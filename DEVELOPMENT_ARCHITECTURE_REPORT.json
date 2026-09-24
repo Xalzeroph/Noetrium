@@ -3,7 +3,7 @@
   "architecture_complexity": {
     "authorities": 20,
     "contract_declarations": 185,
-    "import_edges": 5292,
+    "import_edges": 5295,
     "subsystems": 15,
     "top_level_systems": 16
   },
@@ -23,7 +23,7 @@
     "effective_limits": {
       "authorities": 31,
       "contract_declarations": 185,
-      "import_edges": 5292,
+      "import_edges": 5295,
       "subsystems": 15,
       "top_level_systems": 16
     },
@@ -627,7 +627,7 @@
       "seam_id": "completed"
     }
   ],
-  "import_edges": 5292,
+  "import_edges": 5295,
   "import_violations": [],
   "layer_violations": [],
   "operation_graph": [
@@ -873,23 +873,10 @@
     }
   ],
   "package_cycles": [],
-  "report_sha256": "9ec40854098822ecf97fe8a1b0d6eb7bdbef5a5caddff8aba65dfa65651802e3",
+  "report_sha256": "bace0d87124db087c82c1fd4e5ab5e4fdb87ff2b73e4c333c4f0135f5b2168cd",
   "source_authority_violations": [],
-  "source_digest": "ee2ea0332af6382445cc45a704381e76681b5e1ce601459c353c1a25c5fceed7",
-  "source_invariant_violations": [
-    {
-      "detail": "retired parallel Experiment orchestration namespace reappeared; execution must enter through Research OS",
-      "invariant": "retired_experiment_orchestration_path",
-      "line": 1,
-      "path": "noetrium_platform/research/experimentation/lifecycle/experiment/runtime/matrix.py"
-    },
-    {
-      "detail": "noetrium_platform.research.experimentation.api -> noetrium_platform.capabilities.api",
-      "invariant": "layer_facade_illegal_dependency",
-      "line": 582,
-      "path": "noetrium_platform/research/experimentation/api/__init__.py"
-    }
-  ],
+  "source_digest": "69a7e8df2d1b1b6389c7c75a70ec1428285307346cebcaaefa35c3850eb794da",
+  "source_invariant_violations": [],
   "source_root": ".",
   "subsystem_graph": [
     {
@@ -1734,6 +1721,18 @@
       "score": 2278
     },
     {
+      "branches": 71,
+      "classes": 5,
+      "exception_handlers": 7,
+      "functions": 82,
+      "imports": 12,
+      "max_function_lines": 95,
+      "module": "noetrium_platform.capabilities.environment.catalog.runtime.catalog",
+      "path": "noetrium_platform/capabilities/environment/catalog/runtime/catalog.py",
+      "physical_lines": 1504,
+      "score": 2268
+    },
+    {
       "branches": 121,
       "classes": 31,
       "exception_handlers": 1,
@@ -1840,24 +1839,12 @@
       "path": "noetrium_platform/capabilities/participant/providers/sqlite_revision_authority.py",
       "physical_lines": 863,
       "score": 1710
-    },
-    {
-      "branches": 90,
-      "classes": 2,
-      "exception_handlers": 14,
-      "functions": 28,
-      "imports": 20,
-      "max_function_lines": 82,
-      "module": "noetrium_platform.composition.model_qualification.qualification_index_worker",
-      "path": "noetrium_platform/composition/model_qualification/qualification_index_worker.py",
-      "physical_lines": 721,
-      "score": 1705
     }
   ],
   "top_optimization_risks": [
     {
       "exception_handlers": 0,
-      "import_fan_in": 450,
+      "import_fan_in": 451,
       "import_fan_out": 27,
       "io_sites": 0,
       "lock_sites": 0,
@@ -1868,7 +1855,7 @@
         "HIGH_FAN_IN",
         "HIGH_FAN_OUT"
       ],
-      "risk_score": 1881,
+      "risk_score": 1885,
       "self_mutation_sites": 0,
       "serialization_sites": 0
     },
@@ -2015,6 +2002,24 @@
       "serialization_sites": 0
     },
     {
+      "exception_handlers": 7,
+      "import_fan_in": 1,
+      "import_fan_out": 6,
+      "io_sites": 4,
+      "lock_sites": 0,
+      "long_functions": 4,
+      "module": "noetrium_platform.capabilities.environment.catalog.runtime.catalog",
+      "path": "noetrium_platform/capabilities/environment/catalog/runtime/catalog.py",
+      "reason_codes": [
+        "STATE_MUTATION_CONCENTRATION",
+        "FAILURE_BRANCH_CONCENTRATION",
+        "LONG_FUNCTION"
+      ],
+      "risk_score": 388,
+      "self_mutation_sites": 38,
+      "serialization_sites": 2
+    },
+    {
       "exception_handlers": 2,
       "import_fan_in": 2,
       "import_fan_out": 16,
@@ -2087,6 +2092,22 @@
       "serialization_sites": 0
     },
     {
+      "exception_handlers": 0,
+      "import_fan_in": 77,
+      "import_fan_out": 7,
+      "io_sites": 0,
+      "lock_sites": 0,
+      "long_functions": 0,
+      "module": "noetrium_platform.foundation.governance.api",
+      "path": "noetrium_platform/foundation/governance/api/__init__.py",
+      "reason_codes": [
+        "HIGH_FAN_IN"
+      ],
+      "risk_score": 329,
+      "self_mutation_sites": 0,
+      "serialization_sites": 0
+    },
+    {
       "exception_handlers": 13,
       "import_fan_in": 3,
       "import_fan_out": 7,
@@ -2102,22 +2123,6 @@
       ],
       "risk_score": 326,
       "self_mutation_sites": 29,
-      "serialization_sites": 0
-    },
-    {
-      "exception_handlers": 0,
-      "import_fan_in": 75,
-      "import_fan_out": 7,
-      "io_sites": 0,
-      "lock_sites": 0,
-      "long_functions": 0,
-      "module": "noetrium_platform.foundation.governance.api",
-      "path": "noetrium_platform/foundation/governance/api/__init__.py",
-      "reason_codes": [
-        "HIGH_FAN_IN"
-      ],
-      "risk_score": 321,
-      "self_mutation_sites": 0,
       "serialization_sites": 0
     },
     {
@@ -2192,22 +2197,6 @@
       ],
       "risk_score": 289,
       "self_mutation_sites": 17,
-      "serialization_sites": 0
-    },
-    {
-      "exception_handlers": 0,
-      "import_fan_in": 69,
-      "import_fan_out": 2,
-      "io_sites": 0,
-      "lock_sites": 0,
-      "long_functions": 0,
-      "module": "noetrium_platform.foundation.kernel.concurrency.api",
-      "path": "noetrium_platform/foundation/kernel/concurrency/api/__init__.py",
-      "reason_codes": [
-        "HIGH_FAN_IN"
-      ],
-      "risk_score": 282,
-      "self_mutation_sites": 0,
       "serialization_sites": 0
     }
   ]

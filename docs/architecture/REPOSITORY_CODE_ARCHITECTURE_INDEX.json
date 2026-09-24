@@ -1,15 +1,15 @@
 {
   "counts": {
     "parse_errors": 0,
-    "python_files": 3667,
-    "python_import_edges": 7082,
-    "symbols": 4911,
-    "tracked_files": 4302,
+    "python_files": 3670,
+    "python_import_edges": 7092,
+    "symbols": 4925,
+    "tracked_files": 4306,
     "typescript_javascript_files": 11
   },
   "language_symbol_counts": {
     "javascript": 1,
-    "python": 4905,
+    "python": 4919,
     "typescript": 5
   },
   "parse_errors": [],
@@ -371,6 +371,12 @@
     {
       "source_module": "noetrium_platform.capabilities.environment.catalog.api.contracts",
       "source_role": "core_platform",
+      "target_module": "noetrium_platform.foundation.kernel.kernel",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "noetrium_platform.capabilities.environment.catalog.api.contracts",
+      "source_role": "core_platform",
       "target_module": "noetrium_platform.substrate.api",
       "target_role": "core_platform"
     },
@@ -396,6 +402,12 @@
       "source_module": "noetrium_platform.capabilities.environment.catalog.runtime.catalog",
       "source_role": "core_platform",
       "target_module": "noetrium_platform.foundation.kernel.kernel.durability.sqlite",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "noetrium_platform.capabilities.environment.catalog.runtime.catalog",
+      "source_role": "core_platform",
+      "target_module": "noetrium_platform.foundation.kernel.kernel.retry",
       "target_role": "core_platform"
     },
     {
@@ -3929,12 +3941,6 @@
     {
       "source_module": "noetrium_platform.composition.model_management",
       "source_role": "core_platform",
-      "target_module": "noetrium_platform.capabilities.environment.catalog.runtime",
-      "target_role": "core_platform"
-    },
-    {
-      "source_module": "noetrium_platform.composition.model_management",
-      "source_role": "core_platform",
       "target_module": "noetrium_platform.capabilities.model.api",
       "target_role": "core_platform"
     },
@@ -4086,12 +4092,6 @@
       "source_module": "noetrium_platform.composition.model_management",
       "source_role": "core_platform",
       "target_module": "noetrium_platform.infrastructure.lifecycle.service.runtime.state_storage",
-      "target_role": "core_platform"
-    },
-    {
-      "source_module": "noetrium_platform.composition.model_management",
-      "source_role": "core_platform",
-      "target_module": "noetrium_platform.infrastructure.resources.allocation.providers.local_candidates",
       "target_role": "core_platform"
     },
     {
@@ -12899,13 +12899,31 @@
     {
       "source_module": "noetrium_platform.infrastructure.resources.allocation.api.ports",
       "source_role": "core_platform",
+      "target_module": "noetrium_platform.foundation.governance.api",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "noetrium_platform.infrastructure.resources.allocation.api.ports",
+      "source_role": "core_platform",
       "target_module": "noetrium_platform.infrastructure.resources.lease.api",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "noetrium_platform.infrastructure.resources.allocation.providers.local_candidates",
+      "source_role": "core_platform",
+      "target_module": "noetrium_platform.infrastructure.resources.allocation.api.contracts",
       "target_role": "core_platform"
     },
     {
       "source_module": "noetrium_platform.infrastructure.resources.allocation.providers.socket_probe",
       "source_role": "core_platform",
       "target_module": "noetrium_platform.infrastructure.resources.allocation.api",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "noetrium_platform.infrastructure.resources.allocation.runtime.endpoint_allocator",
+      "source_role": "core_platform",
+      "target_module": "noetrium_platform.foundation.governance.api",
       "target_role": "core_platform"
     },
     {
@@ -14345,12 +14363,6 @@
     {
       "source_module": "noetrium_platform.research.experimentation.api",
       "source_role": "core_platform",
-      "target_module": "noetrium_platform.capabilities.api",
-      "target_role": "core_platform"
-    },
-    {
-      "source_module": "noetrium_platform.research.experimentation.api",
-      "source_role": "core_platform",
       "target_module": "noetrium_platform.foundation.kernel.kernel",
       "target_role": "core_platform"
     },
@@ -14961,18 +14973,6 @@
       "target_role": "core_platform"
     },
     {
-      "source_module": "noetrium_platform.research.experimentation.lifecycle.experiment.runtime.matrix",
-      "source_role": "core_platform",
-      "target_module": "noetrium_platform.research.experimentation.lifecycle.experiment.api.contracts",
-      "target_role": "core_platform"
-    },
-    {
-      "source_module": "noetrium_platform.research.experimentation.lifecycle.experiment.runtime.matrix",
-      "source_role": "core_platform",
-      "target_module": "noetrium_platform.research.experimentation.lifecycle.study.api",
-      "target_role": "core_platform"
-    },
-    {
       "source_module": "noetrium_platform.research.experimentation.lifecycle.run.api.artifacts",
       "source_role": "core_platform",
       "target_module": "noetrium_platform.foundation.kernel.kernel",
@@ -15510,6 +15510,18 @@
       "source_module": "noetrium_platform.research.experimentation.package_store",
       "source_role": "core_platform",
       "target_module": "noetrium_platform.foundation.kernel.kernel.durability",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "noetrium_platform.research.experimentation.projection",
+      "source_role": "core_platform",
+      "target_module": "noetrium_platform.research.experimentation.lifecycle.experiment.api.contracts",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "noetrium_platform.research.experimentation.projection",
+      "source_role": "core_platform",
+      "target_module": "noetrium_platform.research.experimentation.lifecycle.study.api",
       "target_role": "core_platform"
     },
     {
@@ -18132,6 +18144,12 @@
       "source_module": "research.reproductions.execution_authority",
       "source_role": "research_reproductions",
       "target_module": "noetrium_platform.composition.research_os_experiment_trial_execution",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "research.reproductions.execution_authority",
+      "source_role": "research_reproductions",
+      "target_module": "noetrium_platform.foundation.kernel.kernel",
       "target_role": "core_platform"
     },
     {
@@ -25935,6 +25953,12 @@
       "target_role": "core_platform"
     },
     {
+      "source_module": "tests.test_environment_instance_lifecycle_v1",
+      "source_role": "tests",
+      "target_module": "noetrium_platform.capabilities.environment.api",
+      "target_role": "core_platform"
+    },
+    {
       "source_module": "tests.test_environment_jsonl_process_transport_v1",
       "source_role": "tests",
       "target_module": "noetrium_platform.capabilities.environment.providers",
@@ -25992,6 +26016,30 @@
       "source_module": "tests.test_environment_minecraft_raw_control_v1",
       "source_role": "tests",
       "target_module": "noetrium_platform.foundation.kernel.kernel",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "tests.test_environment_pool_scale_v1",
+      "source_role": "tests",
+      "target_module": "noetrium_platform.capabilities.environment.catalog.api",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "tests.test_environment_pool_scale_v1",
+      "source_role": "tests",
+      "target_module": "noetrium_platform.capabilities.environment.catalog.runtime",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "tests.test_environment_pool_scale_v1",
+      "source_role": "tests",
+      "target_module": "noetrium_platform.foundation.scope.api",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "tests.test_environment_pool_scale_v1",
+      "source_role": "tests",
+      "target_module": "noetrium_platform.foundation.scope.providers",
       "target_role": "core_platform"
     },
     {
@@ -26339,7 +26387,7 @@
     {
       "source_module": "tests.test_experiment_report_projection_v2",
       "source_role": "tests",
-      "target_module": "noetrium_platform.research.experimentation.lifecycle.experiment.runtime.matrix",
+      "target_module": "noetrium_platform.research.experimentation.projection",
       "target_role": "core_platform"
     },
     {
@@ -31547,7 +31595,7 @@
     {
       "source_module": "tests.test_raw_record_metric_engine_v1",
       "source_role": "tests",
-      "target_module": "noetrium_platform.research.experimentation.lifecycle.experiment.runtime.matrix",
+      "target_module": "noetrium_platform.research.experimentation.projection",
       "target_role": "core_platform"
     },
     {
@@ -32232,6 +32280,12 @@
       "source_module": "tests.test_reproduction_fleet_authority_composition_v1",
       "source_role": "tests",
       "target_module": "research.reproductions.fleet",
+      "target_role": "research_reproductions"
+    },
+    {
+      "source_module": "tests.test_reproduction_fleet_authority_manifest_v1",
+      "source_role": "tests",
+      "target_module": "research.reproductions.execution_authority",
       "target_role": "research_reproductions"
     },
     {
@@ -34158,6 +34212,12 @@
       "source_module": "tests.test_resource_endpoint_allocation_v1",
       "source_role": "tests",
       "target_module": "noetrium_platform.infrastructure.resources.allocation.api",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "tests.test_resource_endpoint_allocation_v1",
+      "source_role": "tests",
+      "target_module": "noetrium_platform.infrastructure.resources.allocation.providers",
       "target_role": "core_platform"
     },
     {
@@ -40223,7 +40283,7 @@
     {
       "source_module": "tests.test_study_matrix_universal_projection_v1",
       "source_role": "tests",
-      "target_module": "noetrium_platform.research.experimentation.lifecycle.experiment.runtime.matrix",
+      "target_module": "noetrium_platform.research.experimentation.projection",
       "target_role": "core_platform"
     },
     {
@@ -41795,7 +41855,7 @@
     {
       "source_module": "tests.test_universal_experiment_kernel_v1",
       "source_role": "tests",
-      "target_module": "noetrium_platform.research.experimentation.lifecycle.experiment.runtime.matrix",
+      "target_module": "noetrium_platform.research.experimentation.projection",
       "target_role": "core_platform"
     },
     {
@@ -42509,7 +42569,7 @@
   ],
   "role_import_counts": [
     {
-      "count": 2584,
+      "count": 2586,
       "source_role": "core_platform",
       "target_role": "core_platform"
     },
@@ -42554,7 +42614,7 @@
       "target_role": "public_facade"
     },
     {
-      "count": 585,
+      "count": 586,
       "source_role": "research_reproductions",
       "target_role": "core_platform"
     },
@@ -42569,7 +42629,7 @@
       "target_role": "research_reproductions"
     },
     {
-      "count": 2761,
+      "count": 2767,
       "source_role": "tests",
       "target_role": "core_platform"
     },
@@ -42589,7 +42649,7 @@
       "target_role": "reference_orchestration"
     },
     {
-      "count": 343,
+      "count": 344,
       "source_role": "tests",
       "target_role": "research_reproductions"
     },
@@ -42632,23 +42692,23 @@
     "reference_components": 22,
     "reference_orchestration": 10,
     "research_reproductions": 777,
-    "tests": 821,
+    "tests": 824,
     "tooling": 79
   },
   "role_symbol_counts": {
-    "core_platform": 3342,
+    "core_platform": 3355,
     "examples": 3,
     "other": 20,
     "public_facade": 4,
     "reference_components": 64,
     "reference_orchestration": 14,
-    "research_reproductions": 430,
+    "research_reproductions": 431,
     "sdk": 5,
     "tests": 990,
     "tooling": 39
   },
   "schema": "noetrium-repository-code-architecture-index.v1",
-  "source_git_sha": "9db37ab69a4235aae8972be820fdc8b505706017",
+  "source_git_sha": "2ab1d11377eacc2b8a7560a8465a65a017e4b6e8",
   "symbols": [
     {
       "bases": [],
@@ -45348,6 +45408,115 @@
       ],
       "decorators": [],
       "fields": [
+        "ACTIVE",
+        "DRAINING",
+        "RETIRED"
+      ],
+      "kind": "enum",
+      "language": "python",
+      "line": 11,
+      "methods": [],
+      "module": "noetrium_platform.capabilities.environment.catalog.api.contracts",
+      "name": "EnvironmentProfileLifecycle",
+      "path": "noetrium_platform/capabilities/environment/catalog/api/contracts.py",
+      "qualname": "noetrium_platform.capabilities.environment.catalog.api.contracts.EnvironmentProfileLifecycle",
+      "role": "core_platform"
+    },
+    {
+      "bases": [],
+      "decorators": [
+        "dataclass(frozen=True, slots=True)"
+      ],
+      "fields": [
+        "profile_id: str",
+        "category_id: str",
+        "profile_revision: str",
+        "lifecycle: EnvironmentProfileLifecycle"
+      ],
+      "kind": "dataclass",
+      "language": "python",
+      "line": 18,
+      "methods": [
+        "__post_init__"
+      ],
+      "module": "noetrium_platform.capabilities.environment.catalog.api.contracts",
+      "name": "EnvironmentProfileRevision",
+      "path": "noetrium_platform/capabilities/environment/catalog/api/contracts.py",
+      "qualname": "noetrium_platform.capabilities.environment.catalog.api.contracts.EnvironmentProfileRevision",
+      "role": "core_platform"
+    },
+    {
+      "bases": [],
+      "decorators": [
+        "dataclass(frozen=True, slots=True)"
+      ],
+      "fields": [
+        "profile_id: str",
+        "profile_revision: str",
+        "build_input_digest: str",
+        "runtime_identity_digest: str",
+        "deployment_receipt_digest: str",
+        "runtime_reference: str",
+        "materialization_digest: str"
+      ],
+      "kind": "dataclass",
+      "language": "python",
+      "line": 53,
+      "methods": [
+        "__post_init__"
+      ],
+      "module": "noetrium_platform.capabilities.environment.catalog.api.contracts",
+      "name": "EnvironmentProfileMaterialization",
+      "path": "noetrium_platform/capabilities/environment/catalog/api/contracts.py",
+      "qualname": "noetrium_platform.capabilities.environment.catalog.api.contracts.EnvironmentProfileMaterialization",
+      "role": "core_platform"
+    },
+    {
+      "bases": [
+        "StrEnum"
+      ],
+      "decorators": [],
+      "fields": [
+        "CLEAN",
+        "IN_USE",
+        "DIRTY",
+        "DESTROYED"
+      ],
+      "kind": "enum",
+      "language": "python",
+      "line": 113,
+      "methods": [],
+      "module": "noetrium_platform.capabilities.environment.catalog.api.contracts",
+      "name": "EnvironmentInstanceState",
+      "path": "noetrium_platform/capabilities/environment/catalog/api/contracts.py",
+      "qualname": "noetrium_platform.capabilities.environment.catalog.api.contracts.EnvironmentInstanceState",
+      "role": "core_platform"
+    },
+    {
+      "bases": [
+        "StrEnum"
+      ],
+      "decorators": [],
+      "fields": [
+        "OVERLAY_DESTROYED",
+        "PROVIDER_RESET_VERIFIED"
+      ],
+      "kind": "enum",
+      "language": "python",
+      "line": 120,
+      "methods": [],
+      "module": "noetrium_platform.capabilities.environment.catalog.api.contracts",
+      "name": "EnvironmentCleanlinessKind",
+      "path": "noetrium_platform/capabilities/environment/catalog/api/contracts.py",
+      "qualname": "noetrium_platform.capabilities.environment.catalog.api.contracts.EnvironmentCleanlinessKind",
+      "role": "core_platform"
+    },
+    {
+      "bases": [
+        "StrEnum"
+      ],
+      "decorators": [],
+      "fields": [
         "PYTHON",
         "CONDA",
         "MAMBA",
@@ -45358,7 +45527,7 @@
       ],
       "kind": "enum",
       "language": "python",
-      "line": 10,
+      "line": 125,
       "methods": [],
       "module": "noetrium_platform.capabilities.environment.catalog.api.contracts",
       "name": "ExecutionEnvironmentKind",
@@ -45380,7 +45549,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 21,
+      "line": 136,
       "methods": [],
       "module": "noetrium_platform.capabilities.environment.catalog.api.contracts",
       "name": "EnvironmentTemplate",
@@ -45405,7 +45574,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 30,
+      "line": 145,
       "methods": [],
       "module": "noetrium_platform.capabilities.environment.catalog.api.contracts",
       "name": "EnvironmentSpec",
@@ -45427,7 +45596,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 42,
+      "line": 157,
       "methods": [],
       "module": "noetrium_platform.capabilities.environment.catalog.api.contracts",
       "name": "EnvironmentOverlay",
@@ -45448,7 +45617,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 51,
+      "line": 166,
       "methods": [],
       "module": "noetrium_platform.capabilities.environment.catalog.api.contracts",
       "name": "EnvironmentAssignment",
@@ -45473,7 +45642,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 59,
+      "line": 174,
       "methods": [],
       "module": "noetrium_platform.capabilities.environment.catalog.api.contracts",
       "name": "ResolvedEnvironmentSpec",
@@ -45491,13 +45660,18 @@
         "resolved_spec_digest: str",
         "backend: str",
         "runtime_reference: str",
+        "runtime_identity_digest: str",
+        "materialization_digest: str",
         "scope: ScopeIdentity",
         "profile_id: str",
-        "profile_revision: str"
+        "profile_revision: str",
+        "state: EnvironmentInstanceState",
+        "generation: int",
+        "cleanliness_proof_digest: str | None"
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 71,
+      "line": 186,
       "methods": [
         "__post_init__"
       ],
@@ -45513,6 +45687,137 @@
         "dataclass(frozen=True, slots=True)"
       ],
       "fields": [
+        "instance_id: str",
+        "profile_revision: str",
+        "runtime_identity_digest: str",
+        "materialization_digest: str",
+        "generation: int",
+        "kind: EnvironmentCleanlinessKind",
+        "proof_digest: str"
+      ],
+      "kind": "dataclass",
+      "language": "python",
+      "line": 244,
+      "methods": [
+        "__post_init__"
+      ],
+      "module": "noetrium_platform.capabilities.environment.catalog.api.contracts",
+      "name": "EnvironmentCleanlinessProof",
+      "path": "noetrium_platform/capabilities/environment/catalog/api/contracts.py",
+      "qualname": "noetrium_platform.capabilities.environment.catalog.api.contracts.EnvironmentCleanlinessProof",
+      "role": "core_platform"
+    },
+    {
+      "bases": [],
+      "decorators": [
+        "dataclass(frozen=True, slots=True)"
+      ],
+      "fields": [
+        "profile_id: str",
+        "profile_revision: str",
+        "instance_ids: tuple[str, ...]",
+        "bound_instance_ids: tuple[str, ...]",
+        "reusable_instance_ids: tuple[str, ...]",
+        "blocking_instance_ids: tuple[str, ...]"
+      ],
+      "kind": "dataclass",
+      "language": "python",
+      "line": 280,
+      "methods": [
+        "locally_gc_eligible"
+      ],
+      "module": "noetrium_platform.capabilities.environment.catalog.api.contracts",
+      "name": "EnvironmentProfileReferenceSummary",
+      "path": "noetrium_platform/capabilities/environment/catalog/api/contracts.py",
+      "qualname": "noetrium_platform.capabilities.environment.catalog.api.contracts.EnvironmentProfileReferenceSummary",
+      "role": "core_platform"
+    },
+    {
+      "bases": [],
+      "decorators": [
+        "dataclass(frozen=True, slots=True)"
+      ],
+      "fields": [
+        "profile_id: str",
+        "profile_revision: str",
+        "runtime_identity_digest: str",
+        "instance_ids: tuple[str, ...]",
+        "bound_instance_ids: tuple[str, ...]",
+        "reusable_instance_ids: tuple[str, ...]",
+        "blocking_instance_ids: tuple[str, ...]"
+      ],
+      "kind": "dataclass",
+      "language": "python",
+      "line": 294,
+      "methods": [
+        "__post_init__",
+        "locally_gc_eligible"
+      ],
+      "module": "noetrium_platform.capabilities.environment.catalog.api.contracts",
+      "name": "EnvironmentRuntimeReferenceSummary",
+      "path": "noetrium_platform/capabilities/environment/catalog/api/contracts.py",
+      "qualname": "noetrium_platform.capabilities.environment.catalog.api.contracts.EnvironmentRuntimeReferenceSummary",
+      "role": "core_platform"
+    },
+    {
+      "bases": [],
+      "decorators": [
+        "dataclass(frozen=True, slots=True)"
+      ],
+      "fields": [
+        "profile_id: str",
+        "profile_revision: str",
+        "runtime_identity_digest: str",
+        "local: EnvironmentRuntimeReferenceSummary",
+        "resumable_execution_ids: tuple[str, ...] | None",
+        "retained_evidence_ids: tuple[str, ...] | None"
+      ],
+      "kind": "dataclass",
+      "language": "python",
+      "line": 324,
+      "methods": [
+        "__post_init__",
+        "external_reference_closure_complete",
+        "eligible"
+      ],
+      "module": "noetrium_platform.capabilities.environment.catalog.api.contracts",
+      "name": "EnvironmentRuntimeGcAssessment",
+      "path": "noetrium_platform/capabilities/environment/catalog/api/contracts.py",
+      "qualname": "noetrium_platform.capabilities.environment.catalog.api.contracts.EnvironmentRuntimeGcAssessment",
+      "role": "core_platform"
+    },
+    {
+      "bases": [],
+      "decorators": [
+        "dataclass(frozen=True, slots=True)"
+      ],
+      "fields": [
+        "profile_id: str",
+        "profile_revision: str",
+        "local: EnvironmentProfileReferenceSummary",
+        "resumable_execution_ids: tuple[str, ...] | None",
+        "retained_evidence_ids: tuple[str, ...] | None"
+      ],
+      "kind": "dataclass",
+      "language": "python",
+      "line": 382,
+      "methods": [
+        "__post_init__",
+        "external_reference_closure_complete",
+        "eligible"
+      ],
+      "module": "noetrium_platform.capabilities.environment.catalog.api.contracts",
+      "name": "EnvironmentProfileGcAssessment",
+      "path": "noetrium_platform/capabilities/environment/catalog/api/contracts.py",
+      "qualname": "noetrium_platform.capabilities.environment.catalog.api.contracts.EnvironmentProfileGcAssessment",
+      "role": "core_platform"
+    },
+    {
+      "bases": [],
+      "decorators": [
+        "dataclass(frozen=True, slots=True)"
+      ],
+      "fields": [
         "binding_id: str",
         "scope: ScopeIdentity",
         "role: str",
@@ -45520,12 +45825,33 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 94,
+      "line": 435,
       "methods": [],
       "module": "noetrium_platform.capabilities.environment.catalog.api.contracts",
       "name": "EnvironmentBinding",
       "path": "noetrium_platform/capabilities/environment/catalog/api/contracts.py",
       "qualname": "noetrium_platform.capabilities.environment.catalog.api.contracts.EnvironmentBinding",
+      "role": "core_platform"
+    },
+    {
+      "bases": [],
+      "decorators": [
+        "dataclass(frozen=True, slots=True)"
+      ],
+      "fields": [
+        "binding: EnvironmentBinding",
+        "instance: EnvironmentInstance"
+      ],
+      "kind": "dataclass",
+      "language": "python",
+      "line": 443,
+      "methods": [
+        "__post_init__"
+      ],
+      "module": "noetrium_platform.capabilities.environment.catalog.api.contracts",
+      "name": "EnvironmentInstanceAcquisition",
+      "path": "noetrium_platform/capabilities/environment/catalog/api/contracts.py",
+      "qualname": "noetrium_platform.capabilities.environment.catalog.api.contracts.EnvironmentInstanceAcquisition",
       "role": "core_platform"
     },
     {
@@ -45536,16 +45862,34 @@
       "fields": [],
       "kind": "protocol",
       "language": "python",
-      "line": 18,
+      "line": 27,
       "methods": [
+        "register_profile_revision",
+        "profile_revision",
+        "register_profile_materialization",
+        "profile_materialization",
+        "profile_materializations",
+        "transition_profile_revision",
         "register_template",
         "register_spec",
         "register_overlay",
         "assign",
         "resolve",
         "register_instance",
+        "register_recovery_instance",
         "bind",
-        "binding"
+        "acquire_reusable_instance",
+        "recover_reusable_instance",
+        "unbind",
+        "binding",
+        "release_instance",
+        "mark_instance_dirty",
+        "destroy_instance",
+        "reusable_instances",
+        "profile_references",
+        "assess_profile_gc",
+        "runtime_references",
+        "assess_runtime_gc"
       ],
       "module": "noetrium_platform.capabilities.environment.catalog.api.ports",
       "name": "ExecutionEnvironmentCatalogPort",
@@ -45561,7 +45905,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 34,
+      "line": 46,
       "methods": [],
       "module": "noetrium_platform.capabilities.environment.catalog.runtime.catalog",
       "name": "EnvironmentCatalogConflict",
@@ -45577,7 +45921,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 38,
+      "line": 50,
       "methods": [],
       "module": "noetrium_platform.capabilities.environment.catalog.runtime.catalog",
       "name": "EnvironmentCatalogNotFound",
@@ -45586,15 +45930,41 @@
       "role": "core_platform"
     },
     {
+      "bases": [
+        "RuntimeError"
+      ],
+      "decorators": [],
+      "fields": [],
+      "kind": "class",
+      "language": "python",
+      "line": 54,
+      "methods": [],
+      "module": "noetrium_platform.capabilities.environment.catalog.runtime.catalog",
+      "name": "EnvironmentCatalogStaleRevision",
+      "path": "noetrium_platform/capabilities/environment/catalog/runtime/catalog.py",
+      "qualname": "noetrium_platform.capabilities.environment.catalog.runtime.catalog.EnvironmentCatalogStaleRevision",
+      "role": "core_platform"
+    },
+    {
       "bases": [],
       "decorators": [],
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 42,
+      "line": 58,
       "methods": [
         "__init__",
         "_put",
+        "register_profile_revision",
+        "profile_revision",
+        "register_profile_materialization",
+        "profile_materialization",
+        "profile_materializations",
+        "transition_profile_revision",
+        "_require_new_profile_admission",
+        "_require_recovery_pin",
+        "_validate_instance_materialization",
+        "_validate_fresh_instance",
         "register_template",
         "register_spec",
         "register_overlay",
@@ -45602,8 +45972,23 @@
         "_spec_chain",
         "resolve",
         "register_instance",
+        "register_recovery_instance",
+        "_rebuild_bindings",
+        "_instance",
+        "_bindings_for_instance",
         "bind",
+        "acquire_reusable_instance",
+        "recover_reusable_instance",
+        "unbind",
         "binding",
+        "release_instance",
+        "mark_instance_dirty",
+        "destroy_instance",
+        "reusable_instances",
+        "profile_references",
+        "assess_profile_gc",
+        "runtime_references",
+        "assess_runtime_gc",
         "resolved_digest"
       ],
       "module": "noetrium_platform.capabilities.environment.catalog.runtime.catalog",
@@ -45620,13 +46005,15 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 159,
+      "line": 945,
       "methods": [
         "__init__",
         "_connection",
         "_scope",
         "_decode_scope",
         "_pairs",
+        "_profile_revision",
+        "_profile_materialization",
         "_template",
         "_spec",
         "_overlay",
@@ -45637,14 +46024,32 @@
         "_persist",
         "_pairs_decode",
         "_load",
+        "register_profile_revision",
+        "profile_revision",
+        "register_profile_materialization",
+        "profile_materialization",
+        "profile_materializations",
+        "transition_profile_revision",
         "register_template",
         "register_spec",
         "register_overlay",
         "assign",
         "resolve",
         "register_instance",
+        "register_recovery_instance",
         "bind",
-        "binding"
+        "acquire_reusable_instance",
+        "recover_reusable_instance",
+        "unbind",
+        "binding",
+        "release_instance",
+        "mark_instance_dirty",
+        "destroy_instance",
+        "reusable_instances",
+        "profile_references",
+        "assess_profile_gc",
+        "runtime_references",
+        "assess_runtime_gc"
       ],
       "module": "noetrium_platform.capabilities.environment.catalog.runtime.catalog",
       "name": "SQLiteExecutionEnvironmentCatalog",
@@ -52742,7 +53147,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 41,
+      "line": 39,
       "methods": [
         "__post_init__"
       ],
@@ -52767,7 +53172,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 80,
+      "line": 78,
       "methods": [
         "placement_digest"
       ],
@@ -52789,7 +53194,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 94,
+      "line": 92,
       "methods": [
         "__post_init__"
       ],
@@ -52805,7 +53210,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 116,
+      "line": 114,
       "methods": [
         "__init__",
         "assert_healthy",
@@ -52825,7 +53230,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 183,
+      "line": 181,
       "methods": [
         "__init__",
         "_target_count",
@@ -63975,7 +64380,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 81,
+      "line": 79,
       "methods": [],
       "module": "noetrium_platform.composition.model_management",
       "name": "ManagementPlaneAuthorities",
@@ -63989,7 +64394,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 94,
+      "line": 92,
       "methods": [
         "__init__",
         "open",
@@ -64517,12 +64922,13 @@
         "resource_ownership: ResourceOwnershipPort",
         "resource_leases: ResourceLeasePort",
         "endpoint_allocations: EndpointAllocationPort",
+        "endpoint_candidates: EndpointCandidatePortSourcePort",
         "compute_inventory: ComputeInventoryPort",
         "compute_scheduler: ComputeSchedulerPort"
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 69,
+      "line": 75,
       "methods": [],
       "module": "noetrium_platform.composition.platform_meta",
       "name": "PlatformMetaAuthorities",
@@ -68979,6 +69385,7 @@
         "scope: ScopeIdentity | None",
         "kind: ArtifactKind | None",
         "producer_component_id: str | None",
+        "digest: str | None",
         "limit: int"
       ],
       "kind": "dataclass",
@@ -69270,12 +69677,32 @@
       "decorators": [
         "runtime_checkable"
       ],
+      "fields": [],
+      "kind": "protocol",
+      "language": "python",
+      "line": 27,
+      "methods": [
+        "resolve"
+      ],
+      "module": "noetrium_platform.evidence.artifact.content.api.blob",
+      "name": "ArtifactBlobResolverPort",
+      "path": "noetrium_platform/evidence/artifact/content/api/blob.py",
+      "qualname": "noetrium_platform.evidence.artifact.content.api.blob.ArtifactBlobResolverPort",
+      "role": "core_platform"
+    },
+    {
+      "bases": [
+        "Protocol"
+      ],
+      "decorators": [
+        "runtime_checkable"
+      ],
       "fields": [
         "durability: str"
       ],
       "kind": "protocol",
       "language": "python",
-      "line": 27,
+      "line": 39,
       "methods": [
         "put",
         "get",
@@ -69823,6 +70250,7 @@
         "_lock_path",
         "_verify_existing",
         "put",
+        "resolve",
         "get",
         "verify"
       ],
@@ -97929,7 +98357,7 @@
       "fields": [],
       "kind": "protocol",
       "language": "python",
-      "line": 18,
+      "line": 24,
       "methods": [
         "candidate_ports"
       ],
@@ -97947,7 +98375,7 @@
       "fields": [],
       "kind": "protocol",
       "language": "python",
-      "line": 29,
+      "line": 36,
       "methods": [
         "probe"
       ],
@@ -97965,7 +98393,7 @@
       "fields": [],
       "kind": "protocol",
       "language": "python",
-      "line": 33,
+      "line": 40,
       "methods": [
         "reserve",
         "confirm_bound",
@@ -97991,7 +98419,7 @@
       "fields": [],
       "kind": "protocol",
       "language": "python",
-      "line": 62,
+      "line": 69,
       "methods": [
         "start",
         "assert_healthy",
@@ -98011,7 +98439,7 @@
       "fields": [],
       "kind": "protocol",
       "language": "python",
-      "line": 68,
+      "line": 75,
       "methods": [
         "create"
       ],
@@ -98029,9 +98457,10 @@
       "fields": [],
       "kind": "protocol",
       "language": "python",
-      "line": 72,
+      "line": 79,
       "methods": [
         "allocate",
+        "allocate_auto",
         "confirm_bound",
         "replace_bound",
         "renew",
@@ -98052,14 +98481,14 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 41,
+      "line": 54,
       "methods": [
         "candidate_ports"
       ],
       "module": "noetrium_platform.infrastructure.resources.allocation.providers.local_candidates",
-      "name": "LocalTcpEndpointCandidateSource",
+      "name": "LocalEndpointCandidateSource",
       "path": "noetrium_platform/infrastructure/resources/allocation/providers/local_candidates.py",
-      "qualname": "noetrium_platform.infrastructure.resources.allocation.providers.local_candidates.LocalTcpEndpointCandidateSource",
+      "qualname": "noetrium_platform.infrastructure.resources.allocation.providers.local_candidates.LocalEndpointCandidateSource",
       "role": "core_platform"
     },
     {
@@ -98086,7 +98515,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 28,
+      "line": 32,
       "methods": [],
       "module": "noetrium_platform.infrastructure.resources.allocation.runtime.endpoint_allocator",
       "name": "EndpointAllocationConflict",
@@ -98102,7 +98531,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 32,
+      "line": 36,
       "methods": [
         "__init__"
       ],
@@ -98120,9 +98549,10 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 40,
+      "line": 109,
       "methods": [
         "__init__",
+        "allocate_auto",
         "allocate",
         "_resolve_existing",
         "confirm_bound",
@@ -98147,11 +98577,12 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 163,
+      "line": 272,
       "methods": [
         "__init__",
         "_reconcile_allocation_locked",
         "_existing_for_request_locked",
+        "allocate_auto",
         "allocate",
         "confirm_bound",
         "replace_bound",
@@ -112354,113 +112785,6 @@
       "role": "core_platform"
     },
     {
-      "bases": [],
-      "decorators": [],
-      "fields": [],
-      "kind": "class",
-      "language": "python",
-      "line": 39,
-      "methods": [
-        "plan"
-      ],
-      "module": "noetrium_platform.research.experimentation.lifecycle.experiment.runtime.matrix",
-      "name": "StudyMatrixUniversalProjection",
-      "path": "noetrium_platform/research/experimentation/lifecycle/experiment/runtime/matrix.py",
-      "qualname": "noetrium_platform.research.experimentation.lifecycle.experiment.runtime.matrix.StudyMatrixUniversalProjection",
-      "role": "core_platform"
-    },
-    {
-      "bases": [],
-      "decorators": [],
-      "fields": [],
-      "kind": "class",
-      "language": "python",
-      "line": 84,
-      "methods": [
-        "plan"
-      ],
-      "module": "noetrium_platform.research.experimentation.lifecycle.experiment.runtime.matrix",
-      "name": "StaticUnitPlanner",
-      "path": "noetrium_platform/research/experimentation/lifecycle/experiment/runtime/matrix.py",
-      "qualname": "noetrium_platform.research.experimentation.lifecycle.experiment.runtime.matrix.StaticUnitPlanner",
-      "role": "core_platform"
-    },
-    {
-      "bases": [
-        "UniversalObservationSinkPort"
-      ],
-      "decorators": [],
-      "fields": [],
-      "kind": "class",
-      "language": "python",
-      "line": 93,
-      "methods": [
-        "__init__",
-        "append",
-        "snapshot"
-      ],
-      "module": "noetrium_platform.research.experimentation.lifecycle.experiment.runtime.matrix",
-      "name": "InMemoryObservationProjection",
-      "path": "noetrium_platform/research/experimentation/lifecycle/experiment/runtime/matrix.py",
-      "qualname": "noetrium_platform.research.experimentation.lifecycle.experiment.runtime.matrix.InMemoryObservationProjection",
-      "role": "core_platform"
-    },
-    {
-      "bases": [],
-      "decorators": [],
-      "fields": [],
-      "kind": "class",
-      "language": "python",
-      "line": 301,
-      "methods": [
-        "evaluate"
-      ],
-      "module": "noetrium_platform.research.experimentation.lifecycle.experiment.runtime.matrix",
-      "name": "MetricEngine",
-      "path": "noetrium_platform/research/experimentation/lifecycle/experiment/runtime/matrix.py",
-      "qualname": "noetrium_platform.research.experimentation.lifecycle.experiment.runtime.matrix.MetricEngine",
-      "role": "core_platform"
-    },
-    {
-      "bases": [],
-      "decorators": [
-        "dataclass(frozen=True, slots=True)"
-      ],
-      "fields": [
-        "findings: tuple[UniversalDoctorFinding, ...]"
-      ],
-      "kind": "dataclass",
-      "language": "python",
-      "line": 331,
-      "methods": [
-        "healthy"
-      ],
-      "module": "noetrium_platform.research.experimentation.lifecycle.experiment.runtime.matrix",
-      "name": "DoctorReport",
-      "path": "noetrium_platform/research/experimentation/lifecycle/experiment/runtime/matrix.py",
-      "qualname": "noetrium_platform.research.experimentation.lifecycle.experiment.runtime.matrix.DoctorReport",
-      "role": "core_platform"
-    },
-    {
-      "bases": [
-        "ExperimentDoctorPort"
-      ],
-      "decorators": [],
-      "fields": [],
-      "kind": "class",
-      "language": "python",
-      "line": 339,
-      "methods": [
-        "inspect",
-        "report"
-      ],
-      "module": "noetrium_platform.research.experimentation.lifecycle.experiment.runtime.matrix",
-      "name": "ExperimentDoctor",
-      "path": "noetrium_platform/research/experimentation/lifecycle/experiment/runtime/matrix.py",
-      "qualname": "noetrium_platform.research.experimentation.lifecycle.experiment.runtime.matrix.ExperimentDoctor",
-      "role": "core_platform"
-    },
-    {
       "bases": [
         "StrEnum"
       ],
@@ -115858,6 +116182,113 @@
       "name": "DirectoryResearchPackageStore",
       "path": "noetrium_platform/research/experimentation/package_store.py",
       "qualname": "noetrium_platform.research.experimentation.package_store.DirectoryResearchPackageStore",
+      "role": "core_platform"
+    },
+    {
+      "bases": [],
+      "decorators": [],
+      "fields": [],
+      "kind": "class",
+      "language": "python",
+      "line": 39,
+      "methods": [
+        "plan"
+      ],
+      "module": "noetrium_platform.research.experimentation.projection",
+      "name": "StudyMatrixUniversalProjection",
+      "path": "noetrium_platform/research/experimentation/projection.py",
+      "qualname": "noetrium_platform.research.experimentation.projection.StudyMatrixUniversalProjection",
+      "role": "core_platform"
+    },
+    {
+      "bases": [],
+      "decorators": [],
+      "fields": [],
+      "kind": "class",
+      "language": "python",
+      "line": 84,
+      "methods": [
+        "plan"
+      ],
+      "module": "noetrium_platform.research.experimentation.projection",
+      "name": "StaticUnitPlanner",
+      "path": "noetrium_platform/research/experimentation/projection.py",
+      "qualname": "noetrium_platform.research.experimentation.projection.StaticUnitPlanner",
+      "role": "core_platform"
+    },
+    {
+      "bases": [
+        "UniversalObservationSinkPort"
+      ],
+      "decorators": [],
+      "fields": [],
+      "kind": "class",
+      "language": "python",
+      "line": 93,
+      "methods": [
+        "__init__",
+        "append",
+        "snapshot"
+      ],
+      "module": "noetrium_platform.research.experimentation.projection",
+      "name": "InMemoryObservationProjection",
+      "path": "noetrium_platform/research/experimentation/projection.py",
+      "qualname": "noetrium_platform.research.experimentation.projection.InMemoryObservationProjection",
+      "role": "core_platform"
+    },
+    {
+      "bases": [],
+      "decorators": [],
+      "fields": [],
+      "kind": "class",
+      "language": "python",
+      "line": 301,
+      "methods": [
+        "evaluate"
+      ],
+      "module": "noetrium_platform.research.experimentation.projection",
+      "name": "MetricEngine",
+      "path": "noetrium_platform/research/experimentation/projection.py",
+      "qualname": "noetrium_platform.research.experimentation.projection.MetricEngine",
+      "role": "core_platform"
+    },
+    {
+      "bases": [],
+      "decorators": [
+        "dataclass(frozen=True, slots=True)"
+      ],
+      "fields": [
+        "findings: tuple[UniversalDoctorFinding, ...]"
+      ],
+      "kind": "dataclass",
+      "language": "python",
+      "line": 331,
+      "methods": [
+        "healthy"
+      ],
+      "module": "noetrium_platform.research.experimentation.projection",
+      "name": "DoctorReport",
+      "path": "noetrium_platform/research/experimentation/projection.py",
+      "qualname": "noetrium_platform.research.experimentation.projection.DoctorReport",
+      "role": "core_platform"
+    },
+    {
+      "bases": [
+        "ExperimentDoctorPort"
+      ],
+      "decorators": [],
+      "fields": [],
+      "kind": "class",
+      "language": "python",
+      "line": 339,
+      "methods": [
+        "inspect",
+        "report"
+      ],
+      "module": "noetrium_platform.research.experimentation.projection",
+      "name": "ExperimentDoctor",
+      "path": "noetrium_platform/research/experimentation/projection.py",
+      "qualname": "noetrium_platform.research.experimentation.projection.ExperimentDoctor",
       "role": "core_platform"
     },
     {
@@ -122958,6 +123389,36 @@
         "dataclass(frozen=True, slots=True)"
       ],
       "fields": [
+        "manifest_registry_digest: str",
+        "research_capability_registry_digest: str",
+        "participant_registry_digest: str",
+        "model_registry_digest: str",
+        "trial_provider_registry_digest: str",
+        "aggregation_registry_digest: str",
+        "reconciliation_registry_digest: str",
+        "benchmark_registry_digest: str",
+        "benchmark_authority_digest: str",
+        "reproduction_capability_registry_digest: str | None",
+        "manifest_digest: str"
+      ],
+      "kind": "dataclass",
+      "language": "python",
+      "line": 54,
+      "methods": [
+        "__post_init__"
+      ],
+      "module": "research.reproductions.execution_authority",
+      "name": "ReproductionFleetAuthorityManifest",
+      "path": "research/reproductions/execution_authority.py",
+      "qualname": "research.reproductions.execution_authority.ReproductionFleetAuthorityManifest",
+      "role": "research_reproductions"
+    },
+    {
+      "bases": [],
+      "decorators": [
+        "dataclass(frozen=True, slots=True)"
+      ],
+      "fields": [
         "paper_uri: str",
         "source_repository: str",
         "qwen_iccv_commit: str",
@@ -123305,6 +123766,7 @@
       "language": "python",
       "line": 127,
       "methods": [
+        "authority_digest",
         "resolve"
       ],
       "module": "research.reproductions.fleet",
@@ -123328,7 +123790,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 138,
+      "line": 141,
       "methods": [
         "__post_init__"
       ],
@@ -123351,7 +123813,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 191,
+      "line": 194,
       "methods": [
         "__post_init__"
       ],
@@ -123377,7 +123839,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 439,
+      "line": 472,
       "methods": [
         "__post_init__"
       ],
@@ -123407,7 +123869,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 601,
+      "line": 634,
       "methods": [
         "__post_init__",
         "execution_authority_closed"
@@ -123425,13 +123887,14 @@
       ],
       "fields": [
         "materialization: ReproductionFleetMaterialization",
+        "authority_manifest_digest: str",
         "revision_digest: str",
         "lanes: tuple[ReproductionFleetAuthorityLaneAudit, ...]",
         "audit_digest: str"
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 697,
+      "line": 730,
       "methods": [
         "__post_init__",
         "closed_lane_count",
@@ -123451,6 +123914,7 @@
       ],
       "fields": [
         "materialization: ReproductionFleetMaterialization",
+        "authority_manifest_digest: str",
         "execution_id: str",
         "revision_digest: str",
         "selected_node_ids: tuple[str, ...]",
@@ -123460,7 +123924,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 945,
+      "line": 992,
       "methods": [
         "__post_init__"
       ],
@@ -123479,11 +123943,12 @@
         "benchmark_resolver: ReproductionBenchmarkResolverPort",
         "research_bindings: ResearchBindingAuthorityPort",
         "experiment_runtime_components: ResearchOSExperimentRuntimeComponents",
+        "authority_manifest_digest: str",
         "capability_resolver: ReproductionCapabilityRequirementResolverPort | None"
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 1087,
+      "line": 1151,
       "methods": [
         "__post_init__"
       ],
@@ -123501,11 +123966,12 @@
       "fields": [
         "materialization: ReproductionFleetMaterialization",
         "receipt: api.ResearchControlReceipt",
+        "authority_manifest_digest: str",
         "execution_digest: str"
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 1128,
+      "line": 1201,
       "methods": [
         "__post_init__"
       ],
@@ -123521,7 +123987,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 1219,
+      "line": 1304,
       "methods": [
         "__init__",
         "resolve"
@@ -130367,7 +130833,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 24,
+      "line": 25,
       "methods": [],
       "module": "scripts.verify_container_image",
       "name": "CommandReceipt",
@@ -130390,6 +130856,7 @@
         "source_sha: str",
         "wheel_sha256: str",
         "distribution_evidence_sha256: str",
+        "python_runtime_identity_digest: str",
         "repo_digests: tuple[str, ...]",
         "container_user: str",
         "effective_uid: int",
@@ -130403,7 +130870,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 33,
+      "line": 34,
       "methods": [],
       "module": "scripts.verify_container_image",
       "name": "ContainerVerificationReceipt",
@@ -133286,7 +133753,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 45,
+      "line": 50,
       "methods": [
         "probe"
       ],
@@ -133304,7 +133771,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 50,
+      "line": 55,
       "methods": [
         "test_scope_and_lease_survive_rebuild_and_fence_conflicts",
         "test_endpoint_allocation_survives_rebuild_and_release_is_idempotent",
@@ -133312,6 +133779,9 @@
         "test_durable_portfolio_survives_rebuild_with_canonical_manifest",
         "test_durable_experimentation_survives_rebuild",
         "test_durable_compute_inventory_and_allocations_survive_rebuild",
+        "test_environment_instance_reuse_is_generation_fenced_and_gc_safe",
+        "test_environment_exact_runtime_gc_does_not_collapse_profile_outputs",
+        "test_environment_profile_lifecycle_is_runtime_admission_truth",
         "test_durable_environment_hierarchy_survives_rebuild"
       ],
       "module": "tests.test_durable_resource_authorities_v1",
@@ -137354,7 +137824,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 29,
+      "line": 30,
       "methods": [
         "__init__",
         "put_deployment"
@@ -137371,7 +137841,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 38,
+      "line": 39,
       "methods": [
         "__init__",
         "status",
@@ -137389,7 +137859,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 60,
+      "line": 61,
       "methods": [
         "__init__",
         "reconcile"
@@ -137406,7 +137876,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 78,
+      "line": 79,
       "methods": [
         "__init__",
         "candidates",
@@ -137425,9 +137895,10 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 125,
+      "line": 126,
       "methods": [
         "__init__",
+        "allocate_auto",
         "allocate",
         "confirm_bound",
         "release"
@@ -137444,7 +137915,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 166,
+      "line": 179,
       "methods": [
         "__init__",
         "start",
@@ -137463,7 +137934,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 182,
+      "line": 195,
       "methods": [
         "__init__",
         "create"
@@ -137480,24 +137951,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 194,
-      "methods": [
-        "__init__",
-        "candidate_ports"
-      ],
-      "module": "tests.test_model_replica_pool_auto_placement_v1",
-      "name": "CandidatePorts",
-      "path": "tests/test_model_replica_pool_auto_placement_v1.py",
-      "qualname": "tests.test_model_replica_pool_auto_placement_v1.CandidatePorts",
-      "role": "tests"
-    },
-    {
-      "bases": [],
-      "decorators": [],
-      "fields": [],
-      "kind": "class",
-      "language": "python",
-      "line": 205,
+      "line": 207,
       "methods": [
         "__init__",
         "create"
@@ -137516,7 +137970,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 272,
+      "line": 273,
       "methods": [
         "allocate"
       ],
@@ -139946,7 +140400,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 15,
+      "line": 16,
       "methods": [
         "resolve"
       ],
@@ -139962,7 +140416,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 20,
+      "line": 21,
       "methods": [
         "resolve"
       ],
@@ -139978,7 +140432,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 25,
+      "line": 26,
       "methods": [
         "resolve"
       ],
@@ -139994,7 +140448,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 30,
+      "line": 31,
       "methods": [
         "resolve"
       ],
@@ -140010,7 +140464,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 35,
+      "line": 36,
       "methods": [
         "resolve"
       ],
@@ -140026,7 +140480,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 40,
+      "line": 41,
       "methods": [
         "resolve"
       ],
@@ -140042,7 +140496,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 45,
+      "line": 46,
       "methods": [
         "resolve"
       ],
@@ -140058,7 +140512,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 50,
+      "line": 51,
       "methods": [
         "resolve"
       ],
@@ -140074,7 +140528,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 55,
+      "line": 56,
       "methods": [
         "resolve"
       ],
@@ -140106,7 +140560,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 23,
+      "line": 25,
       "methods": [
         "resolve"
       ],
@@ -140122,7 +140576,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 29,
+      "line": 31,
       "methods": [
         "resolve"
       ],
@@ -140138,7 +140592,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 35,
+      "line": 37,
       "methods": [
         "resolve"
       ],
@@ -140154,7 +140608,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 41,
+      "line": 43,
       "methods": [
         "resolve"
       ],
@@ -140170,7 +140624,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 47,
+      "line": 49,
       "methods": [
         "resolve"
       ],
@@ -140202,7 +140656,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 90,
+      "line": 94,
       "methods": [
         "resolve"
       ],
@@ -141116,7 +141570,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 24,
+      "line": 29,
       "methods": [
         "__init__",
         "probe"
@@ -141133,7 +141587,24 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 133,
+      "line": 43,
+      "methods": [
+        "__init__",
+        "candidate_ports"
+      ],
+      "module": "tests.test_resource_endpoint_allocation_v1",
+      "name": "ScriptedCandidates",
+      "path": "tests/test_resource_endpoint_allocation_v1.py",
+      "qualname": "tests.test_resource_endpoint_allocation_v1.ScriptedCandidates",
+      "role": "tests"
+    },
+    {
+      "bases": [],
+      "decorators": [],
+      "fields": [],
+      "kind": "class",
+      "language": "python",
+      "line": 215,
       "methods": [
         "probe"
       ],
@@ -141151,7 +141622,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 155,
+      "line": 237,
       "methods": [
         "get"
       ],
@@ -141169,7 +141640,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 181,
+      "line": 263,
       "methods": [
         "get"
       ],

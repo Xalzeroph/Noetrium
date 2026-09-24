@@ -21,7 +21,7 @@
 
 <!-- readme-locale:fr -->
 
-<!-- readme-source-sha256:f01787f87584f9d54263a9b036a1dae6cdba72a578f3976b0972352eec6376a4 -->
+<!-- readme-source-sha256:1f432b22c69651657449ab8a823c51758cc8a8a8c5a4a5e0da04796eff0e3217 -->
 
 <p align="center">
   <strong>Construisez des agents. Exécutez des expériences. Vérifiez les résultats.</strong><br>
