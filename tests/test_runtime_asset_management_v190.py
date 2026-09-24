@@ -8,6 +8,10 @@ import pytest
 from unittest.mock import patch
 
 from noetrium_platform.foundation.scope.api import PLATFORM_SCOPE
+from noetrium_platform.foundation.kernel.kernel import (
+    DurableCarrierClosureAuthority,
+    DurableCarrierReferenceClosure,
+)
 from noetrium_platform.foundation.scope.runtime import InMemoryScopeRegistry
 from noetrium_platform.infrastructure.resources.directory.api import (
     DirectoryLayout,
@@ -17,9 +21,7 @@ from noetrium_platform.infrastructure.resources.directory.api import (
 )
 from noetrium_platform.infrastructure.resources.directory.runtime import build_local_directory_authorities
 from noetrium_platform.capabilities.model.asset.api import (
-    ModelAssetClosureAuthority,
     ModelAssetMode,
-    ModelAssetReferenceClosure,
     ModelSourceSpec,
 )
 from noetrium_platform.capabilities.model.api import ModelAuthorities
@@ -198,18 +200,18 @@ def _closed_model_gc(models: ModelAuthorities, model_id: str):
     return models.assets.assess_model_gc(
         model_id,
         closures=(
-            ModelAssetReferenceClosure(
-                ModelAssetClosureAuthority.EVIDENCE,
+            DurableCarrierReferenceClosure(
+                DurableCarrierClosureAuthority.EVIDENCE,
                 "1" * 64,
                 (),
             ),
-            ModelAssetReferenceClosure(
-                ModelAssetClosureAuthority.EXECUTION,
+            DurableCarrierReferenceClosure(
+                DurableCarrierClosureAuthority.EXECUTION,
                 "2" * 64,
                 (),
             ),
-            ModelAssetReferenceClosure(
-                ModelAssetClosureAuthority.RECOVERY,
+            DurableCarrierReferenceClosure(
+                DurableCarrierClosureAuthority.RECOVERY,
                 "3" * 64,
                 (),
             ),
@@ -1167,8 +1169,8 @@ def test_model_asset_physical_gc_requires_complete_external_closure() -> None:
         partial = models.assets.assess_model_gc(
             "gc-gate",
             closures=(
-                ModelAssetReferenceClosure(
-                    ModelAssetClosureAuthority.EXECUTION,
+                DurableCarrierReferenceClosure(
+                    DurableCarrierClosureAuthority.EXECUTION,
                     "4" * 64,
                     (),
                 ),
@@ -1188,13 +1190,13 @@ def test_model_asset_physical_gc_requires_complete_external_closure() -> None:
 @pytest.mark.parametrize(
     ("authority", "reference_id"),
     (
-        (ModelAssetClosureAuthority.EXECUTION, "run-resumable"),
-        (ModelAssetClosureAuthority.EVIDENCE, "evidence-retained"),
-        (ModelAssetClosureAuthority.RECOVERY, "checkpoint-retained"),
+        (DurableCarrierClosureAuthority.EXECUTION, "run-resumable"),
+        (DurableCarrierClosureAuthority.EVIDENCE, "evidence-retained"),
+        (DurableCarrierClosureAuthority.RECOVERY, "checkpoint-retained"),
     ),
 )
 def test_model_asset_physical_gc_blocks_retained_external_reference(
-    authority: ModelAssetClosureAuthority,
+    authority: DurableCarrierClosureAuthority,
     reference_id: str,
 ) -> None:
     with TemporaryDirectory() as td:
@@ -1213,16 +1215,16 @@ def test_model_asset_physical_gc_blocks_retained_external_reference(
         )
         model_id = asset.model_id
         closures = tuple(
-            ModelAssetReferenceClosure(
+            DurableCarrierReferenceClosure(
                 current,
                 str(index) * 64,
                 (reference_id,) if current is authority else (),
             )
             for index, current in enumerate(
                 (
-                    ModelAssetClosureAuthority.EVIDENCE,
-                    ModelAssetClosureAuthority.EXECUTION,
-                    ModelAssetClosureAuthority.RECOVERY,
+                    DurableCarrierClosureAuthority.EVIDENCE,
+                    DurableCarrierClosureAuthority.EXECUTION,
+                    DurableCarrierClosureAuthority.RECOVERY,
                 ),
                 start=5,
             )
@@ -1273,18 +1275,18 @@ def test_model_asset_physical_gc_retry_requires_same_durable_proof() -> None:
         changed = models.assets.assess_model_gc(
             asset.model_id,
             closures=(
-                ModelAssetReferenceClosure(
-                    ModelAssetClosureAuthority.EVIDENCE,
+                DurableCarrierReferenceClosure(
+                    DurableCarrierClosureAuthority.EVIDENCE,
                     "a" * 64,
                     (),
                 ),
-                ModelAssetReferenceClosure(
-                    ModelAssetClosureAuthority.EXECUTION,
+                DurableCarrierReferenceClosure(
+                    DurableCarrierClosureAuthority.EXECUTION,
                     "b" * 64,
                     (),
                 ),
-                ModelAssetReferenceClosure(
-                    ModelAssetClosureAuthority.RECOVERY,
+                DurableCarrierReferenceClosure(
+                    DurableCarrierClosureAuthority.RECOVERY,
                     "c" * 64,
                     (),
                 ),
