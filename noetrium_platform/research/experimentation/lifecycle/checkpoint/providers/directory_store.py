@@ -33,19 +33,21 @@ from .publication_intent import (
 )
 from ..api.contracts import (
     RunCheckpointBundle,
+    CheckpointGcAssessment,
+    CheckpointNamespace,
+    CheckpointPersistenceState,
     RunCheckpointConflict,
-    RunCheckpointGcAssessment,
     RunCheckpointIntegrityError,
     RunCheckpointManifest,
-    RunCheckpointPersistenceState,
     RunCheckpointRecoveryRequired,
     RunCheckpointStore,
     RunParticipantPayload,
 )
 
 
-_RETIREMENT_SCHEMA = "noetrium.run-checkpoint-retirement.v1"
+_RETIREMENT_SCHEMA = "noetrium.checkpoint-retirement.v1"
 _RETIREMENT_FIELDS = {
+    "namespace",
     "checkpoint_id",
     "persistence_state",
     "state_digest",
@@ -188,7 +190,7 @@ class DirectoryRunCheckpointStore(RunCheckpointStore):
     @staticmethod
     def _gc_state_digest(
         checkpoint_id: str,
-        persistence_state: RunCheckpointPersistenceState,
+        persistence_state: CheckpointPersistenceState,
         manifest_sha256: str,
         blob_sha256s: tuple[str, ...],
     ) -> str:
@@ -205,7 +207,7 @@ class DirectoryRunCheckpointStore(RunCheckpointStore):
     def _current_gc_state_unlocked(
         self,
         checkpoint_id: str,
-    ) -> tuple[RunCheckpointPersistenceState, str, tuple[str, ...]]:
+    ) -> tuple[CheckpointPersistenceState, str, tuple[str, ...]]:
         path = self._manifest_path(checkpoint_id)
         try:
             pending = self._intents.load(checkpoint_id)
@@ -242,10 +244,10 @@ class DirectoryRunCheckpointStore(RunCheckpointStore):
                         "committed checkpoint conflicts with pending publication intent"
                     )
             return (
-                RunCheckpointPersistenceState.COMMITTED,
+                CheckpointPersistenceState.COMMITTED,
                 self._gc_state_digest(
                     checkpoint_id,
-                    RunCheckpointPersistenceState.COMMITTED,
+                    CheckpointPersistenceState.COMMITTED,
                     manifest_sha256,
                     blobs,
                 ),
@@ -254,10 +256,10 @@ class DirectoryRunCheckpointStore(RunCheckpointStore):
 
         if pending is not None:
             return (
-                RunCheckpointPersistenceState.PENDING,
+                CheckpointPersistenceState.PENDING,
                 self._gc_state_digest(
                     checkpoint_id,
-                    RunCheckpointPersistenceState.PENDING,
+                    CheckpointPersistenceState.PENDING,
                     pending.manifest_sha256,
                     pending.blob_sha256s,
                 ),
@@ -269,11 +271,12 @@ class DirectoryRunCheckpointStore(RunCheckpointStore):
 
     @staticmethod
     def _retirement_document(
-        gc: RunCheckpointGcAssessment,
+        gc: CheckpointGcAssessment,
         *,
         purged: bool,
     ) -> dict[str, object]:
         return {
+            "namespace": gc.namespace.value,
             "checkpoint_id": gc.checkpoint_id,
             "persistence_state": gc.persistence_state.value,
             "state_digest": gc.state_digest,
@@ -284,7 +287,7 @@ class DirectoryRunCheckpointStore(RunCheckpointStore):
 
     def _write_retirement(
         self,
-        gc: RunCheckpointGcAssessment,
+        gc: CheckpointGcAssessment,
         *,
         purged: bool,
     ) -> None:
@@ -317,9 +320,11 @@ class DirectoryRunCheckpointStore(RunCheckpointStore):
                 "checkpoint retirement document fields drifted"
             )
         try:
+            if payload["namespace"] != CheckpointNamespace.RUN.value:
+                raise ValueError("checkpoint retirement namespace drifted")
             if payload["checkpoint_id"] != checkpoint_id:
                 raise ValueError("checkpoint retirement identity drifted")
-            RunCheckpointPersistenceState(str(payload["persistence_state"]))
+            CheckpointPersistenceState(str(payload["persistence_state"]))
             for label in ("state_digest", "gc_proof_digest"):
                 value = payload[label]
                 if (
@@ -572,7 +577,7 @@ class DirectoryRunCheckpointStore(RunCheckpointStore):
         checkpoint_id: str,
         *,
         closures: tuple[DurableCarrierReferenceClosure, ...] = (),
-    ) -> RunCheckpointGcAssessment:
+    ) -> CheckpointGcAssessment:
         with InterprocessFileLock(
             self._manifest_lock_path(checkpoint_id)
         ):
@@ -582,12 +587,13 @@ class DirectoryRunCheckpointStore(RunCheckpointStore):
                     self._current_gc_state_unlocked(checkpoint_id)
                 )
             else:
-                persistence_state = RunCheckpointPersistenceState(
+                persistence_state = CheckpointPersistenceState(
                     str(retirement["persistence_state"])
                 )
                 state_digest = str(retirement["state_digest"])
                 blobs = tuple(str(value) for value in retirement["blob_sha256s"])
-            return RunCheckpointGcAssessment(
+            return CheckpointGcAssessment(
+                namespace=CheckpointNamespace.RUN,
                 checkpoint_id=checkpoint_id,
                 persistence_state=persistence_state,
                 state_digest=state_digest,
@@ -598,13 +604,16 @@ class DirectoryRunCheckpointStore(RunCheckpointStore):
     @staticmethod
     def _require_gc(
         checkpoint_id: str,
-        gc: RunCheckpointGcAssessment,
-    ) -> RunCheckpointGcAssessment:
-        if type(gc) is not RunCheckpointGcAssessment:
+        gc: CheckpointGcAssessment,
+    ) -> CheckpointGcAssessment:
+        if type(gc) is not CheckpointGcAssessment:
             raise RuntimeError(
                 "checkpoint physical GC requires a typed GC assessment"
             )
-        if gc.checkpoint_id != checkpoint_id:
+        if (
+            gc.namespace is not CheckpointNamespace.RUN
+            or gc.checkpoint_id != checkpoint_id
+        ):
             raise RuntimeError(
                 "checkpoint GC assessment does not bind the requested identity"
             )
@@ -619,7 +628,7 @@ class DirectoryRunCheckpointStore(RunCheckpointStore):
         self,
         checkpoint_id: str,
         *,
-        gc: RunCheckpointGcAssessment,
+        gc: CheckpointGcAssessment,
     ) -> bool:
         gc = self._require_gc(checkpoint_id, gc)
         manifest_path = self._manifest_path(checkpoint_id)
