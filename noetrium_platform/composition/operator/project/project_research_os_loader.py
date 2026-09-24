@@ -6,42 +6,18 @@ from pathlib import Path
 import sys
 
 from noetrium_platform.composition.research_execution_pool import ResearchExecutionPool
-from noetrium_platform.composition.research_os import bind_portfolio_research_os
-from noetrium_platform.composition.research_os_execution import StrictResearchOSControl
-from noetrium_platform.composition.research_os_runtime import (
-    CanonicalResearchOSNodeRuntime,
-)
-from noetrium_platform.composition.research_os_value_authorities import (
-    ResearchOSImmutableValueAuthority,
-)
-from noetrium_platform.composition.research_os_values import ResearchOSValueRouter
-from noetrium_platform.evidence.artifact.catalog.providers import (
-    SQLiteArtifactRegistry,
-)
-from noetrium_platform.evidence.artifact.content.providers import (
-    DirectoryArtifactBlobStore,
-)
-from noetrium_platform.evidence.artifact.lineage.relation.providers import (
-    SQLiteArtifactLineageStore,
-)
-from noetrium_platform.evidence.artifact.retention.providers import (
-    SQLiteArtifactRetentionStore,
+from noetrium_platform.composition.research_os_local import (
+    compose_local_research_os,
 )
 from noetrium_platform.foundation.portfolio.project.api import (
     ProjectManifest,
     decode_project_manifest_bytes,
-)
-from noetrium_platform.foundation.portfolio.runtime import (
-    SQLitePortfolioRevisionStore,
 )
 from noetrium_platform.product.operator.api import project_template_revision
 from noetrium_platform.product.research_os import (
     ResearchGraphRevision,
     ResearchOS,
     ResearchPortfolio,
-)
-from noetrium_platform.research.execution.graph.providers import (
-    SQLiteResearchGraphExecutionStore,
 )
 
 from .project_layout import project_package_name
@@ -171,31 +147,11 @@ def load_project_research_os(
     state_root = root / _STATE_DIRECTORY
     state_root.mkdir(parents=True, exist_ok=True)
 
-    blobs = DirectoryArtifactBlobStore(state_root / "blobs")
-    revisions = SQLitePortfolioRevisionStore(state_root / "portfolio.sqlite3")
-    graph = SQLiteResearchGraphExecutionStore(state_root / "graph.sqlite3")
-    registry = SQLiteArtifactRegistry(state_root / "artifact-catalog.sqlite3")
-    retention = SQLiteArtifactRetentionStore(
-        state_root / "artifact-retention.sqlite3"
-    )
-    lineage = SQLiteArtifactLineageStore(state_root / "artifact-lineage.sqlite3")
-    values = ResearchOSValueRouter(
-        (ResearchOSImmutableValueAuthority(blobs, registry, retention),)
-    )
-    pool = ResearchExecutionPool()
-    runtime = CanonicalResearchOSNodeRuntime(state_root / "machine-state")
-    control = StrictResearchOSControl(
-        graph,
-        pool,
-        runtime,
-        values,
-        artifact_lineage=lineage,
-    )
-    research_os = bind_portfolio_research_os(
-        revisions,
-        blobs,
-        control=control,
-    )
+    composition = compose_local_research_os(state_root)
+    research_os = composition.research_os
+    revisions = composition.revision_store
+    graph = composition.graph_store
+    pool = composition.execution_pool
 
     execution_id = manifest.project.identity.project_id
     active = graph.active_cut(execution_id)
