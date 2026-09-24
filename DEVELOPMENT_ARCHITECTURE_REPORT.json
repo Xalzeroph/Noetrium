@@ -3,7 +3,7 @@
   "architecture_complexity": {
     "authorities": 20,
     "contract_declarations": 185,
-    "import_edges": 5298,
+    "import_edges": 5308,
     "subsystems": 15,
     "top_level_systems": 16
   },
@@ -23,7 +23,7 @@
     "effective_limits": {
       "authorities": 31,
       "contract_declarations": 185,
-      "import_edges": 5298,
+      "import_edges": 5308,
       "subsystems": 15,
       "top_level_systems": 16
     },
@@ -627,7 +627,7 @@
       "seam_id": "completed"
     }
   ],
-  "import_edges": 5298,
+  "import_edges": 5308,
   "import_violations": [],
   "layer_violations": [],
   "operation_graph": [
@@ -873,9 +873,21 @@
     }
   ],
   "package_cycles": [],
-  "report_sha256": "28fb0be034ad106cf5452a0e92cb22eea95315020ca26f47b91642eda2246dbb",
-  "source_authority_violations": [],
-  "source_digest": "342dcd1453b5431ada65004aecfbac42ca7430827370342d7452246d7dd972de",
+  "report_sha256": "8cd54daf761c860f373514b4c6aa89f3e0d1e73718e233054a935dcdd71938a1",
+  "source_authority_violations": [
+    {
+      "allowed_modules": [
+        "noetrium_platform.foundation.kernel.kernel.retry"
+      ],
+      "authority": "kernel.blocking_wait",
+      "detail": "time.sleep is a protected mutation primitive; authority belongs to noetrium_platform.foundation.kernel.kernel.retry",
+      "line": 145,
+      "module": "noetrium_platform.capabilities.environment.providers.docker_containers",
+      "path": "noetrium_platform/capabilities/environment/providers/docker_containers.py",
+      "primitive": "time.sleep"
+    }
+  ],
+  "source_digest": "9d9c54bed8dd9f8900f673393cc4a35204f81c622cc1fd9bc8c2b6dff0640524",
   "source_invariant_violations": [],
   "source_root": ".",
   "subsystem_graph": [
@@ -1844,7 +1856,7 @@
   "top_optimization_risks": [
     {
       "exception_handlers": 0,
-      "import_fan_in": 451,
+      "import_fan_in": 452,
       "import_fan_out": 27,
       "io_sites": 0,
       "lock_sites": 0,
@@ -1855,7 +1867,7 @@
         "HIGH_FAN_IN",
         "HIGH_FAN_OUT"
       ],
-      "risk_score": 1885,
+      "risk_score": 1889,
       "self_mutation_sites": 0,
       "serialization_sites": 0
     },
@@ -1987,7 +1999,7 @@
     },
     {
       "exception_handlers": 0,
-      "import_fan_in": 97,
+      "import_fan_in": 98,
       "import_fan_out": 4,
       "io_sites": 0,
       "lock_sites": 0,
@@ -1997,7 +2009,7 @@
       "reason_codes": [
         "HIGH_FAN_IN"
       ],
-      "risk_score": 400,
+      "risk_score": 404,
       "self_mutation_sites": 0,
       "serialization_sites": 0
     },
@@ -2092,6 +2104,22 @@
       "serialization_sites": 0
     },
     {
+      "exception_handlers": 0,
+      "import_fan_in": 77,
+      "import_fan_out": 7,
+      "io_sites": 0,
+      "lock_sites": 0,
+      "long_functions": 0,
+      "module": "noetrium_platform.foundation.governance.api",
+      "path": "noetrium_platform/foundation/governance/api/__init__.py",
+      "reason_codes": [
+        "HIGH_FAN_IN"
+      ],
+      "risk_score": 329,
+      "self_mutation_sites": 0,
+      "serialization_sites": 0
+    },
+    {
       "exception_handlers": 13,
       "import_fan_in": 3,
       "import_fan_out": 7,
@@ -2107,22 +2135,6 @@
       ],
       "risk_score": 326,
       "self_mutation_sites": 29,
-      "serialization_sites": 0
-    },
-    {
-      "exception_handlers": 0,
-      "import_fan_in": 76,
-      "import_fan_out": 7,
-      "io_sites": 0,
-      "lock_sites": 0,
-      "long_functions": 0,
-      "module": "noetrium_platform.foundation.governance.api",
-      "path": "noetrium_platform/foundation/governance/api/__init__.py",
-      "reason_codes": [
-        "HIGH_FAN_IN"
-      ],
-      "risk_score": 325,
-      "self_mutation_sites": 0,
       "serialization_sites": 0
     },
     {
@@ -2182,21 +2194,19 @@
       "serialization_sites": 0
     },
     {
-      "exception_handlers": 12,
-      "import_fan_in": 1,
-      "import_fan_out": 8,
-      "io_sites": 2,
-      "lock_sites": 2,
-      "long_functions": 2,
-      "module": "noetrium_platform.capabilities.environment.minecraft.composition.server_service",
-      "path": "noetrium_platform/capabilities/environment/minecraft/composition/server_service.py",
+      "exception_handlers": 0,
+      "import_fan_in": 71,
+      "import_fan_out": 2,
+      "io_sites": 0,
+      "lock_sites": 0,
+      "long_functions": 0,
+      "module": "noetrium_platform.foundation.kernel.concurrency.api",
+      "path": "noetrium_platform/foundation/kernel/concurrency/api/__init__.py",
       "reason_codes": [
-        "STATE_MUTATION_CONCENTRATION",
-        "FAILURE_BRANCH_CONCENTRATION",
-        "LONG_FUNCTION"
+        "HIGH_FAN_IN"
       ],
-      "risk_score": 289,
-      "self_mutation_sites": 17,
+      "risk_score": 290,
+      "self_mutation_sites": 0,
       "serialization_sites": 0
     }
   ]

@@ -1007,6 +1007,16 @@
     },
     {
       "kind": "references",
+      "source": "noetrium_platform.capabilities.environment.providers.docker_containers.DockerCliManagedContainerProvider",
+      "target": "noetrium_platform.capabilities.environment.providers.docker_containers.DockerContainerObservation"
+    },
+    {
+      "kind": "references",
+      "source": "noetrium_platform.capabilities.environment.providers.docker_containers.DockerManagedContainerPort",
+      "target": "noetrium_platform.capabilities.environment.providers.docker_containers.DockerContainerObservation"
+    },
+    {
+      "kind": "references",
       "source": "noetrium_platform.capabilities.environment.providers.jsonl_process.JsonlProcessTransport",
       "target": "noetrium_platform.capabilities.environment.providers.jsonl_process.FailureReporter"
     },
@@ -4557,6 +4567,71 @@
     },
     {
       "kind": "references",
+      "source": "noetrium_platform.composition.docker_container_leases.DockerContainerLeaseAuthority",
+      "target": "noetrium_platform.capabilities.environment.providers.docker_containers.DockerContainerObservation"
+    },
+    {
+      "kind": "references",
+      "source": "noetrium_platform.composition.docker_container_leases.DockerContainerLeaseAuthority",
+      "target": "noetrium_platform.capabilities.environment.providers.docker_containers.DockerManagedContainerPort"
+    },
+    {
+      "kind": "references",
+      "source": "noetrium_platform.composition.docker_container_leases.DockerContainerLeaseAuthority",
+      "target": "noetrium_platform.composition.docker_container_leases.DockerContainerLeasePolicy"
+    },
+    {
+      "kind": "references",
+      "source": "noetrium_platform.composition.docker_container_leases.DockerContainerLeaseAuthority",
+      "target": "noetrium_platform.composition.docker_container_leases.DockerContainerReconciliation"
+    },
+    {
+      "kind": "references",
+      "source": "noetrium_platform.composition.docker_container_leases.DockerContainerLeaseAuthority",
+      "target": "noetrium_platform.composition.docker_container_leases.DockerReconcileStopPort"
+    },
+    {
+      "kind": "references",
+      "source": "noetrium_platform.composition.docker_container_leases.DockerContainerLeaseAuthority",
+      "target": "noetrium_platform.composition.docker_container_leases.ManagedDockerContainerLease"
+    },
+    {
+      "kind": "references",
+      "source": "noetrium_platform.composition.docker_container_leases.DockerContainerLeaseHeartbeatFactory",
+      "target": "noetrium_platform.composition.docker_container_leases.DockerContainerLeaseAuthority"
+    },
+    {
+      "kind": "references",
+      "source": "noetrium_platform.composition.docker_container_leases.DockerContainerLeaseHeartbeatFactory",
+      "target": "noetrium_platform.composition.docker_container_leases.DockerContainerLeaseHeartbeatGuard"
+    },
+    {
+      "kind": "references",
+      "source": "noetrium_platform.composition.docker_container_leases.DockerContainerLeaseHeartbeatFactory",
+      "target": "noetrium_platform.composition.docker_container_leases.DockerContainerLeasePolicy"
+    },
+    {
+      "kind": "references",
+      "source": "noetrium_platform.composition.docker_container_leases.DockerContainerLeaseHeartbeatFactory",
+      "target": "noetrium_platform.composition.docker_container_leases.ManagedDockerContainerLease"
+    },
+    {
+      "kind": "references",
+      "source": "noetrium_platform.composition.docker_container_leases.DockerContainerLeaseHeartbeatGuard",
+      "target": "noetrium_platform.composition.docker_container_leases.DockerContainerLeaseAuthority"
+    },
+    {
+      "kind": "references",
+      "source": "noetrium_platform.composition.docker_container_leases.DockerContainerLeaseHeartbeatGuard",
+      "target": "noetrium_platform.composition.docker_container_leases.DockerContainerLeasePolicy"
+    },
+    {
+      "kind": "references",
+      "source": "noetrium_platform.composition.docker_container_leases.DockerContainerLeaseHeartbeatGuard",
+      "target": "noetrium_platform.composition.docker_container_leases.ManagedDockerContainerLease"
+    },
+    {
+      "kind": "references",
       "source": "noetrium_platform.composition.environment_instance_leases.EnvironmentInstanceLeaseAuthority",
       "target": "noetrium_platform.composition.environment_instance_leases.EnvironmentInstanceLeaseHandle"
     },
@@ -4664,6 +4739,11 @@
       "kind": "references",
       "source": "noetrium_platform.composition.minecraft_agent.participant_runtime.MinecraftParticipantRuntimeAdapter",
       "target": "noetrium_platform.capabilities.environment.minecraft.api.ports.MinecraftSessionServices"
+    },
+    {
+      "kind": "references",
+      "source": "noetrium_platform.composition.model_management.ManagementPlaneAuthorities",
+      "target": "noetrium_platform.composition.docker_container_leases.DockerContainerLeaseAuthority"
     },
     {
       "kind": "references",
@@ -4854,6 +4934,21 @@
       "kind": "references",
       "source": "noetrium_platform.composition.research_child_machine_batch.PooledChildResearchBatchMechanics",
       "target": "noetrium_platform.research.execution.machines.child_machine_batch.ChildResearchMachineBatchRequest"
+    },
+    {
+      "kind": "references",
+      "source": "noetrium_platform.composition.research_execution_pool.ResearchExecutionPool",
+      "target": "noetrium_platform.composition.docker_container_leases.DockerContainerLeaseAuthority"
+    },
+    {
+      "kind": "references",
+      "source": "noetrium_platform.composition.research_execution_pool.ResearchExecutionPool",
+      "target": "noetrium_platform.composition.docker_container_leases.DockerContainerLeaseHeartbeatFactory"
+    },
+    {
+      "kind": "references",
+      "source": "noetrium_platform.composition.research_execution_pool.ResearchExecutionPool",
+      "target": "noetrium_platform.composition.docker_container_leases.DockerContainerLeasePolicy"
     },
     {
       "kind": "references",
@@ -23333,6 +23428,99 @@
       "top_system": "environment"
     },
     {
+      "bases": [],
+      "decorators": [],
+      "fields": [],
+      "kind": "class",
+      "line": 43,
+      "methods": [
+        "__init__",
+        "docker_executable",
+        "_missing",
+        "_decode_inspect",
+        "inspect",
+        "list_managed",
+        "wait_running",
+        "remove"
+      ],
+      "module": "noetrium_platform.capabilities.environment.providers.docker_containers",
+      "name": "DockerCliManagedContainerProvider",
+      "nesting": [
+        "DockerCliManagedContainerProvider"
+      ],
+      "qualname": "noetrium_platform.capabilities.environment.providers.docker_containers.DockerCliManagedContainerProvider",
+      "system_key": "environment",
+      "top_system": "environment"
+    },
+    {
+      "bases": [],
+      "decorators": [
+        "dataclass(frozen=True, slots=True)"
+      ],
+      "fields": [
+        "container_id",
+        "image",
+        "labels",
+        "name",
+        "running"
+      ],
+      "kind": "dataclass",
+      "line": 20,
+      "methods": [
+        "__post_init__"
+      ],
+      "module": "noetrium_platform.capabilities.environment.providers.docker_containers",
+      "name": "DockerContainerObservation",
+      "nesting": [
+        "DockerContainerObservation"
+      ],
+      "qualname": "noetrium_platform.capabilities.environment.providers.docker_containers.DockerContainerObservation",
+      "system_key": "environment",
+      "top_system": "environment"
+    },
+    {
+      "bases": [
+        "RuntimeError"
+      ],
+      "decorators": [],
+      "fields": [],
+      "kind": "class",
+      "line": 15,
+      "methods": [],
+      "module": "noetrium_platform.capabilities.environment.providers.docker_containers",
+      "name": "DockerContainerRuntimeError",
+      "nesting": [
+        "DockerContainerRuntimeError"
+      ],
+      "qualname": "noetrium_platform.capabilities.environment.providers.docker_containers.DockerContainerRuntimeError",
+      "system_key": "environment",
+      "top_system": "environment"
+    },
+    {
+      "bases": [
+        "Protocol"
+      ],
+      "decorators": [],
+      "fields": [],
+      "kind": "protocol",
+      "line": 32,
+      "methods": [
+        "docker_executable",
+        "inspect",
+        "list_managed",
+        "wait_running",
+        "remove"
+      ],
+      "module": "noetrium_platform.capabilities.environment.providers.docker_containers",
+      "name": "DockerManagedContainerPort",
+      "nesting": [
+        "DockerManagedContainerPort"
+      ],
+      "qualname": "noetrium_platform.capabilities.environment.providers.docker_containers.DockerManagedContainerPort",
+      "system_key": "environment",
+      "top_system": "environment"
+    },
+    {
       "bases": [
         "Protocol"
       ],
@@ -38863,6 +39051,206 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
+      "line": 123,
+      "methods": [
+        "__init__",
+        "_resource",
+        "_name",
+        "reserve",
+        "_validate_observation",
+        "docker_run_prefix",
+        "confirm_running",
+        "renew",
+        "renew_many",
+        "release",
+        "reconcile",
+        "run_reconciler"
+      ],
+      "module": "noetrium_platform.composition.docker_container_leases",
+      "name": "DockerContainerLeaseAuthority",
+      "nesting": [
+        "DockerContainerLeaseAuthority"
+      ],
+      "qualname": "noetrium_platform.composition.docker_container_leases.DockerContainerLeaseAuthority",
+      "system_key": "research_os",
+      "top_system": "research_os"
+    },
+    {
+      "bases": [
+        "RuntimeError"
+      ],
+      "decorators": [],
+      "fields": [],
+      "kind": "class",
+      "line": 119,
+      "methods": [],
+      "module": "noetrium_platform.composition.docker_container_leases",
+      "name": "DockerContainerLeaseConflict",
+      "nesting": [
+        "DockerContainerLeaseConflict"
+      ],
+      "qualname": "noetrium_platform.composition.docker_container_leases.DockerContainerLeaseConflict",
+      "system_key": "research_os",
+      "top_system": "research_os"
+    },
+    {
+      "bases": [
+        "RuntimeError"
+      ],
+      "decorators": [],
+      "fields": [],
+      "kind": "class",
+      "line": 350,
+      "methods": [],
+      "module": "noetrium_platform.composition.docker_container_leases",
+      "name": "DockerContainerLeaseHeartbeatError",
+      "nesting": [
+        "DockerContainerLeaseHeartbeatError"
+      ],
+      "qualname": "noetrium_platform.composition.docker_container_leases.DockerContainerLeaseHeartbeatError",
+      "system_key": "research_os",
+      "top_system": "research_os"
+    },
+    {
+      "bases": [],
+      "decorators": [],
+      "fields": [],
+      "kind": "class",
+      "line": 447,
+      "methods": [
+        "__init__",
+        "policy",
+        "create"
+      ],
+      "module": "noetrium_platform.composition.docker_container_leases",
+      "name": "DockerContainerLeaseHeartbeatFactory",
+      "nesting": [
+        "DockerContainerLeaseHeartbeatFactory"
+      ],
+      "qualname": "noetrium_platform.composition.docker_container_leases.DockerContainerLeaseHeartbeatFactory",
+      "system_key": "research_os",
+      "top_system": "research_os"
+    },
+    {
+      "bases": [],
+      "decorators": [],
+      "fields": [],
+      "kind": "class",
+      "line": 354,
+      "methods": [
+        "__init__",
+        "handles",
+        "start",
+        "_renew_once",
+        "assert_healthy",
+        "close"
+      ],
+      "module": "noetrium_platform.composition.docker_container_leases",
+      "name": "DockerContainerLeaseHeartbeatGuard",
+      "nesting": [
+        "DockerContainerLeaseHeartbeatGuard"
+      ],
+      "qualname": "noetrium_platform.composition.docker_container_leases.DockerContainerLeaseHeartbeatGuard",
+      "system_key": "research_os",
+      "top_system": "research_os"
+    },
+    {
+      "bases": [],
+      "decorators": [
+        "dataclass(frozen=True, slots=True)"
+      ],
+      "fields": [
+        "renewal_interval_seconds",
+        "ttl_seconds"
+      ],
+      "kind": "dataclass",
+      "line": 49,
+      "methods": [
+        "__post_init__"
+      ],
+      "module": "noetrium_platform.composition.docker_container_leases",
+      "name": "DockerContainerLeasePolicy",
+      "nesting": [
+        "DockerContainerLeasePolicy"
+      ],
+      "qualname": "noetrium_platform.composition.docker_container_leases.DockerContainerLeasePolicy",
+      "system_key": "research_os",
+      "top_system": "research_os"
+    },
+    {
+      "bases": [],
+      "decorators": [
+        "dataclass(frozen=True, slots=True)"
+      ],
+      "fields": [
+        "removed_container_ids"
+      ],
+      "kind": "dataclass",
+      "line": 115,
+      "methods": [],
+      "module": "noetrium_platform.composition.docker_container_leases",
+      "name": "DockerContainerReconciliation",
+      "nesting": [
+        "DockerContainerReconciliation"
+      ],
+      "qualname": "noetrium_platform.composition.docker_container_leases.DockerContainerReconciliation",
+      "system_key": "research_os",
+      "top_system": "research_os"
+    },
+    {
+      "bases": [
+        "Protocol"
+      ],
+      "decorators": [],
+      "fields": [],
+      "kind": "protocol",
+      "line": 44,
+      "methods": [
+        "wait"
+      ],
+      "module": "noetrium_platform.composition.docker_container_leases",
+      "name": "DockerReconcileStopPort",
+      "nesting": [
+        "DockerReconcileStopPort"
+      ],
+      "qualname": "noetrium_platform.composition.docker_container_leases.DockerReconcileStopPort",
+      "system_key": "research_os",
+      "top_system": "research_os"
+    },
+    {
+      "bases": [],
+      "decorators": [
+        "dataclass(frozen=True, slots=True)"
+      ],
+      "fields": [
+        "allocation_id",
+        "container_name",
+        "holder_scope",
+        "image",
+        "lease",
+        "runtime_identity_digest"
+      ],
+      "kind": "dataclass",
+      "line": 71,
+      "methods": [
+        "__post_init__",
+        "labels",
+        "docker_run_options"
+      ],
+      "module": "noetrium_platform.composition.docker_container_leases",
+      "name": "ManagedDockerContainerLease",
+      "nesting": [
+        "ManagedDockerContainerLease"
+      ],
+      "qualname": "noetrium_platform.composition.docker_container_leases.ManagedDockerContainerLease",
+      "system_key": "research_os",
+      "top_system": "research_os"
+    },
+    {
+      "bases": [],
+      "decorators": [],
+      "fields": [],
+      "kind": "class",
       "line": 149,
       "methods": [
         "__init__",
@@ -39329,6 +39717,7 @@
       ],
       "fields": [
         "_closed",
+        "_docker_controller",
         "_model_controller",
         "_orchestration_group",
         "_stop",
@@ -39489,7 +39878,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 93,
+      "line": 100,
       "methods": [
         "__init__",
         "open",
@@ -39514,6 +39903,7 @@
         "compute_scheduler",
         "deployment_qualification",
         "directories",
+        "docker_containers",
         "execution_environments",
         "host",
         "model_revisions",
@@ -39523,7 +39913,7 @@
         "scopes"
       ],
       "kind": "dataclass",
-      "line": 80,
+      "line": 86,
       "methods": [],
       "module": "noetrium_platform.composition.model_management",
       "name": "ManagementPlaneAuthorities",
@@ -40840,7 +41230,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 41,
+      "line": 47,
       "methods": [
         "__init__",
         "model_admission",
@@ -40849,6 +41239,7 @@
         "compute_lease_guard_factory",
         "endpoint_lease_guard_factory",
         "environment_instance_lease_guard_factory",
+        "docker_container_lease_guard_factory",
         "open_model_io_group",
         "close_orchestration_group",
         "close_experiment_group",
@@ -78404,7 +78795,7 @@
         "RELEASED"
       ],
       "kind": "enum",
-      "line": 29,
+      "line": 30,
       "methods": [],
       "module": "noetrium_platform.infrastructure.resources.lease.api.contracts",
       "name": "LeaseState",
@@ -78425,7 +78816,7 @@
         "resource_id"
       ],
       "kind": "dataclass",
-      "line": 36,
+      "line": 37,
       "methods": [
         "__post_init__",
         "key"
@@ -78447,6 +78838,7 @@
       "fields": [
         "CACHE",
         "COMPUTE",
+        "CONTAINER",
         "DATASET",
         "EXECUTION_ENVIRONMENT",
         "GPU",
@@ -78486,7 +78878,7 @@
         "state"
       ],
       "kind": "dataclass",
-      "line": 57,
+      "line": 58,
       "methods": [
         "__post_init__",
         "expired_at"
@@ -78511,7 +78903,7 @@
         "scope"
       ],
       "kind": "dataclass",
-      "line": 50,
+      "line": 51,
       "methods": [],
       "module": "noetrium_platform.infrastructure.resources.lease.api.contracts",
       "name": "ResourceOwner",
@@ -78533,7 +78925,7 @@
         "SHARED"
       ],
       "kind": "enum",
-      "line": 23,
+      "line": 24,
       "methods": [],
       "module": "noetrium_platform.infrastructure.resources.lease.api.contracts",
       "name": "ResourceOwnership",
@@ -99054,6 +99446,16 @@
     },
     {
       "kind": "constructs",
+      "source": "noetrium_platform.capabilities.environment.providers.docker_containers.DockerCliManagedContainerProvider",
+      "target": "noetrium_platform.capabilities.environment.providers.docker_containers.DockerContainerObservation"
+    },
+    {
+      "kind": "constructs",
+      "source": "noetrium_platform.capabilities.environment.providers.docker_containers.DockerCliManagedContainerProvider",
+      "target": "noetrium_platform.capabilities.environment.providers.docker_containers.DockerContainerRuntimeError"
+    },
+    {
+      "kind": "constructs",
       "source": "noetrium_platform.capabilities.environment.providers.jsonl_process.JsonlProcessTransport",
       "target": "noetrium_platform.capabilities.environment.providers.jsonl_process.JsonlProcessMessage"
     },
@@ -99699,6 +100101,31 @@
     },
     {
       "kind": "constructs",
+      "source": "noetrium_platform.composition.docker_container_leases.DockerContainerLeaseAuthority",
+      "target": "noetrium_platform.composition.docker_container_leases.DockerContainerLeaseConflict"
+    },
+    {
+      "kind": "constructs",
+      "source": "noetrium_platform.composition.docker_container_leases.DockerContainerLeaseAuthority",
+      "target": "noetrium_platform.composition.docker_container_leases.DockerContainerReconciliation"
+    },
+    {
+      "kind": "constructs",
+      "source": "noetrium_platform.composition.docker_container_leases.DockerContainerLeaseAuthority",
+      "target": "noetrium_platform.composition.docker_container_leases.ManagedDockerContainerLease"
+    },
+    {
+      "kind": "constructs",
+      "source": "noetrium_platform.composition.docker_container_leases.DockerContainerLeaseHeartbeatFactory",
+      "target": "noetrium_platform.composition.docker_container_leases.DockerContainerLeaseHeartbeatGuard"
+    },
+    {
+      "kind": "constructs",
+      "source": "noetrium_platform.composition.docker_container_leases.DockerContainerLeaseHeartbeatGuard",
+      "target": "noetrium_platform.composition.docker_container_leases.DockerContainerLeaseHeartbeatError"
+    },
+    {
+      "kind": "constructs",
       "source": "noetrium_platform.composition.environment_instance_leases.EnvironmentInstanceLeaseAuthority",
       "target": "noetrium_platform.composition.environment_instance_leases.EnvironmentInstanceLeaseHandle"
     },
@@ -99796,6 +100223,11 @@
       "kind": "constructs",
       "source": "noetrium_platform.composition.research_child_machine_batch.PooledChildResearchBatchMechanics",
       "target": "noetrium_platform.research.execution.machines.child_machine_batch.ChildResearchMachineBatchMechanicsResult"
+    },
+    {
+      "kind": "constructs",
+      "source": "noetrium_platform.composition.research_execution_pool.ResearchExecutionPool",
+      "target": "noetrium_platform.composition.docker_container_leases.DockerContainerLeaseHeartbeatFactory"
     },
     {
       "kind": "constructs",
@@ -103314,13 +103746,13 @@
     }
   ],
   "counts": {
-    "association_edges": 3470,
-    "classes": 3361,
-    "constructor_edges": 921,
+    "association_edges": 3489,
+    "classes": 3374,
+    "constructor_edges": 929,
     "inheritance_edges": 150,
-    "module_import_edges": 5009,
+    "module_import_edges": 5019,
     "parse_errors": 0,
-    "python_modules": 1907,
+    "python_modules": 1909,
     "registry_authorities": 20,
     "registry_nodes": 31,
     "top_level_systems": 16
@@ -105228,7 +105660,15 @@
     },
     {
       "source": "noetrium_platform.capabilities.environment.providers",
+      "target": "noetrium_platform.capabilities.environment.docker_containers"
+    },
+    {
+      "source": "noetrium_platform.capabilities.environment.providers",
       "target": "noetrium_platform.capabilities.environment.jsonl_process"
+    },
+    {
+      "source": "noetrium_platform.capabilities.environment.providers.docker_containers",
+      "target": "noetrium_platform.substrate.api"
     },
     {
       "source": "noetrium_platform.capabilities.environment.providers.jsonl_process",
@@ -108503,6 +108943,26 @@
       "target": "noetrium_platform.infrastructure.reliability.forensics.runtime.diagnostic_adapter"
     },
     {
+      "source": "noetrium_platform.composition.docker_container_leases",
+      "target": "noetrium_platform.capabilities.environment.providers.docker_containers"
+    },
+    {
+      "source": "noetrium_platform.composition.docker_container_leases",
+      "target": "noetrium_platform.foundation.governance.api"
+    },
+    {
+      "source": "noetrium_platform.composition.docker_container_leases",
+      "target": "noetrium_platform.foundation.kernel.concurrency.api"
+    },
+    {
+      "source": "noetrium_platform.composition.docker_container_leases",
+      "target": "noetrium_platform.foundation.kernel.kernel"
+    },
+    {
+      "source": "noetrium_platform.composition.docker_container_leases",
+      "target": "noetrium_platform.infrastructure.resources.lease.api"
+    },
+    {
       "source": "noetrium_platform.composition.environment_capabilities",
       "target": "noetrium_platform.composition.action"
     },
@@ -108920,6 +109380,10 @@
     },
     {
       "source": "noetrium_platform.composition.model_management",
+      "target": "noetrium_platform.capabilities.environment.providers"
+    },
+    {
+      "source": "noetrium_platform.composition.model_management",
       "target": "noetrium_platform.capabilities.model.api"
     },
     {
@@ -108957,6 +109421,10 @@
     {
       "source": "noetrium_platform.composition.model_management",
       "target": "noetrium_platform.capabilities.model.qualification.composition"
+    },
+    {
+      "source": "noetrium_platform.composition.model_management",
+      "target": "noetrium_platform.composition.docker_container_leases"
     },
     {
       "source": "noetrium_platform.composition.model_management",
@@ -110125,6 +110593,10 @@
     {
       "source": "noetrium_platform.composition.research_execution_pool",
       "target": "noetrium_platform.composition.concurrency"
+    },
+    {
+      "source": "noetrium_platform.composition.research_execution_pool",
+      "target": "noetrium_platform.composition.docker_container_leases"
     },
     {
       "source": "noetrium_platform.composition.research_execution_pool",
@@ -125183,10 +125655,20 @@
     },
     {
       "imports": [
+        "noetrium_platform.capabilities.environment.docker_containers",
         "noetrium_platform.capabilities.environment.jsonl_process"
       ],
       "module": "noetrium_platform.capabilities.environment.providers",
       "path": "noetrium_platform/capabilities/environment/providers/__init__.py",
+      "system_key": "environment",
+      "top_system": "environment"
+    },
+    {
+      "imports": [
+        "noetrium_platform.substrate.api"
+      ],
+      "module": "noetrium_platform.capabilities.environment.providers.docker_containers",
+      "path": "noetrium_platform/capabilities/environment/providers/docker_containers.py",
       "system_key": "environment",
       "top_system": "environment"
     },
@@ -128535,6 +129017,19 @@
     },
     {
       "imports": [
+        "noetrium_platform.capabilities.environment.providers.docker_containers",
+        "noetrium_platform.foundation.governance.api",
+        "noetrium_platform.foundation.kernel.concurrency.api",
+        "noetrium_platform.foundation.kernel.kernel",
+        "noetrium_platform.infrastructure.resources.lease.api"
+      ],
+      "module": "noetrium_platform.composition.docker_container_leases",
+      "path": "noetrium_platform/composition/docker_container_leases.py",
+      "system_key": "research_os",
+      "top_system": "research_os"
+    },
+    {
+      "imports": [
         "noetrium_platform.composition.action",
         "noetrium_platform.composition.branch",
         "noetrium_platform.composition.query",
@@ -128815,6 +129310,7 @@
     {
       "imports": [
         "noetrium_platform.capabilities.environment.catalog.api",
+        "noetrium_platform.capabilities.environment.providers",
         "noetrium_platform.capabilities.model.api",
         "noetrium_platform.capabilities.model.asset.providers",
         "noetrium_platform.capabilities.model.asset.runtime",
@@ -128825,6 +129321,7 @@
         "noetrium_platform.capabilities.model.deployment.composition",
         "noetrium_platform.capabilities.model.deployment.runtime",
         "noetrium_platform.capabilities.model.qualification.composition",
+        "noetrium_platform.composition.docker_container_leases",
         "noetrium_platform.composition.model_qualification",
         "noetrium_platform.composition.platform_meta",
         "noetrium_platform.composition.research_execution_pool",
@@ -129733,6 +130230,7 @@
         "noetrium_platform.capabilities.model.serving.api",
         "noetrium_platform.capabilities.model.serving.runtime",
         "noetrium_platform.composition.concurrency",
+        "noetrium_platform.composition.docker_container_leases",
         "noetrium_platform.composition.environment_instance_leases",
         "noetrium_platform.foundation.kernel.concurrency.api",
         "noetrium_platform.infrastructure.resources.allocation.api",
@@ -144085,7 +144583,7 @@
   "parse_errors": [],
   "registry_sha256": "d3fc1bab831f1b7379e5a36048a61c00fe173429df958270d36a16f3f00171c0",
   "schema": "noetrium-code-architecture-index.v1",
-  "source_git_sha": "752edbd76c6391619e660c3f85d5b9880db440d3",
+  "source_git_sha": "a1308269acd987901a29d46fc9151d459cb1e083",
   "system_import_edges": [
     {
       "count": 85,
@@ -144113,7 +144611,7 @@
       "target": "platform"
     },
     {
-      "count": 214,
+      "count": 215,
       "source": "environment",
       "target": "environment"
     },
@@ -144233,7 +144731,7 @@
       "target": "data"
     },
     {
-      "count": 44,
+      "count": 46,
       "source": "research_os",
       "target": "environment"
     },
@@ -144248,7 +144746,7 @@
       "target": "experimentation"
     },
     {
-      "count": 34,
+      "count": 35,
       "source": "research_os",
       "target": "governance"
     },
@@ -144268,7 +144766,7 @@
       "target": "participant"
     },
     {
-      "count": 119,
+      "count": 121,
       "source": "research_os",
       "target": "platform"
     },
@@ -144283,12 +144781,12 @@
       "target": "reliability"
     },
     {
-      "count": 322,
+      "count": 324,
       "source": "research_os",
       "target": "research_os"
     },
     {
-      "count": 28,
+      "count": 29,
       "source": "research_os",
       "target": "resource"
     },

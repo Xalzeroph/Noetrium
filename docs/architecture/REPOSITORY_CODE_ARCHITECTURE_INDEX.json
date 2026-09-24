@@ -1,15 +1,15 @@
 {
   "counts": {
     "parse_errors": 0,
-    "python_files": 3672,
-    "python_import_edges": 7106,
-    "symbols": 4932,
-    "tracked_files": 4308,
+    "python_files": 3675,
+    "python_import_edges": 7121,
+    "symbols": 4949,
+    "tracked_files": 4311,
     "typescript_javascript_files": 11
   },
   "language_symbol_counts": {
     "javascript": 1,
-    "python": 4926,
+    "python": 4943,
     "typescript": 5
   },
   "parse_errors": [],
@@ -906,6 +906,12 @@
       "source_module": "noetrium_platform.capabilities.environment.minecraft.runtime.state",
       "source_role": "core_platform",
       "target_module": "noetrium_platform.foundation.kernel.kernel",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "noetrium_platform.capabilities.environment.providers.docker_containers",
+      "source_role": "core_platform",
+      "target_module": "noetrium_platform.substrate.api",
       "target_role": "core_platform"
     },
     {
@@ -3417,6 +3423,36 @@
       "target_role": "core_platform"
     },
     {
+      "source_module": "noetrium_platform.composition.docker_container_leases",
+      "source_role": "core_platform",
+      "target_module": "noetrium_platform.capabilities.environment.providers.docker_containers",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "noetrium_platform.composition.docker_container_leases",
+      "source_role": "core_platform",
+      "target_module": "noetrium_platform.foundation.governance.api",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "noetrium_platform.composition.docker_container_leases",
+      "source_role": "core_platform",
+      "target_module": "noetrium_platform.foundation.kernel.concurrency.api",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "noetrium_platform.composition.docker_container_leases",
+      "source_role": "core_platform",
+      "target_module": "noetrium_platform.foundation.kernel.kernel",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "noetrium_platform.composition.docker_container_leases",
+      "source_role": "core_platform",
+      "target_module": "noetrium_platform.infrastructure.resources.lease.api",
+      "target_role": "core_platform"
+    },
+    {
       "source_module": "noetrium_platform.composition.environment_capabilities.action",
       "source_role": "core_platform",
       "target_module": "noetrium_platform.capabilities.environment.api",
@@ -3965,6 +4001,12 @@
     {
       "source_module": "noetrium_platform.composition.model_management",
       "source_role": "core_platform",
+      "target_module": "noetrium_platform.capabilities.environment.providers",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "noetrium_platform.composition.model_management",
+      "source_role": "core_platform",
       "target_module": "noetrium_platform.capabilities.model.api",
       "target_role": "core_platform"
     },
@@ -4020,6 +4062,12 @@
       "source_module": "noetrium_platform.composition.model_management",
       "source_role": "core_platform",
       "target_module": "noetrium_platform.capabilities.model.qualification.composition",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "noetrium_platform.composition.model_management",
+      "source_role": "core_platform",
+      "target_module": "noetrium_platform.composition.docker_container_leases",
       "target_role": "core_platform"
     },
     {
@@ -5460,6 +5508,12 @@
       "source_module": "noetrium_platform.composition.research_execution_pool",
       "source_role": "core_platform",
       "target_module": "noetrium_platform.capabilities.model.serving.runtime",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "noetrium_platform.composition.research_execution_pool",
+      "source_role": "core_platform",
+      "target_module": "noetrium_platform.composition.docker_container_leases",
       "target_role": "core_platform"
     },
     {
@@ -16050,6 +16104,12 @@
       "source_module": "research.benchmarks.alfworld.runtime.session",
       "source_role": "research_reproductions",
       "target_module": "noetrium_platform.capabilities.environment.text_world.api",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "research.benchmarks.alfworld.runtime.session",
+      "source_role": "research_reproductions",
+      "target_module": "noetrium_platform.composition.docker_container_leases",
       "target_role": "core_platform"
     },
     {
@@ -28272,6 +28332,36 @@
       "source_module": "tests.test_machine_snapshot_v1",
       "source_role": "tests",
       "target_module": "noetrium_platform.foundation.kernel.kernel",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "tests.test_managed_docker_container_leases_v1",
+      "source_role": "tests",
+      "target_module": "noetrium_platform.capabilities.environment.providers.docker_containers",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "tests.test_managed_docker_container_leases_v1",
+      "source_role": "tests",
+      "target_module": "noetrium_platform.composition.docker_container_leases",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "tests.test_managed_docker_container_leases_v1",
+      "source_role": "tests",
+      "target_module": "noetrium_platform.foundation.scope.api",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "tests.test_managed_docker_container_leases_v1",
+      "source_role": "tests",
+      "target_module": "noetrium_platform.infrastructure.resources.lease.api",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "tests.test_managed_docker_container_leases_v1",
+      "source_role": "tests",
+      "target_module": "noetrium_platform.infrastructure.resources.lease.runtime",
       "target_role": "core_platform"
     },
     {
@@ -42653,7 +42743,7 @@
   ],
   "role_import_counts": [
     {
-      "count": 2590,
+      "count": 2599,
       "source_role": "core_platform",
       "target_role": "core_platform"
     },
@@ -42698,7 +42788,7 @@
       "target_role": "public_facade"
     },
     {
-      "count": 586,
+      "count": 587,
       "source_role": "research_reproductions",
       "target_role": "core_platform"
     },
@@ -42713,7 +42803,7 @@
       "target_role": "research_reproductions"
     },
     {
-      "count": 2777,
+      "count": 2782,
       "source_role": "tests",
       "target_role": "core_platform"
     },
@@ -42769,30 +42859,30 @@
     }
   ],
   "role_python_module_counts": {
-    "core_platform": 1907,
+    "core_platform": 1909,
     "examples": 6,
     "other": 6,
     "public_facade": 40,
     "reference_components": 22,
     "reference_orchestration": 10,
     "research_reproductions": 777,
-    "tests": 825,
+    "tests": 826,
     "tooling": 79
   },
   "role_symbol_counts": {
-    "core_platform": 3362,
+    "core_platform": 3375,
     "examples": 3,
     "other": 20,
     "public_facade": 4,
     "reference_components": 64,
     "reference_orchestration": 14,
-    "research_reproductions": 431,
+    "research_reproductions": 434,
     "sdk": 5,
-    "tests": 990,
+    "tests": 991,
     "tooling": 39
   },
   "schema": "noetrium-repository-code-architecture-index.v1",
-  "source_git_sha": "752edbd76c6391619e660c3f85d5b9880db440d3",
+  "source_git_sha": "a1308269acd987901a29d46fc9151d459cb1e083",
   "symbols": [
     {
       "bases": [],
@@ -49788,6 +49878,91 @@
       "name": "MinecraftWorldQuery",
       "path": "noetrium_platform/capabilities/environment/minecraft/runtime/world.py",
       "qualname": "noetrium_platform.capabilities.environment.minecraft.runtime.world.MinecraftWorldQuery",
+      "role": "core_platform"
+    },
+    {
+      "bases": [
+        "RuntimeError"
+      ],
+      "decorators": [],
+      "fields": [],
+      "kind": "class",
+      "language": "python",
+      "line": 15,
+      "methods": [],
+      "module": "noetrium_platform.capabilities.environment.providers.docker_containers",
+      "name": "DockerContainerRuntimeError",
+      "path": "noetrium_platform/capabilities/environment/providers/docker_containers.py",
+      "qualname": "noetrium_platform.capabilities.environment.providers.docker_containers.DockerContainerRuntimeError",
+      "role": "core_platform"
+    },
+    {
+      "bases": [],
+      "decorators": [
+        "dataclass(frozen=True, slots=True)"
+      ],
+      "fields": [
+        "container_id: str",
+        "name: str",
+        "image: str",
+        "running: bool",
+        "labels: Mapping[str, str]"
+      ],
+      "kind": "dataclass",
+      "language": "python",
+      "line": 20,
+      "methods": [
+        "__post_init__"
+      ],
+      "module": "noetrium_platform.capabilities.environment.providers.docker_containers",
+      "name": "DockerContainerObservation",
+      "path": "noetrium_platform/capabilities/environment/providers/docker_containers.py",
+      "qualname": "noetrium_platform.capabilities.environment.providers.docker_containers.DockerContainerObservation",
+      "role": "core_platform"
+    },
+    {
+      "bases": [
+        "Protocol"
+      ],
+      "decorators": [],
+      "fields": [],
+      "kind": "protocol",
+      "language": "python",
+      "line": 32,
+      "methods": [
+        "docker_executable",
+        "inspect",
+        "list_managed",
+        "wait_running",
+        "remove"
+      ],
+      "module": "noetrium_platform.capabilities.environment.providers.docker_containers",
+      "name": "DockerManagedContainerPort",
+      "path": "noetrium_platform/capabilities/environment/providers/docker_containers.py",
+      "qualname": "noetrium_platform.capabilities.environment.providers.docker_containers.DockerManagedContainerPort",
+      "role": "core_platform"
+    },
+    {
+      "bases": [],
+      "decorators": [],
+      "fields": [],
+      "kind": "class",
+      "language": "python",
+      "line": 43,
+      "methods": [
+        "__init__",
+        "docker_executable",
+        "_missing",
+        "_decode_inspect",
+        "inspect",
+        "list_managed",
+        "wait_running",
+        "remove"
+      ],
+      "module": "noetrium_platform.capabilities.environment.providers.docker_containers",
+      "name": "DockerCliManagedContainerProvider",
+      "path": "noetrium_platform/capabilities/environment/providers/docker_containers.py",
+      "qualname": "noetrium_platform.capabilities.environment.providers.docker_containers.DockerCliManagedContainerProvider",
       "role": "core_platform"
     },
     {
@@ -64026,6 +64201,188 @@
       "role": "core_platform"
     },
     {
+      "bases": [
+        "Protocol"
+      ],
+      "decorators": [],
+      "fields": [],
+      "kind": "protocol",
+      "language": "python",
+      "line": 44,
+      "methods": [
+        "wait"
+      ],
+      "module": "noetrium_platform.composition.docker_container_leases",
+      "name": "DockerReconcileStopPort",
+      "path": "noetrium_platform/composition/docker_container_leases.py",
+      "qualname": "noetrium_platform.composition.docker_container_leases.DockerReconcileStopPort",
+      "role": "core_platform"
+    },
+    {
+      "bases": [],
+      "decorators": [
+        "dataclass(frozen=True, slots=True)"
+      ],
+      "fields": [
+        "ttl_seconds: float",
+        "renewal_interval_seconds: float"
+      ],
+      "kind": "dataclass",
+      "language": "python",
+      "line": 49,
+      "methods": [
+        "__post_init__"
+      ],
+      "module": "noetrium_platform.composition.docker_container_leases",
+      "name": "DockerContainerLeasePolicy",
+      "path": "noetrium_platform/composition/docker_container_leases.py",
+      "qualname": "noetrium_platform.composition.docker_container_leases.DockerContainerLeasePolicy",
+      "role": "core_platform"
+    },
+    {
+      "bases": [],
+      "decorators": [
+        "dataclass(frozen=True, slots=True)"
+      ],
+      "fields": [
+        "allocation_id: str",
+        "holder_scope: ScopeIdentity",
+        "image: str",
+        "runtime_identity_digest: str",
+        "container_name: str",
+        "lease: ResourceLease"
+      ],
+      "kind": "dataclass",
+      "language": "python",
+      "line": 71,
+      "methods": [
+        "__post_init__",
+        "labels",
+        "docker_run_options"
+      ],
+      "module": "noetrium_platform.composition.docker_container_leases",
+      "name": "ManagedDockerContainerLease",
+      "path": "noetrium_platform/composition/docker_container_leases.py",
+      "qualname": "noetrium_platform.composition.docker_container_leases.ManagedDockerContainerLease",
+      "role": "core_platform"
+    },
+    {
+      "bases": [],
+      "decorators": [
+        "dataclass(frozen=True, slots=True)"
+      ],
+      "fields": [
+        "removed_container_ids: tuple[str, ...]"
+      ],
+      "kind": "dataclass",
+      "language": "python",
+      "line": 115,
+      "methods": [],
+      "module": "noetrium_platform.composition.docker_container_leases",
+      "name": "DockerContainerReconciliation",
+      "path": "noetrium_platform/composition/docker_container_leases.py",
+      "qualname": "noetrium_platform.composition.docker_container_leases.DockerContainerReconciliation",
+      "role": "core_platform"
+    },
+    {
+      "bases": [
+        "RuntimeError"
+      ],
+      "decorators": [],
+      "fields": [],
+      "kind": "class",
+      "language": "python",
+      "line": 119,
+      "methods": [],
+      "module": "noetrium_platform.composition.docker_container_leases",
+      "name": "DockerContainerLeaseConflict",
+      "path": "noetrium_platform/composition/docker_container_leases.py",
+      "qualname": "noetrium_platform.composition.docker_container_leases.DockerContainerLeaseConflict",
+      "role": "core_platform"
+    },
+    {
+      "bases": [],
+      "decorators": [],
+      "fields": [],
+      "kind": "class",
+      "language": "python",
+      "line": 123,
+      "methods": [
+        "__init__",
+        "_resource",
+        "_name",
+        "reserve",
+        "_validate_observation",
+        "docker_run_prefix",
+        "confirm_running",
+        "renew",
+        "renew_many",
+        "release",
+        "reconcile",
+        "run_reconciler"
+      ],
+      "module": "noetrium_platform.composition.docker_container_leases",
+      "name": "DockerContainerLeaseAuthority",
+      "path": "noetrium_platform/composition/docker_container_leases.py",
+      "qualname": "noetrium_platform.composition.docker_container_leases.DockerContainerLeaseAuthority",
+      "role": "core_platform"
+    },
+    {
+      "bases": [
+        "RuntimeError"
+      ],
+      "decorators": [],
+      "fields": [],
+      "kind": "class",
+      "language": "python",
+      "line": 350,
+      "methods": [],
+      "module": "noetrium_platform.composition.docker_container_leases",
+      "name": "DockerContainerLeaseHeartbeatError",
+      "path": "noetrium_platform/composition/docker_container_leases.py",
+      "qualname": "noetrium_platform.composition.docker_container_leases.DockerContainerLeaseHeartbeatError",
+      "role": "core_platform"
+    },
+    {
+      "bases": [],
+      "decorators": [],
+      "fields": [],
+      "kind": "class",
+      "language": "python",
+      "line": 354,
+      "methods": [
+        "__init__",
+        "handles",
+        "start",
+        "_renew_once",
+        "assert_healthy",
+        "close"
+      ],
+      "module": "noetrium_platform.composition.docker_container_leases",
+      "name": "DockerContainerLeaseHeartbeatGuard",
+      "path": "noetrium_platform/composition/docker_container_leases.py",
+      "qualname": "noetrium_platform.composition.docker_container_leases.DockerContainerLeaseHeartbeatGuard",
+      "role": "core_platform"
+    },
+    {
+      "bases": [],
+      "decorators": [],
+      "fields": [],
+      "kind": "class",
+      "language": "python",
+      "line": 447,
+      "methods": [
+        "__init__",
+        "policy",
+        "create"
+      ],
+      "module": "noetrium_platform.composition.docker_container_leases",
+      "name": "DockerContainerLeaseHeartbeatFactory",
+      "path": "noetrium_platform/composition/docker_container_leases.py",
+      "qualname": "noetrium_platform.composition.docker_container_leases.DockerContainerLeaseHeartbeatFactory",
+      "role": "core_platform"
+    },
+    {
       "bases": [],
       "decorators": [],
       "fields": [],
@@ -64478,6 +64835,7 @@
         "_stop: Event",
         "model_replica_pool: LocalModelReplicaPoolRuntime | None",
         "_model_controller: TaskHandlePort | None",
+        "_docker_controller: TaskHandlePort | None",
         "_closed: bool"
       ],
       "kind": "dataclass",
@@ -64609,11 +64967,12 @@
         "host: HostComposition",
         "compute_scheduler: ComputeSchedulerPort",
         "deployment_qualification: DeploymentQualificationAuthorities",
+        "docker_containers: DockerContainerLeaseAuthority",
         "platform_meta: PlatformMetaAuthorities"
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 80,
+      "line": 86,
       "methods": [],
       "module": "noetrium_platform.composition.model_management",
       "name": "ManagementPlaneAuthorities",
@@ -64627,7 +64986,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 93,
+      "line": 100,
       "methods": [
         "__init__",
         "open",
@@ -65819,7 +66178,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 41,
+      "line": 47,
       "methods": [
         "__init__",
         "model_admission",
@@ -65828,6 +66187,7 @@
         "compute_lease_guard_factory",
         "endpoint_lease_guard_factory",
         "environment_instance_lease_guard_factory",
+        "docker_container_lease_guard_factory",
         "open_model_io_group",
         "close_orchestration_group",
         "close_experiment_group",
@@ -100069,6 +100429,7 @@
         "GPU",
         "DATASET",
         "CACHE",
+        "CONTAINER",
         "NETWORK_ENDPOINT",
         "RECOVERY"
       ],
@@ -100094,7 +100455,7 @@
       ],
       "kind": "enum",
       "language": "python",
-      "line": 23,
+      "line": 24,
       "methods": [],
       "module": "noetrium_platform.infrastructure.resources.lease.api.contracts",
       "name": "ResourceOwnership",
@@ -100114,7 +100475,7 @@
       ],
       "kind": "enum",
       "language": "python",
-      "line": 29,
+      "line": 30,
       "methods": [],
       "module": "noetrium_platform.infrastructure.resources.lease.api.contracts",
       "name": "LeaseState",
@@ -100133,7 +100494,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 36,
+      "line": 37,
       "methods": [
         "__post_init__",
         "key"
@@ -100156,7 +100517,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 50,
+      "line": 51,
       "methods": [],
       "module": "noetrium_platform.infrastructure.resources.lease.api.contracts",
       "name": "ResourceOwner",
@@ -100183,7 +100544,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 57,
+      "line": 58,
       "methods": [
         "__post_init__",
         "expired_at"
@@ -119473,7 +119834,45 @@
       "fields": [],
       "kind": "protocol",
       "language": "python",
-      "line": 53,
+      "line": 57,
+      "methods": [
+        "start",
+        "assert_healthy",
+        "close"
+      ],
+      "module": "research.benchmarks.alfworld.runtime.session",
+      "name": "_ContainerLeaseGuard",
+      "path": "research/benchmarks/alfworld/runtime/session.py",
+      "qualname": "research.benchmarks.alfworld.runtime.session._ContainerLeaseGuard",
+      "role": "research_reproductions"
+    },
+    {
+      "bases": [
+        "Protocol"
+      ],
+      "decorators": [],
+      "fields": [],
+      "kind": "protocol",
+      "language": "python",
+      "line": 63,
+      "methods": [
+        "create"
+      ],
+      "module": "research.benchmarks.alfworld.runtime.session",
+      "name": "_ContainerLeaseGuardFactory",
+      "path": "research/benchmarks/alfworld/runtime/session.py",
+      "qualname": "research.benchmarks.alfworld.runtime.session._ContainerLeaseGuardFactory",
+      "role": "research_reproductions"
+    },
+    {
+      "bases": [
+        "Protocol"
+      ],
+      "decorators": [],
+      "fields": [],
+      "kind": "protocol",
+      "language": "python",
+      "line": 70,
       "methods": [
         "started",
         "start",
@@ -119489,6 +119888,27 @@
     },
     {
       "bases": [],
+      "decorators": [],
+      "fields": [],
+      "kind": "class",
+      "language": "python",
+      "line": 83,
+      "methods": [
+        "__init__",
+        "started",
+        "start",
+        "send",
+        "read",
+        "close"
+      ],
+      "module": "research.benchmarks.alfworld.runtime.session",
+      "name": "_ManagedDockerWorkerTransport",
+      "path": "research/benchmarks/alfworld/runtime/session.py",
+      "qualname": "research.benchmarks.alfworld.runtime.session._ManagedDockerWorkerTransport",
+      "role": "research_reproductions"
+    },
+    {
+      "bases": [],
       "decorators": [
         "dataclass(frozen=True, slots=True)"
       ],
@@ -119500,12 +119920,11 @@
         "recovery_root: str",
         "session_id: str",
         "split: str",
-        "command_timeout_s: float",
-        "docker_executable: str"
+        "command_timeout_s: float"
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 67,
+      "line": 169,
       "methods": [
         "__post_init__",
         "provider_instance_id",
@@ -119523,7 +119942,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 127,
+      "line": 227,
       "methods": [
         "__init__",
         "provider_instance_id",
@@ -136230,6 +136649,27 @@
       "name": "Increment",
       "path": "tests/test_machine_research_closure_v1.py",
       "qualname": "tests.test_machine_research_closure_v1.Increment",
+      "role": "tests"
+    },
+    {
+      "bases": [],
+      "decorators": [],
+      "fields": [],
+      "kind": "class",
+      "language": "python",
+      "line": 25,
+      "methods": [
+        "__init__",
+        "start",
+        "inspect",
+        "list_managed",
+        "wait_running",
+        "remove"
+      ],
+      "module": "tests.test_managed_docker_container_leases_v1",
+      "name": "FakeDockerRuntime",
+      "path": "tests/test_managed_docker_container_leases_v1.py",
+      "qualname": "tests.test_managed_docker_container_leases_v1.FakeDockerRuntime",
       "role": "tests"
     },
     {
