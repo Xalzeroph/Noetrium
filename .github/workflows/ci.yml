@@ -59,7 +59,14 @@ jobs:
             tests/test_atomic_task_batch_v1.py \
             tests/test_pooled_child_research_machine_batch_v1.py \
             tests/test_research_graph_scheduler_durable_v1.py \
-            tests/test_research_graph_scale_v1.py
+            tests/test_research_graph_scale_v1.py \
+            tests/test_research_graph_claim_control_fence_v1.py \
+            tests/test_research_graph_cut_switch_fence_v1.py \
+            tests/test_research_os_multi_program_selection_v1.py \
+            tests/test_research_os_retry_scope_v1.py \
+            tests/test_research_os_migration_v1.py \
+            tests/test_research_os_migration_node_control_intent_v1.py \
+            tests/test_research_os_artifact_migration_v1.py
 
   governance:
     name: governance / contracts / quality
