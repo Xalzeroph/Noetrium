@@ -100,6 +100,7 @@ def test_server_preparation_configures_rcon_only_with_explicit_secret(tmp_path) 
         jar_path=str(jar),
         workdir=str(tmp_path / "server"),
         java_executable="/usr/bin/java",
+        port=25565,
         rcon_endpoint=MinecraftRconEndpoint(port=25585),
     )
 
@@ -191,7 +192,7 @@ class _RconSocket:
 def test_rcon_console_authenticates_and_returns_non_secret_command_evidence() -> None:
     sock = _RconSocket()
     console = MinecraftRconConsole(
-        MinecraftRconEndpoint(command_timeout_s=3.0),
+        MinecraftRconEndpoint(port=25575, command_timeout_s=3.0),
         secret_provider=lambda: "super-secret",
         socket_factory=lambda: sock,
     )
@@ -208,7 +209,7 @@ def test_rcon_console_authenticates_and_returns_non_secret_command_evidence() ->
 def test_rcon_authentication_failure_has_stable_code_and_closes_socket() -> None:
     sock = _RconSocket(auth_failure=True, expected_timeout=1.0)
     console = MinecraftRconConsole(
-        MinecraftRconEndpoint(),
+        MinecraftRconEndpoint(port=25575),
         secret_provider=lambda: "wrong-secret",
         socket_factory=lambda: sock,
     )
@@ -271,7 +272,7 @@ def test_rcon_network_lifetime_is_not_serialized_by_request_id_lock() -> None:
         return sock
 
     console = MinecraftRconConsole(
-        MinecraftRconEndpoint(),
+        MinecraftRconEndpoint(port=25575),
         secret_provider=lambda: "secret",
         socket_factory=socket_factory,
     )
