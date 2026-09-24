@@ -21,7 +21,8 @@ Usage: ./deploy/noetrium <doctor|build|plan|requirements|preflight|run|env> [arg
   env        pass remaining arguments to the low-level environment bootstrap
 
 Configuration:
-  NOETRIUM_FLEET_EXECUTION_AUTHORITY=module:factory
+  NOETRIUM_FLEET_AUTHORITY_MATERIALIZER=module:factory
+  NOETRIUM_FLEET_EXECUTION_AUTHORITY=module:factory  # low-level override
   NOETRIUM_DEPLOYMENT_STATE_ROOT=/writable/path
   NOETRIUM_CONTROL_ENV_FILE=/path/to/env-file
   NOETRIUM_SKIP_ENVIRONMENT_BUILD=1
@@ -40,10 +41,24 @@ host_doctor() {
   mkdir -p "$ENV_WORK_ROOT" "$FLEET_STATE_ROOT"
 }
 
+authority_materializer_from_env_file() {
+  file="${NOETRIUM_CONTROL_ENV_FILE:-$ROOT/deploy/.env}"
+  [ -f "$file" ] || return 0
+  sed -n 's/^NOETRIUM_FLEET_AUTHORITY_MATERIALIZER=//p' "$file" | tail -n 1
+}
+
 authority_from_env_file() {
   file="${NOETRIUM_CONTROL_ENV_FILE:-$ROOT/deploy/.env}"
   [ -f "$file" ] || return 0
   sed -n 's/^NOETRIUM_FLEET_EXECUTION_AUTHORITY=//p' "$file" | tail -n 1
+}
+
+authority_materializer() {
+  if [ -n "${NOETRIUM_FLEET_AUTHORITY_MATERIALIZER:-}" ]; then
+    printf '%s\n' "$NOETRIUM_FLEET_AUTHORITY_MATERIALIZER"
+    return 0
+  fi
+  authority_materializer_from_env_file
 }
 
 execution_authority() {
@@ -65,13 +80,37 @@ emit_authority_requirements() {
   printf 'noetrium_authority_requirements=%s\n' "$path"
 }
 
-require_execution_authority() {
-  authority="$(execution_authority)"
-  if [ -z "$authority" ]; then
-    emit_authority_requirements
-    die "execution authority is unresolved; owner systems must materialize the emitted prerequisite manifest before preflight/run"
+require_execution_source() {
+  materializer="$(authority_materializer)"
+  if [ -n "$materializer" ]; then
+    printf 'materializer|%s\n' "$materializer"
+    return 0
   fi
-  printf '%s\n' "$authority"
+  authority="$(execution_authority)"
+  if [ -n "$authority" ]; then
+    printf 'authority|%s\n' "$authority"
+    return 0
+  fi
+  emit_authority_requirements
+  die "execution authority is unresolved; owner systems must materialize the emitted prerequisite manifest before preflight/run"
+}
+
+fleet_with_execution_source() {
+  source="$1"
+  shift
+  kind="${source%%|*}"
+  spec="${source#*|}"
+  case "$kind" in
+    materializer)
+      fleet "$@" --authority-materializer "$spec"
+      ;;
+    authority)
+      fleet "$@" --execution-authority "$spec"
+      ;;
+    *)
+      die "invalid execution authority source kind: $kind"
+      ;;
+  esac
 }
 
 environment_bootstrap() {
@@ -120,21 +159,21 @@ case "$command" in
     ;;
   preflight)
     host_doctor
-    authority="$(require_execution_authority)"
-    fleet --authority-audit --execution-authority "$authority"
-    fleet --preflight --execution-authority "$authority" \
+    source="$(require_execution_source)"
+    fleet_with_execution_source "$source" --authority-audit
+    fleet_with_execution_source "$source" --preflight \
       --state-root "$FLEET_STATE_ROOT" "$@"
     ;;
   run)
     host_doctor
-    authority="$(require_execution_authority)"
+    source="$(require_execution_source)"
     if [ "${NOETRIUM_SKIP_ENVIRONMENT_BUILD:-0}" != "1" ]; then
       environment_bootstrap build
     fi
-    fleet --authority-audit --execution-authority "$authority"
-    fleet --preflight --execution-authority "$authority" \
+    fleet_with_execution_source "$source" --authority-audit
+    fleet_with_execution_source "$source" --preflight \
       --state-root "$FLEET_STATE_ROOT" "$@"
-    fleet --execute --execution-authority "$authority" \
+    fleet_with_execution_source "$source" --execute \
       --state-root "$FLEET_STATE_ROOT" "$@"
     ;;
   env)
