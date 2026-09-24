@@ -7,6 +7,12 @@ from __future__ import annotations
 
 from noetrium_platform.product import api as _product
 from noetrium_platform.product.api import (
+    RESEARCH_PROJECT_BLUEPRINT_SCHEMA,
+    ResearchDefinitionRef,
+    ResearchProjectBlueprint,
+    decode_research_project_blueprint,
+    encode_research_project_blueprint,
+    research_project_blueprint_document,
     ResearchBranch,
     ResearchControlAction,
     ResearchControlReceipt,
