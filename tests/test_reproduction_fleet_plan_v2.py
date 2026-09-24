@@ -70,6 +70,7 @@ def test_fleet_plan_separates_materialization_from_true_execution_readiness() ->
                     "binding_requirement_digest",
                     "trial_protocol_identity_digest",
                     "project_manifest_requirement_digest",
+                    "project_manifest_keys_digest",
                     "authority_requirement_digest",
                 ):
                     digest = requirement[key]
@@ -77,6 +78,22 @@ def test_fleet_plan_separates_materialization_from_true_execution_readiness() ->
                     assert all(ch in "0123456789abcdef" for ch in digest)
                 assert requirement["trial_provider_requirement_id"]
                 assert requirement["aggregation_requirement_id"]
+                assert isinstance(
+                    requirement["project_manifest_capability_requirement_ids"],
+                    tuple,
+                )
+                assert isinstance(
+                    requirement["project_manifest_method_requirement_keys"],
+                    tuple,
+                )
+                assert isinstance(
+                    requirement["project_manifest_configuration_ref_ids"],
+                    tuple,
+                )
+                assert (
+                    requirement["trial_provider_requirement_id"]
+                    in requirement["project_manifest_capability_requirement_ids"]
+                )
                 for participant in requirement["participant_requirements"]:
                     assert len(participant) == 5
                     assert len(participant[-1]) == 64
