@@ -242,5 +242,12 @@ def test_managed_runtime_does_not_release_resources_when_workloads_fail_to_quies
 
     assert resource_controller.cleaned == 0
     assert fleet.shutdowns == 0
+    assert pool.closed is False
+    assert runtime_lock.released is False
+
+    pool.quiesce_error = None
+    managed.close()
+    assert resource_controller.cleaned == 1
+    assert fleet.shutdowns == 1
     assert pool.closed is True
     assert runtime_lock.released is True
