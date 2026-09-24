@@ -257,7 +257,7 @@ python scripts/check_readme_i18n.py
 
 Noetrium は execution environment を、論文ごとの可変コンテナではなく revisioned environment fleet として管理します。Host contract は Docker + Compose だけで、host Python は不要です。
 
-サーバーの統一エントリポイントは `./deploy/noetrium` です。`./deploy/noetrium run` は一般ユーザー権限のまま Docker/Compose の適格性確認、正確な environment image の build/reuse、fleet authority 監査、preflight、Research OS 実行を fail-close で連結します。`sudo` は呼び出しません。アカウントには現在の Docker daemon へのアクセス（Docker group または rootless Docker）だけが必要で、GPU host には NVIDIA container runtime が事前に必要です。科学的 binding は推測せず、host environment または `deploy/.env` に `NOETRIUM_FLEET_EXECUTION_AUTHORITY=module:factory` を設定します。
+サーバーの統一エントリポイントは `./deploy/noetrium` です。`./deploy/noetrium run` は一般ユーザー権限のまま Docker/Compose の適格性確認、正確な environment image の build/reuse、fleet authority 監査、preflight、Research OS 実行を fail-close で連結します。`sudo` は呼び出しません。アカウントには現在の Docker daemon へのアクセス（Docker group または rootless Docker）だけが必要で、GPU host には NVIDIA container runtime が事前に必要です。科学的 binding は推測しません。`./deploy/noetrium requirements` は作業を開始せずに、content-addressed な benchmark/reproduction authority 要件を出力します。実行時は `NOETRIUM_FLEET_AUTHORITY_MATERIALIZER=module:factory` を優先し、owner system が 2 段階で正確な registry を物化します。`NOETRIUM_FLEET_EXECUTION_AUTHORITY=module:factory` は低レベルの完全構成済み authority bundle の上書き入口としてのみ残します。どちらも設定されていない場合、`preflight`/`run` は prerequisite manifest を deployment state に書き出し、execution cut を作成する前に fail-close します。
 
 Host port は Resource authority が一元管理します。kernel-selected candidate を取得し、現在の OS bind availability を probe し、使用中または lease 中の endpoint を避け、atomic fencing で並行競合を防ぎ、live lease を更新し、release 後の physical port を再利用可能にします。Paper、model replica、environment provider が host port をハードコードする必要はありません。以下の `build-environments.sh` は低レベル profile inspection / maintenance 用に残します。
 
