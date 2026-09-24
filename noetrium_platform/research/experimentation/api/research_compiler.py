@@ -40,6 +40,94 @@ def _unique_preserving_order(values):
     return tuple(result)
 
 
+@dataclass(frozen=True, slots=True)
+class ResearchManifestRequirementKeys:
+    """Exact ProjectManifest keys selected by one ResearchStudyDefinition."""
+
+    capability_requirement_ids: tuple[str, ...]
+    method_requirement_keys: tuple[tuple[str, str], ...]
+    configuration_ref_ids: tuple[str, ...]
+    keys_digest: str = field(init=False)
+
+    def __post_init__(self) -> None:
+        if type(self.capability_requirement_ids) is not tuple:
+            raise TypeError("manifest capability requirement ids must be tuple")
+        if type(self.method_requirement_keys) is not tuple:
+            raise TypeError("manifest method requirement keys must be tuple")
+        if type(self.configuration_ref_ids) is not tuple:
+            raise TypeError("manifest configuration ref ids must be tuple")
+        if len(self.capability_requirement_ids) != len(
+            set(self.capability_requirement_ids)
+        ):
+            raise ValueError("manifest capability requirement ids must be unique")
+        if len(self.method_requirement_keys) != len(
+            set(self.method_requirement_keys)
+        ):
+            raise ValueError("manifest method requirement keys must be unique")
+        if len(self.configuration_ref_ids) != len(
+            set(self.configuration_ref_ids)
+        ):
+            raise ValueError("manifest configuration ref ids must be unique")
+        object.__setattr__(
+            self,
+            "keys_digest",
+            canonical_digest(
+                {
+                    "capability_requirement_ids": self.capability_requirement_ids,
+                    "method_requirement_keys": self.method_requirement_keys,
+                    "configuration_ref_ids": self.configuration_ref_ids,
+                }
+            ),
+        )
+
+
+def research_manifest_requirement_keys(
+    definition: ResearchStudyDefinition,
+) -> ResearchManifestRequirementKeys:
+    """Derive the exact ProjectManifest key set needed by one Study."""
+
+    if type(definition) is not ResearchStudyDefinition:
+        raise TypeError(
+            "manifest requirement selection requires ResearchStudyDefinition"
+        )
+    requirements = definition.binding_requirements
+    capability_ids = [requirements.trial_provider_requirement_id]
+    method_pairs: list[tuple[str, str]] = []
+    configuration_ids: list[str] = []
+
+    for model_role in requirements.model_roles:
+        capability_ids.append(model_role.requirement_id)
+        if model_role.prompt_configuration_id is not None:
+            configuration_ids.append(model_role.prompt_configuration_id)
+
+    for participant in requirements.participants:
+        capability_ids.extend(participant.capability_requirement_ids)
+        method_pairs.append(
+            (participant.method_id, participant.treatment_id)
+        )
+        configuration_ids.extend(participant.configuration_ref_ids)
+
+    for task in definition.benchmark.selected_tasks(
+        definition.benchmark_split_id
+    ):
+        package = task.package
+        if package is None:
+            continue
+        for requirement_id in (
+            package.environment_requirement_id,
+            package.verifier_requirement_id,
+            package.verifier_environment_requirement_id,
+        ):
+            if requirement_id is not None:
+                capability_ids.append(requirement_id)
+
+    return ResearchManifestRequirementKeys(
+        _unique_preserving_order(capability_ids),
+        _unique_preserving_order(method_pairs),
+        _unique_preserving_order(configuration_ids),
+    )
+
+
 def resolve_research_requirements(
     definition: ResearchStudyDefinition,
     project_manifest: ProjectManifest,
@@ -53,37 +141,10 @@ def resolve_research_requirements(
         raise ValueError("research requirements belong to a different project")
     if definition.study_id not in project_manifest.study_ids:
         raise ValueError("research study is not declared by ProjectManifest")
-    requirements = definition.binding_requirements
-    capability_ids = [requirements.trial_provider_requirement_id]
-    method_pairs = []
-    configuration_ids = []
-    for model_role in requirements.model_roles:
-        capability_ids.append(model_role.requirement_id)
-        if model_role.prompt_configuration_id is not None:
-            configuration_ids.append(model_role.prompt_configuration_id)
-    for participant in requirements.participants:
-        capability_ids.extend(participant.capability_requirement_ids)
-        method_pairs.append((participant.method_id, participant.treatment_id))
-        configuration_ids.extend(participant.configuration_ref_ids)
-
-    # Executable benchmark packages own their environment/verifier requirements
-    # locally. The Study compiler lifts only those requirement identities into
-    # the project binding closure; concrete providers remain late-bound.
-    for task in definition.benchmark.selected_tasks(definition.benchmark_split_id):
-        package = task.package
-        if package is None:
-            continue
-        for requirement_id in (
-            package.environment_requirement_id,
-            package.verifier_requirement_id,
-            package.verifier_environment_requirement_id,
-        ):
-            if requirement_id is not None:
-                capability_ids.append(requirement_id)
-
-    selected_capability_ids = _unique_preserving_order(capability_ids)
-    selected_method_keys = _unique_preserving_order(method_pairs)
-    selected_config_ids = _unique_preserving_order(configuration_ids)
+    selected = research_manifest_requirement_keys(definition)
+    selected_capability_ids = selected.capability_requirement_ids
+    selected_method_keys = selected.method_requirement_keys
+    selected_config_ids = selected.configuration_ref_ids
     capability_by_id = {row.requirement_id: row for row in project_manifest.capability_requirements}
     method_by_key = {(row.method_id, row.treatment_id): row for row in project_manifest.method_requirements}
     config_by_id = {row.configuration_id: row for row in project_manifest.configuration_refs}
