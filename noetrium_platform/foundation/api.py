@@ -26,6 +26,8 @@ from noetrium_platform.evidence.artifact.api import (
     ArtifactRetention,
     MaterializedTreeInspectionPort,
     MultimodalPart,
+    TensorContentRef,
+    TensorContentStorePort,
 )
 
 from noetrium_platform.foundation.governance.api import (
@@ -173,6 +175,8 @@ __all__ = (
     "METHOD_COMPOSITION_PORTS_V1",
     "ManagedDirectoryKind",
     "MaterializedTreeInspectionPort",
+    "TensorContentRef",
+    "TensorContentStorePort",
     "MultimodalPart",
     "PLATFORM_SCOPE",
     "PendingEffectRecoveryRequired",
