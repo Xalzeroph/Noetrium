@@ -202,10 +202,14 @@ def test_step_limit_is_committed_as_resumable_interrupted_control_fact() -> None
 
 def test_method_transition_commits_child_machine_link() -> None:
     child_program_digest = canonical_digest({"program": "child-optimization"})
+    child_program_lock_digest = canonical_digest(
+        {"program_lock": "child-optimization"}
+    )
     link = ChildMachineLink(
         parent_machine_id="method:run-1",
         child_machine_id="optimization:method-child",
         child_program_digest=child_program_digest,
+        child_program_lock_digest=child_program_lock_digest,
         child_snapshot_ref="machine:optimization:method-child:cut:2:ref",
         child_transition_start=1,
         child_transition_end=2,
@@ -241,3 +245,7 @@ def test_method_transition_commits_child_machine_link() -> None:
     assert len(commits[0].child_links) == 1
     assert commits[0].child_links[0] == link
     assert commits[0].child_links[0].child_program_digest == child_program_digest
+    assert (
+        commits[0].child_links[0].child_program_lock_digest
+        == child_program_lock_digest
+    )
