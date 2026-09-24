@@ -552,6 +552,7 @@ def main() -> int:
         result = audit_repository_execution_authorities(authorities)
         payload = {
             "schema": "noetrium.reproduction-fleet-authority-audit.v1",
+            "authority_manifest_digest": authorities.authority_manifest_digest,
             "materialization_digest": (
                 result.materialization.materialization_digest
             ),
@@ -613,7 +614,8 @@ def main() -> int:
             execution_id=args.execution_id,
         )
         payload = {
-            "schema": "noetrium.reproduction-fleet-preflight.v1",
+            "schema": "noetrium.reproduction-fleet-preflight.v2",
+            "authority_manifest_digest": result.authority_manifest_digest,
             "execution_id": result.execution_id,
             "revision_digest": result.revision_digest,
             "materialization_digest": result.materialization.materialization_digest,
@@ -642,7 +644,8 @@ def main() -> int:
             execution_id=args.execution_id,
         )
         payload = {
-            "schema": "noetrium.reproduction-fleet-execution.v1",
+            "schema": "noetrium.reproduction-fleet-execution.v2",
+            "authority_manifest_digest": result.authority_manifest_digest,
             "execution_id": result.receipt.target.execution_id,
             "revision_digest": result.receipt.target.research_revision_digest,
             "materialization_digest": (
