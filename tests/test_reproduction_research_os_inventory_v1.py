@@ -74,7 +74,7 @@ def test_every_executable_study_reproduction_compiles_to_current_research_os() -
     for definition in eligible:
         kinds = {asset.kind for asset in definition.assets}
         program = compile_reproduction_research_program(definition)
-        assert program.program_id == definition.identity.method_id
+        assert program.program_id == definition.package
         assert len(program.nodes) == 1
         node = program.nodes[0]
         assert node.node_id == "reproduction"
@@ -88,12 +88,21 @@ def test_every_executable_study_reproduction_compiles_to_current_research_os() -
             method_definition = next(
                 row for row in program.definitions if row.definition_id == "method"
             )
-            assert type(method_definition.implementation) is (
-                api.ResearchMethodProgramImplementation
-            )
-            assert method_definition.implementation.program_digest == (
-                binding.program_digest
-            )
+            if binding.exact:
+                assert type(method_definition.implementation) is (
+                    api.ResearchMethodProgramImplementation
+                )
+                assert method_definition.implementation.program_digest == (
+                    binding.program_digest
+                )
+            else:
+                assert method_definition.implementation is None
+                assert method_definition.config["authority"] == (
+                    "parameterized-method-program-factory"
+                )
+                assert method_definition.config["unresolved_parameters"] == (
+                    binding.factory.unresolved_parameters
+                )
         else:
             machine_bindings = resolve_research_program_bindings(definition)
             assert machine_bindings
@@ -105,7 +114,7 @@ def test_every_executable_study_reproduction_compiles_to_current_research_os() -
             assert len(machine_definitions) == len(machine_bindings)
 
         portfolio = api.ResearchPortfolio(
-            f"{definition.identity.method_id}.migration-gate",
+            f"{definition.package}.migration-gate",
             (program,),
         )
         revision = api.ResearchGraphRevision(
@@ -115,7 +124,7 @@ def test_every_executable_study_reproduction_compiles_to_current_research_os() -
             "reproduction migration gate",
         )
         graph = compile_research_portfolio_graph(revision, portfolio)
-        graph.node(f"{definition.identity.method_id}::reproduction")
+        graph.node(f"{definition.package}::reproduction")
         compiled_packages.append(definition.package)
 
     assert tuple(sorted(compiled_packages)) == tuple(
@@ -149,25 +158,45 @@ def test_all_protocol_bound_reproductions_compile_as_one_multi_paper_portfolio()
         api.ResearchNodeKind.EXPERIMENT
     }
 
-def test_method_program_bindings_also_lower_exactly_on_method_nodes() -> None:
-    # The experiment lane resolves through Experimentation closure.  This
-    # complementary check proves the same frozen MethodProgram binding lowers
-    # directly to UMM without wrapper semantics.
+def test_method_program_bindings_lower_only_when_exact() -> None:
+    # Symbol bindings and exact factories lower directly to UMM. Parameterized
+    # factories remain protocol-bound until ExperimentClosure supplies the
+    # benchmark-owned parameters; direct lowering must not invent them.
     for definition in _definitions():
         kinds = {asset.kind for asset in definition.assets}
         if ReproductionAssetKind.METHOD_PROGRAM not in kinds:
             continue
         binding = resolve_method_program_binding(definition)
-        builder = api.ResearchProgramBuilder(definition.identity.method_id)
-        builder.method_program(
-            "method",
-            module=binding.module,
-            qualname=binding.qualname,
-        )
+        if not binding.exact:
+            program = compile_reproduction_research_program(definition)
+            method_definition = next(
+                row for row in program.definitions if row.definition_id == "method"
+            )
+            assert method_definition.implementation is None
+            assert binding.factory is not None
+            assert binding.factory.unresolved_parameters
+            continue
+
+        builder = api.ResearchProgramBuilder(definition.package)
+        if binding.binding_kind == "symbol":
+            builder.method_program(
+                "method",
+                module=binding.module,
+                qualname=binding.qualname,
+            )
+        else:
+            assert binding.factory is not None
+            builder.method_program_factory(
+                "method",
+                module=binding.module,
+                qualname=binding.qualname,
+                args=binding.factory.args,
+                kwargs=binding.factory.kwargs,
+            )
         builder.method_node("method", definitions=("method",))
         program = builder.freeze()
         portfolio = api.ResearchPortfolio(
-            f"{definition.identity.method_id}.method-gate",
+            f"{definition.package}.method-gate",
             (program,),
         )
         revision = api.ResearchGraphRevision(
@@ -180,7 +209,7 @@ def test_method_program_bindings_also_lower_exactly_on_method_nodes() -> None:
             compile_research_portfolio_graph(revision, portfolio)
         )
         lowered = lowering.node(
-            f"{definition.identity.method_id}::method"
+            f"{definition.package}::method"
         )
         assert len(lowered.method_programs) == 1
         assert lowered.method_programs[0].program.program_digest == (
