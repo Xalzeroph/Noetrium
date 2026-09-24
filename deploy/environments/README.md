@@ -114,7 +114,7 @@ Each checkout increments `EnvironmentInstance.generation`. `EnvironmentCleanline
 
 The same authority exposes two GC cuts. `runtime_references()` / `assess_runtime_gc()` operate on one exact `profile_id + profile_revision + runtime_identity_digest` and are the authority for deleting a concrete image/runtime object. `profile_references()` / `assess_profile_gc()` aggregate every concrete runtime produced from the recipe revision and are the authority for deleting the whole logical profile revision. This distinction matters when the same recipe has multiple concrete outputs across hosts or rebuilds: one exact runtime may be collectible while another remains pinned, so exact-runtime GC must not be inferred from profile-level identity alone.
 
-Both assessments fail closed. Local eligibility requires zero live bindings and every matching catalog instance to be DESTROYED. Final GC additionally requires Execution and Evidence to provide complete closure results. An unknown or missing external reference set is blocking; an explicit empty tuple means that authority has proven closure. Environment never claims those external truths itself.
+Both assessments fail closed. Local eligibility requires zero live bindings and every matching catalog instance to be DESTROYED. Final GC additionally requires the canonical Execution, Evidence, and Recovery authorities to provide a complete proof-backed durable-carrier closure. Any missing authority or any retained reference is blocking. Environment never claims those external truths itself, and each assessment binds the exact profile/runtime identity, local reference snapshot, and closure proofs into its proof digest.
 
 ## Profile-local doctors
 
