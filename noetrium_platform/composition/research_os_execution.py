@@ -670,14 +670,17 @@ class StrictResearchOSControl(
                 "ArtifactLineageRelationPort"
             )
         self._artifact_lineage = artifact_lineage
-        if checkpoints is not None and not isinstance(
-            checkpoints,
-            ResearchOSGraphCheckpointStorePort,
-        ):
-            raise TypeError(
-                "Research OS control checkpoints must satisfy "
-                "ResearchOSGraphCheckpointStorePort"
-            )
+        if checkpoints is not None:
+            if not isinstance(checkpoints, ResearchOSGraphCheckpointStorePort):
+                raise TypeError(
+                    "Research OS control checkpoints must satisfy "
+                    "ResearchOSGraphCheckpointStorePort"
+                )
+            durability = getattr(checkpoints, "durability", None)
+            if type(durability) is not str or not durability.strip():
+                raise TypeError(
+                    "Research OS control checkpoint store requires durability metadata"
+                )
         self._checkpoints = checkpoints
 
     def active_revision_digest(self, execution_id: str) -> str:
