@@ -18,7 +18,6 @@ from noetrium_platform.capabilities.environment.catalog.api import (
     EnvironmentInstanceState,
     EnvironmentProfileLifecycle,
     EnvironmentProfileRevision,
-    EnvironmentProfileUseIntent,
     EnvironmentSpec,
     ExecutionEnvironmentKind,
 )
@@ -339,8 +338,10 @@ class DurableResourceAuthoritiesTests(TestCase):
         with TemporaryDirectory() as directory:
             root = Path(directory)
             scope = ScopeIdentity(ScopeKind.WORKSPACE, "workspace")
+            other_scope = ScopeIdentity(ScopeKind.WORKSPACE, "other-workspace")
             meta = build_durable_platform_meta(root)
             meta.scopes.register(scope, PLATFORM_SCOPE)
+            meta.scopes.register(other_scope, PLATFORM_SCOPE)
             revision = "4" * 64
             runtime_digest = "5" * 64
             profile = EnvironmentProfileRevision(
@@ -361,6 +362,16 @@ class DurableResourceAuthoritiesTests(TestCase):
             )
             meta.environments.register_instance(instance)
 
+            pinned = meta.environments.acquire_reusable_instance(
+                profile.profile_id,
+                profile.profile_revision,
+                runtime_digest,
+                binding_id="pinned-binding",
+                role="runner",
+                scope=scope,
+            )
+            self.assertEqual(pinned.instance.generation, 1)
+
             draining = meta.environments.transition_profile_revision(
                 profile.profile_id,
                 profile.profile_revision,
@@ -376,20 +387,63 @@ class DurableResourceAuthoritiesTests(TestCase):
                     profile.profile_revision,
                     runtime_digest,
                     binding_id="new-work",
-                    role="runner",
+                    role="runner-2",
                     scope=scope,
                 )
 
-            recovered = meta.environments.acquire_reusable_instance(
+            replacement_instance = EnvironmentInstance(
+                "env-lifecycle-replacement",
+                "8" * 64,
+                "docker",
+                "container:env-lifecycle-replacement",
+                runtime_digest,
+                scope,
+                profile.profile_id,
+                profile.profile_revision,
+            )
+            with self.assertRaises(RuntimeError):
+                meta.environments.register_instance(replacement_instance)
+            with self.assertRaises(RuntimeError):
+                meta.environments.register_recovery_instance(
+                    EnvironmentInstance(
+                        "env-wrong-scope",
+                        "9" * 64,
+                        "docker",
+                        "container:env-wrong-scope",
+                        runtime_digest,
+                        other_scope,
+                        profile.profile_id,
+                        profile.profile_revision,
+                    ),
+                    role="runner",
+                    scope=other_scope,
+                )
+
+            meta.environments.register_recovery_instance(
+                replacement_instance,
+                role="runner",
+                scope=scope,
+            )
+            recovered = meta.environments.recover_reusable_instance(
                 profile.profile_id,
                 profile.profile_revision,
                 runtime_digest,
-                binding_id="recovery",
                 role="runner",
                 scope=scope,
-                intent=EnvironmentProfileUseIntent.RESUME_PINNED,
+            )
+            self.assertEqual(recovered.binding.binding_id, "pinned-binding")
+            self.assertEqual(
+                recovered.binding.instance_id,
+                replacement_instance.instance_id,
             )
             self.assertEqual(recovered.instance.generation, 1)
+
+            restored_pinned = build_durable_platform_meta(root)
+            self.assertEqual(
+                restored_pinned.environments.binding("runner", scope),
+                recovered.binding,
+            )
+
             meta.environments.unbind("runner", scope)
             meta.environments.release_instance(
                 recovered.instance.instance_id,
@@ -421,28 +475,29 @@ class DurableResourceAuthoritiesTests(TestCase):
                     role="runner",
                     scope=scope,
                 )
-
             with self.assertRaises(RuntimeError):
-                meta.environments.acquire_reusable_instance(
+                meta.environments.recover_reusable_instance(
                     profile.profile_id,
                     profile.profile_revision,
                     runtime_digest,
-                    binding_id="resume-after-retire",
                     role="runner",
                     scope=scope,
-                    intent=EnvironmentProfileUseIntent.RESUME_PINNED,
                 )
-
-            historical = meta.environments.acquire_reusable_instance(
-                profile.profile_id,
-                profile.profile_revision,
-                runtime_digest,
-                binding_id="historical-recovery",
-                role="runner",
-                scope=scope,
-                intent=EnvironmentProfileUseIntent.HISTORICAL_RECOVERY,
-            )
-            self.assertEqual(historical.instance.generation, 2)
+            with self.assertRaises(RuntimeError):
+                meta.environments.register_recovery_instance(
+                    EnvironmentInstance(
+                        "env-retired-replacement",
+                        "a" * 64,
+                        "docker",
+                        "container:env-retired-replacement",
+                        runtime_digest,
+                        scope,
+                        profile.profile_id,
+                        profile.profile_revision,
+                    ),
+                    role="runner",
+                    scope=scope,
+                )
             with self.assertRaises(RuntimeError):
                 meta.environments.transition_profile_revision(
                     profile.profile_id,
