@@ -5,7 +5,7 @@ from dataclasses import dataclass, field
 from enum import StrEnum
 from typing import Protocol, runtime_checkable
 
-from noetrium_platform.foundation.kernel.kernel import (
+from noetrium.api import (
     JsonObject,
     JsonValue,
     MachineJournalPort,
@@ -15,7 +15,7 @@ from noetrium_platform.foundation.kernel.kernel import (
     require_sha256,
     thaw_json,
 )
-from noetrium_platform.research.execution.machines.api import (
+from noetrium.api import (
     MemoryConcern,
     MemoryProgramBuilder,
     ProgramNodeRequest,
