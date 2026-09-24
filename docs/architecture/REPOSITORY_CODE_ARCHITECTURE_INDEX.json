@@ -1,10 +1,10 @@
 {
   "counts": {
     "parse_errors": 0,
-    "python_files": 3655,
-    "python_import_edges": 7029,
+    "python_files": 3657,
+    "python_import_edges": 7038,
     "symbols": 4851,
-    "tracked_files": 4284,
+    "tracked_files": 4286,
     "typescript_javascript_files": 11
   },
   "language_symbol_counts": {
@@ -19515,9 +19515,45 @@
       "target_role": "research_reproductions"
     },
     {
+      "source_module": "research.reproductions.multiagent_debate.program",
+      "source_role": "research_reproductions",
+      "target_module": "noetrium_platform.capabilities.participant.method.api",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "research.reproductions.multiagent_debate.program",
+      "source_role": "research_reproductions",
+      "target_module": "noetrium_platform.foundation.kernel.kernel",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "research.reproductions.multiagent_debate.program",
+      "source_role": "research_reproductions",
+      "target_module": "noetrium_platform.research.execution.workflow.api",
+      "target_role": "core_platform"
+    },
+    {
       "source_module": "research.reproductions.multiagent_debate.source",
       "source_role": "research_reproductions",
       "target_module": "research.reproductions.provenance",
+      "target_role": "research_reproductions"
+    },
+    {
+      "source_module": "research.reproductions.multiagent_debate.study",
+      "source_role": "research_reproductions",
+      "target_module": "noetrium_platform.foundation.kernel.kernel",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "research.reproductions.multiagent_debate.study",
+      "source_role": "research_reproductions",
+      "target_module": "noetrium_platform.research.experimentation.lifecycle.api",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "research.reproductions.multiagent_debate.study",
+      "source_role": "research_reproductions",
+      "target_module": "research.benchmarks.gsm8k",
       "target_role": "research_reproductions"
     },
     {
@@ -36857,7 +36893,25 @@
     {
       "source_module": "tests.test_scientific_multiagent_debate_fidelity_v1",
       "source_role": "tests",
+      "target_module": "noetrium_platform.research.execution.workflow.api",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "tests.test_scientific_multiagent_debate_fidelity_v1",
+      "source_role": "tests",
       "target_module": "research.reproductions.multiagent_debate",
+      "target_role": "research_reproductions"
+    },
+    {
+      "source_module": "tests.test_scientific_multiagent_debate_fidelity_v1",
+      "source_role": "tests",
+      "target_module": "research.reproductions.multiagent_debate.definition",
+      "target_role": "research_reproductions"
+    },
+    {
+      "source_module": "tests.test_scientific_multiagent_debate_fidelity_v1",
+      "source_role": "tests",
+      "target_module": "research.reproductions.research_os",
       "target_role": "research_reproductions"
     },
     {
@@ -42236,7 +42290,7 @@
       "target_role": "public_facade"
     },
     {
-      "count": 643,
+      "count": 648,
       "source_role": "research_reproductions",
       "target_role": "core_platform"
     },
@@ -42246,12 +42300,12 @@
       "target_role": "public_facade"
     },
     {
-      "count": 333,
+      "count": 334,
       "source_role": "research_reproductions",
       "target_role": "research_reproductions"
     },
     {
-      "count": 2762,
+      "count": 2763,
       "source_role": "tests",
       "target_role": "core_platform"
     },
@@ -42271,7 +42325,7 @@
       "target_role": "reference_orchestration"
     },
     {
-      "count": 314,
+      "count": 316,
       "source_role": "tests",
       "target_role": "research_reproductions"
     },
@@ -42313,7 +42367,7 @@
     "public_facade": 40,
     "reference_components": 22,
     "reference_orchestration": 10,
-    "research_reproductions": 766,
+    "research_reproductions": 768,
     "tests": 805,
     "tooling": 78
   },
@@ -42330,7 +42384,7 @@
     "tooling": 38
   },
   "schema": "noetrium-repository-code-architecture-index.v1",
-  "source_git_sha": "85d665f38dccbec852ac0248f213cd4f9e600186",
+  "source_git_sha": "e27f67404daceed0d2ca7c97904c1da4d8975f95",
   "symbols": [
     {
       "bases": [],
@@ -45168,7 +45222,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 31,
+      "line": 34,
       "methods": [],
       "module": "noetrium_platform.capabilities.environment.catalog.runtime.catalog",
       "name": "EnvironmentCatalogConflict",
@@ -45184,7 +45238,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 35,
+      "line": 38,
       "methods": [],
       "module": "noetrium_platform.capabilities.environment.catalog.runtime.catalog",
       "name": "EnvironmentCatalogNotFound",
@@ -45198,7 +45252,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 39,
+      "line": 42,
       "methods": [
         "__init__",
         "_put",
@@ -45227,7 +45281,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 156,
+      "line": 159,
       "methods": [
         "__init__",
         "_connection",
@@ -51722,7 +51776,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 348,
+      "line": 351,
       "methods": [
         "__init__",
         "_connect",
@@ -62888,7 +62942,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 466,
+      "line": 469,
       "methods": [
         "__init__",
         "_connect",
@@ -68000,7 +68054,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 33,
+      "line": 32,
       "methods": [
         "__init__",
         "_connect_writer",
@@ -69117,7 +69171,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 24,
+      "line": 23,
       "methods": [
         "__init__",
         "_connect_writer",
@@ -69236,7 +69290,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 25,
+      "line": 24,
       "methods": [
         "__init__",
         "_connect_writer",
@@ -77627,7 +77681,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 30,
+      "line": 33,
       "methods": [],
       "module": "noetrium_platform.foundation.governance.evolution.providers.sqlite_store",
       "name": "EvolutionStoreConflict",
@@ -77643,7 +77697,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 34,
+      "line": 37,
       "methods": [],
       "module": "noetrium_platform.foundation.governance.evolution.providers.sqlite_store",
       "name": "EvolutionStoreIntegrityError",
@@ -77659,7 +77713,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 319,
+      "line": 322,
       "methods": [
         "__init__",
         "_connection",
@@ -95463,6 +95517,7 @@
       "methods": [
         "__init__",
         "connect",
+        "connect_reader",
         "initialize"
       ],
       "module": "noetrium_platform.infrastructure.reliability.forensics.providers.index_db",

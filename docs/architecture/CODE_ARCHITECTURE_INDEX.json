@@ -18564,7 +18564,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 31,
+      "line": 34,
       "methods": [],
       "module": "noetrium_platform.capabilities.environment.catalog.runtime.catalog",
       "name": "EnvironmentCatalogConflict",
@@ -18582,7 +18582,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 35,
+      "line": 38,
       "methods": [],
       "module": "noetrium_platform.capabilities.environment.catalog.runtime.catalog",
       "name": "EnvironmentCatalogNotFound",
@@ -18598,7 +18598,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 39,
+      "line": 42,
       "methods": [
         "__init__",
         "_put",
@@ -18631,7 +18631,7 @@
         "SCHEMA_VERSION"
       ],
       "kind": "class",
-      "line": 156,
+      "line": 159,
       "methods": [
         "__init__",
         "_connection",
@@ -25721,7 +25721,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 348,
+      "line": 351,
       "methods": [
         "__init__",
         "_connect",
@@ -37910,7 +37910,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 466,
+      "line": 469,
       "methods": [
         "__init__",
         "_connect",
@@ -43539,7 +43539,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 33,
+      "line": 32,
       "methods": [
         "__init__",
         "_connect_writer",
@@ -44766,7 +44766,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 24,
+      "line": 23,
       "methods": [
         "__init__",
         "_connect_writer",
@@ -44897,7 +44897,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 25,
+      "line": 24,
       "methods": [
         "__init__",
         "_connect_writer",
@@ -54110,7 +54110,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 30,
+      "line": 33,
       "methods": [],
       "module": "noetrium_platform.foundation.governance.evolution.providers.sqlite_store",
       "name": "EvolutionStoreConflict",
@@ -54128,7 +54128,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 34,
+      "line": 37,
       "methods": [],
       "module": "noetrium_platform.foundation.governance.evolution.providers.sqlite_store",
       "name": "EvolutionStoreIntegrityError",
@@ -54148,7 +54148,7 @@
         "SCHEMA_VERSION"
       ],
       "kind": "class",
-      "line": 319,
+      "line": 322,
       "methods": [
         "__init__",
         "_connection",
@@ -73659,6 +73659,7 @@
       "methods": [
         "__init__",
         "connect",
+        "connect_reader",
         "initialize"
       ],
       "module": "noetrium_platform.infrastructure.reliability.forensics.providers.index_db",
@@ -143669,7 +143670,7 @@
   "parse_errors": [],
   "registry_sha256": "d3fc1bab831f1b7379e5a36048a61c00fe173429df958270d36a16f3f00171c0",
   "schema": "noetrium-code-architecture-index.v1",
-  "source_git_sha": "85d665f38dccbec852ac0248f213cd4f9e600186",
+  "source_git_sha": "e27f67404daceed0d2ca7c97904c1da4d8975f95",
   "system_import_edges": [
     {
       "count": 85,
