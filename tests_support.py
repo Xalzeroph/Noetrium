@@ -282,6 +282,67 @@ class ExperimentRuntimeComponentsForTest:
     run_runtime: object
 
 
+class ExperimentRuntimeForTest:
+    def __init__(
+        self,
+        trial_protocol_identity,
+        cycle_runtime,
+        run_runtime,
+        *,
+        run_identity_provider,
+        cycle_identity_provider,
+    ) -> None:
+        self.trial_protocol_identity = trial_protocol_identity
+        self.cycle_runtime = cycle_runtime
+        self.run_runtime = run_runtime
+        self.run_identity_provider = run_identity_provider
+        self.cycle_identity_provider = cycle_identity_provider
+
+    def open_run(
+        self,
+        spec,
+        *,
+        run_identity=None,
+        restore_checkpoint_id=None,
+        restore_cycle_identity=None,
+    ):
+        from noetrium_platform.research.experimentation.lifecycle.experiment.runtime.trial_protocol_identity import (
+            verify_trial_protocol_identity,
+        )
+
+        verify_trial_protocol_identity(spec, self.trial_protocol_identity)
+        identity = run_identity or self.run_identity_provider.allocate()
+        return self.run_runtime.open(
+            spec,
+            identity,
+            restore_checkpoint_id=restore_checkpoint_id,
+            restore_cycle_identity=restore_cycle_identity,
+        )
+
+    def execute_cycle(
+        self,
+        spec,
+        *,
+        task,
+        input_kind="input",
+        input_payload=None,
+        cycle_identity=None,
+    ):
+        from noetrium_platform.research.experimentation.lifecycle.experiment.runtime.trial_protocol_identity import (
+            verify_trial_protocol_identity,
+        )
+
+        verify_trial_protocol_identity(spec, self.trial_protocol_identity)
+        identity = cycle_identity or self.cycle_identity_provider.allocate()
+        return self.cycle_runtime.run(
+            spec,
+            identity,
+            task=task,
+            input_kind=input_kind,
+            input_payload=input_payload,
+        )
+
+
 class ExperimentWorkflowSurfaceRegistryForTest:
     def __init__(self, factories) -> None:
         self._factories = {factory.surface_id: factory for factory in factories}
@@ -585,9 +646,6 @@ def build_experiment_runtime_for_test(
 ):
     """Test-only legacy ExperimentRuntime wrapper over the fixture components."""
 
-    from noetrium_platform.research.experimentation.lifecycle.experiment.runtime import (
-        ExperimentRuntime,
-    )
     import uuid
     from noetrium_platform.research.experimentation.lifecycle.run.api.identity import RunIdentity
 
@@ -616,7 +674,7 @@ def build_experiment_runtime_for_test(
         machine_snapshot_store=machine_snapshot_store,
         state_root=state_root,
     )
-    return ExperimentRuntime(
+    return ExperimentRuntimeForTest(
         components.trial_protocol_identity,
         components.cycle_runtime,
         components.run_runtime,
