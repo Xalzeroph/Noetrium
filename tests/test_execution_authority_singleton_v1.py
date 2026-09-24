@@ -20,10 +20,12 @@ _FORBIDDEN_CLASS_NAMES = {
     "RunCycleExecutor",
     "RunSession",
     "ExperimentTrialCycleExecutor",
+    "TrialExperimentProgramBinding",
 }
 _FORBIDDEN_FUNCTION_NAMES = {
     "build_experiment_runtime",
     "build_experiment_runtime_components",
+    "compile_trial_experiment_program",
 }
 
 _ALLOWED_CALLERS = {
