@@ -4,12 +4,10 @@ import html.parser
 import json
 import os
 from pathlib import Path
-import shutil
-import subprocess
 import sys
 import threading
 from urllib.parse import unquote, urljoin, urlsplit
-from urllib.request import Request, urlopen
+from urllib.request import Request
 
 try:
     from packaging.markers import default_environment
@@ -31,6 +29,7 @@ if str(_REPOSITORY_ROOT) not in sys.path:
     sys.path.insert(0, str(_REPOSITORY_ROOT))
 
 from noetrium_platform.foundation.kernel.kernel.durability.durable_file import atomic_replace_bytes
+from noetrium_platform.evidence.artifact.content.providers.download import open_artifact_http
 from noetrium_platform.foundation.kernel.concurrency.api import (
     ConcurrencyBudget,
     ExecutionLaneKind,
@@ -152,7 +151,7 @@ class _Links(html.parser.HTMLParser):
 
 
 def _fetch_url(url, accept, limit):
-    """Fetch bounded index metadata without changing the target ABI probe."""
+    """Fetch bounded index metadata through the canonical Artifact HTTP transport."""
     cache_path = None
     if CACHE_ROOT:
         cache_key = hashlib.sha256((accept + "\x00" + url).encode("utf-8")).hexdigest()
@@ -173,44 +172,24 @@ def _fetch_url(url, accept, limit):
             pass
         return body
 
-    errors = []
-    curl = shutil.which("curl")
-    if curl:
-        try:
-            result = subprocess.run(
-                (
-                    curl,
-                    "--fail",
-                    "--location",
-                    "--silent",
-                    "--show-error",
-                    "--connect-timeout",
-                    "5",
-                    "--max-time",
-                    "10",
-                    "--max-filesize",
-                    str(limit),
-                    "--header",
-                    "Accept: " + accept,
-                    url,
-                ),
-                check=True,
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE,
-                timeout=12,
-            )
-            if len(result.stdout) > limit:
-                raise ValueError("metadata response exceeds observation limit")
-            return _store(result.stdout)
-        except Exception as exc:
-            errors.append("curl:" + type(exc).__name__)
+    response = None
     try:
         request = Request(url, headers={"Accept": accept})
-        with urlopen(request, timeout=10) as response:
-            return _store(response.read(limit))
+        response = open_artifact_http(request, 10.0)
+        status = int(getattr(response, "status", 200))
+        if status >= 400:
+            raise RuntimeError(f"metadata HTTP status {status}")
+        body = response.read(limit + 1)
+        if len(body) > limit:
+            raise ValueError("metadata response exceeds observation limit")
+        return _store(body)
     except Exception as exc:
-        errors.append("urllib:" + type(exc).__name__)
-        raise RuntimeError("bounded metadata fetch failed: " + ",".join(errors))
+        raise RuntimeError(
+            "bounded metadata fetch failed: " + type(exc).__name__
+        ) from exc
+    finally:
+        if response is not None:
+            response.close()
 
 
 def _versions(raw):
