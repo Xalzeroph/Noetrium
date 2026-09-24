@@ -1,6 +1,9 @@
 from __future__ import annotations
 
 from noetrium import api
+from noetrium_platform.composition.research_os_graph import (
+    compile_research_portfolio_graph,
+)
 
 from research.reproductions import build_research
 from research.reproductions.research_os import (
@@ -41,3 +44,23 @@ def test_non_executable_catalog_entries_are_never_silently_promoted() -> None:
     for definition in definitions:
         if not is_research_os_executable(definition):
             assert definition.package not in portfolio_ids
+
+
+
+def test_top_level_reproduction_portfolio_compiles_as_one_current_research_graph() -> None:
+    portfolio = build_research()
+    revision = api.ResearchGraphRevision(
+        portfolio.portfolio_id,
+        portfolio.portfolio_digest,
+        (),
+        "repository reproduction fleet",
+    )
+
+    graph = compile_research_portfolio_graph(revision, portfolio)
+
+    assert graph.plan.research_revision_digest == revision.revision_digest
+    assert len(graph.nodes) == len(portfolio.programs)
+    assert {node.graph_node_id for node in graph.nodes} == {
+        program.program_id + "::reproduction"
+        for program in portfolio.programs
+    }
