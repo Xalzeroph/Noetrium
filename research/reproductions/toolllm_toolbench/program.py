@@ -819,11 +819,17 @@ def _return_result(request: MethodNodeRequest) -> MethodNodeResult:
 
 
 def build_toolllm_toolbench_method_program(
-    capability_ids: tuple[str, ...],
+    capability_ids: Sequence[str],
     *,
     retrieval_mode: str = "oracle",
 ) -> MethodProgram:
-    if type(capability_ids) is not tuple or not capability_ids:
+    if isinstance(capability_ids, (str, bytes, bytearray)) or not isinstance(
+        capability_ids,
+        Sequence,
+    ):
+        raise TypeError("ToolLLM capability closure must be a sequence")
+    capability_ids = tuple(capability_ids)
+    if not capability_ids:
         raise ValueError("ToolLLM MethodProgram requires capability closure")
     if any(not isinstance(row, str) or not row.strip() for row in capability_ids):
         raise ValueError("ToolLLM capability closure must contain non-empty text")
