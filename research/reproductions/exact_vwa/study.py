@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from noetrium_platform.foundation.kernel.kernel import canonical_digest
+from noetrium.api import canonical_digest
 from noetrium.api import ExperimentTrialProtocolIdentity
 from noetrium.api import (
     BenchmarkTaskSet,
