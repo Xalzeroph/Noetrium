@@ -55,6 +55,18 @@ class _EventStop:
         return self._event.wait(timeout)
 
 
+def _reconcile_startup_ownership(
+    management: ManagementPlaneAuthorities,
+    resources: ManagedResourceReconciler,
+) -> None:
+    """Converge process owners before reclaiming their lower resource leases."""
+
+    management.models.fleet.remove_selected(
+        ModelDeploymentSelector(tags=("auto-managed",))
+    )
+    resources.reconcile()
+
+
 @dataclass(slots=True)
 class ManagedResearchRuntime:
     """Composition owner for one long-lived platform research process.
@@ -338,24 +350,16 @@ def build_local_managed_research_runtime(
                 model_storage_pools=model_storage_pools,
                 task_group=group,
             )
-            # Auto-placed model replicas belong to the previous runtime owner
-            # generation.  Stop/remove them before endpoint/GPU reconciliation
-            # so expired lower leases can never be released underneath a
-            # surviving model process.
-            management.models.fleet.remove_selected(
-                ModelDeploymentSelector(tags=("auto-managed",))
-            )
-
             # Startup reconciliation is synchronous and fail-closed. No new
-            # workload is admitted until physical and logical ephemeral
-            # resources agree after a process/daemon/host restart.
+            # workload is admitted until physical owners are converged and then
+            # their logical/ephemeral resources agree after restart.
             resources = ManagedResourceReconciler(
                 containers=management.docker_containers,
                 environments=management.platform_meta.environment_instance_leases,
                 endpoints=management.platform_meta.endpoint_allocations,
                 compute=management.platform_meta.compute_scheduler,
             )
-            resources.reconcile()
+            _reconcile_startup_ownership(management, resources)
             model_replica_pool = bind_local_model_replica_pool(management, pool)
         except BaseException:
             pool.close_orchestration_group(group, cancel_pending=True)
