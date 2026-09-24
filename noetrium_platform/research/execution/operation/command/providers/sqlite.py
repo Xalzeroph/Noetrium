@@ -5,7 +5,11 @@ import sqlite3
 from pathlib import Path
 
 from noetrium_platform.foundation.kernel.kernel.retry import retry_until_deadline
-from noetrium_platform.foundation.kernel.kernel.durability.sqlite import open_durable_sqlite_writer
+from noetrium_platform.foundation.kernel.kernel.durability.sqlite import (
+    begin_immediate_sqlite_transaction,
+    is_sqlite_lock_contention,
+    open_durable_sqlite_writer,
+)
 from noetrium_platform.research.execution.operation.command.api import (
     CommandConflict,
     CommandCorruption,
@@ -36,15 +40,12 @@ class SQLiteCommandStore:
     def _initialize(self) -> None:
         retry_until_deadline(
             self._initialize_once,
-            should_retry=lambda exc: isinstance(exc, sqlite3.OperationalError)
-            and "locked" in str(exc).lower(),
+            should_retry=is_sqlite_lock_contention,
             timeout_seconds=30.0,
         )
 
     def _initialize_once(self) -> None:
         with closing(self._connect()) as db, db:
-            if db.execute("PRAGMA journal_mode").fetchone()[0].lower() != "wal":
-                db.execute("PRAGMA journal_mode=WAL").fetchone()
             db.execute("""CREATE TABLE IF NOT EXISTS commands (
                 command_id TEXT PRIMARY KEY,
                 command_type TEXT NOT NULL,
@@ -99,7 +100,7 @@ class SQLiteCommandStore:
 
     def create_or_get(self, command: ExecutionCommand) -> tuple[ExecutionCommand, bool]:
         with closing(self._connect()) as db, db:
-            db.execute("BEGIN IMMEDIATE")
+            begin_immediate_sqlite_transaction(db, timeout_seconds=30.0)
             try:
                 row = db.execute(
                     "SELECT * FROM commands WHERE command_id=?",
