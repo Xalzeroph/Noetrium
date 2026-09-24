@@ -27,7 +27,13 @@ class ResourceLeasePort(Protocol):
         ttl_seconds: float,
         now: float | None = None,
     ) -> ResourceLease: ...
-    def release(self, lease_id: str, *, now: float | None = None) -> ResourceLease: ...
+    def release(
+        self,
+        lease_id: str,
+        *,
+        fencing_token: int,
+        now: float | None = None,
+    ) -> ResourceLease: ...
     def get(self, lease_id: str, *, now: float | None = None) -> ResourceLease: ...
     def active_for(
         self, resource: ResourceIdentity, *, now: float | None = None
