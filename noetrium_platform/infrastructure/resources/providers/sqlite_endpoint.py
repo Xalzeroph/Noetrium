@@ -210,32 +210,51 @@ class SQLiteEndpointAllocationStore(AtomicEndpointReservationPort):
     def _reconcile_one(
         self, conn: sqlite3.Connection, allocation_id: str, now_epoch_s: float
     ) -> EndpointAllocation | None:
+        del now_epoch_s
         row = conn.execute(
             f"SELECT {self._SELECT} FROM endpoint_allocations WHERE allocation_id=?",
             (allocation_id,),
         ).fetchone()
-        if row is None:
-            return None
-        allocation = self._decode(row)
+        return None if row is None else self._decode(row)
+
+    @staticmethod
+    def _lease_authoritative(
+        conn: sqlite3.Connection,
+        allocation: EndpointAllocation,
+        now_epoch_s: float,
+    ) -> bool:
         if not allocation.state.is_live:
-            return allocation
+            return False
         expire_lease(conn, allocation.lease_id, now_epoch_s)
         lease_row = conn.execute(
             "SELECT * FROM resource_leases WHERE lease_id=?",
             (allocation.lease_id,),
         ).fetchone()
-        lease = None if lease_row is None else decode_resource_lease(lease_row)
-        if (
-            lease is None
-            or lease.state is not LeaseState.ACTIVE
-            or lease.fencing_token != allocation.lease_fencing_token
-        ):
-            conn.execute(
-                "UPDATE endpoint_allocations SET state='released' WHERE allocation_id=? AND state IN ('reserved','bound')",
-                (allocation_id,),
+        if lease_row is None:
+            return False
+        lease = decode_resource_lease(lease_row)
+        return (
+            lease.state is LeaseState.ACTIVE
+            and lease.resource == allocation.endpoint.resource
+            and lease.holder_scope == allocation.holder_scope
+            and lease.purpose == allocation.purpose
+            and lease.holder_generation == allocation.lease_holder_generation
+            and lease.fencing_token == allocation.lease_fencing_token
+            and not lease.expired_at(now_epoch_s)
+        )
+
+    @classmethod
+    def _require_lease_authority(
+        cls,
+        conn: sqlite3.Connection,
+        allocation: EndpointAllocation,
+        now_epoch_s: float,
+    ) -> None:
+        if not cls._lease_authoritative(conn, allocation, now_epoch_s):
+            raise ResourceLeaseConflict(
+                "endpoint allocation lease is no longer authoritative: "
+                f"{allocation.allocation_id}"
             )
-            return replace(allocation, state=EndpointAllocationState.RELEASED)
-        return allocation
 
     def reserve(
         self,
@@ -257,10 +276,27 @@ class SQLiteEndpointAllocationStore(AtomicEndpointReservationPort):
             raise ValueError("endpoint observation time must be finite")
         with self._transaction() as conn:
             try:
-                existing = self._reconcile_one(conn, allocation.allocation_id, now_epoch_s)
+                existing = self._reconcile_one(
+                    conn, allocation.allocation_id, now_epoch_s
+                )
                 if existing is not None:
-
-                    return EndpointReservationResult(EndpointReservationStatus.EXISTING, existing)
+                    if (
+                        existing.state.is_live
+                        and not self._lease_authoritative(
+                            conn, existing, now_epoch_s
+                        )
+                    ):
+                        return EndpointReservationResult(
+                            EndpointReservationStatus.RESOURCE_BUSY,
+                            detail=(
+                                "endpoint allocation is quarantined pending "
+                                f"physical convergence: {existing.allocation_id}"
+                            ),
+                        )
+                    return EndpointReservationResult(
+                        EndpointReservationStatus.EXISTING,
+                        existing,
+                    )
 
                 try:
                     ensure_resource_owner(conn, owner)
@@ -336,6 +372,7 @@ class SQLiteEndpointAllocationStore(AtomicEndpointReservationPort):
                     raise KeyError(proof.allocation_id)
                 if current.state is EndpointAllocationState.RELEASED:
                     raise RuntimeError(f"endpoint allocation is released: {proof.allocation_id}")
+                self._require_lease_authority(conn, current, now_epoch_s)
                 if current.endpoint != proof.endpoint:
                     raise RuntimeError(
                         f"endpoint binding proof endpoint mismatch: {proof.allocation_id}"
@@ -407,6 +444,7 @@ class SQLiteEndpointAllocationStore(AtomicEndpointReservationPort):
                     raise KeyError(proof.allocation_id)
                 if current.state is not EndpointAllocationState.BOUND:
                     raise RuntimeError(f"endpoint allocation is not bound: {proof.allocation_id}")
+                self._require_lease_authority(conn, current, now_epoch_s)
                 if current.endpoint != proof.endpoint:
                     raise RuntimeError(f"endpoint binding proof endpoint mismatch: {proof.allocation_id}")
                 if current.lease_fencing_token != proof.lease_fencing_token:
@@ -600,7 +638,6 @@ class SQLiteEndpointAllocationStore(AtomicEndpointReservationPort):
                 raise
 
     def active(self) -> tuple[EndpointAllocation, ...]:
-        self.reconcile_orphans()
         with self._connection() as conn:
             rows = conn.execute(
                 f"SELECT {self._SELECT} FROM endpoint_allocations "
@@ -608,7 +645,16 @@ class SQLiteEndpointAllocationStore(AtomicEndpointReservationPort):
             ).fetchall()
         return tuple(self._decode(row) for row in rows)
 
-    def reconcile_orphans(self, *, now: float | None = None) -> tuple[EndpointAllocation, ...]:
+    def expire_orphans(
+        self, *, now: float | None = None
+    ) -> tuple[EndpointAllocation, ...]:
+        """Expire lease truth but retain endpoint rows until OS convergence.
+
+        Resource lease expiry is not proof that a TCP/UDP listener disappeared.
+        Returning the still-live allocation generation makes the caller with the
+        OS probe the only authority that may retire it.
+        """
+
         now_epoch_s = time() if now is None else float(now)
         if not math.isfinite(now_epoch_s):
             raise ValueError("endpoint observation time must be finite")
@@ -624,18 +670,61 @@ class SQLiteEndpointAllocationStore(AtomicEndpointReservationPort):
                 FROM endpoint_allocations AS a
                 LEFT JOIN resource_leases AS l ON l.lease_id=a.lease_id
                 WHERE a.state IN ('reserved','bound') AND (
-                    l.lease_id IS NULL OR l.state!='active' OR l.fencing_token!=a.lease_fencing_token
+                    l.lease_id IS NULL
+                    OR l.state!='active'
+                    OR l.resource_kind!='network-endpoint'
+                    OR l.resource_id!=('network-endpoint:' || lower(a.protocol) || '://' || lower(a.host) || ':' || a.port)
+                    OR l.holder_scope_kind!=a.holder_scope_kind
+                    OR l.holder_scope_id!=a.holder_scope_id
+                    OR l.purpose!=a.purpose
+                    OR l.holder_generation!=a.lease_holder_generation
+                    OR l.fencing_token!=a.lease_fencing_token
                 )
                 ORDER BY a.allocation_id
                 """
             ).fetchall()
-            if orphan_rows:
-                conn.executemany(
-                    "UPDATE endpoint_allocations SET state='released' WHERE allocation_id=? AND state IN ('reserved','bound')",
-                    ((str(row[0]),) for row in orphan_rows),
-                )
+        return tuple(self._decode(row) for row in orphan_rows)
 
-        return tuple(replace(self._decode(row), state=EndpointAllocationState.RELEASED) for row in orphan_rows)
+    def retire_orphan(
+        self,
+        allocation: EndpointAllocation,
+        *,
+        now: float | None = None,
+    ) -> EndpointAllocation:
+        if type(allocation) is not EndpointAllocation:
+            raise TypeError("endpoint orphan retirement requires EndpointAllocation")
+        now_epoch_s = time() if now is None else float(now)
+        if not math.isfinite(now_epoch_s):
+            raise ValueError("endpoint observation time must be finite")
+        with self._transaction() as conn:
+            current = self._reconcile_one(
+                conn, allocation.allocation_id, now_epoch_s
+            )
+            if current is None:
+                raise KeyError(allocation.allocation_id)
+            self._require_generation(current, allocation)
+            if current.state is EndpointAllocationState.RELEASED:
+                return current
+            if self._lease_authoritative(conn, current, now_epoch_s):
+                raise ResourceLeaseConflict(
+                    "cannot retire endpoint with authoritative live lease: "
+                    f"{allocation.allocation_id}"
+                )
+            updated = conn.execute(
+                "UPDATE endpoint_allocations SET state='released' "
+                "WHERE allocation_id=? AND state IN ('reserved','bound') "
+                "AND lease_fencing_token=?",
+                (
+                    allocation.allocation_id,
+                    allocation.lease_fencing_token,
+                ),
+            )
+            if updated.rowcount != 1:
+                raise ResourceLeaseConflict(
+                    "endpoint orphan retirement lost authority: "
+                    f"{allocation.allocation_id}"
+                )
+            return replace(current, state=EndpointAllocationState.RELEASED)
 
 
 __all__ = ["SQLiteEndpointAllocationStore"]
