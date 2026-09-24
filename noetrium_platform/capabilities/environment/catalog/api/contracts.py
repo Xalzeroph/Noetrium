@@ -48,6 +48,50 @@ class EnvironmentProfileRevision:
             )
 
 
+@dataclass(frozen=True, slots=True)
+class EnvironmentProfileMaterialization:
+    """One verified concrete runtime realization of an immutable profile revision."""
+
+    profile_id: str
+    profile_revision: str
+    runtime_identity_digest: str
+    deployment_receipt_digest: str
+    runtime_reference: str
+
+    def __post_init__(self) -> None:
+        if (
+            type(self.profile_id) is not str
+            or not self.profile_id.strip()
+            or self.profile_id != self.profile_id.strip()
+        ):
+            raise ValueError(
+                "environment profile materialization profile_id must be canonical text"
+            )
+        for field_name, value in (
+            ("profile_revision", self.profile_revision),
+            ("runtime_identity_digest", self.runtime_identity_digest),
+            ("deployment_receipt_digest", self.deployment_receipt_digest),
+        ):
+            if (
+                type(value) is not str
+                or len(value) != 64
+                or any(ch not in "0123456789abcdef" for ch in value)
+            ):
+                raise ValueError(
+                    f"environment profile materialization {field_name} "
+                    "must be lowercase sha256"
+                )
+        if (
+            type(self.runtime_reference) is not str
+            or not self.runtime_reference.strip()
+            or self.runtime_reference != self.runtime_reference.strip()
+        ):
+            raise ValueError(
+                "environment profile materialization runtime_reference "
+                "must be canonical non-empty text"
+            )
+
+
 class EnvironmentInstanceState(StrEnum):
     CLEAN = "clean"
     IN_USE = "in_use"
@@ -315,6 +359,7 @@ __all__ = [
     "EnvironmentInstanceState",
     "EnvironmentProfileGcAssessment",
     "EnvironmentProfileLifecycle",
+    "EnvironmentProfileMaterialization",
     "EnvironmentProfileRevision",
     "EnvironmentProfileReferenceSummary",
     "EnvironmentOverlay",
