@@ -1,10 +1,10 @@
 from __future__ import annotations
 
-import hashlib
 from typing import Protocol, cast
 
 from noetrium_platform.evidence.data._canonical import canonical_bytes, strict_json_loads
 from noetrium_platform.foundation.kernel.kernel import JsonValue
+from noetrium_platform.foundation.kernel.kernel.durability import sha256_bytes
 
 
 class StatePayloadCodec(Protocol):
@@ -22,5 +22,4 @@ class StrictJsonStatePayloadCodec:
         return cast(JsonValue, strict_json_loads(raw))
 
 
-def payload_sha256(raw: bytes) -> str:
-    return hashlib.sha256(raw).hexdigest()
+payload_sha256 = sha256_bytes
