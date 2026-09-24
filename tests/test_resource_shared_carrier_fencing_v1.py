@@ -76,8 +76,12 @@ def test_shared_mutable_carrier_reuse_is_generation_fenced(
             now=base + 7.0,
         )
 
-    stale_release = registry.release(generation_one.lease_id, now=base + 7.0)
-    assert stale_release.lease_id == generation_one.lease_id
+    with pytest.raises(Exception):
+        registry.release(
+            generation_one.lease_id,
+            fencing_token=generation_one.fencing_token,
+            now=base + 7.0,
+        )
     assert registry.active_for(resource) == (generation_two,)
 
     with pytest.raises(ResourceLeaseConflict, match="resource already has an active lease"):
@@ -152,3 +156,38 @@ def test_shared_carrier_fence_persists_across_sqlite_restart(tmp_path) -> None:
             now=base + 7.0,
         )
     assert after_restart.get(generation_two.lease_id).fencing_token == 2
+
+
+@pytest.mark.parametrize("registry_factory", [InMemoryResourceLeaseRegistry, SQLiteResourceLeaseRegistry])
+def test_reused_lease_id_rejects_delayed_release_from_old_generation(
+    registry_factory,
+    tmp_path,
+) -> None:
+    registry = (
+        registry_factory()
+        if registry_factory is InMemoryResourceLeaseRegistry
+        else registry_factory(tmp_path / "reused-release.sqlite")
+    )
+    resource = ResourceIdentity(ResourceKind.CONTAINER, "same-logical-container")
+    registry.register_owner(ResourceOwner(resource, PLATFORM_SCOPE))
+    base = time() + 60.0
+    requested = ResourceLease(
+        "container:same-logical-container",
+        resource,
+        PLATFORM_SCOPE,
+        "managed container",
+    )
+    old = registry.acquire(requested, ttl_seconds=1.0, now=base)
+    registry.reconcile_expired(now=base + 2.0)
+    current = registry.acquire(requested, ttl_seconds=30.0, now=base + 2.0)
+
+    assert current.fencing_token > old.fencing_token
+    with pytest.raises(ResourceLeaseConflict, match="stale lease fencing token"):
+        registry.release(
+            old.lease_id,
+            fencing_token=old.fencing_token,
+            now=base + 3.0,
+        )
+
+    active = registry.active_for(resource, now=base + 3.0)
+    assert active == (current,)
