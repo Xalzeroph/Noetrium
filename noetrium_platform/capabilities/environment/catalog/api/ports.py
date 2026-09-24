@@ -15,6 +15,8 @@ from .contracts import (
     EnvironmentProfileLifecycle,
     EnvironmentProfileReferenceSummary,
     EnvironmentProfileRevision,
+    EnvironmentRuntimeGcAssessment,
+    EnvironmentRuntimeReferenceSummary,
     EnvironmentSpec,
     EnvironmentTemplate,
     ResolvedEnvironmentSpec,
@@ -99,6 +101,21 @@ class ExecutionEnvironmentCatalogPort(Protocol):
         resumable_execution_ids: tuple[str, ...] | None = None,
         retained_evidence_ids: tuple[str, ...] | None = None,
     ) -> EnvironmentProfileGcAssessment: ...
+    def runtime_references(
+        self,
+        profile_id: str,
+        profile_revision: str,
+        runtime_identity_digest: str,
+    ) -> EnvironmentRuntimeReferenceSummary: ...
+    def assess_runtime_gc(
+        self,
+        profile_id: str,
+        profile_revision: str,
+        runtime_identity_digest: str,
+        *,
+        resumable_execution_ids: tuple[str, ...] | None = None,
+        retained_evidence_ids: tuple[str, ...] | None = None,
+    ) -> EnvironmentRuntimeGcAssessment: ...
 
 
 __all__ = ["ExecutionEnvironmentCatalogPort"]
