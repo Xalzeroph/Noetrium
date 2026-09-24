@@ -283,7 +283,7 @@ python scripts/check_readme_i18n.py
 
 Noetrium 把执行环境作为可版本化的环境 fleet 管理，而不是“每篇论文一套可变容器”。宿主机契约只有 Docker + Compose；不要求宿主 Python。
 
-服务器统一入口是 `./deploy/noetrium`。`./deploy/noetrium run` 会以普通用户权限串联 Docker/Compose 资格检查、精确环境镜像构建或复用、fleet authority 审计、preflight 与 Research OS 执行，并保持 fail-close。它不会调用 `sudo`；账号只需能访问当前 Docker daemon（Docker 组权限或 rootless Docker），GPU 主机则需预先安装 NVIDIA container runtime。科学绑定不会被猜测。`./deploy/noetrium requirements` 会在不启动任务的情况下输出内容寻址的 benchmark/reproduction authority 需求清单。执行时首选 `NOETRIUM_FLEET_AUTHORITY_MATERIALIZER=module:factory`，由 owner system 分两阶段物化精确 registry；`NOETRIUM_FLEET_EXECUTION_AUTHORITY=module:factory` 仅保留为低层完整 authority bundle 覆盖入口。若两者都未配置，`preflight`/`run` 会先把 prerequisite manifest 写入 deployment state，然后在创建任何 execution cut 前 fail-close。
+服务器统一入口是 `./deploy/noetrium`。`./deploy/noetrium run` 会以普通用户权限串联 Docker/Compose 资格检查、精确环境镜像构建或复用、fleet authority 审计、preflight 与 Research OS 执行，并保持 fail-close。它不会调用 `sudo`；账号只需能访问当前 Docker daemon（Docker 组权限或 rootless Docker），GPU 主机则需预先安装 NVIDIA container runtime。科学绑定不会被猜测。`./deploy/noetrium requirements` 会在不启动任务的情况下输出内容寻址的 benchmark/reproduction authority 需求清单。执行时首选 `NOETRIUM_FLEET_AUTHORITY_MATERIALIZER=module:factory`，由 owner system 按 prerequisite → ProjectManifest → execution-owner 三阶段物化精确 registry；`NOETRIUM_FLEET_EXECUTION_AUTHORITY=module:factory` 仅保留为低层完整 authority bundle 覆盖入口。若两者都未配置，`preflight`/`run` 会先把 prerequisite manifest 写入 deployment state，然后在创建任何 execution cut 前 fail-close。
 
 主机端口由 Resource authority 统一管理：从内核获取候选端口、探测当前 OS bind 状态、自动避开已占用或已租约端口、以原子 fencing 防止并发冲突、续租存活端口，并在释放后允许物理端口复用。论文、模型副本和环境 provider 不需要硬编码宿主端口。下面的 `build-environments.sh` 保留为低层 profile 检查与维护入口。
 
