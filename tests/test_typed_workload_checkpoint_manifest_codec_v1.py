@@ -490,3 +490,26 @@ def test_workload_checkpoint_gc_retry_rejects_changed_proof(
     with pytest.raises(RuntimeError, match="generation or GC proof changed"):
         store.purge(manifest.checkpoint_id, gc=changed)
     assert store.purge(manifest.checkpoint_id, gc=original)
+
+
+def test_workload_checkpoint_load_rejects_conflicting_committed_intent(
+    tmp_path,
+) -> None:
+    manifest, payload = _direct_manifest_and_payload()
+    manifest = replace(manifest, checkpoint_id="workload-intent-conflict")
+    store = DirectoryWorkloadCheckpointStore(tmp_path / "intent-conflict")
+    store.publish(manifest, (payload,))
+
+    store._intents.publish(
+        CheckpointPublicationIntent(
+            namespace=store._intents.namespace,
+            checkpoint_id=manifest.checkpoint_id,
+            manifest_sha256="0" * 64,
+            blob_sha256s=(payload.ref.payload_sha256,),
+        )
+    )
+    with pytest.raises(
+        RunCheckpointIntegrityError,
+        match="conflicts with pending publication intent",
+    ):
+        store.load(manifest.checkpoint_id)
