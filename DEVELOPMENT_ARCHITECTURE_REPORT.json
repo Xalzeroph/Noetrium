@@ -3,7 +3,7 @@
   "architecture_complexity": {
     "authorities": 20,
     "contract_declarations": 184,
-    "import_edges": 5309,
+    "import_edges": 5310,
     "subsystems": 15,
     "top_level_systems": 16
   },
@@ -23,7 +23,7 @@
     "effective_limits": {
       "authorities": 31,
       "contract_declarations": 184,
-      "import_edges": 5309,
+      "import_edges": 5310,
       "subsystems": 15,
       "top_level_systems": 16
     },
@@ -627,7 +627,7 @@
       "seam_id": "completed"
     }
   ],
-  "import_edges": 5309,
+  "import_edges": 5310,
   "import_violations": [],
   "layer_violations": [],
   "operation_graph": [
@@ -873,9 +873,9 @@
     }
   ],
   "package_cycles": [],
-  "report_sha256": "bbc9bf83d9fdce843282adb8d836276231a3a3f59d4029eff67c1df62461c170",
+  "report_sha256": "e6f1b0f7557352e85ad63f4b7d7f1cfc61360d7912ee4d498b0652351352c28e",
   "source_authority_violations": [],
-  "source_digest": "fde943b771d26f91951020c3d377f849f5a97e6104bfcf0512e63cb4b1ec315f",
+  "source_digest": "b3cefe1237e065801eeb9f0def9e4fc10249fb77a8e2580fc0ed1c95c263c5ec",
   "source_invariant_violations": [
     {
       "detail": "noetrium_platform.product.research_authoring -> noetrium_platform.capabilities.environment.software.api; required facade=noetrium_platform.research.experimentation.api",
@@ -1881,8 +1881,8 @@
   "top_optimization_risks": [
     {
       "exception_handlers": 0,
-      "import_fan_in": 459,
-      "import_fan_out": 28,
+      "import_fan_in": 458,
+      "import_fan_out": 29,
       "io_sites": 0,
       "lock_sites": 0,
       "long_functions": 0,
@@ -1892,7 +1892,7 @@
         "HIGH_FAN_IN",
         "HIGH_FAN_OUT"
       ],
-      "risk_score": 1920,
+      "risk_score": 1919,
       "self_mutation_sites": 0,
       "serialization_sites": 0
     },
@@ -1989,7 +1989,7 @@
     },
     {
       "exception_handlers": 11,
-      "import_fan_in": 62,
+      "import_fan_in": 60,
       "import_fan_out": 1,
       "io_sites": 8,
       "lock_sites": 0,
@@ -2002,7 +2002,7 @@
         "FAILURE_BRANCH_CONCENTRATION",
         "LONG_FUNCTION"
       ],
-      "risk_score": 443,
+      "risk_score": 435,
       "self_mutation_sites": 0,
       "serialization_sites": 0
     },

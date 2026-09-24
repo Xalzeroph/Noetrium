@@ -9087,13 +9087,53 @@
     },
     {
       "kind": "references",
+      "source": "noetrium_platform.foundation.kernel.kernel.authority.DirectoryMachineAuthority",
+      "target": "noetrium_platform.foundation.kernel.kernel.authority._ClockAnchor"
+    },
+    {
+      "kind": "references",
+      "source": "noetrium_platform.foundation.kernel.kernel.authority.DirectoryMachineAuthority",
+      "target": "noetrium_platform.foundation.kernel.kernel.lease_clock.LeaseClockPort"
+    },
+    {
+      "kind": "references",
+      "source": "noetrium_platform.foundation.kernel.kernel.authority.DirectoryMachineAuthority",
+      "target": "noetrium_platform.foundation.kernel.kernel.lease_clock.LeaseClockReading"
+    },
+    {
+      "kind": "references",
       "source": "noetrium_platform.foundation.kernel.kernel.authority.InMemoryMachineAuthority",
       "target": "noetrium_platform.foundation.kernel.kernel.authority.MachineLease"
     },
     {
       "kind": "references",
+      "source": "noetrium_platform.foundation.kernel.kernel.authority.InMemoryMachineAuthority",
+      "target": "noetrium_platform.foundation.kernel.kernel.authority._ClockAnchor"
+    },
+    {
+      "kind": "references",
+      "source": "noetrium_platform.foundation.kernel.kernel.authority.InMemoryMachineAuthority",
+      "target": "noetrium_platform.foundation.kernel.kernel.lease_clock.LeaseClockPort"
+    },
+    {
+      "kind": "references",
+      "source": "noetrium_platform.foundation.kernel.kernel.authority.InMemoryMachineAuthority",
+      "target": "noetrium_platform.foundation.kernel.kernel.lease_clock.LeaseClockReading"
+    },
+    {
+      "kind": "references",
       "source": "noetrium_platform.foundation.kernel.kernel.authority.MachineAuthorityPort",
       "target": "noetrium_platform.foundation.kernel.kernel.authority.MachineLease"
+    },
+    {
+      "kind": "references",
+      "source": "noetrium_platform.foundation.kernel.kernel.authority.MachineLease",
+      "target": "noetrium_platform.foundation.kernel.kernel.lease_clock.LeaseClockReading"
+    },
+    {
+      "kind": "references",
+      "source": "noetrium_platform.foundation.kernel.kernel.authority._ClockAnchor",
+      "target": "noetrium_platform.foundation.kernel.kernel.lease_clock.LeaseClockReading"
     },
     {
       "kind": "references",
@@ -9629,6 +9669,21 @@
       "kind": "references",
       "source": "noetrium_platform.foundation.kernel.kernel.leaf_failure.LeafFailureReceipt",
       "target": "noetrium_platform.foundation.kernel.kernel.leaf_failure.LeafFailureClass"
+    },
+    {
+      "kind": "references",
+      "source": "noetrium_platform.foundation.kernel.kernel.lease_clock.LeaseClockPort",
+      "target": "noetrium_platform.foundation.kernel.kernel.lease_clock.LeaseClockReading"
+    },
+    {
+      "kind": "references",
+      "source": "noetrium_platform.foundation.kernel.kernel.lease_clock.LocalLeaseClock",
+      "target": "noetrium_platform.foundation.kernel.kernel.lease_clock.LeaseClockReading"
+    },
+    {
+      "kind": "references",
+      "source": "noetrium_platform.foundation.kernel.kernel.lease_clock.ManualLeaseClock",
+      "target": "noetrium_platform.foundation.kernel.kernel.lease_clock.LeaseClockReading"
     },
     {
       "kind": "references",
@@ -13067,11 +13122,6 @@
     },
     {
       "kind": "references",
-      "source": "noetrium_platform.infrastructure.resources.lease.api.clock.LeaseClockPort",
-      "target": "noetrium_platform.infrastructure.resources.lease.api.clock.LeaseClockReading"
-    },
-    {
-      "kind": "references",
       "source": "noetrium_platform.infrastructure.resources.lease.api.contracts.ResourceIdentity",
       "target": "noetrium_platform.infrastructure.resources.lease.api.contracts.ResourceKind"
     },
@@ -13119,16 +13169,6 @@
       "kind": "references",
       "source": "noetrium_platform.infrastructure.resources.lease.api.ports.ResourceOwnershipPort",
       "target": "noetrium_platform.infrastructure.resources.lease.api.contracts.ResourceOwner"
-    },
-    {
-      "kind": "references",
-      "source": "noetrium_platform.infrastructure.resources.lease.runtime.clock.LocalLeaseClock",
-      "target": "noetrium_platform.infrastructure.resources.lease.api.clock.LeaseClockReading"
-    },
-    {
-      "kind": "references",
-      "source": "noetrium_platform.infrastructure.resources.lease.runtime.clock.ManualLeaseClock",
-      "target": "noetrium_platform.infrastructure.resources.lease.api.clock.LeaseClockReading"
     },
     {
       "kind": "references",
@@ -59679,10 +59719,15 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 141,
+      "line": 294,
       "methods": [
         "__init__",
         "_path",
+        "_clock_anchor_path",
+        "_encode_clock_anchor",
+        "_read_clock_anchor",
+        "_write_clock_anchor",
+        "_authority_now_locked",
         "_read",
         "_encode",
         "acquire",
@@ -59704,10 +59749,10 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 86,
+      "line": 165,
       "methods": [
         "__init__",
-        "_now",
+        "_authority_now_unlocked",
         "acquire",
         "renew",
         "assert_held",
@@ -59729,7 +59774,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 17,
+      "line": 21,
       "methods": [],
       "module": "noetrium_platform.foundation.kernel.kernel.authority",
       "name": "MachineAuthorityError",
@@ -59749,7 +59794,7 @@
       ],
       "fields": [],
       "kind": "protocol",
-      "line": 65,
+      "line": 104,
       "methods": [
         "acquire",
         "renew",
@@ -59772,17 +59817,20 @@
       ],
       "fields": [
         "acquired_at",
+        "boot_identity_digest",
         "epoch",
         "expires_at",
+        "host_identity_digest",
         "lease_digest",
         "machine_id",
         "owner_id",
         "released"
       ],
       "kind": "dataclass",
-      "line": 30,
+      "line": 38,
       "methods": [
         "__post_init__",
+        "belongs_to",
         "is_live"
       ],
       "module": "noetrium_platform.foundation.kernel.kernel.authority",
@@ -59801,7 +59849,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 21,
+      "line": 25,
       "methods": [],
       "module": "noetrium_platform.foundation.kernel.kernel.authority",
       "name": "MachineLeaseBusy",
@@ -59819,7 +59867,25 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 25,
+      "line": 33,
+      "methods": [],
+      "module": "noetrium_platform.foundation.kernel.kernel.authority",
+      "name": "MachineLeaseClockConflict",
+      "nesting": [
+        "MachineLeaseClockConflict"
+      ],
+      "qualname": "noetrium_platform.foundation.kernel.kernel.authority.MachineLeaseClockConflict",
+      "system_key": "platform",
+      "top_system": "platform"
+    },
+    {
+      "bases": [
+        "MachineAuthorityError"
+      ],
+      "decorators": [],
+      "fields": [],
+      "kind": "class",
+      "line": 29,
       "methods": [],
       "module": "noetrium_platform.foundation.kernel.kernel.authority",
       "name": "MachineLeaseLost",
@@ -59827,6 +59893,32 @@
         "MachineLeaseLost"
       ],
       "qualname": "noetrium_platform.foundation.kernel.kernel.authority.MachineLeaseLost",
+      "system_key": "platform",
+      "top_system": "platform"
+    },
+    {
+      "bases": [],
+      "decorators": [
+        "dataclass(frozen=True, slots=True)"
+      ],
+      "fields": [
+        "boot_identity_digest",
+        "elapsed_seconds",
+        "host_identity_digest",
+        "logical_epoch_seconds"
+      ],
+      "kind": "dataclass",
+      "line": 123,
+      "methods": [
+        "from_reading",
+        "__post_init__"
+      ],
+      "module": "noetrium_platform.foundation.kernel.kernel.authority",
+      "name": "_ClockAnchor",
+      "nesting": [
+        "_ClockAnchor"
+      ],
+      "qualname": "noetrium_platform.foundation.kernel.kernel.authority._ClockAnchor",
       "system_key": "platform",
       "top_system": "platform"
     },
@@ -61899,6 +61991,152 @@
         "LeafFailureReceipt"
       ],
       "qualname": "noetrium_platform.foundation.kernel.kernel.leaf_failure.LeafFailureReceipt",
+      "system_key": "platform",
+      "top_system": "platform"
+    },
+    {
+      "bases": [
+        "Protocol"
+      ],
+      "decorators": [
+        "runtime_checkable"
+      ],
+      "fields": [],
+      "kind": "protocol",
+      "line": 57,
+      "methods": [
+        "read"
+      ],
+      "module": "noetrium_platform.foundation.kernel.kernel.lease_clock",
+      "name": "LeaseClockPort",
+      "nesting": [
+        "LeaseClockPort"
+      ],
+      "qualname": "noetrium_platform.foundation.kernel.kernel.lease_clock.LeaseClockPort",
+      "system_key": "platform",
+      "top_system": "platform"
+    },
+    {
+      "bases": [],
+      "decorators": [
+        "dataclass(frozen=True, slots=True)"
+      ],
+      "fields": [
+        "boot_identity_digest",
+        "elapsed_seconds",
+        "host_identity_digest",
+        "wall_epoch_seconds"
+      ],
+      "kind": "dataclass",
+      "line": 23,
+      "methods": [
+        "__post_init__"
+      ],
+      "module": "noetrium_platform.foundation.kernel.kernel.lease_clock",
+      "name": "LeaseClockReading",
+      "nesting": [
+        "LeaseClockReading"
+      ],
+      "qualname": "noetrium_platform.foundation.kernel.kernel.lease_clock.LeaseClockReading",
+      "system_key": "platform",
+      "top_system": "platform"
+    },
+    {
+      "bases": [
+        "RuntimeError"
+      ],
+      "decorators": [],
+      "fields": [],
+      "kind": "class",
+      "line": 61,
+      "methods": [],
+      "module": "noetrium_platform.foundation.kernel.kernel.lease_clock",
+      "name": "LeaseClockUnavailable",
+      "nesting": [
+        "LeaseClockUnavailable"
+      ],
+      "qualname": "noetrium_platform.foundation.kernel.kernel.lease_clock.LeaseClockUnavailable",
+      "system_key": "platform",
+      "top_system": "platform"
+    },
+    {
+      "bases": [
+        "LeaseClockPort"
+      ],
+      "decorators": [],
+      "fields": [],
+      "kind": "class",
+      "line": 188,
+      "methods": [
+        "read"
+      ],
+      "module": "noetrium_platform.foundation.kernel.kernel.lease_clock",
+      "name": "LocalLeaseClock",
+      "nesting": [
+        "LocalLeaseClock"
+      ],
+      "qualname": "noetrium_platform.foundation.kernel.kernel.lease_clock.LocalLeaseClock",
+      "system_key": "platform",
+      "top_system": "platform"
+    },
+    {
+      "bases": [
+        "LeaseClockPort"
+      ],
+      "decorators": [],
+      "fields": [],
+      "kind": "class",
+      "line": 201,
+      "methods": [
+        "__init__",
+        "read",
+        "advance",
+        "jump_wall",
+        "reboot",
+        "move_host"
+      ],
+      "module": "noetrium_platform.foundation.kernel.kernel.lease_clock",
+      "name": "ManualLeaseClock",
+      "nesting": [
+        "ManualLeaseClock"
+      ],
+      "qualname": "noetrium_platform.foundation.kernel.kernel.lease_clock.ManualLeaseClock",
+      "system_key": "platform",
+      "top_system": "platform"
+    },
+    {
+      "bases": [
+        "ctypes.Structure"
+      ],
+      "decorators": [],
+      "fields": [],
+      "kind": "class",
+      "line": 114,
+      "methods": [],
+      "module": "noetrium_platform.foundation.kernel.kernel.lease_clock",
+      "name": "_Guid",
+      "nesting": [
+        "_Guid"
+      ],
+      "qualname": "noetrium_platform.foundation.kernel.kernel.lease_clock._Guid",
+      "system_key": "platform",
+      "top_system": "platform"
+    },
+    {
+      "bases": [
+        "ctypes.Structure"
+      ],
+      "decorators": [],
+      "fields": [],
+      "kind": "class",
+      "line": 123,
+      "methods": [],
+      "module": "noetrium_platform.foundation.kernel.kernel.lease_clock",
+      "name": "_SystemBootEnvironmentInformation",
+      "nesting": [
+        "_SystemBootEnvironmentInformation"
+      ],
+      "qualname": "noetrium_platform.foundation.kernel.kernel.lease_clock._SystemBootEnvironmentInformation",
       "system_key": "platform",
       "top_system": "platform"
     },
@@ -79341,53 +79579,6 @@
     },
     {
       "bases": [
-        "Protocol"
-      ],
-      "decorators": [
-        "runtime_checkable"
-      ],
-      "fields": [],
-      "kind": "protocol",
-      "line": 49,
-      "methods": [
-        "read"
-      ],
-      "module": "noetrium_platform.infrastructure.resources.lease.api.clock",
-      "name": "LeaseClockPort",
-      "nesting": [
-        "LeaseClockPort"
-      ],
-      "qualname": "noetrium_platform.infrastructure.resources.lease.api.clock.LeaseClockPort",
-      "system_key": "resource/lease",
-      "top_system": "resource"
-    },
-    {
-      "bases": [],
-      "decorators": [
-        "dataclass(frozen=True, slots=True)"
-      ],
-      "fields": [
-        "boot_identity_digest",
-        "elapsed_seconds",
-        "host_identity_digest",
-        "wall_epoch_seconds"
-      ],
-      "kind": "dataclass",
-      "line": 9,
-      "methods": [
-        "__post_init__"
-      ],
-      "module": "noetrium_platform.infrastructure.resources.lease.api.clock",
-      "name": "LeaseClockReading",
-      "nesting": [
-        "LeaseClockReading"
-      ],
-      "qualname": "noetrium_platform.infrastructure.resources.lease.api.clock.LeaseClockReading",
-      "system_key": "resource/lease",
-      "top_system": "resource"
-    },
-    {
-      "bases": [
         "StrEnum"
       ],
       "decorators": [],
@@ -79656,105 +79847,6 @@
         "ResourceOwnershipPort"
       ],
       "qualname": "noetrium_platform.infrastructure.resources.lease.api.ports.ResourceOwnershipPort",
-      "system_key": "resource/lease",
-      "top_system": "resource"
-    },
-    {
-      "bases": [
-        "RuntimeError"
-      ],
-      "decorators": [],
-      "fields": [],
-      "kind": "class",
-      "line": 17,
-      "methods": [],
-      "module": "noetrium_platform.infrastructure.resources.lease.runtime.clock",
-      "name": "LeaseClockUnavailable",
-      "nesting": [
-        "LeaseClockUnavailable"
-      ],
-      "qualname": "noetrium_platform.infrastructure.resources.lease.runtime.clock.LeaseClockUnavailable",
-      "system_key": "resource/lease",
-      "top_system": "resource"
-    },
-    {
-      "bases": [
-        "LeaseClockPort"
-      ],
-      "decorators": [],
-      "fields": [],
-      "kind": "class",
-      "line": 144,
-      "methods": [
-        "read"
-      ],
-      "module": "noetrium_platform.infrastructure.resources.lease.runtime.clock",
-      "name": "LocalLeaseClock",
-      "nesting": [
-        "LocalLeaseClock"
-      ],
-      "qualname": "noetrium_platform.infrastructure.resources.lease.runtime.clock.LocalLeaseClock",
-      "system_key": "resource/lease",
-      "top_system": "resource"
-    },
-    {
-      "bases": [
-        "LeaseClockPort"
-      ],
-      "decorators": [],
-      "fields": [],
-      "kind": "class",
-      "line": 157,
-      "methods": [
-        "__init__",
-        "read",
-        "advance",
-        "jump_wall",
-        "reboot",
-        "move_host"
-      ],
-      "module": "noetrium_platform.infrastructure.resources.lease.runtime.clock",
-      "name": "ManualLeaseClock",
-      "nesting": [
-        "ManualLeaseClock"
-      ],
-      "qualname": "noetrium_platform.infrastructure.resources.lease.runtime.clock.ManualLeaseClock",
-      "system_key": "resource/lease",
-      "top_system": "resource"
-    },
-    {
-      "bases": [
-        "ctypes.Structure"
-      ],
-      "decorators": [],
-      "fields": [],
-      "kind": "class",
-      "line": 70,
-      "methods": [],
-      "module": "noetrium_platform.infrastructure.resources.lease.runtime.clock",
-      "name": "_Guid",
-      "nesting": [
-        "_Guid"
-      ],
-      "qualname": "noetrium_platform.infrastructure.resources.lease.runtime.clock._Guid",
-      "system_key": "resource/lease",
-      "top_system": "resource"
-    },
-    {
-      "bases": [
-        "ctypes.Structure"
-      ],
-      "decorators": [],
-      "fields": [],
-      "kind": "class",
-      "line": 79,
-      "methods": [],
-      "module": "noetrium_platform.infrastructure.resources.lease.runtime.clock",
-      "name": "_SystemBootEnvironmentInformation",
-      "nesting": [
-        "_SystemBootEnvironmentInformation"
-      ],
-      "qualname": "noetrium_platform.infrastructure.resources.lease.runtime.clock._SystemBootEnvironmentInformation",
       "system_key": "resource/lease",
       "top_system": "resource"
     },
@@ -101430,7 +101522,17 @@
     {
       "kind": "constructs",
       "source": "noetrium_platform.foundation.kernel.kernel.authority.DirectoryMachineAuthority",
+      "target": "noetrium_platform.foundation.kernel.kernel.authority.MachineLeaseClockConflict"
+    },
+    {
+      "kind": "constructs",
+      "source": "noetrium_platform.foundation.kernel.kernel.authority.DirectoryMachineAuthority",
       "target": "noetrium_platform.foundation.kernel.kernel.authority.MachineLeaseLost"
+    },
+    {
+      "kind": "constructs",
+      "source": "noetrium_platform.foundation.kernel.kernel.authority.DirectoryMachineAuthority",
+      "target": "noetrium_platform.foundation.kernel.kernel.authority._ClockAnchor"
     },
     {
       "kind": "constructs",
@@ -101450,7 +101552,17 @@
     {
       "kind": "constructs",
       "source": "noetrium_platform.foundation.kernel.kernel.authority.InMemoryMachineAuthority",
+      "target": "noetrium_platform.foundation.kernel.kernel.authority.MachineLeaseClockConflict"
+    },
+    {
+      "kind": "constructs",
+      "source": "noetrium_platform.foundation.kernel.kernel.authority.InMemoryMachineAuthority",
       "target": "noetrium_platform.foundation.kernel.kernel.authority.MachineLeaseLost"
+    },
+    {
+      "kind": "constructs",
+      "source": "noetrium_platform.foundation.kernel.kernel.authority.InMemoryMachineAuthority",
+      "target": "noetrium_platform.foundation.kernel.kernel.lease_clock.LocalLeaseClock"
     },
     {
       "kind": "constructs",
@@ -101676,6 +101788,16 @@
       "kind": "constructs",
       "source": "noetrium_platform.foundation.kernel.kernel.leaf_contract.SystemLeafRuntimeOwner",
       "target": "noetrium_platform.foundation.kernel.kernel.leaf_contract.LeafExecutionError"
+    },
+    {
+      "kind": "constructs",
+      "source": "noetrium_platform.foundation.kernel.kernel.lease_clock.LocalLeaseClock",
+      "target": "noetrium_platform.foundation.kernel.kernel.lease_clock.LeaseClockUnavailable"
+    },
+    {
+      "kind": "constructs",
+      "source": "noetrium_platform.foundation.kernel.kernel.lease_clock.ManualLeaseClock",
+      "target": "noetrium_platform.foundation.kernel.kernel.lease_clock.LeaseClockReading"
     },
     {
       "kind": "constructs",
@@ -102899,21 +103021,6 @@
     },
     {
       "kind": "constructs",
-      "source": "noetrium_platform.infrastructure.resources.lease.runtime.clock.LocalLeaseClock",
-      "target": "noetrium_platform.infrastructure.resources.lease.runtime.clock.LeaseClockUnavailable"
-    },
-    {
-      "kind": "constructs",
-      "source": "noetrium_platform.infrastructure.resources.lease.runtime.clock.ManualLeaseClock",
-      "target": "noetrium_platform.infrastructure.resources.lease.api.clock.LeaseClockReading"
-    },
-    {
-      "kind": "constructs",
-      "source": "noetrium_platform.infrastructure.resources.lease.runtime.registry.InMemoryResourceLeaseRegistry",
-      "target": "noetrium_platform.infrastructure.resources.lease.runtime.clock.LocalLeaseClock"
-    },
-    {
-      "kind": "constructs",
       "source": "noetrium_platform.infrastructure.resources.resolution.resolver.HierarchicalResourceResolver",
       "target": "noetrium_platform.infrastructure.resources.resolution.contracts.ResolvedValue"
     },
@@ -103749,13 +103856,13 @@
     }
   ],
   "counts": {
-    "association_edges": 3460,
-    "classes": 3374,
-    "constructor_edges": 936,
-    "inheritance_edges": 149,
-    "module_import_edges": 5032,
+    "association_edges": 3468,
+    "classes": 3376,
+    "constructor_edges": 939,
+    "inheritance_edges": 150,
+    "module_import_edges": 5035,
     "parse_errors": 0,
-    "python_modules": 1909,
+    "python_modules": 1910,
     "registry_authorities": 20,
     "registry_nodes": 31,
     "top_level_systems": 16
@@ -104053,6 +104160,11 @@
     },
     {
       "kind": "inherits",
+      "source": "noetrium_platform.foundation.kernel.kernel.authority.MachineLeaseClockConflict",
+      "target": "noetrium_platform.foundation.kernel.kernel.authority.MachineAuthorityError"
+    },
+    {
+      "kind": "inherits",
       "source": "noetrium_platform.foundation.kernel.kernel.authority.MachineLeaseLost",
       "target": "noetrium_platform.foundation.kernel.kernel.authority.MachineAuthorityError"
     },
@@ -104125,6 +104237,16 @@
       "kind": "inherits",
       "source": "noetrium_platform.foundation.kernel.kernel.journal.InMemoryMachineJournal",
       "target": "noetrium_platform.foundation.kernel.kernel.journal.MachineJournalPort"
+    },
+    {
+      "kind": "inherits",
+      "source": "noetrium_platform.foundation.kernel.kernel.lease_clock.LocalLeaseClock",
+      "target": "noetrium_platform.foundation.kernel.kernel.lease_clock.LeaseClockPort"
+    },
+    {
+      "kind": "inherits",
+      "source": "noetrium_platform.foundation.kernel.kernel.lease_clock.ManualLeaseClock",
+      "target": "noetrium_platform.foundation.kernel.kernel.lease_clock.LeaseClockPort"
     },
     {
       "kind": "inherits",
@@ -104330,16 +104452,6 @@
       "kind": "inherits",
       "source": "noetrium_platform.infrastructure.resources.lease.api.errors.ResourceLeaseExpired",
       "target": "noetrium_platform.infrastructure.resources.lease.api.errors.ResourceLeaseConflict"
-    },
-    {
-      "kind": "inherits",
-      "source": "noetrium_platform.infrastructure.resources.lease.runtime.clock.LocalLeaseClock",
-      "target": "noetrium_platform.infrastructure.resources.lease.api.clock.LeaseClockPort"
-    },
-    {
-      "kind": "inherits",
-      "source": "noetrium_platform.infrastructure.resources.lease.runtime.clock.ManualLeaseClock",
-      "target": "noetrium_platform.infrastructure.resources.lease.api.clock.LeaseClockPort"
     },
     {
       "kind": "inherits",
@@ -116766,6 +116878,10 @@
     },
     {
       "source": "noetrium_platform.foundation.kernel.kernel",
+      "target": "noetrium_platform.foundation.kernel.lease_clock"
+    },
+    {
+      "source": "noetrium_platform.foundation.kernel.kernel",
       "target": "noetrium_platform.foundation.kernel.machine"
     },
     {
@@ -116811,6 +116927,10 @@
     {
       "source": "noetrium_platform.foundation.kernel.kernel.authority",
       "target": "noetrium_platform.foundation.kernel.kernel.durability.file_lock"
+    },
+    {
+      "source": "noetrium_platform.foundation.kernel.kernel.authority",
+      "target": "noetrium_platform.foundation.kernel.kernel.lease_clock"
     },
     {
       "source": "noetrium_platform.foundation.kernel.kernel.auxiliary_failures",
@@ -116914,7 +117034,7 @@
     },
     {
       "source": "noetrium_platform.foundation.kernel.kernel.durability.contracts",
-      "target": "noetrium_platform.foundation.kernel.kernel"
+      "target": "noetrium_platform.foundation.kernel.kernel.canonical"
     },
     {
       "source": "noetrium_platform.foundation.kernel.kernel.durability.document_integrity",
@@ -121481,6 +121601,10 @@
       "target": "noetrium_platform.infrastructure.resources.lease.ports"
     },
     {
+      "source": "noetrium_platform.infrastructure.resources.lease.api.clock",
+      "target": "noetrium_platform.foundation.kernel.kernel.lease_clock"
+    },
+    {
       "source": "noetrium_platform.infrastructure.resources.lease.api.contracts",
       "target": "noetrium_platform.foundation.governance.api"
     },
@@ -121502,7 +121626,7 @@
     },
     {
       "source": "noetrium_platform.infrastructure.resources.lease.runtime.clock",
-      "target": "noetrium_platform.infrastructure.resources.lease.api.clock"
+      "target": "noetrium_platform.foundation.kernel.kernel.lease_clock"
     },
     {
       "source": "noetrium_platform.infrastructure.resources.lease.runtime.registry",
@@ -136551,6 +136675,7 @@
         "noetrium_platform.foundation.kernel.inspection",
         "noetrium_platform.foundation.kernel.journal",
         "noetrium_platform.foundation.kernel.json_value",
+        "noetrium_platform.foundation.kernel.lease_clock",
         "noetrium_platform.foundation.kernel.machine",
         "noetrium_platform.foundation.kernel.nir",
         "noetrium_platform.foundation.kernel.operation",
@@ -136570,7 +136695,8 @@
       "imports": [
         "noetrium_platform.foundation.kernel.kernel.canonical",
         "noetrium_platform.foundation.kernel.kernel.durability.durable_file",
-        "noetrium_platform.foundation.kernel.kernel.durability.file_lock"
+        "noetrium_platform.foundation.kernel.kernel.durability.file_lock",
+        "noetrium_platform.foundation.kernel.kernel.lease_clock"
       ],
       "module": "noetrium_platform.foundation.kernel.kernel.authority",
       "path": "noetrium_platform/foundation/kernel/kernel/authority.py",
@@ -136683,7 +136809,7 @@
     },
     {
       "imports": [
-        "noetrium_platform.foundation.kernel.kernel"
+        "noetrium_platform.foundation.kernel.kernel.canonical"
       ],
       "module": "noetrium_platform.foundation.kernel.kernel.durability.contracts",
       "path": "noetrium_platform/foundation/kernel/kernel/durability/contracts.py",
@@ -136913,6 +137039,13 @@
       ],
       "module": "noetrium_platform.foundation.kernel.kernel.leaf_failure",
       "path": "noetrium_platform/foundation/kernel/kernel/leaf_failure.py",
+      "system_key": "platform",
+      "top_system": "platform"
+    },
+    {
+      "imports": [],
+      "module": "noetrium_platform.foundation.kernel.kernel.lease_clock",
+      "path": "noetrium_platform/foundation/kernel/kernel/lease_clock.py",
       "system_key": "platform",
       "top_system": "platform"
     },
@@ -141517,7 +141650,9 @@
       "top_system": "resource"
     },
     {
-      "imports": [],
+      "imports": [
+        "noetrium_platform.foundation.kernel.kernel.lease_clock"
+      ],
       "module": "noetrium_platform.infrastructure.resources.lease.api.clock",
       "path": "noetrium_platform/infrastructure/resources/lease/api/clock.py",
       "system_key": "resource/lease",
@@ -141561,7 +141696,7 @@
     },
     {
       "imports": [
-        "noetrium_platform.infrastructure.resources.lease.api.clock"
+        "noetrium_platform.foundation.kernel.kernel.lease_clock"
       ],
       "module": "noetrium_platform.infrastructure.resources.lease.runtime.clock",
       "path": "noetrium_platform/infrastructure/resources/lease/runtime/clock.py",
@@ -144645,7 +144780,7 @@
   "parse_errors": [],
   "registry_sha256": "276e2729e0b700e814e98f8460d87e0ebee66c4620226fe2d880fe55cc970aec",
   "schema": "noetrium-code-architecture-index.v1",
-  "source_git_sha": "e70a87f9878a477b57b7d57f751bf2d8fb2ab2ec",
+  "source_git_sha": "cdee96712ea29c678444ace3fbf1b6a821b7d18b",
   "system_import_edges": [
     {
       "count": 85,
@@ -144758,7 +144893,7 @@
       "target": "platform"
     },
     {
-      "count": 185,
+      "count": 187,
       "source": "platform",
       "target": "platform"
     },
@@ -144868,12 +145003,12 @@
       "target": "governance"
     },
     {
-      "count": 18,
+      "count": 20,
       "source": "resource",
       "target": "platform"
     },
     {
-      "count": 107,
+      "count": 106,
       "source": "resource",
       "target": "resource"
     },

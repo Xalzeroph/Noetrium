@@ -1,15 +1,15 @@
 {
   "counts": {
     "parse_errors": 0,
-    "python_files": 3685,
+    "python_files": 3686,
     "python_import_edges": 6944,
-    "symbols": 5030,
-    "tracked_files": 4321,
+    "symbols": 5032,
+    "tracked_files": 4322,
     "typescript_javascript_files": 11
   },
   "language_symbol_counts": {
     "javascript": 1,
-    "python": 5024,
+    "python": 5026,
     "typescript": 5
   },
   "parse_errors": [],
@@ -10209,12 +10209,6 @@
       "target_role": "core_platform"
     },
     {
-      "source_module": "noetrium_platform.foundation.kernel.kernel.durability.contracts",
-      "source_role": "core_platform",
-      "target_module": "noetrium_platform.foundation.kernel.kernel",
-      "target_role": "core_platform"
-    },
-    {
       "source_module": "noetrium_platform.foundation.kernel.kernel.durability.durable_file",
       "source_role": "core_platform",
       "target_module": "noetrium_platform.foundation.kernel.kernel.retry",
@@ -13467,6 +13461,12 @@
       "target_role": "core_platform"
     },
     {
+      "source_module": "noetrium_platform.infrastructure.resources.lease.api.clock",
+      "source_role": "core_platform",
+      "target_module": "noetrium_platform.foundation.kernel.kernel.lease_clock",
+      "target_role": "core_platform"
+    },
+    {
       "source_module": "noetrium_platform.infrastructure.resources.lease.api.contracts",
       "source_role": "core_platform",
       "target_module": "noetrium_platform.foundation.governance.api",
@@ -13481,7 +13481,7 @@
     {
       "source_module": "noetrium_platform.infrastructure.resources.lease.runtime.clock",
       "source_role": "core_platform",
-      "target_module": "noetrium_platform.infrastructure.resources.lease.api.clock",
+      "target_module": "noetrium_platform.foundation.kernel.kernel.lease_clock",
       "target_role": "core_platform"
     },
     {
@@ -41797,7 +41797,7 @@
     }
   ],
   "role_python_module_counts": {
-    "core_platform": 1909,
+    "core_platform": 1910,
     "examples": 6,
     "other": 7,
     "public_facade": 40,
@@ -41808,7 +41808,7 @@
     "tooling": 79
   },
   "role_symbol_counts": {
-    "core_platform": 3375,
+    "core_platform": 3377,
     "examples": 3,
     "other": 23,
     "public_facade": 4,
@@ -41820,7 +41820,7 @@
     "tooling": 39
   },
   "schema": "noetrium-repository-code-architecture-index.v1",
-  "source_git_sha": "e70a87f9878a477b57b7d57f751bf2d8fb2ab2ec",
+  "source_git_sha": "cdee96712ea29c678444ace3fbf1b6a821b7d18b",
   "symbols": [
     {
       "bases": [],
@@ -82085,7 +82085,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 17,
+      "line": 21,
       "methods": [],
       "module": "noetrium_platform.foundation.kernel.kernel.authority",
       "name": "MachineAuthorityError",
@@ -82101,7 +82101,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 21,
+      "line": 25,
       "methods": [],
       "module": "noetrium_platform.foundation.kernel.kernel.authority",
       "name": "MachineLeaseBusy",
@@ -82117,12 +82117,28 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 25,
+      "line": 29,
       "methods": [],
       "module": "noetrium_platform.foundation.kernel.kernel.authority",
       "name": "MachineLeaseLost",
       "path": "noetrium_platform/foundation/kernel/kernel/authority.py",
       "qualname": "noetrium_platform.foundation.kernel.kernel.authority.MachineLeaseLost",
+      "role": "core_platform"
+    },
+    {
+      "bases": [
+        "MachineAuthorityError"
+      ],
+      "decorators": [],
+      "fields": [],
+      "kind": "class",
+      "language": "python",
+      "line": 33,
+      "methods": [],
+      "module": "noetrium_platform.foundation.kernel.kernel.authority",
+      "name": "MachineLeaseClockConflict",
+      "path": "noetrium_platform/foundation/kernel/kernel/authority.py",
+      "qualname": "noetrium_platform.foundation.kernel.kernel.authority.MachineLeaseClockConflict",
       "role": "core_platform"
     },
     {
@@ -82136,14 +82152,17 @@
         "epoch: int",
         "acquired_at: float",
         "expires_at: float",
+        "host_identity_digest: str",
+        "boot_identity_digest: str",
         "released: bool",
         "lease_digest: str"
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 30,
+      "line": 38,
       "methods": [
         "__post_init__",
+        "belongs_to",
         "is_live"
       ],
       "module": "noetrium_platform.foundation.kernel.kernel.authority",
@@ -82162,7 +82181,7 @@
       "fields": [],
       "kind": "protocol",
       "language": "python",
-      "line": 65,
+      "line": 104,
       "methods": [
         "acquire",
         "renew",
@@ -82177,14 +82196,38 @@
     },
     {
       "bases": [],
+      "decorators": [
+        "dataclass(frozen=True, slots=True)"
+      ],
+      "fields": [
+        "host_identity_digest: str",
+        "boot_identity_digest: str",
+        "elapsed_seconds: float",
+        "logical_epoch_seconds: float"
+      ],
+      "kind": "dataclass",
+      "language": "python",
+      "line": 123,
+      "methods": [
+        "from_reading",
+        "__post_init__"
+      ],
+      "module": "noetrium_platform.foundation.kernel.kernel.authority",
+      "name": "_ClockAnchor",
+      "path": "noetrium_platform/foundation/kernel/kernel/authority.py",
+      "qualname": "noetrium_platform.foundation.kernel.kernel.authority._ClockAnchor",
+      "role": "core_platform"
+    },
+    {
+      "bases": [],
       "decorators": [],
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 86,
+      "line": 165,
       "methods": [
         "__init__",
-        "_now",
+        "_authority_now_unlocked",
         "acquire",
         "renew",
         "assert_held",
@@ -82204,10 +82247,15 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 141,
+      "line": 294,
       "methods": [
         "__init__",
         "_path",
+        "_clock_anchor_path",
+        "_encode_clock_anchor",
+        "_read_clock_anchor",
+        "_write_clock_anchor",
+        "_authority_now_locked",
         "_read",
         "_encode",
         "acquire",
@@ -84098,6 +84146,138 @@
       "name": "LeafFailureReceipt",
       "path": "noetrium_platform/foundation/kernel/kernel/leaf_failure.py",
       "qualname": "noetrium_platform.foundation.kernel.kernel.leaf_failure.LeafFailureReceipt",
+      "role": "core_platform"
+    },
+    {
+      "bases": [],
+      "decorators": [
+        "dataclass(frozen=True, slots=True)"
+      ],
+      "fields": [
+        "host_identity_digest: str",
+        "boot_identity_digest: str",
+        "elapsed_seconds: float",
+        "wall_epoch_seconds: float"
+      ],
+      "kind": "dataclass",
+      "language": "python",
+      "line": 23,
+      "methods": [
+        "__post_init__"
+      ],
+      "module": "noetrium_platform.foundation.kernel.kernel.lease_clock",
+      "name": "LeaseClockReading",
+      "path": "noetrium_platform/foundation/kernel/kernel/lease_clock.py",
+      "qualname": "noetrium_platform.foundation.kernel.kernel.lease_clock.LeaseClockReading",
+      "role": "core_platform"
+    },
+    {
+      "bases": [
+        "Protocol"
+      ],
+      "decorators": [
+        "runtime_checkable"
+      ],
+      "fields": [],
+      "kind": "protocol",
+      "language": "python",
+      "line": 57,
+      "methods": [
+        "read"
+      ],
+      "module": "noetrium_platform.foundation.kernel.kernel.lease_clock",
+      "name": "LeaseClockPort",
+      "path": "noetrium_platform/foundation/kernel/kernel/lease_clock.py",
+      "qualname": "noetrium_platform.foundation.kernel.kernel.lease_clock.LeaseClockPort",
+      "role": "core_platform"
+    },
+    {
+      "bases": [
+        "RuntimeError"
+      ],
+      "decorators": [],
+      "fields": [],
+      "kind": "class",
+      "language": "python",
+      "line": 61,
+      "methods": [],
+      "module": "noetrium_platform.foundation.kernel.kernel.lease_clock",
+      "name": "LeaseClockUnavailable",
+      "path": "noetrium_platform/foundation/kernel/kernel/lease_clock.py",
+      "qualname": "noetrium_platform.foundation.kernel.kernel.lease_clock.LeaseClockUnavailable",
+      "role": "core_platform"
+    },
+    {
+      "bases": [
+        "ctypes.Structure"
+      ],
+      "decorators": [],
+      "fields": [],
+      "kind": "class",
+      "language": "python",
+      "line": 114,
+      "methods": [],
+      "module": "noetrium_platform.foundation.kernel.kernel.lease_clock",
+      "name": "_Guid",
+      "path": "noetrium_platform/foundation/kernel/kernel/lease_clock.py",
+      "qualname": "noetrium_platform.foundation.kernel.kernel.lease_clock._Guid",
+      "role": "core_platform"
+    },
+    {
+      "bases": [
+        "ctypes.Structure"
+      ],
+      "decorators": [],
+      "fields": [],
+      "kind": "class",
+      "language": "python",
+      "line": 123,
+      "methods": [],
+      "module": "noetrium_platform.foundation.kernel.kernel.lease_clock",
+      "name": "_SystemBootEnvironmentInformation",
+      "path": "noetrium_platform/foundation/kernel/kernel/lease_clock.py",
+      "qualname": "noetrium_platform.foundation.kernel.kernel.lease_clock._SystemBootEnvironmentInformation",
+      "role": "core_platform"
+    },
+    {
+      "bases": [
+        "LeaseClockPort"
+      ],
+      "decorators": [],
+      "fields": [],
+      "kind": "class",
+      "language": "python",
+      "line": 188,
+      "methods": [
+        "read"
+      ],
+      "module": "noetrium_platform.foundation.kernel.kernel.lease_clock",
+      "name": "LocalLeaseClock",
+      "path": "noetrium_platform/foundation/kernel/kernel/lease_clock.py",
+      "qualname": "noetrium_platform.foundation.kernel.kernel.lease_clock.LocalLeaseClock",
+      "role": "core_platform"
+    },
+    {
+      "bases": [
+        "LeaseClockPort"
+      ],
+      "decorators": [],
+      "fields": [],
+      "kind": "class",
+      "language": "python",
+      "line": 201,
+      "methods": [
+        "__init__",
+        "read",
+        "advance",
+        "jump_wall",
+        "reboot",
+        "move_host"
+      ],
+      "module": "noetrium_platform.foundation.kernel.kernel.lease_clock",
+      "name": "ManualLeaseClock",
+      "path": "noetrium_platform/foundation/kernel/kernel/lease_clock.py",
+      "qualname": "noetrium_platform.foundation.kernel.kernel.lease_clock.ManualLeaseClock",
       "role": "core_platform"
     },
     {
@@ -100006,49 +100186,6 @@
       "role": "core_platform"
     },
     {
-      "bases": [],
-      "decorators": [
-        "dataclass(frozen=True, slots=True)"
-      ],
-      "fields": [
-        "host_identity_digest: str",
-        "boot_identity_digest: str",
-        "elapsed_seconds: float",
-        "wall_epoch_seconds: float"
-      ],
-      "kind": "dataclass",
-      "language": "python",
-      "line": 9,
-      "methods": [
-        "__post_init__"
-      ],
-      "module": "noetrium_platform.infrastructure.resources.lease.api.clock",
-      "name": "LeaseClockReading",
-      "path": "noetrium_platform/infrastructure/resources/lease/api/clock.py",
-      "qualname": "noetrium_platform.infrastructure.resources.lease.api.clock.LeaseClockReading",
-      "role": "core_platform"
-    },
-    {
-      "bases": [
-        "Protocol"
-      ],
-      "decorators": [
-        "runtime_checkable"
-      ],
-      "fields": [],
-      "kind": "protocol",
-      "language": "python",
-      "line": 49,
-      "methods": [
-        "read"
-      ],
-      "module": "noetrium_platform.infrastructure.resources.lease.api.clock",
-      "name": "LeaseClockPort",
-      "path": "noetrium_platform/infrastructure/resources/lease/api/clock.py",
-      "qualname": "noetrium_platform.infrastructure.resources.lease.api.clock.LeaseClockPort",
-      "role": "core_platform"
-    },
-    {
       "bases": [
         "StrEnum"
       ],
@@ -100295,95 +100432,6 @@
       "name": "ResourceLeasePort",
       "path": "noetrium_platform/infrastructure/resources/lease/api/ports.py",
       "qualname": "noetrium_platform.infrastructure.resources.lease.api.ports.ResourceLeasePort",
-      "role": "core_platform"
-    },
-    {
-      "bases": [
-        "RuntimeError"
-      ],
-      "decorators": [],
-      "fields": [],
-      "kind": "class",
-      "language": "python",
-      "line": 17,
-      "methods": [],
-      "module": "noetrium_platform.infrastructure.resources.lease.runtime.clock",
-      "name": "LeaseClockUnavailable",
-      "path": "noetrium_platform/infrastructure/resources/lease/runtime/clock.py",
-      "qualname": "noetrium_platform.infrastructure.resources.lease.runtime.clock.LeaseClockUnavailable",
-      "role": "core_platform"
-    },
-    {
-      "bases": [
-        "ctypes.Structure"
-      ],
-      "decorators": [],
-      "fields": [],
-      "kind": "class",
-      "language": "python",
-      "line": 70,
-      "methods": [],
-      "module": "noetrium_platform.infrastructure.resources.lease.runtime.clock",
-      "name": "_Guid",
-      "path": "noetrium_platform/infrastructure/resources/lease/runtime/clock.py",
-      "qualname": "noetrium_platform.infrastructure.resources.lease.runtime.clock._Guid",
-      "role": "core_platform"
-    },
-    {
-      "bases": [
-        "ctypes.Structure"
-      ],
-      "decorators": [],
-      "fields": [],
-      "kind": "class",
-      "language": "python",
-      "line": 79,
-      "methods": [],
-      "module": "noetrium_platform.infrastructure.resources.lease.runtime.clock",
-      "name": "_SystemBootEnvironmentInformation",
-      "path": "noetrium_platform/infrastructure/resources/lease/runtime/clock.py",
-      "qualname": "noetrium_platform.infrastructure.resources.lease.runtime.clock._SystemBootEnvironmentInformation",
-      "role": "core_platform"
-    },
-    {
-      "bases": [
-        "LeaseClockPort"
-      ],
-      "decorators": [],
-      "fields": [],
-      "kind": "class",
-      "language": "python",
-      "line": 144,
-      "methods": [
-        "read"
-      ],
-      "module": "noetrium_platform.infrastructure.resources.lease.runtime.clock",
-      "name": "LocalLeaseClock",
-      "path": "noetrium_platform/infrastructure/resources/lease/runtime/clock.py",
-      "qualname": "noetrium_platform.infrastructure.resources.lease.runtime.clock.LocalLeaseClock",
-      "role": "core_platform"
-    },
-    {
-      "bases": [
-        "LeaseClockPort"
-      ],
-      "decorators": [],
-      "fields": [],
-      "kind": "class",
-      "language": "python",
-      "line": 157,
-      "methods": [
-        "__init__",
-        "read",
-        "advance",
-        "jump_wall",
-        "reboot",
-        "move_host"
-      ],
-      "module": "noetrium_platform.infrastructure.resources.lease.runtime.clock",
-      "name": "ManualLeaseClock",
-      "path": "noetrium_platform/infrastructure/resources/lease/runtime/clock.py",
-      "qualname": "noetrium_platform.infrastructure.resources.lease.runtime.clock.ManualLeaseClock",
       "role": "core_platform"
     },
     {
@@ -135973,7 +136021,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 41,
+      "line": 42,
       "methods": [
         "propose"
       ],
@@ -135989,7 +136037,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 111,
+      "line": 120,
       "methods": [
         "propose"
       ],
@@ -136005,7 +136053,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 150,
+      "line": 225,
       "methods": [
         "__init__",
         "reconcile"
@@ -136022,7 +136070,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 213,
+      "line": 288,
       "methods": [
         "reconcile"
       ],
@@ -136038,7 +136086,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 254,
+      "line": 329,
       "methods": [
         "propose"
       ],
@@ -136054,7 +136102,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 279,
+      "line": 354,
       "methods": [
         "propose"
       ],
