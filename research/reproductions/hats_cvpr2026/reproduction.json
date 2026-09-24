@@ -2,7 +2,7 @@
   "schema": "noetrium.reproduction.projection.v7",
   "authority": "generated_from_typed_definition_and_source",
   "package": "hats_cvpr2026",
-  "package_digest": "23d31adc8a0f5a8ca6a8dc7e5b397a6cef2350c901bb2b40785bfe77a6cbaddd",
+  "package_digest": "49d29837bf5d261e3f08a33b0ab9bc1f8f7b8f454dccfad2c1d1c5a6865c1324",
   "definition_digest": "730c6c09f3a04599fa35dfaf6f0b5d3f9b95fbe38d58eeca34eee1070af35ba2",
   "source_registry_digest": "6ded210c5feb62419b23855eed7f730eaf0c375454a28473e6137c2d262643f8",
   "lifecycle": "protocol_bound",
@@ -103,7 +103,7 @@
       "kind": "study",
       "path": "research/reproductions/hats_cvpr2026/study.py",
       "declaration_digest": "3127b63ac482d8354cb6268a0d3d0e0f3d36e632d8e0249d042d67212aed7d29",
-      "content_sha256": "8d117a51c3bb658c0ce0df7b75b91aea6d0927e96b5959e229082973c64ae4e7"
+      "content_sha256": "d6a9534c3c5b314262db1278672a0281692af27fc80c080f0423971d68a86842"
     }
   ],
   "primary_executable": "research/reproductions/hats_cvpr2026/program.py",

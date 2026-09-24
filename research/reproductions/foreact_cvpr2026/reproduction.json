@@ -2,7 +2,7 @@
   "schema": "noetrium.reproduction.projection.v7",
   "authority": "generated_from_typed_definition_and_source",
   "package": "foreact_cvpr2026",
-  "package_digest": "c33ea4081030d1985b8a732d581c932f7d07077b65470f6b0da9f1960b855ab0",
+  "package_digest": "07826c2dcb5e6a04bd0cc50dc0507fc39ea33408471f45ac2c964c8dec7ef745",
   "definition_digest": "4c4f653a0e8a0ee83ef80201410c057919aeb5e1147665289ac6ebf6e02deb97",
   "source_registry_digest": "d4af5fa79a4ea9d41bf67a7f2f4cacdb317f4a546024a54ac52ad3517b7d135e",
   "lifecycle": "protocol_bound",
@@ -103,7 +103,7 @@
       "kind": "study",
       "path": "research/reproductions/foreact_cvpr2026/study.py",
       "declaration_digest": "e4c173a73f1e575c51422e791e8921c906d16ce57654f2416c3c543d2c93c43b",
-      "content_sha256": "8d117a51c3bb658c0ce0df7b75b91aea6d0927e96b5959e229082973c64ae4e7"
+      "content_sha256": "d6a9534c3c5b314262db1278672a0281692af27fc80c080f0423971d68a86842"
     }
   ],
   "primary_executable": "research/reproductions/foreact_cvpr2026/program.py",

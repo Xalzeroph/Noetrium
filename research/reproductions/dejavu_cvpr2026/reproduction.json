@@ -2,7 +2,7 @@
   "schema": "noetrium.reproduction.projection.v7",
   "authority": "generated_from_typed_definition_and_source",
   "package": "dejavu_cvpr2026",
-  "package_digest": "9402374010ff3f2c988b1dd91da88f4d9b39492bccbd252c992811b5c90b2bab",
+  "package_digest": "ebd089e6ae12a2e6d2578c3f4e5ada18f92c6ef456d8d9417ad8ace724ca0da3",
   "definition_digest": "8eae2b161866373bdc45f256ebe7f6dfc108428ce3d19edc858e9b9972ce9618",
   "source_registry_digest": "8a15c3477680e8e65e651bbb1e46b7e02110e2e05f265a2d49d43e0fd63a9fad",
   "lifecycle": "protocol_bound",
@@ -89,7 +89,7 @@
       "kind": "study",
       "path": "research/reproductions/dejavu_cvpr2026/study.py",
       "declaration_digest": "1dfab5d2d25402bd4c7253b699246f4171fd3b9238b6a276eaef2ea012baf052",
-      "content_sha256": "8d117a51c3bb658c0ce0df7b75b91aea6d0927e96b5959e229082973c64ae4e7"
+      "content_sha256": "d6a9534c3c5b314262db1278672a0281692af27fc80c080f0423971d68a86842"
     }
   ],
   "primary_executable": "research/reproductions/dejavu_cvpr2026/program.py",

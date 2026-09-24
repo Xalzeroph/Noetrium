@@ -2929,7 +2929,7 @@
       "reproductions": [
         {
           "package": "astranav_memory_cvpr2026",
-          "package_digest": "1a99778349b143b9d283b2a18a3cb9258a6321a8d47b2827b2f78cf4b64d4d1b",
+          "package_digest": "03dcaaf5b9a391a64393a615fd5dd3fb28cd2b46578873ce6b2c28fad27e047d",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "goat-bench",
@@ -2967,7 +2967,7 @@
             {
               "kind": "study",
               "path": "research/reproductions/astranav_memory_cvpr2026/study.py",
-              "content_sha256": "8d117a51c3bb658c0ce0df7b75b91aea6d0927e96b5959e229082973c64ae4e7"
+              "content_sha256": "d6a9534c3c5b314262db1278672a0281692af27fc80c080f0423971d68a86842"
             }
           ],
           "blockers": [
@@ -2992,7 +2992,7 @@
       "reproductions": [
         {
           "package": "ces_gui_cvpr2026",
-          "package_digest": "35b243848b54dc62f027bf9ac559e4a9a7c868610fc75607d389c3941fd3b8aa",
+          "package_digest": "316153ef7f55f1e1285acd8a5b0d2936d5131c6ad1db25355b66d19939487a84",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "aitz",
@@ -3031,7 +3031,7 @@
             {
               "kind": "study",
               "path": "research/reproductions/ces_gui_cvpr2026/study.py",
-              "content_sha256": "8d117a51c3bb658c0ce0df7b75b91aea6d0927e96b5959e229082973c64ae4e7"
+              "content_sha256": "d6a9534c3c5b314262db1278672a0281692af27fc80c080f0423971d68a86842"
             }
           ],
           "blockers": [
@@ -3056,7 +3056,7 @@
       "reproductions": [
         {
           "package": "crossha_cvpr2026",
-          "package_digest": "127648f0fcbe429a28ca4f086e96bb70acd97c2169f023ebf97bcad37e4c53f0",
+          "package_digest": "aa5d0d439b335e1567872e8248e46d49552a0c5711f10d0907305dfc1a59c1d0",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "minecraft-openha"
@@ -3093,7 +3093,7 @@
             {
               "kind": "study",
               "path": "research/reproductions/crossha_cvpr2026/study.py",
-              "content_sha256": "8d117a51c3bb658c0ce0df7b75b91aea6d0927e96b5959e229082973c64ae4e7"
+              "content_sha256": "d6a9534c3c5b314262db1278672a0281692af27fc80c080f0423971d68a86842"
             }
           ],
           "blockers": [
@@ -3118,7 +3118,7 @@
       "reproductions": [
         {
           "package": "d3d_vlp_cvpr2026",
-          "package_digest": "24d8022610f18c2c8ed783ef3780ee09a7c96e809d55ded94c98375a196ff225",
+          "package_digest": "e2e31624710af9186a668f870a6ded23604e547471d3bf2734cc8d4e8b96dd26",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "hm3d-ovon",
@@ -3159,7 +3159,7 @@
             {
               "kind": "study",
               "path": "research/reproductions/d3d_vlp_cvpr2026/study.py",
-              "content_sha256": "8d117a51c3bb658c0ce0df7b75b91aea6d0927e96b5959e229082973c64ae4e7"
+              "content_sha256": "d6a9534c3c5b314262db1278672a0281692af27fc80c080f0423971d68a86842"
             }
           ],
           "blockers": [
@@ -3184,7 +3184,7 @@
       "reproductions": [
         {
           "package": "dejavu_cvpr2026",
-          "package_digest": "9402374010ff3f2c988b1dd91da88f4d9b39492bccbd252c992811b5c90b2bab",
+          "package_digest": "ebd089e6ae12a2e6d2578c3f4e5ada18f92c6ef456d8d9417ad8ace724ca0da3",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "libero"
@@ -3215,7 +3215,7 @@
             {
               "kind": "study",
               "path": "research/reproductions/dejavu_cvpr2026/study.py",
-              "content_sha256": "8d117a51c3bb658c0ce0df7b75b91aea6d0927e96b5959e229082973c64ae4e7"
+              "content_sha256": "d6a9534c3c5b314262db1278672a0281692af27fc80c080f0423971d68a86842"
             }
           ],
           "blockers": [
@@ -3240,7 +3240,7 @@
       "reproductions": [
         {
           "package": "foreact_cvpr2026",
-          "package_digest": "c33ea4081030d1985b8a732d581c932f7d07077b65470f6b0da9f1960b855ab0",
+          "package_digest": "07826c2dcb5e6a04bd0cc50dc0507fc39ea33408471f45ac2c964c8dec7ef745",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "foreact-real11"
@@ -3277,7 +3277,7 @@
             {
               "kind": "study",
               "path": "research/reproductions/foreact_cvpr2026/study.py",
-              "content_sha256": "8d117a51c3bb658c0ce0df7b75b91aea6d0927e96b5959e229082973c64ae4e7"
+              "content_sha256": "d6a9534c3c5b314262db1278672a0281692af27fc80c080f0423971d68a86842"
             }
           ],
           "blockers": [
@@ -3302,7 +3302,7 @@
       "reproductions": [
         {
           "package": "hats_cvpr2026",
-          "package_digest": "23d31adc8a0f5a8ca6a8dc7e5b397a6cef2350c901bb2b40785bfe77a6cbaddd",
+          "package_digest": "49d29837bf5d261e3f08a33b0ab9bc1f8f7b8f454dccfad2c1d1c5a6865c1324",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "androidworld",
@@ -3340,7 +3340,7 @@
             {
               "kind": "study",
               "path": "research/reproductions/hats_cvpr2026/study.py",
-              "content_sha256": "8d117a51c3bb658c0ce0df7b75b91aea6d0927e96b5959e229082973c64ae4e7"
+              "content_sha256": "d6a9534c3c5b314262db1278672a0281692af27fc80c080f0423971d68a86842"
             }
           ],
           "blockers": [
@@ -3365,7 +3365,7 @@
       "reproductions": [
         {
           "package": "ishift_cvpr2026",
-          "package_digest": "5c8bb5bfab4a59534d6499d007b8ed7a560847b592a6d11df8f327c720a20102",
+          "package_digest": "31af5d8e2e2e6c74682d4a5fb4c165699c845b94e6ae18a38f3cd9cbafd7be15",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "aitw",
@@ -3405,7 +3405,7 @@
             {
               "kind": "study",
               "path": "research/reproductions/ishift_cvpr2026/study.py",
-              "content_sha256": "8d117a51c3bb658c0ce0df7b75b91aea6d0927e96b5959e229082973c64ae4e7"
+              "content_sha256": "d6a9534c3c5b314262db1278672a0281692af27fc80c080f0423971d68a86842"
             }
           ],
           "blockers": [
@@ -3430,7 +3430,7 @@
       "reproductions": [
         {
           "package": "lmee_cvpr2026",
-          "package_digest": "4e581d26b37c2424a92ed76418cef07a4c2d4d211f23aa3f8173495a19a9594a",
+          "package_digest": "c9bfa8f608a1181566e54ece959a733d790f388cd861e0251acbe493e8cdf31d",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "lmee-bench"
@@ -3467,7 +3467,7 @@
             {
               "kind": "study",
               "path": "research/reproductions/lmee_cvpr2026/study.py",
-              "content_sha256": "8d117a51c3bb658c0ce0df7b75b91aea6d0927e96b5959e229082973c64ae4e7"
+              "content_sha256": "d6a9534c3c5b314262db1278672a0281692af27fc80c080f0423971d68a86842"
             }
           ],
           "blockers": [
@@ -3492,7 +3492,7 @@
       "reproductions": [
         {
           "package": "motus_cvpr2026",
-          "package_digest": "c02dbff46069db3d4dfff529f555192d71e66f7b5b9e1465f982954a5e89624d",
+          "package_digest": "a487bf3fe09575f46d2f445d2e9483f281db9bc210279cfd8ab72b5e88e36d4a",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "motus-realworld",
@@ -3530,7 +3530,7 @@
             {
               "kind": "study",
               "path": "research/reproductions/motus_cvpr2026/study.py",
-              "content_sha256": "8d117a51c3bb658c0ce0df7b75b91aea6d0927e96b5959e229082973c64ae4e7"
+              "content_sha256": "d6a9534c3c5b314262db1278672a0281692af27fc80c080f0423971d68a86842"
             }
           ],
           "blockers": [
@@ -3555,7 +3555,7 @@
       "reproductions": [
         {
           "package": "optimusvla_cvpr2026",
-          "package_digest": "51322ee82bebd2e930fdcbde56cfbaf3ac3b5a22547c0c8b85b663cdea7d62d8",
+          "package_digest": "1500141d925e04e1455268a505c2e01cf47e6ccd8c1c685c40df70a3e67f8e15",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "calvin",
@@ -3594,7 +3594,7 @@
             {
               "kind": "study",
               "path": "research/reproductions/optimusvla_cvpr2026/study.py",
-              "content_sha256": "8d117a51c3bb658c0ce0df7b75b91aea6d0927e96b5959e229082973c64ae4e7"
+              "content_sha256": "d6a9534c3c5b314262db1278672a0281692af27fc80c080f0423971d68a86842"
             }
           ],
           "blockers": [
@@ -3619,7 +3619,7 @@
       "reproductions": [
         {
           "package": "roboagent_cvpr2026",
-          "package_digest": "9ffa1d720d173f94d0af3ae26b58b3224ac3bbaca7c69eb60f3083ea4f2553f9",
+          "package_digest": "b0236fe5ce460fbcaee474b09596254c7099446171a0251ecf017a3a4d989a77",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "alfworld",
@@ -3657,7 +3657,7 @@
             {
               "kind": "study",
               "path": "research/reproductions/roboagent_cvpr2026/study.py",
-              "content_sha256": "8d117a51c3bb658c0ce0df7b75b91aea6d0927e96b5959e229082973c64ae4e7"
+              "content_sha256": "d6a9534c3c5b314262db1278672a0281692af27fc80c080f0423971d68a86842"
             }
           ],
           "blockers": [
@@ -3682,7 +3682,7 @@
       "reproductions": [
         {
           "package": "ui_agile_cvprf2026",
-          "package_digest": "c97279f49354062905197ce61111df370ec9c696c34cc953299c131a7b6df255",
+          "package_digest": "9ba94eeda5acf840e9336c7b9b912eb9c7a73c57ab384a56126edbe6cd4eb455",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "androidcontrol",
@@ -3721,7 +3721,7 @@
             {
               "kind": "study",
               "path": "research/reproductions/ui_agile_cvprf2026/study.py",
-              "content_sha256": "8d117a51c3bb658c0ce0df7b75b91aea6d0927e96b5959e229082973c64ae4e7"
+              "content_sha256": "d6a9534c3c5b314262db1278672a0281692af27fc80c080f0423971d68a86842"
             }
           ],
           "blockers": [
@@ -3746,7 +3746,7 @@
       "reproductions": [
         {
           "package": "vilomem_cvpr2026",
-          "package_digest": "4595ad87d0de4242a5b9510905df5b756f4e29dbf5c188817c1c79e15b47f83e",
+          "package_digest": "fda456f493d8253038341edda02693fba008a9088e3212404a4a4b8a80c248ca",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "hallusionbench",
@@ -3788,7 +3788,7 @@
             {
               "kind": "study",
               "path": "research/reproductions/vilomem_cvpr2026/study.py",
-              "content_sha256": "8d117a51c3bb658c0ce0df7b75b91aea6d0927e96b5959e229082973c64ae4e7"
+              "content_sha256": "d6a9534c3c5b314262db1278672a0281692af27fc80c080f0423971d68a86842"
             }
           ],
           "blockers": [
@@ -3896,5 +3896,5 @@
       ]
     }
   ],
-  "projection_digest": "7deaad0b53914406b686e947445c51cdf212e2ef43b0ae69c40e8cb8fac56ca9"
+  "projection_digest": "c39ea900ddc8fa3f221cbcfdf6323cdbeb6baa51eecb27b3b52b7936114957e2"
 }

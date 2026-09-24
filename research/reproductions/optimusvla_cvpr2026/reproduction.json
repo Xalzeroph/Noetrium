@@ -2,7 +2,7 @@
   "schema": "noetrium.reproduction.projection.v7",
   "authority": "generated_from_typed_definition_and_source",
   "package": "optimusvla_cvpr2026",
-  "package_digest": "51322ee82bebd2e930fdcbde56cfbaf3ac3b5a22547c0c8b85b663cdea7d62d8",
+  "package_digest": "1500141d925e04e1455268a505c2e01cf47e6ccd8c1c685c40df70a3e67f8e15",
   "definition_digest": "924ba4ddda9619d14ef27319e474b5c94b1b08f0cb49141f0b840c0af4225ba4",
   "source_registry_digest": "a14f0c02855003c848afa4330da888dfbf6930f445850857bd2f6e75e348b32b",
   "lifecycle": "protocol_bound",
@@ -103,7 +103,7 @@
       "kind": "study",
       "path": "research/reproductions/optimusvla_cvpr2026/study.py",
       "declaration_digest": "1ad869366cf427dc9d731cd56868a3abe56d9d32870188c3aeb20e68466a76da",
-      "content_sha256": "8d117a51c3bb658c0ce0df7b75b91aea6d0927e96b5959e229082973c64ae4e7"
+      "content_sha256": "d6a9534c3c5b314262db1278672a0281692af27fc80c080f0423971d68a86842"
     }
   ],
   "primary_executable": "research/reproductions/optimusvla_cvpr2026/program.py",

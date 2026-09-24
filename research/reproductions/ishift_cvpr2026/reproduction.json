@@ -2,7 +2,7 @@
   "schema": "noetrium.reproduction.projection.v7",
   "authority": "generated_from_typed_definition_and_source",
   "package": "ishift_cvpr2026",
-  "package_digest": "5c8bb5bfab4a59534d6499d007b8ed7a560847b592a6d11df8f327c720a20102",
+  "package_digest": "31af5d8e2e2e6c74682d4a5fb4c165699c845b94e6ae18a38f3cd9cbafd7be15",
   "definition_digest": "71014d59993c0d6760c4e4084123323967e87540a3a576fb5641ec3efb47b4dd",
   "source_registry_digest": "cba20db8cc89fd106370867aad306e63553e71b3d7f65bf597a47c087dc83dda",
   "lifecycle": "protocol_bound",
@@ -104,7 +104,7 @@
       "kind": "study",
       "path": "research/reproductions/ishift_cvpr2026/study.py",
       "declaration_digest": "047085be4689066e9accbeee202f12a839a627b3b74584efd41c382a113ba59d",
-      "content_sha256": "8d117a51c3bb658c0ce0df7b75b91aea6d0927e96b5959e229082973c64ae4e7"
+      "content_sha256": "d6a9534c3c5b314262db1278672a0281692af27fc80c080f0423971d68a86842"
     }
   ],
   "primary_executable": "research/reproductions/ishift_cvpr2026/program.py",

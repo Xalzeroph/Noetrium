@@ -2,7 +2,7 @@
   "schema": "noetrium.reproduction.projection.v7",
   "authority": "generated_from_typed_definition_and_source",
   "package": "roboagent_cvpr2026",
-  "package_digest": "9ffa1d720d173f94d0af3ae26b58b3224ac3bbaca7c69eb60f3083ea4f2553f9",
+  "package_digest": "b0236fe5ce460fbcaee474b09596254c7099446171a0251ecf017a3a4d989a77",
   "definition_digest": "87f0fedec0b991e30a5b4f1a0d986a0569d09b3167ebedb041d9022c7420a0a7",
   "source_registry_digest": "0b3ad74ac3a4724a41459fdf4cb59a21de449af23739fab7aa2f6afc1fa298c0",
   "lifecycle": "protocol_bound",
@@ -103,7 +103,7 @@
       "kind": "study",
       "path": "research/reproductions/roboagent_cvpr2026/study.py",
       "declaration_digest": "f94216a7b9f88673d8b3c1bd1390c1f4eb3ffc2dec70e54ea32a805cd3ab76b2",
-      "content_sha256": "8d117a51c3bb658c0ce0df7b75b91aea6d0927e96b5959e229082973c64ae4e7"
+      "content_sha256": "d6a9534c3c5b314262db1278672a0281692af27fc80c080f0423971d68a86842"
     }
   ],
   "primary_executable": "research/reproductions/roboagent_cvpr2026/program.py",

@@ -2,7 +2,7 @@
   "schema": "noetrium.reproduction.projection.v7",
   "authority": "generated_from_typed_definition_and_source",
   "package": "ui_agile_cvprf2026",
-  "package_digest": "c97279f49354062905197ce61111df370ec9c696c34cc953299c131a7b6df255",
+  "package_digest": "9ba94eeda5acf840e9336c7b9b912eb9c7a73c57ab384a56126edbe6cd4eb455",
   "definition_digest": "b37f7e58d6b9ecd223386f2c25b165c779a3aee07580cd88adeb85f8965b6330",
   "source_registry_digest": "5cef7fdf56a74ea0ec0a9ac1e0ec2a3bf5f5059a5d320f51b85b563711af9a3a",
   "lifecycle": "protocol_bound",
@@ -102,7 +102,7 @@
       "kind": "study",
       "path": "research/reproductions/ui_agile_cvprf2026/study.py",
       "declaration_digest": "ba4750ce17e6d75f8edc8d64e75b3bbe60fdc6a2051f9d54d385d61d19f08854",
-      "content_sha256": "8d117a51c3bb658c0ce0df7b75b91aea6d0927e96b5959e229082973c64ae4e7"
+      "content_sha256": "d6a9534c3c5b314262db1278672a0281692af27fc80c080f0423971d68a86842"
     }
   ],
   "primary_executable": "research/reproductions/ui_agile_cvprf2026/program.py",
