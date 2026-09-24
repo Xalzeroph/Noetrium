@@ -6,8 +6,10 @@ from pathlib import Path
 import re
 from typing import Protocol
 
+from ...research_blueprint import ResearchProjectBlueprint
 
-PROJECT_TEMPLATE_REVISION = "noetrium.project-template.v7"
+
+PROJECT_TEMPLATE_REVISION = "noetrium.project-template.v8"
 _PROJECT_TOKEN = re.compile(r"[a-z][a-z0-9_.-]*")
 _PROJECT_VERSION = re.compile(r"[0-9A-Za-z][0-9A-Za-z._+-]*")
 
@@ -26,6 +28,7 @@ class ProjectCreateRequest:
     project_id: str
     version: str
     destination: Path
+    blueprint: ResearchProjectBlueprint | None = None
 
     def __post_init__(self) -> None:
         if _PROJECT_TOKEN.fullmatch(self.project_id) is None:
@@ -34,6 +37,13 @@ class ProjectCreateRequest:
             raise ValueError("project version is not canonical")
         if not isinstance(self.destination, Path):
             raise TypeError("project destination must be a pathlib.Path")
+        if self.blueprint is not None:
+            if type(self.blueprint) is not ResearchProjectBlueprint:
+                raise TypeError("project blueprint must be ResearchProjectBlueprint")
+            if self.blueprint.portfolio.portfolio_id != self.project_id:
+                raise ValueError(
+                    "project blueprint portfolio_id must match project_id"
+                )
 
 
 @dataclass(frozen=True, slots=True)
@@ -44,6 +54,7 @@ class ProjectCreateReceipt:
     template_revision: str
     manifest_path: str
     manifest_semantic_digest: str
+    research_blueprint_digest: str
     generated_files: tuple[str, ...]
 
 
@@ -120,9 +131,10 @@ class ProjectFacade:
         project_id: str,
         version: str,
         destination: Path,
+        blueprint: ResearchProjectBlueprint | None = None,
     ) -> ProjectCreateReceipt:
         return self._experience.create(
-            ProjectCreateRequest(project_id, version, destination)
+            ProjectCreateRequest(project_id, version, destination, blueprint)
         )
 
     def doctor(self, project_root: Path) -> ProjectDoctorReport:
