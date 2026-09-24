@@ -1,7 +1,8 @@
 from __future__ import annotations
 
+from noetrium_platform.foundation.kernel.kernel.durability import sha256_bytes
+
 from dataclasses import asdict, dataclass
-import hashlib
 import json
 
 
@@ -22,7 +23,7 @@ class CanarySuite:
 
     def digest(self) -> str:
         raw=json.dumps(asdict(self),sort_keys=True,separators=(",",":"),ensure_ascii=False).encode()
-        return hashlib.sha256(raw).hexdigest()
+        return sha256_bytes(raw)
 
 
 @dataclass(frozen=True, slots=True)
