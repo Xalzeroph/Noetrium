@@ -435,9 +435,18 @@ def build_experiment_runtime_for_test(
     from noetrium_platform.research.experimentation.lifecycle.experiment.runtime import (
         ExperimentRuntime,
     )
-    from noetrium_platform.research.experimentation.lifecycle.run.providers.identity import (
-        RandomRunIdentityProvider,
-    )
+    import uuid
+    from noetrium_platform.research.experimentation.lifecycle.run.api.identity import RunIdentity
+
+    class _RandomRunIdentityProviderForTest:
+        def allocate(self) -> RunIdentity:
+            run_id = f"run_{uuid.uuid4().hex[:12]}"
+            return RunIdentity(
+                run_id,
+                f"session_{uuid.uuid4().hex[:12]}",
+                run_id,
+            )
+
     from noetrium_platform.research.execution.decision.cycle_identity import (
         RandomDecisionCycleIdentityProvider,
     )
@@ -458,7 +467,7 @@ def build_experiment_runtime_for_test(
         components,
         run_identity_provider=(
             run_identity_provider
-            or RandomRunIdentityProvider()
+            or _RandomRunIdentityProviderForTest()
         ),
         cycle_identity_provider=(
             cycle_identity_provider
