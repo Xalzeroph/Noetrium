@@ -150,7 +150,7 @@ Deployment-specific mirrors or parameter substitutions use the generic override 
 ```bash
 ./deploy/build-environments.sh build --profiles minecraft \
   --build-input JAVA_RUNTIME_IMAGE=registry.example/java/runtime \
-  --build-input NODE_VERSION=22.22.2
+  --build-input NODE_RUNTIME_IMAGE=registry.example/node/runtime
 ```
 
 An override that is not declared by one of the selected profiles fails closed. Adding a new profile-specific runtime input therefore changes only the registry row and that profile's recipe/Compose wiring; the central builder remains unchanged.
@@ -186,7 +186,7 @@ release source
 
 Build receipts include source SHA, wheel SHA-256, distribution-evidence SHA-256, exact upstream runtime-source identities, profile id, category, profile lifecycle, profile revision digest, `build_input_digest`, Docker image metadata, and the final normalized `runtime_identity_digest`.
 
-The base cache key includes the exact Python runtime source identity, and the base image carries that digest as an OCI label verified by the formal container verifier. Profile cache keys use the complete `build_input_digest`; profile images carry the same digest as an OCI label. Profile-specific inputs are generic registry data. For the current Minecraft profile this includes the exact Java runtime image identity, Node version, and the pinned SHA-256 of the Node Linux x64 archive in addition to the base image.
+The base cache key includes the exact Python runtime source identity, and the base image carries that digest as an OCI label verified by the formal container verifier. Profile cache keys use the complete `build_input_digest`; profile images carry the same digest as an OCI label. Profile-specific inputs are generic registry data. For the current Minecraft profile this includes the exact Java and Node runtime image identities in addition to the base image. Both are ordinary registry-declared image inputs; the builder itself contains no Minecraft-specific source-resolution logic.
 
 Registry mirrors are deployment configuration. Canonical runtime identities remain separately recorded from the actual source registry image.
 
