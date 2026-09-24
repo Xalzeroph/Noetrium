@@ -8,6 +8,7 @@ from research.benchmarks.webvoyager import (
 )
 from research.reproductions.agent_q_surrogate import (
     AGENT_Q_SURROGATE_FIDELITY,
+    AGENT_Q_SURROGATE_METHOD_PROGRAM,
     build_agent_q_surrogate_webvoyager_study,
 )
 
@@ -62,3 +63,32 @@ def test_agent_q_surrogate_webvoyager_study_separates_provenance_from_execution_
         "vision_judge": "model.agent-q-surrogate.vision-judge",
     }
     assert study.execution_policy.trial_budget.max_steps == 6
+
+
+
+def test_agent_q_surrogate_method_program_is_current_umm_execution_surface() -> None:
+    program = AGENT_Q_SURROGATE_METHOD_PROGRAM
+    assert program.program_identity.implementation.method_id == "agent-q-surrogate"
+    assert program.configuration["relation_to_paper"] == (
+        "independent_oss_surrogate_not_author_official"
+    )
+    assert program.configuration["official_source_resolved"] is False
+    assert program.configuration["mcts_iterations"] == 10
+    assert program.configuration["mcts_depth"] == 6
+    assert program.required_capabilities == ("environment.act",)
+    node_ids = tuple(node.node_id for node in program.graph.nodes)
+    assert node_ids == (
+        "prepare_iteration",
+        "reset_home",
+        "record_reset",
+        "actor",
+        "prepare_action",
+        "environment",
+        "record_environment",
+        "critic",
+        "record_critic",
+        "judge",
+        "route",
+        "extract_preferences",
+        "return",
+    )
