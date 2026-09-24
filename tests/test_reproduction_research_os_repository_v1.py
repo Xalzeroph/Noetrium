@@ -208,6 +208,8 @@ def test_bound_reproduction_lanes_compile_as_distinct_product_programs() -> None
 
 def test_every_reproduction_projection_records_current_product_research_os_identity() -> None:
     definitions = discover_reproduction_definitions()
+    fleet_plan = build_plan()
+    lanes = {row["package"]: row for row in fleet_plan["lanes"]}
     for definition in definitions:
         payload = json.loads(
             Path(
@@ -217,7 +219,7 @@ def test_every_reproduction_projection_records_current_product_research_os_ident
                 "reproduction.json",
             ).read_text(encoding="utf-8")
         )
-        assert payload["schema"] == "noetrium.reproduction.projection.v9"
+        assert payload["schema"] == "noetrium.reproduction.projection.v10"
         projected = payload["research_os"]
         assert projected["surface"] == "noetrium.api"
 
@@ -227,10 +229,18 @@ def test_every_reproduction_projection_records_current_product_research_os_ident
                 "execution_state": "not_executable",
                 "program_id": None,
                 "program_digest": None,
+                "benchmark_authority": {
+                    "state": "not_applicable",
+                    "selection_digests": [],
+                    "blockers": [],
+                },
                 "benchmark_split_axis": {
                     "required": False,
                     "consumers": [],
                 },
+                "reproduction_closure_state": "not_applicable",
+                "execution_authority_state": "not_applicable",
+                "materialization_ready": False,
                 "execution_requirements": [],
             }
             continue
@@ -238,21 +248,25 @@ def test_every_reproduction_projection_records_current_product_research_os_ident
         program = compile_reproduction_research_program(definition)
         requirements = resolve_execution_requirements(definition)
         split_consumers = resolve_benchmark_split_consumers(definition)
+        lane = lanes[definition.package]
         assert projected["program_id"] == program.program_id
         assert projected["program_digest"] == program.program_digest
         assert projected["benchmark_split_axis"] == {
             "required": bool(split_consumers),
             "consumers": list(split_consumers),
         }
-        assert projected["execution_state"] == (
-            "closure_binding_required"
-            if requirements
-            else (
-                "benchmark_binding_required"
-                if split_consumers
-                else "execution_ready"
-            )
+        assert projected["execution_state"] == lane["state"]
+        assert projected["benchmark_authority"] == {
+            "state": lane["benchmark_authority_state"],
+            "selection_digests": list(lane["benchmark_selection_digests"]),
+            "blockers": list(lane["benchmark_blockers"]),
+        }
+        assert (
+            projected["reproduction_closure_state"]
+            == lane["reproduction_closure_state"]
         )
+        assert projected["execution_authority_state"] == "required"
+        assert projected["materialization_ready"] is lane["materialization_ready"]
         assert tuple(
             (
                 row["parameter"],
