@@ -459,6 +459,8 @@ def test_environment_bootstrap_signal_cleanup_uses_exact_ids_and_surfaces_failur
 
     for block in (child_cleanup, owner_cleanup):
         assert "docker ps -aq --no-trunc" in block
+        assert 'label=$OWNER_PID_LABEL=$"' in block
+        assert 'label=$OWNER_PID_LABEL=$"' not in block
         assert "remove_bootstrap_container_exact" in block
         assert "|| true" not in block
 
