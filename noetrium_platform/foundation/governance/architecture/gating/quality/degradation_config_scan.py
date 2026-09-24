@@ -13,7 +13,7 @@ from noetrium_platform.foundation.governance.api import (
     RepositorySourceIndexPort,
 )
 
-from .degradation_contracts import (
+from .api.contracts import (
     DegradationFinding,
     FORBIDDEN_ENABLED_CONFIG_KEYS,
     FORBIDDEN_NONEMPTY_CONFIG_KEYS,
