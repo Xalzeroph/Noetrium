@@ -1392,6 +1392,11 @@ class SQLiteResearchGraphExecutionStore:
                     raise ResearchGraphExecutionConflict(
                         "research graph active cut compare-and-swap conflict"
                     )
+                if source_fence is None:
+                    raise ResearchGraphExecutionConflict(
+                        "research graph active cut replacement requires an exact "
+                        "source execution fence"
+                    )
                 if source_fence is not None:
                     if current.generation != source_fence.active_cut_generation:
                         raise ResearchGraphExecutionConflict(
