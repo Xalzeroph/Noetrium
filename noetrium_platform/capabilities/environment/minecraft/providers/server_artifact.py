@@ -3,7 +3,7 @@ from __future__ import annotations
 import json
 from dataclasses import dataclass
 from urllib.parse import urlparse
-from urllib.request import Request, urlopen
+from urllib.request import Request
 from typing import Any, Mapping
 
 from noetrium_platform.substrate.api import ArtifactKind, ArtifactRecord, ArtifactRetention
@@ -72,15 +72,13 @@ class OfficialMinecraftServerArtifactProvider:
         self,
         acquirer: ArtifactAcquisitionPort,
         *,
-        metadata_opener: ArtifactHttpOpener | None = None,
+        metadata_opener: ArtifactHttpOpener,
         user_agent: str = "noetrium-minecraft-artifact/1",
     ) -> None:
         if not user_agent.strip():
             raise ValueError("Minecraft artifact user agent must be non-empty")
         self._acquirer = acquirer
-        self._metadata_opener = metadata_opener or (
-            lambda request, timeout_s: urlopen(request, timeout=timeout_s)  # type: ignore[return-value]
-        )
+        self._metadata_opener = metadata_opener
         self._user_agent = user_agent
 
     def resolve(self, version: str, *, timeout_s: float = 30.0) -> MinecraftServerDownloadInfo:
