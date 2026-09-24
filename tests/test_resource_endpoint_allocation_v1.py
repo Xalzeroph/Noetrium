@@ -257,3 +257,22 @@ def test_automatic_endpoint_allocation_is_resource_owned() -> None:
     assert allocation.endpoint.host == "127.0.0.1"
     assert 1 <= allocation.endpoint.port <= 65535
     assert len(leases.active_for(allocation.endpoint.resource)) == 1
+
+
+def test_endpoint_reconcile_releases_expired_allocation() -> None:
+    leases = InMemoryResourceLeaseRegistry()
+    allocator = InMemoryEndpointAllocator(
+        ownership=leases,
+        leases=leases,
+        probe=ScriptedProbe(),
+    )
+    allocation = allocator.allocate(_request("branch-expiring-reconcile", (25579,)))
+    lease = leases.get(allocation.lease_id)
+    assert lease.expires_at_epoch_s is not None
+
+    released = allocator.reconcile(now=lease.expires_at_epoch_s + 1.0)
+
+    assert tuple(row.allocation_id for row in released) == (
+        "branch-expiring-reconcile",
+    )
+    assert allocator.active() == ()

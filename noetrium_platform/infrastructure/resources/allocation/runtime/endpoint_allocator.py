@@ -22,6 +22,7 @@ from noetrium_platform.infrastructure.resources.lease.api import (
     LeaseState,
     ResourceLease,
     ResourceLeasePort,
+    ResourceKind,
     ResourceOwner,
     ResourceOwnership,
     ResourceOwnershipPort,
@@ -232,6 +233,13 @@ class AtomicEndpointAllocator(EndpointAllocationPort):
 
     def active(self) -> tuple[EndpointAllocation, ...]:
         return self._reservations.active()
+
+    def reconcile(
+        self,
+        *,
+        now: float | None = None,
+    ) -> tuple[EndpointAllocation, ...]:
+        return self._reservations.reconcile_orphans(now=now)
 
 
 class InMemoryEndpointAllocator(EndpointAllocationPort):
@@ -514,7 +522,33 @@ class InMemoryEndpointAllocator(EndpointAllocationPort):
                 self._reconcile_allocation_locked(allocation_id)
                 for allocation_id in tuple(self._allocations)
             )
-            return tuple(sorted((row for row in rows if row.state.is_live), key=lambda row: row.allocation_id))
+            return tuple(
+                sorted(
+                    (row for row in rows if row.state.is_live),
+                    key=lambda row: row.allocation_id,
+                )
+            )
+
+    def reconcile(
+        self,
+        *,
+        now: float | None = None,
+    ) -> tuple[EndpointAllocation, ...]:
+        now_epoch_s = time() if now is None else float(now)
+        if not math.isfinite(now_epoch_s) or now_epoch_s <= 0:
+            raise ValueError("endpoint reconciliation time must be finite and positive")
+        self._leases.reconcile_expired(
+            now=now_epoch_s,
+            resource_kind=ResourceKind.NETWORK_ENDPOINT,
+        )
+        released: list[EndpointAllocation] = []
+        with self._lock:
+            for allocation_id in tuple(self._allocations):
+                before = self._allocations[allocation_id]
+                current = self._reconcile_allocation_locked(allocation_id)
+                if before.state.is_live and current.state is EndpointAllocationState.RELEASED:
+                    released.append(current)
+        return tuple(sorted(released, key=lambda row: row.allocation_id))
 
 
 __all__ = [
