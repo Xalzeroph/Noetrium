@@ -6,6 +6,7 @@ from research.benchmarks.math500 import (
     build_math500_lits_task_set,
 )
 from research.reproductions.lits_math500 import (
+    LITS_MATH500_METHOD_PROGRAM,
     LITS_MATH500_RELEASE_FIDELITY,
     build_lits_math500_release_study,
 )
@@ -45,3 +46,26 @@ def test_lits_math500_release_compiles_without_inventing_a_concrete_model() -> N
     roles = {row.role: row.requirement_id for row in study.binding_requirements.model_roles}
     assert roles == {"policy": "model.lits.policy", "reward": "model.lits.reward"}
     assert LITS_MATH500_RELEASE_FIDELITY.model_binding_semantics.endswith("concrete_model_is_user_bound")
+
+
+
+def test_lits_math500_method_program_is_current_umm_execution_surface() -> None:
+    program = LITS_MATH500_METHOD_PROGRAM
+    assert program.program_identity.implementation.method_id == "lits-math500"
+    assert program.configuration["search_algorithm"] == "mcts"
+    assert program.configuration["policy_component"] == "concat"
+    assert program.configuration["transition_component"] == "concat"
+    assert program.configuration["reward_component"] == "generative"
+    assert program.configuration["search_iterations"] == 50
+    assert program.configuration["candidate_actions"] == 3
+    assert program.configuration["max_steps"] == 10
+    assert "model" not in program.configuration
+    assert tuple(node.node_id for node in program.graph.nodes) == (
+        "select",
+        "policy",
+        "expand",
+        "reward",
+        "backpropagate",
+        "advance",
+        "return",
+    )
