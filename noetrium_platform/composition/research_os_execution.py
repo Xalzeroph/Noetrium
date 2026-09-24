@@ -1328,7 +1328,7 @@ class StrictResearchOSControl(
                 expected_generation=node_control.generation,
                 now_ns=time.time_ns(),
             )
-            record = self._store.snapshot(cut.cut_id).node(node.graph_node_id)
+            record = self._store.node_state(cut.cut_id, node.graph_node_id)
             if record.state not in {
                 ResearchGraphLiveNodeState.CLAIMED,
                 ResearchGraphLiveNodeState.RUNNING,
