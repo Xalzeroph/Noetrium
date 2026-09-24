@@ -8,7 +8,6 @@ from .server_files import (
     ensure_port_available,
     prepare_server_files,
     render_server_properties,
-    sha256_file,
 )
 from .server_artifact import (
     MinecraftServerArtifactError,
@@ -40,7 +39,6 @@ __all__ = [
     "ensure_port_available",
     "prepare_server_files",
     "render_server_properties",
-    "sha256_file",
     "MinecraftServerArtifactError",
     "MinecraftServerDownloadInfo",
     "OfficialMinecraftServerArtifactProvider",
