@@ -126,6 +126,7 @@ class PersistentSessionSnapshot:
     start_command: str | None = None
     current_path: str | None = None
     evidence_refs: tuple[str, ...] = ()
+    session_generation: str | None = None
 
 
 @dataclass(frozen=True, slots=True)
