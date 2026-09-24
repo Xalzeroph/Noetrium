@@ -8,9 +8,7 @@ compiled research plans selected for one orchestration batch.
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from enum import StrEnum
 import re
-from typing import Protocol
 
 from noetrium_platform.foundation.kernel.kernel import canonical_digest, require_sha256
 from noetrium_platform.research.experimentation.binding import (
@@ -18,11 +16,8 @@ from noetrium_platform.research.experimentation.binding import (
     ResearchRequirementResolution,
 )
 from noetrium_platform.research.experimentation.lifecycle.api import (
-    BoundStudyExecutionPort,
     StudyExecutionPlan,
     ResearchStudyDefinition,
-    StudyMatrixExecutionReport,
-    StudyMetricAggregationPort,
 )
 from .research_compiler import CompiledResearchPlan, compile_research_plan
 
@@ -275,137 +270,12 @@ def compile_research_campaign(
     return CompiledResearchCampaign(plan, compiled_lanes)
 
 
-@dataclass(frozen=True, slots=True)
-class ResearchCampaignStudyBinding:
-    lane_id: str
-    adapter: BoundStudyExecutionPort
-    aggregation: StudyMetricAggregationPort | None = None
-
-    def __post_init__(self) -> None:
-        _token(self.lane_id, "campaign binding lane_id")
-        if not isinstance(self.adapter, BoundStudyExecutionPort):
-            raise TypeError("campaign study adapter must satisfy BoundStudyExecutionPort")
-        if self.aggregation is not None and not callable(
-            getattr(self.aggregation, "aggregate", None)
-        ):
-            raise TypeError("campaign study aggregation must satisfy StudyMetricAggregationPort")
-
-
-class ResearchCampaignLaneState(StrEnum):
-    SUCCEEDED = "succeeded"
-    FAILED = "failed"
-    BLOCKED = "blocked"
-
-
-@dataclass(frozen=True, slots=True)
-class ResearchCampaignLaneResult:
-    lane_id: str
-    research_plan_digest: str
-    study_plan_digest: str
-    state: ResearchCampaignLaneState
-    report: StudyMatrixExecutionReport | None = None
-    failure_type: str | None = None
-    failure_message: str | None = None
-    blocked_by_lane_ids: tuple[str, ...] = ()
-
-    def __post_init__(self) -> None:
-        _token(self.lane_id, "campaign result lane_id")
-        require_sha256(self.research_plan_digest, "campaign result research_plan_digest")
-        require_sha256(self.study_plan_digest, "campaign result study_plan_digest")
-        if not isinstance(self.state, ResearchCampaignLaneState):
-            raise TypeError("campaign lane state must be ResearchCampaignLaneState")
-        if type(self.blocked_by_lane_ids) is not tuple:
-            raise TypeError("campaign blocked dependencies must be a tuple")
-        blockers = tuple(
-            _token(value, "campaign blocker lane_id")
-            for value in self.blocked_by_lane_ids
-        )
-        if len(blockers) != len(set(blockers)):
-            raise ValueError("campaign blocked dependencies must not contain duplicates")
-        blockers = tuple(sorted(blockers))
-        object.__setattr__(self, "blocked_by_lane_ids", blockers)
-        if self.state is ResearchCampaignLaneState.SUCCEEDED:
-            if type(self.report) is not StudyMatrixExecutionReport:
-                raise TypeError("successful campaign lane requires StudyMatrixExecutionReport")
-            if self.report.plan_digest != self.study_plan_digest:
-                raise ValueError("campaign lane report does not match frozen study plan")
-            if self.failure_type is not None or self.failure_message is not None:
-                raise ValueError("successful campaign lane cannot carry failure metadata")
-            if blockers:
-                raise ValueError("successful campaign lane cannot carry blockers")
-        elif self.state is ResearchCampaignLaneState.FAILED:
-            if self.report is not None:
-                raise ValueError("failed campaign lane cannot carry a study report")
-            if not isinstance(self.failure_type, str) or not self.failure_type.strip():
-                raise ValueError("failed campaign lane requires failure_type")
-            if not isinstance(self.failure_message, str) or not self.failure_message.strip():
-                raise ValueError("failed campaign lane requires failure_message")
-            if blockers:
-                raise ValueError("failed campaign lane cannot carry blockers")
-        else:
-            if self.report is not None:
-                raise ValueError("blocked campaign lane cannot carry a study report")
-            if self.failure_type is not None or self.failure_message is not None:
-                raise ValueError("blocked campaign lane cannot carry failure metadata")
-            if not blockers:
-                raise ValueError("blocked campaign lane requires blocked_by_lane_ids")
-
-
-@dataclass(frozen=True, slots=True)
-class ResearchCampaignExecutionReport:
-    campaign_id: str
-    campaign_digest: str
-    lanes: tuple[ResearchCampaignLaneResult, ...]
-
-    def __post_init__(self) -> None:
-        _token(self.campaign_id, "campaign report campaign_id")
-        require_sha256(self.campaign_digest, "campaign report campaign_digest")
-        if type(self.lanes) is not tuple or not self.lanes:
-            raise TypeError("campaign report lanes must be a non-empty tuple")
-        if any(type(row) is not ResearchCampaignLaneResult for row in self.lanes):
-            raise TypeError("campaign report lanes must contain ResearchCampaignLaneResult")
-        lane_ids = tuple(row.lane_id for row in self.lanes)
-        if lane_ids != tuple(sorted(lane_ids)):
-            raise ValueError("campaign report lanes must be canonical lane-id order")
-        if len(lane_ids) != len(set(lane_ids)):
-            raise ValueError("campaign report lane identities must be unique")
-
-    @property
-    def succeeded_lane_ids(self) -> tuple[str, ...]:
-        return tuple(
-            row.lane_id for row in self.lanes
-            if row.state is ResearchCampaignLaneState.SUCCEEDED
-        )
-
-    @property
-    def failed_lane_ids(self) -> tuple[str, ...]:
-        return tuple(
-            row.lane_id for row in self.lanes
-            if row.state is ResearchCampaignLaneState.FAILED
-        )
-
-    @property
-    def blocked_lane_ids(self) -> tuple[str, ...]:
-        return tuple(
-            row.lane_id for row in self.lanes
-            if row.state is ResearchCampaignLaneState.BLOCKED
-        )
-
-
-class ResearchCampaignExecutionPort(Protocol):
-    def execute(self) -> ResearchCampaignExecutionReport: ...
-
 
 __all__ = [
     "CompiledResearchCampaign",
     "CompiledResearchCampaignLane",
     "ResearchCampaignCompilationUnit",
-    "ResearchCampaignExecutionPort",
-    "ResearchCampaignExecutionReport",
-    "ResearchCampaignLaneResult",
-    "ResearchCampaignLaneState",
     "ResearchCampaignPlan",
     "ResearchCampaignStudy",
-    "ResearchCampaignStudyBinding",
     "compile_research_campaign",
 ]
