@@ -107,6 +107,41 @@ class ServiceStartResumeV145Tests(unittest.TestCase):
             self.assertEqual(adapter.reconcile_calls, 1)
             self.assertEqual(adapter.start_calls, 0)
 
+    def test_stopping_state_with_missing_exact_process_completes_then_restarts(self) -> None:
+        with TemporaryDirectory() as td:
+            launch = contract()
+            process = ServiceProcessIdentity(34, "start:34", 34)
+            store = FileServiceStateStore(Path(td) / "service.json")
+            store.write(
+                replace(
+                    ServiceSupervisorState.initial(
+                        launch.service_id,
+                        launch.digest(),
+                    ),
+                    phase=ServicePhase.STOPPING,
+                    process=process,
+                )
+            )
+
+            class MissingThenStartAdapter(Adapter):
+                def reconcile(self, state, launch):
+                    self.reconcile_calls += 1
+                    if state.phase is ServicePhase.STOPPING:
+                        return None, ("proc-missing:34",)
+                    return state.process, ()
+
+            adapter = MissingThenStartAdapter()
+            report = make_service_supervisor(store, adapter).start_exact(launch)
+            self.assertEqual(report.state.phase, ServicePhase.RUNNING)
+            self.assertIsNotNone(report.state.process)
+            self.assertEqual(adapter.start_calls, 1)
+            self.assertEqual(adapter.reconcile_calls, 2)
+            self.assertIn(
+                "service-stop-recovery:exact-process-missing",
+                report.evidence_refs,
+            )
+            self.assertIn("proc-missing:34", report.evidence_refs)
+
     def test_stopping_state_is_not_overwritten_by_start_verification(self) -> None:
         with TemporaryDirectory() as td:
             launch = contract()
