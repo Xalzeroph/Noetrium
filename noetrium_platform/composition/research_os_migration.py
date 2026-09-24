@@ -684,9 +684,10 @@ def materialize_research_os_execution_migration(
                     f"{node_id}"
                 )
             if (
-                execution_store.snapshot(plan.target_cut.cut_id)
-                .node(node_id)
-                .state
+                execution_store.node_state(
+                    plan.target_cut.cut_id,
+                    node_id,
+                ).state
                 is not ResearchGraphLiveNodeState.CANCELLED
             ):
                 raise ResearchGraphExecutionConflict(
