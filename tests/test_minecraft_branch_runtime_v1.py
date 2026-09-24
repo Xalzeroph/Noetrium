@@ -162,7 +162,7 @@ def _request() -> MinecraftBranchRuntimeRequest:
         cleanup_ref="cleanup:candidate-a",
     )
     env = MinecraftEnvironmentSpec(
-        endpoint=MinecraftEndpointSpec("127.0.0.1", 25565),
+        endpoint=MinecraftEndpointSpec(),
         bridge=MinecraftBridgeSpec(("node", "bridge.js"), r"C:\mc\bridge"),
         agent=MinecraftAgentSpec(username="platform_bot", version="1.20.1"),
     )
@@ -413,7 +413,7 @@ def test_branch_runtime_rebinds_game_and_rcon_generation_together() -> None:
         request,
         server_template=replace(
             request.server_template,
-            rcon_endpoint=MinecraftRconEndpoint(port=25575),
+            rcon_endpoint=MinecraftRconEndpoint(),
         ),
     )
     factory = MinecraftBranchRuntimeFactory(
@@ -581,7 +581,7 @@ def test_branch_runtime_allocates_and_rebinds_rcon_endpoint_as_part_of_branch_tr
     request = _request()
     request = replace(
         request,
-        server_template=replace(request.server_template, rcon_endpoint=MinecraftRconEndpoint(port=25575)),
+        server_template=replace(request.server_template, rcon_endpoint=MinecraftRconEndpoint()),
     )
 
     binding = factory.open(request)
@@ -637,7 +637,7 @@ def test_branch_runtime_releases_all_endpoints_when_binding_confirmation_fails()
     request = _request()
     request = replace(
         request,
-        server_template=replace(request.server_template, rcon_endpoint=MinecraftRconEndpoint(port=25575)),
+        server_template=replace(request.server_template, rcon_endpoint=MinecraftRconEndpoint()),
     )
     factory = MinecraftBranchRuntimeFactory(
         endpoint_allocations=allocations,
