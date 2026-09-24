@@ -21,7 +21,7 @@
 
 <!-- readme-locale:fr -->
 
-<!-- readme-source-sha256:24c8d32126332e24f0b8b6e6302432fdedfd8a5126fd7a40592dd97d59410d30 -->
+<!-- readme-source-sha256:145c0cfcb1d6b183dd096579dd0f23dbfdac92c360dbeec1c01a525d9aa672bc -->
 
 <p align="center">
   <strong>Construisez des agents. Exécutez des expériences. Vérifiez les résultats.</strong><br>
@@ -225,9 +225,15 @@ Le code downstream importe les contracts stables et les components réutilisable
 
 <!-- readme-section:containers -->
 
-## Container workflow
+## Flux de conteneurs et d’environnements
 
-Noetrium treats execution environments as a revisioned fleet, not as one mutable container per paper. The host contract is Docker + Compose; host Python is not required.
+Noetrium traite les environnements d’exécution comme une flotte révisionnée, et non comme un conteneur mutable par article. Le contrat hôte se limite à Docker + Compose ; Python n’est pas requis sur l’hôte.
+
+Le point d’entrée serveur canonique est `./deploy/noetrium`. `./deploy/noetrium run` enchaîne avec les droits d’un utilisateur ordinaire la qualification Docker/Compose, la construction ou réutilisation exacte de l’environnement, la matérialisation des authorities de la flotte, le preflight et l’exécution de Research OS en mode fail-close. Il n’invoque jamais `sudo` ; le compte doit seulement accéder au Docker daemon actif (groupe Docker ou Docker rootless), et les hôtes GPU doivent disposer du NVIDIA container runtime. Les deux chemins de fleet authority factory reçoivent le même typed execution context, empêchant les providers downstream de créer des authorities parallèles pour Docker, endpoint, compute/GPU, environment, model, workspace ou execution pool.
+
+La Resource authority contrôle l’allocation dynamique des ports hôte : elle demande des candidates au kernel, vérifie la disponibilité réelle du bind, évite les endpoints occupés ou leased, applique un fencing atomique, renouvelle les leases actives et rend le port physique réutilisable après release. Les endpoints automatiques sont platform-managed par défaut. Papers, model replicas, branches Minecraft et environment providers déclarent seulement leur besoin d’un endpoint ; ils ne choisissent pas le port concret.
+
+Chaque state root appartient à un seul `ManagedResearchRuntime`, protégé par `managed-research-runtime.lock`. Lors d’un arrêt normal, les workloads Experiment et Model-I/O sont d’abord scellés puis physiquement joints ; les processus de modèles sont ensuite arrêtés sans modifier le durable desired state, puis les conteneurs Docker gérés, générations d’EnvironmentInstance et allocations endpoint/compute/GPU sont nettoyés, et le verrou est libéré en dernier. Si la convergence du workload ne peut pas être prouvée, le cleanup échoue de manière sûre et ne libère pas les ressources sous un travail potentiellement vivant. HUP/INT/TERM supprime aussi le bootstrap container jetable. SIGKILL, une panne du daemon, une perte SSH ou une coupure hôte ne peuvent exécuter le cleanup au moment exact de la panne ; le kernel libère le verrou, les heartbeats cessent, les leases expirent, puis le prochain démarrage réconcilie synchroniquement l’état physique et durable avant d’admettre du travail. Les bootstrap containers disposent aussi d’un orphan reaper fondé sur PID + boot-id + process-start generation. Workspaces, checkpoints, artifacts, evidence et Machine Journals sont des supports durables de recovery, nettoyés seulement par retention/GC explicite après recovery et evidence closure.
 
 ```bash
 ./deploy/build-environments.sh validate

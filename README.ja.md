@@ -21,7 +21,7 @@
 
 <!-- readme-locale:ja -->
 
-<!-- readme-source-sha256:24c8d32126332e24f0b8b6e6302432fdedfd8a5126fd7a40592dd97d59410d30 -->
+<!-- readme-source-sha256:145c0cfcb1d6b183dd096579dd0f23dbfdac92c360dbeec1c01a525d9aa672bc -->
 
 <p align="center">
   <strong>研究システムを構成する。帰属可能な実行を走らせる。証拠を検証する。</strong><br>
@@ -255,11 +255,13 @@ python scripts/check_readme_i18n.py
 
 ## コンテナと環境ワークフロー
 
-Noetrium は execution environment を、論文ごとの可変コンテナではなく revisioned environment fleet として管理します。Host contract は Docker + Compose だけで、host Python は不要です。
+Noetrium は execution environment を論文ごとの可変コンテナではなく revisioned environment fleet として管理します。Host contract は Docker + Compose のみで、host Python は不要です。
 
-サーバーの統一エントリポイントは `./deploy/noetrium` です。`./deploy/noetrium run` は一般ユーザー権限のまま Docker/Compose の適格性確認、正確な environment image の build/reuse、fleet authority 監査、preflight、Research OS 実行を fail-close で連結します。`sudo` は呼び出しません。アカウントには現在の Docker daemon へのアクセス（Docker group または rootless Docker）だけが必要で、GPU host には NVIDIA container runtime が事前に必要です。科学的 binding は推測しません。`./deploy/noetrium requirements` は作業を開始せずに、content-addressed な benchmark/reproduction authority 要件を出力します。実行時は `NOETRIUM_FLEET_AUTHORITY_MATERIALIZER=module:factory` を優先し、owner system が prerequisite → ProjectManifest → execution-owner の 3 段階で正確な registry を物化します。`NOETRIUM_FLEET_EXECUTION_AUTHORITY=module:factory` は低レベルの完全構成済み authority bundle の上書き入口としてのみ残します。どちらも設定されていない場合、`preflight`/`run` は prerequisite manifest を deployment state に書き出し、execution cut を作成する前に fail-close します。
+サーバーの統一エントリポイントは `./deploy/noetrium` です。一般ユーザー権限の `./deploy/noetrium run` が Docker/Compose の適格性確認、正確な環境 build/reuse、fleet authority materialization、preflight、Research OS 実行を fail-close で連結します。`sudo` は呼び出しません。必要なのは Docker daemon へのアクセス（Docker group または rootless Docker）だけで、GPU host には NVIDIA container runtime が事前に必要です。両方の fleet authority factory は同じ typed execution context を受け取るため、downstream provider が別の Docker、endpoint、compute/GPU、environment、model、workspace、execution pool authority を作ることはできません。
 
-Host port は Resource authority が一元管理します。kernel-selected candidate を取得し、現在の OS bind availability を probe し、使用中または lease 中の endpoint を避け、atomic fencing で並行競合を防ぎ、live lease を更新し、release 後の physical port を再利用可能にします。Paper、model replica、environment provider が host port をハードコードする必要はありません。以下の `build-environments.sh` は低レベル profile inspection / maintenance 用に残します。
+動的 host port は Resource authority が一元管理します。kernel から candidate を取得し、OS bind availability を probe し、使用中または lease 中の endpoint を避け、atomic fencing で競合を防ぎ、live lease を更新し、release 後の physical port を再利用可能にします。自動割り当て endpoint は既定で platform-managed です。Paper、model replica、Minecraft branch、environment provider は endpoint の必要性だけを宣言し、具体的な host port は選びません。
+
+各 state root は 1 つの `ManagedResearchRuntime` だけが所有し、cross-process `managed-research-runtime.lock` で fence されます。通常の shutdown では、まず Experiment と Model-I/O の workload を seal して物理的に join し、durable desired state を変更せずに model process を停止し、その後 managed Docker container、EnvironmentInstance generation、endpoint allocation、compute/GPU allocation を cleanup し、最後に process lock を解放します。workload の収束を証明できない場合は fail-safe とし、動作中の可能性がある処理の下で port/GPU を解放しません。HUP/INT/TERM では disposable bootstrap container も削除します。SIGKILL、daemon 障害、SSH 切断、host power loss では故障瞬間の cleanup は実行できないため、kernel lock の自動解放、heartbeat 停止、lease expiry と次回起動前の同期 reconciliation で収束します。bootstrap container には PID + boot-id + process-start generation による orphan reaper もあります。workspace、checkpoint、artifact、evidence、Machine Journal は recovery carrier なので crash 時に自動削除せず、recovery と evidence closure 後に明示的 retention/GC で回収します。
 
 ```bash
 ./deploy/build-environments.sh validate

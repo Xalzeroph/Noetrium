@@ -21,7 +21,7 @@
 
 <!-- readme-locale:ru -->
 
-<!-- readme-source-sha256:24c8d32126332e24f0b8b6e6302432fdedfd8a5126fd7a40592dd97d59410d30 -->
+<!-- readme-source-sha256:145c0cfcb1d6b183dd096579dd0f23dbfdac92c360dbeec1c01a525d9aa672bc -->
 
 <p align="center">
   <strong>Создавайте агентов. Запускайте эксперименты. Проверяйте результаты.</strong><br>
@@ -225,9 +225,15 @@ Downstream-код импортирует стабильные contracts и по�
 
 <!-- readme-section:containers -->
 
-## Container workflow
+## Контейнеры и окружения
 
-Noetrium treats execution environments as a revisioned fleet, not as one mutable container per paper. The host contract is Docker + Compose; host Python is not required.
+Noetrium рассматривает среды выполнения как ревизируемый fleet, а не как изменяемый контейнер на каждую статью. Контракт хоста ограничен Docker + Compose; Python на хосте не требуется.
+
+Каноническая серверная точка входа — `./deploy/noetrium`. `./deploy/noetrium run` под правами обычного пользователя объединяет проверку Docker/Compose, точную сборку или повторное использование окружения, материализацию authority флота, preflight и выполнение Research OS в fail-close режиме. `sudo` никогда не вызывается; аккаунту нужен только доступ к активному Docker daemon (группа Docker или rootless Docker), а GPU-хосту — NVIDIA container runtime. Оба пути fleet authority factory получают один typed execution context, поэтому downstream providers не могут создавать параллельные authorities для Docker, endpoint, compute/GPU, environment, model, workspace или execution pool.
+
+Resource authority владеет динамическим размещением host ports: запрашивает candidates у kernel, проверяет реальную доступность bind, обходит занятые или leased endpoints, применяет атомарный fencing, продлевает активные leases и разрешает повторное использование физического порта после release. Автоматические endpoints по умолчанию platform-managed. Papers, model replicas, Minecraft branches и environment providers только заявляют необходимость endpoint и не выбирают конкретный host port.
+
+Каждый state root принадлежит одному `ManagedResearchRuntime` и защищён `managed-research-runtime.lock`. При нормальном shutdown сначала закрывается приём и физически сходятся workloads Experiment и Model-I/O, затем останавливаются model processes без изменения durable desired state, после чего очищаются управляемые Docker containers, поколения EnvironmentInstance и endpoint/compute/GPU allocations; lock освобождается последним. Если сходимость workload доказать нельзя, cleanup работает fail-safe и не освобождает ресурсы под потенциально живой работой. HUP/INT/TERM также удаляет одноразовый bootstrap container. SIGKILL, сбой Docker daemon, потеря SSH или отключение питания не позволяют выполнить cleanup непосредственно в момент аварии; kernel автоматически освобождает lock, heartbeats прекращаются, leases истекают, а следующий запуск синхронно reconciles физическое и durable состояние до допуска новой работы. Для bootstrap containers действует дополнительный orphan reaper по PID + boot-id + process-start generation. Workspaces, checkpoints, artifacts, evidence и Machine Journals — durable носители recovery и удаляются только явным retention/GC после recovery и evidence closure.
 
 ```bash
 ./deploy/build-environments.sh validate

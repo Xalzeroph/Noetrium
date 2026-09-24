@@ -21,7 +21,7 @@
 
 <!-- readme-locale:ko -->
 
-<!-- readme-source-sha256:24c8d32126332e24f0b8b6e6302432fdedfd8a5126fd7a40592dd97d59410d30 -->
+<!-- readme-source-sha256:145c0cfcb1d6b183dd096579dd0f23dbfdac92c360dbeec1c01a525d9aa672bc -->
 
 <p align="center">
   <strong>연구 시스템을 구성하고, 귀속 가능한 실행을 수행하고, 증거를 검증하세요.</strong><br>
@@ -257,9 +257,11 @@ python scripts/check_readme_i18n.py
 
 Noetrium은 실행 환경을 논문별 mutable container가 아니라 revisioned environment fleet으로 관리합니다. Host contract는 Docker + Compose뿐이며 host Python은 필요하지 않습니다.
 
-서버의 통합 진입점은 `./deploy/noetrium`입니다. `./deploy/noetrium run`은 일반 사용자 권한으로 Docker/Compose 검증, 정확한 environment image build/reuse, fleet authority 감사, preflight, Research OS 실행을 fail-close 방식으로 연결합니다. `sudo`를 호출하지 않습니다. 계정은 현재 Docker daemon에 접근할 수 있으면 되며(Docker group 또는 rootless Docker), GPU host에는 NVIDIA container runtime이 미리 설치되어 있어야 합니다. 과학적 binding은 추측하지 않습니다. `./deploy/noetrium requirements`는 작업을 시작하지 않고 content-addressed benchmark/reproduction authority 요구 사항을 출력합니다. 실행 시에는 `NOETRIUM_FLEET_AUTHORITY_MATERIALIZER=module:factory`를 우선 사용하며 owner system이 prerequisite → ProjectManifest → execution-owner의 세 단계로 정확한 registry를 물화합니다. `NOETRIUM_FLEET_EXECUTION_AUTHORITY=module:factory`는 저수준의 완전히 구성된 authority bundle override로만 유지됩니다. 둘 다 설정하지 않으면 `preflight`/`run`이 prerequisite manifest를 deployment state에 기록한 뒤 execution cut을 만들기 전에 fail-close 합니다.
+서버 통합 진입점은 `./deploy/noetrium`입니다. 일반 사용자 권한의 `./deploy/noetrium run`이 Docker/Compose 검증, 정확한 환경 build/reuse, fleet authority materialization, preflight, Research OS 실행을 fail-close 방식으로 연결합니다. `sudo`를 호출하지 않으며 계정은 Docker daemon에 접근할 수 있으면 됩니다(Docker group 또는 rootless Docker). GPU host에는 NVIDIA container runtime이 미리 필요합니다. 두 fleet authority factory는 동일한 typed execution context를 받으므로 downstream provider가 별도의 Docker, endpoint, compute/GPU, environment, model, workspace 또는 execution pool authority를 만들 수 없습니다.
 
-Host port는 Resource authority가 통합 관리합니다. kernel-selected candidate를 얻고 현재 OS bind availability를 probe하며 이미 사용 중이거나 lease된 endpoint를 피하고 atomic fencing으로 동시 충돌을 방지하고 live lease를 갱신하며 release 후 physical port를 다시 사용할 수 있게 합니다. Paper, model replica, environment provider가 host port를 하드코딩할 필요가 없습니다. 아래 `build-environments.sh`는 저수준 profile inspection / maintenance 용도로 유지됩니다.
+동적 host port는 Resource authority가 통합 관리합니다. kernel에서 candidate를 얻고 OS bind availability를 probe하며 사용 중이거나 lease된 endpoint를 피하고 atomic fencing으로 동시 충돌을 막고 live lease를 갱신하며 release 후 physical port를 다시 사용할 수 있게 합니다. 자동 할당 endpoint는 기본적으로 platform-managed입니다. Paper, model replica, Minecraft branch, environment provider는 endpoint가 필요하다고만 선언하고 구체적인 host port는 선택하지 않습니다.
+
+각 state root는 하나의 `ManagedResearchRuntime`만 소유하며 cross-process `managed-research-runtime.lock`으로 fence됩니다. 정상 shutdown은 먼저 Experiment와 Model-I/O workload를 seal하고 물리적으로 join한 뒤 durable desired state를 바꾸지 않고 model process를 중지하고, managed Docker container, EnvironmentInstance generation, endpoint allocation, compute/GPU allocation을 정리한 후 마지막에 process lock을 해제합니다. workload 수렴을 증명하지 못하면 fail-safe로 처리하여 살아 있을 수 있는 작업 아래에서 port/GPU를 해제하지 않습니다. HUP/INT/TERM에서는 disposable bootstrap container도 제거합니다. SIGKILL, Docker daemon 장애, SSH 연결 끊김, host 전원 손실은 장애 순간 cleanup을 실행할 수 없으므로 kernel lock 자동 해제, heartbeat 중단, lease 만료와 다음 시작 전 동기 reconciliation으로 수렴합니다. bootstrap container에는 PID + boot-id + process-start generation 기반 orphan reaper도 있습니다. workspace, checkpoint, artifact, evidence, Machine Journal은 recovery carrier이므로 crash 시 자동 삭제하지 않고 recovery와 evidence closure 후 명시적 retention/GC로 회수합니다.
 
 ```bash
 ./deploy/build-environments.sh validate

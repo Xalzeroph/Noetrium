@@ -21,7 +21,7 @@
 
 <!-- readme-locale:zh-TW -->
 
-<!-- readme-source-sha256:24c8d32126332e24f0b8b6e6302432fdedfd8a5126fd7a40592dd97d59410d30 -->
+<!-- readme-source-sha256:145c0cfcb1d6b183dd096579dd0f23dbfdac92c360dbeec1c01a525d9aa672bc -->
 
 <p align="center">
   <strong>組合研究系統。執行可歸因執行。驗證證據。</strong><br>
@@ -257,9 +257,11 @@ python scripts/check_readme_i18n.py
 
 Noetrium 將執行環境視為可版本化的 environment fleet，而不是「每篇論文一套可變容器」。Host contract 只有 Docker + Compose；不要求 host Python。
 
-伺服器統一入口是 `./deploy/noetrium`。`./deploy/noetrium run` 會以一般使用者權限串接 Docker/Compose 資格檢查、精確環境映像建置或重用、fleet authority 稽核、preflight 與 Research OS 執行，並維持 fail-close。它不會呼叫 `sudo`；帳號只需能存取目前的 Docker daemon（Docker 群組權限或 rootless Docker），GPU 主機則需預先安裝 NVIDIA container runtime。科學綁定不會被推測。`./deploy/noetrium requirements` 會在不啟動工作的情況下輸出內容定址的 benchmark/reproduction authority 需求清單。執行時優先使用 `NOETRIUM_FLEET_AUTHORITY_MATERIALIZER=module:factory`，由 owner system 依 prerequisite → ProjectManifest → execution-owner 三階段物化精確 registry；`NOETRIUM_FLEET_EXECUTION_AUTHORITY=module:factory` 僅保留作為低階完整 authority bundle 覆寫入口。若兩者都未設定，`preflight`/`run` 會先將 prerequisite manifest 寫入 deployment state，並在建立任何 execution cut 前 fail-close。
+伺服器統一入口是 `./deploy/noetrium`。一般使用者執行 `./deploy/noetrium run` 即可串接 Docker/Compose 資格檢查、精確環境建置或重用、fleet authority 物化、preflight 與 Research OS 執行，並維持 fail-close。它不會呼叫 `sudo`；帳號只需能存取目前的 Docker daemon（Docker 群組或 rootless Docker），GPU 主機需預先具備 NVIDIA container runtime。兩種 fleet authority factory 都接收同一個 typed execution context，因此 downstream provider 無法另建 Docker、endpoint、compute/GPU、environment、model、workspace 或 execution pool authority。
 
-Host port 由 Resource authority 統一管理：從 kernel 取得候選 port、探測目前 OS bind 狀態、自動避開已占用或已 lease 的 endpoint、以原子 fencing 防止並行衝突、續租存活 endpoint，並在釋放後允許實體 port 重用。論文、model replica 與 environment provider 不需要硬編碼 host port。下方的 `build-environments.sh` 保留作為低階 profile 檢查與維護入口。
+動態 host port 由 Resource authority 統一管理：向 kernel 取得候選 port、探測 OS bind 狀態、自動避開已占用或已 lease 的 endpoint、以原子 fencing 保護並行 claim、續租 live lease，並在釋放後允許實體 port 重用。自動分配的 endpoint 預設就是 platform-managed。論文、model replica、Minecraft branch 與 environment provider 只宣告需要 endpoint，不選擇具體 host port。
+
+每個 state root 只能由一個 `ManagedResearchRuntime` 持有，並由跨程序 `managed-research-runtime.lock` fencing。正常結束會先封閉並實體收斂 Experiment 與 Model-I/O 工作域，再停止 model 實體程序但保留 durable desired state，接著清理受管 Docker container、EnvironmentInstance generation、endpoint allocation 與 compute/GPU allocation，最後才釋放程序鎖。若無法證明 workload 已收斂，cleanup 會 fail-safe：寧可維持資源 fencing，也不會在可能仍存活的工作底下提前釋放 port 或 GPU。HUP/INT/TERM 會額外刪除一次性 bootstrap container；SIGKILL、Docker daemon 故障、SSH 中斷或主機斷電無法在故障瞬間執行 cleanup，此時 kernel 自動釋放程序鎖、heartbeat 停止、lease 到期，下一次啟動先同步 reconcile 實體資源與 durable state，再接納新工作。bootstrap container 另有 PID + boot-id + process-start generation 的孤兒回收。workspace、checkpoint、artifact、evidence 與 Machine Journal 是恢復載體，不會因 crash 自動刪除；恢復與 evidence closure 完成後再依明確 retention/GC 回收。
 
 ```bash
 ./deploy/build-environments.sh validate
