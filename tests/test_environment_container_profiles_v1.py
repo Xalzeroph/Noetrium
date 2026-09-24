@@ -74,7 +74,10 @@ def test_environment_images_extend_qualified_base_and_install_local_doctors() ->
         assert "ARG PLATFORM_BASE_IMAGE" in text
         assert "FROM ${PLATFORM_BASE_IMAGE}" in text
         assert "environment-doctor.d" in text
-        assert f"/environment-doctor.d/{row['profile_id']}" in text
+        assert f"/environment-doctor.d/{row['category_id']}" in text
+        assert "org.opencontainers.image.noetrium.environment.profile-id" in text
+        assert "org.opencontainers.image.noetrium.environment.category-id" in text
+        assert "org.opencontainers.image.noetrium.environment.profile-revision" in text
         lowered = text.lower()
         for forbidden in ("copy research", "copy benchmarks", "copy datasets", "copy checkpoints", "copy experiments"):
             assert forbidden not in lowered
@@ -104,7 +107,10 @@ def test_environment_writable_state_is_instance_scoped() -> None:
     minecraft = (ROOT / "deploy" / "environments" / "minecraft" / "compose.yaml").read_text(encoding="utf-8")
     assert "PLATFORM_RUNTIME_STATE_ROOT" in base
     assert "PLATFORM_ENVIRONMENT_INSTANCE_ROOT" in minecraft
+    assert "set PLATFORM_RUNTIME_STATE_ROOT to a per-instance writable directory" in base
+    assert "set PLATFORM_ENVIRONMENT_INSTANCE_ROOT to a per-instance writable directory" in minecraft
     assert "${PLATFORM_HOST_DATA_ROOT:-./.runtime}/minecraft" not in minecraft
+    assert "instances/unscoped" not in minecraft
     builder = (ROOT / "scripts" / "build_environment_images.py").read_text(encoding="utf-8")
     assert "qualification_instance" in builder
     assert "PLATFORM_ENVIRONMENT_INSTANCE_ROOT" in builder
@@ -151,6 +157,7 @@ def test_deployment_runtime_images_are_source_configurable_without_remote_fronte
     assert "--java-runtime-canonical-image" in builder
     assert '"runtime_image_sources"' in builder
     assert "profile_revision" in builder
+    assert "_verified_profile_image_identity" in builder
     for dockerfile in (ROOT / "deploy").rglob("Dockerfile"):
         text = dockerfile.read_text(encoding="utf-8")
         assert "# syntax=docker/dockerfile:" not in text
