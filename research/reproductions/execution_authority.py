@@ -36,7 +36,10 @@ from .fleet import (
     ReproductionBenchmarkResolverPort,
     ReproductionFleetExecutionAuthorities,
 )
-from .research_os import ReproductionCapabilityRequirementResolverPort
+from .research_os import (
+    ReproductionCapabilityRequirementResolverPort,
+    ReproductionCapabilitySelectionRegistry,
+)
 
 
 def compose_repository_fleet_execution_authorities(
@@ -116,7 +119,7 @@ def compose_repository_fleet_execution_authorities_from_registries(
     experiment_reconciliation: ResearchOSExperimentReconciliationRegistry,
     experiment_aggregation: ResearchOSExperimentAggregationResolverPort | None = None,
     reproduction_capabilities: (
-        ReproductionCapabilityRequirementResolverPort | None
+        ReproductionCapabilitySelectionRegistry | None
     ) = None,
     benchmarks: ReproductionBenchmarkResolverPort | None = None,
 ) -> ReproductionFleetExecutionAuthorities:
@@ -151,6 +154,16 @@ def compose_repository_fleet_execution_authorities_from_registries(
             raise TypeError(
                 f"registry fleet authority {field_name} must be {expected.__name__}"
             )
+
+    if (
+        reproduction_capabilities is not None
+        and type(reproduction_capabilities)
+        is not ReproductionCapabilitySelectionRegistry
+    ):
+        raise TypeError(
+            "registry fleet authority reproduction_capabilities must be "
+            "ReproductionCapabilitySelectionRegistry"
+        )
 
     return compose_repository_fleet_execution_authorities(
         manifests=manifests,
