@@ -50,15 +50,15 @@ category: minecraft
   minecraft-r3  active    revision=C...  <- default for new executions
 ```
 
-Existing executions remain pinned to the exact `profile_id + profile_revision` recorded by `EnvironmentInstance`.
+Existing executions are pinned to two different identity layers recorded by `EnvironmentInstance`: the logical deployable recipe cut (`profile_id + profile_revision`) and the concrete runtime content identity (`runtime_identity_digest`). Reuse requires all three to match, so the same recipe revision cannot silently cross into a different image/runtime cut on another host.
 
 ## Lifecycle
 
 Profiles have exactly three lifecycle states:
 
 - `active`: eligible for new bindings;
-- `draining`: no default new binding; already pinned executions may finish or resume;
-- `retired`: historical/recovery-only; explicit `--allow-retired` is required to materialize it.
+- `draining`: no default new binding; only an execution with an existing durable pin may resume it;
+- `retired`: historical-recovery-only; runtime use requires historical-recovery intent backed by a durable pin, and explicit `--allow-retired` is required to materialize its image.
 
 Retirement is the logical delete operation. A retired registry row is retained so historical experiments keep a reproducible environment identity.
 
@@ -104,7 +104,7 @@ DIRTY --exact reset/overlay-destroy proof--> CLEAN
 CLEAN/DIRTY/IN_USE(unbound abort) --destroy--> DESTROYED
 ```
 
-Each checkout increments `EnvironmentInstance.generation`. `EnvironmentCleanlinessProof` binds the instance id, immutable profile revision, exact generation, proof kind and proof digest. A proof from generation N cannot certify generation N+1. `reusable_instances()` returns only CLEAN instances.
+Each checkout increments `EnvironmentInstance.generation`. `EnvironmentCleanlinessProof` binds the instance id, immutable profile revision, concrete `runtime_identity_digest`, exact generation, proof kind and proof digest. A proof from generation N cannot certify generation N+1, and a proof for one concrete runtime cannot certify another. `reusable_instances()` returns only CLEAN instances matching the requested profile revision and runtime identity.
 
 The same authority exposes `profile_references()` and `assess_profile_gc()`. Local GC eligibility requires zero live bindings and every catalog instance for that profile revision to be DESTROYED. Final GC is stricter: Execution and Evidence must both provide complete closure results. An unknown/missing external reference set is blocking; an explicit empty tuple means that authority has proven closure. Environment never claims those external truths itself, and physical deletion is eligible only when local references are closed, Execution reports no resumable execution, and Evidence reports no retained dependency.
 
@@ -164,7 +164,7 @@ release source
   -> build receipt
 ```
 
-Build receipts include source SHA, wheel SHA-256, distribution-evidence SHA-256, profile id, category, profile lifecycle, profile revision digest and concrete image identity.
+Build receipts include source SHA, wheel SHA-256, distribution-evidence SHA-256, profile id, category, profile lifecycle, profile revision digest, Docker image metadata, and a normalized `runtime_identity_digest` derived from the content-addressed image identity.
 
 An exact cached base is re-verified before reuse. Profile images are tagged by both source and profile revision, so changing the profile definition cannot silently reuse an older image.
 
@@ -202,6 +202,6 @@ The registry gate rejects downstream benchmark/paper content in platform-owned i
 
 Never overwrite a revision in place.
 
-Create a new profile revision, make it the active default, move the prior revision to draining, and only later mark it retired after no new work can bind it. Existing `EnvironmentInstance` records keep their exact deployment revision.
+Create a new profile revision, make it the active default, move the prior revision to draining, and only later mark it retired after no new work can bind it and no instance is still in use. Existing `EnvironmentInstance` records keep both their exact deployment revision and concrete runtime identity.
 
 This gives Noetrium Git-like environment evolution: new executions move forward while old executions remain recoverable and attributable.
