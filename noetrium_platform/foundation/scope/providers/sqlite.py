@@ -5,8 +5,8 @@ import sqlite3
 
 from noetrium_platform.foundation.kernel.kernel.logical_path import logical_absolute_path
 from noetrium_platform.foundation.kernel.kernel.durability.sqlite import (
-    begin_immediate_sqlite_transaction,
     durable_sqlite_connection,
+    immediate_sqlite_transaction,
 )
 from noetrium_platform.foundation.scope.api import PLATFORM_SCOPE, ScopeIdentity, ScopeKind, ScopeLink
 from noetrium_platform.foundation.scope.runtime import ScopeNotRegistered, ScopeRegistryConflict
@@ -102,11 +102,11 @@ class SQLiteScopeRegistry:
     def register(self, scope: ScopeIdentity, parent: ScopeIdentity | None) -> None:
         self._validate_parent(scope, parent)
         with self._connection() as conn:
-            begin_immediate_sqlite_transaction(
+            with immediate_sqlite_transaction(
                 conn,
                 timeout_seconds=self.timeout_seconds,
-            )
-            try:
+                label="scope registry",
+            ):
                 if parent is not None:
                     parent_row = conn.execute(
                         "SELECT 1 FROM scopes WHERE scope_key=?", (parent.key,)
@@ -121,17 +121,11 @@ class SQLiteScopeRegistry:
                 if row is not None:
                     if row[2] != parent_key:
                         raise ScopeRegistryConflict(f"scope parent already fixed: {scope.key}")
-                    conn.commit()
                     return
                 conn.execute(
                     "INSERT INTO scopes(scope_key,kind,scope_id,parent_key) VALUES(?,?,?,?)",
                     (scope.key, scope.kind.value, scope.scope_id, parent_key),
                 )
-                conn.commit()
-            except BaseException:
-                if conn.in_transaction:
-                    conn.rollback()
-                raise
 
     def parent(self, scope: ScopeIdentity) -> ScopeIdentity | None:
         with self._connection() as conn:
