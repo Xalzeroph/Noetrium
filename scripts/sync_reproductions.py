@@ -15,6 +15,7 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 from noetrium_platform.foundation.kernel.kernel import canonical_digest, thaw_json
+from research.reproductions.benchmark_authority import RepositoryBenchmarkAuthority
 from research.reproductions.provenance import (
     MethodSourceLane,
     MethodSourceRegistry,
@@ -36,11 +37,12 @@ from research.reproductions.research_os import (
     is_research_os_executable,
     resolve_benchmark_split_consumers,
     resolve_execution_requirements,
+    resolve_study_factory_bindings,
 )
 
-PROJECTION_SCHEMA = "noetrium.reproduction.projection.v9"
+PROJECTION_SCHEMA = "noetrium.reproduction.projection.v10"
 REPRODUCTION_CATALOG_SCHEMA = "noetrium.reproduction-catalog.projection.v1"
-REPRODUCTION_RESEARCH_OS_STATUS_SCHEMA = "noetrium.reproduction-research-os-status.v2"
+REPRODUCTION_RESEARCH_OS_STATUS_SCHEMA = "noetrium.reproduction-research-os-status.v3"
 REPRODUCTION_CATALOG_AUTHORITY = "generated_from_typed_reproduction_definitions"
 _ALLOWED_DEFINITION_IMPORTS = {"__future__", "research.reproductions.contracts"}
 _ALLOWED_SOURCE_IMPORTS = {
@@ -227,6 +229,7 @@ def _delta(row: ReproductionDelta) -> dict[str, Any]:
 def _projection(
     definition: ReproductionDefinition,
     sources: MethodSourceRegistry,
+    benchmark_authority: RepositoryBenchmarkAuthority,
 ) -> dict[str, Any]:
     assets = [_asset(row) for row in definition.assets]
     scientific_tests = [_scientific_test(path) for path in definition.scientific_tests]
@@ -234,23 +237,58 @@ def _projection(
         program = compile_reproduction_research_program(definition)
         requirements = resolve_execution_requirements(definition)
         split_consumers = resolve_benchmark_split_consumers(definition)
+        benchmark_selection_digests: list[str] = []
+        benchmark_blockers: list[str] = []
+        factories = resolve_study_factory_bindings(definition)
+        for factory in factories:
+            try:
+                selections = benchmark_authority.resolve(definition, factory)
+            except BaseException as exc:
+                benchmark_blockers.append(
+                    type(exc).__name__ + ":" + str(exc)
+                )
+                continue
+            benchmark_selection_digests.extend(
+                row.selection_digest for row in selections
+            )
+        benchmark_authority_state = (
+            "closed"
+            if not benchmark_blockers
+            and len(benchmark_selection_digests) >= len(factories)
+            else "required"
+        )
+        reproduction_closure_state = (
+            "required" if requirements else "closed"
+        )
+        materialization_ready = (
+            benchmark_authority_state == "closed"
+            and reproduction_closure_state == "closed"
+        )
         research_os = {
             "surface": "noetrium.api",
             "execution_state": (
-                "closure_binding_required"
-                if requirements
+                "benchmark_authority_required"
+                if benchmark_authority_state != "closed"
                 else (
-                    "benchmark_binding_required"
-                    if split_consumers
-                    else "execution_ready"
+                    "reproduction_closure_required"
+                    if reproduction_closure_state != "closed"
+                    else "execution_authority_required"
                 )
             ),
             "program_id": program.program_id,
             "program_digest": program.program_digest,
+            "benchmark_authority": {
+                "state": benchmark_authority_state,
+                "selection_digests": sorted(benchmark_selection_digests),
+                "blockers": sorted(set(benchmark_blockers)),
+            },
             "benchmark_split_axis": {
                 "required": bool(split_consumers),
                 "consumers": list(split_consumers),
             },
+            "reproduction_closure_state": reproduction_closure_state,
+            "execution_authority_state": "required",
+            "materialization_ready": materialization_ready,
             "execution_requirements": [
                 {
                     "parameter": row.parameter,
@@ -267,10 +305,18 @@ def _projection(
             "execution_state": "not_executable",
             "program_id": None,
             "program_digest": None,
+            "benchmark_authority": {
+                "state": "not_applicable",
+                "selection_digests": [],
+                "blockers": [],
+            },
             "benchmark_split_axis": {
                 "required": False,
                 "consumers": [],
             },
+            "reproduction_closure_state": "not_applicable",
+            "execution_authority_state": "not_applicable",
+            "materialization_ready": False,
             "execution_requirements": [],
         }
     package_digest = canonical_digest(
@@ -419,6 +465,7 @@ def sync(*, check: bool) -> int:
     )
     rows: list[tuple[ReproductionDefinition, MethodSourceRegistry]] = []
     projections: list[dict[str, Any]] = []
+    benchmark_authority = RepositoryBenchmarkAuthority.discover()
     drift: list[str] = []
 
     for package_dir in package_dirs:
@@ -427,7 +474,7 @@ def sync(*, check: bool) -> int:
         _validate_paths(package_dir, definition)
         rows.append((definition, sources))
         projection_path = package_dir / "reproduction.json"
-        projection = _projection(definition, sources)
+        projection = _projection(definition, sources, benchmark_authority)
         projections.append(projection)
         expected = _render_json(projection)
         current = projection_path.read_text(encoding="utf-8") if projection_path.is_file() else ""
@@ -463,7 +510,11 @@ def sync(*, check: bool) -> int:
             "program_id": projection["research_os"]["program_id"],
             "program_digest": projection["research_os"]["program_digest"],
             "benchmark_ids": projection["catalog"]["benchmark_ids"],
+            "benchmark_authority": projection["research_os"]["benchmark_authority"],
             "benchmark_split_axis": projection["research_os"]["benchmark_split_axis"],
+            "reproduction_closure_state": projection["research_os"]["reproduction_closure_state"],
+            "execution_authority_state": projection["research_os"]["execution_authority_state"],
+            "materialization_ready": projection["research_os"]["materialization_ready"],
             "execution_requirements": projection["research_os"]["execution_requirements"],
         }
         for projection in sorted(projections, key=lambda row: row["package"])
