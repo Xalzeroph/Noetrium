@@ -21,7 +21,7 @@
 
 <!-- readme-locale:zh-TW -->
 
-<!-- readme-source-sha256:1d097532f66055a05778d749cb2a1cb375e5120edd090aef4857370acf9fe5ba -->
+<!-- readme-source-sha256:fe58dc78f1f88f005dd5ef21f96e7098d741120348c4bdde5ca91bbc82146271 -->
 
 <p align="center">
   <strong>組合研究系統。執行可歸因執行。驗證證據。</strong><br>
