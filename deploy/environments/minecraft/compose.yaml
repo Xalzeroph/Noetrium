@@ -16,7 +16,7 @@ services:
       MC_DATA_DIR: /var/lib/minecraft
     volumes:
       - type: bind
-        source: ${PLATFORM_ENVIRONMENT_INSTANCE_ROOT:-./.runtime/instances/unscoped}/minecraft
+        source: ${PLATFORM_ENVIRONMENT_INSTANCE_ROOT:?set PLATFORM_ENVIRONMENT_INSTANCE_ROOT to a per-instance writable directory}/minecraft
         target: /var/lib/minecraft
     healthcheck:
       test: ["CMD", "/usr/local/bin/noetrium-entrypoint", "environment-doctor", "minecraft"]
