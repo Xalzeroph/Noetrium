@@ -4,7 +4,6 @@ from collections import deque
 from dataclasses import dataclass
 import json
 import os
-from pathlib import Path
 import queue
 import subprocess
 import threading
@@ -50,7 +49,6 @@ class JsonlProcessError(RuntimeError):
 class JsonlProcessSpec:
     command: tuple[str, ...]
     cwd: str
-    stderr_log_path: str | None = None
     stdout_queue_capacity: int = 4096
 
     def __post_init__(self) -> None:
@@ -58,10 +56,6 @@ class JsonlProcessSpec:
             raise ValueError("JSONL process command must be non-empty")
         if type(self.cwd) is not str or not self.cwd.strip():
             raise ValueError("JSONL process cwd must be non-empty")
-        if self.stderr_log_path is not None and (
-            type(self.stderr_log_path) is not str or not self.stderr_log_path.strip()
-        ):
-            raise ValueError("JSONL process stderr_log_path must be non-empty when provided")
         if type(self.stdout_queue_capacity) is not int or self.stdout_queue_capacity <= 0:
             raise ValueError("JSONL process stdout_queue_capacity must be positive")
 
@@ -152,7 +146,6 @@ class JsonlProcessTransport:
         self._process: JsonlProcess | None = None
         self._stdout_task: TaskHandlePort[None] | None = None
         self._stderr_task: TaskHandlePort[None] | None = None
-        self._stderr_handle: TextIO | None = None
         self._process_supervisor = process_supervisor
 
     @property
@@ -218,23 +211,11 @@ class JsonlProcessTransport:
         if process is None or process.stderr is None:
             return
         try:
-            if self.spec.stderr_log_path:
-                path = Path(self.spec.stderr_log_path)
-                path.parent.mkdir(parents=True, exist_ok=True)
-                self._stderr_handle = path.open("a", encoding="utf-8", buffering=1)
-            try:
-                for line in iter(process.stderr.readline, ""):
-                    text = line.rstrip("\r\n")
-                    self._stderr_tail.append(text)
-                    if self._stderr_handle is not None:
-                        self._stderr_handle.write(line)
-            except (OSError, ValueError):
-                if not self._stdout_stop.is_set():
-                    raise
-        finally:
-            if self._stderr_handle is not None:
-                self._stderr_handle.close()
-                self._stderr_handle = None
+            for line in iter(process.stderr.readline, ""):
+                self._stderr_tail.append(line.rstrip("\r\n"))
+        except (OSError, ValueError):
+            if not self._stdout_stop.is_set():
+                raise
 
     def _drain_stdout_task(self, context: TaskContextPort) -> None:
         context.checkpoint()
