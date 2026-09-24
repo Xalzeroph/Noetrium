@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from contextlib import contextmanager
 from hashlib import sha256
 import json
 
@@ -96,6 +97,20 @@ class ModelAssetRegistry:
             raise RuntimeError("invalid model asset retirement document")
         return value["asset_digest"], value["delete_managed_files"], proof
 
+
+    @contextmanager
+    def deployment_admission(self, model_id: str):
+        """Hold the exact asset generation stable through deployment commit."""
+
+        self._validate_id(model_id)
+        with self._lock(model_id):
+            if self._retired_path(model_id).exists():
+                raise RuntimeError(
+                    "model asset is retiring or retired: "
+                    f"{model_id}"
+                )
+            asset = self._read(model_id)
+            yield asset
 
     def ensure_not_retired(self, model_id: str) -> None:
         self._validate_id(model_id)
