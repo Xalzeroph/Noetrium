@@ -282,6 +282,130 @@ class ExperimentRuntimeComponentsForTest:
     run_runtime: object
 
 
+class ExperimentWorkflowSurfaceRegistryForTest:
+    def __init__(self, factories) -> None:
+        self._factories = {factory.surface_id: factory for factory in factories}
+        if len(self._factories) != len(factories):
+            raise ValueError("duplicate workflow surface_id")
+
+    def bind(self, surface_id: str, context):
+        try:
+            factory = self._factories[surface_id]
+        except KeyError as exc:
+            raise LookupError(
+                f"no workflow surface factory for surface_id={surface_id!r}"
+            ) from exc
+        return factory.bind(context)
+
+    def reuse_scope(self, surface_id: str):
+        from noetrium_platform.research.execution.workflow.api import (
+            workflow_surface_reuse_scope,
+        )
+        try:
+            factory = self._factories[surface_id]
+        except KeyError as exc:
+            raise LookupError(
+                f"no workflow surface factory for surface_id={surface_id!r}"
+            ) from exc
+        return workflow_surface_reuse_scope(factory)
+
+
+class ExperimentTrialCycleExecutorForTest:
+    def __init__(
+        self,
+        dispatcher,
+        trial_protocol,
+        *,
+        effect_intents=None,
+        workflow_surface_factories=(),
+        machine_journal=None,
+        machine_snapshot_store=None,
+    ) -> None:
+        from noetrium_platform.research.execution.workflow.api import (
+            require_execution_trial_protocol,
+        )
+
+        self.dispatcher = dispatcher
+        self.trial_protocol = require_execution_trial_protocol(trial_protocol)
+        self.effect_intents = effect_intents
+        self._surface_registry = ExperimentWorkflowSurfaceRegistryForTest(
+            workflow_surface_factories
+        )
+        self._machine_journal = machine_journal
+        self._machine_snapshot_store = machine_snapshot_store
+        self._run_surface_key = None
+        self._run_surface = None
+
+    def _surface_for(self, *, surface_id, run_id, surface_context):
+        from noetrium_platform.research.execution.workflow.api import (
+            WorkflowSurfaceReuseScope,
+        )
+
+        if (
+            self._surface_registry.reuse_scope(surface_id)
+            is not WorkflowSurfaceReuseScope.RUN
+        ):
+            return self._surface_registry.bind(surface_id, surface_context)
+
+        key = (
+            surface_id,
+            run_id,
+            id(surface_context.bound),
+            id(surface_context.participant_sessions),
+            id(surface_context.effect_intents),
+            id(surface_context.machine_journal),
+            id(surface_context.machine_snapshot_store),
+        )
+        if self._run_surface_key != key or self._run_surface is None:
+            self._run_surface = self._surface_registry.bind(
+                surface_id,
+                surface_context,
+            )
+            self._run_surface_key = key
+        return self._run_surface
+
+    def execute(
+        self,
+        *,
+        bound,
+        participant_sessions,
+        context,
+        task,
+        input_kind,
+        input_payload,
+    ):
+        from noetrium_platform.research.execution.workflow.api import (
+            TrialCycleExecution,
+            WorkflowSurfaceBindingContext,
+            workflow_surface_id,
+        )
+
+        surface_context = WorkflowSurfaceBindingContext(
+            context.run_id,
+            self.dispatcher,
+            bound,
+            participant_sessions,
+            self.effect_intents,
+            self._machine_journal,
+            self._machine_snapshot_store,
+        )
+        surface = self._surface_for(
+            surface_id=workflow_surface_id(self.trial_protocol),
+            run_id=context.run_id,
+            surface_context=surface_context,
+        )
+        result = self.trial_protocol.run(
+            surface,
+            context,
+            task=task,
+            input_kind=input_kind,
+            input_payload=input_payload,
+        )
+        if not isinstance(result, TrialCycleExecution):
+            raise TypeError("ExperimentTrialProtocol must return TrialCycleExecution")
+        return result
+
+
 class ExperimentComponentBinderForTest:
     def __init__(self, resolver) -> None:
         self._resolver = resolver
@@ -339,7 +463,6 @@ def build_experiment_runtime_components_for_test(
         ParticipantLifecycleAdapterRegistry,
     )
     from noetrium_platform.research.experimentation.lifecycle.experiment.runtime import (
-        ExperimentTrialCycleExecutor,
         trial_protocol_identity,
     )
     from noetrium_platform.capabilities.participant.session.runtime.checkpoint_runtime import (
@@ -408,7 +531,7 @@ def build_experiment_runtime_components_for_test(
         if effect_journal is not None
         else None
     )
-    trial_cycle = ExperimentTrialCycleExecutor(
+    trial_cycle = ExperimentTrialCycleExecutorForTest(
         dispatcher,
         trial_protocol,
         effect_intents=effect_intents,
