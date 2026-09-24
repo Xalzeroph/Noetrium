@@ -148,11 +148,11 @@ def test_release_updates_lease_and_allocation_in_one_transaction() -> None:
         allocator = AtomicEndpointAllocator(reservations=store, probe=_AvailableProbe())
         allocation = allocator.allocate(_request("release"))
 
-        released = allocator.release("release")
+        released = allocator.release(allocation)
         assert released.state is EndpointAllocationState.RELEASED
         lease = SQLiteResourceLeaseRegistry(database).get(allocation.lease_id)
         assert lease.state is LeaseState.RELEASED
-        assert allocator.release("release") == released
+        assert allocator.release(allocation) == released
 
 
 def test_endpoint_lease_persists_canonical_acquire_and_release_provenance() -> None:
@@ -167,7 +167,7 @@ def test_endpoint_lease_persists_canonical_acquire_and_release_provenance() -> N
         assert acquired.acquired_at_epoch_s is not None
         assert acquired.released_at_epoch_s is None
 
-        allocator.release(allocation.allocation_id)
+        allocator.release(allocation)
         released = leases.get(allocation.lease_id)
         assert released.state is LeaseState.RELEASED
         assert released.released_at_epoch_s is not None
@@ -206,7 +206,10 @@ def test_early_external_lease_release_is_reconciled_by_point_get() -> None:
         allocator = AtomicEndpointAllocator(reservations=store, probe=_AvailableProbe())
         allocation = allocator.allocate(_request("orphan"))
 
-        SQLiteResourceLeaseRegistry(database).release(allocation.lease_id)
+        SQLiteResourceLeaseRegistry(database).release(
+            allocation.lease_id,
+            fencing_token=allocation.lease_fencing_token,
+        )
         current = store.get("orphan")
         assert current is not None
         assert current.state is EndpointAllocationState.RELEASED
