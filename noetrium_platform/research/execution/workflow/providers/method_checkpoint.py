@@ -145,8 +145,10 @@ class JsonMethodCheckpointStore(MethodCheckpointStorePort):
                 finally:
                     stream.seek(0)
                     msvcrt.locking(stream.fileno(), msvcrt.LK_UNLCK, 1)
-            else:  # pragma: no cover - unsupported platform fallback
-                yield
+            else:  # pragma: no cover - unsupported host family
+                raise RuntimeError(
+                    "method checkpoint durability requires POSIX flock or Windows locking"
+                )
 
     def _load_unlocked(self, path: Path, run_id: str) -> MethodCheckpoint | None:
         if not path.exists():
