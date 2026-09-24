@@ -9,8 +9,12 @@ from noetrium_platform.evidence.artifact.content.api import (
     ArtifactBlobStoreError,
     ArtifactBlobStorePort,
 )
-from noetrium_platform.foundation.kernel.kernel.durability import InterprocessFileLock
-from noetrium_platform.foundation.kernel.kernel.durability.durable_file import atomic_replace_bytes
+from noetrium_platform.foundation.kernel.kernel.durability import (
+    InterprocessFileLock,
+    durable_publish_immutable_bytes,
+    durable_unlink,
+    fsync_directory,
+)
 
 
 class DirectoryArtifactBlobStore(ArtifactBlobStorePort):
@@ -23,7 +27,9 @@ class DirectoryArtifactBlobStore(ArtifactBlobStorePort):
         self.root = Path(root)
         self.root.mkdir(parents=True, exist_ok=True)
         self._lock_root = self.root / ".locks"
+        self._staging_root = self.root / ".staging"
         self._lock_root.mkdir(parents=True, exist_ok=True)
+        self._staging_root.mkdir(parents=True, exist_ok=True)
         self._local_locks = tuple(
             RLock() for _ in range(self._LOCK_SHARDS)
         )
@@ -75,6 +81,12 @@ class DirectoryArtifactBlobStore(ArtifactBlobStorePort):
                 "artifact blob digest collision"
             )
 
+    def _cleanup_staging(self, path: Path) -> None:
+        for candidate in tuple(
+            sorted(self._staging_root.glob(f"{path.name}.immutable.*"))
+        ):
+            durable_unlink(candidate)
+
     def put(self, payload: bytes, *, media_type: str) -> ArtifactBlobRef:
         if type(payload) is not bytes:
             raise TypeError("artifact blob payload must be bytes")
@@ -84,11 +96,26 @@ class DirectoryArtifactBlobStore(ArtifactBlobStorePort):
         local_lock = self._local_locks[self._shard_index(digest)]
         with local_lock:
             with InterprocessFileLock(self._lock_path(digest)):
+                self._cleanup_staging(path)
                 if path.exists():
                     self._verify_existing(path, payload, digest)
+                    # A prior publisher may have linked the complete inode but
+                    # failed before directory durability acknowledgement.
+                    fsync_directory(path.parent)
                     return ref
-                path.parent.mkdir(parents=True, exist_ok=True)
-                atomic_replace_bytes(path, payload)
+                try:
+                    durable_publish_immutable_bytes(
+                        path,
+                        payload,
+                        staging_dir=self._staging_root,
+                    )
+                except FileExistsError:
+                    # Uncoordinated external publishers cannot be overwritten.
+                    # Accept only exact immutable content.
+                    self._verify_existing(path, payload, digest)
+                    fsync_directory(path.parent)
+                    return ref
+                self._verify_existing(path, payload, digest)
         return ref
 
     def resolve(
