@@ -1,15 +1,15 @@
 {
   "counts": {
     "parse_errors": 0,
-    "python_files": 3675,
-    "python_import_edges": 7171,
-    "symbols": 4871,
-    "tracked_files": 4305,
+    "python_files": 3676,
+    "python_import_edges": 7177,
+    "symbols": 4872,
+    "tracked_files": 4306,
     "typescript_javascript_files": 11
   },
   "language_symbol_counts": {
     "javascript": 1,
-    "python": 4865,
+    "python": 4866,
     "typescript": 5
   },
   "parse_errors": [],
@@ -4727,67 +4727,13 @@
     {
       "source_module": "noetrium_platform.composition.operator.project.project_research_os_loader",
       "source_role": "core_platform",
-      "target_module": "noetrium_platform.composition.research_os",
-      "target_role": "core_platform"
-    },
-    {
-      "source_module": "noetrium_platform.composition.operator.project.project_research_os_loader",
-      "source_role": "core_platform",
-      "target_module": "noetrium_platform.composition.research_os_execution",
-      "target_role": "core_platform"
-    },
-    {
-      "source_module": "noetrium_platform.composition.operator.project.project_research_os_loader",
-      "source_role": "core_platform",
-      "target_module": "noetrium_platform.composition.research_os_runtime",
-      "target_role": "core_platform"
-    },
-    {
-      "source_module": "noetrium_platform.composition.operator.project.project_research_os_loader",
-      "source_role": "core_platform",
-      "target_module": "noetrium_platform.composition.research_os_value_authorities",
-      "target_role": "core_platform"
-    },
-    {
-      "source_module": "noetrium_platform.composition.operator.project.project_research_os_loader",
-      "source_role": "core_platform",
-      "target_module": "noetrium_platform.composition.research_os_values",
-      "target_role": "core_platform"
-    },
-    {
-      "source_module": "noetrium_platform.composition.operator.project.project_research_os_loader",
-      "source_role": "core_platform",
-      "target_module": "noetrium_platform.evidence.artifact.catalog.providers",
-      "target_role": "core_platform"
-    },
-    {
-      "source_module": "noetrium_platform.composition.operator.project.project_research_os_loader",
-      "source_role": "core_platform",
-      "target_module": "noetrium_platform.evidence.artifact.content.providers",
-      "target_role": "core_platform"
-    },
-    {
-      "source_module": "noetrium_platform.composition.operator.project.project_research_os_loader",
-      "source_role": "core_platform",
-      "target_module": "noetrium_platform.evidence.artifact.lineage.relation.providers",
-      "target_role": "core_platform"
-    },
-    {
-      "source_module": "noetrium_platform.composition.operator.project.project_research_os_loader",
-      "source_role": "core_platform",
-      "target_module": "noetrium_platform.evidence.artifact.retention.providers",
+      "target_module": "noetrium_platform.composition.research_os_local",
       "target_role": "core_platform"
     },
     {
       "source_module": "noetrium_platform.composition.operator.project.project_research_os_loader",
       "source_role": "core_platform",
       "target_module": "noetrium_platform.foundation.portfolio.project.api",
-      "target_role": "core_platform"
-    },
-    {
-      "source_module": "noetrium_platform.composition.operator.project.project_research_os_loader",
-      "source_role": "core_platform",
-      "target_module": "noetrium_platform.foundation.portfolio.runtime",
       "target_role": "core_platform"
     },
     {
@@ -4800,12 +4746,6 @@
       "source_module": "noetrium_platform.composition.operator.project.project_research_os_loader",
       "source_role": "core_platform",
       "target_module": "noetrium_platform.product.research_os",
-      "target_role": "core_platform"
-    },
-    {
-      "source_module": "noetrium_platform.composition.operator.project.project_research_os_loader",
-      "source_role": "core_platform",
-      "target_module": "noetrium_platform.research.execution.graph.providers",
       "target_role": "core_platform"
     },
     {
@@ -5916,6 +5856,90 @@
       "source_module": "noetrium_platform.composition.research_os_graph",
       "source_role": "core_platform",
       "target_module": "noetrium_platform.research.execution.policy.api",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "noetrium_platform.composition.research_os_local",
+      "source_role": "core_platform",
+      "target_module": "noetrium_platform.composition.research_execution_pool",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "noetrium_platform.composition.research_os_local",
+      "source_role": "core_platform",
+      "target_module": "noetrium_platform.composition.research_os",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "noetrium_platform.composition.research_os_local",
+      "source_role": "core_platform",
+      "target_module": "noetrium_platform.composition.research_os_execution",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "noetrium_platform.composition.research_os_local",
+      "source_role": "core_platform",
+      "target_module": "noetrium_platform.composition.research_os_experiment",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "noetrium_platform.composition.research_os_local",
+      "source_role": "core_platform",
+      "target_module": "noetrium_platform.composition.research_os_runtime",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "noetrium_platform.composition.research_os_local",
+      "source_role": "core_platform",
+      "target_module": "noetrium_platform.composition.research_os_value_authorities",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "noetrium_platform.composition.research_os_local",
+      "source_role": "core_platform",
+      "target_module": "noetrium_platform.composition.research_os_values",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "noetrium_platform.composition.research_os_local",
+      "source_role": "core_platform",
+      "target_module": "noetrium_platform.evidence.artifact.catalog.providers",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "noetrium_platform.composition.research_os_local",
+      "source_role": "core_platform",
+      "target_module": "noetrium_platform.evidence.artifact.content.providers",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "noetrium_platform.composition.research_os_local",
+      "source_role": "core_platform",
+      "target_module": "noetrium_platform.evidence.artifact.lineage.relation.providers",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "noetrium_platform.composition.research_os_local",
+      "source_role": "core_platform",
+      "target_module": "noetrium_platform.evidence.artifact.retention.providers",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "noetrium_platform.composition.research_os_local",
+      "source_role": "core_platform",
+      "target_module": "noetrium_platform.foundation.portfolio.runtime",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "noetrium_platform.composition.research_os_local",
+      "source_role": "core_platform",
+      "target_module": "noetrium_platform.product.research_os",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "noetrium_platform.composition.research_os_local",
+      "source_role": "core_platform",
+      "target_module": "noetrium_platform.research.execution.graph.providers",
       "target_role": "core_platform"
     },
     {
@@ -9756,6 +9780,12 @@
       "source_module": "noetrium_platform.foundation.governance.providers.repository_source",
       "source_role": "core_platform",
       "target_module": "noetrium_platform.foundation.governance.api",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "noetrium_platform.foundation.governance.providers.repository_source",
+      "source_role": "core_platform",
+      "target_module": "noetrium_platform.foundation.kernel.kernel.durability",
       "target_role": "core_platform"
     },
     {
@@ -18786,6 +18816,12 @@
       "source_module": "research.reproductions.fleet",
       "source_role": "research_reproductions",
       "target_module": "noetrium_platform.composition.research_os_graph",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "research.reproductions.fleet",
+      "source_role": "research_reproductions",
+      "target_module": "noetrium_platform.composition.research_os_local",
       "target_role": "core_platform"
     },
     {
@@ -43043,7 +43079,7 @@
   ],
   "role_import_counts": [
     {
-      "count": 2690,
+      "count": 2695,
       "source_role": "core_platform",
       "target_role": "core_platform"
     },
@@ -43088,7 +43124,7 @@
       "target_role": "public_facade"
     },
     {
-      "count": 624,
+      "count": 625,
       "source_role": "research_reproductions",
       "target_role": "core_platform"
     },
@@ -43159,7 +43195,7 @@
     }
   ],
   "role_python_module_counts": {
-    "core_platform": 1928,
+    "core_platform": 1929,
     "examples": 6,
     "other": 1,
     "public_facade": 40,
@@ -43170,7 +43206,7 @@
     "tooling": 78
   },
   "role_symbol_counts": {
-    "core_platform": 3341,
+    "core_platform": 3342,
     "examples": 3,
     "other": 5,
     "public_facade": 4,
@@ -43182,7 +43218,7 @@
     "tooling": 38
   },
   "schema": "noetrium-repository-code-architecture-index.v1",
-  "source_git_sha": "642540e4fe2e3558586bb97e56d3f311c532e40d",
+  "source_git_sha": "c81d1372e6bb70b5e18ad59690a3cbeaaedc331e",
   "symbols": [
     {
       "bases": [],
@@ -64811,7 +64847,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 56,
+      "line": 32,
       "methods": [
         "default_execution_id",
         "close"
@@ -66101,6 +66137,30 @@
       "name": "ResearchOSGraphExecutor",
       "path": "noetrium_platform/composition/research_os_graph.py",
       "qualname": "noetrium_platform.composition.research_os_graph.ResearchOSGraphExecutor",
+      "role": "core_platform"
+    },
+    {
+      "bases": [],
+      "decorators": [
+        "dataclass(slots=True)"
+      ],
+      "fields": [
+        "state_root: Path",
+        "research_os: ResearchOS",
+        "revision_store: SQLitePortfolioRevisionStore",
+        "graph_store: SQLiteResearchGraphExecutionStore",
+        "execution_pool: ResearchExecutionPool"
+      ],
+      "kind": "dataclass",
+      "language": "python",
+      "line": 47,
+      "methods": [
+        "close"
+      ],
+      "module": "noetrium_platform.composition.research_os_local",
+      "name": "LocalResearchOSComposition",
+      "path": "noetrium_platform/composition/research_os_local.py",
+      "qualname": "noetrium_platform.composition.research_os_local.LocalResearchOSComposition",
       "role": "core_platform"
     },
     {
@@ -71547,7 +71607,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 19,
+      "line": 20,
       "methods": [],
       "module": "noetrium_platform.evidence.data.state.runtime.sqlite_backend",
       "name": "EncodedAggregate",
@@ -71563,7 +71623,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 28,
+      "line": 29,
       "methods": [
         "__init__",
         "read",
@@ -71585,7 +71645,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 167,
+      "line": 164,
       "methods": [
         "__init__",
         "connect_writer",
@@ -95327,7 +95387,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 31,
+      "line": 32,
       "methods": [
         "__init__",
         "read",
@@ -95350,7 +95410,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 100,
+      "line": 101,
       "methods": [
         "__init__",
         "connect",
@@ -98694,7 +98754,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 74,
+      "line": 75,
       "methods": [],
       "module": "noetrium_platform.infrastructure.resources.compute.runtime.scheduler",
       "name": "_HostUsage",
@@ -98708,7 +98768,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 272,
+      "line": 273,
       "methods": [
         "__init__",
         "_usage",
@@ -98734,7 +98794,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 503,
+      "line": 504,
       "methods": [
         "__init__",
         "_connection",
@@ -123635,7 +123695,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 53,
+      "line": 58,
       "methods": [
         "__post_init__"
       ],
@@ -123655,7 +123715,7 @@
       "fields": [],
       "kind": "protocol",
       "language": "python",
-      "line": 110,
+      "line": 115,
       "methods": [
         "resolve"
       ],
@@ -123675,7 +123735,7 @@
       "fields": [],
       "kind": "protocol",
       "language": "python",
-      "line": 121,
+      "line": 126,
       "methods": [
         "resolve"
       ],
@@ -123700,7 +123760,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 131,
+      "line": 136,
       "methods": [
         "__post_init__"
       ],
@@ -123723,7 +123783,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 184,
+      "line": 189,
       "methods": [
         "__post_init__"
       ],
@@ -123739,7 +123799,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 405,
+      "line": 474,
       "methods": [
         "__init__",
         "resolve"
