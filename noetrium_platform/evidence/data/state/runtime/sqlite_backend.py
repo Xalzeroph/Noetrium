@@ -6,7 +6,11 @@ from pathlib import Path
 import sqlite3
 
 from noetrium_platform.evidence.data._sqlite_types import require_blob, require_integer, require_text
-from noetrium_platform.evidence.data._sqlite_transaction import rollback_data_writer
+from noetrium_platform.foundation.kernel.kernel.durability.sqlite import (
+    open_durable_sqlite_reader,
+    open_durable_sqlite_writer,
+    rollback_sqlite_writer,
+)
 from noetrium_platform.evidence.data.state.api import StateBootstrapConflict, StateCorruptionError
 
 
@@ -142,7 +146,7 @@ class SQLiteStateWriteSession(AbstractContextManager["SQLiteStateWriteSession"])
                         primary = rollback_exc
                         raise
                 else:
-                    rollback_data_writer(self.conn, primary)
+                    rollback_sqlite_writer(self.conn, primary, label="data")
         finally:
             try:
                 self.conn.close()
@@ -167,18 +171,16 @@ class SQLiteStateBackend:
         self.timeout_seconds = timeout_seconds
 
     def connect_writer(self) -> sqlite3.Connection:
-        conn = sqlite3.connect(self.path, timeout=self.timeout_seconds, isolation_level=None)
-        conn.execute("PRAGMA journal_mode=WAL")
-        conn.execute("PRAGMA synchronous=FULL")
-        conn.execute("PRAGMA foreign_keys=ON")
-        return conn
+        return open_durable_sqlite_writer(
+            self.path,
+            timeout_seconds=self.timeout_seconds,
+        )
 
     def connect_reader(self) -> sqlite3.Connection:
-        uri = f"file:{self.path.resolve().as_posix()}?mode=ro"
-        conn = sqlite3.connect(uri, uri=True, timeout=self.timeout_seconds, isolation_level=None)
-        conn.execute("PRAGMA query_only=ON")
-        conn.execute("PRAGMA foreign_keys=ON")
-        return conn
+        return open_durable_sqlite_reader(
+            self.path,
+            timeout_seconds=self.timeout_seconds,
+        )
 
     @contextmanager
     def writer_connection(self):
@@ -219,7 +221,7 @@ class SQLiteStateBackend:
                     self._insert_if_absent(conn, value)
                 conn.commit()
             except BaseException as primary:
-                rollback_data_writer(conn, primary)
+                rollback_sqlite_writer(conn, primary, label="data")
                 raise
 
     def _ensure_schema(self, conn: sqlite3.Connection) -> None:
