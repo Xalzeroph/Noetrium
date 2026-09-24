@@ -262,73 +262,83 @@ class ModelAssetManager:
         if type(delete_managed_files) is not bool:
             raise TypeError("delete_managed_files must be bool")
         with self._lock:
-            references = self._references.references(model_id)
-            if references:
-                raise RuntimeError(
-                    f"model is still referenced by a deployment: {model_id}"
-                )
-
-            retirement = self._asset_registry.retirement(model_id)
-            if retirement is None:
-                asset = self.model(model_id)
-                physical_gc = (
-                    self._require_physical_gc(asset, gc)
-                    if delete_managed_files
-                    else None
-                )
-                asset = self._asset_registry.begin_retirement(
-                    asset,
+            # This outer cross-process fence spans both deployment-reference
+            # observation and retirement/physical cleanup. Deployment creation
+            # holds the same fence through its durable desired-state commit.
+            with self._asset_registry.lifecycle_fence(model_id):
+                return self._unregister_model_fenced(
+                    model_id,
                     delete_managed_files=delete_managed_files,
-                    gc_proof_digest=(
-                        None
-                        if physical_gc is None
-                        else physical_gc.proof_digest
-                    ),
+                    gc=gc,
                 )
-                durable_delete = delete_managed_files
-                durable_gc_proof = (
-                    None
-                    if physical_gc is None
-                    else physical_gc.proof_digest
-                )
-            else:
-                asset, durable_delete, durable_gc_proof = retirement
-                if asset is None:
-                    return True
 
-                if durable_delete:
-                    physical_gc = self._require_physical_gc(asset, gc)
-                    if physical_gc.proof_digest != durable_gc_proof:
-                        raise RuntimeError(
-                            "model asset GC proof changed across retirement retry"
-                        )
-                elif delete_managed_files:
-                    # Retirement and physical GC are separate lifecycle cuts.
-                    # A later destructive request is allowed only after a fresh
-                    # complete closure assessment for this exact asset digest.
-                    physical_gc = self._require_physical_gc(asset, gc)
-                    asset = self._asset_registry.authorize_gc(
-                        asset,
-                        gc_proof_digest=physical_gc.proof_digest,
-                    )
-                    durable_delete = True
-                    durable_gc_proof = physical_gc.proof_digest
-                else:
-                    physical_gc = None
+    def _unregister_model_fenced(
+        self,
+        model_id: str,
+        *,
+        delete_managed_files: bool,
+        gc: ModelAssetGcAssessment | None,
+    ) -> bool:
+        references = self._references.references(model_id)
+        if references:
+            raise RuntimeError(
+                f"model is still referenced by a deployment: {model_id}"
+            )
 
-            # Deployment reference truth belongs to deployment authority.
-            # Recheck after retirement publication before touching bytes so a
-            # concurrent deployment can never be deleted underneath.
-            references = self._references.references(model_id)
-            if references:
-                raise RuntimeError(
-                    "model gained a deployment reference during retirement: "
-                    f"{model_id}"
-                )
+        retirement = self._asset_registry.retirement(model_id)
+        if retirement is None:
+            asset = self.model(model_id)
+            physical_gc = (
+                self._require_physical_gc(asset, gc)
+                if delete_managed_files
+                else None
+            )
+            asset = self._asset_registry.begin_retirement(
+                asset,
+                delete_managed_files=delete_managed_files,
+                gc_proof_digest=(
+                    None if physical_gc is None else physical_gc.proof_digest
+                ),
+            )
+            durable_delete = delete_managed_files
+            durable_gc_proof = (
+                None if physical_gc is None else physical_gc.proof_digest
+            )
+        else:
+            asset, durable_delete, durable_gc_proof = retirement
+            if asset is None:
+                return True
 
             if durable_delete:
-                self._storage.remove(asset)
-            return self._asset_registry.finish_retirement(asset)
+                physical_gc = self._require_physical_gc(asset, gc)
+                if physical_gc.proof_digest != durable_gc_proof:
+                    raise RuntimeError(
+                        "model asset GC proof changed across retirement retry"
+                    )
+            elif delete_managed_files:
+                physical_gc = self._require_physical_gc(asset, gc)
+                asset = self._asset_registry.authorize_gc(
+                    asset,
+                    gc_proof_digest=physical_gc.proof_digest,
+                )
+                durable_delete = True
+                durable_gc_proof = physical_gc.proof_digest
+            else:
+                physical_gc = None
+
+        # The lifecycle fence is still held here, so no deployment admission
+        # can cross this recheck or commit after it until retirement/GC
+        # converges or fails.
+        references = self._references.references(model_id)
+        if references:
+            raise RuntimeError(
+                "model gained a deployment reference during retirement: "
+                f"{model_id}"
+            )
+
+        if durable_delete:
+            self._storage.remove(asset)
+        return self._asset_registry.finish_retirement(asset)
 
 
 
