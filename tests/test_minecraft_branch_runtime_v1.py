@@ -50,8 +50,9 @@ class NoopGuard:
 
 
 class NoopGuardFactory:
-    def create(self, allocation_ids: tuple[str, ...]):
-        assert allocation_ids
+    def create(self, allocations):
+        assert allocations
+        assert all(hasattr(row, "lease_fencing_token") for row in allocations)
         return NoopGuard()
 
 
@@ -712,8 +713,11 @@ def test_branch_session_surfaces_endpoint_lease_guard_failure() -> None:
     guard = Guard()
 
     class GuardFactory:
-        def create(self, allocation_ids: tuple[str, ...]):
-            assert allocation_ids == ("minecraft:candidate-a:candidate-a-session:game",)
+        def create(self, allocations):
+            assert tuple(row.allocation_id for row in allocations) == (
+                "minecraft:candidate-a:candidate-a-session:game",
+            )
+            assert all(row.lease_fencing_token >= 1 for row in allocations)
             return guard
 
     factory = MinecraftBranchRuntimeFactory(
