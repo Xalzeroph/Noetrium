@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from noetrium_platform.research.experimentation.lifecycle.api import BenchmarkTaskSet
+from noetrium.api import BenchmarkTaskSet
 from research.benchmarks.moviechat_1k import (
     MOVIECHAT_1K_BENCHMARK_ID,
     MOVIECHAT_1K_TEST_SPLIT,
