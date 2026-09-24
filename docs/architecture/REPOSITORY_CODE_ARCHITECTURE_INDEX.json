@@ -2,14 +2,14 @@
   "counts": {
     "parse_errors": 0,
     "python_files": 3666,
-    "python_import_edges": 7090,
-    "symbols": 4851,
+    "python_import_edges": 7094,
+    "symbols": 4852,
     "tracked_files": 4296,
     "typescript_javascript_files": 11
   },
   "language_symbol_counts": {
     "javascript": 1,
-    "python": 4845,
+    "python": 4846,
     "typescript": 5
   },
   "parse_errors": [],
@@ -906,6 +906,12 @@
       "source_module": "noetrium_platform.capabilities.environment.software.providers.local_repository",
       "source_role": "core_platform",
       "target_module": "noetrium_platform.foundation.kernel.kernel",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "noetrium_platform.capabilities.environment.software.providers.local_repository",
+      "source_role": "core_platform",
+      "target_module": "noetrium_platform.foundation.kernel.kernel.durability",
       "target_role": "core_platform"
     },
     {
@@ -9375,6 +9381,12 @@
       "target_role": "core_platform"
     },
     {
+      "source_module": "noetrium_platform.foundation.governance.architecture.capability_index",
+      "source_role": "core_platform",
+      "target_module": "noetrium_platform.foundation.kernel.kernel.durability",
+      "target_role": "core_platform"
+    },
+    {
       "source_module": "noetrium_platform.foundation.governance.architecture.catalog_contract_invariants",
       "source_role": "core_platform",
       "target_module": "noetrium_platform.foundation.governance.system_registry.api",
@@ -9456,6 +9468,12 @@
       "source_module": "noetrium_platform.foundation.governance.architecture.ownership_matrix",
       "source_role": "core_platform",
       "target_module": "noetrium_platform.foundation.kernel.kernel",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "noetrium_platform.foundation.governance.architecture.ownership_matrix",
+      "source_role": "core_platform",
+      "target_module": "noetrium_platform.foundation.kernel.kernel.durability",
       "target_role": "core_platform"
     },
     {
@@ -32633,6 +32651,12 @@
     {
       "source_module": "tests.test_reproduction_research_os_coverage_v1",
       "source_role": "tests",
+      "target_module": "research.reproductions.contracts",
+      "target_role": "research_reproductions"
+    },
+    {
+      "source_module": "tests.test_reproduction_research_os_coverage_v1",
+      "source_role": "tests",
       "target_module": "research.reproductions.research_os",
       "target_role": "research_reproductions"
     },
@@ -42557,7 +42581,7 @@
   ],
   "role_import_counts": [
     {
-      "count": 2650,
+      "count": 2653,
       "source_role": "core_platform",
       "target_role": "core_platform"
     },
@@ -42637,7 +42661,7 @@
       "target_role": "reference_orchestration"
     },
     {
-      "count": 324,
+      "count": 325,
       "source_role": "tests",
       "target_role": "research_reproductions"
     },
@@ -42684,7 +42708,7 @@
     "tooling": 78
   },
   "role_symbol_counts": {
-    "core_platform": 3337,
+    "core_platform": 3338,
     "examples": 3,
     "other": 5,
     "public_facade": 4,
@@ -42696,7 +42720,7 @@
     "tooling": 38
   },
   "schema": "noetrium-repository-code-architecture-index.v1",
-  "source_git_sha": "a6a28dc18be984a411340b26466fab733c6ac954",
+  "source_git_sha": "e26dac3adca038f045c9469d51aef5c7334bd9de",
   "symbols": [
     {
       "bases": [],
@@ -49503,7 +49527,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 72,
+      "line": 73,
       "methods": [
         "__init__",
         "identity",
@@ -49526,7 +49550,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 157,
+      "line": 158,
       "methods": [
         "__init__",
         "spec",
@@ -77089,7 +77113,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 23,
+      "line": 24,
       "methods": [
         "direct_authority",
         "__post_init__",
@@ -77113,7 +77137,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 89,
+      "line": 90,
       "methods": [
         "__post_init__",
         "as_dict"
@@ -82291,12 +82315,31 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 8,
+      "line": 9,
       "methods": [],
       "module": "noetrium_platform.foundation.kernel.kernel.durability.durable_append",
       "name": "DurableAppendError",
       "path": "noetrium_platform/foundation/kernel/kernel/durability/durable_append.py",
       "qualname": "noetrium_platform.foundation.kernel.kernel.durability.durable_append.DurableAppendError",
+      "role": "core_platform"
+    },
+    {
+      "bases": [
+        "StrEnum"
+      ],
+      "decorators": [],
+      "fields": [
+        "BUFFERED",
+        "DURABLE"
+      ],
+      "kind": "enum",
+      "language": "python",
+      "line": 13,
+      "methods": [],
+      "module": "noetrium_platform.foundation.kernel.kernel.durability.durable_append",
+      "name": "AppendDurability",
+      "path": "noetrium_platform/foundation/kernel/kernel/durability/durable_append.py",
+      "qualname": "noetrium_platform.foundation.kernel.kernel.durability.durable_append.AppendDurability",
       "role": "core_platform"
     },
     {
@@ -90106,7 +90149,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 35,
+      "line": 34,
       "methods": [
         "__init__",
         "__enter__",
@@ -90126,7 +90169,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 54,
+      "line": 53,
       "methods": [
         "__init__",
         "__enter__",
@@ -90146,7 +90189,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 74,
+      "line": 73,
       "methods": [
         "__init__",
         "_operation_transition_lock",
@@ -95691,7 +95734,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 12,
+      "line": 15,
       "methods": [
         "__init__",
         "append"
@@ -125394,7 +125437,6 @@
       ],
       "decorators": [],
       "fields": [
-        "BENCHMARK_SPLIT",
         "CAPABILITY_ID",
         "CAPABILITY_CLOSURE",
         "PAPER_OPTION"
@@ -125423,7 +125465,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 57,
+      "line": 56,
       "methods": [
         "__post_init__"
       ],
@@ -125443,13 +125485,14 @@
         "binding_id: str",
         "study_factory: str",
         "benchmark_id: str",
+        "benchmark_split_id: str | None",
         "values: Mapping[str, JsonValue]",
         "requirement_digests: tuple[str, ...]",
         "binding_digest: str"
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 107,
+      "line": 106,
       "methods": [
         "__post_init__"
       ],
@@ -125475,7 +125518,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 172,
+      "line": 181,
       "methods": [
         "__post_init__"
       ],
@@ -125502,9 +125545,10 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 197,
+      "line": 206,
       "methods": [
         "__post_init__",
+        "benchmark_split_parameter",
         "unresolved_parameters",
         "exact_after_benchmark"
       ],
@@ -125530,7 +125574,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 236,
+      "line": 261,
       "methods": [
         "__post_init__",
         "exact",
@@ -129545,6 +129589,7 @@
         "execution_requirement_parameters: tuple[str, ...]",
         "execution_requirement_kinds: tuple[str, ...]",
         "execution_requirement_digests: tuple[str, ...]",
+        "benchmark_split_axis_consumers: tuple[str, ...]",
         "method_program_digest: str | None",
         "research_machine_program_digests: tuple[str, ...]",
         "state: str",
@@ -129552,7 +129597,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 33,
+      "line": 34,
       "methods": [],
       "module": "scripts.run_reproduction_fleet",
       "name": "Lane",
@@ -144802,7 +144847,10 @@
         "test_process_spawn_outside_backend_is_rejected_even_when_import_is_legal",
         "test_raw_file_replace_outside_durable_filesystem_authority_is_rejected",
         "test_checkpoint_publish_cannot_escape_checkpoint_coordinator",
-        "test_prepared_capability_effect_calls_cannot_bypass_effect_executor"
+        "test_prepared_capability_effect_calls_cannot_bypass_effect_executor",
+        "test_sqlite_connection_outside_platform_durability_is_rejected",
+        "test_thread_pool_outside_concurrency_provider_is_rejected",
+        "test_raw_thread_outside_concurrency_provider_is_rejected"
       ],
       "module": "tests.test_source_authority_v123",
       "name": "SourceAuthorityV123Tests",

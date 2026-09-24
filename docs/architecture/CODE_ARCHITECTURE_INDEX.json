@@ -22912,7 +22912,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 72,
+      "line": 73,
       "methods": [
         "__init__",
         "identity",
@@ -22937,7 +22937,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 157,
+      "line": 158,
       "methods": [
         "__init__",
         "spec",
@@ -53123,7 +53123,7 @@
         "source_digest"
       ],
       "kind": "dataclass",
-      "line": 89,
+      "line": 90,
       "methods": [
         "__post_init__",
         "as_dict"
@@ -53157,7 +53157,7 @@
         "system_id"
       ],
       "kind": "dataclass",
-      "line": 23,
+      "line": 24,
       "methods": [
         "direct_authority",
         "__post_init__",
@@ -58800,12 +58800,33 @@
     },
     {
       "bases": [
+        "StrEnum"
+      ],
+      "decorators": [],
+      "fields": [
+        "BUFFERED",
+        "DURABLE"
+      ],
+      "kind": "enum",
+      "line": 13,
+      "methods": [],
+      "module": "noetrium_platform.foundation.kernel.kernel.durability.durable_append",
+      "name": "AppendDurability",
+      "nesting": [
+        "AppendDurability"
+      ],
+      "qualname": "noetrium_platform.foundation.kernel.kernel.durability.durable_append.AppendDurability",
+      "system_key": "platform",
+      "top_system": "platform"
+    },
+    {
+      "bases": [
         "RuntimeError"
       ],
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 8,
+      "line": 9,
       "methods": [],
       "module": "noetrium_platform.foundation.kernel.kernel.durability.durable_append",
       "name": "DurableAppendError",
@@ -67373,7 +67394,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 74,
+      "line": 73,
       "methods": [
         "__init__",
         "_operation_transition_lock",
@@ -67405,7 +67426,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 54,
+      "line": 53,
       "methods": [
         "__init__",
         "__enter__",
@@ -67427,7 +67448,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 35,
+      "line": 34,
       "methods": [
         "__init__",
         "__enter__",
@@ -73509,7 +73530,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 12,
+      "line": 15,
       "methods": [
         "__init__",
         "append"
@@ -102381,10 +102402,10 @@
   ],
   "counts": {
     "association_edges": 3426,
-    "classes": 3336,
+    "classes": 3337,
     "constructor_edges": 932,
     "inheritance_edges": 149,
-    "module_import_edges": 5100,
+    "module_import_edges": 5103,
     "parse_errors": 0,
     "python_modules": 1927,
     "registry_authorities": 20,
@@ -104310,6 +104331,10 @@
     {
       "source": "noetrium_platform.capabilities.environment.software.providers.local_repository",
       "target": "noetrium_platform.foundation.kernel.kernel"
+    },
+    {
+      "source": "noetrium_platform.capabilities.environment.software.providers.local_repository",
+      "target": "noetrium_platform.foundation.kernel.kernel.durability"
     },
     {
       "source": "noetrium_platform.capabilities.environment.software.providers.local_repository",
@@ -113576,6 +113601,10 @@
       "target": "noetrium_platform.foundation.kernel.kernel.canonical"
     },
     {
+      "source": "noetrium_platform.foundation.governance.architecture.capability_index",
+      "target": "noetrium_platform.foundation.kernel.kernel.durability"
+    },
+    {
       "source": "noetrium_platform.foundation.governance.architecture.catalog_contract_invariants",
       "target": "noetrium_platform.foundation.governance.architecture.source_index"
     },
@@ -113930,6 +113959,10 @@
     {
       "source": "noetrium_platform.foundation.governance.architecture.ownership_matrix",
       "target": "noetrium_platform.foundation.kernel.kernel"
+    },
+    {
+      "source": "noetrium_platform.foundation.governance.architecture.ownership_matrix",
+      "target": "noetrium_platform.foundation.kernel.kernel.durability"
     },
     {
       "source": "noetrium_platform.foundation.governance.architecture.participant_binding_invariants",
@@ -124662,6 +124695,7 @@
         "noetrium_platform.capabilities.environment.api",
         "noetrium_platform.capabilities.environment.software.api",
         "noetrium_platform.foundation.kernel.kernel",
+        "noetrium_platform.foundation.kernel.kernel.durability",
         "noetrium_platform.substrate.api"
       ],
       "module": "noetrium_platform.capabilities.environment.software.providers.local_repository",
@@ -133513,7 +133547,8 @@
     },
     {
       "imports": [
-        "noetrium_platform.foundation.kernel.kernel.canonical"
+        "noetrium_platform.foundation.kernel.kernel.canonical",
+        "noetrium_platform.foundation.kernel.kernel.durability"
       ],
       "module": "noetrium_platform.foundation.governance.architecture.capability_index",
       "path": "noetrium_platform/foundation/governance/architecture/capability_index.py",
@@ -133978,7 +134013,8 @@
     },
     {
       "imports": [
-        "noetrium_platform.foundation.kernel.kernel"
+        "noetrium_platform.foundation.kernel.kernel",
+        "noetrium_platform.foundation.kernel.kernel.durability"
       ],
       "module": "noetrium_platform.foundation.governance.architecture.ownership_matrix",
       "path": "noetrium_platform/foundation/governance/architecture/ownership_matrix.py",
@@ -143753,7 +143789,7 @@
   "parse_errors": [],
   "registry_sha256": "d3fc1bab831f1b7379e5a36048a61c00fe173429df958270d36a16f3f00171c0",
   "schema": "noetrium-code-architecture-index.v1",
-  "source_git_sha": "a6a28dc18be984a411340b26466fab733c6ac954",
+  "source_git_sha": "e26dac3adca038f045c9469d51aef5c7334bd9de",
   "system_import_edges": [
     {
       "count": 85,
@@ -143791,7 +143827,7 @@
       "target": "environment"
     },
     {
-      "count": 67,
+      "count": 68,
       "source": "environment",
       "target": "platform"
     },
@@ -143826,7 +143862,7 @@
       "target": "governance"
     },
     {
-      "count": 38,
+      "count": 40,
       "source": "governance",
       "target": "platform"
     },
