@@ -976,6 +976,8 @@ class SQLiteComputeScheduler:
                 )
                 conn.commit()
                 return allocation
+            except ComputePhysicalConvergencePending:
+                raise
             except BaseException as primary:
                 rollback_sqlite_writer(
                     conn,
@@ -1040,6 +1042,8 @@ class SQLiteComputeScheduler:
                     ))
                 conn.commit()
                 return tuple(renewed)
+            except ComputePhysicalConvergencePending:
+                raise
             except BaseException as primary:
                 rollback_sqlite_writer(
                     conn,
