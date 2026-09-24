@@ -134,7 +134,14 @@ __all__ = [
 ]
 
 from noetrium_platform.capabilities.environment.catalog.api import (
+    EnvironmentCleanlinessKind,
+    EnvironmentCleanlinessProof,
+    EnvironmentInstance,
+    EnvironmentInstanceState,
+    EnvironmentProfileGcAssessment,
+    EnvironmentProfileReferenceSummary,
     EnvironmentSpec,
+    ExecutionEnvironmentCatalogPort,
     ExecutionEnvironmentKind,
 )
 from noetrium_platform.capabilities.environment.embodied.api import (
@@ -160,8 +167,15 @@ _ENVIRONMENT_AUTHORING_EXPORTS = (
     "EmbodiedEventKind",
     "EmbodimentKind",
     "EmbodimentSpec",
+    "EnvironmentCleanlinessKind",
+    "EnvironmentCleanlinessProof",
+    "EnvironmentInstance",
+    "EnvironmentInstanceState",
+    "EnvironmentProfileGcAssessment",
+    "EnvironmentProfileReferenceSummary",
     "EnvironmentSpec",
     "EpisodeSpec",
+    "ExecutionEnvironmentCatalogPort",
     "ExecutionEnvironmentKind",
     "SensorModality",
     "SensorSpec",
