@@ -2,7 +2,7 @@
   "schema": "noetrium.reproduction.projection.v10",
   "authority": "generated_from_typed_definition_and_source",
   "package": "flow_modularized_agentic_workflow",
-  "package_digest": "0e88a263fa42f2e0bc7694ee4f8597043161338327d68e1d44ab8a7ce6337c59",
+  "package_digest": "b75cb72ffe6a6736e3702bb85744f4f10803a551730173e2874929d5ab33d675",
   "definition_digest": "c0df097174fd40ce218adc9f396a11ad78c05b08fd6b8b3219e047b249be0bee",
   "source_registry_digest": "871ee9bf57337e607fa5a5ed65434e3cc122df43f3db5d6cca12cb61261175b4",
   "lifecycle": "protocol_bound",
@@ -226,7 +226,7 @@
       "state": "required",
       "selection_digests": [],
       "blockers": [
-        "ReproductionResearchOSCompileError:benchmark 'flow-practical-tasks' has no exact source-contained repository authority; immutable data/materialization is required"
+        "ReproductionResearchOSCompileError:benchmark 'flow-practical-tasks' has no exact repository or materialized authority"
       ]
     },
     "benchmark_split_axis": {

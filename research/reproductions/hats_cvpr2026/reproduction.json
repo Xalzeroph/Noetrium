@@ -2,7 +2,7 @@
   "schema": "noetrium.reproduction.projection.v10",
   "authority": "generated_from_typed_definition_and_source",
   "package": "hats_cvpr2026",
-  "package_digest": "41b61d24e5005d94c4b4d7ae58d0c90122790478e95ded02da2fb2f70838e66f",
+  "package_digest": "332fb5c99885711940ab88c14ed26e4567fa0bfdb937fb54338b2170e4cc2241",
   "definition_digest": "730c6c09f3a04599fa35dfaf6f0b5d3f9b95fbe38d58eeca34eee1070af35ba2",
   "source_registry_digest": "6ded210c5feb62419b23855eed7f730eaf0c375454a28473e6137c2d262643f8",
   "lifecycle": "protocol_bound",
@@ -170,7 +170,7 @@
       "state": "required",
       "selection_digests": [],
       "blockers": [
-        "ReproductionResearchOSCompileError:benchmark 'androidworld' has no exact source-contained repository authority; immutable data/materialization is required"
+        "ReproductionResearchOSCompileError:benchmark 'androidworld' has no exact repository or materialized authority"
       ]
     },
     "benchmark_split_axis": {

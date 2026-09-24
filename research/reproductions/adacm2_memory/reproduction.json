@@ -2,7 +2,7 @@
   "schema": "noetrium.reproduction.projection.v10",
   "authority": "generated_from_typed_definition_and_source",
   "package": "adacm2_memory",
-  "package_digest": "90501a3a212258494d989a32ddaa21a44ca982a5ad12246e64f57072fe0387e9",
+  "package_digest": "04bc2231b03327ef26525b1db1c11d1bcf2ea79b2e0f9c38e0e74febaedf21b9",
   "definition_digest": "6a69a2d164b86b3534e4982d84e8ef08626548335af759a36096b8135e4d3ccb",
   "source_registry_digest": "d46d92fc46eb723b8905ef27d3104b049b7b560c6b2946d3ad5e25a04645996a",
   "lifecycle": "protocol_bound",
@@ -176,7 +176,7 @@
       "state": "required",
       "selection_digests": [],
       "blockers": [
-        "ReproductionResearchOSCompileError:benchmark 'lvu' has no exact source-contained repository authority; immutable data/materialization is required"
+        "ReproductionResearchOSCompileError:benchmark 'lvu' has no exact repository or materialized authority"
       ]
     },
     "benchmark_split_axis": {

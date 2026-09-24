@@ -2,7 +2,7 @@
   "schema": "noetrium.reproduction.projection.v10",
   "authority": "generated_from_typed_definition_and_source",
   "package": "toolformer",
-  "package_digest": "6c4e3c297791062829d823686cf6c798734af27f2f30484192e10b6f60dc1a2a",
+  "package_digest": "b72affe3c0b47eea9568042ba2e4fa8048f773b0a739dc635b2ea4c7dea0219f",
   "definition_digest": "a754638e2a9e4546aa921cdc86739cdd0b9d5d01c5c83413543e89deebb71dbf",
   "source_registry_digest": "0aa5c4ef466c87b4808d296ec9f3b44ddcff08ee64566c34ac93be4e38815682",
   "lifecycle": "protocol_bound",
@@ -173,7 +173,7 @@
       "state": "required",
       "selection_digests": [],
       "blockers": [
-        "ReproductionResearchOSCompileError:benchmark 'toolformer-eval' has no exact source-contained repository authority; immutable data/materialization is required"
+        "ReproductionResearchOSCompileError:benchmark 'toolformer-eval' has no exact repository or materialized authority"
       ]
     },
     "benchmark_split_axis": {

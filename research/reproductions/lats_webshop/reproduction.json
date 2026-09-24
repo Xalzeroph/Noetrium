@@ -2,7 +2,7 @@
   "schema": "noetrium.reproduction.projection.v10",
   "authority": "generated_from_typed_definition_and_source",
   "package": "lats_webshop",
-  "package_digest": "3fce7c4df5e4303dd464094d080422d9a6e61233dbd12d386f96d3ea95c2a482",
+  "package_digest": "f2cb3aa0dc4598209b594c4e0b4b359d8ca62a03bbd366a158c4a1ab9d9daa1f",
   "definition_digest": "404faa0212523d5ab11e9a57c0479ab0ca187d904630c80d7db37f83f5d760ef",
   "source_registry_digest": "c61cf5118ecb4fb8570883fd539c09106e2fb2499028b48e830237203981d344",
   "lifecycle": "protocol_bound",
@@ -168,7 +168,7 @@
       "state": "required",
       "selection_digests": [],
       "blockers": [
-        "ReproductionResearchOSCompileError:benchmark 'webshop' has no exact source-contained repository authority; immutable data/materialization is required"
+        "ReproductionResearchOSCompileError:benchmark 'webshop' has no exact repository or materialized authority"
       ]
     },
     "benchmark_split_axis": {

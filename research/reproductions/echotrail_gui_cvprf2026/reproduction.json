@@ -2,7 +2,7 @@
   "schema": "noetrium.reproduction.projection.v10",
   "authority": "generated_from_typed_definition_and_source",
   "package": "echotrail_gui_cvprf2026",
-  "package_digest": "7fd34fb4d0591945beacd65b309781115f1c223d8d765bbc88fcf2e26de18070",
+  "package_digest": "431ea27d24476b271f7e7a478243d8edc1050e42bed0e122ab85b133b650698f",
   "definition_digest": "a416b11ff97033d65e18fcf6dca7379a84003038f816bf609c572e989cf77086",
   "source_registry_digest": "f56a51b136c7de6c02f262d8367ce2fb13744bd3104f62e22dd9a2e05e14c6ce",
   "lifecycle": "protocol_bound",
@@ -128,7 +128,7 @@
       "state": "required",
       "selection_digests": [],
       "blockers": [
-        "ReproductionResearchOSCompileError:benchmark 'androidlab' has no exact source-contained repository authority; immutable data/materialization is required"
+        "ReproductionResearchOSCompileError:benchmark 'androidlab' has no exact repository or materialized authority"
       ]
     },
     "benchmark_split_axis": {

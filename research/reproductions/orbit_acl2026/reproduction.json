@@ -2,7 +2,7 @@
   "schema": "noetrium.reproduction.projection.v10",
   "authority": "generated_from_typed_definition_and_source",
   "package": "orbit_acl2026",
-  "package_digest": "78d1fec03e327bee276f6798ca5852c0e51be36be1176e5faec1bb2c605cc8ec",
+  "package_digest": "e945d48c47494406bafe2f7e08a63061be7283c009d88f8e146f3575e477f5ba",
   "definition_digest": "31d3ffd5d1c98ec9762c689dc037d3e0dcbb141348d839a062dc163e62aefebd",
   "source_registry_digest": "f4d993f22dde65b3c172032c7553b1c4cd9fa0d2095143a46cca690494315612",
   "lifecycle": "protocol_bound",
@@ -180,7 +180,7 @@
       "state": "required",
       "selection_digests": [],
       "blockers": [
-        "ReproductionResearchOSCompileError:benchmark 'embodiedbench' has no exact source-contained repository authority; immutable data/materialization is required"
+        "ReproductionResearchOSCompileError:benchmark 'embodiedbench' has no exact repository or materialized authority"
       ]
     },
     "benchmark_split_axis": {

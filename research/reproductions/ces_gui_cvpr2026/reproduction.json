@@ -2,7 +2,7 @@
   "schema": "noetrium.reproduction.projection.v10",
   "authority": "generated_from_typed_definition_and_source",
   "package": "ces_gui_cvpr2026",
-  "package_digest": "8a3405c45905c1f127a85761a771e9f9fe0280010fdb855110f95db2f47a1ad9",
+  "package_digest": "27fcba3e3381a260f1dac2ae48c4f138d2d04f402dda8075ad7c74b503f36022",
   "definition_digest": "a107308919879400a2faa321adadac511e19a659c7ebb5b9cd858bec7e28f0b2",
   "source_registry_digest": "1b552ecdc0428896fe2cf149d77fc3b56180a74bb3f4927581ca6073ca28a4df",
   "lifecycle": "protocol_bound",
@@ -156,7 +156,7 @@
       "state": "required",
       "selection_digests": [],
       "blockers": [
-        "ReproductionResearchOSCompileError:benchmark 'aitz' has no exact source-contained repository authority; immutable data/materialization is required"
+        "ReproductionResearchOSCompileError:benchmark 'aitz' has no exact repository or materialized authority"
       ]
     },
     "benchmark_split_axis": {

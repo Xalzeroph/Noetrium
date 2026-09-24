@@ -2,7 +2,7 @@
   "schema": "noetrium.reproduction.projection.v10",
   "authority": "generated_from_typed_definition_and_source",
   "package": "rap_reasoning",
-  "package_digest": "c821aac2960a17599eb0af97fc3375b4b7f30a4a4c216aa709aefc8acecf490b",
+  "package_digest": "4f3cd7f8786d7d4ee1614ddf8540ffc905ba29ba5c1632e24715750fd2880f01",
   "definition_digest": "3de23b790a18d3bd15b16ce34f0a87cb7e95fa74b9b4c06fde9cfa49bba55e61",
   "source_registry_digest": "ced15295ec849f883db78704fb7a1e4351e59bd9ff1229c652b243f23abfdff2",
   "lifecycle": "protocol_bound",
@@ -147,7 +147,7 @@
       "state": "required",
       "selection_digests": [],
       "blockers": [
-        "ReproductionResearchOSCompileError:benchmark 'blocksworld' has no exact source-contained repository authority; immutable data/materialization is required"
+        "ReproductionResearchOSCompileError:benchmark 'blocksworld' has no exact repository or materialized authority"
       ]
     },
     "benchmark_split_axis": {

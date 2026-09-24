@@ -2,7 +2,7 @@
   "schema": "noetrium.reproduction.projection.v10",
   "authority": "generated_from_typed_definition_and_source",
   "package": "tree_search_language_model_agents",
-  "package_digest": "e4a9d28ceb1194010c0471f5d006424612b550f2fcf0d5fcf72adfcbd4ebfd8b",
+  "package_digest": "c4d7eb7ba15680d5f6386daf5012a5ba06d1b281a4dcf5ae3403175cf4ed9731",
   "definition_digest": "438c62dd357573beeeac528734499cd9ee6d018d7689e3f2d7ed8ccf94387660",
   "source_registry_digest": "0c66afa3c244c45e64cde70188b1023106137f8be0ce30f1899186e1ff153f35",
   "lifecycle": "protocol_bound",
@@ -131,7 +131,7 @@
       "state": "required",
       "selection_digests": [],
       "blockers": [
-        "ReproductionResearchOSCompileError:benchmark 'visualwebarena' has no exact source-contained repository authority; immutable data/materialization is required"
+        "ReproductionResearchOSCompileError:benchmark 'visualwebarena' has no exact repository or materialized authority"
       ]
     },
     "benchmark_split_axis": {

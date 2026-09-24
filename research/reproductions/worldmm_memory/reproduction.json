@@ -2,7 +2,7 @@
   "schema": "noetrium.reproduction.projection.v10",
   "authority": "generated_from_typed_definition_and_source",
   "package": "worldmm_memory",
-  "package_digest": "01d73feb26ec997b4af58e7b5f8101128663a1e0beb6400ec52b9a07bcaec9f3",
+  "package_digest": "a979117ff73ae3084bd955cef30ee4e1d4402c9e6a97d75882406f36689dc631",
   "definition_digest": "3314ca00b83178a9c509432fa74f6aa63b1fc1aba43de1686e47ac5bb46ad530",
   "source_registry_digest": "59fad67df15f1fffd4579cda87465a6feb1607352e4bdf24806f77c92a06dc6e",
   "lifecycle": "protocol_bound",
@@ -200,7 +200,7 @@
       "state": "required",
       "selection_digests": [],
       "blockers": [
-        "ReproductionResearchOSCompileError:benchmark 'egolifeqa' has no exact source-contained repository authority; immutable data/materialization is required"
+        "ReproductionResearchOSCompileError:benchmark 'egolifeqa' has no exact repository or materialized authority"
       ]
     },
     "benchmark_split_axis": {

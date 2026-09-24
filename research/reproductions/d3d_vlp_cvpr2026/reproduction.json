@@ -2,7 +2,7 @@
   "schema": "noetrium.reproduction.projection.v10",
   "authority": "generated_from_typed_definition_and_source",
   "package": "d3d_vlp_cvpr2026",
-  "package_digest": "435e07021a4e9f3bc03412b7c3091aad111c2fe549b5ca6f3c98d024ca5fc23f",
+  "package_digest": "6b7ebf9fc5e8a48436be5d327c9f5518d1682f7db314baa3c68e83298118ba6c",
   "definition_digest": "826cbc66bb82023852c07b6f2b9035bfbeb20d4d0f0d674660824ada0e451f4b",
   "source_registry_digest": "2cdeb4231d82b4960adc04b241fa45eae325f9b560c0d815e9fa4a73b8b941ac",
   "lifecycle": "protocol_bound",
@@ -182,7 +182,7 @@
       "state": "required",
       "selection_digests": [],
       "blockers": [
-        "ReproductionResearchOSCompileError:benchmark 'hm3d-ovon' has no exact source-contained repository authority; immutable data/materialization is required"
+        "ReproductionResearchOSCompileError:benchmark 'hm3d-ovon' has no exact repository or materialized authority"
       ]
     },
     "benchmark_split_axis": {

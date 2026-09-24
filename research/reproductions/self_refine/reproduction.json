@@ -2,7 +2,7 @@
   "schema": "noetrium.reproduction.projection.v10",
   "authority": "generated_from_typed_definition_and_source",
   "package": "self_refine",
-  "package_digest": "6604b014dd9d0159363a8a67aa71fc1c700caad47e0e2105c78a09958c03ec9c",
+  "package_digest": "f0e97e6182e9b95cfd242332507c88f2f746bcdbc19c0ad89ff1c14d6003ec23",
   "definition_digest": "5cdb8b1fa8cb872403f5928015538ba5657683b929b42ab9a77603227707cfb8",
   "source_registry_digest": "b3badf805b90ccd708fe9510374f12a0ea4bc3c0df3f1230667c5035820c2ba2",
   "lifecycle": "protocol_bound",
@@ -140,7 +140,7 @@
       "state": "required",
       "selection_digests": [],
       "blockers": [
-        "ReproductionResearchOSCompileError:benchmark 'commongen' has no exact source-contained repository authority; immutable data/materialization is required"
+        "ReproductionResearchOSCompileError:benchmark 'commongen' has no exact repository or materialized authority"
       ]
     },
     "benchmark_split_axis": {

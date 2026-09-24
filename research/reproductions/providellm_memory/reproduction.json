@@ -2,7 +2,7 @@
   "schema": "noetrium.reproduction.projection.v10",
   "authority": "generated_from_typed_definition_and_source",
   "package": "providellm_memory",
-  "package_digest": "daf232ebeb805ef4b279dbf79ffa86dd59d9fb129e8c41816bce0468da2d8267",
+  "package_digest": "3824db7cfbe610c0cda906081985d41e4e227da8361369c5dff5bb346d9ab6ae",
   "definition_digest": "a996e7348737dcf563b34e86f150b0cae75235c6c3da5dbf2dd98f14987854f0",
   "source_registry_digest": "9e2a5d1186f95a8f45699ceebf02fe6c91c0af32ce912a7e1d4f40d4192a3979",
   "lifecycle": "protocol_bound",
@@ -247,7 +247,7 @@
       "state": "required",
       "selection_digests": [],
       "blockers": [
-        "ReproductionResearchOSCompileError:benchmark 'ego4d-goalstep' has no exact source-contained repository authority; immutable data/materialization is required"
+        "ReproductionResearchOSCompileError:benchmark 'ego4d-goalstep' has no exact repository or materialized authority"
       ]
     },
     "benchmark_split_axis": {

@@ -2,7 +2,7 @@
   "schema": "noetrium.reproduction.projection.v10",
   "authority": "generated_from_typed_definition_and_source",
   "package": "eaglet_acl2026",
-  "package_digest": "4a21078a0266668c5119d103b7c2264ef297757bd369496eb132d8dae8d9c0d3",
+  "package_digest": "9a74c785aa90bba107159356749fe3bb17c8323efe26cd211c3f73a695c93126",
   "definition_digest": "f63bbc43510fe9211823c526a76fad6cfd47b777cbd11b8a2e53af1a56b56086",
   "source_registry_digest": "95a8891d6c68ac7e536b45a44f88468adc4588fb5fe74c25b93d0ab18721b5b9",
   "lifecycle": "protocol_bound",
@@ -178,7 +178,7 @@
       "state": "required",
       "selection_digests": [],
       "blockers": [
-        "ReproductionResearchOSCompileError:benchmark 'alfworld' has no exact source-contained repository authority; immutable data/materialization is required"
+        "ReproductionResearchOSCompileError:benchmark 'alfworld' has no exact repository or materialized authority"
       ]
     },
     "benchmark_split_axis": {

@@ -2,7 +2,7 @@
   "schema": "noetrium.reproduction.projection.v10",
   "authority": "generated_from_typed_definition_and_source",
   "package": "agemem_acl2026",
-  "package_digest": "3f1e97c681e12d7a66df8045ab286e2e0b6af9936d97a74d3577729ba343d883",
+  "package_digest": "e4e6f4bacc44b84d7b0fa6b62336ad135f2419667803ce1f0a6c1bc4f61c047f",
   "definition_digest": "4656452218c3b431bcec6dc8eb8bfad7766146bd8697f2d65a8bd6f41e2d2b14",
   "source_registry_digest": "1362c5849fb9e462bb866792b448a978e8f703e4240025eb73a0a8ca00c034c6",
   "lifecycle": "protocol_bound",
@@ -176,7 +176,7 @@
       "state": "required",
       "selection_digests": [],
       "blockers": [
-        "ReproductionResearchOSCompileError:benchmark 'agentboard-pddl' has no exact source-contained repository authority; immutable data/materialization is required"
+        "ReproductionResearchOSCompileError:benchmark 'agentboard-pddl' has no exact repository or materialized authority"
       ]
     },
     "benchmark_split_axis": {

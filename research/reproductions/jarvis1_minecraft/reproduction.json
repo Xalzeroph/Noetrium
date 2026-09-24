@@ -2,7 +2,7 @@
   "schema": "noetrium.reproduction.projection.v10",
   "authority": "generated_from_typed_definition_and_source",
   "package": "jarvis1_minecraft",
-  "package_digest": "727202559065d2ee9a7c632ac7c481088e66c71fe2e925daa0ccb309fc90aa39",
+  "package_digest": "4e23e28264c107d9df7dd28e3e18016ba515318df184520cf3a329aa6ed3483a",
   "definition_digest": "34f17d6f0d7879c11dd051235813d1e08d67479911f20ed4df97916c03a8e159",
   "source_registry_digest": "d0a3d3ba7b0bbee5cf156be04b204f1c10085da1b8847a3a18f524b83ae1280b",
   "lifecycle": "protocol_bound",
@@ -179,7 +179,7 @@
     "benchmark_authority": {
       "state": "closed",
       "selection_digests": [
-        "1be7e0a3d32e13e63c3a49aa5bde894845a964d8ed29e7c1ca29ee27a833aa65"
+        "453fbdb926610f3fe4b10b44ff029f3cda92f68f6c77e4799c35771568063434"
       ],
       "blockers": []
     },

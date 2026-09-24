@@ -2,7 +2,7 @@
   "schema": "noetrium.reproduction.projection.v10",
   "authority": "generated_from_typed_definition_and_source",
   "package": "autogen_agentchat",
-  "package_digest": "3bd22b6b8ab40c88683e21f3040dacea1e5b757321f13f230ea39565e22bd718",
+  "package_digest": "24f559cdf7503940b943adc0afe6b81157f4f75ec8e696433d59aa4a2256a224",
   "definition_digest": "cc6c1df578b908f00a037c121b1029b6407f3bb0a9c891a68c8049924a54d746",
   "source_registry_digest": "8668e81cb1f973ed2b3d05971c15f5e4455cd2ee8b8e2932f40c208aa8875912",
   "lifecycle": "protocol_bound",
@@ -113,7 +113,7 @@
       "state": "required",
       "selection_digests": [],
       "blockers": [
-        "ReproductionResearchOSCompileError:benchmark 'multiagentbench' has no exact source-contained repository authority; immutable data/materialization is required"
+        "ReproductionResearchOSCompileError:benchmark 'multiagentbench' has no exact repository or materialized authority"
       ]
     },
     "benchmark_split_axis": {

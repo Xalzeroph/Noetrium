@@ -2,7 +2,7 @@
   "schema": "noetrium.reproduction.projection.v10",
   "authority": "generated_from_typed_definition_and_source",
   "package": "lits_math500",
-  "package_digest": "d085ad47b335483c647d9dbe555b23bf6292db628da663b202827ecf42fd2d94",
+  "package_digest": "3334a0610ddc22468300e08a4e369eb24dc308275bc8e8e05bf032a09f2321d3",
   "definition_digest": "2f7e988e92fc57d18678a1c4de309a653ad54a451aa0ddedb84dead3ca826e7a",
   "source_registry_digest": "a7690832f13476ee4b23d5467a46ea3041e9a9bc011a9268b12aee7a7ade8709",
   "lifecycle": "protocol_bound",
@@ -119,7 +119,7 @@
       "state": "required",
       "selection_digests": [],
       "blockers": [
-        "ReproductionResearchOSCompileError:benchmark 'math500' has no exact source-contained repository authority; immutable data/materialization is required"
+        "ReproductionResearchOSCompileError:benchmark 'math500' has no exact repository or materialized authority"
       ]
     },
     "benchmark_split_axis": {

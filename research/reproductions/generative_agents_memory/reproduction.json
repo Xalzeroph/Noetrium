@@ -2,7 +2,7 @@
   "schema": "noetrium.reproduction.projection.v10",
   "authority": "generated_from_typed_definition_and_source",
   "package": "generative_agents_memory",
-  "package_digest": "f6131d8ac8e28d980b477984b8e3857ca5aaec0ad146e6151a00aa06e9f78fe1",
+  "package_digest": "798fd70be248963ae23496de020558f30e38181fc08204c72310ff5e84eb29f2",
   "definition_digest": "8d2830be9592a39bb8ff8cf36ed5515e8368e706e450ac4521230e47facf6e61",
   "source_registry_digest": "4eee9b9597e3af590b88c8a406bb7366ac2bc8cea07e32f8ca278990086caf7e",
   "lifecycle": "protocol_bound",
@@ -146,7 +146,7 @@
       "state": "required",
       "selection_digests": [],
       "blockers": [
-        "ReproductionResearchOSCompileError:benchmark 'generative-agents-smallville' has no exact source-contained repository authority; immutable data/materialization is required"
+        "ReproductionResearchOSCompileError:benchmark 'generative-agents-smallville' has no exact repository or materialized authority"
       ]
     },
     "benchmark_split_axis": {

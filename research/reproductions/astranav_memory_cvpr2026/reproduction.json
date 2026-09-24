@@ -2,7 +2,7 @@
   "schema": "noetrium.reproduction.projection.v10",
   "authority": "generated_from_typed_definition_and_source",
   "package": "astranav_memory_cvpr2026",
-  "package_digest": "0007d1c4d0e43677474d40a7b8a93a04d57b1675d4d373733c0bcd18003298ee",
+  "package_digest": "ed94adedda4df1985cd366ea56ee96dbeaa5f90668d891890dbca33912ce3748",
   "definition_digest": "481b9e05da672245ec2a806d72b1a13530b67ed5ea12a05e2855a28bf8225b4f",
   "source_registry_digest": "304c7c3d5dc3e52eeb337cb48eef06780d286e226a126bd447de218cc3d11aae",
   "lifecycle": "protocol_bound",
@@ -170,7 +170,7 @@
       "state": "required",
       "selection_digests": [],
       "blockers": [
-        "ReproductionResearchOSCompileError:benchmark 'goat-bench' has no exact source-contained repository authority; immutable data/materialization is required"
+        "ReproductionResearchOSCompileError:benchmark 'goat-bench' has no exact repository or materialized authority"
       ]
     },
     "benchmark_split_axis": {

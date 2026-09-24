@@ -2,7 +2,7 @@
   "schema": "noetrium.reproduction.projection.v10",
   "authority": "generated_from_typed_definition_and_source",
   "package": "memevolve",
-  "package_digest": "7fbc47f7121e0a6fd68de4281b102d3389b3575f7666e9c198aa3eb96134e3a4",
+  "package_digest": "3dafb2d06b818d3bf6ca02a52619228580ee582621bda5b66dc2c16b71f82384",
   "definition_digest": "1336421e8f467dea1b177f6c4ccda7e283bae802349d03cb8ba35f3d874e75b9",
   "source_registry_digest": "a92e273188a3b65a11542aa445022569964e21f942fb4412164a0c5f6a9ec7d7",
   "lifecycle": "protocol_bound",
@@ -103,7 +103,7 @@
       "state": "required",
       "selection_digests": [],
       "blockers": [
-        "ReproductionResearchOSCompileError:benchmark 'evomembench' has no exact source-contained repository authority; immutable data/materialization is required"
+        "ReproductionResearchOSCompileError:benchmark 'evomembench' has no exact repository or materialized authority"
       ]
     },
     "benchmark_split_axis": {

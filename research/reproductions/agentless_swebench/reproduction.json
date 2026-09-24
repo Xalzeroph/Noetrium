@@ -2,7 +2,7 @@
   "schema": "noetrium.reproduction.projection.v10",
   "authority": "generated_from_typed_definition_and_source",
   "package": "agentless_swebench",
-  "package_digest": "a837f53ddf64aca0bb357d909698e41d206d6c72fafa21a3b6594913bbc76d6c",
+  "package_digest": "ba453b5bb16894db5ba63b87e05514e2fe62b9ba9b11281f2a9f0d3757d2ddfc",
   "definition_digest": "a524a3b376569393b5288022c9b83d133898b4316cb95a6c86c17792d2fbbcb8",
   "source_registry_digest": "6c3f3a35e76b0138dfbc16be29a802509c86aa537b696a15da6f10d9b8a8dedf",
   "lifecycle": "protocol_bound",
@@ -157,7 +157,7 @@
       "state": "required",
       "selection_digests": [],
       "blockers": [
-        "ReproductionResearchOSCompileError:benchmark 'swe-bench' has no exact source-contained repository authority; immutable data/materialization is required"
+        "ReproductionResearchOSCompileError:benchmark 'swe-bench' has no exact repository or materialized authority"
       ]
     },
     "benchmark_split_axis": {

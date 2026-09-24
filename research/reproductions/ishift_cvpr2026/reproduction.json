@@ -2,7 +2,7 @@
   "schema": "noetrium.reproduction.projection.v10",
   "authority": "generated_from_typed_definition_and_source",
   "package": "ishift_cvpr2026",
-  "package_digest": "04d4aa9983dcc799c25f3928ae0b952cef515b9b31efeaba1513ec21969233b4",
+  "package_digest": "e03795e92daa253f76c213e488f737b9cd156399c2c484d5cf816f4f8eee578a",
   "definition_digest": "71014d59993c0d6760c4e4084123323967e87540a3a576fb5641ec3efb47b4dd",
   "source_registry_digest": "cba20db8cc89fd106370867aad306e63553e71b3d7f65bf597a47c087dc83dda",
   "lifecycle": "protocol_bound",
@@ -210,7 +210,7 @@
       "state": "required",
       "selection_digests": [],
       "blockers": [
-        "ReproductionResearchOSCompileError:benchmark 'aitw' has no exact source-contained repository authority; immutable data/materialization is required"
+        "ReproductionResearchOSCompileError:benchmark 'aitw' has no exact repository or materialized authority"
       ]
     },
     "benchmark_split_axis": {

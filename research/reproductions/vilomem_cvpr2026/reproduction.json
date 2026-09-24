@@ -2,7 +2,7 @@
   "schema": "noetrium.reproduction.projection.v10",
   "authority": "generated_from_typed_definition_and_source",
   "package": "vilomem_cvpr2026",
-  "package_digest": "707ec715739c243eac11b21c915ec12c36abf044ac64fc43106dae027c847c2a",
+  "package_digest": "a37466aec5d81515d882baac79b73505609ca3b75f963fc67711a111d8aea609",
   "definition_digest": "d6b6820150436f699bd1dc43ee5cf54d80c9215f8950d081381007c7683fc905",
   "source_registry_digest": "5800084d54705cb425925baff25d1b4265d9ff1079e122cdf75b3705ff0ca64c",
   "lifecycle": "protocol_bound",
@@ -228,7 +228,7 @@
       "state": "required",
       "selection_digests": [],
       "blockers": [
-        "ReproductionResearchOSCompileError:benchmark 'hallusionbench' has no exact source-contained repository authority; immutable data/materialization is required"
+        "ReproductionResearchOSCompileError:benchmark 'hallusionbench' has no exact repository or materialized authority"
       ]
     },
     "benchmark_split_axis": {

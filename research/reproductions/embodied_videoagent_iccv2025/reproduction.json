@@ -2,7 +2,7 @@
   "schema": "noetrium.reproduction.projection.v10",
   "authority": "generated_from_typed_definition_and_source",
   "package": "embodied_videoagent_iccv2025",
-  "package_digest": "0cb2d432fb4f648749ced3c3fbe9535919c41a0bc39de51f61b1a25a0009d319",
+  "package_digest": "5c4819fc15b789b87b4c24054a1ea8a99ffba51188eded433bde88f7a13065eb",
   "definition_digest": "acac825e01b68f68aa50634cb0146cc694556b4af078498edfdb26d9976c9604",
   "source_registry_digest": "02d0e0637b0b444d9c44e4be5e0d96c4e51df06bfe95c4adec1184fc215fecb6",
   "lifecycle": "protocol_bound",
@@ -159,7 +159,7 @@
       "state": "required",
       "selection_digests": [],
       "blockers": [
-        "ReproductionResearchOSCompileError:benchmark 'ego4d-vq3d' has no exact source-contained repository authority; immutable data/materialization is required"
+        "ReproductionResearchOSCompileError:benchmark 'ego4d-vq3d' has no exact repository or materialized authority"
       ]
     },
     "benchmark_split_axis": {

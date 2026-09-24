@@ -2,7 +2,7 @@
   "schema": "noetrium.reproduction.projection.v10",
   "authority": "generated_from_typed_definition_and_source",
   "package": "adas_meta_agent_search",
-  "package_digest": "55144bcfc743d1f6ffb0f9ab3d02b0424ccc7040382c35d1bb36e65289e19820",
+  "package_digest": "c36c96737545ddd6c8935ba900c2575aab26dc8e0d8810b60637d3383e8575a4",
   "definition_digest": "914a44cfe1ea062d50779b6fa128f01c541b813e976801cda570819c57fcd17e",
   "source_registry_digest": "0c0b03477d5254347c34f420f4354bb8acbacc56f34dd4a40275e1d128b71eef",
   "lifecycle": "protocol_bound",
@@ -148,7 +148,7 @@
       "state": "required",
       "selection_digests": [],
       "blockers": [
-        "ReproductionResearchOSCompileError:benchmark 'mgsm' has no exact source-contained repository authority; immutable data/materialization is required"
+        "ReproductionResearchOSCompileError:benchmark 'mgsm' has no exact repository or materialized authority"
       ]
     },
     "benchmark_split_axis": {

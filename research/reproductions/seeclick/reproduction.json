@@ -2,7 +2,7 @@
   "schema": "noetrium.reproduction.projection.v10",
   "authority": "generated_from_typed_definition_and_source",
   "package": "seeclick",
-  "package_digest": "4b9f49fc2dbae8bbd3fe56238bbcb430357af98fa6963a662622fae9795a3c64",
+  "package_digest": "bd39c10acfea0322a4e4ea7a93f27a166ab9be5322eca43d68ff45ca7098e282",
   "definition_digest": "a7dc27f765e0cd9d6f6ef4fb784124a06d339ec5aaf3c43a239cdda32ae071a1",
   "source_registry_digest": "703701aa516e21be3cdc470ed08bd842843e88a39dbdeba1a063fc280cf96439",
   "lifecycle": "protocol_bound",
@@ -208,7 +208,7 @@
       "state": "required",
       "selection_digests": [],
       "blockers": [
-        "ReproductionResearchOSCompileError:benchmark 'screenspot' has no exact source-contained repository authority; immutable data/materialization is required"
+        "ReproductionResearchOSCompileError:benchmark 'screenspot' has no exact repository or materialized authority"
       ]
     },
     "benchmark_split_axis": {

@@ -2,7 +2,7 @@
   "schema": "noetrium.reproduction.projection.v10",
   "authority": "generated_from_typed_definition_and_source",
   "package": "memgpt_classic",
-  "package_digest": "4ce4eafa63022c97682c1d75bae3395f33ed1bc3b01d4e284f2ffa518bb1fdc3",
+  "package_digest": "4c873910fdd7cd9acdeaced1577b3848c9cb209a4ff4f490acc8e361028b2d98",
   "definition_digest": "2f942be8c2fe1f5d37cda1e7f2e0f91b7fa18f3e7d4393d96a5cf4967e31a6ed",
   "source_registry_digest": "a344ec7fde772c9140ac33832d9b9438b417ea0804035281115501feecff9998",
   "lifecycle": "protocol_bound",
@@ -130,7 +130,7 @@
       "state": "required",
       "selection_digests": [],
       "blockers": [
-        "ReproductionResearchOSCompileError:benchmark 'memoryarena' has no exact source-contained repository authority; immutable data/materialization is required"
+        "ReproductionResearchOSCompileError:benchmark 'memoryarena' has no exact repository or materialized authority"
       ]
     },
     "benchmark_split_axis": {

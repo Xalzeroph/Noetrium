@@ -2,7 +2,7 @@
   "schema": "noetrium.reproduction.projection.v10",
   "authority": "generated_from_typed_definition_and_source",
   "package": "videoarm_cvpr2026",
-  "package_digest": "4bd33c38c8daca91392647c57420d926b16b332d6c53801496a47ea2065f4552",
+  "package_digest": "57cdd6d16c9c624542db0b6cf23872455f5eb58a770cd24a830bc3b463d31ad3",
   "definition_digest": "16d76a6bf1558096961fdef74089e3c536dd3d43fc991582c6b0c7d603c7d01a",
   "source_registry_digest": "dd8526fc8b15cc760274353f8a4c7bb10778f7149004af924220d6a2edcdd77e",
   "lifecycle": "protocol_bound",
@@ -164,7 +164,7 @@
       "state": "required",
       "selection_digests": [],
       "blockers": [
-        "ReproductionResearchOSCompileError:benchmark 'egoschema' has no exact source-contained repository authority; immutable data/materialization is required"
+        "ReproductionResearchOSCompileError:benchmark 'egoschema' has no exact repository or materialized authority"
       ]
     },
     "benchmark_split_axis": {

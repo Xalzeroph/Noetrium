@@ -2,7 +2,7 @@
   "schema": "noetrium.reproduction.projection.v10",
   "authority": "generated_from_typed_definition_and_source",
   "package": "agent_s3",
-  "package_digest": "c8cf05f27941e44f606bf0e40ede6bc622fc87c1504a00b25ba8d2edd9ee0e9a",
+  "package_digest": "83d75a14be3aad3b9f819df56a954150b9453405d819942b22ca0ac50e2abd35",
   "definition_digest": "571e956debc7d55aba3299a6eef84c393f939187368bbb799bd269b9ce0ee48d",
   "source_registry_digest": "c13f9d1d0cdabb811ceddbaa18dcef0668ca95280ab0012b6a463d39844c7a34",
   "lifecycle": "protocol_bound",
@@ -114,7 +114,7 @@
       "state": "required",
       "selection_digests": [],
       "blockers": [
-        "ReproductionResearchOSCompileError:benchmark 'osworld' has no exact source-contained repository authority; immutable data/materialization is required"
+        "ReproductionResearchOSCompileError:benchmark 'osworld' has no exact repository or materialized authority"
       ]
     },
     "benchmark_split_axis": {

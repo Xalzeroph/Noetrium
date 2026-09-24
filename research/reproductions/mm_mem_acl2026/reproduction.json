@@ -2,7 +2,7 @@
   "schema": "noetrium.reproduction.projection.v10",
   "authority": "generated_from_typed_definition_and_source",
   "package": "mm_mem_acl2026",
-  "package_digest": "870ee83413c0f775c3c8e09260b3a81c25561bbe1f1a58fcc6ff4c693d1bd2b2",
+  "package_digest": "0a91daf41e694b43c4f2563d76d1fda56e618a75eeb732e4d077facf455f0ea4",
   "definition_digest": "5a28d88b6d8d97d71a1200d092b8152f715e2614196bf829bf6c514fa0f1d968",
   "source_registry_digest": "23068ada425dff308cddf569cf3d93ed1d222dcfaa14899dd001f70f66d8e0bb",
   "lifecycle": "protocol_bound",
@@ -177,7 +177,7 @@
       "state": "required",
       "selection_digests": [],
       "blockers": [
-        "ReproductionResearchOSCompileError:benchmark 'hd-epic' has no exact source-contained repository authority; immutable data/materialization is required"
+        "ReproductionResearchOSCompileError:benchmark 'hd-epic' has no exact repository or materialized authority"
       ]
     },
     "benchmark_split_axis": {

@@ -2,7 +2,7 @@
   "schema": "noetrium.reproduction.projection.v10",
   "authority": "generated_from_typed_definition_and_source",
   "package": "hugginggpt",
-  "package_digest": "75ef9530a7c09e33557df92a08cea04bcb87d0ff8abff7e2f8e284ce8584f76c",
+  "package_digest": "24205223bccd1e7f615f2181dac08c3debb9e452cd0dc2559951b030f4c300a3",
   "definition_digest": "2e0b013dd19a762c3afd8eda0a66bf0d9878f7b35aedb4659f5c9ea7f7be8afc",
   "source_registry_digest": "694e1acf36f5bdc067e93ab86f80e49a41f98113ac5297bc5380a4dc00ad4428",
   "lifecycle": "protocol_bound",
@@ -215,7 +215,7 @@
       "state": "required",
       "selection_digests": [],
       "blockers": [
-        "ReproductionResearchOSCompileError:benchmark 'hugginggpt-paper-tasks' has no exact source-contained repository authority; immutable data/materialization is required"
+        "ReproductionResearchOSCompileError:benchmark 'hugginggpt-paper-tasks' has no exact repository or materialized authority"
       ]
     },
     "benchmark_split_axis": {

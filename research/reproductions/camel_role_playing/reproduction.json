@@ -2,7 +2,7 @@
   "schema": "noetrium.reproduction.projection.v10",
   "authority": "generated_from_typed_definition_and_source",
   "package": "camel_role_playing",
-  "package_digest": "539933e49ea52d9c4fe2503db2d9dba71e8a350c53a92461beccbc8718b0d22b",
+  "package_digest": "fa9cc7ba095d93d4d550873ab040d9d5fdb54cab3ff649fc989aebb11a735882",
   "definition_digest": "fce235dd82ef0a923481fb22c65aa4cfe1c680a4fcf2cd9f9e69e2eb1464ec37",
   "source_registry_digest": "75df2f5db5dfa002ca6fa39a6e7e1d816a138c100af3b04dd7f85c03a55f1a46",
   "lifecycle": "protocol_bound",
@@ -183,7 +183,7 @@
       "state": "required",
       "selection_digests": [],
       "blockers": [
-        "ReproductionResearchOSCompileError:benchmark 'camel-ai-society' has no exact source-contained repository authority; immutable data/materialization is required"
+        "ReproductionResearchOSCompileError:benchmark 'camel-ai-society' has no exact repository or materialized authority"
       ]
     },
     "benchmark_split_axis": {

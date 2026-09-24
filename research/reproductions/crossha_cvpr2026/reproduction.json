@@ -2,7 +2,7 @@
   "schema": "noetrium.reproduction.projection.v10",
   "authority": "generated_from_typed_definition_and_source",
   "package": "crossha_cvpr2026",
-  "package_digest": "ddbc7211a31f12638f3e734bfe7bd57e69cfc1bb2970bc3510cce99277261afe",
+  "package_digest": "8c268b372636919c4ea3548f41370746ce055db67c34d37e7ee89d2e0d0046d8",
   "definition_digest": "0dbd527b8a5223d3511d230e426f1b7d740cab26e48f781a7be0b08873e32655",
   "source_registry_digest": "5a145e097816c7349d69d888b911b46ce88155c5829bc4dcc9d1017335ead762",
   "lifecycle": "protocol_bound",
@@ -184,7 +184,7 @@
       "state": "required",
       "selection_digests": [],
       "blockers": [
-        "ReproductionResearchOSCompileError:benchmark 'minecraft-openha' has no exact source-contained repository authority; immutable data/materialization is required"
+        "ReproductionResearchOSCompileError:benchmark 'minecraft-openha' has no exact repository or materialized authority"
       ]
     },
     "benchmark_split_axis": {

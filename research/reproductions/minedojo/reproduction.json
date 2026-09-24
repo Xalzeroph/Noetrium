@@ -2,7 +2,7 @@
   "schema": "noetrium.reproduction.projection.v10",
   "authority": "generated_from_typed_definition_and_source",
   "package": "minedojo",
-  "package_digest": "4b49c2dbf394232dafa3f9e38787d7ffeb3b3cab890a9d7d9a2cb5c8f55e1d6a",
+  "package_digest": "6148e2e969a0fa07fcb7819a5f7b94b9e0906ac3c4025c3800c4683c99dee185",
   "definition_digest": "859f1c1220814ec7377557548db8c0a5703d0ebd323a8be89adff59072207a5e",
   "source_registry_digest": "4e2bb1c63f4746aac56e56ee71551b01971ab4476cff7f802b1806783b01b3b1",
   "lifecycle": "protocol_bound",
@@ -246,7 +246,7 @@
       "state": "required",
       "selection_digests": [],
       "blockers": [
-        "ReproductionResearchOSCompileError:benchmark 'minedojo' has no exact source-contained repository authority; immutable data/materialization is required"
+        "ReproductionResearchOSCompileError:benchmark 'minedojo' has no exact repository or materialized authority"
       ]
     },
     "benchmark_split_axis": {

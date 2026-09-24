@@ -2,7 +2,7 @@
   "schema": "noetrium.reproduction.projection.v10",
   "authority": "generated_from_typed_definition_and_source",
   "package": "storm_wiki",
-  "package_digest": "d8160b56730ebd3b8a8601466d29ebf3bbb0c83427ef6ec3493d1877aa3fa406",
+  "package_digest": "de9bb39e66bda9794d49473902f40613ac1b74478f2c2651382e347b6f83a157",
   "definition_digest": "6984850bbaaa1139acee2db5aee2b4bfbeb80ccd94ddd7f49c298c04d45bc06d",
   "source_registry_digest": "a81615aa99cc6d96340bca8447ebe87504c9bdb0bcc0f961f51286299458a9b0",
   "lifecycle": "protocol_bound",
@@ -173,7 +173,7 @@
       "state": "required",
       "selection_digests": [],
       "blockers": [
-        "ReproductionResearchOSCompileError:benchmark 'freshwiki' has no exact source-contained repository authority; immutable data/materialization is required"
+        "ReproductionResearchOSCompileError:benchmark 'freshwiki' has no exact repository or materialized authority"
       ]
     },
     "benchmark_split_axis": {

@@ -2,7 +2,7 @@
   "schema": "noetrium.reproduction.projection.v10",
   "authority": "generated_from_typed_definition_and_source",
   "package": "motus_cvpr2026",
-  "package_digest": "141df90ea20fa2347fb54276370650fc33e897d57f87f56243f01b08f309af98",
+  "package_digest": "65e572697000e19301e9afe319909c5be3b57ff6eaa4fdb6e4f0e1056efb6869",
   "definition_digest": "8b41ad74c2412a23a30b4715772cd57a332afa98886eadb6c19a612d13edeaf8",
   "source_registry_digest": "858a852bf2df784905dba0b3f7ee4b9fb68c96935b35d787eaf3f9097ac4ebcc",
   "lifecycle": "protocol_bound",
@@ -182,7 +182,7 @@
       "state": "required",
       "selection_digests": [],
       "blockers": [
-        "ReproductionResearchOSCompileError:benchmark 'motus-realworld' has no exact source-contained repository authority; immutable data/materialization is required"
+        "ReproductionResearchOSCompileError:benchmark 'motus-realworld' has no exact repository or materialized authority"
       ]
     },
     "benchmark_split_axis": {

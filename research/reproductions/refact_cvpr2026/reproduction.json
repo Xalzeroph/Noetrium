@@ -2,7 +2,7 @@
   "schema": "noetrium.reproduction.projection.v10",
   "authority": "generated_from_typed_definition_and_source",
   "package": "refact_cvpr2026",
-  "package_digest": "3e6c425b6d06e9906a9800f5e456882f714a50b9889dd386d4764a4f670bb15f",
+  "package_digest": "21f038feef3e341aa77080acf8586f17a5ee32a2cd4a7bcd1f50a87f927985cf",
   "definition_digest": "2edaaab0273d70e8999ac875be0675620443d83300bf28fefa6167d5528d0dd6",
   "source_registry_digest": "53720c064b39a3602333deb72b1dc6075b6c3cae6594bfa084990681eb67baff",
   "lifecycle": "protocol_bound",
@@ -127,7 +127,7 @@
       "state": "required",
       "selection_digests": [],
       "blockers": [
-        "ReproductionResearchOSCompileError:benchmark 'groundedvqa' has no exact source-contained repository authority; immutable data/materialization is required"
+        "ReproductionResearchOSCompileError:benchmark 'groundedvqa' has no exact repository or materialized authority"
       ]
     },
     "benchmark_split_axis": {

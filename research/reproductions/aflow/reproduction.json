@@ -2,7 +2,7 @@
   "schema": "noetrium.reproduction.projection.v10",
   "authority": "generated_from_typed_definition_and_source",
   "package": "aflow",
-  "package_digest": "b8be65819583bf3f09329dc50207f3cbc0fed5290923418d106b6d7fccb12ba2",
+  "package_digest": "3c578b6b6fc92ff37ca93ff3243f29b668aa4ce8efa6060dd1711addc1463f9a",
   "definition_digest": "32fd6b066d9ecf013bf733c377c0ee289207ed5817e65f3170c676e502c4f006",
   "source_registry_digest": "21252fdb46d581a1b68a681b0c99494769cc12a9e32a963ecd017bb06a0133b7",
   "lifecycle": "protocol_bound",
@@ -225,7 +225,7 @@
       "state": "required",
       "selection_digests": [],
       "blockers": [
-        "ReproductionResearchOSCompileError:benchmark 'humaneval' has no exact source-contained repository authority; immutable data/materialization is required"
+        "ReproductionResearchOSCompileError:benchmark 'humaneval' has no exact repository or materialized authority"
       ]
     },
     "benchmark_split_axis": {

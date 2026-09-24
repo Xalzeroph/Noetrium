@@ -2,7 +2,7 @@
   "schema": "noetrium.reproduction.projection.v10",
   "authority": "generated_from_typed_definition_and_source",
   "package": "chain_of_thought_gsm8k",
-  "package_digest": "3c470b1c3487618c8fdfcfcd742e0b3c04d2788eaa48c6a36910aff435720b46",
+  "package_digest": "482d214af5b864783b365c263b8ce451d6d344a99a9967d5eb8e20ada1772f9b",
   "definition_digest": "2687a49ab37d0ea47afc94894e7a46afc600f2d4e5f2ca6f6c91cdc0c09ce399",
   "source_registry_digest": "fc74cb2f69f422446062876d3fb62441e1e3d08543aa287d805a02c23927870d",
   "lifecycle": "protocol_bound",
@@ -153,7 +153,7 @@
       "state": "required",
       "selection_digests": [],
       "blockers": [
-        "ReproductionResearchOSCompileError:benchmark 'gsm8k' has no exact source-contained repository authority; immutable data/materialization is required"
+        "ReproductionResearchOSCompileError:benchmark 'gsm8k' has no exact repository or materialized authority"
       ]
     },
     "benchmark_split_axis": {

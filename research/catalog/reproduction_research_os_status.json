@@ -25,7 +25,7 @@
         "state": "required",
         "selection_digests": [],
         "blockers": [
-          "ReproductionResearchOSCompileError:benchmark 'lvu' has no exact source-contained repository authority; immutable data/materialization is required"
+          "ReproductionResearchOSCompileError:benchmark 'lvu' has no exact repository or materialized authority"
         ]
       },
       "benchmark_split_axis": {
@@ -51,7 +51,7 @@
         "state": "required",
         "selection_digests": [],
         "blockers": [
-          "ReproductionResearchOSCompileError:benchmark 'mind2web' has no exact source-contained repository authority; immutable data/materialization is required"
+          "ReproductionResearchOSCompileError:benchmark 'mind2web' has no exact repository or materialized authority"
         ]
       },
       "benchmark_split_axis": {
@@ -78,7 +78,7 @@
         "state": "required",
         "selection_digests": [],
         "blockers": [
-          "ReproductionResearchOSCompileError:benchmark 'mgsm' has no exact source-contained repository authority; immutable data/materialization is required"
+          "ReproductionResearchOSCompileError:benchmark 'mgsm' has no exact repository or materialized authority"
         ]
       },
       "benchmark_split_axis": {
@@ -103,7 +103,7 @@
         "state": "required",
         "selection_digests": [],
         "blockers": [
-          "ReproductionResearchOSCompileError:benchmark 'humaneval' has no exact source-contained repository authority; immutable data/materialization is required"
+          "ReproductionResearchOSCompileError:benchmark 'humaneval' has no exact repository or materialized authority"
         ]
       },
       "benchmark_split_axis": {
@@ -132,7 +132,7 @@
         "state": "required",
         "selection_digests": [],
         "blockers": [
-          "ReproductionResearchOSCompileError:benchmark 'agentboard-pddl' has no exact source-contained repository authority; immutable data/materialization is required"
+          "ReproductionResearchOSCompileError:benchmark 'agentboard-pddl' has no exact repository or materialized authority"
         ]
       },
       "benchmark_split_axis": {
@@ -160,7 +160,7 @@
         "state": "required",
         "selection_digests": [],
         "blockers": [
-          "ReproductionResearchOSCompileError:benchmark 'webshop' has no exact source-contained repository authority; immutable data/materialization is required"
+          "ReproductionResearchOSCompileError:benchmark 'webshop' has no exact repository or materialized authority"
         ]
       },
       "benchmark_split_axis": {
@@ -185,7 +185,7 @@
         "state": "required",
         "selection_digests": [],
         "blockers": [
-          "ReproductionResearchOSCompileError:benchmark 'osworld' has no exact source-contained repository authority; immutable data/materialization is required"
+          "ReproductionResearchOSCompileError:benchmark 'osworld' has no exact repository or materialized authority"
         ]
       },
       "benchmark_split_axis": {
@@ -212,7 +212,7 @@
         "state": "required",
         "selection_digests": [],
         "blockers": [
-          "ReproductionResearchOSCompileError:benchmark 'swe-bench' has no exact source-contained repository authority; immutable data/materialization is required"
+          "ReproductionResearchOSCompileError:benchmark 'swe-bench' has no exact repository or materialized authority"
         ]
       },
       "benchmark_split_axis": {
@@ -244,7 +244,7 @@
         "state": "required",
         "selection_digests": [],
         "blockers": [
-          "ReproductionResearchOSCompileError:benchmark 'agentboard-pddl' has no exact source-contained repository authority; immutable data/materialization is required"
+          "ReproductionResearchOSCompileError:benchmark 'agentboard-pddl' has no exact repository or materialized authority"
         ]
       },
       "benchmark_split_axis": {
@@ -312,7 +312,7 @@
         "state": "required",
         "selection_digests": [],
         "blockers": [
-          "ReproductionResearchOSCompileError:benchmark 'goat-bench' has no exact source-contained repository authority; immutable data/materialization is required"
+          "ReproductionResearchOSCompileError:benchmark 'goat-bench' has no exact repository or materialized authority"
         ]
       },
       "benchmark_split_axis": {
@@ -339,7 +339,7 @@
         "state": "required",
         "selection_digests": [],
         "blockers": [
-          "ReproductionResearchOSCompileError:benchmark 'multiagentbench' has no exact source-contained repository authority; immutable data/materialization is required"
+          "ReproductionResearchOSCompileError:benchmark 'multiagentbench' has no exact repository or materialized authority"
         ]
       },
       "benchmark_split_axis": {
@@ -366,7 +366,7 @@
         "state": "required",
         "selection_digests": [],
         "blockers": [
-          "ReproductionResearchOSCompileError:benchmark 'camel-ai-society' has no exact source-contained repository authority; immutable data/materialization is required"
+          "ReproductionResearchOSCompileError:benchmark 'camel-ai-society' has no exact repository or materialized authority"
         ]
       },
       "benchmark_split_axis": {
@@ -392,7 +392,7 @@
         "state": "required",
         "selection_digests": [],
         "blockers": [
-          "ReproductionResearchOSCompileError:benchmark 'visualwebarena' has no exact source-contained repository authority; immutable data/materialization is required"
+          "ReproductionResearchOSCompileError:benchmark 'visualwebarena' has no exact repository or materialized authority"
         ]
       },
       "benchmark_split_axis": {
@@ -421,7 +421,7 @@
         "state": "required",
         "selection_digests": [],
         "blockers": [
-          "ReproductionResearchOSCompileError:benchmark 'aitz' has no exact source-contained repository authority; immutable data/materialization is required"
+          "ReproductionResearchOSCompileError:benchmark 'aitz' has no exact repository or materialized authority"
         ]
       },
       "benchmark_split_axis": {
@@ -448,7 +448,7 @@
         "state": "required",
         "selection_digests": [],
         "blockers": [
-          "ReproductionResearchOSCompileError:benchmark 'gsm8k' has no exact source-contained repository authority; immutable data/materialization is required"
+          "ReproductionResearchOSCompileError:benchmark 'gsm8k' has no exact repository or materialized authority"
         ]
       },
       "benchmark_split_axis": {
@@ -473,7 +473,7 @@
         "state": "required",
         "selection_digests": [],
         "blockers": [
-          "ReproductionResearchOSCompileError:benchmark 'srdd' has no exact source-contained repository authority; immutable data/materialization is required"
+          "ReproductionResearchOSCompileError:benchmark 'srdd' has no exact repository or materialized authority"
         ]
       },
       "benchmark_split_axis": {
@@ -497,7 +497,7 @@
       "benchmark_authority": {
         "state": "closed",
         "selection_digests": [
-          "da7d6d79e9c4ef05d2e6c278a3088a5af0a2055ea3462f42a9817c16809b2995"
+          "d3d3f242141520fbbf1be94138f702c566e10e7d238130aacd21030306ef0444"
         ],
         "blockers": []
       },
@@ -523,7 +523,7 @@
         "state": "required",
         "selection_digests": [],
         "blockers": [
-          "ReproductionResearchOSCompileError:benchmark 'mind2web' has no exact source-contained repository authority; immutable data/materialization is required"
+          "ReproductionResearchOSCompileError:benchmark 'mind2web' has no exact repository or materialized authority"
         ]
       },
       "benchmark_split_axis": {
@@ -550,7 +550,7 @@
         "state": "required",
         "selection_digests": [],
         "blockers": [
-          "ReproductionResearchOSCompileError:benchmark 'minecraft-openha' has no exact source-contained repository authority; immutable data/materialization is required"
+          "ReproductionResearchOSCompileError:benchmark 'minecraft-openha' has no exact repository or materialized authority"
         ]
       },
       "benchmark_split_axis": {
@@ -581,7 +581,7 @@
         "state": "required",
         "selection_digests": [],
         "blockers": [
-          "ReproductionResearchOSCompileError:benchmark 'hm3d-ovon' has no exact source-contained repository authority; immutable data/materialization is required"
+          "ReproductionResearchOSCompileError:benchmark 'hm3d-ovon' has no exact repository or materialized authority"
         ]
       },
       "benchmark_split_axis": {
@@ -608,7 +608,7 @@
         "state": "required",
         "selection_digests": [],
         "blockers": [
-          "ReproductionResearchOSCompileError:benchmark 'swe-bench' has no exact source-contained repository authority; immutable data/materialization is required"
+          "ReproductionResearchOSCompileError:benchmark 'swe-bench' has no exact repository or materialized authority"
         ]
       },
       "benchmark_split_axis": {
@@ -635,7 +635,7 @@
         "state": "required",
         "selection_digests": [],
         "blockers": [
-          "ReproductionResearchOSCompileError:benchmark 'libero' has no exact source-contained repository authority; immutable data/materialization is required"
+          "ReproductionResearchOSCompileError:benchmark 'libero' has no exact repository or materialized authority"
         ]
       },
       "benchmark_split_axis": {
@@ -661,7 +661,7 @@
       "benchmark_authority": {
         "state": "closed",
         "selection_digests": [
-          "828b434f58e2f1b954f77ec5ebbd2fe8215dc60f8457fbc46f8ee4086871a37f"
+          "aa3677e7c8aed01d4c2eb46e8bfb658bc54b5c809c93ec39c54aa25f403427ef"
         ],
         "blockers": []
       },
@@ -687,7 +687,7 @@
         "state": "required",
         "selection_digests": [],
         "blockers": [
-          "ReproductionResearchOSCompileError:benchmark 'egoschema' has no exact source-contained repository authority; immutable data/materialization is required"
+          "ReproductionResearchOSCompileError:benchmark 'egoschema' has no exact repository or materialized authority"
         ]
       },
       "benchmark_split_axis": {
@@ -714,7 +714,7 @@
         "state": "required",
         "selection_digests": [],
         "blockers": [
-          "ReproductionResearchOSCompileError:benchmark 'alfworld' has no exact source-contained repository authority; immutable data/materialization is required"
+          "ReproductionResearchOSCompileError:benchmark 'alfworld' has no exact repository or materialized authority"
         ]
       },
       "benchmark_split_axis": {
@@ -742,7 +742,7 @@
         "state": "required",
         "selection_digests": [],
         "blockers": [
-          "ReproductionResearchOSCompileError:benchmark 'androidlab' has no exact source-contained repository authority; immutable data/materialization is required"
+          "ReproductionResearchOSCompileError:benchmark 'androidlab' has no exact repository or materialized authority"
         ]
       },
       "benchmark_split_axis": {
@@ -769,7 +769,7 @@
         "state": "required",
         "selection_digests": [],
         "blockers": [
-          "ReproductionResearchOSCompileError:benchmark 'ego2web' has no exact source-contained repository authority; immutable data/materialization is required"
+          "ReproductionResearchOSCompileError:benchmark 'ego2web' has no exact repository or materialized authority"
         ]
       },
       "benchmark_split_axis": {
@@ -798,7 +798,7 @@
         "state": "required",
         "selection_digests": [],
         "blockers": [
-          "ReproductionResearchOSCompileError:benchmark 'ego4d-vq3d' has no exact source-contained repository authority; immutable data/materialization is required"
+          "ReproductionResearchOSCompileError:benchmark 'ego4d-vq3d' has no exact repository or materialized authority"
         ]
       },
       "benchmark_split_axis": {
@@ -826,7 +826,7 @@
         "state": "required",
         "selection_digests": [],
         "blockers": [
-          "ReproductionResearchOSCompileError:benchmark 'osworld' has no exact source-contained repository authority; immutable data/materialization is required"
+          "ReproductionResearchOSCompileError:benchmark 'osworld' has no exact repository or materialized authority"
         ]
       },
       "benchmark_split_axis": {
@@ -851,7 +851,7 @@
         "state": "required",
         "selection_digests": [],
         "blockers": [
-          "ReproductionResearchOSCompileError:benchmark 'egoschema' has no exact source-contained repository authority; immutable data/materialization is required"
+          "ReproductionResearchOSCompileError:benchmark 'egoschema' has no exact repository or materialized authority"
         ]
       },
       "benchmark_split_axis": {
@@ -876,7 +876,7 @@
         "state": "required",
         "selection_digests": [],
         "blockers": [
-          "ReproductionResearchOSCompileError:benchmark 'flow-practical-tasks' has no exact source-contained repository authority; immutable data/materialization is required"
+          "ReproductionResearchOSCompileError:benchmark 'flow-practical-tasks' has no exact repository or materialized authority"
         ]
       },
       "benchmark_split_axis": {
@@ -901,7 +901,7 @@
         "state": "required",
         "selection_digests": [],
         "blockers": [
-          "ReproductionResearchOSCompileError:benchmark 'foreact-real11' has no exact source-contained repository authority; immutable data/materialization is required"
+          "ReproductionResearchOSCompileError:benchmark 'foreact-real11' has no exact repository or materialized authority"
         ]
       },
       "benchmark_split_axis": {
@@ -928,7 +928,7 @@
         "state": "required",
         "selection_digests": [],
         "blockers": [
-          "ReproductionResearchOSCompileError:benchmark 'gats-synthetic' has no exact source-contained repository authority; immutable data/materialization is required"
+          "ReproductionResearchOSCompileError:benchmark 'gats-synthetic' has no exact repository or materialized authority"
         ]
       },
       "benchmark_split_axis": {
@@ -953,7 +953,7 @@
         "state": "required",
         "selection_digests": [],
         "blockers": [
-          "ReproductionResearchOSCompileError:benchmark 'generative-agents-smallville' has no exact source-contained repository authority; immutable data/materialization is required"
+          "ReproductionResearchOSCompileError:benchmark 'generative-agents-smallville' has no exact repository or materialized authority"
         ]
       },
       "benchmark_split_axis": {
@@ -1000,7 +1000,7 @@
         "state": "required",
         "selection_digests": [],
         "blockers": [
-          "ReproductionResearchOSCompileError:benchmark 'androidworld' has no exact source-contained repository authority; immutable data/materialization is required"
+          "ReproductionResearchOSCompileError:benchmark 'androidworld' has no exact repository or materialized authority"
         ]
       },
       "benchmark_split_axis": {
@@ -1027,7 +1027,7 @@
         "state": "required",
         "selection_digests": [],
         "blockers": [
-          "ReproductionResearchOSCompileError:benchmark 'hugginggpt-paper-tasks' has no exact source-contained repository authority; immutable data/materialization is required"
+          "ReproductionResearchOSCompileError:benchmark 'hugginggpt-paper-tasks' has no exact repository or materialized authority"
         ]
       },
       "benchmark_split_axis": {
@@ -1064,7 +1064,7 @@
         "state": "required",
         "selection_digests": [],
         "blockers": [
-          "ReproductionResearchOSCompileError:benchmark 'alfworld' has no exact source-contained repository authority; immutable data/materialization is required"
+          "ReproductionResearchOSCompileError:benchmark 'alfworld' has no exact repository or materialized authority"
         ]
       },
       "benchmark_split_axis": {
@@ -1094,7 +1094,7 @@
         "state": "required",
         "selection_digests": [],
         "blockers": [
-          "ReproductionResearchOSCompileError:benchmark 'aitw' has no exact source-contained repository authority; immutable data/materialization is required"
+          "ReproductionResearchOSCompileError:benchmark 'aitw' has no exact repository or materialized authority"
         ]
       },
       "benchmark_split_axis": {
@@ -1120,7 +1120,7 @@
       "benchmark_authority": {
         "state": "closed",
         "selection_digests": [
-          "1be7e0a3d32e13e63c3a49aa5bde894845a964d8ed29e7c1ca29ee27a833aa65"
+          "453fbdb926610f3fe4b10b44ff029f3cda92f68f6c77e4799c35771568063434"
         ],
         "blockers": []
       },
@@ -1146,7 +1146,7 @@
         "state": "required",
         "selection_digests": [],
         "blockers": [
-          "ReproductionResearchOSCompileError:benchmark 'webshop' has no exact source-contained repository authority; immutable data/materialization is required"
+          "ReproductionResearchOSCompileError:benchmark 'webshop' has no exact repository or materialized authority"
         ]
       },
       "benchmark_split_axis": {
@@ -1171,7 +1171,7 @@
         "state": "required",
         "selection_digests": [],
         "blockers": [
-          "ReproductionResearchOSCompileError:benchmark 'math500' has no exact source-contained repository authority; immutable data/materialization is required"
+          "ReproductionResearchOSCompileError:benchmark 'math500' has no exact repository or materialized authority"
         ]
       },
       "benchmark_split_axis": {
@@ -1196,7 +1196,7 @@
         "state": "required",
         "selection_digests": [],
         "blockers": [
-          "ReproductionResearchOSCompileError:benchmark 'swe-bench' has no exact source-contained repository authority; immutable data/materialization is required"
+          "ReproductionResearchOSCompileError:benchmark 'swe-bench' has no exact repository or materialized authority"
         ]
       },
       "benchmark_split_axis": {
@@ -1223,7 +1223,7 @@
         "state": "required",
         "selection_digests": [],
         "blockers": [
-          "ReproductionResearchOSCompileError:benchmark 'lmee-bench' has no exact source-contained repository authority; immutable data/materialization is required"
+          "ReproductionResearchOSCompileError:benchmark 'lmee-bench' has no exact repository or materialized authority"
         ]
       },
       "benchmark_split_axis": {
@@ -1250,7 +1250,7 @@
         "state": "required",
         "selection_digests": [],
         "blockers": [
-          "ReproductionResearchOSCompileError:benchmark 'egoschema' has no exact source-contained repository authority; immutable data/materialization is required"
+          "ReproductionResearchOSCompileError:benchmark 'egoschema' has no exact repository or materialized authority"
         ]
       },
       "benchmark_split_axis": {
@@ -1277,7 +1277,7 @@
         "state": "required",
         "selection_digests": [],
         "blockers": [
-          "ReproductionResearchOSCompileError:benchmark 'lvu' has no exact source-contained repository authority; immutable data/materialization is required"
+          "ReproductionResearchOSCompileError:benchmark 'lvu' has no exact repository or materialized authority"
         ]
       },
       "benchmark_split_axis": {
@@ -1325,7 +1325,7 @@
         "state": "required",
         "selection_digests": [],
         "blockers": [
-          "ReproductionResearchOSCompileError:benchmark 'mem-gallery' has no exact source-contained repository authority; immutable data/materialization is required"
+          "ReproductionResearchOSCompileError:benchmark 'mem-gallery' has no exact repository or materialized authority"
         ]
       },
       "benchmark_split_axis": {
@@ -1353,7 +1353,7 @@
         "state": "required",
         "selection_digests": [],
         "blockers": [
-          "ReproductionResearchOSCompileError:benchmark 'evomembench' has no exact source-contained repository authority; immutable data/materialization is required"
+          "ReproductionResearchOSCompileError:benchmark 'evomembench' has no exact repository or materialized authority"
         ]
       },
       "benchmark_split_axis": {
@@ -1380,7 +1380,7 @@
         "state": "required",
         "selection_digests": [],
         "blockers": [
-          "ReproductionResearchOSCompileError:benchmark 'memoryarena' has no exact source-contained repository authority; immutable data/materialization is required"
+          "ReproductionResearchOSCompileError:benchmark 'memoryarena' has no exact repository or materialized authority"
         ]
       },
       "benchmark_split_axis": {
@@ -1407,7 +1407,7 @@
         "state": "required",
         "selection_digests": [],
         "blockers": [
-          "ReproductionResearchOSCompileError:benchmark 'humaneval' has no exact source-contained repository authority; immutable data/materialization is required"
+          "ReproductionResearchOSCompileError:benchmark 'humaneval' has no exact repository or materialized authority"
         ]
       },
       "benchmark_split_axis": {
@@ -1432,7 +1432,7 @@
         "state": "required",
         "selection_digests": [],
         "blockers": [
-          "ReproductionResearchOSCompileError:benchmark 'minedojo' has no exact source-contained repository authority; immutable data/materialization is required"
+          "ReproductionResearchOSCompileError:benchmark 'minedojo' has no exact repository or materialized authority"
         ]
       },
       "benchmark_split_axis": {
@@ -1460,7 +1460,7 @@
         "state": "required",
         "selection_digests": [],
         "blockers": [
-          "ReproductionResearchOSCompileError:benchmark 'hd-epic' has no exact source-contained repository authority; immutable data/materialization is required"
+          "ReproductionResearchOSCompileError:benchmark 'hd-epic' has no exact repository or materialized authority"
         ]
       },
       "benchmark_split_axis": {
@@ -1487,7 +1487,7 @@
         "state": "required",
         "selection_digests": [],
         "blockers": [
-          "ReproductionResearchOSCompileError:benchmark 'mmbench-gui' has no exact source-contained repository authority; immutable data/materialization is required"
+          "ReproductionResearchOSCompileError:benchmark 'mmbench-gui' has no exact repository or materialized authority"
         ]
       },
       "benchmark_split_axis": {
@@ -1515,7 +1515,7 @@
         "state": "required",
         "selection_digests": [],
         "blockers": [
-          "ReproductionResearchOSCompileError:benchmark 'motus-realworld' has no exact source-contained repository authority; immutable data/materialization is required"
+          "ReproductionResearchOSCompileError:benchmark 'motus-realworld' has no exact repository or materialized authority"
         ]
       },
       "benchmark_split_axis": {
@@ -1542,7 +1542,7 @@
         "state": "required",
         "selection_digests": [],
         "blockers": [
-          "ReproductionResearchOSCompileError:benchmark 'moviechat-1k' has no exact source-contained repository authority; immutable data/materialization is required"
+          "ReproductionResearchOSCompileError:benchmark 'moviechat-1k' has no exact repository or materialized authority"
         ]
       },
       "benchmark_split_axis": {
@@ -1567,7 +1567,7 @@
         "state": "required",
         "selection_digests": [],
         "blockers": [
-          "ReproductionResearchOSCompileError:benchmark 'gsm8k' has no exact source-contained repository authority; immutable data/materialization is required"
+          "ReproductionResearchOSCompileError:benchmark 'gsm8k' has no exact repository or materialized authority"
         ]
       },
       "benchmark_split_axis": {
@@ -1593,7 +1593,7 @@
         "state": "required",
         "selection_digests": [],
         "blockers": [
-          "ReproductionResearchOSCompileError:benchmark 'mind2web' has no exact source-contained repository authority; immutable data/materialization is required"
+          "ReproductionResearchOSCompileError:benchmark 'mind2web' has no exact repository or materialized authority"
         ]
       },
       "benchmark_split_axis": {
@@ -1619,7 +1619,7 @@
       "benchmark_authority": {
         "state": "closed",
         "selection_digests": [
-          "3a7b31924169e074bdf289df20e906e4bcecc60898b7c2bc5cac9b57c20387b0"
+          "d81d4132870d47205869ebcfb5eace837c4eb49cf0df3afd9487c6c8f27ed6d0"
         ],
         "blockers": []
       },
@@ -1644,7 +1644,7 @@
       "benchmark_authority": {
         "state": "closed",
         "selection_digests": [
-          "f1c0ed30653476b3367ee3454ee5d5772ac98136d1ec8df84975e1cf5896a692"
+          "830dba0339c384410800761c3d19e392ec5f4c0d3d00917c41f9bb2244c47cf3"
         ],
         "blockers": []
       },
@@ -1672,7 +1672,7 @@
         "state": "required",
         "selection_digests": [],
         "blockers": [
-          "ReproductionResearchOSCompileError:benchmark 'calvin' has no exact source-contained repository authority; immutable data/materialization is required"
+          "ReproductionResearchOSCompileError:benchmark 'calvin' has no exact repository or materialized authority"
         ]
       },
       "benchmark_split_axis": {
@@ -1699,7 +1699,7 @@
         "state": "required",
         "selection_digests": [],
         "blockers": [
-          "ReproductionResearchOSCompileError:benchmark 'embodiedbench' has no exact source-contained repository authority; immutable data/materialization is required"
+          "ReproductionResearchOSCompileError:benchmark 'embodiedbench' has no exact repository or materialized authority"
         ]
       },
       "benchmark_split_axis": {
@@ -1728,7 +1728,7 @@
         "state": "required",
         "selection_digests": [],
         "blockers": [
-          "ReproductionResearchOSCompileError:benchmark 'macosarena' has no exact source-contained repository authority; immutable data/materialization is required"
+          "ReproductionResearchOSCompileError:benchmark 'macosarena' has no exact repository or materialized authority"
         ]
       },
       "benchmark_split_axis": {
@@ -1776,7 +1776,7 @@
         "state": "required",
         "selection_digests": [],
         "blockers": [
-          "ReproductionResearchOSCompileError:benchmark 'ego4d-goalstep' has no exact source-contained repository authority; immutable data/materialization is required"
+          "ReproductionResearchOSCompileError:benchmark 'ego4d-goalstep' has no exact repository or materialized authority"
         ]
       },
       "benchmark_split_axis": {
@@ -1802,7 +1802,7 @@
         "state": "required",
         "selection_digests": [],
         "blockers": [
-          "ReproductionResearchOSCompileError:benchmark 'alfworld' has no exact source-contained repository authority; immutable data/materialization is required"
+          "ReproductionResearchOSCompileError:benchmark 'alfworld' has no exact repository or materialized authority"
         ]
       },
       "benchmark_split_axis": {
@@ -1827,7 +1827,7 @@
         "state": "required",
         "selection_digests": [],
         "blockers": [
-          "ReproductionResearchOSCompileError:benchmark 'webarena' has no exact source-contained repository authority; immutable data/materialization is required"
+          "ReproductionResearchOSCompileError:benchmark 'webarena' has no exact repository or materialized authority"
         ]
       },
       "benchmark_split_axis": {
@@ -1854,7 +1854,7 @@
         "state": "required",
         "selection_digests": [],
         "blockers": [
-          "ReproductionResearchOSCompileError:benchmark 'blocksworld' has no exact source-contained repository authority; immutable data/materialization is required"
+          "ReproductionResearchOSCompileError:benchmark 'blocksworld' has no exact repository or materialized authority"
         ]
       },
       "benchmark_split_axis": {
@@ -1880,7 +1880,7 @@
         "state": "required",
         "selection_digests": [],
         "blockers": [
-          "ReproductionResearchOSCompileError:benchmark 'alfworld' has no exact source-contained repository authority; immutable data/materialization is required"
+          "ReproductionResearchOSCompileError:benchmark 'alfworld' has no exact repository or materialized authority"
         ]
       },
       "benchmark_split_axis": {
@@ -1905,7 +1905,7 @@
         "state": "required",
         "selection_digests": [],
         "blockers": [
-          "ReproductionResearchOSCompileError:benchmark 'groundedvqa' has no exact source-contained repository authority; immutable data/materialization is required"
+          "ReproductionResearchOSCompileError:benchmark 'groundedvqa' has no exact repository or materialized authority"
         ]
       },
       "benchmark_split_axis": {
@@ -1932,7 +1932,7 @@
         "state": "required",
         "selection_digests": [],
         "blockers": [
-          "ReproductionResearchOSCompileError:benchmark 'alfworld' has no exact source-contained repository authority; immutable data/materialization is required"
+          "ReproductionResearchOSCompileError:benchmark 'alfworld' has no exact repository or materialized authority"
         ]
       },
       "benchmark_split_axis": {
@@ -1957,7 +1957,7 @@
         "state": "required",
         "selection_digests": [],
         "blockers": [
-          "ReproductionResearchOSCompileError:benchmark 'moviechat-1k' has no exact source-contained repository authority; immutable data/materialization is required"
+          "ReproductionResearchOSCompileError:benchmark 'moviechat-1k' has no exact repository or materialized authority"
         ]
       },
       "benchmark_split_axis": {
@@ -1983,7 +1983,7 @@
         "state": "required",
         "selection_digests": [],
         "blockers": [
-          "ReproductionResearchOSCompileError:benchmark 'alfworld' has no exact source-contained repository authority; immutable data/materialization is required"
+          "ReproductionResearchOSCompileError:benchmark 'alfworld' has no exact repository or materialized authority"
         ]
       },
       "benchmark_split_axis": {
@@ -2010,7 +2010,7 @@
         "state": "required",
         "selection_digests": [],
         "blockers": [
-          "ReproductionResearchOSCompileError:benchmark 'saycan-101' has no exact source-contained repository authority; immutable data/materialization is required"
+          "ReproductionResearchOSCompileError:benchmark 'saycan-101' has no exact repository or materialized authority"
         ]
       },
       "benchmark_split_axis": {
@@ -2035,7 +2035,7 @@
         "state": "required",
         "selection_digests": [],
         "blockers": [
-          "ReproductionResearchOSCompileError:benchmark 'screenspot' has no exact source-contained repository authority; immutable data/materialization is required"
+          "ReproductionResearchOSCompileError:benchmark 'screenspot' has no exact repository or materialized authority"
         ]
       },
       "benchmark_split_axis": {
@@ -2062,7 +2062,7 @@
         "state": "required",
         "selection_digests": [],
         "blockers": [
-          "ReproductionResearchOSCompileError:benchmark 'gsm8k' has no exact source-contained repository authority; immutable data/materialization is required"
+          "ReproductionResearchOSCompileError:benchmark 'gsm8k' has no exact repository or materialized authority"
         ]
       },
       "benchmark_split_axis": {
@@ -2087,7 +2087,7 @@
         "state": "required",
         "selection_digests": [],
         "blockers": [
-          "ReproductionResearchOSCompileError:benchmark 'commongen' has no exact source-contained repository authority; immutable data/materialization is required"
+          "ReproductionResearchOSCompileError:benchmark 'commongen' has no exact repository or materialized authority"
         ]
       },
       "benchmark_split_axis": {
@@ -2114,7 +2114,7 @@
         "state": "required",
         "selection_digests": [],
         "blockers": [
-          "ReproductionResearchOSCompileError:benchmark 'state-control-benchmark' has no exact source-contained repository authority; immutable data/materialization is required"
+          "ReproductionResearchOSCompileError:benchmark 'state-control-benchmark' has no exact repository or materialized authority"
         ]
       },
       "benchmark_split_axis": {
@@ -2140,7 +2140,7 @@
       "benchmark_authority": {
         "state": "closed",
         "selection_digests": [
-          "6ce92c89a1c67a29ce5036a6d27e4d8783e573c1f1bc982579cf3c2793ce02ff"
+          "7b12e188906f8aab4ede599a4454bdffb1097acbcf6481f749f43f389891e77d"
         ],
         "blockers": []
       },
@@ -2166,7 +2166,7 @@
         "state": "required",
         "selection_digests": [],
         "blockers": [
-          "ReproductionResearchOSCompileError:benchmark 'freshwiki' has no exact source-contained repository authority; immutable data/materialization is required"
+          "ReproductionResearchOSCompileError:benchmark 'freshwiki' has no exact repository or materialized authority"
         ]
       },
       "benchmark_split_axis": {
@@ -2202,7 +2202,7 @@
         "state": "required",
         "selection_digests": [],
         "blockers": [
-          "ReproductionResearchOSCompileError:benchmark 'swe-bench' has no exact source-contained repository authority; immutable data/materialization is required"
+          "ReproductionResearchOSCompileError:benchmark 'swe-bench' has no exact repository or materialized authority"
         ]
       },
       "benchmark_split_axis": {
@@ -2229,7 +2229,7 @@
         "state": "required",
         "selection_digests": [],
         "blockers": [
-          "ReproductionResearchOSCompileError:benchmark 'toolformer-eval' has no exact source-contained repository authority; immutable data/materialization is required"
+          "ReproductionResearchOSCompileError:benchmark 'toolformer-eval' has no exact repository or materialized authority"
         ]
       },
       "benchmark_split_axis": {
@@ -2256,7 +2256,7 @@
         "state": "required",
         "selection_digests": [],
         "blockers": [
-          "ReproductionResearchOSCompileError:benchmark 'toolbench' has no exact source-contained repository authority; immutable data/materialization is required"
+          "ReproductionResearchOSCompileError:benchmark 'toolbench' has no exact repository or materialized authority"
         ]
       },
       "benchmark_split_axis": {
@@ -2293,7 +2293,7 @@
         "state": "required",
         "selection_digests": [],
         "blockers": [
-          "ReproductionResearchOSCompileError:benchmark 'game24' has no exact source-contained repository authority; immutable data/materialization is required"
+          "ReproductionResearchOSCompileError:benchmark 'game24' has no exact repository or materialized authority"
         ]
       },
       "benchmark_split_axis": {
@@ -2319,7 +2319,7 @@
         "state": "required",
         "selection_digests": [],
         "blockers": [
-          "ReproductionResearchOSCompileError:benchmark 'visualwebarena' has no exact source-contained repository authority; immutable data/materialization is required"
+          "ReproductionResearchOSCompileError:benchmark 'visualwebarena' has no exact repository or materialized authority"
         ]
       },
       "benchmark_split_axis": {
@@ -2346,7 +2346,7 @@
         "state": "required",
         "selection_digests": [],
         "blockers": [
-          "ReproductionResearchOSCompileError:benchmark 'androidcontrol' has no exact source-contained repository authority; immutable data/materialization is required"
+          "ReproductionResearchOSCompileError:benchmark 'androidcontrol' has no exact repository or materialized authority"
         ]
       },
       "benchmark_split_axis": {
@@ -2373,7 +2373,7 @@
         "state": "required",
         "selection_digests": [],
         "blockers": [
-          "ReproductionResearchOSCompileError:benchmark 'osworld' has no exact source-contained repository authority; immutable data/materialization is required"
+          "ReproductionResearchOSCompileError:benchmark 'osworld' has no exact repository or materialized authority"
         ]
       },
       "benchmark_split_axis": {
@@ -2400,7 +2400,7 @@
         "state": "required",
         "selection_digests": [],
         "blockers": [
-          "ReproductionResearchOSCompileError:benchmark 'egoschema' has no exact source-contained repository authority; immutable data/materialization is required"
+          "ReproductionResearchOSCompileError:benchmark 'egoschema' has no exact repository or materialized authority"
         ]
       },
       "benchmark_split_axis": {
@@ -2425,7 +2425,7 @@
         "state": "required",
         "selection_digests": [],
         "blockers": [
-          "ReproductionResearchOSCompileError:benchmark 'egoschema' has no exact source-contained repository authority; immutable data/materialization is required"
+          "ReproductionResearchOSCompileError:benchmark 'egoschema' has no exact repository or materialized authority"
         ]
       },
       "benchmark_split_axis": {
@@ -2450,7 +2450,7 @@
         "state": "required",
         "selection_digests": [],
         "blockers": [
-          "ReproductionResearchOSCompileError:benchmark 'egoschema' has no exact source-contained repository authority; immutable data/materialization is required"
+          "ReproductionResearchOSCompileError:benchmark 'egoschema' has no exact repository or materialized authority"
         ]
       },
       "benchmark_split_axis": {
@@ -2477,7 +2477,7 @@
         "state": "required",
         "selection_digests": [],
         "blockers": [
-          "ReproductionResearchOSCompileError:benchmark 'egoschema' has no exact source-contained repository authority; immutable data/materialization is required"
+          "ReproductionResearchOSCompileError:benchmark 'egoschema' has no exact repository or materialized authority"
         ]
       },
       "benchmark_split_axis": {
@@ -2507,7 +2507,7 @@
         "state": "required",
         "selection_digests": [],
         "blockers": [
-          "ReproductionResearchOSCompileError:benchmark 'hallusionbench' has no exact source-contained repository authority; immutable data/materialization is required"
+          "ReproductionResearchOSCompileError:benchmark 'hallusionbench' has no exact repository or materialized authority"
         ]
       },
       "benchmark_split_axis": {
@@ -2533,7 +2533,7 @@
       "benchmark_authority": {
         "state": "closed",
         "selection_digests": [
-          "f050c5fc7b979d28f610b1f74d8132bcb1f6518f7cad8c00655d100507e35723"
+          "a90293ec811827f02d346aa4b864d0dc46cb2cf7cc8644864519e53ad4600c1c"
         ],
         "blockers": []
       },
@@ -2558,7 +2558,7 @@
       "benchmark_authority": {
         "state": "closed",
         "selection_digests": [
-          "c01c9baad686259bda76ea3f7204ceabae429d7e6c2c498d10d6b427dfd275b8"
+          "b030849b41612394d474220b2ca9a6a6572ef5997eb66729e59fcac019d6f708"
         ],
         "blockers": []
       },
@@ -2584,7 +2584,7 @@
         "state": "required",
         "selection_digests": [],
         "blockers": [
-          "ReproductionResearchOSCompileError:benchmark 'osworld' has no exact source-contained repository authority; immutable data/materialization is required"
+          "ReproductionResearchOSCompileError:benchmark 'osworld' has no exact repository or materialized authority"
         ]
       },
       "benchmark_split_axis": {
@@ -2611,7 +2611,7 @@
         "state": "required",
         "selection_digests": [],
         "blockers": [
-          "ReproductionResearchOSCompileError:benchmark 'webarena' has no exact source-contained repository authority; immutable data/materialization is required"
+          "ReproductionResearchOSCompileError:benchmark 'webarena' has no exact repository or materialized authority"
         ]
       },
       "benchmark_split_axis": {
@@ -2638,7 +2638,7 @@
         "state": "required",
         "selection_digests": [],
         "blockers": [
-          "ReproductionResearchOSCompileError:benchmark 'webvoyager' has no exact source-contained repository authority; immutable data/materialization is required"
+          "ReproductionResearchOSCompileError:benchmark 'webvoyager' has no exact repository or materialized authority"
         ]
       },
       "benchmark_split_axis": {
@@ -2663,7 +2663,7 @@
         "state": "required",
         "selection_digests": [],
         "blockers": [
-          "ReproductionResearchOSCompileError:benchmark 'egolifeqa' has no exact source-contained repository authority; immutable data/materialization is required"
+          "ReproductionResearchOSCompileError:benchmark 'egolifeqa' has no exact repository or materialized authority"
         ]
       },
       "benchmark_split_axis": {
@@ -2676,5 +2676,5 @@
       "execution_requirements": []
     }
   ],
-  "status_digest": "90ccf05d2b843a57414e961ba1b39f015cb35ffbdc7267a51583988e78de1ec2"
+  "status_digest": "e83d4312f94fa56c0081275b79118b5351a137c7f65b712085b49d8538589ec8"
 }

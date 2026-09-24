@@ -2,7 +2,7 @@
   "schema": "noetrium.reproduction.projection.v10",
   "authority": "generated_from_typed_definition_and_source",
   "package": "openwebvoyager_acl2025",
-  "package_digest": "2b6dc82b12764085b6679421e05089701a765589c9ef41ee929284764cbb223a",
+  "package_digest": "3def7409e0c653ca154a6ac22389bcdc495dcdd501efe7de4ce0737d79559aa2",
   "definition_digest": "6f19edd6d128abbbd1dfc05ecfda969e79fcb9ab91e0ae1f8db6a4ccb0371a8c",
   "source_registry_digest": "2786a755ecfaf94cc7a57d6cbb3293d435778d7369320d104cb57d3f0c44c4f4",
   "lifecycle": "protocol_bound",
@@ -154,7 +154,7 @@
       "state": "required",
       "selection_digests": [],
       "blockers": [
-        "ReproductionResearchOSCompileError:benchmark 'mind2web' has no exact source-contained repository authority; immutable data/materialization is required"
+        "ReproductionResearchOSCompileError:benchmark 'mind2web' has no exact repository or materialized authority"
       ]
     },
     "benchmark_split_axis": {

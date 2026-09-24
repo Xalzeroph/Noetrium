@@ -2,7 +2,7 @@
   "schema": "noetrium.reproduction.projection.v10",
   "authority": "generated_from_typed_definition_and_source",
   "package": "chatdev_v1",
-  "package_digest": "a7341bf5ba169a317080237629ea652ef2e1244e34e3ac10fdf3a2755505435c",
+  "package_digest": "90f0aadd068b29db509e0a739e08f9b22d756453d04de0978a5c3667b9476213",
   "definition_digest": "596185b0e8a4c8ff69611e15bb9504734d6d7575f0a187ab1214d235499e61d2",
   "source_registry_digest": "ef8ddd9ce1f6e9a889a6c727ad6145b62925d7559d7022c815721004d1c57702",
   "lifecycle": "protocol_bound",
@@ -184,7 +184,7 @@
       "state": "required",
       "selection_digests": [],
       "blockers": [
-        "ReproductionResearchOSCompileError:benchmark 'srdd' has no exact source-contained repository authority; immutable data/materialization is required"
+        "ReproductionResearchOSCompileError:benchmark 'srdd' has no exact repository or materialized authority"
       ]
     },
     "benchmark_split_axis": {

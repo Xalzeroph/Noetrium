@@ -2,7 +2,7 @@
   "schema": "noetrium.reproduction.projection.v10",
   "authority": "generated_from_typed_definition_and_source",
   "package": "foreact_cvpr2026",
-  "package_digest": "2f81033a41db3fad074a692628510bbdbcf2959f84ce4dda5ff9452af2a5b38c",
+  "package_digest": "ae9a4570aaf9bb0fadce58d68c810eb03470ed61377cc17f4bfeb47a0235693a",
   "definition_digest": "4c4f653a0e8a0ee83ef80201410c057919aeb5e1147665289ac6ebf6e02deb97",
   "source_registry_digest": "d4af5fa79a4ea9d41bf67a7f2f4cacdb317f4a546024a54ac52ad3517b7d135e",
   "lifecycle": "protocol_bound",
@@ -193,7 +193,7 @@
       "state": "required",
       "selection_digests": [],
       "blockers": [
-        "ReproductionResearchOSCompileError:benchmark 'foreact-real11' has no exact source-contained repository authority; immutable data/materialization is required"
+        "ReproductionResearchOSCompileError:benchmark 'foreact-real11' has no exact repository or materialized authority"
       ]
     },
     "benchmark_split_axis": {

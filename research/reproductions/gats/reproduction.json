@@ -2,7 +2,7 @@
   "schema": "noetrium.reproduction.projection.v10",
   "authority": "generated_from_typed_definition_and_source",
   "package": "gats",
-  "package_digest": "e05f5fb04ef3bcf5e6d423aa6bc2717dc251050e09df84c59f7df1f1cdc83453",
+  "package_digest": "0977784dcfc24328a5545400f79aee7d4cf3857d84df7a4eb0e1d1a710769996",
   "definition_digest": "50329df88dd157ef0aa6ded83f175e2ce332658fd62d6579b68c4615a199beea",
   "source_registry_digest": "bd01696f94f58340e853c4ec16a61206335c13e3ef45730b14418c4646b37a67",
   "lifecycle": "protocol_bound",
@@ -171,7 +171,7 @@
       "state": "required",
       "selection_digests": [],
       "blockers": [
-        "ReproductionResearchOSCompileError:benchmark 'gats-synthetic' has no exact source-contained repository authority; immutable data/materialization is required"
+        "ReproductionResearchOSCompileError:benchmark 'gats-synthetic' has no exact repository or materialized authority"
       ]
     },
     "benchmark_split_axis": {

@@ -2,7 +2,7 @@
   "schema": "noetrium.reproduction.projection.v10",
   "authority": "generated_from_typed_definition_and_source",
   "package": "vima_embodied",
-  "package_digest": "e2e1fce199cc552b3a452fdc2732946ebbe6921165ab298a2ffc63c611f50f2b",
+  "package_digest": "d49c68117b05b9081eb4a89311eab1057c36a5683dd4fe993902b3d0c7c344c1",
   "definition_digest": "ab6c0f217b76235521106482bd1e85e19f3ca8b77921e08fde38740ba431ed4d",
   "source_registry_digest": "bf35b8c87b325e6a50b501d4e2671f6c130a246df6340370de02382c8a31c33b",
   "lifecycle": "protocol_bound",
@@ -225,7 +225,7 @@
     "benchmark_authority": {
       "state": "closed",
       "selection_digests": [
-        "f050c5fc7b979d28f610b1f74d8132bcb1f6518f7cad8c00655d100507e35723"
+        "a90293ec811827f02d346aa4b864d0dc46cb2cf7cc8644864519e53ad4600c1c"
       ],
       "blockers": []
     },

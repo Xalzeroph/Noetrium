@@ -2,7 +2,7 @@
   "schema": "noetrium.reproduction.projection.v10",
   "authority": "generated_from_typed_definition_and_source",
   "package": "mmbench_gui_cvpr2026",
-  "package_digest": "4c0e7519fd2e5aa4914a9dc6846dac43f8800758db8468e61a2338b53fe206f1",
+  "package_digest": "8bc1a5d66b1e85000ded45326723bda5cb3b0536e2907c23703e3028aee41b7b",
   "definition_digest": "0b458fdb6db1d2419ced972a62c742a827d4a621bf0e2f5802213b52f3a6d04b",
   "source_registry_digest": "0bd637491221155365b0c5b74f30276537c21dcb8d83df4f0f8e86de19e11023",
   "lifecycle": "protocol_bound",
@@ -132,7 +132,7 @@
       "state": "required",
       "selection_digests": [],
       "blockers": [
-        "ReproductionResearchOSCompileError:benchmark 'mmbench-gui' has no exact source-contained repository authority; immutable data/materialization is required"
+        "ReproductionResearchOSCompileError:benchmark 'mmbench-gui' has no exact repository or materialized authority"
       ]
     },
     "benchmark_split_axis": {

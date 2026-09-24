@@ -2,7 +2,7 @@
   "schema": "noetrium.reproduction.projection.v10",
   "authority": "generated_from_typed_definition_and_source",
   "package": "moviechat_memory",
-  "package_digest": "4354b41e9896791eb84f35e0a63406ca48fbbf417ec33094536b3cc914f9fdbd",
+  "package_digest": "2f9c38544620b4f389888bce3ca0b52c6a7ba6888ce301bda104c3ed281dbcf7",
   "definition_digest": "866e3fd622f501c3f9086956fbc189285777133db76bdda212503dcf35c8af91",
   "source_registry_digest": "2cef17c8d328384849759d7e5d19d69f4b2d8cee4baf1d186f767e439b1fd60c",
   "lifecycle": "protocol_bound",
@@ -215,7 +215,7 @@
       "state": "required",
       "selection_digests": [],
       "blockers": [
-        "ReproductionResearchOSCompileError:benchmark 'moviechat-1k' has no exact source-contained repository authority; immutable data/materialization is required"
+        "ReproductionResearchOSCompileError:benchmark 'moviechat-1k' has no exact repository or materialized authority"
       ]
     },
     "benchmark_split_axis": {

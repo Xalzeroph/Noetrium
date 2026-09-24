@@ -2,7 +2,7 @@
   "schema": "noetrium.reproduction.projection.v10",
   "authority": "generated_from_typed_definition_and_source",
   "package": "ui_agile_cvprf2026",
-  "package_digest": "e8f9f3d25c905d6b6ab55b2849f21cb5a9c058ba641aaca67f939ef806629f26",
+  "package_digest": "52b5303619fadc1e07ab1a890e17ee7aa8bfdd811e552683759388be87857604",
   "definition_digest": "b37f7e58d6b9ecd223386f2c25b165c779a3aee07580cd88adeb85f8965b6330",
   "source_registry_digest": "5cef7fdf56a74ea0ec0a9ac1e0ec2a3bf5f5059a5d320f51b85b563711af9a3a",
   "lifecycle": "protocol_bound",
@@ -206,7 +206,7 @@
       "state": "required",
       "selection_digests": [],
       "blockers": [
-        "ReproductionResearchOSCompileError:benchmark 'androidcontrol' has no exact source-contained repository authority; immutable data/materialization is required"
+        "ReproductionResearchOSCompileError:benchmark 'androidcontrol' has no exact repository or materialized authority"
       ]
     },
     "benchmark_split_axis": {

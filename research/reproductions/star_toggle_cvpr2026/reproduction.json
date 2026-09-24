@@ -2,7 +2,7 @@
   "schema": "noetrium.reproduction.projection.v10",
   "authority": "generated_from_typed_definition_and_source",
   "package": "star_toggle_cvpr2026",
-  "package_digest": "ef714cd603bb9d88cb011f9870d61c6888730fe9a1c5059e80271beb63627025",
+  "package_digest": "b1fbd47517084c7881a7434d962fa9f31ca5d8a8fe8124c4a988bc1c343ff424",
   "definition_digest": "93e3375e669cf6e1c7530880b22bd5300e5007ca3867138396b6ac95b5535198",
   "source_registry_digest": "63d3e4151cddb2066935521fd183b7ecd8928aa95081977a09344e76bbae9f56",
   "lifecycle": "protocol_bound",
@@ -151,7 +151,7 @@
       "state": "required",
       "selection_digests": [],
       "blockers": [
-        "ReproductionResearchOSCompileError:benchmark 'state-control-benchmark' has no exact source-contained repository authority; immutable data/materialization is required"
+        "ReproductionResearchOSCompileError:benchmark 'state-control-benchmark' has no exact repository or materialized authority"
       ]
     },
     "benchmark_split_axis": {
