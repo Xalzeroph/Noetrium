@@ -38,7 +38,7 @@ permissions:
 
 concurrency:
   group: platform-projection-main
-  cancel-in-progress: true
+  cancel-in-progress: false
 
 jobs:
   project:
