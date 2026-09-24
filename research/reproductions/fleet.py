@@ -11,7 +11,9 @@ from typing import Protocol, runtime_checkable
 
 from noetrium import api
 from noetrium_platform.composition.research_binding_authority import (
+    ResearchBindingAuthorityError,
     ResearchBindingAuthorityPort,
+    ResearchProjectManifestRequirement,
 )
 from noetrium_platform.composition.research_os_local import (
     compose_local_research_os,
@@ -432,6 +434,159 @@ def _fleet_revision_message(fleet: ReproductionFleetMaterialization) -> str:
 
 
 @dataclass(frozen=True, slots=True)
+class ReproductionFleetAuthorityGap:
+    """Machine-readable missing execution authority for one materialized lane."""
+
+    stage: str
+    requirement_key: str
+    requirement_digest: str
+    error_type: str
+    message: str
+    diagnostics: tuple[str, ...] = ()
+    gap_digest: str = field(init=False)
+
+    def __post_init__(self) -> None:
+        for field_name, value in (
+            ("stage", self.stage),
+            ("requirement_key", self.requirement_key),
+            ("error_type", self.error_type),
+        ):
+            if (
+                type(value) is not str
+                or not value.strip()
+                or value != value.strip()
+            ):
+                raise ValueError(
+                    f"fleet authority gap {field_name} must be canonical text"
+                )
+        _require_sha256(
+            self.requirement_digest,
+            "fleet authority gap requirement_digest",
+        )
+        if type(self.message) is not str:
+            raise TypeError("fleet authority gap message must be text")
+        if type(self.diagnostics) is not tuple or any(
+            type(row) is not str or not row
+            for row in self.diagnostics
+        ):
+            raise TypeError(
+                "fleet authority gap diagnostics must be immutable text tuple"
+            )
+        object.__setattr__(
+            self,
+            "gap_digest",
+            canonical_digest(
+                {
+                    "stage": self.stage,
+                    "requirement_key": self.requirement_key,
+                    "requirement_digest": self.requirement_digest,
+                    "error_type": self.error_type,
+                    "message": self.message,
+                    "diagnostics": self.diagnostics,
+                }
+            ),
+        )
+
+
+def _generic_authority_gap(
+    *,
+    stage: str,
+    requirement_key: str,
+    study: ResearchStudyDefinition,
+    exc: BaseException,
+) -> ReproductionFleetAuthorityGap:
+    return ReproductionFleetAuthorityGap(
+        stage=stage,
+        requirement_key=requirement_key,
+        requirement_digest=canonical_digest(
+            {
+                "stage": stage,
+                "requirement_key": requirement_key,
+                "study_definition_digest": study.definition_digest,
+            }
+        ),
+        error_type=type(exc).__name__,
+        message=str(exc),
+    )
+
+
+def _research_binding_gap(
+    study: ResearchStudyDefinition,
+    exc: BaseException,
+) -> ReproductionFleetAuthorityGap:
+    if isinstance(exc, ResearchBindingAuthorityError):
+        if exc.stage == "participant":
+            matches = tuple(
+                row
+                for row in study.binding_requirements.participants
+                if row.role == exc.requirement_id
+            )
+            requirement_digest = (
+                matches[0].requirement_digest
+                if len(matches) == 1
+                else canonical_digest(
+                    {
+                        "stage": exc.stage,
+                        "requirement_id": exc.requirement_id,
+                        "study_definition_digest": study.definition_digest,
+                    }
+                )
+            )
+        elif exc.stage == "model":
+            matches = tuple(
+                row
+                for row in study.binding_requirements.model_roles
+                if row.role == exc.requirement_id
+                or row.requirement_id == exc.requirement_id
+            )
+            requirement_digest = (
+                matches[0].requirement_digest
+                if len(matches) == 1
+                else canonical_digest(
+                    {
+                        "stage": exc.stage,
+                        "requirement_id": exc.requirement_id,
+                        "study_definition_digest": study.definition_digest,
+                    }
+                )
+            )
+        else:
+            requirement_digest = canonical_digest(
+                {
+                    "stage": exc.stage,
+                    "requirement_id": exc.requirement_id,
+                    "study_definition_digest": study.definition_digest,
+                }
+            )
+        return ReproductionFleetAuthorityGap(
+            stage=exc.stage,
+            requirement_key=exc.requirement_id,
+            requirement_digest=requirement_digest,
+            error_type=type(exc).__name__,
+            message=str(exc),
+            diagnostics=tuple(
+                row.machine_digest for row in exc.diagnostics
+            ),
+        )
+
+    manifest = ResearchProjectManifestRequirement.from_study(study)
+    if isinstance(exc, (LookupError, ValueError)):
+        return ReproductionFleetAuthorityGap(
+            stage="project_manifest",
+            requirement_key=f"{study.project_id}:{study.study_id}",
+            requirement_digest=manifest.requirement_digest,
+            error_type=type(exc).__name__,
+            message=str(exc),
+        )
+    return _generic_authority_gap(
+        stage="research_binding",
+        requirement_key=study.binding_requirement_digest,
+        study=study,
+        exc=exc,
+    )
+
+
+@dataclass(frozen=True, slots=True)
 class ReproductionFleetAuthorityLaneAudit:
     """Read-only authority closure result for one materialized fleet lane."""
 
@@ -443,6 +598,7 @@ class ReproductionFleetAuthorityLaneAudit:
     study_execution_closed: bool
     aggregation_closed: bool
     reconciliation_closed: bool
+    gaps: tuple[ReproductionFleetAuthorityGap, ...]
     blockers: tuple[str, ...]
     audit_digest: str = field(init=False)
 
@@ -475,6 +631,19 @@ class ReproductionFleetAuthorityLaneAudit:
                 raise TypeError(
                     f"fleet authority lane {field_name} must be boolean"
                 )
+        if type(self.gaps) is not tuple or any(
+            type(row) is not ReproductionFleetAuthorityGap
+            for row in self.gaps
+        ):
+            raise TypeError(
+                "fleet authority lane gaps must be typed immutable tuple"
+            )
+        if tuple(row.gap_digest for row in self.gaps) != tuple(
+            sorted(row.gap_digest for row in self.gaps)
+        ):
+            raise ValueError(
+                "fleet authority lane gaps must be canonical digest order"
+            )
         if type(self.blockers) is not tuple or any(
             type(row) is not str or not row
             for row in self.blockers
@@ -495,6 +664,7 @@ class ReproductionFleetAuthorityLaneAudit:
                     "study_execution_closed": self.study_execution_closed,
                     "aggregation_closed": self.aggregation_closed,
                     "reconciliation_closed": self.reconciliation_closed,
+                    "gaps": tuple(row.gap_digest for row in self.gaps),
                     "blockers": self.blockers,
                 }
             ),
@@ -507,6 +677,7 @@ class ReproductionFleetAuthorityLaneAudit:
             and self.study_execution_closed
             and self.aggregation_closed
             and self.reconciliation_closed
+            and not self.gaps
             and not self.blockers
         )
 
@@ -566,6 +737,10 @@ class ReproductionFleetAuthorityAudit:
     def blocker_count(self) -> int:
         return sum(len(row.blockers) for row in self.lanes)
 
+    @property
+    def gap_count(self) -> int:
+        return sum(len(row.gaps) for row in self.lanes)
+
 
 def audit_materialized_reproduction_fleet_authorities(
     fleet: ReproductionFleetMaterialization,
@@ -609,6 +784,7 @@ def audit_materialized_reproduction_fleet_authorities(
         lane = lane_by_program[program_id]
         node = graph.node(program_id + "::reproduction")
         blockers: list[str] = []
+        gaps: list[ReproductionFleetAuthorityGap] = []
         closure = None
         research_closed = False
         study_closed = False
@@ -624,6 +800,8 @@ def audit_materialized_reproduction_fleet_authorities(
             )
             research_closed = True
         except BaseException as exc:
+            gap = _research_binding_gap(lane.study, exc)
+            gaps.append(gap)
             blockers.append(
                 "research_binding:"
                 + type(exc).__name__
@@ -655,6 +833,55 @@ def audit_materialized_reproduction_fleet_authorities(
                     else:
                         reconciliation_closed = True
                 except BaseException as exc:
+                    if stage == "aggregation":
+                        requirement_key = (
+                            closure.definition.aggregation_requirement_id
+                        )
+                        requirement_digest = canonical_digest(
+                            {
+                                "stage": stage,
+                                "requirement_id": requirement_key,
+                                "study_definition_digest": (
+                                    closure.definition.definition_digest
+                                ),
+                            }
+                        )
+                    else:
+                        provider_ids = tuple(
+                            sorted(
+                                {
+                                    row.provider_id
+                                    for row in closure.research_plan.experiment_plan.bindings
+                                }
+                            )
+                        )
+                        protocol_digest = (
+                            closure.research_plan.trial_protocol_identity.digest()
+                        )
+                        requirement_key = (
+                            stage
+                            + ":"
+                            + ",".join(provider_ids)
+                            + ":"
+                            + protocol_digest
+                        )
+                        requirement_digest = canonical_digest(
+                            {
+                                "stage": stage,
+                                "provider_ids": provider_ids,
+                                "trial_protocol_digest": protocol_digest,
+                                "closure_digest": closure.closure_digest,
+                            }
+                        )
+                    gaps.append(
+                        ReproductionFleetAuthorityGap(
+                            stage=stage,
+                            requirement_key=requirement_key,
+                            requirement_digest=requirement_digest,
+                            error_type=type(exc).__name__,
+                            message=str(exc),
+                        )
+                    )
                     blockers.append(
                         stage + ":" + type(exc).__name__ + ":" + str(exc)
                     )
@@ -671,6 +898,7 @@ def audit_materialized_reproduction_fleet_authorities(
                 study_execution_closed=study_closed,
                 aggregation_closed=aggregation_closed,
                 reconciliation_closed=reconciliation_closed,
+                gaps=tuple(sorted(gaps, key=lambda row: row.gap_digest)),
                 blockers=tuple(sorted(set(blockers))),
             )
         )
@@ -1042,6 +1270,7 @@ __all__ = [
     "ReproductionBenchmarkSelection",
     "audit_repository_execution_authorities",
     "audit_materialized_reproduction_fleet_authorities",
+    "ReproductionFleetAuthorityGap",
     "ReproductionFleetAuthorityLaneAudit",
     "ReproductionFleetAuthorityAudit",
     "ReproductionFleetExecutionAuthorities",
