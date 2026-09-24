@@ -157,6 +157,35 @@ class ReproductionExecutionResolution:
         )
 
 
+@dataclass(frozen=True, slots=True)
+class ReproductionExecutionRequest:
+    """Top-level request selecting scientific lane identity, never platform wiring."""
+
+    package: str
+    study_factory: str
+    benchmark: BenchmarkTaskSet
+
+    def __post_init__(self) -> None:
+        if type(self.package) is not str or not self.package.strip():
+            raise ValueError("reproduction execution request package is required")
+        if type(self.study_factory) is not str or not self.study_factory.strip():
+            raise ValueError("reproduction execution request study_factory is required")
+        if not isinstance(self.benchmark, BenchmarkTaskSet):
+            raise TypeError(
+                "reproduction execution request benchmark must be BenchmarkTaskSet"
+            )
+
+    @property
+    def request_digest(self) -> str:
+        return canonical_digest({
+            "package": self.package,
+            "study_factory": self.study_factory,
+            "benchmark_id": self.benchmark.benchmark_id,
+            "benchmark_revision_id": self.benchmark.revision_id,
+            "benchmark_cut_digest": self.benchmark.cut_digest,
+        })
+
+
 _BENCHMARK_SPLIT_PARAMETERS = frozenset({"split_id", "benchmark_split_id"})
 
 _EXECUTION_REQUIREMENT_KIND_BY_PARAMETER = {
@@ -1799,6 +1828,63 @@ def compile_repository_reproduction_portfolio(
     )
 
 
+def compile_resolved_reproduction_portfolio(
+    portfolio_id: str,
+    requests: tuple[ReproductionExecutionRequest, ...],
+    *,
+    capability_resolver: ReproductionCapabilityRequirementResolverPort | None = None,
+) -> api.ResearchPortfolio:
+    """Compile top-level lane requests without caller-authored execution bindings."""
+
+    if type(requests) is not tuple or not requests:
+        raise ValueError("resolved reproduction portfolio requires execution requests")
+    if any(type(row) is not ReproductionExecutionRequest for row in requests):
+        raise TypeError(
+            "resolved reproduction portfolio requests must be typed"
+        )
+    request_digests = tuple(row.request_digest for row in requests)
+    if len(request_digests) != len(set(request_digests)):
+        raise ValueError("resolved reproduction execution requests must be unique")
+
+    definitions = {
+        row.package: row
+        for row in discover_reproduction_definitions()
+    }
+    bindings: list[ReproductionExecutionBinding] = []
+    for request in sorted(
+        requests,
+        key=lambda row: (
+            row.package,
+            row.study_factory,
+            row.benchmark.benchmark_id,
+            row.benchmark.revision_id,
+            row.benchmark.cut_digest,
+        ),
+    ):
+        definition = definitions.get(request.package)
+        if definition is None:
+            raise ReproductionResearchOSCompileError(
+                f"unknown reproduction package in execution request: "
+                f"{request.package}"
+            )
+        if not is_research_os_executable(definition):
+            raise ReproductionResearchOSCompileError(
+                f"{request.package} has no executable Study/Program authority"
+            )
+        bindings.extend(
+            expand_resolved_reproduction_benchmark_lanes(
+                definition,
+                study_factory=request.study_factory,
+                benchmark=request.benchmark,
+                capability_resolver=capability_resolver,
+            )
+        )
+    return compile_bound_reproduction_portfolio(
+        portfolio_id,
+        tuple(bindings),
+    )
+
+
 def compile_bound_reproduction_portfolio(
     portfolio_id: str,
     bindings: tuple[ReproductionExecutionBinding, ...],
@@ -1869,6 +1955,7 @@ __all__ = [
     "ReproductionCapabilityRequirementResolverPort",
     "ReproductionExecutionBinding",
     "ReproductionExecutionRequirement",
+    "ReproductionExecutionRequest",
     "ReproductionExecutionResolution",
     "ReproductionExecutionRequirementKind",
     "ReproductionMachineProgramBinding",
@@ -1879,6 +1966,7 @@ __all__ = [
     "compile_bound_reproduction_portfolio",
     "compile_bound_reproduction_research_program",
     "compile_reproduction_portfolio",
+    "compile_resolved_reproduction_portfolio",
     "compile_reproduction_research_program",
     "compile_repository_reproduction_portfolio",
     "discover_reproduction_definitions",
