@@ -59,6 +59,7 @@ class ReproductionFleetAuthorityManifest:
     participant_registry_digest: str
     model_registry_digest: str
     trial_provider_registry_digest: str
+    aggregation_registry_digest: str
     reconciliation_registry_digest: str
     benchmark_registry_digest: str
     reproduction_capability_registry_digest: str | None = None
@@ -71,6 +72,7 @@ class ReproductionFleetAuthorityManifest:
             "participant_registry_digest",
             "model_registry_digest",
             "trial_provider_registry_digest",
+            "aggregation_registry_digest",
             "reconciliation_registry_digest",
             "benchmark_registry_digest",
         ):
@@ -88,7 +90,7 @@ class ReproductionFleetAuthorityManifest:
             "manifest_digest",
             canonical_digest(
                 {
-                    "schema": "noetrium.reproduction-fleet-authority-manifest.v1",
+                    "schema": "noetrium.reproduction-fleet-authority-manifest.v2",
                     "manifest_registry_digest": self.manifest_registry_digest,
                     "research_capability_registry_digest": (
                         self.research_capability_registry_digest
@@ -96,6 +98,7 @@ class ReproductionFleetAuthorityManifest:
                     "participant_registry_digest": self.participant_registry_digest,
                     "model_registry_digest": self.model_registry_digest,
                     "trial_provider_registry_digest": self.trial_provider_registry_digest,
+                    "aggregation_registry_digest": self.aggregation_registry_digest,
                     "reconciliation_registry_digest": self.reconciliation_registry_digest,
                     "benchmark_registry_digest": self.benchmark_registry_digest,
                     "reproduction_capability_registry_digest": (
@@ -113,6 +116,7 @@ def _registry_authority_manifest(
     participants: ResearchParticipantBindingRegistry,
     models: ResearchModelRoleBindingRegistry,
     trial_providers: ResearchOSExperimentTrialProviderRegistry,
+    experiment_aggregation: ResearchOSExperimentAggregationRegistry,
     experiment_reconciliation: ResearchOSExperimentReconciliationRegistry,
     benchmark_resolutions: BenchmarkResolutionRegistry | None,
     reproduction_capabilities: ReproductionCapabilitySelectionRegistry | None,
@@ -128,6 +132,7 @@ def _registry_authority_manifest(
         participant_registry_digest=participants.identity_digest,
         model_registry_digest=models.identity_digest,
         trial_provider_registry_digest=trial_providers.identity_digest,
+        aggregation_registry_digest=experiment_aggregation.identity_digest,
         reconciliation_registry_digest=experiment_reconciliation.identity_digest,
         benchmark_registry_digest=benchmark_registry.identity_digest,
         reproduction_capability_registry_digest=(
@@ -227,7 +232,7 @@ def compose_repository_fleet_execution_authorities_from_registries(
     models: ResearchModelRoleBindingRegistry,
     trial_providers: ResearchOSExperimentTrialProviderRegistry,
     experiment_reconciliation: ResearchOSExperimentReconciliationRegistry,
-    experiment_aggregation: ResearchOSExperimentAggregationResolverPort | None = None,
+    experiment_aggregation: ResearchOSExperimentAggregationRegistry | None = None,
     reproduction_capabilities: (
         ReproductionCapabilitySelectionRegistry | None
     ) = None,
@@ -267,6 +272,21 @@ def compose_repository_fleet_execution_authorities_from_registries(
             )
 
     if (
+        experiment_aggregation is not None
+        and type(experiment_aggregation)
+        is not ResearchOSExperimentAggregationRegistry
+    ):
+        raise TypeError(
+            "registry fleet authority experiment_aggregation must be "
+            "ResearchOSExperimentAggregationRegistry"
+        )
+    resolved_aggregation = (
+        ResearchOSExperimentAggregationRegistry.canonical()
+        if experiment_aggregation is None
+        else experiment_aggregation
+    )
+
+    if (
         reproduction_capabilities is not None
         and type(reproduction_capabilities)
         is not ReproductionCapabilitySelectionRegistry
@@ -282,6 +302,7 @@ def compose_repository_fleet_execution_authorities_from_registries(
         participants=participants,
         models=models,
         trial_providers=trial_providers,
+        experiment_aggregation=resolved_aggregation,
         experiment_reconciliation=experiment_reconciliation,
         benchmark_resolutions=benchmark_resolutions,
         reproduction_capabilities=reproduction_capabilities,
@@ -294,7 +315,7 @@ def compose_repository_fleet_execution_authorities_from_registries(
         models=models,
         experiment_reconciliation=experiment_reconciliation,
         experiment_trial_providers=trial_providers,
-        experiment_aggregation=experiment_aggregation,
+        experiment_aggregation=resolved_aggregation,
         reproduction_capabilities=reproduction_capabilities,
         benchmark_resolutions=benchmark_resolutions,
         benchmarks=benchmarks,
