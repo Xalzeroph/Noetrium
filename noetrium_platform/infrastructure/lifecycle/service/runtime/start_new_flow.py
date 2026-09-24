@@ -29,8 +29,10 @@ class NewServiceStartFlow:
         self,
         contract: ServiceLaunchContract,
         state: ServiceSupervisorState,
+        *,
+        initial_evidence: tuple[str, ...] = (),
     ) -> ServiceStartReport:
-        evidence: list[str] = []
+        evidence: list[str] = list(initial_evidence)
         state = self._transitions.persist(state, ServicePhase.VERIFY_CONTRACT)
         state = self._transitions.persist(state, ServicePhase.RECONCILE_PRIOR)
         existing, refs = self._adapter.reconcile(state, contract)
