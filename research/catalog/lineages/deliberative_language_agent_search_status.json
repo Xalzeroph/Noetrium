@@ -335,7 +335,7 @@
       "reproductions": [
         {
           "package": "lats_webshop",
-          "package_digest": "f2cb3aa0dc4598209b594c4e0b4b359d8ca62a03bbd366a158c4a1ab9d9daa1f",
+          "package_digest": "3d3c9128e66d99a24763de513fb8da3da875d9e5d7febb09d1c8e71972ccc636",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "webshop"
@@ -357,12 +357,12 @@
             {
               "kind": "method_program",
               "path": "research/reproductions/lats_webshop/program.py",
-              "content_sha256": "3714702b4e180b0f18c80bfd4e9ac4341f3c6e42564d69d25af1bc9a462ee49b"
+              "content_sha256": "910430aa011b87a0d8afc1f2312c1adb3be64375902f88f68202fd0908ce8f57"
             },
             {
               "kind": "study",
               "path": "research/reproductions/lats_webshop/study.py",
-              "content_sha256": "79bfc65fafba5df00e807821cb79355b351a1edeb0918c0c8d5a233a98830f5a"
+              "content_sha256": "7a7b8739982c9082c07a8bc6ea93173c734bb4e027fa92f8b4e9738ff593c4e2"
             },
             {
               "kind": "support",
@@ -478,5 +478,5 @@
       ]
     }
   ],
-  "projection_digest": "d651133bfe447324cc19b50b7ca74064f7e52a42710107a6edef7249f8aed720"
+  "projection_digest": "116d5979ae997fa3d4718f72bcdb596556b6fa6642416225d5fd16780aa139a0"
 }

@@ -1427,7 +1427,7 @@
       "reproductions": [
         {
           "package": "lats_webshop",
-          "package_digest": "f2cb3aa0dc4598209b594c4e0b4b359d8ca62a03bbd366a158c4a1ab9d9daa1f",
+          "package_digest": "3d3c9128e66d99a24763de513fb8da3da875d9e5d7febb09d1c8e71972ccc636",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "webshop"
@@ -1449,12 +1449,12 @@
             {
               "kind": "method_program",
               "path": "research/reproductions/lats_webshop/program.py",
-              "content_sha256": "3714702b4e180b0f18c80bfd4e9ac4341f3c6e42564d69d25af1bc9a462ee49b"
+              "content_sha256": "910430aa011b87a0d8afc1f2312c1adb3be64375902f88f68202fd0908ce8f57"
             },
             {
               "kind": "study",
               "path": "research/reproductions/lats_webshop/study.py",
-              "content_sha256": "79bfc65fafba5df00e807821cb79355b351a1edeb0918c0c8d5a233a98830f5a"
+              "content_sha256": "7a7b8739982c9082c07a8bc6ea93173c734bb4e027fa92f8b4e9738ff593c4e2"
             },
             {
               "kind": "support",
@@ -2705,7 +2705,7 @@
       "reproductions": [
         {
           "package": "jarvis1_minecraft",
-          "package_digest": "77a5ce686d66c93ec9c47d8c99483532d688e7e86266ab79a83b1689444d7795",
+          "package_digest": "e3565470b6007752cf3f65fd9aec3293b83ab5c5d55341b7368977b2e403ed37",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "jarvis1-offline-185"
@@ -2742,12 +2742,12 @@
             {
               "kind": "method_program",
               "path": "research/reproductions/jarvis1_minecraft/program.py",
-              "content_sha256": "5768f40860bdbdfa532415a77f0689aae51471d9c3453b9e1e03d45aeba3afb5"
+              "content_sha256": "5b9e773272d30399c705581779e22777a0741e5e0627dc31e0fc1128473f814d"
             },
             {
               "kind": "research_program",
               "path": "research/reproductions/jarvis1_minecraft/memory.py",
-              "content_sha256": "abec5a3f6b4eaa5e05cd2fcee2c896ae8917085ace38801b1ee4e077285e9c1d"
+              "content_sha256": "018661046936ef687c9b46c62395c196bf0201505b38279700d907e84c29adc3"
             },
             {
               "kind": "study",
@@ -3365,7 +3365,7 @@
       "reproductions": [
         {
           "package": "ishift_cvpr2026",
-          "package_digest": "e03795e92daa253f76c213e488f737b9cd156399c2c484d5cf816f4f8eee578a",
+          "package_digest": "3f251efc037c83601ce0955f6ee54d550964ba82fde27cf6603697f74d7438fb",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "aitw",
@@ -3400,7 +3400,7 @@
             {
               "kind": "method_program",
               "path": "research/reproductions/ishift_cvpr2026/program.py",
-              "content_sha256": "cc2af6c58813d1be7b80f619aacf127bf96e4f9cf0fd06ed13eca4f78b61304a"
+              "content_sha256": "076a2c2c170cd4e95054567d8bfbff1b514ee141e5afa822fd103bf19929ab40"
             },
             {
               "kind": "study",
@@ -3430,7 +3430,7 @@
       "reproductions": [
         {
           "package": "lmee_cvpr2026",
-          "package_digest": "2c7a7816dabadcd090cb61d12c8d7fbded28009a069915931cd7394c7bdf732a",
+          "package_digest": "94e1f7d238819da11119789b5ddadbb718921120f70714137e3aacc721af63ac",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "lmee-bench"
@@ -3462,7 +3462,7 @@
             {
               "kind": "method_program",
               "path": "research/reproductions/lmee_cvpr2026/program.py",
-              "content_sha256": "09e7c5088d0478e1276d9a6b8700f513cbec30748f73e88f877acb7a1f9886b5"
+              "content_sha256": "02e0cc904f9eca8c9b5685f133210e0c34c2716537c0f2bbcf2b7f205ba5ee88"
             },
             {
               "kind": "study",
@@ -3896,5 +3896,5 @@
       ]
     }
   ],
-  "projection_digest": "ff9dd11cbe7b4c5f4d9f49f81bebaf2d63f1df84673b23a3d1e68ba7ccfe6a9c"
+  "projection_digest": "ad860025e12a7bcf14d317f24e196f7852aee19a1cf1c2934c1181054523aafd"
 }

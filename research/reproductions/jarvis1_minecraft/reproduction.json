@@ -2,7 +2,7 @@
   "schema": "noetrium.reproduction.projection.v10",
   "authority": "generated_from_typed_definition_and_source",
   "package": "jarvis1_minecraft",
-  "package_digest": "77a5ce686d66c93ec9c47d8c99483532d688e7e86266ab79a83b1689444d7795",
+  "package_digest": "e3565470b6007752cf3f65fd9aec3293b83ab5c5d55341b7368977b2e403ed37",
   "definition_digest": "34f17d6f0d7879c11dd051235813d1e08d67479911f20ed4df97916c03a8e159",
   "source_registry_digest": "d0a3d3ba7b0bbee5cf156be04b204f1c10085da1b8847a3a18f524b83ae1280b",
   "lifecycle": "protocol_bound",
@@ -110,13 +110,13 @@
       "kind": "method_program",
       "path": "research/reproductions/jarvis1_minecraft/program.py",
       "declaration_digest": "5290ac81d8ce24405daccbc3bb8fe4746cfaac0951930059d70ade70781657fe",
-      "content_sha256": "5768f40860bdbdfa532415a77f0689aae51471d9c3453b9e1e03d45aeba3afb5"
+      "content_sha256": "5b9e773272d30399c705581779e22777a0741e5e0627dc31e0fc1128473f814d"
     },
     {
       "kind": "research_program",
       "path": "research/reproductions/jarvis1_minecraft/memory.py",
       "declaration_digest": "41dc8602926dbce8e5d8a46328c8fd83201c8b4c51d0f7eb75ff8fb86fad96ea",
-      "content_sha256": "abec5a3f6b4eaa5e05cd2fcee2c896ae8917085ace38801b1ee4e077285e9c1d"
+      "content_sha256": "018661046936ef687c9b46c62395c196bf0201505b38279700d907e84c29adc3"
     },
     {
       "kind": "study",

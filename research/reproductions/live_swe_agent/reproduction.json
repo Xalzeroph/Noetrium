@@ -2,7 +2,7 @@
   "schema": "noetrium.reproduction.projection.v10",
   "authority": "generated_from_typed_definition_and_source",
   "package": "live_swe_agent",
-  "package_digest": "f0b7de5bfbbab5dca7f19512b922865891a927d4aa7fce27867666bd541832bd",
+  "package_digest": "58f2749452075b516dc8fd715cf2f7f101c24ee215bd7be6d77c1c127abd896f",
   "definition_digest": "9be3174ead00018a3ab7ab3633b28d826507a31a61dbd8a7792c473c1f26513c",
   "source_registry_digest": "df603fd2b849ff9e4be7849fe10487911f2bb7dd449b0c8822be92c5e7b40e5c",
   "lifecycle": "protocol_bound",
@@ -74,13 +74,13 @@
       "kind": "method_program",
       "path": "research/reproductions/live_swe_agent/program.py",
       "declaration_digest": "79f2d83a15df4540299423718590a36aec0dcd4ca621707814a2e3921ddd0468",
-      "content_sha256": "763c08ea8944548acf370b4c596dedda381382bb5a1b89aad01094361e2d47f2"
+      "content_sha256": "4af93ec1990a772570b9e346a84a0063aaa791f061a0230d34c8431c258c8169"
     },
     {
       "kind": "study",
       "path": "research/reproductions/live_swe_agent/study.py",
       "declaration_digest": "475f10f088749054af76698d1a2588a342453985ebe7c0a48cce628940cb7c8e",
-      "content_sha256": "99f93267c38cbd4d8b48569f60c90743553746829482d7c4a3e5747cbba406e3"
+      "content_sha256": "f1d6a949d1145977ed8b58e1d95ba88400a9d1c6c74bfea6c6ab24099e4473bd"
     }
   ],
   "primary_executable": "research/reproductions/live_swe_agent/program.py",
