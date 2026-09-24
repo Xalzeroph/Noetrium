@@ -8,14 +8,6 @@ Downstream projects import these names through :mod:`noetrium.api`.
 """
 from __future__ import annotations
 
-from noetrium_platform.composition.environment_capabilities import (
-    environment_action_capability_payload,
-    environment_branch_action_spec,
-    environment_fork_action_payload,
-    environment_query_capability_payload,
-    environment_replay_action_payload,
-    environment_reset_capability_payload,
-)
 from noetrium_platform.foundation.kernel.kernel import (
     ChildMachineLink,
     EffectCertainty,
@@ -121,6 +113,12 @@ from noetrium_platform.research.experimentation.api import (
     StudyModel,
     StudyParticipant,
     TrialBudget,
+    environment_action_capability_payload,
+    environment_branch_action_spec,
+    environment_fork_action_payload,
+    environment_query_capability_payload,
+    environment_replay_action_payload,
+    environment_reset_capability_payload,
     materialize_capability_selection_view,
     program_execution_capability_payload,
 )
