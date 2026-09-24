@@ -20,7 +20,7 @@ from noetrium_platform.composition.research_os_reconciliation import (
     ResearchOSNodeReconciliationProof,
 )
 from noetrium_platform.composition.research_os_value_authorities import (
-    ResearchOSArtifactValueAuthority,
+    ResearchOSImmutableValueAuthority,
 )
 from noetrium_platform.composition.research_os_values import ResearchOSValueRouter
 from noetrium_platform.composition.research_os_graph import (
@@ -531,7 +531,7 @@ def test_experiment_report_output_is_only_verified_artifact_reference_manifest(
     graph = SQLiteResearchGraphExecutionStore(tmp_path / "graph.sqlite3")
     artifact_blobs = DirectoryArtifactBlobStore(tmp_path / "value-blobs")
     artifact_registry = SQLiteArtifactRegistry(tmp_path / "value-artifacts.sqlite3")
-    authority = ResearchOSArtifactValueAuthority(
+    authority = ResearchOSImmutableValueAuthority(
         artifact_blobs,
         artifact_registry,
     )
@@ -642,7 +642,7 @@ def test_experiment_artifact_edge_feeds_evaluation_through_authority_resolution(
         run_id="experiment-evaluation",
         writer_actor=_InlineActor(),
     )
-    value_authority = ResearchOSArtifactValueAuthority(
+    value_authority = ResearchOSImmutableValueAuthority(
         DirectoryArtifactBlobStore(tmp_path / "value-blobs"),
         SQLiteArtifactRegistry(tmp_path / "value-artifacts.sqlite3"),
     )
