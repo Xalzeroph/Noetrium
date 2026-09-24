@@ -30,86 +30,64 @@ recovery infrastructure. Those remain platform composition responsibilities.
 
 ## Authoring
 
-A project authors the entire scientific program in one top-level module.
+A generated project separates user scientific semantics from platform shell.
+
+`src/<package>/core.py` is the only generated file intended for scientific
+editing. It exports one function:
 
 ```python
 from noetrium import api
 
 
-def paper_method(payload=None):
-    return payload
-
-
-def benchmark():
-    return ()
-
-
-def primary_metric(value):
-    return 0.0 if value is None else 1.0
-
-
-builder = api.ResearchProgramBuilder("my-paper")
-builder.method("method", implementation=paper_method)
-builder.benchmark("benchmark", implementation=benchmark)
-builder.metric("primary-metric", implementation=primary_metric)
-
-builder.experiment(
-    "main",
-    definitions=("method", "benchmark"),
-    outputs=(
-        api.ResearchOutputSpec("trajectory", api.ResearchValueKind.ARTIFACT),
-    ),
-)
-builder.evaluation(
-    "evaluate",
-    definitions=("primary-metric",),
-    outputs=(
-        api.ResearchOutputSpec("score", api.ResearchValueKind.METRIC),
-    ),
-)
-builder.depends(
-    "evaluate",
-    "main",
-    bindings=(
-        api.ResearchInputBinding(
-            "trajectory",
-            "trajectory",
-            api.ResearchValueKind.ARTIFACT,
-        ),
-    ),
-)
-builder.analysis("analysis", depends_on=("evaluate",))
-
-PROGRAM = builder.freeze()
-PORTFOLIO = api.ResearchPortfolio("my-paper", (PROGRAM,))
+def build_research() -> api.ResearchPortfolio:
+    # Arbitrary user-owned Python is allowed here.
+    # Construct one program or hundreds; use any DAG and any supported/custom
+    # semantics. The scaffold does not prescribe methods, benchmarks, metrics,
+    # experiments, node kinds, or cross-program topology.
+    return build_my_research_portfolio()
 ```
 
-Authors do not calculate implementation hashes. A named module-scope callable
-is converted into a `ResearchImplementation` automatically by freezing its
-import-resolvable module/qualname and canonical callable-source digest. This
-keeps authoring diffs fine-grained: changing an unrelated metric does not
-invalidate a method. Runtime compilation adds the referenced dependency closure,
-Git cut, environment, model, provider, and release provenance without changing
-this authoring ergonomics.
+The only top-level contract is that `build_research()` returns a valid
+`ResearchPortfolio` whose `portfolio_id` matches the project identity. The
+implementation may use `ResearchProgramBuilder`, direct immutable Product
+contracts, custom nodes, Machine-backed semantics, helper modules, generated
+domain code, or any other Python organization that stays behind
+`noetrium.api`.
+
+The generated `src/<package>/research.py` shell calls `build_research()`,
+checks only that top-level contract, and exposes `PORTFOLIO` plus `PROGRAMS`.
+It owns no scientific topology and can be regenerated at any time.
+
+Authors do not calculate implementation hashes. Named implementation callables
+referenced from the returned Portfolio are frozen through canonical
+ResearchImplementation identity. Runtime compilation adds dependency closure,
+revision cut, environment/model/provider identity, execution evidence and
+recovery state without requiring project code to assemble those systems.
 
 ## Project scaffold
 
-`noetrium project create <project-id>` creates one project shape.
+`noetrium project create <project-id>` creates one semantics-neutral project
+shape:
 
-The generated scientific surface is:
-
-- `src/<package>/research.py` — the complete ResearchProgram/Portfolio authoring
-  module;
+- `src/<package>/core.py` — user-owned scientific core;
+- `src/<package>/research.py` — platform-owned generated Research OS shell;
 - `project.manifest.json` — platform-managed project identity/provenance;
-- `tests/test_generated_project.py` — installed-package conformance coverage.
+- `tests/test_generated_project.py` — generated top-level contract coverage.
 
-The scaffold deliberately does not generate `method.py`, `study.py`,
-`application.py`, provider stubs, checkpoint plumbing, model bindings,
-environment bindings, or resource configuration glue.
+There is no blueprint JSON, implementation-slot schema, provider template, or
+fixed method/benchmark/metric/experiment skeleton. The default CUSTOM root in a
+fresh `core.py` is only a structurally valid bootstrap and may be replaced
+entirely.
 
-`noetrium project doctor --project .` verifies the template revision,
-manifest/platform provenance, exact generated files, the downstream import
-boundary, and the top-level ResearchProgram/ResearchPortfolio contract.
+`noetrium project sync --project .` regenerates only platform-owned shell/test
+files. It does not parse, normalize, rewrite, or infer the scientific topology
+inside `core.py`.
+
+`noetrium project doctor --project .` verifies template/provenance identity,
+deterministic platform shell, the public import boundary, and the single
+core-to-ResearchPortfolio contract. It deliberately does not require specific
+definition kinds, node kinds, benchmark structure, experiment structure, or DAG
+shape beyond the canonical ResearchPortfolio invariants themselves.
 
 `noetrium project test --project .` builds and installs the downstream package
 in isolation before running its generated contract suite. Source-tree-only
