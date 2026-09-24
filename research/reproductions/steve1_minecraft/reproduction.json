@@ -2,8 +2,8 @@
   "schema": "noetrium.reproduction.projection.v7",
   "authority": "generated_from_typed_definition_and_source",
   "package": "steve1_minecraft",
-  "package_digest": "ca632e8bce7ccb35c78269af96b269d1986dd69aa2c1ed3d6d0c70dd35db8c83",
-  "definition_digest": "f0f19b97ed5412ff9ecac1901064f9121a004c739b5064e602032181b165c192",
+  "package_digest": "edab847d866076420acebc661b7883a42ba41c696fb7c94b61f718381763ba5e",
+  "definition_digest": "0eec3e1c1cf3c30526fe0d2f1b000e3f9d5a615cee2b4255031a47c856411627",
   "source_registry_digest": "365b9a6eac2c92f89fc90b3802a0fdbdcf92ad106758f8a518a664be076f0881",
   "lifecycle": "protocol_bound",
   "identity": {

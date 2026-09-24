@@ -2,8 +2,8 @@
   "schema": "noetrium.reproduction.projection.v7",
   "authority": "generated_from_typed_definition_and_source",
   "package": "chatdev_v1",
-  "package_digest": "3569b0fb9156681272c9468b81b0560e8860d6b560fc6f1c16202b4d8b5ea125",
-  "definition_digest": "dc8c73c41472cca6782492175e4c021eb185498a0b316ff0cd820a281161b143",
+  "package_digest": "e30171bbe47224dfb62fe31f1beb10a91cc2008a4d9de90d73f3de9638de96b3",
+  "definition_digest": "596185b0e8a4c8ff69611e15bb9504734d6d7575f0a187ab1214d235499e61d2",
   "source_registry_digest": "ef8ddd9ce1f6e9a889a6c727ad6145b62925d7559d7022c815721004d1c57702",
   "lifecycle": "protocol_bound",
   "identity": {
