@@ -117,6 +117,21 @@ class DockerContainerLeaseAuthority:
             and all(ch in "0123456789abcdef" for ch in value)
         )
 
+    def _require_handle_authority(
+        self,
+        handle: ManagedDockerContainerLease,
+    ) -> None:
+        if type(handle) is not ManagedDockerContainerLease:
+            raise TypeError("managed Docker lifecycle requires ManagedDockerContainerLease")
+        if handle.authority_id != self.authority_id:
+            raise DockerContainerLeaseConflict(
+                "managed Docker handle belongs to a different authority"
+            )
+        if handle.owner_generation_id != self.owner_generation_id:
+            raise DockerContainerLeaseConflict(
+                "managed Docker handle belongs to a stale owner generation"
+            )
+
     @staticmethod
     def _validate_observation(
         handle: ManagedDockerContainerLease,
@@ -180,7 +195,14 @@ class DockerContainerLeaseAuthority:
         observed = self.runtime.inspect(handle.container_name)
         if observed is None:
             return handle
-        self._validate_observation(handle, observed)
+        try:
+            self._validate_observation(handle, observed)
+        except DockerContainerLeaseConflict:
+            self.leases.release(
+                lease.lease_id,
+                fencing_token=lease.fencing_token,
+            )
+            raise
         if not observed.running:
             # A stopped container cannot remain the owner of an active
             # generation. End it now so the next reserve advances fencing.
@@ -201,6 +223,7 @@ class DockerContainerLeaseAuthority:
         self,
         handle: ManagedDockerContainerLease,
     ) -> tuple[str, ...]:
+        self._require_handle_authority(handle)
         return (
             self.runtime.docker_executable,
             "run",
@@ -214,6 +237,7 @@ class DockerContainerLeaseAuthority:
         *,
         timeout_seconds: float = 10.0,
     ) -> DockerContainerObservation:
+        self._require_handle_authority(handle)
         observed = self.runtime.wait_running(
             handle.container_name,
             timeout_seconds=timeout_seconds,
@@ -225,6 +249,7 @@ class DockerContainerLeaseAuthority:
         self,
         handle: ManagedDockerContainerLease,
     ) -> ManagedDockerContainerLease:
+        self._require_handle_authority(handle)
         renewed = self.leases.renew(
             handle.lease.lease_id,
             fencing_token=handle.lease.fencing_token,
@@ -248,14 +273,25 @@ class DockerContainerLeaseAuthority:
         return tuple(self.renew(handle) for handle in handles)
 
     def release(self, handle: ManagedDockerContainerLease) -> ResourceLease:
-        # Physical effect first. Never publish logical release while a container
-        # may still exist.
-        self.runtime.remove(handle.container_name, force=True)
-        if self.runtime.inspect(handle.container_name) is not None:
-            raise DockerContainerLeaseConflict(
-                "managed Docker container survived release"
-            )
-        return self.leases.release(handle.lease.lease_id, fencing_token=handle.lease.fencing_token)
+        self._require_handle_authority(handle)
+        # Resolve the physical object first, then verify its exact immutable
+        # labels before mutation. A delayed close must never delete an
+        # unrelated container that reused the old logical Docker name.
+        observed = self.runtime.inspect(handle.container_name)
+        if observed is not None:
+            self._validate_observation(handle, observed)
+            self.runtime.remove(observed.container_id, force=True)
+            if self.runtime.inspect(observed.container_id) is not None:
+                raise DockerContainerLeaseConflict(
+                    "managed Docker container survived release"
+                )
+        # Physical effect first. Never publish logical release while the exact
+        # owned container may still exist. Generic lease release is itself
+        # fenced, so a delayed close cannot release a replacement generation.
+        return self.leases.release(
+            handle.lease.lease_id,
+            fencing_token=handle.lease.fencing_token,
+        )
 
     def reconcile(
         self,
