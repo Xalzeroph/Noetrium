@@ -105,12 +105,15 @@ class FakeGpuObserver:
 class FakeRuntime:
     def __init__(self) -> None:
         self.live = False
+        self.stop_succeeds = True
+        self.start_calls = 0
 
     def reconcile_exact(self, contract):
         process = ServiceProcessIdentity(1234, "start") if self.live else None
         return ServiceReconcileObservation(True, process)
 
     def start_exact(self, contract):
+        self.start_calls += 1
         self.live = True
         return ServiceStartOutcome(contract.digest(), ServiceProcessIdentity(1234, "start"), "ready:test", 1234.5)
 
@@ -118,6 +121,8 @@ class FakeRuntime:
         raise NotImplementedError
 
     def stop_exact(self, contract):
+        if not self.stop_succeeds:
+            return ServiceStopOutcome(contract.digest(), False)
         self.live = False
         return ServiceStopOutcome(contract.digest(), True)
 
@@ -756,3 +761,119 @@ def test_model_runtime_shutdown_preserves_desired_state_for_restart() -> None:
         restarted = models.fleet.reconcile()[0]
         assert restarted.runtime_state is ModelRuntimeState.RUNNING
         assert factory.runtime.live is True
+
+
+
+def test_model_replacement_keeps_old_applied_generation_when_physical_stop_is_unproven() -> None:
+    with TemporaryDirectory() as td:
+        root = Path(td)
+        directories = build_local_directory_authorities(layout(root))
+        environments = build_environments(directories)
+        environments.lifecycle.create(
+            PythonEnvironmentSpec("serve", PLATFORM_SCOPE, backend="fake")
+        )
+        model_dir = root / "model"
+        model_dir.mkdir()
+        factory = FakeFactory()
+        models = build_models(directories, environments, factory)
+        models.assets.register_model("m", PLATFORM_SCOPE, model_dir)
+        original = ModelDeploymentSpec(
+            deployment_id="d",
+            service_id="model:d",
+            model_id="m",
+            engine="custom",
+            scope=PLATFORM_SCOPE,
+            executable="{python}",
+            argv=("{python}", "-m", "server", "--port", "8000"),
+            cwd=root,
+            python_environment_id="serve",
+        )
+        models.deployment_catalog.put_deployment(original)
+        models.deployment_runtime.start("d")
+        assert factory.runtime.start_calls == 1
+        assert factory.runtime.live
+
+        models.deployment_catalog.put_deployment(
+            ModelDeploymentSpec(
+                deployment_id="d",
+                service_id="model:d",
+                model_id="m",
+                engine="custom",
+                scope=PLATFORM_SCOPE,
+                executable="{python}",
+                argv=("{python}", "-m", "server", "--port", "9000"),
+                cwd=root,
+                python_environment_id="serve",
+                desired_state=ModelDesiredState.RUNNING,
+            )
+        )
+        factory.runtime.stop_succeeds = False
+
+        try:
+            models.deployment_runtime.start("d")
+        except RuntimeError as exc:
+            assert "did not stop before deployment replacement" in str(exc)
+        else:
+            raise AssertionError("replacement must fail closed while the old process is live")
+
+        assert factory.runtime.live
+        assert factory.runtime.start_calls == 1
+        assert (
+            models.deployment_runtime.status("d").runtime_state
+            is ModelRuntimeState.UPDATE_PENDING
+        )
+
+
+def test_model_remove_and_restart_require_physical_stop_convergence() -> None:
+    with TemporaryDirectory() as td:
+        root = Path(td)
+        directories = build_local_directory_authorities(layout(root))
+        environments = build_environments(directories)
+        environments.lifecycle.create(
+            PythonEnvironmentSpec("serve", PLATFORM_SCOPE, backend="fake")
+        )
+        model_dir = root / "model"
+        model_dir.mkdir()
+        factory = FakeFactory()
+        models = build_models(directories, environments, factory)
+        models.assets.register_model("m", PLATFORM_SCOPE, model_dir)
+        models.deployment_catalog.put_deployment(
+            ModelDeploymentSpec(
+                deployment_id="d",
+                service_id="model:d",
+                model_id="m",
+                engine="custom",
+                scope=PLATFORM_SCOPE,
+                executable="{python}",
+                argv=("{python}", "-m", "server"),
+                cwd=root,
+                python_environment_id="serve",
+            )
+        )
+        models.deployment_runtime.start("d")
+        factory.runtime.stop_succeeds = False
+
+        try:
+            models.deployment_runtime.remove_deployment("d")
+        except RuntimeError as exc:
+            assert "physical generation did not stop" in str(exc)
+        else:
+            raise AssertionError("remove must retain catalog state while the process is live")
+
+        assert models.deployment_catalog.deployment("d").deployment_id == "d"
+        assert factory.runtime.live
+        assert factory.runtime.start_calls == 1
+
+        try:
+            models.deployment_runtime.restart("d")
+        except RuntimeError as exc:
+            assert "prior physical generation did not stop" in str(exc)
+        else:
+            raise AssertionError("restart must not start a second physical generation")
+
+        assert factory.runtime.live
+        assert factory.runtime.start_calls == 1
+        assert (
+            models.deployment_catalog.deployment("d").desired_state
+            is ModelDesiredState.STOPPED
+        )
