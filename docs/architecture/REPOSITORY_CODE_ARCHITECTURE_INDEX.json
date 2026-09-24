@@ -1,10 +1,10 @@
 {
   "counts": {
     "parse_errors": 0,
-    "python_files": 3654,
-    "python_import_edges": 7025,
+    "python_files": 3655,
+    "python_import_edges": 7032,
     "symbols": 4851,
-    "tracked_files": 4283,
+    "tracked_files": 4284,
     "typescript_javascript_files": 11
   },
   "language_symbol_counts": {
@@ -16923,6 +16923,12 @@
       "target_role": "core_platform"
     },
     {
+      "source_module": "research.reproductions",
+      "source_role": "research_reproductions",
+      "target_module": "noetrium",
+      "target_role": "public_facade"
+    },
+    {
       "source_module": "research.reproductions.adacm2_memory.benchmark",
       "source_role": "research_reproductions",
       "target_module": "noetrium_platform.research.experimentation.lifecycle.api",
@@ -22319,6 +22325,12 @@
     {
       "source_module": "scripts.run_reproduction_fleet",
       "source_role": "tooling",
+      "target_module": "research.reproductions",
+      "target_role": "research_reproductions"
+    },
+    {
+      "source_module": "scripts.run_reproduction_fleet",
+      "source_role": "tooling",
       "target_module": "research.reproductions.contracts",
       "target_role": "research_reproductions"
     },
@@ -22716,6 +22728,12 @@
       "source_module": "scripts.sync_reproductions",
       "source_role": "tooling",
       "target_module": "research.reproductions.provenance",
+      "target_role": "research_reproductions"
+    },
+    {
+      "source_module": "scripts.sync_reproductions",
+      "source_role": "tooling",
+      "target_module": "research.reproductions.research_os",
       "target_role": "research_reproductions"
     },
     {
@@ -32431,6 +32449,30 @@
       "source_role": "tests",
       "target_module": "scripts.run_reproduction_fleet",
       "target_role": "tooling"
+    },
+    {
+      "source_module": "tests.test_reproduction_top_level_authoring_v1",
+      "source_role": "tests",
+      "target_module": "noetrium",
+      "target_role": "public_facade"
+    },
+    {
+      "source_module": "tests.test_reproduction_top_level_authoring_v1",
+      "source_role": "tests",
+      "target_module": "research.reproductions",
+      "target_role": "research_reproductions"
+    },
+    {
+      "source_module": "tests.test_reproduction_top_level_authoring_v1",
+      "source_role": "tests",
+      "target_module": "research.reproductions.contracts",
+      "target_role": "research_reproductions"
+    },
+    {
+      "source_module": "tests.test_reproduction_top_level_authoring_v1",
+      "source_role": "tests",
+      "target_module": "research.reproductions.research_os",
+      "target_role": "research_reproductions"
     },
     {
       "source_module": "tests.test_research_campaign_v1",
@@ -42217,7 +42259,7 @@
       "target_role": "core_platform"
     },
     {
-      "count": 5,
+      "count": 6,
       "source_role": "research_reproductions",
       "target_role": "public_facade"
     },
@@ -42232,7 +42274,7 @@
       "target_role": "core_platform"
     },
     {
-      "count": 26,
+      "count": 27,
       "source_role": "tests",
       "target_role": "public_facade"
     },
@@ -42247,7 +42289,7 @@
       "target_role": "reference_orchestration"
     },
     {
-      "count": 313,
+      "count": 316,
       "source_role": "tests",
       "target_role": "research_reproductions"
     },
@@ -42272,7 +42314,7 @@
       "target_role": "public_facade"
     },
     {
-      "count": 4,
+      "count": 6,
       "source_role": "tooling",
       "target_role": "research_reproductions"
     },
@@ -42290,7 +42332,7 @@
     "reference_components": 22,
     "reference_orchestration": 10,
     "research_reproductions": 766,
-    "tests": 804,
+    "tests": 805,
     "tooling": 78
   },
   "role_symbol_counts": {
@@ -42306,7 +42348,7 @@
     "tooling": 38
   },
   "schema": "noetrium-repository-code-architecture-index.v1",
-  "source_git_sha": "59c1f79626687f0547b2864f4dfba97d8f1db0c3",
+  "source_git_sha": "2359b27c0eeef2fdbe86a501c0fee4a7329a93c7",
   "symbols": [
     {
       "bases": [],
