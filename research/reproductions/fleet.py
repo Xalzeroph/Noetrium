@@ -1090,6 +1090,7 @@ class ReproductionFleetExecutionAuthorities:
     benchmark_resolver: ReproductionBenchmarkResolverPort
     research_bindings: ResearchBindingAuthorityPort
     experiment_runtime_components: ResearchOSExperimentRuntimeComponents
+    authority_manifest_digest: str
     capability_resolver: ReproductionCapabilityRequirementResolverPort | None = None
 
     def __post_init__(self) -> None:
@@ -1114,6 +1115,10 @@ class ReproductionFleetExecutionAuthorities:
             raise TypeError(
                 "fleet execution authorities require typed Experiment runtime components"
             )
+        _require_sha256(
+            self.authority_manifest_digest,
+            "fleet execution authority_manifest_digest",
+        )
         if self.capability_resolver is not None and not isinstance(
             self.capability_resolver,
             ReproductionCapabilityRequirementResolverPort,
@@ -1130,6 +1135,7 @@ class ReproductionFleetExecutionResult:
 
     materialization: ReproductionFleetMaterialization
     receipt: api.ResearchControlReceipt
+    authority_manifest_digest: str
     execution_digest: str = field(init=False)
 
     def __post_init__(self) -> None:
@@ -1141,6 +1147,10 @@ class ReproductionFleetExecutionResult:
             raise TypeError(
                 "fleet execution result requires ResearchControlReceipt"
             )
+        _require_sha256(
+            self.authority_manifest_digest,
+            "fleet execution result authority_manifest_digest",
+        )
         object.__setattr__(
             self,
             "execution_digest",
@@ -1149,6 +1159,7 @@ class ReproductionFleetExecutionResult:
                     "materialization_digest": (
                         self.materialization.materialization_digest
                     ),
+                    "authority_manifest_digest": self.authority_manifest_digest,
                     "receipt_digest": self.receipt.receipt_digest,
                     "execution_id": self.receipt.target.execution_id,
                     "revision_digest": (
@@ -1213,7 +1224,11 @@ def run_repository_execution_fleet(
         experiment_runtime_components=authorities.experiment_runtime_components,
         execution_id=execution_id,
     )
-    return ReproductionFleetExecutionResult(fleet, receipt)
+    return ReproductionFleetExecutionResult(
+        fleet,
+        receipt,
+        authorities.authority_manifest_digest,
+    )
 
 
 class ReproductionFleetExperimentClosureProvider:
