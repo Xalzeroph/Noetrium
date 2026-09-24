@@ -127,7 +127,7 @@ class MinecraftRconConsole(MinecraftServerConsolePort):
         try:
             sock = self._socket_factory()
             sock.settimeout(timeout_s)
-            sock.connect((self.endpoint.host, self.endpoint.port))
+            sock.connect((self.endpoint.host, self.endpoint.bound_port))
 
             auth_id = self._request_id()
             stage = "auth"
@@ -159,7 +159,7 @@ class MinecraftRconConsole(MinecraftServerConsolePort):
             evidence = "minecraft-rcon-command:" + canonical_digest(
                 {
                     "host": self.endpoint.host,
-                    "port": self.endpoint.port,
+                    "port": self.endpoint.bound_port,
                     "command": command,
                     "response_sha256": hashlib.sha256(response.encode("utf-8")).hexdigest(),
                 }
