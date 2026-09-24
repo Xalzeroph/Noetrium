@@ -269,6 +269,94 @@ class EnvironmentProfileReferenceSummary:
 
 
 @dataclass(frozen=True, slots=True)
+class EnvironmentRuntimeReferenceSummary:
+    """Exact local references to one concrete runtime realization."""
+
+    profile_id: str
+    profile_revision: str
+    runtime_identity_digest: str
+    instance_ids: tuple[str, ...]
+    bound_instance_ids: tuple[str, ...]
+    reusable_instance_ids: tuple[str, ...]
+    blocking_instance_ids: tuple[str, ...]
+
+    def __post_init__(self) -> None:
+        if (
+            type(self.runtime_identity_digest) is not str
+            or len(self.runtime_identity_digest) != 64
+            or any(
+                ch not in "0123456789abcdef"
+                for ch in self.runtime_identity_digest
+            )
+        ):
+            raise ValueError(
+                "environment runtime reference identity must be lowercase sha256"
+            )
+
+    @property
+    def locally_gc_eligible(self) -> bool:
+        return not self.bound_instance_ids and not self.blocking_instance_ids
+
+
+@dataclass(frozen=True, slots=True)
+class EnvironmentRuntimeGcAssessment:
+    """Fail-closed GC decision for one exact concrete runtime object."""
+
+    profile_id: str
+    profile_revision: str
+    runtime_identity_digest: str
+    local: EnvironmentRuntimeReferenceSummary
+    resumable_execution_ids: tuple[str, ...] | None = None
+    retained_evidence_ids: tuple[str, ...] | None = None
+
+    def __post_init__(self) -> None:
+        if self.local.profile_id != self.profile_id:
+            raise ValueError("environment runtime GC local profile identity drifted")
+        if self.local.profile_revision != self.profile_revision:
+            raise ValueError("environment runtime GC local profile revision drifted")
+        if self.local.runtime_identity_digest != self.runtime_identity_digest:
+            raise ValueError("environment runtime GC concrete identity drifted")
+        for field_name in (
+            "resumable_execution_ids",
+            "retained_evidence_ids",
+        ):
+            values = getattr(self, field_name)
+            if values is None:
+                continue
+            if type(values) is not tuple or any(
+                type(value) is not str
+                or not value.strip()
+                or value != value.strip()
+                for value in values
+            ):
+                raise TypeError(
+                    f"environment runtime GC {field_name} "
+                    "must be canonical text tuple"
+                )
+            if values != tuple(sorted(set(values))):
+                raise ValueError(
+                    f"environment runtime GC {field_name} "
+                    "must be unique sorted order"
+                )
+
+    @property
+    def external_reference_closure_complete(self) -> bool:
+        return (
+            self.resumable_execution_ids is not None
+            and self.retained_evidence_ids is not None
+        )
+
+    @property
+    def eligible(self) -> bool:
+        return (
+            self.local.locally_gc_eligible
+            and self.external_reference_closure_complete
+            and not self.resumable_execution_ids
+            and not self.retained_evidence_ids
+        )
+
+
+@dataclass(frozen=True, slots=True)
 class EnvironmentProfileGcAssessment:
     """Fail-closed profile-GC decision across local, execution and evidence truth."""
 
@@ -362,6 +450,8 @@ __all__ = [
     "EnvironmentProfileMaterialization",
     "EnvironmentProfileRevision",
     "EnvironmentProfileReferenceSummary",
+    "EnvironmentRuntimeGcAssessment",
+    "EnvironmentRuntimeReferenceSummary",
     "EnvironmentOverlay",
     "EnvironmentSpec",
     "EnvironmentTemplate",
