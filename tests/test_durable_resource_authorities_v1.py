@@ -16,6 +16,8 @@ from noetrium_platform.capabilities.environment.catalog.api import (
     EnvironmentCleanlinessProof,
     EnvironmentInstance,
     EnvironmentInstanceState,
+    EnvironmentProfileLifecycle,
+    EnvironmentProfileRevision,
     EnvironmentSpec,
     ExecutionEnvironmentKind,
 )
@@ -181,6 +183,13 @@ class DurableResourceAuthoritiesTests(TestCase):
             meta.scopes.register(scope, PLATFORM_SCOPE)
             revision = "a" * 64
             runtime_digest = "d" * 64
+            meta.environments.register_profile_revision(
+                EnvironmentProfileRevision(
+                    "web-default",
+                    "web",
+                    revision,
+                )
+            )
             instance = EnvironmentInstance(
                 "env-reuse",
                 "b" * 64,
@@ -325,6 +334,121 @@ class DurableResourceAuthoritiesTests(TestCase):
             self.assertTrue(restored_gc.eligible)
 
 
+    def test_environment_profile_lifecycle_is_runtime_admission_truth(self) -> None:
+        with TemporaryDirectory() as directory:
+            root = Path(directory)
+            scope = ScopeIdentity(ScopeKind.WORKSPACE, "workspace")
+            meta = build_durable_platform_meta(root)
+            meta.scopes.register(scope, PLATFORM_SCOPE)
+            revision = "4" * 64
+            runtime_digest = "5" * 64
+            profile = EnvironmentProfileRevision(
+                "web-lifecycle",
+                "web",
+                revision,
+            )
+            meta.environments.register_profile_revision(profile)
+            instance = EnvironmentInstance(
+                "env-lifecycle",
+                "6" * 64,
+                "docker",
+                "container:env-lifecycle",
+                runtime_digest,
+                scope,
+                profile.profile_id,
+                profile.profile_revision,
+            )
+            meta.environments.register_instance(instance)
+
+            draining = meta.environments.transition_profile_revision(
+                profile.profile_id,
+                profile.profile_revision,
+                EnvironmentProfileLifecycle.DRAINING,
+            )
+            self.assertIs(
+                draining.lifecycle,
+                EnvironmentProfileLifecycle.DRAINING,
+            )
+            with self.assertRaises(RuntimeError):
+                meta.environments.acquire_reusable_instance(
+                    profile.profile_id,
+                    profile.profile_revision,
+                    runtime_digest,
+                    binding_id="new-work",
+                    role="runner",
+                    scope=scope,
+                )
+
+            recovered = meta.environments.acquire_reusable_instance(
+                profile.profile_id,
+                profile.profile_revision,
+                runtime_digest,
+                binding_id="recovery",
+                role="runner",
+                scope=scope,
+                recovery=True,
+            )
+            self.assertEqual(recovered.instance.generation, 1)
+            meta.environments.unbind("runner", scope)
+            meta.environments.release_instance(
+                recovered.instance.instance_id,
+                cleanliness=EnvironmentCleanlinessProof(
+                    recovered.instance.instance_id,
+                    revision,
+                    runtime_digest,
+                    recovered.instance.generation,
+                    EnvironmentCleanlinessKind.PROVIDER_RESET_VERIFIED,
+                    "7" * 64,
+                ),
+            )
+
+            retired = meta.environments.transition_profile_revision(
+                profile.profile_id,
+                profile.profile_revision,
+                EnvironmentProfileLifecycle.RETIRED,
+            )
+            self.assertIs(
+                retired.lifecycle,
+                EnvironmentProfileLifecycle.RETIRED,
+            )
+            with self.assertRaises(RuntimeError):
+                meta.environments.acquire_reusable_instance(
+                    profile.profile_id,
+                    profile.profile_revision,
+                    runtime_digest,
+                    binding_id="new-after-retire",
+                    role="runner",
+                    scope=scope,
+                )
+
+            historical = meta.environments.acquire_reusable_instance(
+                profile.profile_id,
+                profile.profile_revision,
+                runtime_digest,
+                binding_id="historical-recovery",
+                role="runner",
+                scope=scope,
+                recovery=True,
+            )
+            self.assertEqual(historical.instance.generation, 2)
+            with self.assertRaises(RuntimeError):
+                meta.environments.transition_profile_revision(
+                    profile.profile_id,
+                    profile.profile_revision,
+                    EnvironmentProfileLifecycle.ACTIVE,
+                )
+
+            restored = build_durable_platform_meta(root)
+            restored_profile = restored.environments.profile_revision(
+                profile.profile_id,
+                profile.profile_revision,
+            )
+            self.assertIs(
+                restored_profile.lifecycle,
+                EnvironmentProfileLifecycle.RETIRED,
+            )
+
+
     def test_durable_environment_hierarchy_survives_rebuild(self) -> None:
         with TemporaryDirectory() as directory:
             root = Path(directory)
@@ -338,6 +462,14 @@ class DurableResourceAuthoritiesTests(TestCase):
             )
             first.environments.register_spec(spec)
             first.environments.assign(EnvironmentAssignment("default", "python-base", scope))
+            revision = "2" * 64
+            first.environments.register_profile_revision(
+                EnvironmentProfileRevision(
+                    "text-world-default",
+                    "text_world",
+                    revision,
+                )
+            )
             instance = EnvironmentInstance(
                 "env-1",
                 "1" * 64,
@@ -346,7 +478,7 @@ class DurableResourceAuthoritiesTests(TestCase):
                 "3" * 64,
                 scope,
                 "text-world-default",
-                "2" * 64,
+                revision,
             )
             first.environments.register_instance(instance)
             binding = EnvironmentBinding("binding-1", scope, "runner", "env-1")
