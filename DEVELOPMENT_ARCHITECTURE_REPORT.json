@@ -3,7 +3,7 @@
   "architecture_complexity": {
     "authorities": 20,
     "contract_declarations": 184,
-    "import_edges": 5286,
+    "import_edges": 5293,
     "subsystems": 15,
     "top_level_systems": 16
   },
@@ -23,7 +23,7 @@
     "effective_limits": {
       "authorities": 31,
       "contract_declarations": 184,
-      "import_edges": 5286,
+      "import_edges": 5293,
       "subsystems": 15,
       "top_level_systems": 16
     },
@@ -627,7 +627,7 @@
       "seam_id": "completed"
     }
   ],
-  "import_edges": 5286,
+  "import_edges": 5293,
   "import_violations": [],
   "layer_violations": [],
   "operation_graph": [
@@ -873,10 +873,23 @@
     }
   ],
   "package_cycles": [],
-  "report_sha256": "ed6f86e412c9362225e879e1adfbc9aa9c3b057e415e8b739bda53c045885bea",
+  "report_sha256": "844044c4dc75d70d7989926e5946e53c7c266a86efb238c0596592f026c82658",
   "source_authority_violations": [],
-  "source_digest": "c52d46d8fdf5d536c5e83edf3e48e01751694ef81bd42b6dc3f629466512ce9d",
-  "source_invariant_violations": [],
+  "source_digest": "d80f8cf56b191fecd1335f7225d03ebdae91e11b1f567fb758efa6490519fa32",
+  "source_invariant_violations": [
+    {
+      "detail": "noetrium_platform.product.research_authoring -> noetrium_platform.evidence.data.projection.api; required facade=noetrium_platform.research.experimentation.api",
+      "invariant": "skip_layer_dependency",
+      "line": 11,
+      "path": "noetrium_platform/product/research_authoring.py"
+    },
+    {
+      "detail": "noetrium_platform.product.research_authoring -> noetrium_platform.evidence.data.query.api; required facade=noetrium_platform.research.experimentation.api",
+      "invariant": "skip_layer_dependency",
+      "line": 12,
+      "path": "noetrium_platform/product/research_authoring.py"
+    }
+  ],
   "source_root": ".",
   "subsystem_graph": [
     {
@@ -1844,7 +1857,7 @@
   "top_optimization_risks": [
     {
       "exception_handlers": 0,
-      "import_fan_in": 451,
+      "import_fan_in": 452,
       "import_fan_out": 27,
       "io_sites": 0,
       "lock_sites": 0,
@@ -1855,7 +1868,7 @@
         "HIGH_FAN_IN",
         "HIGH_FAN_OUT"
       ],
-      "risk_score": 1885,
+      "risk_score": 1889,
       "self_mutation_sites": 0,
       "serialization_sites": 0
     },
@@ -1951,6 +1964,25 @@
       "serialization_sites": 0
     },
     {
+      "exception_handlers": 11,
+      "import_fan_in": 63,
+      "import_fan_out": 1,
+      "io_sites": 8,
+      "lock_sites": 0,
+      "long_functions": 2,
+      "module": "noetrium_platform.foundation.kernel.kernel.durability.durable_file",
+      "path": "noetrium_platform/foundation/kernel/kernel/durability/durable_file.py",
+      "reason_codes": [
+        "HIGH_FAN_IN",
+        "IO_CONCENTRATION",
+        "FAILURE_BRANCH_CONCENTRATION",
+        "LONG_FUNCTION"
+      ],
+      "risk_score": 447,
+      "self_mutation_sites": 0,
+      "serialization_sites": 0
+    },
+    {
       "exception_handlers": 2,
       "import_fan_in": 2,
       "import_fan_out": 16,
@@ -2018,25 +2050,6 @@
         "HIGH_FAN_IN"
       ],
       "risk_score": 396,
-      "self_mutation_sites": 0,
-      "serialization_sites": 0
-    },
-    {
-      "exception_handlers": 8,
-      "import_fan_in": 63,
-      "import_fan_out": 1,
-      "io_sites": 7,
-      "lock_sites": 0,
-      "long_functions": 1,
-      "module": "noetrium_platform.foundation.kernel.kernel.durability.durable_file",
-      "path": "noetrium_platform/foundation/kernel/kernel/durability/durable_file.py",
-      "reason_codes": [
-        "HIGH_FAN_IN",
-        "IO_CONCENTRATION",
-        "FAILURE_BRANCH_CONCENTRATION",
-        "LONG_FUNCTION"
-      ],
-      "risk_score": 395,
       "self_mutation_sites": 0,
       "serialization_sites": 0
     },

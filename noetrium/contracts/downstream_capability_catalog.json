@@ -1,6 +1,6 @@
 {
   "ambiguous_symbol_sources": {},
-  "catalog_digest": "f2aebae7b5d1589970ca32fe6f78f06e2667d9daf8b8f774f69085c19a64f27f",
+  "catalog_digest": "804e40be5959b25f89f54a98a433dfa829dafdda2d7c52d8171c0ca068e8b736",
   "direct_symbol_sources": {
     "ActionKind": "noetrium_platform.product.api",
     "ActionRequest": "noetrium_platform.product.api",
@@ -58,6 +58,7 @@
     "MachineSnapshotStorePort": "noetrium_platform.product.api",
     "MachineStatus": "noetrium_platform.product.api",
     "MeasurementDefinition": "noetrium_platform.product.api",
+    "MeasurementValueKind": "noetrium_platform.product.api",
     "MemoryConcern": "noetrium_platform.product.api",
     "MemoryProgramBuilder": "noetrium_platform.product.api",
     "MethodAgentRequest": "noetrium_platform.product.api",
@@ -77,6 +78,7 @@
     "MethodRuntimeContext": "noetrium_platform.product.api",
     "MethodRuntimePort": "noetrium_platform.product.api",
     "MethodWorkflow": "noetrium_platform.product.api",
+    "ModelRoleUsage": "noetrium_platform.product.api",
     "OptimizationConcern": "noetrium_platform.product.api",
     "OptimizationProgramBuilder": "noetrium_platform.product.api",
     "ParticipantConcern": "noetrium_platform.product.api",
@@ -125,6 +127,9 @@
     "RuntimeModule": "noetrium_platform.product.api",
     "RuntimeModuleBuilder": "noetrium_platform.product.api",
     "RuntimeProgramBuilder": "noetrium_platform.product.api",
+    "SemanticProjectionSnapshot": "noetrium_platform.product.api",
+    "SemanticSimilarityQuery": "noetrium_platform.product.api",
+    "SemanticSimilarityQueryPort": "noetrium_platform.product.api",
     "SensorModality": "noetrium_platform.product.api",
     "SensorSpec": "noetrium_platform.product.api",
     "Study": "noetrium_platform.product.api",
@@ -317,6 +322,9 @@
     "MeasurementDefinition": [
       "research_os"
     ],
+    "MeasurementValueKind": [
+      "research_os"
+    ],
     "MemoryConcern": [
       "research_os"
     ],
@@ -372,6 +380,9 @@
       "research_os"
     ],
     "MethodWorkflow": [
+      "research_os"
+    ],
+    "ModelRoleUsage": [
       "research_os"
     ],
     "OptimizationConcern": [
@@ -516,6 +527,15 @@
       "research_os"
     ],
     "RuntimeProgramBuilder": [
+      "research_os"
+    ],
+    "SemanticProjectionSnapshot": [
+      "research_os"
+    ],
+    "SemanticSimilarityQuery": [
+      "research_os"
+    ],
+    "SemanticSimilarityQueryPort": [
       "research_os"
     ],
     "SensorModality": [
@@ -1235,6 +1255,7 @@
             "MachineSnapshotStorePort",
             "MachineStatus",
             "MeasurementDefinition",
+            "MeasurementValueKind",
             "MemoryConcern",
             "MemoryProgramBuilder",
             "MethodAgentRequest",
@@ -1254,6 +1275,7 @@
             "MethodRuntimeContext",
             "MethodRuntimePort",
             "MethodWorkflow",
+            "ModelRoleUsage",
             "OptimizationConcern",
             "OptimizationProgramBuilder",
             "ParticipantConcern",
@@ -1268,6 +1290,9 @@
             "ResearchProgramHost",
             "ResearchRunProgramBuilder",
             "ResearchStudyDefinition",
+            "SemanticProjectionSnapshot",
+            "SemanticSimilarityQuery",
+            "SemanticSimilarityQueryPort",
             "SensorModality",
             "SensorSpec",
             "RunConcern",
@@ -1299,7 +1324,7 @@
       "canonical_authority": null,
       "downstream_surface": "public",
       "facade_module": "noetrium.contracts.systems.research_os",
-      "interface_digest": "f1e3b2abfede6d7aec3847ad0252e250e05f479e291485fa0709e1ddf32da191",
+      "interface_digest": "6ed29c8279856e052da4413927fdf01464dd57ce5e6fc4ce0918ff3d8d8bc682",
       "must_not_own": "domain authority, scientific execution truth, provider state or duplicated evidence",
       "node_kind": "product_surface",
       "owns": "single downstream research authoring, revision, graph-control and live-intervention product surface",

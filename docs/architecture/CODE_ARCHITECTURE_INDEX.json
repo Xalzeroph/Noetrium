@@ -15727,6 +15727,21 @@
     },
     {
       "kind": "references",
+      "source": "noetrium_platform.research.experimentation.lifecycle.checkpoint.providers.directory_store.DirectoryRunCheckpointStore",
+      "target": "noetrium_platform.research.experimentation.lifecycle.checkpoint.providers.publication_intent.CheckpointPublicationIntent"
+    },
+    {
+      "kind": "references",
+      "source": "noetrium_platform.research.experimentation.lifecycle.checkpoint.providers.publication_intent.DirectoryCheckpointPublicationIntentStore",
+      "target": "noetrium_platform.research.experimentation.lifecycle.checkpoint.providers.publication_intent.CheckpointPublicationIntent"
+    },
+    {
+      "kind": "references",
+      "source": "noetrium_platform.research.experimentation.lifecycle.checkpoint.providers.workload_store.DirectoryWorkloadCheckpointStore",
+      "target": "noetrium_platform.research.experimentation.lifecycle.checkpoint.providers.publication_intent.CheckpointPublicationIntent"
+    },
+    {
+      "kind": "references",
       "source": "noetrium_platform.research.experimentation.lifecycle.checkpoint.runtime.capture.RunCheckpointCapture",
       "target": "noetrium_platform.research.experimentation.lifecycle.checkpoint.api.contracts.RunCheckpointStore"
     },
@@ -27189,7 +27204,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 12,
+      "line": 15,
       "methods": [
         "__init__",
         "put",
@@ -92017,12 +92032,19 @@
         "durability"
       ],
       "kind": "class",
-      "line": 20,
+      "line": 33,
       "methods": [
         "__init__",
         "_sha",
         "_blob_path",
+        "_blob_lock_path",
+        "_verify_blob",
+        "_cleanup_blob_staging",
         "_manifest_path",
+        "_manifest_lock_path",
+        "_publication_intent",
+        "_publish_intent",
+        "_clear_intent",
         "_write_blob",
         "publish",
         "load"
@@ -92033,6 +92055,91 @@
         "DirectoryRunCheckpointStore"
       ],
       "qualname": "noetrium_platform.research.experimentation.lifecycle.checkpoint.providers.directory_store.DirectoryRunCheckpointStore",
+      "system_key": "experimentation",
+      "top_system": "experimentation"
+    },
+    {
+      "bases": [],
+      "decorators": [
+        "dataclass(frozen=True, slots=True)"
+      ],
+      "fields": [
+        "blob_sha256s",
+        "checkpoint_id",
+        "manifest_sha256",
+        "namespace"
+      ],
+      "kind": "dataclass",
+      "line": 35,
+      "methods": [
+        "__post_init__",
+        "document"
+      ],
+      "module": "noetrium_platform.research.experimentation.lifecycle.checkpoint.providers.publication_intent",
+      "name": "CheckpointPublicationIntent",
+      "nesting": [
+        "CheckpointPublicationIntent"
+      ],
+      "qualname": "noetrium_platform.research.experimentation.lifecycle.checkpoint.providers.publication_intent.CheckpointPublicationIntent",
+      "system_key": "experimentation",
+      "top_system": "experimentation"
+    },
+    {
+      "bases": [
+        "RuntimeError"
+      ],
+      "decorators": [],
+      "fields": [],
+      "kind": "class",
+      "line": 26,
+      "methods": [],
+      "module": "noetrium_platform.research.experimentation.lifecycle.checkpoint.providers.publication_intent",
+      "name": "CheckpointPublicationIntentConflict",
+      "nesting": [
+        "CheckpointPublicationIntentConflict"
+      ],
+      "qualname": "noetrium_platform.research.experimentation.lifecycle.checkpoint.providers.publication_intent.CheckpointPublicationIntentConflict",
+      "system_key": "experimentation",
+      "top_system": "experimentation"
+    },
+    {
+      "bases": [
+        "RuntimeError"
+      ],
+      "decorators": [],
+      "fields": [],
+      "kind": "class",
+      "line": 30,
+      "methods": [],
+      "module": "noetrium_platform.research.experimentation.lifecycle.checkpoint.providers.publication_intent",
+      "name": "CheckpointPublicationIntentCorruptionError",
+      "nesting": [
+        "CheckpointPublicationIntentCorruptionError"
+      ],
+      "qualname": "noetrium_platform.research.experimentation.lifecycle.checkpoint.providers.publication_intent.CheckpointPublicationIntentCorruptionError",
+      "system_key": "experimentation",
+      "top_system": "experimentation"
+    },
+    {
+      "bases": [],
+      "decorators": [],
+      "fields": [],
+      "kind": "class",
+      "line": 88,
+      "methods": [
+        "__init__",
+        "manifest_digest",
+        "_path",
+        "load",
+        "publish",
+        "clear"
+      ],
+      "module": "noetrium_platform.research.experimentation.lifecycle.checkpoint.providers.publication_intent",
+      "name": "DirectoryCheckpointPublicationIntentStore",
+      "nesting": [
+        "DirectoryCheckpointPublicationIntentStore"
+      ],
+      "qualname": "noetrium_platform.research.experimentation.lifecycle.checkpoint.providers.publication_intent.DirectoryCheckpointPublicationIntentStore",
       "system_key": "experimentation",
       "top_system": "experimentation"
     },
@@ -92064,11 +92171,15 @@
         "durability"
       ],
       "kind": "class",
-      "line": 20,
+      "line": 27,
       "methods": [
         "__init__",
         "_sha",
         "_manifest_path",
+        "_manifest_lock_path",
+        "_publication_intent",
+        "_publish_intent",
+        "_clear_intent",
         "publish",
         "load"
       ],
@@ -103156,8 +103267,43 @@
     },
     {
       "kind": "constructs",
+      "source": "noetrium_platform.research.experimentation.lifecycle.checkpoint.providers.directory_store.DirectoryRunCheckpointStore",
+      "target": "noetrium_platform.research.experimentation.lifecycle.checkpoint.providers.publication_intent.CheckpointPublicationIntent"
+    },
+    {
+      "kind": "constructs",
+      "source": "noetrium_platform.research.experimentation.lifecycle.checkpoint.providers.directory_store.DirectoryRunCheckpointStore",
+      "target": "noetrium_platform.research.experimentation.lifecycle.checkpoint.providers.publication_intent.DirectoryCheckpointPublicationIntentStore"
+    },
+    {
+      "kind": "constructs",
+      "source": "noetrium_platform.research.experimentation.lifecycle.checkpoint.providers.publication_intent.DirectoryCheckpointPublicationIntentStore",
+      "target": "noetrium_platform.research.experimentation.lifecycle.checkpoint.providers.publication_intent.CheckpointPublicationIntent"
+    },
+    {
+      "kind": "constructs",
+      "source": "noetrium_platform.research.experimentation.lifecycle.checkpoint.providers.publication_intent.DirectoryCheckpointPublicationIntentStore",
+      "target": "noetrium_platform.research.experimentation.lifecycle.checkpoint.providers.publication_intent.CheckpointPublicationIntentConflict"
+    },
+    {
+      "kind": "constructs",
+      "source": "noetrium_platform.research.experimentation.lifecycle.checkpoint.providers.publication_intent.DirectoryCheckpointPublicationIntentStore",
+      "target": "noetrium_platform.research.experimentation.lifecycle.checkpoint.providers.publication_intent.CheckpointPublicationIntentCorruptionError"
+    },
+    {
+      "kind": "constructs",
       "source": "noetrium_platform.research.experimentation.lifecycle.checkpoint.providers.workload_store.DirectoryWorkloadCheckpointStore",
       "target": "noetrium_platform.research.experimentation.lifecycle.checkpoint.providers.directory_store.DirectoryRunCheckpointStore"
+    },
+    {
+      "kind": "constructs",
+      "source": "noetrium_platform.research.experimentation.lifecycle.checkpoint.providers.workload_store.DirectoryWorkloadCheckpointStore",
+      "target": "noetrium_platform.research.experimentation.lifecycle.checkpoint.providers.publication_intent.CheckpointPublicationIntent"
+    },
+    {
+      "kind": "constructs",
+      "source": "noetrium_platform.research.experimentation.lifecycle.checkpoint.providers.workload_store.DirectoryWorkloadCheckpointStore",
+      "target": "noetrium_platform.research.experimentation.lifecycle.checkpoint.providers.publication_intent.DirectoryCheckpointPublicationIntentStore"
     },
     {
       "kind": "constructs",
@@ -103431,13 +103577,13 @@
     }
   ],
   "counts": {
-    "association_edges": 3454,
-    "classes": 3365,
-    "constructor_edges": 925,
+    "association_edges": 3457,
+    "classes": 3369,
+    "constructor_edges": 932,
     "inheritance_edges": 149,
-    "module_import_edges": 5009,
+    "module_import_edges": 5016,
     "parse_errors": 0,
-    "python_modules": 1906,
+    "python_modules": 1907,
     "registry_authorities": 20,
     "registry_nodes": 31,
     "top_level_systems": 16
@@ -121388,6 +121534,14 @@
     },
     {
       "source": "noetrium_platform.product.research_authoring",
+      "target": "noetrium_platform.evidence.data.projection.api"
+    },
+    {
+      "source": "noetrium_platform.product.research_authoring",
+      "target": "noetrium_platform.evidence.data.query.api"
+    },
+    {
+      "source": "noetrium_platform.product.research_authoring",
       "target": "noetrium_platform.foundation.kernel.kernel"
     },
     {
@@ -123151,12 +123305,28 @@
       "target": "noetrium_platform.research.experimentation.lifecycle.checkpoint.providers.codec"
     },
     {
+      "source": "noetrium_platform.research.experimentation.lifecycle.checkpoint.providers.directory_store",
+      "target": "noetrium_platform.research.experimentation.lifecycle.checkpoint.providers.publication_intent"
+    },
+    {
+      "source": "noetrium_platform.research.experimentation.lifecycle.checkpoint.providers.publication_intent",
+      "target": "noetrium_platform.foundation.kernel.kernel"
+    },
+    {
+      "source": "noetrium_platform.research.experimentation.lifecycle.checkpoint.providers.publication_intent",
+      "target": "noetrium_platform.foundation.kernel.kernel.durability"
+    },
+    {
       "source": "noetrium_platform.research.experimentation.lifecycle.checkpoint.providers.workload_codec",
       "target": "noetrium_platform.foundation.kernel.kernel"
     },
     {
       "source": "noetrium_platform.research.experimentation.lifecycle.checkpoint.providers.workload_codec",
       "target": "noetrium_platform.research.experimentation.lifecycle.checkpoint.api"
+    },
+    {
+      "source": "noetrium_platform.research.experimentation.lifecycle.checkpoint.providers.workload_store",
+      "target": "noetrium_platform.foundation.kernel.kernel.durability"
     },
     {
       "source": "noetrium_platform.research.experimentation.lifecycle.checkpoint.providers.workload_store",
@@ -123169,6 +123339,10 @@
     {
       "source": "noetrium_platform.research.experimentation.lifecycle.checkpoint.providers.workload_store",
       "target": "noetrium_platform.research.experimentation.lifecycle.checkpoint.providers.directory_store"
+    },
+    {
+      "source": "noetrium_platform.research.experimentation.lifecycle.checkpoint.providers.workload_store",
+      "target": "noetrium_platform.research.experimentation.lifecycle.checkpoint.providers.publication_intent"
     },
     {
       "source": "noetrium_platform.research.experimentation.lifecycle.checkpoint.providers.workload_store",
@@ -141453,6 +141627,8 @@
     },
     {
       "imports": [
+        "noetrium_platform.evidence.data.projection.api",
+        "noetrium_platform.evidence.data.query.api",
         "noetrium_platform.foundation.kernel.kernel",
         "noetrium_platform.research.experimentation.api"
       ],
@@ -143125,10 +143301,21 @@
         "noetrium_platform.foundation.kernel.kernel.durability",
         "noetrium_platform.research.execution.api",
         "noetrium_platform.research.experimentation.lifecycle.checkpoint.api.contracts",
-        "noetrium_platform.research.experimentation.lifecycle.checkpoint.providers.codec"
+        "noetrium_platform.research.experimentation.lifecycle.checkpoint.providers.codec",
+        "noetrium_platform.research.experimentation.lifecycle.checkpoint.providers.publication_intent"
       ],
       "module": "noetrium_platform.research.experimentation.lifecycle.checkpoint.providers.directory_store",
       "path": "noetrium_platform/research/experimentation/lifecycle/checkpoint/providers/directory_store.py",
+      "system_key": "experimentation",
+      "top_system": "experimentation"
+    },
+    {
+      "imports": [
+        "noetrium_platform.foundation.kernel.kernel",
+        "noetrium_platform.foundation.kernel.kernel.durability"
+      ],
+      "module": "noetrium_platform.research.experimentation.lifecycle.checkpoint.providers.publication_intent",
+      "path": "noetrium_platform/research/experimentation/lifecycle/checkpoint/providers/publication_intent.py",
       "system_key": "experimentation",
       "top_system": "experimentation"
     },
@@ -143144,9 +143331,11 @@
     },
     {
       "imports": [
+        "noetrium_platform.foundation.kernel.kernel.durability",
         "noetrium_platform.foundation.kernel.kernel.durability.durable_file",
         "noetrium_platform.research.experimentation.lifecycle.checkpoint.api",
         "noetrium_platform.research.experimentation.lifecycle.checkpoint.providers.directory_store",
+        "noetrium_platform.research.experimentation.lifecycle.checkpoint.providers.publication_intent",
         "noetrium_platform.research.experimentation.lifecycle.checkpoint.providers.workload_codec"
       ],
       "module": "noetrium_platform.research.experimentation.lifecycle.checkpoint.providers.workload_store",
@@ -144189,7 +144378,7 @@
   "parse_errors": [],
   "registry_sha256": "276e2729e0b700e814e98f8460d87e0ebee66c4620226fe2d880fe55cc970aec",
   "schema": "noetrium-code-architecture-index.v1",
-  "source_git_sha": "fd25ea778989a3bed87cabb69f3ab503cf4c784a",
+  "source_git_sha": "553e2f22be3906edc27c08b545702051eac6b90c",
   "system_import_edges": [
     {
       "count": 85,
@@ -144242,12 +144431,12 @@
       "target": "execution"
     },
     {
-      "count": 241,
+      "count": 243,
       "source": "experimentation",
       "target": "experimentation"
     },
     {
-      "count": 72,
+      "count": 75,
       "source": "experimentation",
       "target": "platform"
     },
@@ -144332,7 +144521,7 @@
       "target": "artifact"
     },
     {
-      "count": 13,
+      "count": 15,
       "source": "research_os",
       "target": "data"
     },

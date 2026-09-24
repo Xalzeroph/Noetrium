@@ -1,6 +1,6 @@
 {
   "generator": "scripts/generate_interface_schemas.py",
-  "interface_digest": "dc3f87046ce16856c57c625817e60789507ecb9ad192830e1710661a9cdc3320",
+  "interface_digest": "ac4c109357333891e54a833006763d09864a03b93cd5ebe90b988af0bb1a3296",
   "interface_schema": {
     "description": "Generated signatures, annotations, class members, decorators, docs and re-export provenance for every public API symbol.",
     "schema_id": "noetrium.interface-schema",
@@ -938,6 +938,15 @@
             {
               "doc": null,
               "kind": "reexport",
+              "name": "MeasurementValueKind",
+              "origin_module": "..research_authoring",
+              "origin_name": "MeasurementValueKind",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "reexport",
               "name": "MemoryConcern",
               "origin_module": "..research_authoring",
               "origin_name": "MemoryConcern",
@@ -1109,6 +1118,15 @@
             {
               "doc": null,
               "kind": "reexport",
+              "name": "ModelRoleUsage",
+              "origin_module": "..research_authoring",
+              "origin_name": "ModelRoleUsage",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "reexport",
               "name": "OptimizationConcern",
               "origin_module": "..research_authoring",
               "origin_name": "OptimizationConcern",
@@ -1229,6 +1247,33 @@
               "name": "ResearchStudyDefinition",
               "origin_module": "..research_authoring",
               "origin_name": "ResearchStudyDefinition",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "reexport",
+              "name": "SemanticProjectionSnapshot",
+              "origin_module": "..research_authoring",
+              "origin_name": "SemanticProjectionSnapshot",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "reexport",
+              "name": "SemanticSimilarityQuery",
+              "origin_module": "..research_authoring",
+              "origin_name": "SemanticSimilarityQuery",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "reexport",
+              "name": "SemanticSimilarityQueryPort",
+              "origin_module": "..research_authoring",
+              "origin_name": "SemanticSimilarityQueryPort",
               "schema_id": "noetrium.interface-schema",
               "schema_version": "1"
             },
@@ -1535,6 +1580,7 @@
             "MachineSnapshotStorePort",
             "MachineStatus",
             "MeasurementDefinition",
+            "MeasurementValueKind",
             "MemoryConcern",
             "MemoryProgramBuilder",
             "MethodAgentRequest",
@@ -1554,6 +1600,7 @@
             "MethodRuntimeContext",
             "MethodRuntimePort",
             "MethodWorkflow",
+            "ModelRoleUsage",
             "OptimizationConcern",
             "OptimizationProgramBuilder",
             "ParticipantConcern",
@@ -1568,6 +1615,9 @@
             "ResearchProgramHost",
             "ResearchRunProgramBuilder",
             "ResearchStudyDefinition",
+            "SemanticProjectionSnapshot",
+            "SemanticSimilarityQuery",
+            "SemanticSimilarityQueryPort",
             "SensorModality",
             "SensorSpec",
             "RunConcern",
