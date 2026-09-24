@@ -7,7 +7,10 @@ from threading import Lock
 import pytest
 
 import noetrium_platform.evidence.artifact.content.providers.blob_store as blob_module
-from noetrium_platform.evidence.artifact.content.api import ArtifactBlobStoreError
+from noetrium_platform.evidence.artifact.content.api import (
+    ArtifactBlobLifecycleState,
+    ArtifactBlobStoreError,
+)
 from noetrium_platform.evidence.artifact.content.providers import (
     DirectoryArtifactBlobStore,
 )
@@ -182,3 +185,151 @@ def test_external_corrupt_blob_publisher_fails_closed_without_overwrite(
         store.put(payload, media_type="application/octet-stream")
 
     assert path.read_bytes() == foreign
+
+
+
+def test_blob_gc_generation_fences_republished_same_digest(tmp_path) -> None:
+    store = DirectoryArtifactBlobStore(tmp_path / "blobs")
+    payload = b"generation-fenced-artifact"
+    ref = store.put(payload, media_type="application/octet-stream")
+    first = store.generation(ref)
+    assert first.generation == 1
+    assert first.state is ArtifactBlobLifecycleState.ACTIVE
+
+    proof = "a" * 64
+    purged = store.purge(
+        ref,
+        expected_generation=first.generation,
+        gc_proof_digest=proof,
+    )
+    assert purged.state is ArtifactBlobLifecycleState.PURGED
+    assert not store._path(ref.content_sha256).exists()
+
+    republished = store.put(
+        payload,
+        media_type="application/octet-stream",
+    )
+    assert republished == ref
+    second = store.generation(republished)
+    assert second.generation == 2
+    assert second.state is ArtifactBlobLifecycleState.ACTIVE
+
+    with pytest.raises(
+        ArtifactBlobStoreError,
+        match="stale artifact blob generation",
+    ):
+        store.purge(
+            ref,
+            expected_generation=first.generation,
+            gc_proof_digest=proof,
+        )
+    assert store.get(republished) == payload
+
+
+def test_blob_gc_retry_recovers_retiring_generation(
+    tmp_path,
+    monkeypatch,
+) -> None:
+    store = DirectoryArtifactBlobStore(tmp_path / "blobs")
+    payload = b"retiring-artifact"
+    ref = store.put(payload, media_type="application/octet-stream")
+    generation = store.generation(ref)
+
+    real_unlink = blob_module.durable_unlink
+    failed = False
+
+    def fail_once(path):
+        nonlocal failed
+        if path == store._path(ref.content_sha256) and not failed:
+            failed = True
+            raise OSError("simulated delete crash")
+        return real_unlink(path)
+
+    monkeypatch.setattr(blob_module, "durable_unlink", fail_once)
+    with pytest.raises(OSError, match="delete crash"):
+        store.purge(
+            ref,
+            expected_generation=generation.generation,
+            gc_proof_digest="b" * 64,
+        )
+
+    retiring = store.generation(ref)
+    assert retiring.state is ArtifactBlobLifecycleState.RETIRING
+    with pytest.raises(
+        ArtifactBlobStoreError,
+        match="retirement requires recovery",
+    ):
+        store.put(payload, media_type="application/octet-stream")
+
+    monkeypatch.setattr(blob_module, "durable_unlink", real_unlink)
+    purged = store.purge(
+        ref,
+        expected_generation=generation.generation,
+        gc_proof_digest="b" * 64,
+    )
+    assert purged.state is ArtifactBlobLifecycleState.PURGED
+    assert not store._path(ref.content_sha256).exists()
+
+
+def test_blob_gc_retry_rejects_changed_proof(tmp_path, monkeypatch) -> None:
+    store = DirectoryArtifactBlobStore(tmp_path / "blobs")
+    payload = b"proof-fenced-artifact"
+    ref = store.put(payload, media_type="application/octet-stream")
+    generation = store.generation(ref)
+
+    real_unlink = blob_module.durable_unlink
+
+    def fail_delete(path):
+        if path == store._path(ref.content_sha256):
+            raise OSError("simulated delete crash")
+        return real_unlink(path)
+
+    monkeypatch.setattr(blob_module, "durable_unlink", fail_delete)
+    with pytest.raises(OSError, match="delete crash"):
+        store.purge(
+            ref,
+            expected_generation=generation.generation,
+            gc_proof_digest="c" * 64,
+        )
+
+    monkeypatch.setattr(blob_module, "durable_unlink", real_unlink)
+    with pytest.raises(
+        ArtifactBlobStoreError,
+        match="GC proof changed",
+    ):
+        store.purge(
+            ref,
+            expected_generation=generation.generation,
+            gc_proof_digest="d" * 64,
+        )
+    assert store.purge(
+        ref,
+        expected_generation=generation.generation,
+        gc_proof_digest="c" * 64,
+    ).state is ArtifactBlobLifecycleState.PURGED
+
+
+def test_purged_blob_split_truth_fails_closed(tmp_path) -> None:
+    store = DirectoryArtifactBlobStore(tmp_path / "blobs")
+    payload = b"purged-residue"
+    ref = store.put(payload, media_type="application/octet-stream")
+    generation = store.generation(ref)
+    store.purge(
+        ref,
+        expected_generation=generation.generation,
+        gc_proof_digest="e" * 64,
+    )
+    path = store._path(ref.content_sha256)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_bytes(payload)
+
+    with pytest.raises(
+        ArtifactBlobStoreError,
+        match="unexpected physical residue",
+    ):
+        store.generation(ref)
+    with pytest.raises(
+        ArtifactBlobStoreError,
+        match="unexpected physical residue",
+    ):
+        store.put(payload, media_type="application/octet-stream")
