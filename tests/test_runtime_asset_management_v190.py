@@ -114,15 +114,27 @@ class FakeRuntime:
         self.live = False
         self.stop_succeeds = True
         self.start_calls = 0
+        self.process: ServiceProcessIdentity | None = None
 
     def reconcile_exact(self, contract):
-        process = ServiceProcessIdentity(1234, "start") if self.live else None
-        return ServiceReconcileObservation(True, process)
+        return ServiceReconcileObservation(
+            True,
+            self.process if self.live else None,
+        )
 
     def start_exact(self, contract):
         self.start_calls += 1
         self.live = True
-        return ServiceStartOutcome(contract.digest(), ServiceProcessIdentity(1234, "start"), "ready:test", 1234.5)
+        self.process = ServiceProcessIdentity(
+            1234 + self.start_calls,
+            f"start:{self.start_calls}",
+        )
+        return ServiceStartOutcome(
+            contract.digest(),
+            self.process,
+            "ready:test",
+            1234.5,
+        )
 
     def verify_ready_exact(self, contract):
         raise NotImplementedError
@@ -131,6 +143,7 @@ class FakeRuntime:
         if not self.stop_succeeds:
             return ServiceStopOutcome(contract.digest(), False)
         self.live = False
+        self.process = None
         return ServiceStopOutcome(contract.digest(), True)
 
 
@@ -1137,3 +1150,108 @@ def test_model_asset_retirement_preserves_keep_files_policy_across_finish_failur
                 source,
                 mode="reference",
             )
+
+
+
+def test_stale_same_config_generation_cannot_stop_restarted_process() -> None:
+    with TemporaryDirectory() as td:
+        root = Path(td)
+        directories = build_local_directory_authorities(layout(root))
+        environments = build_environments(directories)
+        environments.lifecycle.create(
+            PythonEnvironmentSpec("serve", PLATFORM_SCOPE, backend="fake")
+        )
+        model_dir = root / "model-same-config-restart"
+        model_dir.mkdir()
+        factory = FakeFactory()
+        models = build_models(directories, environments, factory)
+        models.assets.register_model("m", PLATFORM_SCOPE, model_dir)
+        spec = ModelDeploymentSpec(
+            deployment_id="same-config",
+            service_id="model:same-config",
+            model_id="m",
+            engine="custom",
+            scope=PLATFORM_SCOPE,
+            executable="{python}",
+            argv=("{python}", "-m", "server"),
+            cwd=root,
+            python_environment_id="serve",
+            desired_state=ModelDesiredState.RUNNING,
+        )
+        models.deployment_catalog.put_deployment(spec)
+
+        first = models.deployment_runtime.start(
+            models.deployment_runtime.generation("same-config")
+        )
+        assert first.runtime_state is ModelRuntimeState.RUNNING
+        stale = models.deployment_runtime.generation("same-config")
+        first_process = factory.runtime.process
+        assert first_process is not None
+
+        stopped = models.deployment_runtime.shutdown(stale)
+        assert stopped.runtime_state is ModelRuntimeState.STOPPED
+        restarted = models.fleet.reconcile()[0]
+        assert restarted.runtime_state is ModelRuntimeState.RUNNING
+        current = models.deployment_runtime.generation("same-config")
+        second_process = factory.runtime.process
+        assert second_process is not None
+        assert second_process != first_process
+        assert current != stale
+
+        with pytest.raises(
+            RuntimeError,
+            match="stale model deployment generation",
+        ):
+            models.deployment_runtime.shutdown(stale)
+
+        assert factory.runtime.live
+        assert factory.runtime.process == second_process
+        assert models.deployment_runtime.generation("same-config") == current
+
+
+def test_model_stop_refuses_unowned_process_replacement() -> None:
+    with TemporaryDirectory() as td:
+        root = Path(td)
+        directories = build_local_directory_authorities(layout(root))
+        environments = build_environments(directories)
+        environments.lifecycle.create(
+            PythonEnvironmentSpec("serve", PLATFORM_SCOPE, backend="fake")
+        )
+        model_dir = root / "model-process-drift"
+        model_dir.mkdir()
+        factory = FakeFactory()
+        models = build_models(directories, environments, factory)
+        models.assets.register_model("m", PLATFORM_SCOPE, model_dir)
+        models.deployment_catalog.put_deployment(
+            ModelDeploymentSpec(
+                deployment_id="process-drift",
+                service_id="model:process-drift",
+                model_id="m",
+                engine="custom",
+                scope=PLATFORM_SCOPE,
+                executable="{python}",
+                argv=("{python}", "-m", "server"),
+                cwd=root,
+                python_environment_id="serve",
+            )
+        )
+        models.deployment_runtime.start(
+            models.deployment_runtime.generation("process-drift")
+        )
+        owned = models.deployment_runtime.generation("process-drift")
+        replacement = ServiceProcessIdentity(9999, "start:replacement")
+        factory.runtime.process = replacement
+        factory.runtime.live = True
+
+        assert (
+            models.deployment_runtime.status("process-drift").runtime_state
+            is ModelRuntimeState.DRIFTED
+        )
+        with pytest.raises(
+            RuntimeError,
+            match="process generation drifted before physical stop",
+        ):
+            models.deployment_runtime.shutdown(owned)
+
+        assert factory.runtime.live
+        assert factory.runtime.process == replacement
