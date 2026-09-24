@@ -24,7 +24,10 @@ from noetrium_platform.capabilities.model.deployment.runtime.codec import (
     encode_applied,
 )
 from noetrium_platform.capabilities.model.deployment.runtime.controller_state import FileModelControllerStateStore
-from noetrium_platform.infrastructure.lifecycle.service.api import ServiceLaunchContract
+from noetrium_platform.infrastructure.lifecycle.service.api import (
+    ServiceLaunchContract,
+    ServiceProcessIdentity,
+)
 from noetrium_platform.foundation.scope.api import PLATFORM_SCOPE
 
 
@@ -69,6 +72,15 @@ def _contract() -> ServiceLaunchContract:
     )
 
 
+def _process() -> ServiceProcessIdentity:
+    return ServiceProcessIdentity(
+        4321,
+        "pid:4321:start:17",
+        4321,
+        4321,
+    )
+
+
 def test_deployment_and_applied_snapshot_round_trip_exactly() -> None:
     deployment = _deployment()
     assert decode_deployment(deployment_to_data(deployment)) == deployment
@@ -77,6 +89,7 @@ def test_deployment_and_applied_snapshot_round_trip_exactly() -> None:
         deployment,
         _contract(),
         (("CUDA_VISIBLE_DEVICES", "0"),),
+        _process(),
     )
     assert decode_applied(json.loads(encode_applied(applied))) == applied
 
@@ -152,16 +165,53 @@ def test_asset_decoder_rejects_scalar_and_nested_origin_coercion() -> None:
 
 def test_applied_decoder_rejects_nested_contract_coercion() -> None:
     document = json.loads(encode_applied(AppliedModelDeployment(
-        _deployment(), _contract(), (("CUDA_VISIBLE_DEVICES", "0"),)
+        _deployment(),
+        _contract(),
+        (("CUDA_VISIBLE_DEVICES", "0"),),
+        _process(),
     )))
     document["contract"]["heartbeat_interval_s"] = "2.0"
     with pytest.raises(ValueError):
         decode_applied(document)
 
     document = json.loads(encode_applied(AppliedModelDeployment(
-        _deployment(), _contract(), (("CUDA_VISIBLE_DEVICES", "0"),)
+        _deployment(),
+        _contract(),
+        (("CUDA_VISIBLE_DEVICES", "0"),),
+        _process(),
     )))
     document["contract"]["unexpected"] = "legacy"
+    with pytest.raises(ValueError):
+        decode_applied(document)
+
+
+
+def test_applied_decoder_rejects_process_identity_coercion() -> None:
+    document = json.loads(
+        encode_applied(
+            AppliedModelDeployment(
+                _deployment(),
+                _contract(),
+                (("CUDA_VISIBLE_DEVICES", "0"),),
+                _process(),
+            )
+        )
+    )
+    document["process"]["pid"] = "4321"
+    with pytest.raises(ValueError):
+        decode_applied(document)
+
+    document = json.loads(
+        encode_applied(
+            AppliedModelDeployment(
+                _deployment(),
+                _contract(),
+                (("CUDA_VISIBLE_DEVICES", "0"),),
+                _process(),
+            )
+        )
+    )
+    document["process"]["legacy"] = True
     with pytest.raises(ValueError):
         decode_applied(document)
 
