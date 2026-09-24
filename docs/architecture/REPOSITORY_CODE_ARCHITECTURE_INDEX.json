@@ -1,15 +1,15 @@
 {
   "counts": {
     "parse_errors": 0,
-    "python_files": 3631,
-    "python_import_edges": 6873,
-    "symbols": 4826,
-    "tracked_files": 4260,
+    "python_files": 3633,
+    "python_import_edges": 6890,
+    "symbols": 4828,
+    "tracked_files": 4262,
     "typescript_javascript_files": 11
   },
   "language_symbol_counts": {
     "javascript": 1,
-    "python": 4820,
+    "python": 4822,
     "typescript": 5
   },
   "parse_errors": [],
@@ -31995,6 +31995,42 @@
       "target_role": "core_platform"
     },
     {
+      "source_module": "tests.test_research_graph_reconcile_retry_control_v1",
+      "source_role": "tests",
+      "target_module": "noetrium_platform.composition.research_execution_pool",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "tests.test_research_graph_reconcile_retry_control_v1",
+      "source_role": "tests",
+      "target_module": "noetrium_platform.composition.research_graph",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "tests.test_research_graph_reconcile_retry_control_v1",
+      "source_role": "tests",
+      "target_module": "noetrium_platform.foundation.kernel.concurrency.api",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "tests.test_research_graph_reconcile_retry_control_v1",
+      "source_role": "tests",
+      "target_module": "noetrium_platform.foundation.kernel.kernel",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "tests.test_research_graph_reconcile_retry_control_v1",
+      "source_role": "tests",
+      "target_module": "noetrium_platform.research.execution.graph.api",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "tests.test_research_graph_reconcile_retry_control_v1",
+      "source_role": "tests",
+      "target_module": "noetrium_platform.research.execution.graph.providers",
+      "target_role": "core_platform"
+    },
+    {
       "source_module": "tests.test_research_graph_reuse_and_cut_ref_v1",
       "source_role": "tests",
       "target_module": "noetrium_platform.foundation.kernel.kernel",
@@ -32796,6 +32832,72 @@
       "source_module": "tests.test_research_os_portfolio_binding_v1",
       "source_role": "tests",
       "target_module": "noetrium_platform.product.research_os",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "tests.test_research_os_retry_pause_intent_v1",
+      "source_role": "tests",
+      "target_module": "noetrium",
+      "target_role": "public_facade"
+    },
+    {
+      "source_module": "tests.test_research_os_retry_pause_intent_v1",
+      "source_role": "tests",
+      "target_module": "noetrium_platform.composition.research_execution_pool",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "tests.test_research_os_retry_pause_intent_v1",
+      "source_role": "tests",
+      "target_module": "noetrium_platform.composition.research_os",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "tests.test_research_os_retry_pause_intent_v1",
+      "source_role": "tests",
+      "target_module": "noetrium_platform.composition.research_os_execution",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "tests.test_research_os_retry_pause_intent_v1",
+      "source_role": "tests",
+      "target_module": "noetrium_platform.composition.research_os_values",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "tests.test_research_os_retry_pause_intent_v1",
+      "source_role": "tests",
+      "target_module": "noetrium_platform.evidence.artifact.content.providers",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "tests.test_research_os_retry_pause_intent_v1",
+      "source_role": "tests",
+      "target_module": "noetrium_platform.foundation.kernel.concurrency.api",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "tests.test_research_os_retry_pause_intent_v1",
+      "source_role": "tests",
+      "target_module": "noetrium_platform.foundation.kernel.kernel",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "tests.test_research_os_retry_pause_intent_v1",
+      "source_role": "tests",
+      "target_module": "noetrium_platform.foundation.portfolio.runtime",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "tests.test_research_os_retry_pause_intent_v1",
+      "source_role": "tests",
+      "target_module": "noetrium_platform.research.execution.graph.api",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "tests.test_research_os_retry_pause_intent_v1",
+      "source_role": "tests",
+      "target_module": "noetrium_platform.research.execution.graph.providers",
       "target_role": "core_platform"
     },
     {
@@ -41315,12 +41417,12 @@
       "target_role": "research_reproductions"
     },
     {
-      "count": 2700,
+      "count": 2716,
       "source_role": "tests",
       "target_role": "core_platform"
     },
     {
-      "count": 19,
+      "count": 20,
       "source_role": "tests",
       "target_role": "public_facade"
     },
@@ -41378,7 +41480,7 @@
     "reference_components": 22,
     "reference_orchestration": 10,
     "research_reproductions": 760,
-    "tests": 786,
+    "tests": 788,
     "tooling": 78
   },
   "role_symbol_counts": {
@@ -41390,11 +41492,11 @@
     "reference_orchestration": 14,
     "research_reproductions": 403,
     "sdk": 5,
-    "tests": 961,
+    "tests": 963,
     "tooling": 38
   },
   "schema": "noetrium-repository-code-architecture-index.v1",
-  "source_git_sha": "ba970a4e2ee823cd5f4e6530fb206db705af4366",
+  "source_git_sha": "5c0c8b59a08eb718b3444be01d7050bbd0ca21f2",
   "symbols": [
     {
       "bases": [],
@@ -63968,7 +64070,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 150,
+      "line": 151,
       "methods": [
         "__post_init__",
         "admission"
@@ -63987,7 +64089,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 271,
+      "line": 272,
       "methods": [],
       "module": "noetrium_platform.composition.research_os_execution",
       "name": "ResearchOSExecutionUnsupported",
@@ -64001,7 +64103,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 434,
+      "line": 435,
       "methods": [
         "__init__",
         "execute",
@@ -64023,7 +64125,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 599,
+      "line": 613,
       "methods": [
         "__init__",
         "active_revision_digest",
@@ -64209,7 +64311,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 38,
+      "line": 37,
       "methods": [
         "__post_init__"
       ],
@@ -64234,7 +64336,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 64,
+      "line": 63,
       "methods": [
         "__post_init__",
         "incoming_dependency_digests",
@@ -64260,7 +64362,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 126,
+      "line": 125,
       "methods": [
         "__post_init__",
         "node"
@@ -64281,7 +64383,7 @@
       "fields": [],
       "kind": "protocol",
       "language": "python",
-      "line": 324,
+      "line": 323,
       "methods": [
         "execute"
       ],
@@ -64299,7 +64401,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 336,
+      "line": 335,
       "methods": [
         "__init__",
         "execute"
@@ -93917,9 +94019,6 @@
       "language": "python",
       "line": 67,
       "methods": [
-        "add_event",
-        "add_failure",
-        "add_mutation",
         "add_raw_payload",
         "project_event",
         "project_events_batch",
@@ -93945,7 +94044,7 @@
       "fields": [],
       "kind": "protocol",
       "language": "python",
-      "line": 83,
+      "line": 80,
       "methods": [
         "append",
         "flush",
@@ -93966,7 +94065,7 @@
       "fields": [],
       "kind": "protocol",
       "language": "python",
-      "line": 90,
+      "line": 87,
       "methods": [
         "append_owned"
       ],
@@ -93984,7 +94083,7 @@
       "fields": [],
       "kind": "protocol",
       "language": "python",
-      "line": 94,
+      "line": 91,
       "methods": [
         "release"
       ],
@@ -94002,7 +94101,7 @@
       "fields": [],
       "kind": "protocol",
       "language": "python",
-      "line": 98,
+      "line": 95,
       "methods": [
         "root",
         "failures",
@@ -94373,9 +94472,6 @@
       "methods": [
         "__init__",
         "_write",
-        "add_event",
-        "add_failure",
-        "add_mutation",
         "add_raw_payload",
         "project_event",
         "project_events_batch",
@@ -94596,9 +94692,6 @@
         "project_event",
         "project_failure",
         "project_mutation",
-        "add_event",
-        "add_failure",
-        "add_mutation",
         "set_freshness",
         "add_raw_payload",
         "close"
@@ -100466,7 +100559,6 @@
         "mark_blocked",
         "recover_expired",
         "retry_failed_subgraph",
-        "schedule_retry",
         "resolve_reconciliation",
         "mark_reused",
         "reuse_record",
@@ -100488,7 +100580,7 @@
       "fields": [],
       "kind": "protocol",
       "language": "python",
-      "line": 623,
+      "line": 615,
       "methods": [
         "control_state",
         "request_drain",
@@ -100515,7 +100607,7 @@
       "fields": [],
       "kind": "protocol",
       "language": "python",
-      "line": 693,
+      "line": 685,
       "methods": [
         "node_control_state",
         "node_control_snapshot",
@@ -100542,7 +100634,7 @@
       "fields": [],
       "kind": "protocol",
       "language": "python",
-      "line": 764,
+      "line": 756,
       "methods": [
         "active_cut",
         "move_active_cut"
@@ -100616,7 +100708,6 @@
         "mark_blocked",
         "recover_expired",
         "retry_failed_subgraph",
-        "schedule_retry",
         "resolve_reconciliation",
         "mark_reused",
         "reuse_record",
@@ -137696,6 +137787,22 @@
       "fields": [],
       "kind": "class",
       "language": "python",
+      "line": 27,
+      "methods": [
+        "execute"
+      ],
+      "module": "tests.test_research_graph_reconcile_retry_control_v1",
+      "name": "_NeverExecute",
+      "path": "tests/test_research_graph_reconcile_retry_control_v1.py",
+      "qualname": "tests.test_research_graph_reconcile_retry_control_v1._NeverExecute",
+      "role": "tests"
+    },
+    {
+      "bases": [],
+      "decorators": [],
+      "fields": [],
+      "kind": "class",
+      "language": "python",
       "line": 16,
       "methods": [
         "__init__",
@@ -137832,7 +137939,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 182,
+      "line": 183,
       "methods": [
         "reconcile_node"
       ],
@@ -137848,7 +137955,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 816,
+      "line": 817,
       "methods": [
         "ensure_execution",
         "snapshot",
@@ -137881,7 +137988,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 956,
+      "line": 957,
       "methods": [
         "execute"
       ],
@@ -138029,7 +138136,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 377,
+      "line": 390,
       "methods": [
         "__init__",
         "active_cut",
@@ -138047,7 +138154,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 705,
+      "line": 718,
       "methods": [
         "__init__",
         "active_cut",
@@ -138065,7 +138172,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 814,
+      "line": 827,
       "methods": [
         "__init__",
         "active_cut",
@@ -138135,6 +138242,24 @@
       "name": "_Control",
       "path": "tests/test_research_os_portfolio_binding_v1.py",
       "qualname": "tests.test_research_os_portfolio_binding_v1._Control",
+      "role": "tests"
+    },
+    {
+      "bases": [],
+      "decorators": [],
+      "fields": [],
+      "kind": "class",
+      "language": "python",
+      "line": 28,
+      "methods": [
+        "__init__",
+        "admit",
+        "execute"
+      ],
+      "module": "tests.test_research_os_retry_pause_intent_v1",
+      "name": "_FailOnceRuntime",
+      "path": "tests/test_research_os_retry_pause_intent_v1.py",
+      "qualname": "tests.test_research_os_retry_pause_intent_v1._FailOnceRuntime",
       "role": "tests"
     },
     {

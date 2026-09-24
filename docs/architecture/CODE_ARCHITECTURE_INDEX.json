@@ -40003,7 +40003,7 @@
         "target"
       ],
       "kind": "dataclass",
-      "line": 150,
+      "line": 151,
       "methods": [
         "__post_init__",
         "admission"
@@ -40022,7 +40022,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 434,
+      "line": 435,
       "methods": [
         "__init__",
         "execute",
@@ -40045,7 +40045,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 271,
+      "line": 272,
       "methods": [],
       "module": "noetrium_platform.composition.research_os_execution",
       "name": "ResearchOSExecutionUnsupported",
@@ -40113,7 +40113,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 599,
+      "line": 613,
       "methods": [
         "__init__",
         "active_revision_digest",
@@ -40315,7 +40315,7 @@
         "revision"
       ],
       "kind": "dataclass",
-      "line": 126,
+      "line": 125,
       "methods": [
         "__post_init__",
         "node"
@@ -40343,7 +40343,7 @@
         "semantic_digest"
       ],
       "kind": "dataclass",
-      "line": 64,
+      "line": 63,
       "methods": [
         "__post_init__",
         "incoming_dependency_digests",
@@ -40369,7 +40369,7 @@
         "upstream"
       ],
       "kind": "dataclass",
-      "line": 38,
+      "line": 37,
       "methods": [
         "__post_init__"
       ],
@@ -40389,7 +40389,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 336,
+      "line": 335,
       "methods": [
         "__init__",
         "execute"
@@ -40412,7 +40412,7 @@
       ],
       "fields": [],
       "kind": "protocol",
-      "line": 324,
+      "line": 323,
       "methods": [
         "execute"
       ],
@@ -72836,7 +72836,7 @@
       "decorators": [],
       "fields": [],
       "kind": "protocol",
-      "line": 90,
+      "line": 87,
       "methods": [
         "append_owned"
       ],
@@ -72856,7 +72856,7 @@
       "decorators": [],
       "fields": [],
       "kind": "protocol",
-      "line": 83,
+      "line": 80,
       "methods": [
         "append",
         "flush",
@@ -72882,9 +72882,6 @@
       "kind": "protocol",
       "line": 67,
       "methods": [
-        "add_event",
-        "add_failure",
-        "add_mutation",
         "add_raw_payload",
         "project_event",
         "project_events_batch",
@@ -72965,7 +72962,7 @@
       "decorators": [],
       "fields": [],
       "kind": "protocol",
-      "line": 98,
+      "line": 95,
       "methods": [
         "root",
         "failures",
@@ -73018,7 +73015,7 @@
       "decorators": [],
       "fields": [],
       "kind": "protocol",
-      "line": 94,
+      "line": 91,
       "methods": [
         "release"
       ],
@@ -73413,9 +73410,6 @@
       "methods": [
         "__init__",
         "_write",
-        "add_event",
-        "add_failure",
-        "add_mutation",
         "add_raw_payload",
         "project_event",
         "project_events_batch",
@@ -73654,9 +73648,6 @@
         "project_event",
         "project_failure",
         "project_mutation",
-        "add_event",
-        "add_failure",
-        "add_mutation",
         "set_freshness",
         "add_raw_payload",
         "close"
@@ -79669,7 +79660,7 @@
       ],
       "fields": [],
       "kind": "protocol",
-      "line": 764,
+      "line": 756,
       "methods": [
         "active_cut",
         "move_active_cut"
@@ -79803,7 +79794,7 @@
       ],
       "fields": [],
       "kind": "protocol",
-      "line": 623,
+      "line": 615,
       "methods": [
         "control_state",
         "request_drain",
@@ -79938,7 +79929,6 @@
         "mark_blocked",
         "recover_expired",
         "retry_failed_subgraph",
-        "schedule_retry",
         "resolve_reconciliation",
         "mark_reused",
         "reuse_record",
@@ -80042,7 +80032,7 @@
       ],
       "fields": [],
       "kind": "protocol",
-      "line": 693,
+      "line": 685,
       "methods": [
         "node_control_state",
         "node_control_snapshot",
@@ -80230,7 +80220,6 @@
         "mark_blocked",
         "recover_expired",
         "retry_failed_subgraph",
-        "schedule_retry",
         "resolve_reconciliation",
         "mark_reused",
         "reuse_record",
@@ -143186,7 +143175,7 @@
   "parse_errors": [],
   "registry_sha256": "d3fc1bab831f1b7379e5a36048a61c00fe173429df958270d36a16f3f00171c0",
   "schema": "noetrium-code-architecture-index.v1",
-  "source_git_sha": "ba970a4e2ee823cd5f4e6530fb206db705af4366",
+  "source_git_sha": "5c0c8b59a08eb718b3444be01d7050bbd0ca21f2",
   "system_import_edges": [
     {
       "count": 90,
