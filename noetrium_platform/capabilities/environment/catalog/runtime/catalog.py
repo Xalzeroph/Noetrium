@@ -10,7 +10,7 @@ from noetrium_platform.foundation.kernel.kernel.durability.sqlite import (
     durable_sqlite_connection,
     immediate_sqlite_transaction,
 )
-from noetrium_platform.foundation.kernel.kernel import canonical_digest
+from noetrium_platform.foundation.kernel.kernel import DurableCarrierReferenceClosure, canonical_digest
 from noetrium_platform.foundation.kernel.kernel.retry import retry_until_deadline
 from noetrium_platform.capabilities.environment.catalog.api import (
     EnvironmentAssignment,
@@ -869,23 +869,13 @@ class ExecutionEnvironmentCatalog:
         profile_id: str,
         profile_revision: str,
         *,
-        resumable_execution_ids: tuple[str, ...] | None = None,
-        retained_evidence_ids: tuple[str, ...] | None = None,
+        closures: tuple[DurableCarrierReferenceClosure, ...] = (),
     ) -> EnvironmentProfileGcAssessment:
         return EnvironmentProfileGcAssessment(
             profile_id,
             profile_revision,
             self._profile_references_local(profile_id, profile_revision),
-            (
-                None
-                if resumable_execution_ids is None
-                else tuple(sorted(set(resumable_execution_ids)))
-            ),
-            (
-                None
-                if retained_evidence_ids is None
-                else tuple(sorted(set(retained_evidence_ids)))
-            ),
+            closures,
         )
 
     def _runtime_references_local(
@@ -954,8 +944,7 @@ class ExecutionEnvironmentCatalog:
         profile_revision: str,
         runtime_identity_digest: str,
         *,
-        resumable_execution_ids: tuple[str, ...] | None = None,
-        retained_evidence_ids: tuple[str, ...] | None = None,
+        closures: tuple[DurableCarrierReferenceClosure, ...] = (),
     ) -> EnvironmentRuntimeGcAssessment:
         return EnvironmentRuntimeGcAssessment(
             profile_id,
@@ -966,16 +955,7 @@ class ExecutionEnvironmentCatalog:
                 profile_revision,
                 runtime_identity_digest,
             ),
-            (
-                None
-                if resumable_execution_ids is None
-                else tuple(sorted(set(resumable_execution_ids)))
-            ),
-            (
-                None
-                if retained_evidence_ids is None
-                else tuple(sorted(set(retained_evidence_ids)))
-            ),
+            closures,
         )
 
     @staticmethod
@@ -1506,15 +1486,13 @@ class SQLiteExecutionEnvironmentCatalog(ExecutionEnvironmentCatalog):
         profile_id: str,
         profile_revision: str,
         *,
-        resumable_execution_ids: tuple[str, ...] | None = None,
-        retained_evidence_ids: tuple[str, ...] | None = None,
+        closures: tuple[DurableCarrierReferenceClosure, ...] = (),
     ) -> EnvironmentProfileGcAssessment:
         self._load()
         return super().assess_profile_gc(
             profile_id,
             profile_revision,
-            resumable_execution_ids=resumable_execution_ids,
-            retained_evidence_ids=retained_evidence_ids,
+            closures=closures,
         )
 
     def runtime_references(
@@ -1536,16 +1514,14 @@ class SQLiteExecutionEnvironmentCatalog(ExecutionEnvironmentCatalog):
         profile_revision: str,
         runtime_identity_digest: str,
         *,
-        resumable_execution_ids: tuple[str, ...] | None = None,
-        retained_evidence_ids: tuple[str, ...] | None = None,
+        closures: tuple[DurableCarrierReferenceClosure, ...] = (),
     ) -> EnvironmentRuntimeGcAssessment:
         self._load()
         return super().assess_runtime_gc(
             profile_id,
             profile_revision,
             runtime_identity_digest,
-            resumable_execution_ids=resumable_execution_ids,
-            retained_evidence_ids=retained_evidence_ids,
+            closures=closures,
         )
 
 
