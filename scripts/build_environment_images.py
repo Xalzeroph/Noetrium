@@ -13,7 +13,17 @@ from typing import Iterable
 
 ROOT = Path(__file__).resolve().parents[1]
 CATALOG_PATH = ROOT / "deploy" / "environments" / "catalog.json"
-EXPECTED_PROFILES = frozenset({"minecraft", "embodied", "gui", "web", "software", "text_world"})
+PROFILE_REGISTRY_SCHEMA = "noetrium.environment-profile-registry.v2"
+PROFILE_LIFECYCLE_STATES = frozenset({"active", "draining", "retired"})
+REQUIRED_PRIVATE_WRITABLE = frozenset({
+    "workspace",
+    "tmp",
+    "runtime-state",
+    "secrets",
+    "process-namespace",
+    "network-namespace",
+    "ports",
+})
 FORBIDDEN_IMAGE_MARKERS = (
     "copy research",
     "copy benchmarks",
@@ -68,8 +78,8 @@ def _sha256(path: Path) -> str:
 
 def _load_catalog() -> dict:
     data = json.loads(CATALOG_PATH.read_text(encoding="utf-8"))
-    if data.get("schema") != "noetrium.environment-container-profiles.v1":
-        raise RuntimeError("environment profile catalog schema is not current")
+    if data.get("schema") != PROFILE_REGISTRY_SCHEMA:
+        raise RuntimeError("environment profile registry schema is not current")
     return data
 
 
@@ -84,17 +94,42 @@ def _profile_map(data: dict) -> dict[str, dict]:
         profile_id = row.get("profile_id")
         if not isinstance(profile_id, str) or not profile_id:
             raise RuntimeError("environment profile id must be non-empty")
+        if profile_id in result:
+            raise RuntimeError(f"duplicate environment profile id: {profile_id}")
         result[profile_id] = row
     return result
 
 
+def _profile_revision(row: dict) -> str:
+    material = {
+        key: value
+        for key, value in row.items()
+        if key not in {"lifecycle", "default_for_category"}
+    }
+    payload = json.dumps(
+        material,
+        sort_keys=True,
+        separators=(",", ":"),
+        ensure_ascii=True,
+    ).encode("utf-8")
+    return hashlib.sha256(payload).hexdigest()
+
+
+def _default_active_profile_ids(profiles: dict[str, dict]) -> tuple[str, ...]:
+    return tuple(
+        sorted(
+            profile_id
+            for profile_id, row in profiles.items()
+            if row.get("lifecycle") == "active"
+            and row.get("default_for_category") is True
+        )
+    )
+
+
 def validate_catalog(data: dict, profiles: dict[str, dict]) -> dict:
     errors: list[str] = []
-    if set(profiles) != EXPECTED_PROFILES:
-        errors.append(
-            "profile set drift: "
-            f"expected={sorted(EXPECTED_PROFILES)!r} observed={sorted(profiles)!r}"
-        )
+    if not profiles:
+        errors.append("environment profile registry must contain at least one profile")
 
     base = data.get("base")
     if not isinstance(base, dict):
@@ -109,14 +144,54 @@ def validate_catalog(data: dict, profiles: dict[str, dict]) -> dict:
             elif not (ROOT / value).is_file():
                 errors.append(f"base {field} does not exist: {value}")
 
+    active_defaults: dict[str, list[str]] = {}
     for profile_id, row in sorted(profiles.items()):
-        if row.get("category_id") != profile_id:
-            errors.append(f"{profile_id}: category_id must match canonical environment category")
+        category_id = row.get("category_id")
+        if not isinstance(category_id, str) or not category_id.strip():
+            errors.append(f"{profile_id}: category_id must be non-empty")
+            continue
+
+        lifecycle = row.get("lifecycle")
+        if lifecycle not in PROFILE_LIFECYCLE_STATES:
+            errors.append(
+                f"{profile_id}: lifecycle must be one of "
+                f"{sorted(PROFILE_LIFECYCLE_STATES)!r}"
+            )
+        if row.get("default_for_category") is True:
+            if lifecycle != "active":
+                errors.append(
+                    f"{profile_id}: only active profiles may be category defaults"
+                )
+            active_defaults.setdefault(category_id, []).append(profile_id)
+
         if row.get("extends") != "base":
             errors.append(f"{profile_id}: environment profile must extend base")
-        if profile_id == "text_world":
-            if row.get("build_mode") != "base-only":
-                errors.append("text_world must remain base-only")
+
+        isolation = row.get("isolation")
+        if not isinstance(isolation, dict):
+            errors.append(f"{profile_id}: isolation policy must be an object")
+        else:
+            shared = isolation.get("shared_read_only")
+            private = isolation.get("private_writable")
+            cleanliness = isolation.get("cleanliness")
+            if not isinstance(shared, list) or not shared:
+                errors.append(f"{profile_id}: shared_read_only must be non-empty")
+            if not isinstance(private, list):
+                errors.append(f"{profile_id}: private_writable must be a list")
+            else:
+                missing = sorted(REQUIRED_PRIVATE_WRITABLE - set(private))
+                if missing:
+                    errors.append(
+                        f"{profile_id}: private_writable misses required isolation "
+                        f"domains {missing!r}"
+                    )
+            if cleanliness != "destroy-overlay-or-verified-reset":
+                errors.append(
+                    f"{profile_id}: cleanliness policy must require overlay "
+                    "destruction or verified reset"
+                )
+
+        if row.get("build_mode") == "base-only":
             continue
 
         dockerfile_text = ""
@@ -141,27 +216,60 @@ def validate_catalog(data: dict, profiles: dict[str, dict]) -> dict:
                 errors.append(f"{profile_id}: Dockerfile must declare PLATFORM_BASE_IMAGE")
             if "from ${platform_base_image}" not in lowered:
                 errors.append(f"{profile_id}: Dockerfile must consume PLATFORM_BASE_IMAGE")
+            if "environment-doctor.d" not in lowered:
+                errors.append(
+                    f"{profile_id}: Dockerfile must install a profile-local doctor hook"
+                )
             for marker in FORBIDDEN_IMAGE_MARKERS:
                 if marker in lowered:
-                    errors.append(f"{profile_id}: downstream/scientific marker leaked into image: {marker}")
+                    errors.append(
+                        f"{profile_id}: downstream/scientific marker leaked into image: "
+                        f"{marker}"
+                    )
         if compose_text:
             if "environment-doctor" not in compose_text:
                 errors.append(f"{profile_id}: compose overlay lacks environment doctor")
             if profile_id not in compose_text:
                 errors.append(f"{profile_id}: compose overlay lacks profile identity")
 
+    for category_id, defaults in sorted(active_defaults.items()):
+        if len(defaults) != 1:
+            errors.append(
+                f"{category_id}: expected exactly one active default profile, "
+                f"observed={defaults!r}"
+            )
+    active_categories = {
+        row["category_id"]
+        for row in profiles.values()
+        if row.get("lifecycle") == "active"
+    }
+    missing_defaults = sorted(set(active_categories) - set(active_defaults))
+    if missing_defaults:
+        errors.append(
+            "active categories lack a default profile: "
+            f"{missing_defaults!r}"
+        )
+
     if errors:
         raise RuntimeError("; ".join(errors))
     return {
-        "schema": "noetrium.environment-profile-validation.v1",
+        "schema": "noetrium.environment-profile-validation.v2",
         "status": "pass",
         "profile_count": len(profiles),
+        "active_profile_count": sum(
+            row.get("lifecycle") == "active" for row in profiles.values()
+        ),
+        "draining_profile_count": sum(
+            row.get("lifecycle") == "draining" for row in profiles.values()
+        ),
+        "retired_profile_count": sum(
+            row.get("lifecycle") == "retired" for row in profiles.values()
+        ),
         "image_profile_count": sum(
             1 for row in profiles.values() if row.get("build_mode") != "base-only"
         ),
         "base_build_mode": data["base"]["build_mode"],
     }
-
 
 def _digest_label(labels: dict, key: str) -> str:
     value = labels.get(key)
