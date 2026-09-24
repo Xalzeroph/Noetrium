@@ -8,10 +8,10 @@ from unittest.mock import patch
 
 import pytest
 
+from noetrium import api
 from noetrium_platform.product.operator.api import (
     ResearchAction,
     ResearchFacade,
-    ResearchOperationFailure,
     ResearchRequest,
     ResearchResult,
 )
@@ -63,64 +63,131 @@ def test_facade_rejects_application_result_identity_drift():
         ResearchFacade(_BadApplication()).run("run-1")
 
 
-def test_research_parser_has_one_project_lifecycle_surface():
+def test_research_parser_exposes_canonical_research_os_control_surface():
     parser = build_research_parser()
-    for command in ("run", "inspect", "stop", "resume", "reconcile", "evidence"):
+    commands = tuple(action.value for action in api.ResearchControlAction)
+    assert commands == (
+        "run",
+        "inspect",
+        "pause",
+        "drain",
+        "interrupt",
+        "resume",
+        "retry",
+        "cancel",
+        "checkpoint",
+        "reconcile",
+        "migrate",
+    )
+    for command in commands:
         args = parser.parse_args([command, "run-1", "--project", "."])
         assert args.action.value == command
         assert args.route == "project"
         assert args.project_root == Path(".")
 
 
-def test_lifecycle_cli_routes_only_through_project_binding(capsys):
-    app = _Application()
-    loaded = type("Loaded", (), {"application": app, "default_target": "project-default"})()
+class _ProjectResearchOS:
+    def __init__(self) -> None:
+        self.calls = []
+
+    def run(self, target, payload=None):
+        self.calls.append(("run", target, payload))
+        return {
+            "action": "run",
+            "execution_id": target.execution_id,
+            "revision_digest": target.revision.revision_digest,
+            "node": (
+                None
+                if target.node is None
+                else {
+                    "program_id": target.node.program_id,
+                    "node_id": target.node.node_id,
+                }
+            ),
+            "payload": payload,
+        }
+
+    def reconcile(self, target, payload=None):
+        del target, payload
+        raise ValueError("lower-authority reconciliation proof is unavailable")
+
+
+class _LoadedResearchOS:
+    def __init__(self, research_os) -> None:
+        self.research_os = research_os
+        self.default_execution_id = "project-default"
+        self.revision = api.ResearchGraphRevision(
+            "paper",
+            "a" * 64,
+            (),
+            "working",
+        )
+        self.active_revision = self.revision
+        self.closed = False
+
+    def close(self) -> None:
+        self.closed = True
+
+
+def test_lifecycle_cli_routes_directly_through_project_research_os(capsys):
+    research_os = _ProjectResearchOS()
+    loaded = _LoadedResearchOS(research_os)
     with patch(
-        "noetrium_platform.composition.operator.wiring.research.load_project_application",
+        "noetrium_platform.composition.operator.wiring.research.load_project_research_os",
         return_value=loaded,
     ):
-        rc = main(["run", "run-7", "--project", ".", "--payload", '{"seed": 7}'])
+        rc = main([
+            "run",
+            "run-7",
+            "--project",
+            ".",
+            "--program",
+            "paper",
+            "--node",
+            "source",
+            "--payload",
+            '{"seed": 7}',
+        ])
     assert rc == 0
     output = json.loads(capsys.readouterr().out)
     assert output["ok"] is True
     assert output["result"]["action"] == "run"
-    assert output["result"]["target"] == "run-7"
-    assert app.requests[0].payload["seed"] == 7
+    assert output["result"]["execution_id"] == "run-7"
+    assert output["result"]["node"] == {
+        "program_id": "paper",
+        "node_id": "source",
+    }
+    action, target, payload = research_os.calls[0]
+    assert action == "run"
+    assert target.node == api.ResearchNodeRef("paper", "source")
+    assert payload["seed"] == 7
+    assert loaded.closed is True
 
 
-def test_lifecycle_cli_preserves_authoritative_operation_failure(capsys):
-    class _FailingApplication:
-        def execute(self, request: ResearchRequest) -> ResearchResult:
-            raise ResearchOperationFailure(
-                ResearchResult(
-                    request.action,
-                    request.target,
-                    "recovery_required",
-                    {"control_revision": 3, "operation_id": "a" * 64},
-                )
-            )
-
-    loaded = type(
-        "Loaded",
-        (),
-        {"application": _FailingApplication(), "default_target": "run-7"},
-    )()
+def test_lifecycle_cli_fails_closed_on_research_os_control_error(capsys):
+    loaded = _LoadedResearchOS(_ProjectResearchOS())
     with patch(
-        "noetrium_platform.composition.operator.wiring.research.load_project_application",
+        "noetrium_platform.composition.operator.wiring.research.load_project_research_os",
         return_value=loaded,
     ):
         rc = main([
-            "reconcile", "run-7", "--project", ".",
-            "--payload", '{"expected_revision": 3}',
+            "reconcile",
+            "run-7",
+            "--project",
+            ".",
+            "--program",
+            "paper",
+            "--node",
+            "source",
         ])
-    assert rc == 3
+    assert rc == 2
     captured = capsys.readouterr()
     assert captured.out == ""
     error = json.loads(captured.err)
     assert error["ok"] is False
     assert error["command"] == "reconcile"
-    assert error["result"]["state"] == "recovery_required"
-    assert error["result"]["payload"]["control_revision"] == 3
+    assert error["error_type"] == "ValueError"
+    assert loaded.closed is True
 
 
 def test_manage_route_preserves_foreign_cli_arguments_verbatim():
