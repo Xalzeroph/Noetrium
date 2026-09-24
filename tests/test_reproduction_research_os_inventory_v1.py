@@ -98,11 +98,13 @@ def test_every_executable_study_reproduction_compiles_to_current_research_os() -
             else:
                 assert method_definition.implementation is None
                 assert method_definition.config["authority"] == (
-                    "parameterized-method-program-factory"
+                    "execution-binding-required"
                 )
-                assert method_definition.config["unresolved_parameters"] == (
-                    binding.factory.unresolved_parameters
-                )
+                assert method_definition.config[
+                    "execution_requirement_digests"
+                ]
+                assert binding.factory is not None
+                assert binding.factory.unresolved_parameters
         else:
             machine_bindings = resolve_research_program_bindings(definition)
             assert machine_bindings
