@@ -183,7 +183,6 @@ from noetrium_platform.research.experimentation.lifecycle.run.api import (
     RunRuntimePort,
     RunDiagnosticsPort,
     RunSessionPort,
-    RunSessionFactoryPort,
     ExperimentRunSpec,
     ExperimentRunResult,
 )
@@ -392,7 +391,6 @@ __all__ = [
     "RunRestoreResult",
     "RunRuntimePort",
     "RunScientificValidity",
-    "RunSessionFactoryPort",
     "RunSessionPort",
     "RunTaskOutcome",
     "Study",
