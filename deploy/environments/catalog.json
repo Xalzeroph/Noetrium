@@ -89,20 +89,14 @@
             "name": "java_runtime",
             "environment_variable": "JAVA_RUNTIME_IMAGE",
             "canonical_image": "eclipse-temurin:21-jre-jammy"
-          }
-        ],
-        "parameters": [
-          {
-            "name": "node_linux_x64_sha256",
-            "environment_variable": "NODE_LINUX_X64_SHA256",
-            "default": "88fd1ce767091fd8d4a99fdb2356e98c819f93f3b1f8663853a2dee9b438068a"
           },
           {
-            "name": "node_version",
-            "environment_variable": "NODE_VERSION",
-            "default": "22.22.2"
+            "name": "node_runtime",
+            "environment_variable": "NODE_RUNTIME_IMAGE",
+            "canonical_image": "node:22.22.2-bookworm-slim"
           }
-        ]
+        ],
+        "parameters": []
       }
     },
     {
