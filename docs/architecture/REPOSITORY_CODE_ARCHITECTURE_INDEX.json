@@ -1,10 +1,10 @@
 {
   "counts": {
     "parse_errors": 0,
-    "python_files": 3663,
-    "python_import_edges": 7080,
+    "python_files": 3666,
+    "python_import_edges": 7090,
     "symbols": 4851,
-    "tracked_files": 4292,
+    "tracked_files": 4295,
     "typescript_javascript_files": 11
   },
   "language_symbol_counts": {
@@ -30405,6 +30405,36 @@
       "target_role": "core_platform"
     },
     {
+      "source_module": "tests.test_operator_project_unconstrained_authoring_v1",
+      "source_role": "tests",
+      "target_module": "noetrium_platform.composition.operator.project",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "tests.test_operator_project_unconstrained_authoring_v1",
+      "source_role": "tests",
+      "target_module": "noetrium_platform.composition.operator.project.project_platform_identity",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "tests.test_operator_project_unconstrained_authoring_v1",
+      "source_role": "tests",
+      "target_module": "noetrium_platform.composition.operator.project.project_research_os_loader",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "tests.test_operator_project_unconstrained_authoring_v1",
+      "source_role": "tests",
+      "target_module": "noetrium_platform.composition.research_os_graph",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "tests.test_operator_project_unconstrained_authoring_v1",
+      "source_role": "tests",
+      "target_module": "noetrium_platform.product.operator.api",
+      "target_role": "core_platform"
+    },
+    {
       "source_module": "tests.test_operator_public_facade_v206",
       "source_role": "tests",
       "target_module": "noetrium",
@@ -32569,6 +32599,36 @@
       "source_role": "tests",
       "target_module": "scripts.run_reproduction_fleet",
       "target_role": "tooling"
+    },
+    {
+      "source_module": "tests.test_reproduction_latest_interface_gate_v1",
+      "source_role": "tests",
+      "target_module": "noetrium",
+      "target_role": "public_facade"
+    },
+    {
+      "source_module": "tests.test_reproduction_latest_interface_gate_v1",
+      "source_role": "tests",
+      "target_module": "noetrium_platform.composition.research_os_graph",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "tests.test_reproduction_latest_interface_gate_v1",
+      "source_role": "tests",
+      "target_module": "research.reproductions",
+      "target_role": "research_reproductions"
+    },
+    {
+      "source_module": "tests.test_reproduction_latest_interface_gate_v1",
+      "source_role": "tests",
+      "target_module": "research.reproductions.contracts",
+      "target_role": "research_reproductions"
+    },
+    {
+      "source_module": "tests.test_reproduction_latest_interface_gate_v1",
+      "source_role": "tests",
+      "target_module": "research.reproductions.research_os",
+      "target_role": "research_reproductions"
     },
     {
       "source_module": "tests.test_reproduction_research_os_coverage_v1",
@@ -42557,12 +42617,12 @@
       "target_role": "research_reproductions"
     },
     {
-      "count": 2765,
+      "count": 2771,
       "source_role": "tests",
       "target_role": "core_platform"
     },
     {
-      "count": 27,
+      "count": 28,
       "source_role": "tests",
       "target_role": "public_facade"
     },
@@ -42577,7 +42637,7 @@
       "target_role": "reference_orchestration"
     },
     {
-      "count": 321,
+      "count": 324,
       "source_role": "tests",
       "target_role": "research_reproductions"
     },
@@ -42620,7 +42680,7 @@
     "reference_components": 22,
     "reference_orchestration": 10,
     "research_reproductions": 774,
-    "tests": 805,
+    "tests": 808,
     "tooling": 78
   },
   "role_symbol_counts": {
@@ -42636,7 +42696,7 @@
     "tooling": 38
   },
   "schema": "noetrium-repository-code-architecture-index.v1",
-  "source_git_sha": "21507512cd1ac57f0ec965e7903735926b66b2ee",
+  "source_git_sha": "ff9d4923be0b6237b532bc7153a4a1940f9a7968",
   "symbols": [
     {
       "bases": [],
@@ -129491,7 +129551,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 31,
+      "line": 33,
       "methods": [],
       "module": "scripts.run_reproduction_fleet",
       "name": "Lane",
