@@ -68,10 +68,28 @@ class _ExactLinuxProcess:
             raise ServiceProcessDrift(
                 "cannot safely signal process without frozen process-group identity"
             )
-        if os.getpgid(self.identity.execution_pid) != pgid:
+
+        def require_exact_start_identity() -> None:
+            try:
+                observed = self.procfs.start_identity(self.identity.pid)
+            except (FileNotFoundError, ProcessLookupError) as exc:
+                raise ProcessLookupError(self.identity.execution_pid) from exc
+            if observed != self.identity.start_identity:
+                raise ServiceProcessDrift(
+                    "process start identity drift; refusing to signal reused PID"
+                )
+
+        # Poll and signal delivery are separate syscalls. Re-prove the
+        # persisted process generation immediately around the PGID check so an
+        # old cleanup cannot target a process/group that reused the same
+        # numeric identifiers after the previous liveness observation.
+        require_exact_start_identity()
+        observed_pgid = os.getpgid(self.identity.execution_pid)
+        if observed_pgid != pgid:
             raise ServiceProcessDrift(
                 "process group drift; refusing to signal unrelated process"
             )
+        require_exact_start_identity()
         os.killpg(pgid, sig)
 
     def terminate(self) -> None:
