@@ -1,9 +1,9 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-import hashlib
 
 
+from noetrium_platform.foundation.kernel.kernel.durability import sha256_bytes
 @dataclass(frozen=True, slots=True)
 class ProcessIdentity:
     pid: int
@@ -13,7 +13,7 @@ class ProcessIdentity:
     @classmethod
     def from_argv(cls, pid: int, start_marker: str, argv: tuple[str, ...]) -> "ProcessIdentity":
         raw = b"\0".join(x.encode("utf-8", "surrogateescape") for x in argv)
-        return cls(pid=pid, start_marker=start_marker, argv_digest=hashlib.sha256(raw).hexdigest())
+        return cls(pid=pid, start_marker=start_marker, argv_digest=sha256_bytes(raw))
 
 
 class ProcessIdentityReconciler:
