@@ -12,10 +12,9 @@ from noetrium_platform.evidence.artifact.reference.api import (
 )
 from noetrium_platform.foundation.kernel.kernel import strict_finite_json_digest as canonical_digest
 from noetrium_platform.foundation.kernel.kernel.durability.sqlite import (
-    begin_immediate_sqlite_transaction,
+    immediate_sqlite_transaction,
     open_durable_sqlite_reader,
     open_durable_sqlite_writer,
-    rollback_sqlite_writer,
 )
 from noetrium_platform.evidence.artifact._sqlite_types import require_integer, require_text
 from noetrium_platform.foundation.governance.api import ScopeIdentity, ScopeKind
@@ -172,32 +171,47 @@ class SQLiteArtifactReferenceStore:
         ):
             raise ValueError("artifact reference CAS inputs are invalid")
         with closing(self._connect_writer()) as db:
-            begin_immediate_sqlite_transaction(db, timeout_seconds=self.timeout_seconds)
-            try:
+            with immediate_sqlite_transaction(
+                db,
+                timeout_seconds=self.timeout_seconds,
+                label="artifact reference",
+            ):
                 row = self._select(db, reference_id, scope)
                 if row is None:
                     if expected_generation != 0:
                         raise ArtifactReferenceConflict(
-                            f"missing reference {reference_id!r}; expected generation {expected_generation}"
+                            f"missing reference {reference_id!r}; "
+                            f"expected generation {expected_generation}"
                         )
-                    created = ArtifactReference(reference_id, scope, artifact_id, 1)
+                    created = ArtifactReference(
+                        reference_id,
+                        scope,
+                        artifact_id,
+                        1,
+                    )
                     db.execute(
                         "INSERT INTO artifact_references VALUES(?,?,?,?,?,?)",
                         self._encode(created),
                     )
-                    db.execute("COMMIT")
                     return created
                 current = self._decode(row)
                 if current.generation != expected_generation:
                     raise ArtifactReferenceConflict(
-                        f"reference generation conflict: expected {expected_generation}, actual {current.generation}"
+                        "reference generation conflict: "
+                        f"expected {expected_generation}, "
+                        f"actual {current.generation}"
                     )
                 if current.artifact_id == artifact_id:
-                    db.execute("COMMIT")
                     return current
-                updated = ArtifactReference(reference_id, scope, artifact_id, current.generation + 1)
+                updated = ArtifactReference(
+                    reference_id,
+                    scope,
+                    artifact_id,
+                    current.generation + 1,
+                )
                 db.execute(
-                    "UPDATE artifact_references SET artifact_id=?,generation=?,record_sha256=? "
+                    "UPDATE artifact_references "
+                    "SET artifact_id=?,generation=?,record_sha256=? "
                     "WHERE scope_kind=? AND scope_id=? AND reference_id=?",
                     (
                         updated.artifact_id,
@@ -208,11 +222,7 @@ class SQLiteArtifactReferenceStore:
                         reference_id,
                     ),
                 )
-                db.execute("COMMIT")
                 return updated
-            except BaseException as primary:
-                rollback_sqlite_writer(db, primary, label="artifact")
-                raise
 
 
 __all__ = ["SQLiteArtifactReferenceStore"]
