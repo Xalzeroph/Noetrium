@@ -39,7 +39,7 @@ from .control import (
     RunScientificValidity,
     RunTaskOutcome,
 )
-from .ports import DecisionCycleRuntimePort, RunRuntimePort, RunSessionPort
+from .lifecycle_ports import RunSessionPort
 from .diagnostics import RunDiagnosticsPort
 from .artifacts import (
     RunArtifactFinalizationError,
@@ -100,7 +100,6 @@ __all__ = [
     "RunOutcomeProjection",
     "RunScientificValidity",
     "RunTaskOutcome",
-    "DecisionCycleRuntimePort",
     "RunArtifactFinalizationError",
     "RunArtifactFinalizationPort",
     "RunArtifactKind",
@@ -110,7 +109,6 @@ __all__ = [
     "RunArtifactVerificationError",
     "RunArtifactVerificationPort",
     "RunArtifactWriteActorPort",
-    "RunRuntimePort",
     "RunDiagnosticsPort",
     "RunSessionPort",
     "ExperimentRunSpec",
