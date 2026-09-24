@@ -540,11 +540,9 @@ def build_experiment_runtime_components_for_test(
     from noetrium_platform.research.experimentation.lifecycle.checkpoint.runtime.coordination import (
         RunCheckpointCoordinator,
     )
-    from noetrium_platform.research.experimentation.lifecycle.run.runtime.decision_runtime import (
-        DecisionCycleRuntime,
-    )
-    from noetrium_platform.research.experimentation.lifecycle.run.runtime.run_runtime import (
-        RunRuntime,
+    from tests_runtime_harness import (
+        DecisionCycleRuntimeForTest,
+        RunRuntimeForTest,
     )
     from noetrium_platform.research.execution.workflow.runtime import (
         EffectIntentOperations,
@@ -611,14 +609,14 @@ def build_experiment_runtime_components_for_test(
     )
     return ExperimentRuntimeComponentsForTest(
         trial_protocol_identity(trial_protocol),
-        DecisionCycleRuntime(
+        DecisionCycleRuntimeForTest(
             binder,
             lifecycle,
             trial_cycle,
             journal=shared_machine_journal,
             snapshot_store=machine_snapshot_store,
         ),
-        RunRuntime(
+        RunRuntimeForTest(
             binder,
             lifecycle,
             trial_cycle,
