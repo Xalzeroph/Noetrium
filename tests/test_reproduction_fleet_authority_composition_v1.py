@@ -3,6 +3,9 @@ from __future__ import annotations
 from noetrium_platform.composition.research_binding_authority import (
     ResearchBindingAuthority,
 )
+from noetrium_platform.composition.research_os_experiment_runtime_binding import (
+    ResearchOSExperimentRuntimeBindingAuthority,
+)
 from research.reproductions.execution_authority import (
     compose_repository_fleet_execution_authorities,
 )
@@ -29,7 +32,24 @@ class _Models:
         raise AssertionError((requirement, context))
 
 
-class _ExperimentBindings:
+class _ExperimentStudyExecution:
+    def resolve(self, closure):
+        raise AssertionError(closure)
+
+
+class _ExperimentAggregation:
+    def resolve(self, closure):
+        raise AssertionError(closure)
+
+
+class _ExperimentArtifacts:
+    identity_digest = "a" * 64
+
+    def resolve(self, closure, *, execution_cut_id):
+        raise AssertionError((closure, execution_cut_id))
+
+
+class _ExperimentReconciliation:
     def resolve(self, closure):
         raise AssertionError(closure)
 
@@ -52,7 +72,10 @@ def test_repository_fleet_authority_composition_has_one_research_binding_authori
         research_capabilities=_ResearchCapabilities(),
         participants=_Participants(),
         models=_Models(),
-        experiment_bindings=_ExperimentBindings(),
+        experiment_study_execution=_ExperimentStudyExecution(),
+        experiment_aggregation=_ExperimentAggregation(),
+        experiment_artifacts=_ExperimentArtifacts(),
+        experiment_reconciliation=_ExperimentReconciliation(),
         reproduction_capabilities=reproduction_capabilities,
         benchmarks=benchmarks,
     )
@@ -60,5 +83,5 @@ def test_repository_fleet_authority_composition_has_one_research_binding_authori
     assert type(bundle) is ReproductionFleetExecutionAuthorities
     assert bundle.benchmark_resolver is benchmarks
     assert type(bundle.research_bindings) is ResearchBindingAuthority
-    assert type(bundle.experiment_bindings) is _ExperimentBindings
+    assert type(bundle.experiment_bindings) is ResearchOSExperimentRuntimeBindingAuthority
     assert bundle.capability_resolver is reproduction_capabilities
