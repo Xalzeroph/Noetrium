@@ -14,6 +14,7 @@ from noetrium_platform.foundation.kernel.kernel.canonical import (
     canonical_digest,
     strict_json_loads,
 )
+from noetrium_platform.foundation.kernel.kernel.durability import atomic_replace_bytes
 
 SCHEMA = "noetrium.capability-index.v1"
 _KIND_VALUES = {
@@ -204,8 +205,7 @@ def write_capability_index(
     output: Path,
 ) -> dict[str, Any]:
     value = build_capability_index(root)
-    Path(output).parent.mkdir(parents=True, exist_ok=True)
-    Path(output).write_bytes(canonical_bytes(value))
+    atomic_replace_bytes(Path(output), canonical_bytes(value))
     return value
 
 
