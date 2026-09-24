@@ -40,7 +40,7 @@ class Runner:
             if name not in self.sessions:
                 return TmuxCommandResult(1, "", "missing")
             command, cwd = self.sessions[name]
-            return TmuxCommandResult(0, f"{name}\t900\t0\t{command}\t{cwd}\n", "")
+            return TmuxCommandResult(0, f"{name}\t$900\t900\t0\t{command}\t{cwd}\n", "")
         if args[0] == "new-session":
             name = args[args.index("-s") + 1]; self.sessions[name] = (args[-1], args[args.index("-c") + 1])
             return TmuxCommandResult(0, "", "")
