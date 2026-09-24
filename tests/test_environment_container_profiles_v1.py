@@ -7,6 +7,7 @@ from pathlib import Path
 from scripts.build_environment_images import (
     _default_active_profile_ids,
     _image_runtime_identity_digest,
+    _profile_build_input_digest,
     _profile_map,
     _profile_revision,
     _require_profile_build_intent,
@@ -120,8 +121,52 @@ def test_environment_build_receipt_uses_concrete_content_addressed_runtime_ident
     builder = (ROOT / "scripts" / "build_environment_images.py").read_text(
         encoding="utf-8"
     )
-    assert '"schema": "noetrium.environment-image-build.v2"' in builder
+    assert '"schema": "noetrium.environment-image-build.v3"' in builder
     assert '"runtime_identity_digest"' in builder
+
+
+def test_environment_profile_build_input_changes_with_runtime_sources() -> None:
+    web = {"profile_id": "web", "category_id": "web"}
+    first = _profile_build_input_digest(
+        web,
+        profile_revision="a" * 64,
+        base_runtime_identity_digest="b" * 64,
+        java_runtime_identity_digest=None,
+        node_version="22.22.2",
+    )
+    changed_base = _profile_build_input_digest(
+        web,
+        profile_revision="a" * 64,
+        base_runtime_identity_digest="c" * 64,
+        java_runtime_identity_digest=None,
+        node_version="22.22.2",
+    )
+    assert first != changed_base
+
+    minecraft = {"profile_id": "minecraft", "category_id": "minecraft"}
+    mc_first = _profile_build_input_digest(
+        minecraft,
+        profile_revision="d" * 64,
+        base_runtime_identity_digest="e" * 64,
+        java_runtime_identity_digest="a" * 64,
+        node_version="22.22.2",
+    )
+    mc_java_changed = _profile_build_input_digest(
+        minecraft,
+        profile_revision="d" * 64,
+        base_runtime_identity_digest="e" * 64,
+        java_runtime_identity_digest="b" * 64,
+        node_version="22.22.2",
+    )
+    mc_node_changed = _profile_build_input_digest(
+        minecraft,
+        profile_revision="d" * 64,
+        base_runtime_identity_digest="e" * 64,
+        java_runtime_identity_digest="a" * 64,
+        node_version="22.23.0",
+    )
+    assert mc_first != mc_java_changed
+    assert mc_first != mc_node_changed
 
 
 def test_environment_registry_declares_share_vs_isolate_policy() -> None:
@@ -163,6 +208,7 @@ def test_environment_images_extend_qualified_base_and_install_local_doctors() ->
         assert "org.opencontainers.image.noetrium.environment.profile-id" in text
         assert "org.opencontainers.image.noetrium.environment.category-id" in text
         assert "org.opencontainers.image.noetrium.environment.profile-revision" in text
+        assert "org.opencontainers.image.noetrium.environment.build-input.sha256" in text
         lowered = text.lower()
         for forbidden in ("copy research", "copy benchmarks", "copy datasets", "copy checkpoints", "copy experiments"):
             assert forbidden not in lowered
@@ -241,6 +287,8 @@ def test_deployment_runtime_images_are_source_configurable_without_remote_fronte
     assert "--java-runtime-image" in builder
     assert "--java-runtime-canonical-image" in builder
     assert '"runtime_image_sources"' in builder
+    assert "PLATFORM_PYTHON_RUNTIME_IDENTITY_DIGEST" in builder
+    assert "NOETRIUM_ENVIRONMENT_BUILD_INPUT_DIGEST" in builder
     assert "profile_revision" in builder
     assert "_verified_profile_image_identity" in builder
     for dockerfile in (ROOT / "deploy").rglob("Dockerfile"):
