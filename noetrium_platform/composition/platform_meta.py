@@ -34,8 +34,14 @@ from noetrium_platform.foundation.portfolio.runtime import (
     SQLitePortfolioCatalog,
 )
 from noetrium_platform.infrastructure.resources.compute.api import ComputeInventoryPort, ComputeSchedulerPort, GpuRuntimeObserverPort, HostRuntimeObserverPort
-from noetrium_platform.infrastructure.resources.allocation.api import EndpointAllocationPort
-from noetrium_platform.infrastructure.resources.allocation.providers import SocketEndpointProbe
+from noetrium_platform.infrastructure.resources.allocation.api import (
+    EndpointAllocationPort,
+    EndpointCandidatePortSourcePort,
+)
+from noetrium_platform.infrastructure.resources.allocation.providers import (
+    LocalEndpointCandidateSource,
+    SocketEndpointProbe,
+)
 from noetrium_platform.infrastructure.resources.providers import (
     SQLiteEndpointAllocationStore,
     SQLiteResourceLeaseRegistry,
@@ -83,6 +89,7 @@ class PlatformMetaAuthorities:
     resource_ownership: ResourceOwnershipPort
     resource_leases: ResourceLeasePort
     endpoint_allocations: EndpointAllocationPort
+    endpoint_candidates: EndpointCandidatePortSourcePort
     compute_inventory: ComputeInventoryPort
     compute_scheduler: ComputeSchedulerPort
 
@@ -97,10 +104,12 @@ def build_in_memory_platform_meta(
     evolution = RegistryDrivenEvolutionController(systems)
     resources = InMemoryResourceLeaseRegistry()
     compute_inventory = InMemoryComputeInventory()
+    endpoint_candidates = LocalEndpointCandidateSource()
     endpoint_allocations = InMemoryEndpointAllocator(
         ownership=resources,
         leases=resources,
         probe=SocketEndpointProbe(),
+        candidates=endpoint_candidates,
     )
     artifacts = InMemoryArtifactRegistry()
     datasets = InMemoryDatasetRegistry()
@@ -125,6 +134,7 @@ def build_in_memory_platform_meta(
         resource_ownership=resources,
         resource_leases=resources,
         endpoint_allocations=endpoint_allocations,
+        endpoint_candidates=endpoint_candidates,
         compute_inventory=compute_inventory,
         compute_scheduler=InMemoryComputeScheduler(
             compute_inventory, ownership=resources, leases=resources,
@@ -160,9 +170,11 @@ def build_durable_platform_meta(
     evolution = RegistryDrivenEvolutionController(systems, store=evolution_store)
     experimentation = SQLiteExperimentationCatalog(root / "platform-experimentation.sqlite", scopes)
     resources = SQLiteResourceLeaseRegistry(database)
+    endpoint_candidates = LocalEndpointCandidateSource()
     endpoint_allocations = AtomicEndpointAllocator(
         reservations=SQLiteEndpointAllocationStore(database),
         probe=SocketEndpointProbe(),
+        candidates=endpoint_candidates,
     )
     compute_inventory = SQLiteComputeInventory(database)
     compute_scheduler = SQLiteComputeScheduler(
@@ -202,6 +214,7 @@ def build_durable_platform_meta(
         resource_ownership=resources,
         resource_leases=resources,
         endpoint_allocations=endpoint_allocations,
+        endpoint_candidates=endpoint_candidates,
         compute_inventory=compute_inventory,
         compute_scheduler=compute_scheduler,
     )

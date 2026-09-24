@@ -18,12 +18,10 @@ from noetrium_platform.capabilities.model.deployment.runtime.templates import (
     vllm_deployment,
 )
 from noetrium_platform.foundation.kernel.kernel import canonical_digest
-from noetrium_platform.substrate.api import ScopeIdentity
+from noetrium_platform.substrate.api import PLATFORM_SCOPE, ScopeIdentity
 from noetrium_platform.substrate.api import (
     EndpointAllocation,
-    EndpointCandidatePortSourcePort,
     EndpointAllocationPort,
-    EndpointAllocationRequest,
     EndpointBindingProof,
     EndpointLeaseGuardFactoryPort,
 )
@@ -191,7 +189,6 @@ class LocalModelReplicaPoolRuntime:
         fleet: ModelFleetRuntimePort,
         compute_scheduler: ComputeSchedulerPort,
         endpoint_allocations: EndpointAllocationPort,
-        endpoint_candidates: EndpointCandidatePortSourcePort,
         compute_lease_guards: ComputeLeaseGuardFactoryPort,
         endpoint_lease_guards: EndpointLeaseGuardFactoryPort,
     ) -> None:
@@ -200,7 +197,6 @@ class LocalModelReplicaPoolRuntime:
         self._fleet = fleet
         self._compute_scheduler = compute_scheduler
         self._endpoint_allocations = endpoint_allocations
-        self._endpoint_candidates = endpoint_candidates
         self._compute_lease_guards = compute_lease_guards
         self._endpoint_lease_guards = endpoint_lease_guards
 
@@ -274,23 +270,17 @@ class LocalModelReplicaPoolRuntime:
                         break
                     raise
                 compute_rows.append(compute)
-                ports = self._endpoint_candidates.candidate_ports(
+                endpoint = self._endpoint_allocations.allocate_auto(
+                    allocation_id=(
+                        f"model-pool:{request.pool_id}:{request_digest[:16]}:"
+                        f"{index}:endpoint"
+                    ),
+                    holder_scope=request.scope,
+                    owner_scope=PLATFORM_SCOPE,
+                    ownership=ResourceOwnership.PLATFORM_MANAGED,
+                    purpose=f"model-replica:{request.pool_id}",
                     host=request.endpoint_host,
-                    count=request.endpoint_candidate_count,
-                )
-                endpoint = self._endpoint_allocations.allocate(
-                    EndpointAllocationRequest(
-                        allocation_id=(
-                            f"model-pool:{request.pool_id}:{request_digest[:16]}:"
-                            f"{index}:endpoint"
-                        ),
-                        holder_scope=request.scope,
-                        owner_scope=request.scope,
-                        ownership=ResourceOwnership.PLATFORM_MANAGED,
-                        purpose=f"model-replica:{request.pool_id}",
-                        host=request.endpoint_host,
-                        candidate_ports=ports,
-                    )
+                    candidate_count=request.endpoint_candidate_count,
                 )
                 endpoint_rows.append(endpoint)
                 spec = self._deployment(
