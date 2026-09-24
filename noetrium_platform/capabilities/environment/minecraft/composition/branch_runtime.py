@@ -343,6 +343,15 @@ class MinecraftBranchRuntimeBinding(MinecraftBranchRuntimePort):
                 self._session.close()
             except BaseException as exc:
                 errors.append(exc)
+                # The environment session may still own a live bridge/client
+                # process that consumes the server endpoint. Lower lifecycle
+                # stages must remain fenced until that physical consumer is
+                # proven quiescent.
+                raise MinecraftBranchRuntimeError(
+                    "branch runtime close failed before session convergence",
+                    phase="close",
+                    cleanup_errors=tuple(errors),
+                ) from exc
             else:
                 self._session_closed = True
 
