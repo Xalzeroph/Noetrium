@@ -8,6 +8,7 @@ from noetrium_platform.foundation.kernel.kernel import (
     AuthenticatedWorkerInterpreter,
     InMemoryMachineAuthority,
     InMemoryMachineJournal,
+    ManualLeaseClock,
     MachineCommand,
     MachineIdentity,
     MachineKind,
@@ -54,8 +55,11 @@ def _command(machine_id: str, revision: int, command_id: str) -> MachineCommand:
 
 
 def test_machine_authority_fences_expired_owner_before_commit() -> None:
-    now = [100.0]
-    authority = InMemoryMachineAuthority(clock=lambda: now[0])
+    clock = ManualLeaseClock(
+        elapsed_seconds=10.0,
+        wall_epoch_seconds=100.0,
+    )
+    authority = InMemoryMachineAuthority(clock=clock)
     lease_a = authority.acquire("m1", "worker-a", ttl_seconds=5)
     runtime = MachineExecutor(
         identity=MachineIdentity("m1", MachineKind.RUN, "1", "generation-1"),
@@ -66,7 +70,7 @@ def test_machine_authority_fences_expired_owner_before_commit() -> None:
     )
     runtime.open({})
     runtime.step(_command("m1", 0, "c1"), _Interpreter())
-    now[0] = 106.0
+    clock.advance(6.0)
     authority.acquire("m1", "worker-b", ttl_seconds=5)
     with pytest.raises(MachineLeaseLost):
         runtime.step(_command("m1", 1, "c2"), _Interpreter())
@@ -74,11 +78,16 @@ def test_machine_authority_fences_expired_owner_before_commit() -> None:
 
 def test_directory_machine_authority_preserves_epoch_across_restart(tmp_path) -> None:
     path = tmp_path / "authority"
-    first = DirectoryMachineAuthority(path)
-    lease = first.acquire("m2", "owner-a", now=10.0)
+    clock = ManualLeaseClock(
+        elapsed_seconds=10.0,
+        wall_epoch_seconds=1_000.0,
+    )
+    first = DirectoryMachineAuthority(path, clock=clock)
+    lease = first.acquire("m2", "owner-a")
     first.release(lease)
-    second = DirectoryMachineAuthority(path)
-    next_lease = second.acquire("m2", "owner-b", now=20.0)
+    clock.advance(10.0)
+    second = DirectoryMachineAuthority(path, clock=clock)
+    next_lease = second.acquire("m2", "owner-b")
     assert next_lease.epoch == lease.epoch + 1
 
 
