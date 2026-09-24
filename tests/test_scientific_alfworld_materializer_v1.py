@@ -10,6 +10,7 @@ from research.benchmarks.alfworld import (
     ALFWORLD_RELEASE_COMMIT,
     ALFWORLD_RELEASE_VERSION,
     materialize_alfworld_paper_eval,
+    register_alfworld_materialization,
 )
 
 _RAW_FAMILIES = (
@@ -123,3 +124,14 @@ def test_text_runtime_authority_freezes_historical_dependency_commits() -> None:
     assert ALFWORLD_TEXTWORLD_COMMIT == "634f9f91fec732a79dd9e7623675301a53f06623"
     assert ALFWORLD_FAST_DOWNWARD_COMMIT == "84769171b9d965bf5739eaa7cf6604b0d9697534"
     assert len(ALFWORLD_TEXT_RUNTIME_AUTHORITY_DIGEST) == 64
+
+
+def test_materialization_registers_exact_benchmark_authority(tmp_path: Path) -> None:
+    root, paths = _dataset(tmp_path)
+    materialized = _materialize(root, paths)
+    registration = register_alfworld_materialization(materialized)
+
+    assert registration.resolution == materialized.resolution
+    assert registration.benchmark_id == materialized.resolution.task_set.benchmark_id
+    assert len(registration.authority_proof_digest) == 64
+    assert len(registration.registration_digest) == 64
