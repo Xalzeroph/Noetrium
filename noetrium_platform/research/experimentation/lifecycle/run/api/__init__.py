@@ -1,5 +1,4 @@
 from .identity import RunIdentity
-from .identity_ports import RunIdentityProvider
 from .lifecycle import RunCleanupFailure, RunCleanupReport, RunClosed, RunRecoveryRequired
 from .cleanup import attach_cleanup_note
 from .manifest import CompositionPlanReference, RunLaunchManifest, RunResearchSemanticsReference
@@ -54,7 +53,6 @@ from .execution import ExperimentRunResult
 
 __all__ = [
     "RunIdentity",
-    "RunIdentityProvider",
     "RunCleanupFailure",
     "RunCleanupReport",
     "RunClosed",
