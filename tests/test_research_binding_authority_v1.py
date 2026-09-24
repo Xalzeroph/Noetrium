@@ -16,6 +16,13 @@ from noetrium_platform.capabilities.participant.core.api import (
 from noetrium_platform.composition.research_binding_authority import (
     ResearchBindingAuthority,
     ResearchBindingAuthorityError,
+    ResearchBindingResolutionContext,
+    ResearchCapabilityBindingRegistration,
+    ResearchCapabilityBindingRegistry,
+    ResearchModelRoleBindingRegistration,
+    ResearchModelRoleBindingRegistry,
+    ResearchParticipantBindingRegistration,
+    ResearchParticipantBindingRegistry,
     ResearchProjectManifestRegistry,
 )
 from noetrium_platform.foundation.governance.architecture.api import (
@@ -43,6 +50,9 @@ from noetrium_platform.foundation.portfolio.api import (
     ProjectProviderBinding,
     ProjectSpec,
     ProjectToolProvenance,
+)
+from noetrium_platform.research.experimentation.api import (
+    resolve_research_requirements,
 )
 from noetrium_platform.research.experimentation.lifecycle.api import (
     BenchmarkTaskSet,
@@ -368,3 +378,77 @@ def test_project_manifest_registry_rejects_ambiguous_project_study_versions() ->
     )
     with pytest.raises(ValueError, match="ambiguous Study coverage"):
         ResearchProjectManifestRegistry((first, second))
+
+
+
+def test_binding_registries_close_study_without_custom_resolver_logic() -> None:
+    definition = _definition()
+    manifest = _manifest()
+    requirement_resolution = resolve_research_requirements(
+        definition,
+        manifest,
+    )
+    context = ResearchBindingResolutionContext.create(
+        definition,
+        manifest,
+        requirement_resolution,
+    )
+
+    capability_owner = _Capabilities()
+    capability_registry = ResearchCapabilityBindingRegistry(
+        tuple(
+            ResearchCapabilityBindingRegistration(
+                manifest.semantic_digest,
+                requirement.requirement_id,
+                canonical_digest(requirement),
+                capability_owner.resolve(requirement, context),
+            )
+            for requirement in requirement_resolution.capability_requirements
+        )
+    )
+
+    participant_owner = _Participants()
+    participant_registry = ResearchParticipantBindingRegistry(
+        tuple(
+            ResearchParticipantBindingRegistration(
+                manifest.semantic_digest,
+                requirement.requirement_digest,
+                participant_owner.resolve(requirement, context),
+            )
+            for requirement in definition.binding_requirements.participants
+        )
+    )
+
+    model_owner = _Models()
+    model_registry = ResearchModelRoleBindingRegistry(
+        tuple(
+            ResearchModelRoleBindingRegistration(
+                manifest.semantic_digest,
+                requirement.requirement_digest,
+                model_owner.resolve(requirement, context),
+            )
+            for requirement in definition.binding_requirements.model_roles
+        )
+    )
+
+    authority = ResearchBindingAuthority(
+        ResearchProjectManifestRegistry((manifest,)),
+        capability_registry,
+        participant_registry,
+        model_registry,
+    )
+    resolved, contribution = authority.resolve(definition)
+
+    assert resolved.resolution_digest == requirement_resolution.resolution_digest
+    assert tuple(
+        row.requirement_id for row in contribution.capability_bindings
+    ) == ("trial.provider", "model.generate")
+    assert tuple(
+        row.role for row in contribution.participant_bindings
+    ) == ("agent",)
+    assert tuple(
+        row.role for row in contribution.model_role_bindings
+    ) == ("solver",)
+    assert len(capability_registry.identity_digest) == 64
+    assert len(participant_registry.identity_digest) == 64
+    assert len(model_registry.identity_digest) == 64
