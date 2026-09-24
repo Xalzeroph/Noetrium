@@ -36,7 +36,12 @@ class DirectoryResearchOSExperimentArtifactStoreFactory(
             raise TypeError(
                 "Research OS Experiment Artifact factory root must be pathlib.Path"
             )
-        if not isinstance(task_group, TaskGroupPort):
+        group_id = getattr(task_group, "group_id", None)
+        if (
+            type(group_id) is not str
+            or not group_id.strip()
+            or not callable(getattr(task_group, "open_serial_actor", None))
+        ):
             raise TypeError(
                 "Research OS Experiment Artifact factory requires TaskGroupPort"
             )
