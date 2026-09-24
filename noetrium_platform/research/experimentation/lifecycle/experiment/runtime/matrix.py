@@ -394,19 +394,6 @@ class ExperimentDoctor(ExperimentDoctorPort):
 
 
 
-class UniversalExperimentKernel:
-    def __init__(self, planner: StaticUnitPlanner | None = None, doctor: UniversalExperimentDoctor | None = None) -> None:
-        self.planner = planner or StaticUnitPlanner()
-        self.doctor = doctor or ExperimentDoctor()
-
-    def compile(self, definition: UniversalExperimentDefinition, units: tuple[UniversalExperimentUnit, ...]) -> UniversalExperimentPlan:
-        return self.planner.plan(definition, units)
-
-    def inspect(self, plan: UniversalExperimentPlan, observations: tuple[UniversalObservationEnvelope, ...]) -> UniversalDoctorReport:
-        return self.doctor.report(plan, observations)
-
-
-
 def project_experiment_run_report(
     plan: UniversalExperimentPlan,
     run_id: str,
@@ -446,5 +433,5 @@ UniversalDoctorReport = DoctorReport
 __all__ = [
     "StudyMatrixUniversalProjection", "StaticUnitPlanner",
     "InMemoryObservationProjection", "DoctorReport", "ExperimentDoctor",
-    "UniversalExperimentKernel", "MetricEngine", "project_experiment_run_report",
+    "MetricEngine", "project_experiment_run_report",
 ]
