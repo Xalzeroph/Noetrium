@@ -375,6 +375,17 @@ class ExecutionEnvironmentCatalog:
         self._validate_fresh_instance(instance)
         self._put(self._instances, instance.instance_id, instance)
 
+    def instances(self) -> tuple[EnvironmentInstance, ...]:
+        return tuple(sorted(self._instances.values(), key=lambda row: row.instance_id))
+
+    def bindings(self) -> tuple[EnvironmentBinding, ...]:
+        return tuple(
+            sorted(
+                self._binding_rows.values(),
+                key=lambda row: (row.scope.key, row.role, row.binding_id),
+            )
+        )
+
     def register_recovery_instance(
         self,
         instance: EnvironmentInstance,
@@ -1299,6 +1310,14 @@ class SQLiteExecutionEnvironmentCatalog(ExecutionEnvironmentCatalog):
         self._load()
         super().register_instance(instance)
         self._persist()
+
+    def instances(self) -> tuple[EnvironmentInstance, ...]:
+        self._load()
+        return super().instances()
+
+    def bindings(self) -> tuple[EnvironmentBinding, ...]:
+        self._load()
+        return super().bindings()
 
     def register_recovery_instance(
         self,

@@ -54,6 +54,7 @@ from noetrium_platform.infrastructure.resources.lease.api import ResourceLeasePo
 from noetrium_platform.infrastructure.resources.lease.runtime import InMemoryResourceLeaseRegistry
 from noetrium_platform.capabilities.environment.catalog.api import ExecutionEnvironmentCatalogPort
 from noetrium_platform.capabilities.environment.catalog.runtime import (
+    EnvironmentInstanceLeaseAuthority,
     ExecutionEnvironmentCatalog,
     SQLiteExecutionEnvironmentCatalog,
 )
@@ -76,6 +77,7 @@ class PlatformMetaAuthorities:
     portfolio: PortfolioCatalogPort
     experimentation: ExperimentationCatalogPort
     environments: ExecutionEnvironmentCatalogPort
+    environment_instance_leases: EnvironmentInstanceLeaseAuthority
     artifacts: ArtifactRegistryPort
     datasets: DatasetRegistryPort
     facts: DurableFactStorePort
@@ -102,6 +104,12 @@ def build_in_memory_platform_meta(
         leases=resources,
         probe=SocketEndpointProbe(),
     )
+    environments = ExecutionEnvironmentCatalog(scopes)
+    environment_instance_leases = EnvironmentInstanceLeaseAuthority(
+        catalog=environments,
+        ownership=resources,
+        leases=resources,
+    )
     artifacts = InMemoryArtifactRegistry()
     datasets = InMemoryDatasetRegistry()
     facts = compose_in_memory_fact_store()
@@ -117,7 +125,8 @@ def build_in_memory_platform_meta(
         capability_composition=CapabilityCompositionPlanner(systems=systems, scopes=scopes),
         portfolio=InMemoryPortfolioCatalog(scopes),
         experimentation=InMemoryExperimentationCatalog(scopes),
-        environments=ExecutionEnvironmentCatalog(scopes),
+        environments=environments,
+        environment_instance_leases=environment_instance_leases,
         artifacts=artifacts,
         datasets=datasets,
         facts=facts,
@@ -160,6 +169,15 @@ def build_durable_platform_meta(
     evolution = RegistryDrivenEvolutionController(systems, store=evolution_store)
     experimentation = SQLiteExperimentationCatalog(root / "platform-experimentation.sqlite", scopes)
     resources = SQLiteResourceLeaseRegistry(database)
+    environments = SQLiteExecutionEnvironmentCatalog(
+        root / "platform-environments.sqlite",
+        scopes,
+    )
+    environment_instance_leases = EnvironmentInstanceLeaseAuthority(
+        catalog=environments,
+        ownership=resources,
+        leases=resources,
+    )
     endpoint_allocations = AtomicEndpointAllocator(
         reservations=SQLiteEndpointAllocationStore(database),
         probe=SocketEndpointProbe(),
@@ -194,7 +212,8 @@ def build_durable_platform_meta(
         capability_composition=CapabilityCompositionPlanner(systems=systems, scopes=scopes),
         portfolio=SQLitePortfolioCatalog(database, scopes),
         experimentation=experimentation,
-        environments=SQLiteExecutionEnvironmentCatalog(root / "platform-environments.sqlite", scopes),
+        environments=environments,
+        environment_instance_leases=environment_instance_leases,
         artifacts=artifacts,
         datasets=datasets,
         facts=facts,
