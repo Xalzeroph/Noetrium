@@ -288,7 +288,6 @@ class ExperimentDefinition:
     observation_protocol_digest: str
     analysis_plan_digest: str
     implementation_digest: str
-    resource_policy_digest: str
     input_cut_digest: str | None = None
     objective: str = ""
     metadata: Mapping[str, JsonValue] = field(default_factory=dict)
@@ -304,8 +303,7 @@ class ExperimentDefinition:
         for name, value in (("design_protocol_digest", self.design_protocol_digest),
                             ("observation_protocol_digest", self.observation_protocol_digest),
                             ("analysis_plan_digest", self.analysis_plan_digest),
-                            ("implementation_digest", self.implementation_digest),
-                            ("resource_policy_digest", self.resource_policy_digest)):
+                            ("implementation_digest", self.implementation_digest)):
             require_sha256(value, f"experiment definition {name}")
         if self.input_cut_digest is not None:
             require_sha256(self.input_cut_digest, "experiment definition input_cut_digest")
@@ -323,7 +321,6 @@ class ExperimentDefinition:
             "observation_protocol_digest": self.observation_protocol_digest,
             "analysis_plan_digest": self.analysis_plan_digest,
             "implementation_digest": self.implementation_digest,
-            "resource_policy_digest": self.resource_policy_digest,
             "input_cut_digest": self.input_cut_digest,
             "objective": self.objective, "metadata": self.metadata,
         }))

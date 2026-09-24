@@ -33,7 +33,6 @@ def definition(mode: ExecutionMode = ExecutionMode.INTERACTIVE) -> ExperimentDef
         observation_protocol_digest=SHA_B,
         analysis_plan_digest="c" * 64,
         implementation_digest="d" * 64,
-        resource_policy_digest="e" * 64,
         objective="measure a generic session",
         metadata={"family": "agent", "version": 1},
     )

@@ -190,13 +190,6 @@ from noetrium_platform.research.experimentation.lifecycle.evaluation.api import 
     build_comparability_proof,
 )
 
-from noetrium_platform.research.experimentation.lifecycle.experiment.resource.api import (
-    ComputeDemand,
-    ResourceAllocationLeasePort,
-    ResourceAllocationReceipt,
-    ResourcePolicy,
-)
-
 from noetrium_platform.research.experimentation.lifecycle.experiment.api.contracts import (
     FindingSeverity,
     ObservationEnvelope,
@@ -235,7 +228,6 @@ __all__ = [
     "CheckpointTriggerKind",
     "ComparabilityProof",
     "CompositionPlanReference",
-    "ComputeDemand",
     "DerivedEvidenceArtifact",
     "DoctorFinding",
     "EVIDENCE_BUNDLE_SCHEMA_VERSION",
@@ -298,9 +290,6 @@ __all__ = [
     "ReplayLevel",
     "ResearchRevision",
     "ResearchStudyDefinition",
-    "ResourceAllocationLeasePort",
-    "ResourceAllocationReceipt",
-    "ResourcePolicy",
     "RunArtifactFinalizationError",
     "RunArtifactFinalizationPort",
     "RunArtifactKind",

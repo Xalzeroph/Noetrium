@@ -376,12 +376,10 @@
     "downstream_surface": "public",
     "requires": [
       "artifact",
-      "resource/compute",
       "scope"
     ],
     "provides": [
       "experiment.definition",
-      "experiment.resource-policy",
       "experiment.runtime",
       "run.checkpoint",
       "run.control",
@@ -425,18 +423,6 @@
         "must_not_own": "runtime process state or an independent execution loop",
         "shape": [
           "api"
-        ]
-      },
-      {
-        "key": "experimentation/lifecycle/resource",
-        "package_prefix": "noetrium_platform.research.experimentation.lifecycle.experiment.resource",
-        "node_kind": "policy",
-        "owns": "typed experiment resource policy identity, placement requirements and allocation receipts",
-        "must_not_own": "physical compute truth, model-serving capacity or execution scheduling policy",
-        "shape": [
-          "api",
-          "runtime",
-          "composition"
         ]
       },
       {

@@ -16,7 +16,7 @@ SHA = "a" * 64
 def definition() -> ExperimentDefinition:
     return ExperimentDefinition(
         "project", "experiment", "protocol", ExperimentUnitKind.EPISODE,
-        ExecutionMode.SIMULATION, SHA, "b" * 64, "c" * 64, "d" * 64, "e" * 64,
+        ExecutionMode.SIMULATION, SHA, "b" * 64, "c" * 64, "d" * 64,
     )
 
 def unit(unit_id: str, ordinal: int) -> ExperimentUnit:
