@@ -9,7 +9,6 @@ from __future__ import annotations
 from .host_runtime import (
     ResearchMachineRunPort,
     ResearchMachineSessionPort,
-    ResearchProgramHostFactoryPort,
     ResearchProgramHostPort,
 )
 from ..program import (
@@ -443,7 +442,6 @@ __all__ = [
     "visibility_runtime_module",
     "ResearchMachineRunPort",
     "ResearchMachineSessionPort",
-    "ResearchProgramHostFactoryPort",
     "ResearchProgramHostPort",
     "capability_runtime_operations",
     "default_memory_handlers",
