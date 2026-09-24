@@ -852,15 +852,12 @@ class _ExecutionStoreWithoutActiveCut:
     ):
         raise AssertionError("unused")
 
-    def renew_lease(
+    def renew_leases(
         self,
         execution_id,
-        node_id,
+        renewals,
         *,
-        attempt_id,
-        owner_id,
         now_ns,
-        lease_expires_at_ns,
     ):
         raise AssertionError("unused")
 
