@@ -11,7 +11,7 @@ def _lane(plan: dict, package: str) -> dict:
 
 def test_fleet_plan_separates_materialization_from_true_execution_readiness() -> None:
     plan = build_plan()
-    assert plan["schema"] == "noetrium.reproduction-fleet-plan.v9"
+    assert plan["schema"] == "noetrium.reproduction-fleet-plan.v10"
     assert plan["compile_failure_count"] == 0
     assert plan["research_os_compiled_count"] == plan["executable_reproduction_count"]
     assert plan["graph_node_count"] == plan["executable_reproduction_count"]
@@ -20,6 +20,9 @@ def test_fleet_plan_separates_materialization_from_true_execution_readiness() ->
     assert len(plan["portfolio_digest"]) == 64
     assert len(plan["graph_digest"]) == 64
     assert len(plan["plan_digest"]) == 64
+    assert len(plan["prerequisite_manifest_digest"]) == 64
+    assert plan["prerequisite_requirement_count"] > 0
+    assert plan["prerequisite_stage_counts"]["benchmark"] > 0
     assert "execution_ready_count" not in plan
 
     states = {
