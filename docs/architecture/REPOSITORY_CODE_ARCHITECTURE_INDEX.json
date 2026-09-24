@@ -1,18 +1,23 @@
 {
   "counts": {
-    "parse_errors": 0,
-    "python_files": 3685,
-    "python_import_edges": 7144,
-    "symbols": 4967,
-    "tracked_files": 4321,
+    "parse_errors": 1,
+    "python_files": 3688,
+    "python_import_edges": 7140,
+    "symbols": 4984,
+    "tracked_files": 4324,
     "typescript_javascript_files": 11
   },
   "language_symbol_counts": {
     "javascript": 1,
-    "python": 4961,
+    "python": 4978,
     "typescript": 5
   },
-  "parse_errors": [],
+  "parse_errors": [
+    {
+      "error": "unterminated string literal (detected at line 37) (test_tmux_joined_runtime_status_v150.py, line 37)",
+      "path": "tests/test_tmux_joined_runtime_status_v150.py"
+    }
+  ],
   "python_import_edges": [
     {
       "source_module": "components.reference.environment_counter",
@@ -11394,6 +11399,12 @@
       "source_module": "noetrium_platform.infrastructure.lifecycle.service.runtime.linux_spawn",
       "source_role": "core_platform",
       "target_module": "noetrium_platform.infrastructure.lifecycle.service.api.environment",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "noetrium_platform.infrastructure.lifecycle.service.runtime.linux_start_marker",
+      "source_role": "core_platform",
+      "target_module": "noetrium_platform.infrastructure.lifecycle.service.api",
       "target_role": "core_platform"
     },
     {
@@ -28089,6 +28100,24 @@
       "target_role": "core_platform"
     },
     {
+      "source_module": "tests.test_linux_process_signal_generation_v1",
+      "source_role": "tests",
+      "target_module": "noetrium_platform.infrastructure.lifecycle.service.api",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "tests.test_linux_process_signal_generation_v1",
+      "source_role": "tests",
+      "target_module": "noetrium_platform.infrastructure.lifecycle.service.runtime",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "tests.test_linux_process_signal_generation_v1",
+      "source_role": "tests",
+      "target_module": "noetrium_platform.infrastructure.lifecycle.service.runtime.process_contracts",
+      "target_role": "core_platform"
+    },
+    {
       "source_module": "tests.test_local_compute_inventory_autodiscovery_v1",
       "source_role": "tests",
       "target_module": "noetrium_platform.infrastructure.resources.compute.api",
@@ -28134,6 +28163,12 @@
       "source_module": "tests.test_local_service_process_v110",
       "source_role": "tests",
       "target_module": "noetrium_platform.infrastructure.lifecycle.service.runtime.linux_procfs",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "tests.test_local_service_process_v110",
+      "source_role": "tests",
+      "target_module": "noetrium_platform.infrastructure.lifecycle.service.runtime.start_journal",
       "target_role": "core_platform"
     },
     {
@@ -36105,6 +36140,12 @@
       "target_role": "research_reproductions"
     },
     {
+      "source_module": "tests.test_scientific_alfworld_text_runtime_v1",
+      "source_role": "tests",
+      "target_module": "research.benchmarks.alfworld.runtime.session",
+      "target_role": "research_reproductions"
+    },
+    {
       "source_module": "tests.test_scientific_autogen_agentchat_fidelity_v1",
       "source_role": "tests",
       "target_module": "research.reproductions.autogen_agentchat",
@@ -40929,72 +40970,6 @@
       "target_role": "core_platform"
     },
     {
-      "source_module": "tests.test_tmux_joined_runtime_status_v150",
-      "source_role": "tests",
-      "target_module": "noetrium_platform.composition.reliability_observability",
-      "target_role": "core_platform"
-    },
-    {
-      "source_module": "tests.test_tmux_joined_runtime_status_v150",
-      "source_role": "tests",
-      "target_module": "noetrium_platform.composition.reliability_observability.forensic_status",
-      "target_role": "core_platform"
-    },
-    {
-      "source_module": "tests.test_tmux_joined_runtime_status_v150",
-      "source_role": "tests",
-      "target_module": "noetrium_platform.composition.status_adapters.runtime",
-      "target_role": "core_platform"
-    },
-    {
-      "source_module": "tests.test_tmux_joined_runtime_status_v150",
-      "source_role": "tests",
-      "target_module": "noetrium_platform.composition.status_adapters.session",
-      "target_role": "core_platform"
-    },
-    {
-      "source_module": "tests.test_tmux_joined_runtime_status_v150",
-      "source_role": "tests",
-      "target_module": "noetrium_platform.evidence.observability.status.runtime",
-      "target_role": "core_platform"
-    },
-    {
-      "source_module": "tests.test_tmux_joined_runtime_status_v150",
-      "source_role": "tests",
-      "target_module": "noetrium_platform.infrastructure.lifecycle.launch_control",
-      "target_role": "core_platform"
-    },
-    {
-      "source_module": "tests.test_tmux_joined_runtime_status_v150",
-      "source_role": "tests",
-      "target_module": "noetrium_platform.infrastructure.lifecycle.launch_control.status_readers",
-      "target_role": "core_platform"
-    },
-    {
-      "source_module": "tests.test_tmux_joined_runtime_status_v150",
-      "source_role": "tests",
-      "target_module": "noetrium_platform.infrastructure.lifecycle.session.api",
-      "target_role": "core_platform"
-    },
-    {
-      "source_module": "tests.test_tmux_joined_runtime_status_v150",
-      "source_role": "tests",
-      "target_module": "noetrium_platform.infrastructure.lifecycle.session.runtime",
-      "target_role": "core_platform"
-    },
-    {
-      "source_module": "tests.test_tmux_joined_runtime_status_v150",
-      "source_role": "tests",
-      "target_module": "noetrium_platform.infrastructure.reliability.forensics.runtime.diagnostic_adapter",
-      "target_role": "core_platform"
-    },
-    {
-      "source_module": "tests.test_tmux_joined_runtime_status_v150",
-      "source_role": "tests",
-      "target_module": "tests._concurrency_support",
-      "target_role": "tests"
-    },
-    {
       "source_module": "tests.test_tmux_parser_v1",
       "source_role": "tests",
       "target_module": "noetrium_platform.infrastructure.lifecycle.session.runtime.tmux_parser",
@@ -42417,6 +42392,12 @@
       "target_role": "core_platform"
     },
     {
+      "source_module": "tests.test_windows_process_job_lifecycle_v1",
+      "source_role": "tests",
+      "target_module": "noetrium_platform.infrastructure.lifecycle.process.supervision.runtime",
+      "target_role": "core_platform"
+    },
+    {
       "source_module": "tests.test_workflow_surface_isolation_v165",
       "source_role": "tests",
       "target_module": "noetrium_platform.composition.workflows.agent_turn",
@@ -42881,7 +42862,7 @@
   ],
   "role_import_counts": [
     {
-      "count": 2586,
+      "count": 2587,
       "source_role": "core_platform",
       "target_role": "core_platform"
     },
@@ -42941,7 +42922,7 @@
       "target_role": "research_reproductions"
     },
     {
-      "count": 2788,
+      "count": 2783,
       "source_role": "tests",
       "target_role": "core_platform"
     },
@@ -42961,12 +42942,12 @@
       "target_role": "reference_orchestration"
     },
     {
-      "count": 353,
+      "count": 354,
       "source_role": "tests",
       "target_role": "research_reproductions"
     },
     {
-      "count": 87,
+      "count": 86,
       "source_role": "tests",
       "target_role": "tests"
     },
@@ -42997,18 +42978,18 @@
     }
   ],
   "role_python_module_counts": {
-    "core_platform": 1910,
+    "core_platform": 1911,
     "examples": 6,
     "other": 7,
     "public_facade": 40,
     "reference_components": 22,
     "reference_orchestration": 10,
     "research_reproductions": 780,
-    "tests": 831,
+    "tests": 833,
     "tooling": 79
   },
   "role_symbol_counts": {
-    "core_platform": 3355,
+    "core_platform": 3356,
     "examples": 3,
     "other": 23,
     "public_facade": 4,
@@ -43016,11 +42997,11 @@
     "reference_orchestration": 14,
     "research_reproductions": 448,
     "sdk": 5,
-    "tests": 1012,
+    "tests": 1028,
     "tooling": 39
   },
   "schema": "noetrium-repository-code-architecture-index.v1",
-  "source_git_sha": "adf6fcb9b33255a9fa2909f6677181c3f518ec3c",
+  "source_git_sha": "bbcf2e1982040845589b888898f96509e6355846",
   "symbols": [
     {
       "bases": [],
@@ -48438,7 +48419,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 393,
+      "line": 419,
       "methods": [
         "__init__",
         "open"
@@ -64462,7 +64443,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 378,
+      "line": 386,
       "methods": [],
       "module": "noetrium_platform.composition.environment_instance_leases",
       "name": "EnvironmentInstanceLeaseHeartbeatError",
@@ -64476,7 +64457,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 382,
+      "line": 390,
       "methods": [
         "__init__",
         "handles",
@@ -64497,7 +64478,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 483,
+      "line": 495,
       "methods": [
         "__init__",
         "policy",
@@ -66062,6 +66043,7 @@
         "close_orchestration_group",
         "close_experiment_group",
         "close_model_io_group",
+        "_close_domain_for_physical_convergence",
         "quiesce_workloads",
         "orchestration_admission_snapshot",
         "experiment_admission_snapshot",
@@ -92754,11 +92736,14 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 18,
+      "line": 29,
       "methods": [
         "__init__",
         "reconcile",
         "start",
+        "prepare_start_recovery",
+        "start_prepared",
+        "reconcile_prepared_start",
         "alive",
         "stop"
       ],
@@ -92794,7 +92779,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 13,
+      "line": 14,
       "methods": [
         "__init__",
         "_evidence_ref",
@@ -92843,6 +92828,8 @@
         "_process_directory",
         "path",
         "visible_pid",
+        "process_ids",
+        "control_pid",
         "alive_pid",
         "_start_identity_from_directory",
         "_cmdline_from_directory",
@@ -92891,7 +92878,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 84,
+      "line": 102,
       "methods": [
         "__init__",
         "alive",
@@ -92937,6 +92924,33 @@
       "name": "LinuxProcessSpawner",
       "path": "noetrium_platform/infrastructure/lifecycle/service/runtime/linux_spawn.py",
       "qualname": "noetrium_platform.infrastructure.lifecycle.service.runtime.linux_spawn.LinuxProcessSpawner",
+      "role": "core_platform"
+    },
+    {
+      "bases": [],
+      "decorators": [
+        "dataclass(frozen=True, slots=True)"
+      ],
+      "fields": [
+        "token: str",
+        "intent_id: str",
+        "attempt: int",
+        "contract_digest: str",
+        "environment_digest: str",
+        "prepared_at_epoch_s: float"
+      ],
+      "kind": "dataclass",
+      "language": "python",
+      "line": 21,
+      "methods": [
+        "__post_init__",
+        "encode",
+        "decode"
+      ],
+      "module": "noetrium_platform.infrastructure.lifecycle.service.runtime.linux_start_marker",
+      "name": "LinuxPreparedStartToken",
+      "path": "noetrium_platform/infrastructure/lifecycle/service/runtime/linux_start_marker.py",
+      "qualname": "noetrium_platform.infrastructure.lifecycle.service.runtime.linux_start_marker.LinuxPreparedStartToken",
       "role": "core_platform"
     },
     {
@@ -93491,7 +93505,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 15,
+      "line": 16,
       "methods": [
         "__init__",
         "_load_state",
@@ -94279,7 +94293,8 @@
         "controller_dead: bool | None",
         "start_command: str | None",
         "current_path: str | None",
-        "evidence_refs: tuple[str, ...]"
+        "evidence_refs: tuple[str, ...]",
+        "session_generation: str | None"
       ],
       "kind": "dataclass",
       "language": "python",
@@ -94305,7 +94320,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 132,
+      "line": 133,
       "methods": [],
       "module": "noetrium_platform.infrastructure.lifecycle.session.api.contracts",
       "name": "PersistentSessionReport",
@@ -94327,7 +94342,7 @@
       ],
       "kind": "enum",
       "language": "python",
-      "line": 140,
+      "line": 141,
       "methods": [],
       "module": "noetrium_platform.infrastructure.lifecycle.session.api.contracts",
       "name": "PersistentSessionObservationState",
@@ -94351,7 +94366,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 149,
+      "line": 150,
       "methods": [],
       "module": "noetrium_platform.infrastructure.lifecycle.session.api.contracts",
       "name": "PersistentSessionObservation",
@@ -94372,7 +94387,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 160,
+      "line": 161,
       "methods": [
         "__post_init__",
         "digest"
@@ -99276,7 +99291,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 135,
+      "line": 139,
       "methods": [
         "__init__",
         "create"
@@ -99937,7 +99952,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 126,
+      "line": 130,
       "methods": [
         "__init__",
         "policy",
@@ -100328,6 +100343,7 @@
         "_lease_id",
         "_name",
         "_runtime_digest_valid",
+        "_require_handle_authority",
         "_validate_observation",
         "reserve",
         "docker_run_prefix",
@@ -100353,7 +100369,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 420,
+      "line": 457,
       "methods": [],
       "module": "noetrium_platform.infrastructure.resources.container.runtime.lease_authority",
       "name": "DockerContainerLeaseHeartbeatError",
@@ -100369,7 +100385,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 424,
+      "line": 461,
       "methods": [
         "__init__",
         "handles",
@@ -100392,7 +100408,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 528,
+      "line": 569,
       "methods": [
         "__init__",
         "policy",
@@ -119683,7 +119699,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 171,
+      "line": 184,
       "methods": [
         "__post_init__",
         "provider_instance_id",
@@ -119701,7 +119717,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 229,
+      "line": 242,
       "methods": [
         "__init__",
         "provider_instance_id",
@@ -134760,6 +134776,60 @@
       "role": "tests"
     },
     {
+      "bases": [
+        "_ExitedProcess"
+      ],
+      "decorators": [],
+      "fields": [],
+      "kind": "class",
+      "language": "python",
+      "line": 95,
+      "methods": [
+        "__init__",
+        "poll"
+      ],
+      "module": "tests.test_environment_jsonl_process_transport_v1",
+      "name": "_LiveProcess",
+      "path": "tests/test_environment_jsonl_process_transport_v1.py",
+      "qualname": "tests.test_environment_jsonl_process_transport_v1._LiveProcess",
+      "role": "tests"
+    },
+    {
+      "bases": [],
+      "decorators": [],
+      "fields": [],
+      "kind": "class",
+      "language": "python",
+      "line": 105,
+      "methods": [
+        "__init__",
+        "result"
+      ],
+      "module": "tests.test_environment_jsonl_process_transport_v1",
+      "name": "_Result",
+      "path": "tests/test_environment_jsonl_process_transport_v1.py",
+      "qualname": "tests.test_environment_jsonl_process_transport_v1._Result",
+      "role": "tests"
+    },
+    {
+      "bases": [],
+      "decorators": [],
+      "fields": [],
+      "kind": "class",
+      "language": "python",
+      "line": 117,
+      "methods": [
+        "__init__",
+        "await_exit",
+        "terminate"
+      ],
+      "module": "tests.test_environment_jsonl_process_transport_v1",
+      "name": "_FlakyTerminationSupervisor",
+      "path": "tests/test_environment_jsonl_process_transport_v1.py",
+      "qualname": "tests.test_environment_jsonl_process_transport_v1._FlakyTerminationSupervisor",
+      "role": "tests"
+    },
+    {
       "bases": [],
       "decorators": [],
       "fields": [],
@@ -136283,6 +136353,41 @@
       "fields": [],
       "kind": "class",
       "language": "python",
+      "line": 14,
+      "methods": [
+        "__init__",
+        "alive_pid",
+        "start_identity"
+      ],
+      "module": "tests.test_linux_process_signal_generation_v1",
+      "name": "_RacingProcfs",
+      "path": "tests/test_linux_process_signal_generation_v1.py",
+      "qualname": "tests.test_linux_process_signal_generation_v1._RacingProcfs",
+      "role": "tests"
+    },
+    {
+      "bases": [],
+      "decorators": [],
+      "fields": [],
+      "kind": "class",
+      "language": "python",
+      "line": 54,
+      "methods": [
+        "alive_pid",
+        "start_identity"
+      ],
+      "module": "tests.test_linux_process_signal_generation_v1",
+      "name": "_StableProcfs",
+      "path": "tests/test_linux_process_signal_generation_v1.py",
+      "qualname": "tests.test_linux_process_signal_generation_v1._StableProcfs",
+      "role": "tests"
+    },
+    {
+      "bases": [],
+      "decorators": [],
+      "fields": [],
+      "kind": "class",
+      "language": "python",
       "line": 12,
       "methods": [
         "snapshot"
@@ -136322,6 +136427,7 @@
         "setUp",
         "tearDown",
         "test_exact_local_process_can_start_reconcile_and_stop_without_host_env_merge",
+        "test_local_process_is_recovered_after_crash_between_spawn_and_process_journal",
         "test_materialized_environment_drift_fails_before_spawn",
         "test_pid_start_identity_mismatch_is_treated_as_missing_not_adopted"
       ],
@@ -136337,7 +136443,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 95,
+      "line": 169,
       "methods": [
         "resolve"
       ],
@@ -136355,7 +136461,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 130,
+      "line": 204,
       "methods": [
         "test_facts_resolves_process_directory_once"
       ],
@@ -136373,7 +136479,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 150,
+      "line": 224,
       "methods": [
         "__init__",
         "_process_directory"
@@ -137556,7 +137662,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 58,
+      "line": 59,
       "methods": [
         "__init__",
         "close"
@@ -137573,7 +137679,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 66,
+      "line": 67,
       "methods": [
         "__init__",
         "open_session"
@@ -137592,7 +137698,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 92,
+      "line": 93,
       "methods": [
         "__init__"
       ],
@@ -137608,7 +137714,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 119,
+      "line": 120,
       "methods": [
         "__init__",
         "advance_generation",
@@ -137628,7 +137734,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 149,
+      "line": 150,
       "methods": [
         "candidate_ports"
       ],
@@ -137644,7 +137750,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 198,
+      "line": 199,
       "methods": [
         "create"
       ],
@@ -137660,7 +137766,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 245,
+      "line": 246,
       "methods": [
         "__init__",
         "__getattr__",
@@ -137678,7 +137784,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 279,
+      "line": 280,
       "methods": [
         "create"
       ],
@@ -137696,7 +137802,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 335,
+      "line": 336,
       "methods": [
         "verify_ready"
       ],
@@ -137712,7 +137818,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 338,
+      "line": 339,
       "methods": [],
       "module": "tests.test_minecraft_branch_runtime_v1",
       "name": "MissingReadyAt",
@@ -137726,7 +137832,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 344,
+      "line": 345,
       "methods": [
         "create"
       ],
@@ -137742,7 +137848,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 375,
+      "line": 376,
       "methods": [
         "__init__",
         "__getattr__",
@@ -137760,7 +137866,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 405,
+      "line": 406,
       "methods": [
         "create"
       ],
@@ -137778,7 +137884,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 455,
+      "line": 456,
       "methods": [
         "prepare_action_recovery",
         "execute_prepared_action",
@@ -137798,7 +137904,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 470,
+      "line": 471,
       "methods": [
         "open_session"
       ],
@@ -137814,7 +137920,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 480,
+      "line": 481,
       "methods": [
         "create"
       ],
@@ -137832,7 +137938,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 519,
+      "line": 520,
       "methods": [
         "start"
       ],
@@ -137848,7 +137954,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 530,
+      "line": 531,
       "methods": [
         "create"
       ],
@@ -137864,7 +137970,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 570,
+      "line": 571,
       "methods": [
         "create"
       ],
@@ -137880,7 +137986,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 611,
+      "line": 612,
       "methods": [
         "__init__",
         "__getattr__",
@@ -137898,7 +138004,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 633,
+      "line": 634,
       "methods": [
         "create"
       ],
@@ -137916,7 +138022,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 681,
+      "line": 682,
       "methods": [
         "observe"
       ],
@@ -137934,7 +138040,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 686,
+      "line": 687,
       "methods": [
         "open_session"
       ],
@@ -137950,7 +138056,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 697,
+      "line": 698,
       "methods": [
         "create"
       ],
@@ -137966,7 +138072,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 701,
+      "line": 702,
       "methods": [
         "__init__",
         "start",
@@ -137985,7 +138091,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 714,
+      "line": 715,
       "methods": [
         "create"
       ],
@@ -137993,6 +138099,92 @@
       "name": "GuardFactory",
       "path": "tests/test_minecraft_branch_runtime_v1.py",
       "qualname": "tests.test_minecraft_branch_runtime_v1.GuardFactory",
+      "role": "tests"
+    },
+    {
+      "bases": [
+        "RecordingServer"
+      ],
+      "decorators": [],
+      "fields": [],
+      "kind": "class",
+      "language": "python",
+      "line": 749,
+      "methods": [
+        "__init__",
+        "stop"
+      ],
+      "module": "tests.test_minecraft_branch_runtime_v1",
+      "name": "FlakyStopServer",
+      "path": "tests/test_minecraft_branch_runtime_v1.py",
+      "qualname": "tests.test_minecraft_branch_runtime_v1.FlakyStopServer",
+      "role": "tests"
+    },
+    {
+      "bases": [],
+      "decorators": [],
+      "fields": [],
+      "kind": "class",
+      "language": "python",
+      "line": 765,
+      "methods": [
+        "create"
+      ],
+      "module": "tests.test_minecraft_branch_runtime_v1",
+      "name": "ServerFactory",
+      "path": "tests/test_minecraft_branch_runtime_v1.py",
+      "qualname": "tests.test_minecraft_branch_runtime_v1.ServerFactory",
+      "role": "tests"
+    },
+    {
+      "bases": [
+        "NoopGuard"
+      ],
+      "decorators": [],
+      "fields": [],
+      "kind": "class",
+      "language": "python",
+      "line": 804,
+      "methods": [
+        "__init__",
+        "close"
+      ],
+      "module": "tests.test_minecraft_branch_runtime_v1",
+      "name": "FlakyGuard",
+      "path": "tests/test_minecraft_branch_runtime_v1.py",
+      "qualname": "tests.test_minecraft_branch_runtime_v1.FlakyGuard",
+      "role": "tests"
+    },
+    {
+      "bases": [],
+      "decorators": [],
+      "fields": [],
+      "kind": "class",
+      "language": "python",
+      "line": 815,
+      "methods": [
+        "create"
+      ],
+      "module": "tests.test_minecraft_branch_runtime_v1",
+      "name": "GuardFactory",
+      "path": "tests/test_minecraft_branch_runtime_v1.py",
+      "qualname": "tests.test_minecraft_branch_runtime_v1.GuardFactory",
+      "role": "tests"
+    },
+    {
+      "bases": [],
+      "decorators": [],
+      "fields": [],
+      "kind": "class",
+      "language": "python",
+      "line": 826,
+      "methods": [
+        "create"
+      ],
+      "module": "tests.test_minecraft_branch_runtime_v1",
+      "name": "ServerFactory",
+      "path": "tests/test_minecraft_branch_runtime_v1.py",
+      "qualname": "tests.test_minecraft_branch_runtime_v1.ServerFactory",
       "role": "tests"
     },
     {
@@ -142801,7 +142993,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 39,
+      "line": 40,
       "methods": [
         "__init__",
         "probe"
@@ -142818,7 +143010,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 323,
+      "line": 327,
       "methods": [
         "renew_many"
       ],
@@ -142834,7 +143026,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 379,
+      "line": 402,
       "methods": [
         "probe"
       ],
@@ -143047,7 +143239,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 125,
+      "line": 130,
       "methods": [
         "__init__",
         "open",
@@ -143067,7 +143259,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 166,
+      "line": 171,
       "methods": [
         "test_directory_manager_allocates_and_removes_workspaces",
         "test_python_environment_manager_is_backend_driven",
@@ -143103,7 +143295,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 435,
+      "line": 440,
       "methods": [
         "run"
       ],
@@ -143119,7 +143311,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 485,
+      "line": 490,
       "methods": [
         "__init__",
         "run"
@@ -143136,7 +143328,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 643,
+      "line": 648,
       "methods": [
         "__init__",
         "wait"
@@ -144060,7 +144252,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 16,
+      "line": 17,
       "methods": [
         "__init__",
         "started",
@@ -144073,6 +144265,114 @@
       "name": "_FakeWorkerTransport",
       "path": "tests/test_scientific_alfworld_text_runtime_v1.py",
       "qualname": "tests.test_scientific_alfworld_text_runtime_v1._FakeWorkerTransport",
+      "role": "tests"
+    },
+    {
+      "bases": [],
+      "decorators": [],
+      "fields": [],
+      "kind": "class",
+      "language": "python",
+      "line": 183,
+      "methods": [
+        "__init__",
+        "started",
+        "close"
+      ],
+      "module": "tests.test_scientific_alfworld_text_runtime_v1",
+      "name": "Delegate",
+      "path": "tests/test_scientific_alfworld_text_runtime_v1.py",
+      "qualname": "tests.test_scientific_alfworld_text_runtime_v1.Delegate",
+      "role": "tests"
+    },
+    {
+      "bases": [],
+      "decorators": [],
+      "fields": [],
+      "kind": "class",
+      "language": "python",
+      "line": 196,
+      "methods": [
+        "__init__",
+        "start",
+        "assert_healthy",
+        "close"
+      ],
+      "module": "tests.test_scientific_alfworld_text_runtime_v1",
+      "name": "Guard",
+      "path": "tests/test_scientific_alfworld_text_runtime_v1.py",
+      "qualname": "tests.test_scientific_alfworld_text_runtime_v1.Guard",
+      "role": "tests"
+    },
+    {
+      "bases": [],
+      "decorators": [],
+      "fields": [],
+      "kind": "class",
+      "language": "python",
+      "line": 209,
+      "methods": [
+        "__init__",
+        "release"
+      ],
+      "module": "tests.test_scientific_alfworld_text_runtime_v1",
+      "name": "Containers",
+      "path": "tests/test_scientific_alfworld_text_runtime_v1.py",
+      "qualname": "tests.test_scientific_alfworld_text_runtime_v1.Containers",
+      "role": "tests"
+    },
+    {
+      "bases": [],
+      "decorators": [],
+      "fields": [],
+      "kind": "class",
+      "language": "python",
+      "line": 242,
+      "methods": [
+        "__init__",
+        "started",
+        "close"
+      ],
+      "module": "tests.test_scientific_alfworld_text_runtime_v1",
+      "name": "Delegate",
+      "path": "tests/test_scientific_alfworld_text_runtime_v1.py",
+      "qualname": "tests.test_scientific_alfworld_text_runtime_v1.Delegate",
+      "role": "tests"
+    },
+    {
+      "bases": [],
+      "decorators": [],
+      "fields": [],
+      "kind": "class",
+      "language": "python",
+      "line": 253,
+      "methods": [
+        "__init__",
+        "start",
+        "assert_healthy",
+        "close"
+      ],
+      "module": "tests.test_scientific_alfworld_text_runtime_v1",
+      "name": "Guard",
+      "path": "tests/test_scientific_alfworld_text_runtime_v1.py",
+      "qualname": "tests.test_scientific_alfworld_text_runtime_v1.Guard",
+      "role": "tests"
+    },
+    {
+      "bases": [],
+      "decorators": [],
+      "fields": [],
+      "kind": "class",
+      "language": "python",
+      "line": 266,
+      "methods": [
+        "__init__",
+        "release"
+      ],
+      "module": "tests.test_scientific_alfworld_text_runtime_v1",
+      "name": "Containers",
+      "path": "tests/test_scientific_alfworld_text_runtime_v1.py",
+      "qualname": "tests.test_scientific_alfworld_text_runtime_v1.Containers",
       "role": "tests"
     },
     {
@@ -147114,6 +147414,7 @@
         "test_start_child_without_process_identity_is_never_replayed",
         "test_recovery_required_state_cannot_be_auto_started",
         "test_running_process_is_reconciled_not_restarted",
+        "test_stopping_state_with_missing_exact_process_completes_then_restarts",
         "test_stopping_state_is_not_overwritten_by_start_verification"
       ],
       "module": "tests.test_service_start_resume_v145",
@@ -147124,13 +147425,31 @@
     },
     {
       "bases": [
+        "Adapter"
+      ],
+      "decorators": [],
+      "fields": [],
+      "kind": "class",
+      "language": "python",
+      "line": 126,
+      "methods": [
+        "reconcile"
+      ],
+      "module": "tests.test_service_start_resume_v145",
+      "name": "MissingThenStartAdapter",
+      "path": "tests/test_service_start_resume_v145.py",
+      "qualname": "tests.test_service_start_resume_v145.ServiceStartResumeV145Tests.MissingThenStartAdapter",
+      "role": "tests"
+    },
+    {
+      "bases": [
         "unittest.TestCase"
       ],
       "decorators": [],
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 132,
+      "line": 167,
       "methods": [
         "test_uncertain_start_cannot_be_misreported_as_exited",
         "test_stopping_with_exact_process_identity_is_idempotently_resumed"
@@ -148517,44 +148836,6 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 29,
-      "methods": [
-        "__init__",
-        "run"
-      ],
-      "module": "tests.test_tmux_joined_runtime_status_v150",
-      "name": "Runner",
-      "path": "tests/test_tmux_joined_runtime_status_v150.py",
-      "qualname": "tests.test_tmux_joined_runtime_status_v150.Runner",
-      "role": "tests"
-    },
-    {
-      "bases": [
-        "unittest.TestCase"
-      ],
-      "decorators": [],
-      "fields": [],
-      "kind": "class",
-      "language": "python",
-      "line": 44,
-      "methods": [
-        "build",
-        "test_exact_tmux_controller_is_visible_without_becoming_runtime_authority",
-        "test_missing_tmux_is_operational_degradation_not_scientific_failure",
-        "test_status_detects_current_spec_drift_instead_of_reusing_old_binding"
-      ],
-      "module": "tests.test_tmux_joined_runtime_status_v150",
-      "name": "TmuxJoinedRuntimeStatusTests",
-      "path": "tests/test_tmux_joined_runtime_status_v150.py",
-      "qualname": "tests.test_tmux_joined_runtime_status_v150.TmuxJoinedRuntimeStatusTests",
-      "role": "tests"
-    },
-    {
-      "bases": [],
-      "decorators": [],
-      "fields": [],
-      "kind": "class",
-      "language": "python",
       "line": 21,
       "methods": [
         "__init__",
@@ -148574,7 +148855,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 59,
+      "line": 69,
       "methods": [
         "manager",
         "test_exact_binding_is_reused_without_second_tmux_create",
@@ -148586,6 +148867,7 @@
         "test_runtime_host_session_name_binds_control_and_manifest",
         "test_manual_same_name_tmux_session_with_wrong_command_is_rejected",
         "test_tmux_transport_identity_drift_is_rejected",
+        "test_delayed_old_generation_kill_cannot_terminate_recreated_same_name_session",
         "test_attach_requires_exact_durable_binding_and_live_snapshot",
         "test_attach_rejects_live_command_drift_before_materializing_tty"
       ],
@@ -150054,6 +150336,23 @@
       "name": "_CatalogPackage",
       "path": "tests/test_vnext_system_catalog.py",
       "qualname": "tests.test_vnext_system_catalog._CatalogPackage",
+      "role": "tests"
+    },
+    {
+      "bases": [],
+      "decorators": [],
+      "fields": [],
+      "kind": "class",
+      "language": "python",
+      "line": 8,
+      "methods": [
+        "__init__",
+        "CloseHandle"
+      ],
+      "module": "tests.test_windows_process_job_lifecycle_v1",
+      "name": "_RetryableKernel32",
+      "path": "tests/test_windows_process_job_lifecycle_v1.py",
+      "qualname": "tests.test_windows_process_job_lifecycle_v1._RetryableKernel32",
       "role": "tests"
     },
     {

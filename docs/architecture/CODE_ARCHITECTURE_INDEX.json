@@ -11158,6 +11158,16 @@
     {
       "kind": "references",
       "source": "noetrium_platform.infrastructure.lifecycle.service.runtime.linux_backend.LinuxProcessBackend",
+      "target": "noetrium_platform.infrastructure.lifecycle.service.runtime.prepared_start.PreparedServiceStartReconcileResult"
+    },
+    {
+      "kind": "references",
+      "source": "noetrium_platform.infrastructure.lifecycle.service.runtime.linux_backend.LinuxProcessBackend",
+      "target": "noetrium_platform.infrastructure.lifecycle.service.runtime.prepared_start.ServiceStartRecoveryHandle"
+    },
+    {
+      "kind": "references",
+      "source": "noetrium_platform.infrastructure.lifecycle.service.runtime.linux_backend.LinuxProcessBackend",
       "target": "noetrium_platform.infrastructure.lifecycle.service.runtime.process_contracts.ProcessReconcileResult"
     },
     {
@@ -21359,7 +21369,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 393,
+      "line": 419,
       "methods": [
         "__init__",
         "open"
@@ -38913,7 +38923,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 378,
+      "line": 386,
       "methods": [],
       "module": "noetrium_platform.composition.environment_instance_leases",
       "name": "EnvironmentInstanceLeaseHeartbeatError",
@@ -38929,7 +38939,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 483,
+      "line": 495,
       "methods": [
         "__init__",
         "policy",
@@ -38949,7 +38959,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 382,
+      "line": 390,
       "methods": [
         "__init__",
         "handles",
@@ -40726,6 +40736,7 @@
         "close_orchestration_group",
         "close_experiment_group",
         "close_model_io_group",
+        "_close_domain_for_physical_convergence",
         "quiesce_workloads",
         "orchestration_admission_snapshot",
         "experiment_admission_snapshot",
@@ -69999,11 +70010,14 @@
         "start_recovery_durability"
       ],
       "kind": "class",
-      "line": 18,
+      "line": 29,
       "methods": [
         "__init__",
         "reconcile",
         "start",
+        "prepare_start_recovery",
+        "start_prepared",
+        "reconcile_prepared_start",
         "alive",
         "stop"
       ],
@@ -70043,7 +70057,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 13,
+      "line": 14,
       "methods": [
         "__init__",
         "_evidence_ref",
@@ -70096,6 +70110,8 @@
         "_process_directory",
         "path",
         "visible_pid",
+        "process_ids",
+        "control_pid",
         "alive_pid",
         "_start_identity_from_directory",
         "_cmdline_from_directory",
@@ -70119,7 +70135,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 84,
+      "line": 102,
       "methods": [
         "__init__",
         "alive",
@@ -70200,6 +70216,35 @@
         "_SpawnCleanupProcess"
       ],
       "qualname": "noetrium_platform.infrastructure.lifecycle.service.runtime.linux_spawn._SpawnCleanupProcess",
+      "system_key": "runtime",
+      "top_system": "runtime"
+    },
+    {
+      "bases": [],
+      "decorators": [
+        "dataclass(frozen=True, slots=True)"
+      ],
+      "fields": [
+        "attempt",
+        "contract_digest",
+        "environment_digest",
+        "intent_id",
+        "prepared_at_epoch_s",
+        "token"
+      ],
+      "kind": "dataclass",
+      "line": 21,
+      "methods": [
+        "__post_init__",
+        "encode",
+        "decode"
+      ],
+      "module": "noetrium_platform.infrastructure.lifecycle.service.runtime.linux_start_marker",
+      "name": "LinuxPreparedStartToken",
+      "nesting": [
+        "LinuxPreparedStartToken"
+      ],
+      "qualname": "noetrium_platform.infrastructure.lifecycle.service.runtime.linux_start_marker.LinuxPreparedStartToken",
       "system_key": "runtime",
       "top_system": "runtime"
     },
@@ -70810,7 +70855,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 15,
+      "line": 16,
       "methods": [
         "__init__",
         "_load_state",
@@ -71623,7 +71668,7 @@
         "summary"
       ],
       "kind": "dataclass",
-      "line": 149,
+      "line": 150,
       "methods": [],
       "module": "noetrium_platform.infrastructure.lifecycle.session.api.contracts",
       "name": "PersistentSessionObservation",
@@ -71647,7 +71692,7 @@
         "UNBOUND"
       ],
       "kind": "enum",
-      "line": 140,
+      "line": 141,
       "methods": [],
       "module": "noetrium_platform.infrastructure.lifecycle.session.api.contracts",
       "name": "PersistentSessionObservationState",
@@ -71701,7 +71746,7 @@
         "spec_digest"
       ],
       "kind": "dataclass",
-      "line": 132,
+      "line": 133,
       "methods": [],
       "module": "noetrium_platform.infrastructure.lifecycle.session.api.contracts",
       "name": "PersistentSessionReport",
@@ -71723,6 +71768,7 @@
         "current_path",
         "evidence_refs",
         "exists",
+        "session_generation",
         "session_name",
         "start_command"
       ],
@@ -71779,7 +71825,7 @@
         "transport_identity_digest"
       ],
       "kind": "dataclass",
-      "line": 160,
+      "line": 161,
       "methods": [
         "__post_init__",
         "digest"
@@ -77134,7 +77180,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 135,
+      "line": 139,
       "methods": [
         "__init__",
         "create"
@@ -77861,7 +77907,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 126,
+      "line": 130,
       "methods": [
         "__init__",
         "policy",
@@ -78294,6 +78340,7 @@
         "_lease_id",
         "_name",
         "_runtime_digest_valid",
+        "_require_handle_authority",
         "_validate_observation",
         "reserve",
         "docker_run_prefix",
@@ -78339,7 +78386,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 420,
+      "line": 457,
       "methods": [],
       "module": "noetrium_platform.infrastructure.resources.container.runtime.lease_authority",
       "name": "DockerContainerLeaseHeartbeatError",
@@ -78357,7 +78404,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 528,
+      "line": 569,
       "methods": [
         "__init__",
         "policy",
@@ -78379,7 +78426,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 424,
+      "line": 461,
       "methods": [
         "__init__",
         "handles",
@@ -101535,6 +101582,11 @@
     },
     {
       "kind": "constructs",
+      "source": "noetrium_platform.infrastructure.lifecycle.service.runtime.linux_backend.LinuxProcessBackend",
+      "target": "noetrium_platform.infrastructure.lifecycle.service.runtime.prepared_start.PreparedServiceStartReconcileResult"
+    },
+    {
+      "kind": "constructs",
       "source": "noetrium_platform.infrastructure.lifecycle.service.runtime.linux_identity.LinuxExactProcessVerifier",
       "target": "noetrium_platform.infrastructure.lifecycle.service.runtime.process_contracts.ProcessReconcileResult"
     },
@@ -103025,13 +103077,13 @@
     }
   ],
   "counts": {
-    "association_edges": 3445,
-    "classes": 3354,
-    "constructor_edges": 913,
+    "association_edges": 3447,
+    "classes": 3355,
+    "constructor_edges": 914,
     "inheritance_edges": 146,
-    "module_import_edges": 5003,
+    "module_import_edges": 5009,
     "parse_errors": 0,
-    "python_modules": 1910,
+    "python_modules": 1911,
     "registry_authorities": 20,
     "registry_nodes": 31,
     "top_level_systems": 16
@@ -118115,6 +118167,14 @@
     },
     {
       "source": "noetrium_platform.infrastructure.lifecycle.service.runtime.linux_backend",
+      "target": "noetrium_platform.infrastructure.lifecycle.service.runtime.linux_start_marker"
+    },
+    {
+      "source": "noetrium_platform.infrastructure.lifecycle.service.runtime.linux_backend",
+      "target": "noetrium_platform.infrastructure.lifecycle.service.runtime.prepared_start"
+    },
+    {
+      "source": "noetrium_platform.infrastructure.lifecycle.service.runtime.linux_backend",
       "target": "noetrium_platform.infrastructure.lifecycle.service.runtime.process_contracts"
     },
     {
@@ -118132,6 +118192,10 @@
     {
       "source": "noetrium_platform.infrastructure.lifecycle.service.runtime.linux_identity",
       "target": "noetrium_platform.infrastructure.lifecycle.service.runtime.linux_procfs"
+    },
+    {
+      "source": "noetrium_platform.infrastructure.lifecycle.service.runtime.linux_identity",
+      "target": "noetrium_platform.infrastructure.lifecycle.service.runtime.linux_start_marker"
     },
     {
       "source": "noetrium_platform.infrastructure.lifecycle.service.runtime.linux_identity",
@@ -118192,6 +118256,14 @@
     {
       "source": "noetrium_platform.infrastructure.lifecycle.service.runtime.linux_spawn",
       "target": "noetrium_platform.infrastructure.lifecycle.service.runtime.linux_signal"
+    },
+    {
+      "source": "noetrium_platform.infrastructure.lifecycle.service.runtime.linux_start_marker",
+      "target": "noetrium_platform.infrastructure.lifecycle.service.api"
+    },
+    {
+      "source": "noetrium_platform.infrastructure.lifecycle.service.runtime.linux_start_marker",
+      "target": "noetrium_platform.infrastructure.lifecycle.service.runtime.prepared_start"
     },
     {
       "source": "noetrium_platform.infrastructure.lifecycle.service.runtime.preflight",
@@ -118412,6 +118484,10 @@
     {
       "source": "noetrium_platform.infrastructure.lifecycle.service.runtime.start_coordination",
       "target": "noetrium_platform.infrastructure.lifecycle.service.api"
+    },
+    {
+      "source": "noetrium_platform.infrastructure.lifecycle.service.runtime.start_coordination",
+      "target": "noetrium_platform.infrastructure.lifecycle.service.runtime.contracts"
     },
     {
       "source": "noetrium_platform.infrastructure.lifecycle.service.runtime.start_coordination",
@@ -138084,6 +138160,8 @@
         "noetrium_platform.infrastructure.lifecycle.service.runtime.linux_procfs",
         "noetrium_platform.infrastructure.lifecycle.service.runtime.linux_signal",
         "noetrium_platform.infrastructure.lifecycle.service.runtime.linux_spawn",
+        "noetrium_platform.infrastructure.lifecycle.service.runtime.linux_start_marker",
+        "noetrium_platform.infrastructure.lifecycle.service.runtime.prepared_start",
         "noetrium_platform.infrastructure.lifecycle.service.runtime.process_contracts"
       ],
       "module": "noetrium_platform.infrastructure.lifecycle.service.runtime.linux_backend",
@@ -138104,6 +138182,7 @@
         "noetrium_platform.infrastructure.lifecycle.service.api",
         "noetrium_platform.infrastructure.lifecycle.service.api.environment",
         "noetrium_platform.infrastructure.lifecycle.service.runtime.linux_procfs",
+        "noetrium_platform.infrastructure.lifecycle.service.runtime.linux_start_marker",
         "noetrium_platform.infrastructure.lifecycle.service.runtime.process_contracts"
       ],
       "module": "noetrium_platform.infrastructure.lifecycle.service.runtime.linux_identity",
@@ -138145,6 +138224,16 @@
       ],
       "module": "noetrium_platform.infrastructure.lifecycle.service.runtime.linux_spawn",
       "path": "noetrium_platform/infrastructure/lifecycle/service/runtime/linux_spawn.py",
+      "system_key": "runtime",
+      "top_system": "runtime"
+    },
+    {
+      "imports": [
+        "noetrium_platform.infrastructure.lifecycle.service.api",
+        "noetrium_platform.infrastructure.lifecycle.service.runtime.prepared_start"
+      ],
+      "module": "noetrium_platform.infrastructure.lifecycle.service.runtime.linux_start_marker",
+      "path": "noetrium_platform/infrastructure/lifecycle/service/runtime/linux_start_marker.py",
       "system_key": "runtime",
       "top_system": "runtime"
     },
@@ -138317,6 +138406,7 @@
     {
       "imports": [
         "noetrium_platform.infrastructure.lifecycle.service.api",
+        "noetrium_platform.infrastructure.lifecycle.service.runtime.contracts",
         "noetrium_platform.infrastructure.lifecycle.service.runtime.service_state_contracts",
         "noetrium_platform.infrastructure.lifecycle.service.runtime.start_flow_common",
         "noetrium_platform.infrastructure.lifecycle.service.runtime.start_journal",
@@ -143770,7 +143860,7 @@
   "parse_errors": [],
   "registry_sha256": "d3fc1bab831f1b7379e5a36048a61c00fe173429df958270d36a16f3f00171c0",
   "schema": "noetrium-code-architecture-index.v1",
-  "source_git_sha": "adf6fcb9b33255a9fa2909f6677181c3f518ec3c",
+  "source_git_sha": "bbcf2e1982040845589b888898f96509e6355846",
   "system_import_edges": [
     {
       "count": 85,
@@ -144008,7 +144098,7 @@
       "target": "platform"
     },
     {
-      "count": 542,
+      "count": 548,
       "source": "runtime",
       "target": "runtime"
     },

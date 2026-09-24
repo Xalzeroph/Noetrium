@@ -3,7 +3,7 @@
   "architecture_complexity": {
     "authorities": 20,
     "contract_declarations": 185,
-    "import_edges": 5285,
+    "import_edges": 5291,
     "subsystems": 15,
     "top_level_systems": 16
   },
@@ -23,7 +23,7 @@
     "effective_limits": {
       "authorities": 31,
       "contract_declarations": 185,
-      "import_edges": 5285,
+      "import_edges": 5291,
       "subsystems": 15,
       "top_level_systems": 16
     },
@@ -627,7 +627,7 @@
       "seam_id": "completed"
     }
   ],
-  "import_edges": 5285,
+  "import_edges": 5291,
   "import_violations": [],
   "layer_violations": [],
   "operation_graph": [
@@ -873,7 +873,7 @@
     }
   ],
   "package_cycles": [],
-  "report_sha256": "66dd532f275ef6a5de79e32697639634144c044905fdc34bcefae38a17ac57f9",
+  "report_sha256": "49e4a13a83b9c6ef20b243f15fcb88dbac1993f7446fbad357c0c590c3e2dbb3",
   "source_authority_violations": [
     {
       "allowed_modules": [
@@ -887,7 +887,7 @@
       "primitive": "time.sleep"
     }
   ],
-  "source_digest": "9569d08f20ddc68db74ae688091c3bac9cd3ee3fef6f0e9dc65c1051678d9f9c",
+  "source_digest": "3e5e0f279da34675c0a85c442c59d8867c4d825d53f4b6c21ab65e2968257747",
   "source_invariant_violations": [],
   "source_root": ".",
   "subsystem_graph": [
@@ -1813,8 +1813,8 @@
       "max_function_lines": 77,
       "module": "noetrium_platform.infrastructure.resources.compute.runtime.scheduler",
       "path": "noetrium_platform/infrastructure/resources/compute/runtime/scheduler.py",
-      "physical_lines": 1025,
-      "score": 1901
+      "physical_lines": 1026,
+      "score": 1902
     },
     {
       "branches": 88,
@@ -2104,6 +2104,24 @@
       "serialization_sites": 0
     },
     {
+      "exception_handlers": 11,
+      "import_fan_in": 3,
+      "import_fan_out": 7,
+      "io_sites": 0,
+      "lock_sites": 2,
+      "long_functions": 2,
+      "module": "noetrium_platform.capabilities.environment.minecraft.composition.branch_runtime",
+      "path": "noetrium_platform/capabilities/environment/minecraft/composition/branch_runtime.py",
+      "reason_codes": [
+        "STATE_MUTATION_CONCENTRATION",
+        "FAILURE_BRANCH_CONCENTRATION",
+        "LONG_FUNCTION"
+      ],
+      "risk_score": 360,
+      "self_mutation_sites": 35,
+      "serialization_sites": 0
+    },
+    {
       "exception_handlers": 0,
       "import_fan_in": 80,
       "import_fan_out": 7,
@@ -2139,21 +2157,21 @@
       "serialization_sites": 0
     },
     {
-      "exception_handlers": 13,
-      "import_fan_in": 3,
-      "import_fan_out": 7,
+      "exception_handlers": 3,
+      "import_fan_in": 1,
+      "import_fan_out": 6,
       "io_sites": 0,
-      "lock_sites": 2,
-      "long_functions": 1,
-      "module": "noetrium_platform.capabilities.environment.minecraft.composition.branch_runtime",
-      "path": "noetrium_platform/capabilities/environment/minecraft/composition/branch_runtime.py",
+      "lock_sites": 7,
+      "long_functions": 2,
+      "module": "noetrium_platform.infrastructure.resources.container.runtime.lease_authority",
+      "path": "noetrium_platform/infrastructure/resources/container/runtime/lease_authority.py",
       "reason_codes": [
+        "LOCK_CONTENTION_RISK",
         "STATE_MUTATION_CONCENTRATION",
-        "FAILURE_BRANCH_CONCENTRATION",
         "LONG_FUNCTION"
       ],
-      "risk_score": 326,
-      "self_mutation_sites": 29,
+      "risk_score": 310,
+      "self_mutation_sites": 28,
       "serialization_sites": 0
     },
     {
@@ -2192,25 +2210,6 @@
       "risk_score": 300,
       "self_mutation_sites": 12,
       "serialization_sites": 4
-    },
-    {
-      "exception_handlers": 8,
-      "import_fan_in": 1,
-      "import_fan_out": 11,
-      "io_sites": 0,
-      "lock_sites": 0,
-      "long_functions": 4,
-      "module": "noetrium_platform.capabilities.environment.minecraft.runtime.session",
-      "path": "noetrium_platform/capabilities/environment/minecraft/runtime/session.py",
-      "reason_codes": [
-        "HIGH_FAN_OUT",
-        "STATE_MUTATION_CONCENTRATION",
-        "FAILURE_BRANCH_CONCENTRATION",
-        "LONG_FUNCTION"
-      ],
-      "risk_score": 296,
-      "self_mutation_sites": 23,
-      "serialization_sites": 0
     }
   ]
 }
