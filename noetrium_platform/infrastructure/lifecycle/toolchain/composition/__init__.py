@@ -30,7 +30,7 @@ def compose_eclipse_adoptium_java_runtime(
     acquisition: ArtifactAcquisitionPort,
     materialization: ArchiveMaterializationPort,
     tree_inspection: MaterializedTreeInspectionPort,
-    metadata_opener: ArtifactHttpOpener | None = None,
+    metadata_opener: ArtifactHttpOpener,
     command_runner: JavaCommandRunner | None = None,
 ) -> JavaRuntimeToolchainAssembly:
     """Assemble Runtime toolchain logic over injected Artifact-system ports.
@@ -40,7 +40,7 @@ def compose_eclipse_adoptium_java_runtime(
     Those bindings belong at an outer composition root.
     """
 
-    metadata = AdoptiumMetadataResolver(opener=metadata_opener or open_artifact_http)
+    metadata = AdoptiumMetadataResolver(opener=metadata_opener)
     verifier = (
         JavaRuntimeVerifier()
         if command_runner is None
