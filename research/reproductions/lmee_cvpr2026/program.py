@@ -1,5 +1,5 @@
 from __future__ import annotations
-from noetrium_platform.research.execution.workflow.api import AgentMethodSpec, AgentPhaseSpec
+from noetrium.api import AgentMethodSpec, AgentPhaseSpec
 METHOD_ID="lmee_cvpr2026"
 TITLE="Explore with Long-term Memory: A Benchmark and Multimodal LLM-based Reinforcement Learning Framework for Embodied Exploration"
 VENUE="CVPR 2026"
