@@ -188,6 +188,42 @@ class SQLiteResourceLeaseRegistry(ResourceOwnershipPort, ResourceLeasePort):
                 ).fetchall()
         return tuple(decode_resource_lease(row) for row in rows)
 
+    def active_leases(
+        self,
+        *,
+        resource_kind: ResourceKind | None = None,
+        now: float | None = None,
+    ) -> tuple[ResourceLease, ...]:
+        now_epoch_s = time() if now is None else float(now)
+        if not math.isfinite(now_epoch_s):
+            raise ValueError("lease observation time must be finite")
+        if resource_kind is not None and type(resource_kind) is not ResourceKind:
+            raise TypeError("resource_kind must be ResourceKind when provided")
+        with self._connection() as conn:
+            with immediate_sqlite_transaction(
+                conn,
+                timeout_seconds=self.timeout_seconds,
+                label="resource active lease enumeration",
+            ):
+                reconcile_expired_resource_leases(
+                    conn,
+                    now_epoch_s=now_epoch_s,
+                    resource_kind=resource_kind,
+                )
+                if resource_kind is None:
+                    rows = conn.execute(
+                        "SELECT * FROM resource_leases "
+                        "WHERE state='active' ORDER BY lease_id"
+                    ).fetchall()
+                else:
+                    rows = conn.execute(
+                        "SELECT * FROM resource_leases "
+                        "WHERE state='active' AND resource_kind=? "
+                        "ORDER BY lease_id",
+                        (resource_kind.value,),
+                    ).fetchall()
+        return tuple(decode_resource_lease(row) for row in rows)
+
     def history_for(
         self, resource: ResourceIdentity, *, now: float | None = None
     ) -> tuple[ResourceLease, ...]:
