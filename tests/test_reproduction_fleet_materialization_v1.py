@@ -61,6 +61,10 @@ def _benchmark(
 class _StructuralBenchmarkResolver:
     """Synthetic authority used only to pressure the fleet compiler in CI."""
 
+    authority_digest = canonical_digest(
+        {"authority": "ci.structural-benchmark-authority.v1"}
+    )
+
     def resolve(self, definition, study_factory):
         split_consumers = set(resolve_benchmark_split_consumers(definition))
         split_aware = (
@@ -88,6 +92,10 @@ class _StructuralBenchmarkResolver:
 
 
 class _AdaptAgentBenchmarkResolver:
+    authority_digest = canonical_digest(
+        {"authority": "test.adaptagent.paper-cut.v1"}
+    )
+
     def resolve(self, definition, study_factory):
         assert definition.package == "adaptagent_acl2025"
         assert study_factory.qualname == "build_adaptagent_study"
