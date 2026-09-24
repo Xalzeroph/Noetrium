@@ -80,8 +80,9 @@ def test_non_executable_reproductions_are_explicit_not_silent_downgrades() -> No
 def test_reproduction_packages_use_only_public_noetrium_surface() -> None:
     violations: list[str] = []
     for path in sorted(_root().glob("*/*.py")):
-        if path.name in {"research_os.py", "contracts.py"}:
-            continue
+        # Only paper-owned package modules are downstream code. Repository-level
+        # reproduction compiler/contracts live directly under _root() and are
+        # platform/workspace infrastructure, so this glob intentionally excludes them.
         tree = ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
         for node in ast.walk(tree):
             if isinstance(node, ast.Import):
