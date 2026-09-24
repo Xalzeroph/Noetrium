@@ -25,6 +25,7 @@ from noetrium_platform.composition.research_os_experiment_trial_execution import
 from noetrium_platform.composition.research_os_experiment_runtime_binding import (
     ResearchOSExperimentAggregationRegistry,
     ResearchOSExperimentAggregationResolverPort,
+    ResearchOSExperimentReconciliationRegistry,
     ResearchOSExperimentReconciliationResolverPort,
     ResearchOSExperimentRuntimeComponents,
     ResearchOSExperimentStudyExecutionResolverPort,
@@ -112,7 +113,7 @@ def compose_repository_fleet_execution_authorities_from_registries(
     participants: ResearchParticipantBindingRegistry,
     models: ResearchModelRoleBindingRegistry,
     trial_providers: ResearchOSExperimentTrialProviderRegistry,
-    experiment_reconciliation: ResearchOSExperimentReconciliationResolverPort,
+    experiment_reconciliation: ResearchOSExperimentReconciliationRegistry,
     experiment_aggregation: ResearchOSExperimentAggregationResolverPort | None = None,
     reproduction_capabilities: (
         ReproductionCapabilityRequirementResolverPort | None
@@ -139,6 +140,11 @@ def compose_repository_fleet_execution_authorities_from_registries(
             "trial_providers",
             trial_providers,
             ResearchOSExperimentTrialProviderRegistry,
+        ),
+        (
+            "experiment_reconciliation",
+            experiment_reconciliation,
+            ResearchOSExperimentReconciliationRegistry,
         ),
     ):
         if type(value) is not expected:
