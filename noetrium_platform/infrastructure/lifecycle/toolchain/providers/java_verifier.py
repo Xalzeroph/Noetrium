@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import hashlib
 import os
 import subprocess
 from collections.abc import Callable
@@ -8,6 +7,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Protocol
 
+from noetrium_platform.foundation.kernel.kernel.durability import sha256_file
 from noetrium_platform.infrastructure.lifecycle.toolchain.api import RuntimeToolchainError, parse_java_major
 
 JavaCommandRunner = Callable[..., subprocess.CompletedProcess[str]]
@@ -24,16 +24,6 @@ class JavaRuntimeVerifierPort(Protocol):
     def verify(
         self, java_executable: Path, feature_version: int
     ) -> JavaExecutableVerification: ...
-
-
-def sha256_file(path: Path) -> tuple[str, int]:
-    digest = hashlib.sha256()
-    size = 0
-    with path.open("rb") as handle:
-        for block in iter(lambda: handle.read(1024 * 1024), b""):
-            digest.update(block)
-            size += len(block)
-    return digest.hexdigest(), size
 
 
 class JavaRuntimeVerifier(JavaRuntimeVerifierPort):
@@ -87,5 +77,4 @@ __all__ = [
     "JavaExecutableVerification",
     "JavaRuntimeVerifier",
     "JavaRuntimeVerifierPort",
-    "sha256_file",
 ]
