@@ -14,38 +14,6 @@ from noetrium_platform.foundation.kernel.kernel import (
 )
 
 
-class ModelAssetClosureAuthority(StrEnum):
-    EXECUTION = "execution"
-    EVIDENCE = "evidence"
-    RECOVERY = "recovery"
-
-
-@dataclass(frozen=True, slots=True)
-class ModelAssetReferenceClosure:
-    authority: ModelAssetClosureAuthority
-    proof_digest: str
-    retained_reference_ids: tuple[str, ...] = ()
-
-    def __post_init__(self) -> None:
-        if type(self.authority) is not ModelAssetClosureAuthority:
-            raise TypeError("model asset closure authority must be typed")
-        if (
-            type(self.proof_digest) is not str
-            or len(self.proof_digest) != 64
-            or any(ch not in "0123456789abcdef" for ch in self.proof_digest)
-        ):
-            raise ValueError("model asset closure proof_digest must be lowercase sha256")
-        if type(self.retained_reference_ids) is not tuple or any(
-            type(value) is not str
-            or not value.strip()
-            or value != value.strip()
-            for value in self.retained_reference_ids
-        ):
-            raise TypeError("model asset retained references must be canonical text tuple")
-        if self.retained_reference_ids != tuple(sorted(set(self.retained_reference_ids))):
-            raise ValueError("model asset retained references must be unique sorted order")
-
-
 @dataclass(frozen=True, slots=True)
 class ModelAssetGcAssessment:
     model_id: str
@@ -184,7 +152,7 @@ class ModelAssetUsage:
 
 
 __all__ = [
-    "ManagedModelAsset", "ModelAcquisitionReceipt", "ModelAssetClosureAuthority",
-    "ModelAssetGcAssessment", "ModelAssetMode", "ModelAssetOrigin", "ModelAssetReferenceClosure",
+    "ManagedModelAsset", "ModelAcquisitionReceipt",
+    "ModelAssetGcAssessment", "ModelAssetMode", "ModelAssetOrigin",
     "ModelAssetStats", "ModelAssetUsage", "ModelConfigSummary", "ModelSourceSpec", "ModelStoragePoolStatus",
 ]
