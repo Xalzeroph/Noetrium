@@ -1074,18 +1074,24 @@ class StrictResearchOSControl(
             request.target.execution_id,
             compilation,
         )
-        active = self._store.active_cut(request.target.execution_id)
-        if active is None:
+        observed = self._store.active_execution_snapshot(
+            request.target.execution_id
+        )
+        if observed is None:
             raise ResearchGraphExecutionConflict(
                 "Research OS execution has no active durable cut"
             )
-        if active.cut_id != cut.cut_id:
+        if observed.active_cut.cut_id != cut.cut_id:
             raise ResearchGraphExecutionConflict(
                 "Research OS target revision is not the active durable cut"
             )
-        snapshot = self._store.snapshot(cut.cut_id)
-        control = self._store.control_state(cut.cut_id)
-        return compilation, cut, active, snapshot, control
+        return (
+            compilation,
+            cut,
+            observed.active_cut,
+            observed.execution,
+            observed.control,
+        )
 
     @staticmethod
     def _target_graph_node(
@@ -1248,29 +1254,35 @@ class StrictResearchOSControl(
             try:
                 report = scheduler.execute()
             except ResearchGraphControlHalt:
-                active = self._store.active_cut(request.target.execution_id)
-                if active is None or active.cut_id != prepared.cut.cut_id:
+                observed = self._store.active_execution_snapshot(
+                    request.target.execution_id
+                )
+                if (
+                    observed is None
+                    or observed.active_cut.cut_id != prepared.cut.cut_id
+                ):
                     raise ResearchGraphExecutionConflict(
                         "Research OS active cut changed while control halt was observed"
                     )
-                snapshot = self._store.snapshot(prepared.cut.cut_id)
-                control = self._store.control_state(prepared.cut.cut_id)
                 return self._durable_control_receipt(
                     request,
                     prepared.compilation,
                     prepared.cut,
-                    active,
-                    snapshot,
-                    control,
+                    observed.active_cut,
+                    observed.execution,
+                    observed.control,
                 )
             except ResearchGraphNodeControlHalt as halt:
-                active = self._store.active_cut(request.target.execution_id)
-                if active is None or active.cut_id != prepared.cut.cut_id:
+                observed = self._store.active_execution_snapshot(
+                    request.target.execution_id
+                )
+                if (
+                    observed is None
+                    or observed.active_cut.cut_id != prepared.cut.cut_id
+                ):
                     raise ResearchGraphExecutionConflict(
                         "Research OS active cut changed while node control halt was observed"
                     )
-                snapshot = self._store.snapshot(prepared.cut.cut_id)
-                control = self._store.control_state(prepared.cut.cut_id)
                 recovery = any(
                     row.phase is ResearchGraphNodeControlPhase.RECOVERY_REQUIRED
                     for row in halt.controls
@@ -1279,9 +1291,9 @@ class StrictResearchOSControl(
                     request,
                     prepared.compilation,
                     prepared.cut,
-                    active,
-                    snapshot,
-                    control,
+                    observed.active_cut,
+                    observed.execution,
+                    observed.control,
                     state=(
                         "node_recovery_required"
                         if recovery
