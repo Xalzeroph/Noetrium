@@ -80,10 +80,11 @@ def _readme(project_id: str) -> str:
 
 This is a Noetrium Research OS project with one unconstrained scientific core.
 
-Edit only `src/<package>/core.py`. Its `build_research()` function may construct
+The only required user-owned entrypoint is `src/<package>/core.py::build_research()`.
+It may import any package-local modules or subpackages you create and may construct
 any valid ResearchPortfolio: one paper or hundreds, arbitrary ResearchPrograms,
-custom DAGs, methods, benchmarks, experiments, analyses, Machine-backed
-semantics, and cross-program dependencies.
+custom DAGs, methods, memory, participants, runtimes, benchmarks, experiments,
+analyses, Machine-backed semantics, and cross-program dependencies.
 
 `src/<package>/research.py`, project metadata, tests, execution wiring,
 model/environment/resource composition, scheduling, checkpointing, evidence,
