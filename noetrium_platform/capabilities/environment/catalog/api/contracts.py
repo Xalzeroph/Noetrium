@@ -7,6 +7,18 @@ from noetrium_platform.substrate.api import ScopeIdentity
 from noetrium_platform.substrate.api import ResolutionPolicy
 
 
+class EnvironmentInstanceState(StrEnum):
+    CLEAN = "clean"
+    IN_USE = "in_use"
+    DIRTY = "dirty"
+    DESTROYED = "destroyed"
+
+
+class EnvironmentCleanlinessKind(StrEnum):
+    OVERLAY_DESTROYED = "overlay_destroyed"
+    PROVIDER_RESET_VERIFIED = "provider_reset_verified"
+
+
 class ExecutionEnvironmentKind(StrEnum):
     PYTHON = "python"
     CONDA = "conda"
@@ -76,8 +88,13 @@ class EnvironmentInstance:
     scope: ScopeIdentity
     profile_id: str
     profile_revision: str
+    state: EnvironmentInstanceState = EnvironmentInstanceState.CLEAN
+    generation: int = 0
+    cleanliness_proof_digest: str | None = None
 
     def __post_init__(self) -> None:
+        if not self.instance_id.strip():
+            raise ValueError("environment instance_id must be non-empty")
         if not self.profile_id.strip():
             raise ValueError("environment instance profile_id must be non-empty")
         revision = self.profile_revision
@@ -88,6 +105,77 @@ class EnvironmentInstance:
             raise ValueError(
                 "environment instance profile_revision must be lowercase sha256"
             )
+        if isinstance(self.generation, bool) or self.generation < 0:
+            raise ValueError("environment instance generation must be non-negative")
+        proof = self.cleanliness_proof_digest
+        if proof is not None and (
+            len(proof) != 64
+            or any(ch not in "0123456789abcdef" for ch in proof)
+        ):
+            raise ValueError(
+                "environment cleanliness proof digest must be lowercase sha256"
+            )
+        if self.state is EnvironmentInstanceState.DESTROYED and proof is not None:
+            raise ValueError("destroyed environment instance cannot retain cleanliness proof")
+
+
+@dataclass(frozen=True, slots=True)
+class EnvironmentCleanlinessProof:
+    instance_id: str
+    profile_revision: str
+    generation: int
+    kind: EnvironmentCleanlinessKind
+    proof_digest: str
+
+    def __post_init__(self) -> None:
+        if not self.instance_id.strip():
+            raise ValueError("environment cleanliness proof instance_id must be non-empty")
+        for label, value in (
+            ("profile_revision", self.profile_revision),
+            ("proof_digest", self.proof_digest),
+        ):
+            if (
+                len(value) != 64
+                or any(ch not in "0123456789abcdef" for ch in value)
+            ):
+                raise ValueError(
+                    f"environment cleanliness {label} must be lowercase sha256"
+                )
+        if isinstance(self.generation, bool) or self.generation <= 0:
+            raise ValueError(
+                "environment cleanliness generation must identify an acquired generation"
+            )
+
+
+@dataclass(frozen=True, slots=True)
+class EnvironmentProfileReferenceSummary:
+    profile_id: str
+    profile_revision: str
+    instance_ids: tuple[str, ...]
+    bound_instance_ids: tuple[str, ...]
+    reusable_instance_ids: tuple[str, ...]
+    blocking_instance_ids: tuple[str, ...]
+
+    @property
+    def locally_gc_eligible(self) -> bool:
+        return not self.bound_instance_ids and not self.blocking_instance_ids
+
+
+@dataclass(frozen=True, slots=True)
+class EnvironmentProfileGcAssessment:
+    profile_id: str
+    profile_revision: str
+    local: EnvironmentProfileReferenceSummary
+    resumable_execution_ids: tuple[str, ...] = ()
+    retained_evidence_ids: tuple[str, ...] = ()
+
+    @property
+    def eligible(self) -> bool:
+        return (
+            self.local.locally_gc_eligible
+            and not self.resumable_execution_ids
+            and not self.retained_evidence_ids
+        )
 
 
 @dataclass(frozen=True, slots=True)
@@ -101,7 +189,12 @@ class EnvironmentBinding:
 __all__ = [
     "EnvironmentAssignment",
     "EnvironmentBinding",
+    "EnvironmentCleanlinessKind",
+    "EnvironmentCleanlinessProof",
     "EnvironmentInstance",
+    "EnvironmentInstanceState",
+    "EnvironmentProfileGcAssessment",
+    "EnvironmentProfileReferenceSummary",
     "EnvironmentOverlay",
     "EnvironmentSpec",
     "EnvironmentTemplate",
