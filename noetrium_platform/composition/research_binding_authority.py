@@ -95,6 +95,85 @@ class ResearchBindingResolutionContext:
             )
 
 
+class ResearchProjectManifestRegistry:
+    """Exact immutable ProjectManifest authority for materialized Studies."""
+
+    def __init__(self, manifests: tuple[ProjectManifest, ...]) -> None:
+        if type(manifests) is not tuple or not manifests:
+            raise TypeError(
+                "Research ProjectManifest registry requires non-empty typed tuple"
+            )
+        if any(type(row) is not ProjectManifest for row in manifests):
+            raise TypeError(
+                "Research ProjectManifest registry manifests must be typed"
+            )
+        ordered = tuple(
+            sorted(
+                manifests,
+                key=lambda row: (
+                    row.project.identity.project_id,
+                    row.project.identity.version,
+                    row.semantic_digest,
+                ),
+            )
+        )
+        digests = tuple(row.semantic_digest for row in ordered)
+        if len(digests) != len(set(digests)):
+            raise ValueError(
+                "Research ProjectManifest registry contains duplicate manifests"
+            )
+        coverage: dict[tuple[str, str], list[ProjectManifest]] = {}
+        for manifest in ordered:
+            for study_id in manifest.study_ids:
+                coverage.setdefault(
+                    (manifest.project.identity.project_id, study_id),
+                    [],
+                ).append(manifest)
+        ambiguous = tuple(
+            sorted(
+                key for key, rows in coverage.items()
+                if len(rows) != 1
+            )
+        )
+        if ambiguous:
+            raise ValueError(
+                "Research ProjectManifest registry has ambiguous Study coverage: "
+                f"{ambiguous}"
+            )
+        self._manifests = ordered
+        self._coverage = {
+            key: rows[0] for key, rows in coverage.items()
+        }
+        self._identity_digest = canonical_digest(
+            {
+                "schema": "noetrium.research-project-manifest-registry.v1",
+                "manifests": digests,
+            }
+        )
+
+    @property
+    def identity_digest(self) -> str:
+        return self._identity_digest
+
+    def resolve(self, definition: ResearchStudyDefinition) -> ProjectManifest:
+        if type(definition) is not ResearchStudyDefinition:
+            raise TypeError(
+                "Research ProjectManifest registry requires ResearchStudyDefinition"
+            )
+        key = (definition.project_id, definition.study_id)
+        manifest = self._coverage.get(key)
+        if manifest is None:
+            raise LookupError(
+                "no exact ProjectManifest for "
+                f"project={definition.project_id!r} study={definition.study_id!r}"
+            )
+        if definition.study_id not in manifest.study_ids:
+            raise ValueError("ProjectManifest Study coverage drifted")
+        if manifest.project.identity.project_id != definition.project_id:
+            raise ValueError("ProjectManifest project identity drifted")
+        return manifest
+
+
 @runtime_checkable
 class ResearchProjectManifestResolverPort(Protocol):
     """Resolve the exact ProjectManifest authority for one materialized Study."""
@@ -408,5 +487,6 @@ __all__ = [
     "ResearchCapabilityBindingResolverPort",
     "ResearchModelRoleBindingResolverPort",
     "ResearchParticipantBindingResolverPort",
+    "ResearchProjectManifestRegistry",
     "ResearchProjectManifestResolverPort",
 ]
