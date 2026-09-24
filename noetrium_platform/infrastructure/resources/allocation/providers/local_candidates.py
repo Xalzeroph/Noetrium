@@ -2,41 +2,28 @@ from __future__ import annotations
 
 import socket
 
-from noetrium_platform.infrastructure.resources.allocation.api.contracts import (
-    EndpointProtocol,
-)
 
-
-def _discover_local_candidate_ports(
+def _discover_local_tcp_candidate_ports(
     *,
     host: str = "127.0.0.1",
     count: int = 32,
-    protocol: EndpointProtocol = EndpointProtocol.TCP,
 ) -> tuple[int, ...]:
-    """Ask the local kernel for currently free endpoint candidates.
+    """Ask the local kernel for currently free TCP port candidates.
 
-    These are placement candidates, not ownership. EndpointAllocationPort
-    re-probes and atomically leases a candidate before a service may use it.
+    The returned ports are candidates, not ownership. Canonical ownership and
+    fencing still belong to EndpointAllocationPort, which re-probes and leases
+    each endpoint before a service may use it.
     """
 
     if not host.strip():
         raise ValueError("local endpoint candidate host is required")
     if type(count) is not int or count <= 0:
         raise ValueError("local endpoint candidate count must be positive")
-    if not isinstance(protocol, EndpointProtocol):
-        raise TypeError("local endpoint candidate protocol must be EndpointProtocol")
-
-    family = socket.AF_INET6 if ":" in host else socket.AF_INET
-    socket_type = (
-        socket.SOCK_STREAM
-        if protocol is EndpointProtocol.TCP
-        else socket.SOCK_DGRAM
-    )
     sockets: list[socket.socket] = []
     ports: list[int] = []
     try:
         for _ in range(count):
-            handle = socket.socket(family, socket_type)
+            handle = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             handle.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 0)
             handle.bind((host, 0))
             sockets.append(handle)
@@ -44,28 +31,23 @@ def _discover_local_candidate_ports(
             if port not in ports:
                 ports.append(port)
         if not ports:
-            raise RuntimeError("kernel returned no endpoint candidates")
+            raise RuntimeError("kernel returned no TCP endpoint candidates")
         return tuple(ports)
     finally:
         for handle in sockets:
             handle.close()
 
 
-class LocalEndpointCandidateSource:
-    """Local-kernel candidate source for TCP and UDP endpoint allocation."""
+class LocalTcpEndpointCandidateSource:
+    """Local-kernel implementation of EndpointCandidatePortSourcePort."""
 
     def candidate_ports(
         self,
         *,
         host: str,
         count: int,
-        protocol: EndpointProtocol = EndpointProtocol.TCP,
     ) -> tuple[int, ...]:
-        return _discover_local_candidate_ports(
-            host=host,
-            count=count,
-            protocol=protocol,
-        )
+        return _discover_local_tcp_candidate_ports(host=host, count=count)
 
 
-__all__ = ["LocalEndpointCandidateSource"]
+__all__ = ["LocalTcpEndpointCandidateSource"]

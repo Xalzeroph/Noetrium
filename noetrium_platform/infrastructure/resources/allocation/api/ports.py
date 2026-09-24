@@ -7,16 +7,10 @@ from .contracts import (
     EndpointAllocationRequest,
     EndpointBindingProof,
     EndpointProbeResult,
-    EndpointProtocol,
     EndpointReservationResult,
     NetworkEndpoint,
 )
-from noetrium_platform.infrastructure.resources.lease.api import (
-    ResourceLease,
-    ResourceOwner,
-    ResourceOwnership,
-)
-from noetrium_platform.foundation.governance.api import PLATFORM_SCOPE, ScopeIdentity
+from noetrium_platform.infrastructure.resources.lease.api import ResourceLease, ResourceOwner
 
 
 
@@ -29,7 +23,6 @@ class EndpointCandidatePortSourcePort(Protocol):
         *,
         host: str,
         count: int,
-        protocol: EndpointProtocol = EndpointProtocol.TCP,
     ) -> tuple[int, ...]: ...
 
 
@@ -78,19 +71,6 @@ class EndpointLeaseGuardFactoryPort(Protocol):
 
 class EndpointAllocationPort(Protocol):
     def allocate(self, request: EndpointAllocationRequest) -> EndpointAllocation: ...
-    def allocate_auto(
-        self,
-        *,
-        allocation_id: str,
-        holder_scope: ScopeIdentity,
-        purpose: str,
-        host: str = "127.0.0.1",
-        candidate_count: int = 32,
-        preferred_ports: tuple[int, ...] = (),
-        protocol: EndpointProtocol = EndpointProtocol.TCP,
-        owner_scope: ScopeIdentity = PLATFORM_SCOPE,
-        ownership: ResourceOwnership = ResourceOwnership.EXTERNAL,
-    ) -> EndpointAllocation: ...
     def confirm_bound(self, proof: EndpointBindingProof) -> EndpointAllocation: ...
     def replace_bound(
         self, proof: EndpointBindingProof, *, expected_previous_binding_proof_digest: str
