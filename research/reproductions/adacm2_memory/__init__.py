@@ -28,7 +28,8 @@ from .source import ADACM2_CVPR_2025, SOURCES
 from .study import (
     adacm2_lvu_trial_protocol,
     build_adacm2_lvu_ambiguity_studies,
-    build_adacm2_lvu_study,
+    build_adacm2_lvu_eq6_literal_study,
+    build_adacm2_lvu_eq8_consistent_study,
 )
 
 __all__ = [
@@ -54,7 +55,8 @@ __all__ = [
     "adacm2_partition_lengths",
     "build_adacm2_lvu_ambiguity_studies",
     "build_adacm2_lvu_cut",
-    "build_adacm2_lvu_study",
+    "build_adacm2_lvu_eq6_literal_study",
+    "build_adacm2_lvu_eq8_consistent_study",
     "build_adacm2_memory_program",
     "reduce_adacm2_cache",
 ]
