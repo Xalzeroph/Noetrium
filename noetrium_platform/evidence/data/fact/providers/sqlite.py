@@ -19,7 +19,11 @@ from noetrium_platform.evidence.data._canonical import (
     canonical_text,
     strict_json_loads,
 )
-from noetrium_platform.evidence.data._sqlite_transaction import rollback_data_writer
+from noetrium_platform.foundation.kernel.kernel.durability.sqlite import (
+    open_durable_sqlite_reader,
+    open_durable_sqlite_writer,
+    rollback_sqlite_writer,
+)
 from noetrium_platform.evidence.data._sqlite_types import require_integer, require_text
 
 
@@ -50,18 +54,16 @@ class SQLiteDurableFactStore:
             )
 
     def _connect_writer(self) -> sqlite3.Connection:
-        db = sqlite3.connect(self.path, timeout=self.timeout_seconds, isolation_level=None)
-        db.execute("PRAGMA journal_mode=WAL")
-        db.execute("PRAGMA synchronous=FULL")
-        db.execute(f"PRAGMA busy_timeout={int(self.timeout_seconds * 1000)}")
-        return db
+        return open_durable_sqlite_writer(
+            self.path,
+            timeout_seconds=self.timeout_seconds,
+        )
 
     def _connect_reader(self) -> sqlite3.Connection:
-        uri = f"file:{self.path.as_posix()}?mode=ro"
-        db = sqlite3.connect(uri, uri=True, timeout=self.timeout_seconds, isolation_level=None)
-        db.execute("PRAGMA query_only=ON")
-        db.execute(f"PRAGMA busy_timeout={int(self.timeout_seconds * 1000)}")
-        return db
+        return open_durable_sqlite_reader(
+            self.path,
+            timeout_seconds=self.timeout_seconds,
+        )
 
     @staticmethod
     def _document(fact: DurableFact) -> dict[str, object]:
@@ -160,7 +162,7 @@ class SQLiteDurableFactStore:
                 sequence = int(cursor.lastrowid)
                 db.execute("COMMIT")
             except BaseException as primary:
-                rollback_data_writer(db, primary)
+                rollback_sqlite_writer(db, primary, label="data")
                 raise
         return DurableFactReceipt(fact.fact_id, sequence, record_sha256)
 
