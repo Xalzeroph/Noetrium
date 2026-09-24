@@ -38,6 +38,10 @@ REPRODUCTION = ReproductionDefinition(
             path='research/reproductions/agent_q_surrogate/fidelity.py',
         ),
         ReproductionAssetRef(
+            kind=ReproductionAssetKind('method_program'),
+            path='research/reproductions/agent_q_surrogate/program.py',
+        ),
+        ReproductionAssetRef(
             kind=ReproductionAssetKind('study'),
             path='research/reproductions/agent_q_surrogate/study.py',
         ),
