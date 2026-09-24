@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import math
 import sqlite3
+from contextlib import contextmanager
 
 from dataclasses import replace
 from pathlib import Path
@@ -26,8 +27,8 @@ from noetrium_platform.infrastructure.resources.lease.api import (
     ResourceOwnershipConflict,
 )
 from noetrium_platform.foundation.kernel.kernel.durability.sqlite import (
-    begin_immediate_sqlite_transaction,
     durable_sqlite_connection,
+    immediate_sqlite_transaction,
 )
 from noetrium_platform.infrastructure.resources.providers.sqlite_lease_ops import (
     acquire_resource_lease,
@@ -66,18 +67,27 @@ class SQLiteEndpointAllocationStore(AtomicEndpointReservationPort):
         if not math.isfinite(float(timeout_seconds)) or timeout_seconds <= 0:
             raise ValueError("SQLite endpoint timeout_seconds must be finite and positive")
         self.timeout_seconds = float(timeout_seconds)
-        with self._connection() as conn:
-            begin_immediate_sqlite_transaction(conn, timeout_seconds=self.timeout_seconds)
+        with self._transaction() as conn:
             try:
                 ensure_resource_schema(conn)
                 self._ensure_schema(conn)
-                conn.commit()
+
             except BaseException:
-                conn.rollback()
+
                 raise
 
     def _connection(self):
         return durable_sqlite_connection(self.path, timeout_seconds=self.timeout_seconds)
+
+    @contextmanager
+    def _transaction(self):
+        with self._connection() as conn:
+            with immediate_sqlite_transaction(
+                conn,
+                timeout_seconds=self.timeout_seconds,
+                label="endpoint allocation",
+            ):
+                yield conn
 
     def _ensure_schema(self, conn: sqlite3.Connection) -> None:
         conn.execute("CREATE TABLE IF NOT EXISTS endpoint_meta(key TEXT PRIMARY KEY, value TEXT NOT NULL)")
@@ -220,18 +230,17 @@ class SQLiteEndpointAllocationStore(AtomicEndpointReservationPort):
         now_epoch_s = time() if now is None else float(now)
         if not math.isfinite(now_epoch_s):
             raise ValueError("endpoint observation time must be finite")
-        with self._connection() as conn:
-            begin_immediate_sqlite_transaction(conn, timeout_seconds=self.timeout_seconds)
+        with self._transaction() as conn:
             try:
                 existing = self._reconcile_one(conn, allocation.allocation_id, now_epoch_s)
                 if existing is not None:
-                    conn.commit()
+
                     return EndpointReservationResult(EndpointReservationStatus.EXISTING, existing)
 
                 try:
                     ensure_resource_owner(conn, owner)
                 except ResourceOwnershipConflict:
-                    conn.commit()
+
                     return EndpointReservationResult(
                         EndpointReservationStatus.OWNER_CONFLICT,
                         detail=f"resource owner conflict: {owner.resource.key}",
@@ -247,7 +256,7 @@ class SQLiteEndpointAllocationStore(AtomicEndpointReservationPort):
                 except ResourceLeaseConflict as exc:
                     if not str(exc).startswith("resource already has an active lease:"):
                         raise
-                    conn.commit()
+
                     return EndpointReservationResult(
                         EndpointReservationStatus.RESOURCE_BUSY,
                         detail=f"resource already leased: {lease.resource.key}",
@@ -279,14 +288,14 @@ class SQLiteEndpointAllocationStore(AtomicEndpointReservationPort):
                         granted_allocation.lease_expires_at_epoch_s,
                     ),
                 )
-                conn.commit()
+
                 return EndpointReservationResult(
                     EndpointReservationStatus.RESERVED,
                     granted_allocation,
                     granted_lease,
                 )
             except BaseException:
-                conn.rollback()
+
                 raise
 
     def confirm_bound(
@@ -295,8 +304,7 @@ class SQLiteEndpointAllocationStore(AtomicEndpointReservationPort):
         now_epoch_s = time() if now is None else float(now)
         if not math.isfinite(now_epoch_s):
             raise ValueError("endpoint observation time must be finite")
-        with self._connection() as conn:
-            begin_immediate_sqlite_transaction(conn, timeout_seconds=self.timeout_seconds)
+        with self._transaction() as conn:
             try:
                 current = self._reconcile_one(conn, proof.allocation_id, now_epoch_s)
                 if current is None:
@@ -318,7 +326,7 @@ class SQLiteEndpointAllocationStore(AtomicEndpointReservationPort):
                         and current.binding_evidence_ref == proof.evidence_ref
                         and current.bound_at_epoch_s == proof.observed_at_epoch_s
                     ):
-                        conn.commit()
+
                         return current
                     raise RuntimeError(
                         f"endpoint allocation already has a different binding proof: {proof.allocation_id}"
@@ -343,7 +351,7 @@ class SQLiteEndpointAllocationStore(AtomicEndpointReservationPort):
                     raise RuntimeError(
                         f"endpoint binding transition lost authority: {proof.allocation_id}"
                     )
-                conn.commit()
+
                 return replace(
                     current,
                     state=EndpointAllocationState.BOUND,
@@ -353,7 +361,7 @@ class SQLiteEndpointAllocationStore(AtomicEndpointReservationPort):
                     bound_at_epoch_s=proof.observed_at_epoch_s,
                 )
             except BaseException:
-                conn.rollback()
+
                 raise
 
     def replace_bound(
@@ -367,8 +375,7 @@ class SQLiteEndpointAllocationStore(AtomicEndpointReservationPort):
         now_epoch_s = time() if now is None else float(now)
         if not math.isfinite(now_epoch_s):
             raise ValueError("endpoint observation time must be finite")
-        with self._connection() as conn:
-            begin_immediate_sqlite_transaction(conn, timeout_seconds=self.timeout_seconds)
+        with self._transaction() as conn:
             try:
                 current = self._reconcile_one(conn, proof.allocation_id, now_epoch_s)
                 if current is None:
@@ -393,12 +400,12 @@ class SQLiteEndpointAllocationStore(AtomicEndpointReservationPort):
                 )
                 if cursor.rowcount != 1:
                     raise RuntimeError(f"endpoint binding replacement lost authority: {proof.allocation_id}")
-                conn.commit()
+
                 return replace(current, binding_proof_digest=proof_digest,
                     binding_binder_identity_digest=proof.binder_identity_digest,
                     binding_evidence_ref=proof.evidence_ref, bound_at_epoch_s=proof.observed_at_epoch_s)
             except BaseException:
-                conn.rollback()
+
                 raise
 
     def renew(
@@ -413,14 +420,13 @@ class SQLiteEndpointAllocationStore(AtomicEndpointReservationPort):
         now_epoch_s = time() if now is None else float(now)
         if not math.isfinite(now_epoch_s):
             raise ValueError("endpoint observation time must be finite")
-        with self._connection() as conn:
-            begin_immediate_sqlite_transaction(conn, timeout_seconds=self.timeout_seconds)
+        with self._transaction() as conn:
             current = self._reconcile_one(conn, allocation_id, now_epoch_s)
             if current is None:
-                conn.rollback()
+
                 raise KeyError(allocation_id)
             if not current.state.is_live:
-                conn.rollback()
+
                 raise RuntimeError(f"endpoint allocation is not active: {allocation_id}")
             try:
                 renewed_lease = renew_resource_lease(
@@ -435,10 +441,10 @@ class SQLiteEndpointAllocationStore(AtomicEndpointReservationPort):
                     "UPDATE endpoint_allocations SET lease_expires_at_epoch_s=? WHERE allocation_id=?",
                     (expires_at, allocation_id),
                 )
-                conn.commit()
+
                 return replace(current, lease_expires_at_epoch_s=expires_at)
             except BaseException:
-                conn.rollback()
+
                 raise
 
     def renew_many(
@@ -456,8 +462,7 @@ class SQLiteEndpointAllocationStore(AtomicEndpointReservationPort):
             raise ValueError("endpoint lease ttl_seconds must be finite and > 0")
         now_epoch_s = time() if now is None else float(now)
         expires_at = now_epoch_s + ttl_seconds
-        with self._connection() as conn:
-            begin_immediate_sqlite_transaction(conn, timeout_seconds=self.timeout_seconds)
+        with self._transaction() as conn:
             try:
                 current_rows: list[EndpointAllocation] = []
                 for allocation_id in allocation_ids:
@@ -483,22 +488,21 @@ class SQLiteEndpointAllocationStore(AtomicEndpointReservationPort):
                     "UPDATE endpoint_allocations SET lease_expires_at_epoch_s=? WHERE allocation_id=?",
                     [(expires_at, row.allocation_id) for row in current_rows],
                 )
-                conn.commit()
+
                 return tuple(replace(row, lease_expires_at_epoch_s=expires_at) for row in current_rows)
             except BaseException:
-                conn.rollback()
+
                 raise
 
     def release(self, allocation_id: str) -> EndpointAllocation:
         now_epoch_s = time()
-        with self._connection() as conn:
-            begin_immediate_sqlite_transaction(conn, timeout_seconds=self.timeout_seconds)
+        with self._transaction() as conn:
             current = self._reconcile_one(conn, allocation_id, now_epoch_s)
             if current is None:
-                conn.rollback()
+
                 raise KeyError(allocation_id)
             if current.state is EndpointAllocationState.RELEASED:
-                conn.commit()
+
                 return current
             release_resource_lease(
                 conn, current.lease_id, now_epoch_s=now_epoch_s
@@ -507,21 +511,20 @@ class SQLiteEndpointAllocationStore(AtomicEndpointReservationPort):
                 "UPDATE endpoint_allocations SET state='released' WHERE allocation_id=?",
                 (allocation_id,),
             )
-            conn.commit()
+
             return replace(current, state=EndpointAllocationState.RELEASED)
 
     def get(self, allocation_id: str) -> EndpointAllocation | None:
         # Point reads are strongly reconciled against the authoritative lease.
         # This is still O(1): both allocation_id and lease_id are indexed keys.
         now_epoch_s = time()
-        with self._connection() as conn:
-            begin_immediate_sqlite_transaction(conn, timeout_seconds=self.timeout_seconds)
+        with self._transaction() as conn:
             try:
                 current = self._reconcile_one(conn, allocation_id, now_epoch_s)
-                conn.commit()
+
                 return current
             except BaseException:
-                conn.rollback()
+
                 raise
 
     def active(self) -> tuple[EndpointAllocation, ...]:
@@ -537,8 +540,7 @@ class SQLiteEndpointAllocationStore(AtomicEndpointReservationPort):
         now_epoch_s = time() if now is None else float(now)
         if not math.isfinite(now_epoch_s):
             raise ValueError("endpoint observation time must be finite")
-        with self._connection() as conn:
-            begin_immediate_sqlite_transaction(conn, timeout_seconds=self.timeout_seconds)
+        with self._transaction() as conn:
             reconcile_expired_resource_leases(
                 conn,
                 now_epoch_s=now_epoch_s,
@@ -560,7 +562,7 @@ class SQLiteEndpointAllocationStore(AtomicEndpointReservationPort):
                     "UPDATE endpoint_allocations SET state='released' WHERE allocation_id=? AND state IN ('reserved','bound')",
                     ((str(row[0]),) for row in orphan_rows),
                 )
-            conn.commit()
+
         return tuple(replace(self._decode(row), state=EndpointAllocationState.RELEASED) for row in orphan_rows)
 
 
