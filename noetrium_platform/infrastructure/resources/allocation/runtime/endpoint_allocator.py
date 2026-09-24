@@ -34,6 +34,17 @@ class EndpointAllocationConflict(RuntimeError):
     pass
 
 
+class EndpointPhysicalConvergencePending(RuntimeError):
+    """A logical endpoint owner is stale but the OS still reports a listener."""
+
+    def __init__(self, allocation_ids: tuple[str, ...]) -> None:
+        self.allocation_ids = tuple(sorted(set(allocation_ids)))
+        super().__init__(
+            "endpoint physical convergence is not proven: "
+            + ",".join(self.allocation_ids)
+        )
+
+
 class EndpointAllocationUnavailable(RuntimeError):
     def __init__(self, request: EndpointAllocationRequest, attempts: tuple[str, ...]) -> None:
         self.request = request
@@ -163,6 +174,9 @@ class AtomicEndpointAllocator(EndpointAllocationPort):
         )
 
     def allocate(self, request: EndpointAllocationRequest) -> EndpointAllocation:
+        # Never admit a fresh physical endpoint while stale durable generations
+        # have not yet converged against OS listener truth.
+        self.reconcile()
         request_digest = request.digest()
         existing = self._reservations.get(request.allocation_id)
         if existing is not None:
@@ -268,6 +282,15 @@ class AtomicEndpointAllocator(EndpointAllocationPort):
     def release(self, allocation: EndpointAllocation) -> EndpointAllocation:
         if type(allocation) is not EndpointAllocation:
             raise TypeError("endpoint release requires EndpointAllocation")
+        current = self._reservations.get(allocation.allocation_id)
+        if current is None:
+            raise KeyError(allocation.allocation_id)
+        _require_allocation_generation(current, allocation)
+        if current.state is EndpointAllocationState.RELEASED:
+            return current
+        physical = self._probe.probe(current.endpoint)
+        if not physical.available:
+            raise EndpointPhysicalConvergencePending((current.allocation_id,))
         return self._reservations.release(allocation)
 
     def get(self, allocation_id: str) -> EndpointAllocation:
@@ -284,7 +307,20 @@ class AtomicEndpointAllocator(EndpointAllocationPort):
         *,
         now: float | None = None,
     ) -> tuple[EndpointAllocation, ...]:
-        return self._reservations.reconcile_orphans(now=now)
+        orphans = self._reservations.expire_orphans(now=now)
+        released: list[EndpointAllocation] = []
+        pending: list[str] = []
+        for allocation in orphans:
+            physical = self._probe.probe(allocation.endpoint)
+            if not physical.available:
+                pending.append(allocation.allocation_id)
+                continue
+            released.append(
+                self._reservations.retire_orphan(allocation, now=now)
+            )
+        if pending:
+            raise EndpointPhysicalConvergencePending(tuple(pending))
+        return tuple(sorted(released, key=lambda row: row.allocation_id))
 
 
 class InMemoryEndpointAllocator(EndpointAllocationPort):
@@ -317,19 +353,23 @@ class InMemoryEndpointAllocator(EndpointAllocationPort):
 
     def _reconcile_allocation_locked(self, allocation_id: str) -> EndpointAllocation:
         try:
-            current = self._allocations[allocation_id]
+            return self._allocations[allocation_id]
         except KeyError as exc:
             raise KeyError(allocation_id) from exc
+
+    def _lease_authoritative_locked(
+        self,
+        current: EndpointAllocation,
+        now_epoch_s: float,
+    ) -> bool:
         if not current.state.is_live:
-            return current
+            return False
         try:
-            lease = self._leases.get(current.lease_id)
+            lease = self._leases.get(current.lease_id, now=now_epoch_s)
         except KeyError:
-            lease = None
-        now_epoch_s = time()
-        lease_valid = (
-            lease is not None
-            and lease.state is LeaseState.ACTIVE
+            return False
+        return (
+            lease.state is LeaseState.ACTIVE
             and lease.resource == current.endpoint.resource
             and lease.holder_scope == current.holder_scope
             and lease.purpose == current.purpose
@@ -337,11 +377,17 @@ class InMemoryEndpointAllocator(EndpointAllocationPort):
             and lease.fencing_token == current.lease_fencing_token
             and not lease.expired_at(now_epoch_s)
         )
-        if lease_valid:
-            return current
-        released = replace(current, state=EndpointAllocationState.RELEASED)
-        self._allocations[allocation_id] = released
-        return released
+
+    def _require_lease_authority_locked(
+        self,
+        current: EndpointAllocation,
+        now_epoch_s: float,
+    ) -> None:
+        if not self._lease_authoritative_locked(current, now_epoch_s):
+            raise EndpointAllocationConflict(
+                "endpoint allocation lease is no longer authoritative: "
+                f"{current.allocation_id}"
+            )
 
     def _existing_for_request_locked(
         self, request: EndpointAllocationRequest, request_digest: str
@@ -386,6 +432,7 @@ class InMemoryEndpointAllocator(EndpointAllocationPort):
         )
 
     def allocate(self, request: EndpointAllocationRequest) -> EndpointAllocation:
+        self.reconcile()
         request_digest = request.digest()
         with self._lock:
             existing = self._existing_for_request_locked(request, request_digest)
@@ -457,6 +504,7 @@ class InMemoryEndpointAllocator(EndpointAllocationPort):
                 raise EndpointAllocationConflict(
                     f"endpoint allocation is released: {proof.allocation_id}"
                 )
+            self._require_lease_authority_locked(current, time())
             if current.endpoint != proof.endpoint:
                 raise EndpointAllocationConflict(
                     f"endpoint binding proof endpoint mismatch: {proof.allocation_id}"
@@ -498,6 +546,7 @@ class InMemoryEndpointAllocator(EndpointAllocationPort):
             current = self._reconcile_allocation_locked(proof.allocation_id)
             if current.state is not EndpointAllocationState.BOUND:
                 raise EndpointAllocationConflict(f"endpoint allocation is not bound: {proof.allocation_id}")
+            self._require_lease_authority_locked(current, time())
             if current.endpoint != proof.endpoint:
                 raise EndpointAllocationConflict(f"endpoint binding proof endpoint mismatch: {proof.allocation_id}")
             if current.lease_fencing_token != proof.lease_fencing_token:
@@ -576,7 +625,22 @@ class InMemoryEndpointAllocator(EndpointAllocationPort):
             _require_allocation_generation(current, allocation)
             if current.state is EndpointAllocationState.RELEASED:
                 return current
-            self._leases.release(current.lease_id, fencing_token=current.lease_fencing_token)
+            self._require_lease_authority_locked(current, time())
+
+        physical = self._probe.probe(current.endpoint)
+        if not physical.available:
+            raise EndpointPhysicalConvergencePending((current.allocation_id,))
+
+        with self._lock:
+            current = self._reconcile_allocation_locked(allocation.allocation_id)
+            _require_allocation_generation(current, allocation)
+            if current.state is EndpointAllocationState.RELEASED:
+                return current
+            self._require_lease_authority_locked(current, time())
+            self._leases.release(
+                current.lease_id,
+                fencing_token=current.lease_fencing_token,
+            )
             released = replace(current, state=EndpointAllocationState.RELEASED)
             self._allocations[allocation.allocation_id] = released
             return released
@@ -610,13 +674,34 @@ class InMemoryEndpointAllocator(EndpointAllocationPort):
             now=now_epoch_s,
             resource_kind=ResourceKind.NETWORK_ENDPOINT,
         )
-        released: list[EndpointAllocation] = []
         with self._lock:
-            for allocation_id in tuple(self._allocations):
-                before = self._allocations[allocation_id]
-                current = self._reconcile_allocation_locked(allocation_id)
-                if before.state.is_live and current.state is EndpointAllocationState.RELEASED:
-                    released.append(current)
+            orphans = tuple(
+                row
+                for row in self._allocations.values()
+                if row.state.is_live
+                and not self._lease_authoritative_locked(row, now_epoch_s)
+            )
+
+        released: list[EndpointAllocation] = []
+        pending: list[str] = []
+        for expected in orphans:
+            physical = self._probe.probe(expected.endpoint)
+            if not physical.available:
+                pending.append(expected.allocation_id)
+                continue
+            with self._lock:
+                current = self._reconcile_allocation_locked(expected.allocation_id)
+                _require_allocation_generation(current, expected)
+                if current.state is EndpointAllocationState.RELEASED:
+                    continue
+                if self._lease_authoritative_locked(current, now_epoch_s):
+                    continue
+                retired = replace(current, state=EndpointAllocationState.RELEASED)
+                self._allocations[current.allocation_id] = retired
+                released.append(retired)
+
+        if pending:
+            raise EndpointPhysicalConvergencePending(tuple(pending))
         return tuple(sorted(released, key=lambda row: row.allocation_id))
 
 
@@ -624,5 +709,6 @@ __all__ = [
     "AtomicEndpointAllocator",
     "EndpointAllocationConflict",
     "EndpointAllocationUnavailable",
+    "EndpointPhysicalConvergencePending",
     "InMemoryEndpointAllocator",
 ]
