@@ -13,7 +13,7 @@ from noetrium_platform.composition.research_os_runtime import (
     CanonicalResearchOSNodeRuntime,
 )
 from noetrium_platform.composition.research_os_value_authorities import (
-    ResearchOSArtifactValueAuthority,
+    ResearchOSImmutableValueAuthority,
 )
 from noetrium_platform.composition.research_os_values import (
     ResearchOSValueRouter,
@@ -102,7 +102,7 @@ def test_live_revision_migration_rebinds_artifact_and_records_reuse_lineage(
     graph = SQLiteResearchGraphExecutionStore(tmp_path / "graph.sqlite3")
     runtime = CanonicalResearchOSNodeRuntime(tmp_path / "machine-state")
     value_blobs = DirectoryArtifactBlobStore(tmp_path / "value-blobs")
-    authority = ResearchOSArtifactValueAuthority(
+    authority = ResearchOSImmutableValueAuthority(
         value_blobs,
         SQLiteArtifactRegistry(tmp_path / "artifact-catalog.sqlite3"),
         SQLiteArtifactRetentionStore(tmp_path / "artifact-retention.sqlite3"),
