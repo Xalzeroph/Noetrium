@@ -228,12 +228,33 @@ class EnvironmentBinding:
     instance_id: str
 
 
+@dataclass(frozen=True, slots=True)
+class EnvironmentInstanceAcquisition:
+    """One atomically selected and generation-fenced reusable instance binding."""
+
+    binding: EnvironmentBinding
+    instance: EnvironmentInstance
+
+    def __post_init__(self) -> None:
+        if type(self.binding) is not EnvironmentBinding:
+            raise TypeError("environment acquisition binding must be EnvironmentBinding")
+        if type(self.instance) is not EnvironmentInstance:
+            raise TypeError("environment acquisition instance must be EnvironmentInstance")
+        if self.binding.instance_id != self.instance.instance_id:
+            raise ValueError("environment acquisition binding instance drifted")
+        if self.instance.state is not EnvironmentInstanceState.IN_USE:
+            raise ValueError("environment acquisition instance must be IN_USE")
+        if self.instance.generation <= 0:
+            raise ValueError("environment acquisition requires a fenced generation")
+
+
 __all__ = [
     "EnvironmentAssignment",
     "EnvironmentBinding",
     "EnvironmentCleanlinessKind",
     "EnvironmentCleanlinessProof",
     "EnvironmentInstance",
+    "EnvironmentInstanceAcquisition",
     "EnvironmentInstanceState",
     "EnvironmentProfileGcAssessment",
     "EnvironmentProfileReferenceSummary",
