@@ -26,7 +26,6 @@ from .world_cut_integrity import (
     path_from_ref as _path_from_ref,
     safe_child as _safe_child,
     safe_exception_message as _safe_exception_message,
-    sha256_file as _sha256,
     tree_manifest as _tree_manifest,
     validated_manifest as _validated_manifest,
     validate_source as _validate_source,
