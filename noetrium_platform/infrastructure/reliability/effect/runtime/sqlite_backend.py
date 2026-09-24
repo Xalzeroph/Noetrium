@@ -5,6 +5,8 @@ import math
 from pathlib import Path
 import sqlite3
 
+from noetrium_platform.foundation.kernel.kernel.durability.sqlite import open_durable_sqlite_writer
+
 from .persistence import EffectJournalPersistenceBackend, EncodedEffectIntentRecord
 
 
@@ -97,10 +99,10 @@ class SQLiteEffectJournalBackend(EffectJournalPersistenceBackend):
         self._initialize()
 
     def connect(self) -> sqlite3.Connection:
-        conn = sqlite3.connect(self.path, timeout=self.timeout_seconds, isolation_level=None)
-        conn.execute("PRAGMA synchronous=FULL")
-        conn.execute("PRAGMA foreign_keys=ON")
-        return conn
+        return open_durable_sqlite_writer(
+            self.path,
+            timeout_seconds=self.timeout_seconds,
+        )
 
     @contextmanager
     def connection(self):
@@ -114,7 +116,6 @@ class SQLiteEffectJournalBackend(EffectJournalPersistenceBackend):
 
     def _initialize(self) -> None:
         with self.connection() as conn:
-            conn.execute("PRAGMA journal_mode=WAL")
             conn.execute("BEGIN IMMEDIATE")
             try:
                 conn.execute(f"CREATE TABLE IF NOT EXISTS {_META_TABLE} (key TEXT PRIMARY KEY, value TEXT NOT NULL)")
