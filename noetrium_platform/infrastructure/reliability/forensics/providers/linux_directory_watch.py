@@ -186,43 +186,71 @@ class _LinuxInotifyHub:
 
     def unregister(self, token: int) -> None:
         self._require_owner_process()
+        removed_kernel_watch = False
         with self._lock:
-            watch = self._watch_by_token.pop(token, None)
-            self._pending.discard(token)
+            watch = self._watch_by_token.get(token)
             if watch is None:
                 return
             tokens = self._tokens_by_watch.get(watch)
-            if tokens is None:
+            if tokens is None or token not in tokens:
+                raise RuntimeError(
+                    "Linux directory watch token mapping lost physical identity"
+                )
+            if len(tokens) > 1:
+                self._watch_by_token.pop(token, None)
+                self._pending.discard(token)
+                tokens.remove(token)
                 return
-            tokens.discard(token)
-            if tokens:
-                return
-            self._tokens_by_watch.pop(watch, None)
-            fd = self._fd
 
-        result = int(self._remove_watch(fd, watch))
-        if result < 0:
-            error = ctypes.get_errno()
-            if error not in (errno.EINVAL, errno.EBADF):
-                raise OSError(error, "failed to remove Linux directory watch")
-        # rm_watch queues IN_IGNORED. Drain it before a future registration can
-        # reuse the descriptor and accidentally attribute the stale event.
-        self._drain()
+            # The final logical token owns the kernel watch. Keep register()
+            # fenced until rm_watch proves physical convergence, otherwise a
+            # concurrent add_watch may reuse this descriptor and be removed by
+            # delayed cleanup from the old token.
+            fd = self._fd
+            result = int(self._remove_watch(fd, watch))
+            if result < 0:
+                error = ctypes.get_errno()
+                if error not in (errno.EINVAL, errno.EBADF):
+                    # Preserve every logical identity so a later close can retry.
+                    raise OSError(
+                        error,
+                        "failed to remove Linux directory watch",
+                    )
+
+            self._watch_by_token.pop(token, None)
+            self._pending.discard(token)
+            self._tokens_by_watch.pop(watch, None)
+            removed_kernel_watch = True
+
+        if removed_kernel_watch:
+            # rm_watch queues IN_IGNORED. Drain it before a future registration
+            # can reuse the descriptor and inherit the stale event.
+            self._drain()
 
     def close(self) -> None:
         if os.getpid() != self._owner_pid:
             self.abandon_after_fork()
             return
-        with self._lock:
-            if self._closed:
-                return
-            self._closed = True
-            fd, self._fd = self._fd, -1
-            self._watch_by_token.clear()
-            self._tokens_by_watch.clear()
-            self._pending.clear()
-        if fd >= 0:
-            os.close(fd)
+        # _drain() takes read_lock -> state lock. Use the same order here so
+        # close cannot publish terminal logical state before the fd close effect
+        # has actually converged.
+        with self._read_lock:
+            with self._lock:
+                if self._closed:
+                    return
+                fd = self._fd
+                if fd >= 0:
+                    try:
+                        os.close(fd)
+                    except OSError as exc:
+                        if exc.errno != errno.EBADF:
+                            # Keep fd and maps intact; a later close may retry.
+                            raise
+                self._fd = -1
+                self._closed = True
+                self._watch_by_token.clear()
+                self._tokens_by_watch.clear()
+                self._pending.clear()
 
 
 _HUB_LOCK = RLock()
@@ -295,9 +323,14 @@ class LinuxDirectoryWatch:
         self._hub.acknowledge(self._token)
 
     def close(self) -> None:
-        token, self._token = self._token, None
-        if token is not None:
-            self._hub.unregister(token)
+        token = self._token
+        if token is None:
+            return
+        # Only publish this wrapper as closed after unregister() proves the
+        # underlying physical watch has converged. A failed close must remain
+        # retryable instead of turning into a permanent no-op.
+        self._hub.unregister(token)
+        self._token = None
 
 
 def open_linux_directory_watch(root: Path) -> LinuxDirectoryWatch | None:
