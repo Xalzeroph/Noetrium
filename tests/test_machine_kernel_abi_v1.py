@@ -82,6 +82,25 @@ def test_directory_journal_survives_new_instance(tmp_path: Path) -> None:
     assert restored.get(first.commit_id) == first
 
 
+def test_directory_journal_get_revalidates_cached_file_identity(
+    tmp_path: Path,
+) -> None:
+    journal = DirectoryMachineJournal(tmp_path)
+    first = journal.append(make_commit())
+    assert journal.get(first.commit_id) == first
+
+    path = next((tmp_path / "machines").glob("*.journal"))
+    replacement = path.with_suffix(".replacement")
+    replacement.write_bytes(path.read_bytes())
+    replacement.replace(path)
+
+    with pytest.raises(
+        MachineIntegrityError,
+        match="journal file identity was replaced",
+    ):
+        journal.get(first.commit_id)
+
+
 def test_directory_journal_rejects_non_canonical_record(tmp_path: Path) -> None:
     journal = DirectoryMachineJournal(tmp_path)
     first = make_commit()
