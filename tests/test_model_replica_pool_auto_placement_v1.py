@@ -395,3 +395,113 @@ def test_model_replica_pool_cleanup_is_retryable_and_never_releases_resources_un
     assert len(endpoints.released) == 2
     assert compute_guards.created[0].closed is True
     assert endpoint_guards.created[0].closed is True
+
+
+def test_model_replica_pool_runtime_retires_forgotten_active_lease(tmp_path) -> None:
+    catalog = Catalog()
+    runtime = Runtime(catalog)
+    scheduler = Scheduler()
+    endpoints = Endpoints()
+    compute_guards = ComputeGuards()
+    endpoint_guards = EndpointGuards()
+    pool = LocalModelReplicaPoolRuntime(
+        deployment_catalog=catalog,
+        deployment_runtime=runtime,
+        fleet=Fleet(catalog),
+        compute_scheduler=scheduler,
+        endpoint_allocations=endpoints,
+        compute_lease_guards=compute_guards,
+        endpoint_lease_guards=endpoint_guards,
+    )
+
+    pool.ensure(
+        ModelReplicaPoolRequest(
+            pool_id="forgotten",
+            scope=PLATFORM_SCOPE,
+            model_id="qwen3-8b",
+            engine="vllm",
+            python_environment_id="vllm",
+            cwd=Path(tmp_path),
+            compute=ComputeRequirement(
+                cpu_cores=2,
+                memory_bytes=1024,
+                gpu_count=1,
+                minimum_gpu_memory_bytes=40 * 1024**3,
+            ),
+        )
+    )
+    assert pool.active_lease_count == 1
+
+    pool.close_all()
+
+    assert pool.active_lease_count == 0
+    assert len(runtime.removed) == 2
+    assert len(scheduler.released) == 2
+    assert len(endpoints.released) == 2
+    assert compute_guards.created[0].closed is True
+    assert endpoint_guards.created[0].closed is True
+
+
+def test_model_replica_pool_runtime_close_all_is_retryable_and_seals_new_ensure(
+    tmp_path,
+) -> None:
+    class FailOnceRuntime(Runtime):
+        def __init__(self, catalog):
+            super().__init__(catalog)
+            self.failed = False
+
+        def remove_deployment(self, generation):
+            if not self.failed:
+                self.failed = True
+                raise RuntimeError("simulated model stop uncertainty")
+            return super().remove_deployment(generation)
+
+    catalog = Catalog()
+    runtime = FailOnceRuntime(catalog)
+    scheduler = Scheduler()
+    endpoints = Endpoints()
+    pool = LocalModelReplicaPoolRuntime(
+        deployment_catalog=catalog,
+        deployment_runtime=runtime,
+        fleet=Fleet(catalog),
+        compute_scheduler=scheduler,
+        endpoint_allocations=endpoints,
+        compute_lease_guards=ComputeGuards(),
+        endpoint_lease_guards=EndpointGuards(),
+    )
+    request = ModelReplicaPoolRequest(
+        pool_id="retry-runtime-close",
+        scope=PLATFORM_SCOPE,
+        model_id="qwen3-8b",
+        engine="vllm",
+        python_environment_id="vllm",
+        cwd=Path(tmp_path),
+        compute=ComputeRequirement(
+            cpu_cores=2,
+            memory_bytes=1024,
+            gpu_count=1,
+            minimum_gpu_memory_bytes=40 * 1024**3,
+        ),
+    )
+    pool.ensure(request)
+
+    try:
+        pool.close_all()
+    except ExceptionGroup as error:
+        assert any(
+            "simulated model stop uncertainty" in str(item)
+            for item in error.exceptions
+        )
+    else:
+        raise AssertionError("uncertain model stop must keep pool cleanup retryable")
+
+    assert pool.active_lease_count == 1
+    try:
+        pool.ensure(request)
+    except RuntimeError as error:
+        assert "closing" in str(error)
+    else:
+        raise AssertionError("closing replica pool must reject new ensure")
+
+    pool.close_all()
+    assert pool.active_lease_count == 0
