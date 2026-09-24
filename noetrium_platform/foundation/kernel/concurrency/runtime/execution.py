@@ -22,6 +22,14 @@ from noetrium_platform.foundation.kernel.concurrency.api.ports import (
 T = TypeVar("T")
 
 
+def blocking_sleep(seconds: float) -> None:
+    """Perform one validated synchronous wait under the concurrency authority."""
+    delay = float(seconds)
+    if delay < 0:
+        raise ValueError("blocking sleep delay must be non-negative")
+    time.sleep(delay)
+
+
 class UnifiedExecutionAuthority:
     """Pure execution mechanism consuming a neutral permit Port.
 
@@ -182,7 +190,7 @@ class UnifiedExecutionAuthority:
             if cancellation is not None and cancellation.wait(wait_for):
                 raise TaskCancelled(cancellation.reason or "serial execution permit wait cancelled")
             if cancellation is None:
-                time.sleep(wait_for)
+                blocking_sleep(wait_for)
 
     def submit_atomic_batch(
         self,
@@ -290,4 +298,4 @@ class UnifiedExecutionAuthority:
         return raw
 
 
-__all__ = ["UnifiedExecutionAuthority"]
+__all__ = ["UnifiedExecutionAuthority", "blocking_sleep"]
