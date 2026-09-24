@@ -1,4 +1,4 @@
-from tests_support import CompositeParticipantResolver, FakeParticipantResolver
+from tests_support import CompositeParticipantResolver, FakeParticipantResolver, ExperimentComponentBinderForTest
 from tests_support import context_action_spec, model_role_for_test
 from pathlib import Path
 import hashlib
@@ -12,7 +12,6 @@ from noetrium_platform.foundation.kernel.kernel import ExecutionContext, Operati
 from noetrium_platform.capabilities.participant.method.api import MethodIdentity, MethodSnapshot
 from noetrium_platform.research.experimentation.lifecycle.checkpoint.runtime.coordination import RunCheckpointCoordinator, RunCheckpointIdentityMismatch
 from noetrium_platform.research.experimentation.lifecycle.checkpoint.providers.directory_store import DirectoryRunCheckpointStore
-from noetrium_platform.research.experimentation.lifecycle.experiment.runtime import ExperimentComponentBinder
 from noetrium_platform.research.execution.participants import ParticipantCheckpointOperations, ParticipantResolutionOperations
 from noetrium_platform.capabilities.participant.session.runtime.checkpoint_runtime import ParticipantCheckpointRuntime
 from noetrium_platform.capabilities.participant.core.api import ParticipantLifecycleAdapterRegistry
@@ -45,7 +44,7 @@ class E:
 def bound(dispatcher, spec):
     mr=FakeParticipantResolver(); mr.register("method", "m",M)
     er=FakeParticipantResolver(); er.register("environment", "e",E)
-    return ExperimentComponentBinder(ParticipantResolutionOperations(dispatcher, ParticipantLifecycleAdapterRegistry(context_action_participant_adapters(CompositeParticipantResolver(mr, er))))).bind(
+    return ExperimentComponentBinderForTest(ParticipantResolutionOperations(dispatcher, ParticipantLifecycleAdapterRegistry(context_action_participant_adapters(CompositeParticipantResolver(mr, er))))).bind(
         spec,
         ExecutionContext("run","trace","dc",study_id="s",task_id="task",decision_cycle_id="dc"),
     )
