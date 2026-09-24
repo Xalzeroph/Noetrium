@@ -16,7 +16,12 @@ from noetrium_platform.infrastructure.resources.directory.api import (
     WorkspaceReferenceClosure,
 )
 from noetrium_platform.infrastructure.resources.directory.runtime import build_local_directory_authorities
-from noetrium_platform.capabilities.model.asset.api import ModelAssetMode, ModelSourceSpec
+from noetrium_platform.capabilities.model.asset.api import (
+    ModelAssetClosureAuthority,
+    ModelAssetMode,
+    ModelAssetReferenceClosure,
+    ModelSourceSpec,
+)
 from noetrium_platform.capabilities.model.api import ModelAuthorities
 from noetrium_platform.capabilities.model.deployment.api import ModelDeploymentLogs, ModelDeploymentSelector, ModelDeploymentSpec, ModelDesiredState, ModelRuntimeState
 from noetrium_platform.infrastructure.resources.compute.api import GpuDeviceStatus, GpuProcessStatus, GpuRuntimeSnapshot
@@ -188,6 +193,29 @@ def build_models(directories, environments, factory, *, source_backends=(), gpu_
     )
     assignments = ModelAssignmentManager(InMemoryScopeRegistry())
     return ModelAuthorities(assets, assignments, catalog, runtime, fleet, logs, resources, controller)
+
+def _closed_model_gc(models: ModelAuthorities, model_id: str):
+    return models.assets.assess_model_gc(
+        model_id,
+        closures=(
+            ModelAssetReferenceClosure(
+                ModelAssetClosureAuthority.EVIDENCE,
+                "1" * 64,
+                (),
+            ),
+            ModelAssetReferenceClosure(
+                ModelAssetClosureAuthority.EXECUTION,
+                "2" * 64,
+                (),
+            ),
+            ModelAssetReferenceClosure(
+                ModelAssetClosureAuthority.RECOVERY,
+                "3" * 64,
+                (),
+            ),
+        ),
+    )
+
 
 
 class ManagementTests(unittest.TestCase):
@@ -418,7 +446,11 @@ class ManagementTests(unittest.TestCase):
                     self.skipTest("Windows symlink privilege is unavailable")
                 raise
             self.assertTrue(link_asset.path.is_symlink())
-            models.assets.unregister_model("link", delete_managed_files=True)
+            models.assets.unregister_model(
+                "link",
+                delete_managed_files=True,
+                gc=_closed_model_gc(models, "link"),
+            )
             self.assertTrue(linked.exists())
 
     def test_gpu_conflicts_are_visible_but_do_not_block_management(self):
@@ -534,7 +566,11 @@ class ManagementTests(unittest.TestCase):
             self.assertEqual(seen["env"]["HF_HOME"], str(directories.layout.layout.cache / "huggingface"))
             self.assertEqual(seen["env"]["HF_ENDPOINT"], "https://hf-mirror.example")
             self.assertTrue((asset.path / "config.json").exists())
-            models.assets.unregister_model("example-model", delete_managed_files=True)
+            models.assets.unregister_model(
+                "example-model",
+                delete_managed_files=True,
+                gc=_closed_model_gc(models, "example-model"),
+            )
             self.assertFalse(asset.path.exists())
 
     def test_gpu_runtime_observer_is_best_effort_and_parses_nvidia_smi(self):
@@ -1103,6 +1139,173 @@ def test_model_deployment_retirement_purges_obsolete_process_tombstones() -> Non
         ) == ()
 
 
+
+def test_model_asset_physical_gc_requires_complete_external_closure() -> None:
+    with TemporaryDirectory() as td:
+        root = Path(td)
+        directories = build_local_directory_authorities(layout(root))
+        environments = build_environments(directories)
+        models = build_models(directories, environments, FakeFactory())
+        source = root / "source-gc-gate"
+        source.mkdir()
+        (source / "weights.bin").write_bytes(b"weights")
+        asset = models.assets.register_model(
+            "gc-gate",
+            PLATFORM_SCOPE,
+            source,
+            mode="copy",
+        )
+
+        with pytest.raises(RuntimeError, match="typed model asset GC assessment"):
+            models.assets.unregister_model(
+                "gc-gate",
+                delete_managed_files=True,
+            )
+        assert asset.path.exists()
+        assert models.assets.model("gc-gate") == asset
+
+        partial = models.assets.assess_model_gc(
+            "gc-gate",
+            closures=(
+                ModelAssetReferenceClosure(
+                    ModelAssetClosureAuthority.EXECUTION,
+                    "4" * 64,
+                    (),
+                ),
+            ),
+        )
+        assert not partial.eligible
+        with pytest.raises(RuntimeError, match="complete execution, evidence, and recovery"):
+            models.assets.unregister_model(
+                "gc-gate",
+                delete_managed_files=True,
+                gc=partial,
+            )
+        assert asset.path.exists()
+        assert models.assets.model("gc-gate") == asset
+
+
+@pytest.mark.parametrize(
+    ("authority", "reference_id"),
+    (
+        (ModelAssetClosureAuthority.EXECUTION, "run-resumable"),
+        (ModelAssetClosureAuthority.EVIDENCE, "evidence-retained"),
+        (ModelAssetClosureAuthority.RECOVERY, "checkpoint-retained"),
+    ),
+)
+def test_model_asset_physical_gc_blocks_retained_external_reference(
+    authority: ModelAssetClosureAuthority,
+    reference_id: str,
+) -> None:
+    with TemporaryDirectory() as td:
+        root = Path(td)
+        directories = build_local_directory_authorities(layout(root))
+        environments = build_environments(directories)
+        models = build_models(directories, environments, FakeFactory())
+        source = root / f"source-{authority.value}"
+        source.mkdir()
+        (source / "weights.bin").write_bytes(b"weights")
+        asset = models.assets.register_model(
+            f"gc-{authority.value}",
+            PLATFORM_SCOPE,
+            source,
+            mode="copy",
+        )
+        model_id = asset.model_id
+        closures = tuple(
+            ModelAssetReferenceClosure(
+                current,
+                str(index) * 64,
+                (reference_id,) if current is authority else (),
+            )
+            for index, current in enumerate(
+                (
+                    ModelAssetClosureAuthority.EVIDENCE,
+                    ModelAssetClosureAuthority.EXECUTION,
+                    ModelAssetClosureAuthority.RECOVERY,
+                ),
+                start=5,
+            )
+        )
+        gc = models.assets.assess_model_gc(model_id, closures=closures)
+        assert gc.closure_complete
+        assert not gc.eligible
+        with pytest.raises(RuntimeError, match="zero retained references"):
+            models.assets.unregister_model(
+                model_id,
+                delete_managed_files=True,
+                gc=gc,
+            )
+        assert asset.path.exists()
+        assert models.assets.model(model_id) == asset
+
+
+def test_model_asset_physical_gc_retry_requires_same_durable_proof() -> None:
+    with TemporaryDirectory() as td:
+        root = Path(td)
+        directories = build_local_directory_authorities(layout(root))
+        environments = build_environments(directories)
+        models = build_models(directories, environments, FakeFactory())
+        source = root / "source-proof-retry"
+        source.mkdir()
+        (source / "weights.bin").write_bytes(b"weights")
+        asset = models.assets.register_model(
+            "gc-proof-retry",
+            PLATFORM_SCOPE,
+            source,
+            mode="copy",
+        )
+        storage = models.assets._storage
+        real_remove = storage.remove
+
+        def fail_remove(_asset):
+            raise OSError("simulated destructive GC interruption")
+
+        storage.remove = fail_remove
+        original = _closed_model_gc(models, asset.model_id)
+        with pytest.raises(OSError, match="destructive GC interruption"):
+            models.assets.unregister_model(
+                asset.model_id,
+                delete_managed_files=True,
+                gc=original,
+            )
+
+        changed = models.assets.assess_model_gc(
+            asset.model_id,
+            closures=(
+                ModelAssetReferenceClosure(
+                    ModelAssetClosureAuthority.EVIDENCE,
+                    "a" * 64,
+                    (),
+                ),
+                ModelAssetReferenceClosure(
+                    ModelAssetClosureAuthority.EXECUTION,
+                    "b" * 64,
+                    (),
+                ),
+                ModelAssetReferenceClosure(
+                    ModelAssetClosureAuthority.RECOVERY,
+                    "c" * 64,
+                    (),
+                ),
+            ),
+        )
+        storage.remove = real_remove
+        with pytest.raises(RuntimeError, match="GC proof changed across retirement retry"):
+            models.assets.unregister_model(
+                asset.model_id,
+                delete_managed_files=True,
+                gc=changed,
+            )
+        assert asset.path.exists()
+
+        assert models.assets.unregister_model(
+            asset.model_id,
+            delete_managed_files=True,
+            gc=original,
+        )
+        assert not asset.path.exists()
+
 def test_model_asset_retirement_retries_managed_delete_with_durable_original_policy() -> None:
     with TemporaryDirectory() as td:
         root = Path(td)
@@ -1131,10 +1334,12 @@ def test_model_asset_retirement_retries_managed_delete_with_durable_original_pol
             return real_remove(value)
 
         storage.remove = fail_once
+        gc = _closed_model_gc(models, "retire-delete")
         with pytest.raises(OSError, match="delete interruption"):
             models.assets.unregister_model(
                 "retire-delete",
                 delete_managed_files=True,
+                gc=gc,
             )
 
         assert asset.path.exists()
@@ -1145,6 +1350,7 @@ def test_model_asset_retirement_retries_managed_delete_with_durable_original_pol
         assert models.assets.unregister_model(
             "retire-delete",
             delete_managed_files=False,
+            gc=gc,
         )
         assert calls == 2
         assert not asset.path.exists()
