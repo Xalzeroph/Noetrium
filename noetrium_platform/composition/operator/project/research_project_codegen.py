@@ -12,12 +12,14 @@ def render_research_core(project_id: str) -> str:
         raise ValueError("research core project_id must be non-empty")
     return f'''"""USER-OWNED scientific semantics.
 
-This is the only generated file intended for scientific editing.
+This is the generated user-owned entrypoint. You may keep all scientific code
+here or import arbitrary package-local modules/subpackages that you own.
 
 Replace the entire body of build_research() with the real research core. You may
 construct any number of ResearchPrograms, any DAG, any definitions, CUSTOM
-semantics, Machine-backed methods, experiments, analyses, or cross-program
-dependencies. The project scaffold does not prescribe scientific topology.
+semantics, Method/Memory/Participant/Runtime programs, Machine-backed methods,
+benchmarks, experiments, analyses, or cross-program dependencies. The project
+scaffold does not prescribe scientific topology or source layout.
 
 Everything outside this file is platform shell: packaging, validation, execution
 wiring, scheduling, evidence, artifacts, checkpoint/recovery and live revision
