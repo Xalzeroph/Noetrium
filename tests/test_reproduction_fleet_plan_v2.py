@@ -12,7 +12,7 @@ def _lane(plan: dict, package: str) -> dict:
 def test_fleet_plan_is_derived_only_from_current_research_os_compilers() -> None:
     plan = build_plan()
     assert plan["schema"] == "noetrium.reproduction-fleet-plan.v5"
-        assert plan["compile_failure_count"] == 0
+    assert plan["compile_failure_count"] == 0
     assert plan["research_os_compiled_count"] == plan["executable_reproduction_count"]
     assert (
         plan["execution_ready_count"] + plan["closure_binding_required_count"]
