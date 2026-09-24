@@ -98,9 +98,10 @@ def test_sqlite_graph_timestamp_overflow_fails_before_durable_mutation(
         failure_message="fixture",
     )
     with pytest.raises(ValueError, match="signed 64-bit storage"):
-        store.schedule_retry(
+        store.retry_failed_subgraph(
             "execution",
             "node",
+            descendant_node_ids=(),
             retry_not_before_ns=_INT64_MAX + 1,
         )
     assert store.snapshot("execution").node("node").state is (
