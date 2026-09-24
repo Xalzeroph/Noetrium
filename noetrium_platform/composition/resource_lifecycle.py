@@ -145,7 +145,7 @@ class ManagedResourceReconciler:
             )
             for allocation in self._endpoints.active():
                 released_endpoints.append(
-                    self._endpoints.release(allocation.allocation_id)
+                    self._endpoints.release(allocation)
                 )
             if self._endpoints.active():
                 raise RuntimeError(
@@ -166,7 +166,7 @@ class ManagedResourceReconciler:
         try:
             compute = self._compute.reconcile_expired(now=now_epoch_s)
             for allocation in self._compute.allocations():
-                self._compute.release(allocation.allocation_id)
+                self._compute.release(allocation)
             if self._compute.allocations():
                 raise RuntimeError(
                     "compute allocations survived owner shutdown cleanup"
