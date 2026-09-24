@@ -1,6 +1,9 @@
 from __future__ import annotations
 
-from noetrium_platform.foundation.kernel.kernel.durability import flush_file_descriptor
+from noetrium_platform.foundation.kernel.kernel.durability import (
+    AppendDurability,
+    append_bytes,
+)
 
 import os
 from pathlib import Path
@@ -27,10 +30,16 @@ class HashLedgerWriter:
         state=self.state.value
         encoded,row_hash=encode_row(state.tail_hash,payload)
         due=(state.since_sync+1)>=self.fsync_every
-        with self.path.open("ab",buffering=1024*1024) as fh:
-            fh.write(encoded)
-            fh.flush()
-            if due:
-                flush_file_descriptor(fh.fileno())
+        append_bytes(
+            self.path,
+            encoded,
+            durability=(
+                AppendDurability.DURABLE
+                if due
+                else AppendDurability.BUFFERED
+            ),
+            buffering=1024 * 1024,
+            sync_parent=due,
+        )
         self.state.appended(row_hash,stat_signature(self.path),synced=due)
         return row_hash
