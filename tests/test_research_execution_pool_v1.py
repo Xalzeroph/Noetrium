@@ -173,3 +173,26 @@ def test_workload_quiesce_seals_work_domains_but_keeps_cleanup_orchestration_ali
     cleanup = pool.open_orchestration_group("terminal-cleanup")
     pool.close_orchestration_group(cleanup)
     pool.close()
+
+
+def test_workload_failure_does_not_block_physical_quiescence_or_pool_close() -> None:
+    pool = bind_research_execution_pool()
+    group = pool.open_experiment_group("failed-workload")
+
+    def boom(context: TaskContextPort) -> None:
+        context.checkpoint()
+        raise RuntimeError("simulated workload failure")
+
+    handle = group.submit(
+        ExecutionSpec(task_id="boom", lane_kind=ExecutionLaneKind.BLOCKING_IO),
+        boom,
+    )
+    with pytest.raises(RuntimeError, match="simulated workload failure"):
+        handle.result(1)
+
+    # The logical workload failure remains observable on the child handle, but
+    # terminal resource teardown depends on physical convergence, not success.
+    pool.quiesce_workloads()
+    with pytest.raises(RuntimeError, match="workloads are quiescing"):
+        pool.open_experiment_group("late")
+    pool.close()
