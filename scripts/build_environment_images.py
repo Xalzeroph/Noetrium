@@ -39,6 +39,8 @@ REVISION_LABEL = "org.opencontainers.image.revision"
 PROFILE_ID_LABEL = "org.opencontainers.image.noetrium.environment.profile-id"
 PROFILE_CATEGORY_LABEL = "org.opencontainers.image.noetrium.environment.category-id"
 PROFILE_REVISION_LABEL = "org.opencontainers.image.noetrium.environment.profile-revision"
+PROFILE_BUILD_INPUT_LABEL = "org.opencontainers.image.noetrium.environment.build-input.sha256"
+PYTHON_RUNTIME_IDENTITY_LABEL = "org.opencontainers.image.noetrium.python-runtime.sha256"
 PYTHON_RUNTIME_CANONICAL_IMAGE = "python:3.12-slim-bookworm"
 JAVA_RUNTIME_CANONICAL_IMAGE = "eclipse-temurin:21-jre-jammy"
 
@@ -274,6 +276,7 @@ def validate_catalog(data: dict, profiles: dict[str, dict]) -> dict:
                 PROFILE_ID_LABEL,
                 PROFILE_CATEGORY_LABEL,
                 PROFILE_REVISION_LABEL,
+                PROFILE_BUILD_INPUT_LABEL,
             ):
                 if label not in dockerfile_text:
                     errors.append(
@@ -296,6 +299,7 @@ def validate_catalog(data: dict, profiles: dict[str, dict]) -> dict:
                 "NOETRIUM_ENVIRONMENT_PROFILE_ID",
                 "NOETRIUM_ENVIRONMENT_CATEGORY_ID",
                 "NOETRIUM_ENVIRONMENT_PROFILE_REVISION",
+                "NOETRIUM_ENVIRONMENT_BUILD_INPUT_DIGEST",
             ):
                 if build_arg not in compose_text:
                     errors.append(
@@ -352,12 +356,21 @@ def _digest_label(labels: dict, key: str) -> str:
     return value
 
 
-def _cached_base_provenance(identity: dict, source_sha: str) -> tuple[str, str]:
+def _cached_base_provenance(
+    identity: dict,
+    source_sha: str,
+    python_runtime_identity_digest: str,
+) -> tuple[str, str]:
     labels = identity.get("labels")
     if not isinstance(labels, dict):
         raise RuntimeError("cached base image labels are invalid")
     if labels.get(REVISION_LABEL) != source_sha:
         raise RuntimeError("cached base image source revision does not match checkout")
+    if (
+        _digest_label(labels, PYTHON_RUNTIME_IDENTITY_LABEL)
+        != python_runtime_identity_digest
+    ):
+        raise RuntimeError("cached base image Python runtime identity drifted")
     return _digest_label(labels, WHEEL_LABEL), _digest_label(labels, DISTRIBUTION_LABEL)
 
 
@@ -406,12 +419,53 @@ def _image_runtime_identity_digest(identity: dict) -> str:
     return image_id.removeprefix("sha256:")
 
 
+def _ensure_image_identity(image: str) -> dict:
+    """Resolve the concrete local image that will be consumed by Docker."""
+
+    if not _image_exists(image):
+        _run(("docker", "pull", image))
+    return _image_identity(image)
+
+
+def _profile_build_input_digest(
+    row: dict,
+    *,
+    profile_revision: str,
+    base_runtime_identity_digest: str,
+    java_runtime_identity_digest: str | None,
+    node_version: str,
+) -> str:
+    material: dict[str, object] = {
+        "schema": "noetrium.environment-profile-build-input.v1",
+        "profile_id": row["profile_id"],
+        "category_id": row["category_id"],
+        "profile_revision": profile_revision,
+        "base_runtime_identity_digest": base_runtime_identity_digest,
+    }
+    if row["category_id"] == "minecraft":
+        if java_runtime_identity_digest is None:
+            raise RuntimeError(
+                "minecraft profile build input requires Java runtime identity"
+            )
+        material["java_runtime_identity_digest"] = java_runtime_identity_digest
+        material["node_version"] = node_version
+    return hashlib.sha256(
+        json.dumps(
+            material,
+            sort_keys=True,
+            separators=(",", ":"),
+            ensure_ascii=True,
+        ).encode("utf-8")
+    ).hexdigest()
+
+
 def _verified_profile_image_identity(
     tag: str,
     *,
     profile_id: str,
     category_id: str,
     profile_revision: str,
+    build_input_digest: str,
 ) -> dict:
     identity = _image_identity(tag)
     labels = identity["labels"]
@@ -419,6 +473,7 @@ def _verified_profile_image_identity(
         PROFILE_ID_LABEL: profile_id,
         PROFILE_CATEGORY_LABEL: category_id,
         PROFILE_REVISION_LABEL: profile_revision,
+        PROFILE_BUILD_INPUT_LABEL: build_input_digest,
     }
     mismatches = {
         key: (expected_value, labels.get(key))
@@ -477,7 +532,28 @@ def build_environment_images(
     shared_root.chmod(0o777)
     instances_root.chmod(0o777)
 
-    base_tag = f"noetrium:{source_sha}"
+    python_source_identity = _ensure_image_identity(python_runtime_image)
+    python_runtime_identity_digest = _image_runtime_identity_digest(
+        python_source_identity
+    )
+    needs_java = any(
+        by_id[profile_id]["category_id"] == "minecraft"
+        for profile_id in profiles
+    )
+    java_source_identity = (
+        _ensure_image_identity(java_runtime_image)
+        if needs_java
+        else None
+    )
+    java_runtime_identity_digest = (
+        None
+        if java_source_identity is None
+        else _image_runtime_identity_digest(java_source_identity)
+    )
+
+    base_tag = (
+        f"noetrium:{source_sha}-{python_runtime_identity_digest}"
+    )
     reused_base = _image_exists(base_tag) and not rebuild
     build_mode = "reused-verified-base" if reused_base else "qualified-distribution-build"
 
@@ -485,7 +561,9 @@ def build_environment_images(
         scratch_root.mkdir(parents=True, exist_ok=True)
         base_identity = _image_identity(base_tag)
         wheel_sha256, distribution_evidence_sha256 = _cached_base_provenance(
-            base_identity, source_sha
+            base_identity,
+            source_sha,
+            python_runtime_identity_digest,
         )
     else:
         if scratch_root.exists():
@@ -541,6 +619,11 @@ def build_environment_images(
                 "--build-arg",
                 f"PYTHON_RUNTIME_IMAGE={python_runtime_image}",
                 "--build-arg",
+                (
+                    "PLATFORM_PYTHON_RUNTIME_IDENTITY_DIGEST="
+                    f"{python_runtime_identity_digest}"
+                ),
+                "--build-arg",
                 f"PLATFORM_SOURCE_SHA={source_sha}",
                 "--build-arg",
                 f"PLATFORM_WHEEL_SHA256={wheel_sha256}",
@@ -555,6 +638,16 @@ def build_environment_images(
             )
         )
         base_identity = _image_identity(base_tag)
+        built_wheel, built_distribution = _cached_base_provenance(
+            base_identity,
+            source_sha,
+            python_runtime_identity_digest,
+        )
+        if (
+            built_wheel != wheel_sha256
+            or built_distribution != distribution_evidence_sha256
+        ):
+            raise RuntimeError("built base provenance labels drifted")
 
     base_verification = scratch_root / "base-container-verification.json"
     _run(
@@ -591,9 +684,20 @@ def build_environment_images(
                     row["category_id"],
                 )
             )
+            profile_revision = _profile_revision(row)
+            build_input_digest = _profile_build_input_digest(
+                row,
+                profile_revision=profile_revision,
+                base_runtime_identity_digest=base_identity[
+                    "runtime_identity_digest"
+                ],
+                java_runtime_identity_digest=java_runtime_identity_digest,
+                node_version=node_version,
+            )
             profile_identity = dict(base_identity)
             profile_identity["profile_id"] = profile_id
-            profile_identity["profile_revision"] = _profile_revision(row)
+            profile_identity["profile_revision"] = profile_revision
+            profile_identity["build_input_digest"] = build_input_digest
             profile_identity["lifecycle"] = row["lifecycle"]
             profile_identity["base_only"] = True
             profile_identity["reused"] = True
@@ -607,10 +711,16 @@ def build_environment_images(
         if not isinstance(image_env, str) or not image_env:
             raise RuntimeError(f"{profile_id}: image_env missing")
         revision = _profile_revision(row)
-        tag = (
-            f"noetrium-env-{profile_id}:"
-            f"{source_sha[:12]}-{revision[:12]}"
+        build_input_digest = _profile_build_input_digest(
+            row,
+            profile_revision=revision,
+            base_runtime_identity_digest=base_identity[
+                "runtime_identity_digest"
+            ],
+            java_runtime_identity_digest=java_runtime_identity_digest,
+            node_version=node_version,
         )
+        tag = f"noetrium-env-{profile_id}:{build_input_digest}"
         env = os.environ.copy()
         env["PLATFORM_IMAGE"] = base_tag
         env[image_env] = tag
@@ -619,7 +729,7 @@ def build_environment_images(
         env["PLATFORM_HOST_DATA_ROOT"] = str(runtime_root)
         qualification_instance = (
             instances_root
-            / f"doctor-{profile_id}-{source_sha[:12]}-{revision[:12]}"
+            / f"doctor-{profile_id}-{build_input_digest[:24]}"
         )
         if qualification_instance.exists():
             shutil.rmtree(qualification_instance)
@@ -633,6 +743,7 @@ def build_environment_images(
         env["NOETRIUM_ENVIRONMENT_PROFILE_ID"] = profile_id
         env["NOETRIUM_ENVIRONMENT_CATEGORY_ID"] = row["category_id"]
         env["NOETRIUM_ENVIRONMENT_PROFILE_REVISION"] = revision
+        env["NOETRIUM_ENVIRONMENT_BUILD_INPUT_DIGEST"] = build_input_digest
         reused_profile = _image_exists(tag) and not rebuild
         if not reused_profile:
             _run(
@@ -670,18 +781,20 @@ def build_environment_images(
             profile_id=profile_id,
             category_id=row["category_id"],
             profile_revision=revision,
+            build_input_digest=build_input_digest,
         )
         profile_identity["reused"] = reused_profile
         profile_identity["runtime_identity_digest"] = _image_runtime_identity_digest(
             profile_identity
         )
         profile_identity["profile_revision"] = revision
+        profile_identity["build_input_digest"] = build_input_digest
         profile_identity["lifecycle"] = row["lifecycle"]
         profile_identity["qualification_instance_cleaned"] = True
         images[profile_id] = profile_identity
 
     receipt = {
-        "schema": "noetrium.environment-image-build.v2",
+        "schema": "noetrium.environment-image-build.v3",
         "source_sha": source_sha,
         "branch": branch,
         "catalog_sha256": _sha256(CATALOG_PATH),
@@ -691,24 +804,14 @@ def build_environment_images(
             "python": {
                 "canonical_image": python_runtime_canonical_image,
                 "source_image": python_runtime_image,
-                "source_identity": (
-                    _image_identity(python_runtime_image)
-                    if _image_exists(python_runtime_image)
-                    else None
-                ),
+                "source_identity": python_source_identity,
+                "runtime_identity_digest": python_runtime_identity_digest,
             },
             "java": {
                 "canonical_image": java_runtime_canonical_image,
                 "source_image": java_runtime_image,
-                "source_identity": (
-                    _image_identity(java_runtime_image)
-                    if any(
-                        by_id[profile_id]["category_id"] == "minecraft"
-                        for profile_id in profiles
-                    )
-                    and _image_exists(java_runtime_image)
-                    else None
-                ),
+                "source_identity": java_source_identity,
+                "runtime_identity_digest": java_runtime_identity_digest,
             },
         },
         "node_version": node_version,
@@ -718,6 +821,9 @@ def build_environment_images(
                 "category_id": by_id[profile_id]["category_id"],
                 "lifecycle": by_id[profile_id]["lifecycle"],
                 "profile_revision": _profile_revision(by_id[profile_id]),
+                "build_input_digest": images[profile_id][
+                    "build_input_digest"
+                ],
             }
             for profile_id in profiles
         ],
