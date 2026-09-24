@@ -13,4 +13,13 @@ class ResourceLeaseExpired(ResourceLeaseConflict):
     """The caller attempted to use or renew an expired lease."""
 
 
-__all__ = ["ResourceLeaseConflict", "ResourceLeaseExpired", "ResourceOwnershipConflict"]
+class ResourceLeaseClockConflict(ResourceLeaseConflict):
+    """Lease time belongs to another host or an invalid clock generation."""
+
+
+__all__ = [
+    "ResourceLeaseClockConflict",
+    "ResourceLeaseConflict",
+    "ResourceLeaseExpired",
+    "ResourceOwnershipConflict",
+]
