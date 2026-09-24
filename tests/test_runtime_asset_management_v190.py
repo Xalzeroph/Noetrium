@@ -16,8 +16,6 @@ from noetrium_platform.foundation.scope.runtime import InMemoryScopeRegistry
 from noetrium_platform.infrastructure.resources.directory.api import (
     DirectoryLayout,
     ManagedDirectoryKind,
-    WorkspaceClosureAuthority,
-    WorkspaceReferenceClosure,
 )
 from noetrium_platform.infrastructure.resources.directory.runtime import build_local_directory_authorities
 from noetrium_platform.capabilities.model.asset.api import (
@@ -240,18 +238,18 @@ class ManagementTests(unittest.TestCase):
                 scope=PLATFORM_SCOPE,
                 category="study",
                 closures=(
-                    WorkspaceReferenceClosure(
-                        WorkspaceClosureAuthority.EVIDENCE,
+                    DurableCarrierReferenceClosure(
+                        DurableCarrierClosureAuthority.EVIDENCE,
                         "1" * 64,
                         (),
                     ),
-                    WorkspaceReferenceClosure(
-                        WorkspaceClosureAuthority.EXECUTION,
+                    DurableCarrierReferenceClosure(
+                        DurableCarrierClosureAuthority.EXECUTION,
                         "2" * 64,
                         (),
                     ),
-                    WorkspaceReferenceClosure(
-                        WorkspaceClosureAuthority.RECOVERY,
+                    DurableCarrierReferenceClosure(
+                        DurableCarrierClosureAuthority.RECOVERY,
                         "3" * 64,
                         (),
                     ),
