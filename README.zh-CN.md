@@ -21,7 +21,7 @@
 
 <!-- readme-locale:zh-CN -->
 
-<!-- readme-source-sha256:a9bd4d748e873475c1d79c09b05377525fa7c2a703c5cffe85a797db33d64c6a -->
+<!-- readme-source-sha256:f01787f87584f9d54263a9b036a1dae6cdba72a578f3976b0972352eec6376a4 -->
 
 <p align="center">
   <strong>组合研究系统。运行可归因执行。验证证据。</strong><br>
@@ -279,23 +279,45 @@ python scripts/check_readme_i18n.py
 
 <!-- readme-section:containers -->
 
-## 容器工作流
+## 容器与环境工作流
 
-`deploy/` 下维护可复用 Linux 镜像与 Compose 定义。
+Noetrium 把执行环境作为可版本化的环境 fleet 管理，而不是“每篇论文一套可变容器”。宿主机契约只有 Docker + Compose；不要求宿主 Python。
 
 ```bash
-python scripts/build_environment_images.py validate
-python scripts/build_environment_images.py build --profiles text_world
+./deploy/build-environments.sh validate
+./deploy/build-environments.sh list
+./deploy/build-environments.sh build
 ```
 
-部署层把不可变软件与可变 runtime state 分离；主机路径和 secret 不进入已提交的 composition 代码。
+环境 registry 位于 `deploy/environments/catalog.json`。Builder 不再硬编码环境集合；每个 category 只有一个 active default revision，旧 revision 可进入 draining / retired，继续服务已固定版本的 execution 与历史恢复。
+
+共享原则只有一条：**共享不可变内容，隔离全部可变运行态。**
+
+因此不同论文可以复用 Noetrium base、环境镜像层和 content-addressed assets，但 workspace、tmp、runtime state、secret、process/network namespace、port、browser/world/application state 都属于单次 execution 的私有 overlay。Warm instance 只有在 overlay 被销毁或 provider 给出明确 cleanliness proof 后才能重新入池；不确定状态直接销毁。
+
+```text
+host substrate
+  -> evidence-bound Noetrium base
+  -> reusable environment capability profile
+  -> immutable content-addressed workload assets
+  -> private per-execution writable overlay
+  -> immutable artifacts / evidence / Machine Journal
+```
+
+运行时环境 identity 固定为 `profile_id + profile_revision`，并与稳定的 category（如 `web`、`minecraft`、`gui`、`embodied`、`software`、`text_world`）分离。新 revision 激活后，旧 execution 不会无声漂移到新镜像。
+
+Retired 是逻辑删除：禁止新工作绑定，但保留历史 identity。只有当没有 active/resumable reference，且 retained evidence 也不再依赖该 revision 时，物理 image/cache 才允许 GC。
+
+Profile readiness 使用镜像内本地 doctor hook，而不是中央 switch。新增环境只需 registry row、image recipe、可选 Compose overlay 和 doctor hook，不需要修改中央部署代码。
+
+[Environment profile registry](deploy/environments/README.md)
 
 ### 内置 Minecraft Provider
 
-Minecraft 是第一方可复用环境 Provider；任务集和科学组合继续留在下游。
+Minecraft 是第一方可复用环境 capability profile。Java、Node、Mineflayer prerequisites 可共享；benchmark world、task suite、paper method 与可写 world state 保持下游或 execution 私有。
 
 ```bash
-python scripts/build_environment_images.py build --profiles minecraft
+./deploy/build-environments.sh build --profiles minecraft
 ```
 
 [Minecraft infrastructure](docs/infrastructure/minecraft/README.md)
