@@ -54,25 +54,35 @@ class ManagedObservability:
     raw: RegistryBoundRawObservationGateway
     logging: LoggingSystemBinding
     _telemetry_backend: object
+    _raw_closed: bool = False
+    _telemetry_closed: bool = False
     _closed: bool = False
 
     def close(self) -> None:
         if self._closed:
             return
-        self._closed = True
         errors: list[BaseException] = []
-        try:
-            self.raw.close()
-        except BaseException as exc:
-            errors.append(exc)
-        close = getattr(self._telemetry_backend, "close", None)
-        if callable(close):
+        if not self._raw_closed:
             try:
-                close()
+                self.raw.close()
             except BaseException as exc:
                 errors.append(exc)
+            else:
+                self._raw_closed = True
+        if not self._telemetry_closed:
+            close = getattr(self._telemetry_backend, "close", None)
+            if callable(close):
+                try:
+                    close()
+                except BaseException as exc:
+                    errors.append(exc)
+                else:
+                    self._telemetry_closed = True
+            else:
+                self._telemetry_closed = True
         if errors:
             raise ExceptionGroup("managed observability close failed", errors)
+        self._closed = self._raw_closed and self._telemetry_closed
 
     def __enter__(self) -> "ManagedObservability":
         return self
