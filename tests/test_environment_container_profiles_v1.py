@@ -380,5 +380,8 @@ def test_environment_bootstrap_reaps_nested_qualification_orphans() -> None:
     assert "NOETRIUM_BOOTSTRAP_OWNER_PID" in bootstrap
     assert "NOETRIUM_BOOTSTRAP_OWNER_BOOT" in bootstrap
     assert "NOETRIUM_BOOTSTRAP_OWNER_START" in bootstrap
+    assert 'label=$OWNER_PID_LABEL=$$"' in bootstrap
+    assert "NOETRIUM_BOOTSTRAP_OWNER_PID=$$ -e" in bootstrap
+    assert "NOETRIUM_BOOTSTRAP_OWNER_PID=$ -e" not in bootstrap
     assert "io.noetrium.bootstrap-child=qualification-v1" in builder
     assert "_qualification_label_args()" in builder
