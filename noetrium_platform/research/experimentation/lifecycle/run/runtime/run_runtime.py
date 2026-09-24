@@ -42,10 +42,6 @@ from noetrium_platform.research.experimentation.lifecycle.checkpoint.api import 
     RunCheckpointCoordinatorPort,
 )
 from noetrium_platform.research.experimentation.lifecycle.experiment.api import ExperimentSpec
-from noetrium_platform.research.experimentation.lifecycle.experiment.api.ports import (
-    ExperimentComponentBindingPort,
-    ExperimentTrialCycleExecutorPort,
-)
 from noetrium_platform.research.experimentation.lifecycle.run.api.identity import RunIdentity
 from noetrium_platform.research.experimentation.lifecycle.run.api.lifecycle import (
     RunCleanupFailure,
@@ -145,9 +141,9 @@ def _failure_receipt(
 class _RunRuntimeFrame:
     spec: ExperimentSpec
     identity: RunIdentity
-    binder: ExperimentComponentBindingPort
+    binder: object
     lifecycle: ParticipantSessionLifecyclePort
-    trial: ExperimentTrialCycleExecutorPort
+    trial: object
     checkpoint: RunCheckpointCoordinatorPort | None
     machine_journal: MachineJournalPort
     machine_snapshot_store: MachineSnapshotStorePort | None
@@ -680,9 +676,9 @@ class RunRuntime:
 
     def __init__(
         self,
-        binder: ExperimentComponentBindingPort,
+        binder: object,
         lifecycle: ParticipantSessionLifecyclePort,
-        trial: ExperimentTrialCycleExecutorPort,
+        trial: object,
         checkpoint: RunCheckpointCoordinatorPort | None,
         *,
         machine_journal: MachineJournalPort,
