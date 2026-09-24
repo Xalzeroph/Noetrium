@@ -13,10 +13,14 @@ from dataclasses import dataclass, field
 from enum import Enum, StrEnum
 import importlib
 import inspect
+from itertools import product
 from pathlib import Path, PurePosixPath
-from typing import get_type_hints
+from typing import Protocol, get_type_hints, runtime_checkable
 
 from noetrium import api
+from noetrium_platform.capabilities.participant.capability.api.selection import (
+    CapabilitySelectionView,
+)
 from noetrium_platform.foundation.kernel.kernel import (
     JsonValue,
     canonical_digest,
@@ -90,6 +94,69 @@ class ReproductionExecutionRequirement:
             )
 
 
+@runtime_checkable
+class ReproductionCapabilityRequirementResolverPort(Protocol):
+    """Resolve one semantic capability requirement from authoritative platform state.
+
+    Implementations own no capability definitions. They return a pinned
+    CapabilitySelectionView materialized from the real capability authority.
+    """
+
+    def resolve(
+        self,
+        requirement: ReproductionExecutionRequirement,
+    ) -> CapabilitySelectionView: ...
+
+
+@dataclass(frozen=True, slots=True)
+class ReproductionExecutionResolution:
+    """One exact non-benchmark closure variant before benchmark lane expansion."""
+
+    package: str
+    study_factory: str
+    values: Mapping[str, JsonValue]
+    proof_digests: tuple[str, ...]
+    resolution_digest: str = field(init=False)
+
+    def __post_init__(self) -> None:
+        if type(self.package) is not str or not self.package.strip():
+            raise ValueError("reproduction resolution package is required")
+        if type(self.study_factory) is not str or not self.study_factory.strip():
+            raise ValueError("reproduction resolution study_factory is required")
+        if not isinstance(self.values, Mapping):
+            raise TypeError("reproduction resolution values must be a mapping")
+        frozen_values = freeze_json({
+            key: self.values[key]
+            for key in sorted(self.values)
+        })
+        if not isinstance(frozen_values, Mapping):
+            raise TypeError("reproduction resolution values must freeze to object")
+        if type(self.proof_digests) is not tuple:
+            raise TypeError("reproduction resolution proof_digests must be tuple")
+        proofs = tuple(sorted(self.proof_digests))
+        if len(proofs) != len(set(proofs)) or any(
+            type(value) is not str
+            or len(value) != 64
+            or any(ch not in "0123456789abcdef" for ch in value)
+            for value in proofs
+        ):
+            raise ValueError(
+                "reproduction resolution proofs must be unique SHA-256 digests"
+            )
+        object.__setattr__(self, "values", frozen_values)
+        object.__setattr__(self, "proof_digests", proofs)
+        object.__setattr__(
+            self,
+            "resolution_digest",
+            canonical_digest({
+                "package": self.package,
+                "study_factory": self.study_factory,
+                "values": frozen_values,
+                "proof_digests": proofs,
+            }),
+        )
+
+
 _BENCHMARK_SPLIT_PARAMETERS = frozenset({"split_id", "benchmark_split_id"})
 
 _EXECUTION_REQUIREMENT_KIND_BY_PARAMETER = {
@@ -113,6 +180,7 @@ class ReproductionExecutionBinding:
     benchmark_split_id: str | None
     values: Mapping[str, JsonValue]
     requirement_digests: tuple[str, ...]
+    resolution_proof_digests: tuple[str, ...] = ()
     binding_digest: str = field(init=False)
 
     def __post_init__(self) -> None:
@@ -158,8 +226,27 @@ class ReproductionExecutionBinding:
             raise ValueError(
                 "reproduction execution binding requirement digests must be unique SHA-256"
             )
+        if type(self.resolution_proof_digests) is not tuple:
+            raise TypeError(
+                "reproduction execution binding resolution_proof_digests must be tuple"
+            )
+        resolution_proofs = tuple(sorted(self.resolution_proof_digests))
+        if len(resolution_proofs) != len(set(resolution_proofs)) or any(
+            type(value) is not str
+            or len(value) != 64
+            or any(ch not in "0123456789abcdef" for ch in value)
+            for value in resolution_proofs
+        ):
+            raise ValueError(
+                "reproduction execution resolution proofs must be unique SHA-256"
+            )
         object.__setattr__(self, "values", frozen_values)
         object.__setattr__(self, "requirement_digests", digests)
+        object.__setattr__(
+            self,
+            "resolution_proof_digests",
+            resolution_proofs,
+        )
         object.__setattr__(
             self,
             "binding_digest",
@@ -172,6 +259,7 @@ class ReproductionExecutionBinding:
                     "benchmark_split_id": self.benchmark_split_id,
                     "values": frozen_values,
                     "requirement_digests": digests,
+                    "resolution_proof_digests": resolution_proofs,
                 }
             ),
         )
@@ -581,6 +669,7 @@ def bind_reproduction_execution(
     benchmark_id: str,
     benchmark_split_id: str | None = None,
     values: Mapping[str, object],
+    resolution_proof_digests: tuple[str, ...] = (),
 ) -> ReproductionExecutionBinding:
     """Bind exactly one Study lane; missing/extra values fail closed."""
 
@@ -683,6 +772,7 @@ def bind_reproduction_execution(
         benchmark_split_id,
         frozen,
         tuple(row.requirement_digest for row in requirements),
+        resolution_proof_digests,
     )
 
 
@@ -692,6 +782,7 @@ def expand_reproduction_benchmark_lanes(
     study_factory: str,
     benchmark: BenchmarkTaskSet,
     values: Mapping[str, object],
+    resolution_proof_digests: tuple[str, ...] = (),
 ) -> tuple[ReproductionExecutionBinding, ...]:
     """Expand one immutable benchmark cut into exact Research OS execution lanes.
 
@@ -749,12 +840,20 @@ def expand_reproduction_benchmark_lanes(
 
     bindings: list[ReproductionExecutionBinding] = []
     for split_id in split_ids:
+        frozen_values = freeze_json({
+            key: values[key]
+            for key in sorted(values)
+        })
         lane_identity = canonical_digest(
             {
                 "package": definition.package,
                 "study_factory": study_factory,
                 "benchmark_cut_digest": benchmark.cut_digest,
                 "benchmark_split_id": split_id,
+                "execution_values": frozen_values,
+                "resolution_proof_digests": tuple(
+                    sorted(resolution_proof_digests)
+                ),
             }
         )
         binding_id = (
@@ -769,9 +868,204 @@ def expand_reproduction_benchmark_lanes(
                 benchmark_id=benchmark.benchmark_id,
                 benchmark_split_id=split_id,
                 values=values,
+                resolution_proof_digests=resolution_proof_digests,
             )
         )
     return tuple(bindings)
+
+
+def resolve_reproduction_execution_variants(
+    definition: ReproductionDefinition,
+    *,
+    study_factory: str,
+    capability_resolver: ReproductionCapabilityRequirementResolverPort | None = None,
+) -> tuple[ReproductionExecutionResolution, ...]:
+    """Resolve all non-benchmark closure axes without inventing scientific values.
+
+    Enum paper options expand exhaustively from the paper-owned Study type.
+    Capability values must come from an authoritative CapabilitySelectionView.
+    """
+
+    if type(definition) is not ReproductionDefinition:
+        raise TypeError("reproduction execution variants require definition")
+    study = next(
+        (
+            row
+            for row in resolve_study_factory_bindings(definition)
+            if row.qualname == study_factory
+        ),
+        None,
+    )
+    if study is None:
+        raise ReproductionResearchOSCompileError(
+            f"{definition.package} has no Study factory {study_factory!r}"
+        )
+    module = importlib.import_module(study.module)
+    factory = getattr(module, study.qualname)
+    hints = get_type_hints(factory)
+    requirements = _requirements_for_study(definition, study_factory)
+    if not requirements:
+        return (
+            ReproductionExecutionResolution(
+                definition.package,
+                study_factory,
+                {},
+                (),
+            ),
+        )
+
+    axes: list[tuple[tuple[JsonValue, str], ...]] = []
+    for requirement in requirements:
+        if requirement.kind is ReproductionExecutionRequirementKind.PAPER_OPTION:
+            annotation = hints.get(
+                requirement.parameter,
+                inspect.Signature.empty,
+            )
+            if not (
+                inspect.isclass(annotation)
+                and issubclass(annotation, Enum)
+            ):
+                raise ReproductionResearchOSCompileError(
+                    f"{definition.package} paper option {requirement.parameter!r} "
+                    "must be a typed Enum or have a package-owned default"
+                )
+            members = tuple(annotation)
+            if not members:
+                raise ReproductionResearchOSCompileError(
+                    f"{definition.package} paper option Enum is empty: "
+                    f"{requirement.parameter}"
+                )
+            axes.append(
+                tuple(
+                    (
+                        freeze_json(member.value),
+                        canonical_digest({
+                            "requirement_digest": requirement.requirement_digest,
+                            "option_type": (
+                                f"{annotation.__module__}.{annotation.__qualname__}"
+                            ),
+                            "option_name": member.name,
+                            "option_value": freeze_json(member.value),
+                        }),
+                    )
+                    for member in members
+                )
+            )
+            continue
+
+        if capability_resolver is None or not isinstance(
+            capability_resolver,
+            ReproductionCapabilityRequirementResolverPort,
+        ):
+            raise ReproductionResearchOSCompileError(
+                f"{definition.package} capability requirement "
+                f"{requirement.parameter!r} requires platform capability resolution"
+            )
+        view = capability_resolver.resolve(requirement)
+        if type(view) is not CapabilitySelectionView:
+            raise TypeError(
+                "reproduction capability resolver must return CapabilitySelectionView"
+            )
+        capability_ids = tuple(
+            sorted(descriptor.capability_id for descriptor in view.descriptors)
+        )
+        if len(capability_ids) != len(set(capability_ids)):
+            raise ValueError("resolved reproduction capability ids must be unique")
+        if requirement.kind is ReproductionExecutionRequirementKind.CAPABILITY_ID:
+            if len(capability_ids) != 1:
+                raise ReproductionResearchOSCompileError(
+                    f"{definition.package} capability id requirement "
+                    f"{requirement.parameter!r} resolved {len(capability_ids)} providers"
+                )
+            value: JsonValue = capability_ids[0]
+        elif requirement.kind is (
+            ReproductionExecutionRequirementKind.CAPABILITY_CLOSURE
+        ):
+            if not capability_ids:
+                raise ReproductionResearchOSCompileError(
+                    f"{definition.package} capability closure "
+                    f"{requirement.parameter!r} resolved empty"
+                )
+            value = capability_ids
+        else:
+            raise TypeError("unsupported reproduction execution requirement kind")
+        axes.append(
+            ((
+                value,
+                canonical_digest({
+                    "requirement_digest": requirement.requirement_digest,
+                    "capability_selection_view_digest": view.view_digest,
+                    "source_cut_digest": view.source_cut_digest,
+                    "selection_provenance_digest": (
+                        view.selection_provenance_digest
+                    ),
+                    "capability_ids": capability_ids,
+                }),
+            ),)
+        )
+
+    resolutions: list[ReproductionExecutionResolution] = []
+    for combination in product(*axes):
+        values = {
+            requirement.parameter: combination[index][0]
+            for index, requirement in enumerate(requirements)
+        }
+        proofs = tuple(
+            combination[index][1]
+            for index in range(len(requirements))
+        )
+        resolutions.append(
+            ReproductionExecutionResolution(
+                definition.package,
+                study_factory,
+                values,
+                proofs,
+            )
+        )
+    return tuple(
+        sorted(
+            resolutions,
+            key=lambda row: row.resolution_digest,
+        )
+    )
+
+
+def expand_resolved_reproduction_benchmark_lanes(
+    definition: ReproductionDefinition,
+    *,
+    study_factory: str,
+    benchmark: BenchmarkTaskSet,
+    capability_resolver: ReproductionCapabilityRequirementResolverPort | None = None,
+) -> tuple[ReproductionExecutionBinding, ...]:
+    """One-call closure + benchmark expansion for an executable paper Study."""
+
+    bindings: list[ReproductionExecutionBinding] = []
+    for resolution in resolve_reproduction_execution_variants(
+        definition,
+        study_factory=study_factory,
+        capability_resolver=capability_resolver,
+    ):
+        bindings.extend(
+            expand_reproduction_benchmark_lanes(
+                definition,
+                study_factory=study_factory,
+                benchmark=benchmark,
+                values=resolution.values,
+                resolution_proof_digests=resolution.proof_digests,
+            )
+        )
+    ordered = tuple(
+        sorted(
+            bindings,
+            key=lambda row: row.binding_digest,
+        )
+    )
+    identities = tuple((row.package, row.binding_id) for row in ordered)
+    if len(identities) != len(set(identities)):
+        raise ReproductionResearchOSCompileError(
+            "resolved reproduction lane identities must be unique"
+        )
+    return ordered
 
 
 def _coerce_study_value(annotation: object, value: JsonValue) -> object:
@@ -1572,8 +1866,10 @@ def compile_reproduction_portfolio(
 
 
 __all__ = [
+    "ReproductionCapabilityRequirementResolverPort",
     "ReproductionExecutionBinding",
     "ReproductionExecutionRequirement",
+    "ReproductionExecutionResolution",
     "ReproductionExecutionRequirementKind",
     "ReproductionMachineProgramBinding",
     "ReproductionMethodProgramBinding",
@@ -1588,11 +1884,13 @@ __all__ = [
     "discover_reproduction_definitions",
     "executable_reproduction_definitions",
     "expand_reproduction_benchmark_lanes",
+    "expand_resolved_reproduction_benchmark_lanes",
     "is_research_os_executable",
     "materialize_reproduction_method_program",
     "materialize_reproduction_study",
     "resolve_benchmark_split_consumers",
     "resolve_execution_requirements",
+    "resolve_reproduction_execution_variants",
     "resolve_method_program_binding",
     "resolve_study_factory_bindings",
     "resolve_research_program_bindings",
