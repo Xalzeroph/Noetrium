@@ -36,6 +36,7 @@ from .sqlite import (
     open_durable_sqlite_reader,
     open_durable_sqlite_writer,
     rollback_sqlite_writer,
+    sqlite_read_snapshot,
 )
 from .contracts import (
     DurableObjectIdentity,
