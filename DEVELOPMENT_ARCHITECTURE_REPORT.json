@@ -873,9 +873,9 @@
     }
   ],
   "package_cycles": [],
-  "report_sha256": "f352531e2cb049539935813071f34c9bee4f7be482f1407bd4b8b6bd6658ff24",
+  "report_sha256": "9cd8fb0f1f8390366a025e7d8759583137f81894295d9c6765013f7b39e8896e",
   "source_authority_violations": [],
-  "source_digest": "f87dd2ea3b3b5f1e9580a6d7f72eb5f38645484b1235903692a0d1d141904eb6",
+  "source_digest": "82f5a9192281806c13562a9e1d6807ec7d9e164f1d005832fac0ada9d77ed441",
   "source_invariant_violations": [],
   "source_root": ".",
   "subsystem_graph": [
@@ -1601,16 +1601,16 @@
   ],
   "top_hotspots": [
     {
-      "branches": 208,
+      "branches": 209,
       "classes": 1,
       "exception_handlers": 0,
       "functions": 70,
       "imports": 9,
-      "max_function_lines": 118,
+      "max_function_lines": 122,
       "module": "noetrium_platform.research.execution.graph.providers.sqlite",
       "path": "noetrium_platform/research/execution/graph/providers/sqlite.py",
-      "physical_lines": 2663,
-      "score": 4490
+      "physical_lines": 2668,
+      "score": 4511
     },
     {
       "branches": 210,
@@ -1745,6 +1745,18 @@
       "score": 2258
     },
     {
+      "branches": 98,
+      "classes": 9,
+      "exception_handlers": 11,
+      "functions": 59,
+      "imports": 13,
+      "max_function_lines": 100,
+      "module": "noetrium_platform.foundation.kernel.kernel.journal",
+      "path": "noetrium_platform/foundation/kernel/kernel/journal.py",
+      "physical_lines": 1091,
+      "score": 2124
+    },
+    {
       "branches": 97,
       "classes": 11,
       "exception_handlers": 2,
@@ -1827,18 +1839,6 @@
       "path": "noetrium_platform/capabilities/participant/providers/sqlite_revision_authority.py",
       "physical_lines": 863,
       "score": 1710
-    },
-    {
-      "branches": 90,
-      "classes": 2,
-      "exception_handlers": 14,
-      "functions": 28,
-      "imports": 20,
-      "max_function_lines": 82,
-      "module": "noetrium_platform.composition.model_qualification.qualification_index_worker",
-      "path": "noetrium_platform/composition/model_qualification/qualification_index_worker.py",
-      "physical_lines": 721,
-      "score": 1705
     }
   ],
   "top_optimization_risks": [
@@ -2164,6 +2164,24 @@
       "serialization_sites": 0
     },
     {
+      "exception_handlers": 11,
+      "import_fan_in": 3,
+      "import_fan_out": 5,
+      "io_sites": 5,
+      "lock_sites": 2,
+      "long_functions": 3,
+      "module": "noetrium_platform.foundation.kernel.kernel.journal",
+      "path": "noetrium_platform/foundation/kernel/kernel/journal.py",
+      "reason_codes": [
+        "STATE_MUTATION_CONCENTRATION",
+        "FAILURE_BRANCH_CONCENTRATION",
+        "LONG_FUNCTION"
+      ],
+      "risk_score": 329,
+      "self_mutation_sites": 18,
+      "serialization_sites": 0
+    },
+    {
       "exception_handlers": 13,
       "import_fan_in": 2,
       "import_fan_out": 5,
@@ -2180,24 +2198,6 @@
       "risk_score": 325,
       "self_mutation_sites": 26,
       "serialization_sites": 2
-    },
-    {
-      "exception_handlers": 12,
-      "import_fan_in": 1,
-      "import_fan_out": 8,
-      "io_sites": 2,
-      "lock_sites": 2,
-      "long_functions": 2,
-      "module": "noetrium_platform.capabilities.environment.minecraft.composition.server_service",
-      "path": "noetrium_platform/capabilities/environment/minecraft/composition/server_service.py",
-      "reason_codes": [
-        "STATE_MUTATION_CONCENTRATION",
-        "FAILURE_BRANCH_CONCENTRATION",
-        "LONG_FUNCTION"
-      ],
-      "risk_score": 314,
-      "self_mutation_sites": 22,
-      "serialization_sites": 0
     }
   ]
 }

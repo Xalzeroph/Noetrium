@@ -1,15 +1,15 @@
 {
   "counts": {
     "parse_errors": 0,
-    "python_files": 3691,
-    "python_import_edges": 6953,
-    "symbols": 5047,
-    "tracked_files": 4328,
+    "python_files": 3694,
+    "python_import_edges": 6959,
+    "symbols": 5051,
+    "tracked_files": 4331,
     "typescript_javascript_files": 11
   },
   "language_symbol_counts": {
     "javascript": 1,
-    "python": 5041,
+    "python": 5045,
     "typescript": 5
   },
   "parse_errors": [],
@@ -26673,6 +26673,12 @@
       "target_role": "tests"
     },
     {
+      "source_module": "tests.test_journal_inspection_delivery_v1",
+      "source_role": "tests",
+      "target_module": "noetrium_platform.foundation.kernel.kernel",
+      "target_role": "core_platform"
+    },
+    {
       "source_module": "tests.test_jsonl_log_algorithm_regressions",
       "source_role": "tests",
       "target_module": "noetrium_platform.evidence.observability.logging.context.api",
@@ -26988,6 +26994,12 @@
       "source_module": "tests.test_low_level_participant_api_v166",
       "source_role": "tests",
       "target_module": "noetrium_platform.research.experimentation.lifecycle.checkpoint.providers.directory_store",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "tests.test_machine_delivery_receipt_state_v1",
+      "source_role": "tests",
+      "target_module": "noetrium_platform.foundation.kernel.kernel",
       "target_role": "core_platform"
     },
     {
@@ -33564,6 +33576,30 @@
       "source_module": "tests.test_role04_algorithm_contracts_v1",
       "source_role": "tests",
       "target_module": "noetrium_platform.research.execution.machines",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "tests.test_run_artifact_gc_v1",
+      "source_role": "tests",
+      "target_module": "noetrium_platform.foundation.kernel.kernel",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "tests.test_run_artifact_gc_v1",
+      "source_role": "tests",
+      "target_module": "noetrium_platform.research.experimentation.lifecycle.api",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "tests.test_run_artifact_gc_v1",
+      "source_role": "tests",
+      "target_module": "noetrium_platform.research.experimentation.lifecycle.run.runtime",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "tests.test_run_artifact_gc_v1",
+      "source_role": "tests",
+      "target_module": "noetrium_platform.research.experimentation.lifecycle.run.runtime.artifacts",
       "target_role": "core_platform"
     },
     {
@@ -41795,7 +41831,7 @@
       "target_role": "research_reproductions"
     },
     {
-      "count": 2814,
+      "count": 2820,
       "source_role": "tests",
       "target_role": "core_platform"
     },
@@ -41858,11 +41894,11 @@
     "reference_components": 22,
     "reference_orchestration": 10,
     "research_reproductions": 778,
-    "tests": 836,
+    "tests": 839,
     "tooling": 80
   },
   "role_symbol_counts": {
-    "core_platform": 3392,
+    "core_platform": 3394,
     "examples": 3,
     "other": 23,
     "public_facade": 4,
@@ -41870,11 +41906,11 @@
     "reference_orchestration": 14,
     "research_reproductions": 444,
     "sdk": 5,
-    "tests": 1059,
+    "tests": 1061,
     "tooling": 39
   },
   "schema": "noetrium-repository-code-architecture-index.v1",
-  "source_git_sha": "474df5b65912682902ba978fdda884eea16d1a8d",
+  "source_git_sha": "d62cbe89cb05cce3bbf7989dfeea64b076db868c",
   "symbols": [
     {
       "bases": [],
@@ -83021,7 +83057,7 @@
       "fields": [],
       "kind": "protocol",
       "language": "python",
-      "line": 94,
+      "line": 132,
       "methods": [
         "enqueue",
         "pending",
@@ -83044,7 +83080,7 @@
       "fields": [],
       "kind": "protocol",
       "language": "python",
-      "line": 102,
+      "line": 140,
       "methods": [
         "accept",
         "contains"
@@ -83063,7 +83099,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 107,
+      "line": 145,
       "methods": [
         "__init__",
         "enqueue",
@@ -83085,7 +83121,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 177,
+      "line": 212,
       "methods": [
         "__init__",
         "accept",
@@ -83481,7 +83517,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 139,
+      "line": 140,
       "methods": [
         "__init__",
         "_read",
@@ -83503,7 +83539,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 167,
+      "line": 168,
       "methods": [
         "__init__",
         "_envelope_path",
@@ -83530,7 +83566,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 274,
+      "line": 276,
       "methods": [
         "__init__",
         "_path",
@@ -84225,7 +84261,8 @@
     },
     {
       "bases": [
-        "MachineJournalPort"
+        "MachineJournalPort",
+        "MachineJournalGcPort"
       ],
       "decorators": [],
       "fields": [],
@@ -84252,6 +84289,11 @@
         "latest",
         "get",
         "commits",
+        "assess_gc",
+        "_require_retirement_matches_gc",
+        "_validate_quarantine_identity",
+        "_move_journal_to_quarantine",
+        "purge",
         "_machine_ids"
       ],
       "module": "noetrium_platform.foundation.kernel.kernel.journal",
@@ -113605,7 +113647,7 @@
       ],
       "kind": "enum",
       "language": "python",
-      "line": 42,
+      "line": 51,
       "methods": [],
       "module": "noetrium_platform.research.experimentation.lifecycle.run.api.artifacts",
       "name": "RunArtifactKind",
@@ -113621,7 +113663,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 55,
+      "line": 64,
       "methods": [],
       "module": "noetrium_platform.research.experimentation.lifecycle.run.api.artifacts",
       "name": "RunArtifactFinalizationError",
@@ -113637,7 +113679,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 59,
+      "line": 68,
       "methods": [],
       "module": "noetrium_platform.research.experimentation.lifecycle.run.api.artifacts",
       "name": "RunArtifactVerificationError",
@@ -113653,7 +113695,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 63,
+      "line": 72,
       "methods": [],
       "module": "noetrium_platform.research.experimentation.lifecycle.run.api.artifacts",
       "name": "RunArtifactSealedError",
@@ -113677,7 +113719,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 67,
+      "line": 76,
       "methods": [
         "__post_init__"
       ],
@@ -113688,6 +113730,33 @@
       "role": "core_platform"
     },
     {
+      "bases": [],
+      "decorators": [
+        "dataclass(frozen=True, slots=True)"
+      ],
+      "fields": [
+        "run_id: str",
+        "tree_digest: str",
+        "entry_count: int",
+        "total_bytes: int",
+        "closures: tuple[DurableCarrierReferenceClosure, ...]",
+        "proof_digest: str"
+      ],
+      "kind": "dataclass",
+      "language": "python",
+      "line": 98,
+      "methods": [
+        "__post_init__",
+        "closure_complete",
+        "eligible"
+      ],
+      "module": "noetrium_platform.research.experimentation.lifecycle.run.api.artifacts",
+      "name": "RunArtifactGcAssessment",
+      "path": "noetrium_platform/research/experimentation/lifecycle/run/api/artifacts.py",
+      "qualname": "noetrium_platform.research.experimentation.lifecycle.run.api.artifacts.RunArtifactGcAssessment",
+      "role": "core_platform"
+    },
+    {
       "bases": [
         "Protocol"
       ],
@@ -113695,7 +113764,7 @@
       "fields": [],
       "kind": "protocol",
       "language": "python",
-      "line": 88,
+      "line": 153,
       "methods": [
         "finalize"
       ],
@@ -113713,7 +113782,7 @@
       "fields": [],
       "kind": "protocol",
       "language": "python",
-      "line": 98,
+      "line": 163,
       "methods": [
         "verify_finalized"
       ],
@@ -113731,7 +113800,7 @@
       "fields": [],
       "kind": "protocol",
       "language": "python",
-      "line": 101,
+      "line": 166,
       "methods": [
         "call"
       ],
@@ -113753,13 +113822,13 @@
       "fields": [],
       "kind": "protocol",
       "language": "python",
-      "line": 115,
+      "line": 180,
       "methods": [
-        "path",
-        "directory",
         "publish_json",
         "publish_text",
-        "append_json"
+        "append_json",
+        "assess_gc",
+        "purge"
       ],
       "module": "noetrium_platform.research.experimentation.lifecycle.run.api.artifacts",
       "name": "RunArtifactStorePort",
@@ -114147,22 +114216,47 @@
     },
     {
       "bases": [
+        "StrEnum"
+      ],
+      "decorators": [],
+      "fields": [
+        "RETIRED",
+        "QUARANTINED",
+        "PURGED"
+      ],
+      "kind": "enum",
+      "language": "python",
+      "line": 50,
+      "methods": [],
+      "module": "noetrium_platform.research.experimentation.lifecycle.run.runtime.artifacts",
+      "name": "_RunArtifactRetirementPhase",
+      "path": "noetrium_platform/research/experimentation/lifecycle/run/runtime/artifacts.py",
+      "qualname": "noetrium_platform.research.experimentation.lifecycle.run.runtime.artifacts._RunArtifactRetirementPhase",
+      "role": "core_platform"
+    },
+    {
+      "bases": [
         "RunArtifactStorePort"
       ],
       "decorators": [],
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 31,
+      "line": 57,
       "methods": [
         "__init__",
+        "_retirement_path",
+        "_quarantine_path",
+        "_load_retirement",
+        "_publish_retirement",
+        "_require_active",
+        "_tree_identity",
+        "_require_gc_identity",
         "_resolve_ref",
         "_seal_key",
         "_seal_path",
         "_ledger_path",
         "_require_unsealed",
-        "path",
-        "directory",
         "publish_json",
         "publish_text",
         "append_json",
@@ -114173,7 +114267,9 @@
         "_ensure_generation_index",
         "finalize",
         "_finalize_locked",
-        "verify_finalized"
+        "verify_finalized",
+        "assess_gc",
+        "purge"
       ],
       "module": "noetrium_platform.research.experimentation.lifecycle.run.runtime.artifacts",
       "name": "DirectoryRunArtifactStore",
@@ -136452,7 +136548,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 28,
+      "line": 29,
       "methods": [
         "propose"
       ],
@@ -136460,6 +136556,22 @@
       "name": "IncrementInterpreter",
       "path": "tests/test_machine_executor_v1.py",
       "qualname": "tests.test_machine_executor_v1.IncrementInterpreter",
+      "role": "tests"
+    },
+    {
+      "bases": [],
+      "decorators": [],
+      "fields": [],
+      "kind": "class",
+      "language": "python",
+      "line": 41,
+      "methods": [
+        "propose"
+      ],
+      "module": "tests.test_machine_executor_v1",
+      "name": "EmittingIncrementInterpreter",
+      "path": "tests/test_machine_executor_v1.py",
+      "qualname": "tests.test_machine_executor_v1.EmittingIncrementInterpreter",
       "role": "tests"
     },
     {
@@ -142861,7 +142973,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 390,
+      "line": 417,
       "methods": [
         "__init__",
         "move_active_cut"
@@ -142880,7 +142992,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 713,
+      "line": 746,
       "methods": [
         "__init__",
         "move_active_cut"
@@ -142899,7 +143011,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 818,
+      "line": 851,
       "methods": [
         "__init__",
         "move_active_cut"
@@ -143234,6 +143346,22 @@
       "name": "_RenewingAllocations",
       "path": "tests/test_resource_endpoint_heartbeat_v1.py",
       "qualname": "tests.test_resource_endpoint_heartbeat_v1._RenewingAllocations",
+      "role": "tests"
+    },
+    {
+      "bases": [],
+      "decorators": [],
+      "fields": [],
+      "kind": "class",
+      "language": "python",
+      "line": 21,
+      "methods": [
+        "call"
+      ],
+      "module": "tests.test_run_artifact_gc_v1",
+      "name": "_InlineSerialActor",
+      "path": "tests/test_run_artifact_gc_v1.py",
+      "qualname": "tests.test_run_artifact_gc_v1._InlineSerialActor",
       "role": "tests"
     },
     {

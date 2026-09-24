@@ -9633,6 +9633,11 @@
     {
       "kind": "references",
       "source": "noetrium_platform.foundation.kernel.kernel.journal.DirectoryMachineJournal",
+      "target": "noetrium_platform.foundation.kernel.kernel.durable_closure.DurableCarrierReferenceClosure"
+    },
+    {
+      "kind": "references",
+      "source": "noetrium_platform.foundation.kernel.kernel.journal.DirectoryMachineJournal",
       "target": "noetrium_platform.foundation.kernel.kernel.journal.MachineJournalGcAssessment"
     },
     {
@@ -16133,6 +16138,11 @@
     {
       "kind": "references",
       "source": "noetrium_platform.research.experimentation.lifecycle.run.api.artifacts.RunArtifactStorePort",
+      "target": "noetrium_platform.research.experimentation.lifecycle.run.api.artifacts.RunArtifactGcAssessment"
+    },
+    {
+      "kind": "references",
+      "source": "noetrium_platform.research.experimentation.lifecycle.run.api.artifacts.RunArtifactStorePort",
       "target": "noetrium_platform.research.experimentation.lifecycle.run.api.artifacts.RunArtifactKind"
     },
     {
@@ -16203,6 +16213,11 @@
     {
       "kind": "references",
       "source": "noetrium_platform.research.experimentation.lifecycle.run.runtime.artifacts.DirectoryRunArtifactStore",
+      "target": "noetrium_platform.research.experimentation.lifecycle.run.api.artifacts.RunArtifactGcAssessment"
+    },
+    {
+      "kind": "references",
+      "source": "noetrium_platform.research.experimentation.lifecycle.run.runtime.artifacts.DirectoryRunArtifactStore",
       "target": "noetrium_platform.research.experimentation.lifecycle.run.api.artifacts.RunArtifactKind"
     },
     {
@@ -16214,6 +16229,11 @@
       "kind": "references",
       "source": "noetrium_platform.research.experimentation.lifecycle.run.runtime.artifacts.DirectoryRunArtifactStore",
       "target": "noetrium_platform.research.experimentation.lifecycle.run.api.artifacts.RunArtifactWriteActorPort"
+    },
+    {
+      "kind": "references",
+      "source": "noetrium_platform.research.experimentation.lifecycle.run.runtime.artifacts.DirectoryRunArtifactStore",
+      "target": "noetrium_platform.research.experimentation.lifecycle.run.runtime.artifacts._RunArtifactRetirementPhase"
     },
     {
       "kind": "references",
@@ -60763,7 +60783,7 @@
         "durability"
       ],
       "kind": "class",
-      "line": 177,
+      "line": 212,
       "methods": [
         "__init__",
         "accept",
@@ -60787,7 +60807,7 @@
         "durability"
       ],
       "kind": "class",
-      "line": 107,
+      "line": 145,
       "methods": [
         "__init__",
         "enqueue",
@@ -60839,7 +60859,7 @@
       ],
       "fields": [],
       "kind": "protocol",
-      "line": 102,
+      "line": 140,
       "methods": [
         "accept",
         "contains"
@@ -60862,7 +60882,7 @@
       ],
       "fields": [],
       "kind": "protocol",
-      "line": 94,
+      "line": 132,
       "methods": [
         "enqueue",
         "pending",
@@ -61304,7 +61324,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 274,
+      "line": 276,
       "methods": [
         "__init__",
         "_path",
@@ -61328,7 +61348,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 167,
+      "line": 168,
       "methods": [
         "__init__",
         "_envelope_path",
@@ -61356,7 +61376,7 @@
         "durability"
       ],
       "kind": "class",
-      "line": 139,
+      "line": 140,
       "methods": [
         "__init__",
         "_read",
@@ -61928,7 +61948,8 @@
     },
     {
       "bases": [
-        "MachineJournalPort"
+        "MachineJournalPort",
+        "MachineJournalGcPort"
       ],
       "decorators": [],
       "fields": [
@@ -61956,6 +61977,11 @@
         "latest",
         "get",
         "commits",
+        "assess_gc",
+        "_require_retirement_matches_gc",
+        "_validate_quarantine_identity",
+        "_move_journal_to_quarantine",
+        "purge",
         "_machine_ids"
       ],
       "module": "noetrium_platform.foundation.kernel.kernel.journal",
@@ -94209,7 +94235,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 55,
+      "line": 64,
       "methods": [],
       "module": "noetrium_platform.research.experimentation.lifecycle.run.api.artifacts",
       "name": "RunArtifactFinalizationError",
@@ -94227,7 +94253,7 @@
       "decorators": [],
       "fields": [],
       "kind": "protocol",
-      "line": 88,
+      "line": 153,
       "methods": [
         "finalize"
       ],
@@ -94237,6 +94263,35 @@
         "RunArtifactFinalizationPort"
       ],
       "qualname": "noetrium_platform.research.experimentation.lifecycle.run.api.artifacts.RunArtifactFinalizationPort",
+      "system_key": "experimentation",
+      "top_system": "experimentation"
+    },
+    {
+      "bases": [],
+      "decorators": [
+        "dataclass(frozen=True, slots=True)"
+      ],
+      "fields": [
+        "closures",
+        "entry_count",
+        "proof_digest",
+        "run_id",
+        "total_bytes",
+        "tree_digest"
+      ],
+      "kind": "dataclass",
+      "line": 98,
+      "methods": [
+        "__post_init__",
+        "closure_complete",
+        "eligible"
+      ],
+      "module": "noetrium_platform.research.experimentation.lifecycle.run.api.artifacts",
+      "name": "RunArtifactGcAssessment",
+      "nesting": [
+        "RunArtifactGcAssessment"
+      ],
+      "qualname": "noetrium_platform.research.experimentation.lifecycle.run.api.artifacts.RunArtifactGcAssessment",
       "system_key": "experimentation",
       "top_system": "experimentation"
     },
@@ -94258,7 +94313,7 @@
         "RESULT"
       ],
       "kind": "enum",
-      "line": 42,
+      "line": 51,
       "methods": [],
       "module": "noetrium_platform.research.experimentation.lifecycle.run.api.artifacts",
       "name": "RunArtifactKind",
@@ -94276,7 +94331,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 63,
+      "line": 72,
       "methods": [],
       "module": "noetrium_platform.research.experimentation.lifecycle.run.api.artifacts",
       "name": "RunArtifactSealedError",
@@ -94302,7 +94357,7 @@
         "run_id"
       ],
       "kind": "dataclass",
-      "line": 67,
+      "line": 76,
       "methods": [
         "__post_init__"
       ],
@@ -94326,13 +94381,13 @@
       ],
       "fields": [],
       "kind": "protocol",
-      "line": 115,
+      "line": 180,
       "methods": [
-        "path",
-        "directory",
         "publish_json",
         "publish_text",
-        "append_json"
+        "append_json",
+        "assess_gc",
+        "purge"
       ],
       "module": "noetrium_platform.research.experimentation.lifecycle.run.api.artifacts",
       "name": "RunArtifactStorePort",
@@ -94350,7 +94405,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 59,
+      "line": 68,
       "methods": [],
       "module": "noetrium_platform.research.experimentation.lifecycle.run.api.artifacts",
       "name": "RunArtifactVerificationError",
@@ -94368,7 +94423,7 @@
       "decorators": [],
       "fields": [],
       "kind": "protocol",
-      "line": 98,
+      "line": 163,
       "methods": [
         "verify_finalized"
       ],
@@ -94388,7 +94443,7 @@
       "decorators": [],
       "fields": [],
       "kind": "protocol",
-      "line": 101,
+      "line": 166,
       "methods": [
         "call"
       ],
@@ -94818,16 +94873,21 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 31,
+      "line": 57,
       "methods": [
         "__init__",
+        "_retirement_path",
+        "_quarantine_path",
+        "_load_retirement",
+        "_publish_retirement",
+        "_require_active",
+        "_tree_identity",
+        "_require_gc_identity",
         "_resolve_ref",
         "_seal_key",
         "_seal_path",
         "_ledger_path",
         "_require_unsealed",
-        "path",
-        "directory",
         "publish_json",
         "publish_text",
         "append_json",
@@ -94838,7 +94898,9 @@
         "_ensure_generation_index",
         "finalize",
         "_finalize_locked",
-        "verify_finalized"
+        "verify_finalized",
+        "assess_gc",
+        "purge"
       ],
       "module": "noetrium_platform.research.experimentation.lifecycle.run.runtime.artifacts",
       "name": "DirectoryRunArtifactStore",
@@ -94846,6 +94908,28 @@
         "DirectoryRunArtifactStore"
       ],
       "qualname": "noetrium_platform.research.experimentation.lifecycle.run.runtime.artifacts.DirectoryRunArtifactStore",
+      "system_key": "experimentation",
+      "top_system": "experimentation"
+    },
+    {
+      "bases": [
+        "StrEnum"
+      ],
+      "decorators": [],
+      "fields": [
+        "PURGED",
+        "QUARANTINED",
+        "RETIRED"
+      ],
+      "kind": "enum",
+      "line": 50,
+      "methods": [],
+      "module": "noetrium_platform.research.experimentation.lifecycle.run.runtime.artifacts",
+      "name": "_RunArtifactRetirementPhase",
+      "nesting": [
+        "_RunArtifactRetirementPhase"
+      ],
+      "qualname": "noetrium_platform.research.experimentation.lifecycle.run.runtime.artifacts._RunArtifactRetirementPhase",
       "system_key": "experimentation",
       "top_system": "experimentation"
     },
@@ -102280,6 +102364,11 @@
     {
       "kind": "constructs",
       "source": "noetrium_platform.foundation.kernel.kernel.journal.DirectoryMachineJournal",
+      "target": "noetrium_platform.foundation.kernel.kernel.journal.MachineJournalGcAssessment"
+    },
+    {
+      "kind": "constructs",
+      "source": "noetrium_platform.foundation.kernel.kernel.journal.DirectoryMachineJournal",
       "target": "noetrium_platform.foundation.kernel.kernel.journal.MachineJournalRetirementPhase"
     },
     {
@@ -104220,6 +104309,11 @@
     {
       "kind": "constructs",
       "source": "noetrium_platform.research.experimentation.lifecycle.run.runtime.artifacts.DirectoryRunArtifactStore",
+      "target": "noetrium_platform.research.experimentation.lifecycle.run.api.artifacts.RunArtifactGcAssessment"
+    },
+    {
+      "kind": "constructs",
+      "source": "noetrium_platform.research.experimentation.lifecycle.run.runtime.artifacts.DirectoryRunArtifactStore",
       "target": "noetrium_platform.research.experimentation.lifecycle.run.api.artifacts.RunArtifactKind"
     },
     {
@@ -104236,6 +104330,11 @@
       "kind": "constructs",
       "source": "noetrium_platform.research.experimentation.lifecycle.run.runtime.artifacts.DirectoryRunArtifactStore",
       "target": "noetrium_platform.research.experimentation.lifecycle.run.api.artifacts.RunArtifactVerificationError"
+    },
+    {
+      "kind": "constructs",
+      "source": "noetrium_platform.research.experimentation.lifecycle.run.runtime.artifacts.DirectoryRunArtifactStore",
+      "target": "noetrium_platform.research.experimentation.lifecycle.run.runtime.artifacts._RunArtifactRetirementPhase"
     },
     {
       "kind": "constructs",
@@ -104429,10 +104528,10 @@
     }
   ],
   "counts": {
-    "association_edges": 3489,
-    "classes": 3391,
-    "constructor_edges": 948,
-    "inheritance_edges": 150,
+    "association_edges": 3493,
+    "classes": 3393,
+    "constructor_edges": 951,
+    "inheritance_edges": 151,
     "module_import_edges": 5047,
     "parse_errors": 0,
     "python_modules": 1912,
@@ -104800,6 +104899,11 @@
       "kind": "inherits",
       "source": "noetrium_platform.foundation.kernel.kernel.inspection.JournalInspectionService",
       "target": "noetrium_platform.foundation.kernel.kernel.inspection.JournalInspectionPort"
+    },
+    {
+      "kind": "inherits",
+      "source": "noetrium_platform.foundation.kernel.kernel.journal.DirectoryMachineJournal",
+      "target": "noetrium_platform.foundation.kernel.kernel.journal.MachineJournalGcPort"
     },
     {
       "kind": "inherits",
@@ -145429,7 +145533,7 @@
   "parse_errors": [],
   "registry_sha256": "276e2729e0b700e814e98f8460d87e0ebee66c4620226fe2d880fe55cc970aec",
   "schema": "noetrium-code-architecture-index.v1",
-  "source_git_sha": "474df5b65912682902ba978fdda884eea16d1a8d",
+  "source_git_sha": "d62cbe89cb05cce3bbf7989dfeea64b076db868c",
   "system_import_edges": [
     {
       "count": 85,
