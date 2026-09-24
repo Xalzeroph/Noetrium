@@ -22,6 +22,7 @@ from .benchmark import (
 )
 from .design import (
     BenchmarkAssignmentMode,
+    DEFAULT_STUDY_AGGREGATION_REQUIREMENT_ID,
     FactorLevelSpec, FactorSelection,
     ParticipantSchedule, ResearchRevision, ResearchStudyDefinition,
     StudyExecutionPolicy, StudyFactorSpec, StudyIntervention,
@@ -58,6 +59,7 @@ __all__ = [
     "AgentStudySpec",
     "Study",
     "BenchmarkAssignmentMode",
+    "DEFAULT_STUDY_AGGREGATION_REQUIREMENT_ID",
     "StudyModel",
     "StudyParticipant",
     "PostHocEvaluationDefinition",
