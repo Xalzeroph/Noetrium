@@ -1,5 +1,5 @@
 from __future__ import annotations
-from noetrium_platform.research.execution.workflow.api import AgentMethodSpec, AgentPhaseSpec
+from noetrium.api import AgentMethodSpec, AgentPhaseSpec
 METHOD_ID="motus_cvpr2026"
 TITLE="Motus: A Unified Latent Action World Model"
 VENUE="CVPR 2026"
