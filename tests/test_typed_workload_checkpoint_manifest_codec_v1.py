@@ -353,3 +353,51 @@ def test_workload_checkpoint_publish_intent_recovers_manifest_crash(
         owned_manifest.checkpoint_id
     ).exists()
     assert reopened.load(owned_manifest.checkpoint_id).manifest == owned_manifest
+
+
+def test_workload_checkpoint_gc_requires_complete_closure(tmp_path) -> None:
+    manifest, payload = _direct_manifest_and_payload()
+    store = DirectoryWorkloadCheckpointStore(tmp_path / "gc-closure")
+    store.publish(manifest, (payload,))
+    partial = store.assess_gc(
+        manifest.checkpoint_id,
+        closures=(
+            DurableCarrierReferenceClosure(
+                DurableCarrierClosureAuthority.EXECUTION,
+                "4" * 64,
+                (),
+            ),
+        ),
+    )
+    assert not partial.eligible
+    with pytest.raises(RuntimeError, match="complete execution"):
+        store.purge(manifest.checkpoint_id, gc=partial)
+    assert store.load(manifest.checkpoint_id).manifest == manifest
+
+
+def test_workload_checkpoint_gc_preserves_shared_cas_until_last_reference(
+    tmp_path,
+) -> None:
+    base, payload = _direct_manifest_and_payload()
+    first = replace(base, checkpoint_id="workload-shared-first")
+    second = replace(base, checkpoint_id="workload-shared-second")
+    store = DirectoryWorkloadCheckpointStore(tmp_path / "gc-shared")
+    store.publish(first, (payload,))
+    store.publish(second, (payload,))
+
+    blob = store._content._blob_path(payload.ref.payload_sha256)
+    assert blob.exists()
+    assert store.purge(
+        first.checkpoint_id,
+        gc=_closed_gc(store, first.checkpoint_id),
+    )
+    assert blob.exists()
+    assert store.load(second.checkpoint_id).payloads == (payload,)
+
+    assert store.purge(
+        second.checkpoint_id,
+        gc=_closed_gc(store, second.checkpoint_id),
+    )
+    assert not blob.exists()
+    with pytest.raises(RunCheckpointConflict, match="retired"):
+        store.publish(first, (payload,))
