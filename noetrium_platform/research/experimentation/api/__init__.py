@@ -579,19 +579,17 @@ _EXPERIMENTATION_PRODUCT_AUTHORING_EXPORTS = (
 __all__ = tuple(__all__) + _EXPERIMENTATION_PRODUCT_AUTHORING_EXPORTS
 
 # Adjacent-layer branch/replay authoring semantics.
-from noetrium_platform.capabilities.api import (
+from noetrium_platform.research.execution.api import (
     EnvironmentForkReceipt,
     EnvironmentReplayError,
     EnvironmentReplayReceipt,
     EnvironmentSessionOpener,
-    fork_environment_session,
-    replay_environment_prefix,
-)
-from noetrium_platform.research.execution.api import (
     ExecutionForkReceipt,
     ExecutionSourceCut,
     ExecutionStateAnchor,
     bind_execution_fork,
+    fork_environment_session,
+    replay_environment_prefix,
 )
 __all__ = tuple(__all__) + (
     "EnvironmentForkReceipt",
