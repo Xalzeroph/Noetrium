@@ -7,6 +7,7 @@ import sqlite3
 
 from noetrium_platform.evidence.data._sqlite_types import require_blob, require_integer, require_text
 from noetrium_platform.foundation.kernel.kernel.durability.sqlite import (
+    abort_sqlite_writer,
     begin_immediate_sqlite_transaction,
     open_durable_sqlite_reader,
     open_durable_sqlite_writer,
@@ -144,11 +145,7 @@ class SQLiteStateWriteSession(AbstractContextManager["SQLiteStateWriteSession"])
         try:
             if exc_type is not None or not self._complete:
                 if primary is None:
-                    try:
-                        self.conn.rollback()
-                    except BaseException as rollback_exc:
-                        primary = rollback_exc
-                        raise
+                    abort_sqlite_writer(self.conn)
                 else:
                     rollback_sqlite_writer(self.conn, primary, label="data")
         finally:
