@@ -6,7 +6,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Generic, Protocol, TypeVar
 
-from noetrium_platform.foundation.kernel.kernel import canonical_digest
+from ..canonical import canonical_digest
 
 
 T = TypeVar("T")
