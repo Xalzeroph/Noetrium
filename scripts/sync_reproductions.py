@@ -34,12 +34,13 @@ from research.reproductions.contracts import (
 from research.reproductions.research_os import (
     compile_reproduction_research_program,
     is_research_os_executable,
+    resolve_benchmark_split_consumers,
     resolve_execution_requirements,
 )
 
-PROJECTION_SCHEMA = "noetrium.reproduction.projection.v8"
+PROJECTION_SCHEMA = "noetrium.reproduction.projection.v9"
 REPRODUCTION_CATALOG_SCHEMA = "noetrium.reproduction-catalog.projection.v1"
-REPRODUCTION_RESEARCH_OS_STATUS_SCHEMA = "noetrium.reproduction-research-os-status.v1"
+REPRODUCTION_RESEARCH_OS_STATUS_SCHEMA = "noetrium.reproduction-research-os-status.v2"
 REPRODUCTION_CATALOG_AUTHORITY = "generated_from_typed_reproduction_definitions"
 _ALLOWED_DEFINITION_IMPORTS = {"__future__", "research.reproductions.contracts"}
 _ALLOWED_SOURCE_IMPORTS = {
@@ -232,15 +233,24 @@ def _projection(
     if is_research_os_executable(definition):
         program = compile_reproduction_research_program(definition)
         requirements = resolve_execution_requirements(definition)
+        split_consumers = resolve_benchmark_split_consumers(definition)
         research_os = {
             "surface": "noetrium.api",
             "execution_state": (
-                "execution_ready"
-                if not requirements
-                else "closure_binding_required"
+                "closure_binding_required"
+                if requirements
+                else (
+                    "benchmark_binding_required"
+                    if split_consumers
+                    else "execution_ready"
+                )
             ),
             "program_id": program.program_id,
             "program_digest": program.program_digest,
+            "benchmark_split_axis": {
+                "required": bool(split_consumers),
+                "consumers": list(split_consumers),
+            },
             "execution_requirements": [
                 {
                     "parameter": row.parameter,
@@ -257,6 +267,10 @@ def _projection(
             "execution_state": "not_executable",
             "program_id": None,
             "program_digest": None,
+            "benchmark_split_axis": {
+                "required": False,
+                "consumers": [],
+            },
             "execution_requirements": [],
         }
     package_digest = canonical_digest(
@@ -449,6 +463,7 @@ def sync(*, check: bool) -> int:
             "program_id": projection["research_os"]["program_id"],
             "program_digest": projection["research_os"]["program_digest"],
             "benchmark_ids": projection["catalog"]["benchmark_ids"],
+            "benchmark_split_axis": projection["research_os"]["benchmark_split_axis"],
             "execution_requirements": projection["research_os"]["execution_requirements"],
         }
         for projection in sorted(projections, key=lambda row: row["package"])
