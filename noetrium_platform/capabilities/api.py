@@ -164,6 +164,8 @@ from noetrium_platform.substrate.api import (
     is_absolute_target_path,
     require_production_qualification,
     source_cut,
+    TensorContentRef,
+    TensorContentStorePort,
 )
 
 __all__ = (
@@ -295,6 +297,8 @@ __all__ = (
     "ResearchSourceSnapshot",
     "ScopeIdentity",
     "ScopeKind",
+    "TensorContentRef",
+    "TensorContentStorePort",
     "ScopeRegistryPort",
     "SensorModality",
     "SensorSpec",
