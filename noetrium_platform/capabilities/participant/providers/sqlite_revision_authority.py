@@ -4,7 +4,10 @@ from contextlib import contextmanager
 from pathlib import Path
 import sqlite3
 
-from noetrium_platform.foundation.kernel.kernel.durability.sqlite import open_durable_sqlite_writer
+from noetrium_platform.foundation.kernel.kernel.durability.sqlite import (
+    immediate_sqlite_transaction,
+    open_durable_sqlite_writer,
+)
 from typing import Iterator
 
 from noetrium_platform.foundation.kernel.kernel import (
@@ -486,21 +489,17 @@ class SQLiteParticipantRevisionAuthority:
     def _transaction(self) -> Iterator[sqlite3.Connection]:
         connection = self._connect()
         try:
-            connection.execute("BEGIN IMMEDIATE")
-            yield connection
-            connection.execute("COMMIT")
-        except sqlite3.DatabaseError as exc:
             try:
-                connection.execute("ROLLBACK")
-            except sqlite3.DatabaseError:
-                pass
-            raise ParticipantRevisionIntegrityError("participant revision transaction failed") from exc
-        except BaseException:
-            try:
-                connection.execute("ROLLBACK")
-            except sqlite3.DatabaseError:
-                pass
-            raise
+                with immediate_sqlite_transaction(
+                    connection,
+                    timeout_seconds=30.0,
+                    label="participant revision",
+                ):
+                    yield connection
+            except sqlite3.DatabaseError as exc:
+                raise ParticipantRevisionIntegrityError(
+                    "participant revision transaction failed"
+                ) from exc
         finally:
             connection.close()
 
