@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from .source_authority_contracts import SourceAuthorityRule
-from .source_authority_matchers import exact_call, suffix_call
+from .source_authority_matchers import exact_call, path_open_write_mode, suffix_call
 
 
 DEFAULT_SOURCE_AUTHORITY_RULES: tuple[SourceAuthorityRule, ...] = (
@@ -62,6 +62,16 @@ DEFAULT_SOURCE_AUTHORITY_RULES: tuple[SourceAuthorityRule, ...] = (
         "Path.write_bytes",
         ("noetrium_platform.foundation.kernel.kernel.durability.durable_file",),
         suffix_call("write_bytes"),
+    ),
+    SourceAuthorityRule(
+        "filesystem.write_mode_open",
+        "Path.open(write-mode)",
+        (
+            "noetrium_platform.foundation.kernel.kernel.durability.durable_append",
+            "noetrium_platform.foundation.kernel.kernel.durability.durable_file",
+            "noetrium_platform.infrastructure.lifecycle.service.runtime.linux_spawn",
+        ),
+        path_open_write_mode(),
     ),
     SourceAuthorityRule(
         "filesystem.interprocess_flock",
