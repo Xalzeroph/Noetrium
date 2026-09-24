@@ -4,7 +4,7 @@ import shutil
 from enum import StrEnum
 from pathlib import Path
 
-from noetrium_platform.foundation.kernel.kernel import canonical_digest
+from noetrium_platform.foundation.kernel.kernel import DurableCarrierReferenceClosure, canonical_digest
 from noetrium_platform.foundation.kernel.kernel.durability.checksummed_document import (
     ChecksummedDocumentError,
     decode_checksummed_document,
@@ -24,7 +24,6 @@ from noetrium_platform.infrastructure.resources.directory.api import (
     WorkspaceGcAssessment,
     WorkspaceMetadataError,
     WorkspaceMetadataFailureCode,
-    WorkspaceReferenceClosure,
 )
 from noetrium_platform.foundation.governance.api import (
     ScopeIdentity,
@@ -309,7 +308,7 @@ class LocalWorkspaceManager:
         *,
         scope: ScopeIdentity,
         category: str = "default",
-        closures: tuple[WorkspaceReferenceClosure, ...] = (),
+        closures: tuple[DurableCarrierReferenceClosure, ...] = (),
     ) -> WorkspaceGcAssessment:
         self._validate_name(workspace_id, "workspace_id")
         self._validate_name(category, "category")
