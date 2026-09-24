@@ -1,5 +1,5 @@
 from __future__ import annotations
-from noetrium_platform.research.execution.workflow.api import AgentMethodSpec, AgentPhaseSpec
+from noetrium.api import AgentMethodSpec, AgentPhaseSpec
 METHOD_ID="d3d_vlp_cvpr2026"
 TITLE="D3D-VLP: Dynamic 3D Vision-Language-Planning Model for Embodied Grounding and Navigation"
 VENUE="CVPR 2026"
