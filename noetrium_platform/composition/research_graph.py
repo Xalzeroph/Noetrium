@@ -696,15 +696,69 @@ class ResearchGraphScheduler:
             and current.attempt_id == attempt_id
             and current.lease_owner_id == self._scheduler_owner_id
         ):
-            current = store.mark_failed(
-                execution_id,
-                node.node_id,
-                attempt_id=attempt_id,
-                owner_id=self._scheduler_owner_id,
-                now_ns=time.time_ns(),
-                failure_type=type(failure).__name__,
-                failure_message=message,
-            )
+            failure_now_ns = time.time_ns()
+            if (
+                current.lease_expires_at_ns is not None
+                and current.lease_expires_at_ns <= failure_now_ns
+            ):
+                if not isinstance(store, ResearchGraphClaimRecoveryPort):
+                    raise ResearchGraphExecutionConflict(
+                        "research graph store cannot recover an expired attempt"
+                    ) from failure
+                current = store.recover_expired_attempt(
+                    execution_id,
+                    node.node_id,
+                    attempt_id=attempt_id,
+                    owner_id=self._scheduler_owner_id,
+                    now_ns=failure_now_ns,
+                )
+                live[node_id] = current
+                if (
+                    current.state
+                    is not ResearchGraphLiveNodeState.RECONCILE_REQUIRED
+                ):
+                    raise ResearchGraphExecutionConflict(
+                        "expired running attempt did not enter reconciliation"
+                    ) from failure
+                reconciliation_required.add(node_id)
+                return
+
+            try:
+                current = store.mark_failed(
+                    execution_id,
+                    node.node_id,
+                    attempt_id=attempt_id,
+                    owner_id=self._scheduler_owner_id,
+                    now_ns=failure_now_ns,
+                    failure_type=type(failure).__name__,
+                    failure_message=message,
+                )
+            except ResearchGraphExecutionConflict:
+                # The lease may expire between the read above and the failure
+                # CAS. Re-read exact durable truth; never weaken the lease
+                # fence merely because completion arrived concurrently.
+                refreshed = store.node_state(execution_id, node.node_id)
+                recovery_now_ns = time.time_ns()
+                if (
+                    refreshed.state is ResearchGraphLiveNodeState.RUNNING
+                    and refreshed.attempt_id == attempt_id
+                    and refreshed.lease_owner_id == self._scheduler_owner_id
+                    and refreshed.lease_expires_at_ns is not None
+                    and refreshed.lease_expires_at_ns <= recovery_now_ns
+                    and isinstance(store, ResearchGraphClaimRecoveryPort)
+                ):
+                    current = store.recover_expired_attempt(
+                        execution_id,
+                        node.node_id,
+                        attempt_id=attempt_id,
+                        owner_id=self._scheduler_owner_id,
+                        now_ns=recovery_now_ns,
+                    )
+                    live[node_id] = current
+                    reconciliation_required.add(node_id)
+                    return
+                raise
+
             live[node_id] = current
             results[node_id] = ResearchGraphNodeResult(
                 node.node_id,
