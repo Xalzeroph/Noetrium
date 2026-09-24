@@ -3,7 +3,7 @@ from __future__ import annotations
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
 
-from noetrium_platform.foundation.kernel.kernel import JsonObject, JsonValue, freeze_json
+from noetrium.api import JsonObject, JsonValue, freeze_json
 
 from .fidelity import SWE_AGENT_PAPER_ERA_FIDELITY
 
