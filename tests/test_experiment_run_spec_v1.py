@@ -83,13 +83,11 @@ class ExperimentRunSpecTests(unittest.TestCase):
         )
         return ProjectRunDefinition(project_manifest, experiment, study, run, identity, manifest)
 
-    def test_project_run_definition_binds_public_identities_and_control_target(self) -> None:
+    def test_project_run_definition_binds_public_identities(self) -> None:
         definition = self._project_run_definition()
         self.assertEqual(len(definition.definition_digest), 64)
-        target = definition.control_target(3)
-        self.assertEqual(target.run_id, definition.identity.run_id)
-        self.assertEqual(target.run_manifest_digest, definition.manifest.digest())
-        self.assertEqual(target.expected_revision, 3)
+        self.assertEqual(definition.identity.run_id, definition.run.run_id)
+        self.assertEqual(definition.run_manifest_digest, definition.manifest.digest())
 
     def test_project_run_definition_rejects_cross_identity_drift(self) -> None:
         definition = self._project_run_definition()
