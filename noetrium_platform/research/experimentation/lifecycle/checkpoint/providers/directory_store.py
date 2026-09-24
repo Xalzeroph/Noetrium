@@ -44,6 +44,17 @@ from ..api.contracts import (
 )
 
 
+_RETIREMENT_SCHEMA = "noetrium.run-checkpoint-retirement.v1"
+_RETIREMENT_FIELDS = {
+    "checkpoint_id",
+    "persistence_state",
+    "state_digest",
+    "blob_sha256s",
+    "gc_proof_digest",
+    "purged",
+}
+
+
 class DirectoryRunCheckpointStore(RunCheckpointStore):
     """Crash-durable content-addressed persistence for generic participant checkpoints."""
 
@@ -56,15 +67,22 @@ class DirectoryRunCheckpointStore(RunCheckpointStore):
         self.blob_staging = self.root / "blob_staging"
         self.manifests = self.root / "manifests"
         self.manifest_locks = self.root / "manifest_locks"
+        self.retired = self.root / "retired"
         self.blobs.mkdir(parents=True, exist_ok=True)
         self.blob_locks.mkdir(parents=True, exist_ok=True)
         self.blob_staging.mkdir(parents=True, exist_ok=True)
         self.manifests.mkdir(parents=True, exist_ok=True)
         self.manifest_locks.mkdir(parents=True, exist_ok=True)
+        self.retired.mkdir(parents=True, exist_ok=True)
         self.codec = RunCheckpointManifestCodec()
+        self._workload_codec = WorkloadCheckpointManifestCodec()
         self._intents = DirectoryCheckpointPublicationIntentStore(
             self.root,
             namespace="run",
+        )
+        self._workload_intents = DirectoryCheckpointPublicationIntentStore(
+            self.root,
+            namespace="workload",
         )
 
     @staticmethod
@@ -114,6 +132,10 @@ class DirectoryRunCheckpointStore(RunCheckpointStore):
     def _manifest_lock_path(self, checkpoint_id: str) -> Path:
         safe = hashlib.sha256(checkpoint_id.encode("utf-8")).hexdigest()
         return self.manifest_locks / f"{safe}.lock"
+
+    def _retirement_path(self, checkpoint_id: str) -> Path:
+        safe = hashlib.sha256(checkpoint_id.encode("utf-8")).hexdigest()
+        return self.retired / f"{safe}.json"
 
     def _publication_intent(
         self,
