@@ -7,6 +7,7 @@ from .materializer import (
     GSM8KMaterializedTask,
     materialize_archived_gsm8k_test,
     materialize_gsm8k_jsonl,
+    register_gsm8k_materialization,
 )
 from .verifier import (
     extract_gsm8k_completion_answer,
@@ -31,6 +32,7 @@ from .cut import (
 __all__ = [
     "materialize_gsm8k_jsonl",
     "materialize_archived_gsm8k_test",
+    "register_gsm8k_materialization",
     "verify_gsm8k_completion",
     "normalize_gsm8k_numeric_answer",
     "extract_gsm8k_completion_answer",
