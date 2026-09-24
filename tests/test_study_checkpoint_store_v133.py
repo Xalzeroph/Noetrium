@@ -13,6 +13,7 @@ from noetrium_platform.research.experimentation.lifecycle.api import (
     RunCheckpointConflict,
     RunCheckpointIntegrityError,
     RunCheckpointManifest,
+    RunCheckpointRecoveryRequired,
     RunParticipantPayload,
     RunParticipantSnapshotRef,
 )
@@ -184,6 +185,19 @@ def test_checkpoint_publish_intent_survives_manifest_crash_and_resumes(
     assert store._blob_path(
         payloads[0].checkpoint.ref.payload_sha256
     ).exists()
+
+    pending = DirectoryRunCheckpointStore(root)
+    with pytest.raises(RunCheckpointRecoveryRequired) as raised:
+        pending.load(owned.checkpoint_id)
+    recovery = raised.value
+    assert recovery.checkpoint_id == owned.checkpoint_id
+    assert recovery.namespace == "run"
+    assert recovery.manifest_sha256 == pending._intents.load(
+        owned.checkpoint_id
+    ).manifest_sha256
+    assert recovery.blob_sha256s == (
+        payloads[0].checkpoint.ref.payload_sha256,
+    )
 
     conflicting_payloads = (
         participant_payload("method", b"losing-payload", generation="g2"),
