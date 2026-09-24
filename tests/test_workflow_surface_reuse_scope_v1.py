@@ -9,7 +9,7 @@ from noetrium_platform.research.execution.workflow.api import (
 )
 from noetrium_platform.foundation.kernel.kernel import ExecutionContext
 from noetrium_platform.capabilities.participant.core.api import BoundParticipants
-from noetrium_platform.research.experimentation.lifecycle.experiment.runtime import ExperimentTrialCycleExecutor
+from tests_support import ExperimentTrialCycleExecutorForTest
 
 
 class _DefaultFactory:
@@ -58,7 +58,7 @@ class _CountingFactory:
 
 
 def _execute_twice(factory: _CountingFactory) -> None:
-    executor = ExperimentTrialCycleExecutor(
+    executor = ExperimentTrialCycleExecutorForTest(
         object(), _Protocol(), workflow_surface_factories=(factory,)
     )
     bound = BoundParticipants(())
