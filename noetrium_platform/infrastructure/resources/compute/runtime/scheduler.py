@@ -22,6 +22,7 @@ from noetrium_platform.infrastructure.resources.lease.api import (
 from noetrium_platform.foundation.kernel.kernel.durability.sqlite import (
     begin_immediate_sqlite_transaction,
     durable_sqlite_connection,
+    rollback_sqlite_writer,
 )
 from noetrium_platform.infrastructure.resources.providers.sqlite_resource import ensure_resource_schema
 from noetrium_platform.infrastructure.resources.providers.sqlite_lease_ops import (
@@ -792,8 +793,12 @@ class SQLiteComputeScheduler:
                 )
                 conn.commit()
                 return allocation
-            except BaseException:
-                conn.rollback()
+            except BaseException as primary:
+                rollback_sqlite_writer(
+                    conn,
+                    primary,
+                    label="compute scheduler",
+                )
                 raise
     def renew_many(
         self,
@@ -831,8 +836,12 @@ class SQLiteComputeScheduler:
                     ))
                 conn.commit()
                 return tuple(renewed)
-            except BaseException:
-                conn.rollback()
+            except BaseException as primary:
+                rollback_sqlite_writer(
+                    conn,
+                    primary,
+                    label="compute scheduler",
+                )
                 raise
     def reconcile_expired(
         self,
@@ -846,8 +855,12 @@ class SQLiteComputeScheduler:
                 expired = self._cleanup_expired(conn, now_epoch_s)
                 conn.commit()
                 return expired
-            except BaseException:
-                conn.rollback()
+            except BaseException as primary:
+                rollback_sqlite_writer(
+                    conn,
+                    primary,
+                    label="compute scheduler",
+                )
                 raise
 
     def release(self, allocation_id: str) -> None:
@@ -872,8 +885,12 @@ class SQLiteComputeScheduler:
                     (allocation_id,),
                 )
                 conn.commit()
-            except BaseException:
-                conn.rollback()
+            except BaseException as primary:
+                rollback_sqlite_writer(
+                    conn,
+                    primary,
+                    label="compute scheduler",
+                )
                 raise
 
     def allocations(
