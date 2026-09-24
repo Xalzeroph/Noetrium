@@ -700,20 +700,11 @@ class StrictResearchOSControl(
                     "reuse candidate is not durably succeeded: "
                     f"{graph_node_id}"
                 )
-            matching_attempts = tuple(
-                attempt
-                for attempt in self._store.attempts(
-                    plan.source_cut.cut_id,
-                    graph_node_id,
-                )
-                if attempt.attempt_number == record.attempt_number
+            terminal_attempt = self._store.attempt_state(
+                plan.source_cut.cut_id,
+                graph_node_id,
+                record.attempt_number,
             )
-            if len(matching_attempts) != 1:
-                raise ResearchGraphExecutionConflict(
-                    "reuse candidate lost exact terminal attempt history: "
-                    f"{graph_node_id}"
-                )
-            terminal_attempt = matching_attempts[0]
             if terminal_attempt.state not in {
                 ResearchGraphAttemptState.SUCCEEDED,
                 ResearchGraphAttemptState.RECONCILED_SUCCEEDED,
