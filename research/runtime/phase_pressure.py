@@ -7,12 +7,10 @@ from noetrium_platform.composition.method_runtime import (
 
 
 import argparse
-from concurrent.futures import ThreadPoolExecutor, as_completed
 import importlib
 import json
 from pathlib import Path
 import subprocess
-from threading import Lock
 import time
 
 from noetrium_platform.composition.model_requests import (
@@ -31,11 +29,19 @@ from noetrium_platform.capabilities.model.serving.endpoint.composition import (
     build_adaptive_operational_endpoint_pool,
 )
 from noetrium_platform.capabilities.model.serving.runtime import ModelAdmissionRegistry
+from noetrium_platform.foundation.kernel.concurrency.api import (
+    ConcurrencyBudget,
+    ExecutionLaneKind,
+    ExecutionSpec,
+    TaskFailurePolicy,
+    TaskFailureScope,
+)
 from noetrium_platform.foundation.kernel.concurrency.composition import build_concurrency_runtime
 from noetrium_platform.foundation.kernel.kernel import (
     ExecutionContext,
     canonical_digest,
 )
+from noetrium_platform.foundation.kernel.kernel.durability import atomic_replace_bytes
 from noetrium_platform.research.execution.workflow.api import MethodNodeKind, MethodProgram
 from noetrium_platform.research.execution.workflow.composition import (
     DispatchPoolBackedMethodAgentLoop,
@@ -53,8 +59,6 @@ from noetrium_platform.research.experimentation.workload.composition import (
 
 ROOT = Path(__file__).resolve().parents[2]
 REPRO_ROOT = ROOT / "research" / "reproductions"
-_PRINT_LOCK = Lock()
-
 
 def _git_sha() -> str:
     return subprocess.check_output(
@@ -273,20 +277,10 @@ def _run_episode(
     }
     record["outcome_class"] = _pressure_outcome_class(record)
     record["record_digest"] = canonical_digest(record)
-    (output / "result.json").write_text(
-        json.dumps(record, indent=2, sort_keys=True) + "\n",
-        encoding="utf-8",
+    atomic_replace_bytes(
+        output / "result.json",
+        (json.dumps(record, indent=2, sort_keys=True) + "\n").encode("utf-8"),
     )
-    with _PRINT_LOCK:
-        print(
-            "RESULT",
-            package,
-            repetition,
-            result.status.value,
-            result.evidence_status.value,
-            result.step_count,
-            flush=True,
-        )
     return record
 
 
@@ -332,12 +326,10 @@ def _failed_record(
     }
     record["outcome_class"] = _pressure_outcome_class(record)
     record["record_digest"] = canonical_digest(record)
-    (output / "result.json").write_text(
-        json.dumps(record, indent=2, sort_keys=True) + "\n",
-        encoding="utf-8",
+    atomic_replace_bytes(
+        output / "result.json",
+        (json.dumps(record, indent=2, sort_keys=True) + "\n").encode("utf-8"),
     )
-    with _PRINT_LOCK:
-        print("FAILED", package, repetition, record["failure"], flush=True)
     return record
 
 
@@ -428,13 +420,28 @@ def run(args: argparse.Namespace) -> dict:
         )
 
     args.output_root.mkdir(parents=True, exist_ok=True)
-    concurrency = build_concurrency_runtime()
+    concurrency = build_concurrency_runtime(
+        budget=ConcurrencyBudget(
+            max_blocking_io_workers=worker_count,
+            max_blocking_io_in_flight=worker_count,
+            default_queue_capacity=max(worker_count, len(pending_jobs), 1),
+        )
+    )
     group = concurrency.open_task_group(
         "phase-pressure:model-endpoints:"
         + canonical_digest({
             "inventory": inventory.identity_digest,
             "source_sha": source_sha,
         })[:16]
+    )
+    execution_group = concurrency.open_task_group(
+        "phase-pressure:episodes:"
+        + canonical_digest({
+            "inventory": inventory.identity_digest,
+            "source_sha": source_sha,
+            "worker_count": worker_count,
+        })[:16],
+        failure_policy=TaskFailurePolicy.COLLECT_ALL,
     )
     admission = ModelAdmissionRegistry()
     selection_policy = (
@@ -451,40 +458,59 @@ def run(args: argparse.Namespace) -> dict:
 
     records: list[dict] = list(resumed_records)
     try:
-        with ThreadPoolExecutor(
-            max_workers=worker_count,
-            thread_name_prefix="phase-pressure",
-        ) as executor:
-            futures = {
-                executor.submit(
-                    _run_episode,
+        handles = tuple(
+            (
+                package,
+                repetition,
+                execution_group.submit(
+                    ExecutionSpec(
+                        task_id=f"phase-pressure:{package}:rep-{repetition}",
+                        lane_kind=ExecutionLaneKind.BLOCKING_IO,
+                        failure_scope=TaskFailureScope.CALLER,
+                    ),
+                    lambda _context, *, _package=package, _program=program, _repetition=repetition: _run_episode(
+                        package=_package,
+                        program=_program,
+                        repetition=_repetition,
+                        output_root=args.output_root,
+                        source_sha=source_sha,
+                        inventory=inventory,
+                        pool=pool,
+                        args=args,
+                    ),
+                ),
+            )
+            for package, program, repetition in pending_jobs
+        )
+        for package, repetition, handle in handles:
+            try:
+                record = handle.result()
+                records.append(record)
+                print(
+                    "RESULT",
+                    package,
+                    repetition,
+                    record["status"],
+                    record["evidence_status"],
+                    record["step_count"],
+                    flush=True,
+                )
+            except BaseException as exc:
+                record = _failed_record(
                     package=package,
-                    program=program,
                     repetition=repetition,
                     output_root=args.output_root,
                     source_sha=source_sha,
                     inventory=inventory,
-                    pool=pool,
-                    args=args,
-                ): (package, repetition)
-                for package, program, repetition in pending_jobs
-            }
-            for future in as_completed(futures):
-                package, repetition = futures[future]
-                try:
-                    records.append(future.result())
-                except BaseException as exc:
-                    records.append(_failed_record(
-                        package=package,
-                        repetition=repetition,
-                        output_root=args.output_root,
-                        source_sha=source_sha,
-                        inventory=inventory,
-                        exc=exc,
-                    ))
+                    exc=exc,
+                )
+                records.append(record)
+                print("FAILED", package, repetition, record["failure"], flush=True)
+        execution_group.wait()
     finally:
         snapshot = pool.snapshot()
         admission.close()
+        execution_group.close(cancel_pending=True)
         group.close(cancel_pending=True)
         concurrency.close()
 
@@ -527,9 +553,9 @@ def run(args: argparse.Namespace) -> dict:
         "packages": tuple(package for package, _ in selected),
     }
     summary["summary_digest"] = canonical_digest(summary)
-    (args.output_root / "summary.json").write_text(
-        json.dumps(summary, indent=2, sort_keys=True) + "\n",
-        encoding="utf-8",
+    atomic_replace_bytes(
+        args.output_root / "summary.json",
+        (json.dumps(summary, indent=2, sort_keys=True) + "\n").encode("utf-8"),
     )
     print("SUMMARY", json.dumps(summary, sort_keys=True), flush=True)
     return summary
