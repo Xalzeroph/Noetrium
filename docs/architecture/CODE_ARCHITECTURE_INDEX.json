@@ -29518,7 +29518,7 @@
         "prompt_digest"
       ],
       "kind": "dataclass",
-      "line": 29,
+      "line": 30,
       "methods": [],
       "module": "noetrium_platform.capabilities.model.request.prompt.runtime.qualification",
       "name": "CanaryObservation",
@@ -29540,7 +29540,7 @@
         "suite_id"
       ],
       "kind": "dataclass",
-      "line": 18,
+      "line": 19,
       "methods": [
         "digest"
       ],
@@ -29566,7 +29566,7 @@
         "role"
       ],
       "kind": "dataclass",
-      "line": 9,
+      "line": 10,
       "methods": [],
       "module": "noetrium_platform.capabilities.model.request.prompt.runtime.qualification",
       "name": "PromptCanary",
@@ -29594,7 +29594,7 @@
         "total"
       ],
       "kind": "dataclass",
-      "line": 38,
+      "line": 39,
       "methods": [
         "qualified"
       ],
@@ -29922,7 +29922,7 @@
         "text"
       ],
       "kind": "dataclass",
-      "line": 10,
+      "line": 11,
       "methods": [],
       "module": "noetrium_platform.capabilities.model.request.prompt.runtime.spec",
       "name": "PromptSection",
@@ -29950,7 +29950,7 @@
         "version"
       ],
       "kind": "dataclass",
-      "line": 17,
+      "line": 18,
       "methods": [
         "__post_init__",
         "compile",
@@ -30279,7 +30279,7 @@
         "snapshot_digest"
       ],
       "kind": "dataclass",
-      "line": 105,
+      "line": 106,
       "methods": [
         "__post_init__"
       ],
@@ -30311,7 +30311,7 @@
         "schema_version"
       ],
       "kind": "dataclass",
-      "line": 141,
+      "line": 142,
       "methods": [
         "__post_init__"
       ],
@@ -30381,7 +30381,7 @@
         "numa_nodes"
       ],
       "kind": "dataclass",
-      "line": 17,
+      "line": 18,
       "methods": [
         "__post_init__"
       ],
@@ -30405,7 +30405,7 @@
         "numa_node"
       ],
       "kind": "dataclass",
-      "line": 10,
+      "line": 11,
       "methods": [],
       "module": "noetrium_platform.capabilities.model.serving.api.inventory",
       "name": "CPUNode",
@@ -30428,7 +30428,7 @@
         "link_type"
       ],
       "kind": "dataclass",
-      "line": 56,
+      "line": 57,
       "methods": [
         "__post_init__"
       ],
@@ -30457,7 +30457,7 @@
         "uuid"
       ],
       "kind": "dataclass",
-      "line": 35,
+      "line": 36,
       "methods": [
         "__post_init__"
       ],
@@ -30488,7 +30488,7 @@
         "runtime"
       ],
       "kind": "dataclass",
-      "line": 118,
+      "line": 119,
       "methods": [
         "__post_init__",
         "identity_digest",
@@ -30514,7 +30514,7 @@
         "pids_max"
       ],
       "kind": "dataclass",
-      "line": 111,
+      "line": 112,
       "methods": [],
       "module": "noetrium_platform.capabilities.model.serving.api.inventory",
       "name": "HostLimits",
@@ -30537,7 +30537,7 @@
         "physical_total_bytes"
       ],
       "kind": "dataclass",
-      "line": 73,
+      "line": 74,
       "methods": [
         "effective_available_bytes"
       ],
@@ -30565,7 +30565,7 @@
         "total_bytes"
       ],
       "kind": "dataclass",
-      "line": 87,
+      "line": 88,
       "methods": [],
       "module": "noetrium_platform.capabilities.model.serving.api.inventory",
       "name": "MountInventory",
@@ -30593,7 +30593,7 @@
         "vllm"
       ],
       "kind": "dataclass",
-      "line": 98,
+      "line": 99,
       "methods": [],
       "module": "noetrium_platform.capabilities.model.serving.api.inventory",
       "name": "RuntimeInventory",
@@ -32921,7 +32921,7 @@
         "start_marker"
       ],
       "kind": "dataclass",
-      "line": 8,
+      "line": 9,
       "methods": [
         "from_argv"
       ],
@@ -32939,7 +32939,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 19,
+      "line": 20,
       "methods": [
         "reconcile"
       ],
@@ -51020,7 +51020,7 @@
         "source_git_sha"
       ],
       "kind": "dataclass",
-      "line": 44,
+      "line": 45,
       "methods": [
         "approved"
       ],
@@ -51047,7 +51047,7 @@
         "schema_version"
       ],
       "kind": "dataclass",
-      "line": 67,
+      "line": 68,
       "methods": [
         "__post_init__",
         "approval_for"
@@ -51071,7 +51071,7 @@
         "PERFORMANCE"
       ],
       "kind": "enum",
-      "line": 12,
+      "line": 13,
       "methods": [],
       "module": "noetrium_platform.foundation.governance.api.baseline_authority",
       "name": "GovernanceBaselineLane",
@@ -67755,7 +67755,7 @@
         "variables"
       ],
       "kind": "dataclass",
-      "line": 24,
+      "line": 25,
       "methods": [
         "__post_init__",
         "from_mapping",
@@ -70189,7 +70189,7 @@
       "decorators": [],
       "fields": [],
       "kind": "protocol",
-      "line": 16,
+      "line": 15,
       "methods": [
         "digest"
       ],
@@ -70214,7 +70214,7 @@
         "launcher_binary_sha256"
       ],
       "kind": "dataclass",
-      "line": 23,
+      "line": 22,
       "methods": [
         "__post_init__",
         "digest",
@@ -72659,7 +72659,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 37,
+      "line": 38,
       "methods": [
         "__init__",
         "register",
@@ -72697,7 +72697,7 @@
         "stage"
       ],
       "kind": "dataclass",
-      "line": 10,
+      "line": 11,
       "methods": [
         "key",
         "digest"
@@ -79606,7 +79606,7 @@
         "trace_id"
       ],
       "kind": "dataclass",
-      "line": 11,
+      "line": 12,
       "methods": [
         "__post_init__",
         "digest"
@@ -79627,7 +79627,7 @@
       "decorators": [],
       "fields": [],
       "kind": "protocol",
-      "line": 40,
+      "line": 41,
       "methods": [
         "allocate"
       ],
@@ -79645,7 +79645,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 62,
+      "line": 63,
       "methods": [
         "__init__",
         "allocate"
@@ -79664,7 +79664,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 44,
+      "line": 45,
       "methods": [
         "allocate"
       ],
@@ -102518,7 +102518,7 @@
     "classes": 3340,
     "constructor_edges": 933,
     "inheritance_edges": 149,
-    "module_import_edges": 5126,
+    "module_import_edges": 5141,
     "parse_errors": 0,
     "python_modules": 1928,
     "registry_authorities": 20,
@@ -105754,6 +105754,10 @@
       "target": "noetrium_platform.foundation.kernel.kernel.durability.file_lock"
     },
     {
+      "source": "noetrium_platform.capabilities.model.request.prompt.runtime.qualification",
+      "target": "noetrium_platform.foundation.kernel.kernel.durability"
+    },
+    {
       "source": "noetrium_platform.capabilities.model.request.prompt.runtime.rendering",
       "target": "noetrium_platform.capabilities.model.request.prompt.runtime.blocks"
     },
@@ -105812,6 +105816,10 @@
     {
       "source": "noetrium_platform.capabilities.model.request.prompt.runtime.request_contract",
       "target": "noetrium_platform.foundation.kernel.kernel"
+    },
+    {
+      "source": "noetrium_platform.capabilities.model.request.prompt.runtime.request_contract",
+      "target": "noetrium_platform.foundation.kernel.kernel.durability"
     },
     {
       "source": "noetrium_platform.capabilities.model.request.prompt.runtime.request_contract",
@@ -105880,6 +105888,14 @@
     {
       "source": "noetrium_platform.capabilities.model.request.prompt.runtime.schema",
       "target": "noetrium_platform.foundation.kernel.kernel"
+    },
+    {
+      "source": "noetrium_platform.capabilities.model.request.prompt.runtime.schema",
+      "target": "noetrium_platform.foundation.kernel.kernel.durability"
+    },
+    {
+      "source": "noetrium_platform.capabilities.model.request.prompt.runtime.spec",
+      "target": "noetrium_platform.foundation.kernel.kernel.durability"
     },
     {
       "source": "noetrium_platform.capabilities.model.request.prompt.runtime.trace",
@@ -106030,12 +106046,20 @@
       "target": "noetrium_platform.capabilities.model.serving.api.inventory"
     },
     {
+      "source": "noetrium_platform.capabilities.model.serving.api.host_verification",
+      "target": "noetrium_platform.foundation.kernel.kernel.durability"
+    },
+    {
       "source": "noetrium_platform.capabilities.model.serving.api.host_verification_ports",
       "target": "noetrium_platform.capabilities.model.serving.api.host_verification"
     },
     {
       "source": "noetrium_platform.capabilities.model.serving.api.host_verification_ports",
       "target": "noetrium_platform.capabilities.model.serving.api.inventory"
+    },
+    {
+      "source": "noetrium_platform.capabilities.model.serving.api.inventory",
+      "target": "noetrium_platform.foundation.kernel.kernel.durability"
     },
     {
       "source": "noetrium_platform.capabilities.model.serving.api.placement",
@@ -106702,6 +106726,10 @@
       "target": "noetrium_platform.capabilities.model.serving.api.placement"
     },
     {
+      "source": "noetrium_platform.capabilities.model.serving.runtime.process_identity",
+      "target": "noetrium_platform.foundation.kernel.kernel.durability"
+    },
+    {
       "source": "noetrium_platform.capabilities.model.serving.runtime.recovery",
       "target": "noetrium_platform.capabilities.model.serving.api.recovery"
     },
@@ -106780,6 +106808,10 @@
     {
       "source": "noetrium_platform.capabilities.model.stack.api",
       "target": "noetrium_platform.capabilities.model.stack.stack"
+    },
+    {
+      "source": "noetrium_platform.capabilities.model.stack.api.stack",
+      "target": "noetrium_platform.foundation.kernel.kernel.durability"
     },
     {
       "source": "noetrium_platform.capabilities.model.stack.api.stack",
@@ -113638,6 +113670,10 @@
       "target": "noetrium_platform.foundation.scope.api"
     },
     {
+      "source": "noetrium_platform.foundation.governance.api.baseline_authority",
+      "target": "noetrium_platform.foundation.kernel.kernel.durability"
+    },
+    {
       "source": "noetrium_platform.foundation.governance.architecture",
       "target": "noetrium_platform.foundation.governance.audit"
     },
@@ -114799,6 +114835,10 @@
     },
     {
       "source": "noetrium_platform.foundation.governance.evolution.providers.sqlite_store",
+      "target": "noetrium_platform.foundation.kernel.kernel.durability"
+    },
+    {
+      "source": "noetrium_platform.foundation.governance.evolution.providers.sqlite_store",
       "target": "noetrium_platform.foundation.kernel.kernel.durability.sqlite"
     },
     {
@@ -115012,6 +115052,10 @@
     {
       "source": "noetrium_platform.foundation.governance.release.runtime.pipeline",
       "target": "noetrium_platform.foundation.governance.release.runtime.project_metadata"
+    },
+    {
+      "source": "noetrium_platform.foundation.governance.release.runtime.regression_state",
+      "target": "noetrium_platform.foundation.kernel.kernel.durability"
     },
     {
       "source": "noetrium_platform.foundation.governance.release.runtime.regression_state",
@@ -117282,6 +117326,10 @@
       "target": "noetrium_platform.foundation.kernel.kernel"
     },
     {
+      "source": "noetrium_platform.infrastructure.lifecycle.service.api.environment",
+      "target": "noetrium_platform.foundation.kernel.kernel.durability"
+    },
+    {
       "source": "noetrium_platform.infrastructure.lifecycle.service.api.ports",
       "target": "noetrium_platform.infrastructure.lifecycle.service.api.contracts"
     },
@@ -118207,6 +118255,10 @@
     },
     {
       "source": "noetrium_platform.infrastructure.lifecycle.session.api.contracts",
+      "target": "noetrium_platform.foundation.kernel.kernel.durability"
+    },
+    {
+      "source": "noetrium_platform.infrastructure.lifecycle.session.api.contracts",
       "target": "noetrium_platform.foundation.kernel.kernel.errors"
     },
     {
@@ -118868,6 +118920,10 @@
     {
       "source": "noetrium_platform.infrastructure.reliability.failure.api",
       "target": "noetrium_platform.infrastructure.reliability.failure.references"
+    },
+    {
+      "source": "noetrium_platform.infrastructure.reliability.failure.api.catalog",
+      "target": "noetrium_platform.foundation.kernel.kernel.durability"
     },
     {
       "source": "noetrium_platform.infrastructure.reliability.failure.api.catalog",
@@ -120420,6 +120476,10 @@
     {
       "source": "noetrium_platform.research.execution.decision",
       "target": "noetrium_platform.research.execution.cycle_result"
+    },
+    {
+      "source": "noetrium_platform.research.execution.decision.cycle_identity",
+      "target": "noetrium_platform.foundation.kernel.kernel.durability"
     },
     {
       "source": "noetrium_platform.research.execution.decision.cycle_result",
@@ -126269,7 +126329,9 @@
       "top_system": "model"
     },
     {
-      "imports": [],
+      "imports": [
+        "noetrium_platform.foundation.kernel.kernel.durability"
+      ],
       "module": "noetrium_platform.capabilities.model.request.prompt.runtime.qualification",
       "path": "noetrium_platform/capabilities/model/request/prompt/runtime/qualification.py",
       "system_key": "model",
@@ -126308,6 +126370,7 @@
       "imports": [
         "noetrium_platform.capabilities.model.request.prompt.runtime.runtime_contracts",
         "noetrium_platform.foundation.kernel.kernel",
+        "noetrium_platform.foundation.kernel.kernel.durability",
         "noetrium_platform.foundation.kernel.kernel.identity"
       ],
       "module": "noetrium_platform.capabilities.model.request.prompt.runtime.request_contract",
@@ -126403,7 +126466,8 @@
     },
     {
       "imports": [
-        "noetrium_platform.foundation.kernel.kernel"
+        "noetrium_platform.foundation.kernel.kernel",
+        "noetrium_platform.foundation.kernel.kernel.durability"
       ],
       "module": "noetrium_platform.capabilities.model.request.prompt.runtime.schema",
       "path": "noetrium_platform/capabilities/model/request/prompt/runtime/schema.py",
@@ -126411,7 +126475,9 @@
       "top_system": "model"
     },
     {
-      "imports": [],
+      "imports": [
+        "noetrium_platform.foundation.kernel.kernel.durability"
+      ],
       "module": "noetrium_platform.capabilities.model.request.prompt.runtime.spec",
       "path": "noetrium_platform/capabilities/model/request/prompt/runtime/spec.py",
       "system_key": "model",
@@ -126526,7 +126592,8 @@
     },
     {
       "imports": [
-        "noetrium_platform.capabilities.model.serving.api.inventory"
+        "noetrium_platform.capabilities.model.serving.api.inventory",
+        "noetrium_platform.foundation.kernel.kernel.durability"
       ],
       "module": "noetrium_platform.capabilities.model.serving.api.host_verification",
       "path": "noetrium_platform/capabilities/model/serving/api/host_verification.py",
@@ -126544,7 +126611,9 @@
       "top_system": "model"
     },
     {
-      "imports": [],
+      "imports": [
+        "noetrium_platform.foundation.kernel.kernel.durability"
+      ],
       "module": "noetrium_platform.capabilities.model.serving.api.inventory",
       "path": "noetrium_platform/capabilities/model/serving/api/inventory.py",
       "system_key": "model",
@@ -127131,7 +127200,9 @@
       "top_system": "model"
     },
     {
-      "imports": [],
+      "imports": [
+        "noetrium_platform.foundation.kernel.kernel.durability"
+      ],
       "module": "noetrium_platform.capabilities.model.serving.runtime.process_identity",
       "path": "noetrium_platform/capabilities/model/serving/runtime/process_identity.py",
       "system_key": "model",
@@ -127230,6 +127301,7 @@
     },
     {
       "imports": [
+        "noetrium_platform.foundation.kernel.kernel.durability",
         "noetrium_platform.foundation.kernel.kernel.identity"
       ],
       "module": "noetrium_platform.capabilities.model.stack.api.stack",
@@ -133618,7 +133690,9 @@
       "top_system": "governance"
     },
     {
-      "imports": [],
+      "imports": [
+        "noetrium_platform.foundation.kernel.kernel.durability"
+      ],
       "module": "noetrium_platform.foundation.governance.api.baseline_authority",
       "path": "noetrium_platform/foundation/governance/api/baseline_authority.py",
       "system_key": "governance",
@@ -134924,6 +134998,7 @@
         "noetrium_platform.foundation.governance.evolution.api",
         "noetrium_platform.foundation.governance.system_registry.api",
         "noetrium_platform.foundation.kernel.kernel",
+        "noetrium_platform.foundation.kernel.kernel.durability",
         "noetrium_platform.foundation.kernel.kernel.durability.sqlite"
       ],
       "module": "noetrium_platform.foundation.governance.evolution.providers.sqlite_store",
@@ -135189,6 +135264,7 @@
     },
     {
       "imports": [
+        "noetrium_platform.foundation.kernel.kernel.durability",
         "noetrium_platform.foundation.kernel.kernel.durability.durable_file"
       ],
       "module": "noetrium_platform.foundation.governance.release.runtime.regression_state",
@@ -137870,7 +137946,9 @@
       "top_system": "runtime"
     },
     {
-      "imports": [],
+      "imports": [
+        "noetrium_platform.foundation.kernel.kernel.durability"
+      ],
       "module": "noetrium_platform.infrastructure.lifecycle.service.api.environment",
       "path": "noetrium_platform/infrastructure/lifecycle/service/api/environment.py",
       "system_key": "runtime",
@@ -138535,6 +138613,7 @@
     {
       "imports": [
         "noetrium_platform.foundation.api",
+        "noetrium_platform.foundation.kernel.kernel.durability",
         "noetrium_platform.foundation.kernel.kernel.errors"
       ],
       "module": "noetrium_platform.infrastructure.lifecycle.session.api.contracts",
@@ -139240,6 +139319,7 @@
     },
     {
       "imports": [
+        "noetrium_platform.foundation.kernel.kernel.durability",
         "noetrium_platform.infrastructure.reliability.failure.api.contracts"
       ],
       "module": "noetrium_platform.infrastructure.reliability.failure.api.catalog",
@@ -141034,7 +141114,9 @@
       "top_system": "execution"
     },
     {
-      "imports": [],
+      "imports": [
+        "noetrium_platform.foundation.kernel.kernel.durability"
+      ],
       "module": "noetrium_platform.research.execution.decision.cycle_identity",
       "path": "noetrium_platform/research/execution/decision/cycle_identity.py",
       "system_key": "execution",
@@ -144025,7 +144107,7 @@
   "parse_errors": [],
   "registry_sha256": "d3fc1bab831f1b7379e5a36048a61c00fe173429df958270d36a16f3f00171c0",
   "schema": "noetrium-code-architecture-index.v1",
-  "source_git_sha": "7f9682ee805f11eee9729895c6259b81ec017001",
+  "source_git_sha": "642540e4fe2e3558586bb97e56d3f311c532e40d",
   "system_import_edges": [
     {
       "count": 85,
@@ -144073,7 +144155,7 @@
       "target": "execution"
     },
     {
-      "count": 78,
+      "count": 79,
       "source": "execution",
       "target": "platform"
     },
@@ -144098,7 +144180,7 @@
       "target": "governance"
     },
     {
-      "count": 40,
+      "count": 43,
       "source": "governance",
       "target": "platform"
     },
@@ -144113,7 +144195,7 @@
       "target": "model"
     },
     {
-      "count": 92,
+      "count": 100,
       "source": "model",
       "target": "platform"
     },
@@ -144158,7 +144240,7 @@
       "target": "portfolio"
     },
     {
-      "count": 50,
+      "count": 51,
       "source": "reliability",
       "target": "platform"
     },
@@ -144268,7 +144350,7 @@
       "target": "artifact"
     },
     {
-      "count": 74,
+      "count": 76,
       "source": "runtime",
       "target": "platform"
     },
