@@ -13,12 +13,6 @@ class EnvironmentProfileLifecycle(StrEnum):
     RETIRED = "retired"
 
 
-class EnvironmentProfileUseIntent(StrEnum):
-    NEW_EXECUTION = "new_execution"
-    RESUME_PINNED = "resume_pinned"
-    HISTORICAL_RECOVERY = "historical_recovery"
-
-
 @dataclass(frozen=True, slots=True)
 class EnvironmentProfileRevision:
     profile_id: str
@@ -322,7 +316,6 @@ __all__ = [
     "EnvironmentProfileGcAssessment",
     "EnvironmentProfileLifecycle",
     "EnvironmentProfileRevision",
-    "EnvironmentProfileUseIntent",
     "EnvironmentProfileReferenceSummary",
     "EnvironmentOverlay",
     "EnvironmentSpec",
