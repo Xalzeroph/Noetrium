@@ -22,6 +22,61 @@ def build_research() -> api.ResearchPortfolio:
     )
 
 
+
+
+def execution_request(
+    package: str,
+    study_factory: str,
+    benchmark: object,
+) -> object:
+    """Declare one scientific execution lane without authoring platform bindings."""
+
+    from .research_os import ReproductionExecutionRequest
+
+    return ReproductionExecutionRequest(
+        package,
+        study_factory,
+        benchmark,
+    )
+
+
+def build_execution_research(
+    requests: tuple[object, ...],
+    *,
+    capability_resolver: object | None = None,
+) -> api.ResearchPortfolio:
+    """Compile scientific lane requests into a fully bound ResearchPortfolio.
+
+    Benchmark split expansion, typed paper-option expansion, capability closure
+    resolution and execution-binding identity are compiler/platform concerns.
+    """
+
+    from .research_os import (
+        ReproductionCapabilityRequirementResolverPort,
+        ReproductionExecutionRequest,
+        compile_resolved_reproduction_portfolio,
+    )
+
+    if type(requests) is not tuple or not requests:
+        raise ValueError("execution research requires a non-empty request tuple")
+    if any(type(row) is not ReproductionExecutionRequest for row in requests):
+        raise TypeError(
+            "execution research requires typed ReproductionExecutionRequest values"
+        )
+    if capability_resolver is not None and not isinstance(
+        capability_resolver,
+        ReproductionCapabilityRequirementResolverPort,
+    ):
+        raise TypeError(
+            "execution research capability_resolver must satisfy the typed resolver port"
+        )
+    return compile_resolved_reproduction_portfolio(
+        "repository-reproductions.execution-research",
+        requests,
+        capability_resolver=capability_resolver,
+    )
+
+
 def build_bound_research(bindings: tuple[object, ...]) -> api.ResearchPortfolio:
     """Compile exact paper-owned execution bindings into one runnable portfolio.
 
@@ -43,4 +98,9 @@ def build_bound_research(bindings: tuple[object, ...]) -> api.ResearchPortfolio:
     )
 
 
-__all__ = ["build_bound_research", "build_research"]
+__all__ = [
+    "build_bound_research",
+    "build_execution_research",
+    "build_research",
+    "execution_request",
+]
