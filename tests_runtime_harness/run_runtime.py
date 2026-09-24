@@ -50,7 +50,11 @@ from noetrium_platform.research.experimentation.lifecycle.run.api.lifecycle impo
 from tests_runtime_harness.lifecycle_session import RunSessionForTest
 from tests_runtime_harness.cycle import RunCycleExecutorForTest
 from tests_runtime_harness.decision_runtime import identity_context
-from .program import RunMachineBinding, RunMachineSession, RunPhase
+from noetrium_platform.research.experimentation.lifecycle.run.runtime.program import (
+    RunMachineBinding,
+    RunMachineSession,
+    RunPhase,
+)
 
 
 RUN_RUNTIME_PROGRAM = (
