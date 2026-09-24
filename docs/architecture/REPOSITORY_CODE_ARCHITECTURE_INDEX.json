@@ -1,15 +1,15 @@
 {
   "counts": {
     "parse_errors": 0,
-    "python_files": 3624,
-    "python_import_edges": 6839,
-    "symbols": 4820,
-    "tracked_files": 4253,
+    "python_files": 3627,
+    "python_import_edges": 6861,
+    "symbols": 4825,
+    "tracked_files": 4256,
     "typescript_javascript_files": 11
   },
   "language_symbol_counts": {
     "javascript": 1,
-    "python": 4814,
+    "python": 4819,
     "typescript": 5
   },
   "parse_errors": [],
@@ -31893,6 +31893,24 @@
       "target_role": "core_platform"
     },
     {
+      "source_module": "tests.test_research_graph_cut_switch_fence_v1",
+      "source_role": "tests",
+      "target_module": "noetrium_platform.foundation.kernel.kernel",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "tests.test_research_graph_cut_switch_fence_v1",
+      "source_role": "tests",
+      "target_module": "noetrium_platform.research.execution.graph.api",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "tests.test_research_graph_cut_switch_fence_v1",
+      "source_role": "tests",
+      "target_module": "noetrium_platform.research.execution.graph.providers",
+      "target_role": "core_platform"
+    },
+    {
       "source_module": "tests.test_research_graph_durable_state_v1",
       "source_role": "tests",
       "target_module": "noetrium_platform.foundation.kernel.kernel",
@@ -32529,6 +32547,54 @@
       "target_role": "core_platform"
     },
     {
+      "source_module": "tests.test_research_os_migration_node_control_intent_v1",
+      "source_role": "tests",
+      "target_module": "noetrium",
+      "target_role": "public_facade"
+    },
+    {
+      "source_module": "tests.test_research_os_migration_node_control_intent_v1",
+      "source_role": "tests",
+      "target_module": "noetrium_platform.composition.research_execution_pool",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "tests.test_research_os_migration_node_control_intent_v1",
+      "source_role": "tests",
+      "target_module": "noetrium_platform.composition.research_graph",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "tests.test_research_os_migration_node_control_intent_v1",
+      "source_role": "tests",
+      "target_module": "noetrium_platform.composition.research_os_graph",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "tests.test_research_os_migration_node_control_intent_v1",
+      "source_role": "tests",
+      "target_module": "noetrium_platform.composition.research_os_migration",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "tests.test_research_os_migration_node_control_intent_v1",
+      "source_role": "tests",
+      "target_module": "noetrium_platform.foundation.kernel.concurrency.api",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "tests.test_research_os_migration_node_control_intent_v1",
+      "source_role": "tests",
+      "target_module": "noetrium_platform.research.execution.graph.api",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "tests.test_research_os_migration_node_control_intent_v1",
+      "source_role": "tests",
+      "target_module": "noetrium_platform.research.execution.graph.providers",
+      "target_role": "core_platform"
+    },
+    {
       "source_module": "tests.test_research_os_migration_v1",
       "source_role": "tests",
       "target_module": "noetrium_platform.composition.research_os_graph",
@@ -32664,6 +32730,72 @@
       "source_module": "tests.test_research_os_portfolio_binding_v1",
       "source_role": "tests",
       "target_module": "noetrium_platform.product.research_os",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "tests.test_research_os_retry_scope_v1",
+      "source_role": "tests",
+      "target_module": "noetrium",
+      "target_role": "public_facade"
+    },
+    {
+      "source_module": "tests.test_research_os_retry_scope_v1",
+      "source_role": "tests",
+      "target_module": "noetrium_platform.composition.research_execution_pool",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "tests.test_research_os_retry_scope_v1",
+      "source_role": "tests",
+      "target_module": "noetrium_platform.composition.research_os",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "tests.test_research_os_retry_scope_v1",
+      "source_role": "tests",
+      "target_module": "noetrium_platform.composition.research_os_execution",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "tests.test_research_os_retry_scope_v1",
+      "source_role": "tests",
+      "target_module": "noetrium_platform.composition.research_os_values",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "tests.test_research_os_retry_scope_v1",
+      "source_role": "tests",
+      "target_module": "noetrium_platform.evidence.artifact.content.providers",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "tests.test_research_os_retry_scope_v1",
+      "source_role": "tests",
+      "target_module": "noetrium_platform.foundation.kernel.concurrency.api",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "tests.test_research_os_retry_scope_v1",
+      "source_role": "tests",
+      "target_module": "noetrium_platform.foundation.kernel.kernel",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "tests.test_research_os_retry_scope_v1",
+      "source_role": "tests",
+      "target_module": "noetrium_platform.foundation.portfolio.runtime",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "tests.test_research_os_retry_scope_v1",
+      "source_role": "tests",
+      "target_module": "noetrium_platform.research.execution.graph.api",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "tests.test_research_os_retry_scope_v1",
+      "source_role": "tests",
+      "target_module": "noetrium_platform.research.execution.graph.providers",
       "target_role": "core_platform"
     },
     {
@@ -41111,12 +41243,12 @@
       "target_role": "research_reproductions"
     },
     {
-      "count": 2669,
+      "count": 2689,
       "source_role": "tests",
       "target_role": "core_platform"
     },
     {
-      "count": 17,
+      "count": 19,
       "source_role": "tests",
       "target_role": "public_facade"
     },
@@ -41174,11 +41306,11 @@
     "reference_components": 22,
     "reference_orchestration": 10,
     "research_reproductions": 760,
-    "tests": 780,
+    "tests": 783,
     "tooling": 77
   },
   "role_symbol_counts": {
-    "core_platform": 3327,
+    "core_platform": 3328,
     "examples": 3,
     "other": 5,
     "public_facade": 4,
@@ -41186,11 +41318,11 @@
     "reference_orchestration": 14,
     "research_reproductions": 403,
     "sdk": 5,
-    "tests": 957,
+    "tests": 961,
     "tooling": 38
   },
   "schema": "noetrium-repository-code-architecture-index.v1",
-  "source_git_sha": "2799036014b7b01fcb5212e8155ebf364ab81c95",
+  "source_git_sha": "f896f34aa6961d6a6a94315f0cf5db951cd17ffb",
   "symbols": [
     {
       "bases": [],
@@ -63776,7 +63908,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 397,
+      "line": 434,
       "methods": [
         "__init__",
         "execute",
@@ -63798,7 +63930,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 562,
+      "line": 599,
       "methods": [
         "__init__",
         "active_revision_digest",
@@ -78809,7 +78941,6 @@
       "line": 224,
       "methods": [
         "submit",
-        "submit_atomic_batch",
         "close"
       ],
       "module": "noetrium_platform.foundation.kernel.concurrency.api.ports",
@@ -78827,7 +78958,26 @@
       "fields": [],
       "kind": "protocol",
       "language": "python",
-      "line": 246,
+      "line": 238,
+      "methods": [
+        "submit_atomic_batch"
+      ],
+      "module": "noetrium_platform.foundation.kernel.concurrency.api.ports",
+      "name": "AtomicBatchExecutorProviderPort",
+      "path": "noetrium_platform/foundation/kernel/concurrency/api/ports.py",
+      "qualname": "noetrium_platform.foundation.kernel.concurrency.api.ports.AtomicBatchExecutorProviderPort",
+      "role": "core_platform"
+    },
+    {
+      "bases": [
+        "ExecutorProviderPort",
+        "Protocol"
+      ],
+      "decorators": [],
+      "fields": [],
+      "kind": "protocol",
+      "language": "python",
+      "line": 248,
       "methods": [
         "map"
       ],
@@ -78845,7 +78995,7 @@
       "fields": [],
       "kind": "protocol",
       "language": "python",
-      "line": 250,
+      "line": 252,
       "methods": [
         "lane_id",
         "submit",
@@ -78869,7 +79019,7 @@
       "fields": [],
       "kind": "protocol",
       "language": "python",
-      "line": 292,
+      "line": 294,
       "methods": [
         "create",
         "close"
@@ -78888,7 +79038,7 @@
       "fields": [],
       "kind": "protocol",
       "language": "python",
-      "line": 302,
+      "line": 304,
       "methods": [
         "schedule_once",
         "schedule_fixed_delay",
@@ -79356,7 +79506,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 24,
+      "line": 25,
       "methods": [
         "__init__",
         "ensure_serial_lane",
@@ -137459,13 +137609,31 @@
     },
     {
       "bases": [
+        "_DependencyCheckingExecutor"
+      ],
+      "decorators": [],
+      "fields": [],
+      "kind": "class",
+      "language": "python",
+      "line": 173,
+      "methods": [
+        "execute"
+      ],
+      "module": "tests.test_research_graph_scale_v1",
+      "name": "_FailingExecutor",
+      "path": "tests/test_research_graph_scale_v1.py",
+      "qualname": "tests.test_research_graph_scale_v1._FailingExecutor",
+      "role": "tests"
+    },
+    {
+      "bases": [
         "ResearchGraphNodeExecutorPort"
       ],
       "decorators": [],
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 43,
+      "line": 45,
       "methods": [
         "__init__",
         "execute"
@@ -137474,6 +137642,25 @@
       "name": "_Executor",
       "path": "tests/test_research_graph_scheduler_durable_v1.py",
       "qualname": "tests.test_research_graph_scheduler_durable_v1._Executor",
+      "role": "tests"
+    },
+    {
+      "bases": [
+        "_Executor"
+      ],
+      "decorators": [],
+      "fields": [],
+      "kind": "class",
+      "language": "python",
+      "line": 334,
+      "methods": [
+        "__init__",
+        "execute"
+      ],
+      "module": "tests.test_research_graph_scheduler_durable_v1",
+      "name": "_FailOnceExecutor",
+      "path": "tests/test_research_graph_scheduler_durable_v1.py",
+      "qualname": "tests.test_research_graph_scheduler_durable_v1._FailOnceExecutor",
       "role": "tests"
     },
     {
@@ -137725,6 +137912,22 @@
       "fields": [],
       "kind": "class",
       "language": "python",
+      "line": 33,
+      "methods": [
+        "execute"
+      ],
+      "module": "tests.test_research_os_migration_node_control_intent_v1",
+      "name": "_NeverExecute",
+      "path": "tests/test_research_os_migration_node_control_intent_v1.py",
+      "qualname": "tests.test_research_os_migration_node_control_intent_v1._NeverExecute",
+      "role": "tests"
+    },
+    {
+      "bases": [],
+      "decorators": [],
+      "fields": [],
+      "kind": "class",
+      "language": "python",
       "line": 377,
       "methods": [
         "__init__",
@@ -137831,6 +138034,24 @@
       "name": "_Control",
       "path": "tests/test_research_os_portfolio_binding_v1.py",
       "qualname": "tests.test_research_os_portfolio_binding_v1._Control",
+      "role": "tests"
+    },
+    {
+      "bases": [],
+      "decorators": [],
+      "fields": [],
+      "kind": "class",
+      "language": "python",
+      "line": 28,
+      "methods": [
+        "__init__",
+        "admit",
+        "execute"
+      ],
+      "module": "tests.test_research_os_retry_scope_v1",
+      "name": "_FailOnceRuntime",
+      "path": "tests/test_research_os_retry_scope_v1.py",
+      "qualname": "tests.test_research_os_retry_scope_v1._FailOnceRuntime",
       "role": "tests"
     },
     {

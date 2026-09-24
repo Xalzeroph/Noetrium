@@ -8022,6 +8022,16 @@
     },
     {
       "kind": "references",
+      "source": "noetrium_platform.foundation.kernel.concurrency.api.ports.AtomicBatchExecutorProviderPort",
+      "target": "noetrium_platform.foundation.kernel.concurrency.api.contracts.Deadline"
+    },
+    {
+      "kind": "references",
+      "source": "noetrium_platform.foundation.kernel.concurrency.api.ports.AtomicBatchExecutorProviderPort",
+      "target": "noetrium_platform.foundation.kernel.concurrency.api.ports.CancellationTokenPort"
+    },
+    {
+      "kind": "references",
       "source": "noetrium_platform.foundation.kernel.concurrency.api.ports.ExecutionAuthorityProviderPort",
       "target": "noetrium_platform.foundation.kernel.concurrency.api.contracts.Deadline"
     },
@@ -8284,6 +8294,11 @@
       "kind": "references",
       "source": "noetrium_platform.foundation.kernel.concurrency.runtime.cancellation._TaskContext",
       "target": "noetrium_platform.foundation.kernel.concurrency.runtime.cancellation._DeadlineOwner"
+    },
+    {
+      "kind": "references",
+      "source": "noetrium_platform.foundation.kernel.concurrency.runtime.execution.UnifiedExecutionAuthority",
+      "target": "noetrium_platform.foundation.kernel.concurrency.api.ports.AtomicBatchExecutorProviderPort"
     },
     {
       "kind": "references",
@@ -39984,7 +39999,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 397,
+      "line": 434,
       "methods": [
         "__init__",
         "execute",
@@ -40075,7 +40090,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 562,
+      "line": 599,
       "methods": [
         "__init__",
         "active_revision_digest",
@@ -56270,6 +56285,27 @@
     },
     {
       "bases": [
+        "ExecutorProviderPort",
+        "Protocol"
+      ],
+      "decorators": [],
+      "fields": [],
+      "kind": "protocol",
+      "line": 238,
+      "methods": [
+        "submit_atomic_batch"
+      ],
+      "module": "noetrium_platform.foundation.kernel.concurrency.api.ports",
+      "name": "AtomicBatchExecutorProviderPort",
+      "nesting": [
+        "AtomicBatchExecutorProviderPort"
+      ],
+      "qualname": "noetrium_platform.foundation.kernel.concurrency.api.ports.AtomicBatchExecutorProviderPort",
+      "system_key": "platform",
+      "top_system": "platform"
+    },
+    {
+      "bases": [
         "Protocol"
       ],
       "decorators": [],
@@ -56299,7 +56335,7 @@
       "decorators": [],
       "fields": [],
       "kind": "protocol",
-      "line": 246,
+      "line": 248,
       "methods": [
         "map"
       ],
@@ -56405,7 +56441,6 @@
       "line": 224,
       "methods": [
         "submit",
-        "submit_atomic_batch",
         "close"
       ],
       "module": "noetrium_platform.foundation.kernel.concurrency.api.ports",
@@ -56489,7 +56524,7 @@
       "decorators": [],
       "fields": [],
       "kind": "protocol",
-      "line": 292,
+      "line": 294,
       "methods": [
         "create",
         "close"
@@ -56510,7 +56545,7 @@
       "decorators": [],
       "fields": [],
       "kind": "protocol",
-      "line": 250,
+      "line": 252,
       "methods": [
         "lane_id",
         "submit",
@@ -56640,7 +56675,7 @@
       "decorators": [],
       "fields": [],
       "kind": "protocol",
-      "line": 302,
+      "line": 304,
       "methods": [
         "schedule_once",
         "schedule_fixed_delay",
@@ -57148,7 +57183,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 24,
+      "line": 25,
       "methods": [
         "__init__",
         "ensure_serial_lane",
@@ -102000,10 +102035,10 @@
     }
   ],
   "counts": {
-    "association_edges": 3407,
-    "classes": 3326,
+    "association_edges": 3410,
+    "classes": 3327,
     "constructor_edges": 927,
-    "inheritance_edges": 148,
+    "inheritance_edges": 149,
     "module_import_edges": 5048,
     "parse_errors": 0,
     "python_modules": 1928,
@@ -102221,6 +102256,11 @@
       "kind": "inherits",
       "source": "noetrium_platform.foundation.governance.release.runtime.active_pin_codec.ActiveReleasePinIntegrityError",
       "target": "noetrium_platform.foundation.kernel.kernel.durability.document_integrity.DocumentIntegrityError"
+    },
+    {
+      "kind": "inherits",
+      "source": "noetrium_platform.foundation.kernel.concurrency.api.ports.AtomicBatchExecutorProviderPort",
+      "target": "noetrium_platform.foundation.kernel.concurrency.api.ports.ExecutorProviderPort"
     },
     {
       "kind": "inherits",
@@ -143112,7 +143152,7 @@
   "parse_errors": [],
   "registry_sha256": "d3fc1bab831f1b7379e5a36048a61c00fe173429df958270d36a16f3f00171c0",
   "schema": "noetrium-code-architecture-index.v1",
-  "source_git_sha": "2799036014b7b01fcb5212e8155ebf364ab81c95",
+  "source_git_sha": "f896f34aa6961d6a6a94315f0cf5db951cd17ffb",
   "system_import_edges": [
     {
       "count": 90,
