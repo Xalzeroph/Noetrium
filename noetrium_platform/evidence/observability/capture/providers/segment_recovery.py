@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from noetrium_platform.foundation.kernel.kernel.durability import flush_file_descriptor
+from noetrium_platform.foundation.kernel.kernel.durability import durable_truncate_file
 
 from dataclasses import dataclass
 import hashlib
@@ -133,10 +133,7 @@ def scan_raw_segment(
                 )
 
     if discarded_tail_bytes:
-        with target.open("r+b") as handle:
-            handle.truncate(valid_bytes)
-            handle.flush()
-            flush_file_descriptor(handle.fileno())
+        durable_truncate_file(target, valid_bytes)
     return RecoveredRawSegment(sequence, idempotency, valid_bytes, discarded_tail_bytes)
 
 
