@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+from dataclasses import replace
 from pathlib import Path
 import sqlite3
 from typing import TypeVar
@@ -13,8 +14,12 @@ from noetrium_platform.foundation.kernel.kernel import canonical_digest
 from noetrium_platform.capabilities.environment.catalog.api import (
     EnvironmentAssignment,
     EnvironmentBinding,
+    EnvironmentCleanlinessProof,
     EnvironmentInstance,
+    EnvironmentInstanceState,
     EnvironmentOverlay,
+    EnvironmentProfileGcAssessment,
+    EnvironmentProfileReferenceSummary,
     EnvironmentSpec,
     EnvironmentTemplate,
     ExecutionEnvironmentKind,
@@ -53,6 +58,7 @@ class ExecutionEnvironmentCatalog:
         self._overlays: dict[str, EnvironmentOverlay] = {}
         self._assignments = HierarchicalResourceResolver[str](ancestry=scopes.ancestry)
         self._instances: dict[str, EnvironmentInstance] = {}
+        self._binding_rows: dict[tuple[str, str], EnvironmentBinding] = {}
         self._bindings = HierarchicalResourceResolver[EnvironmentBinding](ancestry=scopes.ancestry)
 
     @staticmethod
@@ -139,15 +145,269 @@ class ExecutionEnvironmentCatalog:
         )
 
     def register_instance(self, instance: EnvironmentInstance) -> None:
+        if instance.state is not EnvironmentInstanceState.CLEAN:
+            raise EnvironmentCatalogConflict(
+                "new environment instance must enter catalog CLEAN"
+            )
+        if instance.generation != 0:
+            raise EnvironmentCatalogConflict(
+                "new environment instance generation must start at zero"
+            )
         self._put(self._instances, instance.instance_id, instance)
 
+    def _rebuild_bindings(self) -> None:
+        self._bindings = HierarchicalResourceResolver[EnvironmentBinding](
+            ancestry=self._scopes.ancestry
+        )
+        for row in self._binding_rows.values():
+            self._bindings.bind(
+                ScopedValue(
+                    "execution-environment-instance",
+                    row.role,
+                    row.scope,
+                    row,
+                )
+            )
+
+    def _instance(self, instance_id: str) -> EnvironmentInstance:
+        try:
+            return self._instances[instance_id]
+        except KeyError as exc:
+            raise EnvironmentCatalogNotFound(instance_id) from exc
+
+    def _bindings_for_instance(
+        self,
+        instance_id: str,
+    ) -> tuple[EnvironmentBinding, ...]:
+        return tuple(
+            sorted(
+                (
+                    row
+                    for row in self._binding_rows.values()
+                    if row.instance_id == instance_id
+                ),
+                key=lambda row: (row.scope.key, row.role, row.binding_id),
+            )
+        )
+
     def bind(self, binding: EnvironmentBinding) -> None:
-        if binding.instance_id not in self._instances:
-            raise EnvironmentCatalogNotFound(binding.instance_id)
-        self._bindings.bind(ScopedValue("execution-environment-instance", binding.role, binding.scope, binding))
+        instance = self._instance(binding.instance_id)
+        key = (binding.role, binding.scope.key)
+        existing = self._binding_rows.get(key)
+        if existing is not None:
+            if existing != binding:
+                raise EnvironmentCatalogConflict(
+                    f"environment binding already exists for {key!r}"
+                )
+            return
+
+        existing_bindings = self._bindings_for_instance(binding.instance_id)
+        if instance.state is EnvironmentInstanceState.CLEAN:
+            next_instance = replace(
+                instance,
+                state=EnvironmentInstanceState.IN_USE,
+                generation=instance.generation + 1,
+                cleanliness_proof_digest=None,
+            )
+        elif instance.state is EnvironmentInstanceState.IN_USE:
+            scopes = {row.scope.key for row in existing_bindings}
+            if scopes and scopes != {binding.scope.key}:
+                raise EnvironmentCatalogConflict(
+                    "environment instance cannot be shared across execution scopes"
+                )
+            next_instance = instance
+        else:
+            raise EnvironmentCatalogConflict(
+                f"environment instance {binding.instance_id!r} is not reusable: "
+                f"state={instance.state.value}"
+            )
+
+        self._bindings.bind(
+            ScopedValue(
+                "execution-environment-instance",
+                binding.role,
+                binding.scope,
+                binding,
+            )
+        )
+        self._binding_rows[key] = binding
+        self._instances[binding.instance_id] = next_instance
+
+    def unbind(self, role: str, scope: ScopeIdentity) -> EnvironmentBinding:
+        key = (role, scope.key)
+        try:
+            binding = self._binding_rows.pop(key)
+        except KeyError as exc:
+            raise EnvironmentCatalogNotFound(key) from exc
+        self._rebuild_bindings()
+        return binding
 
     def binding(self, role: str, scope: ScopeIdentity) -> EnvironmentBinding:
-        return self._bindings.resolve(namespace="execution-environment-instance", name=role, scope=scope).value
+        return self._bindings.resolve(
+            namespace="execution-environment-instance",
+            name=role,
+            scope=scope,
+        ).value
+
+    def release_instance(
+        self,
+        instance_id: str,
+        *,
+        cleanliness: EnvironmentCleanlinessProof | None = None,
+    ) -> EnvironmentInstance:
+        instance = self._instance(instance_id)
+        bound = self._bindings_for_instance(instance_id)
+        if bound:
+            raise EnvironmentCatalogConflict(
+                f"environment instance {instance_id!r} still has active bindings"
+            )
+        if instance.state is EnvironmentInstanceState.DESTROYED:
+            raise EnvironmentCatalogConflict(
+                f"environment instance {instance_id!r} is already destroyed"
+            )
+        if instance.state is EnvironmentInstanceState.CLEAN:
+            if cleanliness is not None:
+                raise EnvironmentCatalogConflict(
+                    "fresh CLEAN environment instance does not accept a reuse proof"
+                )
+            return instance
+        if cleanliness is None:
+            updated = replace(
+                instance,
+                state=EnvironmentInstanceState.DIRTY,
+                cleanliness_proof_digest=None,
+            )
+            self._instances[instance_id] = updated
+            return updated
+
+        if cleanliness.instance_id != instance_id:
+            raise EnvironmentCatalogConflict(
+                "environment cleanliness proof targets a different instance"
+            )
+        if cleanliness.profile_revision != instance.profile_revision:
+            raise EnvironmentCatalogConflict(
+                "environment cleanliness proof profile revision is stale"
+            )
+        if cleanliness.generation != instance.generation:
+            raise EnvironmentCatalogConflict(
+                "environment cleanliness proof generation is stale"
+            )
+        updated = replace(
+            instance,
+            state=EnvironmentInstanceState.CLEAN,
+            cleanliness_proof_digest=cleanliness.proof_digest,
+        )
+        self._instances[instance_id] = updated
+        return updated
+
+    def mark_instance_dirty(self, instance_id: str) -> EnvironmentInstance:
+        instance = self._instance(instance_id)
+        if instance.state is EnvironmentInstanceState.DESTROYED:
+            raise EnvironmentCatalogConflict(
+                f"destroyed environment instance {instance_id!r} cannot become dirty"
+            )
+        updated = replace(
+            instance,
+            state=EnvironmentInstanceState.DIRTY,
+            cleanliness_proof_digest=None,
+        )
+        self._instances[instance_id] = updated
+        return updated
+
+    def destroy_instance(self, instance_id: str) -> EnvironmentInstance:
+        instance = self._instance(instance_id)
+        if self._bindings_for_instance(instance_id):
+            raise EnvironmentCatalogConflict(
+                f"environment instance {instance_id!r} still has active bindings"
+            )
+        if instance.state is EnvironmentInstanceState.DESTROYED:
+            return instance
+        updated = replace(
+            instance,
+            state=EnvironmentInstanceState.DESTROYED,
+            cleanliness_proof_digest=None,
+        )
+        self._instances[instance_id] = updated
+        return updated
+
+    def reusable_instances(
+        self,
+        profile_id: str,
+        profile_revision: str,
+    ) -> tuple[EnvironmentInstance, ...]:
+        return tuple(
+            sorted(
+                (
+                    row
+                    for row in self._instances.values()
+                    if row.profile_id == profile_id
+                    and row.profile_revision == profile_revision
+                    and row.state is EnvironmentInstanceState.CLEAN
+                ),
+                key=lambda row: row.instance_id,
+            )
+        )
+
+    def profile_references(
+        self,
+        profile_id: str,
+        profile_revision: str,
+    ) -> EnvironmentProfileReferenceSummary:
+        matching = tuple(
+            sorted(
+                (
+                    row
+                    for row in self._instances.values()
+                    if row.profile_id == profile_id
+                    and row.profile_revision == profile_revision
+                ),
+                key=lambda row: row.instance_id,
+            )
+        )
+        matching_ids = {row.instance_id for row in matching}
+        bound_ids = tuple(
+            sorted(
+                {
+                    row.instance_id
+                    for row in self._binding_rows.values()
+                    if row.instance_id in matching_ids
+                }
+            )
+        )
+        reusable_ids = tuple(
+            row.instance_id
+            for row in matching
+            if row.state is EnvironmentInstanceState.CLEAN
+        )
+        blocking_ids = tuple(
+            row.instance_id
+            for row in matching
+            if row.state is not EnvironmentInstanceState.DESTROYED
+        )
+        return EnvironmentProfileReferenceSummary(
+            profile_id,
+            profile_revision,
+            tuple(row.instance_id for row in matching),
+            bound_ids,
+            reusable_ids,
+            blocking_ids,
+        )
+
+    def assess_profile_gc(
+        self,
+        profile_id: str,
+        profile_revision: str,
+        *,
+        resumable_execution_ids: tuple[str, ...] = (),
+        retained_evidence_ids: tuple[str, ...] = (),
+    ) -> EnvironmentProfileGcAssessment:
+        return EnvironmentProfileGcAssessment(
+            profile_id,
+            profile_revision,
+            self.profile_references(profile_id, profile_revision),
+            tuple(sorted(set(resumable_execution_ids))),
+            tuple(sorted(set(retained_evidence_ids))),
+        )
 
     @staticmethod
     def resolved_digest(value: ResolvedEnvironmentSpec) -> str:
@@ -159,7 +419,7 @@ __all__ = ["EnvironmentCatalogConflict", "EnvironmentCatalogNotFound", "Executio
 class SQLiteExecutionEnvironmentCatalog(ExecutionEnvironmentCatalog):
     """Restart-safe environment hierarchy and binding authority."""
 
-    SCHEMA_VERSION = 2
+    SCHEMA_VERSION = 3
 
     def __init__(
         self, path: str | Path, scopes: ScopeRegistryPort, *,
@@ -170,7 +430,6 @@ class SQLiteExecutionEnvironmentCatalog(ExecutionEnvironmentCatalog):
         self.path.parent.mkdir(parents=True, exist_ok=True)
         self.timeout_seconds = float(timeout_seconds)
         self._assignment_rows: dict[tuple[str, str], EnvironmentAssignment] = {}
-        self._binding_rows: dict[tuple[str, str], EnvironmentBinding] = {}
         self._state_generation = 0
         with self._connection() as conn:
             conn.execute(
@@ -247,6 +506,9 @@ class SQLiteExecutionEnvironmentCatalog(ExecutionEnvironmentCatalog):
             "scope": cls._scope(value.scope),
             "profile_id": value.profile_id,
             "profile_revision": value.profile_revision,
+            "state": value.state.value,
+            "generation": value.generation,
+            "cleanliness_proof_digest": value.cleanliness_proof_digest,
         }
 
     @classmethod
@@ -340,6 +602,9 @@ class SQLiteExecutionEnvironmentCatalog(ExecutionEnvironmentCatalog):
                 self._decode_scope(row["scope"]),
                 row["profile_id"],
                 row["profile_revision"],
+                EnvironmentInstanceState(row["state"]),
+                int(row["generation"]),
+                row["cleanliness_proof_digest"],
             )
             for row in value.get("instances", [])
         }
@@ -364,11 +629,7 @@ class SQLiteExecutionEnvironmentCatalog(ExecutionEnvironmentCatalog):
             self._assignments.bind(
                 ScopedValue("execution-environment", row.name, row.scope, row.spec_id, row.policy)
             )
-        self._bindings = HierarchicalResourceResolver(ancestry=self._scopes.ancestry)
-        for row in self._binding_rows.values():
-            self._bindings.bind(
-                ScopedValue("execution-environment-instance", row.role, row.scope, row)
-            )
+        self._rebuild_bindings()
 
     def register_template(self, template: EnvironmentTemplate) -> None:
         self._load()
@@ -403,12 +664,75 @@ class SQLiteExecutionEnvironmentCatalog(ExecutionEnvironmentCatalog):
     def bind(self, binding: EnvironmentBinding) -> None:
         self._load()
         super().bind(binding)
-        self._binding_rows[(binding.role, binding.scope.key)] = binding
         self._persist()
+
+    def unbind(self, role: str, scope: ScopeIdentity) -> EnvironmentBinding:
+        self._load()
+        value = super().unbind(role, scope)
+        self._persist()
+        return value
 
     def binding(self, role: str, scope: ScopeIdentity) -> EnvironmentBinding:
         self._load()
         return super().binding(role, scope)
+
+    def release_instance(
+        self,
+        instance_id: str,
+        *,
+        cleanliness: EnvironmentCleanlinessProof | None = None,
+    ) -> EnvironmentInstance:
+        self._load()
+        value = super().release_instance(
+            instance_id,
+            cleanliness=cleanliness,
+        )
+        self._persist()
+        return value
+
+    def mark_instance_dirty(self, instance_id: str) -> EnvironmentInstance:
+        self._load()
+        value = super().mark_instance_dirty(instance_id)
+        self._persist()
+        return value
+
+    def destroy_instance(self, instance_id: str) -> EnvironmentInstance:
+        self._load()
+        value = super().destroy_instance(instance_id)
+        self._persist()
+        return value
+
+    def reusable_instances(
+        self,
+        profile_id: str,
+        profile_revision: str,
+    ) -> tuple[EnvironmentInstance, ...]:
+        self._load()
+        return super().reusable_instances(profile_id, profile_revision)
+
+    def profile_references(
+        self,
+        profile_id: str,
+        profile_revision: str,
+    ) -> EnvironmentProfileReferenceSummary:
+        self._load()
+        return super().profile_references(profile_id, profile_revision)
+
+    def assess_profile_gc(
+        self,
+        profile_id: str,
+        profile_revision: str,
+        *,
+        resumable_execution_ids: tuple[str, ...] = (),
+        retained_evidence_ids: tuple[str, ...] = (),
+    ) -> EnvironmentProfileGcAssessment:
+        self._load()
+        return super().assess_profile_gc(
+            profile_id,
+            profile_revision,
+            resumable_execution_ids=resumable_execution_ids,
+            retained_evidence_ids=retained_evidence_ids,
+        )
 
 
 __all__ = [
