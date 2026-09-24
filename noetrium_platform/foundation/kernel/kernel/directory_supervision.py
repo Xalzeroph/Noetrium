@@ -37,10 +37,15 @@ def _decode_link(value: object) -> ChildMachineLink:
     }:
         raise ValueError("child link record fields are not exact")
     link = ChildMachineLink(
-        value["parent_machine_id"], value["child_machine_id"],
-        value["child_program_digest"], value["child_program_lock_digest"],
-        value["child_snapshot_ref"], value["child_transition_start"], value["child_transition_end"],
-        value["child_result_ref"], value["failure_policy"],
+        parent_machine_id=value["parent_machine_id"],
+        child_machine_id=value["child_machine_id"],
+        child_program_digest=value["child_program_digest"],
+        child_program_lock_digest=value["child_program_lock_digest"],
+        child_snapshot_ref=value["child_snapshot_ref"],
+        child_transition_start=value["child_transition_start"],
+        child_transition_end=value["child_transition_end"],
+        child_result_ref=value["child_result_ref"],
+        failure_policy=value["failure_policy"],
     )
     if link.link_digest != value["link_digest"]:
         raise ValueError("child link digest mismatch")
