@@ -3,10 +3,10 @@ from __future__ import annotations
 from dataclasses import asdict, dataclass
 import json
 
+from noetrium_platform.foundation.kernel.kernel.durability import sha256_bytes
 from noetrium_platform.foundation.kernel.kernel.identity import ImmutableModelIdentity
 
 
-from noetrium_platform.foundation.kernel.kernel.durability import sha256_bytes
 def _digest(value: object) -> str:
     raw = json.dumps(
         value,
