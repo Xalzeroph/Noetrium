@@ -334,6 +334,93 @@ class DurableResourceAuthoritiesTests(TestCase):
             self.assertTrue(restored_gc.eligible)
 
 
+    def test_environment_exact_runtime_gc_does_not_collapse_profile_outputs(self) -> None:
+        with TemporaryDirectory() as directory:
+            root = Path(directory)
+            scope = ScopeIdentity(ScopeKind.WORKSPACE, "workspace")
+            meta = build_durable_platform_meta(root)
+            meta.scopes.register(scope, PLATFORM_SCOPE)
+            revision = "a" * 64
+            runtime_a = "b" * 64
+            runtime_b = "c" * 64
+            meta.environments.register_profile_revision(
+                EnvironmentProfileRevision("web-multi-runtime", "web", revision)
+            )
+            first = EnvironmentInstance(
+                "env-runtime-a",
+                "d" * 64,
+                "docker",
+                "container:runtime-a",
+                runtime_a,
+                scope,
+                "web-multi-runtime",
+                revision,
+            )
+            second = EnvironmentInstance(
+                "env-runtime-b",
+                "e" * 64,
+                "docker",
+                "container:runtime-b",
+                runtime_b,
+                scope,
+                "web-multi-runtime",
+                revision,
+            )
+            meta.environments.register_instance(first)
+            meta.environments.register_instance(second)
+            meta.environments.destroy_instance(first.instance_id)
+
+            exact_a = meta.environments.assess_runtime_gc(
+                "web-multi-runtime",
+                revision,
+                runtime_a,
+                resumable_execution_ids=(),
+                retained_evidence_ids=(),
+            )
+            self.assertTrue(exact_a.eligible)
+            self.assertEqual(exact_a.local.instance_ids, (first.instance_id,))
+
+            exact_b = meta.environments.assess_runtime_gc(
+                "web-multi-runtime",
+                revision,
+                runtime_b,
+                resumable_execution_ids=(),
+                retained_evidence_ids=(),
+            )
+            self.assertFalse(exact_b.eligible)
+            self.assertEqual(
+                exact_b.local.blocking_instance_ids,
+                (second.instance_id,),
+            )
+
+            whole_profile = meta.environments.assess_profile_gc(
+                "web-multi-runtime",
+                revision,
+                resumable_execution_ids=(),
+                retained_evidence_ids=(),
+            )
+            self.assertFalse(whole_profile.eligible)
+
+            restored = build_durable_platform_meta(root)
+            restored_exact_a = restored.environments.assess_runtime_gc(
+                "web-multi-runtime",
+                revision,
+                runtime_a,
+                resumable_execution_ids=(),
+                retained_evidence_ids=(),
+            )
+            self.assertTrue(restored_exact_a.eligible)
+
+            restored.environments.destroy_instance(second.instance_id)
+            final_profile = restored.environments.assess_profile_gc(
+                "web-multi-runtime",
+                revision,
+                resumable_execution_ids=(),
+                retained_evidence_ids=(),
+            )
+            self.assertTrue(final_profile.eligible)
+
+
     def test_environment_profile_lifecycle_is_runtime_admission_truth(self) -> None:
         with TemporaryDirectory() as directory:
             root = Path(directory)
