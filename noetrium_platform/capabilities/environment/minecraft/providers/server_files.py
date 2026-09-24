@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from noetrium_platform.foundation.kernel.kernel.durability import flush_file_descriptor
+
 import hashlib
 from pathlib import Path
 import os
@@ -79,7 +81,7 @@ def _atomic_write(path: Path, content: str) -> None:
         with os.fdopen(fd, "w", encoding="utf-8", newline="\n") as handle:
             handle.write(content)
             handle.flush()
-            os.fsync(handle.fileno())
+            flush_file_descriptor(handle.fileno())
         Path(temporary).replace(path)
     except BaseException:
         Path(temporary).unlink(missing_ok=True)
