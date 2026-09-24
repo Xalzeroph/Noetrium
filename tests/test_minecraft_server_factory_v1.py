@@ -17,7 +17,8 @@ from noetrium_platform.capabilities.environment.minecraft.composition import (
     MinecraftTcpReadinessProbe,
     build_server_service_contract,
 )
-from noetrium_platform.capabilities.environment.minecraft.providers.server_files import MinecraftServerPreparationError, sha256_file
+from noetrium_platform.capabilities.environment.minecraft.providers.server_files import MinecraftServerPreparationError
+from noetrium_platform.foundation.kernel.kernel.durability import sha256_file
 from noetrium_platform.infrastructure.lifecycle.service.api.environment import MaterializedServiceEnvironment
 
 
@@ -61,7 +62,8 @@ def test_server_factory_prepares_files_and_builds_exact_service_contract_without
         environment_generation="e" * 64,
     )
 
-    assert controller.contract.artifact_digest == sha256_file(spec.jar_path)
+    expected_digest, _expected_size = sha256_file(Path(spec.jar_path))
+    assert controller.contract.artifact_digest == expected_digest
     assert len(controller.contract.generation) == 64
     assert (Path(spec.workdir) / "eula.txt").read_text(encoding="utf-8") == "eula=true\n"
     properties = (Path(spec.workdir) / "server.properties").read_text(encoding="utf-8")
