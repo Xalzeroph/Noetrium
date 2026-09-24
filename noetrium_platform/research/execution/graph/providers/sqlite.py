@@ -8,8 +8,8 @@ from uuid import uuid4
 
 from noetrium_platform.foundation.kernel.kernel import require_sha256
 from noetrium_platform.foundation.kernel.kernel.durability.sqlite import (
-    begin_immediate_sqlite_transaction,
     durable_sqlite_connection,
+    immediate_sqlite_transaction,
 )
 _SQLITE_INT64_MAX = (1 << 63) - 1
 
@@ -62,17 +62,12 @@ class SQLiteResearchGraphExecutionStore:
     @contextmanager
     def _transaction(self):
         with self._connection() as conn:
-            begin_immediate_sqlite_transaction(
+            with immediate_sqlite_transaction(
                 conn,
                 timeout_seconds=self.timeout_seconds,
-            )
-            try:
+                label="research graph",
+            ):
                 yield conn
-                conn.commit()
-            except BaseException:
-                if conn.in_transaction:
-                    conn.rollback()
-                raise
 
     def _ensure_schema(self, conn: sqlite3.Connection) -> None:
         conn.execute(
