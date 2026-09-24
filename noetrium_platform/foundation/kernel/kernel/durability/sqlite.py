@@ -130,6 +130,32 @@ def begin_immediate_sqlite_transaction(
     )
 
 
+@contextmanager
+def immediate_sqlite_transaction(
+    db: sqlite3.Connection,
+    *,
+    timeout_seconds: float,
+    label: str,
+) -> Iterator[sqlite3.Connection]:
+    """Own one IMMEDIATE transaction under the canonical SQLite policy."""
+    if type(label) is not str or not label.strip():
+        raise ValueError("SQLite transaction label must be non-empty text")
+    begin_immediate_sqlite_transaction(
+        db,
+        timeout_seconds=timeout_seconds,
+    )
+    try:
+        yield db
+        db.commit()
+    except BaseException as primary:
+        rollback_sqlite_writer(
+            db,
+            primary,
+            label=label,
+        )
+        raise
+
+
 def rollback_sqlite_writer(
     db: sqlite3.Connection,
     primary: BaseException,
@@ -153,6 +179,7 @@ def rollback_sqlite_writer(
 __all__ = [
     "begin_immediate_sqlite_transaction",
     "is_sqlite_lock_contention",
+    "immediate_sqlite_transaction",
     "SQLiteDurabilityProfile",
     "durable_sqlite_connection",
     "open_durable_sqlite_reader",
