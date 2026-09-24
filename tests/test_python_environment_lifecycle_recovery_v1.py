@@ -350,3 +350,68 @@ def test_process_lock_is_shared_per_authority_path_only(tmp_path) -> None:
 
     assert authorities_a1.lifecycle._lock is authorities_a2.lifecycle._lock
     assert authorities_a1.lifecycle._lock is not authorities_b.lifecycle._lock
+
+
+def test_failed_create_rollback_does_not_retire_environment_identity(
+    tmp_path,
+) -> None:
+    directories, broken = _authorities(
+        tmp_path,
+        _Backend(fail_after_partial=True),
+    )
+    with pytest.raises(RuntimeError, match="backend create failed"):
+        broken.lifecycle.create(_spec())
+
+    assert not PythonEnvironmentRegistry(
+        directories.layout
+    ).is_retired("managed")
+
+    _directories_value, recovered = _authorities(
+        tmp_path,
+        _Backend(),
+    )
+    created = recovered.lifecycle.create(_spec())
+    assert created.python_path.exists()
+
+
+def test_explicit_managed_remove_retires_environment_identity(
+    tmp_path,
+) -> None:
+    directories, authorities = _authorities(tmp_path)
+    created = authorities.lifecycle.create(_spec())
+    assert authorities.lifecycle.remove("managed")
+    assert not created.root.exists()
+
+    registry = PythonEnvironmentRegistry(directories.layout)
+    assert registry.is_retired("managed")
+    assert authorities.lifecycle.remove("managed")
+
+    with pytest.raises(RuntimeError, match="retired and cannot be reused"):
+        authorities.lifecycle.create(_spec())
+
+
+def test_external_remove_preserves_root_but_retires_logical_identity(
+    tmp_path,
+) -> None:
+    directories, authorities = _authorities(tmp_path)
+    external = tmp_path / "external-runtime"
+    python_path = external / "bin" / "python"
+    python_path.parent.mkdir(parents=True)
+    python_path.write_bytes(b"python")
+    spec = PythonEnvironmentSpec(
+        "external-retired",
+        PLATFORM_SCOPE,
+        backend="fake",
+    )
+    registered = authorities.lifecycle.register_existing(spec, external)
+    assert registered.root == external.resolve()
+
+    assert authorities.lifecycle.remove("external-retired")
+    assert external.exists()
+    assert python_path.exists()
+    assert PythonEnvironmentRegistry(
+        directories.layout
+    ).is_retired("external-retired")
+
+    with pytest.raises(RuntimeError, match="retired and cannot be reused"):
+        authorities.lifecycle.register_existing(spec, external)
