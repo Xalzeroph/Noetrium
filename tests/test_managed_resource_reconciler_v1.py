@@ -105,22 +105,45 @@ class ShutdownAuthority:
 
 
 class EndpointShutdownAuthority:
+    def __init__(self, events: list[str]) -> None:
+        self.events = events
+        self.live = {"endpoint-live"}
+
     def reconcile(self, *, now=None):
+        self.events.append("endpoint-reconcile")
         return ()
 
     def active(self):
-        return (Allocation("endpoint-live"),)
+        return tuple(Allocation(value) for value in sorted(self.live))
+
+    def release(self, allocation_id):
+        self.events.append(f"endpoint-release:{allocation_id}")
+        self.live.remove(allocation_id)
+        return Allocation(allocation_id)
 
 
 class ComputeShutdownAuthority:
+    def __init__(self, events: list[str]) -> None:
+        self.events = events
+        self.live = {"compute-live"}
+
     def reconcile_expired(self, *, now=None):
+        self.events.append("compute-reconcile")
         return ()
 
     def allocations(self, *, scope=None):
-        return (Allocation("compute-live"),)
+        return tuple(Allocation(value) for value in sorted(self.live))
+
+    def release(self, allocation_id):
+        self.events.append(f"compute-release:{allocation_id}")
+        self.live.remove(allocation_id)
+        return Allocation(allocation_id)
 
 
-def test_managed_resource_shutdown_fails_closed_on_live_endpoint_and_compute() -> None:
+def test_managed_resource_shutdown_actively_reclaims_endpoint_and_compute() -> None:
+    events: list[str] = []
+    endpoints = EndpointShutdownAuthority(events)
+    compute = ComputeShutdownAuthority(events)
     reconciler = ManagedResourceReconciler(
         containers=ShutdownAuthority(
             DockerContainerReconciliation((), ()),
@@ -128,13 +151,57 @@ def test_managed_resource_shutdown_fails_closed_on_live_endpoint_and_compute() -
         environments=ShutdownAuthority(
             EnvironmentInstanceReconciliation((), ()),
         ),
-        endpoints=EndpointShutdownAuthority(),
-        compute=ComputeShutdownAuthority(),
+        endpoints=endpoints,
+        compute=compute,
     )
 
-    with pytest.raises(ExceptionGroup) as captured:
+    report = reconciler.shutdown_cleanup(now=1000.0)
+
+    assert report.endpoints == (Allocation("endpoint-live"),)
+    assert endpoints.active() == ()
+    assert compute.allocations() == ()
+    assert events == [
+        "endpoint-reconcile",
+        "endpoint-release:endpoint-live",
+        "compute-reconcile",
+        "compute-release:compute-live",
+    ]
+
+
+class FailingContainerShutdownAuthority(ShutdownAuthority):
+    def shutdown_cleanup(self, *, now=None):
+        raise RuntimeError("container physical removal failed")
+
+
+class NeverCalledShutdownAuthority:
+    def __init__(self) -> None:
+        self.called = False
+
+    def shutdown_cleanup(self, *, now=None):
+        self.called = True
+        raise AssertionError("later cleanup stage must remain fenced")
+
+    def reconcile(self, *, now=None):
+        self.called = True
+        raise AssertionError("later reconcile stage must remain fenced")
+
+
+def test_managed_resource_shutdown_stops_at_first_unproven_dependency_stage() -> None:
+    environment = NeverCalledShutdownAuthority()
+    endpoints = NeverCalledShutdownAuthority()
+    compute = NeverCalledShutdownAuthority()
+    reconciler = ManagedResourceReconciler(
+        containers=FailingContainerShutdownAuthority(
+            DockerContainerReconciliation((), ()),
+        ),
+        environments=environment,
+        endpoints=endpoints,
+        compute=compute,
+    )
+
+    with pytest.raises(ExceptionGroup, match="container cleanup"):
         reconciler.shutdown_cleanup(now=1000.0)
 
-    messages = tuple(str(exc) for exc in captured.value.exceptions)
-    assert any("live endpoint allocations remain" in message for message in messages)
-    assert any("live compute allocations remain" in message for message in messages)
+    assert environment.called is False
+    assert endpoints.called is False
+    assert compute.called is False
