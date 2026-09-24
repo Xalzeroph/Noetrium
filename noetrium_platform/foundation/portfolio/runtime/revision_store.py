@@ -5,7 +5,10 @@ from pathlib import Path
 import sqlite3
 from threading import RLock
 
-from noetrium_platform.foundation.kernel.kernel.durability.sqlite import durable_sqlite_connection
+from noetrium_platform.foundation.kernel.kernel.durability.sqlite import (
+    begin_immediate_sqlite_transaction,
+    durable_sqlite_connection,
+)
 from noetrium_platform.foundation.kernel.kernel import require_sha256
 from noetrium_platform.foundation.portfolio.api.revision import (
     PortfolioBranchRef,
@@ -226,7 +229,7 @@ class SQLitePortfolioRevisionStore:
         if type(revision) is not PortfolioRevision:
             raise TypeError("portfolio commit requires PortfolioRevision")
         with self._connection() as conn:
-            conn.execute("BEGIN IMMEDIATE")
+            begin_immediate_sqlite_transaction(conn, timeout_seconds=self.timeout_seconds)
             try:
                 for parent in revision.parent_revision_digests:
                     self._revision_tx(conn, revision.subject_id, parent)
@@ -278,7 +281,7 @@ class SQLitePortfolioRevisionStore:
         if expected_revision_digest is not None:
             require_sha256(expected_revision_digest, "portfolio expected branch revision")
         with self._connection() as conn:
-            conn.execute("BEGIN IMMEDIATE")
+            begin_immediate_sqlite_transaction(conn, timeout_seconds=self.timeout_seconds)
             try:
                 self._revision_tx(conn, subject_id, revision_digest)
                 row = conn.execute(
@@ -354,7 +357,7 @@ class SQLitePortfolioRevisionStore:
     ) -> PortfolioTagRef:
         require_sha256(revision_digest, "portfolio tag revision_digest")
         with self._connection() as conn:
-            conn.execute("BEGIN IMMEDIATE")
+            begin_immediate_sqlite_transaction(conn, timeout_seconds=self.timeout_seconds)
             try:
                 self._revision_tx(conn, subject_id, revision_digest)
                 row = conn.execute(
