@@ -50,12 +50,15 @@ class ComputeLeaseHeartbeatGuard:
         self._policy = policy
         self._lock = Lock()
         self._scheduled: ScheduledTaskHandlePort | None = None
+        self._closing = False
         self._closed = False
 
     def start(self) -> None:
         with self._lock:
             if self._closed:
                 raise ComputeLeaseHeartbeatError("compute lease heartbeat is closed")
+            if self._closing:
+                raise ComputeLeaseHeartbeatError("compute lease heartbeat is closing")
             if self._scheduled is not None:
                 return
             self._scheduled = self._heartbeat_scheduler.register(
@@ -95,13 +98,14 @@ class ComputeLeaseHeartbeatGuard:
         with self._lock:
             if self._closed:
                 return
-            self._closed = True
+            self._closing = True
             scheduled = self._scheduled
         if scheduled is not None:
             scheduled.cancel()
         self.assert_healthy()
-
-
+        with self._lock:
+            self._closed = True
+            self._closing = False
 
 
 class ComputeLeaseHeartbeatFactory:
