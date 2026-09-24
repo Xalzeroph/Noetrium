@@ -82,7 +82,6 @@ class SQLiteResourceLeaseRegistry(ResourceOwnershipPort, ResourceLeasePort):
                 raise ValueError(
                     "lease observation time must be finite and positive"
                 )
-            return value
         return authoritative_lease_now(conn, self._clock.read())
 
     def register_owner(self, owner: ResourceOwner) -> None:
