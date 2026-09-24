@@ -719,6 +719,23 @@ def build_environment_images(
         allow_draining=allow_draining,
         allow_retired=allow_retired,
     )
+    declared_build_input_variables = {
+        spec["environment_variable"]
+        for profile_id in profiles
+        for group in _profile_build_input_rows(by_id[profile_id])
+        for spec in group
+    }
+    unknown_build_input_overrides = tuple(
+        sorted(
+            set(profile_build_input_overrides)
+            - declared_build_input_variables
+        )
+    )
+    if unknown_build_input_overrides:
+        raise RuntimeError(
+            "profile build input overrides are not declared by selected "
+            f"profiles: {unknown_build_input_overrides!r}"
+        )
 
     _run(("docker", "--version"))
     _run(("docker", "compose", "version"))
