@@ -103,24 +103,51 @@ reconcile_bootstrap_children() {
 }
 
 cleanup_owned_bootstrap_children() {
-  ids="$(docker ps -aq \
+  if ! ids="$(docker ps -aq --no-trunc \
     --filter "label=$BOOTSTRAP_CHILD_LABEL=$BOOTSTRAP_CHILD_VALUE" \
-    --filter "label=$OWNER_PID_LABEL=$$" \
+    --filter "label=$OWNER_PID_LABEL=$" \
     --filter "label=$OWNER_BOOT_LABEL=$BOOT_ID" \
-    --filter "label=$OWNER_START_LABEL=$OWNER_START" 2>/dev/null || true)"
+    --filter "label=$OWNER_START_LABEL=$OWNER_START" 2>/dev/null)"; then
+    echo "Unable to enumerate owned bootstrap child containers during cleanup." >&2
+    return 1
+  fi
   [ -n "$ids" ] || return 0
+  failed=0
   for id in $ids; do
-    docker rm -f "$id" >/dev/null 2>&1 || true
+    remove_bootstrap_container_exact "$id" || failed=1
   done
+  return "$failed"
+}
+
+cleanup_owned_bootstrap_container() {
+  if ! ids="$(docker ps -aq --no-trunc \
+    --filter "label=$BOOTSTRAP_MANAGED_LABEL=$BOOTSTRAP_MANAGED_VALUE" \
+    --filter "label=$OWNER_PID_LABEL=$" \
+    --filter "label=$OWNER_BOOT_LABEL=$BOOT_ID" \
+    --filter "label=$OWNER_START_LABEL=$OWNER_START" 2>/dev/null)"; then
+    echo "Unable to enumerate owned bootstrap container during cleanup." >&2
+    return 1
+  fi
+  [ -n "$ids" ] || return 0
+  failed=0
+  for id in $ids; do
+    remove_bootstrap_container_exact "$id" || failed=1
+  done
+  return "$failed"
 }
 
 bootstrap_cleanup() {
   status=$?
   trap - EXIT HUP INT TERM
-  cleanup_owned_bootstrap_children
+  cleanup_failed=0
+  cleanup_owned_bootstrap_children || cleanup_failed=1
   if [ "$BOOTSTRAP_ACTIVE" = "1" ]; then
-    docker rm -f "$BOOTSTRAP_CONTAINER_NAME" >/dev/null 2>&1 || true
+    cleanup_owned_bootstrap_container || cleanup_failed=1
     BOOTSTRAP_ACTIVE=0
+  fi
+  if [ "$cleanup_failed" = "1" ]; then
+    echo "Bootstrap cleanup did not prove physical convergence." >&2
+    [ "$status" -ne 0 ] || status=1
   fi
   exit "$status"
 }
