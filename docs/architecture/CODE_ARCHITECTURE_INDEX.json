@@ -10587,6 +10587,11 @@
     },
     {
       "kind": "references",
+      "source": "noetrium_platform.infrastructure.lifecycle.process.supervision.runtime.supervisor._WindowsJobOwnedProcess",
+      "target": "noetrium_platform.infrastructure.lifecycle.process.supervision.runtime.windows_job.WindowsProcessJob"
+    },
+    {
+      "kind": "references",
       "source": "noetrium_platform.infrastructure.lifecycle.python.api.contracts.ManagedPythonEnvironment",
       "target": "noetrium_platform.infrastructure.lifecycle.python.api.contracts.PythonEnvironmentOwnership"
     },
@@ -21379,7 +21384,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 419,
+      "line": 428,
       "methods": [
         "__init__",
         "open"
@@ -66373,7 +66378,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 20,
+      "line": 105,
       "methods": [
         "__init__",
         "_task_id",
@@ -66389,6 +66394,52 @@
         "AsyncProcessSupervisor"
       ],
       "qualname": "noetrium_platform.infrastructure.lifecycle.process.supervision.runtime.supervisor.AsyncProcessSupervisor",
+      "system_key": "runtime",
+      "top_system": "runtime"
+    },
+    {
+      "bases": [],
+      "decorators": [],
+      "fields": [],
+      "kind": "class",
+      "line": 25,
+      "methods": [
+        "__init__",
+        "poll",
+        "wait",
+        "_signal_guardian",
+        "terminate",
+        "kill"
+      ],
+      "module": "noetrium_platform.infrastructure.lifecycle.process.supervision.runtime.supervisor",
+      "name": "_PosixGroupOwnedProcess",
+      "nesting": [
+        "_PosixGroupOwnedProcess"
+      ],
+      "qualname": "noetrium_platform.infrastructure.lifecycle.process.supervision.runtime.supervisor._PosixGroupOwnedProcess",
+      "system_key": "runtime",
+      "top_system": "runtime"
+    },
+    {
+      "bases": [],
+      "decorators": [],
+      "fields": [],
+      "kind": "class",
+      "line": 66,
+      "methods": [
+        "__init__",
+        "_retire_job_if_exited",
+        "poll",
+        "wait",
+        "terminate",
+        "kill"
+      ],
+      "module": "noetrium_platform.infrastructure.lifecycle.process.supervision.runtime.supervisor",
+      "name": "_WindowsJobOwnedProcess",
+      "nesting": [
+        "_WindowsJobOwnedProcess"
+      ],
+      "qualname": "noetrium_platform.infrastructure.lifecycle.process.supervision.runtime.supervisor._WindowsJobOwnedProcess",
       "system_key": "runtime",
       "top_system": "runtime"
     },
@@ -76938,7 +76989,8 @@
         "get",
         "active",
         "reconcile",
-        "reconcile_orphans"
+        "expire_orphans",
+        "retire_orphan"
       ],
       "module": "noetrium_platform.infrastructure.resources.allocation.api.ports",
       "name": "AtomicEndpointReservationPort",
@@ -76956,7 +77008,7 @@
       "decorators": [],
       "fields": [],
       "kind": "protocol",
-      "line": 82,
+      "line": 87,
       "methods": [
         "allocate",
         "allocate_auto",
@@ -77005,7 +77057,7 @@
       "decorators": [],
       "fields": [],
       "kind": "protocol",
-      "line": 78,
+      "line": 83,
       "methods": [
         "create"
       ],
@@ -77025,7 +77077,7 @@
       "decorators": [],
       "fields": [],
       "kind": "protocol",
-      "line": 72,
+      "line": 77,
       "methods": [
         "start",
         "assert_healthy",
@@ -77103,7 +77155,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 113,
+      "line": 124,
       "methods": [
         "__init__",
         "allocate_auto",
@@ -77152,7 +77204,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 37,
+      "line": 48,
       "methods": [
         "__init__"
       ],
@@ -77167,15 +77219,37 @@
     },
     {
       "bases": [
+        "RuntimeError"
+      ],
+      "decorators": [],
+      "fields": [],
+      "kind": "class",
+      "line": 37,
+      "methods": [
+        "__init__"
+      ],
+      "module": "noetrium_platform.infrastructure.resources.allocation.runtime.endpoint_allocator",
+      "name": "EndpointPhysicalConvergencePending",
+      "nesting": [
+        "EndpointPhysicalConvergencePending"
+      ],
+      "qualname": "noetrium_platform.infrastructure.resources.allocation.runtime.endpoint_allocator.EndpointPhysicalConvergencePending",
+      "system_key": "resource",
+      "top_system": "resource"
+    },
+    {
+      "bases": [
         "EndpointAllocationPort"
       ],
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 290,
+      "line": 326,
       "methods": [
         "__init__",
         "_reconcile_allocation_locked",
+        "_lease_authoritative_locked",
+        "_require_lease_authority_locked",
         "_existing_for_request_locked",
         "allocate_auto",
         "allocate",
@@ -79259,6 +79333,8 @@
         "_owner_matches",
         "_require_generation",
         "_reconcile_one",
+        "_lease_authoritative",
+        "_require_lease_authority",
         "reserve",
         "confirm_bound",
         "replace_bound",
@@ -79267,7 +79343,8 @@
         "release",
         "get",
         "active",
-        "reconcile_orphans"
+        "expire_orphans",
+        "retire_orphan"
       ],
       "module": "noetrium_platform.infrastructure.resources.providers.sqlite_endpoint",
       "name": "SQLiteEndpointAllocationStore",
@@ -101415,6 +101492,16 @@
     },
     {
       "kind": "constructs",
+      "source": "noetrium_platform.infrastructure.lifecycle.process.supervision.runtime.supervisor.AsyncProcessSupervisor",
+      "target": "noetrium_platform.infrastructure.lifecycle.process.supervision.runtime.supervisor._PosixGroupOwnedProcess"
+    },
+    {
+      "kind": "constructs",
+      "source": "noetrium_platform.infrastructure.lifecycle.process.supervision.runtime.supervisor.AsyncProcessSupervisor",
+      "target": "noetrium_platform.infrastructure.lifecycle.process.supervision.runtime.supervisor._WindowsJobOwnedProcess"
+    },
+    {
+      "kind": "constructs",
       "source": "noetrium_platform.infrastructure.lifecycle.process.supervision.runtime.windows_job.WindowsProcessJob",
       "target": "noetrium_platform.infrastructure.lifecycle.process.supervision.runtime.windows_job.WindowsProcessJobError"
     },
@@ -102280,6 +102367,11 @@
     },
     {
       "kind": "constructs",
+      "source": "noetrium_platform.infrastructure.resources.allocation.runtime.endpoint_allocator.AtomicEndpointAllocator",
+      "target": "noetrium_platform.infrastructure.resources.allocation.runtime.endpoint_allocator.EndpointPhysicalConvergencePending"
+    },
+    {
+      "kind": "constructs",
       "source": "noetrium_platform.infrastructure.resources.allocation.runtime.endpoint_allocator.InMemoryEndpointAllocator",
       "target": "noetrium_platform.infrastructure.resources.allocation.runtime.endpoint_allocator.EndpointAllocationConflict"
     },
@@ -102287,6 +102379,11 @@
       "kind": "constructs",
       "source": "noetrium_platform.infrastructure.resources.allocation.runtime.endpoint_allocator.InMemoryEndpointAllocator",
       "target": "noetrium_platform.infrastructure.resources.allocation.runtime.endpoint_allocator.EndpointAllocationUnavailable"
+    },
+    {
+      "kind": "constructs",
+      "source": "noetrium_platform.infrastructure.resources.allocation.runtime.endpoint_allocator.InMemoryEndpointAllocator",
+      "target": "noetrium_platform.infrastructure.resources.allocation.runtime.endpoint_allocator.EndpointPhysicalConvergencePending"
     },
     {
       "kind": "constructs",
@@ -103150,13 +103247,13 @@
     }
   ],
   "counts": {
-    "association_edges": 3449,
-    "classes": 3357,
-    "constructor_edges": 916,
+    "association_edges": 3450,
+    "classes": 3360,
+    "constructor_edges": 920,
     "inheritance_edges": 146,
-    "module_import_edges": 5011,
+    "module_import_edges": 5013,
     "parse_errors": 0,
-    "python_modules": 1911,
+    "python_modules": 1912,
     "registry_authorities": 20,
     "registry_nodes": 31,
     "top_level_systems": 16
@@ -109161,6 +109258,10 @@
     {
       "source": "noetrium_platform.composition.operator.maintenance.management_cli",
       "target": "noetrium_platform.foundation.kernel.concurrency.api"
+    },
+    {
+      "source": "noetrium_platform.composition.operator.maintenance.management_cli",
+      "target": "noetrium_platform.foundation.kernel.kernel.durability.file_lock"
     },
     {
       "source": "noetrium_platform.composition.operator.maintenance.management_cli",
@@ -117293,6 +117394,10 @@
     {
       "source": "noetrium_platform.infrastructure.lifecycle.process.supervision.runtime.supervisor",
       "target": "noetrium_platform.infrastructure.lifecycle.process.supervision.api"
+    },
+    {
+      "source": "noetrium_platform.infrastructure.lifecycle.process.supervision.runtime.supervisor",
+      "target": "noetrium_platform.infrastructure.lifecycle.process.supervision.runtime.windows_job"
     },
     {
       "source": "noetrium_platform.infrastructure.lifecycle.python.api",
@@ -128952,6 +129057,7 @@
         "noetrium_platform.composition.model_management",
         "noetrium_platform.composition.operator.maintenance.management",
         "noetrium_platform.foundation.kernel.concurrency.api",
+        "noetrium_platform.foundation.kernel.kernel.durability.file_lock",
         "noetrium_platform.foundation.kernel.kernel.errors",
         "noetrium_platform.infrastructure.lifecycle.python.api",
         "noetrium_platform.infrastructure.resources.directory.api",
@@ -137309,9 +137415,17 @@
       "top_system": "runtime"
     },
     {
+      "imports": [],
+      "module": "noetrium_platform.infrastructure.lifecycle.process.supervision.runtime.parent_bound_child",
+      "path": "noetrium_platform/infrastructure/lifecycle/process/supervision/runtime/parent_bound_child.py",
+      "system_key": "runtime",
+      "top_system": "runtime"
+    },
+    {
       "imports": [
         "noetrium_platform.foundation.kernel.concurrency.api",
-        "noetrium_platform.infrastructure.lifecycle.process.supervision.api"
+        "noetrium_platform.infrastructure.lifecycle.process.supervision.api",
+        "noetrium_platform.infrastructure.lifecycle.process.supervision.runtime.windows_job"
       ],
       "module": "noetrium_platform.infrastructure.lifecycle.process.supervision.runtime.supervisor",
       "path": "noetrium_platform/infrastructure/lifecycle/process/supervision/runtime/supervisor.py",
@@ -143943,7 +144057,7 @@
   "parse_errors": [],
   "registry_sha256": "d3fc1bab831f1b7379e5a36048a61c00fe173429df958270d36a16f3f00171c0",
   "schema": "noetrium-code-architecture-index.v1",
-  "source_git_sha": "cabb9c2ab7fdfb65a9f27c490b71b48dcfc1d6a7",
+  "source_git_sha": "68d311e67e5221a869baa0eb0d50b605c3dee7cf",
   "system_import_edges": [
     {
       "count": 85,
@@ -144126,7 +144240,7 @@
       "target": "participant"
     },
     {
-      "count": 124,
+      "count": 125,
       "source": "research_os",
       "target": "platform"
     },
@@ -144181,7 +144295,7 @@
       "target": "platform"
     },
     {
-      "count": 548,
+      "count": 549,
       "source": "runtime",
       "target": "runtime"
     },

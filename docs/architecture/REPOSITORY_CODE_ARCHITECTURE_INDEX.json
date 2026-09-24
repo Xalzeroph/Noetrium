@@ -1,15 +1,15 @@
 {
   "counts": {
     "parse_errors": 1,
-    "python_files": 3689,
-    "python_import_edges": 7147,
-    "symbols": 4988,
-    "tracked_files": 4325,
+    "python_files": 3690,
+    "python_import_edges": 7149,
+    "symbols": 4998,
+    "tracked_files": 4326,
     "typescript_javascript_files": 11
   },
   "language_symbol_counts": {
     "javascript": 1,
-    "python": 4982,
+    "python": 4992,
     "typescript": 5
   },
   "parse_errors": [
@@ -4463,6 +4463,12 @@
       "source_module": "noetrium_platform.composition.operator.maintenance.management_cli",
       "source_role": "core_platform",
       "target_module": "noetrium_platform.foundation.kernel.concurrency.api",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "noetrium_platform.composition.operator.maintenance.management_cli",
+      "source_role": "core_platform",
+      "target_module": "noetrium_platform.foundation.kernel.kernel.durability.file_lock",
       "target_role": "core_platform"
     },
     {
@@ -28570,6 +28576,12 @@
     {
       "source_module": "tests.test_management_cli_v191",
       "source_role": "tests",
+      "target_module": "noetrium_platform.foundation.kernel.kernel.durability.file_lock",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "tests.test_management_cli_v191",
+      "source_role": "tests",
       "target_module": "noetrium_platform.infrastructure.lifecycle.python.api",
       "target_role": "core_platform"
     },
@@ -42904,7 +42916,7 @@
   ],
   "role_import_counts": [
     {
-      "count": 2589,
+      "count": 2590,
       "source_role": "core_platform",
       "target_role": "core_platform"
     },
@@ -42964,7 +42976,7 @@
       "target_role": "research_reproductions"
     },
     {
-      "count": 2787,
+      "count": 2788,
       "source_role": "tests",
       "target_role": "core_platform"
     },
@@ -43020,7 +43032,7 @@
     }
   ],
   "role_python_module_counts": {
-    "core_platform": 1911,
+    "core_platform": 1912,
     "examples": 6,
     "other": 7,
     "public_facade": 40,
@@ -43031,7 +43043,7 @@
     "tooling": 79
   },
   "role_symbol_counts": {
-    "core_platform": 3358,
+    "core_platform": 3361,
     "examples": 3,
     "other": 23,
     "public_facade": 4,
@@ -43039,11 +43051,11 @@
     "reference_orchestration": 14,
     "research_reproductions": 448,
     "sdk": 5,
-    "tests": 1030,
+    "tests": 1037,
     "tooling": 39
   },
   "schema": "noetrium-repository-code-architecture-index.v1",
-  "source_git_sha": "cabb9c2ab7fdfb65a9f27c490b71b48dcfc1d6a7",
+  "source_git_sha": "68d311e67e5221a869baa0eb0d50b605c3dee7cf",
   "symbols": [
     {
       "bases": [],
@@ -48461,7 +48473,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 419,
+      "line": 428,
       "methods": [
         "__init__",
         "open"
@@ -89442,6 +89454,48 @@
       "role": "core_platform"
     },
     {
+      "bases": [],
+      "decorators": [],
+      "fields": [],
+      "kind": "class",
+      "language": "python",
+      "line": 25,
+      "methods": [
+        "__init__",
+        "poll",
+        "wait",
+        "_signal_guardian",
+        "terminate",
+        "kill"
+      ],
+      "module": "noetrium_platform.infrastructure.lifecycle.process.supervision.runtime.supervisor",
+      "name": "_PosixGroupOwnedProcess",
+      "path": "noetrium_platform/infrastructure/lifecycle/process/supervision/runtime/supervisor.py",
+      "qualname": "noetrium_platform.infrastructure.lifecycle.process.supervision.runtime.supervisor._PosixGroupOwnedProcess",
+      "role": "core_platform"
+    },
+    {
+      "bases": [],
+      "decorators": [],
+      "fields": [],
+      "kind": "class",
+      "language": "python",
+      "line": 66,
+      "methods": [
+        "__init__",
+        "_retire_job_if_exited",
+        "poll",
+        "wait",
+        "terminate",
+        "kill"
+      ],
+      "module": "noetrium_platform.infrastructure.lifecycle.process.supervision.runtime.supervisor",
+      "name": "_WindowsJobOwnedProcess",
+      "path": "noetrium_platform/infrastructure/lifecycle/process/supervision/runtime/supervisor.py",
+      "qualname": "noetrium_platform.infrastructure.lifecycle.process.supervision.runtime.supervisor._WindowsJobOwnedProcess",
+      "role": "core_platform"
+    },
+    {
       "bases": [
         "ProcessSupervisorPort"
       ],
@@ -89449,7 +89503,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 20,
+      "line": 105,
       "methods": [
         "__init__",
         "_task_id",
@@ -99119,7 +99173,8 @@
         "get",
         "active",
         "reconcile",
-        "reconcile_orphans"
+        "expire_orphans",
+        "retire_orphan"
       ],
       "module": "noetrium_platform.infrastructure.resources.allocation.api.ports",
       "name": "AtomicEndpointReservationPort",
@@ -99135,7 +99190,7 @@
       "fields": [],
       "kind": "protocol",
       "language": "python",
-      "line": 72,
+      "line": 77,
       "methods": [
         "start",
         "assert_healthy",
@@ -99155,7 +99210,7 @@
       "fields": [],
       "kind": "protocol",
       "language": "python",
-      "line": 78,
+      "line": 83,
       "methods": [
         "create"
       ],
@@ -99173,7 +99228,7 @@
       "fields": [],
       "kind": "protocol",
       "language": "python",
-      "line": 82,
+      "line": 87,
       "methods": [
         "allocate",
         "allocate_auto",
@@ -99253,6 +99308,24 @@
         "__init__"
       ],
       "module": "noetrium_platform.infrastructure.resources.allocation.runtime.endpoint_allocator",
+      "name": "EndpointPhysicalConvergencePending",
+      "path": "noetrium_platform/infrastructure/resources/allocation/runtime/endpoint_allocator.py",
+      "qualname": "noetrium_platform.infrastructure.resources.allocation.runtime.endpoint_allocator.EndpointPhysicalConvergencePending",
+      "role": "core_platform"
+    },
+    {
+      "bases": [
+        "RuntimeError"
+      ],
+      "decorators": [],
+      "fields": [],
+      "kind": "class",
+      "language": "python",
+      "line": 48,
+      "methods": [
+        "__init__"
+      ],
+      "module": "noetrium_platform.infrastructure.resources.allocation.runtime.endpoint_allocator",
       "name": "EndpointAllocationUnavailable",
       "path": "noetrium_platform/infrastructure/resources/allocation/runtime/endpoint_allocator.py",
       "qualname": "noetrium_platform.infrastructure.resources.allocation.runtime.endpoint_allocator.EndpointAllocationUnavailable",
@@ -99266,7 +99339,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 113,
+      "line": 124,
       "methods": [
         "__init__",
         "allocate_auto",
@@ -99295,10 +99368,12 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 290,
+      "line": 326,
       "methods": [
         "__init__",
         "_reconcile_allocation_locked",
+        "_lease_authoritative_locked",
+        "_require_lease_authority_locked",
         "_existing_for_request_locked",
         "allocate_auto",
         "allocate",
@@ -101200,6 +101275,8 @@
         "_owner_matches",
         "_require_generation",
         "_reconcile_one",
+        "_lease_authoritative",
+        "_require_lease_authority",
         "reserve",
         "confirm_bound",
         "replace_bound",
@@ -101208,7 +101285,8 @@
         "release",
         "get",
         "active",
-        "reconcile_orphans"
+        "expire_orphans",
+        "retire_orphan"
       ],
       "module": "noetrium_platform.infrastructure.resources.providers.sqlite_endpoint",
       "name": "SQLiteEndpointAllocationStore",
@@ -134961,6 +135039,41 @@
       "fields": [],
       "kind": "class",
       "language": "python",
+      "line": 163,
+      "methods": [
+        "__init__",
+        "submit"
+      ],
+      "module": "tests.test_environment_jsonl_process_transport_v1",
+      "name": "_FailingSubmitGroup",
+      "path": "tests/test_environment_jsonl_process_transport_v1.py",
+      "qualname": "tests.test_environment_jsonl_process_transport_v1._FailingSubmitGroup",
+      "role": "tests"
+    },
+    {
+      "bases": [],
+      "decorators": [],
+      "fields": [],
+      "kind": "class",
+      "language": "python",
+      "line": 176,
+      "methods": [
+        "__init__",
+        "await_exit",
+        "terminate"
+      ],
+      "module": "tests.test_environment_jsonl_process_transport_v1",
+      "name": "_ImmediateTerminationSupervisor",
+      "path": "tests/test_environment_jsonl_process_transport_v1.py",
+      "qualname": "tests.test_environment_jsonl_process_transport_v1._ImmediateTerminationSupervisor",
+      "role": "tests"
+    },
+    {
+      "bases": [],
+      "decorators": [],
+      "fields": [],
+      "kind": "class",
+      "language": "python",
       "line": 23,
       "methods": [
         "__init__",
@@ -137423,9 +137536,10 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 12,
+      "line": 13,
       "methods": [
         "test_nonzero_managed_environment_command_is_not_reported_as_ok",
+        "test_management_cli_refuses_state_root_owned_by_live_runtime",
         "test_directory_and_model_registry_commands"
       ],
       "module": "tests.test_management_cli_v191",
@@ -138304,6 +138418,95 @@
       "kind": "class",
       "language": "python",
       "line": 826,
+      "methods": [
+        "create"
+      ],
+      "module": "tests.test_minecraft_branch_runtime_v1",
+      "name": "ServerFactory",
+      "path": "tests/test_minecraft_branch_runtime_v1.py",
+      "qualname": "tests.test_minecraft_branch_runtime_v1.ServerFactory",
+      "role": "tests"
+    },
+    {
+      "bases": [
+        "RecordingSession"
+      ],
+      "decorators": [],
+      "fields": [],
+      "kind": "class",
+      "language": "python",
+      "line": 862,
+      "methods": [
+        "__init__",
+        "close"
+      ],
+      "module": "tests.test_minecraft_branch_runtime_v1",
+      "name": "FlakySession",
+      "path": "tests/test_minecraft_branch_runtime_v1.py",
+      "qualname": "tests.test_minecraft_branch_runtime_v1.FlakySession",
+      "role": "tests"
+    },
+    {
+      "bases": [
+        "RecordingEnvironmentRuntime"
+      ],
+      "decorators": [],
+      "fields": [],
+      "kind": "class",
+      "language": "python",
+      "line": 873,
+      "methods": [
+        "__init__",
+        "open_session"
+      ],
+      "module": "tests.test_minecraft_branch_runtime_v1",
+      "name": "RuntimeWithFlakySession",
+      "path": "tests/test_minecraft_branch_runtime_v1.py",
+      "qualname": "tests.test_minecraft_branch_runtime_v1.RuntimeWithFlakySession",
+      "role": "tests"
+    },
+    {
+      "bases": [
+        "NoopGuard"
+      ],
+      "decorators": [],
+      "fields": [],
+      "kind": "class",
+      "language": "python",
+      "line": 889,
+      "methods": [
+        "__init__",
+        "close"
+      ],
+      "module": "tests.test_minecraft_branch_runtime_v1",
+      "name": "RecordingGuard",
+      "path": "tests/test_minecraft_branch_runtime_v1.py",
+      "qualname": "tests.test_minecraft_branch_runtime_v1.RecordingGuard",
+      "role": "tests"
+    },
+    {
+      "bases": [],
+      "decorators": [],
+      "fields": [],
+      "kind": "class",
+      "language": "python",
+      "line": 899,
+      "methods": [
+        "create"
+      ],
+      "module": "tests.test_minecraft_branch_runtime_v1",
+      "name": "GuardFactory",
+      "path": "tests/test_minecraft_branch_runtime_v1.py",
+      "qualname": "tests.test_minecraft_branch_runtime_v1.GuardFactory",
+      "role": "tests"
+    },
+    {
+      "bases": [],
+      "decorators": [],
+      "fields": [],
+      "kind": "class",
+      "language": "python",
+      "line": 916,
       "methods": [
         "create"
       ],

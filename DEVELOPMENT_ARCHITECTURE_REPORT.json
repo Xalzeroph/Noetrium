@@ -3,7 +3,7 @@
   "architecture_complexity": {
     "authorities": 20,
     "contract_declarations": 185,
-    "import_edges": 5293,
+    "import_edges": 5295,
     "subsystems": 15,
     "top_level_systems": 16
   },
@@ -23,7 +23,7 @@
     "effective_limits": {
       "authorities": 31,
       "contract_declarations": 185,
-      "import_edges": 5293,
+      "import_edges": 5295,
       "subsystems": 15,
       "top_level_systems": 16
     },
@@ -627,7 +627,7 @@
       "seam_id": "completed"
     }
   ],
-  "import_edges": 5293,
+  "import_edges": 5295,
   "import_violations": [],
   "layer_violations": [],
   "operation_graph": [
@@ -873,8 +873,55 @@
     }
   ],
   "package_cycles": [],
-  "report_sha256": "22988518f994e7332dd7297efb29f31cf82fe240b032d2b6166572c4c6834864",
+  "report_sha256": "19d93cdc0667d5846fbd7e0ccd958cd9034360d7b79bd396fca74d2d2f031708",
   "source_authority_violations": [
+    {
+      "allowed_modules": [
+        "noetrium_platform.infrastructure.lifecycle.process.supervision.runtime.command_runner",
+        "noetrium_platform.infrastructure.lifecycle.service.runtime.linux_signal"
+      ],
+      "authority": "process.process_group_signal",
+      "detail": "os.killpg is a protected mutation primitive; authority belongs to noetrium_platform.infrastructure.lifecycle.process.supervision.runtime.command_runner, noetrium_platform.infrastructure.lifecycle.service.runtime.linux_signal",
+      "line": 39,
+      "module": "noetrium_platform.infrastructure.lifecycle.process.supervision.runtime.parent_bound_child",
+      "path": "noetrium_platform/infrastructure/lifecycle/process/supervision/runtime/parent_bound_child.py",
+      "primitive": "os.killpg"
+    },
+    {
+      "allowed_modules": [
+        "noetrium_platform.infrastructure.lifecycle.service.runtime.linux_spawn",
+        "noetrium_platform.infrastructure.lifecycle.process.supervision.runtime.supervisor"
+      ],
+      "authority": "lifecycle.process_spawn",
+      "detail": "subprocess.Popen is a protected mutation primitive; authority belongs to noetrium_platform.infrastructure.lifecycle.service.runtime.linux_spawn, noetrium_platform.infrastructure.lifecycle.process.supervision.runtime.supervisor",
+      "line": 81,
+      "module": "noetrium_platform.infrastructure.lifecycle.process.supervision.runtime.parent_bound_child",
+      "path": "noetrium_platform/infrastructure/lifecycle/process/supervision/runtime/parent_bound_child.py",
+      "primitive": "subprocess.Popen"
+    },
+    {
+      "allowed_modules": [
+        "noetrium_platform.foundation.kernel.kernel.retry"
+      ],
+      "authority": "kernel.blocking_wait",
+      "detail": "time.sleep is a protected mutation primitive; authority belongs to noetrium_platform.foundation.kernel.kernel.retry",
+      "line": 97,
+      "module": "noetrium_platform.infrastructure.lifecycle.process.supervision.runtime.parent_bound_child",
+      "path": "noetrium_platform/infrastructure/lifecycle/process/supervision/runtime/parent_bound_child.py",
+      "primitive": "time.sleep"
+    },
+    {
+      "allowed_modules": [
+        "noetrium_platform.infrastructure.lifecycle.process.supervision.runtime.command_runner",
+        "noetrium_platform.infrastructure.lifecycle.service.runtime.linux_signal"
+      ],
+      "authority": "process.process_group_signal",
+      "detail": "os.killpg is a protected mutation primitive; authority belongs to noetrium_platform.infrastructure.lifecycle.process.supervision.runtime.command_runner, noetrium_platform.infrastructure.lifecycle.service.runtime.linux_signal",
+      "line": 48,
+      "module": "noetrium_platform.infrastructure.lifecycle.process.supervision.runtime.parent_bound_child",
+      "path": "noetrium_platform/infrastructure/lifecycle/process/supervision/runtime/parent_bound_child.py",
+      "primitive": "os.killpg"
+    },
     {
       "allowed_modules": [
         "noetrium_platform.foundation.kernel.kernel.retry"
@@ -887,7 +934,7 @@
       "primitive": "time.sleep"
     }
   ],
-  "source_digest": "eec0ac3c69605227239fc0e2577be726092885f722db3279dab33c1d40c11f72",
+  "source_digest": "1ba687489a61d7c5e98b9115dd7385c507c5ce0cda96314407323510fe1d3ca0",
   "source_invariant_violations": [],
   "source_root": ".",
   "subsystem_graph": [
@@ -2032,24 +2079,6 @@
       "serialization_sites": 0
     },
     {
-      "exception_handlers": 7,
-      "import_fan_in": 1,
-      "import_fan_out": 6,
-      "io_sites": 28,
-      "lock_sites": 0,
-      "long_functions": 4,
-      "module": "noetrium_platform.infrastructure.resources.providers.sqlite_endpoint",
-      "path": "noetrium_platform/infrastructure/resources/providers/sqlite_endpoint.py",
-      "reason_codes": [
-        "IO_CONCENTRATION",
-        "FAILURE_BRANCH_CONCENTRATION",
-        "LONG_FUNCTION"
-      ],
-      "risk_score": 392,
-      "self_mutation_sites": 2,
-      "serialization_sites": 0
-    },
-    {
       "exception_handlers": 8,
       "import_fan_in": 62,
       "import_fan_out": 1,
@@ -2101,6 +2130,24 @@
       ],
       "risk_score": 385,
       "self_mutation_sites": 64,
+      "serialization_sites": 0
+    },
+    {
+      "exception_handlers": 7,
+      "import_fan_in": 1,
+      "import_fan_out": 6,
+      "io_sites": 27,
+      "lock_sites": 0,
+      "long_functions": 4,
+      "module": "noetrium_platform.infrastructure.resources.providers.sqlite_endpoint",
+      "path": "noetrium_platform/infrastructure/resources/providers/sqlite_endpoint.py",
+      "reason_codes": [
+        "IO_CONCENTRATION",
+        "FAILURE_BRANCH_CONCENTRATION",
+        "LONG_FUNCTION"
+      ],
+      "risk_score": 384,
+      "self_mutation_sites": 2,
       "serialization_sites": 0
     },
     {
@@ -2157,6 +2204,24 @@
       "serialization_sites": 0
     },
     {
+      "exception_handlers": 13,
+      "import_fan_in": 2,
+      "import_fan_out": 5,
+      "io_sites": 0,
+      "lock_sites": 0,
+      "long_functions": 3,
+      "module": "noetrium_platform.capabilities.environment.providers.jsonl_process",
+      "path": "noetrium_platform/capabilities/environment/providers/jsonl_process.py",
+      "reason_codes": [
+        "STATE_MUTATION_CONCENTRATION",
+        "FAILURE_BRANCH_CONCENTRATION",
+        "LONG_FUNCTION"
+      ],
+      "risk_score": 325,
+      "self_mutation_sites": 26,
+      "serialization_sites": 2
+    },
+    {
       "exception_handlers": 3,
       "import_fan_in": 1,
       "import_fan_out": 6,
@@ -2173,24 +2238,6 @@
       "risk_score": 310,
       "self_mutation_sites": 28,
       "serialization_sites": 0
-    },
-    {
-      "exception_handlers": 11,
-      "import_fan_in": 2,
-      "import_fan_out": 5,
-      "io_sites": 0,
-      "lock_sites": 0,
-      "long_functions": 3,
-      "module": "noetrium_platform.capabilities.environment.providers.jsonl_process",
-      "path": "noetrium_platform/capabilities/environment/providers/jsonl_process.py",
-      "reason_codes": [
-        "STATE_MUTATION_CONCENTRATION",
-        "FAILURE_BRANCH_CONCENTRATION",
-        "LONG_FUNCTION"
-      ],
-      "risk_score": 309,
-      "self_mutation_sites": 26,
-      "serialization_sites": 2
     },
     {
       "exception_handlers": 3,
