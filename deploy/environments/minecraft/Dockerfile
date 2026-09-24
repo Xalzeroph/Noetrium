@@ -15,6 +15,7 @@ LABEL org.opencontainers.image.noetrium.environment.profile-id="${NOETRIUM_ENVIR
       org.opencontainers.image.noetrium.environment.build-input.sha256="${NOETRIUM_ENVIRONMENT_BUILD_INPUT_DIGEST}"
 
 ARG NODE_VERSION=22.22.2
+ARG NODE_LINUX_X64_SHA256
 ENV JAVA_HOME=/opt/java/openjdk \
     MC_DATA_DIR=/var/lib/minecraft \
     NOETRIUM_ENVIRONMENT_PROFILE=minecraft \
@@ -31,11 +32,11 @@ RUN apt-get update \
     && rm -rf /var/lib/apt/lists/*
 
 RUN cd /tmp \
+    && test -n "${NODE_LINUX_X64_SHA256}" \
     && curl -fsSLO "https://nodejs.org/dist/v${NODE_VERSION}/node-v${NODE_VERSION}-linux-x64.tar.xz" \
-    && curl -fsSLO "https://nodejs.org/dist/v${NODE_VERSION}/SHASUMS256.txt" \
-    && grep " node-v${NODE_VERSION}-linux-x64.tar.xz$" SHASUMS256.txt | sha256sum -c - \
+    && printf '%s  %s\n' "${NODE_LINUX_X64_SHA256}" "node-v${NODE_VERSION}-linux-x64.tar.xz" | sha256sum -c - \
     && tar -xJf "node-v${NODE_VERSION}-linux-x64.tar.xz" --strip-components=1 -C /usr/local \
-    && rm -f "node-v${NODE_VERSION}-linux-x64.tar.xz" SHASUMS256.txt
+    && rm -f "node-v${NODE_VERSION}-linux-x64.tar.xz"
 
 RUN bridge="$(python -c 'from pathlib import Path; import noetrium_platform; print(Path(noetrium_platform.__file__).resolve().parent / "capabilities/environment/minecraft/providers/assets/mineflayer_bridge")')" \
     && test -f "$bridge/package-lock.json" \
