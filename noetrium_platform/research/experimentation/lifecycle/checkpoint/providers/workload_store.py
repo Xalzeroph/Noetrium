@@ -3,6 +3,7 @@ from __future__ import annotations
 import hashlib
 from pathlib import Path
 
+from noetrium_platform.foundation.kernel.kernel.durability import InterprocessFileLock
 from noetrium_platform.foundation.kernel.kernel.durability.durable_file import atomic_replace_bytes
 
 from ..api import (
@@ -30,7 +31,9 @@ class DirectoryWorkloadCheckpointStore(WorkloadCheckpointStore):
     def __init__(self, root: Path) -> None:
         self._content = DirectoryRunCheckpointStore(Path(root))
         self._manifests = Path(root) / "workload_manifests"
+        self._manifest_locks = Path(root) / "workload_manifest_locks"
         self._manifests.mkdir(parents=True, exist_ok=True)
+        self._manifest_locks.mkdir(parents=True, exist_ok=True)
         self._codec = WorkloadCheckpointManifestCodec()
 
     @staticmethod
@@ -40,6 +43,10 @@ class DirectoryWorkloadCheckpointStore(WorkloadCheckpointStore):
     def _manifest_path(self, checkpoint_id: str) -> Path:
         safe = self._sha(checkpoint_id.encode("utf-8"))
         return self._manifests / f"{safe}.json"
+
+    def _manifest_lock_path(self, checkpoint_id: str) -> Path:
+        safe = self._sha(checkpoint_id.encode("utf-8"))
+        return self._manifest_locks / f"{safe}.lock"
 
     def publish(
         self,
@@ -52,19 +59,26 @@ class DirectoryWorkloadCheckpointStore(WorkloadCheckpointStore):
             raise RunCheckpointIntegrityError(
                 "workload checkpoint payload refs do not match manifest"
             ) from exc
-        for item in payloads:
-            self._content._write_blob(item.payload, item.ref.payload_sha256)
         path = self._manifest_path(manifest.checkpoint_id)
         encoded = self._codec.encode(manifest)
-        if path.exists():
-            current = self._codec.decode(path.read_bytes())
-            if current != manifest:
-                raise RunCheckpointConflict(
-                    f"workload checkpoint id is already bound to different state: {manifest.checkpoint_id}"
+        with InterprocessFileLock(
+            self._manifest_lock_path(manifest.checkpoint_id)
+        ):
+            if path.exists():
+                current = self._codec.decode(path.read_bytes())
+                if current != manifest:
+                    raise RunCheckpointConflict(
+                        "workload checkpoint id is already bound to different state: "
+                        f"{manifest.checkpoint_id}"
+                    )
+                return current
+            for item in payloads:
+                self._content._write_blob(
+                    item.payload,
+                    item.ref.payload_sha256,
                 )
-            return current
-        atomic_replace_bytes(path, encoded)
-        return manifest
+            atomic_replace_bytes(path, encoded)
+            return manifest
 
     def load(self, checkpoint_id: str) -> WorkloadCheckpointBundle:
         path = self._manifest_path(checkpoint_id)
