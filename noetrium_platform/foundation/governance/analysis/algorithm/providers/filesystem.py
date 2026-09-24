@@ -74,23 +74,20 @@ def _snapshot_from_dict(data: dict) -> AlgorithmSnapshot:
     common_fields = {
         "schema_version", "analyzer_revision", "source_digest", "symbols", "coverage", "generated_unix_ns",
     }
-    if schema == "algorithm-snapshot.v3":
-        expected = common_fields | {"source_authority", "source_revision", "analyzer_implementation_digest"}
-        if set(data) != expected:
-            raise ValueError("algorithm-snapshot.v3 has unexpected fields")
-        source_authority = str(data["source_authority"])
-        source_revision = data["source_revision"]
-        if source_revision is not None:
-            source_revision = str(source_revision)
-        implementation_digest = str(data["analyzer_implementation_digest"])
-    elif schema == "algorithm-snapshot.v2":
-        if set(data) != common_fields:
-            raise ValueError("legacy algorithm-snapshot.v2 has unexpected fields")
-        source_authority = "legacy"
-        source_revision = None
-        implementation_digest = ""
-    else:
+    if schema != "algorithm-snapshot.v3":
         raise ValueError(f"unsupported algorithm snapshot schema: {schema}")
+    expected = common_fields | {
+        "source_authority",
+        "source_revision",
+        "analyzer_implementation_digest",
+    }
+    if set(data) != expected:
+        raise ValueError("algorithm-snapshot.v3 has unexpected fields")
+    source_authority = str(data["source_authority"])
+    source_revision = data["source_revision"]
+    if source_revision is not None:
+        source_revision = str(source_revision)
+    implementation_digest = str(data["analyzer_implementation_digest"])
     return AlgorithmSnapshot(
         schema_version=schema,
         analyzer_revision=str(data["analyzer_revision"]),
