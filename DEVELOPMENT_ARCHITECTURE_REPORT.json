@@ -873,7 +873,7 @@
     }
   ],
   "package_cycles": [],
-  "report_sha256": "1758c2a2df077c2d0f0f9812943a2f33e115fde42809c6c5a3308805334a6133",
+  "report_sha256": "167a9fd46fd664a95aef245b8eba2a7a8622679962a0bfdc6a6ae62442ea5975",
   "source_authority_violations": [
     {
       "allowed_modules": [
@@ -887,7 +887,7 @@
       "primitive": "time.sleep"
     }
   ],
-  "source_digest": "87587bd44e6c8014eda0ce864f0930b1a3272c6aa7ea02941395e142e774cdc2",
+  "source_digest": "f876435fd34abee8afc3c1798e7c09a4e9fa5561af14b16372ef43b79a9f93c9",
   "source_invariant_violations": [],
   "source_root": ".",
   "subsystem_graph": [

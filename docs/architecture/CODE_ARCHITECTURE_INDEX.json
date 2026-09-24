@@ -38902,7 +38902,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 477,
+      "line": 483,
       "methods": [
         "__init__",
         "policy",
@@ -77103,7 +77103,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 116,
+      "line": 122,
       "methods": [
         "__init__",
         "create"
@@ -77830,7 +77830,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 107,
+      "line": 111,
       "methods": [
         "__init__",
         "policy",
@@ -78325,7 +78325,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 507,
+      "line": 513,
       "methods": [
         "__init__",
         "policy",
@@ -99754,11 +99754,6 @@
     {
       "kind": "constructs",
       "source": "noetrium_platform.composition.resource_lifecycle.ManagedResourceReconciler",
-      "target": "noetrium_platform.composition.environment_instance_leases.EnvironmentInstanceReconciliation"
-    },
-    {
-      "kind": "constructs",
-      "source": "noetrium_platform.composition.resource_lifecycle.ManagedResourceReconciler",
       "target": "noetrium_platform.composition.resource_lifecycle.ManagedResourceReconciliation"
     },
     {
@@ -102975,7 +102970,7 @@
   "counts": {
     "association_edges": 3441,
     "classes": 3353,
-    "constructor_edges": 914,
+    "constructor_edges": 913,
     "inheritance_edges": 146,
     "module_import_edges": 5003,
     "parse_errors": 0,
@@ -143718,7 +143713,7 @@
   "parse_errors": [],
   "registry_sha256": "d3fc1bab831f1b7379e5a36048a61c00fe173429df958270d36a16f3f00171c0",
   "schema": "noetrium-code-architecture-index.v1",
-  "source_git_sha": "3f22c76c6ccf06ab3a8c6632decdaecae12ad557",
+  "source_git_sha": "d154f45f407698a36f96fe1083c1ef3679cacebe",
   "system_import_edges": [
     {
       "count": 85,

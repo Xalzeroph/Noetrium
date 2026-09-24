@@ -3,13 +3,13 @@
     "parse_errors": 0,
     "python_files": 3685,
     "python_import_edges": 7144,
-    "symbols": 4956,
+    "symbols": 4958,
     "tracked_files": 4321,
     "typescript_javascript_files": 11
   },
   "language_symbol_counts": {
     "javascript": 1,
-    "python": 4950,
+    "python": 4952,
     "typescript": 5
   },
   "parse_errors": [],
@@ -43016,11 +43016,11 @@
     "reference_orchestration": 14,
     "research_reproductions": 448,
     "sdk": 5,
-    "tests": 1002,
+    "tests": 1004,
     "tooling": 39
   },
   "schema": "noetrium-repository-code-architecture-index.v1",
-  "source_git_sha": "3f22c76c6ccf06ab3a8c6632decdaecae12ad557",
+  "source_git_sha": "d154f45f407698a36f96fe1083c1ef3679cacebe",
   "symbols": [
     {
       "bases": [],
@@ -64490,7 +64490,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 477,
+      "line": 483,
       "methods": [
         "__init__",
         "policy",
@@ -99265,7 +99265,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 116,
+      "line": 122,
       "methods": [
         "__init__",
         "create"
@@ -99926,7 +99926,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 107,
+      "line": 111,
       "methods": [
         "__init__",
         "policy",
@@ -100380,7 +100380,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 507,
+      "line": 513,
       "methods": [
         "__init__",
         "policy",
@@ -136961,8 +136961,10 @@
       "language": "python",
       "line": 107,
       "methods": [
+        "__init__",
         "reconcile",
-        "active"
+        "active",
+        "release"
       ],
       "module": "tests.test_managed_resource_reconciler_v1",
       "name": "EndpointShutdownAuthority",
@@ -136976,15 +136978,53 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 115,
+      "line": 125,
       "methods": [
+        "__init__",
         "reconcile_expired",
-        "allocations"
+        "allocations",
+        "release"
       ],
       "module": "tests.test_managed_resource_reconciler_v1",
       "name": "ComputeShutdownAuthority",
       "path": "tests/test_managed_resource_reconciler_v1.py",
       "qualname": "tests.test_managed_resource_reconciler_v1.ComputeShutdownAuthority",
+      "role": "tests"
+    },
+    {
+      "bases": [
+        "ShutdownAuthority"
+      ],
+      "decorators": [],
+      "fields": [],
+      "kind": "class",
+      "language": "python",
+      "line": 171,
+      "methods": [
+        "shutdown_cleanup"
+      ],
+      "module": "tests.test_managed_resource_reconciler_v1",
+      "name": "FailingContainerShutdownAuthority",
+      "path": "tests/test_managed_resource_reconciler_v1.py",
+      "qualname": "tests.test_managed_resource_reconciler_v1.FailingContainerShutdownAuthority",
+      "role": "tests"
+    },
+    {
+      "bases": [],
+      "decorators": [],
+      "fields": [],
+      "kind": "class",
+      "language": "python",
+      "line": 176,
+      "methods": [
+        "__init__",
+        "shutdown_cleanup",
+        "reconcile"
+      ],
+      "module": "tests.test_managed_resource_reconciler_v1",
+      "name": "NeverCalledShutdownAuthority",
+      "path": "tests/test_managed_resource_reconciler_v1.py",
+      "qualname": "tests.test_managed_resource_reconciler_v1.NeverCalledShutdownAuthority",
       "role": "tests"
     },
     {
