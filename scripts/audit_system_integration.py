@@ -31,6 +31,8 @@ class SystemIntegrationRow:
     script_consumers: tuple[str, ...]
     test_consumers: tuple[str, ...]
     direct_runtime_or_provider_consumers: tuple[str, ...]
+    concrete_binding_consumers: tuple[str, ...]
+    concrete_bypass_consumers: tuple[str, ...]
     facade_module: str | None
     status: str
 
@@ -297,6 +299,8 @@ def build_report() -> dict:
     inbound: dict[str, dict[str, set[str]]] = defaultdict(lambda: defaultdict(set))
     composition_inbound: dict[str, set[str]] = defaultdict(set)
     direct_concrete: dict[str, set[str]] = defaultdict(set)
+    concrete_bindings: dict[str, set[str]] = defaultdict(set)
+    concrete_bypasses: dict[str, set[str]] = defaultdict(set)
     topology_inbound: dict[str, dict[str, set[str]]] = defaultdict(
         lambda: defaultdict(set)
     )
@@ -333,6 +337,11 @@ def build_report() -> dict:
                         ".runtime" in imported or ".providers" in imported
                     ):
                         direct_concrete[target_owner].add(module)
+                        source_parts = module.split(".")
+                        if "composition" in source_parts:
+                            concrete_bindings[target_owner].add(module)
+                        else:
+                            concrete_bypasses[target_owner].add(module)
 
                 target_topology_owner = owner_for_module(imported, topology_owners)
                 if (
@@ -389,6 +398,8 @@ def build_report() -> dict:
         scripts = tuple(sorted(inbound[key]["script"]))
         tests = tuple(sorted(inbound[key]["test"]))
         concrete = tuple(sorted(direct_concrete[key]))
+        bindings = tuple(sorted(concrete_bindings[key]))
+        bypasses = tuple(sorted(concrete_bypasses[key]))
         facade = downstream_by_key.get(key, {}).get("facade_module")
 
         if missing:
@@ -428,6 +439,8 @@ def build_report() -> dict:
             script_consumers=scripts,
             test_consumers=tests,
             direct_runtime_or_provider_consumers=concrete,
+            concrete_binding_consumers=bindings,
+            concrete_bypass_consumers=bypasses,
             facade_module=str(facade) if facade else None,
             status=status,
         ))
@@ -527,6 +540,12 @@ def build_report() -> dict:
         "direct_concrete_dependency_system_count": sum(
             bool(row.direct_runtime_or_provider_consumers) for row in rows
         ),
+        "concrete_binding_system_count": sum(
+            bool(row.concrete_binding_consumers) for row in rows
+        ),
+        "concrete_bypass_system_count": sum(
+            bool(row.concrete_bypass_consumers) for row in rows
+        ),
         "systems": [asdict(row) for row in rows],
         "component_count": sum(
             row.topology_level == "component" for row in layer_rows
@@ -561,6 +580,8 @@ def render_markdown(report: dict) -> str:
         f"- Registered systems: {report['system_count']}",
         f"- Disconnected/non-production-consumed: {report['disconnected_system_count']}",
         f"- Cross-system direct runtime/provider pressure: {report['direct_concrete_dependency_system_count']}",
+        f"- Explicit composition bindings: {report['concrete_binding_system_count']}",
+        f"- Non-composition concrete bypasses: {report['concrete_bypass_system_count']}",
         f"- Registered components: {report['component_count']}",
         f"- Registered internal facets: {report['internal_facet_count']}",
         f"- Layer nodes needing wiring attention: {report['layer_disconnected_count']}",
@@ -663,6 +684,13 @@ def main(argv: list[str] | None = None) -> int:
             row["system_key"]: row["direct_runtime_or_provider_consumers"]
             for row in report["systems"]
             if row["direct_runtime_or_provider_consumers"]
+        },
+        "concrete_binding_system_count": report["concrete_binding_system_count"],
+        "concrete_bypass_system_count": report["concrete_bypass_system_count"],
+        "concrete_bypass_systems": {
+            row["system_key"]: row["concrete_bypass_consumers"]
+            for row in report["systems"]
+            if row["concrete_bypass_consumers"]
         },
         "component_count": report["component_count"],
         "internal_facet_count": report["internal_facet_count"],
