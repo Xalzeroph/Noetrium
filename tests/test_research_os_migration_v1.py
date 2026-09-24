@@ -387,14 +387,11 @@ def test_migration_cas_rejects_stale_source_cut(tmp_path) -> None:
 
 
 
-class _RacingActiveCutStore:
-    def __init__(self, store, *, competing_cut_id: str) -> None:
-        self._store = store
+class _RacingExecutionStore(SQLiteResearchGraphExecutionStore):
+    def __init__(self, path, *, competing_cut_id: str) -> None:
+        super().__init__(path)
         self._competing_cut_id = competing_cut_id
         self._raced = False
-
-    def active_cut(self, logical_execution_id: str):
-        return self._store.active_cut(logical_execution_id)
 
     def move_active_cut(
         self,
@@ -406,12 +403,12 @@ class _RacingActiveCutStore:
     ):
         if not self._raced:
             self._raced = True
-            self._store.move_active_cut(
+            super().move_active_cut(
                 logical_execution_id,
                 self._competing_cut_id,
                 expected_cut_id=expected_cut_id,
             )
-        return self._store.move_active_cut(
+        return super().move_active_cut(
             logical_execution_id,
             cut_id,
             expected_cut_id=expected_cut_id,
@@ -473,8 +470,8 @@ def test_migration_final_cas_conflict_keeps_staged_target_inactive_and_paused(
         stable.new_semantic_digest,
         canonical_digest({"artifact-proof": "paper-b::main"}),
     )
-    racing = _RacingActiveCutStore(
-        store,
+    racing = _RacingExecutionStore(
+        store.path,
         competing_cut_id=competing_cut.cut_id,
     )
 
@@ -485,9 +482,8 @@ def test_migration_final_cas_conflict_keeps_staged_target_inactive_and_paused(
         materialize_research_os_execution_migration(
             plan,
             new,
-            store,
+            racing,
             reuse_proofs=(proof,),
-            active_cut_store=racing,
             now_ns=20,
         )
 
@@ -658,8 +654,8 @@ def test_migration_retry_reconciles_staged_pause_with_current_source_control(tmp
         competing,
     )
     store.ensure_execution(competing_cut.cut_id, competing.plan)
-    racing = _RacingActiveCutStore(
-        store,
+    racing = _RacingExecutionStore(
+        store.path,
         competing_cut_id=competing_cut.cut_id,
     )
 
@@ -667,8 +663,7 @@ def test_migration_retry_reconciles_staged_pause_with_current_source_control(tmp
         materialize_research_os_execution_migration(
             plan,
             new,
-            store,
-            active_cut_store=racing,
+            racing,
             now_ns=20,
         )
 
@@ -715,14 +710,11 @@ def test_migration_retry_reconciles_staged_pause_with_current_source_control(tmp
 
 
 
-class _SourceControlRacingActiveCutStore:
-    def __init__(self, store, *, node_id: str) -> None:
-        self._store = store
+class _SourceControlRacingExecutionStore(SQLiteResearchGraphExecutionStore):
+    def __init__(self, path, *, node_id: str) -> None:
+        super().__init__(path)
         self._node_id = node_id
         self._raced = False
-
-    def active_cut(self, logical_execution_id: str):
-        return self._store.active_cut(logical_execution_id)
 
     def move_active_cut(
         self,
@@ -734,19 +726,19 @@ class _SourceControlRacingActiveCutStore:
     ):
         if source_fence is not None and not self._raced:
             self._raced = True
-            control = self._store.node_control_state(
+            control = self.node_control_state(
                 source_fence.source_execution_id,
                 self._node_id,
             )
             assert control.phase is ResearchGraphNodeControlPhase.PAUSED
-            resumed = self._store.resume_node(
+            resumed = self.resume_node(
                 source_fence.source_execution_id,
                 self._node_id,
                 expected_generation=control.generation,
                 now_ns=50,
             )
             assert resumed.phase is ResearchGraphNodeControlPhase.ACTIVE
-        return self._store.move_active_cut(
+        return super().move_active_cut(
             logical_execution_id,
             cut_id,
             expected_cut_id=expected_cut_id,
@@ -791,8 +783,8 @@ def test_atomic_cut_fence_rejects_source_node_control_race(tmp_path) -> None:
         new,
         store.snapshot(source_cut_id),
     )
-    racing = _SourceControlRacingActiveCutStore(
-        store,
+    racing = _SourceControlRacingExecutionStore(
+        store.path,
         node_id="paper-a::main",
     )
 
@@ -803,8 +795,7 @@ def test_atomic_cut_fence_rejects_source_node_control_race(tmp_path) -> None:
         materialize_research_os_execution_migration(
             plan,
             new,
-            store,
-            active_cut_store=racing,
+            racing,
             now_ns=20,
         )
 
@@ -824,14 +815,11 @@ def test_atomic_cut_fence_rejects_source_node_control_race(tmp_path) -> None:
     ).phase is ResearchGraphNodeControlPhase.PAUSED
 
 
-class _ABAActiveCutStore:
-    def __init__(self, store, *, competing_cut_id: str) -> None:
-        self._store = store
+class _ABAExecutionStore(SQLiteResearchGraphExecutionStore):
+    def __init__(self, path, *, competing_cut_id: str) -> None:
+        super().__init__(path)
         self._competing_cut_id = competing_cut_id
         self._raced = False
-
-    def active_cut(self, logical_execution_id: str):
-        return self._store.active_cut(logical_execution_id)
 
     def move_active_cut(
         self,
@@ -843,17 +831,17 @@ class _ABAActiveCutStore:
     ):
         if source_fence is not None and not self._raced:
             self._raced = True
-            self._store.move_active_cut(
+            super().move_active_cut(
                 logical_execution_id,
                 self._competing_cut_id,
                 expected_cut_id=expected_cut_id,
             )
-            self._store.move_active_cut(
+            super().move_active_cut(
                 logical_execution_id,
                 source_fence.source_execution_id,
                 expected_cut_id=self._competing_cut_id,
             )
-        return self._store.move_active_cut(
+        return super().move_active_cut(
             logical_execution_id,
             cut_id,
             expected_cut_id=expected_cut_id,
@@ -899,8 +887,8 @@ def test_atomic_cut_fence_rejects_active_ref_aba(tmp_path) -> None:
         competing,
     )
     store.ensure_execution(competing_cut.cut_id, competing.plan)
-    racing = _ABAActiveCutStore(
-        store,
+    racing = _ABAExecutionStore(
+        store.path,
         competing_cut_id=competing_cut.cut_id,
     )
 
@@ -911,8 +899,7 @@ def test_atomic_cut_fence_rejects_active_ref_aba(tmp_path) -> None:
         materialize_research_os_execution_migration(
             plan,
             new,
-            store,
-            active_cut_store=racing,
+            racing,
             now_ns=20,
         )
 
