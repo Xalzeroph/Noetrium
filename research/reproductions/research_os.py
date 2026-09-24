@@ -45,9 +45,8 @@ class ReproductionResearchOSCompileError(RuntimeError):
 
 
 class ReproductionExecutionRequirementKind(StrEnum):
-    """Typed input required to close one reproduction execution."""
+    """Typed non-benchmark input required to close one reproduction execution."""
 
-    BENCHMARK_SPLIT = "benchmark_split"
     CAPABILITY_ID = "capability_id"
     CAPABILITY_CLOSURE = "capability_closure"
     PAPER_OPTION = "paper_option"
@@ -91,9 +90,9 @@ class ReproductionExecutionRequirement:
             )
 
 
+_BENCHMARK_SPLIT_PARAMETERS = frozenset({"split_id", "benchmark_split_id"})
+
 _EXECUTION_REQUIREMENT_KIND_BY_PARAMETER = {
-    "split_id": ReproductionExecutionRequirementKind.BENCHMARK_SPLIT,
-    "benchmark_split_id": ReproductionExecutionRequirementKind.BENCHMARK_SPLIT,
     "search_capability_id": ReproductionExecutionRequirementKind.CAPABILITY_ID,
     "expert_capability_ids": ReproductionExecutionRequirementKind.CAPABILITY_CLOSURE,
     "tool_capability_ids": ReproductionExecutionRequirementKind.CAPABILITY_CLOSURE,
@@ -111,6 +110,7 @@ class ReproductionExecutionBinding:
     binding_id: str
     study_factory: str
     benchmark_id: str
+    benchmark_split_id: str | None
     values: Mapping[str, JsonValue]
     requirement_digests: tuple[str, ...]
     binding_digest: str = field(init=False)
@@ -126,6 +126,14 @@ class ReproductionExecutionBinding:
                 raise ValueError(
                     f"reproduction execution binding {field_name} must be canonical text"
                 )
+        if self.benchmark_split_id is not None and (
+            type(self.benchmark_split_id) is not str
+            or not self.benchmark_split_id.strip()
+            or self.benchmark_split_id != self.benchmark_split_id.strip()
+        ):
+            raise ValueError(
+                "reproduction execution binding benchmark_split_id must be canonical text"
+            )
         if not isinstance(self.values, Mapping):
             raise TypeError("reproduction execution binding values must be a mapping")
         frozen_values = freeze_json(
@@ -161,6 +169,7 @@ class ReproductionExecutionBinding:
                     "binding_id": self.binding_id,
                     "study_factory": self.study_factory,
                     "benchmark_id": self.benchmark_id,
+                    "benchmark_split_id": self.benchmark_split_id,
                     "values": frozen_values,
                     "requirement_digests": digests,
                 }
@@ -221,10 +230,26 @@ class ReproductionStudyFactoryBinding:
             raise ValueError("reproduction Study factory digest must be SHA-256 text")
 
     @property
+    def benchmark_split_parameter(self) -> str | None:
+        matches = tuple(
+            name
+            for name in self.required_parameters
+            if name in _BENCHMARK_SPLIT_PARAMETERS
+        )
+        if len(matches) > 1:
+            raise ReproductionResearchOSCompileError(
+                f"{self.package} Study factory {self.qualname} declares multiple "
+                f"benchmark split parameters: {matches}"
+            )
+        return None if not matches else matches[0]
+
+    @property
     def unresolved_parameters(self) -> tuple[str, ...]:
         return tuple(
-            name for name in self.required_parameters
+            name
+            for name in self.required_parameters
             if name != self.benchmark_parameter
+            and name not in _BENCHMARK_SPLIT_PARAMETERS
         )
 
     @property
