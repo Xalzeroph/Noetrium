@@ -1,5 +1,5 @@
 from __future__ import annotations
-from noetrium_platform.research.execution.workflow.api import AgentMethodSpec, AgentPhaseSpec
+from noetrium.api import AgentMethodSpec, AgentPhaseSpec
 METHOD_ID="foreact_cvpr2026"
 TITLE="ForeAct: Steering Your VLA with Efficient Visual Foresight Planning"
 VENUE="CVPR 2026"
