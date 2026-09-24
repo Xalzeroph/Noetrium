@@ -14,7 +14,11 @@ from noetrium_platform.evidence.data.dataset.api import (
     DatasetVersion,
 )
 from noetrium_platform.evidence.data._canonical import DataCanonicalDecodingError, canonical_digest, strict_json_loads
-from noetrium_platform.evidence.data._sqlite_transaction import rollback_data_writer
+from noetrium_platform.foundation.kernel.kernel.durability.sqlite import (
+    open_durable_sqlite_reader,
+    open_durable_sqlite_writer,
+    rollback_sqlite_writer,
+)
 from noetrium_platform.evidence.data._sqlite_types import require_optional_text, require_text
 from noetrium_platform.foundation.api import ScopeIdentity, ScopeKind
 
@@ -36,54 +40,16 @@ class SQLiteDatasetRegistry:
             self._ensure_schema(db)
 
     def _connect_writer(self) -> sqlite3.Connection:
-        db = sqlite3.connect(self.path, timeout=self.timeout_seconds, isolation_level=None)
-        db.execute("PRAGMA journal_mode=WAL")
-        db.execute("PRAGMA synchronous=FULL")
-        db.execute(f"PRAGMA busy_timeout={int(self.timeout_seconds * 1000)}")
-        db.execute("PRAGMA foreign_keys=ON")
-        return db
+        return open_durable_sqlite_writer(
+            self.path,
+            timeout_seconds=self.timeout_seconds,
+        )
 
     def _connect_reader(self) -> sqlite3.Connection:
-        uri = f"file:{self.path.as_posix()}?mode=ro"
-        db = sqlite3.connect(uri, uri=True, timeout=self.timeout_seconds, isolation_level=None)
-        db.execute("PRAGMA query_only=ON")
-        db.execute(f"PRAGMA busy_timeout={int(self.timeout_seconds * 1000)}")
-        db.execute("PRAGMA foreign_keys=ON")
-        return db
-
-    @classmethod
-    def _ensure_schema(cls, db: sqlite3.Connection) -> None:
-        db.executescript(
-            """
-            CREATE TABLE IF NOT EXISTS datasets(
-                dataset_key TEXT PRIMARY KEY,
-                dataset_id TEXT NOT NULL,
-                version TEXT NOT NULL,
-                scope_kind TEXT NOT NULL,
-                scope_id TEXT NOT NULL,
-                content_sha256 TEXT NOT NULL,
-                schema_ref TEXT,
-                parents_json TEXT NOT NULL,
-                tags_json TEXT NOT NULL,
-                metadata_json TEXT NOT NULL,
-                record_sha256 TEXT NOT NULL
-            );
-            CREATE UNIQUE INDEX IF NOT EXISTS idx_datasets_identity ON datasets(dataset_id,version);
-            CREATE INDEX IF NOT EXISTS idx_datasets_scope ON datasets(scope_kind,scope_id,dataset_key);
-            CREATE TABLE IF NOT EXISTS dataset_tags(
-                dataset_key TEXT NOT NULL,
-                tag TEXT NOT NULL,
-                PRIMARY KEY(dataset_key,tag),
-                FOREIGN KEY(dataset_key) REFERENCES datasets(dataset_key) ON DELETE CASCADE
-            );
-            CREATE INDEX IF NOT EXISTS idx_dataset_tags_tag ON dataset_tags(tag,dataset_key);
-            """
+        return open_durable_sqlite_reader(
+            self.path,
+            timeout_seconds=self.timeout_seconds,
         )
-        columns = tuple(row[1] for row in db.execute("PRAGMA table_info(datasets)"))
-        if columns != cls._COLUMNS:
-            raise DatasetRegistryCorruptionError(
-                f"unsupported dataset registry schema columns: {columns!r}"
-            )
 
     @staticmethod
     def _parent_documents(dataset: DatasetVersion) -> tuple[dict[str, str], ...]:
@@ -213,7 +179,7 @@ class SQLiteDatasetRegistry:
                 )
                 db.execute("COMMIT")
             except BaseException as primary:
-                rollback_data_writer(db, primary)
+                rollback_sqlite_writer(db, primary, label="data")
                 raise
         return dataset
 
