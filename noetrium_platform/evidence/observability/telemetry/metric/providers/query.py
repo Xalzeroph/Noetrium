@@ -6,6 +6,10 @@ import math
 from pathlib import Path
 import sqlite3
 
+from noetrium_platform.foundation.kernel.kernel.durability.sqlite import (
+    open_durable_sqlite_reader,
+)
+
 from ..api.json_contract import decode_string_map
 from ..api.errors import TelemetryMetricCorruptionError
 
@@ -56,11 +60,10 @@ class SQLiteTelemetryReader:
     def _connect(self) -> sqlite3.Connection:
         if not self.path.exists():
             raise FileNotFoundError(self.path)
-        uri = f"file:{self.path.resolve().as_posix()}?mode=ro"
-        db = sqlite3.connect(uri, uri=True, timeout=30)
-        db.execute("PRAGMA query_only=ON")
-        db.execute("PRAGMA busy_timeout=30000")
-        return db
+        return open_durable_sqlite_reader(
+            self.path,
+            timeout_seconds=30.0,
+        )
 
     def query(
         self,
