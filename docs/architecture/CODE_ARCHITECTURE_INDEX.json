@@ -4967,8 +4967,18 @@
     },
     {
       "kind": "references",
+      "source": "noetrium_platform.composition.research_os_checkpoint.ResearchOSGraphCheckpointStorePort",
+      "target": "noetrium_platform.composition.research_os_checkpoint.ResearchOSGraphCheckpoint"
+    },
+    {
+      "kind": "references",
       "source": "noetrium_platform.composition.research_os_checkpoint.ResearchOSNodeCheckpointPort",
       "target": "noetrium_platform.composition.research_os_checkpoint.ResearchOSNodeCheckpointProof"
+    },
+    {
+      "kind": "references",
+      "source": "noetrium_platform.composition.research_os_checkpoint_store.DirectoryResearchOSGraphCheckpointStore",
+      "target": "noetrium_platform.composition.research_os_checkpoint.ResearchOSGraphCheckpoint"
     },
     {
       "kind": "references",
@@ -4994,6 +5004,11 @@
       "kind": "references",
       "source": "noetrium_platform.composition.research_os_execution.PreparedResearchOSExecution",
       "target": "noetrium_platform.product.research_os.ResearchExecutionTarget"
+    },
+    {
+      "kind": "references",
+      "source": "noetrium_platform.composition.research_os_execution.PreparedResearchOSNodeExecutor",
+      "target": "noetrium_platform.composition.research_os_checkpoint.ResearchOSGraphCheckpointStorePort"
     },
     {
       "kind": "references",
@@ -40891,7 +40906,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 95,
+      "line": 216,
       "methods": [],
       "module": "noetrium_platform.composition.research_os_checkpoint",
       "name": "ResearchOSCheckpointIndeterminate",
@@ -40899,6 +40914,84 @@
         "ResearchOSCheckpointIndeterminate"
       ],
       "qualname": "noetrium_platform.composition.research_os_checkpoint.ResearchOSCheckpointIndeterminate",
+      "system_key": "research_os",
+      "top_system": "research_os"
+    },
+    {
+      "bases": [],
+      "decorators": [
+        "dataclass(frozen=True, slots=True)"
+      ],
+      "fields": [
+        "checkpoint_digest",
+        "control_generation",
+        "control_phase",
+        "execution_cut_id",
+        "graph_digest",
+        "nodes",
+        "research_revision_digest",
+        "selected_node_ids",
+        "snapshot_generation"
+      ],
+      "kind": "dataclass",
+      "line": 101,
+      "methods": [
+        "__post_init__",
+        "scope_digest",
+        "body",
+        "to_document",
+        "from_document"
+      ],
+      "module": "noetrium_platform.composition.research_os_checkpoint",
+      "name": "ResearchOSGraphCheckpoint",
+      "nesting": [
+        "ResearchOSGraphCheckpoint"
+      ],
+      "qualname": "noetrium_platform.composition.research_os_checkpoint.ResearchOSGraphCheckpoint",
+      "system_key": "research_os",
+      "top_system": "research_os"
+    },
+    {
+      "bases": [
+        "ValueError"
+      ],
+      "decorators": [],
+      "fields": [],
+      "kind": "class",
+      "line": 194,
+      "methods": [],
+      "module": "noetrium_platform.composition.research_os_checkpoint",
+      "name": "ResearchOSGraphCheckpointCorruptionError",
+      "nesting": [
+        "ResearchOSGraphCheckpointCorruptionError"
+      ],
+      "qualname": "noetrium_platform.composition.research_os_checkpoint.ResearchOSGraphCheckpointCorruptionError",
+      "system_key": "research_os",
+      "top_system": "research_os"
+    },
+    {
+      "bases": [
+        "Protocol"
+      ],
+      "decorators": [
+        "runtime_checkable"
+      ],
+      "fields": [
+        "durability"
+      ],
+      "kind": "protocol",
+      "line": 199,
+      "methods": [
+        "publish",
+        "load",
+        "latest"
+      ],
+      "module": "noetrium_platform.composition.research_os_checkpoint",
+      "name": "ResearchOSGraphCheckpointStorePort",
+      "nesting": [
+        "ResearchOSGraphCheckpointStorePort"
+      ],
+      "qualname": "noetrium_platform.composition.research_os_checkpoint.ResearchOSGraphCheckpointStorePort",
       "system_key": "research_os",
       "top_system": "research_os"
     },
@@ -40911,7 +41004,7 @@
       ],
       "fields": [],
       "kind": "protocol",
-      "line": 100,
+      "line": 221,
       "methods": [
         "checkpoint_node"
       ],
@@ -40940,7 +41033,7 @@
         "semantic_digest"
       ],
       "kind": "dataclass",
-      "line": 20,
+      "line": 25,
       "methods": [
         "__post_init__",
         "validate"
@@ -40951,6 +41044,36 @@
         "ResearchOSNodeCheckpointProof"
       ],
       "qualname": "noetrium_platform.composition.research_os_checkpoint.ResearchOSNodeCheckpointProof",
+      "system_key": "research_os",
+      "top_system": "research_os"
+    },
+    {
+      "bases": [
+        "ResearchOSGraphCheckpointStorePort"
+      ],
+      "decorators": [],
+      "fields": [
+        "durability"
+      ],
+      "kind": "class",
+      "line": 27,
+      "methods": [
+        "__init__",
+        "_scope_digest",
+        "_object_path",
+        "_pointer_path",
+        "_decode_checkpoint",
+        "_load_unlocked",
+        "load",
+        "latest",
+        "publish"
+      ],
+      "module": "noetrium_platform.composition.research_os_checkpoint_store",
+      "name": "DirectoryResearchOSGraphCheckpointStore",
+      "nesting": [
+        "DirectoryResearchOSGraphCheckpointStore"
+      ],
+      "qualname": "noetrium_platform.composition.research_os_checkpoint_store.DirectoryResearchOSGraphCheckpointStore",
       "system_key": "research_os",
       "top_system": "research_os"
     },
@@ -40970,7 +41093,7 @@
         "target"
       ],
       "kind": "dataclass",
-      "line": 152,
+      "line": 154,
       "methods": [
         "__post_init__",
         "admission"
@@ -40989,7 +41112,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 436,
+      "line": 438,
       "methods": [
         "__init__",
         "execute",
@@ -41012,7 +41135,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 273,
+      "line": 275,
       "methods": [],
       "module": "noetrium_platform.composition.research_os_execution",
       "name": "ResearchOSExecutionUnsupported",
@@ -41036,7 +41159,7 @@
         "semantic_digest"
       ],
       "kind": "dataclass",
-      "line": 86,
+      "line": 88,
       "methods": [
         "__post_init__"
       ],
@@ -41058,7 +41181,7 @@
       ],
       "fields": [],
       "kind": "protocol",
-      "line": 129,
+      "line": 131,
       "methods": [
         "admit",
         "execute"
@@ -41080,7 +41203,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 614,
+      "line": 617,
       "methods": [
         "__init__",
         "active_revision_digest",
@@ -41880,7 +42003,7 @@
         "state_root"
       ],
       "kind": "dataclass",
-      "line": 63,
+      "line": 66,
       "methods": [
         "prepare",
         "close"
@@ -99411,6 +99534,16 @@
     },
     {
       "kind": "constructs",
+      "source": "noetrium_platform.composition.research_os_checkpoint_store.DirectoryResearchOSGraphCheckpointStore",
+      "target": "noetrium_platform.composition.research_os_checkpoint.ResearchOSGraphCheckpointCorruptionError"
+    },
+    {
+      "kind": "constructs",
+      "source": "noetrium_platform.composition.research_os_checkpoint_store.DirectoryResearchOSGraphCheckpointStore",
+      "target": "noetrium_platform.foundation.kernel.kernel.durability.file_lock.InterprocessFileLock"
+    },
+    {
+      "kind": "constructs",
       "source": "noetrium_platform.composition.research_os_execution.PreparedResearchOSNodeExecutor",
       "target": "noetrium_platform.composition.research_os_execution.ResearchOSExecutionUnsupported"
     },
@@ -99418,6 +99551,11 @@
       "kind": "constructs",
       "source": "noetrium_platform.composition.research_os_execution.PreparedResearchOSNodeExecutor",
       "target": "noetrium_platform.evidence.artifact.contracts.ArtifactContentIdentity"
+    },
+    {
+      "kind": "constructs",
+      "source": "noetrium_platform.composition.research_os_execution.StrictResearchOSControl",
+      "target": "noetrium_platform.composition.research_os_checkpoint.ResearchOSGraphCheckpoint"
     },
     {
       "kind": "constructs",
@@ -102836,13 +102974,13 @@
     }
   ],
   "counts": {
-    "association_edges": 3438,
-    "classes": 3349,
-    "constructor_edges": 911,
-    "inheritance_edges": 145,
-    "module_import_edges": 4997,
+    "association_edges": 3441,
+    "classes": 3353,
+    "constructor_edges": 914,
+    "inheritance_edges": 146,
+    "module_import_edges": 5002,
     "parse_errors": 0,
-    "python_modules": 1909,
+    "python_modules": 1910,
     "registry_authorities": 20,
     "registry_nodes": 31,
     "top_level_systems": 16
@@ -102937,6 +103075,11 @@
       "kind": "inherits",
       "source": "noetrium_platform.composition.research_child_machine_batch.PooledChildResearchBatchMechanics",
       "target": "noetrium_platform.research.execution.machines.child_machine_batch.ChildResearchMachineBatchMechanicsPort"
+    },
+    {
+      "kind": "inherits",
+      "source": "noetrium_platform.composition.research_os_checkpoint_store.DirectoryResearchOSGraphCheckpointStore",
+      "target": "noetrium_platform.composition.research_os_checkpoint.ResearchOSGraphCheckpointStorePort"
     },
     {
       "kind": "inherits",
@@ -109712,6 +109855,22 @@
       "target": "noetrium_platform.foundation.kernel.kernel"
     },
     {
+      "source": "noetrium_platform.composition.research_os_checkpoint_store",
+      "target": "noetrium_platform.composition.research_os_checkpoint"
+    },
+    {
+      "source": "noetrium_platform.composition.research_os_checkpoint_store",
+      "target": "noetrium_platform.foundation.kernel.kernel"
+    },
+    {
+      "source": "noetrium_platform.composition.research_os_checkpoint_store",
+      "target": "noetrium_platform.foundation.kernel.kernel.durability.durable_file"
+    },
+    {
+      "source": "noetrium_platform.composition.research_os_checkpoint_store",
+      "target": "noetrium_platform.foundation.kernel.kernel.durability.file_lock"
+    },
+    {
       "source": "noetrium_platform.composition.research_os_execution",
       "target": "noetrium_platform.composition.research_execution_pool"
     },
@@ -109886,6 +110045,10 @@
     {
       "source": "noetrium_platform.composition.research_os_local",
       "target": "noetrium_platform.composition.research_os"
+    },
+    {
+      "source": "noetrium_platform.composition.research_os_local",
+      "target": "noetrium_platform.composition.research_os_checkpoint_store"
     },
     {
       "source": "noetrium_platform.composition.research_os_local",
@@ -129236,6 +129399,18 @@
     },
     {
       "imports": [
+        "noetrium_platform.composition.research_os_checkpoint",
+        "noetrium_platform.foundation.kernel.kernel",
+        "noetrium_platform.foundation.kernel.kernel.durability.durable_file",
+        "noetrium_platform.foundation.kernel.kernel.durability.file_lock"
+      ],
+      "module": "noetrium_platform.composition.research_os_checkpoint_store",
+      "path": "noetrium_platform/composition/research_os_checkpoint_store.py",
+      "system_key": "research_os",
+      "top_system": "research_os"
+    },
+    {
+      "imports": [
         "noetrium_platform.composition.research_execution_pool",
         "noetrium_platform.composition.research_graph",
         "noetrium_platform.composition.research_os",
@@ -129328,6 +129503,7 @@
       "imports": [
         "noetrium_platform.composition.research_execution_pool",
         "noetrium_platform.composition.research_os",
+        "noetrium_platform.composition.research_os_checkpoint_store",
         "noetrium_platform.composition.research_os_execution",
         "noetrium_platform.composition.research_os_experiment",
         "noetrium_platform.composition.research_os_experiment_artifacts",
@@ -143538,7 +143714,7 @@
   "parse_errors": [],
   "registry_sha256": "d3fc1bab831f1b7379e5a36048a61c00fe173429df958270d36a16f3f00171c0",
   "schema": "noetrium-code-architecture-index.v1",
-  "source_git_sha": "607b026ceaca6367ccecc4c0903b407331f9c3b7",
+  "source_git_sha": "1f258db8a3eec78468adddce1624d9e1ceb6fda0",
   "system_import_edges": [
     {
       "count": 85,
@@ -143721,7 +143897,7 @@
       "target": "participant"
     },
     {
-      "count": 120,
+      "count": 123,
       "source": "research_os",
       "target": "platform"
     },
@@ -143736,7 +143912,7 @@
       "target": "reliability"
     },
     {
-      "count": 322,
+      "count": 324,
       "source": "research_os",
       "target": "research_os"
     },

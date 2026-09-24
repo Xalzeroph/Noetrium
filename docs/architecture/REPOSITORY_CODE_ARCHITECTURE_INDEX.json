@@ -1,15 +1,15 @@
 {
   "counts": {
     "parse_errors": 0,
-    "python_files": 3683,
-    "python_import_edges": 7135,
-    "symbols": 4951,
-    "tracked_files": 4319,
+    "python_files": 3684,
+    "python_import_edges": 7139,
+    "symbols": 4955,
+    "tracked_files": 4320,
     "typescript_javascript_files": 11
   },
   "language_symbol_counts": {
     "javascript": 1,
-    "python": 4945,
+    "python": 4949,
     "typescript": 5
   },
   "parse_errors": [],
@@ -5583,6 +5583,24 @@
       "target_role": "core_platform"
     },
     {
+      "source_module": "noetrium_platform.composition.research_os_checkpoint_store",
+      "source_role": "core_platform",
+      "target_module": "noetrium_platform.foundation.kernel.kernel",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "noetrium_platform.composition.research_os_checkpoint_store",
+      "source_role": "core_platform",
+      "target_module": "noetrium_platform.foundation.kernel.kernel.durability.durable_file",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "noetrium_platform.composition.research_os_checkpoint_store",
+      "source_role": "core_platform",
+      "target_module": "noetrium_platform.foundation.kernel.kernel.durability.file_lock",
+      "target_role": "core_platform"
+    },
+    {
       "source_module": "noetrium_platform.composition.research_os_execution",
       "source_role": "core_platform",
       "target_module": "noetrium_platform.composition.research_execution_pool",
@@ -5754,6 +5772,12 @@
       "source_module": "noetrium_platform.composition.research_os_local",
       "source_role": "core_platform",
       "target_module": "noetrium_platform.composition.research_os",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "noetrium_platform.composition.research_os_local",
+      "source_role": "core_platform",
+      "target_module": "noetrium_platform.composition.research_os_checkpoint_store",
       "target_role": "core_platform"
     },
     {
@@ -42827,7 +42851,7 @@
   ],
   "role_import_counts": [
     {
-      "count": 2581,
+      "count": 2585,
       "source_role": "core_platform",
       "target_role": "core_platform"
     },
@@ -42943,7 +42967,7 @@
     }
   ],
   "role_python_module_counts": {
-    "core_platform": 1909,
+    "core_platform": 1910,
     "examples": 6,
     "other": 7,
     "public_facade": 40,
@@ -42954,7 +42978,7 @@
     "tooling": 79
   },
   "role_symbol_counts": {
-    "core_platform": 3350,
+    "core_platform": 3354,
     "examples": 3,
     "other": 23,
     "public_facade": 4,
@@ -42966,7 +42990,7 @@
     "tooling": 39
   },
   "schema": "noetrium-repository-code-architecture-index.v1",
-  "source_git_sha": "607b026ceaca6367ccecc4c0903b407331f9c3b7",
+  "source_git_sha": "1f258db8a3eec78468adddce1624d9e1ceb6fda0",
   "symbols": [
     {
       "bases": [],
@@ -66199,7 +66223,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 20,
+      "line": 25,
       "methods": [
         "__post_init__",
         "validate"
@@ -66211,6 +66235,78 @@
       "role": "core_platform"
     },
     {
+      "bases": [],
+      "decorators": [
+        "dataclass(frozen=True, slots=True)"
+      ],
+      "fields": [
+        "execution_cut_id: str",
+        "graph_digest: str",
+        "research_revision_digest: str",
+        "snapshot_generation: int",
+        "control_generation: int",
+        "control_phase: str",
+        "selected_node_ids: tuple[str, ...]",
+        "nodes: JsonValue",
+        "checkpoint_digest: str"
+      ],
+      "kind": "dataclass",
+      "language": "python",
+      "line": 101,
+      "methods": [
+        "__post_init__",
+        "scope_digest",
+        "body",
+        "to_document",
+        "from_document"
+      ],
+      "module": "noetrium_platform.composition.research_os_checkpoint",
+      "name": "ResearchOSGraphCheckpoint",
+      "path": "noetrium_platform/composition/research_os_checkpoint.py",
+      "qualname": "noetrium_platform.composition.research_os_checkpoint.ResearchOSGraphCheckpoint",
+      "role": "core_platform"
+    },
+    {
+      "bases": [
+        "ValueError"
+      ],
+      "decorators": [],
+      "fields": [],
+      "kind": "class",
+      "language": "python",
+      "line": 194,
+      "methods": [],
+      "module": "noetrium_platform.composition.research_os_checkpoint",
+      "name": "ResearchOSGraphCheckpointCorruptionError",
+      "path": "noetrium_platform/composition/research_os_checkpoint.py",
+      "qualname": "noetrium_platform.composition.research_os_checkpoint.ResearchOSGraphCheckpointCorruptionError",
+      "role": "core_platform"
+    },
+    {
+      "bases": [
+        "Protocol"
+      ],
+      "decorators": [
+        "runtime_checkable"
+      ],
+      "fields": [
+        "durability: str"
+      ],
+      "kind": "protocol",
+      "language": "python",
+      "line": 199,
+      "methods": [
+        "publish",
+        "load",
+        "latest"
+      ],
+      "module": "noetrium_platform.composition.research_os_checkpoint",
+      "name": "ResearchOSGraphCheckpointStorePort",
+      "path": "noetrium_platform/composition/research_os_checkpoint.py",
+      "qualname": "noetrium_platform.composition.research_os_checkpoint.ResearchOSGraphCheckpointStorePort",
+      "role": "core_platform"
+    },
+    {
       "bases": [
         "RuntimeError"
       ],
@@ -66218,7 +66314,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 95,
+      "line": 216,
       "methods": [],
       "module": "noetrium_platform.composition.research_os_checkpoint",
       "name": "ResearchOSCheckpointIndeterminate",
@@ -66236,7 +66332,7 @@
       "fields": [],
       "kind": "protocol",
       "language": "python",
-      "line": 100,
+      "line": 221,
       "methods": [
         "checkpoint_node"
       ],
@@ -66244,6 +66340,32 @@
       "name": "ResearchOSNodeCheckpointPort",
       "path": "noetrium_platform/composition/research_os_checkpoint.py",
       "qualname": "noetrium_platform.composition.research_os_checkpoint.ResearchOSNodeCheckpointPort",
+      "role": "core_platform"
+    },
+    {
+      "bases": [
+        "ResearchOSGraphCheckpointStorePort"
+      ],
+      "decorators": [],
+      "fields": [],
+      "kind": "class",
+      "language": "python",
+      "line": 27,
+      "methods": [
+        "__init__",
+        "_scope_digest",
+        "_object_path",
+        "_pointer_path",
+        "_decode_checkpoint",
+        "_load_unlocked",
+        "load",
+        "latest",
+        "publish"
+      ],
+      "module": "noetrium_platform.composition.research_os_checkpoint_store",
+      "name": "DirectoryResearchOSGraphCheckpointStore",
+      "path": "noetrium_platform/composition/research_os_checkpoint_store.py",
+      "qualname": "noetrium_platform.composition.research_os_checkpoint_store.DirectoryResearchOSGraphCheckpointStore",
       "role": "core_platform"
     },
     {
@@ -66260,7 +66382,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 86,
+      "line": 88,
       "methods": [
         "__post_init__"
       ],
@@ -66280,7 +66402,7 @@
       "fields": [],
       "kind": "protocol",
       "language": "python",
-      "line": 129,
+      "line": 131,
       "methods": [
         "admit",
         "execute"
@@ -66308,7 +66430,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 152,
+      "line": 154,
       "methods": [
         "__post_init__",
         "admission"
@@ -66327,7 +66449,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 273,
+      "line": 275,
       "methods": [],
       "module": "noetrium_platform.composition.research_os_execution",
       "name": "ResearchOSExecutionUnsupported",
@@ -66341,7 +66463,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 436,
+      "line": 438,
       "methods": [
         "__init__",
         "execute",
@@ -66363,7 +66485,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 614,
+      "line": 617,
       "methods": [
         "__init__",
         "active_revision_digest",
@@ -67099,7 +67221,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 63,
+      "line": 66,
       "methods": [
         "prepare",
         "close"
