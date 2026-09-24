@@ -299,3 +299,81 @@ def test_environment_shutdown_cleanup_marks_live_generation_dirty() -> None:
     assert resources.active_for(
         ResourceIdentity(ResourceKind.EXECUTION_ENVIRONMENT, instance.instance_id)
     ) == ()
+
+
+class _FailOnceLeaseRelease:
+    def __init__(self, delegate, *, commit_before_error: bool) -> None:
+        self.delegate = delegate
+        self.commit_before_error = commit_before_error
+        self.release_calls = 0
+
+    def __getattr__(self, name):
+        return getattr(self.delegate, name)
+
+    def release(self, lease_id: str, *, fencing_token: int, now=None):
+        self.release_calls += 1
+        if self.release_calls == 1:
+            if self.commit_before_error:
+                self.delegate.release(
+                    lease_id,
+                    fencing_token=fencing_token,
+                    now=now,
+                )
+            raise OSError("simulated durable lease release I/O ambiguity")
+        return self.delegate.release(
+            lease_id,
+            fencing_token=fencing_token,
+            now=now,
+        )
+
+
+@pytest.mark.parametrize("commit_before_error", [False, True])
+def test_environment_instance_release_retries_uncertain_durable_release_without_promoting_clean(
+    commit_before_error: bool,
+) -> None:
+    scopes = InMemoryScopeRegistry()
+    scope = _scope()
+    scopes.register(scope, PLATFORM_SCOPE)
+    catalog = ExecutionEnvironmentCatalog(scopes)
+    materialization, instance = _prepare_catalog(catalog, scope)
+    resources = InMemoryResourceLeaseRegistry()
+    leases = _FailOnceLeaseRelease(
+        resources,
+        commit_before_error=commit_before_error,
+    )
+    authority = EnvironmentInstanceLeaseAuthority(
+        catalog=catalog,
+        ownership=resources,
+        leases=leases,
+        reconcile_on_start=False,
+    )
+    handle = authority.acquire_reusable_instance(
+        PROFILE_ID,
+        PROFILE_REVISION,
+        RUNTIME_DIGEST,
+        materialization.materialization_digest,
+        binding_id="binding-release-retry",
+        role="runner",
+        scope=scope,
+    )
+    resource = ResourceIdentity(
+        ResourceKind.EXECUTION_ENVIRONMENT,
+        instance.instance_id,
+    )
+    proof = _cleanliness(handle, materialization)
+
+    with pytest.raises(OSError, match="release I/O ambiguity"):
+        authority.release(handle, cleanliness=proof)
+
+    assert catalog.bindings() == ()
+    assert catalog.instances()[0].state is EnvironmentInstanceState.DIRTY
+    if commit_before_error:
+        assert resources.active_for(resource) == ()
+    else:
+        assert resources.active_for(resource) == (handle.lease,)
+
+    converged = authority.release(handle, cleanliness=proof)
+
+    assert converged.state is EnvironmentInstanceState.DIRTY
+    assert resources.active_for(resource) == ()
+    assert leases.release_calls == 2
