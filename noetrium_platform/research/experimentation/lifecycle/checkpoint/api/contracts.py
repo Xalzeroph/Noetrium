@@ -111,6 +111,34 @@ class RunCheckpointIntegrityError(RuntimeError):
     pass
 
 
+class RunCheckpointRecoveryRequired(RuntimeError):
+    """A durable checkpoint publication exists but has not committed its manifest."""
+
+    def __init__(
+        self,
+        checkpoint_id: str,
+        *,
+        namespace: str,
+        manifest_sha256: str,
+        blob_sha256s: tuple[str, ...],
+    ) -> None:
+        self.checkpoint_id = checkpoint_id
+        self.namespace = namespace
+        self.manifest_sha256 = manifest_sha256
+        self.blob_sha256s = blob_sha256s
+        super().__init__(
+            "checkpoint publication requires recovery before lookup can "
+            f"resolve: {namespace}:{checkpoint_id}"
+        )
+
+    @property
+    def failure_correlation_refs(self) -> tuple[str, ...]:
+        return (
+            f"checkpoint-publication:{self.namespace}:{self.checkpoint_id}",
+            f"checkpoint-manifest-sha256:{self.manifest_sha256}",
+        )
+
+
 @runtime_checkable
 class RunCheckpointStore(Protocol):
     durability: str
@@ -129,6 +157,7 @@ __all__ = [
     "RunCheckpointConflict",
     "RunCheckpointIntegrityError",
     "RunCheckpointManifest",
+    "RunCheckpointRecoveryRequired",
     "RunCheckpointStore",
     "RunParticipantPayload",
     "RunParticipantSnapshotRef",
