@@ -102,6 +102,6 @@ def prepare_server_files(
 
 __all__ = [
     "MinecraftServerPreparationError",
-        "prepare_server_files",
+    "prepare_server_files",
     "render_server_properties",
 ]
