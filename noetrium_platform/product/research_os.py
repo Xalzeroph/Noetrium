@@ -6,7 +6,7 @@ research projects author and control work only through this product surface.
 
 from __future__ import annotations
 
-from collections.abc import Callable
+from collections.abc import Callable, Mapping
 from dataclasses import dataclass, field
 from enum import StrEnum
 import hashlib
@@ -21,6 +21,7 @@ from noetrium_platform.foundation.kernel.kernel import (
     canonical_digest,
     freeze_json,
     require_sha256,
+    thaw_json,
 )
 
 _TOKEN = re.compile(r"[a-z][a-z0-9_.-]*")
@@ -82,21 +83,31 @@ class ResearchValueKind(StrEnum):
     DATA = "data"
 
 
+class ResearchMethodProgramBindingKind(StrEnum):
+    SYMBOL = "symbol"
+    FACTORY = "factory"
+
+
 @dataclass(frozen=True, slots=True)
 class ResearchMethodProgramImplementation:
     """Import-resolvable immutable MethodProgram identity.
 
-    Complex paper methods already authored as MethodProgram IR are referenced by
-    module-level symbols rather than wrapped as ordinary Python callables.  The
-    frozen ResearchProgram stores only import coordinates plus the exact
-    MethodProgram digest; lowering re-imports the symbol and fails closed on any
-    type or digest drift.
+    A declaration may bind either a module-level MethodProgram symbol or a pure
+    module-level factory plus canonical JSON arguments.  In both cases authoring
+    resolves the exact MethodProgram immediately and freezes its program_digest;
+    lowering reconstructs the same value and fails closed on any identity drift.
+    There is still only one execution path: resolved MethodProgram -> Method Machine.
     """
 
     implementation_id: str
     module: str
     qualname: str
     program_digest: str
+    binding_kind: ResearchMethodProgramBindingKind = (
+        ResearchMethodProgramBindingKind.SYMBOL
+    )
+    factory_args: tuple[JsonValue, ...] = ()
+    factory_kwargs: JsonValue = None
     implementation_digest: str = field(init=False)
 
     def __post_init__(self) -> None:
@@ -113,10 +124,33 @@ class ResearchMethodProgramImplementation:
             self.program_digest,
             "research method-program program_digest",
         )
+        if not isinstance(self.binding_kind, ResearchMethodProgramBindingKind):
+            raise TypeError("research method-program binding_kind must be typed")
+        if type(self.factory_args) is not tuple:
+            raise TypeError("research method-program factory_args must be tuple")
+        frozen_args = freeze_json(self.factory_args)
+        if type(frozen_args) is not tuple:
+            raise TypeError("research method-program factory_args must remain tuple")
+        frozen_kwargs = freeze_json(
+            {} if self.factory_kwargs is None else self.factory_kwargs
+        )
+        if not isinstance(frozen_kwargs, Mapping):
+            raise TypeError(
+                "research method-program factory_kwargs must be a JSON object"
+            )
+        if (
+            self.binding_kind is ResearchMethodProgramBindingKind.SYMBOL
+            and (frozen_args or frozen_kwargs)
+        ):
+            raise ValueError(
+                "symbol MethodProgram binding cannot carry factory arguments"
+            )
         module = self.module.strip()
         qualname = self.qualname.strip()
         object.__setattr__(self, "module", module)
         object.__setattr__(self, "qualname", qualname)
+        object.__setattr__(self, "factory_args", frozen_args)
+        object.__setattr__(self, "factory_kwargs", frozen_kwargs)
         object.__setattr__(
             self,
             "implementation_digest",
@@ -127,18 +161,15 @@ class ResearchMethodProgramImplementation:
                     "module": module,
                     "qualname": qualname,
                     "program_digest": self.program_digest,
+                    "binding_kind": self.binding_kind.value,
+                    "factory_args": frozen_args,
+                    "factory_kwargs": frozen_kwargs,
                 }
             ),
         )
 
-    @classmethod
-    def from_symbol(
-        cls,
-        implementation_id: str,
-        *,
-        module: str,
-        qualname: str,
-    ) -> "ResearchMethodProgramImplementation":
+    @staticmethod
+    def _import(module: str, qualname: str) -> object:
         if type(module) is not str or not module.strip():
             raise ValueError("research method-program module must be non-empty")
         if type(qualname) is not str or not qualname.strip():
@@ -149,9 +180,20 @@ class ResearchMethodProgramImplementation:
                 value = getattr(value, part)
         except (ImportError, AttributeError) as exc:
             raise ValueError(
-                "research method-program symbol cannot be imported: "
+                "research method-program binding cannot be imported: "
                 f"{module}:{qualname}"
             ) from exc
+        return value
+
+    @classmethod
+    def from_symbol(
+        cls,
+        implementation_id: str,
+        *,
+        module: str,
+        qualname: str,
+    ) -> "ResearchMethodProgramImplementation":
+        value = cls._import(module, qualname)
         program_digest = getattr(value, "program_digest", None)
         if type(program_digest) is not str:
             raise TypeError(
@@ -166,6 +208,59 @@ class ResearchMethodProgramImplementation:
             module.strip(),
             qualname.strip(),
             program_digest,
+            ResearchMethodProgramBindingKind.SYMBOL,
+        )
+
+    @classmethod
+    def from_factory(
+        cls,
+        implementation_id: str,
+        *,
+        module: str,
+        qualname: str,
+        args: tuple[JsonValue, ...] = (),
+        kwargs: JsonInput = None,
+    ) -> "ResearchMethodProgramImplementation":
+        if type(args) is not tuple:
+            raise TypeError("research method-program factory args must be tuple")
+        frozen_args = freeze_json(args)
+        frozen_kwargs = freeze_json({} if kwargs is None else kwargs)
+        if not isinstance(frozen_kwargs, Mapping):
+            raise TypeError(
+                "research method-program factory kwargs must be a JSON object"
+            )
+        factory = cls._import(module, qualname)
+        if not callable(factory):
+            raise TypeError(
+                "research method-program factory binding must resolve to callable"
+            )
+        try:
+            value = factory(
+                *(thaw_json(row) for row in frozen_args),
+                **dict(thaw_json(frozen_kwargs)),
+            )
+        except Exception as exc:
+            raise ValueError(
+                "research method-program factory could not materialize canonical IR: "
+                f"{module}:{qualname}"
+            ) from exc
+        program_digest = getattr(value, "program_digest", None)
+        if type(program_digest) is not str:
+            raise TypeError(
+                "research method-program factory result has no program_digest"
+            )
+        require_sha256(
+            program_digest,
+            "research method-program factory result program_digest",
+        )
+        return cls(
+            implementation_id,
+            module.strip(),
+            qualname.strip(),
+            program_digest,
+            ResearchMethodProgramBindingKind.FACTORY,
+            frozen_args,
+            frozen_kwargs,
         )
 
 
@@ -654,6 +749,9 @@ def _research_implementation_document(
             "module": implementation.module,
             "qualname": implementation.qualname,
             "program_digest": implementation.program_digest,
+            "binding_kind": implementation.binding_kind.value,
+            "factory_args": implementation.factory_args,
+            "factory_kwargs": implementation.factory_kwargs,
             "implementation_digest": implementation.implementation_digest,
         }
     raise TypeError("research implementation document requires typed implementation")
@@ -1430,6 +1528,31 @@ class ResearchProgramBuilder:
             config=config,
         )
 
+    def method_program_factory(
+        self,
+        definition_id: str,
+        *,
+        module: str,
+        qualname: str,
+        args: tuple[JsonValue, ...] = (),
+        kwargs: JsonInput = None,
+        config: JsonInput = None,
+    ) -> "ResearchProgramBuilder":
+        """Bind a pure MethodProgram factory with explicit canonical arguments."""
+
+        return self.definition(
+            definition_id,
+            kind=ResearchDefinitionKind.METHOD,
+            implementation=ResearchMethodProgramImplementation.from_factory(
+                definition_id,
+                module=module,
+                qualname=qualname,
+                args=args,
+                kwargs=kwargs,
+            ),
+            config=config,
+        )
+
     def benchmark(
         self,
         definition_id: str,
@@ -1907,6 +2030,7 @@ __all__ = [
     "ResearchGraphRevision",
     "ResearchImpactState",
     "ResearchImplementation",
+    "ResearchMethodProgramBindingKind",
     "ResearchMethodProgramImplementation",
     "ResearchInputBinding",
     "ResearchNode",
