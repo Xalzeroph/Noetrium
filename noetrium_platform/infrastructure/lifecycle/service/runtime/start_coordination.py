@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from noetrium_platform.infrastructure.lifecycle.service.api import ServiceLaunchContract, ServiceContractDrift
+from .contracts import ServiceExitClass, ServicePhase
 from .service_state_contracts import ServiceSupervisorState
 from .start_flow_common import ServiceReadinessCommitter
 from .start_journal import ServiceStartJournal
@@ -51,10 +52,28 @@ class ServiceStartCoordinator:
         if unresolved is not None:
             return self._recovery_flow.recover(contract, state, unresolved)
 
+        recovery_evidence: tuple[str, ...] = ()
+        if state.phase is ServicePhase.STOPPING and state.process is not None:
+            reconciled, refs = self._adapter.reconcile(state, contract)
+            if reconciled is None:
+                state = self._transitions.persist(
+                    state,
+                    ServicePhase.EXITED,
+                    process=None,
+                    last_exit_class=ServiceExitClass.CLEAN,
+                )
+                recovery_evidence = tuple(refs) + (
+                    "service-stop-recovery:exact-process-missing",
+                )
+
         decision = decide_service_start_resume(state)
         if decision.blocked:
             raise ServiceStartRecoveryRequired(state, decision)
-        return self._new_flow.execute(contract, state)
+        return self._new_flow.execute(
+            contract,
+            state,
+            initial_evidence=recovery_evidence,
+        )
 
 
 __all__ = ["ServiceStartCoordinator"]
