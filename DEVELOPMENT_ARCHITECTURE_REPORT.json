@@ -873,9 +873,9 @@
     }
   ],
   "package_cycles": [],
-  "report_sha256": "76443ecce64d8936ddbb2204df40d0bb309b326d2e6717c68ed8fd7e0aa95f85",
+  "report_sha256": "9ec40854098822ecf97fe8a1b0d6eb7bdbef5a5caddff8aba65dfa65651802e3",
   "source_authority_violations": [],
-  "source_digest": "bace456841ca4f2424107d37209a986395866366a54b5c9aff2d179af6e9c250",
+  "source_digest": "ee2ea0332af6382445cc45a704381e76681b5e1ce601459c353c1a25c5fceed7",
   "source_invariant_violations": [
     {
       "detail": "retired parallel Experiment orchestration namespace reappeared; execution must enter through Research OS",
@@ -886,7 +886,7 @@
     {
       "detail": "noetrium_platform.research.experimentation.api -> noetrium_platform.capabilities.api",
       "invariant": "layer_facade_illegal_dependency",
-      "line": 577,
+      "line": 582,
       "path": "noetrium_platform/research/experimentation/api/__init__.py"
     }
   ],
@@ -1722,6 +1722,18 @@
       "score": 2327
     },
     {
+      "branches": 116,
+      "classes": 17,
+      "exception_handlers": 0,
+      "functions": 32,
+      "imports": 9,
+      "max_function_lines": 126,
+      "module": "noetrium_platform.composition.research_binding_authority",
+      "path": "noetrium_platform/composition/research_binding_authority.py",
+      "physical_lines": 1171,
+      "score": 2278
+    },
+    {
       "branches": 121,
       "classes": 31,
       "exception_handlers": 1,
@@ -1816,18 +1828,6 @@
       "path": "noetrium_platform/infrastructure/resources/compute/runtime/scheduler.py",
       "physical_lines": 960,
       "score": 1780
-    },
-    {
-      "branches": 95,
-      "classes": 15,
-      "exception_handlers": 0,
-      "functions": 29,
-      "imports": 9,
-      "max_function_lines": 52,
-      "module": "noetrium_platform.composition.research_binding_authority",
-      "path": "noetrium_platform/composition/research_binding_authority.py",
-      "physical_lines": 923,
-      "score": 1714
     },
     {
       "branches": 80,

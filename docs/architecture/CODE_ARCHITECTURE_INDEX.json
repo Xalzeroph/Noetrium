@@ -15157,6 +15157,11 @@
     },
     {
       "kind": "references",
+      "source": "noetrium_platform.research.experimentation.api.research_compiler.ResearchManifestRequirementsUnresolved",
+      "target": "noetrium_platform.research.experimentation.api.research_compiler.ResearchManifestRequirementKeys"
+    },
+    {
+      "kind": "references",
       "source": "noetrium_platform.research.experimentation.api.sharding.CompiledExperimentShardPlan",
       "target": "noetrium_platform.research.experimentation.api.program.CompiledExperimentProgram"
     },
@@ -16224,6 +16229,16 @@
       "kind": "references",
       "source": "noetrium_platform.research.experimentation.lifecycle.study.api.benchmark.BenchmarkCutSpec",
       "target": "noetrium_platform.research.experimentation.lifecycle.study.api.benchmark.TaskSetSplit"
+    },
+    {
+      "kind": "references",
+      "source": "noetrium_platform.research.experimentation.lifecycle.study.api.benchmark.BenchmarkResolutionRegistration",
+      "target": "noetrium_platform.research.experimentation.lifecycle.study.api.benchmark.BenchmarkSourceResolution"
+    },
+    {
+      "kind": "references",
+      "source": "noetrium_platform.research.experimentation.lifecycle.study.api.benchmark.BenchmarkResolutionRegistry",
+      "target": "noetrium_platform.research.experimentation.lifecycle.study.api.benchmark.BenchmarkResolutionRegistration"
     },
     {
       "kind": "references",
@@ -18494,7 +18509,7 @@
         "scope"
       ],
       "kind": "dataclass",
-      "line": 80,
+      "line": 94,
       "methods": [],
       "module": "noetrium_platform.capabilities.environment.catalog.api.contracts",
       "name": "EnvironmentBinding",
@@ -18513,13 +18528,17 @@
       "fields": [
         "backend",
         "instance_id",
+        "profile_id",
+        "profile_revision",
         "resolved_spec_digest",
         "runtime_reference",
         "scope"
       ],
       "kind": "dataclass",
       "line": 71,
-      "methods": [],
+      "methods": [
+        "__post_init__"
+      ],
       "module": "noetrium_platform.capabilities.environment.catalog.api.contracts",
       "name": "EnvironmentInstance",
       "nesting": [
@@ -39721,7 +39740,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 714,
+      "line": 960,
       "methods": [
         "__init__",
         "_capability_bindings",
@@ -39745,7 +39764,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 652,
+      "line": 898,
       "methods": [
         "__init__"
       ],
@@ -39767,7 +39786,7 @@
       ],
       "fields": [],
       "kind": "protocol",
-      "line": 643,
+      "line": 889,
       "methods": [
         "resolve"
       ],
@@ -39777,6 +39796,26 @@
         "ResearchBindingAuthorityPort"
       ],
       "qualname": "noetrium_platform.composition.research_binding_authority.ResearchBindingAuthorityPort",
+      "system_key": "research_os",
+      "top_system": "research_os"
+    },
+    {
+      "bases": [
+        "LookupError"
+      ],
+      "decorators": [],
+      "fields": [],
+      "kind": "class",
+      "line": 230,
+      "methods": [
+        "__init__"
+      ],
+      "module": "noetrium_platform.composition.research_binding_authority",
+      "name": "ResearchBindingRequirementMissing",
+      "nesting": [
+        "ResearchBindingRequirementMissing"
+      ],
+      "qualname": "noetrium_platform.composition.research_binding_authority.ResearchBindingRequirementMissing",
       "system_key": "research_os",
       "top_system": "research_os"
     },
@@ -39792,7 +39831,7 @@
         "resolution"
       ],
       "kind": "dataclass",
-      "line": 41,
+      "line": 278,
       "methods": [
         "create",
         "__post_init__"
@@ -39819,7 +39858,7 @@
         "resolutions"
       ],
       "kind": "dataclass",
-      "line": 185,
+      "line": 428,
       "methods": [
         "__post_init__"
       ],
@@ -39837,7 +39876,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 244,
+      "line": 487,
       "methods": [
         "__init__",
         "identity_digest",
@@ -39861,7 +39900,7 @@
       ],
       "fields": [],
       "kind": "protocol",
-      "line": 610,
+      "line": 856,
       "methods": [
         "resolve"
       ],
@@ -39886,7 +39925,7 @@
         "resolutions"
       ],
       "kind": "dataclass",
-      "line": 473,
+      "line": 718,
       "methods": [
         "__post_init__"
       ],
@@ -39904,7 +39943,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 526,
+      "line": 771,
       "methods": [
         "__init__",
         "identity_digest",
@@ -39928,7 +39967,7 @@
       ],
       "fields": [],
       "kind": "protocol",
-      "line": 632,
+      "line": 878,
       "methods": [
         "resolve"
       ],
@@ -39953,7 +39992,7 @@
         "resolution"
       ],
       "kind": "dataclass",
-      "line": 339,
+      "line": 583,
       "methods": [
         "__post_init__"
       ],
@@ -39971,7 +40010,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 385,
+      "line": 629,
       "methods": [
         "__init__",
         "identity_digest",
@@ -39995,7 +40034,7 @@
       ],
       "fields": [],
       "kind": "protocol",
-      "line": 621,
+      "line": 867,
       "methods": [
         "resolve"
       ],
@@ -40013,7 +40052,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 98,
+      "line": 335,
       "methods": [
         "__init__",
         "identity_digest",
@@ -40029,6 +40068,41 @@
       "top_system": "research_os"
     },
     {
+      "bases": [],
+      "decorators": [
+        "dataclass(frozen=True, slots=True)"
+      ],
+      "fields": [
+        "binding_requirement_digest",
+        "capability_requirement_ids",
+        "configuration_ref_ids",
+        "experiment_id",
+        "manifest_keys_digest",
+        "method_requirement_keys",
+        "model_role_requirement_digests",
+        "participant_requirement_digests",
+        "project_id",
+        "requirement_digest",
+        "study_definition_digest",
+        "study_id",
+        "trial_provider_requirement_id"
+      ],
+      "kind": "dataclass",
+      "line": 42,
+      "methods": [
+        "from_study",
+        "__post_init__"
+      ],
+      "module": "noetrium_platform.composition.research_binding_authority",
+      "name": "ResearchProjectManifestRequirement",
+      "nesting": [
+        "ResearchProjectManifestRequirement"
+      ],
+      "qualname": "noetrium_platform.composition.research_binding_authority.ResearchProjectManifestRequirement",
+      "system_key": "research_os",
+      "top_system": "research_os"
+    },
+    {
       "bases": [
         "Protocol"
       ],
@@ -40037,7 +40111,7 @@
       ],
       "fields": [],
       "kind": "protocol",
-      "line": 178,
+      "line": 421,
       "methods": [
         "resolve"
       ],
@@ -89006,7 +89080,7 @@
         "trial_protocol_identity"
       ],
       "kind": "dataclass",
-      "line": 147,
+      "line": 279,
       "methods": [
         "__post_init__",
         "task_for"
@@ -89017,6 +89091,51 @@
         "CompiledResearchPlan"
       ],
       "qualname": "noetrium_platform.research.experimentation.api.research_compiler.CompiledResearchPlan",
+      "system_key": "experimentation",
+      "top_system": "experimentation"
+    },
+    {
+      "bases": [],
+      "decorators": [
+        "dataclass(frozen=True, slots=True)"
+      ],
+      "fields": [
+        "capability_requirement_ids",
+        "configuration_ref_ids",
+        "keys_digest",
+        "method_requirement_keys"
+      ],
+      "kind": "dataclass",
+      "line": 44,
+      "methods": [
+        "__post_init__"
+      ],
+      "module": "noetrium_platform.research.experimentation.api.research_compiler",
+      "name": "ResearchManifestRequirementKeys",
+      "nesting": [
+        "ResearchManifestRequirementKeys"
+      ],
+      "qualname": "noetrium_platform.research.experimentation.api.research_compiler.ResearchManifestRequirementKeys",
+      "system_key": "experimentation",
+      "top_system": "experimentation"
+    },
+    {
+      "bases": [
+        "ValueError"
+      ],
+      "decorators": [],
+      "fields": [],
+      "kind": "class",
+      "line": 131,
+      "methods": [
+        "__init__"
+      ],
+      "module": "noetrium_platform.research.experimentation.api.research_compiler",
+      "name": "ResearchManifestRequirementsUnresolved",
+      "nesting": [
+        "ResearchManifestRequirementsUnresolved"
+      ],
+      "qualname": "noetrium_platform.research.experimentation.api.research_compiler.ResearchManifestRequirementsUnresolved",
       "system_key": "experimentation",
       "top_system": "experimentation"
     },
@@ -89037,7 +89156,7 @@
         "scientific_design_changed"
       ],
       "kind": "dataclass",
-      "line": 118,
+      "line": 250,
       "methods": [
         "__post_init__"
       ],
@@ -93584,6 +93703,54 @@
       "top_system": "experimentation"
     },
     {
+      "bases": [],
+      "decorators": [
+        "dataclass(frozen=True, slots=True)"
+      ],
+      "fields": [
+        "authority_proof_digest",
+        "registration_digest",
+        "resolution"
+      ],
+      "kind": "dataclass",
+      "line": 526,
+      "methods": [
+        "__post_init__",
+        "benchmark_id"
+      ],
+      "module": "noetrium_platform.research.experimentation.lifecycle.study.api.benchmark",
+      "name": "BenchmarkResolutionRegistration",
+      "nesting": [
+        "BenchmarkResolutionRegistration"
+      ],
+      "qualname": "noetrium_platform.research.experimentation.lifecycle.study.api.benchmark.BenchmarkResolutionRegistration",
+      "system_key": "experimentation",
+      "top_system": "experimentation"
+    },
+    {
+      "bases": [],
+      "decorators": [],
+      "fields": [],
+      "kind": "class",
+      "line": 560,
+      "methods": [
+        "__init__",
+        "identity_digest",
+        "registrations",
+        "benchmark_ids",
+        "registrations_for",
+        "resolve_exact"
+      ],
+      "module": "noetrium_platform.research.experimentation.lifecycle.study.api.benchmark",
+      "name": "BenchmarkResolutionRegistry",
+      "nesting": [
+        "BenchmarkResolutionRegistry"
+      ],
+      "qualname": "noetrium_platform.research.experimentation.lifecycle.study.api.benchmark.BenchmarkResolutionRegistry",
+      "system_key": "experimentation",
+      "top_system": "experimentation"
+    },
+    {
       "bases": [
         "StrEnum"
       ],
@@ -93614,7 +93781,7 @@
       "decorators": [],
       "fields": [],
       "kind": "protocol",
-      "line": 525,
+      "line": 642,
       "methods": [
         "resolve"
       ],
@@ -93721,7 +93888,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 530,
+      "line": 647,
       "methods": [
         "__init__",
         "register",
@@ -98869,6 +99036,26 @@
     },
     {
       "kind": "constructs",
+      "source": "noetrium_platform.composition.research_binding_authority.ResearchCapabilityBindingRegistry",
+      "target": "noetrium_platform.composition.research_binding_authority.ResearchBindingRequirementMissing"
+    },
+    {
+      "kind": "constructs",
+      "source": "noetrium_platform.composition.research_binding_authority.ResearchModelRoleBindingRegistry",
+      "target": "noetrium_platform.composition.research_binding_authority.ResearchBindingRequirementMissing"
+    },
+    {
+      "kind": "constructs",
+      "source": "noetrium_platform.composition.research_binding_authority.ResearchParticipantBindingRegistry",
+      "target": "noetrium_platform.composition.research_binding_authority.ResearchBindingRequirementMissing"
+    },
+    {
+      "kind": "constructs",
+      "source": "noetrium_platform.composition.research_binding_authority.ResearchProjectManifestRegistry",
+      "target": "noetrium_platform.composition.research_binding_authority.ResearchBindingRequirementMissing"
+    },
+    {
+      "kind": "constructs",
       "source": "noetrium_platform.composition.research_child_machine_batch.PooledChildResearchBatchMechanics",
       "target": "noetrium_platform.research.execution.machines.child_machine_batch.ChildResearchMachineBatchMechanicsResult"
     },
@@ -102384,9 +102571,9 @@
     }
   ],
   "counts": {
-    "association_edges": 3436,
-    "classes": 3335,
-    "constructor_edges": 911,
+    "association_edges": 3439,
+    "classes": 3341,
+    "constructor_edges": 915,
     "inheritance_edges": 150,
     "module_import_edges": 5003,
     "parse_errors": 0,
@@ -143117,7 +143304,7 @@
   "parse_errors": [],
   "registry_sha256": "d3fc1bab831f1b7379e5a36048a61c00fe173429df958270d36a16f3f00171c0",
   "schema": "noetrium-code-architecture-index.v1",
-  "source_git_sha": "20e4af24d121f37693c5f91cf5ff27cbf1e53dc7",
+  "source_git_sha": "9db37ab69a4235aae8972be820fdc8b505706017",
   "system_import_edges": [
     {
       "count": 85,
