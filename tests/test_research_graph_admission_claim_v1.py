@@ -7,6 +7,7 @@ from noetrium_platform.composition.research_graph import ResearchGraphScheduler
 from noetrium_platform.foundation.kernel.concurrency.api import ConcurrencyBudget
 from noetrium_platform.foundation.kernel.kernel import canonical_digest
 from noetrium_platform.research.execution.graph.api import (
+    ResearchGraphAttemptState,
     ResearchGraphNode,
     ResearchGraphPlan,
 )
@@ -125,3 +126,65 @@ def test_resource_admission_precedes_claim_and_does_not_starve_lease_renewal(
     assert store.claim_in_flight == [1, 1]
     assert len(store.attempts("execution-admission-before-claim", "a")) == 1
     assert len(store.attempts("execution-admission-before-claim", "b")) == 1
+
+
+class _FailOnceStartStore(SQLiteResearchGraphExecutionStore):
+    def __init__(self, path) -> None:
+        super().__init__(path)
+        self.failed = False
+
+    def mark_running(self, *args, **kwargs):
+        if not self.failed:
+            self.failed = True
+            raise OSError("simulated durable start transition failure")
+        return super().mark_running(*args, **kwargs)
+
+
+class _ImmediateExecutor:
+    def __init__(self) -> None:
+        self.calls: list[str] = []
+
+    def execute(self, context, node, *, deadline) -> None:
+        del deadline
+        context.checkpoint()
+        self.calls.append(node.node_id)
+        context.checkpoint()
+
+
+def test_claim_committed_before_start_failure_is_abandoned_and_retried_exactly(
+    tmp_path,
+) -> None:
+    pool = _pool()
+    plan = ResearchGraphPlan(
+        "claim-start-recovery",
+        canonical_digest({"revision": "claim-start-recovery"}),
+        (
+            ResearchGraphNode(
+                "node",
+                canonical_digest({"node": "node"}),
+            ),
+        ),
+    )
+    store = _FailOnceStartStore(tmp_path / "claim-start.sqlite3")
+    executor = _ImmediateExecutor()
+    scheduler = ResearchGraphScheduler(
+        plan,
+        executor,
+        execution_pool=pool,
+        execution_store=store,
+        execution_id="execution-claim-start-recovery",
+        lease_seconds=0.12,
+    )
+    try:
+        report = scheduler.execute()
+    finally:
+        scheduler.close()
+        pool.close()
+
+    assert report.succeeded_node_ids == ("node",)
+    assert report.failed_node_ids == ()
+    assert executor.calls == ["node"]
+    attempts = store.attempts("execution-claim-start-recovery", "node")
+    assert len(attempts) == 2
+    assert attempts[0].state is ResearchGraphAttemptState.ABANDONED_BEFORE_START
+    assert attempts[1].state is ResearchGraphAttemptState.SUCCEEDED
