@@ -34,7 +34,7 @@ from noetrium_platform.foundation.portfolio.api import (
 from noetrium_platform.research.experimentation.api import (
     research_manifest_requirement_keys,
 )
-from noetrium_platform.research.experimentation.lifecycle.api import (
+from noetrium_platform.research.experimentation.lifecycle.study.api import (
     BenchmarkResolutionRegistry,
     BenchmarkTaskSet,
     TaskDefinition,
