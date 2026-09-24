@@ -378,7 +378,7 @@ class MinecraftBranchRuntimeBinding(MinecraftBranchRuntimePort):
             if allocation.allocation_id in self._released_allocation_ids:
                 continue
             try:
-                self._endpoint_allocations.release(allocation.allocation_id)
+                self._endpoint_allocations.release(allocation)
                 self._released_allocation_ids.add(allocation.allocation_id)
             except BaseException as exc:
                 errors.append(exc)
@@ -434,12 +434,12 @@ class MinecraftBranchRuntimeFactory(MinecraftBranchRuntimeFactoryPort):
                     host=request.endpoint_host,
                     candidate_count=request.endpoint_candidate_count,
                 )
-            allocation_ids = tuple(
-                row.allocation_id
+            allocation_generations = tuple(
+                row
                 for row in (allocation, rcon_allocation)
                 if row is not None
             )
-            lease_guard = self._lease_guard_factory.create(allocation_ids)
+            lease_guard = self._lease_guard_factory.create(allocation_generations)
             lease_guard.start()
             endpoint = allocation.endpoint
             bridge_spec = request.environment_template.bridge
@@ -525,7 +525,7 @@ class MinecraftBranchRuntimeFactory(MinecraftBranchRuntimeFactoryPort):
                 if current is None:
                     continue
                 try:
-                    self._endpoint_allocations.release(current.allocation_id)
+                    self._endpoint_allocations.release(current)
                 except BaseException as cleanup_exc:
                     cleanup_errors.append(cleanup_exc)
             if cleanup_errors:
