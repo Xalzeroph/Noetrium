@@ -12,7 +12,7 @@ from noetrium_platform.foundation.governance.api import (
     RepositorySourceIndexPort,
 )
 
-from .degradation_contracts import BANNED_RUNTIME_IDENTIFIERS, DegradationFinding
+from .api.contracts import BANNED_RUNTIME_IDENTIFIERS, DegradationFinding
 from .degradation_paths import is_excluded_path, iter_audited_files
 
 _BANNED_IDENTIFIER_RE = re.compile(
