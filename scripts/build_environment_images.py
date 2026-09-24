@@ -111,11 +111,25 @@ def _profile_map(data: dict) -> dict[str, dict]:
 
 
 def _profile_revision(row: dict) -> str:
+    """Digest the immutable deployable profile definition and its recipe bytes."""
     material = {
         key: value
         for key, value in row.items()
         if key not in {"lifecycle", "default_for_category"}
     }
+    recipe_digests: dict[str, str] = {}
+    for field in ("dockerfile", "compose"):
+        value = row.get(field)
+        if isinstance(value, str) and value:
+            path = ROOT / value
+            if path.is_file():
+                recipe_digests[field] = _sha256(path)
+    category_id = row.get("category_id")
+    if isinstance(category_id, str) and row.get("build_mode") != "base-only":
+        doctor = ROOT / "deploy" / "environments" / category_id / "doctor.sh"
+        if doctor.is_file():
+            recipe_digests["doctor"] = _sha256(doctor)
+    material["recipe_digests"] = recipe_digests
     payload = json.dumps(
         material,
         sort_keys=True,
