@@ -87171,13 +87171,12 @@
         "schema_version"
       ],
       "kind": "class",
-      "line": 65,
+      "line": 55,
       "methods": [
         "__init__",
         "_path",
         "_encode",
         "_decode",
-        "_process_lock",
         "_load_unlocked",
         "save",
         "load"
@@ -87198,7 +87197,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 61,
+      "line": 51,
       "methods": [],
       "module": "noetrium_platform.research.execution.workflow.providers.method_checkpoint",
       "name": "MethodCheckpointCorruptionError",
@@ -101705,6 +101704,11 @@
     {
       "kind": "constructs",
       "source": "noetrium_platform.research.execution.workflow.providers.method_checkpoint.JsonMethodCheckpointStore",
+      "target": "noetrium_platform.foundation.kernel.kernel.durability.file_lock.InterprocessFileLock"
+    },
+    {
+      "kind": "constructs",
+      "source": "noetrium_platform.research.execution.workflow.providers.method_checkpoint.JsonMethodCheckpointStore",
       "target": "noetrium_platform.research.execution.workflow.api.method_machine.MethodCheckpoint"
     },
     {
@@ -102351,9 +102355,9 @@
   "counts": {
     "association_edges": 3422,
     "classes": 3336,
-    "constructor_edges": 931,
+    "constructor_edges": 932,
     "inheritance_edges": 149,
-    "module_import_edges": 5071,
+    "module_import_edges": 5072,
     "parse_errors": 0,
     "python_modules": 1928,
     "registry_authorities": 20,
@@ -121155,6 +121159,10 @@
     {
       "source": "noetrium_platform.research.execution.workflow.providers.method_checkpoint",
       "target": "noetrium_platform.foundation.kernel.kernel.durability.durable_file"
+    },
+    {
+      "source": "noetrium_platform.research.execution.workflow.providers.method_checkpoint",
+      "target": "noetrium_platform.foundation.kernel.kernel.durability.file_lock"
     },
     {
       "source": "noetrium_platform.research.execution.workflow.providers.method_checkpoint",
@@ -141617,6 +141625,7 @@
       "imports": [
         "noetrium_platform.foundation.kernel.kernel",
         "noetrium_platform.foundation.kernel.kernel.durability.durable_file",
+        "noetrium_platform.foundation.kernel.kernel.durability.file_lock",
         "noetrium_platform.research.execution.workflow.api.method_machine"
       ],
       "module": "noetrium_platform.research.execution.workflow.providers.method_checkpoint",
@@ -143583,7 +143592,7 @@
   "parse_errors": [],
   "registry_sha256": "d3fc1bab831f1b7379e5a36048a61c00fe173429df958270d36a16f3f00171c0",
   "schema": "noetrium-code-architecture-index.v1",
-  "source_git_sha": "f8bfcbb582684b8ca02fe69160d1d529fecac50d",
+  "source_git_sha": "e0d7655aa1429ad0b80eb812096cbd6089aaab60",
   "system_import_edges": [
     {
       "count": 85,
@@ -143626,7 +143635,7 @@
       "target": "execution"
     },
     {
-      "count": 79,
+      "count": 80,
       "source": "execution",
       "target": "platform"
     },

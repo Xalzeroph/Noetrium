@@ -2,14 +2,14 @@
   "counts": {
     "parse_errors": 0,
     "python_files": 3654,
-    "python_import_edges": 6996,
-    "symbols": 4846,
+    "python_import_edges": 6997,
+    "symbols": 4847,
     "tracked_files": 4283,
     "typescript_javascript_files": 11
   },
   "language_symbol_counts": {
     "javascript": 1,
-    "python": 4840,
+    "python": 4841,
     "typescript": 5
   },
   "parse_errors": [],
@@ -13974,6 +13974,12 @@
       "source_module": "noetrium_platform.research.execution.workflow.providers.method_checkpoint",
       "source_role": "core_platform",
       "target_module": "noetrium_platform.foundation.kernel.kernel.durability.durable_file",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "noetrium_platform.research.execution.workflow.providers.method_checkpoint",
+      "source_role": "core_platform",
+      "target_module": "noetrium_platform.foundation.kernel.kernel.durability.file_lock",
       "target_role": "core_platform"
     },
     {
@@ -41993,7 +41999,7 @@
   ],
   "role_import_counts": [
     {
-      "count": 2616,
+      "count": 2617,
       "source_role": "core_platform",
       "target_role": "core_platform"
     },
@@ -42128,11 +42134,11 @@
     "reference_orchestration": 14,
     "research_reproductions": 408,
     "sdk": 5,
-    "tests": 968,
+    "tests": 969,
     "tooling": 38
   },
   "schema": "noetrium-repository-code-architecture-index.v1",
-  "source_git_sha": "f8bfcbb582684b8ca02fe69160d1d529fecac50d",
+  "source_git_sha": "e0d7655aa1429ad0b80eb812096cbd6089aaab60",
   "symbols": [
     {
       "bases": [],
@@ -107682,7 +107688,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 61,
+      "line": 51,
       "methods": [],
       "module": "noetrium_platform.research.execution.workflow.providers.method_checkpoint",
       "name": "MethodCheckpointCorruptionError",
@@ -107698,13 +107704,12 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 65,
+      "line": 55,
       "methods": [
         "__init__",
         "_path",
         "_encode",
         "_decode",
-        "_process_lock",
         "_load_unlocked",
         "save",
         "load"
@@ -146610,6 +146615,24 @@
       "name": "Agent",
       "path": "tests/test_universal_method_machine_abi_v2.py",
       "qualname": "tests.test_universal_method_machine_abi_v2.Agent",
+      "role": "tests"
+    },
+    {
+      "bases": [],
+      "decorators": [],
+      "fields": [],
+      "kind": "class",
+      "language": "python",
+      "line": 356,
+      "methods": [
+        "__init__",
+        "__enter__",
+        "__exit__"
+      ],
+      "module": "tests.test_universal_method_machine_abi_v2",
+      "name": "UnavailableLock",
+      "path": "tests/test_universal_method_machine_abi_v2.py",
+      "qualname": "tests.test_universal_method_machine_abi_v2.UnavailableLock",
       "role": "tests"
     },
     {
