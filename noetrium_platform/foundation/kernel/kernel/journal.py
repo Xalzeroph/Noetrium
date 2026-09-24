@@ -6,12 +6,30 @@ accepts one monotonic revision per machine and rejects ambiguous duplicates.
 
 from __future__ import annotations
 
+from dataclasses import dataclass, field
+from enum import StrEnum
+from hashlib import sha256
 from pathlib import Path
 from threading import RLock
 from typing import Protocol, runtime_checkable
 
-from .canonical import canonical_bytes, strict_json_loads, thaw_json
-from .durability import InterprocessFileLock, durable_append_bytes
+from .canonical import canonical_bytes, canonical_digest, require_sha256, strict_json_loads, thaw_json
+from .durable_closure import (
+    DurableCarrierReferenceClosure,
+    durable_carrier_closure_complete,
+    durable_carrier_gc_eligible,
+    validate_durable_carrier_closures,
+)
+from .durability import (
+    ChecksummedDocumentError,
+    InterprocessFileLock,
+    atomic_replace_bytes,
+    decode_checksummed_document,
+    durable_append_bytes,
+    durable_unlink,
+    encode_checksummed_document,
+    fsync_directory,
+)
 from .machine import (
     MachineCommand,
     MachineCommit,
@@ -201,6 +219,113 @@ def _decode_commit(value: object) -> MachineCommit:
     return commit
 
 
+
+_MACHINE_JOURNAL_RETIREMENT_SCHEMA = "machine.journal-retirement.v1"
+_MACHINE_JOURNAL_RETIREMENT_FIELDS = {
+    "machine_id",
+    "terminal_commit_id",
+    "terminal_revision",
+    "content_sha256",
+    "byte_size",
+    "gc_proof_digest",
+    "phase",
+}
+
+
+class MachineJournalRetirementPhase(StrEnum):
+    RETIRED = "retired"
+    QUARANTINED = "quarantined"
+    PURGED = "purged"
+
+
+@dataclass(frozen=True, slots=True)
+class MachineJournalGcAssessment:
+    """Exact fail-closed GC cut for one durable Machine Journal generation."""
+
+    machine_id: str
+    terminal_commit_id: str
+    terminal_revision: int
+    content_sha256: str
+    byte_size: int
+    closures: tuple[DurableCarrierReferenceClosure, ...] = ()
+    proof_digest: str = field(init=False)
+
+    def __post_init__(self) -> None:
+        if (
+            type(self.machine_id) is not str
+            or not self.machine_id.strip()
+            or self.machine_id != self.machine_id.strip()
+        ):
+            raise ValueError("machine journal GC machine_id must be canonical text")
+        require_sha256(
+            self.terminal_commit_id,
+            "machine journal GC terminal_commit_id",
+        )
+        if (
+            type(self.terminal_revision) is not int
+            or self.terminal_revision <= 0
+        ):
+            raise ValueError(
+                "machine journal GC terminal_revision must be positive"
+            )
+        require_sha256(
+            self.content_sha256,
+            "machine journal GC content_sha256",
+        )
+        if type(self.byte_size) is not int or self.byte_size <= 0:
+            raise ValueError("machine journal GC byte_size must be positive")
+        validate_durable_carrier_closures(self.closures)
+        object.__setattr__(
+            self,
+            "proof_digest",
+            canonical_digest(
+                {
+                    "schema": "machine.journal-gc-assessment.v1",
+                    "machine_id": self.machine_id,
+                    "terminal_commit_id": self.terminal_commit_id,
+                    "terminal_revision": self.terminal_revision,
+                    "content_sha256": self.content_sha256,
+                    "byte_size": self.byte_size,
+                    "closures": [
+                        {
+                            "authority": closure.authority.value,
+                            "proof_digest": closure.proof_digest,
+                            "retained_reference_ids": list(
+                                closure.retained_reference_ids
+                            ),
+                        }
+                        for closure in self.closures
+                    ],
+                }
+            ),
+        )
+
+    @property
+    def closure_complete(self) -> bool:
+        return durable_carrier_closure_complete(self.closures)
+
+    @property
+    def eligible(self) -> bool:
+        return durable_carrier_gc_eligible(self.closures)
+
+
+@runtime_checkable
+class MachineJournalGcPort(Protocol):
+    def assess_gc(
+        self,
+        machine_id: str,
+        *,
+        closures: tuple[DurableCarrierReferenceClosure, ...] = (),
+    ) -> MachineJournalGcAssessment: ...
+
+    def purge(
+        self,
+        machine_id: str,
+        *,
+        gc: MachineJournalGcAssessment,
+    ) -> bool: ...
+
+
 @runtime_checkable
 class MachineJournalPort(Protocol):
     def append(self, commit: MachineCommit) -> MachineCommit: ...
@@ -375,6 +500,149 @@ class DirectoryMachineJournal(MachineJournalPort):
     def _lock_path(self, machine_id: str) -> Path:
         return self.locks / f"{self._file_key(machine_id)}.lock"
 
+    def _retirement_path(self, machine_id: str) -> Path:
+        return (
+            self.logs
+            / ".retired"
+            / f"{self._file_key(machine_id)}.json"
+        )
+
+    def _quarantine_path(self, machine_id: str) -> Path:
+        return (
+            self.logs
+            / ".retired-journals"
+            / f"{self._file_key(machine_id)}.journal"
+        )
+
+    def _load_retirement(
+        self,
+        machine_id: str,
+    ) -> dict[str, object] | None:
+        path = self._retirement_path(machine_id)
+        if not path.exists():
+            return None
+        try:
+            payload = decode_checksummed_document(
+                path.read_bytes(),
+                expected_schema=_MACHINE_JOURNAL_RETIREMENT_SCHEMA,
+            ).payload
+        except (OSError, ChecksummedDocumentError) as exc:
+            raise MachineIntegrityError(
+                "machine journal retirement intent is corrupt"
+            ) from exc
+        if set(payload) != _MACHINE_JOURNAL_RETIREMENT_FIELDS:
+            raise MachineIntegrityError(
+                "machine journal retirement fields are not exact"
+            )
+        if payload.get("machine_id") != machine_id:
+            raise MachineIntegrityError(
+                "machine journal retirement identity mismatch"
+            )
+        try:
+            require_sha256(
+                str(payload["terminal_commit_id"]),
+                "machine journal retirement terminal_commit_id",
+            )
+            require_sha256(
+                str(payload["content_sha256"]),
+                "machine journal retirement content_sha256",
+            )
+            require_sha256(
+                str(payload["gc_proof_digest"]),
+                "machine journal retirement gc_proof_digest",
+            )
+            phase = MachineJournalRetirementPhase(str(payload["phase"]))
+            terminal_revision = payload["terminal_revision"]
+            byte_size = payload["byte_size"]
+            if (
+                type(terminal_revision) is not int
+                or terminal_revision <= 0
+                or type(byte_size) is not int
+                or byte_size <= 0
+            ):
+                raise ValueError("invalid numeric retirement identity")
+        except (KeyError, TypeError, ValueError) as exc:
+            raise MachineIntegrityError(
+                "machine journal retirement intent is invalid"
+            ) from exc
+        return {
+            "machine_id": machine_id,
+            "terminal_commit_id": str(payload["terminal_commit_id"]),
+            "terminal_revision": terminal_revision,
+            "content_sha256": str(payload["content_sha256"]),
+            "byte_size": byte_size,
+            "gc_proof_digest": str(payload["gc_proof_digest"]),
+            "phase": phase,
+        }
+
+    def _publish_retirement(
+        self,
+        gc: MachineJournalGcAssessment,
+        phase: MachineJournalRetirementPhase,
+    ) -> None:
+        atomic_replace_bytes(
+            self._retirement_path(gc.machine_id),
+            encode_checksummed_document(
+                _MACHINE_JOURNAL_RETIREMENT_SCHEMA,
+                {
+                    "machine_id": gc.machine_id,
+                    "terminal_commit_id": gc.terminal_commit_id,
+                    "terminal_revision": gc.terminal_revision,
+                    "content_sha256": gc.content_sha256,
+                    "byte_size": gc.byte_size,
+                    "gc_proof_digest": gc.proof_digest,
+                    "phase": phase.value,
+                },
+            ),
+        )
+
+    def _gc_identity_locked(
+        self,
+        machine_id: str,
+    ) -> tuple[str, int, str, int]:
+        path = self._log_path(machine_id)
+        before = self._file_identity(path)
+        if before is None:
+            raise KeyError(f"machine journal does not exist: {machine_id}")
+        cache = self._read_authoritative(machine_id)
+        if not cache.history.commits:
+            raise MachineIntegrityError(
+                "machine journal GC requires at least one accepted commit"
+            )
+        try:
+            raw = path.read_bytes()
+        except OSError as exc:
+            raise MachineIntegrityError(
+                f"cannot read machine journal for GC: {path}"
+            ) from exc
+        after = self._file_identity(path)
+        if after != before or cache.file_identity != after:
+            raise MachineIntegrityError(
+                "machine journal changed during GC identity capture"
+            )
+        latest = cache.history.commits[-1]
+        return (
+            latest.commit_id,
+            latest.revision,
+            sha256(raw).hexdigest(),
+            len(raw),
+        )
+
+    @staticmethod
+    def _require_gc_identity(
+        gc: MachineJournalGcAssessment,
+        current: tuple[str, int, str, int],
+    ) -> None:
+        if current != (
+            gc.terminal_commit_id,
+            gc.terminal_revision,
+            gc.content_sha256,
+            gc.byte_size,
+        ):
+            raise RuntimeError(
+                "machine journal changed after GC assessment"
+            )
+
     @staticmethod
     def _file_identity(
         path: Path,
@@ -497,6 +765,10 @@ class DirectoryMachineJournal(MachineJournalPort):
     def _history(self, machine_id: str) -> tuple[MachineCommit, ...]:
         if type(machine_id) is not str or not machine_id.strip():
             raise ValueError("machine_id is required")
+        if self._retirement_path(machine_id).exists():
+            raise MachineIntegrityError(
+                "machine journal identity is retired"
+            )
         path = self._log_path(machine_id)
         identity = self._file_identity(path)
         with self._cache_lock:
@@ -518,6 +790,10 @@ class DirectoryMachineJournal(MachineJournalPort):
             raise TypeError("machine journal accepts MachineCommit")
         path = self._log_path(commit.machine_id)
         with InterprocessFileLock(self._lock_path(commit.machine_id)):
+            if self._load_retirement(commit.machine_id) is not None:
+                raise MachineConflict(
+                    "machine journal identity is retired and cannot accept new commits"
+                )
             with self._cache_lock:
                 cached = self._authoritative_cache_locked(
                     commit.machine_id
@@ -569,6 +845,8 @@ class DirectoryMachineJournal(MachineJournalPort):
     def _machine_ids(self) -> tuple[str, ...]:
         ids: set[str] = set()
         for path in sorted(self.logs.glob("*.journal")):
+            if (self.logs / ".retired" / f"{path.stem}.json").exists():
+                continue
             lock_path = self.locks / f"{path.stem}.lock"
             with InterprocessFileLock(lock_path):
                 try:
