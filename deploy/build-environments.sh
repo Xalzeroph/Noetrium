@@ -105,7 +105,7 @@ reconcile_bootstrap_children() {
 cleanup_owned_bootstrap_children() {
   if ! ids="$(docker ps -aq --no-trunc \
     --filter "label=$BOOTSTRAP_CHILD_LABEL=$BOOTSTRAP_CHILD_VALUE" \
-    --filter "label=$OWNER_PID_LABEL=$" \
+    --filter "label=$OWNER_PID_LABEL=$$" \
     --filter "label=$OWNER_BOOT_LABEL=$BOOT_ID" \
     --filter "label=$OWNER_START_LABEL=$OWNER_START" 2>/dev/null)"; then
     echo "Unable to enumerate owned bootstrap child containers during cleanup." >&2
@@ -122,7 +122,7 @@ cleanup_owned_bootstrap_children() {
 cleanup_owned_bootstrap_container() {
   if ! ids="$(docker ps -aq --no-trunc \
     --filter "label=$BOOTSTRAP_MANAGED_LABEL=$BOOTSTRAP_MANAGED_VALUE" \
-    --filter "label=$OWNER_PID_LABEL=$" \
+    --filter "label=$OWNER_PID_LABEL=$$" \
     --filter "label=$OWNER_BOOT_LABEL=$BOOT_ID" \
     --filter "label=$OWNER_START_LABEL=$OWNER_START" 2>/dev/null)"; then
     echo "Unable to enumerate owned bootstrap container during cleanup." >&2
