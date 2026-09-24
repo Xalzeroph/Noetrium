@@ -41,11 +41,11 @@ def test_fleet_plan_exposes_exact_vs_parameterized_study_bindings() -> None:
     assert frontier["study_factory_count"] >= 1
 
 
-def test_fleet_plan_keeps_parameterized_method_factories_explicit() -> None:
+def test_fleet_plan_materializes_exact_method_factories_through_product_abi() -> None:
     plan = build_plan()
     toolformer = _lane(plan, "toolformer")
-    assert toolformer["method_program_digest"] is None
-    assert any(
+    assert len(toolformer["method_program_digest"]) == 64
+    assert not any(
         blocker.startswith("method_factory_requires_binding:")
         for blocker in toolformer["blockers"]
     )
