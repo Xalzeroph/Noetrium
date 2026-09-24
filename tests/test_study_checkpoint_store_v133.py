@@ -143,3 +143,113 @@ def test_checkpoint_publish_fences_conflicting_concurrent_writers(
     assert loaded.participant_payloads == first_payloads
     losing_digest = second_payloads[0].checkpoint.ref.payload_sha256
     assert not first_store._blob_path(losing_digest).exists()
+
+
+
+def test_checkpoint_publish_intent_survives_manifest_crash_and_resumes(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    import noetrium_platform.research.experimentation.lifecycle.checkpoint.providers.directory_store as store_module
+
+    root = tmp_path / "checkpoint-intent-crash"
+    store = DirectoryRunCheckpointStore(root)
+    payloads = (
+        participant_payload("method", b"owned-payload", generation="g1"),
+    )
+    owned = manifest(payloads, checkpoint_id="intent-owned")
+
+    real_atomic_replace = store_module.atomic_replace_bytes
+    failed = False
+
+    def fail_manifest_once(path, payload):
+        nonlocal failed
+        if path.parent == store.manifests and not failed:
+            failed = True
+            raise OSError("simulated crash before manifest publication")
+        return real_atomic_replace(path, payload)
+
+    monkeypatch.setattr(
+        store_module,
+        "atomic_replace_bytes",
+        fail_manifest_once,
+    )
+    with pytest.raises(OSError, match="before manifest publication"):
+        store.publish(owned, payloads)
+
+    intent_path = store._intents._path(owned.checkpoint_id)
+    assert intent_path.exists()
+    assert not store._manifest_path(owned.checkpoint_id).exists()
+    assert store._blob_path(
+        payloads[0].checkpoint.ref.payload_sha256
+    ).exists()
+
+    conflicting_payloads = (
+        participant_payload("method", b"losing-payload", generation="g2"),
+    )
+    conflicting = manifest(
+        conflicting_payloads,
+        checkpoint_id=owned.checkpoint_id,
+    )
+    with pytest.raises(RunCheckpointConflict):
+        DirectoryRunCheckpointStore(root).publish(
+            conflicting,
+            conflicting_payloads,
+        )
+    assert not store._blob_path(
+        conflicting_payloads[0].checkpoint.ref.payload_sha256
+    ).exists()
+
+    monkeypatch.setattr(
+        store_module,
+        "atomic_replace_bytes",
+        real_atomic_replace,
+    )
+    reopened = DirectoryRunCheckpointStore(root)
+    assert reopened.publish(owned, payloads) == owned
+    assert not reopened._intents._path(owned.checkpoint_id).exists()
+    assert reopened.load(owned.checkpoint_id).manifest == owned
+
+
+def test_checkpoint_publish_retry_clears_intent_after_manifest_commit(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    import noetrium_platform.research.experimentation.lifecycle.checkpoint.providers.publication_intent as intent_module
+
+    root = tmp_path / "checkpoint-intent-clear"
+    store = DirectoryRunCheckpointStore(root)
+    payloads = (
+        participant_payload("method", b"payload", generation="g1"),
+    )
+    owned = manifest(payloads, checkpoint_id="intent-clear")
+
+    real_durable_unlink = intent_module.durable_unlink
+    failed = False
+
+    def fail_clear_once(path):
+        nonlocal failed
+        if not failed:
+            failed = True
+            raise OSError("simulated crash after manifest commit")
+        return real_durable_unlink(path)
+
+    monkeypatch.setattr(
+        intent_module,
+        "durable_unlink",
+        fail_clear_once,
+    )
+    with pytest.raises(OSError, match="after manifest commit"):
+        store.publish(owned, payloads)
+
+    assert store._manifest_path(owned.checkpoint_id).exists()
+    assert store._intents._path(owned.checkpoint_id).exists()
+
+    monkeypatch.setattr(
+        intent_module,
+        "durable_unlink",
+        real_durable_unlink,
+    )
+    reopened = DirectoryRunCheckpointStore(root)
+    assert reopened.publish(owned, payloads) == owned
+    assert not reopened._intents._path(owned.checkpoint_id).exists()
