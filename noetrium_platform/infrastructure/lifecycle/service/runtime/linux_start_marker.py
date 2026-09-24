@@ -3,6 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 import json
 import math
+from time import time
 from uuid import uuid4
 
 from noetrium_platform.infrastructure.lifecycle.service.api import (
@@ -23,6 +24,7 @@ class LinuxPreparedStartToken:
     attempt: int
     contract_digest: str
     environment_digest: str
+    prepared_at_epoch_s: float
 
     def __post_init__(self) -> None:
         if (
@@ -45,6 +47,13 @@ class LinuxPreparedStartToken:
                 raise ValueError(
                     f"Linux prepared-start {label} digest must be lowercase sha256"
                 )
+        if (
+            not isinstance(self.prepared_at_epoch_s, (int, float))
+            or isinstance(self.prepared_at_epoch_s, bool)
+            or not math.isfinite(float(self.prepared_at_epoch_s))
+            or float(self.prepared_at_epoch_s) <= 0
+        ):
+            raise ValueError("Linux prepared-start timestamp must be finite and positive")
 
     def encode(self) -> bytes:
         return json.dumps(
@@ -54,6 +63,7 @@ class LinuxPreparedStartToken:
                 "attempt": self.attempt,
                 "contract_digest": self.contract_digest,
                 "environment_digest": self.environment_digest,
+                "prepared_at_epoch_s": self.prepared_at_epoch_s,
             },
             sort_keys=True,
             separators=(",", ":"),
@@ -71,6 +81,7 @@ class LinuxPreparedStartToken:
             "attempt",
             "contract_digest",
             "environment_digest",
+            "prepared_at_epoch_s",
         }:
             raise ValueError("Linux prepared-start recovery payload fields are invalid")
         return cls(
@@ -79,6 +90,7 @@ class LinuxPreparedStartToken:
             int(raw["attempt"]),
             str(raw["contract_digest"]),
             str(raw["environment_digest"]),
+            float(raw["prepared_at_epoch_s"]),
         )
 
 
@@ -99,6 +111,7 @@ def prepare_linux_start_handle(
         attempt,
         contract.digest(),
         environment.digest,
+        time(),
     )
     return ServiceStartRecoveryHandle.from_payload(
         LINUX_PREPARED_START_SCHEMA,
