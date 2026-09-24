@@ -24,12 +24,14 @@ from noetrium_platform.research.execution.graph.api import (
     ResearchGraphControlStorePort,
     ResearchGraphExecutionConflict,
     ResearchGraphExecutionReport,
+    ResearchGraphExecutionSnapshot,
     ResearchGraphExecutionStorePort,
     ResearchGraphLeaseRenewal,
     ResearchGraphLiveNodeState,
     ResearchGraphNodeControlPhase,
     ResearchGraphNodeControlRecord,
     ResearchGraphNodeControlStorePort,
+    ResearchGraphNodeExecutionRecord,
     ResearchGraphNode,
     ResearchGraphNodeExecutorPort,
     ResearchGraphNodeResult,
@@ -413,17 +415,17 @@ class ResearchGraphScheduler:
             )
 
 
-    def _execute_durable(
+    def _prepare_durable_execution(
         self,
+        store: ResearchGraphExecutionStorePort,
+        execution_id: str,
         *,
-        deadline: Deadline | None,
-    ) -> ResearchGraphExecutionReport:
-        store = self._execution_store
-        execution_id = self._execution_id
-        if store is None or execution_id is None:
-            raise RuntimeError("durable graph scheduler is not fully bound")
-
-        now_ns = time.time_ns()
+        now_ns: int,
+    ) -> tuple[
+        ResearchGraphExecutionSnapshot,
+        ResearchGraphControlStorePort,
+        ResearchGraphNodeControlStorePort,
+    ]:
         store.ensure_execution(execution_id, self._plan)
         snapshot = store.recover_expired(execution_id, now_ns=now_ns)
         if not isinstance(store, ResearchGraphControlStorePort):
@@ -437,10 +439,9 @@ class ResearchGraphScheduler:
         control_store = store
         node_control_store = store
         control = control_store.control_state(execution_id)
-        debt_ids = snapshot.reconciliation_required_node_ids
         global_debt = tuple(
             node_id
-            for node_id in debt_ids
+            for node_id in snapshot.reconciliation_required_node_ids
             if node_control_store.node_control_state(
                 execution_id, node_id
             ).phase is not ResearchGraphNodeControlPhase.RECOVERY_REQUIRED
@@ -482,7 +483,19 @@ class ResearchGraphScheduler:
                 "research graph execution has active non-expired leases: "
                 f"{active}"
             )
+        return snapshot, control_store, node_control_store
 
+    def _hydrate_durable_frontier(
+        self,
+        snapshot: ResearchGraphExecutionSnapshot,
+    ) -> tuple[
+        dict[str, ResearchGraphNodeExecutionRecord],
+        dict[str, ResearchGraphNode],
+        dict[str, ResearchGraphNodeResult],
+        set[str],
+        ResearchGraphDependencyFrontier,
+    ]:
+        selected = set(self._selected_node_ids)
         by_id = {node.node_id: node for node in self._plan.nodes}
         live = {node.node_id: node for node in snapshot.nodes}
         pending: dict[str, ResearchGraphNode] = {}
@@ -540,6 +553,33 @@ class ResearchGraphScheduler:
             selected_node_ids=self._selected_node_ids,
             terminal_results=results,
         )
+        return live, pending, results, reconciliation_required, frontier
+
+    def _execute_durable(
+        self,
+        *,
+        deadline: Deadline | None,
+    ) -> ResearchGraphExecutionReport:
+        store = self._execution_store
+        execution_id = self._execution_id
+        if store is None or execution_id is None:
+            raise RuntimeError("durable graph scheduler is not fully bound")
+
+        now_ns = time.time_ns()
+        snapshot, control_store, node_control_store = (
+            self._prepare_durable_execution(
+                store,
+                execution_id,
+                now_ns=now_ns,
+            )
+        )
+        (
+            live,
+            pending,
+            results,
+            reconciliation_required,
+            frontier,
+        ) = self._hydrate_durable_frontier(snapshot)
 
         base_group_id = (
             self._task_group_id or f"research-graph:{execution_id}"
