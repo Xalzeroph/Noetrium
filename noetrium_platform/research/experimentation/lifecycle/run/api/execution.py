@@ -1,13 +1,8 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Protocol
-
 from noetrium_platform.foundation.kernel.kernel import require_sha256
-from noetrium_platform.research.experimentation.lifecycle.run.api.spec import ExperimentRunSpec
 from noetrium_platform.research.experimentation.lifecycle.study.api import (
-    BoundStudyExecutionPort,
-    StudyExecutionPlan,
     StudyMatrixExecutionReport,
 )
 
@@ -35,16 +30,4 @@ class ExperimentRunResult:
             raise ValueError("experiment run result binding digest is inconsistent")
 
 
-class ExperimentRunExecutionPort(Protocol):
-    """Run-layer execution of one frozen, fully-bound scientific plan."""
-
-    def execute(
-        self,
-        *,
-        run_spec: ExperimentRunSpec,
-        plan: StudyExecutionPlan,
-        unit_adapter: BoundStudyExecutionPort,
-    ) -> ExperimentRunResult: ...
-
-
-__all__ = ["ExperimentRunExecutionPort", "ExperimentRunResult"]
+__all__ = ["ExperimentRunResult"]
