@@ -521,6 +521,7 @@ class CanonicalResearchOSNodeRuntime(ResearchOSNodeRuntimePort):
                 closure.experiment_program,
                 runtime_binding.adapter,
                 runtime_binding.aggregation,
+                execution_binding_digest=runtime_binding.runtime_binding_digest,
                 task_group=group,
             ).execute(
                 journal=self._machine_journal,
