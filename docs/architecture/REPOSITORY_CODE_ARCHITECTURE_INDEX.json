@@ -1,15 +1,15 @@
 {
   "counts": {
     "parse_errors": 0,
-    "python_files": 3677,
-    "python_import_edges": 7181,
-    "symbols": 4878,
-    "tracked_files": 4307,
+    "python_files": 3679,
+    "python_import_edges": 7190,
+    "symbols": 4881,
+    "tracked_files": 4309,
     "typescript_javascript_files": 11
   },
   "language_symbol_counts": {
     "javascript": 1,
-    "python": 4872,
+    "python": 4875,
     "typescript": 5
   },
   "parse_errors": [],
@@ -17847,6 +17847,24 @@
       "target_role": "research_reproductions"
     },
     {
+      "source_module": "research.reproductions.benchmark_authority",
+      "source_role": "research_reproductions",
+      "target_module": "noetrium_platform.foundation.kernel.kernel",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "research.reproductions.benchmark_authority",
+      "source_role": "research_reproductions",
+      "target_module": "noetrium_platform.foundation.kernel.kernel.durability",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "research.reproductions.benchmark_authority",
+      "source_role": "research_reproductions",
+      "target_module": "noetrium_platform.research.experimentation.lifecycle.api",
+      "target_role": "core_platform"
+    },
+    {
       "source_module": "research.reproductions.camel_role_playing.definition",
       "source_role": "research_reproductions",
       "target_module": "research.reproductions.contracts",
@@ -33111,6 +33129,42 @@
       "target_role": "research_reproductions"
     },
     {
+      "source_module": "tests.test_reproduction_repository_benchmark_authority_v1",
+      "source_role": "tests",
+      "target_module": "noetrium_platform.foundation.kernel.kernel",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "tests.test_reproduction_repository_benchmark_authority_v1",
+      "source_role": "tests",
+      "target_module": "noetrium_platform.research.experimentation.lifecycle.api",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "tests.test_reproduction_repository_benchmark_authority_v1",
+      "source_role": "tests",
+      "target_module": "research.reproductions.benchmark_authority",
+      "target_role": "research_reproductions"
+    },
+    {
+      "source_module": "tests.test_reproduction_repository_benchmark_authority_v1",
+      "source_role": "tests",
+      "target_module": "research.reproductions.research_os",
+      "target_role": "research_reproductions"
+    },
+    {
+      "source_module": "tests.test_reproduction_repository_benchmark_authority_v1",
+      "source_role": "tests",
+      "target_module": "research.reproductions.storm_wiki.definition",
+      "target_role": "research_reproductions"
+    },
+    {
+      "source_module": "tests.test_reproduction_repository_benchmark_authority_v1",
+      "source_role": "tests",
+      "target_module": "research.reproductions.vima_embodied.definition",
+      "target_role": "research_reproductions"
+    },
+    {
       "source_module": "tests.test_reproduction_research_os_coverage_v1",
       "source_role": "tests",
       "target_module": "research.reproductions.contracts",
@@ -43148,7 +43202,7 @@
       "target_role": "public_facade"
     },
     {
-      "count": 625,
+      "count": 628,
       "source_role": "research_reproductions",
       "target_role": "core_platform"
     },
@@ -43163,7 +43217,7 @@
       "target_role": "research_reproductions"
     },
     {
-      "count": 2795,
+      "count": 2797,
       "source_role": "tests",
       "target_role": "core_platform"
     },
@@ -43183,7 +43237,7 @@
       "target_role": "reference_orchestration"
     },
     {
-      "count": 335,
+      "count": 339,
       "source_role": "tests",
       "target_role": "research_reproductions"
     },
@@ -43225,8 +43279,8 @@
     "public_facade": 40,
     "reference_components": 22,
     "reference_orchestration": 10,
-    "research_reproductions": 775,
-    "tests": 816,
+    "research_reproductions": 776,
+    "tests": 817,
     "tooling": 78
   },
   "role_symbol_counts": {
@@ -43236,13 +43290,13 @@
     "public_facade": 4,
     "reference_components": 64,
     "reference_orchestration": 14,
-    "research_reproductions": 422,
+    "research_reproductions": 425,
     "sdk": 5,
     "tests": 981,
     "tooling": 38
   },
   "schema": "noetrium-repository-code-architecture-index.v1",
-  "source_git_sha": "d3fd2383d0fda9a727639553b850b4978530cc5a",
+  "source_git_sha": "813ece36bea7a0f5dd860e047f03e216eb4dfd1f",
   "symbols": [
     {
       "bases": [],
@@ -121735,6 +121789,82 @@
       "name": "AutoGenAgentChatFidelity",
       "path": "research/reproductions/autogen_agentchat/fidelity.py",
       "qualname": "research.reproductions.autogen_agentchat.fidelity.AutoGenAgentChatFidelity",
+      "role": "research_reproductions"
+    },
+    {
+      "bases": [],
+      "decorators": [
+        "dataclass(frozen=True, slots=True)"
+      ],
+      "fields": [
+        "benchmark_package: str",
+        "module: str",
+        "qualname: str",
+        "source_sha256: str",
+        "resolution: BenchmarkSourceResolution",
+        "binding_digest: str"
+      ],
+      "kind": "dataclass",
+      "language": "python",
+      "line": 33,
+      "methods": [
+        "__post_init__",
+        "benchmark_id"
+      ],
+      "module": "research.reproductions.benchmark_authority",
+      "name": "RepositoryBenchmarkBinding",
+      "path": "research/reproductions/benchmark_authority.py",
+      "qualname": "research.reproductions.benchmark_authority.RepositoryBenchmarkBinding",
+      "role": "research_reproductions"
+    },
+    {
+      "bases": [],
+      "decorators": [
+        "dataclass(frozen=True, slots=True)"
+      ],
+      "fields": [
+        "benchmark_package: str",
+        "module: str",
+        "qualname: str | None",
+        "stage: str",
+        "error_type: str",
+        "error_message: str",
+        "failure_digest: str"
+      ],
+      "kind": "dataclass",
+      "language": "python",
+      "line": 89,
+      "methods": [
+        "__post_init__"
+      ],
+      "module": "research.reproductions.benchmark_authority",
+      "name": "RepositoryBenchmarkDiscoveryFailure",
+      "path": "research/reproductions/benchmark_authority.py",
+      "qualname": "research.reproductions.benchmark_authority.RepositoryBenchmarkDiscoveryFailure",
+      "role": "research_reproductions"
+    },
+    {
+      "bases": [],
+      "decorators": [],
+      "fields": [],
+      "kind": "class",
+      "language": "python",
+      "line": 282,
+      "methods": [
+        "__init__",
+        "discover",
+        "authority_digest",
+        "bindings",
+        "failures",
+        "benchmark_ids",
+        "_binding",
+        "resolve",
+        "audit_document"
+      ],
+      "module": "research.reproductions.benchmark_authority",
+      "name": "RepositoryBenchmarkAuthority",
+      "path": "research/reproductions/benchmark_authority.py",
+      "qualname": "research.reproductions.benchmark_authority.RepositoryBenchmarkAuthority",
       "role": "research_reproductions"
     },
     {
