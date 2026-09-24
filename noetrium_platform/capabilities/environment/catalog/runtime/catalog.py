@@ -5,7 +5,10 @@ from pathlib import Path
 import sqlite3
 from typing import TypeVar
 
-from noetrium_platform.foundation.kernel.kernel.durability.sqlite import durable_sqlite_connection
+from noetrium_platform.foundation.kernel.kernel.durability.sqlite import (
+    durable_sqlite_connection,
+    immediate_sqlite_transaction,
+)
 from noetrium_platform.foundation.kernel.kernel import canonical_digest
 from noetrium_platform.capabilities.environment.catalog.api import (
     EnvironmentAssignment,
@@ -263,17 +266,26 @@ class SQLiteExecutionEnvironmentCatalog(ExecutionEnvironmentCatalog):
     def _persist(self) -> None:
         payload = self._state()
         with self._connection() as conn:
-            conn.execute("BEGIN IMMEDIATE")
             next_generation = self._state_generation + 1
-            updated = conn.execute(
-                "UPDATE environment_state SET schema_version=?, generation=?, payload=? "
-                "WHERE state_id=1 AND generation=?",
-                (self.SCHEMA_VERSION, next_generation, payload, self._state_generation),
-            )
-            if updated.rowcount != 1:
-                conn.rollback()
-                raise RuntimeError("stale environment catalog revision; reload and retry")
-            conn.commit()
+            with immediate_sqlite_transaction(
+                conn,
+                timeout_seconds=self.timeout_seconds,
+                label="environment catalog",
+            ):
+                updated = conn.execute(
+                    "UPDATE environment_state SET schema_version=?, generation=?, payload=? "
+                    "WHERE state_id=1 AND generation=?",
+                    (
+                        self.SCHEMA_VERSION,
+                        next_generation,
+                        payload,
+                        self._state_generation,
+                    ),
+                )
+                if updated.rowcount != 1:
+                    raise RuntimeError(
+                        "stale environment catalog revision; reload and retry"
+                    )
             self._state_generation = next_generation
 
     @staticmethod
