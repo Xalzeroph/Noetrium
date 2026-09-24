@@ -79,6 +79,8 @@ class ManagedResearchRuntime:
     ) -> None:
         if self._closed:
             raise RuntimeError("managed research runtime is closed")
+        if self._stop.is_set():
+            raise RuntimeError("managed research runtime is quiescing")
 
         def _interval(value: float, label: str) -> float:
             if isinstance(value, bool) or not isinstance(value, (int, float)):
@@ -120,6 +122,23 @@ class ManagedResearchRuntime:
                 stop=stop,
             )
 
+    def quiesce_background_controllers(self) -> None:
+        """Stop long-lived controllers without closing the shared execution pool."""
+
+        self._stop.set()
+        errors: list[BaseException] = []
+        for controller in (self._model_controller, self._resource_controller):
+            if controller is not None:
+                try:
+                    controller.result(timeout=30.0)
+                except BaseException as exc:
+                    errors.append(exc)
+        if errors:
+            raise ExceptionGroup(
+                "managed research runtime quiesce failed",
+                errors,
+            )
+
     def assert_healthy(self) -> None:
         if self._closed:
             raise RuntimeError("managed research runtime is closed")
@@ -131,15 +150,12 @@ class ManagedResearchRuntime:
     def close(self) -> None:
         if self._closed:
             return
-        self._closed = True
-        self._stop.set()
         errors: list[BaseException] = []
-        for controller in (self._model_controller, self._resource_controller):
-            if controller is not None:
-                try:
-                    controller.result(timeout=30.0)
-                except BaseException as exc:
-                    errors.append(exc)
+        try:
+            self.quiesce_background_controllers()
+        except BaseException as exc:
+            errors.append(exc)
+        self._closed = True
         try:
             self.observability.close()
         except BaseException as exc:
