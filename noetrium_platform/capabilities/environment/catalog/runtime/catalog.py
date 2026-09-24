@@ -783,6 +783,7 @@ class SQLiteExecutionEnvironmentCatalog(ExecutionEnvironmentCatalog):
                 self,
                 profile_id,
                 profile_revision,
+                runtime_identity_digest,
                 binding_id=binding_id,
                 role=role,
                 scope=scope,
@@ -839,9 +840,14 @@ class SQLiteExecutionEnvironmentCatalog(ExecutionEnvironmentCatalog):
         self,
         profile_id: str,
         profile_revision: str,
+        runtime_identity_digest: str,
     ) -> tuple[EnvironmentInstance, ...]:
         self._load()
-        return super().reusable_instances(profile_id, profile_revision)
+        return super().reusable_instances(
+            profile_id,
+            profile_revision,
+            runtime_identity_digest,
+        )
 
     def profile_references(
         self,
