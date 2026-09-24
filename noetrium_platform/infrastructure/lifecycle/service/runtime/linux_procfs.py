@@ -57,6 +57,37 @@ class LinuxProcfsReader:
         """Return the procfs PID corresponding to a namespace-local PID."""
 
         return int(self._process_directory(pid).name)
+    def process_ids(self) -> tuple[int, ...]:
+        """Enumerate procfs-visible process ids for recovery-only discovery."""
+
+        values: list[int] = []
+        try:
+            entries = tuple(self.root.iterdir())
+        except FileNotFoundError:
+            return ()
+        for candidate in entries:
+            if candidate.name.isdigit() and candidate.is_dir():
+                values.append(int(candidate.name))
+        return tuple(sorted(values))
+
+    def control_pid(self, visible_pid: int) -> int:
+        """Resolve the PID understood by the current PID namespace.
+
+        On ordinary hosts this equals the procfs-visible PID. When procfs
+        belongs to an outer namespace, status:NSpid ends with the PID visible
+        to the innermost/current namespace used by the controller.
+        """
+
+        process_directory = self._process_directory(visible_pid)
+        status = (process_directory / "status").read_text(encoding="utf-8")
+        for line in status.splitlines():
+            if not line.startswith("NSpid:"):
+                continue
+            identities = line.split()[1:]
+            if identities:
+                return int(identities[-1])
+            break
+        return int(visible_pid)
 
     @staticmethod
     def alive_pid(pid: int) -> bool:
