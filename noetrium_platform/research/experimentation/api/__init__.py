@@ -17,8 +17,9 @@ from noetrium_platform.research.experimentation.lifecycle.api import (
     TrialMatrixExecutionReport, TrialProviderPort,
 )
 from .research_compiler import (
-    CompiledResearchPlan, ResearchPlanDiff, compile_research_plan,
-    diff_research_plans, resolve_research_requirements,
+    CompiledResearchPlan, ResearchManifestRequirementKeys, ResearchPlanDiff,
+    compile_research_plan, diff_research_plans,
+    research_manifest_requirement_keys, resolve_research_requirements,
 )
 from .method_host import compile_research_method
 from .sharding import (
@@ -72,6 +73,8 @@ __all__ = [
     "ResearchBindingRequirements",
     "ResearchParticipantRequirement",
     "ResearchRequirementResolution",
+    "ResearchManifestRequirementKeys",
+    "research_manifest_requirement_keys",
     "resolve_research_requirements",
     "TaskVerifierArtifact",
     "TaskVerifierPort",
