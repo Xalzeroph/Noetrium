@@ -165,9 +165,23 @@ jobs:
           print(f"ROLE06_DISTRIBUTION_EVIDENCE_SHA256={ctx['distribution_evidence_sha256']}")
           PY
 
+      - name: Resolve exact Python runtime source
+        run: |
+          ROLE06_PYTHON_RUNTIME_IMAGE="python:3.12-slim-bookworm"
+          docker pull "${ROLE06_PYTHON_RUNTIME_IMAGE}"
+          ROLE06_PYTHON_RUNTIME_IMAGE_ID="$(docker image inspect "${ROLE06_PYTHON_RUNTIME_IMAGE}" --format '{{.Id}}')"
+          case "${ROLE06_PYTHON_RUNTIME_IMAGE_ID}" in
+            sha256:????????????????????????????????????????????????????????????????) ;;
+            *) echo "invalid Python runtime image identity: ${ROLE06_PYTHON_RUNTIME_IMAGE_ID}" >&2; exit 1 ;;
+          esac
+          echo "ROLE06_PYTHON_RUNTIME_IMAGE=${ROLE06_PYTHON_RUNTIME_IMAGE}" >> "$GITHUB_ENV"
+          echo "ROLE06_PYTHON_RUNTIME_IDENTITY_DIGEST=${ROLE06_PYTHON_RUNTIME_IMAGE_ID#sha256:}" >> "$GITHUB_ENV"
+
       - name: Build exact-distribution container
         run: |
           docker build \
+            --build-arg PYTHON_RUNTIME_IMAGE="${ROLE06_PYTHON_RUNTIME_IMAGE}" \
+            --build-arg PLATFORM_PYTHON_RUNTIME_IDENTITY_DIGEST="${ROLE06_PYTHON_RUNTIME_IDENTITY_DIGEST}" \
             --build-arg PLATFORM_SOURCE_SHA="${GITHUB_SHA}" \
             --build-arg PLATFORM_WHEEL_SHA256="${ROLE06_WHEEL_SHA256}" \
             --build-arg PLATFORM_DISTRIBUTION_EVIDENCE_SHA256="${ROLE06_DISTRIBUTION_EVIDENCE_SHA256}" \
@@ -180,6 +194,7 @@ jobs:
             --expected-source-sha "${GITHUB_SHA}" \
             --expected-wheel-sha256 "${ROLE06_WHEEL_SHA256}" \
             --expected-distribution-evidence-sha256 "${ROLE06_DISTRIBUTION_EVIDENCE_SHA256}" \
+            --expected-python-runtime-identity-digest "${ROLE06_PYTHON_RUNTIME_IDENTITY_DIGEST}" \
             --output "$RUNNER_TEMP/container-verification.json"
 
       - name: Validate environment profile authority through canonical bootstrap
