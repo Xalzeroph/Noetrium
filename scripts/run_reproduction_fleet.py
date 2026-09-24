@@ -560,6 +560,7 @@ def main() -> int:
             "lane_count": len(result.lanes),
             "closed_lane_count": result.closed_lane_count,
             "blocker_count": result.blocker_count,
+            "gap_count": result.gap_count,
             "all_execution_authority_closed": (
                 result.closed_lane_count == len(result.lanes)
             ),
@@ -577,6 +578,18 @@ def main() -> int:
                     "execution_authority_closed": (
                         row.execution_authority_closed
                     ),
+                    "gaps": [
+                        {
+                            "stage": gap.stage,
+                            "requirement_key": gap.requirement_key,
+                            "requirement_digest": gap.requirement_digest,
+                            "error_type": gap.error_type,
+                            "message": gap.message,
+                            "diagnostics": gap.diagnostics,
+                            "gap_digest": gap.gap_digest,
+                        }
+                        for gap in row.gaps
+                    ],
                     "blockers": row.blockers,
                     "audit_digest": row.audit_digest,
                 }
