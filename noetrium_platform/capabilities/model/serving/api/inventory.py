@@ -135,7 +135,19 @@ class HostInventory:
             or self.captured_at_unix < 0
         ):
             raise ValueError("host inventory captured_at_unix must be finite and non-negative")
-        if len({g.uuid for g in self.gpus})!=len(self.gpus): raise ValueError("duplicate GPU UUID")
+        gpu_ids = {g.uuid for g in self.gpus}
+        if len(gpu_ids) != len(self.gpus):
+            raise ValueError("duplicate GPU UUID")
+        fabric_pairs: set[tuple[str, str]] = set()
+        for link in self.fabric:
+            if link.a_uuid == link.b_uuid:
+                raise ValueError("GPU fabric link cannot be a self-link")
+            if link.a_uuid not in gpu_ids or link.b_uuid not in gpu_ids:
+                raise ValueError("GPU fabric link references an unknown GPU UUID")
+            pair = tuple(sorted((link.a_uuid, link.b_uuid)))
+            if pair in fabric_pairs:
+                raise ValueError("duplicate GPU fabric pair")
+            fabric_pairs.add(pair)
         if len(set(self.cpu.allowed_cpu_ids))!=len(self.cpu.allowed_cpu_ids): raise ValueError("duplicate allowed CPU")
         if len(set(self.listening_ports))!=len(self.listening_ports): raise ValueError("duplicate listening port")
 
