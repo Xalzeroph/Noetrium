@@ -52,6 +52,7 @@ def test_platform_expands_benchmark_splits_into_exact_reproduction_lanes() -> No
         REPRODUCTION,
         study_factory="build_adaptagent_study",
         benchmark=benchmark,
+        benchmark_split_ids=("dev", "test"),
         values={},
     )
 
@@ -81,5 +82,20 @@ def test_split_aware_reproduction_fails_closed_without_benchmark_split_authority
             REPRODUCTION,
             study_factory="build_adaptagent_study",
             benchmark=_benchmark(with_splits=False),
+            benchmark_split_ids=("test",),
+            values={},
+        )
+
+
+def test_split_aware_reproduction_never_defaults_to_all_benchmark_splits() -> None:
+    with pytest.raises(
+        ReproductionResearchOSCompileError,
+        match="requires explicit benchmark_split_ids",
+    ):
+        expand_reproduction_benchmark_lanes(
+            REPRODUCTION,
+            study_factory="build_adaptagent_study",
+            benchmark=_benchmark(),
+            benchmark_split_ids=(),
             values={},
         )
