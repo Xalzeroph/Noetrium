@@ -8,7 +8,7 @@ from noetrium_platform.capabilities.environment.api import (
     EnvironmentBranchState,
     EnvironmentIdentity,
 )
-from noetrium_platform.composition.environment_fork import fork_environment_session
+from noetrium_platform.capabilities.environment.api import fork_environment_session
 from noetrium_platform.foundation.kernel.kernel import ExecutionContext
 
 
