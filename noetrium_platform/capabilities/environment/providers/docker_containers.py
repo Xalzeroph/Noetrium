@@ -30,6 +30,8 @@ class DockerContainerObservation:
 
 
 class DockerManagedContainerPort(Protocol):
+    @property
+    def docker_executable(self) -> str: ...
     def inspect(self, reference: str) -> DockerContainerObservation | None: ...
     def list_managed(self) -> tuple[DockerContainerObservation, ...]: ...
     def wait_running(
@@ -55,6 +57,10 @@ class DockerCliManagedContainerProvider:
         self._runner = runner
         self._docker = docker_executable
         self._timeout = float(command_timeout_seconds)
+
+    @property
+    def docker_executable(self) -> str:
+        return self._docker
 
     @staticmethod
     def _missing(stderr: str) -> bool:

@@ -23,6 +23,8 @@ from noetrium_platform.infrastructure.resources.lease.runtime import (
 
 
 class FakeDockerRuntime:
+    docker_executable = "docker"
+
     def __init__(self) -> None:
         self.rows: dict[str, DockerContainerObservation] = {}
         self.events: list[str] = []
@@ -100,6 +102,10 @@ def test_managed_docker_release_removes_physical_container_before_logical_lease(
     runtime = FakeDockerRuntime()
     authority = _authority(resources, runtime)
     handle = _reserve(authority)
+    prefix = authority.docker_run_prefix(handle)
+    assert prefix[:3] == ("docker", "run", "--rm")
+    assert "--name" in prefix
+    assert "--label" in prefix
     runtime.start(handle)
     observed = authority.confirm_running(handle)
     assert observed.name == handle.container_name

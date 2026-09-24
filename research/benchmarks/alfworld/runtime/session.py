@@ -38,7 +38,11 @@ from noetrium_platform.foundation.kernel.kernel import (
 )
 from noetrium_platform.foundation.kernel.kernel.durability import atomic_replace_bytes, durable_unlink
 from noetrium_platform.infrastructure.lifecycle.host.providers import LocalOperatingSystemRoute
-from noetrium_platform.substrate.api import ProcessSupervisorPort
+from noetrium_platform.substrate.api import ProcessSupervisorPort, ScopeIdentity
+from noetrium_platform.composition.docker_container_leases import (
+    DockerContainerLeaseAuthority,
+    ManagedDockerContainerLease,
+)
 from noetrium_platform.infrastructure.reliability.effect.api import PreparedEffectHandle
 
 from ..authority import ALFWORLD_TEXT_RUNTIME_AUTHORITY_DIGEST
@@ -48,6 +52,19 @@ _STATE_SCHEMA = "alfworld.text-session-state.v1"
 _HANDLE_SCHEMA = "alfworld.text-session-action.v1"
 _CONTAINER_DATA_ROOT = "/data/alfworld"
 _CONTAINER_CONFIG = "/opt/noetrium/alfworld/paper_eval_config.yaml"
+
+
+class _ContainerLeaseGuard(Protocol):
+    def start(self) -> None: ...
+    def assert_healthy(self) -> None: ...
+    def close(self) -> None: ...
+
+
+class _ContainerLeaseGuardFactory(Protocol):
+    def create(
+        self,
+        handles: tuple[ManagedDockerContainerLease, ...],
+    ) -> _ContainerLeaseGuard: ...
 
 
 class _WorkerTransport(Protocol):
@@ -63,6 +80,91 @@ class _WorkerTransport(Protocol):
     def close(self) -> None: ...
 
 
+class _ManagedDockerWorkerTransport:
+    """Bind one JSONL worker process to one fenced physical Docker container."""
+
+    def __init__(
+        self,
+        delegate: _WorkerTransport,
+        *,
+        container_leases: DockerContainerLeaseAuthority,
+        lease: ManagedDockerContainerLease,
+        lease_guard: _ContainerLeaseGuard,
+    ) -> None:
+        self._delegate = delegate
+        self._container_leases = container_leases
+        self._lease = lease
+        self._lease_guard = lease_guard
+        self._closed = False
+
+    @property
+    def started(self) -> bool:
+        return self._delegate.started
+
+    def start(self) -> None:
+        try:
+            self._delegate.start()
+            self._container_leases.confirm_running(self._lease)
+            self._lease_guard.start()
+            self._lease_guard.assert_healthy()
+        except BaseException:
+            cleanup_errors: list[BaseException] = []
+            try:
+                self._delegate.close()
+            except BaseException as exc:
+                cleanup_errors.append(exc)
+            try:
+                self._lease_guard.close()
+            except BaseException as exc:
+                cleanup_errors.append(exc)
+            try:
+                self._container_leases.release(self._lease)
+            except BaseException as exc:
+                cleanup_errors.append(exc)
+            if cleanup_errors:
+                # Preserve the launch failure as primary; cleanup errors remain
+                # chained in a structured group instead of being discarded.
+                raise ExceptionGroup(
+                    "ALFWorld managed Docker launch cleanup failed",
+                    cleanup_errors,
+                )
+            raise
+
+    def send(
+        self,
+        command: str,
+        payload: Mapping[str, JsonInput],
+        *,
+        request_id: str,
+    ) -> None:
+        self._lease_guard.assert_healthy()
+        self._delegate.send(command, payload, request_id=request_id)
+
+    def read(self, *, timeout_s: float) -> JsonlProcessMessage:
+        self._lease_guard.assert_healthy()
+        return self._delegate.read(timeout_s=timeout_s)
+
+    def close(self) -> None:
+        if self._closed:
+            return
+        self._closed = True
+        errors: list[BaseException] = []
+        try:
+            self._delegate.close()
+        except BaseException as exc:
+            errors.append(exc)
+        try:
+            self._lease_guard.close()
+        except BaseException as exc:
+            errors.append(exc)
+        try:
+            self._container_leases.release(self._lease)
+        except BaseException as exc:
+            errors.append(exc)
+        if errors:
+            raise ExceptionGroup("ALFWorld managed Docker close failed", errors)
+
+
 @dataclass(frozen=True, slots=True)
 class AlfworldTextRuntimeSpec:
     image: str
@@ -73,7 +175,6 @@ class AlfworldTextRuntimeSpec:
     session_id: str
     split: str = ALFWORLD_PAPER_EVAL_SPLIT
     command_timeout_s: float = 45.0
-    docker_executable: str = "docker"
 
     def __post_init__(self) -> None:
         if any(
@@ -85,7 +186,6 @@ class AlfworldTextRuntimeSpec:
                 self.recovery_root,
                 self.session_id,
                 self.split,
-                self.docker_executable,
             )
         ):
             raise ValueError("ALFWorld text runtime identity fields must be non-empty")
@@ -578,45 +678,63 @@ def build_alfworld_text_session(
     *,
     process_supervisor: ProcessSupervisorPort,
     task_group: TaskGroupPort,
+    holder_scope: ScopeIdentity,
+    container_leases: DockerContainerLeaseAuthority,
+    container_lease_guards: _ContainerLeaseGuardFactory,
 ) -> AlfworldTextSession:
     data_root = Path(spec.data_root).resolve(strict=True)
     recovery_root = Path(spec.recovery_root).resolve()
     recovery_root.mkdir(parents=True, exist_ok=True)
 
-    def transport_factory() -> JsonlProcessTransport:
-        command = (
-            spec.docker_executable,
-            "run",
-            "--rm",
-            "-i",
-            "--network",
-            "none",
-            "--read-only",
-            "--tmpfs",
-            "/tmp:rw,exec,nosuid,size=256m",
-            "-v",
-            f"{data_root}:{_CONTAINER_DATA_ROOT}:ro",
-            spec.image,
-            "--data-root",
-            _CONTAINER_DATA_ROOT,
-            "--config",
-            _CONTAINER_CONFIG,
-            "--split",
-            spec.split,
+    def transport_factory() -> _ManagedDockerWorkerTransport:
+        lease = container_leases.reserve(
+            allocation_id=f"alfworld:{spec.provider_instance_id}",
+            holder_scope=holder_scope,
+            image=spec.image,
+            runtime_identity_digest=spec.runtime_artifact_digest,
         )
-        return JsonlProcessTransport(
-            spec=JsonlProcessSpec(
-                command=command,
-                cwd=str(data_root),
-                stderr_log_path=str(recovery_root / "worker.stderr.log"),
-                stdout_queue_capacity=512,
-            ),
-            operating_system=LocalOperatingSystemRoute(),
-            task_group=task_group,
-            process_supervisor=process_supervisor,
-            transport_identity=spec.provider_instance_id[:20],
-            task_namespace="alfworld-worker",
-        )
+        try:
+            command = (
+                *container_leases.docker_run_prefix(lease),
+                "-i",
+                "--network",
+                "none",
+                "--read-only",
+                "--tmpfs",
+                "/tmp:rw,exec,nosuid,size=256m",
+                "-v",
+                f"{data_root}:{_CONTAINER_DATA_ROOT}:ro",
+                spec.image,
+                "--data-root",
+                _CONTAINER_DATA_ROOT,
+                "--config",
+                _CONTAINER_CONFIG,
+                "--split",
+                spec.split,
+            )
+            delegate = JsonlProcessTransport(
+                spec=JsonlProcessSpec(
+                    command=command,
+                    cwd=str(data_root),
+                    stderr_log_path=str(recovery_root / "worker.stderr.log"),
+                    stdout_queue_capacity=512,
+                ),
+                operating_system=LocalOperatingSystemRoute(),
+                task_group=task_group,
+                process_supervisor=process_supervisor,
+                transport_identity=spec.provider_instance_id[:20],
+                task_namespace="alfworld-worker",
+            )
+            guard = container_lease_guards.create((lease,))
+            return _ManagedDockerWorkerTransport(
+                delegate,
+                container_leases=container_leases,
+                lease=lease,
+                lease_guard=guard,
+            )
+        except BaseException:
+            container_leases.release(lease)
+            raise
 
     return AlfworldTextSession(spec, transport_factory=transport_factory)
 

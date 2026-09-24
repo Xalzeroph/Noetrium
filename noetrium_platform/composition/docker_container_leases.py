@@ -220,6 +220,19 @@ class DockerContainerLeaseAuthority:
         if observed.name != handle.container_name:
             raise DockerContainerLeaseConflict("managed Docker name drift")
 
+    def docker_run_prefix(
+        self,
+        handle: ManagedDockerContainerLease,
+    ) -> tuple[str, ...]:
+        """Return the only supported launch prefix for this fenced container."""
+
+        return (
+            self.runtime.docker_executable,
+            "run",
+            "--rm",
+            *handle.docker_run_options(),
+        )
+
     def confirm_running(
         self,
         handle: ManagedDockerContainerLease,
