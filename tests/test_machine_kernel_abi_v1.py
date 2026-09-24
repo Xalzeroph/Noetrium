@@ -44,6 +44,8 @@ def make_commit(
         revision=base_revision + 1,
         proposal_digest=proposal.proposal_digest,
         command_digest=command.payload_digest,
+        program_digest="f" * 64,
+        program_lock_digest="e" * 64,
         state=state or {"revision": base_revision + 1},
         previous_commit_id=previous_commit_id,
     )
