@@ -21,6 +21,7 @@ from research.reproductions.benchmark_authority import RepositoryBenchmarkAuthor
 from research.reproductions.contracts import ReproductionAssetKind
 from research.reproductions.fleet import (
     ReproductionFleetExecutionAuthorities,
+    audit_repository_execution_authorities,
     preflight_repository_execution_fleet,
     run_repository_execution_fleet,
 )
@@ -352,6 +353,15 @@ def main() -> int:
     parser.add_argument("--output", type=Path)
     mode = parser.add_mutually_exclusive_group()
     mode.add_argument(
+        "--authority-audit",
+        action="store_true",
+        help=(
+            "materialize exact benchmark/reproduction closure and aggregate "
+            "all lane-level Research/Study/aggregation/reconciliation authority "
+            "gaps without creating stores, cuts, or tasks"
+        ),
+    )
+    mode.add_argument(
         "--preflight",
         action="store_true",
         help=(
@@ -371,7 +381,7 @@ def main() -> int:
         "--execution-authority",
         help=(
             "module:factory returning ReproductionFleetExecutionAuthorities; "
-            "required for --preflight/--execute and never inferred"
+            "required for --authority-audit/--preflight/--execute and never inferred"
         ),
     )
     parser.add_argument(
@@ -381,6 +391,51 @@ def main() -> int:
     )
     parser.add_argument("--execution-id")
     args = parser.parse_args()
+
+    if args.authority_audit:
+        if args.execution_authority is None:
+            parser.error("--authority-audit requires --execution-authority")
+        authorities = _load_execution_authorities(args.execution_authority)
+        result = audit_repository_execution_authorities(authorities)
+        payload = {
+            "schema": "noetrium.reproduction-fleet-authority-audit.v1",
+            "materialization_digest": (
+                result.materialization.materialization_digest
+            ),
+            "portfolio_digest": result.materialization.portfolio.portfolio_digest,
+            "revision_digest": result.revision_digest,
+            "lane_count": len(result.lanes),
+            "closed_lane_count": result.closed_lane_count,
+            "blocker_count": result.blocker_count,
+            "all_execution_authority_closed": (
+                result.closed_lane_count == len(result.lanes)
+            ),
+            "audit_digest": result.audit_digest,
+            "lanes": [
+                {
+                    "package": row.package,
+                    "program_id": row.program_id,
+                    "graph_node_id": row.graph_node_id,
+                    "closure_digest": row.closure_digest,
+                    "research_binding_closed": row.research_binding_closed,
+                    "study_execution_closed": row.study_execution_closed,
+                    "aggregation_closed": row.aggregation_closed,
+                    "reconciliation_closed": row.reconciliation_closed,
+                    "execution_authority_closed": (
+                        row.execution_authority_closed
+                    ),
+                    "blockers": row.blockers,
+                    "audit_digest": row.audit_digest,
+                }
+                for row in result.lanes
+            ],
+        }
+        rendered = json.dumps(payload, indent=2, sort_keys=True) + "\n"
+        if args.output:
+            args.output.parent.mkdir(parents=True, exist_ok=True)
+            args.output.write_text(rendered, encoding="utf-8")
+        print(rendered, end="")
+        return 0 if payload["all_execution_authority_closed"] else 1
 
     if args.preflight:
         if args.execution_authority is None:
@@ -444,7 +499,8 @@ def main() -> int:
 
     if args.execution_authority is not None:
         parser.error(
-            "--execution-authority requires --preflight or --execute"
+            "--execution-authority requires --authority-audit, --preflight, "
+            "or --execute"
         )
     if args.execution_id is not None:
         parser.error("--execution-id requires --preflight or --execute")
