@@ -4,12 +4,14 @@ import pytest
 
 from noetrium_platform.composition.research_execution_pool import ResearchExecutionPool
 from noetrium_platform.composition.research_graph import (
+    ResearchGraphControlHalt,
     ResearchGraphNodeControlHalt,
     ResearchGraphScheduler,
 )
 from noetrium_platform.foundation.kernel.concurrency.api import ConcurrencyBudget
 from noetrium_platform.foundation.kernel.kernel import canonical_digest
 from noetrium_platform.research.execution.graph.api import (
+    ResearchGraphControlPhase,
     ResearchGraphExecutionConflict,
     ResearchGraphLiveNodeState,
     ResearchGraphNodeControlPhase,
@@ -327,3 +329,151 @@ def test_overlapping_selection_rejects_live_lease(tmp_path) -> None:
         pool.close()
 
     assert executor.calls == []
+
+
+class _FailOnceExecutor(_Executor):
+    def __init__(self, failing_node_id: str) -> None:
+        super().__init__()
+        self._failing_node_id = failing_node_id
+        self._failed = False
+
+    def execute(self, context, node, *, deadline) -> None:
+        self.calls.append(node.node_id)
+        if node.node_id == self._failing_node_id and not self._failed:
+            self._failed = True
+            raise RuntimeError("injected retryable failure")
+
+
+def test_retry_failed_subgraph_reruns_only_failed_root_and_descendants(
+    tmp_path,
+) -> None:
+    store = SQLiteResearchGraphExecutionStore(tmp_path / "graph.sqlite3")
+    plan = _plan()
+    first_executor = _FailOnceExecutor("a")
+    first_pool = _pool()
+    first = ResearchGraphScheduler(
+        plan,
+        first_executor,
+        execution_pool=first_pool,
+        execution_store=store,
+        execution_id="execution-retry-subgraph",
+    )
+    try:
+        first_report = first.execute()
+    finally:
+        first.close()
+        first_pool.close()
+
+    assert first_report.failed_node_ids == ("a",)
+    assert first_report.blocked_node_ids == ("b",)
+    assert first_report.succeeded_node_ids == ("x",)
+    assert first_executor.calls.count("a") == 1
+    assert first_executor.calls.count("x") == 1
+    assert first_executor.calls.count("b") == 0
+    assert len(store.attempts("execution-retry-subgraph", "a")) == 1
+    assert len(store.attempts("execution-retry-subgraph", "x")) == 1
+
+    retried = store.retry_failed_subgraph(
+        "execution-retry-subgraph",
+        "a",
+        descendant_node_ids=("b",),
+        retry_not_before_ns=0,
+    )
+    assert retried.node("a").state is ResearchGraphLiveNodeState.RETRY_WAIT
+    assert retried.node("b").state is ResearchGraphLiveNodeState.PENDING
+    assert retried.node("x").state is ResearchGraphLiveNodeState.SUCCEEDED
+
+    resumed_executor = _Executor()
+    resumed_pool = _pool()
+    resumed = ResearchGraphScheduler(
+        plan,
+        resumed_executor,
+        execution_pool=resumed_pool,
+        execution_store=store,
+        execution_id="execution-retry-subgraph",
+    )
+    try:
+        final_report = resumed.execute()
+    finally:
+        resumed.close()
+        resumed_pool.close()
+
+    assert final_report.succeeded_node_ids == ("a", "b", "x")
+    assert final_report.failed_node_ids == ()
+    assert final_report.blocked_node_ids == ()
+    assert resumed_executor.calls == ["a", "b"]
+    assert len(store.attempts("execution-retry-subgraph", "a")) == 2
+    assert len(store.attempts("execution-retry-subgraph", "b")) == 1
+    assert len(store.attempts("execution-retry-subgraph", "x")) == 1
+
+
+def test_draining_cut_transitions_to_paused_without_claiming_new_work(
+    tmp_path,
+) -> None:
+    store = SQLiteResearchGraphExecutionStore(tmp_path / "graph.sqlite3")
+    plan = _plan()
+    store.ensure_execution("execution-draining", plan)
+    control = store.control_state("execution-draining")
+    draining = store.request_drain(
+        "execution-draining",
+        expected_generation=control.generation,
+        now_ns=1,
+    )
+    assert draining.phase is ResearchGraphControlPhase.DRAINING
+
+    executor = _Executor()
+    pool = _pool()
+    scheduler = ResearchGraphScheduler(
+        plan,
+        executor,
+        execution_pool=pool,
+        execution_store=store,
+        execution_id="execution-draining",
+    )
+    try:
+        with pytest.raises(ResearchGraphControlHalt) as captured:
+            scheduler.execute()
+    finally:
+        scheduler.close()
+        pool.close()
+
+    assert captured.value.control.phase is ResearchGraphControlPhase.PAUSED
+    assert executor.calls == []
+    assert store.attempts("execution-draining", "a") == ()
+    assert store.attempts("execution-draining", "b") == ()
+    assert store.attempts("execution-draining", "x") == ()
+
+
+def test_paused_cut_never_claims_new_work_until_explicit_resume(tmp_path) -> None:
+    store = SQLiteResearchGraphExecutionStore(tmp_path / "graph.sqlite3")
+    plan = _plan()
+    store.ensure_execution("execution-paused", plan)
+    control = store.control_state("execution-paused")
+    paused = store.pause_if_quiescent(
+        "execution-paused",
+        expected_generation=control.generation,
+        now_ns=1,
+    )
+    assert paused.phase is ResearchGraphControlPhase.PAUSED
+
+    executor = _Executor()
+    pool = _pool()
+    scheduler = ResearchGraphScheduler(
+        plan,
+        executor,
+        execution_pool=pool,
+        execution_store=store,
+        execution_id="execution-paused",
+    )
+    try:
+        with pytest.raises(ResearchGraphControlHalt) as captured:
+            scheduler.execute()
+    finally:
+        scheduler.close()
+        pool.close()
+
+    assert captured.value.control.phase is ResearchGraphControlPhase.PAUSED
+    assert executor.calls == []
+    assert store.attempts("execution-paused", "a") == ()
+    assert store.attempts("execution-paused", "b") == ()
+    assert store.attempts("execution-paused", "x") == ()
