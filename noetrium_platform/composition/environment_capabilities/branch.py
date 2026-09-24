@@ -6,7 +6,10 @@ from noetrium_platform.capabilities.environment.api import (
     ActionRequest,
     EnvironmentBranchStatePort,
     EnvironmentSession,
+    EnvironmentSessionOpener,
     Observation,
+    fork_environment_session,
+    replay_environment_prefix,
     require_action_result_identity,
 )
 from noetrium_platform.capabilities.participant.capability.api import (
@@ -15,11 +18,6 @@ from noetrium_platform.capabilities.participant.capability.api import (
     CapabilityResult,
     capability_request_digest,
 )
-from noetrium_platform.composition.environment_fork import (
-    EnvironmentSessionOpener,
-    fork_environment_session,
-)
-from noetrium_platform.composition.environment_replay import replay_environment_prefix
 from noetrium_platform.foundation.kernel.kernel import (
     EffectClass,
     JsonInput,
