@@ -1,10 +1,10 @@
 from __future__ import annotations
 
-from contextlib import contextmanager
 from pathlib import Path
 import sqlite3
 from threading import RLock
 
+from noetrium_platform.foundation.kernel.kernel.durability.sqlite import durable_sqlite_connection
 from noetrium_platform.foundation.api import PLATFORM_SCOPE, ScopeIdentity, ScopeRegistryPort
 from noetrium_platform.foundation.portfolio.api import (
     ProgramSpec,
@@ -110,17 +110,11 @@ class SQLitePortfolioCatalog:
         with self._connection() as conn:
             self._ensure_schema(conn)
 
-    @contextmanager
     def _connection(self):
-        conn = sqlite3.connect(self.path, timeout=self.timeout_seconds, isolation_level=None)
-        try:
-            conn.execute(f"PRAGMA busy_timeout={max(1, int(self.timeout_seconds * 1000))}")
-            conn.execute("PRAGMA journal_mode=WAL")
-            conn.execute("PRAGMA synchronous=FULL")
-            conn.execute("PRAGMA foreign_keys=ON")
-            yield conn
-        finally:
-            conn.close()
+        return durable_sqlite_connection(
+            self.path,
+            timeout_seconds=self.timeout_seconds,
+        )
 
     def _ensure_schema(self, conn: sqlite3.Connection) -> None:
         conn.execute("CREATE TABLE IF NOT EXISTS portfolio_meta(key TEXT PRIMARY KEY, value TEXT NOT NULL)")
