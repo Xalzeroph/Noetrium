@@ -3,15 +3,15 @@
   "authority": "generated_from_typed_reproduction_definitions",
   "package_count": 100,
   "state_counts": {
-    "benchmark_binding_required": 47,
-    "closure_binding_required": 6,
-    "execution_ready": 42,
+    "benchmark_binding_required": 48,
+    "closure_binding_required": 4,
+    "execution_ready": 43,
     "not_executable": 5
   },
   "requirement_kind_counts": {
-    "capability_closure": 3,
+    "capability_closure": 2,
     "capability_id": 1,
-    "paper_option": 2
+    "paper_option": 1
   },
   "packages": [
     {
@@ -1410,9 +1410,9 @@
     {
       "package": "toolformer",
       "lifecycle": "protocol_bound",
-      "execution_state": "closure_binding_required",
+      "execution_state": "benchmark_binding_required",
       "program_id": "toolformer",
-      "program_digest": "7625046d1e4d02d0c53fa19af5faab520fa23c955005d8a788b4101f33827ce8",
+      "program_digest": "d1c53ab9d41bb698b7a90509d92d24eb6eb214ba9b82c3c63096360efaa18ad1",
       "benchmark_ids": [
         "toolformer-eval"
       ],
@@ -1422,16 +1422,7 @@
           "study:build_toolformer_study"
         ]
       },
-      "execution_requirements": [
-        {
-          "parameter": "tool_capability_ids",
-          "kind": "capability_closure",
-          "consumers": [
-            "study:build_toolformer_study"
-          ],
-          "requirement_digest": "4e66301f9a974f65aca8c5355a083c3887f0ab956a6b4f5972cc7bf1ef68b157"
-        }
-      ]
+      "execution_requirements": []
     },
     {
       "package": "toolllm_toolbench",
@@ -1530,9 +1521,9 @@
     {
       "package": "vca_video",
       "lifecycle": "protocol_bound",
-      "execution_state": "closure_binding_required",
+      "execution_state": "execution_ready",
       "program_id": "vca_video",
-      "program_digest": "02a4c15c081050572c5db1d3c3ab724ff16e81f71981c1d27234368c034cba44",
+      "program_digest": "3c79a606d39bc5ba967f1420f67198e2588e99fb27138e47c772b61ad8d3b6ab",
       "benchmark_ids": [
         "egoschema"
       ],
@@ -1540,16 +1531,7 @@
         "required": false,
         "consumers": []
       },
-      "execution_requirements": [
-        {
-          "parameter": "sampling_frame_number",
-          "kind": "paper_option",
-          "consumers": [
-            "study:build_vca_egoschema_public_study"
-          ],
-          "requirement_digest": "ddc05f3df29e09b12bd35f9e4a6877fcdbbbe2298373b493437dcd6443c303d3"
-        }
-      ]
+      "execution_requirements": []
     },
     {
       "package": "videoagent_memory",
@@ -1715,5 +1697,5 @@
       "execution_requirements": []
     }
   ],
-  "status_digest": "b37c32ad50a24e44fa761028116a71a367425cb68d9330fd02e166fc9c3e0141"
+  "status_digest": "74b6a1da664f865fb03974b47a56a3a415dec037f2aec9edaaad57ee73a896bf"
 }

@@ -2,7 +2,7 @@
   "schema": "noetrium.reproduction.projection.v9",
   "authority": "generated_from_typed_definition_and_source",
   "package": "vca_video",
-  "package_digest": "92e064b68cd4f9e232d92f3f3df2b05f53642b8f7a8dd072257302ca5422614a",
+  "package_digest": "d7891b9053e03c5b952f33bf674bd5b955dc1b31707fb8b156dc3e5f1e19bd23",
   "definition_digest": "475825bad1ef41fa8e9bc3bec73c0374d2425e0cd6019f7b44b79ffa9d2dd184",
   "source_registry_digest": "993b22ccf2d2e42518ffca18ac76bb9e7465b2b1dfd22cf2c63ca2867c6a8a4b",
   "lifecycle": "protocol_bound",
@@ -89,7 +89,7 @@
       "kind": "study",
       "path": "research/reproductions/vca_video/study.py",
       "declaration_digest": "ecea08a091320896f8014d8b2bd449f1ff27b918171a2669b251677417c6800f",
-      "content_sha256": "2eafb7a27f9cb4af29dc0dcf432de847c2312a8d0553c8858489dd3f25e12e96"
+      "content_sha256": "827aedc216e318e7d089f8a90da2272a4a2579ed514307737fecc1e0435462a1"
     },
     {
       "kind": "support",
@@ -193,22 +193,13 @@
   ],
   "research_os": {
     "surface": "noetrium.api",
-    "execution_state": "closure_binding_required",
+    "execution_state": "execution_ready",
     "program_id": "vca_video",
-    "program_digest": "02a4c15c081050572c5db1d3c3ab724ff16e81f71981c1d27234368c034cba44",
+    "program_digest": "3c79a606d39bc5ba967f1420f67198e2588e99fb27138e47c772b61ad8d3b6ab",
     "benchmark_split_axis": {
       "required": false,
       "consumers": []
     },
-    "execution_requirements": [
-      {
-        "parameter": "sampling_frame_number",
-        "kind": "paper_option",
-        "consumers": [
-          "study:build_vca_egoschema_public_study"
-        ],
-        "requirement_digest": "ddc05f3df29e09b12bd35f9e4a6877fcdbbbe2298373b493437dcd6443c303d3"
-      }
-    ]
+    "execution_requirements": []
   }
 }

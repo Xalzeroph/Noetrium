@@ -2,8 +2,8 @@
   "schema": "noetrium.reproduction.projection.v9",
   "authority": "generated_from_typed_definition_and_source",
   "package": "toolformer",
-  "package_digest": "ee9ba442556d094de47428c32c1f30754f26a4a462fcffc572909cc488bf1e8b",
-  "definition_digest": "1e0d762a99b9c4f4941b6b6c61534071f20ca4efd34eee3045ef6942383cc8d5",
+  "package_digest": "7d7d315416d24c3aee53e9656d9dbde7227181fbebdeb808273dea84b70fd2b9",
+  "definition_digest": "a754638e2a9e4546aa921cdc86739cdd0b9d5d01c5c83413543e89deebb71dbf",
   "source_registry_digest": "0aa5c4ef466c87b4808d296ec9f3b44ddcff08ee64566c34ac93be4e38815682",
   "lifecycle": "protocol_bound",
   "identity": {
@@ -86,7 +86,7 @@
       "kind": "study",
       "path": "research/reproductions/toolformer/study.py",
       "declaration_digest": "1cac10ba460aa534eadaf628dc161183822f949f944cbe8e650085651e5002ba",
-      "content_sha256": "9bc70807ff51108b81394cedbc63658437585357c2ac7968128591559a1b5cbe"
+      "content_sha256": "91db93d07d0b6a6cbd717450e81b6f0696bb8353b52cbe15ecd99ea4c8677b14"
     },
     {
       "kind": "support",
@@ -166,24 +166,15 @@
   ],
   "research_os": {
     "surface": "noetrium.api",
-    "execution_state": "closure_binding_required",
+    "execution_state": "benchmark_binding_required",
     "program_id": "toolformer",
-    "program_digest": "7625046d1e4d02d0c53fa19af5faab520fa23c955005d8a788b4101f33827ce8",
+    "program_digest": "d1c53ab9d41bb698b7a90509d92d24eb6eb214ba9b82c3c63096360efaa18ad1",
     "benchmark_split_axis": {
       "required": true,
       "consumers": [
         "study:build_toolformer_study"
       ]
     },
-    "execution_requirements": [
-      {
-        "parameter": "tool_capability_ids",
-        "kind": "capability_closure",
-        "consumers": [
-          "study:build_toolformer_study"
-        ],
-        "requirement_digest": "4e66301f9a974f65aca8c5355a083c3887f0ab956a6b4f5972cc7bf1ef68b157"
-      }
-    ]
+    "execution_requirements": []
   }
 }
