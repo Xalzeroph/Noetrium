@@ -455,6 +455,8 @@ def resolve_execution_requirements(
         if not method.exact:
             assert method.factory is not None
             for parameter in method.factory.unresolved_parameters:
+                if parameter in _BENCHMARK_SPLIT_PARAMETERS:
+                    continue
                 consumers.setdefault(parameter, set()).add(
                     f"method:{method.qualname}"
                 )
@@ -511,10 +513,7 @@ def _validate_requirement_value(
     requirement: ReproductionExecutionRequirement,
     value: JsonValue,
 ) -> None:
-    if requirement.kind in {
-        ReproductionExecutionRequirementKind.BENCHMARK_SPLIT,
-        ReproductionExecutionRequirementKind.CAPABILITY_ID,
-    }:
+    if requirement.kind is ReproductionExecutionRequirementKind.CAPABILITY_ID:
         if type(value) is not str or not value.strip():
             raise ValueError(
                 f"{requirement.package} execution parameter "
@@ -552,6 +551,7 @@ def bind_reproduction_execution(
     binding_id: str,
     study_factory: str,
     benchmark_id: str,
+    benchmark_split_id: str | None = None,
     values: Mapping[str, object],
 ) -> ReproductionExecutionBinding:
     """Bind exactly one Study lane; missing/extra values fail closed."""
@@ -562,6 +562,48 @@ def bind_reproduction_execution(
         raise ReproductionResearchOSCompileError(
             f"{definition.package} benchmark {benchmark_id!r} is outside paper catalog"
         )
+    studies = resolve_study_factory_bindings(definition)
+    study = next(
+        (row for row in studies if row.qualname == study_factory),
+        None,
+    )
+    if study is None:
+        raise ReproductionResearchOSCompileError(
+            f"{definition.package} has no Study factory {study_factory!r}"
+        )
+    method_split_parameters: tuple[str, ...] = ()
+    method_assets = tuple(
+        row
+        for row in definition.assets
+        if row.kind is ReproductionAssetKind.METHOD_PROGRAM
+    )
+    method = None
+    if method_assets:
+        method = resolve_method_program_binding(definition)
+        if method.factory is not None:
+            method_split_parameters = tuple(
+                name
+                for name in method.factory.unresolved_parameters
+                if name in _BENCHMARK_SPLIT_PARAMETERS
+            )
+    has_split_axis = (
+        study.benchmark_split_parameter is not None
+        or bool(method_split_parameters)
+    )
+    if has_split_axis:
+        if (
+            type(benchmark_split_id) is not str
+            or not benchmark_split_id.strip()
+            or benchmark_split_id != benchmark_split_id.strip()
+        ):
+            raise ReproductionResearchOSCompileError(
+                f"{definition.package} execution lane requires exact benchmark_split_id"
+            )
+    elif benchmark_split_id is not None:
+        raise ReproductionResearchOSCompileError(
+            f"{definition.package} Study lane has no external benchmark split axis"
+        )
+
     if not isinstance(values, Mapping):
         raise TypeError("reproduction execution values must be a mapping")
     frozen = freeze_json({key: values[key] for key in sorted(values)})
@@ -582,13 +624,7 @@ def bind_reproduction_execution(
             frozen[requirement.parameter],
         )
 
-    method_assets = tuple(
-        row
-        for row in definition.assets
-        if row.kind is ReproductionAssetKind.METHOD_PROGRAM
-    )
-    if method_assets:
-        method = resolve_method_program_binding(definition)
+    if method is not None:
         if method.factory is not None:
             module = importlib.import_module(method.module)
             factory = getattr(module, method.qualname)
@@ -597,7 +633,11 @@ def bind_reproduction_execution(
                 *method.factory.args,
                 **dict(method.factory.kwargs),
             )
-            for parameter, value in frozen.items():
+            bound_values = dict(frozen)
+            if benchmark_split_id is not None:
+                for parameter in method_split_parameters:
+                    bound_values[parameter] = benchmark_split_id
+            for parameter, value in bound_values.items():
                 if parameter not in signature.parameters:
                     continue
                 if parameter in bound.arguments:
@@ -612,6 +652,7 @@ def bind_reproduction_execution(
         binding_id,
         study_factory,
         benchmark_id,
+        benchmark_split_id,
         frozen,
         tuple(row.requirement_digest for row in requirements),
     )
@@ -665,6 +706,20 @@ def materialize_reproduction_study(
     kwargs: dict[str, object] = {
         study.benchmark_parameter: benchmark,
     }
+    split_parameter = study.benchmark_split_parameter
+    if split_parameter is not None:
+        if binding.benchmark_split_id is None:
+            raise ReproductionResearchOSCompileError(
+                f"{definition.package} Study lane lost benchmark split identity"
+            )
+        try:
+            benchmark.selected_tasks(binding.benchmark_split_id)
+        except KeyError as exc:
+            raise ReproductionResearchOSCompileError(
+                f"{definition.package} benchmark split is not present in the bound "
+                f"BenchmarkTaskSet: {binding.benchmark_split_id!r}"
+            ) from exc
+        kwargs[split_parameter] = binding.benchmark_split_id
     for requirement in _requirements_for_study(definition, study.qualname):
         if f"study:{study.qualname}" not in requirement.consumers:
             continue
@@ -708,6 +763,10 @@ def materialize_reproduction_method_program(
         )
     assert method.factory is not None
     merged_kwargs = dict(method.factory.kwargs)
+    if binding.benchmark_split_id is not None:
+        for parameter in method.factory.unresolved_parameters:
+            if parameter in _BENCHMARK_SPLIT_PARAMETERS:
+                merged_kwargs[parameter] = binding.benchmark_split_id
     for requirement in _requirements_for_study(
         definition,
         binding.study_factory,
