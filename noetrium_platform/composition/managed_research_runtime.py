@@ -66,55 +66,78 @@ class ManagedResearchRuntime:
     _stop: Event
     model_replica_pool: LocalModelReplicaPoolRuntime | None = None
     _model_controller: TaskHandlePort | None = None
+    _docker_controller: TaskHandlePort | None = None
     _closed: bool = False
 
     def start_background_controllers(
         self,
         *,
         model_reconcile_interval_seconds: float = 10.0,
+        docker_reconcile_interval_seconds: float = 30.0,
     ) -> None:
         if self._closed:
             raise RuntimeError("managed research runtime is closed")
-        if isinstance(model_reconcile_interval_seconds, bool) or not isinstance(
-            model_reconcile_interval_seconds, (int, float)
-        ):
-            raise TypeError("model reconcile interval must be a real number")
-        interval = float(model_reconcile_interval_seconds)
-        if not math.isfinite(interval) or interval <= 0:
-            raise ValueError("model reconcile interval must be finite and positive")
-        if self._model_controller is not None and not self._model_controller.done():
-            return
-        stop = _EventStop(self._stop)
-        self._model_controller = self._orchestration_group.submit(
-            ExecutionSpec(
-                task_id="managed-model-desired-state-controller",
-                lane_kind=ExecutionLaneKind.BLOCKING_IO,
-            ),
-            self.management.models.controller.run,
-            interval_seconds=interval,
-            stop=stop,
+
+        def _interval(value: float, label: str) -> float:
+            if isinstance(value, bool) or not isinstance(value, (int, float)):
+                raise TypeError(f"{label} reconcile interval must be a real number")
+            resolved = float(value)
+            if not math.isfinite(resolved) or resolved <= 0:
+                raise ValueError(
+                    f"{label} reconcile interval must be finite and positive"
+                )
+            return resolved
+
+        model_interval = _interval(
+            model_reconcile_interval_seconds,
+            "model",
         )
+        docker_interval = _interval(
+            docker_reconcile_interval_seconds,
+            "Docker",
+        )
+        stop = _EventStop(self._stop)
+        if self._model_controller is None or self._model_controller.done():
+            self._model_controller = self._orchestration_group.submit(
+                ExecutionSpec(
+                    task_id="managed-model-desired-state-controller",
+                    lane_kind=ExecutionLaneKind.BLOCKING_IO,
+                ),
+                self.management.models.controller.run,
+                interval_seconds=model_interval,
+                stop=stop,
+            )
+        if self._docker_controller is None or self._docker_controller.done():
+            self._docker_controller = self._orchestration_group.submit(
+                ExecutionSpec(
+                    task_id="managed-docker-container-reconciler",
+                    lane_kind=ExecutionLaneKind.BLOCKING_IO,
+                ),
+                self.management.docker_containers.run_reconciler,
+                interval_seconds=docker_interval,
+                stop=stop,
+            )
 
     def assert_healthy(self) -> None:
         if self._closed:
             raise RuntimeError("managed research runtime is closed")
         self._orchestration_group.assert_healthy()
-        controller = self._model_controller
-        if controller is not None and controller.done():
-            controller.result()
+        for controller in (self._model_controller, self._docker_controller):
+            if controller is not None and controller.done():
+                controller.result()
 
     def close(self) -> None:
         if self._closed:
             return
         self._closed = True
         self._stop.set()
-        controller = self._model_controller
         errors: list[BaseException] = []
-        if controller is not None:
-            try:
-                controller.result(timeout=30.0)
-            except BaseException as exc:
-                errors.append(exc)
+        for controller in (self._model_controller, self._docker_controller):
+            if controller is not None:
+                try:
+                    controller.result(timeout=30.0)
+                except BaseException as exc:
+                    errors.append(exc)
         try:
             self.observability.close()
         except BaseException as exc:
@@ -160,6 +183,7 @@ def build_local_managed_research_runtime(
     model_io_admission_budget: AdmissionBudget | None = None,
     start_background_controllers: bool = True,
     model_reconcile_interval_seconds: float = 10.0,
+    docker_reconcile_interval_seconds: float = 30.0,
 ) -> ManagedResearchRuntime:
     pool = ResearchExecutionPool(
         orchestration_concurrency_budget=orchestration_concurrency_budget,
@@ -184,6 +208,9 @@ def build_local_managed_research_runtime(
                 model_storage_pools=model_storage_pools,
                 task_group=group,
             )
+            # Startup reconciliation is synchronous so stale managed containers
+            # are handled before any new research workload is admitted.
+            management.docker_containers.reconcile()
             model_replica_pool = bind_local_model_replica_pool(management, pool)
         except BaseException:
             pool.close_orchestration_group(group, cancel_pending=True)
@@ -220,6 +247,7 @@ def build_local_managed_research_runtime(
         if start_background_controllers:
             runtime.start_background_controllers(
                 model_reconcile_interval_seconds=model_reconcile_interval_seconds,
+                docker_reconcile_interval_seconds=docker_reconcile_interval_seconds,
             )
         return runtime
     except BaseException:

@@ -5,6 +5,7 @@ import math
 from threading import Lock
 from time import time
 from uuid import uuid4
+from typing import Protocol
 
 from noetrium_platform.capabilities.environment.providers.docker_containers import (
     DockerContainerObservation,
@@ -38,6 +39,10 @@ _LABEL_LEASE = "io.noetrium.lease-id"
 _LABEL_FENCING = "io.noetrium.fencing-token"
 _LABEL_RUNTIME = "io.noetrium.runtime-identity"
 _LABEL_HOLDER = "io.noetrium.holder-scope"
+
+
+class DockerReconcileStopPort(Protocol):
+    def wait(self, timeout: float | None = None) -> bool: ...
 
 
 @dataclass(frozen=True, slots=True)
@@ -296,6 +301,38 @@ class DockerContainerLeaseAuthority:
             removed.append(observed.container_id)
         return DockerContainerReconciliation(tuple(sorted(set(removed))))
 
+    def run_reconciler(
+        self,
+        *,
+        interval_seconds: float,
+        stop: DockerReconcileStopPort,
+        max_cycles: int | None = None,
+    ) -> DockerContainerReconciliation:
+        if (
+            isinstance(interval_seconds, bool)
+            or not isinstance(interval_seconds, (int, float))
+            or not math.isfinite(float(interval_seconds))
+            or float(interval_seconds) <= 0
+        ):
+            raise ValueError(
+                "Docker reconciliation interval must be finite and positive"
+            )
+        if max_cycles is not None and (
+            isinstance(max_cycles, bool)
+            or not isinstance(max_cycles, int)
+            or max_cycles <= 0
+        ):
+            raise ValueError("Docker reconciliation max_cycles must be positive")
+        cycles = 0
+        latest = DockerContainerReconciliation(())
+        while True:
+            latest = self.reconcile()
+            cycles += 1
+            if max_cycles is not None and cycles >= max_cycles:
+                return latest
+            if stop.wait(float(interval_seconds)):
+                return latest
+
 
 class DockerContainerLeaseHeartbeatError(RuntimeError):
     pass
@@ -440,5 +477,6 @@ __all__ = [
     "DockerContainerLeaseHeartbeatGuard",
     "DockerContainerLeasePolicy",
     "DockerContainerReconciliation",
+    "DockerReconcileStopPort",
     "ManagedDockerContainerLease",
 ]

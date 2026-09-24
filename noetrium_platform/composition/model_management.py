@@ -40,6 +40,12 @@ from noetrium_platform.composition.resource_probes import LocalCommandResourcePr
 from noetrium_platform.composition.model_qualification import QUALIFICATION_INDEX_WORKER_PATH
 from noetrium_platform.infrastructure.lifecycle.python.api import PythonEnvironmentAuthorities
 from noetrium_platform.capabilities.environment.catalog.api import ExecutionEnvironmentCatalogPort
+from noetrium_platform.capabilities.environment.providers import (
+    DockerCliManagedContainerProvider,
+)
+from noetrium_platform.composition.docker_container_leases import (
+    DockerContainerLeaseAuthority,
+)
 from noetrium_platform.foundation.scope.api import ScopeRegistryPort
 from noetrium_platform.infrastructure.lifecycle.host.api import OperatingSystemRoute
 from noetrium_platform.infrastructure.lifecycle.python.runtime import (
@@ -87,6 +93,7 @@ class ManagementPlaneAuthorities:
     host: HostComposition
     compute_scheduler: ComputeSchedulerPort
     deployment_qualification: DeploymentQualificationAuthorities
+    docker_containers: DockerContainerLeaseAuthority
     platform_meta: PlatformMetaAuthorities
 
 
@@ -168,6 +175,12 @@ def build_local_management_plane(
         directory_layout.layout.state / "platform-meta",
         gpu_runtime_observer=gpu_runtime,
         host_runtime_observer=host_runtime,
+    )
+    docker_containers = DockerContainerLeaseAuthority(
+        ownership=meta.resource_ownership,
+        leases=meta.resource_leases,
+        runtime=DockerCliManagedContainerProvider(local_commands),
+        reconcile_on_start=False,
     )
     try:
         discovered_host = discover_local_compute_host(
@@ -262,6 +275,7 @@ def build_local_management_plane(
             local_commands,
             index_worker_path=QUALIFICATION_INDEX_WORKER_PATH,
         ),
+        docker_containers=docker_containers,
         platform_meta=meta,
     )
 
