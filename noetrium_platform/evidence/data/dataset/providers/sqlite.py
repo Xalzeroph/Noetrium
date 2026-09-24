@@ -15,10 +15,9 @@ from noetrium_platform.evidence.data.dataset.api import (
 )
 from noetrium_platform.evidence.data._canonical import DataCanonicalDecodingError, canonical_digest, strict_json_loads
 from noetrium_platform.foundation.kernel.kernel.durability.sqlite import (
-    begin_immediate_sqlite_transaction,
+    immediate_sqlite_transaction,
     open_durable_sqlite_reader,
     open_durable_sqlite_writer,
-    rollback_sqlite_writer,
 )
 from noetrium_platform.evidence.data._sqlite_types import require_optional_text, require_text
 from noetrium_platform.foundation.api import ScopeIdentity, ScopeKind
@@ -161,27 +160,29 @@ class SQLiteDatasetRegistry:
     def register(self, dataset: DatasetVersion) -> DatasetVersion:
         encoded = self._encode(dataset)
         with closing(self._connect_writer()) as db:
-            begin_immediate_sqlite_transaction(db, timeout_seconds=self.timeout_seconds)
-            try:
+            with immediate_sqlite_transaction(
+                db,
+                timeout_seconds=self.timeout_seconds,
+                label="dataset registry",
+            ):
                 row = db.execute(
-                    f"SELECT {self._select_columns()} FROM datasets WHERE dataset_key=?",
+                    f"SELECT {self._select_columns()} FROM datasets "
+                    "WHERE dataset_key=?",
                     (dataset.identity.key,),
                 ).fetchone()
                 if row is not None:
                     current = self._decode(row)
                     if current != dataset:
                         raise DatasetRegistryConflict(dataset.identity.key)
-                    db.execute("COMMIT")
                     return current
-                db.execute("INSERT INTO datasets VALUES(?,?,?,?,?,?,?,?,?,?,?)", encoded)
+                db.execute(
+                    "INSERT INTO datasets VALUES(?,?,?,?,?,?,?,?,?,?,?)",
+                    encoded,
+                )
                 db.executemany(
                     "INSERT INTO dataset_tags(dataset_key,tag) VALUES(?,?)",
                     ((dataset.identity.key, tag) for tag in dataset.tags),
                 )
-                db.execute("COMMIT")
-            except BaseException as primary:
-                rollback_sqlite_writer(db, primary, label="data")
-                raise
         return dataset
 
     def get(self, identity: DatasetIdentity) -> DatasetVersion:
