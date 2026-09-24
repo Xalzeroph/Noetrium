@@ -640,7 +640,6 @@ __all__ = [
     "ReproductionFleetExperimentClosureProvider",
     "ReproductionFleetLane",
     "ReproductionFleetMaterialization",
-    "ResearchBindingAuthorityPort",
     "execute_materialized_reproduction_fleet",
     "materialize_repository_execution_fleet",
     "resolve_repository_execution_requests",
