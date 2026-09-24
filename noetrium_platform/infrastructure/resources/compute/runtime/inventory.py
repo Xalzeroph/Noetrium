@@ -6,8 +6,8 @@ import sqlite3
 from threading import RLock
 
 from noetrium_platform.foundation.kernel.kernel.durability.sqlite import (
-    begin_immediate_sqlite_transaction,
     durable_sqlite_connection,
+    immediate_sqlite_transaction,
 )
 from noetrium_platform.infrastructure.resources.compute.api import ComputeCluster, ComputeGPU, ComputeHost
 from noetrium_platform.foundation.governance.api import ScopeIdentity, ScopeKind
@@ -156,12 +156,15 @@ class SQLiteComputeInventory:
 
     def _put(self, table: str, key: str, payload: str) -> None:
         with self._connection() as conn:
-            begin_immediate_sqlite_transaction(conn, timeout_seconds=self.timeout_seconds)
-            conn.execute(
-                f"INSERT OR IGNORE INTO {table}({('host_id' if table == 'compute_hosts' else 'cluster_id')},payload) VALUES(?,?)",
-                (key, payload),
-            )
-            conn.commit()
+            with immediate_sqlite_transaction(
+                conn,
+                timeout_seconds=self.timeout_seconds,
+                label="compute inventory",
+            ):
+                conn.execute(
+                    f"INSERT OR IGNORE INTO {table}({('host_id' if table == 'compute_hosts' else 'cluster_id')},payload) VALUES(?,?)",
+                    (key, payload),
+                )
 
     def register_host(self, host: ComputeHost) -> None:
         payload = self._host_payload(host)
