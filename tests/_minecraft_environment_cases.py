@@ -1167,7 +1167,9 @@ class _FakeServiceRuntime:
         self.calls.append("verify")
         return ServiceReadyObservation(contract.digest(), self.process, "ready-ref", 1234.5, ("ready-ref",))
 
-    def stop_exact(self, contract):
+    def stop_exact(self, contract, expected_process):
+        if expected_process != self.process:
+            raise RuntimeError("test Minecraft process generation drifted")
         self.calls.append("stop")
         return ServiceStopOutcome(contract.digest(), True, ("stop-ref",))
 
