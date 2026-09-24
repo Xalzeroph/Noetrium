@@ -39770,7 +39770,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 58,
+      "line": 59,
       "methods": [
         "__init__"
       ],
@@ -39790,7 +39790,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 71,
+      "line": 72,
       "methods": [
         "__init__"
       ],
@@ -39808,7 +39808,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 87,
+      "line": 88,
       "methods": [
         "__init__",
         "plan",
@@ -143207,7 +143207,7 @@
   "parse_errors": [],
   "registry_sha256": "d3fc1bab831f1b7379e5a36048a61c00fe173429df958270d36a16f3f00171c0",
   "schema": "noetrium-code-architecture-index.v1",
-  "source_git_sha": "639447a5504dc6f6bdd5cb4410ec4115a2fa6d04",
+  "source_git_sha": "df5b7e86efd9cc8d44e35498a1ceec0075181bc0",
   "system_import_edges": [
     {
       "count": 90,
