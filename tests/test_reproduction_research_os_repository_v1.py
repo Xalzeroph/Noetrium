@@ -67,15 +67,20 @@ def test_catalog_only_reproductions_are_not_silently_promoted_to_executable() ->
     )
 
 
-def test_all_protocol_bound_reproductions_have_exact_execution_bindings() -> None:
+def test_all_protocol_bound_reproductions_have_only_typed_execution_requirements() -> None:
     plan = build_plan()
-    unresolved = tuple(
-        (
-            row["package"],
-            tuple(row["unresolved_study_parameters"]),
-            tuple(row["blockers"]),
-        )
-        for row in plan["lanes"]
-        if row["unresolved_study_parameters"] or row["blockers"]
-    )
-    assert unresolved == ()
+    assert plan["compile_failure_count"] == 0
+    for row in plan["lanes"]:
+        assert row["blockers"] == ()
+        parameters = tuple(row["execution_requirement_parameters"])
+        kinds = tuple(row["execution_requirement_kinds"])
+        digests = tuple(row["execution_requirement_digests"])
+        assert len(parameters) == len(kinds) == len(digests)
+        assert len(parameters) == len(set(parameters))
+        assert all(kind in {
+            "benchmark_split",
+            "capability_id",
+            "capability_closure",
+            "paper_option",
+        } for kind in kinds)
+        assert all(len(digest) == 64 for digest in digests)
