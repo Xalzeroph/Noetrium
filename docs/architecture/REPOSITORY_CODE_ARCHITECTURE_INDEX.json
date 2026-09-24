@@ -41532,7 +41532,7 @@
     "tooling": 38
   },
   "schema": "noetrium-repository-code-architecture-index.v1",
-  "source_git_sha": "df5b7e86efd9cc8d44e35498a1ceec0075181bc0",
+  "source_git_sha": "077beb15b0dce7c01d53dc3252bdf9446568033c",
   "symbols": [
     {
       "bases": [],
@@ -64928,7 +64928,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 69,
+      "line": 70,
       "methods": [],
       "module": "noetrium_platform.composition.research_os_runtime",
       "name": "CanonicalResearchOSRuntimeUnsupported",
@@ -64944,7 +64944,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 73,
+      "line": 74,
       "methods": [],
       "module": "noetrium_platform.composition.research_os_runtime",
       "name": "CanonicalResearchOSRuntimeFailure",
@@ -64960,7 +64960,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 77,
+      "line": 78,
       "methods": [
         "__init__",
         "admit",
