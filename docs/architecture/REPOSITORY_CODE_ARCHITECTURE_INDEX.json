@@ -1,10 +1,10 @@
 {
   "counts": {
     "parse_errors": 0,
-    "python_files": 3661,
-    "python_import_edges": 7064,
+    "python_files": 3663,
+    "python_import_edges": 7074,
     "symbols": 4851,
-    "tracked_files": 4290,
+    "tracked_files": 4292,
     "typescript_javascript_files": 11
   },
   "language_symbol_counts": {
@@ -564,6 +564,12 @@
       "source_module": "noetrium_platform.capabilities.environment.minecraft.composition.server_service",
       "source_role": "core_platform",
       "target_module": "noetrium_platform.foundation.kernel.kernel",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "noetrium_platform.capabilities.environment.minecraft.composition.server_service",
+      "source_role": "core_platform",
+      "target_module": "noetrium_platform.foundation.kernel.kernel.durability",
       "target_role": "core_platform"
     },
     {
@@ -19311,9 +19317,51 @@
       "target_role": "research_reproductions"
     },
     {
+      "source_module": "research.reproductions.memevolve.program",
+      "source_role": "research_reproductions",
+      "target_module": "noetrium_platform.capabilities.participant.method.api",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "research.reproductions.memevolve.program",
+      "source_role": "research_reproductions",
+      "target_module": "noetrium_platform.foundation.kernel.kernel",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "research.reproductions.memevolve.program",
+      "source_role": "research_reproductions",
+      "target_module": "noetrium_platform.research.execution.workflow.api",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "research.reproductions.memevolve.program",
+      "source_role": "research_reproductions",
+      "target_module": "noetrium_platform.research.experimentation.workbench.api",
+      "target_role": "core_platform"
+    },
+    {
       "source_module": "research.reproductions.memevolve.source",
       "source_role": "research_reproductions",
       "target_module": "research.reproductions.provenance",
+      "target_role": "research_reproductions"
+    },
+    {
+      "source_module": "research.reproductions.memevolve.study",
+      "source_role": "research_reproductions",
+      "target_module": "noetrium_platform.foundation.kernel.kernel",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "research.reproductions.memevolve.study",
+      "source_role": "research_reproductions",
+      "target_module": "noetrium_platform.research.experimentation.lifecycle.api",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "research.reproductions.memevolve.study",
+      "source_role": "research_reproductions",
+      "target_module": "research.benchmarks.memoryarena",
       "target_role": "research_reproductions"
     },
     {
@@ -29147,6 +29195,12 @@
     {
       "source_module": "tests.test_minecraft_server_factory_v1",
       "source_role": "tests",
+      "target_module": "noetrium_platform.foundation.kernel.kernel.durability",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "tests.test_minecraft_server_factory_v1",
+      "source_role": "tests",
       "target_module": "noetrium_platform.infrastructure.lifecycle.service.api.environment",
       "target_role": "core_platform"
     },
@@ -37757,6 +37811,12 @@
     {
       "source_module": "tests.test_scientific_self_evolution_fidelity_v1",
       "source_role": "tests",
+      "target_module": "research.reproductions.memevolve.definition",
+      "target_role": "research_reproductions"
+    },
+    {
+      "source_module": "tests.test_scientific_self_evolution_fidelity_v1",
+      "source_role": "tests",
       "target_module": "research.reproductions.research_os",
       "target_role": "research_reproductions"
     },
@@ -42401,7 +42461,7 @@
   ],
   "role_import_counts": [
     {
-      "count": 2643,
+      "count": 2644,
       "source_role": "core_platform",
       "target_role": "core_platform"
     },
@@ -42446,7 +42506,7 @@
       "target_role": "public_facade"
     },
     {
-      "count": 658,
+      "count": 664,
       "source_role": "research_reproductions",
       "target_role": "core_platform"
     },
@@ -42456,12 +42516,12 @@
       "target_role": "public_facade"
     },
     {
-      "count": 336,
+      "count": 337,
       "source_role": "research_reproductions",
       "target_role": "research_reproductions"
     },
     {
-      "count": 2764,
+      "count": 2765,
       "source_role": "tests",
       "target_role": "core_platform"
     },
@@ -42481,7 +42541,7 @@
       "target_role": "reference_orchestration"
     },
     {
-      "count": 320,
+      "count": 321,
       "source_role": "tests",
       "target_role": "research_reproductions"
     },
@@ -42523,7 +42583,7 @@
     "public_facade": 40,
     "reference_components": 22,
     "reference_orchestration": 10,
-    "research_reproductions": 772,
+    "research_reproductions": 774,
     "tests": 805,
     "tooling": 78
   },
@@ -42540,7 +42600,7 @@
     "tooling": 38
   },
   "schema": "noetrium-repository-code-architecture-index.v1",
-  "source_git_sha": "8615906169bd01a741b0c92520a92ec09d4ff7b1",
+  "source_git_sha": "0f5aa86762b20888041df942f6a0d2cdfcce7ea1",
   "symbols": [
     {
       "bases": [],
@@ -47707,7 +47767,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 40,
+      "line": 41,
       "methods": [],
       "module": "noetrium_platform.capabilities.environment.minecraft.composition.server_service",
       "name": "MinecraftServerServiceError",
@@ -47721,7 +47781,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 44,
+      "line": 45,
       "methods": [
         "__init__",
         "_wait_ready_async",
@@ -47739,7 +47799,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 130,
+      "line": 131,
       "methods": [
         "__init__",
         "_wait_rcon",
@@ -47757,7 +47817,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 267,
+      "line": 268,
       "methods": [
         "__init__",
         "validate"
@@ -47782,7 +47842,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 381,
+      "line": 382,
       "methods": [
         "_event",
         "_failure",
@@ -47814,7 +47874,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 470,
+      "line": 471,
       "methods": [
         "__post_init__"
       ],
@@ -47830,7 +47890,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 499,
+      "line": 500,
       "methods": [
         "__init__",
         "create"
@@ -48303,7 +48363,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 16,
+      "line": 14,
       "methods": [
         "__init__"
       ],
@@ -135997,7 +136057,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 25,
+      "line": 26,
       "methods": [
         "open"
       ],
@@ -136013,7 +136073,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 110,
+      "line": 112,
       "methods": [
         "wait_ready"
       ],
@@ -136029,7 +136089,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 115,
+      "line": 117,
       "methods": [
         "__init__",
         "execute"
@@ -136046,7 +136106,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 127,
+      "line": 129,
       "methods": [
         "alive"
       ],
@@ -136062,7 +136122,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 154,
+      "line": 156,
       "methods": [
         "__init__",
         "close",
@@ -136080,7 +136140,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 177,
+      "line": 179,
       "methods": [
         "alive"
       ],
@@ -136096,7 +136156,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 212,
+      "line": 214,
       "methods": [
         "close",
         "wait_closed"
@@ -136113,7 +136173,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 222,
+      "line": 224,
       "methods": [
         "alive"
       ],

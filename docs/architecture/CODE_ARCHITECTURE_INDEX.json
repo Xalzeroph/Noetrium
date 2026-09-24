@@ -21095,7 +21095,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 267,
+      "line": 268,
       "methods": [
         "__init__",
         "validate"
@@ -21114,7 +21114,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 130,
+      "line": 131,
       "methods": [
         "__init__",
         "_wait_rcon",
@@ -21142,7 +21142,7 @@
         "spec"
       ],
       "kind": "dataclass",
-      "line": 381,
+      "line": 382,
       "methods": [
         "_event",
         "_failure",
@@ -21167,7 +21167,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 40,
+      "line": 41,
       "methods": [],
       "module": "noetrium_platform.capabilities.environment.minecraft.composition.server_service",
       "name": "MinecraftServerServiceError",
@@ -21183,7 +21183,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 499,
+      "line": 500,
       "methods": [
         "__init__",
         "create"
@@ -21213,7 +21213,7 @@
         "task_group"
       ],
       "kind": "dataclass",
-      "line": 470,
+      "line": 471,
       "methods": [
         "__post_init__"
       ],
@@ -21231,7 +21231,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 44,
+      "line": 45,
       "methods": [
         "__init__",
         "_wait_ready_async",
@@ -21758,7 +21758,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 16,
+      "line": 14,
       "methods": [
         "__init__"
       ],
@@ -102383,7 +102383,7 @@
     "classes": 3336,
     "constructor_edges": 932,
     "inheritance_edges": 149,
-    "module_import_edges": 5093,
+    "module_import_edges": 5094,
     "parse_errors": 0,
     "python_modules": 1927,
     "registry_authorities": 20,
@@ -103741,6 +103741,10 @@
     {
       "source": "noetrium_platform.capabilities.environment.minecraft.composition.server_service",
       "target": "noetrium_platform.foundation.kernel.kernel"
+    },
+    {
+      "source": "noetrium_platform.capabilities.environment.minecraft.composition.server_service",
+      "target": "noetrium_platform.foundation.kernel.kernel.durability"
     },
     {
       "source": "noetrium_platform.capabilities.environment.minecraft.composition.server_service",
@@ -124180,6 +124184,7 @@
         "noetrium_platform.capabilities.environment.minecraft.providers.server_files",
         "noetrium_platform.foundation.kernel.concurrency.api",
         "noetrium_platform.foundation.kernel.kernel",
+        "noetrium_platform.foundation.kernel.kernel.durability",
         "noetrium_platform.foundation.kernel.kernel.errors",
         "noetrium_platform.substrate.api"
       ],
@@ -143716,7 +143721,7 @@
   "parse_errors": [],
   "registry_sha256": "d3fc1bab831f1b7379e5a36048a61c00fe173429df958270d36a16f3f00171c0",
   "schema": "noetrium-code-architecture-index.v1",
-  "source_git_sha": "8615906169bd01a741b0c92520a92ec09d4ff7b1",
+  "source_git_sha": "0f5aa86762b20888041df942f6a0d2cdfcce7ea1",
   "system_import_edges": [
     {
       "count": 85,
@@ -143754,7 +143759,7 @@
       "target": "environment"
     },
     {
-      "count": 65,
+      "count": 66,
       "source": "environment",
       "target": "platform"
     },
