@@ -336,8 +336,13 @@ class ModelDeploymentRuntime:
             except (KeyError, FileNotFoundError):
                 # Removal publishes a durable retirement tombstone before the
                 # desired record disappears, so absence is an idempotent terminal
-                # state and the logical id cannot later be recycled.
+                # state and the logical id cannot later be recycled. Exact
+                # process-clear tombstones are no longer needed once that
+                # permanent identity retirement has committed.
                 if self._applied_store.read(generation.deployment_id) is None:
+                    self._applied_store.purge_cleared_after_retirement(
+                        generation.deployment_id
+                    )
                     return True
                 raise
 
@@ -378,7 +383,12 @@ class ModelDeploymentRuntime:
                     "model desired generation changed during physical removal: "
                     f"{generation.deployment_id}"
                 )
-            return self._catalog.remove(generation.deployment_id)
+            retired = self._catalog.remove(generation.deployment_id)
+            if retired:
+                self._applied_store.purge_cleared_after_retirement(
+                    generation.deployment_id
+                )
+            return retired
 
 
 __all__ = ["ModelDeploymentRuntime"]
