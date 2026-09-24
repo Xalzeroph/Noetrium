@@ -1,12 +1,12 @@
 from __future__ import annotations
 
 from dataclasses import asdict, dataclass
-import hashlib
 import json
 from typing import Protocol
 import uuid
 
 
+from noetrium_platform.foundation.kernel.kernel.durability import sha256_bytes
 @dataclass(frozen=True, slots=True)
 class DecisionCycleIdentity:
     """Stable identity for one trial decision cycle.
@@ -34,7 +34,7 @@ class DecisionCycleIdentity:
         raw = json.dumps(
             asdict(self), sort_keys=True, ensure_ascii=False, separators=(",", ":")
         ).encode()
-        return hashlib.sha256(raw).hexdigest()
+        return sha256_bytes(raw)
 
 
 class DecisionCycleIdentityProvider(Protocol):
