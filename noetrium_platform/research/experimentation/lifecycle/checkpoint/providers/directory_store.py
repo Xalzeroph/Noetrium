@@ -1,10 +1,16 @@
 from __future__ import annotations
 
 import hashlib
+from contextlib import ExitStack
 from pathlib import Path
 
 from noetrium_platform.research.execution.api import ParticipantCheckpoint
+from noetrium_platform.foundation.kernel.kernel import (
+    DurableCarrierReferenceClosure,
+    canonical_digest,
+)
 from noetrium_platform.foundation.kernel.kernel.durability import (
+    ChecksummedDocumentError,
     InterprocessFileLock,
     atomic_replace_bytes,
     durable_publish_immutable_bytes,
@@ -12,8 +18,13 @@ from noetrium_platform.foundation.kernel.kernel.durability import (
     fsync_directory,
     sha256_file,
 )
+from noetrium_platform.foundation.kernel.kernel.durability.checksummed_document import (
+    decode_checksummed_document,
+    encode_checksummed_document,
+)
 
 from .codec import RunCheckpointManifestCodec
+from .workload_codec import WorkloadCheckpointManifestCodec
 from .publication_intent import (
     CheckpointPublicationIntent,
     CheckpointPublicationIntentConflict,
@@ -23,8 +34,10 @@ from .publication_intent import (
 from ..api.contracts import (
     RunCheckpointBundle,
     RunCheckpointConflict,
+    RunCheckpointGcAssessment,
     RunCheckpointIntegrityError,
     RunCheckpointManifest,
+    RunCheckpointPersistenceState,
     RunCheckpointRecoveryRequired,
     RunCheckpointStore,
     RunParticipantPayload,
@@ -150,46 +163,50 @@ class DirectoryRunCheckpointStore(RunCheckpointStore):
         except CheckpointPublicationIntentCorruptionError as exc:
             raise RunCheckpointIntegrityError(str(exc)) from exc
 
-    def _write_blob(self, payload: bytes, expected_digest: str) -> None:
+    def _write_blob_under_lock(
+        self,
+        payload: bytes,
+        expected_digest: str,
+    ) -> None:
         actual = self._sha(payload)
         if actual != expected_digest:
             raise RunCheckpointIntegrityError(
                 f"checkpoint payload digest mismatch: expected={expected_digest} actual={actual}"
             )
         path = self._blob_path(actual)
-        with InterprocessFileLock(self._blob_lock_path(actual)):
-            self._cleanup_blob_staging(path)
-            if path.exists():
-                self._verify_blob(
-                    path,
-                    expected_digest=actual,
-                    expected_size=len(payload),
-                )
-                # A prior attempt may have linked the complete inode but failed
-                # while proving directory durability. Exact retry re-establishes
-                # that proof before accepting the existing CAS object.
-                fsync_directory(path.parent)
-                return
-
-            try:
-                durable_publish_immutable_bytes(
-                    path,
-                    payload,
-                    staging_dir=self.blob_staging,
-                )
-            except FileExistsError:
-                self._verify_blob(
-                    path,
-                    expected_digest=actual,
-                    expected_size=len(payload),
-                )
-                fsync_directory(path.parent)
-                return
+        self._cleanup_blob_staging(path)
+        if path.exists():
             self._verify_blob(
                 path,
                 expected_digest=actual,
                 expected_size=len(payload),
             )
+            fsync_directory(path.parent)
+            return
+
+        try:
+            durable_publish_immutable_bytes(
+                path,
+                payload,
+                staging_dir=self.blob_staging,
+            )
+        except FileExistsError:
+            self._verify_blob(
+                path,
+                expected_digest=actual,
+                expected_size=len(payload),
+            )
+            fsync_directory(path.parent)
+            return
+        self._verify_blob(
+            path,
+            expected_digest=actual,
+            expected_size=len(payload),
+        )
+
+    def _write_blob(self, payload: bytes, expected_digest: str) -> None:
+        with InterprocessFileLock(self._blob_lock_path(expected_digest)):
+            self._write_blob_under_lock(payload, expected_digest)
 
     def publish(
         self,
