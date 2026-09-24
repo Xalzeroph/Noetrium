@@ -233,6 +233,10 @@ def build_local_management_plane(
     asset_registry = ModelAssetRegistry(directory_layout)
     deployment_registry = ModelDeploymentRegistry(directory_layout)
     applied_store = AppliedModelDeploymentStore(directory_layout)
+    # Exact clear tombstones dominate any active-path residue that can reappear
+    # after a crash between unlink and directory durability. Converge those
+    # paths before model controllers or new service starts are composed.
+    applied_store.reconcile_cleared()
     asset_storage = LocalModelAssetStorage(directory_layout, additional_pools=model_storage_pools)
     deployment_catalog = ModelDeploymentCatalog(asset_registry, deployment_registry, environments.lifecycle)
     assets = ModelAssetManager(
