@@ -428,9 +428,14 @@ class JsonlProcessTransport:
                         f"{self._task_namespace} drain tasks failed to converge", drain_errors
                     )
         finally:
-            self._stdout_task = None
-            self._stderr_task = None
-            self._process = None
+            # Never discard the exact physical process identity while the child
+            # may still be alive.  Termination can fail transiently; retaining
+            # the process and drain-task handles makes close() retryable and
+            # prevents a later caller from treating a surviving child as gone.
+            if process.poll() is not None:
+                self._stdout_task = None
+                self._stderr_task = None
+                self._process = None
 
     def _terminate_process(self, process: JsonlProcess) -> None:
         if process.poll() is not None:
