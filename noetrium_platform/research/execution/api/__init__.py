@@ -38,7 +38,7 @@ from noetrium_platform.research.execution.decision.cycle_identity import (
     DecisionCycleIdentityProvider,
 )
 from noetrium_platform.research.execution.decision.cycle_result import DecisionCycleResult
-from noetrium_platform.capabilities.environment.embodied.api import EpisodeSpec
+from noetrium_platform.capabilities.api import EpisodeSpec
 from noetrium_platform.research.execution.machines.api import (
     EvaluationConcern,
     ExperimentConcern,
