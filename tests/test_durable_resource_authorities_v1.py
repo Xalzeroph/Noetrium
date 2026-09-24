@@ -195,16 +195,28 @@ class DurableResourceAuthoritiesTests(TestCase):
                 (instance,),
             )
 
-            binding = EnvironmentBinding(
-                "binding-reuse",
-                scope,
-                "runner",
-                "env-reuse",
+            acquisition = meta.environments.acquire_reusable_instance(
+                "web-default",
+                revision,
+                binding_id="binding-reuse",
+                role="runner",
+                scope=scope,
             )
-            meta.environments.bind(binding)
+            binding = acquisition.binding
+            self.assertEqual(binding.instance_id, "env-reuse")
+            self.assertIs(
+                acquisition.instance.state,
+                EnvironmentInstanceState.IN_USE,
+            )
+            self.assertEqual(acquisition.instance.generation, 1)
             self.assertEqual(
                 meta.environments.reusable_instances("web-default", revision),
                 (),
+            )
+            restored_acquired = build_durable_platform_meta(root)
+            self.assertEqual(
+                restored_acquired.environments.binding("runner", scope),
+                binding,
             )
             meta.environments.unbind("runner", scope)
             dirty = meta.environments.release_instance("env-reuse")
@@ -228,7 +240,15 @@ class DurableResourceAuthoritiesTests(TestCase):
                 (clean,),
             )
 
-            meta.environments.bind(binding)
+            reacquisition = meta.environments.acquire_reusable_instance(
+                "web-default",
+                revision,
+                binding_id=binding.binding_id,
+                role=binding.role,
+                scope=binding.scope,
+            )
+            self.assertEqual(reacquisition.binding, binding)
+            self.assertEqual(reacquisition.instance.generation, 2)
             meta.environments.unbind("runner", scope)
             with self.assertRaises(RuntimeError):
                 meta.environments.release_instance(
