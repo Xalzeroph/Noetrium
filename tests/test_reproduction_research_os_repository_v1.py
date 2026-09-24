@@ -1,14 +1,20 @@
 from __future__ import annotations
 
+import pytest
+
 from noetrium import api
 from scripts.run_reproduction_fleet import build_plan
 
 from research.reproductions.research_os import (
+    ReproductionResearchOSCompileError,
+    bind_reproduction_execution,
     compile_repository_reproduction_portfolio,
     compile_reproduction_research_program,
     discover_reproduction_definitions,
     executable_reproduction_definitions,
     is_research_os_executable,
+    materialize_reproduction_method_program,
+    resolve_method_program_binding,
 )
 
 
@@ -84,3 +90,73 @@ def test_all_protocol_bound_reproductions_have_only_typed_execution_requirements
             "paper_option",
         } for kind in kinds)
         assert all(len(digest) == 64 for digest in digests)
+
+
+
+def test_toolformer_execution_binding_cannot_drift_from_method_capability_closure() -> None:
+    from research.reproductions.toolformer.definition import REPRODUCTION
+
+    capabilities = (
+        "tool.question-answering",
+        "tool.wikipedia-search",
+        "tool.calculator",
+        "tool.calendar",
+        "tool.machine-translation",
+    )
+    binding = bind_reproduction_execution(
+        REPRODUCTION,
+        binding_id="paper-eval",
+        study_factory="build_toolformer_study",
+        benchmark_id="toolformer-eval",
+        values={
+            "split_id": "paper-eval",
+            "tool_capability_ids": capabilities,
+        },
+    )
+    implementation = materialize_reproduction_method_program(
+        REPRODUCTION,
+        binding,
+    )
+    assert implementation is not None
+    assert implementation.program_digest == (
+        resolve_method_program_binding(REPRODUCTION).program_digest
+    )
+
+    with pytest.raises(
+        ReproductionResearchOSCompileError,
+        match="Study/Method binding disagrees",
+    ):
+        bind_reproduction_execution(
+            REPRODUCTION,
+            binding_id="drifted",
+            study_factory="build_toolformer_study",
+            benchmark_id="toolformer-eval",
+            values={
+                "split_id": "paper-eval",
+                "tool_capability_ids": ("tool.calculator",),
+            },
+        )
+
+
+def test_adacm2_preserves_both_paper_interpretations_as_distinct_execution_lanes() -> None:
+    from research.reproductions.adacm2_memory.definition import REPRODUCTION
+
+    eq6 = bind_reproduction_execution(
+        REPRODUCTION,
+        binding_id="lvu-eq6",
+        study_factory="build_adacm2_lvu_study",
+        benchmark_id="lvu",
+        values={"interpretation": "eq6_literal"},
+    )
+    eq8 = bind_reproduction_execution(
+        REPRODUCTION,
+        binding_id="lvu-eq8",
+        study_factory="build_adacm2_lvu_study",
+        benchmark_id="lvu",
+        values={"interpretation": "eq8_consistent"},
+    )
+
+    assert eq6.binding_digest != eq8.binding_digest
+    assert eq6.requirement_digests == eq8.requirement_digests
+    assert eq6.values["interpretation"] == "eq6_literal"
+    assert eq8.values["interpretation"] == "eq8_consistent"
