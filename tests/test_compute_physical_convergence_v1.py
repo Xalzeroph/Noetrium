@@ -6,6 +6,7 @@ from noetrium_platform.foundation.scope.api import ScopeIdentity, ScopeKind
 from noetrium_platform.infrastructure.resources.compute.api import (
     ComputeGPU,
     ComputeHost,
+    ComputePlacementUnavailable,
     ComputeRequirement,
     GpuDeviceStatus,
     GpuProcessStatus,
@@ -17,6 +18,7 @@ from noetrium_platform.infrastructure.resources.compute.runtime import (
     InMemoryComputeInventory,
     SQLiteComputeScheduler,
 )
+from noetrium_platform.infrastructure.resources.lease.api import ResourceLeaseConflict
 from tests.resource_compute_support import in_memory_compute_scheduler
 
 
@@ -195,7 +197,7 @@ def test_cpu_only_expiry_quarantines_capacity_until_exclusive_recovery(
     with pytest.raises(ComputePhysicalConvergencePending):
         scheduler.reconcile_expired(now=102.0)
     assert scheduler.allocations() == (first,)
-    with pytest.raises(Exception):
+    with pytest.raises(ComputePlacementUnavailable):
         scheduler.allocate(
             "replacement",
             _scope(),
@@ -286,7 +288,7 @@ def test_stale_recovery_release_cannot_delete_replacement_generation(
     )
     assert replacement.lease_fencing_token > first.lease_fencing_token
 
-    with pytest.raises(Exception):
+    with pytest.raises(ResourceLeaseConflict):
         scheduler.recover_release(first)
 
     assert scheduler.allocations() == (replacement,)
