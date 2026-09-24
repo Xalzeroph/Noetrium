@@ -2,8 +2,8 @@ from __future__ import annotations
 
 from collections.abc import Mapping
 from dataclasses import dataclass
-import hashlib
 
+from noetrium_platform.foundation.kernel.kernel.durability import sha256_bytes
 from noetrium_platform.foundation.kernel.kernel import JsonObject, canonical_bytes, freeze_json
 
 
@@ -20,7 +20,7 @@ class OutputSchemaSpec:
 
     def digest(self) -> str:
         raw=canonical_bytes({"schema_id":self.schema_id,"version":self.version,"schema":self.schema})
-        return hashlib.sha256(raw).hexdigest()
+        return sha256_bytes(raw)
 
 
 class OutputSchemaRegistry:
