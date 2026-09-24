@@ -28,12 +28,38 @@ bootstrap_owner_alive() {
   [ -n "$current_start" ] && [ "$current_start" = "$start" ]
 }
 
+bootstrap_container_absent() {
+  id="$1"
+  remaining="$(docker ps -aq --no-trunc --filter "id=$id")" || {
+    echo "Unable to prove bootstrap container absence: $id" >&2
+    return 2
+  }
+  [ -z "$remaining" ]
+}
+
+remove_bootstrap_container_exact() {
+  id="$1"
+  if docker rm -f "$id" >/dev/null 2>&1; then
+    return 0
+  fi
+  if bootstrap_container_absent "$id"; then
+    return 0
+  fi
+  echo "Failed to remove bootstrap container and absence is unproven: $id" >&2
+  return 1
+}
+
 reconcile_bootstrap_containers() {
-  ids="$(docker ps -aq --filter "label=$BOOTSTRAP_MANAGED_LABEL=$BOOTSTRAP_MANAGED_VALUE" 2>/dev/null || true)"
+  ids="$(docker ps -aq --no-trunc --filter "label=$BOOTSTRAP_MANAGED_LABEL=$BOOTSTRAP_MANAGED_VALUE")"
   [ -n "$ids" ] || return 0
   for id in $ids; do
-    metadata="$(docker inspect --format '{{index .Config.Labels "io.noetrium.bootstrap-owner-pid"}}|{{index .Config.Labels "io.noetrium.bootstrap-owner-boot"}}|{{index .Config.Labels "io.noetrium.bootstrap-owner-start"}}|{{.State.Running}}' "$id" 2>/dev/null || true)"
-    [ -n "$metadata" ] || continue
+    if ! metadata="$(docker inspect --format '{{index .Config.Labels "io.noetrium.bootstrap-owner-pid"}}|{{index .Config.Labels "io.noetrium.bootstrap-owner-boot"}}|{{index .Config.Labels "io.noetrium.bootstrap-owner-start"}}|{{.State.Running}}' "$id" 2>/dev/null)"; then
+      if bootstrap_container_absent "$id"; then
+        continue
+      fi
+      echo "Unable to inspect live bootstrap container: $id" >&2
+      return 1
+    fi
     old_ifs="$IFS"
     IFS='|'
     set -- $metadata
@@ -45,20 +71,22 @@ reconcile_bootstrap_containers() {
     if [ "$running" = "true" ] && bootstrap_owner_alive "$owner_pid" "$owner_boot" "$owner_start"; then
       continue
     fi
-    docker rm -f "$id" >/dev/null 2>&1 || true
+    remove_bootstrap_container_exact "$id"
   done
 }
 
 
 reconcile_bootstrap_children() {
-  ids="$(docker ps -aq --filter "label=$BOOTSTRAP_CHILD_LABEL=$BOOTSTRAP_CHILD_VALUE" 2>/dev/null || true)"
+  ids="$(docker ps -aq --no-trunc --filter "label=$BOOTSTRAP_CHILD_LABEL=$BOOTSTRAP_CHILD_VALUE")"
   [ -n "$ids" ] || return 0
   for id in $ids; do
-    metadata="$(docker inspect --format '{{index .Config.Labels "io.noetrium.bootstrap-owner-pid"}}|{{index .Config.Labels "io.noetrium.bootstrap-owner-boot"}}|{{index .Config.Labels "io.noetrium.bootstrap-owner-start"}}|{{.State.Running}}' "$id" 2>/dev/null || true)"
-    [ -n "$metadata" ] || {
-      docker rm -f "$id" >/dev/null 2>&1 || true
-      continue
-    }
+    if ! metadata="$(docker inspect --format '{{index .Config.Labels "io.noetrium.bootstrap-owner-pid"}}|{{index .Config.Labels "io.noetrium.bootstrap-owner-boot"}}|{{index .Config.Labels "io.noetrium.bootstrap-owner-start"}}|{{.State.Running}}' "$id" 2>/dev/null)"; then
+      if bootstrap_container_absent "$id"; then
+        continue
+      fi
+      echo "Unable to inspect live bootstrap child container: $id" >&2
+      return 1
+    fi
     old_ifs="$IFS"
     IFS='|'
     set -- $metadata
@@ -70,7 +98,7 @@ reconcile_bootstrap_children() {
     if [ "$running" = "true" ] && bootstrap_owner_alive "$owner_pid" "$owner_boot" "$owner_start"; then
       continue
     fi
-    docker rm -f "$id" >/dev/null 2>&1 || true
+    remove_bootstrap_container_exact "$id"
   done
 }
 
