@@ -311,3 +311,72 @@ def test_auto_model_replica_pool_does_not_mask_scheduler_failure(tmp_path) -> No
         assert str(exc) == "scheduler database corrupted"
     else:
         raise AssertionError("unexpected scheduler failures must not be treated as exhaustion")
+
+
+def test_model_replica_pool_cleanup_is_retryable_and_never_releases_resources_under_live_service(
+    tmp_path,
+) -> None:
+    class FailOnceRuntime(Runtime):
+        def __init__(self, catalog):
+            super().__init__(catalog)
+            self.failed = False
+
+        def remove_deployment(self, deployment_id):
+            if not self.failed:
+                self.failed = True
+                raise RuntimeError("service stop not yet proven")
+            return super().remove_deployment(deployment_id)
+
+    catalog = Catalog()
+    runtime = FailOnceRuntime(catalog)
+    scheduler = Scheduler()
+    endpoints = Endpoints()
+    compute_guards = ComputeGuards()
+    endpoint_guards = EndpointGuards()
+    pool = LocalModelReplicaPoolRuntime(
+        deployment_catalog=catalog,
+        deployment_runtime=runtime,
+        fleet=Fleet(catalog),
+        compute_scheduler=scheduler,
+        endpoint_allocations=endpoints,
+        compute_lease_guards=compute_guards,
+        endpoint_lease_guards=endpoint_guards,
+    )
+    lease = pool.ensure(
+        ModelReplicaPoolRequest(
+            pool_id="retry-close",
+            scope=PLATFORM_SCOPE,
+            model_id="qwen3-8b",
+            engine="vllm",
+            python_environment_id="vllm",
+            cwd=Path(tmp_path),
+            compute=ComputeRequirement(
+                cpu_cores=2,
+                memory_bytes=1024,
+                gpu_count=1,
+                minimum_gpu_memory_bytes=40 * 1024**3,
+            ),
+        )
+    )
+
+    try:
+        lease.close()
+    except ExceptionGroup as error:
+        assert any(
+            isinstance(item, RuntimeError)
+            and "service stop not yet proven" in str(item)
+            for item in error.exceptions
+        )
+    else:
+        raise AssertionError("unproven service shutdown must block resource release")
+
+    assert scheduler.released == []
+    assert endpoints.released == []
+    assert compute_guards.created[0].closed is False
+    assert endpoint_guards.created[0].closed is False
+
+    lease.close()
+    assert len(scheduler.released) == 2
+    assert len(endpoints.released) == 2
+    assert compute_guards.created[0].closed is True
+    assert endpoint_guards.created[0].closed is True
