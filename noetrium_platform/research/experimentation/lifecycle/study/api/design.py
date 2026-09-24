@@ -16,6 +16,8 @@ from .measurement import MeasurementProtocol
 
 _HEX = frozenset("0123456789abcdef")
 
+DEFAULT_STUDY_AGGREGATION_REQUIREMENT_ID = "study.aggregate.mean_variance.v1"
+
 
 class BenchmarkAssignmentMode(StrEnum):
     """Granularity at which one frozen benchmark cut expands into Study assignments."""
@@ -255,6 +257,7 @@ class ResearchStudyDefinition:
     revision: ResearchRevision | None
     execution_policy: StudyExecutionPolicy
     benchmark_assignment_mode: BenchmarkAssignmentMode = BenchmarkAssignmentMode.TASK
+    aggregation_requirement_id: str = DEFAULT_STUDY_AGGREGATION_REQUIREMENT_ID
     scientific_design_digest: str = field(init=False)
     participant_design_digest: str = field(init=False)
     binding_requirement_digest: str = field(init=False)
@@ -297,7 +300,11 @@ class ResearchStudyDefinition:
             raise TypeError(
                 "research study benchmark_assignment_mode must be BenchmarkAssignmentMode"
             )
-        scientific = canonical_digest({"project_id": self.project_id, "experiment_id": self.experiment_id, "study_id": self.study_id, "workload_id": self.workload_id, "factors": tuple(item.factor_digest for item in self.factors), "seeds": self.seeds, "repetitions": self.repetitions, "measurement_semantics": self.measurement_protocol.semantic_digest, "benchmark_cut": self.benchmark.cut_digest, "benchmark_split_id": self.benchmark_split_id, "benchmark_assignment_mode": self.benchmark_assignment_mode.value, "trial_protocol": self.trial_protocol_identity.digest()})
+        _text(
+            self.aggregation_requirement_id,
+            "research study aggregation_requirement_id",
+        )
+        scientific = canonical_digest({"project_id": self.project_id, "experiment_id": self.experiment_id, "study_id": self.study_id, "workload_id": self.workload_id, "factors": tuple(item.factor_digest for item in self.factors), "seeds": self.seeds, "repetitions": self.repetitions, "measurement_semantics": self.measurement_protocol.semantic_digest, "benchmark_cut": self.benchmark.cut_digest, "benchmark_split_id": self.benchmark_split_id, "benchmark_assignment_mode": self.benchmark_assignment_mode.value, "aggregation_requirement_id": self.aggregation_requirement_id, "trial_protocol": self.trial_protocol_identity.digest()})
         participant = canonical_digest(tuple(row.requirement_digest for row in self.binding_requirements.participants))
         binding_requirement = self.binding_requirements.requirements_digest
         execution = self.execution_policy.policy_digest
@@ -310,6 +317,7 @@ class ResearchStudyDefinition:
 
 __all__ = [
     "BenchmarkAssignmentMode",
+    "DEFAULT_STUDY_AGGREGATION_REQUIREMENT_ID",
     "FactorLevelSpec",
     "FactorSelection",
     "ParticipantSchedule",
