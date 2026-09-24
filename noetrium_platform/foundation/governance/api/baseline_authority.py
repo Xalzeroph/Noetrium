@@ -1,9 +1,10 @@
 from __future__ import annotations
 
+from noetrium_platform.foundation.kernel.kernel.durability import sha256_bytes
+
 from collections.abc import Iterable
 from dataclasses import dataclass, field
 from enum import StrEnum
-import hashlib
 import json
 from types import MappingProxyType
 from typing import Mapping
@@ -37,7 +38,7 @@ def governance_baseline_semantic_digest(
     raw = json.dumps(
         payload, ensure_ascii=False, sort_keys=True, separators=(",", ":"), allow_nan=False
     ).encode("utf-8")
-    return hashlib.sha256(raw).hexdigest()
+    return sha256_bytes(raw)
 
 
 @dataclass(frozen=True, slots=True)
