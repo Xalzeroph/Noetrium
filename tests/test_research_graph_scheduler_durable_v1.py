@@ -10,12 +10,12 @@ from noetrium_platform.composition.research_graph import (
 from noetrium_platform.foundation.kernel.concurrency.api import ConcurrencyBudget
 from noetrium_platform.foundation.kernel.kernel import canonical_digest
 from noetrium_platform.research.execution.graph.api import (
+    ResearchGraphExecutionConflict,
     ResearchGraphLiveNodeState,
     ResearchGraphNodeControlPhase,
     ResearchGraphNode,
     ResearchGraphNodeExecutorPort,
     ResearchGraphPlan,
-    ResearchGraphReconciliationRequired,
 )
 from noetrium_platform.research.execution.graph.providers import (
     SQLiteResearchGraphExecutionStore,
@@ -137,13 +137,16 @@ def test_durable_scheduler_runs_unrelated_branch_before_reconciliation_boundary(
         lease_seconds=5.0,
     )
     try:
-        with pytest.raises(ResearchGraphReconciliationRequired) as captured:
+        with pytest.raises(ResearchGraphNodeControlHalt) as captured:
             scheduler.execute()
     finally:
         scheduler.close()
         pool.close()
 
-    assert captured.value.node_ids == ("a",)
+    assert tuple(row.node_id for row in captured.value.controls) == ("a",)
+    assert captured.value.controls[0].phase is (
+        ResearchGraphNodeControlPhase.RECOVERY_REQUIRED
+    )
     assert executor.calls == ["x"]
     snapshot = store.snapshot("execution-2")
     assert snapshot.node("a").state is ResearchGraphLiveNodeState.RECONCILE_REQUIRED
