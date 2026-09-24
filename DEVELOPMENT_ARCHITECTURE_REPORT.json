@@ -873,9 +873,9 @@
     }
   ],
   "package_cycles": [],
-  "report_sha256": "df9bb7030aa6dcea7cd621d3d5d4e6f551dead3dffd6db52a76349ed02aca814",
+  "report_sha256": "7ab159908d53186ff89e19eb822c8c4d008e2e10ff61d884784bd06f3781bc02",
   "source_authority_violations": [],
-  "source_digest": "5d563de963643b549b2947172412eeb3811cacc4a48c5153cb64c52a0cb50049",
+  "source_digest": "4ef8f8d76f3aa19e3ed7f8f42beff6d0996442b0ef47fa270e8b34a3e8b4d50f",
   "source_invariant_violations": [],
   "source_root": ".",
   "subsystem_graph": [
@@ -1625,6 +1625,18 @@
       "score": 4092
     },
     {
+      "branches": 157,
+      "classes": 4,
+      "exception_handlers": 16,
+      "functions": 29,
+      "imports": 11,
+      "max_function_lines": 527,
+      "module": "noetrium_platform.composition.research_graph",
+      "path": "noetrium_platform/composition/research_graph.py",
+      "physical_lines": 1548,
+      "score": 3951
+    },
+    {
       "branches": 150,
       "classes": 31,
       "exception_handlers": 5,
@@ -1635,18 +1647,6 @@
       "path": "noetrium_platform/product/research_os.py",
       "physical_lines": 2306,
       "score": 3718
-    },
-    {
-      "branches": 152,
-      "classes": 4,
-      "exception_handlers": 11,
-      "functions": 27,
-      "imports": 11,
-      "max_function_lines": 449,
-      "module": "noetrium_platform.composition.research_graph",
-      "path": "noetrium_platform/composition/research_graph.py",
-      "physical_lines": 1466,
-      "score": 3623
     },
     {
       "branches": 133,
@@ -1933,6 +1933,24 @@
       "serialization_sites": 0
     },
     {
+      "exception_handlers": 16,
+      "import_fan_in": 2,
+      "import_fan_out": 6,
+      "io_sites": 2,
+      "lock_sites": 2,
+      "long_functions": 9,
+      "module": "noetrium_platform.composition.research_graph",
+      "path": "noetrium_platform/composition/research_graph.py",
+      "reason_codes": [
+        "STATE_MUTATION_CONCENTRATION",
+        "FAILURE_BRANCH_CONCENTRATION",
+        "LONG_FUNCTION"
+      ],
+      "risk_score": 474,
+      "self_mutation_sites": 20,
+      "serialization_sites": 0
+    },
+    {
       "exception_handlers": 2,
       "import_fan_in": 2,
       "import_fan_out": 16,
@@ -1948,24 +1966,6 @@
       ],
       "risk_score": 433,
       "self_mutation_sites": 13,
-      "serialization_sites": 0
-    },
-    {
-      "exception_handlers": 11,
-      "import_fan_in": 2,
-      "import_fan_out": 6,
-      "io_sites": 2,
-      "lock_sites": 1,
-      "long_functions": 9,
-      "module": "noetrium_platform.composition.research_graph",
-      "path": "noetrium_platform/composition/research_graph.py",
-      "reason_codes": [
-        "STATE_MUTATION_CONCENTRATION",
-        "FAILURE_BRANCH_CONCENTRATION",
-        "LONG_FUNCTION"
-      ],
-      "risk_score": 422,
-      "self_mutation_sites": 20,
       "serialization_sites": 0
     },
     {

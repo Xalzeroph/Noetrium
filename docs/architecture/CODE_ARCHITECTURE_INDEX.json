@@ -40829,6 +40829,8 @@
         "can_recover_abandoned_owner_generations",
         "model_admission",
         "open_orchestration_group",
+        "control_heartbeats",
+        "open_control_group",
         "open_experiment_group",
         "compute_lease_guard_factory",
         "endpoint_lease_guard_factory",
@@ -40836,11 +40838,13 @@
         "docker_container_lease_guard_factory",
         "open_model_io_group",
         "close_orchestration_group",
+        "close_control_group",
         "close_experiment_group",
         "close_model_io_group",
         "_close_domain_for_physical_convergence",
         "quiesce_workloads",
         "orchestration_admission_snapshot",
+        "control_admission_snapshot",
         "experiment_admission_snapshot",
         "model_io_admission_snapshot",
         "close",
@@ -40863,7 +40867,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 68,
+      "line": 69,
       "methods": [
         "__init__"
       ],
@@ -40883,7 +40887,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 81,
+      "line": 82,
       "methods": [
         "__init__"
       ],
@@ -40901,7 +40905,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 140,
+      "line": 149,
       "methods": [
         "__init__",
         "plan",
@@ -40930,12 +40934,13 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 97,
+      "line": 98,
       "methods": [
         "__init__",
         "current",
         "publish",
         "renew",
+        "snapshot",
         "drop"
       ],
       "module": "noetrium_platform.composition.research_graph",
@@ -144524,7 +144529,7 @@
   "parse_errors": [],
   "registry_sha256": "d3fc1bab831f1b7379e5a36048a61c00fe173429df958270d36a16f3f00171c0",
   "schema": "noetrium-code-architecture-index.v1",
-  "source_git_sha": "10d281e1969dad18ded747f8d0722a033f253ba4",
+  "source_git_sha": "4e67df3d0c1ec66d4bda9cef43cc072adfc4cff2",
   "system_import_edges": [
     {
       "count": 85,

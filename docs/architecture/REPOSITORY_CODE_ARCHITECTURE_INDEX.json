@@ -2,14 +2,14 @@
   "counts": {
     "parse_errors": 0,
     "python_files": 3693,
-    "python_import_edges": 7179,
-    "symbols": 5017,
+    "python_import_edges": 7180,
+    "symbols": 5019,
     "tracked_files": 4329,
     "typescript_javascript_files": 11
   },
   "language_symbol_counts": {
     "javascript": 1,
-    "python": 5011,
+    "python": 5013,
     "typescript": 5
   },
   "parse_errors": [],
@@ -33191,6 +33191,12 @@
     {
       "source_module": "tests.test_research_execution_pool_v1",
       "source_role": "tests",
+      "target_module": "noetrium_platform.composition.research_execution_pool",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "tests.test_research_execution_pool_v1",
+      "source_role": "tests",
       "target_module": "noetrium_platform.foundation.kernel.concurrency.api",
       "target_role": "core_platform"
     },
@@ -43151,7 +43157,7 @@
       "target_role": "research_reproductions"
     },
     {
-      "count": 2807,
+      "count": 2808,
       "source_role": "tests",
       "target_role": "core_platform"
     },
@@ -43226,11 +43232,11 @@
     "reference_orchestration": 14,
     "research_reproductions": 448,
     "sdk": 5,
-    "tests": 1044,
+    "tests": 1046,
     "tooling": 39
   },
   "schema": "noetrium-repository-code-architecture-index.v1",
-  "source_git_sha": "10d281e1969dad18ded747f8d0722a033f253ba4",
+  "source_git_sha": "4e67df3d0c1ec66d4bda9cef43cc072adfc4cff2",
   "symbols": [
     {
       "bases": [],
@@ -66303,6 +66309,8 @@
         "can_recover_abandoned_owner_generations",
         "model_admission",
         "open_orchestration_group",
+        "control_heartbeats",
+        "open_control_group",
         "open_experiment_group",
         "compute_lease_guard_factory",
         "endpoint_lease_guard_factory",
@@ -66310,11 +66318,13 @@
         "docker_container_lease_guard_factory",
         "open_model_io_group",
         "close_orchestration_group",
+        "close_control_group",
         "close_experiment_group",
         "close_model_io_group",
         "_close_domain_for_physical_convergence",
         "quiesce_workloads",
         "orchestration_admission_snapshot",
+        "control_admission_snapshot",
         "experiment_admission_snapshot",
         "model_io_admission_snapshot",
         "close",
@@ -66335,7 +66345,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 68,
+      "line": 69,
       "methods": [
         "__init__"
       ],
@@ -66353,7 +66363,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 81,
+      "line": 82,
       "methods": [
         "__init__"
       ],
@@ -66369,12 +66379,13 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 97,
+      "line": 98,
       "methods": [
         "__init__",
         "current",
         "publish",
         "renew",
+        "snapshot",
         "drop"
       ],
       "module": "noetrium_platform.composition.research_graph",
@@ -66389,7 +66400,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 140,
+      "line": 149,
       "methods": [
         "__init__",
         "plan",
@@ -142936,7 +142947,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 20,
+      "line": 23,
       "methods": [
         "__init__",
         "claim",
@@ -142954,7 +142965,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 42,
+      "line": 45,
       "methods": [
         "__init__",
         "execute"
@@ -142973,7 +142984,43 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 131,
+      "line": 134,
+      "methods": [
+        "__init__",
+        "renew_leases"
+      ],
+      "module": "tests.test_research_graph_admission_claim_v1",
+      "name": "_FailRenewStore",
+      "path": "tests/test_research_graph_admission_claim_v1.py",
+      "qualname": "tests.test_research_graph_admission_claim_v1._FailRenewStore",
+      "role": "tests"
+    },
+    {
+      "bases": [],
+      "decorators": [],
+      "fields": [],
+      "kind": "class",
+      "language": "python",
+      "line": 144,
+      "methods": [
+        "__init__",
+        "execute"
+      ],
+      "module": "tests.test_research_graph_admission_claim_v1",
+      "name": "_CancellationAwareExecutor",
+      "path": "tests/test_research_graph_admission_claim_v1.py",
+      "qualname": "tests.test_research_graph_admission_claim_v1._CancellationAwareExecutor",
+      "role": "tests"
+    },
+    {
+      "bases": [
+        "SQLiteResearchGraphExecutionStore"
+      ],
+      "decorators": [],
+      "fields": [],
+      "kind": "class",
+      "language": "python",
+      "line": 197,
       "methods": [
         "__init__",
         "mark_running"
@@ -142990,7 +143037,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 143,
+      "line": 209,
       "methods": [
         "__init__",
         "execute"
