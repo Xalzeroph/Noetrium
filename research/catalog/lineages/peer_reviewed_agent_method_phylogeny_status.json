@@ -533,7 +533,7 @@
       "reproductions": [
         {
           "package": "hugginggpt",
-          "package_digest": "af1225bd7cf0a8d62e00fae402a3737d70c0534d4fe750aec16cc036c72497a5",
+          "package_digest": "c64505141846c37e6f31ba05abf379b4be8570f4ae423b575f3ceef039b5fc0e",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "hugginggpt-paper-tasks"
@@ -560,7 +560,7 @@
             {
               "kind": "study",
               "path": "research/reproductions/hugginggpt/study.py",
-              "content_sha256": "e53a70e112519336bf38a9f2d90807a7d9ff0acd1f1fac5cdc84b9ce1e12a2dc"
+              "content_sha256": "205c7e64d327e6adfb45cf3b103bc3e742bf15c81383caa7728159a8b40a0b2e"
             },
             {
               "kind": "support",
@@ -655,7 +655,7 @@
       "reproductions": [
         {
           "package": "react_alfworld",
-          "package_digest": "ee232f17e9e9a08ed34e83187015720a084fe3f01f3c17583ea49c500c15e555",
+          "package_digest": "cb2aabb413865cf0790d6df878080966b3fd098b444c792fe639b748f1214850",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "alfworld",
@@ -688,7 +688,7 @@
             {
               "kind": "study",
               "path": "research/reproductions/react_alfworld/study.py",
-              "content_sha256": "ffdd531f97f9a83ba301c7de6844b2684318220ffede67a04b96f9eb2f8ac239"
+              "content_sha256": "c9744bb228ea9f1c0e1ff2e60806142965db91288bd05094f6f6deef120ebcc0"
             },
             {
               "kind": "support",
@@ -3365,7 +3365,7 @@
       "reproductions": [
         {
           "package": "ishift_cvpr2026",
-          "package_digest": "1821548848937910f9e78c0b5c1018adeb9e7eb244979c982577b1dc1bc00598",
+          "package_digest": "7fa1386c0fa6d52092f723c9c9be6aeb33f234d7c968d571af1432a9c830bccc",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "aitw",
@@ -3405,7 +3405,7 @@
             {
               "kind": "study",
               "path": "research/reproductions/ishift_cvpr2026/study.py",
-              "content_sha256": "d6a9534c3c5b314262db1278672a0281692af27fc80c080f0423971d68a86842"
+              "content_sha256": "54d72d3fdcc14e17d72b6595d051e1611e4d7ce52a5c1d733d5b072d9c034af7"
             }
           ],
           "blockers": [
@@ -3492,7 +3492,7 @@
       "reproductions": [
         {
           "package": "motus_cvpr2026",
-          "package_digest": "cccc0e2df5045156c3d72045d8ddecd3f79fb1e8698dd5efc764e0d45689c10d",
+          "package_digest": "6fd3fd43a3f3b8e1b11e0fed5d758871ffe5e6c0426e5b47813529dc43f5ea68",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "motus-realworld",
@@ -3530,7 +3530,7 @@
             {
               "kind": "study",
               "path": "research/reproductions/motus_cvpr2026/study.py",
-              "content_sha256": "d6a9534c3c5b314262db1278672a0281692af27fc80c080f0423971d68a86842"
+              "content_sha256": "54d72d3fdcc14e17d72b6595d051e1611e4d7ce52a5c1d733d5b072d9c034af7"
             }
           ],
           "blockers": [
@@ -3896,5 +3896,5 @@
       ]
     }
   ],
-  "projection_digest": "98e6a095ce009b11b5be4ab26b8f31e192d3ebe75b893fef4c5cfeb9d2faf558"
+  "projection_digest": "fb768bcf4d9fa821e58af67340ce1ef280dd6c1fd5559d12c42b0fa2a4fc7ab5"
 }

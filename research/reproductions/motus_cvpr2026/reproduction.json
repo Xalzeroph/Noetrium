@@ -2,7 +2,7 @@
   "schema": "noetrium.reproduction.projection.v9",
   "authority": "generated_from_typed_definition_and_source",
   "package": "motus_cvpr2026",
-  "package_digest": "cccc0e2df5045156c3d72045d8ddecd3f79fb1e8698dd5efc764e0d45689c10d",
+  "package_digest": "6fd3fd43a3f3b8e1b11e0fed5d758871ffe5e6c0426e5b47813529dc43f5ea68",
   "definition_digest": "8b41ad74c2412a23a30b4715772cd57a332afa98886eadb6c19a612d13edeaf8",
   "source_registry_digest": "858a852bf2df784905dba0b3f7ee4b9fb68c96935b35d787eaf3f9097ac4ebcc",
   "lifecycle": "protocol_bound",
@@ -105,7 +105,7 @@
       "kind": "study",
       "path": "research/reproductions/motus_cvpr2026/study.py",
       "declaration_digest": "a3e96dbe32da2733309f7dd75d4150bcae2349d2e9e8a3e7b72f83507e7a2649",
-      "content_sha256": "d6a9534c3c5b314262db1278672a0281692af27fc80c080f0423971d68a86842"
+      "content_sha256": "54d72d3fdcc14e17d72b6595d051e1611e4d7ce52a5c1d733d5b072d9c034af7"
     }
   ],
   "primary_executable": "research/reproductions/motus_cvpr2026/program.py",
