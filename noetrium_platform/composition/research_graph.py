@@ -1317,6 +1317,22 @@ class ResearchGraphScheduler:
                         del pending[node_id]
                         progressed = True
 
+                # The scheduler remains the durable attempt owner until a
+                # terminal result is committed. Renew before consuming local
+                # completion notifications so a finished worker cannot lose its
+                # lease merely while its result waits in the scheduler queue.
+                now_ns = time.time_ns()
+                self._renew_due_durable_leases(
+                    store=store,
+                    node_control_store=node_control_store,
+                    execution_id=execution_id,
+                    running=running,
+                    attempts=attempts,
+                    live=live,
+                    renewal_interval_ns=renewal_interval_ns,
+                    now_ns=now_ns,
+                )
+
                 completed: list[str] = []
                 while True:
                     try:
@@ -1329,18 +1345,6 @@ class ResearchGraphScheduler:
                     for node_id in sorted(completed):
                         record_completion(node_id)
                     continue
-
-                now_ns = time.time_ns()
-                self._renew_due_durable_leases(
-                    store=store,
-                    node_control_store=node_control_store,
-                    execution_id=execution_id,
-                    running=running,
-                    attempts=attempts,
-                    live=live,
-                    renewal_interval_ns=renewal_interval_ns,
-                    now_ns=now_ns,
-                )
 
                 if draining and not running:
                     paused = control_store.pause_if_quiescent(
