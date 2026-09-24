@@ -38,6 +38,139 @@ from noetrium_platform.research.experimentation.api import (
 
 
 @dataclass(frozen=True, slots=True)
+class ResearchProjectManifestRequirement:
+    """Exact Study-owned request for ProjectManifest materialization.
+
+    This is not a ProjectManifest and contains no provider choice. It freezes
+    only the scientific/authoring facts a manifest authority must cover before
+    owner systems may materialize provider/configuration truth.
+    """
+
+    project_id: str
+    experiment_id: str
+    study_id: str
+    study_definition_digest: str
+    binding_requirement_digest: str
+    trial_provider_requirement_id: str
+    participant_requirement_digests: tuple[str, ...]
+    model_role_requirement_digests: tuple[str, ...]
+    requirement_digest: str
+
+    @classmethod
+    def from_study(
+        cls,
+        definition: ResearchStudyDefinition,
+    ) -> "ResearchProjectManifestRequirement":
+        if type(definition) is not ResearchStudyDefinition:
+            raise TypeError(
+                "ProjectManifest requirement requires ResearchStudyDefinition"
+            )
+        binding = definition.binding_requirements
+        payload = {
+            "project_id": definition.project_id,
+            "experiment_id": definition.experiment_id,
+            "study_id": definition.study_id,
+            "study_definition_digest": definition.definition_digest,
+            "binding_requirement_digest": definition.binding_requirement_digest,
+            "trial_provider_requirement_id": (
+                binding.trial_provider_requirement_id
+            ),
+            "participant_requirement_digests": tuple(
+                row.requirement_digest for row in binding.participants
+            ),
+            "model_role_requirement_digests": tuple(
+                row.requirement_digest for row in binding.model_roles
+            ),
+        }
+        return cls(
+            **payload,
+            requirement_digest=canonical_digest(payload),
+        )
+
+    def __post_init__(self) -> None:
+        for field_name, value in (
+            ("project_id", self.project_id),
+            ("experiment_id", self.experiment_id),
+            ("study_id", self.study_id),
+            (
+                "trial_provider_requirement_id",
+                self.trial_provider_requirement_id,
+            ),
+        ):
+            if (
+                type(value) is not str
+                or not value.strip()
+                or value != value.strip()
+            ):
+                raise ValueError(
+                    f"ProjectManifest requirement {field_name} "
+                    "must be canonical text"
+                )
+        for field_name, value in (
+            ("study_definition_digest", self.study_definition_digest),
+            ("binding_requirement_digest", self.binding_requirement_digest),
+            ("requirement_digest", self.requirement_digest),
+        ):
+            if (
+                type(value) is not str
+                or len(value) != 64
+                or any(ch not in "0123456789abcdef" for ch in value)
+            ):
+                raise ValueError(
+                    f"ProjectManifest requirement {field_name} "
+                    "must be lowercase SHA-256"
+                )
+        for field_name, values in (
+            (
+                "participant_requirement_digests",
+                self.participant_requirement_digests,
+            ),
+            (
+                "model_role_requirement_digests",
+                self.model_role_requirement_digests,
+            ),
+        ):
+            if type(values) is not tuple:
+                raise TypeError(
+                    f"ProjectManifest requirement {field_name} must be tuple"
+                )
+            if len(values) != len(set(values)):
+                raise ValueError(
+                    f"ProjectManifest requirement {field_name} must be unique"
+                )
+            for value in values:
+                if (
+                    type(value) is not str
+                    or len(value) != 64
+                    or any(ch not in "0123456789abcdef" for ch in value)
+                ):
+                    raise ValueError(
+                        f"ProjectManifest requirement {field_name} values "
+                        "must be lowercase SHA-256"
+                    )
+        expected = canonical_digest(
+            {
+                "project_id": self.project_id,
+                "experiment_id": self.experiment_id,
+                "study_id": self.study_id,
+                "study_definition_digest": self.study_definition_digest,
+                "binding_requirement_digest": self.binding_requirement_digest,
+                "trial_provider_requirement_id": (
+                    self.trial_provider_requirement_id
+                ),
+                "participant_requirement_digests": (
+                    self.participant_requirement_digests
+                ),
+                "model_role_requirement_digests": (
+                    self.model_role_requirement_digests
+                ),
+            }
+        )
+        if self.requirement_digest != expected:
+            raise ValueError("ProjectManifest requirement digest drifted")
+
+
+@dataclass(frozen=True, slots=True)
 class ResearchBindingResolutionContext:
     """Frozen input shared with owner-system binding resolvers."""
 
@@ -918,6 +1051,7 @@ __all__ = [
     "ResearchCapabilityBindingRegistration",
     "ResearchModelRoleBindingResolverPort",
     "ResearchParticipantBindingResolverPort",
+    "ResearchProjectManifestRequirement",
     "ResearchProjectManifestRegistry",
     "ResearchProjectManifestResolverPort",
 ]
