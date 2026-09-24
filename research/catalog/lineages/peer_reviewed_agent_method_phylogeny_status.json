@@ -2100,7 +2100,7 @@
       "reproductions": [
         {
           "package": "voyager_minecraft",
-          "package_digest": "6544a70138aa6312a9bbe1f7d2181a42461e9bc430df8723713d5da1a4d8f987",
+          "package_digest": "e95db497db675159c9018e2de3fd83d1001d447340c7b7d8828eecc6fbe2f8cc",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "voyager-minecraft"
@@ -2143,27 +2143,27 @@
             {
               "kind": "method_program",
               "path": "research/reproductions/voyager_minecraft/program.py",
-              "content_sha256": "1d52b10a967f15bdf4c3f93edba6bb5a88fe5c1781df60f3691180744ee18e0d"
+              "content_sha256": "f4773833ba2787a1994045218f32e453613bac98215d6c73c02b7ad476a0d2c9"
             },
             {
               "kind": "research_program",
               "path": "research/reproductions/voyager_minecraft/chest_memory.py",
-              "content_sha256": "a836d03599b5045c6f9d013241bb8be9946fceeb1c3b4d80229b2b6d70159d7e"
+              "content_sha256": "60c4f007c6801c5ae5ba006763fbf6e524bab38bed3f6f7cb2c6998ee4b50b2f"
             },
             {
               "kind": "research_program",
               "path": "research/reproductions/voyager_minecraft/curriculum_memory.py",
-              "content_sha256": "624968fa6399cf356fe66e5a73e625dadf09f1acf42cb2685132fa18a7d63170"
+              "content_sha256": "cd3c60669eea55aa678250fa5a9d342e31c217b397e65edd0008915bba70c532"
             },
             {
               "kind": "research_program",
               "path": "research/reproductions/voyager_minecraft/skill_memory.py",
-              "content_sha256": "3a34fdf5fd98cb412ae239416441cda70b5e8779a364d7b398cb4a953a7caaf2"
+              "content_sha256": "4852ccf3bca87c16e8dffeb80cffc7985bc3e7babe47808025f6ba1afd57c348"
             },
             {
               "kind": "study",
               "path": "research/reproductions/voyager_minecraft/study.py",
-              "content_sha256": "2cf9dde573bc1130e04fafc86bdc84de40c4b77ef9e7ae69f5d3fa0b44932a18"
+              "content_sha256": "843d2d4e4f814c9887eddd8e58ef1cd3e24bb85c52178a4b9df779c5e7657cbc"
             },
             {
               "kind": "support",
@@ -3896,5 +3896,5 @@
       ]
     }
   ],
-  "projection_digest": "81cde56276d4dcbb96cb3bfb0ede4cb4140d9b06707cc37a79b3e4befebb2212"
+  "projection_digest": "be3d76825a717c113cdeb17f4dafffebacaad5f14ef843997dc9850b98278c3c"
 }
