@@ -6,6 +6,7 @@ from noetrium_platform.infrastructure.resources.container.api import (
     DockerContainerLeasePolicy,
     DockerContainerObservation,
     LABEL_AUTHORITY,
+    LABEL_OWNER_GENERATION,
     MANAGED_CONTAINER_LABEL,
     MANAGED_CONTAINER_LABEL_VALUE,
 )
@@ -39,7 +40,7 @@ class FakeDockerRuntime:
 
     def start(self, handle) -> DockerContainerObservation:
         row = DockerContainerObservation(
-            container_id=f"cid-{handle.lease.fencing_token}",
+            container_id=f"cid-{handle.container_name}",
             name=handle.container_name,
             image=handle.image,
             running=True,
@@ -84,12 +85,13 @@ class FakeDockerRuntime:
         self.rows.pop(row.container_id, None)
 
 
-def _authority(resources, runtime):
+def _authority(resources, runtime, *, owner_generation_id: str = "2" * 64):
     return DockerContainerLeaseAuthority(
         ownership=resources,
         leases=resources,
         runtime=runtime,
         authority_id=runtime.authority_id,
+        owner_generation_id=owner_generation_id,
         policy=DockerContainerLeasePolicy(
             ttl_seconds=0.2,
             renewal_interval_seconds=0.05,
@@ -148,22 +150,23 @@ def test_managed_docker_crash_expiry_removes_orphan_on_reconcile() -> None:
     ).state is LeaseState.EXPIRED
 
 
-def test_managed_docker_restart_before_ttl_adopts_exact_generation_without_split_brain() -> None:
+def test_managed_docker_restart_before_ttl_reaps_old_controller_generation() -> None:
     resources = InMemoryResourceLeaseRegistry()
     runtime = FakeDockerRuntime()
-    first = _authority(resources, runtime)
-    handle = _reserve(first)
-    observed = runtime.start(handle)
+    first = _authority(resources, runtime, owner_generation_id="2" * 64)
+    first_handle = _reserve(first)
+    old = runtime.start(first_handle)
 
-    restarted = _authority(resources, runtime)
-    adopted = _reserve(restarted)
+    restarted = _authority(resources, runtime, owner_generation_id="3" * 64)
+    report = restarted.reconcile()
+    assert report.removed_container_ids == (old.container_id,)
+    assert report.released_lease_ids == (first_handle.lease.lease_id,)
+    assert runtime.inspect(old.container_id) is None
 
-    assert adopted == handle
-    assert runtime.inspect(observed.container_id) == observed
-    assert len(runtime.rows) == 1
-    assert resources.active_for(
-        ResourceIdentity(ResourceKind.CONTAINER, handle.allocation_id)
-    ) == (handle.lease,)
+    replacement = _reserve(restarted)
+    assert replacement.owner_generation_id == "3" * 64
+    assert replacement.lease.fencing_token > first_handle.lease.fencing_token
+    assert replacement.container_name != first_handle.container_name
 
 
 def test_managed_docker_expired_generation_can_be_replaced_with_higher_fence() -> None:
@@ -281,3 +284,16 @@ def test_managed_docker_authority_namespace_isolates_shared_daemon() -> None:
     assert left_cleanup.removed_container_ids == (left_observed.container_id,)
     assert right_runtime.inspect(right_observed.container_id) == right_observed
     assert len(rows) == 1
+
+
+def test_managed_docker_live_current_generation_cannot_be_double_started() -> None:
+    resources = InMemoryResourceLeaseRegistry()
+    runtime = FakeDockerRuntime()
+    authority = _authority(resources, runtime)
+    handle = _reserve(authority)
+    runtime.start(handle)
+
+    with pytest.raises(RuntimeError, match="already has a live container"):
+        _reserve(authority)
+
+    assert len(runtime.rows) == 1
