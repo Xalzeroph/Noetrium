@@ -383,7 +383,10 @@ class InMemoryComputeScheduler:
             self._usage_by_host.pop(row.host_id, None)
 
     def _reconcile_expired_locked(self, now_epoch_s: float) -> tuple[ComputeAllocation, ...]:
-        expired_leases = self._leases.reconcile_expired(now=now_epoch_s)
+        expired_leases = self._leases.reconcile_expired(
+            now=now_epoch_s,
+            resource_kind=ResourceKind.COMPUTE,
+        )
         expired: list[ComputeAllocation] = []
         for lease in expired_leases:
             if lease.resource.kind is not ResourceKind.COMPUTE:
