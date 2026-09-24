@@ -437,3 +437,56 @@ def test_workload_checkpoint_gc_handles_pending_publication(
     assert not blob.exists()
     with pytest.raises(RunCheckpointConflict, match="retired"):
         store.publish(manifest, (payload,))
+
+
+def test_workload_checkpoint_gc_retry_rejects_changed_proof(
+    tmp_path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    import noetrium_platform.research.experimentation.lifecycle.checkpoint.providers.workload_store as store_module
+
+    manifest, payload = _direct_manifest_and_payload()
+    manifest = replace(manifest, checkpoint_id="workload-gc-proof-retry")
+    store = DirectoryWorkloadCheckpointStore(tmp_path / "gc-proof-retry")
+    store.publish(manifest, (payload,))
+    original = _closed_gc(store, manifest.checkpoint_id)
+
+    real_unlink = store_module.durable_unlink
+    manifest_path = store._manifest_path(manifest.checkpoint_id)
+    failed = False
+
+    def fail_manifest_once(path):
+        nonlocal failed
+        if path == manifest_path and not failed:
+            failed = True
+            raise OSError("simulated workload retirement crash")
+        return real_unlink(path)
+
+    monkeypatch.setattr(store_module, "durable_unlink", fail_manifest_once)
+    with pytest.raises(OSError, match="retirement crash"):
+        store.purge(manifest.checkpoint_id, gc=original)
+    monkeypatch.setattr(store_module, "durable_unlink", real_unlink)
+
+    changed = store.assess_gc(
+        manifest.checkpoint_id,
+        closures=(
+            DurableCarrierReferenceClosure(
+                DurableCarrierClosureAuthority.EVIDENCE,
+                "a" * 64,
+                (),
+            ),
+            DurableCarrierReferenceClosure(
+                DurableCarrierClosureAuthority.EXECUTION,
+                "b" * 64,
+                (),
+            ),
+            DurableCarrierReferenceClosure(
+                DurableCarrierClosureAuthority.RECOVERY,
+                "c" * 64,
+                (),
+            ),
+        ),
+    )
+    with pytest.raises(RuntimeError, match="generation or GC proof changed"):
+        store.purge(manifest.checkpoint_id, gc=changed)
+    assert store.purge(manifest.checkpoint_id, gc=original)
