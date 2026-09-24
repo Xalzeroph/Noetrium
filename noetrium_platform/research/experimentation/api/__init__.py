@@ -50,19 +50,6 @@ from .construction import (
     ProjectManifestProjection,
     ProjectRunDefinition,
 )
-from noetrium_platform.research.experimentation.lifecycle.api import (
-    RunControlAction,
-    RunControlPort,
-    RunControlPreparedOperation,
-    RunControlReceipt,
-    RunControlRequest,
-    RunControlTarget,
-    RunEvidenceValidity,
-    RunExecutionOutcome,
-    RunOutcomeProjection,
-    RunScientificValidity,
-    RunTaskOutcome,
-)
 
 __all__ = [
     "MachineCut",
@@ -152,17 +139,6 @@ __all__ = [
     "ProjectIdentityProjection",
     "ProjectManifestProjection",
     "ProjectRunDefinition",
-    "RunControlAction",
-    "RunControlPort",
-    "RunControlPreparedOperation",
-    "RunControlReceipt",
-    "RunControlRequest",
-    "RunControlTarget",
-    "RunEvidenceValidity",
-    "RunExecutionOutcome",
-    "RunOutcomeProjection",
-    "RunScientificValidity",
-    "RunTaskOutcome",
 ]
 
 from noetrium_platform.research.execution.api import (
@@ -347,17 +323,6 @@ __all__ = [
     'ProjectIdentityProjection',
     'ProjectManifestProjection',
     'ProjectRunDefinition',
-    'RunControlAction',
-    'RunControlPort',
-    'RunControlPreparedOperation',
-    'RunControlReceipt',
-    'RunControlRequest',
-    'RunControlTarget',
-    'RunEvidenceValidity',
-    'RunExecutionOutcome',
-    'RunOutcomeProjection',
-    'RunScientificValidity',
-    'RunTaskOutcome',
     'ActionKind',
     'ActionSpec',
     'AgentGoal',
