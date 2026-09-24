@@ -2,7 +2,7 @@
   "schema": "noetrium.reproduction.projection.v10",
   "authority": "generated_from_typed_definition_and_source",
   "package": "vima_embodied",
-  "package_digest": "d49c68117b05b9081eb4a89311eab1057c36a5683dd4fe993902b3d0c7c344c1",
+  "package_digest": "2c3be3ebe84d433485979924e013bdb94ccdbce6a5728affbdde25049675b7bb",
   "definition_digest": "ab6c0f217b76235521106482bd1e85e19f3ca8b77921e08fde38740ba431ed4d",
   "source_registry_digest": "bf35b8c87b325e6a50b501d4e2671f6c130a246df6340370de02382c8a31c33b",
   "lifecycle": "protocol_bound",
@@ -111,7 +111,7 @@
       "kind": "benchmark",
       "path": "research/reproductions/vima_embodied/benchmark.py",
       "declaration_digest": "ec50fad6d922faead04028a97b6e898358702b2a404cbd66240c16265dc7b804",
-      "content_sha256": "033c2e5e6a70dd3495f8c20fd8f790222587da41ae2e8a58256d0e936289f0a6"
+      "content_sha256": "4f7f93ab9e64d064d1827460c76a2c4f52d87e855077f88e5375c00930c2398e"
     },
     {
       "kind": "fidelity",

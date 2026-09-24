@@ -920,7 +920,7 @@
       "reproductions": [
         {
           "package": "steve1_minecraft",
-          "package_digest": "326827c797ddd86eeb17524edbf81d08ef6d9516c568d9f7c8c8a293d5b70596",
+          "package_digest": "48f67429d7a928982502618f729773a40e50ca06fd5b2b8375d92e3a6179ae9d",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "steve1-paper-prompts"
@@ -962,7 +962,7 @@
             {
               "kind": "study",
               "path": "research/reproductions/steve1_minecraft/study.py",
-              "content_sha256": "1a104b00ea5519fb16be04a39bc51a2fc62114836a30c18bf0e4479ed91d7ec7"
+              "content_sha256": "82bb147b52e929fb76f38ff3e789ff56499811c43055c6a688cc057315c03261"
             },
             {
               "kind": "support",
@@ -1118,7 +1118,7 @@
       "reproductions": [
         {
           "package": "vima_embodied",
-          "package_digest": "d49c68117b05b9081eb4a89311eab1057c36a5683dd4fe993902b3d0c7c344c1",
+          "package_digest": "2c3be3ebe84d433485979924e013bdb94ccdbce6a5728affbdde25049675b7bb",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "vima-bench"
@@ -1151,7 +1151,7 @@
             {
               "kind": "benchmark",
               "path": "research/reproductions/vima_embodied/benchmark.py",
-              "content_sha256": "033c2e5e6a70dd3495f8c20fd8f790222587da41ae2e8a58256d0e936289f0a6"
+              "content_sha256": "4f7f93ab9e64d064d1827460c76a2c4f52d87e855077f88e5375c00930c2398e"
             },
             {
               "kind": "fidelity",
@@ -1215,7 +1215,7 @@
       "reproductions": [
         {
           "package": "autogen_agentchat",
-          "package_digest": "24f559cdf7503940b943adc0afe6b81157f4f75ec8e696433d59aa4a2256a224",
+          "package_digest": "69ec2a0817e055f15d4dcd3b09abc119f03c8282d51f46b661a8762ac42f3e00",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "multiagentbench"
@@ -1242,7 +1242,7 @@
             {
               "kind": "study",
               "path": "research/reproductions/autogen_agentchat/study.py",
-              "content_sha256": "7a06ca3d6dbbea420d45047693b876b7ad133f102c01f961c5adc7d290cb0a02"
+              "content_sha256": "a55af7a2fd8f01d89a2f40998a51916e3f236f2ca8813f88acd52530e846fa51"
             }
           ],
           "blockers": [
@@ -2705,7 +2705,7 @@
       "reproductions": [
         {
           "package": "jarvis1_minecraft",
-          "package_digest": "4e23e28264c107d9df7dd28e3e18016ba515318df184520cf3a329aa6ed3483a",
+          "package_digest": "77a5ce686d66c93ec9c47d8c99483532d688e7e86266ab79a83b1689444d7795",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "jarvis1-offline-185"
@@ -2752,7 +2752,7 @@
             {
               "kind": "study",
               "path": "research/reproductions/jarvis1_minecraft/study.py",
-              "content_sha256": "0be5342bf8cd2adf0f4e193626a075562d8b30afe0fa4aff1d66e7cc321ec5fd"
+              "content_sha256": "37d6f7f651ff7a3812244d34e902d2ec6b392318f18b7d502b4e85837a2c4050"
             },
             {
               "kind": "support",
@@ -3619,7 +3619,7 @@
       "reproductions": [
         {
           "package": "roboagent_cvpr2026",
-          "package_digest": "c51a690d2d713b6165b60fffb83bb1e0ed12d644cf4acb817d3025a8cf95b635",
+          "package_digest": "fb3ec136b32c0e9dc7a11c103a066f2d749d855ed4fc02a77e108ca6f2149894",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "alfworld",
@@ -3657,7 +3657,7 @@
             {
               "kind": "study",
               "path": "research/reproductions/roboagent_cvpr2026/study.py",
-              "content_sha256": "d6a9534c3c5b314262db1278672a0281692af27fc80c080f0423971d68a86842"
+              "content_sha256": "54d72d3fdcc14e17d72b6595d051e1611e4d7ce52a5c1d733d5b072d9c034af7"
             }
           ],
           "blockers": [
@@ -3896,5 +3896,5 @@
       ]
     }
   ],
-  "projection_digest": "f96e5779b0b2417b425c6b8894568cdf1665e53de6dd3c5ab47a16fa53e83e41"
+  "projection_digest": "d91ad140aa6b98687ca9dad67fb68bb5b763e8b4d001a34340c41b37d466ef54"
 }
