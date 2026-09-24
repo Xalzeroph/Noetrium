@@ -1,8 +1,8 @@
 {
-  "schema": "noetrium.reproduction.projection.v9",
+  "schema": "noetrium.reproduction.projection.v10",
   "authority": "generated_from_typed_definition_and_source",
   "package": "d3d_vlp_cvpr2026",
-  "package_digest": "8fa445418d725c9b858b12bd49b4c66bfe8275693108fe7fcfc5608f9a885af7",
+  "package_digest": "435e07021a4e9f3bc03412b7c3091aad111c2fe549b5ca6f3c98d024ca5fc23f",
   "definition_digest": "826cbc66bb82023852c07b6f2b9035bfbeb20d4d0f0d674660824ada0e451f4b",
   "source_registry_digest": "2cdeb4231d82b4960adc04b241fa45eae325f9b560c0d815e9fa4a73b8b941ac",
   "lifecycle": "protocol_bound",
@@ -175,15 +175,25 @@
   ],
   "research_os": {
     "surface": "noetrium.api",
-    "execution_state": "benchmark_binding_required",
+    "execution_state": "benchmark_authority_required",
     "program_id": "d3d_vlp_cvpr2026",
     "program_digest": "ebebaa864234a467d88e8b6a923993174d1b664b4dbd359ccc62d12fb6cec244",
+    "benchmark_authority": {
+      "state": "required",
+      "selection_digests": [],
+      "blockers": [
+        "ReproductionResearchOSCompileError:benchmark 'hm3d-ovon' has no exact source-contained repository authority; immutable data/materialization is required"
+      ]
+    },
     "benchmark_split_axis": {
       "required": true,
       "consumers": [
         "study:build_study"
       ]
     },
+    "reproduction_closure_state": "closed",
+    "execution_authority_state": "required",
+    "materialization_ready": false,
     "execution_requirements": []
   }
 }

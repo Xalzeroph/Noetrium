@@ -1,8 +1,8 @@
 {
-  "schema": "noetrium.reproduction.projection.v9",
+  "schema": "noetrium.reproduction.projection.v10",
   "authority": "generated_from_typed_definition_and_source",
   "package": "mars_automated_ai_research",
-  "package_digest": "dd635eccd76d27bf96ebc0bdaae8f79b8fb40e19ca94425df8c0f0bab0e89b0c",
+  "package_digest": "28550ae01e05809e9b52672ba52e1636d1a4f4897160458d61305ff6e8e18838",
   "definition_digest": "29237b3baf6000ab63d5856cf1216b7f3ddbe89e923c34274b13130c413b9586",
   "source_registry_digest": "5c4a7eeaf260528c2d32423f029e4420611ba8a29b54a0794f2d546645010ccd",
   "lifecycle": "artifact_only",
@@ -276,10 +276,18 @@
     "execution_state": "not_executable",
     "program_id": null,
     "program_digest": null,
+    "benchmark_authority": {
+      "state": "not_applicable",
+      "selection_digests": [],
+      "blockers": []
+    },
     "benchmark_split_axis": {
       "required": false,
       "consumers": []
     },
+    "reproduction_closure_state": "not_applicable",
+    "execution_authority_state": "not_applicable",
+    "materialization_ready": false,
     "execution_requirements": []
   }
 }

@@ -1,8 +1,8 @@
 {
-  "schema": "noetrium.reproduction.projection.v9",
+  "schema": "noetrium.reproduction.projection.v10",
   "authority": "generated_from_typed_definition_and_source",
   "package": "worldmm_memory",
-  "package_digest": "8584e54874718f3d7a1940c2a1cdc03bef3c66951f7aac800d25e2fbb0eb7d31",
+  "package_digest": "3833ba9954a72e37e11a7397aa7117eac3d05212282f710e4adb84901828f889",
   "definition_digest": "3314ca00b83178a9c509432fa74f6aa63b1fc1aba43de1686e47ac5bb46ad530",
   "source_registry_digest": "59fad67df15f1fffd4579cda87465a6feb1607352e4bdf24806f77c92a06dc6e",
   "lifecycle": "protocol_bound",
@@ -193,13 +193,23 @@
   ],
   "research_os": {
     "surface": "noetrium.api",
-    "execution_state": "execution_ready",
+    "execution_state": "benchmark_authority_required",
     "program_id": "worldmm_memory",
     "program_digest": "10b3ef727c3218eaa685fdf7edcbe4bca2b3fc064258ab1c73cf8d8792a5e8f5",
+    "benchmark_authority": {
+      "state": "required",
+      "selection_digests": [],
+      "blockers": [
+        "ReproductionResearchOSCompileError:benchmark 'egolifeqa' has no exact source-contained repository authority; immutable data/materialization is required"
+      ]
+    },
     "benchmark_split_axis": {
       "required": false,
       "consumers": []
     },
+    "reproduction_closure_state": "closed",
+    "execution_authority_state": "required",
+    "materialization_ready": false,
     "execution_requirements": []
   }
 }

@@ -1,8 +1,8 @@
 {
-  "schema": "noetrium.reproduction.projection.v9",
+  "schema": "noetrium.reproduction.projection.v10",
   "authority": "generated_from_typed_definition_and_source",
   "package": "aflow",
-  "package_digest": "a992bd04600f932180598dc5848ec35478301be6fcf45fecb1b5ba6ff0fa001c",
+  "package_digest": "b8be65819583bf3f09329dc50207f3cbc0fed5290923418d106b6d7fccb12ba2",
   "definition_digest": "32fd6b066d9ecf013bf733c377c0ee289207ed5817e65f3170c676e502c4f006",
   "source_registry_digest": "21252fdb46d581a1b68a681b0c99494769cc12a9e32a963ecd017bb06a0133b7",
   "lifecycle": "protocol_bound",
@@ -218,13 +218,23 @@
   ],
   "research_os": {
     "surface": "noetrium.api",
-    "execution_state": "execution_ready",
+    "execution_state": "benchmark_authority_required",
     "program_id": "aflow",
     "program_digest": "c875e41d17d6a143ed5f2bfc21ad1747a5d448cb463949bc8a62a4d14a75ad55",
+    "benchmark_authority": {
+      "state": "required",
+      "selection_digests": [],
+      "blockers": [
+        "ReproductionResearchOSCompileError:benchmark 'humaneval' has no exact source-contained repository authority; immutable data/materialization is required"
+      ]
+    },
     "benchmark_split_axis": {
       "required": false,
       "consumers": []
     },
+    "reproduction_closure_state": "closed",
+    "execution_authority_state": "required",
+    "materialization_ready": false,
     "execution_requirements": []
   }
 }

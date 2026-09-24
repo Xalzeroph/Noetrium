@@ -1,8 +1,8 @@
 {
-  "schema": "noetrium.reproduction.projection.v9",
+  "schema": "noetrium.reproduction.projection.v10",
   "authority": "generated_from_typed_definition_and_source",
   "package": "optimus1_minecraft",
-  "package_digest": "af9c606750b3edffb7839047edbf6da0d85a6255d67195bb648ed66abbe5b530",
+  "package_digest": "1ec9ca719d46aa3c9f3c94e96873292d58a012402e0a884f56a03b42404697a0",
   "definition_digest": "0ace154a57fd245b13e848a840bc9f3069085d6995554a66cc2723f47d990eed",
   "source_registry_digest": "a3acfe40764ad2d81394436f3bd10ed392d9c039e7f7dd83810b26b7bffbf7fe",
   "lifecycle": "protocol_bound",
@@ -115,7 +115,7 @@
       "kind": "method_program",
       "path": "research/reproductions/optimus1_minecraft/program.py",
       "declaration_digest": "933f6ee7d053cc455e0dc540c61ecbdebc5af0b2e05b708aea49c4c9a44ecfef",
-      "content_sha256": "cac6b6505b2ceae89afaedbbab2dd7283fbf6217dfd153dba346aa32aea3a831"
+      "content_sha256": "ab7fa8dd964a06a0bb01ce85f0cd568c0f9e592fbd0f75865077c4bcf8dd6042"
     },
     {
       "kind": "research_program",
@@ -214,13 +214,23 @@
   ],
   "research_os": {
     "surface": "noetrium.api",
-    "execution_state": "execution_ready",
+    "execution_state": "execution_authority_required",
     "program_id": "optimus1_minecraft",
     "program_digest": "331088f1e05bfd018f9e567e55c900fa21c34eb350551d01bb2c89f10bac43c2",
+    "benchmark_authority": {
+      "state": "closed",
+      "selection_digests": [
+        "3a7b31924169e074bdf289df20e906e4bcecc60898b7c2bc5cac9b57c20387b0"
+      ],
+      "blockers": []
+    },
     "benchmark_split_axis": {
       "required": false,
       "consumers": []
     },
+    "reproduction_closure_state": "closed",
+    "execution_authority_state": "required",
+    "materialization_ready": true,
     "execution_requirements": []
   }
 }

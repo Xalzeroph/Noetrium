@@ -1,8 +1,8 @@
 {
-  "schema": "noetrium.reproduction.projection.v9",
+  "schema": "noetrium.reproduction.projection.v10",
   "authority": "generated_from_typed_definition_and_source",
   "package": "qlass_alfworld",
-  "package_digest": "ad2ac3f821ab73537f06c2104c39257699921be3078086579720f32726aea8b0",
+  "package_digest": "417c047f0fd4d6a5240cd3e7c675a9cdef7abfa972853f21afa8558b1e3b659e",
   "definition_digest": "6c1ca24aa65adba5bd222ebed3ed260aa2f051c62dadbec51751e6cf4c03efb3",
   "source_registry_digest": "819fd0e885a29c9300eee6b6c1b86d1cea8854f8e10d988bf56fb3022f71ed29",
   "lifecycle": "protocol_bound",
@@ -92,7 +92,7 @@
       "kind": "method_program",
       "path": "research/reproductions/qlass_alfworld/program.py",
       "declaration_digest": "e4522932c78db1d96a6a71e417332c218b46e1b501328a14347dc56281c04680",
-      "content_sha256": "04c1bc228c759a05cb124899625a9e118eb60b8819f8a90c80c6c2eabefa48d2"
+      "content_sha256": "192b5a4c8970494d686d46dfd7970e4b03c46fb1521ed9d085eea3bc7c450460"
     },
     {
       "kind": "study",
@@ -188,13 +188,23 @@
   ],
   "research_os": {
     "surface": "noetrium.api",
-    "execution_state": "execution_ready",
+    "execution_state": "benchmark_authority_required",
     "program_id": "qlass_alfworld",
     "program_digest": "10db5e9ccca62b8abbfd42fef1b164fc5bd8d341efd5113c51047d76eadc4b19",
+    "benchmark_authority": {
+      "state": "required",
+      "selection_digests": [],
+      "blockers": [
+        "ReproductionResearchOSCompileError:benchmark 'alfworld' has no exact source-contained repository authority; immutable data/materialization is required"
+      ]
+    },
     "benchmark_split_axis": {
       "required": false,
       "consumers": []
     },
+    "reproduction_closure_state": "closed",
+    "execution_authority_state": "required",
+    "materialization_ready": false,
     "execution_requirements": []
   }
 }

@@ -1,8 +1,8 @@
 {
-  "schema": "noetrium.reproduction.projection.v9",
+  "schema": "noetrium.reproduction.projection.v10",
   "authority": "generated_from_typed_definition_and_source",
   "package": "videoarm_cvpr2026",
-  "package_digest": "0e734c994d203254b1ce41d52d5622afaf76ee1260852b8fe1ab4e8b8d659b97",
+  "package_digest": "4bd33c38c8daca91392647c57420d926b16b332d6c53801496a47ea2065f4552",
   "definition_digest": "16d76a6bf1558096961fdef74089e3c536dd3d43fc991582c6b0c7d603c7d01a",
   "source_registry_digest": "dd8526fc8b15cc760274353f8a4c7bb10778f7149004af924220d6a2edcdd77e",
   "lifecycle": "protocol_bound",
@@ -157,15 +157,25 @@
   ],
   "research_os": {
     "surface": "noetrium.api",
-    "execution_state": "benchmark_binding_required",
+    "execution_state": "benchmark_authority_required",
     "program_id": "videoarm_cvpr2026",
     "program_digest": "fff22652932e88ecda3809c00fa8045269414f409d065275ada914f9be0b0b2e",
+    "benchmark_authority": {
+      "state": "required",
+      "selection_digests": [],
+      "blockers": [
+        "ReproductionResearchOSCompileError:benchmark 'egoschema' has no exact source-contained repository authority; immutable data/materialization is required"
+      ]
+    },
     "benchmark_split_axis": {
       "required": true,
       "consumers": [
         "study:build_videoarm_study"
       ]
     },
+    "reproduction_closure_state": "closed",
+    "execution_authority_state": "required",
+    "materialization_ready": false,
     "execution_requirements": []
   }
 }

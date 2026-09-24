@@ -1,8 +1,8 @@
 {
-  "schema": "noetrium.reproduction.projection.v9",
+  "schema": "noetrium.reproduction.projection.v10",
   "authority": "generated_from_typed_definition_and_source",
   "package": "multiagent_debate",
-  "package_digest": "5bf72ba156e54f364b0311042c628197522158edfaaa4583412fc5db617dbdbf",
+  "package_digest": "4fde38edfeb87171b5e2e860d4c249818726cbf3c98ebd49591cd79513a727f3",
   "definition_digest": "3646b03d0929cb39dee125528cbdcd03a7c4848104073744a950f77e9862b8d7",
   "source_registry_digest": "a444ca49adcadedba1e4bd45f955f057c6810af68c62d3b7782fe033e2d6882a",
   "lifecycle": "protocol_bound",
@@ -97,13 +97,23 @@
   ],
   "research_os": {
     "surface": "noetrium.api",
-    "execution_state": "execution_ready",
+    "execution_state": "benchmark_authority_required",
     "program_id": "multiagent_debate",
     "program_digest": "ebfce1966bfc6a632c05d44603908ff0a7453df727993b3a6bdcba4200a75c16",
+    "benchmark_authority": {
+      "state": "required",
+      "selection_digests": [],
+      "blockers": [
+        "ReproductionResearchOSCompileError:benchmark 'gsm8k' has no exact source-contained repository authority; immutable data/materialization is required"
+      ]
+    },
     "benchmark_split_axis": {
       "required": false,
       "consumers": []
     },
+    "reproduction_closure_state": "closed",
+    "execution_authority_state": "required",
+    "materialization_ready": false,
     "execution_requirements": []
   }
 }

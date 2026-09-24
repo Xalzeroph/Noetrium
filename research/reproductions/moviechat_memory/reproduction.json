@@ -1,8 +1,8 @@
 {
-  "schema": "noetrium.reproduction.projection.v9",
+  "schema": "noetrium.reproduction.projection.v10",
   "authority": "generated_from_typed_definition_and_source",
   "package": "moviechat_memory",
-  "package_digest": "7be19d29e81f3e15977d60cb0911b811493a3775be713e0fd3b036d33ba38fd9",
+  "package_digest": "4354b41e9896791eb84f35e0a63406ca48fbbf417ec33094536b3cc914f9fdbd",
   "definition_digest": "866e3fd622f501c3f9086956fbc189285777133db76bdda212503dcf35c8af91",
   "source_registry_digest": "2cef17c8d328384849759d7e5d19d69f4b2d8cee4baf1d186f767e439b1fd60c",
   "lifecycle": "protocol_bound",
@@ -208,13 +208,23 @@
   ],
   "research_os": {
     "surface": "noetrium.api",
-    "execution_state": "execution_ready",
+    "execution_state": "benchmark_authority_required",
     "program_id": "moviechat_memory",
     "program_digest": "534538e4e5d67e8777e762469fd6b6e1ba5e26eda7bfa19717aab9315632d916",
+    "benchmark_authority": {
+      "state": "required",
+      "selection_digests": [],
+      "blockers": [
+        "ReproductionResearchOSCompileError:benchmark 'moviechat-1k' has no exact source-contained repository authority; immutable data/materialization is required"
+      ]
+    },
     "benchmark_split_axis": {
       "required": false,
       "consumers": []
     },
+    "reproduction_closure_state": "closed",
+    "execution_authority_state": "required",
+    "materialization_ready": false,
     "execution_requirements": []
   }
 }

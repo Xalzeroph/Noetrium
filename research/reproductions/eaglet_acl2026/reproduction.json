@@ -1,8 +1,8 @@
 {
-  "schema": "noetrium.reproduction.projection.v9",
+  "schema": "noetrium.reproduction.projection.v10",
   "authority": "generated_from_typed_definition_and_source",
   "package": "eaglet_acl2026",
-  "package_digest": "534317a5894f9a876c7065b3912f420d280c08d592d031ad1cd1e405628004ea",
+  "package_digest": "4a21078a0266668c5119d103b7c2264ef297757bd369496eb132d8dae8d9c0d3",
   "definition_digest": "f63bbc43510fe9211823c526a76fad6cfd47b777cbd11b8a2e53af1a56b56086",
   "source_registry_digest": "95a8891d6c68ac7e536b45a44f88468adc4588fb5fe74c25b93d0ab18721b5b9",
   "lifecycle": "protocol_bound",
@@ -171,15 +171,25 @@
   ],
   "research_os": {
     "surface": "noetrium.api",
-    "execution_state": "benchmark_binding_required",
+    "execution_state": "benchmark_authority_required",
     "program_id": "eaglet_acl2026",
     "program_digest": "a8cd3879be7693e70196ca689f656e06a6302eb444684a58e9715d48763ce591",
+    "benchmark_authority": {
+      "state": "required",
+      "selection_digests": [],
+      "blockers": [
+        "ReproductionResearchOSCompileError:benchmark 'alfworld' has no exact source-contained repository authority; immutable data/materialization is required"
+      ]
+    },
     "benchmark_split_axis": {
       "required": true,
       "consumers": [
         "study:build_study"
       ]
     },
+    "reproduction_closure_state": "closed",
+    "execution_authority_state": "required",
+    "materialization_ready": false,
     "execution_requirements": []
   }
 }

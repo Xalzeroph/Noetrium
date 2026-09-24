@@ -1,8 +1,8 @@
 {
-  "schema": "noetrium.reproduction.projection.v9",
+  "schema": "noetrium.reproduction.projection.v10",
   "authority": "generated_from_typed_definition_and_source",
   "package": "react_alfworld",
-  "package_digest": "cb2aabb413865cf0790d6df878080966b3fd098b444c792fe639b748f1214850",
+  "package_digest": "1f2b120019e629b66265f740b747b65de336ad167bbe6bcde2cb819605cbbb93",
   "definition_digest": "f537f245a873bcfe3715b4e13fb0f4c7639b65a271d182bbb91b8860da727147",
   "source_registry_digest": "b362f56e91e03c46aecc86932f05c8a6dd1eed18062a14b73ce3d15e8d5c5bde",
   "lifecycle": "protocol_bound",
@@ -78,7 +78,7 @@
       "kind": "method_program",
       "path": "research/reproductions/react_alfworld/program.py",
       "declaration_digest": "0f03adf8741751737af9287a287a135bfb9e586bbb963d90ca40b6a8c89c8d94",
-      "content_sha256": "ccc9a37351078cfb9382e8614c151b25634361949dd5211c4339403a1803932a"
+      "content_sha256": "d80581cd08a01cc7a3c32ca62c44413a070c47b29107e1c3ff9bbbbc1b30f378"
     },
     {
       "kind": "semantics",
@@ -369,13 +369,23 @@
   ],
   "research_os": {
     "surface": "noetrium.api",
-    "execution_state": "execution_ready",
+    "execution_state": "benchmark_authority_required",
     "program_id": "react_alfworld",
     "program_digest": "af725426a190ed100ed007d9421fed39b0af03a7288818e60f81fcbf432beaed",
+    "benchmark_authority": {
+      "state": "required",
+      "selection_digests": [],
+      "blockers": [
+        "ReproductionResearchOSCompileError:benchmark 'alfworld' has no exact source-contained repository authority; immutable data/materialization is required"
+      ]
+    },
     "benchmark_split_axis": {
       "required": false,
       "consumers": []
     },
+    "reproduction_closure_state": "closed",
+    "execution_authority_state": "required",
+    "materialization_ready": false,
     "execution_requirements": []
   }
 }

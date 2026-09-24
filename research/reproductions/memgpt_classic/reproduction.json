@@ -1,8 +1,8 @@
 {
-  "schema": "noetrium.reproduction.projection.v9",
+  "schema": "noetrium.reproduction.projection.v10",
   "authority": "generated_from_typed_definition_and_source",
   "package": "memgpt_classic",
-  "package_digest": "689898723edf96594aa369c26ebaac86b202ebc7b336837aac19b692bab0c831",
+  "package_digest": "4ce4eafa63022c97682c1d75bae3395f33ed1bc3b01d4e284f2ffa518bb1fdc3",
   "definition_digest": "2f942be8c2fe1f5d37cda1e7f2e0f91b7fa18f3e7d4393d96a5cf4967e31a6ed",
   "source_registry_digest": "a344ec7fde772c9140ac33832d9b9438b417ea0804035281115501feecff9998",
   "lifecycle": "protocol_bound",
@@ -123,15 +123,25 @@
   ],
   "research_os": {
     "surface": "noetrium.api",
-    "execution_state": "benchmark_binding_required",
+    "execution_state": "benchmark_authority_required",
     "program_id": "memgpt_classic",
     "program_digest": "b870ad5f6585fb7e22d49de60104f490a5fadd73695f26c6249de2e7a5503e9c",
+    "benchmark_authority": {
+      "state": "required",
+      "selection_digests": [],
+      "blockers": [
+        "ReproductionResearchOSCompileError:benchmark 'memoryarena' has no exact source-contained repository authority; immutable data/materialization is required"
+      ]
+    },
     "benchmark_split_axis": {
       "required": true,
       "consumers": [
         "study:build_memgpt_memoryarena_study"
       ]
     },
+    "reproduction_closure_state": "closed",
+    "execution_authority_state": "required",
+    "materialization_ready": false,
     "execution_requirements": []
   }
 }

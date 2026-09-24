@@ -1,8 +1,8 @@
 {
-  "schema": "noetrium.reproduction.projection.v9",
+  "schema": "noetrium.reproduction.projection.v10",
   "authority": "generated_from_typed_definition_and_source",
   "package": "saycan",
-  "package_digest": "f24d3c3ca8641bebf5e296cc4f47f713c24ffad7e52e94aecb26d51b40852aad",
+  "package_digest": "9e719cbe806328904efc8e07e3be390bf8c374f12390716ba02c9a6eb8efb0b6",
   "definition_digest": "71dd04b1dc76f1794093ba5e23730308c091ad738dcc6d559210d69307e401a7",
   "source_registry_digest": "358acfb9456c29c701634acb64fbce6b2a866522c9060ca11b081e7effdeec4f",
   "lifecycle": "protocol_bound",
@@ -99,7 +99,7 @@
       "kind": "method_program",
       "path": "research/reproductions/saycan/program.py",
       "declaration_digest": "75cb4168637e3a919fad3fa969dc86059ce79ad434c28f54fd799d231133a6f5",
-      "content_sha256": "26c5df7d356384b2271a498851308f0104314e44630e9a8040ac60f151c6d0c1"
+      "content_sha256": "a53c111a8915e5352528070c699badb7c5980b0cf00538df29e2ad3db085aa89"
     },
     {
       "kind": "study",
@@ -182,13 +182,23 @@
   ],
   "research_os": {
     "surface": "noetrium.api",
-    "execution_state": "execution_ready",
+    "execution_state": "benchmark_authority_required",
     "program_id": "saycan",
     "program_digest": "1e3111be8e6840cdfa680310569b1fed3097001fc129a01204f7220d7f37d9af",
+    "benchmark_authority": {
+      "state": "required",
+      "selection_digests": [],
+      "blockers": [
+        "ReproductionResearchOSCompileError:benchmark 'saycan-101' has no exact source-contained repository authority; immutable data/materialization is required"
+      ]
+    },
     "benchmark_split_axis": {
       "required": false,
       "consumers": []
     },
+    "reproduction_closure_state": "closed",
+    "execution_authority_state": "required",
+    "materialization_ready": false,
     "execution_requirements": []
   }
 }

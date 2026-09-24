@@ -1,8 +1,8 @@
 {
-  "schema": "noetrium.reproduction.projection.v9",
+  "schema": "noetrium.reproduction.projection.v10",
   "authority": "generated_from_typed_definition_and_source",
   "package": "ishift_cvpr2026",
-  "package_digest": "7fa1386c0fa6d52092f723c9c9be6aeb33f234d7c968d571af1432a9c830bccc",
+  "package_digest": "04d4aa9983dcc799c25f3928ae0b952cef515b9b31efeaba1513ec21969233b4",
   "definition_digest": "71014d59993c0d6760c4e4084123323967e87540a3a576fb5641ec3efb47b4dd",
   "source_registry_digest": "cba20db8cc89fd106370867aad306e63553e71b3d7f65bf597a47c087dc83dda",
   "lifecycle": "protocol_bound",
@@ -203,15 +203,25 @@
   ],
   "research_os": {
     "surface": "noetrium.api",
-    "execution_state": "benchmark_binding_required",
+    "execution_state": "benchmark_authority_required",
     "program_id": "ishift_cvpr2026",
     "program_digest": "b3bd8993b02155dc5cb3b4095953e054d93ee2453717b1c5958fcd4df54dde8c",
+    "benchmark_authority": {
+      "state": "required",
+      "selection_digests": [],
+      "blockers": [
+        "ReproductionResearchOSCompileError:benchmark 'aitw' has no exact source-contained repository authority; immutable data/materialization is required"
+      ]
+    },
     "benchmark_split_axis": {
       "required": true,
       "consumers": [
         "study:build_study"
       ]
     },
+    "reproduction_closure_state": "closed",
+    "execution_authority_state": "required",
+    "materialization_ready": false,
     "execution_requirements": []
   }
 }

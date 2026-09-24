@@ -1,8 +1,8 @@
 {
-  "schema": "noetrium.reproduction.projection.v9",
+  "schema": "noetrium.reproduction.projection.v10",
   "authority": "generated_from_typed_definition_and_source",
   "package": "dejavu_cvpr2026",
-  "package_digest": "97cb02922da5bd815314fc022c5a109b3d788d127f5cff0604cb37e8352b15b0",
+  "package_digest": "9d5845510e41bab0ec3205e619101e01ef5a0a5942e931c1330fafa60bcf38af",
   "definition_digest": "8eae2b161866373bdc45f256ebe7f6dfc108428ce3d19edc858e9b9972ce9618",
   "source_registry_digest": "8a15c3477680e8e65e651bbb1e46b7e02110e2e05f265a2d49d43e0fd63a9fad",
   "lifecycle": "protocol_bound",
@@ -165,15 +165,25 @@
   ],
   "research_os": {
     "surface": "noetrium.api",
-    "execution_state": "benchmark_binding_required",
+    "execution_state": "benchmark_authority_required",
     "program_id": "dejavu_cvpr2026",
     "program_digest": "87ce0781da7dd54d1ffd42386834bbefd15fd70b4db8d55a5da8b57f17d5cb02",
+    "benchmark_authority": {
+      "state": "required",
+      "selection_digests": [],
+      "blockers": [
+        "ReproductionResearchOSCompileError:benchmark 'libero' has no exact source-contained repository authority; immutable data/materialization is required"
+      ]
+    },
     "benchmark_split_axis": {
       "required": true,
       "consumers": [
         "study:build_study"
       ]
     },
+    "reproduction_closure_state": "closed",
+    "execution_authority_state": "required",
+    "materialization_ready": false,
     "execution_requirements": []
   }
 }

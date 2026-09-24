@@ -1,8 +1,8 @@
 {
-  "schema": "noetrium.reproduction.projection.v9",
+  "schema": "noetrium.reproduction.projection.v10",
   "authority": "generated_from_typed_definition_and_source",
   "package": "vima_embodied",
-  "package_digest": "69deeb56696785a5215dbc08c919fc9c21e3e8baa3fcbd1fdfc9f2ac48a9af28",
+  "package_digest": "8f46df1ed6892855c434b4ae120652ccad36a039bd79566e90d51952abe170e0",
   "definition_digest": "ab6c0f217b76235521106482bd1e85e19f3ca8b77921e08fde38740ba431ed4d",
   "source_registry_digest": "bf35b8c87b325e6a50b501d4e2671f6c130a246df6340370de02382c8a31c33b",
   "lifecycle": "protocol_bound",
@@ -123,7 +123,7 @@
       "kind": "method_program",
       "path": "research/reproductions/vima_embodied/program.py",
       "declaration_digest": "c48b509179323a98d984b27a2db0ab077bb47dc6294e685d854911bcda4b2807",
-      "content_sha256": "f822693c3b8c95213779e3a4fc131d046448dcc436d21aa428d558df39f14628"
+      "content_sha256": "b931d05ff224bd3ac931fe1df6bd23cbb3c1351e949b45355441bc2d3ac823e3"
     },
     {
       "kind": "study",
@@ -219,13 +219,23 @@
   ],
   "research_os": {
     "surface": "noetrium.api",
-    "execution_state": "execution_ready",
+    "execution_state": "execution_authority_required",
     "program_id": "vima_embodied",
     "program_digest": "ba0a1e7c09d29e8c46795c35b7d975cc662724766867fe103680f517cb291393",
+    "benchmark_authority": {
+      "state": "closed",
+      "selection_digests": [
+        "f050c5fc7b979d28f610b1f74d8132bcb1f6518f7cad8c00655d100507e35723"
+      ],
+      "blockers": []
+    },
     "benchmark_split_axis": {
       "required": false,
       "consumers": []
     },
+    "reproduction_closure_state": "closed",
+    "execution_authority_state": "required",
+    "materialization_ready": true,
     "execution_requirements": []
   }
 }

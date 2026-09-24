@@ -1,8 +1,8 @@
 {
-  "schema": "noetrium.reproduction.projection.v9",
+  "schema": "noetrium.reproduction.projection.v10",
   "authority": "generated_from_typed_definition_and_source",
   "package": "lats_webshop",
-  "package_digest": "7c6a37226649898546dac015d6aa6b50c995945ab2c37bd65d6be2ca8ad77cae",
+  "package_digest": "c8fb30de3577baa6b5703c4ac84063cfbbdfffef76b799d9cfaa75e68cc10f25",
   "definition_digest": "404faa0212523d5ab11e9a57c0479ab0ca187d904630c80d7db37f83f5d760ef",
   "source_registry_digest": "c61cf5118ecb4fb8570883fd539c09106e2fb2499028b48e830237203981d344",
   "lifecycle": "protocol_bound",
@@ -78,7 +78,7 @@
       "kind": "method_program",
       "path": "research/reproductions/lats_webshop/program.py",
       "declaration_digest": "7f7cf9987b3fa32dee860d29b42d0701f1a77addba002fed90c9c9a9a7e78fd7",
-      "content_sha256": "e58710c4c398b3ea3f30d48ed4b4f0bd266d88dde044a7ff69e4e5aba936d0b0"
+      "content_sha256": "3714702b4e180b0f18c80bfd4e9ac4341f3c6e42564d69d25af1bc9a462ee49b"
     },
     {
       "kind": "study",
@@ -161,13 +161,23 @@
   ],
   "research_os": {
     "surface": "noetrium.api",
-    "execution_state": "execution_ready",
+    "execution_state": "benchmark_authority_required",
     "program_id": "lats_webshop",
     "program_digest": "203a7d05f3054d168c58d20c8afe6686d96f39dba729574af8c4f7ae5d66cca2",
+    "benchmark_authority": {
+      "state": "required",
+      "selection_digests": [],
+      "blockers": [
+        "ReproductionResearchOSCompileError:benchmark 'webshop' has no exact source-contained repository authority; immutable data/materialization is required"
+      ]
+    },
     "benchmark_split_axis": {
       "required": false,
       "consumers": []
     },
+    "reproduction_closure_state": "closed",
+    "execution_authority_state": "required",
+    "materialization_ready": false,
     "execution_requirements": []
   }
 }

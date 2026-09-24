@@ -1,8 +1,8 @@
 {
-  "schema": "noetrium.reproduction.projection.v9",
+  "schema": "noetrium.reproduction.projection.v10",
   "authority": "generated_from_typed_definition_and_source",
   "package": "adaptagent_acl2025",
-  "package_digest": "61cb2ca6fcd0d50eb4200105783fac2664d7b2d86fe0b49b72382ca84ca54fed",
+  "package_digest": "bfe235989007a6ad94d00c4bd8fc0c33723939bea5bd141e7a4ff6b53b5fe4ff",
   "definition_digest": "6dd3800675462e5bf128d4955f264544483a4787c685f4abb6a6c430227e4717",
   "source_registry_digest": "5ce8de162bd942fa959fe2e67653ee2caecf99ea67555ea0ebbf63f57c11c503",
   "lifecycle": "protocol_bound",
@@ -154,15 +154,25 @@
   ],
   "research_os": {
     "surface": "noetrium.api",
-    "execution_state": "benchmark_binding_required",
+    "execution_state": "benchmark_authority_required",
     "program_id": "adaptagent_acl2025",
     "program_digest": "b4dfa2bf54eff2f92871b7570e5a7a91e54471ecb789675ca02888776c603683",
+    "benchmark_authority": {
+      "state": "required",
+      "selection_digests": [],
+      "blockers": [
+        "ReproductionResearchOSCompileError:benchmark 'mind2web' has no exact source-contained repository authority; immutable data/materialization is required"
+      ]
+    },
     "benchmark_split_axis": {
       "required": true,
       "consumers": [
         "study:build_adaptagent_study"
       ]
     },
+    "reproduction_closure_state": "closed",
+    "execution_authority_state": "required",
+    "materialization_ready": false,
     "execution_requirements": []
   }
 }

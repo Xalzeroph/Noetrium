@@ -1,8 +1,8 @@
 {
-  "schema": "noetrium.reproduction.projection.v9",
+  "schema": "noetrium.reproduction.projection.v10",
   "authority": "generated_from_typed_definition_and_source",
   "package": "webvoyager",
-  "package_digest": "be8ce33f6f0c0cd32949123ad0b55030842b0e837b9741841fb456c3831bb5d7",
+  "package_digest": "2a704df30751f7653779d2adf999e2be2ac1d446f353eec610311b06be4c98db",
   "definition_digest": "8faf5256fad577ed3ce5247d5d6664d2748d9b28844d800e0c6657ba70de3571",
   "source_registry_digest": "78d2607d22aec417ef867017d647e9acd612808ace7a6def9e43e987308f4b5f",
   "lifecycle": "protocol_bound",
@@ -126,13 +126,23 @@
   ],
   "research_os": {
     "surface": "noetrium.api",
-    "execution_state": "execution_ready",
+    "execution_state": "benchmark_authority_required",
     "program_id": "webvoyager",
     "program_digest": "6af022cad8657774f755301888528e141ab92f6a25bdf81401ab890b1aae0ac9",
+    "benchmark_authority": {
+      "state": "required",
+      "selection_digests": [],
+      "blockers": [
+        "ReproductionResearchOSCompileError:benchmark 'webvoyager' has no exact source-contained repository authority; immutable data/materialization is required"
+      ]
+    },
     "benchmark_split_axis": {
       "required": false,
       "consumers": []
     },
+    "reproduction_closure_state": "closed",
+    "execution_authority_state": "required",
+    "materialization_ready": false,
     "execution_requirements": []
   }
 }

@@ -9,7 +9,7 @@
       "reproductions": [
         {
           "package": "chain_of_thought_gsm8k",
-          "package_digest": "c929316f2909f13c269b07b4f81c4731b2b835f237f222ec332272d2a5a1a41f",
+          "package_digest": "3c470b1c3487618c8fdfcfcd742e0b3c04d2788eaa48c6a36910aff435720b46",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "gsm8k"
@@ -68,7 +68,7 @@
       "reproductions": [
         {
           "package": "minedojo",
-          "package_digest": "f4c4b9fef92c8de18771347fcd1cdba509fa14f5628af3c13019988cb01df6ed",
+          "package_digest": "5867f38a9e8e11111ed61c892bf74844d8ff7cbd046540682afe5fc1ee89ca9b",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "minedojo"
@@ -111,7 +111,7 @@
             {
               "kind": "method_program",
               "path": "research/reproductions/minedojo/program.py",
-              "content_sha256": "3dc5703c786f8d0aa0452b62aca670fd2512bb3f06147e955440ce22235c0948"
+              "content_sha256": "f2e1f253d76223caf37ee6a7e6ed074dca67a49e4a6e341d06e3151d3db5ed14"
             },
             {
               "kind": "semantics",
@@ -156,7 +156,7 @@
       "reproductions": [
         {
           "package": "saycan",
-          "package_digest": "f24d3c3ca8641bebf5e296cc4f47f713c24ffad7e52e94aecb26d51b40852aad",
+          "package_digest": "9e719cbe806328904efc8e07e3be390bf8c374f12390716ba02c9a6eb8efb0b6",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "saycan-101"
@@ -193,7 +193,7 @@
             {
               "kind": "method_program",
               "path": "research/reproductions/saycan/program.py",
-              "content_sha256": "26c5df7d356384b2271a498851308f0104314e44630e9a8040ac60f151c6d0c1"
+              "content_sha256": "a53c111a8915e5352528070c699badb7c5980b0cf00538df29e2ad3db085aa89"
             },
             {
               "kind": "study",
@@ -238,7 +238,7 @@
       "reproductions": [
         {
           "package": "camel_role_playing",
-          "package_digest": "5615aa34c3b4588cb87741e43e76c7eb9f675db8dc065d5b10b7a5ae0177aeb9",
+          "package_digest": "539933e49ea52d9c4fe2503db2d9dba71e8a350c53a92461beccbc8718b0d22b",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "camel-ai-society"
@@ -299,7 +299,7 @@
       "reproductions": [
         {
           "package": "code_as_policies",
-          "package_digest": "57e11ab575ea83ae6ed03178adc1ced6b85cba459ea3dfeb93f982c568f9db9d",
+          "package_digest": "73363cd2277f17a30b6077cfe5c5fd1f4a217ebf8256d8b71c0baf6f18622c36",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "robocodegen-37"
@@ -348,7 +348,7 @@
             {
               "kind": "method_program",
               "path": "research/reproductions/code_as_policies/program.py",
-              "content_sha256": "90eaded8a0573136a151b11e1e838a8aa878368fa0017f7698d204bc0a8b7a42"
+              "content_sha256": "d89a59d075970bd2265b83f91761b48db6ccc2aac8e87b07b45b992845aa3f85"
             },
             {
               "kind": "semantics",
@@ -394,7 +394,7 @@
       "reproductions": [
         {
           "package": "deps_minecraft",
-          "package_digest": "a28a3ea00df8a6ae1d263442c1d4378874497091fbd5048335d050e87a239eee",
+          "package_digest": "58f47dae5bc5a0e44ae42ab2da3b23cceccaa70c830456093df9443f1bb73822",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "deps-minecraft-70"
@@ -437,7 +437,7 @@
             {
               "kind": "method_program",
               "path": "research/reproductions/deps_minecraft/program.py",
-              "content_sha256": "ea2cae049be76e10139f55271bfe07345de13e96fab9b95a6b779bc6b8252290"
+              "content_sha256": "05af635a722076ae32f689f96d45b0aeab58bb899e50ded81887da9178f0bb87"
             },
             {
               "kind": "study",
@@ -473,7 +473,7 @@
       "reproductions": [
         {
           "package": "generative_agents_memory",
-          "package_digest": "8e7f2ff7500ed73b432b310043009767a2d76848c55a0968b8e69f13a33ee0fc",
+          "package_digest": "f6131d8ac8e28d980b477984b8e3857ca5aaec0ad146e6151a00aa06e9f78fe1",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "generative-agents-smallville"
@@ -533,7 +533,7 @@
       "reproductions": [
         {
           "package": "hugginggpt",
-          "package_digest": "c64505141846c37e6f31ba05abf379b4be8570f4ae423b575f3ceef039b5fc0e",
+          "package_digest": "75ef9530a7c09e33557df92a08cea04bcb87d0ff8abff7e2f8e284ce8584f76c",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "hugginggpt-paper-tasks"
@@ -595,7 +595,7 @@
       "reproductions": [
         {
           "package": "rap_reasoning",
-          "package_digest": "7d8d6e74691ed14087e1b082b59612c08a3967496870bc8ad99a7d679f4faea8",
+          "package_digest": "c821aac2960a17599eb0af97fc3375b4b7f30a4a4c216aa709aefc8acecf490b",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "blocksworld"
@@ -655,7 +655,7 @@
       "reproductions": [
         {
           "package": "react_alfworld",
-          "package_digest": "cb2aabb413865cf0790d6df878080966b3fd098b444c792fe639b748f1214850",
+          "package_digest": "1f2b120019e629b66265f740b747b65de336ad167bbe6bcde2cb819605cbbb93",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "alfworld",
@@ -678,7 +678,7 @@
             {
               "kind": "method_program",
               "path": "research/reproductions/react_alfworld/program.py",
-              "content_sha256": "ccc9a37351078cfb9382e8614c151b25634361949dd5211c4339403a1803932a"
+              "content_sha256": "d80581cd08a01cc7a3c32ca62c44413a070c47b29107e1c3ff9bbbbc1b30f378"
             },
             {
               "kind": "semantics",
@@ -727,7 +727,7 @@
       "reproductions": [
         {
           "package": "reflexion_alfworld",
-          "package_digest": "e0c976ad00af76d707564e58ff33a81dccedca183be01d4173ffb5423dccfce5",
+          "package_digest": "6ab38eda03d243bde7af1b662b6ac3bd2917be74f7fbdb5555e6bb08e2e1544f",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "alfworld"
@@ -749,7 +749,7 @@
             {
               "kind": "method_program",
               "path": "research/reproductions/reflexion_alfworld/program.py",
-              "content_sha256": "fe744d5b05ca010b79ff334306fec93725c58301bf2936bc7d9213efff3d3e4a"
+              "content_sha256": "1fb0c47b59bd33c8c4e1acaf537999ef787b8ff50a60caf86cb7f2ce25094cfb"
             },
             {
               "kind": "semantics",
@@ -797,7 +797,7 @@
       "reproductions": [
         {
           "package": "self_consistency_gsm8k",
-          "package_digest": "7d6b9563f0ebcd6c0d3e578166c6b85977adf94e47c879ef7f7d074bf8891416",
+          "package_digest": "4583051ca825d1f98bd854b5acf0293f16ebce39e4398a8156247575e3caf95f",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "gsm8k"
@@ -856,7 +856,7 @@
       "reproductions": [
         {
           "package": "self_refine",
-          "package_digest": "3c2defd264e2e8bdf02c335277a7cd133d8529eef59d0977feb44270e50f6587",
+          "package_digest": "1cacd0015f67a866916b5b0ad7962b1c682e0d1539a58b03be1683360702bd9c",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "commongen"
@@ -920,7 +920,7 @@
       "reproductions": [
         {
           "package": "steve1_minecraft",
-          "package_digest": "9a021a7e45fd771b66367d4710e0a2c2d78414d08afa871b8305f34e198ef1a3",
+          "package_digest": "23ec90dccf82bb6a12669c3ad8ca5f37a61bd11d4b54b692c7f36c7504111041",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "steve1-paper-prompts"
@@ -957,7 +957,7 @@
             {
               "kind": "method_program",
               "path": "research/reproductions/steve1_minecraft/program.py",
-              "content_sha256": "a7c1da83a0f4395faa4f3b5de89e23c8264aec9594e205783549ea9ca8bcc340"
+              "content_sha256": "b75f52179edc51868e5aac91b02a4e195a21e1c12491a31c0769136fede37cd4"
             },
             {
               "kind": "study",
@@ -996,7 +996,7 @@
       "reproductions": [
         {
           "package": "toolformer",
-          "package_digest": "7d7d315416d24c3aee53e9656d9dbde7227181fbebdeb808273dea84b70fd2b9",
+          "package_digest": "375ad93ebb3c71741c2f614bd23d655d7e26262f6f1280878b4c0736548fc002",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "toolformer-eval"
@@ -1058,7 +1058,7 @@
       "reproductions": [
         {
           "package": "tree_of_thoughts",
-          "package_digest": "0cbffc9226da2831c2eca915d2f824199655d62f23749ee5c6905ec0ba9ae863",
+          "package_digest": "058a5f40e0a38266fbe2194564a4d827002aaf1a900035e3b5e5a1674334cd18",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "game24"
@@ -1118,7 +1118,7 @@
       "reproductions": [
         {
           "package": "vima_embodied",
-          "package_digest": "69deeb56696785a5215dbc08c919fc9c21e3e8baa3fcbd1fdfc9f2ac48a9af28",
+          "package_digest": "8f46df1ed6892855c434b4ae120652ccad36a039bd79566e90d51952abe170e0",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "vima-bench"
@@ -1161,7 +1161,7 @@
             {
               "kind": "method_program",
               "path": "research/reproductions/vima_embodied/program.py",
-              "content_sha256": "f822693c3b8c95213779e3a4fc131d046448dcc436d21aa428d558df39f14628"
+              "content_sha256": "b931d05ff224bd3ac931fe1df6bd23cbb3c1351e949b45355441bc2d3ac823e3"
             },
             {
               "kind": "study",
@@ -1215,7 +1215,7 @@
       "reproductions": [
         {
           "package": "autogen_agentchat",
-          "package_digest": "d47af0324bc49c099abdc217d3e6fa8cebed319aedbbd1f40c13be88c2ecf905",
+          "package_digest": "3bd22b6b8ab40c88683e21f3040dacea1e5b757321f13f230ea39565e22bd718",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "multiagentbench"
@@ -1270,7 +1270,7 @@
       "reproductions": [
         {
           "package": "chatdev_v1",
-          "package_digest": "63ab986369b7f65e136682591894b28c7da846b127fb8c47ac9fed3b1a0bc092",
+          "package_digest": "a7341bf5ba169a317080237629ea652ef2e1244e34e3ac10fdf3a2755505435c",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "srdd"
@@ -1370,7 +1370,7 @@
       "reproductions": [
         {
           "package": "cogagent",
-          "package_digest": "e52b1812f820473f49ebbe6f346a23900905bb4148585e6039af66b0489b2566",
+          "package_digest": "2ce183703bd3f335ad4492dbe8357a38333477ccfb2766575193c4e0a9643e2e",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "mind2web"
@@ -1427,7 +1427,7 @@
       "reproductions": [
         {
           "package": "lats_webshop",
-          "package_digest": "7c6a37226649898546dac015d6aa6b50c995945ab2c37bd65d6be2ca8ad77cae",
+          "package_digest": "c8fb30de3577baa6b5703c4ac84063cfbbdfffef76b799d9cfaa75e68cc10f25",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "webshop"
@@ -1449,7 +1449,7 @@
             {
               "kind": "method_program",
               "path": "research/reproductions/lats_webshop/program.py",
-              "content_sha256": "e58710c4c398b3ea3f30d48ed4b4f0bd266d88dde044a7ff69e4e5aba936d0b0"
+              "content_sha256": "3714702b4e180b0f18c80bfd4e9ac4341f3c6e42564d69d25af1bc9a462ee49b"
             },
             {
               "kind": "study",
@@ -1503,7 +1503,7 @@
       "reproductions": [
         {
           "package": "ma_lmm_memory",
-          "package_digest": "a1bb94d25e6f6a8f8a36ef468d5ed31304e239c51edf939b160a41589d43b91b",
+          "package_digest": "9c9179a9e99597fd9809f9145024a6b2f0afb14c85231fb7c6299b364f2f2aba",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "lvu"
@@ -1581,7 +1581,7 @@
       "reproductions": [
         {
           "package": "metagpt_software_company",
-          "package_digest": "d1f2b989fbe1e5073ace83cb8397751871b57ab0797c7578715ba5d373a1802c",
+          "package_digest": "f3e06632876ffdd2d82fd01253d8a97b055adec9c47727577632094657f3785e",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "humaneval"
@@ -1645,7 +1645,7 @@
       "reproductions": [
         {
           "package": "moviechat_memory",
-          "package_digest": "7be19d29e81f3e15977d60cb0911b811493a3775be713e0fd3b036d33ba38fd9",
+          "package_digest": "4354b41e9896791eb84f35e0a63406ca48fbbf417ec33094536b3cc914f9fdbd",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "moviechat-1k"
@@ -1723,7 +1723,7 @@
       "reproductions": [
         {
           "package": "seeclick",
-          "package_digest": "58dcc80dc971d31cbe76d0c406f8a919f70992fcb9536b5a19d9db9ef28a9c60",
+          "package_digest": "ebe9931a2e04dcd194ee809b073b1cd6aaaf28bbcbbe67a844a62ee3a507a83c",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "screenspot"
@@ -1785,7 +1785,7 @@
       "reproductions": [
         {
           "package": "storm_wiki",
-          "package_digest": "974df1a3eb4f41cdbc8d9e9ab52b4d066b9adc6b1e86ed699b36376a5cfd7fb7",
+          "package_digest": "0c09c494aa1c5c8cf534132e802a2ff2fc9110f9d9f4eef3f96f3a29231c2141",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "freshwiki"
@@ -1858,7 +1858,7 @@
       "reproductions": [
         {
           "package": "swe_agent_swebench",
-          "package_digest": "e9a81df7e178d3dc5e0b67d904e3886fd959a4090c8ce5181370d0b40637f922",
+          "package_digest": "27f1d9d620feae210f5187bf893e3de7b34bfc447617c2d9a6aa317dcb23550c",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "swe-bench"
@@ -1927,7 +1927,7 @@
       "reproductions": [
         {
           "package": "toolllm_toolbench",
-          "package_digest": "e3035cf35ff4d3f60522c1a82db17e0c5f9395b14afddc1e7ffb06ec924cf6c9",
+          "package_digest": "70a210dadc66484f176247206ca941d008bba0dc0d8a2f35449f5c5df88dcb09",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "toolbench"
@@ -2006,7 +2006,7 @@
       "reproductions": [
         {
           "package": "videoagent_memory",
-          "package_digest": "2277ab839fd4ad6fe41ff5cc09f8573ad771f0ed00204f52ab5de30d297ef096",
+          "package_digest": "01b86bf30fb0d61c5cdcba52fe91b52d620fa964ba8bb0534148086ad5b73f11",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "egoschema"
@@ -2100,7 +2100,7 @@
       "reproductions": [
         {
           "package": "voyager_minecraft",
-          "package_digest": "cfa2ff956d43abffc2d21ea441f7bfa669e65f3e6b7bbaa1c267297ebb454ad3",
+          "package_digest": "ad0745dab465a2f7911dca2788feb3002213277cc49c9ec67fe323c51378dfea",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "voyager-minecraft"
@@ -2215,7 +2215,7 @@
       "reproductions": [
         {
           "package": "webvoyager",
-          "package_digest": "be8ce33f6f0c0cd32949123ad0b55030842b0e837b9741841fb456c3831bb5d7",
+          "package_digest": "2a704df30751f7653779d2adf999e2be2ac1d446f353eec610311b06be4c98db",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "webvoyager"
@@ -2282,7 +2282,7 @@
       "reproductions": [
         {
           "package": "adacm2_memory",
-          "package_digest": "2c58e35ec63aefeb61c7f7146660b8af07ffe77efca10649b0640ae381b51d67",
+          "package_digest": "14a83a9a9f7869a152a9e931c52fd11423a7164ba442c0c279b734bf0464d894",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "lvu"
@@ -2349,7 +2349,7 @@
       "reproductions": [
         {
           "package": "adas_meta_agent_search",
-          "package_digest": "7d7292f9df40af192332b1bdbb141e6e959365bc9c8b52755aa7a17bef6e2e6e",
+          "package_digest": "55144bcfc743d1f6ffb0f9ab3d02b0424ccc7040382c35d1bb36e65289e19820",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "mgsm"
@@ -2408,7 +2408,7 @@
       "reproductions": [
         {
           "package": "aflow",
-          "package_digest": "a992bd04600f932180598dc5848ec35478301be6fcf45fecb1b5ba6ff0fa001c",
+          "package_digest": "b8be65819583bf3f09329dc50207f3cbc0fed5290923418d106b6d7fccb12ba2",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "humaneval"
@@ -2489,7 +2489,7 @@
       "reproductions": [
         {
           "package": "agentless_swebench",
-          "package_digest": "153c98239436c82034465723b1b1df9ed86d5915fc6fe4c1cbbb81e898adced6",
+          "package_digest": "a837f53ddf64aca0bb357d909698e41d206d6c72fafa21a3b6594913bbc76d6c",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "swe-bench"
@@ -2552,7 +2552,7 @@
       "reproductions": [
         {
           "package": "agentsquare",
-          "package_digest": "ac0aa0a6657a6443567986995456e4e8ab3950559329538b32a5ed516a4c33e3",
+          "package_digest": "25fbcfac802021b8e374e2b1e3b346c7d79405cdba9570b3aefd6f4182bdcca4",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "agentboard-pddl",
@@ -2630,7 +2630,7 @@
       "reproductions": [
         {
           "package": "flow_modularized_agentic_workflow",
-          "package_digest": "4abebf2c0e8050197da144a0c46dcee0eb10768fe1a09a08216214f19f39c905",
+          "package_digest": "0e88a263fa42f2e0bc7694ee4f8597043161338327d68e1d44ab8a7ce6337c59",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "flow-practical-tasks"
@@ -2705,7 +2705,7 @@
       "reproductions": [
         {
           "package": "jarvis1_minecraft",
-          "package_digest": "ff2130a9e6dff14c7fa55667eaa79ad5ce76bcebeb70b02be5df5ebeaececa64",
+          "package_digest": "727202559065d2ee9a7c632ac7c481088e66c71fe2e925daa0ccb309fc90aa39",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "jarvis1-offline-185"
@@ -2791,7 +2791,7 @@
       "reproductions": [
         {
           "package": "qlass_alfworld",
-          "package_digest": "ad2ac3f821ab73537f06c2104c39257699921be3078086579720f32726aea8b0",
+          "package_digest": "417c047f0fd4d6a5240cd3e7c675a9cdef7abfa972853f21afa8558b1e3b659e",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "alfworld",
@@ -2820,7 +2820,7 @@
             {
               "kind": "method_program",
               "path": "research/reproductions/qlass_alfworld/program.py",
-              "content_sha256": "04c1bc228c759a05cb124899625a9e118eb60b8819f8a90c80c6c2eabefa48d2"
+              "content_sha256": "192b5a4c8970494d686d46dfd7970e4b03c46fb1521ed9d085eea3bc7c450460"
             },
             {
               "kind": "study",
@@ -2862,7 +2862,7 @@
       "reproductions": [
         {
           "package": "rewind_memory",
-          "package_digest": "89ff4558fca8bca81954897b2ff97e5c9cd894c5fe3c6d26f825a9dd85bb4ca5",
+          "package_digest": "406860bc163f100e07ac1744b4d96e1e5d4f067bb370baa59ba42c204667ce14",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "moviechat-1k"
@@ -2929,7 +2929,7 @@
       "reproductions": [
         {
           "package": "astranav_memory_cvpr2026",
-          "package_digest": "ac95a5f71c8bd0f4f86b0121bff0508b3ef6a15f11de8338f56932086ce71eb4",
+          "package_digest": "0007d1c4d0e43677474d40a7b8a93a04d57b1675d4d373733c0bcd18003298ee",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "goat-bench",
@@ -2992,7 +2992,7 @@
       "reproductions": [
         {
           "package": "ces_gui_cvpr2026",
-          "package_digest": "4cb9da1189503a91f165be4b00c7a7c8f0108ba6bbf38b22602fca5d697f6799",
+          "package_digest": "8a3405c45905c1f127a85761a771e9f9fe0280010fdb855110f95db2f47a1ad9",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "aitz",
@@ -3056,7 +3056,7 @@
       "reproductions": [
         {
           "package": "crossha_cvpr2026",
-          "package_digest": "0dccc24c0b99a9da7103341c992711b19766708cf001aaace46d2182c998b9d6",
+          "package_digest": "ddbc7211a31f12638f3e734bfe7bd57e69cfc1bb2970bc3510cce99277261afe",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "minecraft-openha"
@@ -3118,7 +3118,7 @@
       "reproductions": [
         {
           "package": "d3d_vlp_cvpr2026",
-          "package_digest": "8fa445418d725c9b858b12bd49b4c66bfe8275693108fe7fcfc5608f9a885af7",
+          "package_digest": "435e07021a4e9f3bc03412b7c3091aad111c2fe549b5ca6f3c98d024ca5fc23f",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "hm3d-ovon",
@@ -3184,7 +3184,7 @@
       "reproductions": [
         {
           "package": "dejavu_cvpr2026",
-          "package_digest": "97cb02922da5bd815314fc022c5a109b3d788d127f5cff0604cb37e8352b15b0",
+          "package_digest": "9d5845510e41bab0ec3205e619101e01ef5a0a5942e931c1330fafa60bcf38af",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "libero"
@@ -3240,7 +3240,7 @@
       "reproductions": [
         {
           "package": "foreact_cvpr2026",
-          "package_digest": "9f80758109877da2b1bf1758e9a9c1ba22d5cd9c759ed8536c59003d21bc2b9a",
+          "package_digest": "2f81033a41db3fad074a692628510bbdbcf2959f84ce4dda5ff9452af2a5b38c",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "foreact-real11"
@@ -3302,7 +3302,7 @@
       "reproductions": [
         {
           "package": "hats_cvpr2026",
-          "package_digest": "101a6d789d93a750dc71f685bd7d917df22dcc2bb3c3e39d89aa8b6cfd4b978a",
+          "package_digest": "41b61d24e5005d94c4b4d7ae58d0c90122790478e95ded02da2fb2f70838e66f",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "androidworld",
@@ -3365,7 +3365,7 @@
       "reproductions": [
         {
           "package": "ishift_cvpr2026",
-          "package_digest": "7fa1386c0fa6d52092f723c9c9be6aeb33f234d7c968d571af1432a9c830bccc",
+          "package_digest": "04d4aa9983dcc799c25f3928ae0b952cef515b9b31efeaba1513ec21969233b4",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "aitw",
@@ -3430,7 +3430,7 @@
       "reproductions": [
         {
           "package": "lmee_cvpr2026",
-          "package_digest": "e1c2108e969aac19c71c27690e3562dfdb37df1cdbabed01d74276b4d10b79b3",
+          "package_digest": "b5079484a35ac5a2aa74b263ebe2a5454cbcc5b0894e49ccd78aa5adf314408d",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "lmee-bench"
@@ -3492,7 +3492,7 @@
       "reproductions": [
         {
           "package": "motus_cvpr2026",
-          "package_digest": "6fd3fd43a3f3b8e1b11e0fed5d758871ffe5e6c0426e5b47813529dc43f5ea68",
+          "package_digest": "141df90ea20fa2347fb54276370650fc33e897d57f87f56243f01b08f309af98",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "motus-realworld",
@@ -3555,7 +3555,7 @@
       "reproductions": [
         {
           "package": "optimusvla_cvpr2026",
-          "package_digest": "addcbdffb1b87a9c133321a71617f4574d36f0375d5c6f461fbf3614531555b5",
+          "package_digest": "edd216dd4063ffe24c280477e175970fffcec1127b2a4358347f6920d29cec94",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "calvin",
@@ -3619,7 +3619,7 @@
       "reproductions": [
         {
           "package": "roboagent_cvpr2026",
-          "package_digest": "2d12ab1aa5d86b499abc57e9db19f4bb17cf333dddfecfa93b56130abbc0d674",
+          "package_digest": "de8d82bdd57053c0a245e6e09e0d607863224b892709fb86698ab02bee5e163c",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "alfworld",
@@ -3682,7 +3682,7 @@
       "reproductions": [
         {
           "package": "ui_agile_cvprf2026",
-          "package_digest": "02af3370b424185afa7d2afe48c4d20f5c5b1299a8354045c5ee09630928343b",
+          "package_digest": "e8f9f3d25c905d6b6ab55b2849f21cb5a9c058ba641aaca67f939ef806629f26",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "androidcontrol",
@@ -3746,7 +3746,7 @@
       "reproductions": [
         {
           "package": "vilomem_cvpr2026",
-          "package_digest": "fc6b865a6a2f33b33a9315d9de1ad2d75fee15a310714f5cbcfd924367a75341",
+          "package_digest": "707ec715739c243eac11b21c915ec12c36abf044ac64fc43106dae027c847c2a",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "hallusionbench",
@@ -3813,7 +3813,7 @@
       "reproductions": [
         {
           "package": "worldmm_memory",
-          "package_digest": "8584e54874718f3d7a1940c2a1cdc03bef3c66951f7aac800d25e2fbb0eb7d31",
+          "package_digest": "3833ba9954a72e37e11a7397aa7117eac3d05212282f710e4adb84901828f889",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "egolifeqa"
@@ -3896,5 +3896,5 @@
       ]
     }
   ],
-  "projection_digest": "ea846a3e6cb750e9db16783bfe2c03acac9149a1220429e0837a2e52f3dcf921"
+  "projection_digest": "d531f2e1f8f55037d18723c3cf9ca5dbfe0cbbdc2625c3559489999aecfde0bf"
 }

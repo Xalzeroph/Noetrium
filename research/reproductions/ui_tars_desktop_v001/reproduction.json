@@ -1,8 +1,8 @@
 {
-  "schema": "noetrium.reproduction.projection.v9",
+  "schema": "noetrium.reproduction.projection.v10",
   "authority": "generated_from_typed_definition_and_source",
   "package": "ui_tars_desktop_v001",
-  "package_digest": "95457feca568874c13eff09a84c26c4d6da712632976f4fbe4c70425cc3e18ca",
+  "package_digest": "15dd01376c410f16ac6005ad500e1ff406eed16a73d46cd124a80c8c926743e4",
   "definition_digest": "b727da12acd74c46bfc6227a712a2b0ec9e1315c89e10ebf370bbbf9aa7aee77",
   "source_registry_digest": "c7505a81ddcc5278a50aea896538f01d33110fb19d48872fa2f45a553c1a3768",
   "lifecycle": "protocol_bound",
@@ -76,7 +76,7 @@
       "kind": "method_program",
       "path": "research/reproductions/ui_tars_desktop_v001/program.py",
       "declaration_digest": "b9ed650c5dc288b474f47fab64f94534faa29f417cb4ac4ed4c6f2d8edbdc1d0",
-      "content_sha256": "404d0cbd4e9a007e11ad1a1d6525cff07056db76e9e1b54464b2f66ec9eec8fc"
+      "content_sha256": "cd3db0256ad7e3e89ce80ab3eda0251593ae341cc1aea4c4938a9b071e412e13"
     },
     {
       "kind": "study",
@@ -111,15 +111,25 @@
   ],
   "research_os": {
     "surface": "noetrium.api",
-    "execution_state": "benchmark_binding_required",
+    "execution_state": "benchmark_authority_required",
     "program_id": "ui_tars_desktop_v001",
     "program_digest": "b83b11a9b627ca228fb2bafbca98b517c09e0641e9653ac5418596caedd6d576",
+    "benchmark_authority": {
+      "state": "required",
+      "selection_digests": [],
+      "blockers": [
+        "ReproductionResearchOSCompileError:benchmark 'osworld' has no exact source-contained repository authority; immutable data/materialization is required"
+      ]
+    },
     "benchmark_split_axis": {
       "required": true,
       "consumers": [
         "study:build_ui_tars_osworld_study"
       ]
     },
+    "reproduction_closure_state": "closed",
+    "execution_authority_state": "required",
+    "materialization_ready": false,
     "execution_requirements": []
   }
 }

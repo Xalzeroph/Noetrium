@@ -1,8 +1,8 @@
 {
-  "schema": "noetrium.reproduction.projection.v9",
+  "schema": "noetrium.reproduction.projection.v10",
   "authority": "generated_from_typed_definition_and_source",
   "package": "orbit_acl2026",
-  "package_digest": "7522afda1466c891bf9e71009e3d5416b3113e551d4999d35968517d2d59f1c0",
+  "package_digest": "78d1fec03e327bee276f6798ca5852c0e51be36be1176e5faec1bb2c605cc8ec",
   "definition_digest": "31d3ffd5d1c98ec9762c689dc037d3e0dcbb141348d839a062dc163e62aefebd",
   "source_registry_digest": "f4d993f22dde65b3c172032c7553b1c4cd9fa0d2095143a46cca690494315612",
   "lifecycle": "protocol_bound",
@@ -173,15 +173,25 @@
   ],
   "research_os": {
     "surface": "noetrium.api",
-    "execution_state": "benchmark_binding_required",
+    "execution_state": "benchmark_authority_required",
     "program_id": "orbit_acl2026",
     "program_digest": "53092527c1c4e408c8697c35305c9a78491340ef96db46d5268801666eda01ec",
+    "benchmark_authority": {
+      "state": "required",
+      "selection_digests": [],
+      "blockers": [
+        "ReproductionResearchOSCompileError:benchmark 'embodiedbench' has no exact source-contained repository authority; immutable data/materialization is required"
+      ]
+    },
     "benchmark_split_axis": {
       "required": true,
       "consumers": [
         "study:build_study"
       ]
     },
+    "reproduction_closure_state": "closed",
+    "execution_authority_state": "required",
+    "materialization_ready": false,
     "execution_requirements": []
   }
 }

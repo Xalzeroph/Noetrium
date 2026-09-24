@@ -1,8 +1,8 @@
 {
-  "schema": "noetrium.reproduction.projection.v9",
+  "schema": "noetrium.reproduction.projection.v10",
   "authority": "generated_from_typed_definition_and_source",
   "package": "jarvis1_minecraft",
-  "package_digest": "ff2130a9e6dff14c7fa55667eaa79ad5ce76bcebeb70b02be5df5ebeaececa64",
+  "package_digest": "727202559065d2ee9a7c632ac7c481088e66c71fe2e925daa0ccb309fc90aa39",
   "definition_digest": "34f17d6f0d7879c11dd051235813d1e08d67479911f20ed4df97916c03a8e159",
   "source_registry_digest": "d0a3d3ba7b0bbee5cf156be04b204f1c10085da1b8847a3a18f524b83ae1280b",
   "lifecycle": "protocol_bound",
@@ -173,13 +173,23 @@
   ],
   "research_os": {
     "surface": "noetrium.api",
-    "execution_state": "execution_ready",
+    "execution_state": "execution_authority_required",
     "program_id": "jarvis1_minecraft",
     "program_digest": "bd05d081096e521fe2f6e178e47f369a7b08aa316a44c45a41eff3df23af7264",
+    "benchmark_authority": {
+      "state": "closed",
+      "selection_digests": [
+        "1be7e0a3d32e13e63c3a49aa5bde894845a964d8ed29e7c1ca29ee27a833aa65"
+      ],
+      "blockers": []
+    },
     "benchmark_split_axis": {
       "required": false,
       "consumers": []
     },
+    "reproduction_closure_state": "closed",
+    "execution_authority_state": "required",
+    "materialization_ready": true,
     "execution_requirements": []
   }
 }

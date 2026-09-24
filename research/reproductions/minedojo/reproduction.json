@@ -1,8 +1,8 @@
 {
-  "schema": "noetrium.reproduction.projection.v9",
+  "schema": "noetrium.reproduction.projection.v10",
   "authority": "generated_from_typed_definition_and_source",
   "package": "minedojo",
-  "package_digest": "f4c4b9fef92c8de18771347fcd1cdba509fa14f5628af3c13019988cb01df6ed",
+  "package_digest": "5867f38a9e8e11111ed61c892bf74844d8ff7cbd046540682afe5fc1ee89ca9b",
   "definition_digest": "859f1c1220814ec7377557548db8c0a5703d0ebd323a8be89adff59072207a5e",
   "source_registry_digest": "4e2bb1c63f4746aac56e56ee71551b01971ab4476cff7f802b1806783b01b3b1",
   "lifecycle": "protocol_bound",
@@ -122,7 +122,7 @@
       "kind": "method_program",
       "path": "research/reproductions/minedojo/program.py",
       "declaration_digest": "421ce9ae94216aa14c9a506f46af015655f801c606d339cec0175fcdff47196c",
-      "content_sha256": "3dc5703c786f8d0aa0452b62aca670fd2512bb3f06147e955440ce22235c0948"
+      "content_sha256": "f2e1f253d76223caf37ee6a7e6ed074dca67a49e4a6e341d06e3151d3db5ed14"
     },
     {
       "kind": "semantics",
@@ -239,13 +239,23 @@
   ],
   "research_os": {
     "surface": "noetrium.api",
-    "execution_state": "execution_ready",
+    "execution_state": "benchmark_authority_required",
     "program_id": "minedojo",
     "program_digest": "0b6ea403d57b97c00b92175804b721f2e5757f13589f46c5051ff8637d1ac6b8",
+    "benchmark_authority": {
+      "state": "required",
+      "selection_digests": [],
+      "blockers": [
+        "ReproductionResearchOSCompileError:benchmark 'minedojo' has no exact source-contained repository authority; immutable data/materialization is required"
+      ]
+    },
     "benchmark_split_axis": {
       "required": false,
       "consumers": []
     },
+    "reproduction_closure_state": "closed",
+    "execution_authority_state": "required",
+    "materialization_ready": false,
     "execution_requirements": []
   }
 }

@@ -1,8 +1,8 @@
 {
-  "schema": "noetrium.reproduction.projection.v9",
+  "schema": "noetrium.reproduction.projection.v10",
   "authority": "generated_from_typed_definition_and_source",
   "package": "toolllm_toolbench",
-  "package_digest": "e3035cf35ff4d3f60522c1a82db17e0c5f9395b14afddc1e7ffb06ec924cf6c9",
+  "package_digest": "70a210dadc66484f176247206ca941d008bba0dc0d8a2f35449f5c5df88dcb09",
   "definition_digest": "c0fa5ef40151d3008d2c62449c48af0768b8e5896be45afaf33d45c003a7a30a",
   "source_registry_digest": "87536d5be60f9ec27323a2924c41fbf0380a3f575e43cc044fc3f39779050898",
   "lifecycle": "protocol_bound",
@@ -225,15 +225,25 @@
   ],
   "research_os": {
     "surface": "noetrium.api",
-    "execution_state": "closure_binding_required",
+    "execution_state": "benchmark_authority_required",
     "program_id": "toolllm_toolbench",
     "program_digest": "edaa479449c168a42d0d2ab3ec287c666da860ab71209a8f5b9d02f2e4643470",
+    "benchmark_authority": {
+      "state": "required",
+      "selection_digests": [],
+      "blockers": [
+        "ReproductionResearchOSCompileError:benchmark 'toolbench' has no exact source-contained repository authority; immutable data/materialization is required"
+      ]
+    },
     "benchmark_split_axis": {
       "required": true,
       "consumers": [
         "study:build_toolllm_toolbench_study"
       ]
     },
+    "reproduction_closure_state": "required",
+    "execution_authority_state": "required",
+    "materialization_ready": false,
     "execution_requirements": [
       {
         "parameter": "capability_ids",

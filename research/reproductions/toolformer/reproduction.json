@@ -1,8 +1,8 @@
 {
-  "schema": "noetrium.reproduction.projection.v9",
+  "schema": "noetrium.reproduction.projection.v10",
   "authority": "generated_from_typed_definition_and_source",
   "package": "toolformer",
-  "package_digest": "7d7d315416d24c3aee53e9656d9dbde7227181fbebdeb808273dea84b70fd2b9",
+  "package_digest": "375ad93ebb3c71741c2f614bd23d655d7e26262f6f1280878b4c0736548fc002",
   "definition_digest": "a754638e2a9e4546aa921cdc86739cdd0b9d5d01c5c83413543e89deebb71dbf",
   "source_registry_digest": "0aa5c4ef466c87b4808d296ec9f3b44ddcff08ee64566c34ac93be4e38815682",
   "lifecycle": "protocol_bound",
@@ -166,15 +166,25 @@
   ],
   "research_os": {
     "surface": "noetrium.api",
-    "execution_state": "benchmark_binding_required",
+    "execution_state": "benchmark_authority_required",
     "program_id": "toolformer",
     "program_digest": "d1c53ab9d41bb698b7a90509d92d24eb6eb214ba9b82c3c63096360efaa18ad1",
+    "benchmark_authority": {
+      "state": "required",
+      "selection_digests": [],
+      "blockers": [
+        "ReproductionResearchOSCompileError:benchmark 'toolformer-eval' has no exact source-contained repository authority; immutable data/materialization is required"
+      ]
+    },
     "benchmark_split_axis": {
       "required": true,
       "consumers": [
         "study:build_toolformer_study"
       ]
     },
+    "reproduction_closure_state": "closed",
+    "execution_authority_state": "required",
+    "materialization_ready": false,
     "execution_requirements": []
   }
 }

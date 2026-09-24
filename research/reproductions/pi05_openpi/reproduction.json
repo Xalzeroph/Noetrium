@@ -1,8 +1,8 @@
 {
-  "schema": "noetrium.reproduction.projection.v9",
+  "schema": "noetrium.reproduction.projection.v10",
   "authority": "generated_from_typed_definition_and_source",
   "package": "pi05_openpi",
-  "package_digest": "4f20a623cd43b2eda332d214de3cc69a38493d990f22247a3fe906fb17ec40d6",
+  "package_digest": "43a152f51c97a679ea43aa70baa7f3529f556ed960a5bc7e9d9455c85dbe302d",
   "definition_digest": "9f9f320bdbeba68191303fb24c8ba4aeddd0b27a1885cd71a9dc4cc9ef6d6446",
   "source_registry_digest": "6fd9550e5e62e26d5d5b30a198b91082ca51daf1f7f6619ca09c0115dcdf8f04",
   "lifecycle": "catalogued",
@@ -92,10 +92,18 @@
     "execution_state": "not_executable",
     "program_id": null,
     "program_digest": null,
+    "benchmark_authority": {
+      "state": "not_applicable",
+      "selection_digests": [],
+      "blockers": []
+    },
     "benchmark_split_axis": {
       "required": false,
       "consumers": []
     },
+    "reproduction_closure_state": "not_applicable",
+    "execution_authority_state": "not_applicable",
+    "materialization_ready": false,
     "execution_requirements": []
   }
 }
