@@ -3,7 +3,13 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from enum import StrEnum
 
-from noetrium_platform.foundation.kernel.kernel import canonical_digest
+from noetrium_platform.foundation.kernel.kernel import (
+    DurableCarrierReferenceClosure,
+    canonical_digest,
+    durable_carrier_closure_complete,
+    durable_carrier_gc_eligible,
+    validate_durable_carrier_closures,
+)
 from noetrium_platform.substrate.api import ScopeIdentity
 from noetrium_platform.substrate.api import ResolutionPolicy
 
@@ -328,8 +334,8 @@ class EnvironmentRuntimeGcAssessment:
     profile_revision: str
     runtime_identity_digest: str
     local: EnvironmentRuntimeReferenceSummary
-    resumable_execution_ids: tuple[str, ...] | None = None
-    retained_evidence_ids: tuple[str, ...] | None = None
+    closures: tuple[DurableCarrierReferenceClosure, ...] = ()
+    proof_digest: str = field(init=False)
 
     def __post_init__(self) -> None:
         if self.local.profile_id != self.profile_id:
@@ -338,96 +344,97 @@ class EnvironmentRuntimeGcAssessment:
             raise ValueError("environment runtime GC local profile revision drifted")
         if self.local.runtime_identity_digest != self.runtime_identity_digest:
             raise ValueError("environment runtime GC concrete identity drifted")
-        for field_name in (
-            "resumable_execution_ids",
-            "retained_evidence_ids",
-        ):
-            values = getattr(self, field_name)
-            if values is None:
-                continue
-            if type(values) is not tuple or any(
-                type(value) is not str
-                or not value.strip()
-                or value != value.strip()
-                for value in values
-            ):
-                raise TypeError(
-                    f"environment runtime GC {field_name} "
-                    "must be canonical text tuple"
-                )
-            if values != tuple(sorted(set(values))):
-                raise ValueError(
-                    f"environment runtime GC {field_name} "
-                    "must be unique sorted order"
-                )
+        validate_durable_carrier_closures(self.closures)
+        object.__setattr__(
+            self,
+            "proof_digest",
+            canonical_digest(
+                {
+                    "schema": "environment.runtime-gc-assessment.v1",
+                    "profile_id": self.profile_id,
+                    "profile_revision": self.profile_revision,
+                    "runtime_identity_digest": self.runtime_identity_digest,
+                    "local": {
+                        "instance_ids": self.local.instance_ids,
+                        "bound_instance_ids": self.local.bound_instance_ids,
+                        "reusable_instance_ids": self.local.reusable_instance_ids,
+                        "blocking_instance_ids": self.local.blocking_instance_ids,
+                    },
+                    "closures": tuple(
+                        {
+                            "authority": row.authority.value,
+                            "proof_digest": row.proof_digest,
+                            "retained_reference_ids": row.retained_reference_ids,
+                        }
+                        for row in self.closures
+                    ),
+                }
+            ),
+        )
 
     @property
-    def external_reference_closure_complete(self) -> bool:
-        return (
-            self.resumable_execution_ids is not None
-            and self.retained_evidence_ids is not None
-        )
+    def closure_complete(self) -> bool:
+        return durable_carrier_closure_complete(self.closures)
 
     @property
     def eligible(self) -> bool:
         return (
             self.local.locally_gc_eligible
-            and self.external_reference_closure_complete
-            and not self.resumable_execution_ids
-            and not self.retained_evidence_ids
+            and durable_carrier_gc_eligible(self.closures)
         )
 
 
 @dataclass(frozen=True, slots=True)
 class EnvironmentProfileGcAssessment:
-    """Fail-closed profile-GC decision across local, execution and evidence truth."""
+    """Fail-closed profile-GC decision across all durable reference authorities."""
 
     profile_id: str
     profile_revision: str
     local: EnvironmentProfileReferenceSummary
-    resumable_execution_ids: tuple[str, ...] | None = None
-    retained_evidence_ids: tuple[str, ...] | None = None
+    closures: tuple[DurableCarrierReferenceClosure, ...] = ()
+    proof_digest: str = field(init=False)
 
     def __post_init__(self) -> None:
         if self.local.profile_id != self.profile_id:
             raise ValueError("environment GC local profile identity drifted")
         if self.local.profile_revision != self.profile_revision:
             raise ValueError("environment GC local profile revision drifted")
-        for field_name in (
-            "resumable_execution_ids",
-            "retained_evidence_ids",
-        ):
-            values = getattr(self, field_name)
-            if values is None:
-                continue
-            if type(values) is not tuple or any(
-                type(value) is not str
-                or not value.strip()
-                or value != value.strip()
-                for value in values
-            ):
-                raise TypeError(
-                    f"environment GC {field_name} must be canonical text tuple"
-                )
-            if values != tuple(sorted(set(values))):
-                raise ValueError(
-                    f"environment GC {field_name} must be unique sorted order"
-                )
+        validate_durable_carrier_closures(self.closures)
+        object.__setattr__(
+            self,
+            "proof_digest",
+            canonical_digest(
+                {
+                    "schema": "environment.profile-gc-assessment.v1",
+                    "profile_id": self.profile_id,
+                    "profile_revision": self.profile_revision,
+                    "local": {
+                        "instance_ids": self.local.instance_ids,
+                        "bound_instance_ids": self.local.bound_instance_ids,
+                        "reusable_instance_ids": self.local.reusable_instance_ids,
+                        "blocking_instance_ids": self.local.blocking_instance_ids,
+                    },
+                    "closures": tuple(
+                        {
+                            "authority": row.authority.value,
+                            "proof_digest": row.proof_digest,
+                            "retained_reference_ids": row.retained_reference_ids,
+                        }
+                        for row in self.closures
+                    ),
+                }
+            ),
+        )
 
     @property
-    def external_reference_closure_complete(self) -> bool:
-        return (
-            self.resumable_execution_ids is not None
-            and self.retained_evidence_ids is not None
-        )
+    def closure_complete(self) -> bool:
+        return durable_carrier_closure_complete(self.closures)
 
     @property
     def eligible(self) -> bool:
         return (
             self.local.locally_gc_eligible
-            and self.external_reference_closure_complete
-            and not self.resumable_execution_ids
-            and not self.retained_evidence_ids
+            and durable_carrier_gc_eligible(self.closures)
         )
 
 
