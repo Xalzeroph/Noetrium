@@ -100,6 +100,48 @@ def _sha256(path: Path) -> str:
     return digest.hexdigest()
 
 
+def _qualification_instance_mounts(compose_path: Path) -> tuple[Path, ...]:
+    """Return profile-private bind subdirectories declared by Compose.
+
+    Docker creates a missing bind source on the daemon host, commonly as root.
+    Qualification containers run as the unprivileged platform user, so every
+    profile-owned writable source must exist with usable permissions before
+    Compose is allowed to materialize the container.
+    """
+
+    text = compose_path.read_text(encoding="utf-8")
+    pattern = re.compile(
+        r"\$\{PLATFORM_ENVIRONMENT_INSTANCE_ROOT[^}]*\}"
+        r"/([A-Za-z0-9_.-]+(?:/[A-Za-z0-9_.-]+)*)"
+    )
+    rows: set[Path] = set()
+    for match in pattern.finditer(text):
+        relative = Path(match.group(1))
+        if relative.is_absolute() or ".." in relative.parts:
+            raise RuntimeError(
+                f"unsafe environment instance bind source in {compose_path}: {relative}"
+            )
+        rows.add(relative)
+    return tuple(sorted(rows, key=lambda value: value.as_posix()))
+
+
+def _prepare_qualification_instance(
+    qualification_instance: Path,
+    *,
+    compose_path: Path,
+) -> None:
+    if qualification_instance.exists():
+        shutil.rmtree(qualification_instance)
+    qualification_instance.mkdir(parents=True)
+    qualification_instance.chmod(0o777)
+
+    writable = (Path("platform-state"), *_qualification_instance_mounts(compose_path))
+    for relative in writable:
+        target = qualification_instance / relative
+        target.mkdir(parents=True, exist_ok=True)
+        target.chmod(0o777)
+
+
 def _load_catalog() -> dict:
     data = json.loads(CATALOG_PATH.read_text(encoding="utf-8"))
     if data.get("schema") != PROFILE_REGISTRY_SCHEMA:
@@ -965,10 +1007,10 @@ def build_environment_images(
             instances_root
             / f"doctor-{profile_id}-{build_input_digest[:24]}"
         )
-        if qualification_instance.exists():
-            shutil.rmtree(qualification_instance)
-        qualification_instance.mkdir(parents=True)
-        qualification_instance.chmod(0o777)
+        _prepare_qualification_instance(
+            qualification_instance,
+            compose_path=ROOT / compose,
+        )
         env["PLATFORM_ENVIRONMENT_INSTANCE_ROOT"] = str(qualification_instance)
         env["PLATFORM_RUNTIME_STATE_ROOT"] = str(
             qualification_instance / "platform-state"
