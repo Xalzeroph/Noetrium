@@ -68,8 +68,11 @@ class ModelDeploymentRuntime:
             outcome.ready_evidence_ref,
         )
 
-    def stop(self, deployment_id: str) -> ModelDeploymentStatus:
-        desired = self._catalog.set_desired_state(deployment_id, ModelDesiredState.STOPPED)
+    def _shutdown_applied(
+        self,
+        desired,
+        deployment_id: str,
+    ) -> ModelDeploymentStatus:
         applied = self._applied_store.read(deployment_id)
         if applied is None:
             return ModelDeploymentStatus(
@@ -93,6 +96,23 @@ class ModelDeploymentRuntime:
             desired.desired_state,
             ModelRuntimeState.STOPPED if outcome.stopped else ModelRuntimeState.ERROR,
         )
+
+    def stop(self, deployment_id: str) -> ModelDeploymentStatus:
+        desired = self._catalog.set_desired_state(
+            deployment_id,
+            ModelDesiredState.STOPPED,
+        )
+        return self._shutdown_applied(desired, deployment_id)
+
+    def shutdown(self, deployment_id: str) -> ModelDeploymentStatus:
+        """Stop the physical process without changing desired state.
+
+        Process/runtime state is ephemeral. Desired deployment state is durable
+        configuration and must survive a platform process restart.
+        """
+
+        desired = self._catalog.deployment(deployment_id)
+        return self._shutdown_applied(desired, deployment_id)
 
     def restart(self, deployment_id: str) -> ModelDeploymentStatus:
         self.stop(deployment_id)
