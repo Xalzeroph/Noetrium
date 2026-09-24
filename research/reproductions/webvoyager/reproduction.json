@@ -2,7 +2,7 @@
   "schema": "noetrium.reproduction.projection.v10",
   "authority": "generated_from_typed_definition_and_source",
   "package": "webvoyager",
-  "package_digest": "335efb90bb8d2056a65dc31891dd949aedafe9600efb6008046b8d5ae439ff03",
+  "package_digest": "cb4705e9cd3cfe3193c850f52d32ebe8d8f3eb2d98c107e1c979298778006243",
   "definition_digest": "8faf5256fad577ed3ce5247d5d6664d2748d9b28844d800e0c6657ba70de3571",
   "source_registry_digest": "78d2607d22aec417ef867017d647e9acd612808ace7a6def9e43e987308f4b5f",
   "lifecycle": "protocol_bound",
@@ -95,13 +95,13 @@
       "kind": "method_program",
       "path": "research/reproductions/webvoyager/program.py",
       "declaration_digest": "e0454e2b45fc87fb7419b7f09e84c4933a2c7775764cbf6303f2d45c0d66236c",
-      "content_sha256": "b0e1580e270a9fbc3fc84a83570a09a0923bf85dc0dc84c75b0c391ed36fd6f9"
+      "content_sha256": "cd7ee61978306c75dbdb6722f1cf3f82b100352b07d730da36f6307311738201"
     },
     {
       "kind": "study",
       "path": "research/reproductions/webvoyager/study.py",
       "declaration_digest": "89d53534ab3a0067ace6278a338f408e6af2b9c74d26618d6bcaf1642d4e6412",
-      "content_sha256": "a9be331b13f327b46515c7064310f45ed34dfb9160b3868fac0639d677e046e5"
+      "content_sha256": "1a8effaaab9b5ea1e1e53436b0164898682a82be98e3ae4d154bbd1f5bee53e6"
     }
   ],
   "primary_executable": "research/reproductions/webvoyager/program.py",

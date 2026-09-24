@@ -2215,7 +2215,7 @@
       "reproductions": [
         {
           "package": "webvoyager",
-          "package_digest": "335efb90bb8d2056a65dc31891dd949aedafe9600efb6008046b8d5ae439ff03",
+          "package_digest": "cb4705e9cd3cfe3193c850f52d32ebe8d8f3eb2d98c107e1c979298778006243",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "webvoyager"
@@ -2247,12 +2247,12 @@
             {
               "kind": "method_program",
               "path": "research/reproductions/webvoyager/program.py",
-              "content_sha256": "b0e1580e270a9fbc3fc84a83570a09a0923bf85dc0dc84c75b0c391ed36fd6f9"
+              "content_sha256": "cd7ee61978306c75dbdb6722f1cf3f82b100352b07d730da36f6307311738201"
             },
             {
               "kind": "study",
               "path": "research/reproductions/webvoyager/study.py",
-              "content_sha256": "a9be331b13f327b46515c7064310f45ed34dfb9160b3868fac0639d677e046e5"
+              "content_sha256": "1a8effaaab9b5ea1e1e53436b0164898682a82be98e3ae4d154bbd1f5bee53e6"
             }
           ],
           "blockers": [
@@ -3813,7 +3813,7 @@
       "reproductions": [
         {
           "package": "worldmm_memory",
-          "package_digest": "9e5daa77e1af4d043b9b798ed356caeec713d7d63bbaca8d04f0a2d1b468bccc",
+          "package_digest": "7dfbe937711ccc088fa21beb091c8c4bd6fa2b7e74c45934364a4fae635bebd8",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "egolifeqa"
@@ -3856,12 +3856,12 @@
             {
               "kind": "method_program",
               "path": "research/reproductions/worldmm_memory/program.py",
-              "content_sha256": "39d0c891c7a7b919fd7a42634faf629845aa7080fa94c3330297981f1379351a"
+              "content_sha256": "04a48d2a39d63111298e6ded657952374f66795ef7af5e217d53747351d22548"
             },
             {
               "kind": "research_program",
               "path": "research/reproductions/worldmm_memory/memory.py",
-              "content_sha256": "475a22cd6f4e5f2205b3ec72c6399e4c5ba39ff6d7caf73c296260dd507e737b"
+              "content_sha256": "6235cc9b85f29ce6aa1c52057d92086d61555df7f4b7c7573ac22a73a796cd42"
             },
             {
               "kind": "study",
@@ -3896,5 +3896,5 @@
       ]
     }
   ],
-  "projection_digest": "be3d76825a717c113cdeb17f4dafffebacaad5f14ef843997dc9850b98278c3c"
+  "projection_digest": "d6f34b580bd3be15da5e51a09967d42c2802779db2ab667c373b19928b0dfaa8"
 }

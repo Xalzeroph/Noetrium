@@ -2,7 +2,7 @@
   "schema": "noetrium.reproduction.projection.v10",
   "authority": "generated_from_typed_definition_and_source",
   "package": "worldmm_memory",
-  "package_digest": "9e5daa77e1af4d043b9b798ed356caeec713d7d63bbaca8d04f0a2d1b468bccc",
+  "package_digest": "7dfbe937711ccc088fa21beb091c8c4bd6fa2b7e74c45934364a4fae635bebd8",
   "definition_digest": "3314ca00b83178a9c509432fa74f6aa63b1fc1aba43de1686e47ac5bb46ad530",
   "source_registry_digest": "59fad67df15f1fffd4579cda87465a6feb1607352e4bdf24806f77c92a06dc6e",
   "lifecycle": "protocol_bound",
@@ -124,13 +124,13 @@
       "kind": "method_program",
       "path": "research/reproductions/worldmm_memory/program.py",
       "declaration_digest": "694d5449c06960b2c03e1523c5de5536207872c8ccc1a89651fffa8a14605724",
-      "content_sha256": "39d0c891c7a7b919fd7a42634faf629845aa7080fa94c3330297981f1379351a"
+      "content_sha256": "04a48d2a39d63111298e6ded657952374f66795ef7af5e217d53747351d22548"
     },
     {
       "kind": "research_program",
       "path": "research/reproductions/worldmm_memory/memory.py",
       "declaration_digest": "fd579eee24b1474717507e20ae245ebc29c2231b91c3824c4dd7edfb6def5ac5",
-      "content_sha256": "475a22cd6f4e5f2205b3ec72c6399e4c5ba39ff6d7caf73c296260dd507e737b"
+      "content_sha256": "6235cc9b85f29ce6aa1c52057d92086d61555df7f4b7c7573ac22a73a796cd42"
     },
     {
       "kind": "study",
