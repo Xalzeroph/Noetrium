@@ -410,6 +410,7 @@ def build_environment_images(
     java_runtime_canonical_image: str,
     node_version: str,
     rebuild: bool = False,
+    allow_draining: bool = False,
     allow_retired: bool = False,
 ) -> dict:
     source_sha = _git("rev-parse", "HEAD")
@@ -425,9 +426,15 @@ def build_environment_images(
     validate_catalog(catalog, by_id)
     for profile_id in profiles:
         lifecycle = by_id[profile_id].get("lifecycle")
+        if lifecycle == "draining" and not allow_draining:
+            raise RuntimeError(
+                f"{profile_id}: draining profile requires explicit "
+                "--allow-draining recovery intent"
+            )
         if lifecycle == "retired" and not allow_retired:
             raise RuntimeError(
-                f"{profile_id}: retired profile requires explicit --allow-retired recovery intent"
+                f"{profile_id}: retired profile requires explicit "
+                "--allow-retired historical recovery intent"
             )
 
     _run(("docker", "--version"))
@@ -682,6 +689,7 @@ def build_environment_images(
             for profile_id in profiles
         ],
         "rebuild": rebuild,
+        "allow_draining": allow_draining,
         "allow_retired": allow_retired,
         "build_mode": build_mode,
         "runtime_root": str(runtime_root),
@@ -770,6 +778,15 @@ def main(argv: list[str] | None = None) -> int:
         help="Ignore exact-SHA image cache and rebuild base/profile images.",
     )
     build.add_argument(
+        "--allow-draining",
+        action="store_true",
+        help=(
+            "Permit explicitly named draining revisions only for resuming "
+            "already-pinned executions. Draining profiles are never selected "
+            "for new work by default."
+        ),
+    )
+    build.add_argument(
         "--allow-retired",
         action="store_true",
         help=(
@@ -832,6 +849,7 @@ def main(argv: list[str] | None = None) -> int:
             java_runtime_canonical_image=args.java_runtime_canonical_image,
             node_version=args.node_version,
             rebuild=args.rebuild,
+            allow_draining=args.allow_draining,
             allow_retired=args.allow_retired,
         )
     except Exception as exc:
