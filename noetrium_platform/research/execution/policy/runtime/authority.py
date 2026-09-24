@@ -94,6 +94,7 @@ class HierarchicalAdmissionAuthority:
         self._group_identities: dict[str, _GroupIdentity] = {}
         self._group_intents: dict[str, AdmissionIntent] = {}
         self._waiters: dict[int, _Waiter] = {}
+        self._waiting_permits = 0
         self._queue_version = 0
         self._selection_cache_version = -1
         self._selection_cache_bucket = -1
@@ -219,6 +220,29 @@ class HierarchicalAdmissionAuthority:
     def _invalidate_selection(self) -> None:
         self._queue_version += 1
         self._selection_cache_ticket = None
+
+    def _enqueue_waiter(self, waiter: _Waiter) -> None:
+        if self._waiting_permits + waiter.permit_count > int(self._budget.max_waiting):
+            self._rejected_total += waiter.permit_count
+            raise AdmissionRejected(
+                "execution admission waiting capacity exhausted: "
+                f"waiting={self._waiting_permits} "
+                f"requested={waiter.permit_count} "
+                f"max_waiting={self._budget.max_waiting}"
+            )
+        self._waiters[waiter.ticket] = waiter
+        self._waiting_permits += waiter.permit_count
+        self._invalidate_selection()
+
+    def _remove_waiter(self, ticket: int) -> _Waiter | None:
+        waiter = self._waiters.pop(ticket, None)
+        if waiter is None:
+            return None
+        self._waiting_permits -= waiter.permit_count
+        if self._waiting_permits < 0:
+            raise RuntimeError("execution admission waiting accounting underflow")
+        self._invalidate_selection()
+        return waiter
 
     def _selected_waiter(self) -> _Waiter | None:
         now = time.monotonic()
@@ -365,6 +389,17 @@ class HierarchicalAdmissionAuthority:
                     f"group={group_id} lane={lane_kind.value} permits={permit_count}"
                 )
 
+            if (
+                not self._waiters
+                and self._can_admit(group_id, lane_kind, permit_count)
+            ):
+                return self._grant_many(
+                    group_id,
+                    lane_kind,
+                    permit_count=permit_count,
+                    waited_seconds=0.0,
+                )
+
             waiter = _Waiter(
                 ticket=self._next_ticket,
                 group_id=group_id,
@@ -374,8 +409,7 @@ class HierarchicalAdmissionAuthority:
                 enqueued_monotonic=time.monotonic(),
             )
             self._next_ticket += 1
-            self._waiters[waiter.ticket] = waiter
-            self._invalidate_selection()
+            self._enqueue_waiter(waiter)
             self._queued_total += permit_count
             try:
                 while True:
@@ -390,8 +424,11 @@ class HierarchicalAdmissionAuthority:
                         self._timed_out_total += permit_count
                         raise TimeoutError("execution admission deadline expired")
                     if self._selected_waiter() is waiter:
-                        self._waiters.pop(waiter.ticket, None)
-                        self._invalidate_selection()
+                        removed = self._remove_waiter(waiter.ticket)
+                        if removed is None:
+                            raise RuntimeError(
+                                "selected admission waiter disappeared"
+                            )
                         waited = max(
                             0.0,
                             time.monotonic() - waiter.enqueued_monotonic,
@@ -417,8 +454,7 @@ class HierarchicalAdmissionAuthority:
                     self._condition.wait(wait_for)
             finally:
                 if waiter.ticket in self._waiters:
-                    self._waiters.pop(waiter.ticket, None)
-                    self._invalidate_selection()
+                    self._remove_waiter(waiter.ticket)
                     self._condition.notify_all()
 
     @staticmethod
@@ -478,11 +514,12 @@ class HierarchicalAdmissionAuthority:
             )
             return AdmissionTopologySnapshot(
                 max_total_in_flight=self._budget.max_total_in_flight,
+                max_waiting=int(self._budget.max_waiting),
                 max_in_flight_per_group=int(self._budget.max_in_flight_per_group),
                 max_in_flight_per_tenant=int(self._budget.max_in_flight_per_tenant),
                 max_in_flight_per_resource=int(self._budget.max_in_flight_per_resource),
                 in_flight=self._in_flight,
-                waiting=sum(item.permit_count for item in self._waiters.values()),
+                waiting=self._waiting_permits,
                 closed=self._closed,
                 admitted_total=self._admitted_total,
                 rejected_total=self._rejected_total,
