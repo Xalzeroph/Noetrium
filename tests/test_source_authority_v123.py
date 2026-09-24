@@ -77,6 +77,20 @@ class SourceAuthorityV123Tests(unittest.TestCase):
 
 
 
+    def test_reference_component_cannot_bypass_platform_durability(self):
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            target = root / "components" / "reference"
+            target.mkdir(parents=True)
+            (target / "rogue.py").write_text(
+                "import sqlite3\\n\\ndef connect(path):\\n    return sqlite3.connect(path)\\n",
+                encoding="utf-8",
+            )
+            findings = audit_source_authorities(root)
+            self.assertEqual(len(findings), 1)
+            self.assertEqual(findings[0].authority, "storage.sqlite_connection")
+            self.assertEqual(findings[0].module, "components.reference.rogue")
+
     def test_sqlite_connection_outside_platform_durability_is_rejected(self):
         with tempfile.TemporaryDirectory() as td:
             root = Path(td)
