@@ -53,29 +53,24 @@ class FilesystemPerformanceSnapshotStore:
             return None
         data = json.loads(self._baseline.read_text(encoding="utf-8"))
         schema = str(data.get("schema_version", ""))
-        if schema == "performance-baseline.v2":
-            expected = {
-                "schema_version", "source_authority", "source_revision", "source_digest",
-                "analyzer_revision", "analyzer_implementation_digest", "observed_blocker_fingerprints", "accepted_blocker_fingerprints",
-            }
-            if set(data) != expected:
-                raise ValueError("performance baseline v2 has unexpected fields")
-            revision = data["source_revision"]
-            if revision is not None and not isinstance(revision, str):
-                raise ValueError("performance baseline source_revision must be string or null")
-            return PerformanceBaseline(
-                schema_version=schema, source_authority=str(data["source_authority"]),
-                source_revision=revision, source_digest=str(data["source_digest"]),
-                analyzer_revision=str(data["analyzer_revision"]),
-                analyzer_implementation_digest=str(data["analyzer_implementation_digest"]),
-                observed_blocker_fingerprints=tuple(str(x) for x in data["observed_blocker_fingerprints"]),
-                accepted_blocker_fingerprints=tuple(str(x) for x in data["accepted_blocker_fingerprints"]),
-            )
+        if schema != "performance-baseline.v2":
+            raise ValueError(f"unsupported performance baseline schema: {schema}")
+        expected = {
+            "schema_version", "source_authority", "source_revision", "source_digest",
+            "analyzer_revision", "analyzer_implementation_digest", "observed_blocker_fingerprints", "accepted_blocker_fingerprints",
+        }
+        if set(data) != expected:
+            raise ValueError("performance baseline v2 has unexpected fields")
+        revision = data["source_revision"]
+        if revision is not None and not isinstance(revision, str):
+            raise ValueError("performance baseline source_revision must be string or null")
         return PerformanceBaseline(
-            schema_version=schema, source_authority="legacy", source_revision=None, source_digest="",
-            analyzer_revision=str(data.get("analyzer_revision", "")), analyzer_implementation_digest="",
-            observed_blocker_fingerprints=(),
-            accepted_blocker_fingerprints=tuple(str(x) for x in data.get("blocker_fingerprints", ())),
+            schema_version=schema, source_authority=str(data["source_authority"]),
+            source_revision=revision, source_digest=str(data["source_digest"]),
+            analyzer_revision=str(data["analyzer_revision"]),
+            analyzer_implementation_digest=str(data["analyzer_implementation_digest"]),
+            observed_blocker_fingerprints=tuple(str(x) for x in data["observed_blocker_fingerprints"]),
+            accepted_blocker_fingerprints=tuple(str(x) for x in data["accepted_blocker_fingerprints"]),
         )
 
     def publish_baseline(self, baseline: PerformanceBaseline) -> None:
