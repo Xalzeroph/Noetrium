@@ -898,22 +898,84 @@ def _machine_dependency_document(
     }
 
 
-def compile_reproduction_research_program(
+def _validated_execution_binding(
     definition: ReproductionDefinition,
+    binding: ReproductionExecutionBinding | None,
+) -> ReproductionExecutionBinding | None:
+    if binding is None:
+        return None
+    if type(binding) is not ReproductionExecutionBinding:
+        raise TypeError("bound reproduction compilation requires execution binding")
+    if binding.package != definition.package:
+        raise ValueError("reproduction execution binding package drifted")
+    validated = bind_reproduction_execution(
+        definition,
+        binding_id=binding.binding_id,
+        study_factory=binding.study_factory,
+        benchmark_id=binding.benchmark_id,
+        values=binding.values,
+    )
+    if validated.binding_digest != binding.binding_digest:
+        raise ValueError("reproduction execution binding identity drifted")
+    return validated
+
+
+def _method_factory_call(
+    definition: ReproductionDefinition,
+    method: ReproductionMethodProgramBinding,
+    binding: ReproductionExecutionBinding | None,
+) -> tuple[tuple[JsonValue, ...], Mapping[str, JsonValue]]:
+    if method.factory is None:
+        raise TypeError("reproduction MethodProgram symbol has no factory call")
+    kwargs: dict[str, JsonValue] = dict(method.factory.kwargs)
+    if binding is not None:
+        for requirement in _requirements_for_study(
+            definition,
+            binding.study_factory,
+        ):
+            if f"method:{method.qualname}" in requirement.consumers:
+                kwargs[requirement.parameter] = binding.values[
+                    requirement.parameter
+                ]
+    return method.factory.args, kwargs
+
+
+def _compile_reproduction_research_program(
+    definition: ReproductionDefinition,
+    execution_binding: ReproductionExecutionBinding | None,
 ) -> api.ResearchProgram:
-    """Compile one executable+Study reproduction to the current Research OS IR.
-
-    MethodProgram packages bind their exact UMM IR.  Reproductions whose primary
-    executable is another Research Machine bind those exact program identities as
-    platform-resolved executable requirements for the Experimentation closure.
-    Nothing is downgraded to a plain callable.
-    """
-
     if type(definition) is not ReproductionDefinition:
         raise TypeError("reproduction Research OS compilation requires definition")
+    execution_binding = _validated_execution_binding(
+        definition,
+        execution_binding,
+    )
     study = _asset(definition, ReproductionAssetKind.STUDY)
-    study_factories = resolve_study_factory_bindings(definition)
-    execution_requirements = resolve_execution_requirements(definition)
+    all_study_factories = resolve_study_factory_bindings(definition)
+    if execution_binding is None:
+        study_factories = all_study_factories
+        execution_requirements = resolve_execution_requirements(definition)
+        benchmark_ids = definition.catalog.benchmark_ids
+        program_id = definition.package
+    else:
+        study_factories = tuple(
+            row
+            for row in all_study_factories
+            if row.qualname == execution_binding.study_factory
+        )
+        if len(study_factories) != 1:
+            raise ReproductionResearchOSCompileError(
+                f"{definition.package} bound Study factory identity drifted"
+            )
+        execution_requirements = _requirements_for_study(
+            definition,
+            execution_binding.study_factory,
+        )
+        benchmark_ids = (execution_binding.benchmark_id,)
+        program_id = (
+            f"{definition.package}.{execution_binding.binding_id}"
+        )
+
     machine_dependencies = resolve_research_program_bindings(definition)
     machine_dependency_documents = tuple(
         _machine_dependency_document(row)
@@ -934,25 +996,54 @@ def compile_reproduction_research_program(
             "ResearchProgram asset"
         )
 
-    # One top-level ResearchProgram represents one reproduction package, not the
-    # underlying method identity. Different paper/version packages may share the
-    # same method_id; package identity is the unique ResearchGraph namespace.
-    builder = api.ResearchProgramBuilder(definition.package)
+    builder = api.ResearchProgramBuilder(program_id)
     executable_definition_ids: list[str] = []
     if method_assets:
         method = resolve_method_program_binding(definition)
+        effective_program_digest = method.program_digest
+        effective_binding_digest = method.binding_digest
+        factory_args: tuple[JsonValue, ...] | None = None
+        factory_kwargs: Mapping[str, JsonValue] | None = None
+        if method.factory is not None and (
+            method.exact or execution_binding is not None
+        ):
+            factory_args, factory_kwargs = _method_factory_call(
+                definition,
+                method,
+                execution_binding,
+            )
+            implementation = api.ResearchMethodProgramImplementation.from_factory(
+                "method",
+                module=method.module,
+                qualname=method.qualname,
+                args=factory_args,
+                kwargs=factory_kwargs,
+            )
+            effective_program_digest = implementation.program_digest
+            effective_binding_digest = canonical_digest(
+                {
+                    "factory_binding_digest": method.binding_digest,
+                    "execution_binding_digest": (
+                        None
+                        if execution_binding is None
+                        else execution_binding.binding_digest
+                    ),
+                    "program_digest": effective_program_digest,
+                }
+            )
+
         method_config = {
             "reproduction_package": definition.package,
             "reproduction_method_id": definition.identity.method_id,
             "reproduction_definition_digest": definition.definition_digest,
             "asset_path": method.asset.path,
             "binding_kind": method.binding_kind,
-            "binding_digest": method.binding_digest,
-            "program_digest": method.program_digest,
-            "unresolved_parameters": (
-                ()
-                if method.factory is None
-                else method.factory.unresolved_parameters
+            "binding_digest": effective_binding_digest,
+            "program_digest": effective_program_digest,
+            "execution_binding_digest": (
+                None
+                if execution_binding is None
+                else execution_binding.binding_digest
             ),
             "research_program_dependencies": machine_dependency_documents,
         }
@@ -963,14 +1054,14 @@ def compile_reproduction_research_program(
                 qualname=method.qualname,
                 config=method_config,
             )
-        elif method.exact:
-            assert method.factory is not None
+        elif effective_program_digest is not None:
+            assert factory_args is not None and factory_kwargs is not None
             builder.method_program_factory(
                 "method",
                 module=method.module,
                 qualname=method.qualname,
-                args=method.factory.args,
-                kwargs=method.factory.kwargs,
+                args=factory_args,
+                kwargs=factory_kwargs,
                 config=method_config,
             )
         else:
@@ -979,20 +1070,28 @@ def compile_reproduction_research_program(
                 kind=api.ResearchDefinitionKind.METHOD,
                 config={
                     **method_config,
-                    "authority": "parameterized-method-program-factory",
+                    "authority": "execution-binding-required",
+                    "execution_requirement_digests": tuple(
+                        row.requirement_digest
+                        for row in execution_requirements
+                        if any(
+                            consumer.startswith("method:")
+                            for consumer in row.consumers
+                        )
+                    ),
                 },
             )
         executable_definition_ids.append("method")
-        primary_executable_digest = method.binding_digest
+        primary_executable_digest = effective_binding_digest
     else:
-        for index, binding in enumerate(machine_dependencies):
+        for index, machine_binding in enumerate(machine_dependencies):
             definition_id = f"machine.{index:02d}"
             builder.definition(
                 definition_id,
                 kind=api.ResearchDefinitionKind.CUSTOM,
                 config={
                     "authority": "research-machine-program",
-                    **_machine_dependency_document(binding),
+                    **_machine_dependency_document(machine_binding),
                 },
             )
             executable_definition_ids.append(definition_id)
@@ -1007,13 +1106,13 @@ def compile_reproduction_research_program(
             "asset_path": study.path,
             "study_factories": tuple(
                 {
-                    "module": binding.module,
-                    "qualname": binding.qualname,
-                    "benchmark_parameter": binding.benchmark_parameter,
-                    "required_parameters": binding.required_parameters,
-                    "binding_digest": binding.binding_digest,
+                    "module": study_binding.module,
+                    "qualname": study_binding.qualname,
+                    "benchmark_parameter": study_binding.benchmark_parameter,
+                    "required_parameters": study_binding.required_parameters,
+                    "binding_digest": study_binding.binding_digest,
                 }
-                for binding in study_factories
+                for study_binding in study_factories
             ),
             "execution_requirements": tuple(
                 {
@@ -1024,17 +1123,33 @@ def compile_reproduction_research_program(
                 }
                 for requirement in execution_requirements
             ),
+            "execution_binding": (
+                None
+                if execution_binding is None
+                else {
+                    "binding_id": execution_binding.binding_id,
+                    "binding_digest": execution_binding.binding_digest,
+                    "study_factory": execution_binding.study_factory,
+                    "benchmark_id": execution_binding.benchmark_id,
+                    "values": execution_binding.values,
+                }
+            ),
         },
     )
 
     benchmark_definition_ids: list[str] = []
-    for benchmark_id in definition.catalog.benchmark_ids:
+    for benchmark_id in benchmark_ids:
         definition_id = f"benchmark.{benchmark_id}"
         builder.benchmark(
             definition_id,
             config={
                 "benchmark_id": benchmark_id,
                 "reproduction_package": definition.package,
+                "execution_binding_digest": (
+                    None
+                    if execution_binding is None
+                    else execution_binding.binding_digest
+                ),
             },
         )
         benchmark_definition_ids.append(definition_id)
@@ -1059,15 +1174,41 @@ def compile_reproduction_research_program(
             "reproduction_definition_digest": definition.definition_digest,
             "primary_executable_digest": primary_executable_digest,
             "study_asset": study.path,
-            "benchmark_ids": definition.catalog.benchmark_ids,
+            "benchmark_ids": benchmark_ids,
             "research_program_dependencies": machine_dependency_documents,
             "execution_requirement_digests": tuple(
                 requirement.requirement_digest
                 for requirement in execution_requirements
             ),
+            "execution_binding_digest": (
+                None
+                if execution_binding is None
+                else execution_binding.binding_digest
+            ),
         },
     )
     return builder.freeze()
+
+
+def compile_reproduction_research_program(
+    definition: ReproductionDefinition,
+) -> api.ResearchProgram:
+    """Compile one reproduction template onto the current Product Research OS."""
+
+    return _compile_reproduction_research_program(definition, None)
+
+
+def compile_bound_reproduction_research_program(
+    definition: ReproductionDefinition,
+    execution_binding: ReproductionExecutionBinding,
+) -> api.ResearchProgram:
+    """Compile one exact benchmark/treatment lane onto Product Research OS."""
+
+    return _compile_reproduction_research_program(
+        definition,
+        execution_binding,
+    )
+
 
 _NON_EXECUTABLE_LIFECYCLES = frozenset(
     {
@@ -1187,6 +1328,7 @@ __all__ = [
     "ReproductionStudyFactoryBinding",
     "ReproductionResearchOSCompileError",
     "bind_reproduction_execution",
+    "compile_bound_reproduction_research_program",
     "compile_reproduction_portfolio",
     "compile_reproduction_research_program",
     "compile_repository_reproduction_portfolio",
