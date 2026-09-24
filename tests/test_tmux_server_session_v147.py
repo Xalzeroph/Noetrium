@@ -35,7 +35,7 @@ class FakeTmuxRunner:
             if name not in self.sessions:
                 return TmuxCommandResult(1, "", "can't find session")
             pid, command, cwd = self.sessions[name]
-            return TmuxCommandResult(0, f"{name}\t{pid}\t0\t{command}\t{cwd}\n", "")
+            return TmuxCommandResult(0, f"{name}\t${pid}\t{pid}\t0\t{command}\t{cwd}\n", "")
         if args[0] == "new-session":
             name = args[args.index("-s") + 1]
             if name in self.sessions:
@@ -45,8 +45,18 @@ class FakeTmuxRunner:
             self.sessions[name] = (self.next_pid, command, args[args.index("-c") + 1])
             return TmuxCommandResult(0, "", "")
         if args[0] == "kill-session":
-            name = args[args.index("-t") + 1].lstrip("=")
-            self.sessions.pop(name, None)
+            target = args[args.index("-t") + 1]
+            matched = next(
+                (
+                    name
+                    for name, (pid, _command, _cwd) in self.sessions.items()
+                    if target == f"$" + str(pid)
+                ),
+                None,
+            )
+            if matched is None:
+                return TmuxCommandResult(1, "", "can't find session")
+            self.sessions.pop(matched, None)
             return TmuxCommandResult(0, "", "")
         raise AssertionError(args)
 
@@ -207,6 +217,32 @@ class TmuxServerSessionTests(unittest.TestCase):
             changed = PersistentSessionManager(changed_cli, DirectoryPersistentSessionBindingStore(root / "bindings"))
             with self.assertRaises(PersistentSessionDrift):
                 changed.ensure(spec)
+
+
+    def test_delayed_old_generation_kill_cannot_terminate_recreated_same_name_session(self):
+        with TemporaryDirectory() as td:
+            root = Path(td)
+            runner = FakeTmuxRunner()
+            manager = self.manager(root, runner)
+            spec = PersistentSessionSpec(
+                "rp-reused",
+                ("/bin/echo", "same"),
+                "/tmp",
+                "c",
+                "7" * 64,
+            )
+            first = manager.ensure(spec)
+            old_generation = first.snapshot.session_generation
+            self.assertIsNotNone(old_generation)
+
+            runner.sessions.pop(spec.session_name)
+            second = manager.ensure(spec)
+            self.assertNotEqual(second.snapshot.session_generation, old_generation)
+
+            evidence = manager.control.terminate(first.snapshot)
+
+            self.assertIn(spec.session_name, runner.sessions)
+            self.assertIn("kill-missing", evidence[0])
 
     def test_attach_requires_exact_durable_binding_and_live_snapshot(self):
         with TemporaryDirectory() as td:
