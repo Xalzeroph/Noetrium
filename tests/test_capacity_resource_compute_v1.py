@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from threading import Barrier, Thread
+from threading import Barrier, Event, Thread
 import time
 
 from noetrium_platform.infrastructure.resources.compute.api import ComputeHost, ComputeRequirement
@@ -32,6 +32,66 @@ class _SlowInventory(InMemoryComputeInventory):
         rows = super().list_hosts(scope=scope)
         time.sleep(0.05)
         return rows
+
+
+class _BlockingInventory(InMemoryComputeInventory):
+    def __init__(self) -> None:
+        super().__init__()
+        self.list_entered = Event()
+        self.release_list = Event()
+
+    def list_hosts(self, *, scope=None):
+        rows = super().list_hosts(scope=scope)
+        self.list_entered.set()
+        if not self.release_list.wait(2.0):
+            raise TimeoutError("test inventory list_hosts release was not signalled")
+        return rows
+
+
+def test_inventory_observation_does_not_hold_scheduler_state_lock() -> None:
+    scope = _scope("lock-scope")
+    inventory = _BlockingInventory()
+    inventory.register_host(ComputeHost("host", scope, 2, 2))
+    scheduler = in_memory_compute_scheduler(inventory)
+    candidate_done = Event()
+    candidate_errors: list[BaseException] = []
+
+    def read_candidates() -> None:
+        try:
+            scheduler.candidates(
+                ComputeRequirement(cpu_cores=1, memory_bytes=1),
+                scope=scope,
+            )
+        except BaseException as exc:
+            candidate_errors.append(exc)
+        finally:
+            candidate_done.set()
+
+    candidate_thread = Thread(target=read_candidates)
+    candidate_thread.start()
+    assert inventory.list_entered.wait(1.0)
+
+    allocation_done = Event()
+    allocation_rows: list[tuple[object, ...]] = []
+
+    def read_allocations() -> None:
+        allocation_rows.append(scheduler.allocations(scope=scope))
+        allocation_done.set()
+
+    allocation_thread = Thread(target=read_allocations)
+    allocation_thread.start()
+    assert allocation_done.wait(0.5), (
+        "inventory observation must not hold the scheduler state lock"
+    )
+
+    inventory.release_list.set()
+    candidate_thread.join(timeout=2.0)
+    allocation_thread.join(timeout=2.0)
+
+    assert not candidate_thread.is_alive()
+    assert not allocation_thread.is_alive()
+    assert candidate_errors == []
+    assert allocation_rows == [()]
 
 
 def test_compute_allocation_is_linearizable_under_thread_contention() -> None:
