@@ -4,6 +4,7 @@ import argparse
 import hashlib
 import json
 import os
+import re
 from pathlib import Path
 import shutil
 import subprocess
@@ -14,6 +15,7 @@ from typing import Iterable
 ROOT = Path(__file__).resolve().parents[1]
 CATALOG_PATH = ROOT / "deploy" / "environments" / "catalog.json"
 PROFILE_REGISTRY_SCHEMA = "noetrium.environment-profile-registry.v2"
+PROFILE_TOKEN_RE = re.compile(r"^[a-z][a-z0-9_.-]*$")
 PROFILE_LIFECYCLE_STATES = frozenset({"active", "draining", "retired"})
 REQUIRED_PRIVATE_WRITABLE = frozenset({
     "workspace",
@@ -95,8 +97,13 @@ def _profile_map(data: dict) -> dict[str, dict]:
         if not isinstance(row, dict):
             raise RuntimeError("environment profile row must be an object")
         profile_id = row.get("profile_id")
-        if not isinstance(profile_id, str) or not profile_id:
-            raise RuntimeError("environment profile id must be non-empty")
+        if (
+            not isinstance(profile_id, str)
+            or PROFILE_TOKEN_RE.fullmatch(profile_id) is None
+        ):
+            raise RuntimeError(
+                "environment profile id must be a lowercase deployment token"
+            )
         if profile_id in result:
             raise RuntimeError(f"duplicate environment profile id: {profile_id}")
         result[profile_id] = row
@@ -150,8 +157,13 @@ def validate_catalog(data: dict, profiles: dict[str, dict]) -> dict:
     active_defaults: dict[str, list[str]] = {}
     for profile_id, row in sorted(profiles.items()):
         category_id = row.get("category_id")
-        if not isinstance(category_id, str) or not category_id.strip():
-            errors.append(f"{profile_id}: category_id must be non-empty")
+        if (
+            not isinstance(category_id, str)
+            or PROFILE_TOKEN_RE.fullmatch(category_id) is None
+        ):
+            errors.append(
+                f"{profile_id}: category_id must be a lowercase deployment token"
+            )
             continue
 
         lifecycle = row.get("lifecycle")
@@ -223,6 +235,15 @@ def validate_catalog(data: dict, profiles: dict[str, dict]) -> dict:
                 errors.append(
                     f"{profile_id}: Dockerfile must install a profile-local doctor hook"
                 )
+            for label in (
+                PROFILE_ID_LABEL,
+                PROFILE_CATEGORY_LABEL,
+                PROFILE_REVISION_LABEL,
+            ):
+                if label not in dockerfile_text:
+                    errors.append(
+                        f"{profile_id}: Dockerfile must carry profile identity label {label}"
+                    )
             for marker in FORBIDDEN_IMAGE_MARKERS:
                 if marker in lowered:
                     errors.append(
@@ -236,6 +257,15 @@ def validate_catalog(data: dict, profiles: dict[str, dict]) -> dict:
                 errors.append(
                     f"{profile_id}: compose overlay lacks category identity {category_id!r}"
                 )
+            for build_arg in (
+                "NOETRIUM_ENVIRONMENT_PROFILE_ID",
+                "NOETRIUM_ENVIRONMENT_CATEGORY_ID",
+                "NOETRIUM_ENVIRONMENT_PROFILE_REVISION",
+            ):
+                if build_arg not in compose_text:
+                    errors.append(
+                        f"{profile_id}: compose overlay lacks identity build arg {build_arg}"
+                    )
 
     for category_id, defaults in sorted(active_defaults.items()):
         if len(defaults) != 1:
