@@ -1,6 +1,18 @@
 from research.reproductions.adas_meta_agent_search import ADAS_META_AGENT_SEARCH_FIDELITY
-from research.reproductions.live_swe_agent import LIVE_SWE_AGENT_FIDELITY
+from research.reproductions.live_swe_agent import (
+    LIVE_SWE_AGENT_FIDELITY,
+    LIVE_SWE_AGENT_METHOD_PROGRAM,
+)
+from research.reproductions.live_swe_agent.definition import (
+    REPRODUCTION as LIVE_SWE_REPRODUCTION,
+)
 from research.reproductions.memevolve import MEMEVOLVE_FIDELITY
+from research.reproductions.research_os import (
+    ReproductionExecutionRequirementKind,
+    compile_reproduction_research_program,
+    is_research_os_executable,
+    resolve_execution_requirements,
+)
 
 
 def test_adas_meta_agent_search_preserves_executable_archive_evolution() -> None:
@@ -46,3 +58,31 @@ def test_live_swe_agent_preserves_runtime_tool_creation_without_platform_policy(
     assert fidelity.runtime_tool_creation
     assert fidelity.created_tools_are_python_cli_programs
     assert fidelity.task_completion_command == "echo COMPLETE_TASK_AND_SUBMIT_FINAL_OUTPUT"
+
+
+
+def test_live_swe_agent_method_program_keeps_online_tool_evolution_downstream() -> None:
+    program = LIVE_SWE_AGENT_METHOD_PROGRAM
+
+    assert program.configuration["runtime_tool_creation"] is True
+    assert program.configuration["trajectory_reflection_before_tool_creation"] is True
+    assert program.configuration["created_tools_are_python_cli_programs"] is True
+    assert program.configuration["paper_default_step_limit"] == 0.0
+    assert program.configuration["paper_default_cost_limit"] == 3.0
+    assert program.required_capabilities == ("software.command",)
+    assert program.graph.node("worker").agent_id == "live-swe-agent.worker"
+    assert program.graph.node("tool_reflection").agent_id == (
+        "live-swe-agent.tool-reflection"
+    )
+
+
+def test_live_swe_agent_enters_current_research_os_with_typed_swebench_split() -> None:
+    assert is_research_os_executable(LIVE_SWE_REPRODUCTION)
+    requirements = resolve_execution_requirements(LIVE_SWE_REPRODUCTION)
+
+    assert tuple(row.parameter for row in requirements) == ("split_id",)
+    assert requirements[0].kind is ReproductionExecutionRequirementKind.BENCHMARK_SPLIT
+
+    research_program = compile_reproduction_research_program(LIVE_SWE_REPRODUCTION)
+    assert research_program.program_id == "live_swe_agent"
+    assert tuple(node.node_id for node in research_program.nodes) == ("reproduction",)
