@@ -1,10 +1,10 @@
 from __future__ import annotations
 
 from collections.abc import Callable
-import hashlib
 from pathlib import Path
 import sqlite3
 
+from noetrium_platform.foundation.kernel.kernel.durability import sha256_bytes
 from noetrium_platform.foundation.kernel.kernel.durability.sqlite import (
     immediate_sqlite_transaction,
     open_durable_sqlite_writer,
@@ -53,7 +53,7 @@ def _payload(value: object) -> tuple[bytes, str]:
         raw = strict_finite_json_bytes(value)
     except (CanonicalEncodingError, UnicodeEncodeError) as exc:
         raise EvolutionStoreIntegrityError("evolution record is not strict JSON") from exc
-    return raw, hashlib.sha256(raw).hexdigest()
+    return raw, sha256_bytes(raw)
 
 
 def _object(raw: bytes, *, field: str) -> dict[str, object]:
