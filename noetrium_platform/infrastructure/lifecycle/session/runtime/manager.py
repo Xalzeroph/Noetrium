@@ -77,8 +77,13 @@ class PersistentSessionManager:
     def terminate(self, spec: PersistentSessionSpec) -> tuple[str, ...]:
         binding = self.bindings.read(spec.session_name)
         if binding is None or binding != self._expected(spec):
-            raise PersistentSessionDrift(PersistentSessionReasonCode.BINDING_DRIFT, "refusing to terminate an unbound/drifted persistent session")
-        return self.control.terminate(spec.session_name)
+            raise PersistentSessionDrift(
+                PersistentSessionReasonCode.BINDING_DRIFT,
+                "refusing to terminate an unbound/drifted persistent session",
+            )
+        snapshot = self.control.inspect(spec.session_name)
+        self.control.verify_snapshot(spec, snapshot)
+        return self.control.terminate(snapshot)
 
     def attach(self, spec: PersistentSessionSpec) -> tuple[str, ...]:
         """Prepare an attach only after proving the frozen session is exact.
