@@ -54,9 +54,11 @@ from noetrium_platform.infrastructure.resources.lease.api import ResourceLeasePo
 from noetrium_platform.infrastructure.resources.lease.runtime import InMemoryResourceLeaseRegistry
 from noetrium_platform.capabilities.environment.catalog.api import ExecutionEnvironmentCatalogPort
 from noetrium_platform.capabilities.environment.catalog.runtime import (
-    EnvironmentInstanceLeaseAuthority,
     ExecutionEnvironmentCatalog,
     SQLiteExecutionEnvironmentCatalog,
+)
+from noetrium_platform.composition.environment_instance_leases import (
+    EnvironmentInstanceLeaseAuthority,
 )
 from noetrium_platform.foundation.scope.api import ScopeRegistryPort
 from noetrium_platform.foundation.scope.runtime import InMemoryScopeRegistry

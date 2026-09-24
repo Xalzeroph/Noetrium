@@ -11,10 +11,12 @@ from noetrium_platform.capabilities.environment.catalog.api import (
     EnvironmentProfileRevision,
 )
 from noetrium_platform.capabilities.environment.catalog.runtime import (
-    EnvironmentInstanceLeaseAuthority,
-    EnvironmentInstanceLeasePolicy,
     ExecutionEnvironmentCatalog,
     SQLiteExecutionEnvironmentCatalog,
+)
+from noetrium_platform.composition.environment_instance_leases import (
+    EnvironmentInstanceLeaseAuthority,
+    EnvironmentInstanceLeasePolicy,
 )
 from noetrium_platform.foundation.scope.api import (
     PLATFORM_SCOPE,

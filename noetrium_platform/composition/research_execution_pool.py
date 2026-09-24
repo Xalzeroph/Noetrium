@@ -4,7 +4,7 @@ from uuid import uuid4
 
 from noetrium_platform.capabilities.model.serving.api import ModelAdmissionRegistryPort
 from noetrium_platform.capabilities.model.serving.runtime import ModelAdmissionRegistry
-from noetrium_platform.capabilities.environment.catalog.runtime import (
+from noetrium_platform.composition.environment_instance_leases import (
     DEFAULT_ENVIRONMENT_INSTANCE_LEASE_POLICY,
     EnvironmentInstanceLeaseAuthority,
     EnvironmentInstanceLeaseHeartbeatFactory,
