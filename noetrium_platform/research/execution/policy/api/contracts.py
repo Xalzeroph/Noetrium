@@ -15,7 +15,7 @@ class AdmissionMode(StrEnum):
 
 
 class AdmissionRejected(ExecutionPermitRejected):
-    """Raised when an admission request uses reject semantics and has no capacity."""
+    """Raised when bounded admission cannot accept or queue a request."""
 
 
 @dataclass(frozen=True, slots=True)
@@ -28,6 +28,7 @@ class AdmissionBudget:
     max_async_io_in_flight: int | None = None
     max_cpu_in_flight: int | None = None
     max_serial_in_flight: int | None = None
+    max_waiting: int | None = None
 
     def __post_init__(self) -> None:
         def require_limit(value: int | None, *, name: str, fallback: int | None = None) -> int:
@@ -47,6 +48,7 @@ class AdmissionBudget:
         async_io = require_limit(self.max_async_io_in_flight, name="max_async_io_in_flight", fallback=total)
         cpu = require_limit(self.max_cpu_in_flight, name="max_cpu_in_flight", fallback=total)
         serial = require_limit(self.max_serial_in_flight, name="max_serial_in_flight", fallback=total)
+        waiting = require_limit(self.max_waiting, name="max_waiting", fallback=total)
         for name, value in (
             ("max_total_in_flight", total),
             ("max_in_flight_per_group", group),
@@ -56,6 +58,7 @@ class AdmissionBudget:
             ("max_async_io_in_flight", async_io),
             ("max_cpu_in_flight", cpu),
             ("max_serial_in_flight", serial),
+            ("max_waiting", waiting),
         ):
             if value <= 0:
                 raise ValueError(f"{name} must be positive")
@@ -78,6 +81,7 @@ class AdmissionBudget:
         object.__setattr__(self, "max_async_io_in_flight", async_io)
         object.__setattr__(self, "max_cpu_in_flight", cpu)
         object.__setattr__(self, "max_serial_in_flight", serial)
+        object.__setattr__(self, "max_waiting", waiting)
 
     def lane_limit(self, lane_kind: ExecutionLaneKind) -> int:
         if lane_kind is ExecutionLaneKind.BLOCKING_IO:
@@ -158,6 +162,7 @@ class LaneAdmissionSnapshot:
 @dataclass(frozen=True, slots=True)
 class AdmissionTopologySnapshot:
     max_total_in_flight: int
+    max_waiting: int
     max_in_flight_per_group: int
     max_in_flight_per_tenant: int
     max_in_flight_per_resource: int
