@@ -1322,6 +1322,11 @@
     },
     {
       "kind": "references",
+      "source": "noetrium_platform.capabilities.model.asset.api.ports.ModelAssetDeploymentAdmissionPort",
+      "target": "noetrium_platform.capabilities.model.asset.api.contracts.ManagedModelAsset"
+    },
+    {
+      "kind": "references",
       "source": "noetrium_platform.capabilities.model.asset.api.ports.ModelAssetLookupPort",
       "target": "noetrium_platform.capabilities.model.asset.api.contracts.ManagedModelAsset"
     },
@@ -18586,7 +18591,7 @@
         "spec_id"
       ],
       "kind": "dataclass",
-      "line": 166,
+      "line": 172,
       "methods": [],
       "module": "noetrium_platform.capabilities.environment.catalog.api.contracts",
       "name": "EnvironmentAssignment",
@@ -18609,7 +18614,7 @@
         "scope"
       ],
       "kind": "dataclass",
-      "line": 435,
+      "line": 442,
       "methods": [],
       "module": "noetrium_platform.capabilities.environment.catalog.api.contracts",
       "name": "EnvironmentBinding",
@@ -18630,7 +18635,7 @@
         "PROVIDER_RESET_VERIFIED"
       ],
       "kind": "enum",
-      "line": 120,
+      "line": 126,
       "methods": [],
       "module": "noetrium_platform.capabilities.environment.catalog.api.contracts",
       "name": "EnvironmentCleanlinessKind",
@@ -18656,7 +18661,7 @@
         "runtime_identity_digest"
       ],
       "kind": "dataclass",
-      "line": 244,
+      "line": 250,
       "methods": [
         "__post_init__"
       ],
@@ -18689,7 +18694,7 @@
         "state"
       ],
       "kind": "dataclass",
-      "line": 186,
+      "line": 192,
       "methods": [
         "__post_init__"
       ],
@@ -18712,7 +18717,7 @@
         "instance"
       ],
       "kind": "dataclass",
-      "line": 443,
+      "line": 450,
       "methods": [
         "__post_init__"
       ],
@@ -18737,7 +18742,7 @@
         "IN_USE"
       ],
       "kind": "enum",
-      "line": 113,
+      "line": 119,
       "methods": [],
       "module": "noetrium_platform.capabilities.environment.catalog.api.contracts",
       "name": "EnvironmentInstanceState",
@@ -18761,7 +18766,7 @@
         "target_spec_id"
       ],
       "kind": "dataclass",
-      "line": 157,
+      "line": 163,
       "methods": [],
       "module": "noetrium_platform.capabilities.environment.catalog.api.contracts",
       "name": "EnvironmentOverlay",
@@ -18778,17 +18783,17 @@
         "dataclass(frozen=True, slots=True)"
       ],
       "fields": [
+        "closures",
         "local",
         "profile_id",
         "profile_revision",
-        "resumable_execution_ids",
-        "retained_evidence_ids"
+        "proof_digest"
       ],
       "kind": "dataclass",
-      "line": 382,
+      "line": 388,
       "methods": [
         "__post_init__",
-        "external_reference_closure_complete",
+        "closure_complete",
         "eligible"
       ],
       "module": "noetrium_platform.capabilities.environment.catalog.api.contracts",
@@ -18811,7 +18816,7 @@
         "RETIRED"
       ],
       "kind": "enum",
-      "line": 11,
+      "line": 17,
       "methods": [],
       "module": "noetrium_platform.capabilities.environment.catalog.api.contracts",
       "name": "EnvironmentProfileLifecycle",
@@ -18837,7 +18842,7 @@
         "runtime_reference"
       ],
       "kind": "dataclass",
-      "line": 53,
+      "line": 59,
       "methods": [
         "__post_init__"
       ],
@@ -18864,7 +18869,7 @@
         "reusable_instance_ids"
       ],
       "kind": "dataclass",
-      "line": 280,
+      "line": 286,
       "methods": [
         "locally_gc_eligible"
       ],
@@ -18889,7 +18894,7 @@
         "profile_revision"
       ],
       "kind": "dataclass",
-      "line": 18,
+      "line": 24,
       "methods": [
         "__post_init__"
       ],
@@ -18908,18 +18913,18 @@
         "dataclass(frozen=True, slots=True)"
       ],
       "fields": [
+        "closures",
         "local",
         "profile_id",
         "profile_revision",
-        "resumable_execution_ids",
-        "retained_evidence_ids",
+        "proof_digest",
         "runtime_identity_digest"
       ],
       "kind": "dataclass",
-      "line": 324,
+      "line": 330,
       "methods": [
         "__post_init__",
-        "external_reference_closure_complete",
+        "closure_complete",
         "eligible"
       ],
       "module": "noetrium_platform.capabilities.environment.catalog.api.contracts",
@@ -18946,7 +18951,7 @@
         "runtime_identity_digest"
       ],
       "kind": "dataclass",
-      "line": 294,
+      "line": 300,
       "methods": [
         "__post_init__",
         "locally_gc_eligible"
@@ -18976,7 +18981,7 @@
         "template_id"
       ],
       "kind": "dataclass",
-      "line": 145,
+      "line": 151,
       "methods": [],
       "module": "noetrium_platform.capabilities.environment.catalog.api.contracts",
       "name": "EnvironmentSpec",
@@ -19000,7 +19005,7 @@
         "template_id"
       ],
       "kind": "dataclass",
-      "line": 136,
+      "line": 142,
       "methods": [],
       "module": "noetrium_platform.capabilities.environment.catalog.api.contracts",
       "name": "EnvironmentTemplate",
@@ -19026,7 +19031,7 @@
         "REMOTE"
       ],
       "kind": "enum",
-      "line": 125,
+      "line": 131,
       "methods": [],
       "module": "noetrium_platform.capabilities.environment.catalog.api.contracts",
       "name": "ExecutionEnvironmentKind",
@@ -19053,7 +19058,7 @@
         "spec_id"
       ],
       "kind": "dataclass",
-      "line": 174,
+      "line": 180,
       "methods": [],
       "module": "noetrium_platform.capabilities.environment.catalog.api.contracts",
       "name": "ResolvedEnvironmentSpec",
@@ -19071,7 +19076,7 @@
       "decorators": [],
       "fields": [],
       "kind": "protocol",
-      "line": 27,
+      "line": 28,
       "methods": [
         "register_profile_revision",
         "profile_revision",
@@ -19234,7 +19239,7 @@
         "SCHEMA_VERSION"
       ],
       "kind": "class",
-      "line": 988,
+      "line": 968,
       "methods": [
         "__init__",
         "_connection",
@@ -25567,6 +25572,26 @@
       "kind": "protocol",
       "line": 34,
       "methods": [
+        "deployment_admission"
+      ],
+      "module": "noetrium_platform.capabilities.model.asset.api.ports",
+      "name": "ModelAssetDeploymentAdmissionPort",
+      "nesting": [
+        "ModelAssetDeploymentAdmissionPort"
+      ],
+      "qualname": "noetrium_platform.capabilities.model.asset.api.ports.ModelAssetDeploymentAdmissionPort",
+      "system_key": "model",
+      "top_system": "model"
+    },
+    {
+      "bases": [
+        "Protocol"
+      ],
+      "decorators": [],
+      "fields": [],
+      "kind": "protocol",
+      "line": 43,
+      "methods": [
         "model"
       ],
       "module": "noetrium_platform.capabilities.model.asset.api.ports",
@@ -25586,7 +25611,7 @@
       "decorators": [],
       "fields": [],
       "kind": "protocol",
-      "line": 42,
+      "line": 51,
       "methods": [
         "fetch_model",
         "register_model",
@@ -25659,7 +25684,7 @@
       "decorators": [],
       "fields": [],
       "kind": "protocol",
-      "line": 38,
+      "line": 47,
       "methods": [
         "usage"
       ],
@@ -25736,7 +25761,8 @@
         "_asset_digest",
         "assess_model_gc",
         "_require_physical_gc",
-        "unregister_model"
+        "unregister_model",
+        "_unregister_model_fenced"
       ],
       "module": "noetrium_platform.capabilities.model.asset.runtime.manager",
       "name": "ModelAssetManager",
@@ -25752,15 +25778,17 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 19,
+      "line": 20,
       "methods": [
         "__init__",
         "_path",
         "_retired_path",
         "_lock",
+        "lifecycle_fence",
         "_digest",
         "_retirement_payload",
         "_decode_retirement",
+        "deployment_admission",
         "ensure_not_retired",
         "put",
         "get",
@@ -103721,11 +103749,11 @@
     }
   ],
   "counts": {
-    "association_edges": 3459,
-    "classes": 3373,
+    "association_edges": 3460,
+    "classes": 3374,
     "constructor_edges": 936,
     "inheritance_edges": 149,
-    "module_import_edges": 5031,
+    "module_import_edges": 5032,
     "parse_errors": 0,
     "python_modules": 1909,
     "registry_authorities": 20,
@@ -104719,6 +104747,10 @@
     {
       "source": "noetrium_platform.capabilities.environment.catalog.api.ports",
       "target": "noetrium_platform.capabilities.environment.catalog.api.contracts"
+    },
+    {
+      "source": "noetrium_platform.capabilities.environment.catalog.api.ports",
+      "target": "noetrium_platform.foundation.kernel.kernel"
     },
     {
       "source": "noetrium_platform.capabilities.environment.catalog.api.ports",
@@ -124845,6 +124877,7 @@
     {
       "imports": [
         "noetrium_platform.capabilities.environment.catalog.api.contracts",
+        "noetrium_platform.foundation.kernel.kernel",
         "noetrium_platform.substrate.api"
       ],
       "module": "noetrium_platform.capabilities.environment.catalog.api.ports",
@@ -144612,7 +144645,7 @@
   "parse_errors": [],
   "registry_sha256": "276e2729e0b700e814e98f8460d87e0ebee66c4620226fe2d880fe55cc970aec",
   "schema": "noetrium-code-architecture-index.v1",
-  "source_git_sha": "4aeb4c4ff53d15624560d531f76f8f8508708627",
+  "source_git_sha": "e70a87f9878a477b57b7d57f751bf2d8fb2ab2ec",
   "system_import_edges": [
     {
       "count": 85,
@@ -144645,7 +144678,7 @@
       "target": "environment"
     },
     {
-      "count": 75,
+      "count": 76,
       "source": "environment",
       "target": "platform"
     },
