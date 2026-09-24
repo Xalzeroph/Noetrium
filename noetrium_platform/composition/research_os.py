@@ -28,6 +28,7 @@ from noetrium_platform.product.research_os import (
     ResearchGraphRevision,
     ResearchImpactState,
     ResearchImplementation,
+    ResearchMethodProgramBindingKind,
     ResearchMethodProgramImplementation,
     ResearchInputBinding,
     ResearchNode,
@@ -125,6 +126,9 @@ def _decode_implementation(
                     "module",
                     "qualname",
                     "program_digest",
+                    "binding_kind",
+                    "factory_args",
+                    "factory_kwargs",
                     "implementation_digest",
                 }
             ),
@@ -135,6 +139,13 @@ def _decode_implementation(
             _text(row["module"], field + ".module"),
             _text(row["qualname"], field + ".qualname"),
             _text(row["program_digest"], field + ".program_digest"),
+            ResearchMethodProgramBindingKind(
+                _text(row["binding_kind"], field + ".binding_kind")
+            ),
+            tuple(
+                _array(row["factory_args"], field + ".factory_args")
+            ),
+            _object(row["factory_kwargs"], field + ".factory_kwargs"),
         )
     else:
         raise ValueError(
