@@ -6,9 +6,8 @@ from typing import Protocol, runtime_checkable
 
 from noetrium_platform.composition.research_execution_pool import ResearchExecutionPool
 from noetrium_platform.composition.research_graph import ResearchGraphScheduler
-from noetrium_platform.foundation.kernel.concurrency.api import Deadline
+from noetrium_platform.foundation.kernel.concurrency.api import Deadline, TaskContextPort
 from noetrium_platform.foundation.kernel.kernel import (
-    ExecutionContext,
     canonical_digest,
     require_sha256,
 )
@@ -326,7 +325,7 @@ class ResearchOSNodeExecutionPort(Protocol):
 
     def execute(
         self,
-        context: ExecutionContext,
+        context: TaskContextPort,
         node: CompiledResearchOSGraphNode,
         *,
         deadline: Deadline | None,
