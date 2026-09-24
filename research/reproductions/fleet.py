@@ -724,6 +724,7 @@ class ReproductionFleetAuthorityAudit:
     """Aggregate read-only execution-authority coverage before admission."""
 
     materialization: ReproductionFleetMaterialization
+    authority_manifest_digest: str
     revision_digest: str
     lanes: tuple[ReproductionFleetAuthorityLaneAudit, ...]
     audit_digest: str = field(init=False)
@@ -733,6 +734,10 @@ class ReproductionFleetAuthorityAudit:
             raise TypeError(
                 "fleet authority audit requires ReproductionFleetMaterialization"
             )
+        _require_sha256(
+            self.authority_manifest_digest,
+            "fleet authority audit authority_manifest_digest",
+        )
         _require_sha256(
             self.revision_digest,
             "fleet authority audit revision_digest",
@@ -758,6 +763,7 @@ class ReproductionFleetAuthorityAudit:
                     "materialization_digest": (
                         self.materialization.materialization_digest
                     ),
+                    "authority_manifest_digest": self.authority_manifest_digest,
                     "revision_digest": self.revision_digest,
                     "lane_audits": tuple(
                         row.audit_digest for row in self.lanes
@@ -784,6 +790,7 @@ def audit_materialized_reproduction_fleet_authorities(
     *,
     research_bindings: ResearchBindingAuthorityPort,
     experiment_runtime_components: ResearchOSExperimentRuntimeComponents,
+    authority_manifest_digest: str,
 ) -> ReproductionFleetAuthorityAudit:
     """Resolve every lane authority without stores, cuts, tasks, or execution."""
 
@@ -800,12 +807,17 @@ def audit_materialized_reproduction_fleet_authorities(
         raise TypeError(
             "fleet authority audit requires typed Experiment runtime components"
         )
+    _require_sha256(
+        authority_manifest_digest,
+        "fleet authority audit authority_manifest_digest",
+    )
 
     revision = api.ResearchGraphRevision(
         fleet.portfolio.portfolio_id,
         fleet.portfolio.portfolio_digest,
         (),
-        "repository reproduction fleet authority audit",
+        _fleet_revision_message(fleet, authority_manifest_digest)
+        + " authority audit",
     )
     graph = compile_research_portfolio_graph(revision, fleet.portfolio)
     closures = ReproductionFleetExperimentClosureProvider(
@@ -942,6 +954,7 @@ def audit_materialized_reproduction_fleet_authorities(
 
     return ReproductionFleetAuthorityAudit(
         fleet,
+        authority_manifest_digest,
         revision.revision_digest,
         tuple(rows),
     )
@@ -964,6 +977,7 @@ def audit_repository_execution_authorities(
         fleet,
         research_bindings=authorities.research_bindings,
         experiment_runtime_components=authorities.experiment_runtime_components,
+        authority_manifest_digest=authorities.authority_manifest_digest,
     )
 
 
