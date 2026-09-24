@@ -26,6 +26,7 @@ from noetrium_platform.infrastructure.resources.container.api import (
     ManagedDockerContainerLease,
 )
 from noetrium_platform.infrastructure.resources.container.api.contracts import (
+    LABEL_AUTHORITY,
     LABEL_ALLOCATION,
     LABEL_FENCING,
     LABEL_HOLDER,
@@ -62,12 +63,20 @@ class DockerContainerLeaseAuthority:
         ownership: ResourceOwnershipPort,
         leases: ResourceLeasePort,
         runtime: DockerManagedContainerPort,
+        authority_id: str,
         policy: DockerContainerLeasePolicy = DEFAULT_DOCKER_CONTAINER_LEASE_POLICY,
         reconcile_on_start: bool = True,
     ) -> None:
+        if (
+            type(authority_id) is not str
+            or len(authority_id) != 64
+            or any(ch not in "0123456789abcdef" for ch in authority_id)
+        ):
+            raise ValueError("Docker container authority_id must be lowercase sha256")
         self.ownership = ownership
         self.leases = leases
         self.runtime = runtime
+        self.authority_id = authority_id
         self.policy = policy
         if reconcile_on_start:
             self.reconcile()
@@ -80,10 +89,10 @@ class DockerContainerLeaseAuthority:
     def _lease_id(allocation_id: str) -> str:
         return f"container:{allocation_id}"
 
-    @staticmethod
-    def _name(allocation_id: str, fencing_token: int) -> str:
+    def _name(self, allocation_id: str, fencing_token: int) -> str:
         digest = canonical_digest(
             {
+                "authority_id": self.authority_id,
                 "allocation_id": allocation_id,
                 "fencing_token": fencing_token,
             }
@@ -152,6 +161,7 @@ class DockerContainerLeaseAuthority:
             holder_scope,
             image,
             runtime_identity_digest,
+            self.authority_id,
             self._name(allocation_id, lease.fencing_token),
             lease,
         )
@@ -213,6 +223,7 @@ class DockerContainerLeaseAuthority:
             handle.holder_scope,
             handle.image,
             handle.runtime_identity_digest,
+            handle.authority_id,
             handle.container_name,
             renewed,
         )
@@ -255,6 +266,7 @@ class DockerContainerLeaseAuthority:
             lease_id = labels.get(LABEL_LEASE)
             fencing_raw = labels.get(LABEL_FENCING)
             runtime_digest = labels.get(LABEL_RUNTIME)
+            authority_id = labels.get(LABEL_AUTHORITY)
             holder_key = labels.get(LABEL_HOLDER)
             lease: ResourceLease | None = None
             fencing: int | None = None
@@ -272,7 +284,8 @@ class DockerContainerLeaseAuthority:
                 and lease.resource == self._resource(allocation_id)
             )
             valid = (
-                exact_resource
+                authority_id == self.authority_id
+                and exact_resource
                 and lease is not None
                 and lease.state is LeaseState.ACTIVE
                 and lease.fencing_token == fencing
