@@ -62,6 +62,7 @@ class ReproductionFleetAuthorityManifest:
     aggregation_registry_digest: str
     reconciliation_registry_digest: str
     benchmark_registry_digest: str
+    benchmark_authority_digest: str
     reproduction_capability_registry_digest: str | None = None
     manifest_digest: str = field(init=False)
 
@@ -75,6 +76,7 @@ class ReproductionFleetAuthorityManifest:
             "aggregation_registry_digest",
             "reconciliation_registry_digest",
             "benchmark_registry_digest",
+            "benchmark_authority_digest",
         ):
             require_sha256(
                 getattr(self, field_name),
@@ -90,7 +92,7 @@ class ReproductionFleetAuthorityManifest:
             "manifest_digest",
             canonical_digest(
                 {
-                    "schema": "noetrium.reproduction-fleet-authority-manifest.v2",
+                    "schema": "noetrium.reproduction-fleet-authority-manifest.v3",
                     "manifest_registry_digest": self.manifest_registry_digest,
                     "research_capability_registry_digest": (
                         self.research_capability_registry_digest
@@ -101,6 +103,7 @@ class ReproductionFleetAuthorityManifest:
                     "aggregation_registry_digest": self.aggregation_registry_digest,
                     "reconciliation_registry_digest": self.reconciliation_registry_digest,
                     "benchmark_registry_digest": self.benchmark_registry_digest,
+                    "benchmark_authority_digest": self.benchmark_authority_digest,
                     "reproduction_capability_registry_digest": (
                         self.reproduction_capability_registry_digest
                     ),
@@ -119,6 +122,7 @@ def _registry_authority_manifest(
     experiment_aggregation: ResearchOSExperimentAggregationRegistry,
     experiment_reconciliation: ResearchOSExperimentReconciliationRegistry,
     benchmark_resolutions: BenchmarkResolutionRegistry | None,
+    benchmark_authority_digest: str,
     reproduction_capabilities: ReproductionCapabilitySelectionRegistry | None,
 ) -> ReproductionFleetAuthorityManifest:
     benchmark_registry = (
@@ -135,6 +139,7 @@ def _registry_authority_manifest(
         aggregation_registry_digest=experiment_aggregation.identity_digest,
         reconciliation_registry_digest=experiment_reconciliation.identity_digest,
         benchmark_registry_digest=benchmark_registry.identity_digest,
+        benchmark_authority_digest=benchmark_authority_digest,
         reproduction_capability_registry_digest=(
             None
             if reproduction_capabilities is None
@@ -187,6 +192,10 @@ def compose_repository_fleet_execution_authorities(
         raise TypeError(
             "fleet authority composition requires ReproductionBenchmarkResolverPort"
         )
+    require_sha256(
+        benchmark_authority.authority_digest,
+        "fleet benchmark authority_digest",
+    )
     research_bindings = ResearchBindingAuthority(
         manifests,
         research_capabilities,
@@ -296,6 +305,21 @@ def compose_repository_fleet_execution_authorities_from_registries(
             "ReproductionCapabilitySelectionRegistry"
         )
 
+    benchmark_authority = (
+        RepositoryBenchmarkAuthority.discover(benchmark_resolutions)
+        if benchmarks is None
+        else benchmarks
+    )
+    if not isinstance(benchmark_authority, ReproductionBenchmarkResolverPort):
+        raise TypeError(
+            "registry fleet authority benchmarks must satisfy "
+            "ReproductionBenchmarkResolverPort"
+        )
+    require_sha256(
+        benchmark_authority.authority_digest,
+        "registry fleet benchmark authority_digest",
+    )
+
     authority_manifest = _registry_authority_manifest(
         manifests=manifests,
         research_capabilities=research_capabilities,
@@ -305,6 +329,7 @@ def compose_repository_fleet_execution_authorities_from_registries(
         experiment_aggregation=resolved_aggregation,
         experiment_reconciliation=experiment_reconciliation,
         benchmark_resolutions=benchmark_resolutions,
+        benchmark_authority_digest=benchmark_authority.authority_digest,
         reproduction_capabilities=reproduction_capabilities,
     )
 
@@ -318,7 +343,7 @@ def compose_repository_fleet_execution_authorities_from_registries(
         experiment_aggregation=resolved_aggregation,
         reproduction_capabilities=reproduction_capabilities,
         benchmark_resolutions=benchmark_resolutions,
-        benchmarks=benchmarks,
+        benchmarks=benchmark_authority,
         authority_manifest_digest=authority_manifest.manifest_digest,
     )
 
