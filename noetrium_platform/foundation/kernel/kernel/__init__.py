@@ -100,7 +100,14 @@ from .machine import (
     TransitionProposal,
 )
 from .failure_materialization import FailureRecordReceipt, OperationFailureSink
-from .journal import DirectoryMachineJournal, InMemoryMachineJournal, MachineJournalPort
+from .journal import (
+    DirectoryMachineJournal,
+    InMemoryMachineJournal,
+    MachineJournalGcAssessment,
+    MachineJournalGcPort,
+    MachineJournalPort,
+    MachineJournalRetirementPhase,
+)
 from .executor import MachineInterpreterPort, MachineNotOpen, MachineExecutor, MachineExecutionError
 from .snapshot import DirectoryMachineSnapshotStore, InMemoryMachineSnapshotStore, MachineSnapshotStorePort
 from .operation_observation import OperationObserver
@@ -130,6 +137,7 @@ __all__ = [
     "DeliveryReceipt", "DeliveryStatus", "InMemoryMachineInbox", "InMemoryMachineOutbox",
     "MachineEnvelope", "MachineInboxPort", "MachineOutboxPort",
     "DirectoryMachineInbox", "DirectoryMachineOutbox", "NIREnvelope",
+    "MachineJournalGcAssessment", "MachineJournalGcPort", "MachineJournalRetirementPhase",
     "InMemoryMachineFamilyRegistry", "MachineFamilyDescriptor", "MachineFamilyRegistryPort",
     "EffectCertainty", "EffectClass", "EffectReceipt", "OperationAuxiliaryFailure",
     "OperationRequest", "OperationResult", "OperationStatus",
