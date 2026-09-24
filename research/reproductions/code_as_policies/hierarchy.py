@@ -7,7 +7,7 @@ from dataclasses import dataclass, field
 from enum import StrEnum
 from typing import Protocol, runtime_checkable
 
-from noetrium_platform.foundation.kernel.kernel import (
+from noetrium.api import (
     ExecutionContext,
     JsonObject,
     JsonValue,
@@ -16,7 +16,7 @@ from noetrium_platform.foundation.kernel.kernel import (
     require_sha256,
     thaw_json,
 )
-from noetrium_platform.research.execution.workflow.api import (
+from noetrium.api import (
     MethodAgentRequest,
     MethodAgentResult,
 )
