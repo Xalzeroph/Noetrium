@@ -360,12 +360,11 @@ class InMemoryEndpointAllocator(EndpointAllocationPort):
     def _lease_authoritative_locked(
         self,
         current: EndpointAllocation,
-        now_epoch_s: float,
     ) -> bool:
         if not current.state.is_live:
             return False
         try:
-            lease = self._leases.get(current.lease_id, now=now_epoch_s)
+            lease = self._leases.get(current.lease_id)
         except KeyError:
             return False
         return (
@@ -375,15 +374,13 @@ class InMemoryEndpointAllocator(EndpointAllocationPort):
             and lease.purpose == current.purpose
             and lease.holder_generation == current.lease_holder_generation
             and lease.fencing_token == current.lease_fencing_token
-            and not lease.expired_at(now_epoch_s)
         )
 
     def _require_lease_authority_locked(
         self,
         current: EndpointAllocation,
-        now_epoch_s: float,
     ) -> None:
-        if not self._lease_authoritative_locked(current, now_epoch_s):
+        if not self._lease_authoritative_locked(current):
             raise EndpointAllocationConflict(
                 "endpoint allocation lease is no longer authoritative: "
                 f"{current.allocation_id}"
@@ -504,7 +501,7 @@ class InMemoryEndpointAllocator(EndpointAllocationPort):
                 raise EndpointAllocationConflict(
                     f"endpoint allocation is released: {proof.allocation_id}"
                 )
-            self._require_lease_authority_locked(current, time())
+            self._require_lease_authority_locked(current)
             if current.endpoint != proof.endpoint:
                 raise EndpointAllocationConflict(
                     f"endpoint binding proof endpoint mismatch: {proof.allocation_id}"
@@ -546,7 +543,7 @@ class InMemoryEndpointAllocator(EndpointAllocationPort):
             current = self._reconcile_allocation_locked(proof.allocation_id)
             if current.state is not EndpointAllocationState.BOUND:
                 raise EndpointAllocationConflict(f"endpoint allocation is not bound: {proof.allocation_id}")
-            self._require_lease_authority_locked(current, time())
+            self._require_lease_authority_locked(current)
             if current.endpoint != proof.endpoint:
                 raise EndpointAllocationConflict(f"endpoint binding proof endpoint mismatch: {proof.allocation_id}")
             if current.lease_fencing_token != proof.lease_fencing_token:
@@ -625,7 +622,7 @@ class InMemoryEndpointAllocator(EndpointAllocationPort):
             _require_allocation_generation(current, allocation)
             if current.state is EndpointAllocationState.RELEASED:
                 return current
-            self._require_lease_authority_locked(current, time())
+            self._require_lease_authority_locked(current)
 
         physical = self._probe.probe(current.endpoint)
         if not physical.available:
@@ -636,7 +633,7 @@ class InMemoryEndpointAllocator(EndpointAllocationPort):
             _require_allocation_generation(current, allocation)
             if current.state is EndpointAllocationState.RELEASED:
                 return current
-            self._require_lease_authority_locked(current, time())
+            self._require_lease_authority_locked(current)
             self._leases.release(
                 current.lease_id,
                 fencing_token=current.lease_fencing_token,
@@ -671,7 +668,6 @@ class InMemoryEndpointAllocator(EndpointAllocationPort):
         if not math.isfinite(now_epoch_s) or now_epoch_s <= 0:
             raise ValueError("endpoint reconciliation time must be finite and positive")
         self._leases.reconcile_expired(
-            now=now_epoch_s,
             resource_kind=ResourceKind.NETWORK_ENDPOINT,
         )
         with self._lock:
@@ -679,7 +675,7 @@ class InMemoryEndpointAllocator(EndpointAllocationPort):
                 row
                 for row in self._allocations.values()
                 if row.state.is_live
-                and not self._lease_authoritative_locked(row, now_epoch_s)
+                and not self._lease_authoritative_locked(row)
             )
 
         released: list[EndpointAllocation] = []
@@ -694,7 +690,7 @@ class InMemoryEndpointAllocator(EndpointAllocationPort):
                 _require_allocation_generation(current, expected)
                 if current.state is EndpointAllocationState.RELEASED:
                     continue
-                if self._lease_authoritative_locked(current, now_epoch_s):
+                if self._lease_authoritative_locked(current):
                     continue
                 retired = replace(current, state=EndpointAllocationState.RELEASED)
                 self._allocations[current.allocation_id] = retired
