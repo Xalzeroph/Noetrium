@@ -193,6 +193,134 @@ class ResearchOSExperimentReconciliationResolverPort(Protocol):
 
 
 @dataclass(frozen=True, slots=True)
+class ResearchOSExperimentReconciliationRegistration:
+    provider_identity: str
+    trial_protocol_digest: str
+    reconciliation: ResearchOSExperimentReconciliationPort
+    registration_digest: str = ""
+
+    def __post_init__(self) -> None:
+        if (
+            type(self.provider_identity) is not str
+            or not self.provider_identity.strip()
+            or self.provider_identity != self.provider_identity.strip()
+        ):
+            raise ValueError(
+                "Experiment reconciliation provider_identity must be canonical text"
+            )
+        require_sha256(
+            self.trial_protocol_digest,
+            "Experiment reconciliation trial_protocol_digest",
+        )
+        if not isinstance(
+            self.reconciliation,
+            ResearchOSExperimentReconciliationPort,
+        ):
+            raise TypeError(
+                "Experiment reconciliation registration requires typed authority"
+            )
+        require_sha256(
+            self.reconciliation.identity_digest,
+            "Experiment reconciliation authority identity",
+        )
+        expected = canonical_digest(
+            {
+                "provider_identity": self.provider_identity,
+                "trial_protocol_digest": self.trial_protocol_digest,
+                "reconciliation_identity_digest": (
+                    self.reconciliation.identity_digest
+                ),
+            }
+        )
+        if self.registration_digest:
+            if self.registration_digest != expected:
+                raise ValueError(
+                    "Experiment reconciliation registration digest drifted"
+                )
+        else:
+            object.__setattr__(self, "registration_digest", expected)
+
+
+class ResearchOSExperimentReconciliationRegistry:
+    """Exact reconciliation authority keyed by Trial provider + protocol."""
+
+    def __init__(
+        self,
+        registrations: tuple[
+            ResearchOSExperimentReconciliationRegistration, ...
+        ],
+    ) -> None:
+        if type(registrations) is not tuple or not registrations:
+            raise TypeError(
+                "Experiment reconciliation registry requires non-empty typed tuple"
+            )
+        if any(
+            type(row) is not ResearchOSExperimentReconciliationRegistration
+            for row in registrations
+        ):
+            raise TypeError(
+                "Experiment reconciliation registry registrations must be typed"
+            )
+        keys = tuple(
+            (row.provider_identity, row.trial_protocol_digest)
+            for row in registrations
+        )
+        if len(keys) != len(set(keys)):
+            raise ValueError(
+                "Experiment reconciliation registry contains duplicate authority"
+            )
+        self._registrations = tuple(
+            sorted(registrations, key=lambda row: row.registration_digest)
+        )
+        self._by_key = {
+            (row.provider_identity, row.trial_protocol_digest): row
+            for row in self._registrations
+        }
+        self._identity_digest = canonical_digest(
+            {
+                "schema": "noetrium.experiment-reconciliation-registry.v1",
+                "registrations": tuple(
+                    row.registration_digest for row in self._registrations
+                ),
+            }
+        )
+
+    @property
+    def identity_digest(self) -> str:
+        return self._identity_digest
+
+    def resolve(
+        self,
+        closure: ResearchOSExperimentClosure,
+    ) -> ResearchOSExperimentReconciliationPort:
+        if type(closure) is not ResearchOSExperimentClosure:
+            raise TypeError(
+                "Experiment reconciliation registry requires "
+                "ResearchOSExperimentClosure"
+            )
+        provider_ids = {
+            row.provider_id
+            for row in closure.research_plan.experiment_plan.bindings
+        }
+        if len(provider_ids) != 1:
+            raise ValueError(
+                "Experiment closure must select exactly one Trial provider "
+                "for reconciliation"
+            )
+        provider_identity = next(iter(provider_ids))
+        protocol_digest = closure.research_plan.trial_protocol_identity.digest()
+        registration = self._by_key.get(
+            (provider_identity, protocol_digest)
+        )
+        if registration is None:
+            raise LookupError(
+                "no exact Experiment reconciliation authority for "
+                f"provider={provider_identity!r} protocol={protocol_digest}"
+            )
+        return registration.reconciliation
+
+
+@dataclass(frozen=True, slots=True)
 class ResearchOSExperimentRuntimeComponents:
     """Owner-system resolvers consumed by the Research OS composition root."""
 
@@ -360,6 +488,8 @@ __all__ = [
     "ResearchOSExperimentAggregationProvider",
     "ResearchOSExperimentAggregationResolverPort",
     "ResearchOSExperimentReconciliationResolverPort",
+    "ResearchOSExperimentReconciliationRegistry",
+    "ResearchOSExperimentReconciliationRegistration",
     "ResearchOSExperimentRuntimeComponents",
     "ResearchOSExperimentRuntimeBindingAuthority",
     "ResearchOSExperimentStudyExecutionBinding",
