@@ -5,6 +5,7 @@ import hashlib
 from pathlib import Path
 import sqlite3
 
+from noetrium_platform.foundation.kernel.kernel.durability.sqlite import open_durable_sqlite_writer
 from noetrium_platform.foundation.kernel.kernel import (
     CanonicalDecodingError,
     CanonicalEncodingError,
@@ -38,7 +39,10 @@ _SCHEMA = "evolution-store.sqlite.v2"
 
 
 def _default_connection(path: str | Path, *, timeout_seconds: float) -> sqlite3.Connection:
-    return sqlite3.connect(path, timeout=timeout_seconds)
+    return open_durable_sqlite_writer(
+        path,
+        timeout_seconds=timeout_seconds,
+    )
 
 
 def _payload(value: object) -> tuple[bytes, str]:
