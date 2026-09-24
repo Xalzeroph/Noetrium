@@ -5,7 +5,6 @@ from typing import Protocol
 
 from noetrium_platform.research.experimentation.lifecycle.api import ExperimentSpec
 from noetrium_platform.research.experimentation.lifecycle.api import ExperimentRunSpec
-from noetrium_platform.research.experimentation.lifecycle.api import RunControlTarget
 from noetrium_platform.research.experimentation.lifecycle.api import RunIdentity
 from noetrium_platform.research.experimentation.lifecycle.api import RunLaunchManifest
 from noetrium_platform.research.experimentation.lifecycle.api import StudyProtocol
@@ -111,13 +110,6 @@ class ProjectRunDefinition:
     @property
     def run_manifest_digest(self) -> str:
         return self.manifest.digest()
-
-    def control_target(self, expected_generation: int | None = None) -> RunControlTarget:
-        return RunControlTarget(
-            self.identity.run_id,
-            self.run_manifest_digest,
-            expected_generation,
-        )
 
 
 __all__ = [
