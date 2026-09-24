@@ -150,6 +150,27 @@ def _default_active_profile_ids(profiles: dict[str, dict]) -> tuple[str, ...]:
     )
 
 
+def _require_profile_build_intent(
+    profiles: dict[str, dict],
+    selected: tuple[str, ...],
+    *,
+    allow_draining: bool,
+    allow_retired: bool,
+) -> None:
+    for profile_id in selected:
+        lifecycle = profiles[profile_id].get("lifecycle")
+        if lifecycle == "draining" and not allow_draining:
+            raise RuntimeError(
+                f"{profile_id}: draining profile requires explicit "
+                "--allow-draining recovery intent"
+            )
+        if lifecycle == "retired" and not allow_retired:
+            raise RuntimeError(
+                f"{profile_id}: retired profile requires explicit "
+                "--allow-retired historical recovery intent"
+            )
+
+
 def validate_catalog(data: dict, profiles: dict[str, dict]) -> dict:
     errors: list[str] = []
     if not profiles:
@@ -424,18 +445,12 @@ def build_environment_images(
     if unknown:
         raise RuntimeError(f"unknown environment profiles: {unknown!r}")
     validate_catalog(catalog, by_id)
-    for profile_id in profiles:
-        lifecycle = by_id[profile_id].get("lifecycle")
-        if lifecycle == "draining" and not allow_draining:
-            raise RuntimeError(
-                f"{profile_id}: draining profile requires explicit "
-                "--allow-draining recovery intent"
-            )
-        if lifecycle == "retired" and not allow_retired:
-            raise RuntimeError(
-                f"{profile_id}: retired profile requires explicit "
-                "--allow-retired historical recovery intent"
-            )
+    _require_profile_build_intent(
+        by_id,
+        profiles,
+        allow_draining=allow_draining,
+        allow_retired=allow_retired,
+    )
 
     _run(("docker", "--version"))
     _run(("docker", "compose", "version"))
