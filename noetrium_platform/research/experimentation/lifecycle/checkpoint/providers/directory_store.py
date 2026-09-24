@@ -11,6 +11,12 @@ from noetrium_platform.foundation.kernel.kernel.durability import (
 )
 
 from .codec import RunCheckpointManifestCodec
+from .publication_intent import (
+    CheckpointPublicationIntent,
+    CheckpointPublicationIntentConflict,
+    CheckpointPublicationIntentCorruptionError,
+    DirectoryCheckpointPublicationIntentStore,
+)
 from ..api.contracts import (
     RunCheckpointBundle,
     RunCheckpointConflict,
@@ -35,6 +41,10 @@ class DirectoryRunCheckpointStore(RunCheckpointStore):
         self.manifests.mkdir(parents=True, exist_ok=True)
         self.manifest_locks.mkdir(parents=True, exist_ok=True)
         self.codec = RunCheckpointManifestCodec()
+        self._intents = DirectoryCheckpointPublicationIntentStore(
+            self.root,
+            namespace="run",
+        )
 
     @staticmethod
     def _sha(payload: bytes) -> str:
@@ -50,6 +60,54 @@ class DirectoryRunCheckpointStore(RunCheckpointStore):
     def _manifest_lock_path(self, checkpoint_id: str) -> Path:
         safe = hashlib.sha256(checkpoint_id.encode("utf-8")).hexdigest()
         return self.manifest_locks / f"{safe}.lock"
+
+    def _publication_intent(
+        self,
+        manifest: RunCheckpointManifest,
+        encoded: bytes,
+        participant_payloads: tuple[RunParticipantPayload, ...],
+    ) -> CheckpointPublicationIntent:
+        return CheckpointPublicationIntent(
+            namespace="run",
+            checkpoint_id=manifest.checkpoint_id,
+            manifest_sha256=self._intents.manifest_digest(encoded),
+            blob_sha256s=tuple(
+                sorted(
+                    {
+                        item.checkpoint.ref.payload_sha256
+                        for item in participant_payloads
+                    }
+                )
+            ),
+        )
+
+    def _publish_intent(
+        self,
+        intent: CheckpointPublicationIntent,
+    ) -> None:
+        try:
+            self._intents.publish(intent)
+        except CheckpointPublicationIntentConflict as exc:
+            raise RunCheckpointConflict(str(exc)) from exc
+        except CheckpointPublicationIntentCorruptionError as exc:
+            raise RunCheckpointIntegrityError(str(exc)) from exc
+
+    def _clear_intent(
+        self,
+        intent: CheckpointPublicationIntent,
+        *,
+        manifest_committed: bool,
+    ) -> None:
+        try:
+            self._intents.clear(intent)
+        except CheckpointPublicationIntentConflict as exc:
+            if manifest_committed:
+                raise RunCheckpointIntegrityError(
+                    "committed checkpoint has conflicting publication intent"
+                ) from exc
+            raise RunCheckpointConflict(str(exc)) from exc
+        except CheckpointPublicationIntentCorruptionError as exc:
+            raise RunCheckpointIntegrityError(str(exc)) from exc
 
     def _write_blob(self, payload: bytes, expected_digest: str) -> None:
         actual = self._sha(payload)
@@ -78,6 +136,11 @@ class DirectoryRunCheckpointStore(RunCheckpointStore):
             ) from exc
         path = self._manifest_path(manifest.checkpoint_id)
         encoded = self.codec.encode(manifest)
+        intent = self._publication_intent(
+            manifest,
+            encoded,
+            participant_payloads,
+        )
         with InterprocessFileLock(
             self._manifest_lock_path(manifest.checkpoint_id)
         ):
@@ -88,16 +151,22 @@ class DirectoryRunCheckpointStore(RunCheckpointStore):
                         "checkpoint id is already bound to different state: "
                         f"{manifest.checkpoint_id}"
                     )
+                # A crash may have committed the manifest before clearing its
+                # intent. Exact idempotent retry converges that final step.
+                self._clear_intent(intent, manifest_committed=True)
                 return current
-            # Bind the checkpoint identity before admitting any competing
-            # publisher. Blob publication is inside the same exact-id fence so
-            # a losing conflicting writer cannot leave unreferenced payloads.
+
+            # Publish durable ownership before any content blob. A crash after
+            # this point leaves a typed pending publication, never an anonymous
+            # orphan payload that age-based cleanup could misclassify.
+            self._publish_intent(intent)
             for item in participant_payloads:
                 self._write_blob(
                     item.checkpoint.opaque_payload,
                     item.checkpoint.ref.payload_sha256,
                 )
             atomic_replace_bytes(path, encoded)
+            self._clear_intent(intent, manifest_committed=True)
             return manifest
 
     def load(self, checkpoint_id: str) -> RunCheckpointBundle:
