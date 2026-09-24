@@ -3,13 +3,13 @@
     "parse_errors": 0,
     "python_files": 3688,
     "python_import_edges": 6950,
-    "symbols": 5037,
+    "symbols": 5044,
     "tracked_files": 4324,
     "typescript_javascript_files": 11
   },
   "language_symbol_counts": {
     "javascript": 1,
-    "python": 5031,
+    "python": 5038,
     "typescript": 5
   },
   "parse_errors": [],
@@ -270,6 +270,12 @@
       "source_module": "noetrium_platform.capabilities.environment.api",
       "source_role": "core_platform",
       "target_module": "noetrium_platform.capabilities.environment.embodied.api",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "noetrium_platform.capabilities.environment.api",
+      "source_role": "core_platform",
+      "target_module": "noetrium_platform.capabilities.environment.software.api",
       "target_role": "core_platform"
     },
     {
@@ -7799,7 +7805,25 @@
     {
       "source_module": "noetrium_platform.evidence.artifact.content.providers.blob_store",
       "source_role": "core_platform",
+      "target_module": "noetrium_platform.foundation.kernel.kernel",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "noetrium_platform.evidence.artifact.content.providers.blob_store",
+      "source_role": "core_platform",
       "target_module": "noetrium_platform.foundation.kernel.kernel.durability",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "noetrium_platform.evidence.artifact.content.providers.blob_store",
+      "source_role": "core_platform",
+      "target_module": "noetrium_platform.foundation.kernel.kernel.durability.checksummed_document",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "noetrium_platform.evidence.artifact.content.providers.blob_store",
+      "source_role": "core_platform",
+      "target_module": "noetrium_platform.foundation.kernel.kernel.durability.durable_file",
       "target_role": "core_platform"
     },
     {
@@ -8004,6 +8028,12 @@
       "source_module": "noetrium_platform.evidence.data._canonical",
       "source_role": "core_platform",
       "target_module": "noetrium_platform.foundation.kernel.kernel",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "noetrium_platform.evidence.data.api",
+      "source_role": "core_platform",
+      "target_module": "noetrium_platform.evidence.data.projection.api",
       "target_role": "core_platform"
     },
     {
@@ -13697,36 +13727,6 @@
     {
       "source_module": "noetrium_platform.product.research_authoring",
       "source_role": "core_platform",
-      "target_module": "noetrium_platform.capabilities.environment.embodied.api",
-      "target_role": "core_platform"
-    },
-    {
-      "source_module": "noetrium_platform.product.research_authoring",
-      "source_role": "core_platform",
-      "target_module": "noetrium_platform.capabilities.environment.software.api",
-      "target_role": "core_platform"
-    },
-    {
-      "source_module": "noetrium_platform.product.research_authoring",
-      "source_role": "core_platform",
-      "target_module": "noetrium_platform.evidence.artifact.content.api",
-      "target_role": "core_platform"
-    },
-    {
-      "source_module": "noetrium_platform.product.research_authoring",
-      "source_role": "core_platform",
-      "target_module": "noetrium_platform.evidence.data.projection.api",
-      "target_role": "core_platform"
-    },
-    {
-      "source_module": "noetrium_platform.product.research_authoring",
-      "source_role": "core_platform",
-      "target_module": "noetrium_platform.evidence.data.query.api",
-      "target_role": "core_platform"
-    },
-    {
-      "source_module": "noetrium_platform.product.research_authoring",
-      "source_role": "core_platform",
       "target_module": "noetrium_platform.foundation.kernel.kernel",
       "target_role": "core_platform"
     },
@@ -13734,12 +13734,6 @@
       "source_module": "noetrium_platform.product.research_authoring",
       "source_role": "core_platform",
       "target_module": "noetrium_platform.research.experimentation.api",
-      "target_role": "core_platform"
-    },
-    {
-      "source_module": "noetrium_platform.product.research_authoring",
-      "source_role": "core_platform",
-      "target_module": "noetrium_platform.research.experimentation.workbench.api",
       "target_role": "core_platform"
     },
     {
@@ -22764,6 +22758,12 @@
       "source_module": "tests.test_artifact_blob_cas_v1",
       "source_role": "tests",
       "target_module": "noetrium_platform.evidence.artifact.content.providers.blob_store",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "tests.test_artifact_blob_cas_v1",
+      "source_role": "tests",
+      "target_module": "noetrium_platform.foundation.kernel.kernel",
       "target_role": "core_platform"
     },
     {
@@ -41717,7 +41717,7 @@
   ],
   "role_import_counts": [
     {
-      "count": 2610,
+      "count": 2609,
       "source_role": "core_platform",
       "target_role": "core_platform"
     },
@@ -41777,7 +41777,7 @@
       "target_role": "research_reproductions"
     },
     {
-      "count": 2811,
+      "count": 2812,
       "source_role": "tests",
       "target_role": "core_platform"
     },
@@ -41844,7 +41844,7 @@
     "tooling": 79
   },
   "role_symbol_counts": {
-    "core_platform": 3382,
+    "core_platform": 3389,
     "examples": 3,
     "other": 23,
     "public_facade": 4,
@@ -41856,7 +41856,7 @@
     "tooling": 39
   },
   "schema": "noetrium-repository-code-architecture-index.v1",
-  "source_git_sha": "e0865f11275ba9b55a5f951b951f3ac6ec4fb0ee",
+  "source_git_sha": "81861919ea9fc84c86bf9530240e644a2233c343",
   "symbols": [
     {
       "bases": [],
@@ -69264,7 +69264,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 10,
+      "line": 17,
       "methods": [
         "__post_init__"
       ],
@@ -69276,13 +69276,130 @@
     },
     {
       "bases": [
+        "StrEnum"
+      ],
+      "decorators": [],
+      "fields": [
+        "ACTIVE",
+        "RETIRING",
+        "PURGED"
+      ],
+      "kind": "enum",
+      "language": "python",
+      "line": 30,
+      "methods": [],
+      "module": "noetrium_platform.evidence.artifact.content.api.blob",
+      "name": "ArtifactBlobLifecycleState",
+      "path": "noetrium_platform/evidence/artifact/content/api/blob.py",
+      "qualname": "noetrium_platform.evidence.artifact.content.api.blob.ArtifactBlobLifecycleState",
+      "role": "core_platform"
+    },
+    {
+      "bases": [],
+      "decorators": [
+        "dataclass(frozen=True, slots=True)"
+      ],
+      "fields": [
+        "content_sha256: str",
+        "size_bytes: int",
+        "generation: int",
+        "closures: tuple[DurableCarrierReferenceClosure, ...]",
+        "proof_digest: str"
+      ],
+      "kind": "dataclass",
+      "language": "python",
+      "line": 37,
+      "methods": [
+        "__post_init__",
+        "eligible"
+      ],
+      "module": "noetrium_platform.evidence.artifact.content.api.blob",
+      "name": "ArtifactBlobGcAssessment",
+      "path": "noetrium_platform/evidence/artifact/content/api/blob.py",
+      "qualname": "noetrium_platform.evidence.artifact.content.api.blob.ArtifactBlobGcAssessment",
+      "role": "core_platform"
+    },
+    {
+      "bases": [],
+      "decorators": [
+        "dataclass(frozen=True, slots=True)"
+      ],
+      "fields": [
+        "content_sha256: str",
+        "generation: int",
+        "state: ArtifactBlobLifecycleState",
+        "gc_proof_digest: str | None"
+      ],
+      "kind": "dataclass",
+      "language": "python",
+      "line": 97,
+      "methods": [
+        "__post_init__"
+      ],
+      "module": "noetrium_platform.evidence.artifact.content.api.blob",
+      "name": "ArtifactBlobGeneration",
+      "path": "noetrium_platform/evidence/artifact/content/api/blob.py",
+      "qualname": "noetrium_platform.evidence.artifact.content.api.blob.ArtifactBlobGeneration",
+      "role": "core_platform"
+    },
+    {
+      "bases": [
+        "Protocol"
+      ],
+      "decorators": [
+        "runtime_checkable"
+      ],
+      "fields": [
+        "ref: ArtifactBlobRef",
+        "generation: ArtifactBlobGeneration"
+      ],
+      "kind": "protocol",
+      "language": "python",
+      "line": 140,
+      "methods": [
+        "read",
+        "assess_gc",
+        "purge"
+      ],
+      "module": "noetrium_platform.evidence.artifact.content.api.blob",
+      "name": "ArtifactBlobFencePort",
+      "path": "noetrium_platform/evidence/artifact/content/api/blob.py",
+      "qualname": "noetrium_platform.evidence.artifact.content.api.blob.ArtifactBlobFencePort",
+      "role": "core_platform"
+    },
+    {
+      "bases": [
+        "Protocol"
+      ],
+      "decorators": [
+        "runtime_checkable"
+      ],
+      "fields": [],
+      "kind": "protocol",
+      "language": "python",
+      "line": 160,
+      "methods": [
+        "publish_fenced",
+        "fence",
+        "generation",
+        "assess_gc",
+        "purge"
+      ],
+      "module": "noetrium_platform.evidence.artifact.content.api.blob",
+      "name": "ArtifactBlobLifecyclePort",
+      "path": "noetrium_platform/evidence/artifact/content/api/blob.py",
+      "qualname": "noetrium_platform.evidence.artifact.content.api.blob.ArtifactBlobLifecyclePort",
+      "role": "core_platform"
+    },
+    {
+      "bases": [
         "RuntimeError"
       ],
       "decorators": [],
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 23,
+      "line": 195,
       "methods": [],
       "module": "noetrium_platform.evidence.artifact.content.api.blob",
       "name": "ArtifactBlobStoreError",
@@ -69300,7 +69417,7 @@
       "fields": [],
       "kind": "protocol",
       "language": "python",
-      "line": 27,
+      "line": 199,
       "methods": [
         "resolve"
       ],
@@ -69322,7 +69439,7 @@
       ],
       "kind": "protocol",
       "language": "python",
-      "line": 39,
+      "line": 211,
       "methods": [
         "put",
         "get",
@@ -69854,26 +69971,93 @@
       "role": "core_platform"
     },
     {
+      "bases": [],
+      "decorators": [
+        "dataclass(frozen=True, slots=True)"
+      ],
+      "fields": [
+        "content_sha256: str",
+        "generation: int",
+        "state: ArtifactBlobLifecycleState",
+        "size_bytes: int",
+        "gc_proof_digest: str | None"
+      ],
+      "kind": "dataclass",
+      "language": "python",
+      "line": 51,
+      "methods": [
+        "__post_init__",
+        "generation_view",
+        "document"
+      ],
+      "module": "noetrium_platform.evidence.artifact.content.providers.blob_store",
+      "name": "_BlobLifecycleRecord",
+      "path": "noetrium_platform/evidence/artifact/content/providers/blob_store.py",
+      "qualname": "noetrium_platform.evidence.artifact.content.providers.blob_store._BlobLifecycleRecord",
+      "role": "core_platform"
+    },
+    {
       "bases": [
-        "ArtifactBlobStorePort"
+        "ArtifactBlobFencePort"
+      ],
+      "decorators": [
+        "dataclass(slots=True)"
+      ],
+      "fields": [
+        "_store: 'DirectoryArtifactBlobStore'",
+        "ref: ArtifactBlobRef",
+        "generation: ArtifactBlobGeneration"
+      ],
+      "kind": "dataclass",
+      "language": "python",
+      "line": 109,
+      "methods": [
+        "read",
+        "assess_gc",
+        "purge"
+      ],
+      "module": "noetrium_platform.evidence.artifact.content.providers.blob_store",
+      "name": "_DirectoryArtifactBlobFence",
+      "path": "noetrium_platform/evidence/artifact/content/providers/blob_store.py",
+      "qualname": "noetrium_platform.evidence.artifact.content.providers.blob_store._DirectoryArtifactBlobFence",
+      "role": "core_platform"
+    },
+    {
+      "bases": [
+        "ArtifactBlobStorePort",
+        "ArtifactBlobLifecyclePort"
       ],
       "decorators": [],
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 20,
+      "line": 144,
       "methods": [
         "__init__",
         "_digest",
         "_path",
+        "_lifecycle_path",
         "_shard_index",
         "_lock_path",
         "_verify_existing",
+        "_read_ref_payload_unlocked",
         "_cleanup_staging",
+        "_read_lifecycle_unlocked",
+        "_write_lifecycle_unlocked",
+        "_active_record_for_publish_unlocked",
+        "_generation_under_lock",
+        "publish_fenced",
+        "fence",
         "put",
         "resolve",
         "get",
-        "verify"
+        "verify",
+        "generation",
+        "_assess_gc_under_lock",
+        "_require_gc",
+        "_purge_under_lock",
+        "assess_gc",
+        "purge"
       ],
       "module": "noetrium_platform.evidence.artifact.content.providers.blob_store",
       "name": "DirectoryArtifactBlobStore",
@@ -111959,7 +112143,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 43,
+      "line": 45,
       "methods": [
         "__init__",
         "_sha",

@@ -3,7 +3,7 @@
   "architecture_complexity": {
     "authorities": 20,
     "contract_declarations": 184,
-    "import_edges": 5321,
+    "import_edges": 5324,
     "subsystems": 15,
     "top_level_systems": 16
   },
@@ -23,7 +23,7 @@
     "effective_limits": {
       "authorities": 31,
       "contract_declarations": 184,
-      "import_edges": 5321,
+      "import_edges": 5324,
       "subsystems": 15,
       "top_level_systems": 16
     },
@@ -627,7 +627,7 @@
       "seam_id": "completed"
     }
   ],
-  "import_edges": 5321,
+  "import_edges": 5324,
   "import_violations": [],
   "layer_violations": [],
   "operation_graph": [
@@ -873,47 +873,10 @@
     }
   ],
   "package_cycles": [],
-  "report_sha256": "479ad09be3914b566add96b503e311a9dca34253f00b22f00ffa3746019f8e66",
+  "report_sha256": "d44bd8b287afdf4ad221480b9e4fd3f613656ab142ea1b348e098c82f75a38cb",
   "source_authority_violations": [],
-  "source_digest": "92fc89b35cde924a27ebeb1459300a7d9448c1a5d5a50b8c6f0d9ad8d75f85dd",
-  "source_invariant_violations": [
-    {
-      "detail": "noetrium_platform.product.research_authoring -> noetrium_platform.capabilities.environment.software.api; required facade=noetrium_platform.research.experimentation.api",
-      "invariant": "skip_layer_dependency",
-      "line": 11,
-      "path": "noetrium_platform/product/research_authoring.py"
-    },
-    {
-      "detail": "noetrium_platform.product.research_authoring -> noetrium_platform.evidence.artifact.content.api; required facade=noetrium_platform.research.experimentation.api",
-      "invariant": "skip_layer_dependency",
-      "line": 17,
-      "path": "noetrium_platform/product/research_authoring.py"
-    },
-    {
-      "detail": "noetrium_platform.product.research_authoring -> noetrium_platform.capabilities.environment.embodied.api; required facade=noetrium_platform.research.experimentation.api",
-      "invariant": "skip_layer_dependency",
-      "line": 18,
-      "path": "noetrium_platform/product/research_authoring.py"
-    },
-    {
-      "detail": "noetrium_platform.product.research_authoring -> noetrium_platform.evidence.data.projection.api; required facade=noetrium_platform.research.experimentation.api",
-      "invariant": "skip_layer_dependency",
-      "line": 24,
-      "path": "noetrium_platform/product/research_authoring.py"
-    },
-    {
-      "detail": "noetrium_platform.product.research_authoring -> noetrium_platform.evidence.data.query.api; required facade=noetrium_platform.research.experimentation.api",
-      "invariant": "skip_layer_dependency",
-      "line": 25,
-      "path": "noetrium_platform/product/research_authoring.py"
-    },
-    {
-      "detail": "noetrium_platform.product.research_authoring -> noetrium_platform.research.experimentation.workbench.api; required facade=noetrium_platform.research.experimentation.api",
-      "invariant": "bypass_lower_layer_facade",
-      "line": 50,
-      "path": "noetrium_platform/product/research_authoring.py"
-    }
-  ],
+  "source_digest": "1380a6507e03e32ed07439e24882d573f6b244f161512744fc4a8e3a55bf4f61",
+  "source_invariant_violations": [],
   "source_root": ".",
   "subsystem_graph": [
     {
@@ -1881,7 +1844,7 @@
   "top_optimization_risks": [
     {
       "exception_handlers": 0,
-      "import_fan_in": 461,
+      "import_fan_in": 462,
       "import_fan_out": 29,
       "io_sites": 0,
       "lock_sites": 0,
@@ -1892,7 +1855,7 @@
         "HIGH_FAN_IN",
         "HIGH_FAN_OUT"
       ],
-      "risk_score": 1931,
+      "risk_score": 1935,
       "self_mutation_sites": 0,
       "serialization_sites": 0
     },
@@ -1989,7 +1952,7 @@
     },
     {
       "exception_handlers": 11,
-      "import_fan_in": 60,
+      "import_fan_in": 61,
       "import_fan_out": 1,
       "io_sites": 8,
       "lock_sites": 0,
@@ -2002,7 +1965,7 @@
         "FAILURE_BRANCH_CONCENTRATION",
         "LONG_FUNCTION"
       ],
-      "risk_score": 435,
+      "risk_score": 439,
       "self_mutation_sites": 0,
       "serialization_sites": 0
     },
@@ -2132,8 +2095,8 @@
     },
     {
       "exception_handlers": 0,
-      "import_fan_in": 75,
-      "import_fan_out": 23,
+      "import_fan_in": 76,
+      "import_fan_out": 24,
       "io_sites": 0,
       "lock_sites": 0,
       "long_functions": 0,
@@ -2143,7 +2106,7 @@
         "HIGH_FAN_IN",
         "HIGH_FAN_OUT"
       ],
-      "risk_score": 369,
+      "risk_score": 376,
       "self_mutation_sites": 0,
       "serialization_sites": 0
     },
@@ -2166,6 +2129,25 @@
       "serialization_sites": 0
     },
     {
+      "exception_handlers": 12,
+      "import_fan_in": 2,
+      "import_fan_out": 9,
+      "io_sites": 6,
+      "lock_sites": 0,
+      "long_functions": 4,
+      "module": "noetrium_platform.research.experimentation.lifecycle.checkpoint.providers.directory_store",
+      "path": "noetrium_platform/research/experimentation/lifecycle/checkpoint/providers/directory_store.py",
+      "reason_codes": [
+        "IO_CONCENTRATION",
+        "STATE_MUTATION_CONCENTRATION",
+        "FAILURE_BRANCH_CONCENTRATION",
+        "LONG_FUNCTION"
+      ],
+      "risk_score": 342,
+      "self_mutation_sites": 11,
+      "serialization_sites": 7
+    },
+    {
       "exception_handlers": 0,
       "import_fan_in": 80,
       "import_fan_out": 7,
@@ -2180,25 +2162,6 @@
       "risk_score": 341,
       "self_mutation_sites": 0,
       "serialization_sites": 0
-    },
-    {
-      "exception_handlers": 12,
-      "import_fan_in": 2,
-      "import_fan_out": 8,
-      "io_sites": 6,
-      "lock_sites": 0,
-      "long_functions": 4,
-      "module": "noetrium_platform.research.experimentation.lifecycle.checkpoint.providers.directory_store",
-      "path": "noetrium_platform/research/experimentation/lifecycle/checkpoint/providers/directory_store.py",
-      "reason_codes": [
-        "IO_CONCENTRATION",
-        "STATE_MUTATION_CONCENTRATION",
-        "FAILURE_BRANCH_CONCENTRATION",
-        "LONG_FUNCTION"
-      ],
-      "risk_score": 339,
-      "self_mutation_sites": 11,
-      "serialization_sites": 7
     },
     {
       "exception_handlers": 13,
