@@ -671,13 +671,12 @@ class StrictResearchOSControl(
     def active_revision_digest(self, execution_id: str) -> str:
         if type(execution_id) is not str or not execution_id.strip():
             raise ValueError("Research OS execution_id must be non-empty")
-        active = self._store.active_cut(execution_id)
-        if active is None:
+        observed = self._store.active_execution_snapshot(execution_id)
+        if observed is None:
             raise ResearchGraphExecutionConflict(
                 "Research OS execution has no active durable cut"
             )
-        snapshot = self._store.snapshot(active.cut_id)
-        return snapshot.research_revision_digest
+        return observed.execution.research_revision_digest
 
     def _migration_reuse_proofs(
         self,
@@ -940,13 +939,19 @@ class StrictResearchOSControl(
             request.target.execution_id,
             source,
         )
-        active = self._store.active_cut(request.target.execution_id)
-        if active is None or active.cut_id != source_cut.cut_id:
+        observed = self._store.active_execution_snapshot(
+            request.target.execution_id
+        )
+        if (
+            observed is None
+            or observed.active_cut.cut_id != source_cut.cut_id
+        ):
             raise ResearchGraphExecutionConflict(
                 "Research OS migration source is not the active durable cut"
             )
-        snapshot = self._store.snapshot(source_cut.cut_id)
-        source_control = self._store.control_state(source_cut.cut_id)
+        active = observed.active_cut
+        snapshot = observed.execution
+        source_control = observed.control
         if source_control.phase is not ResearchGraphControlPhase.PAUSED:
             raise ResearchGraphExecutionConflict(
                 "Research OS migration requires a paused source cut; "
