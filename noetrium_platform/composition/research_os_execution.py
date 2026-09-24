@@ -1383,7 +1383,7 @@ class StrictResearchOSControl(
             control = self._store.pause_if_quiescent(
                 cut.cut_id,
                 expected_generation=control.generation,
-                now_ns=time.time_ns(),
+                now_ns=transition_now_ns,
             )
             snapshot = self._store.snapshot(cut.cut_id)
         return self._durable_control_receipt(
@@ -1741,13 +1741,14 @@ class StrictResearchOSControl(
                 artifact_lineage=self._artifact_lineage,
             ).publish_recovered_result(node, proof.result)
 
+        transition_now_ns = time.time_ns()
         self._store.resolve_reconciliation(
             cut.cut_id,
             node.graph_node_id,
             disposition=proof.disposition,
-            now_ns=time.time_ns(),
+            now_ns=transition_now_ns,
             retry_not_before_ns=(
-                time.time_ns()
+                transition_now_ns
                 if proof.disposition is ResearchGraphReconciliationDisposition.RETRY
                 else None
             ),
@@ -1762,7 +1763,7 @@ class StrictResearchOSControl(
                 cut.cut_id,
                 node.graph_node_id,
                 expected_generation=node_control.generation,
-                now_ns=time.time_ns(),
+                now_ns=transition_now_ns,
             )
         if global_recovery and not snapshot.reconciliation_required_node_ids:
             control = self._store.settle_recovery(
