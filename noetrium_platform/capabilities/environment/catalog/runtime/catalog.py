@@ -24,7 +24,6 @@ from noetrium_platform.capabilities.environment.catalog.api import (
     EnvironmentProfileLifecycle,
     EnvironmentProfileReferenceSummary,
     EnvironmentProfileRevision,
-    EnvironmentProfileUseIntent,
     EnvironmentSpec,
     EnvironmentTemplate,
     ExecutionEnvironmentKind,
@@ -149,39 +148,66 @@ class ExecutionEnvironmentCatalog:
         self._profile_revisions[(profile_id, profile_revision)] = updated
         return updated
 
-    def _require_profile_admission(
+    def _require_new_profile_admission(
         self,
         profile_id: str,
         profile_revision: str,
-        *,
-        intent: EnvironmentProfileUseIntent,
     ) -> EnvironmentProfileRevision:
-        if type(intent) is not EnvironmentProfileUseIntent:
-            raise TypeError(
-                "environment profile admission intent must be EnvironmentProfileUseIntent"
-            )
         profile = self.profile_revision(profile_id, profile_revision)
-        allowed_intents = {
-            EnvironmentProfileLifecycle.ACTIVE: frozenset(
-                {
-                    EnvironmentProfileUseIntent.NEW_EXECUTION,
-                    EnvironmentProfileUseIntent.RESUME_PINNED,
-                }
-            ),
-            EnvironmentProfileLifecycle.DRAINING: frozenset(
-                {EnvironmentProfileUseIntent.RESUME_PINNED}
-            ),
-            EnvironmentProfileLifecycle.RETIRED: frozenset(
-                {EnvironmentProfileUseIntent.HISTORICAL_RECOVERY}
-            ),
-        }
-        if intent in allowed_intents[profile.lifecycle]:
-            return profile
-        raise EnvironmentCatalogConflict(
-            "environment profile revision rejects use intent: "
-            f"{profile.profile_id}@{profile.profile_revision} "
-            f"state={profile.lifecycle.value} intent={intent.value}"
-        )
+        if profile.lifecycle is not EnvironmentProfileLifecycle.ACTIVE:
+            raise EnvironmentCatalogConflict(
+                "environment profile revision does not admit new work: "
+                f"{profile.profile_id}@{profile.profile_revision} "
+                f"state={profile.lifecycle.value}"
+            )
+        return profile
+
+    def _require_recovery_pin(
+        self,
+        profile_id: str,
+        profile_revision: str,
+        runtime_identity_digest: str,
+        *,
+        role: str,
+        scope: ScopeIdentity,
+    ) -> tuple[EnvironmentBinding, EnvironmentInstance]:
+        profile = self.profile_revision(profile_id, profile_revision)
+        if profile.lifecycle is EnvironmentProfileLifecycle.RETIRED:
+            raise EnvironmentCatalogConflict(
+                "retired environment profile revisions cannot enter live execution"
+            )
+        key = (role, scope.key)
+        try:
+            binding = self._binding_rows[key]
+        except KeyError as exc:
+            raise EnvironmentCatalogConflict(
+                "environment recovery requires an existing durable binding pin"
+            ) from exc
+        pinned = self._instance(binding.instance_id)
+        if (
+            pinned.profile_id != profile_id
+            or pinned.profile_revision != profile_revision
+            or pinned.runtime_identity_digest != runtime_identity_digest
+        ):
+            raise EnvironmentCatalogConflict(
+                "environment recovery request does not match the durable binding pin"
+            )
+        if pinned.state is not EnvironmentInstanceState.IN_USE:
+            raise EnvironmentCatalogConflict(
+                "environment recovery binding does not reference an in-use instance"
+            )
+        return binding, pinned
+
+    @staticmethod
+    def _validate_fresh_instance(instance: EnvironmentInstance) -> None:
+        if instance.state is not EnvironmentInstanceState.CLEAN:
+            raise EnvironmentCatalogConflict(
+                "new environment instance must enter catalog CLEAN"
+            )
+        if instance.generation != 0:
+            raise EnvironmentCatalogConflict(
+                "new environment instance generation must start at zero"
+            )
 
     def register_template(self, template: EnvironmentTemplate) -> None:
         self._put(self._templates, template.template_id, template)
@@ -259,25 +285,37 @@ class ExecutionEnvironmentCatalog:
             environment=tuple(sorted(environment.items())),
         )
 
-    def register_instance(
+    def register_instance(self, instance: EnvironmentInstance) -> None:
+        self._require_new_profile_admission(
+            instance.profile_id,
+            instance.profile_revision,
+        )
+        self._validate_fresh_instance(instance)
+        self._put(self._instances, instance.instance_id, instance)
+
+    def register_recovery_instance(
         self,
         instance: EnvironmentInstance,
         *,
-        intent: EnvironmentProfileUseIntent = EnvironmentProfileUseIntent.NEW_EXECUTION,
+        role: str,
+        scope: ScopeIdentity,
     ) -> None:
-        self._require_profile_admission(
+        _binding, pinned = self._require_recovery_pin(
             instance.profile_id,
             instance.profile_revision,
-            intent=intent,
+            instance.runtime_identity_digest,
+            role=role,
+            scope=scope,
         )
-        if instance.state is not EnvironmentInstanceState.CLEAN:
+        if instance.scope != scope:
             raise EnvironmentCatalogConflict(
-                "new environment instance must enter catalog CLEAN"
+                "recovery instance scope must match the pinned execution scope"
             )
-        if instance.generation != 0:
+        if instance.instance_id == pinned.instance_id:
             raise EnvironmentCatalogConflict(
-                "new environment instance generation must start at zero"
+                "recovery instance must be a distinct replacement instance"
             )
+        self._validate_fresh_instance(instance)
         self._put(self._instances, instance.instance_id, instance)
 
     def _rebuild_bindings(self) -> None:
@@ -315,12 +353,7 @@ class ExecutionEnvironmentCatalog:
             )
         )
 
-    def bind(
-        self,
-        binding: EnvironmentBinding,
-        *,
-        intent: EnvironmentProfileUseIntent = EnvironmentProfileUseIntent.NEW_EXECUTION,
-    ) -> None:
+    def bind(self, binding: EnvironmentBinding) -> None:
         instance = self._instance(binding.instance_id)
         key = (binding.role, binding.scope.key)
         existing = self._binding_rows.get(key)
@@ -333,10 +366,9 @@ class ExecutionEnvironmentCatalog:
 
         existing_bindings = self._bindings_for_instance(binding.instance_id)
         if instance.state is EnvironmentInstanceState.CLEAN:
-            self._require_profile_admission(
+            self._require_new_profile_admission(
                 instance.profile_id,
                 instance.profile_revision,
-                intent=intent,
             )
             next_instance = replace(
                 instance,
@@ -346,9 +378,9 @@ class ExecutionEnvironmentCatalog:
             )
         elif instance.state is EnvironmentInstanceState.IN_USE:
             scopes = {row.scope.key for row in existing_bindings}
-            if scopes and scopes != {binding.scope.key}:
+            if not scopes or scopes != {binding.scope.key}:
                 raise EnvironmentCatalogConflict(
-                    "environment instance cannot be shared across execution scopes"
+                    "in-use environment instance can only extend its pinned scope"
                 )
             next_instance = instance
         else:
@@ -377,9 +409,8 @@ class ExecutionEnvironmentCatalog:
         binding_id: str,
         role: str,
         scope: ScopeIdentity,
-        intent: EnvironmentProfileUseIntent = EnvironmentProfileUseIntent.NEW_EXECUTION,
     ) -> EnvironmentInstanceAcquisition:
-        """Select and bind one CLEAN profile revision as one authority operation."""
+        """Atomically acquire one CLEAN ACTIVE revision for new work."""
 
         for field_name, value in (
             ("profile_id", profile_id),
@@ -412,11 +443,7 @@ class ExecutionEnvironmentCatalog:
             raise TypeError(
                 "environment reusable acquisition scope must be ScopeIdentity"
             )
-        self._require_profile_admission(
-            profile_id,
-            profile_revision,
-            intent=intent,
-        )
+        self._require_new_profile_admission(profile_id, profile_revision)
 
         candidates = tuple(
             sorted(
@@ -443,15 +470,90 @@ class ExecutionEnvironmentCatalog:
             role,
             candidate.instance_id,
         )
-        # Bypass virtual dispatch so a durable provider can wrap selection and
-        # binding in one persistence transition.
-        ExecutionEnvironmentCatalog.bind(
-            self,
-            binding,
-            intent=intent,
-        )
+        ExecutionEnvironmentCatalog.bind(self, binding)
         acquired = self._instance(candidate.instance_id)
         return EnvironmentInstanceAcquisition(binding, acquired)
+
+    def recover_reusable_instance(
+        self,
+        profile_id: str,
+        profile_revision: str,
+        runtime_identity_digest: str,
+        *,
+        role: str,
+        scope: ScopeIdentity,
+    ) -> EnvironmentInstanceAcquisition:
+        """Atomically replace an already-pinned ACTIVE/DRAINING instance."""
+
+        pinned_binding, pinned_instance = self._require_recovery_pin(
+            profile_id,
+            profile_revision,
+            runtime_identity_digest,
+            role=role,
+            scope=scope,
+        )
+        related_bindings = self._bindings_for_instance(pinned_instance.instance_id)
+        if not related_bindings:
+            raise EnvironmentCatalogConflict(
+                "environment recovery pin lost its binding set"
+            )
+        if {row.scope.key for row in related_bindings} != {scope.key}:
+            raise EnvironmentCatalogConflict(
+                "environment recovery cannot migrate bindings across scopes"
+            )
+
+        candidates = tuple(
+            sorted(
+                (
+                    row
+                    for row in self._instances.values()
+                    if row.instance_id != pinned_instance.instance_id
+                    and row.profile_id == profile_id
+                    and row.profile_revision == profile_revision
+                    and row.runtime_identity_digest == runtime_identity_digest
+                    and row.state is EnvironmentInstanceState.CLEAN
+                ),
+                key=lambda row: row.instance_id,
+            )
+        )
+        if not candidates:
+            raise EnvironmentCatalogNotFound(
+                ("recovery-replacement", profile_id, profile_revision, runtime_identity_digest)
+            )
+        replacement = candidates[0]
+        if replacement.scope != scope:
+            raise EnvironmentCatalogConflict(
+                "environment recovery replacement scope differs from pinned scope"
+            )
+
+        replacement = replace(
+            replacement,
+            state=EnvironmentInstanceState.IN_USE,
+            generation=replacement.generation + 1,
+            cleanliness_proof_digest=None,
+        )
+        self._instances[replacement.instance_id] = replacement
+        self._instances[pinned_instance.instance_id] = replace(
+            pinned_instance,
+            state=EnvironmentInstanceState.DIRTY,
+            cleanliness_proof_digest=None,
+        )
+
+        migrated: dict[str, EnvironmentBinding] = {}
+        for old in related_bindings:
+            new = EnvironmentBinding(
+                old.binding_id,
+                old.scope,
+                old.role,
+                replacement.instance_id,
+            )
+            self._binding_rows[(old.role, old.scope.key)] = new
+            migrated[old.role] = new
+        self._rebuild_bindings()
+        return EnvironmentInstanceAcquisition(
+            migrated[pinned_binding.role],
+            replacement,
+        )
 
     def unbind(self, role: str, scope: ScopeIdentity) -> EnvironmentBinding:
         key = (role, scope.key)
@@ -952,24 +1054,29 @@ class SQLiteExecutionEnvironmentCatalog(ExecutionEnvironmentCatalog):
         self._load()
         return super().resolve(name, scope)
 
-    def register_instance(
+    def register_instance(self, instance: EnvironmentInstance) -> None:
+        self._load()
+        super().register_instance(instance)
+        self._persist()
+
+    def register_recovery_instance(
         self,
         instance: EnvironmentInstance,
         *,
-        intent: EnvironmentProfileUseIntent = EnvironmentProfileUseIntent.NEW_EXECUTION,
+        role: str,
+        scope: ScopeIdentity,
     ) -> None:
         self._load()
-        super().register_instance(instance, intent=intent)
+        super().register_recovery_instance(
+            instance,
+            role=role,
+            scope=scope,
+        )
         self._persist()
 
-    def bind(
-        self,
-        binding: EnvironmentBinding,
-        *,
-        intent: EnvironmentProfileUseIntent = EnvironmentProfileUseIntent.NEW_EXECUTION,
-    ) -> None:
+    def bind(self, binding: EnvironmentBinding) -> None:
         self._load()
-        super().bind(binding, intent=intent)
+        super().bind(binding)
         self._persist()
 
     def acquire_reusable_instance(
@@ -981,7 +1088,6 @@ class SQLiteExecutionEnvironmentCatalog(ExecutionEnvironmentCatalog):
         binding_id: str,
         role: str,
         scope: ScopeIdentity,
-        intent: EnvironmentProfileUseIntent = EnvironmentProfileUseIntent.NEW_EXECUTION,
     ) -> EnvironmentInstanceAcquisition:
         def acquire_once() -> EnvironmentInstanceAcquisition:
             self._load()
@@ -993,13 +1099,43 @@ class SQLiteExecutionEnvironmentCatalog(ExecutionEnvironmentCatalog):
                 binding_id=binding_id,
                 role=role,
                 scope=scope,
-                intent=intent,
             )
             self._persist()
             return value
 
         return retry_until_deadline(
             acquire_once,
+            should_retry=lambda exc: isinstance(
+                exc,
+                EnvironmentCatalogStaleRevision,
+            ),
+            timeout_seconds=self.timeout_seconds,
+        )
+
+    def recover_reusable_instance(
+        self,
+        profile_id: str,
+        profile_revision: str,
+        runtime_identity_digest: str,
+        *,
+        role: str,
+        scope: ScopeIdentity,
+    ) -> EnvironmentInstanceAcquisition:
+        def recover_once() -> EnvironmentInstanceAcquisition:
+            self._load()
+            value = ExecutionEnvironmentCatalog.recover_reusable_instance(
+                self,
+                profile_id,
+                profile_revision,
+                runtime_identity_digest,
+                role=role,
+                scope=scope,
+            )
+            self._persist()
+            return value
+
+        return retry_until_deadline(
+            recover_once,
             should_retry=lambda exc: isinstance(
                 exc,
                 EnvironmentCatalogStaleRevision,
