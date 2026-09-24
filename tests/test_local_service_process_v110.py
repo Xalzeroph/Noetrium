@@ -9,6 +9,7 @@ from service_os_test_support import make_service_supervisor
 from dataclasses import replace
 import hashlib
 import os
+import signal
 from pathlib import Path
 import sys
 import tempfile
@@ -159,6 +160,102 @@ class LocalServiceProcessV110Tests(unittest.TestCase):
             finally:
                 stopped = second.stop_exact(launch)
                 self.assertEqual(stopped.phase, ServicePhase.EXITED)
+
+    @unittest.skipUnless(
+        sys.platform.startswith("linux"),
+        "Linux process backend requires POSIX process groups",
+    )
+    def test_spawn_identity_failure_force_fallback_is_reaped(self):
+        from noetrium_platform.infrastructure.lifecycle.service.runtime import linux_spawn
+        from noetrium_platform.infrastructure.lifecycle.service.runtime.linux_spawn import (
+            LinuxProcessSpawner,
+        )
+
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            environment = MaterializedServiceEnvironment.from_mapping(
+                {"RP_SENTINEL": "cleanup"}, "env:spawn-cleanup"
+            )
+            launch = contract(root, environment)
+            captures = DirectoryCapturePathProvider(
+                root / "captures"
+            ).paths(launch)
+
+            class FakeChild:
+                pid = 4321
+
+                def __init__(self):
+                    self.returncode = None
+                    self.wait_calls = 0
+
+                def poll(self):
+                    return self.returncode
+
+                def wait(self, timeout=None):
+                    del timeout
+                    self.wait_calls += 1
+                    if self.returncode is None:
+                        raise TimeoutError("child was not killed")
+                    return self.returncode
+
+            class FailingProcfs:
+                def visible_pid(self, pid):
+                    del pid
+                    raise RuntimeError("simulated identity capture failure")
+
+            class Children:
+                def remember(self, child):
+                    raise AssertionError(
+                        f"unidentified child must not be registered: {child}"
+                    )
+
+            class FailedHandle:
+                def result(self, timeout=None):
+                    del timeout
+                    raise RuntimeError("simulated structured cleanup failure")
+
+            class FailingSupervisor:
+                def terminate(self, *args, **kwargs):
+                    del args, kwargs
+                    return FailedHandle()
+
+            child = FakeChild()
+            signals = []
+
+            def force_group(pid, sig):
+                signals.append((pid, sig))
+                child.returncode = -int(sig)
+                return True
+
+            spawner = LinuxProcessSpawner(
+                FailingProcfs(),
+                Children(),
+                FailingSupervisor(),
+            )
+            with patch.object(
+                linux_spawn.subprocess,
+                "Popen",
+                return_value=child,
+            ), patch.object(
+                linux_spawn,
+                "signal_new_session_process_group",
+                force_group,
+            ):
+                with self.assertRaisesRegex(
+                    RuntimeError,
+                    "simulated identity capture failure",
+                ) as caught:
+                    spawner.start(
+                        launch,
+                        environment,
+                        captures,
+                    )
+
+            self.assertEqual(signals, [(4321, signal.SIGKILL)])
+            self.assertEqual(child.wait_calls, 1)
+            notes = "\n".join(getattr(caught.exception, "__notes__", ()))
+            self.assertIn("structured spawn cleanup failed", notes)
+            self.assertIn("force-kill/reap fallback converged", notes)
 
     def test_materialized_environment_drift_fails_before_spawn(self):
         with tempfile.TemporaryDirectory() as td:
