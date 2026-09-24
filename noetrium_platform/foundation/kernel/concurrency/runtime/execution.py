@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import time
 from typing import Any, Callable, TypeVar
 
 from noetrium_platform.foundation.kernel.concurrency.api import (
@@ -11,6 +10,7 @@ from noetrium_platform.foundation.kernel.concurrency.api import (
     ExecutionSpec,
     TaskCancelled,
 )
+from noetrium_platform.foundation.kernel.kernel.retry import blocking_wait
 from noetrium_platform.foundation.kernel.concurrency.api.ports import (
     AtomicBatchExecutorProviderPort,
     CancellationTokenPort,
@@ -20,14 +20,6 @@ from noetrium_platform.foundation.kernel.concurrency.api.ports import (
 )
 
 T = TypeVar("T")
-
-
-def blocking_sleep(seconds: float) -> None:
-    """Perform one validated synchronous wait under the concurrency authority."""
-    delay = float(seconds)
-    if delay < 0:
-        raise ValueError("blocking sleep delay must be non-negative")
-    time.sleep(delay)
 
 
 class UnifiedExecutionAuthority:
@@ -190,7 +182,7 @@ class UnifiedExecutionAuthority:
             if cancellation is not None and cancellation.wait(wait_for):
                 raise TaskCancelled(cancellation.reason or "serial execution permit wait cancelled")
             if cancellation is None:
-                blocking_sleep(wait_for)
+                blocking_wait(wait_for)
 
     def submit_atomic_batch(
         self,
@@ -298,4 +290,4 @@ class UnifiedExecutionAuthority:
         return raw
 
 
-__all__ = ["UnifiedExecutionAuthority", "blocking_sleep"]
+__all__ = ["UnifiedExecutionAuthority"]
