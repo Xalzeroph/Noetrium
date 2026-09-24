@@ -29,6 +29,7 @@ _AGENT_ID = "live-swe-agent.worker"
 _TOOL_REFLECTION_AGENT_ID = "live-swe-agent.tool-reflection"
 _SOFTWARE_COMMAND_CAPABILITY = "software.command"
 _HOST_MAX_TURNS = 512
+_HOST_MAX_TOOL_CREATIONS = 128
 
 
 def _text(value: object, field: str, *, allow_empty: bool = False) -> str:
@@ -338,6 +339,7 @@ def build_live_swe_agent_method_program() -> MethodProgram:
         "paper_default_step_limit": f.default_step_limit,
         "paper_default_cost_limit": f.default_cost_limit,
         "host_max_turns": _HOST_MAX_TURNS,
+        "host_max_tool_creations": _HOST_MAX_TOOL_CREATIONS,
     }
     identity = MethodProgramIdentity(
         MethodIdentity(
@@ -355,14 +357,14 @@ def build_live_swe_agent_method_program() -> MethodProgram:
         _AGENT_ID,
         ("prepare_worker_action",),
         view_handler=_worker_view,
-        max_visits=_HOST_MAX_TURNS + f.code_agent_budget,
+        max_visits=_HOST_MAX_TURNS + _HOST_MAX_TOOL_CREATIONS,
     )
     builder.route(
         "prepare_worker_action",
         "live-swe-agent.worker.record",
         _prepare_worker_action,
         ("tool_reflection", "software_command"),
-        max_visits=_HOST_MAX_TURNS + f.code_agent_budget,
+        max_visits=_HOST_MAX_TURNS + _HOST_MAX_TOOL_CREATIONS,
     )
     builder.agent(
         "tool_reflection",
@@ -370,14 +372,14 @@ def build_live_swe_agent_method_program() -> MethodProgram:
         _TOOL_REFLECTION_AGENT_ID,
         ("prepare_tool_creation",),
         view_handler=_tool_reflection_view,
-        max_visits=f.code_agent_budget,
+        max_visits=_HOST_MAX_TOOL_CREATIONS,
     )
     builder.compute(
         "prepare_tool_creation",
         "live-swe-agent.tool.prepare",
         _prepare_tool_creation,
         ("create_tool",),
-        max_visits=f.code_agent_budget,
+        max_visits=_HOST_MAX_TOOL_CREATIONS,
     )
     builder.capability(
         "create_tool",
@@ -385,7 +387,7 @@ def build_live_swe_agent_method_program() -> MethodProgram:
         _SOFTWARE_COMMAND_CAPABILITY,
         ("record_tool_creation",),
         effect_class=EffectClass.RECONCILABLE,
-        max_visits=f.code_agent_budget,
+        max_visits=_HOST_MAX_TOOL_CREATIONS,
         evidence_obligations=("live-swe-agent.tool-creation-effect",),
     )
     builder.route(
@@ -393,7 +395,7 @@ def build_live_swe_agent_method_program() -> MethodProgram:
         "live-swe-agent.tool.record",
         _record_tool_creation,
         ("worker",),
-        max_visits=f.code_agent_budget,
+        max_visits=_HOST_MAX_TOOL_CREATIONS,
     )
     builder.compute(
         "software_command",
