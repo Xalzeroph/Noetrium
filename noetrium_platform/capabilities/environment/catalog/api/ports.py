@@ -51,8 +51,8 @@ class ExecutionEnvironmentCatalogPort(Protocol):
         profile_id: str,
         profile_revision: str,
         *,
-        resumable_execution_ids: tuple[str, ...] = (),
-        retained_evidence_ids: tuple[str, ...] = (),
+        resumable_execution_ids: tuple[str, ...] | None = None,
+        retained_evidence_ids: tuple[str, ...] | None = None,
     ) -> EnvironmentProfileGcAssessment: ...
 
 
