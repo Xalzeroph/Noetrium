@@ -18,6 +18,7 @@ from .delivery import (
     MachineEnvelope,
     MachineInboxPort,
     MachineOutboxPort,
+    require_delivery_receipt_transition,
 )
 from .durability import InterprocessFileLock, atomic_replace_bytes
 from .machine import MachineCommand, MachineCommit, MachineConflict, MachineIntegrityError
@@ -255,12 +256,13 @@ class DirectoryMachineOutbox(_DirectoryDeliveryStore, MachineOutboxPort):
             if envelope.envelope_digest != receipt.envelope_digest:
                 raise MachineConflict("delivery receipt envelope digest mismatch")
             current = self._load_receipt(envelope)
-            if receipt.attempt < current.attempt:
-                raise MachineConflict("delivery attempt cannot move backwards")
-            if receipt.attempt == current.attempt and receipt != current:
-                raise MachineConflict("delivery receipt conflict at same attempt")
-            self._write(self._receipt_path(receipt.envelope_id), _receipt_document(receipt))
-            return receipt
+            accepted = require_delivery_receipt_transition(current, receipt)
+            if accepted != current:
+                self._write(
+                    self._receipt_path(receipt.envelope_id),
+                    _receipt_document(accepted),
+                )
+            return accepted
 
     def reconcile(self, commits: tuple[MachineCommit, ...]) -> tuple[MachineEnvelope, ...]:
         if type(commits) is not tuple or any(not isinstance(item, MachineCommit) for item in commits):
