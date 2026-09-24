@@ -42744,7 +42744,7 @@
     "tooling": 38
   },
   "schema": "noetrium-repository-code-architecture-index.v1",
-  "source_git_sha": "bbe2c170220519fc58f5603f5e37dabc70b2f793",
+  "source_git_sha": "aba747c951f72336c0c7d7b881e2e6486fdce438",
   "symbols": [
     {
       "bases": [],
@@ -46658,7 +46658,6 @@
       "fields": [
         "command: tuple[str, ...]",
         "cwd: str",
-        "stderr_log_path: str | None",
         "action_recovery_root: str | None",
         "connect_timeout_s: float",
         "command_timeout_s: float",
@@ -46694,7 +46693,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 199,
+      "line": 198,
       "methods": [
         "__post_init__",
         "scientific_identity_digest",
@@ -46719,7 +46718,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 257,
+      "line": 256,
       "methods": [
         "__post_init__"
       ],
@@ -46750,7 +46749,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 274,
+      "line": 273,
       "methods": [
         "__post_init__",
         "command"
@@ -46774,7 +46773,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 344,
+      "line": 343,
       "methods": [
         "__post_init__"
       ],
@@ -46796,7 +46795,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 358,
+      "line": 357,
       "methods": [
         "__post_init__"
       ],
@@ -46818,7 +46817,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 373,
+      "line": 372,
       "methods": [
         "__post_init__"
       ],
@@ -46842,7 +46841,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 388,
+      "line": 387,
       "methods": [
         "__post_init__",
         "digest"
@@ -46870,7 +46869,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 421,
+      "line": 420,
       "methods": [
         "__post_init__",
         "digest"
@@ -46896,7 +46895,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 463,
+      "line": 462,
       "methods": [
         "__post_init__"
       ],
@@ -46921,7 +46920,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 487,
+      "line": 486,
       "methods": [
         "__post_init__"
       ],
@@ -46946,7 +46945,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 509,
+      "line": 508,
       "methods": [
         "__post_init__"
       ],
@@ -46970,7 +46969,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 529,
+      "line": 528,
       "methods": [
         "from_event"
       ],
@@ -46995,7 +46994,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 591,
+      "line": 590,
       "methods": [
         "from_mapping",
         "as_observation"
@@ -49325,7 +49324,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 38,
+      "line": 37,
       "methods": [
         "__init__"
       ],
@@ -49343,12 +49342,11 @@
       "fields": [
         "command: tuple[str, ...]",
         "cwd: str",
-        "stderr_log_path: str | None",
         "stdout_queue_capacity: int"
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 50,
+      "line": 49,
       "methods": [
         "__post_init__"
       ],
@@ -49371,7 +49369,7 @@
       ],
       "kind": "protocol",
       "language": "python",
-      "line": 69,
+      "line": 63,
       "methods": [
         "poll",
         "wait",
@@ -49392,7 +49390,7 @@
       "fields": [],
       "kind": "protocol",
       "language": "python",
-      "line": 81,
+      "line": 75,
       "methods": [
         "__call__"
       ],
@@ -49410,7 +49408,7 @@
       "fields": [],
       "kind": "protocol",
       "language": "python",
-      "line": 89,
+      "line": 83,
       "methods": [
         "__call__"
       ],
@@ -49431,7 +49429,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 102,
+      "line": 96,
       "methods": [],
       "module": "noetrium_platform.capabilities.environment.providers.jsonl_process",
       "name": "JsonlProcessMessage",
@@ -49445,7 +49443,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 107,
+      "line": 101,
       "methods": [
         "__init__",
         "started",
