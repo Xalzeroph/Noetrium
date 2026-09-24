@@ -2282,7 +2282,7 @@
       "reproductions": [
         {
           "package": "adacm2_memory",
-          "package_digest": "8550bce86a74ea13c3d3328ca5fb5f7e0a93808b6c14d5a56a5031e95116dafd",
+          "package_digest": "174cdfac3bbf4651cf87a1fa751f50168a834c62d933d20a03d81efac5e4a1f8",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "lvu"
@@ -2318,7 +2318,7 @@
             {
               "kind": "study",
               "path": "research/reproductions/adacm2_memory/study.py",
-              "content_sha256": "e3c355fa96fc53b97e2286b1c1f7b76d84e44216e0a96a70c76f627bbb6b7c14"
+              "content_sha256": "2bc748533a7aecbc563670f01210d314ea43aa23ca4b219ab9e1ff05046ded4b"
             },
             {
               "kind": "support",
@@ -3896,5 +3896,5 @@
       ]
     }
   ],
-  "projection_digest": "4bc73f6bf1ec3a5bb52aa59481101dc215ffc0cba47d361bac3cfd9c71001f92"
+  "projection_digest": "940daa1cfcc761b1439c31d73e585594ef10873653d7d037f5a23c82d4b1cdb6"
 }

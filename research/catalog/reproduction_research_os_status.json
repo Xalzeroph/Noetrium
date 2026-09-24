@@ -4,22 +4,21 @@
   "package_count": 100,
   "state_counts": {
     "benchmark_binding_required": 48,
-    "closure_binding_required": 4,
-    "execution_ready": 43,
+    "closure_binding_required": 3,
+    "execution_ready": 44,
     "not_executable": 5
   },
   "requirement_kind_counts": {
     "capability_closure": 2,
-    "capability_id": 1,
-    "paper_option": 1
+    "capability_id": 1
   },
   "packages": [
     {
       "package": "adacm2_memory",
       "lifecycle": "protocol_bound",
-      "execution_state": "closure_binding_required",
+      "execution_state": "execution_ready",
       "program_id": "adacm2_memory",
-      "program_digest": "98b658cfd1cf36d0932d3f3cb1df1f2bd1a86587e86b4c0adceda306f292c791",
+      "program_digest": "a0c9e18145ab4ea46cd77d05918b40ed5d5c962ad1eeb6e7d95a743bacbd4fc1",
       "benchmark_ids": [
         "lvu"
       ],
@@ -27,16 +26,7 @@
         "required": false,
         "consumers": []
       },
-      "execution_requirements": [
-        {
-          "parameter": "interpretation",
-          "kind": "paper_option",
-          "consumers": [
-            "study:build_adacm2_lvu_study"
-          ],
-          "requirement_digest": "aef7cdc5d12a5cc76a2c671c7261b57114898023cd2eeb26f6c572de06700080"
-        }
-      ]
+      "execution_requirements": []
     },
     {
       "package": "adaptagent_acl2025",
@@ -1697,5 +1687,5 @@
       "execution_requirements": []
     }
   ],
-  "status_digest": "74b6a1da664f865fb03974b47a56a3a415dec037f2aec9edaaad57ee73a896bf"
+  "status_digest": "cf491f33c803e044dfe27866ef56331feae6492aff4b751911c26f4b8445aa3a"
 }
