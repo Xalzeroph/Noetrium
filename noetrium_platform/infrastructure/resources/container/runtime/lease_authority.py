@@ -344,7 +344,6 @@ class DockerContainerLeaseAuthority:
             raise ValueError("Docker reconciliation time must be finite")
 
         self.leases.reconcile_expired(
-            now=now_epoch_s,
             resource_kind=ResourceKind.CONTAINER,
         )
         removed: list[str] = []
@@ -365,7 +364,7 @@ class DockerContainerLeaseAuthority:
             if allocation_id and lease_id and fencing_raw:
                 try:
                     fencing = int(fencing_raw)
-                    lease = self.leases.get(lease_id, now=now_epoch_s)
+                    lease = self.leases.get(lease_id)
                 except (KeyError, ValueError):
                     lease = None
 
@@ -405,7 +404,7 @@ class DockerContainerLeaseAuthority:
                 and lease is not None
                 and lease.state is LeaseState.ACTIVE
             ):
-                released_lease = self.leases.release(lease.lease_id, fencing_token=lease.fencing_token, now=now_epoch_s)
+                released_lease = self.leases.release(lease.lease_id, fencing_token=lease.fencing_token)
                 if released_lease.state is not LeaseState.RELEASED:
                     raise DockerContainerLeaseConflict(
                         "managed Docker reconcile failed to release lease"
