@@ -873,9 +873,9 @@
     }
   ],
   "package_cycles": [],
-  "report_sha256": "11d7469d8dd65b517488e8fd3edd841f28dc52e16fefc721578c540bd3711e73",
+  "report_sha256": "13bc6d967693eb3f74c3dbd65830a6c40a75605387e6088928c6a9600c743eee",
   "source_authority_violations": [],
-  "source_digest": "7b90f8a9a2f4c74e0ee8f1cd646256c470d5a8f7fcdbe326e6805ae0788d8e91",
+  "source_digest": "aedde9a12d4542bb1d31a3e94e2a1a164b90a07f06ab6772053d1670d500a517",
   "source_invariant_violations": [],
   "source_root": ".",
   "subsystem_graph": [
@@ -1601,16 +1601,16 @@
   ],
   "top_hotspots": [
     {
-      "branches": 198,
+      "branches": 201,
       "classes": 1,
       "exception_handlers": 0,
-      "functions": 68,
+      "functions": 69,
       "imports": 9,
       "max_function_lines": 117,
       "module": "noetrium_platform.research.execution.graph.providers.sqlite",
       "path": "noetrium_platform/research/execution/graph/providers/sqlite.py",
-      "physical_lines": 2477,
-      "score": 4222
+      "physical_lines": 2544,
+      "score": 4313
     },
     {
       "branches": 207,
@@ -1637,16 +1637,16 @@
       "score": 3718
     },
     {
-      "branches": 144,
+      "branches": 147,
       "classes": 4,
       "exception_handlers": 10,
       "functions": 27,
       "imports": 11,
-      "max_function_lines": 437,
+      "max_function_lines": 445,
       "module": "noetrium_platform.composition.research_graph",
       "path": "noetrium_platform/composition/research_graph.py",
-      "physical_lines": 1359,
-      "score": 3418
+      "physical_lines": 1408,
+      "score": 3507
     },
     {
       "branches": 133,
@@ -1863,16 +1863,16 @@
       "exception_handlers": 0,
       "import_fan_in": 1,
       "import_fan_out": 3,
-      "io_sites": 78,
+      "io_sites": 80,
       "lock_sites": 0,
-      "long_functions": 16,
+      "long_functions": 17,
       "module": "noetrium_platform.research.execution.graph.providers.sqlite",
       "path": "noetrium_platform/research/execution/graph/providers/sqlite.py",
       "reason_codes": [
         "IO_CONCENTRATION",
         "LONG_FUNCTION"
       ],
-      "risk_score": 975,
+      "risk_score": 1011,
       "self_mutation_sites": 2,
       "serialization_sites": 2
     },

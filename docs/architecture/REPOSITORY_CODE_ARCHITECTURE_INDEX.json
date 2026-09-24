@@ -1,23 +1,18 @@
 {
   "counts": {
-    "parse_errors": 1,
+    "parse_errors": 0,
     "python_files": 3690,
-    "python_import_edges": 7151,
-    "symbols": 4999,
+    "python_import_edges": 7161,
+    "symbols": 5004,
     "tracked_files": 4326,
     "typescript_javascript_files": 11
   },
   "language_symbol_counts": {
     "javascript": 1,
-    "python": 4993,
+    "python": 4998,
     "typescript": 5
   },
-  "parse_errors": [
-    {
-      "error": "unterminated string literal (detected at line 37) (test_tmux_joined_runtime_status_v150.py, line 37)",
-      "path": "tests/test_tmux_joined_runtime_status_v150.py"
-    }
-  ],
+  "parse_errors": [],
   "python_import_edges": [
     {
       "source_module": "components.reference.environment_counter",
@@ -41036,6 +41031,66 @@
       "target_role": "core_platform"
     },
     {
+      "source_module": "tests.test_tmux_joined_runtime_status_v150",
+      "source_role": "tests",
+      "target_module": "noetrium_platform.composition.reliability_observability",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "tests.test_tmux_joined_runtime_status_v150",
+      "source_role": "tests",
+      "target_module": "noetrium_platform.composition.reliability_observability.forensic_status",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "tests.test_tmux_joined_runtime_status_v150",
+      "source_role": "tests",
+      "target_module": "noetrium_platform.composition.status_adapters.runtime",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "tests.test_tmux_joined_runtime_status_v150",
+      "source_role": "tests",
+      "target_module": "noetrium_platform.composition.status_adapters.session",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "tests.test_tmux_joined_runtime_status_v150",
+      "source_role": "tests",
+      "target_module": "noetrium_platform.evidence.observability.status.runtime",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "tests.test_tmux_joined_runtime_status_v150",
+      "source_role": "tests",
+      "target_module": "noetrium_platform.infrastructure.lifecycle.launch_control.status_readers",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "tests.test_tmux_joined_runtime_status_v150",
+      "source_role": "tests",
+      "target_module": "noetrium_platform.infrastructure.lifecycle.session.api",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "tests.test_tmux_joined_runtime_status_v150",
+      "source_role": "tests",
+      "target_module": "noetrium_platform.infrastructure.lifecycle.session.runtime",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "tests.test_tmux_joined_runtime_status_v150",
+      "source_role": "tests",
+      "target_module": "noetrium_platform.infrastructure.reliability.forensics.runtime.diagnostic_adapter",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "tests.test_tmux_joined_runtime_status_v150",
+      "source_role": "tests",
+      "target_module": "tests._concurrency_support",
+      "target_role": "tests"
+    },
+    {
       "source_module": "tests.test_tmux_parser_v1",
       "source_role": "tests",
       "target_module": "noetrium_platform.infrastructure.lifecycle.session.runtime.tmux_parser",
@@ -42988,7 +43043,7 @@
       "target_role": "research_reproductions"
     },
     {
-      "count": 2788,
+      "count": 2797,
       "source_role": "tests",
       "target_role": "core_platform"
     },
@@ -43013,7 +43068,7 @@
       "target_role": "research_reproductions"
     },
     {
-      "count": 87,
+      "count": 88,
       "source_role": "tests",
       "target_role": "tests"
     },
@@ -43055,7 +43110,7 @@
     "tooling": 79
   },
   "role_symbol_counts": {
-    "core_platform": 3361,
+    "core_platform": 3362,
     "examples": 3,
     "other": 23,
     "public_facade": 4,
@@ -43063,11 +43118,11 @@
     "reference_orchestration": 14,
     "research_reproductions": 448,
     "sdk": 5,
-    "tests": 1038,
+    "tests": 1042,
     "tooling": 39
   },
   "schema": "noetrium-repository-code-architecture-index.v1",
-  "source_git_sha": "bd10aa504012d5ec6bcd4e41a1ce37a1f4522a48",
+  "source_git_sha": "898b73be8d6cffa9507225a63e1f7ea7d8f1b940",
   "symbols": [
     {
       "bases": [],
@@ -66162,7 +66217,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 67,
+      "line": 68,
       "methods": [
         "__init__"
       ],
@@ -66180,7 +66235,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 80,
+      "line": 81,
       "methods": [
         "__init__"
       ],
@@ -66196,7 +66251,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 96,
+      "line": 97,
       "methods": [
         "__init__",
         "current",
@@ -66216,7 +66271,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 139,
+      "line": 140,
       "methods": [
         "__init__",
         "plan",
@@ -104522,6 +104577,26 @@
       "language": "python",
       "line": 705,
       "methods": [
+        "abandon_claim"
+      ],
+      "module": "noetrium_platform.research.execution.graph.api.state",
+      "name": "ResearchGraphClaimRecoveryPort",
+      "path": "noetrium_platform/research/execution/graph/api/state.py",
+      "qualname": "noetrium_platform.research.execution.graph.api.state.ResearchGraphClaimRecoveryPort",
+      "role": "core_platform"
+    },
+    {
+      "bases": [
+        "Protocol"
+      ],
+      "decorators": [
+        "runtime_checkable"
+      ],
+      "fields": [],
+      "kind": "protocol",
+      "language": "python",
+      "line": 720,
+      "methods": [
         "control_state",
         "request_drain",
         "pause_if_quiescent",
@@ -104547,7 +104622,7 @@
       "fields": [],
       "kind": "protocol",
       "language": "python",
-      "line": 775,
+      "line": 790,
       "methods": [
         "node_control_state",
         "node_control_snapshot",
@@ -104575,7 +104650,7 @@
       "fields": [],
       "kind": "protocol",
       "language": "python",
-      "line": 852,
+      "line": 867,
       "methods": [
         "active_cut",
         "active_execution_snapshot",
@@ -104650,6 +104725,7 @@
         "_require_active",
         "_require_unexpired_lease",
         "mark_running",
+        "abandon_claim",
         "renew_leases",
         "mark_succeeded",
         "mark_failed",
@@ -142473,7 +142549,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 19,
+      "line": 20,
       "methods": [
         "__init__",
         "claim",
@@ -142491,7 +142567,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 41,
+      "line": 42,
       "methods": [
         "__init__",
         "execute"
@@ -142500,6 +142576,42 @@
       "name": "_Executor",
       "path": "tests/test_research_graph_admission_claim_v1.py",
       "qualname": "tests.test_research_graph_admission_claim_v1._Executor",
+      "role": "tests"
+    },
+    {
+      "bases": [
+        "SQLiteResearchGraphExecutionStore"
+      ],
+      "decorators": [],
+      "fields": [],
+      "kind": "class",
+      "language": "python",
+      "line": 131,
+      "methods": [
+        "__init__",
+        "mark_running"
+      ],
+      "module": "tests.test_research_graph_admission_claim_v1",
+      "name": "_FailOnceStartStore",
+      "path": "tests/test_research_graph_admission_claim_v1.py",
+      "qualname": "tests.test_research_graph_admission_claim_v1._FailOnceStartStore",
+      "role": "tests"
+    },
+    {
+      "bases": [],
+      "decorators": [],
+      "fields": [],
+      "kind": "class",
+      "language": "python",
+      "line": 143,
+      "methods": [
+        "__init__",
+        "execute"
+      ],
+      "module": "tests.test_research_graph_admission_claim_v1",
+      "name": "_ImmediateExecutor",
+      "path": "tests/test_research_graph_admission_claim_v1.py",
+      "qualname": "tests.test_research_graph_admission_claim_v1._ImmediateExecutor",
       "role": "tests"
     },
     {
@@ -149186,6 +149298,44 @@
       "name": "TmuxCwdIdentityTests",
       "path": "tests/test_tmux_cwd_identity_v157.py",
       "qualname": "tests.test_tmux_cwd_identity_v157.TmuxCwdIdentityTests",
+      "role": "tests"
+    },
+    {
+      "bases": [],
+      "decorators": [],
+      "fields": [],
+      "kind": "class",
+      "language": "python",
+      "line": 44,
+      "methods": [
+        "__init__",
+        "run"
+      ],
+      "module": "tests.test_tmux_joined_runtime_status_v150",
+      "name": "Runner",
+      "path": "tests/test_tmux_joined_runtime_status_v150.py",
+      "qualname": "tests.test_tmux_joined_runtime_status_v150.Runner",
+      "role": "tests"
+    },
+    {
+      "bases": [
+        "unittest.TestCase"
+      ],
+      "decorators": [],
+      "fields": [],
+      "kind": "class",
+      "language": "python",
+      "line": 75,
+      "methods": [
+        "build",
+        "test_exact_tmux_controller_is_visible_without_becoming_runtime_authority",
+        "test_missing_tmux_is_operational_degradation_not_scientific_failure",
+        "test_status_detects_current_spec_drift_instead_of_reusing_old_binding"
+      ],
+      "module": "tests.test_tmux_joined_runtime_status_v150",
+      "name": "TmuxJoinedRuntimeStatusTests",
+      "path": "tests/test_tmux_joined_runtime_status_v150.py",
+      "qualname": "tests.test_tmux_joined_runtime_status_v150.TmuxJoinedRuntimeStatusTests",
       "role": "tests"
     },
     {

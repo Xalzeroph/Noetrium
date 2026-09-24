@@ -13807,6 +13807,11 @@
     },
     {
       "kind": "references",
+      "source": "noetrium_platform.research.execution.graph.api.state.ResearchGraphClaimRecoveryPort",
+      "target": "noetrium_platform.research.execution.graph.api.state.ResearchGraphNodeExecutionRecord"
+    },
+    {
+      "kind": "references",
       "source": "noetrium_platform.research.execution.graph.api.state.ResearchGraphControlRecord",
       "target": "noetrium_platform.research.execution.graph.api.state.ResearchGraphControlPhase"
     },
@@ -40808,7 +40813,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 67,
+      "line": 68,
       "methods": [
         "__init__"
       ],
@@ -40828,7 +40833,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 80,
+      "line": 81,
       "methods": [
         "__init__"
       ],
@@ -40846,7 +40851,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 139,
+      "line": 140,
       "methods": [
         "__init__",
         "plan",
@@ -40875,7 +40880,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 96,
+      "line": 97,
       "methods": [
         "__init__",
         "current",
@@ -82354,7 +82359,7 @@
       ],
       "fields": [],
       "kind": "protocol",
-      "line": 852,
+      "line": 867,
       "methods": [
         "active_cut",
         "active_execution_snapshot",
@@ -82458,6 +82463,28 @@
     },
     {
       "bases": [
+        "Protocol"
+      ],
+      "decorators": [
+        "runtime_checkable"
+      ],
+      "fields": [],
+      "kind": "protocol",
+      "line": 705,
+      "methods": [
+        "abandon_claim"
+      ],
+      "module": "noetrium_platform.research.execution.graph.api.state",
+      "name": "ResearchGraphClaimRecoveryPort",
+      "nesting": [
+        "ResearchGraphClaimRecoveryPort"
+      ],
+      "qualname": "noetrium_platform.research.execution.graph.api.state.ResearchGraphClaimRecoveryPort",
+      "system_key": "execution",
+      "top_system": "execution"
+    },
+    {
+      "bases": [
         "StrEnum"
       ],
       "decorators": [],
@@ -82514,7 +82541,7 @@
       ],
       "fields": [],
       "kind": "protocol",
-      "line": 705,
+      "line": 720,
       "methods": [
         "control_state",
         "request_drain",
@@ -82781,7 +82808,7 @@
       ],
       "fields": [],
       "kind": "protocol",
-      "line": 775,
+      "line": 790,
       "methods": [
         "node_control_state",
         "node_control_snapshot",
@@ -82992,6 +83019,7 @@
         "_require_active",
         "_require_unexpired_lease",
         "mark_running",
+        "abandon_claim",
         "renew_leases",
         "mark_succeeded",
         "mark_failed",
@@ -103246,8 +103274,8 @@
     }
   ],
   "counts": {
-    "association_edges": 3450,
-    "classes": 3360,
+    "association_edges": 3451,
+    "classes": 3361,
     "constructor_edges": 920,
     "inheritance_edges": 146,
     "module_import_edges": 5015,
@@ -144067,7 +144095,7 @@
   "parse_errors": [],
   "registry_sha256": "d3fc1bab831f1b7379e5a36048a61c00fe173429df958270d36a16f3f00171c0",
   "schema": "noetrium-code-architecture-index.v1",
-  "source_git_sha": "bd10aa504012d5ec6bcd4e41a1ce37a1f4522a48",
+  "source_git_sha": "898b73be8d6cffa9507225a63e1f7ea7d8f1b940",
   "system_import_edges": [
     {
       "count": 85,
