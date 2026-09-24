@@ -14,9 +14,11 @@ def _manifest(**overrides) -> ReproductionFleetAuthorityManifest:
         "participant_registry_digest": "3" * 64,
         "model_registry_digest": "4" * 64,
         "trial_provider_registry_digest": "5" * 64,
-        "reconciliation_registry_digest": "6" * 64,
-        "benchmark_registry_digest": "7" * 64,
-        "reproduction_capability_registry_digest": "8" * 64,
+        "aggregation_registry_digest": "6" * 64,
+        "reconciliation_registry_digest": "7" * 64,
+        "benchmark_registry_digest": "8" * 64,
+        "benchmark_authority_digest": "a" * 64,
+        "reproduction_capability_registry_digest": "b" * 64,
     }
     values.update(overrides)
     return ReproductionFleetAuthorityManifest(**values)
@@ -37,8 +39,10 @@ def test_fleet_authority_manifest_is_stable_over_same_owner_cut() -> None:
         "participant_registry_digest",
         "model_registry_digest",
         "trial_provider_registry_digest",
+        "aggregation_registry_digest",
         "reconciliation_registry_digest",
         "benchmark_registry_digest",
+        "benchmark_authority_digest",
         "reproduction_capability_registry_digest",
     ),
 )
