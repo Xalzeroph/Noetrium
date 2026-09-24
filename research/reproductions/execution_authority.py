@@ -41,8 +41,10 @@ from noetrium_platform.composition.research_os_experiment_runtime_binding import
 
 from .benchmark_authority import RepositoryBenchmarkAuthority
 from .authority_requirements import (
+    ReproductionFleetCapabilityRequirementManifest,
     ReproductionFleetOwnerRequirementManifest,
     ReproductionFleetPrerequisiteManifest,
+    compile_materialized_fleet_capability_requirements,
     compile_materialized_fleet_owner_requirements,
     compile_repository_fleet_prerequisites,
 )
@@ -100,9 +102,8 @@ class ReproductionFleetPrerequisiteAuthorities:
 
 @dataclass(frozen=True, slots=True)
 class ReproductionFleetOwnerAuthorities:
-    """Typed owner registries required after exact Study materialization."""
+    """Typed execution-owner registries after ProjectManifest materialization."""
 
-    manifests: ResearchProjectManifestRegistry
     research_capabilities: ResearchCapabilityBindingRegistry
     participants: ResearchParticipantBindingRegistry
     models: ResearchModelRoleBindingRegistry
@@ -112,7 +113,6 @@ class ReproductionFleetOwnerAuthorities:
 
     def __post_init__(self) -> None:
         expected = (
-            ("manifests", self.manifests, ResearchProjectManifestRegistry),
             (
                 "research_capabilities",
                 self.research_capabilities,
@@ -156,7 +156,6 @@ class ReproductionFleetOwnerAuthorities:
         return canonical_digest(
             {
                 "schema": "noetrium.reproduction-fleet-owner-authorities.v1",
-                "manifest_registry_digest": self.manifests.identity_digest,
                 "research_capability_registry_digest": (
                     self.research_capabilities.identity_digest
                 ),
@@ -178,6 +177,7 @@ class ReproductionFleetAuthorityMaterializationError(RuntimeError):
         *,
         prerequisite_manifest_digest: str,
         owner_requirement_manifest_digest: str,
+        capability_requirement_manifest_digest: str,
     ) -> None:
         if type(audit) is not ReproductionFleetAuthorityAudit:
             raise TypeError(
@@ -191,14 +191,24 @@ class ReproductionFleetAuthorityMaterializationError(RuntimeError):
             owner_requirement_manifest_digest,
             "fleet authority materialization owner requirement manifest",
         )
+        require_sha256(
+            capability_requirement_manifest_digest,
+            "fleet authority materialization capability requirement manifest",
+        )
         self.audit = audit
         self.prerequisite_manifest_digest = prerequisite_manifest_digest
         self.owner_requirement_manifest_digest = owner_requirement_manifest_digest
+        self.capability_requirement_manifest_digest = (
+            capability_requirement_manifest_digest
+        )
         self.error_digest = canonical_digest(
             {
                 "schema": "noetrium.reproduction-fleet-authority-materialization-error.v1",
                 "prerequisite_manifest_digest": prerequisite_manifest_digest,
                 "owner_requirement_manifest_digest": owner_requirement_manifest_digest,
+                "capability_requirement_manifest_digest": (
+                    capability_requirement_manifest_digest
+                ),
                 "audit_digest": audit.audit_digest,
                 "blocker_count": audit.blocker_count,
                 "gap_count": audit.gap_count,
@@ -224,10 +234,18 @@ class ReproductionFleetAuthorityMaterializerPort(Protocol):
         requirements: ReproductionFleetPrerequisiteManifest,
     ) -> ReproductionFleetPrerequisiteAuthorities: ...
 
-    def materialize_owners(
+    def materialize_manifests(
         self,
         requirements: ReproductionFleetOwnerRequirementManifest,
         fleet: ReproductionFleetMaterialization,
+    ) -> ResearchProjectManifestRegistry: ...
+
+    def materialize_execution_owners(
+        self,
+        requirements: ReproductionFleetOwnerRequirementManifest,
+        capability_requirements: ReproductionFleetCapabilityRequirementManifest,
+        fleet: ReproductionFleetMaterialization,
+        manifests: ResearchProjectManifestRegistry,
     ) -> ReproductionFleetOwnerAuthorities: ...
 
 
@@ -237,6 +255,8 @@ class MaterializedReproductionFleetExecutionAuthorities:
     prerequisite_authorities: ReproductionFleetPrerequisiteAuthorities
     fleet: ReproductionFleetMaterialization
     owner_requirements: ReproductionFleetOwnerRequirementManifest
+    manifests: ResearchProjectManifestRegistry
+    capability_requirements: ReproductionFleetCapabilityRequirementManifest
     owner_authorities: ReproductionFleetOwnerAuthorities
     execution_authorities: ReproductionFleetExecutionAuthorities
     materialization_digest: str = field(init=False)
@@ -260,9 +280,29 @@ class MaterializedReproductionFleetExecutionAuthorities:
             raise TypeError(
                 "materialized fleet authorities require owner requirements"
             )
+        if type(self.manifests) is not ResearchProjectManifestRegistry:
+            raise TypeError(
+                "materialized fleet authorities require ProjectManifest registry"
+            )
+        if (
+            type(self.capability_requirements)
+            is not ReproductionFleetCapabilityRequirementManifest
+        ):
+            raise TypeError(
+                "materialized fleet authorities require capability requirements"
+            )
         if type(self.owner_authorities) is not ReproductionFleetOwnerAuthorities:
             raise TypeError(
-                "materialized fleet authorities require owner authorities"
+                "materialized fleet authorities require execution-owner authorities"
+            )
+        if (
+            self.capability_requirements.materialization_digest
+            != self.fleet.materialization_digest
+            or self.capability_requirements.project_manifest_registry_digest
+            != self.manifests.identity_digest
+        ):
+            raise ValueError(
+                "capability requirement manifest does not belong to fleet/manifest cut"
             )
         if (
             type(self.execution_authorities)
@@ -291,6 +331,10 @@ class MaterializedReproductionFleetExecutionAuthorities:
                     "fleet_materialization_digest": self.fleet.materialization_digest,
                     "owner_requirement_manifest_digest": (
                         self.owner_requirements.manifest_digest
+                    ),
+                    "project_manifest_registry_digest": self.manifests.identity_digest,
+                    "capability_requirement_manifest_digest": (
+                        self.capability_requirements.manifest_digest
                     ),
                     "owner_authority_digest": self.owner_authorities.authority_digest,
                     "execution_authority_manifest_digest": (
@@ -334,18 +378,32 @@ def materialize_repository_fleet_execution_authorities(
         ),
     )
     owner_requirements = compile_materialized_fleet_owner_requirements(fleet)
-    owner_authorities = materializer.materialize_owners(
+    manifests = materializer.materialize_manifests(
         owner_requirements,
         fleet,
     )
+    if type(manifests) is not ResearchProjectManifestRegistry:
+        raise TypeError(
+            "fleet ProjectManifest materializer returned invalid registry"
+        )
+    capability_requirements = compile_materialized_fleet_capability_requirements(
+        fleet,
+        manifests,
+    )
+    owner_authorities = materializer.materialize_execution_owners(
+        owner_requirements,
+        capability_requirements,
+        fleet,
+        manifests,
+    )
     if type(owner_authorities) is not ReproductionFleetOwnerAuthorities:
         raise TypeError(
-            "fleet owner materializer returned invalid authority bundle"
+            "fleet execution-owner materializer returned invalid authority bundle"
         )
 
     execution_authorities = (
         compose_repository_fleet_execution_authorities_from_registries(
-            manifests=owner_authorities.manifests,
+            manifests=manifests,
             research_capabilities=owner_authorities.research_capabilities,
             participants=owner_authorities.participants,
             models=owner_authorities.models,
@@ -376,6 +434,9 @@ def materialize_repository_fleet_execution_authorities(
             audit,
             prerequisite_manifest_digest=prerequisites.manifest_digest,
             owner_requirement_manifest_digest=owner_requirements.manifest_digest,
+            capability_requirement_manifest_digest=(
+                capability_requirements.manifest_digest
+            ),
         )
 
     return MaterializedReproductionFleetExecutionAuthorities(
@@ -383,6 +444,8 @@ def materialize_repository_fleet_execution_authorities(
         prerequisite_authorities,
         fleet,
         owner_requirements,
+        manifests,
+        capability_requirements,
         owner_authorities,
         execution_authorities,
     )
