@@ -14,6 +14,13 @@ from noetrium_platform.capabilities.environment.software.api import (
     SoftwareWorldPort,
 )
 
+from noetrium_platform.evidence.artifact.content.api import ArtifactBlobRef
+from noetrium_platform.capabilities.environment.embodied.api import (
+    EmbodiedSimulatorBackendPort,
+    SimulatorObservation,
+    SimulatorStep,
+)
+
 from noetrium_platform.evidence.data.projection.api import SemanticProjectionSnapshot
 from noetrium_platform.evidence.data.query.api import (
     SemanticSimilarityQuery,
@@ -156,6 +163,10 @@ from noetrium_platform.research.experimentation.api import (
 )
 
 __all__ = [
+    "SimulatorStep",
+    "SimulatorObservation",
+    "EmbodiedSimulatorBackendPort",
+    "ArtifactBlobRef",
     "ActionKind",
     "ActionRequest",
     "ActionResult",
