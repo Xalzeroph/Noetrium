@@ -1,15 +1,15 @@
 {
   "counts": {
     "parse_errors": 0,
-    "python_files": 3655,
-    "python_import_edges": 7021,
-    "symbols": 4848,
-    "tracked_files": 4284,
+    "python_files": 3654,
+    "python_import_edges": 7023,
+    "symbols": 4850,
+    "tracked_files": 4283,
     "typescript_javascript_files": 11
   },
   "language_symbol_counts": {
     "javascript": 1,
-    "python": 4842,
+    "python": 4844,
     "typescript": 5
   },
   "parse_errors": [],
@@ -1773,7 +1773,7 @@
       "target_role": "core_platform"
     },
     {
-      "source_module": "noetrium_platform.capabilities.model.request.prompt.runtime.atomic_publication",
+      "source_module": "noetrium_platform.capabilities.model.request.prompt.runtime.active_pointer",
       "source_role": "core_platform",
       "target_module": "noetrium_platform.foundation.kernel.kernel.durability.durable_file",
       "target_role": "core_platform"
@@ -1791,6 +1791,12 @@
       "target_role": "core_platform"
     },
     {
+      "source_module": "noetrium_platform.capabilities.model.request.prompt.runtime.generation_staging",
+      "source_role": "core_platform",
+      "target_module": "noetrium_platform.foundation.kernel.kernel.durability.durable_file",
+      "target_role": "core_platform"
+    },
+    {
       "source_module": "noetrium_platform.capabilities.model.request.prompt.runtime.promotion_contracts",
       "source_role": "core_platform",
       "target_module": "noetrium_platform.foundation.kernel.kernel",
@@ -1800,6 +1806,12 @@
       "source_module": "noetrium_platform.capabilities.model.request.prompt.runtime.promotion_record_store",
       "source_role": "core_platform",
       "target_module": "noetrium_platform.foundation.kernel.kernel",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "noetrium_platform.capabilities.model.request.prompt.runtime.promotion_record_store",
+      "source_role": "core_platform",
+      "target_module": "noetrium_platform.foundation.kernel.kernel.durability.durable_file",
       "target_role": "core_platform"
     },
     {
@@ -42143,7 +42155,7 @@
   ],
   "role_import_counts": [
     {
-      "count": 2634,
+      "count": 2636,
       "source_role": "core_platform",
       "target_role": "core_platform"
     },
@@ -42259,7 +42271,7 @@
     }
   ],
   "role_python_module_counts": {
-    "core_platform": 1928,
+    "core_platform": 1927,
     "examples": 6,
     "other": 1,
     "public_facade": 40,
@@ -42276,13 +42288,13 @@
     "public_facade": 4,
     "reference_components": 64,
     "reference_orchestration": 14,
-    "research_reproductions": 408,
+    "research_reproductions": 410,
     "sdk": 5,
     "tests": 970,
     "tooling": 38
   },
   "schema": "noetrium-repository-code-architecture-index.v1",
-  "source_git_sha": "8fe6c849a13078df522982e2ec9ba3e166abef30",
+  "source_git_sha": "2ea173b2f73912d85675a5b124ed1ed60d59c617",
   "symbols": [
     {
       "bases": [],
@@ -54562,7 +54574,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 9,
+      "line": 10,
       "methods": [
         "__init__",
         "read",
@@ -54838,7 +54850,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 12,
+      "line": 15,
       "methods": [
         "__init__",
         "_manifest",
@@ -54979,7 +54991,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 13,
+      "line": 15,
       "methods": [
         "__init__",
         "path",
@@ -55092,7 +55104,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 27,
+      "line": 16,
       "methods": [],
       "module": "noetrium_platform.capabilities.model.request.prompt.runtime.publication_common",
       "name": "PromptPublicationError",
@@ -55106,7 +55118,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 31,
+      "line": 20,
       "methods": [
         "__init__",
         "__enter__",
@@ -81877,7 +81889,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 9,
+      "line": 8,
       "methods": [],
       "module": "noetrium_platform.foundation.kernel.kernel.durability.durable_append",
       "name": "DurableAppendError",
@@ -124965,12 +124977,57 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 36,
+      "line": 37,
       "methods": [],
       "module": "research.reproductions.research_os",
       "name": "ReproductionResearchOSCompileError",
       "path": "research/reproductions/research_os.py",
       "qualname": "research.reproductions.research_os.ReproductionResearchOSCompileError",
+      "role": "research_reproductions"
+    },
+    {
+      "bases": [
+        "StrEnum"
+      ],
+      "decorators": [],
+      "fields": [
+        "BENCHMARK_SPLIT",
+        "CAPABILITY_ID",
+        "CAPABILITY_CLOSURE",
+        "PAPER_OPTION"
+      ],
+      "kind": "enum",
+      "language": "python",
+      "line": 41,
+      "methods": [],
+      "module": "research.reproductions.research_os",
+      "name": "ReproductionExecutionRequirementKind",
+      "path": "research/reproductions/research_os.py",
+      "qualname": "research.reproductions.research_os.ReproductionExecutionRequirementKind",
+      "role": "research_reproductions"
+    },
+    {
+      "bases": [],
+      "decorators": [
+        "dataclass(frozen=True, slots=True)"
+      ],
+      "fields": [
+        "package: str",
+        "parameter: str",
+        "kind: ReproductionExecutionRequirementKind",
+        "consumers: tuple[str, ...]",
+        "requirement_digest: str"
+      ],
+      "kind": "dataclass",
+      "language": "python",
+      "line": 51,
+      "methods": [
+        "__post_init__"
+      ],
+      "module": "research.reproductions.research_os",
+      "name": "ReproductionExecutionRequirement",
+      "path": "research/reproductions/research_os.py",
+      "qualname": "research.reproductions.research_os.ReproductionExecutionRequirement",
       "role": "research_reproductions"
     },
     {
@@ -124989,7 +125046,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 41,
+      "line": 101,
       "methods": [
         "__post_init__"
       ],
@@ -125016,7 +125073,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 66,
+      "line": 126,
       "methods": [
         "__post_init__",
         "unresolved_parameters",
@@ -125044,7 +125101,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 105,
+      "line": 165,
       "methods": [
         "__post_init__",
         "exact",
@@ -129056,7 +129113,9 @@
         "study_factory_count: int",
         "exact_study_factory_count: int",
         "study_factory_digests: tuple[str, ...]",
-        "unresolved_study_parameters: tuple[str, ...]",
+        "execution_requirement_parameters: tuple[str, ...]",
+        "execution_requirement_kinds: tuple[str, ...]",
+        "execution_requirement_digests: tuple[str, ...]",
         "method_program_digest: str | None",
         "research_machine_program_digests: tuple[str, ...]",
         "state: str",
@@ -129064,7 +129123,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 30,
+      "line": 31,
       "methods": [],
       "module": "scripts.run_reproduction_fleet",
       "name": "Lane",

@@ -28871,7 +28871,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 9,
+      "line": 10,
       "methods": [
         "__init__",
         "read",
@@ -29173,7 +29173,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 12,
+      "line": 15,
       "methods": [
         "__init__",
         "_manifest",
@@ -29326,7 +29326,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 13,
+      "line": 15,
       "methods": [
         "__init__",
         "path",
@@ -29451,7 +29451,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 27,
+      "line": 16,
       "methods": [],
       "module": "noetrium_platform.capabilities.model.request.prompt.runtime.publication_common",
       "name": "PromptPublicationError",
@@ -29467,7 +29467,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 31,
+      "line": 20,
       "methods": [
         "__init__",
         "__enter__",
@@ -58805,7 +58805,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 9,
+      "line": 8,
       "methods": [],
       "module": "noetrium_platform.foundation.kernel.kernel.durability.durable_append",
       "name": "DurableAppendError",
@@ -102383,9 +102383,9 @@
     "classes": 3336,
     "constructor_edges": 932,
     "inheritance_edges": 149,
-    "module_import_edges": 5089,
+    "module_import_edges": 5086,
     "parse_errors": 0,
-    "python_modules": 1928,
+    "python_modules": 1927,
     "registry_authorities": 20,
     "registry_nodes": 31,
     "top_level_systems": 16
@@ -105300,18 +105300,6 @@
     },
     {
       "source": "noetrium_platform.capabilities.model.request.prompt.runtime.active_pointer",
-      "target": "noetrium_platform.capabilities.model.request.prompt.runtime.atomic_publication"
-    },
-    {
-      "source": "noetrium_platform.capabilities.model.request.prompt.runtime.active_pointer",
-      "target": "noetrium_platform.capabilities.model.request.prompt.runtime.publication_common"
-    },
-    {
-      "source": "noetrium_platform.capabilities.model.request.prompt.runtime.atomic_publication",
-      "target": "noetrium_platform.capabilities.model.request.prompt.runtime.publication_common"
-    },
-    {
-      "source": "noetrium_platform.capabilities.model.request.prompt.runtime.atomic_publication",
       "target": "noetrium_platform.foundation.kernel.kernel.durability.durable_file"
     },
     {
@@ -105408,10 +105396,6 @@
     },
     {
       "source": "noetrium_platform.capabilities.model.request.prompt.runtime.generation_staging",
-      "target": "noetrium_platform.capabilities.model.request.prompt.runtime.atomic_publication"
-    },
-    {
-      "source": "noetrium_platform.capabilities.model.request.prompt.runtime.generation_staging",
       "target": "noetrium_platform.capabilities.model.request.prompt.runtime.generation_codec"
     },
     {
@@ -105425,6 +105409,10 @@
     {
       "source": "noetrium_platform.capabilities.model.request.prompt.runtime.generation_staging",
       "target": "noetrium_platform.capabilities.model.request.prompt.runtime.publication_common"
+    },
+    {
+      "source": "noetrium_platform.capabilities.model.request.prompt.runtime.generation_staging",
+      "target": "noetrium_platform.foundation.kernel.kernel.durability.durable_file"
     },
     {
       "source": "noetrium_platform.capabilities.model.request.prompt.runtime.generation_store",
@@ -105476,10 +105464,6 @@
     },
     {
       "source": "noetrium_platform.capabilities.model.request.prompt.runtime.promotion_record_store",
-      "target": "noetrium_platform.capabilities.model.request.prompt.runtime.atomic_publication"
-    },
-    {
-      "source": "noetrium_platform.capabilities.model.request.prompt.runtime.promotion_record_store",
       "target": "noetrium_platform.capabilities.model.request.prompt.runtime.promotion_contracts"
     },
     {
@@ -105489,6 +105473,10 @@
     {
       "source": "noetrium_platform.capabilities.model.request.prompt.runtime.promotion_record_store",
       "target": "noetrium_platform.foundation.kernel.kernel"
+    },
+    {
+      "source": "noetrium_platform.capabilities.model.request.prompt.runtime.promotion_record_store",
+      "target": "noetrium_platform.foundation.kernel.kernel.durability.durable_file"
     },
     {
       "source": "noetrium_platform.capabilities.model.request.prompt.runtime.promotion_store",
@@ -125750,21 +125738,10 @@
     },
     {
       "imports": [
-        "noetrium_platform.capabilities.model.request.prompt.runtime.atomic_publication",
-        "noetrium_platform.capabilities.model.request.prompt.runtime.publication_common"
+        "noetrium_platform.foundation.kernel.kernel.durability.durable_file"
       ],
       "module": "noetrium_platform.capabilities.model.request.prompt.runtime.active_pointer",
       "path": "noetrium_platform/capabilities/model/request/prompt/runtime/active_pointer.py",
-      "system_key": "model",
-      "top_system": "model"
-    },
-    {
-      "imports": [
-        "noetrium_platform.capabilities.model.request.prompt.runtime.publication_common",
-        "noetrium_platform.foundation.kernel.kernel.durability.durable_file"
-      ],
-      "module": "noetrium_platform.capabilities.model.request.prompt.runtime.atomic_publication",
-      "path": "noetrium_platform/capabilities/model/request/prompt/runtime/atomic_publication.py",
       "system_key": "model",
       "top_system": "model"
     },
@@ -125855,11 +125832,11 @@
     },
     {
       "imports": [
-        "noetrium_platform.capabilities.model.request.prompt.runtime.atomic_publication",
         "noetrium_platform.capabilities.model.request.prompt.runtime.generation_codec",
         "noetrium_platform.capabilities.model.request.prompt.runtime.generation_contracts",
         "noetrium_platform.capabilities.model.request.prompt.runtime.generation_reader",
-        "noetrium_platform.capabilities.model.request.prompt.runtime.publication_common"
+        "noetrium_platform.capabilities.model.request.prompt.runtime.publication_common",
+        "noetrium_platform.foundation.kernel.kernel.durability.durable_file"
       ],
       "module": "noetrium_platform.capabilities.model.request.prompt.runtime.generation_staging",
       "path": "noetrium_platform/capabilities/model/request/prompt/runtime/generation_staging.py",
@@ -125903,10 +125880,10 @@
     },
     {
       "imports": [
-        "noetrium_platform.capabilities.model.request.prompt.runtime.atomic_publication",
         "noetrium_platform.capabilities.model.request.prompt.runtime.promotion_contracts",
         "noetrium_platform.capabilities.model.request.prompt.runtime.publication_common",
-        "noetrium_platform.foundation.kernel.kernel"
+        "noetrium_platform.foundation.kernel.kernel",
+        "noetrium_platform.foundation.kernel.kernel.durability.durable_file"
       ],
       "module": "noetrium_platform.capabilities.model.request.prompt.runtime.promotion_record_store",
       "path": "noetrium_platform/capabilities/model/request/prompt/runtime/promotion_record_store.py",
@@ -143703,7 +143680,7 @@
   "parse_errors": [],
   "registry_sha256": "d3fc1bab831f1b7379e5a36048a61c00fe173429df958270d36a16f3f00171c0",
   "schema": "noetrium-code-architecture-index.v1",
-  "source_git_sha": "8fe6c849a13078df522982e2ec9ba3e166abef30",
+  "source_git_sha": "2ea173b2f73912d85675a5b124ed1ed60d59c617",
   "system_import_edges": [
     {
       "count": 85,
@@ -143786,12 +143763,12 @@
       "target": "scope"
     },
     {
-      "count": 444,
+      "count": 439,
       "source": "model",
       "target": "model"
     },
     {
-      "count": 89,
+      "count": 91,
       "source": "model",
       "target": "platform"
     },
