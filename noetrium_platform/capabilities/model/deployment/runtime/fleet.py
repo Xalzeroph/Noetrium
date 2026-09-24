@@ -4,6 +4,7 @@ from typing import Callable
 
 from noetrium_platform.capabilities.model.deployment.api import (
     ModelDeploymentCatalogPort,
+    ModelDeploymentGeneration,
     ModelDeploymentRuntimePort,
     ModelDeploymentSelector,
     ModelDeploymentSpec,
@@ -30,20 +31,31 @@ class ModelFleetRuntime:
         self._runtime = runtime
 
     def status_all(self) -> tuple[ModelDeploymentStatus, ...]:
-        return tuple(self._run_fleet_action(spec, self._runtime.status) for spec in self._catalog.deployments())
+        return tuple(
+            self._run_status_action(spec)
+            for spec in self._catalog.deployments()
+        )
 
     def reconcile(self) -> tuple[ModelDeploymentStatus, ...]:
         values: list[ModelDeploymentStatus] = []
         for spec in self._catalog.deployments():
             try:
+                generation = self._runtime.generation(spec.deployment_id)
                 current = self._runtime.status(spec.deployment_id)
-                if spec.desired_state is ModelDesiredState.RUNNING and current.runtime_state is not ModelRuntimeState.RUNNING:
-                    values.append(self._runtime.start(spec.deployment_id))
-                elif spec.desired_state is ModelDesiredState.STOPPED and current.runtime_state in {
-                    ModelRuntimeState.RUNNING,
-                    ModelRuntimeState.UPDATE_PENDING,
-                }:
-                    values.append(self._runtime.stop(spec.deployment_id))
+                if (
+                    spec.desired_state is ModelDesiredState.RUNNING
+                    and current.runtime_state is not ModelRuntimeState.RUNNING
+                ):
+                    values.append(self._runtime.start(generation))
+                elif (
+                    spec.desired_state is ModelDesiredState.STOPPED
+                    and current.runtime_state
+                    in {
+                        ModelRuntimeState.RUNNING,
+                        ModelRuntimeState.UPDATE_PENDING,
+                    }
+                ):
+                    values.append(self._runtime.stop(generation))
                 else:
                     values.append(current)
             except Exception as exc:
@@ -51,16 +63,22 @@ class ModelFleetRuntime:
         return tuple(values)
 
     def start_all(self) -> tuple[ModelDeploymentStatus, ...]:
-        return tuple(self._run_fleet_action(spec, self._runtime.start) for spec in self._catalog.deployments())
+        return tuple(
+            self._run_mutation_action(spec, self._runtime.start)
+            for spec in self._catalog.deployments()
+        )
 
     def stop_all(self) -> tuple[ModelDeploymentStatus, ...]:
-        return tuple(self._run_fleet_action(spec, self._runtime.stop) for spec in self._catalog.deployments())
+        return tuple(
+            self._run_mutation_action(spec, self._runtime.stop)
+            for spec in self._catalog.deployments()
+        )
 
     def shutdown_all(self) -> tuple[ModelDeploymentStatus, ...]:
         """Stop physical model processes while preserving desired deployment state."""
 
         return tuple(
-            self._run_fleet_action(spec, self._runtime.shutdown)
+            self._run_mutation_action(spec, self._runtime.shutdown)
             for spec in self._catalog.deployments()
         )
 
@@ -83,7 +101,8 @@ class ModelFleetRuntime:
         errors: list[BaseException] = []
         for spec in reversed(self._catalog.select(selector)):
             try:
-                self._runtime.remove_deployment(spec.deployment_id)
+                generation = self._runtime.generation(spec.deployment_id)
+                self._runtime.remove_deployment(generation)
             except BaseException as exc:
                 errors.append(exc)
             else:
@@ -106,14 +125,24 @@ class ModelFleetRuntime:
             detail=type(exc).__name__,
         )
 
-    @classmethod
-    def _run_fleet_action(
-        cls, spec: ModelDeploymentSpec, action: Callable[[str], ModelDeploymentStatus]
+    def _run_status_action(
+        self,
+        spec: ModelDeploymentSpec,
     ) -> ModelDeploymentStatus:
         try:
-            return action(spec.deployment_id)
+            return self._runtime.status(spec.deployment_id)
         except Exception as exc:
-            return cls._management_failure_status(spec, exc)
+            return self._management_failure_status(spec, exc)
+
+    def _run_mutation_action(
+        self,
+        spec: ModelDeploymentSpec,
+        action: Callable[[ModelDeploymentGeneration], ModelDeploymentStatus],
+    ) -> ModelDeploymentStatus:
+        try:
+            return action(self._runtime.generation(spec.deployment_id))
+        except Exception as exc:
+            return self._management_failure_status(spec, exc)
 
 
 __all__ = ["ModelFleetRuntime"]
