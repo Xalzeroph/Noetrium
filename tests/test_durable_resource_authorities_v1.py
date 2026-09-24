@@ -12,7 +12,10 @@ from noetrium_platform.infrastructure.resources.compute.api import ComputeHost, 
 from noetrium_platform.capabilities.environment.catalog.api import (
     EnvironmentAssignment,
     EnvironmentBinding,
+    EnvironmentCleanlinessKind,
+    EnvironmentCleanlinessProof,
     EnvironmentInstance,
+    EnvironmentInstanceState,
     EnvironmentSpec,
     ExecutionEnvironmentKind,
 )
@@ -169,6 +172,98 @@ class DurableResourceAuthoritiesTests(TestCase):
             self.assertEqual(second.compute_scheduler.allocations(), (allocation,))
             second.compute_scheduler.release("compute-1")
             self.assertEqual(second.compute_scheduler.allocations(), ())
+
+    def test_environment_instance_reuse_is_generation_fenced_and_gc_safe(self) -> None:
+        with TemporaryDirectory() as directory:
+            root = Path(directory)
+            scope = ScopeIdentity(ScopeKind.WORKSPACE, "workspace")
+            meta = build_durable_platform_meta(root)
+            meta.scopes.register(scope, PLATFORM_SCOPE)
+            revision = "a" * 64
+            instance = EnvironmentInstance(
+                "env-reuse",
+                "b" * 64,
+                "docker",
+                "container:env-reuse",
+                scope,
+                "web-default",
+                revision,
+            )
+            meta.environments.register_instance(instance)
+            self.assertEqual(
+                meta.environments.reusable_instances("web-default", revision),
+                (instance,),
+            )
+
+            binding = EnvironmentBinding(
+                "binding-reuse",
+                scope,
+                "runner",
+                "env-reuse",
+            )
+            meta.environments.bind(binding)
+            self.assertEqual(
+                meta.environments.reusable_instances("web-default", revision),
+                (),
+            )
+            meta.environments.unbind("runner", scope)
+            dirty = meta.environments.release_instance("env-reuse")
+            self.assertIs(dirty.state, EnvironmentInstanceState.DIRTY)
+            self.assertEqual(dirty.generation, 1)
+
+            proof = EnvironmentCleanlinessProof(
+                "env-reuse",
+                revision,
+                dirty.generation,
+                EnvironmentCleanlinessKind.OVERLAY_DESTROYED,
+                "c" * 64,
+            )
+            clean = meta.environments.release_instance(
+                "env-reuse",
+                cleanliness=proof,
+            )
+            self.assertIs(clean.state, EnvironmentInstanceState.CLEAN)
+            self.assertEqual(
+                meta.environments.reusable_instances("web-default", revision),
+                (clean,),
+            )
+
+            meta.environments.bind(binding)
+            meta.environments.unbind("runner", scope)
+            with self.assertRaises(RuntimeError):
+                meta.environments.release_instance(
+                    "env-reuse",
+                    cleanliness=proof,
+                )
+            meta.environments.mark_instance_dirty("env-reuse")
+            destroyed = meta.environments.destroy_instance("env-reuse")
+            self.assertIs(destroyed.state, EnvironmentInstanceState.DESTROYED)
+
+            local = meta.environments.assess_profile_gc(
+                "web-default",
+                revision,
+            )
+            self.assertTrue(local.eligible)
+            resumable = meta.environments.assess_profile_gc(
+                "web-default",
+                revision,
+                resumable_execution_ids=("run-1",),
+            )
+            self.assertFalse(resumable.eligible)
+            evidence = meta.environments.assess_profile_gc(
+                "web-default",
+                revision,
+                retained_evidence_ids=("evidence-1",),
+            )
+            self.assertFalse(evidence.eligible)
+
+            restored = build_durable_platform_meta(root)
+            restored_gc = restored.environments.assess_profile_gc(
+                "web-default",
+                revision,
+            )
+            self.assertTrue(restored_gc.eligible)
+
 
     def test_durable_environment_hierarchy_survives_rebuild(self) -> None:
         with TemporaryDirectory() as directory:
