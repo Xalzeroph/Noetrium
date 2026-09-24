@@ -138,6 +138,7 @@ class ChildMachineLink:
     parent_machine_id: str
     child_machine_id: str
     child_program_digest: str
+    child_program_lock_digest: str
     child_snapshot_ref: str
     child_transition_start: int
     child_transition_end: int
@@ -154,6 +155,10 @@ class ChildMachineLink:
         ):
             _text(value, f"child link {name}")
         require_sha256(self.child_program_digest, "child_program_digest")
+        require_sha256(
+            self.child_program_lock_digest,
+            "child_program_lock_digest",
+        )
         if type(self.child_transition_start) is not int or self.child_transition_start < 0:
             raise ValueError("child transition start must be non-negative")
         if type(self.child_transition_end) is not int or (
@@ -166,6 +171,7 @@ class ChildMachineLink:
             "parent_machine_id": self.parent_machine_id,
             "child_machine_id": self.child_machine_id,
             "child_program_digest": self.child_program_digest,
+            "child_program_lock_digest": self.child_program_lock_digest,
             "child_snapshot_ref": self.child_snapshot_ref,
             "child_transition_start": self.child_transition_start,
             "child_transition_end": self.child_transition_end,
@@ -178,6 +184,7 @@ class ChildMachineLink:
             "parent_machine_id": self.parent_machine_id,
             "child_machine_id": self.child_machine_id,
             "child_program_digest": self.child_program_digest,
+            "child_program_lock_digest": self.child_program_lock_digest,
             "child_snapshot_ref": self.child_snapshot_ref,
             "child_transition_start": self.child_transition_start,
             "child_transition_end": self.child_transition_end,
