@@ -40160,6 +40160,7 @@
         "_hydrate_durable_frontier",
         "_record_durable_completion",
         "_renew_due_durable_leases",
+        "_handle_durable_stall",
         "_execute_durable",
         "close",
         "__enter__",
@@ -143116,7 +143117,7 @@
   "parse_errors": [],
   "registry_sha256": "d3fc1bab831f1b7379e5a36048a61c00fe173429df958270d36a16f3f00171c0",
   "schema": "noetrium-code-architecture-index.v1",
-  "source_git_sha": "a1f84a47e7679a2406e65ff6972e8fb50cd28995",
+  "source_git_sha": "20e4af24d121f37693c5f91cf5ff27cbf1e53dc7",
   "system_import_edges": [
     {
       "count": 85,

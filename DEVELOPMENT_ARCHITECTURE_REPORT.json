@@ -873,9 +873,9 @@
     }
   ],
   "package_cycles": [],
-  "report_sha256": "59a27675325336d19bb1fe37038b7168704007202b2d34f2ab4db6a54912231c",
+  "report_sha256": "76443ecce64d8936ddbb2204df40d0bb309b326d2e6717c68ed8fd7e0aa95f85",
   "source_authority_violations": [],
-  "source_digest": "d169f05fd30342f286ad29c4212e7786f0db7ffc2918d674e3f32276b5dd13ec",
+  "source_digest": "bace456841ca4f2424107d37209a986395866366a54b5c9aff2d179af6e9c250",
   "source_invariant_violations": [
     {
       "detail": "retired parallel Experiment orchestration namespace reappeared; execution must enter through Research OS",
@@ -1650,16 +1650,16 @@
       "score": 3718
     },
     {
-      "branches": 142,
+      "branches": 143,
       "classes": 4,
       "exception_handlers": 10,
-      "functions": 26,
+      "functions": 27,
       "imports": 11,
-      "max_function_lines": 489,
+      "max_function_lines": 437,
       "module": "noetrium_platform.composition.research_graph",
       "path": "noetrium_platform/composition/research_graph.py",
-      "physical_lines": 1315,
-      "score": 3462
+      "physical_lines": 1340,
+      "score": 3391
     },
     {
       "branches": 133,
@@ -1981,6 +1981,24 @@
       "serialization_sites": 0
     },
     {
+      "exception_handlers": 10,
+      "import_fan_in": 2,
+      "import_fan_out": 6,
+      "io_sites": 2,
+      "lock_sites": 1,
+      "long_functions": 9,
+      "module": "noetrium_platform.composition.research_graph",
+      "path": "noetrium_platform/composition/research_graph.py",
+      "reason_codes": [
+        "STATE_MUTATION_CONCENTRATION",
+        "FAILURE_BRANCH_CONCENTRATION",
+        "LONG_FUNCTION"
+      ],
+      "risk_score": 409,
+      "self_mutation_sites": 19,
+      "serialization_sites": 0
+    },
+    {
       "exception_handlers": 0,
       "import_fan_in": 97,
       "import_fan_out": 4,
@@ -1994,24 +2012,6 @@
       ],
       "risk_score": 400,
       "self_mutation_sites": 0,
-      "serialization_sites": 0
-    },
-    {
-      "exception_handlers": 10,
-      "import_fan_in": 2,
-      "import_fan_out": 6,
-      "io_sites": 2,
-      "lock_sites": 1,
-      "long_functions": 8,
-      "module": "noetrium_platform.composition.research_graph",
-      "path": "noetrium_platform/composition/research_graph.py",
-      "reason_codes": [
-        "STATE_MUTATION_CONCENTRATION",
-        "FAILURE_BRANCH_CONCENTRATION",
-        "LONG_FUNCTION"
-      ],
-      "risk_score": 389,
-      "self_mutation_sites": 19,
       "serialization_sites": 0
     },
     {
