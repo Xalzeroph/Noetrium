@@ -217,7 +217,7 @@ def test_mc_spec_is_independent_of_old_runtime_package() -> None:
         bridge=MinecraftBridgeSpec(command=("node", "bridge.js"), cwd="/bridge"),
     )
     assert spec.provider_id == "minecraft.mineflayer.jsonl.v1"
-    assert spec.endpoint.port == 25565
+    assert spec.endpoint.port is None
 
 
 def test_scientific_environment_generation_excludes_operational_endpoint_but_binds_agent_conditions() -> None:
@@ -1138,6 +1138,7 @@ def test_server_files_require_explicit_eula_policy(tmp_path) -> None:
         jar_path=str(jar),
         workdir=str(tmp_path / "world"),
         java_executable="/usr/bin/java",
+        port=25565,
     )
     with pytest.raises(MinecraftServerPreparationError, match="EULA_ACCEPTANCE_REQUIRED"):
         prepare_server_files(spec, accept_eula=False)
@@ -1176,6 +1177,7 @@ def test_server_controller_uses_generic_service_port_only() -> None:
         jar_path="/srv/minecraft/server.jar",
         workdir="/srv/minecraft/world",
         java_executable="/usr/bin/java",
+        port=25565,
     )
     contract = build_server_service_contract(
         spec,
@@ -1214,6 +1216,7 @@ def test_minecraft_server_runtime_uses_generic_service_composer(tmp_path) -> Non
         jar_path="/srv/minecraft/server.jar",
         workdir="/srv/minecraft/world",
         java_executable="/usr/bin/java",
+        port=25565,
     )
     environment = MaterializedServiceEnvironment.from_mapping({"JAVA_HOME": "/usr/lib/jvm"}, "env-ref")
     contract = build_server_service_contract(
