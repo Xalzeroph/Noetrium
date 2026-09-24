@@ -6,6 +6,11 @@ from pathlib import Path
 from tempfile import TemporaryDirectory
 from unittest import TestCase
 
+from noetrium_platform.foundation.kernel.kernel import (
+    DurableCarrierClosureAuthority,
+    DurableCarrierReferenceClosure,
+)
+
 from noetrium_platform.composition.platform_meta import build_durable_platform_meta
 from noetrium_platform.infrastructure.resources.allocation.api import EndpointAllocationRequest, EndpointProbeResult, NetworkEndpoint
 from noetrium_platform.infrastructure.resources.compute.api import ComputeHost, ComputeRequirement
@@ -45,6 +50,32 @@ from noetrium_platform.foundation.portfolio.api import (
 from noetrium_platform.research.experimentation.lifecycle.api import RunIdentity
 from noetrium_platform.research.experimentation.lifecycle.study import StudySpec
 from noetrium_platform.research.experimentation.lifecycle.api import ExperimentSpec
+
+
+def _environment_gc_closures(
+    retained_authority: DurableCarrierClosureAuthority | None = None,
+    retained_reference_id: str | None = None,
+) -> tuple[DurableCarrierReferenceClosure, ...]:
+    return tuple(
+        DurableCarrierReferenceClosure(
+            authority,
+            str(index) * 64,
+            (
+                (retained_reference_id,)
+                if authority is retained_authority
+                and retained_reference_id is not None
+                else ()
+            ),
+        )
+        for index, authority in enumerate(
+            (
+                DurableCarrierClosureAuthority.EVIDENCE,
+                DurableCarrierClosureAuthority.EXECUTION,
+                DurableCarrierClosureAuthority.RECOVERY,
+            ),
+            start=1,
+        )
+    )
 
 
 class _AvailableProbe:
@@ -293,31 +324,43 @@ class DurableResourceAuthoritiesTests(TestCase):
                 "web-default",
                 revision,
             )
-            self.assertFalse(unproven.external_reference_closure_complete)
+            self.assertFalse(unproven.closure_complete)
             self.assertFalse(unproven.eligible)
 
             local = meta.environments.assess_profile_gc(
                 "web-default",
                 revision,
-                resumable_execution_ids=(),
-                retained_evidence_ids=(),
+                closures=_environment_gc_closures(),
             )
-            self.assertTrue(local.external_reference_closure_complete)
+            self.assertTrue(local.closure_complete)
             self.assertTrue(local.eligible)
             resumable = meta.environments.assess_profile_gc(
                 "web-default",
                 revision,
-                resumable_execution_ids=("run-1",),
-                retained_evidence_ids=(),
+                closures=_environment_gc_closures(
+                    DurableCarrierClosureAuthority.EXECUTION,
+                    "run-1",
+                ),
             )
             self.assertFalse(resumable.eligible)
             evidence = meta.environments.assess_profile_gc(
                 "web-default",
                 revision,
-                resumable_execution_ids=(),
-                retained_evidence_ids=("evidence-1",),
+                closures=_environment_gc_closures(
+                    DurableCarrierClosureAuthority.EVIDENCE,
+                    "evidence-1",
+                ),
             )
             self.assertFalse(evidence.eligible)
+            recovery = meta.environments.assess_profile_gc(
+                "web-default",
+                revision,
+                closures=_environment_gc_closures(
+                    DurableCarrierClosureAuthority.RECOVERY,
+                    "checkpoint-1",
+                ),
+            )
+            self.assertFalse(recovery.eligible)
 
             restored = build_durable_platform_meta(root)
             restored_unproven = restored.environments.assess_profile_gc(
@@ -328,8 +371,7 @@ class DurableResourceAuthoritiesTests(TestCase):
             restored_gc = restored.environments.assess_profile_gc(
                 "web-default",
                 revision,
-                resumable_execution_ids=(),
-                retained_evidence_ids=(),
+                closures=_environment_gc_closures(),
             )
             self.assertTrue(restored_gc.eligible)
 
@@ -374,8 +416,7 @@ class DurableResourceAuthoritiesTests(TestCase):
                 "web-multi-runtime",
                 revision,
                 runtime_a,
-                resumable_execution_ids=(),
-                retained_evidence_ids=(),
+                closures=_environment_gc_closures(),
             )
             self.assertTrue(exact_a.eligible)
             self.assertEqual(exact_a.local.instance_ids, (first.instance_id,))
@@ -384,8 +425,7 @@ class DurableResourceAuthoritiesTests(TestCase):
                 "web-multi-runtime",
                 revision,
                 runtime_b,
-                resumable_execution_ids=(),
-                retained_evidence_ids=(),
+                closures=_environment_gc_closures(),
             )
             self.assertFalse(exact_b.eligible)
             self.assertEqual(
@@ -396,8 +436,7 @@ class DurableResourceAuthoritiesTests(TestCase):
             whole_profile = meta.environments.assess_profile_gc(
                 "web-multi-runtime",
                 revision,
-                resumable_execution_ids=(),
-                retained_evidence_ids=(),
+                closures=_environment_gc_closures(),
             )
             self.assertFalse(whole_profile.eligible)
 
@@ -406,8 +445,7 @@ class DurableResourceAuthoritiesTests(TestCase):
                 "web-multi-runtime",
                 revision,
                 runtime_a,
-                resumable_execution_ids=(),
-                retained_evidence_ids=(),
+                closures=_environment_gc_closures(),
             )
             self.assertTrue(restored_exact_a.eligible)
 
@@ -415,8 +453,7 @@ class DurableResourceAuthoritiesTests(TestCase):
             final_profile = restored.environments.assess_profile_gc(
                 "web-multi-runtime",
                 revision,
-                resumable_execution_ids=(),
-                retained_evidence_ids=(),
+                closures=_environment_gc_closures(),
             )
             self.assertTrue(final_profile.eligible)
 
