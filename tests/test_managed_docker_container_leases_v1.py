@@ -5,6 +5,7 @@ import pytest
 from noetrium_platform.infrastructure.resources.container.api import (
     DockerContainerLeasePolicy,
     DockerContainerObservation,
+    LABEL_AUTHORITY,
     MANAGED_CONTAINER_LABEL,
     MANAGED_CONTAINER_LABEL_VALUE,
 )
@@ -25,9 +26,16 @@ from noetrium_platform.infrastructure.resources.lease.runtime import (
 class FakeDockerRuntime:
     docker_executable = "docker"
 
-    def __init__(self) -> None:
-        self.rows: dict[str, DockerContainerObservation] = {}
-        self.events: list[str] = []
+    def __init__(
+        self,
+        authority_id: str = "1" * 64,
+        *,
+        rows: dict[str, DockerContainerObservation] | None = None,
+        events: list[str] | None = None,
+    ) -> None:
+        self.authority_id = authority_id
+        self.rows = {} if rows is None else rows
+        self.events = [] if events is None else events
 
     def start(self, handle) -> DockerContainerObservation:
         row = DockerContainerObservation(
@@ -54,6 +62,7 @@ class FakeDockerRuntime:
                     for row in self.rows.values()
                     if row.labels.get(MANAGED_CONTAINER_LABEL)
                     == MANAGED_CONTAINER_LABEL_VALUE
+                    and row.labels.get(LABEL_AUTHORITY) == self.authority_id
                 ),
                 key=lambda row: row.container_id,
             )
@@ -80,6 +89,7 @@ def _authority(resources, runtime):
         ownership=resources,
         leases=resources,
         runtime=runtime,
+        authority_id=runtime.authority_id,
         policy=DockerContainerLeasePolicy(
             ttl_seconds=0.2,
             renewal_interval_seconds=0.05,
@@ -240,3 +250,31 @@ def test_managed_docker_shutdown_cleanup_removes_physical_before_releasing() -> 
     assert report.released_lease_ids == (handle.lease.lease_id,)
     assert runtime.events == [f"remove:{observed.container_id}"]
     assert resources.get(handle.lease.lease_id).state is LeaseState.RELEASED
+
+
+def test_managed_docker_authority_namespace_isolates_shared_daemon() -> None:
+    rows: dict[str, DockerContainerObservation] = {}
+    events: list[str] = []
+    left_resources = InMemoryResourceLeaseRegistry()
+    right_resources = InMemoryResourceLeaseRegistry()
+    left_runtime = FakeDockerRuntime("a" * 64, rows=rows, events=events)
+    right_runtime = FakeDockerRuntime("b" * 64, rows=rows, events=events)
+    left = _authority(left_resources, left_runtime)
+    right = _authority(right_resources, right_runtime)
+
+    left_handle = _reserve(left, "worker")
+    right_handle = _reserve(right, "worker")
+    left_observed = left_runtime.start(left_handle)
+    right_observed = right_runtime.start(right_handle)
+
+    assert left_handle.container_name != right_handle.container_name
+    assert len(rows) == 2
+
+    left_report = left.reconcile()
+    assert left_report.removed_container_ids == ()
+    assert right_runtime.inspect(right_observed.container_id) == right_observed
+
+    left_cleanup = left.shutdown_cleanup()
+    assert left_cleanup.removed_container_ids == (left_observed.container_id,)
+    assert right_runtime.inspect(right_observed.container_id) == right_observed
+    assert len(rows) == 1
