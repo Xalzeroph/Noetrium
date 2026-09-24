@@ -335,3 +335,16 @@ def test_prepare_context_rejects_missing_oss_metadata_authority(tmp_path: Path) 
 
     with pytest.raises(ValueError, match="OSS metadata authority is missing"):
         context.prepare_container_context(dist, tmp_path / "ctx", expected_source_sha=SHA)
+
+
+def test_container_verifier_labels_ephemeral_smoke_children_for_orphan_reaping(monkeypatch):
+    monkeypatch.setenv("NOETRIUM_BOOTSTRAP_OWNER_PID", "123")
+    monkeypatch.setenv("NOETRIUM_BOOTSTRAP_OWNER_BOOT", "boot-id")
+    monkeypatch.setenv("NOETRIUM_BOOTSTRAP_OWNER_START", "456")
+    options = container._qualification_run_options()
+
+    assert options[:5] == ["--rm", "--init", "--restart", "no", "--label"]
+    assert "io.noetrium.bootstrap-child=qualification-v1" in options
+    assert "io.noetrium.bootstrap-owner-pid=123" in options
+    assert "io.noetrium.bootstrap-owner-boot=boot-id" in options
+    assert "io.noetrium.bootstrap-owner-start=456" in options

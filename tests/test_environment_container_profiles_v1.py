@@ -368,3 +368,17 @@ def test_deployment_runtime_images_are_source_configurable_without_remote_fronte
     for dockerfile in (ROOT / "deploy").rglob("Dockerfile"):
         text = dockerfile.read_text(encoding="utf-8")
         assert "# syntax=docker/dockerfile:" not in text
+
+
+def test_environment_bootstrap_reaps_nested_qualification_orphans() -> None:
+    bootstrap = (ROOT / "deploy" / "build-environments.sh").read_text(encoding="utf-8")
+    builder = (ROOT / "scripts" / "build_environment_images.py").read_text(encoding="utf-8")
+
+    assert 'BOOTSTRAP_CHILD_LABEL="io.noetrium.bootstrap-child"' in bootstrap
+    assert "reconcile_bootstrap_children" in bootstrap
+    assert "cleanup_owned_bootstrap_children" in bootstrap
+    assert "NOETRIUM_BOOTSTRAP_OWNER_PID" in bootstrap
+    assert "NOETRIUM_BOOTSTRAP_OWNER_BOOT" in bootstrap
+    assert "NOETRIUM_BOOTSTRAP_OWNER_START" in bootstrap
+    assert "io.noetrium.bootstrap-child=qualification-v1" in builder
+    assert "_qualification_label_args()" in builder
