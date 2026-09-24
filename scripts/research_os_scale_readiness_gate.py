@@ -190,6 +190,60 @@ def _canonical_graph_resource_binding() -> ReadinessCriterion:
     )
 
 
+_SCALE_EXECUTION_TESTS = (
+    "tests/test_research_graph_scheduler_durable_v1.py",
+    "tests/test_research_graph_scale_v1.py",
+    "tests/test_research_graph_claim_control_fence_v1.py",
+    "tests/test_research_graph_cut_switch_fence_v1.py",
+    "tests/test_research_os_multi_program_selection_v1.py",
+    "tests/test_research_os_retry_scope_v1.py",
+    "tests/test_research_os_migration_v1.py",
+    "tests/test_research_os_migration_node_control_intent_v1.py",
+    "tests/test_research_os_artifact_migration_v1.py",
+)
+
+
+def _scale_execution_proof() -> ReadinessCriterion:
+    command = (
+        sys.executable,
+        "-m",
+        "pytest",
+        "-q",
+        *_SCALE_EXECUTION_TESTS,
+    )
+    try:
+        completed = subprocess.run(
+            command,
+            cwd=ROOT,
+            text=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            check=False,
+            timeout=180,
+        )
+    except subprocess.TimeoutExpired as exc:
+        return ReadinessCriterion(
+            "scale_execution_proof",
+            False,
+            {
+                "tests": list(_SCALE_EXECUTION_TESTS),
+                "timeout_seconds": 180,
+                "stdout_tail": (exc.stdout or "")[-4000:] if isinstance(exc.stdout, str) else "",
+                "stderr_tail": (exc.stderr or "")[-4000:] if isinstance(exc.stderr, str) else "",
+            },
+        )
+    return ReadinessCriterion(
+        "scale_execution_proof",
+        completed.returncode == 0,
+        {
+            "tests": list(_SCALE_EXECUTION_TESTS),
+            "returncode": completed.returncode,
+            "stdout_tail": completed.stdout[-4000:],
+            "stderr_tail": completed.stderr[-4000:],
+        },
+    )
+
+
 def _durable_execution_contract() -> ReadinessCriterion:
     from noetrium_platform.research.execution.graph.providers import (
         SQLiteResearchGraphExecutionStore,
@@ -247,6 +301,7 @@ def evaluate() -> ResearchOSScaleReadiness:
         _unmanaged_executor_constructors(),
         _canonical_graph_resource_binding(),
         _durable_execution_contract(),
+        _scale_execution_proof(),
     )
     return ResearchOSScaleReadiness(
         schema="noetrium.research-os-scale-readiness.v1",
