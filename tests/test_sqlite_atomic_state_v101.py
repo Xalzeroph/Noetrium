@@ -185,6 +185,14 @@ class DataArtifactDurabilityV207Tests(unittest.TestCase):
             self.assertEqual(reopened.get(record.artifact_id), record)
             self.assertEqual(reopened.put(record), record)
             self.assertEqual(reopened.query(ArtifactQuery(kind=ArtifactKind.RUNTIME)), (record,))
+            self.assertEqual(
+                reopened.query(ArtifactQuery(digest=record.digest)),
+                (record,),
+            )
+            self.assertEqual(
+                reopened.query(ArtifactQuery(digest=self._sha("missing"))),
+                (),
+            )
             with self.assertRaises(ArtifactRegistryConflict):
                 reopened.put(self._artifact(digest=self._sha("different")))
 
@@ -208,6 +216,8 @@ class DataArtifactDurabilityV207Tests(unittest.TestCase):
                 ArtifactQuery(limit=True)
             with self.assertRaises(ValueError):
                 ArtifactQuery(limit=10_001)
+            with self.assertRaisesRegex(ValueError, "lowercase SHA-256"):
+                ArtifactQuery(digest="not-a-digest")
 
     def test_artifact_digest_identity_requires_lowercase_sha256(self):
         with self.assertRaisesRegex(ValueError, "lowercase SHA-256"):
