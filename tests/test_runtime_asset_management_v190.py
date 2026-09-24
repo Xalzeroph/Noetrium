@@ -939,3 +939,59 @@ def test_stale_model_generation_cannot_stop_or_remove_replacement_process() -> N
 
         assert models.deployment_runtime.generation("d") == replacement_generation
         assert models.deployment_runtime.status("d").runtime_state is ModelRuntimeState.RUNNING
+
+
+def test_model_remove_retries_after_physical_stop_without_retargeting_generation() -> None:
+    with TemporaryDirectory() as td:
+        root = Path(td)
+        directories = build_local_directory_authorities(layout(root))
+        environments = build_environments(directories)
+        environments.lifecycle.create(
+            PythonEnvironmentSpec("serve", PLATFORM_SCOPE, backend="fake")
+        )
+        model_dir = root / "model-remove-retry"
+        model_dir.mkdir()
+        factory = FakeFactory()
+        models = build_models(directories, environments, factory)
+        models.assets.register_model("m", PLATFORM_SCOPE, model_dir)
+        spec = ModelDeploymentSpec(
+            deployment_id="remove-retry",
+            service_id="model:remove-retry",
+            model_id="m",
+            engine="custom",
+            scope=PLATFORM_SCOPE,
+            executable="{python}",
+            argv=("{python}", "-m", "server"),
+            cwd=root,
+            python_environment_id="serve",
+        )
+        models.deployment_catalog.put_deployment(spec)
+        models.deployment_runtime.start(
+            models.deployment_runtime.generation("remove-retry")
+        )
+        owned_generation = models.deployment_runtime.generation("remove-retry")
+
+        real_remove = models.deployment_catalog.remove
+        remove_calls = 0
+
+        def fail_once(deployment_id: str) -> bool:
+            nonlocal remove_calls
+            remove_calls += 1
+            if remove_calls == 1:
+                raise OSError("simulated desired retirement write failure")
+            return real_remove(deployment_id)
+
+        models.deployment_catalog.remove = fail_once
+
+        with pytest.raises(OSError, match="retirement write failure"):
+            models.deployment_runtime.remove_deployment(owned_generation)
+
+        assert factory.runtime.live is False
+        assert models.deployment_runtime.status("remove-retry").runtime_state is ModelRuntimeState.STOPPED
+
+        assert models.deployment_runtime.remove_deployment(owned_generation) is True
+        assert models.deployment_runtime.remove_deployment(owned_generation) is True
+        assert remove_calls == 2
+
+        with pytest.raises(RuntimeError, match="retired and cannot be reused"):
+            models.deployment_catalog.put_deployment(spec)
