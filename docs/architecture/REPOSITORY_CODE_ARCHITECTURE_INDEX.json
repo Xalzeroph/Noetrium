@@ -3,13 +3,13 @@
     "parse_errors": 0,
     "python_files": 3665,
     "python_import_edges": 7068,
-    "symbols": 4901,
+    "symbols": 4903,
     "tracked_files": 4295,
     "typescript_javascript_files": 11
   },
   "language_symbol_counts": {
     "javascript": 1,
-    "python": 4895,
+    "python": 4897,
     "typescript": 5
   },
   "parse_errors": [],
@@ -42558,13 +42558,13 @@
     "public_facade": 4,
     "reference_components": 64,
     "reference_orchestration": 14,
-    "research_reproductions": 427,
+    "research_reproductions": 429,
     "sdk": 5,
     "tests": 990,
     "tooling": 38
   },
   "schema": "noetrium-repository-code-architecture-index.v1",
-  "source_git_sha": "b9820f300bc3c076955f42187b4c07c3be465bd8",
+  "source_git_sha": "283ec7e9dd8f0df71b79915f00f0e37bdc6d026d",
   "symbols": [
     {
       "bases": [],
@@ -125672,6 +125672,46 @@
       "role": "research_reproductions"
     },
     {
+      "bases": [],
+      "decorators": [
+        "dataclass(frozen=True, slots=True)"
+      ],
+      "fields": [
+        "requirement_digest: str",
+        "view: CapabilitySelectionView",
+        "registration_digest: str"
+      ],
+      "kind": "dataclass",
+      "language": "python",
+      "line": 98,
+      "methods": [
+        "__post_init__"
+      ],
+      "module": "research.reproductions.research_os",
+      "name": "ReproductionCapabilitySelectionRegistration",
+      "path": "research/reproductions/research_os.py",
+      "qualname": "research.reproductions.research_os.ReproductionCapabilitySelectionRegistration",
+      "role": "research_reproductions"
+    },
+    {
+      "bases": [],
+      "decorators": [],
+      "fields": [],
+      "kind": "class",
+      "language": "python",
+      "line": 132,
+      "methods": [
+        "__init__",
+        "identity_digest",
+        "resolve"
+      ],
+      "module": "research.reproductions.research_os",
+      "name": "ReproductionCapabilitySelectionRegistry",
+      "path": "research/reproductions/research_os.py",
+      "qualname": "research.reproductions.research_os.ReproductionCapabilitySelectionRegistry",
+      "role": "research_reproductions"
+    },
+    {
       "bases": [
         "Protocol"
       ],
@@ -125681,7 +125721,7 @@
       "fields": [],
       "kind": "protocol",
       "language": "python",
-      "line": 98,
+      "line": 197,
       "methods": [
         "resolve"
       ],
@@ -125705,7 +125745,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 112,
+      "line": 211,
       "methods": [
         "__post_init__"
       ],
@@ -125729,7 +125769,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 161,
+      "line": 260,
       "methods": [
         "__post_init__",
         "request_digest"
@@ -125758,7 +125798,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 249,
+      "line": 348,
       "methods": [
         "__post_init__"
       ],
@@ -125784,7 +125824,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 345,
+      "line": 444,
       "methods": [
         "__post_init__"
       ],
@@ -125811,7 +125851,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 370,
+      "line": 469,
       "methods": [
         "__post_init__",
         "benchmark_split_parameter",
@@ -125840,7 +125880,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 425,
+      "line": 524,
       "methods": [
         "__post_init__",
         "exact",
@@ -139597,7 +139637,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 24,
+      "line": 27,
       "methods": [
         "resolve"
       ],
