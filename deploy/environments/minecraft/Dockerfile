@@ -1,7 +1,9 @@
 
 ARG PLATFORM_BASE_IMAGE=noetrium:local
 ARG JAVA_RUNTIME_IMAGE=eclipse-temurin:21-jre-jammy
+ARG NODE_RUNTIME_IMAGE=node:22.22.2-bookworm-slim
 FROM ${JAVA_RUNTIME_IMAGE} AS java-runtime
+FROM ${NODE_RUNTIME_IMAGE} AS node-runtime
 
 FROM ${PLATFORM_BASE_IMAGE}
 
@@ -14,8 +16,6 @@ LABEL org.opencontainers.image.noetrium.environment.profile-id="${NOETRIUM_ENVIR
       org.opencontainers.image.noetrium.environment.profile-revision="${NOETRIUM_ENVIRONMENT_PROFILE_REVISION}" \
       org.opencontainers.image.noetrium.environment.build-input.sha256="${NOETRIUM_ENVIRONMENT_BUILD_INPUT_DIGEST}"
 
-ARG NODE_VERSION=22.22.2
-ARG NODE_LINUX_X64_SHA256
 ENV JAVA_HOME=/opt/java/openjdk \
     MC_DATA_DIR=/var/lib/minecraft \
     NOETRIUM_ENVIRONMENT_PROFILE=minecraft \
@@ -26,17 +26,12 @@ RUN mkdir -p /usr/local/lib/noetrium/environment-doctor.d
 COPY deploy/environments/minecraft/doctor.sh /usr/local/lib/noetrium/environment-doctor.d/minecraft
 RUN chmod 0755 /usr/local/lib/noetrium/environment-doctor.d/minecraft
 COPY --from=java-runtime /opt/java/openjdk /opt/java/openjdk
-
-RUN apt-get update \
-    && apt-get install -y --no-install-recommends ca-certificates curl xz-utils \
-    && rm -rf /var/lib/apt/lists/*
-
-RUN cd /tmp \
-    && test -n "${NODE_LINUX_X64_SHA256}" \
-    && curl -fsSLO "https://nodejs.org/dist/v${NODE_VERSION}/node-v${NODE_VERSION}-linux-x64.tar.xz" \
-    && printf '%s  %s\n' "${NODE_LINUX_X64_SHA256}" "node-v${NODE_VERSION}-linux-x64.tar.xz" | sha256sum -c - \
-    && tar -xJf "node-v${NODE_VERSION}-linux-x64.tar.xz" --strip-components=1 -C /usr/local \
-    && rm -f "node-v${NODE_VERSION}-linux-x64.tar.xz"
+COPY --from=node-runtime /usr/local/bin/node /usr/local/bin/node
+COPY --from=node-runtime /usr/local/lib/node_modules /usr/local/lib/node_modules
+RUN ln -sf ../lib/node_modules/npm/bin/npm-cli.js /usr/local/bin/npm \
+    && ln -sf ../lib/node_modules/npm/bin/npx-cli.js /usr/local/bin/npx \
+    && node --version \
+    && npm --version
 
 RUN bridge="$(python -c 'from pathlib import Path; import noetrium_platform; print(Path(noetrium_platform.__file__).resolve().parent / "capabilities/environment/minecraft/providers/assets/mineflayer_bridge")')" \
     && test -f "$bridge/package-lock.json" \
