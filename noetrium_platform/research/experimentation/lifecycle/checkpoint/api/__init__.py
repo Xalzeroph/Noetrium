@@ -1,10 +1,9 @@
+from .gc import CheckpointGcAssessment, CheckpointNamespace, CheckpointPersistenceState
 from .contracts import (
     RunCheckpointBundle,
     RunCheckpointConflict,
-    RunCheckpointGcAssessment,
     RunCheckpointIntegrityError,
     RunCheckpointManifest,
-    RunCheckpointPersistenceState,
     RunCheckpointRecoveryRequired,
     RunCheckpointStore,
     RunParticipantPayload,
@@ -33,16 +32,16 @@ from .workload_ports import (
 
 __all__ = [
     "CheckpointCapturePolicy",
+    "CheckpointGcAssessment",
+    "CheckpointNamespace",
+    "CheckpointPersistenceState",
     "CheckpointTrigger",
     "CheckpointTriggerKind",
     "RunCheckpointBundle",
     "RunCheckpointConflict",
     "RunCheckpointCoordinatorPort",
-    "RunCheckpointGcAssessment",
-    "RunCheckpointGcAssessment",
     "RunCheckpointIntegrityError",
     "RunCheckpointManifest",
-    "RunCheckpointPersistenceState",
     "RunCheckpointRecoveryRequired",
     "RunCheckpointResult",
     "RunCheckpointStore",
