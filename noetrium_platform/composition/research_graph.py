@@ -486,6 +486,12 @@ class ResearchGraphScheduler:
             }:
                 pending[node_id] = node
 
+        frontier = ResearchGraphDependencyFrontier(
+            self._plan,
+            selected_node_ids=self._selected_node_ids,
+            terminal_results=results,
+        )
+
         group = self._pool.open_orchestration_group(
             self._task_group_id or f"research-graph:{execution_id}",
             tenant_id=self._tenant_id,
@@ -547,6 +553,7 @@ class ResearchGraphScheduler:
                     node.semantic_digest,
                     ResearchGraphNodeState.SUCCEEDED,
                 )
+                frontier.record_terminal(results[node_id])
             except BaseException as exc:
                 handle.cancel()
                 failure = _reportable_failure(exc)
@@ -579,6 +586,7 @@ class ResearchGraphScheduler:
                         failure_type=type(failure).__name__,
                         failure_message=message,
                     )
+                    frontier.record_terminal(results[node_id])
                     node_control = node_control_store.node_control_state(
                         execution_id, node_id
                     )
@@ -601,6 +609,7 @@ class ResearchGraphScheduler:
                     and node_control.phase is ResearchGraphNodeControlPhase.PAUSED
                 ):
                     pending[node_id] = node
+                    frontier.restore_ready(node_id)
                     return
                 if current.state is ResearchGraphLiveNodeState.CANCELLED:
                     results[node_id] = ResearchGraphNodeResult(
@@ -608,6 +617,7 @@ class ResearchGraphScheduler:
                         node.semantic_digest,
                         ResearchGraphNodeState.CANCELLED,
                     )
+                    frontier.record_terminal(results[node_id])
                     return
                 control = control_store.control_state(execution_id)
                 if control.phase in {
@@ -650,39 +660,28 @@ class ResearchGraphScheduler:
 
                 progressed = False
 
-                for node_id in tuple(sorted(pending)):
+                for node_id, blockers in frontier.blocked_nodes(set(pending)):
                     node = pending[node_id]
-                    blockers = tuple(
-                        dependency
-                        for dependency in node.depends_on_node_ids
-                        if dependency in results
-                        and results[dependency].state
-                        in {
-                            ResearchGraphNodeState.FAILED,
-                            ResearchGraphNodeState.BLOCKED,
-                            ResearchGraphNodeState.CANCELLED,
-                        }
-                    )
-                    if not blockers:
-                        continue
                     record = store.mark_blocked(
                         execution_id,
                         node_id,
                         blocked_by_node_ids=blockers,
                     )
                     live[node_id] = record
-                    results[node_id] = ResearchGraphNodeResult(
+                    result = ResearchGraphNodeResult(
                         node.node_id,
                         node.semantic_digest,
                         ResearchGraphNodeState.BLOCKED,
                         blocked_by_node_ids=blockers,
                     )
+                    results[node_id] = result
                     del pending[node_id]
+                    frontier.record_terminal(result)
                     progressed = True
 
                 now_ns = time.time_ns()
                 if not draining:
-                    for node_id in tuple(sorted(pending)):
+                    for node_id in frontier.ready_node_ids(set(pending)):
                         node = pending[node_id]
                         node_control = node_control_store.node_control_state(
                             execution_id, node_id
@@ -700,6 +699,7 @@ class ResearchGraphScheduler:
                                 ResearchGraphNodeState.CANCELLED,
                             )
                             del pending[node_id]
+                            frontier.record_terminal(results[node_id])
                             progressed = True
                             continue
                         if node_control.phase is ResearchGraphNodeControlPhase.DRAINING:
@@ -714,13 +714,6 @@ class ResearchGraphScheduler:
                             ResearchGraphNodeControlPhase.PAUSED,
                             ResearchGraphNodeControlPhase.RECOVERY_REQUIRED,
                         }:
-                            continue
-                        if not all(
-                            dependency in results
-                            and results[dependency].state
-                            is ResearchGraphNodeState.SUCCEEDED
-                            for dependency in node.depends_on_node_ids
-                        ):
                             continue
                         current = live[node_id]
                         if (
@@ -754,6 +747,7 @@ class ResearchGraphScheduler:
                                 "claimed research graph node lost attempt id"
                             )
                         handle = submit(node, attempt_id)
+                        frontier.consume_ready(node_id)
                         running[node_id] = (
                             node,
                             handle,
@@ -844,10 +838,13 @@ class ResearchGraphScheduler:
                             execution_id,
                             tuple(sorted(reconciliation_required)),
                         )
+                    ready_pending = set(
+                        frontier.ready_node_ids(set(pending))
+                    )
                     retry_times = tuple(
                         record.retry_not_before_ns
                         for node_id, record in live.items()
-                        if node_id in pending
+                        if node_id in ready_pending
                         and record.state is ResearchGraphLiveNodeState.RETRY_WAIT
                         and record.retry_not_before_ns is not None
                     )
