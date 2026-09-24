@@ -79,7 +79,7 @@ class ArchitectureSourceInvariantsV105Tests(unittest.TestCase):
             violations=[x for x in rows if x.invariant=='model_os_inventory_authority']
             self.assertEqual(len(violations),2)
 
-    def test_fixed_participant_session_args_cannot_return_to_trial_executor(self):
+    def test_retired_experiment_orchestration_namespace_cannot_return(self):
         with tempfile.TemporaryDirectory() as td:
             root=Path(td); study=root/'noetrium_platform/research/experimentation/experiment/runtime'; study.mkdir(parents=True)
             (study/'trial_cycle.py').write_text(
@@ -89,7 +89,7 @@ class ArchitectureSourceInvariantsV105Tests(unittest.TestCase):
                 encoding='utf-8',
             )
             rows=audit_source_invariants(root)
-            self.assertTrue(any(x.invariant=='generic_participant_execution_signature' for x in rows))
+            self.assertTrue(any(x.invariant=='retired_experiment_orchestration_path' for x in rows))
 
 
     def test_composition_families_cannot_cross_import_specialized_domains(self):
