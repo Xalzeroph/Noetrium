@@ -22,7 +22,7 @@ from noetrium_platform.foundation.kernel.kernel import EffectCertainty, EffectCl
 from noetrium_platform.capabilities.participant.core.api import ParticipantImplementationIdentity
 from noetrium_platform.composition.workflows.agent_turn import AGENT_TURN_TRIAL_CONFIGURATION_DIGEST
 from noetrium_platform.research.execution.decision.cycle_identity import DecisionCycleIdentity
-from noetrium_platform.research.experimentation.lifecycle.experiment.runtime import ExperimentRuntime
+from tests_support import ExperimentRuntimeForTest as ExperimentRuntime
 from noetrium_platform.research.experimentation.lifecycle.api import ExperimentParticipantSpec, ExperimentSpec
 
 
