@@ -22,10 +22,17 @@ from noetrium_platform.composition.research_os_experiment_trial_execution import
 )
 from noetrium_platform.foundation.kernel.kernel import canonical_digest
 from noetrium_platform.foundation.portfolio.api import (
+    ProjectCapabilityRequirement,
+    ProjectConfigurationReference,
     ProjectIdentity,
     ProjectManifest,
+    ProjectMethodRequirement,
+    ProjectProviderBinding,
     ProjectSpec,
     ProjectToolProvenance,
+)
+from noetrium_platform.research.experimentation.api import (
+    research_manifest_requirement_keys,
 )
 from noetrium_platform.research.experimentation.lifecycle.api import (
     BenchmarkResolutionRegistry,
@@ -141,6 +148,7 @@ class _Materializer:
     def __init__(self) -> None:
         self.prerequisite_manifest_digest = None
         self.owner_manifest_digest = None
+        self.capability_manifest_digest = None
         self.owner_fleet_digest = None
 
     def materialize_prerequisites(self, requirements):
@@ -149,31 +157,109 @@ class _Materializer:
             BenchmarkResolutionRegistry(),
         )
 
-    def materialize_owners(self, requirements, fleet):
+    def materialize_manifests(self, requirements, fleet):
         self.owner_manifest_digest = requirements.manifest_digest
         self.owner_fleet_digest = fleet.materialization_digest
 
-        manifests = tuple(
-            ProjectManifest(
-                ProjectSpec(
-                    ProjectIdentity(lane.study.project_id, "1"),
-                    lane.program.program_id,
-                    "Two-stage materializer fixture",
-                ),
-                "fixture-v1",
-                ProjectToolProvenance(
-                    "noetrium-test",
-                    "1",
+        manifests = []
+        for lane in fleet.lanes:
+            keys = research_manifest_requirement_keys(lane.study)
+            capabilities = tuple(
+                ProjectCapabilityRequirement(
+                    requirement_id,
+                    "test",
+                    f"capability-{index}",
+                    1,
                     canonical_digest(
                         {
-                            "program_id": lane.program.program_id,
+                            "requirement_id": requirement_id,
                             "study_id": lane.study.study_id,
                         }
                     ),
-                ),
-                study_ids=(lane.study.study_id,),
+                )
+                for index, requirement_id in enumerate(
+                    keys.capability_requirement_ids
+                )
             )
-            for lane in fleet.lanes
+            provider_bindings = tuple(
+                ProjectProviderBinding(
+                    f"binding-{index}",
+                    requirement.requirement_id,
+                    f"provider.{index}",
+                    "1",
+                    canonical_digest(
+                        {
+                            "provider": f"provider.{index}",
+                            "requirement_id": requirement.requirement_id,
+                        }
+                    ),
+                )
+                for index, requirement in enumerate(capabilities)
+            )
+            method_requirements = tuple(
+                ProjectMethodRequirement(
+                    method_id,
+                    treatment_id,
+                    canonical_digest(
+                        {
+                            "method_id": method_id,
+                            "treatment_id": treatment_id,
+                        }
+                    ),
+                )
+                for method_id, treatment_id in keys.method_requirement_keys
+            )
+            configuration_refs = tuple(
+                ProjectConfigurationReference(
+                    configuration_id,
+                    f"artifact://fixture/{configuration_id}",
+                    canonical_digest(
+                        {
+                            "configuration_id": configuration_id,
+                            "study_id": lane.study.study_id,
+                        }
+                    ),
+                )
+                for configuration_id in keys.configuration_ref_ids
+            )
+            manifests.append(
+                ProjectManifest(
+                    ProjectSpec(
+                        ProjectIdentity(lane.study.project_id, "1"),
+                        lane.program.program_id,
+                        "Three-stage materializer fixture",
+                    ),
+                    "fixture-v1",
+                    ProjectToolProvenance(
+                        "noetrium-test",
+                        "1",
+                        canonical_digest(
+                            {
+                                "program_id": lane.program.program_id,
+                                "study_id": lane.study.study_id,
+                            }
+                        ),
+                    ),
+                    capability_requirements=capabilities,
+                    provider_bindings=provider_bindings,
+                    method_requirements=method_requirements,
+                    configuration_refs=configuration_refs,
+                    study_ids=(lane.study.study_id,),
+                )
+            )
+        return ResearchProjectManifestRegistry(tuple(manifests))
+
+    def materialize_execution_owners(
+        self,
+        requirements,
+        capability_requirements,
+        fleet,
+        manifests,
+    ):
+        self.capability_manifest_digest = capability_requirements.manifest_digest
+        self.owner_fleet_digest = fleet.materialization_digest
+        assert capability_requirements.project_manifest_registry_digest == (
+            manifests.identity_digest
         )
 
         protocol_by_digest = {
@@ -204,7 +290,6 @@ class _Materializer:
         )
 
         return ReproductionFleetOwnerAuthorities(
-            manifests=ResearchProjectManifestRegistry(manifests),
             research_capabilities=ResearchCapabilityBindingRegistry(()),
             participants=ResearchParticipantBindingRegistry(()),
             models=ResearchModelRoleBindingRegistry(()),
@@ -268,6 +353,9 @@ def test_two_stage_materializer_is_the_single_zero_glue_authority_pipeline(
         result.owner_requirements.manifest_digest
     )
     assert materializer.owner_fleet_digest == result.fleet.materialization_digest
+    assert materializer.capability_manifest_digest == (
+        result.capability_requirements.manifest_digest
+    )
     assert result.owner_requirements.materialization_digest == (
         result.fleet.materialization_digest
     )
@@ -279,8 +367,14 @@ def test_two_stage_materializer_is_the_single_zero_glue_authority_pipeline(
         result.prerequisites.manifest_digest,
         result.fleet.materialization_digest,
         result.owner_requirements.manifest_digest,
+        result.capability_requirements.manifest_digest,
         result.execution_authorities.authority_manifest_digest,
     }
+    assert result.capability_requirements.requirements
+    assert all(
+        row.project_manifest_digest
+        for row in result.capability_requirements.requirements
+    )
     assert {row.stage for row in result.owner_requirements.requirements} == {
         "project_manifest",
         "participant",
@@ -329,4 +423,5 @@ def test_two_stage_materializer_fails_closed_on_incomplete_owner_registries(
     assert error.audit.gap_count > 0
     assert len(error.prerequisite_manifest_digest) == 64
     assert len(error.owner_requirement_manifest_digest) == 64
+    assert len(error.capability_requirement_manifest_digest) == 64
     assert len(error.error_digest) == 64
