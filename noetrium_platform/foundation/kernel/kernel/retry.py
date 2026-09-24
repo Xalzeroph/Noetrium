@@ -1,8 +1,10 @@
 from __future__ import annotations
 
 from collections.abc import Callable
-from time import monotonic, sleep
+from time import monotonic
 from typing import TypeVar
+
+from noetrium_platform.foundation.kernel.concurrency.runtime.execution import blocking_sleep
 
 
 T = TypeVar("T")
@@ -33,7 +35,7 @@ def retry_until_deadline(
             remaining = deadline - monotonic()
             if not should_retry(exc) or remaining <= 0:
                 raise
-            sleep(min(interval_seconds, remaining))
+            blocking_sleep(min(interval_seconds, remaining))
 
 
 __all__ = ["retry_until_deadline"]
