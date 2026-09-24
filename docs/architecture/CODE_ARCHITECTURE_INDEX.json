@@ -77010,10 +77010,11 @@
         "SCHEMA_VERSION"
       ],
       "kind": "class",
-      "line": 47,
+      "line": 48,
       "methods": [
         "__init__",
         "_connection",
+        "_transaction",
         "_ensure_schema",
         "_decode",
         "_owner_matches",
@@ -143752,7 +143753,7 @@
   "parse_errors": [],
   "registry_sha256": "d3fc1bab831f1b7379e5a36048a61c00fe173429df958270d36a16f3f00171c0",
   "schema": "noetrium-code-architecture-index.v1",
-  "source_git_sha": "48e8c40ee58f7d13f75cf9e394f77feb0cfdedcc",
+  "source_git_sha": "a6a28dc18be984a411340b26466fab733c6ac954",
   "system_import_edges": [
     {
       "count": 85,
