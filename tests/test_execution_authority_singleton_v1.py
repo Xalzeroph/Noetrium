@@ -31,6 +31,10 @@ _ALLOWED_CALLERS = {
         "noetrium_platform/research/execution/workflow/runtime/method_machine.py",
     },
     "build_experiment_runtime": set(),
+    "ExperimentRuntime": set(),
+    "DecisionCycleRuntime": set(),
+    "RunRuntime": set(),
+    "ExperimentTrialCycleExecutor": set(),
 }
 
 
