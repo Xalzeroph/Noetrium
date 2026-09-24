@@ -1,5 +1,5 @@
 from __future__ import annotations
-from noetrium_platform.research.execution.workflow.api import AgentMethodSpec, AgentPhaseSpec
+from noetrium.api import AgentMethodSpec, AgentPhaseSpec
 METHOD_ID="dejavu_cvpr2026"
 TITLE="Dejavu: Towards Experience Feedback Learning for Embodied Intelligence"
 VENUE="CVPR 2026"
