@@ -14,9 +14,9 @@ from research.reproductions.memevolve.definition import (
     REPRODUCTION as MEMEVOLVE_REPRODUCTION,
 )
 from research.reproductions.research_os import (
-    ReproductionExecutionRequirementKind,
     compile_reproduction_research_program,
     is_research_os_executable,
+    resolve_benchmark_split_consumers,
     resolve_execution_requirements,
 )
 
@@ -86,8 +86,10 @@ def test_live_swe_agent_enters_current_research_os_with_typed_swebench_split() -
     assert is_research_os_executable(LIVE_SWE_REPRODUCTION)
     requirements = resolve_execution_requirements(LIVE_SWE_REPRODUCTION)
 
-    assert tuple(row.parameter for row in requirements) == ("split_id",)
-    assert requirements[0].kind is ReproductionExecutionRequirementKind.BENCHMARK_SPLIT
+    assert requirements == ()
+    assert resolve_benchmark_split_consumers(LIVE_SWE_REPRODUCTION) == (
+        "study:build_live_swe_agent_study",
+    )
 
     research_program = compile_reproduction_research_program(LIVE_SWE_REPRODUCTION)
     assert research_program.program_id == "live_swe_agent"
@@ -120,8 +122,10 @@ def test_memevolve_enters_current_research_os_with_typed_benchmark_split() -> No
     assert is_research_os_executable(MEMEVOLVE_REPRODUCTION)
     requirements = resolve_execution_requirements(MEMEVOLVE_REPRODUCTION)
 
-    assert tuple(row.parameter for row in requirements) == ("split_id",)
-    assert requirements[0].kind is ReproductionExecutionRequirementKind.BENCHMARK_SPLIT
+    assert requirements == ()
+    assert resolve_benchmark_split_consumers(MEMEVOLVE_REPRODUCTION) == (
+        "study:build_memevolve_study",
+    )
 
     research_program = compile_reproduction_research_program(MEMEVOLVE_REPRODUCTION)
     assert research_program.program_id == "memevolve"
