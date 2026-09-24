@@ -568,10 +568,22 @@ __all__ = tuple(__all__) + (
     "bind_execution_fork",
 )
 from noetrium_platform.capabilities.api import (
+    EnvironmentForkReceipt,
+    EnvironmentReplayError,
+    EnvironmentReplayReceipt,
+    EnvironmentSessionOpener,
     TensorContentRef,
     TensorContentStorePort,
+    fork_environment_session,
+    replay_environment_prefix,
 )
 __all__ = tuple(__all__) + (
+    "EnvironmentForkReceipt",
+    "EnvironmentReplayError",
+    "EnvironmentReplayReceipt",
+    "EnvironmentSessionOpener",
     "TensorContentRef",
     "TensorContentStorePort",
+    "fork_environment_session",
+    "replay_environment_prefix",
 )
