@@ -13,13 +13,10 @@ from noetrium_platform.composition.research_binding_authority import (
     ResearchParticipantBindingResolverPort,
     ResearchProjectManifestResolverPort,
 )
-from noetrium_platform.composition.research_os_experiment import (
-    ResearchOSExperimentArtifactStoreFactoryPort,
-)
 from noetrium_platform.composition.research_os_experiment_runtime_binding import (
     ResearchOSExperimentAggregationResolverPort,
     ResearchOSExperimentReconciliationResolverPort,
-    ResearchOSExperimentRuntimeBindingAuthority,
+    ResearchOSExperimentRuntimeComponents,
     ResearchOSExperimentStudyExecutionResolverPort,
 )
 
@@ -39,7 +36,6 @@ def compose_repository_fleet_execution_authorities(
     models: ResearchModelRoleBindingResolverPort,
     experiment_study_execution: ResearchOSExperimentStudyExecutionResolverPort,
     experiment_aggregation: ResearchOSExperimentAggregationResolverPort,
-    experiment_artifacts: ResearchOSExperimentArtifactStoreFactoryPort,
     experiment_reconciliation: ResearchOSExperimentReconciliationResolverPort,
     reproduction_capabilities: (
         ReproductionCapabilityRequirementResolverPort | None
@@ -68,16 +64,15 @@ def compose_repository_fleet_execution_authorities(
         participants,
         models,
     )
-    experiment_bindings = ResearchOSExperimentRuntimeBindingAuthority(
+    experiment_runtime_components = ResearchOSExperimentRuntimeComponents(
         study_execution=experiment_study_execution,
         aggregation=experiment_aggregation,
-        artifacts=experiment_artifacts,
         reconciliation=experiment_reconciliation,
     )
     return ReproductionFleetExecutionAuthorities(
         benchmark_resolver=benchmark_authority,
         research_bindings=research_bindings,
-        experiment_bindings=experiment_bindings,
+        experiment_runtime_components=experiment_runtime_components,
         capability_resolver=reproduction_capabilities,
     )
 
