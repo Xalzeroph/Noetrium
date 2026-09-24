@@ -6,7 +6,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Protocol
 from urllib.parse import unquote, urlencode, urlparse
-from urllib.request import Request, urlopen
+from urllib.request import Request
 
 from noetrium_platform.foundation.api import ArtifactHttpOpener, ArtifactHttpResponse
 from noetrium_platform.infrastructure.lifecycle.toolchain.api import (
@@ -36,12 +36,6 @@ class TemurinDownloadInfo:
 
 class TemurinMetadataResolverPort(Protocol):
     def resolve(self, request: JavaRuntimeProvisioningRequest) -> TemurinDownloadInfo: ...
-
-
-def _default_metadata_opener(
-    request: Request, timeout_s: float
-) -> ArtifactHttpResponse:
-    return urlopen(request, timeout=timeout_s)  # type: ignore[return-value]
 
 
 def metadata_url(request: JavaRuntimeProvisioningRequest) -> str:
@@ -211,12 +205,12 @@ class AdoptiumMetadataResolver(TemurinMetadataResolverPort):
     def __init__(
         self,
         *,
-        opener: ArtifactHttpOpener | None = None,
+        opener: ArtifactHttpOpener,
         user_agent: str = "noetrium-java-toolchain/1",
     ) -> None:
         if not user_agent.strip():
             raise ValueError("Java runtime user agent must be non-empty")
-        self._opener = opener or _default_metadata_opener
+        self._opener = opener
         self._user_agent = user_agent
 
     def resolve(self, request: JavaRuntimeProvisioningRequest) -> TemurinDownloadInfo:
