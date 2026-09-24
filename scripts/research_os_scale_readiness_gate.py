@@ -314,7 +314,9 @@ def _durable_execution_contract() -> ReadinessCriterion:
         "canonical_sqlite_durability_binding": (
             "durability.sqlite import" in source
             and "durable_sqlite_connection" in source
-            and "begin_immediate_sqlite_transaction" in source
+            and "immediate_sqlite_transaction" in source
+            and "sqlite3.connect(" not in source
+            and "BEGIN IMMEDIATE" not in source
         ),
         "wal": 'PRAGMA journal_mode=WAL' in durability_source,
         "synchronous_full": '"FULL"' in durability_source,
