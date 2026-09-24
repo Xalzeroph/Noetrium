@@ -148,6 +148,12 @@ from noetrium_platform.capabilities.environment.catalog.api import (
     ExecutionEnvironmentCatalogPort,
     ExecutionEnvironmentKind,
 )
+from noetrium_platform.capabilities.environment.software.api import (
+    SoftwareActionKind,
+    SoftwareActionTimeoutError,
+    SoftwareWorldPort,
+)
+
 from noetrium_platform.capabilities.environment.embodied.api import (
     ActionKind,
     ActionSpec,
@@ -155,9 +161,12 @@ from noetrium_platform.capabilities.environment.embodied.api import (
     EmbodiedCaptureReceipt,
     EmbodiedEvent,
     EmbodiedEventKind,
+    EmbodiedSimulatorBackendPort,
     EmbodimentKind,
     EmbodimentSpec,
     EpisodeSpec,
+    SimulatorObservation,
+    SimulatorStep,
     SensorModality,
     SensorSpec,
 )
@@ -169,6 +178,7 @@ _ENVIRONMENT_AUTHORING_EXPORTS = (
     "EmbodiedCaptureReceipt",
     "EmbodiedEvent",
     "EmbodiedEventKind",
+    "EmbodiedSimulatorBackendPort",
     "EmbodimentKind",
     "EmbodimentSpec",
     "EnvironmentCleanlinessKind",
@@ -183,10 +193,15 @@ _ENVIRONMENT_AUTHORING_EXPORTS = (
     "EnvironmentProfileRevision",
     "EnvironmentSpec",
     "EpisodeSpec",
+    "SimulatorObservation",
+    "SimulatorStep",
     "ExecutionEnvironmentCatalogPort",
     "ExecutionEnvironmentKind",
     "SensorModality",
     "SensorSpec",
+    "SoftwareActionKind",
+    "SoftwareActionTimeoutError",
+    "SoftwareWorldPort",
 )
 __all__ += _ENVIRONMENT_AUTHORING_EXPORTS
 
