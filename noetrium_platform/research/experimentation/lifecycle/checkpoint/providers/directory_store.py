@@ -25,6 +25,7 @@ from ..api.contracts import (
     RunCheckpointConflict,
     RunCheckpointIntegrityError,
     RunCheckpointManifest,
+    RunCheckpointRecoveryRequired,
     RunCheckpointStore,
     RunParticipantPayload,
 )
@@ -239,6 +240,19 @@ class DirectoryRunCheckpointStore(RunCheckpointStore):
     def load(self, checkpoint_id: str) -> RunCheckpointBundle:
         path = self._manifest_path(checkpoint_id)
         if not path.exists():
+            try:
+                pending = self._intents.load(checkpoint_id)
+            except CheckpointPublicationIntentCorruptionError as exc:
+                raise RunCheckpointIntegrityError(
+                    "pending checkpoint publication intent is corrupt"
+                ) from exc
+            if pending is not None:
+                raise RunCheckpointRecoveryRequired(
+                    checkpoint_id,
+                    namespace=pending.namespace,
+                    manifest_sha256=pending.manifest_sha256,
+                    blob_sha256s=pending.blob_sha256s,
+                )
             raise FileNotFoundError(f"study checkpoint not found: {checkpoint_id}")
         manifest = self.codec.decode(path.read_bytes())
         if manifest.checkpoint_id != checkpoint_id:
