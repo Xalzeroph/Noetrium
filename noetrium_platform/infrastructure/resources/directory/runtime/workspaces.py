@@ -20,8 +20,10 @@ from noetrium_platform.infrastructure.resources.directory.api import (
     DirectoryLayoutPort,
     ManagedDirectoryKind,
     WorkspaceAllocation,
+    WorkspaceGcAssessment,
     WorkspaceMetadataError,
     WorkspaceMetadataFailureCode,
+    WorkspaceReferenceClosure,
 )
 from noetrium_platform.foundation.governance.api import (
     ScopeIdentity,
@@ -32,6 +34,12 @@ from noetrium_platform.foundation.governance.api import (
 
 _WORKSPACE_SCHEMA = "resource.workspace-allocation.v2"
 _WORKSPACE_FIELDS = {"workspace_id", "scope", "category", "owner", "note"}
+_WORKSPACE_RETIREMENT_SCHEMA = "resource.workspace-retirement.v1"
+_WORKSPACE_RETIREMENT_FIELDS = {
+    "workspace_identity_digest",
+    "workspace_metadata_digest",
+    "gc_proof_digest",
+}
 
 
 class LocalWorkspaceManager:
@@ -275,15 +283,123 @@ class LocalWorkspaceManager:
             note=note_raw,
         )
 
+    def assess_workspace_gc(
+        self,
+        workspace_id: str,
+        *,
+        scope: ScopeIdentity,
+        category: str = "default",
+        closures: tuple[WorkspaceReferenceClosure, ...] = (),
+    ) -> WorkspaceGcAssessment:
+        self._validate_name(workspace_id, "workspace_id")
+        self._validate_name(category, "category")
+        path = self._path(scope, category, workspace_id)
+        retired = self._retired_path(scope, category, workspace_id)
+        with InterprocessFileLock(
+            self._lock_path(scope, category, workspace_id)
+        ):
+            if not path.exists() and not retired.exists():
+                raise KeyError(
+                    "workspace identity does not exist: "
+                    f"{workspace_id}"
+                )
+            if path.exists():
+                if path.is_symlink() or not path.is_dir():
+                    raise RuntimeError(
+                        f"workspace path is not an owned directory: {path}"
+                    )
+                metadata = path / ".workspace.json"
+                if not metadata.is_file():
+                    raise RuntimeError(
+                        "workspace GC assessment requires authoritative metadata: "
+                        f"{workspace_id}"
+                    )
+                current = self._decode_metadata(self._root, metadata)
+                if (
+                    current.workspace_id != workspace_id
+                    or current.scope != scope
+                    or current.category != category
+                ):
+                    raise RuntimeError(
+                        "workspace GC assessment identity drifted"
+                    )
+            return WorkspaceGcAssessment(
+                workspace_id=workspace_id,
+                scope=scope,
+                category=category,
+                closures=closures,
+            )
+
+    @staticmethod
+    def _metadata_digest(allocation: WorkspaceAllocation) -> str:
+        return canonical_digest(
+            LocalWorkspaceManager._payload(
+                allocation.workspace_id,
+                allocation.scope,
+                allocation.category,
+                allocation.owner,
+                allocation.note,
+            )
+        )
+
+    def _decode_retirement(self, path: Path) -> dict[str, str]:
+        try:
+            payload = decode_checksummed_document(
+                path.read_bytes(),
+                expected_schema=_WORKSPACE_RETIREMENT_SCHEMA,
+            ).payload
+        except (OSError, ChecksummedDocumentError) as exc:
+            raise WorkspaceMetadataError(
+                WorkspaceMetadataFailureCode.DOCUMENT_INTEGRITY
+            ) from exc
+        if set(payload) != _WORKSPACE_RETIREMENT_FIELDS or any(
+            type(payload.get(field_name)) is not str
+            or len(str(payload.get(field_name))) != 64
+            or any(
+                ch not in "0123456789abcdef"
+                for ch in str(payload.get(field_name))
+            )
+            for field_name in _WORKSPACE_RETIREMENT_FIELDS
+        ):
+            raise WorkspaceMetadataError(
+                WorkspaceMetadataFailureCode.PAYLOAD_SHAPE
+            )
+        return {
+            field_name: str(payload[field_name])
+            for field_name in _WORKSPACE_RETIREMENT_FIELDS
+        }
+
     def remove_workspace(
         self,
         workspace_id: str,
         *,
         scope: ScopeIdentity,
         category: str = "default",
+        gc: WorkspaceGcAssessment,
     ) -> bool:
         self._validate_name(workspace_id, "workspace_id")
         self._validate_name(category, "category")
+        expected_identity = self._identity_digest(
+            scope,
+            category,
+            workspace_id,
+        )
+        if (
+            type(gc) is not WorkspaceGcAssessment
+            or gc.workspace_id != workspace_id
+            or gc.scope != scope
+            or gc.category != category
+            or gc.workspace_identity_digest != expected_identity
+        ):
+            raise RuntimeError(
+                "workspace GC assessment does not bind the exact workspace identity"
+            )
+        if not gc.eligible:
+            raise RuntimeError(
+                "workspace GC requires complete execution, evidence, and recovery "
+                "closure with zero retained references"
+            )
+
         path = self._path(scope, category, workspace_id)
         retired = self._retired_path(scope, category, workspace_id)
 
@@ -291,9 +407,15 @@ class LocalWorkspaceManager:
             self._lock_path(scope, category, workspace_id)
         ):
             if retired.exists():
-                # A prior call may have crashed after durable retirement but
-                # before the directory tree fully disappeared. Retirement is
-                # terminal, so retry may finish deleting only this exact path.
+                retirement = self._decode_retirement(retired)
+                if retirement["workspace_identity_digest"] != expected_identity:
+                    raise RuntimeError(
+                        "workspace retirement identity does not match derived identity"
+                    )
+                if retirement["gc_proof_digest"] != gc.proof_digest:
+                    raise RuntimeError(
+                        "workspace retirement GC proof changed across retry"
+                    )
                 if path.exists():
                     if path.is_symlink() or not path.is_dir():
                         raise RuntimeError(
@@ -317,19 +439,25 @@ class LocalWorkspaceManager:
                     f"{workspace_id}"
                 )
             current = self._decode_metadata(self._root, metadata)
-            payload = self._payload(
-                current.workspace_id,
-                current.scope,
-                current.category,
-                current.owner,
-                current.note,
-            )
-            # Publish retirement first. If process death happens after this
-            # point, allocation is permanently fenced while remove() remains
-            # safe to retry against the same derived directory.
+            if (
+                current.workspace_id != workspace_id
+                or current.scope != scope
+                or current.category != category
+            ):
+                raise RuntimeError(
+                    "workspace removal identity drifted from authoritative metadata"
+                )
+            retirement_payload = {
+                "workspace_identity_digest": expected_identity,
+                "workspace_metadata_digest": self._metadata_digest(current),
+                "gc_proof_digest": gc.proof_digest,
+            }
             atomic_replace_bytes(
                 retired,
-                (canonical_digest(payload) + "\n").encode("ascii"),
+                encode_checksummed_document(
+                    _WORKSPACE_RETIREMENT_SCHEMA,
+                    retirement_payload,
+                ),
             )
             shutil.rmtree(path)
             fsync_directory(path.parent)

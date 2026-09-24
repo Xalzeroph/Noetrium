@@ -31,10 +31,6 @@ def register(groups) -> None:
     listing = sub.add_parser("workspace-list")
     listing.add_argument("--category")
     add_scope_arguments(listing)
-    remove = sub.add_parser("workspace-remove")
-    remove.add_argument("workspace_id")
-    remove.add_argument("--category", default="default")
-    add_scope_arguments(remove)
 
 
 def dispatch(args, context: ManagementCommandContext):
@@ -59,8 +55,6 @@ def dispatch(args, context: ManagementCommandContext):
         )
     if args.action == "workspace-list":
         return directories.workspaces.list_workspaces(scope=scope_from_args(args), category=args.category)
-    if args.action == "workspace-remove":
-        return {"removed": directories.workspaces.remove_workspace(args.workspace_id, scope=scope_from_args(args), category=args.category)}
     raise ValueError(f"unsupported directory management action: {args.action}")
 
 
