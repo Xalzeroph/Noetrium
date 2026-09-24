@@ -4,9 +4,10 @@ from pathlib import Path
 from typing import Protocol
 
 from noetrium_platform.substrate.api import ScopeIdentity
+from noetrium_platform.foundation.kernel.kernel import DurableCarrierReferenceClosure
 from .contracts import (
     ManagedModelAsset, ModelAcquisitionReceipt, ModelAssetGcAssessment, ModelAssetMode,
-    ModelAssetReferenceClosure, ModelAssetStats, ModelAssetUsage,
+    ModelAssetStats, ModelAssetUsage,
     ModelConfigSummary, ModelSourceSpec, ModelStoragePoolStatus,
 )
 
@@ -51,7 +52,7 @@ class ModelAssetManagementPort(ModelAssetLookupPort, Protocol):
         self,
         model_id: str,
         *,
-        closures: tuple[ModelAssetReferenceClosure, ...] = (),
+        closures: tuple[DurableCarrierReferenceClosure, ...] = (),
     ) -> ModelAssetGcAssessment: ...
     def unregister_model(
         self,
