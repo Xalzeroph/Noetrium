@@ -49,6 +49,39 @@ def _sqlite_connect_calls(path: Path) -> tuple[int, ...]:
     return tuple(rows)
 
 
+def _sqlite_session_policy_calls(path: Path) -> tuple[tuple[int, str], ...]:
+    """Find raw SQLite durability/session policy outside the canonical primitive."""
+    tree = source_tree(path)
+    protected_prefixes = (
+        "PRAGMA journal_mode",
+        "PRAGMA synchronous",
+        "PRAGMA busy_timeout",
+        "PRAGMA query_only",
+        "PRAGMA foreign_keys",
+    )
+    rows: list[tuple[int, str]] = []
+    for node in ast.walk(tree):
+        if not isinstance(node, ast.Call) or not node.args:
+            continue
+        target = node.func
+        if not (
+            isinstance(target, ast.Attribute)
+            and target.attr in {"execute", "executescript"}
+        ):
+            continue
+        first = node.args[0]
+        if not isinstance(first, ast.Constant) or not isinstance(first.value, str):
+            continue
+        statement = first.value.strip()
+        upper = statement.upper()
+        if upper == "BEGIN IMMEDIATE":
+            rows.append((node.lineno, "BEGIN IMMEDIATE"))
+            continue
+        if any(statement.startswith(prefix) for prefix in protected_prefixes):
+            rows.append((node.lineno, statement.split("=", 1)[0]))
+    return tuple(rows)
+
+
 def audit_sqlite_durability_invariants(
     root: Path,
 ) -> list[SourceInvariantViolation]:
@@ -73,6 +106,20 @@ def audit_sqlite_durability_invariants(
                     (
                         "direct sqlite3.connect() bypasses the canonical Platform "
                         "durability authority; use "
+                        "foundation.kernel.kernel.durability.sqlite"
+                    ),
+                )
+            )
+        for line, primitive in _sqlite_session_policy_calls(path):
+            rows.append(
+                violation(
+                    root,
+                    path,
+                    "sqlite_durability_authority",
+                    line,
+                    (
+                        f"raw SQLite session policy {primitive!r} bypasses the canonical "
+                        "Platform durability authority; use "
                         "foundation.kernel.kernel.durability.sqlite"
                     ),
                 )
