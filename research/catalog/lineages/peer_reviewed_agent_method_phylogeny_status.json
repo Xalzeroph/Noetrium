@@ -238,7 +238,7 @@
       "reproductions": [
         {
           "package": "camel_role_playing",
-          "package_digest": "fa9cc7ba095d93d4d550873ab040d9d5fdb54cab3ff649fc989aebb11a735882",
+          "package_digest": "6588d902ecafed444c40ae57d57ca5261c9897b62322fd9578cf420c2ada35ac",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "camel-ai-society"
@@ -265,7 +265,7 @@
             {
               "kind": "study",
               "path": "research/reproductions/camel_role_playing/study.py",
-              "content_sha256": "141619e26adcb56ede00a0544f286881248b6570ef516dfa9883f527c7dbd231"
+              "content_sha256": "4d61964210751bb1f5fc6b4a32b4571847b722cda539a8e994ca95c37c3f65fd"
             }
           ],
           "blockers": [
@@ -3896,5 +3896,5 @@
       ]
     }
   ],
-  "projection_digest": "9de9c0dcd8ff020898fd9fa4b705ca27d1838203b5711e9260e1db41d61bb881"
+  "projection_digest": "85f6ba0f08e124f40ea9217f4667fba205fbfab31d761e500194bf8a2c69a4bb"
 }
