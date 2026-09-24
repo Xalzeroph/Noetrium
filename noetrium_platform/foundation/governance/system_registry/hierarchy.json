@@ -79,7 +79,8 @@
       "id": "product",
       "lower": "experimentation",
       "members": [
-        "operator"
+        "operator",
+        "research_os"
       ],
       "facade": "noetrium_platform.product.api",
       "composition": "noetrium_platform.product.composition"
