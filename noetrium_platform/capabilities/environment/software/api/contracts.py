@@ -6,6 +6,10 @@ from enum import StrEnum
 from noetrium_platform.foundation.kernel.kernel import JsonValue, canonical_digest, freeze_json, thaw_json
 
 
+class SoftwareActionTimeoutError(RuntimeError):
+    """Software action exceeded its declared execution budget."""
+
+
 class SoftwareActionKind(StrEnum):
     LIST = "list"
     READ = "read"
@@ -43,4 +47,4 @@ class SoftwareEnvironmentSpec:
         })
 
 
-__all__ = ["SoftwareActionKind", "SoftwareEnvironmentSpec"]
+__all__ = ["SoftwareActionKind", "SoftwareActionTimeoutError", "SoftwareEnvironmentSpec"]
