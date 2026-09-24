@@ -11,6 +11,7 @@ services:
         NOETRIUM_ENVIRONMENT_BUILD_INPUT_DIGEST: ${NOETRIUM_ENVIRONMENT_BUILD_INPUT_DIGEST:?build input digest required}
         JAVA_RUNTIME_IMAGE: ${JAVA_RUNTIME_IMAGE:-eclipse-temurin:21-jre-jammy}
         NODE_VERSION: ${NODE_VERSION:-22.22.2}
+        NODE_LINUX_X64_SHA256: ${NODE_LINUX_X64_SHA256:?Node artifact digest required}
     image: ${PLATFORM_MINECRAFT_IMAGE:-noetrium-env-minecraft:local}
     environment:
       NOETRIUM_ENVIRONMENT_PROFILE: minecraft
