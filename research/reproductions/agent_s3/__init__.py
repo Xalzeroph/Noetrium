@@ -22,4 +22,19 @@ __all__ = [
     "AgentS3GeneratorTurn",
     "AgentS3ReflectionTurn",
     "project_agent_s3_context",
+    "AGENT_S3_METHOD_PROGRAM",
+    "agent_s3_initial_state",
+    "build_agent_s3_method_program",
+    "agent_s3_osworld_trial_protocol",
+    "build_agent_s3_osworld_study",
 ]
+
+from .program import (
+    AGENT_S3_METHOD_PROGRAM,
+    agent_s3_initial_state,
+    build_agent_s3_method_program,
+)
+from .study import (
+    agent_s3_osworld_trial_protocol,
+    build_agent_s3_osworld_study,
+)
