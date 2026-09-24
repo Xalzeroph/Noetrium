@@ -174,7 +174,6 @@ from noetrium_platform.research.experimentation.lifecycle.run.api import (
     RunArtifactVerificationError,
     RunArtifactVerificationPort,
     RunArtifactWriteActorPort,
-    RunDiagnosticsPort,
     ExperimentRunSpec,
     ExperimentRunResult,
 )
@@ -363,7 +362,6 @@ __all__ = [
     "RunControlStaleRevision",
     "RunControlTarget",
     "RunControlTransitionOutcome",
-    "RunDiagnosticsPort",
     "RunEvidenceValidity",
     "RunExecutionOutcome",
     "RunIdentity",
