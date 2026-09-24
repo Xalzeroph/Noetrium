@@ -21,7 +21,9 @@ from noetrium_platform.capabilities.environment.catalog.api import (
     EnvironmentInstanceState,
     EnvironmentOverlay,
     EnvironmentProfileGcAssessment,
+    EnvironmentProfileLifecycle,
     EnvironmentProfileReferenceSummary,
+    EnvironmentProfileRevision,
     EnvironmentSpec,
     EnvironmentTemplate,
     ExecutionEnvironmentKind,
@@ -59,6 +61,9 @@ class ExecutionEnvironmentCatalog:
 
     def __init__(self, scopes: ScopeRegistryPort) -> None:
         self._scopes = scopes
+        self._profile_revisions: dict[
+            tuple[str, str], EnvironmentProfileRevision
+        ] = {}
         self._templates: dict[str, EnvironmentTemplate] = {}
         self._specs: dict[str, EnvironmentSpec] = {}
         self._overlays: dict[str, EnvironmentOverlay] = {}
@@ -73,6 +78,78 @@ class ExecutionEnvironmentCatalog:
         if current is not None and current != value:
             raise EnvironmentCatalogConflict(key)
         store[key] = value
+
+    def register_profile_revision(
+        self,
+        profile: EnvironmentProfileRevision,
+    ) -> None:
+        if type(profile) is not EnvironmentProfileRevision:
+            raise TypeError(
+                "environment profile registration requires EnvironmentProfileRevision"
+            )
+        key = (profile.profile_id, profile.profile_revision)
+        current = self._profile_revisions.get(key)
+        if current is not None and current != profile:
+            raise EnvironmentCatalogConflict(
+                f"environment profile revision already registered: {key!r}"
+            )
+        self._profile_revisions[key] = profile
+
+    def profile_revision(
+        self,
+        profile_id: str,
+        profile_revision: str,
+    ) -> EnvironmentProfileRevision:
+        try:
+            return self._profile_revisions[(profile_id, profile_revision)]
+        except KeyError as exc:
+            raise EnvironmentCatalogNotFound(
+                ("profile-revision", profile_id, profile_revision)
+            ) from exc
+
+    def transition_profile_revision(
+        self,
+        profile_id: str,
+        profile_revision: str,
+        lifecycle: EnvironmentProfileLifecycle,
+    ) -> EnvironmentProfileRevision:
+        if type(lifecycle) is not EnvironmentProfileLifecycle:
+            raise TypeError(
+                "environment profile transition requires EnvironmentProfileLifecycle"
+            )
+        current = self.profile_revision(profile_id, profile_revision)
+        if current.lifecycle is lifecycle:
+            return current
+        allowed = {
+            EnvironmentProfileLifecycle.ACTIVE: EnvironmentProfileLifecycle.DRAINING,
+            EnvironmentProfileLifecycle.DRAINING: EnvironmentProfileLifecycle.RETIRED,
+        }
+        if allowed.get(current.lifecycle) is not lifecycle:
+            raise EnvironmentCatalogConflict(
+                "environment profile lifecycle is monotonic: "
+                f"{current.lifecycle.value} -> {lifecycle.value} is forbidden"
+            )
+        updated = replace(current, lifecycle=lifecycle)
+        self._profile_revisions[(profile_id, profile_revision)] = updated
+        return updated
+
+    def _require_profile_admission(
+        self,
+        profile_id: str,
+        profile_revision: str,
+        *,
+        recovery: bool,
+    ) -> EnvironmentProfileRevision:
+        profile = self.profile_revision(profile_id, profile_revision)
+        if profile.lifecycle is EnvironmentProfileLifecycle.ACTIVE:
+            return profile
+        if recovery:
+            return profile
+        raise EnvironmentCatalogConflict(
+            "environment profile revision does not admit new work: "
+            f"{profile.profile_id}@{profile.profile_revision} "
+            f"state={profile.lifecycle.value}"
+        )
 
     def register_template(self, template: EnvironmentTemplate) -> None:
         self._put(self._templates, template.template_id, template)
@@ -150,7 +227,17 @@ class ExecutionEnvironmentCatalog:
             environment=tuple(sorted(environment.items())),
         )
 
-    def register_instance(self, instance: EnvironmentInstance) -> None:
+    def register_instance(
+        self,
+        instance: EnvironmentInstance,
+        *,
+        recovery: bool = False,
+    ) -> None:
+        self._require_profile_admission(
+            instance.profile_id,
+            instance.profile_revision,
+            recovery=recovery,
+        )
         if instance.state is not EnvironmentInstanceState.CLEAN:
             raise EnvironmentCatalogConflict(
                 "new environment instance must enter catalog CLEAN"
@@ -196,7 +283,12 @@ class ExecutionEnvironmentCatalog:
             )
         )
 
-    def bind(self, binding: EnvironmentBinding) -> None:
+    def bind(
+        self,
+        binding: EnvironmentBinding,
+        *,
+        recovery: bool = False,
+    ) -> None:
         instance = self._instance(binding.instance_id)
         key = (binding.role, binding.scope.key)
         existing = self._binding_rows.get(key)
@@ -209,6 +301,11 @@ class ExecutionEnvironmentCatalog:
 
         existing_bindings = self._bindings_for_instance(binding.instance_id)
         if instance.state is EnvironmentInstanceState.CLEAN:
+            self._require_profile_admission(
+                instance.profile_id,
+                instance.profile_revision,
+                recovery=recovery,
+            )
             next_instance = replace(
                 instance,
                 state=EnvironmentInstanceState.IN_USE,
@@ -248,6 +345,7 @@ class ExecutionEnvironmentCatalog:
         binding_id: str,
         role: str,
         scope: ScopeIdentity,
+        recovery: bool = False,
     ) -> EnvironmentInstanceAcquisition:
         """Select and bind one CLEAN profile revision as one authority operation."""
 
@@ -282,6 +380,11 @@ class ExecutionEnvironmentCatalog:
             raise TypeError(
                 "environment reusable acquisition scope must be ScopeIdentity"
             )
+        self._require_profile_admission(
+            profile_id,
+            profile_revision,
+            recovery=recovery,
+        )
 
         candidates = tuple(
             sorted(
@@ -310,7 +413,11 @@ class ExecutionEnvironmentCatalog:
         )
         # Bypass virtual dispatch so a durable provider can wrap selection and
         # binding in one persistence transition.
-        ExecutionEnvironmentCatalog.bind(self, binding)
+        ExecutionEnvironmentCatalog.bind(
+            self,
+            binding,
+            recovery=recovery,
+        )
         acquired = self._instance(candidate.instance_id)
         return EnvironmentInstanceAcquisition(binding, acquired)
 
@@ -564,6 +671,18 @@ class SQLiteExecutionEnvironmentCatalog(ExecutionEnvironmentCatalog):
         return [list(row) for row in value]
 
     @classmethod
+    def _profile_revision(
+        cls,
+        value: EnvironmentProfileRevision,
+    ) -> dict[str, object]:
+        return {
+            "profile_id": value.profile_id,
+            "category_id": value.category_id,
+            "profile_revision": value.profile_revision,
+            "lifecycle": value.lifecycle.value,
+        }
+
+    @classmethod
     def _template(cls, value: EnvironmentTemplate) -> dict[str, object]:
         return {
             "template_id": value.template_id, "kind": value.kind.value,
@@ -620,6 +739,10 @@ class SQLiteExecutionEnvironmentCatalog(ExecutionEnvironmentCatalog):
 
     def _state(self) -> str:
         return json.dumps({
+            "profile_revisions": [
+                self._profile_revision(row)
+                for row in self._profile_revisions.values()
+            ],
             "templates": [self._template(row) for row in self._templates.values()],
             "specs": [self._spec(row) for row in self._specs.values()],
             "overlays": [self._overlay(row) for row in self._overlays.values()],
@@ -666,6 +789,15 @@ class SQLiteExecutionEnvironmentCatalog(ExecutionEnvironmentCatalog):
             raise RuntimeError("unsupported SQLiteExecutionEnvironmentCatalog schema")
         self._state_generation = int(row[1])
         value = json.loads(str(row[2]))
+        self._profile_revisions = {
+            (row["profile_id"], row["profile_revision"]): EnvironmentProfileRevision(
+                row["profile_id"],
+                row["category_id"],
+                row["profile_revision"],
+                EnvironmentProfileLifecycle(row["lifecycle"]),
+            )
+            for row in value.get("profile_revisions", [])
+        }
         self._templates = {
             row["template_id"]: EnvironmentTemplate(
                 row["template_id"], ExecutionEnvironmentKind(row["kind"]),
@@ -732,6 +864,37 @@ class SQLiteExecutionEnvironmentCatalog(ExecutionEnvironmentCatalog):
             )
         self._rebuild_bindings()
 
+    def register_profile_revision(
+        self,
+        profile: EnvironmentProfileRevision,
+    ) -> None:
+        self._load()
+        super().register_profile_revision(profile)
+        self._persist()
+
+    def profile_revision(
+        self,
+        profile_id: str,
+        profile_revision: str,
+    ) -> EnvironmentProfileRevision:
+        self._load()
+        return super().profile_revision(profile_id, profile_revision)
+
+    def transition_profile_revision(
+        self,
+        profile_id: str,
+        profile_revision: str,
+        lifecycle: EnvironmentProfileLifecycle,
+    ) -> EnvironmentProfileRevision:
+        self._load()
+        value = super().transition_profile_revision(
+            profile_id,
+            profile_revision,
+            lifecycle,
+        )
+        self._persist()
+        return value
+
     def register_template(self, template: EnvironmentTemplate) -> None:
         self._load()
         super().register_template(template)
@@ -757,14 +920,24 @@ class SQLiteExecutionEnvironmentCatalog(ExecutionEnvironmentCatalog):
         self._load()
         return super().resolve(name, scope)
 
-    def register_instance(self, instance: EnvironmentInstance) -> None:
+    def register_instance(
+        self,
+        instance: EnvironmentInstance,
+        *,
+        recovery: bool = False,
+    ) -> None:
         self._load()
-        super().register_instance(instance)
+        super().register_instance(instance, recovery=recovery)
         self._persist()
 
-    def bind(self, binding: EnvironmentBinding) -> None:
+    def bind(
+        self,
+        binding: EnvironmentBinding,
+        *,
+        recovery: bool = False,
+    ) -> None:
         self._load()
-        super().bind(binding)
+        super().bind(binding, recovery=recovery)
         self._persist()
 
     def acquire_reusable_instance(
@@ -776,6 +949,7 @@ class SQLiteExecutionEnvironmentCatalog(ExecutionEnvironmentCatalog):
         binding_id: str,
         role: str,
         scope: ScopeIdentity,
+        recovery: bool = False,
     ) -> EnvironmentInstanceAcquisition:
         def acquire_once() -> EnvironmentInstanceAcquisition:
             self._load()
@@ -787,6 +961,7 @@ class SQLiteExecutionEnvironmentCatalog(ExecutionEnvironmentCatalog):
                 binding_id=binding_id,
                 role=role,
                 scope=scope,
+                recovery=recovery,
             )
             self._persist()
             return value
