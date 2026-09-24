@@ -1,4 +1,5 @@
 from concurrent.futures import ThreadPoolExecutor, TimeoutError as FutureTimeoutError
+from contextlib import contextmanager
 from pathlib import Path
 import hashlib
 import tempfile
@@ -11,6 +12,7 @@ from noetrium_platform.capabilities.participant.core.api import ParticipantCheck
 from noetrium_platform.capabilities.participant.core.api import ParticipantImplementationIdentity, ParticipantRuntimeBinding
 from noetrium_platform.research.experimentation.lifecycle.api import (
     RunCheckpointConflict,
+    RunCheckpointIntegrityError,
     RunCheckpointManifest,
     RunParticipantPayload,
     RunParticipantSnapshotRef,
@@ -253,3 +255,77 @@ def test_checkpoint_publish_retry_clears_intent_after_manifest_commit(
     reopened = DirectoryRunCheckpointStore(root)
     assert reopened.publish(owned, payloads) == owned
     assert not reopened._intents._path(owned.checkpoint_id).exists()
+
+
+
+def test_checkpoint_blob_external_exact_create_race_is_verified(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    import noetrium_platform.research.experimentation.lifecycle.checkpoint.providers.directory_store as store_module
+
+    store = DirectoryRunCheckpointStore(tmp_path / "blob-exact-race")
+    payloads = (
+        participant_payload("method", b"same-content", generation="g1"),
+    )
+    checkpoint = manifest(payloads, checkpoint_id="blob-exact-race")
+    expected = payloads[0].checkpoint.opaque_payload
+    blob_path = store._blob_path(
+        payloads[0].checkpoint.ref.payload_sha256
+    )
+
+    @contextmanager
+    def external_exact_create(path, *, buffering=-1):
+        del buffering
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_bytes(expected)
+        raise FileExistsError("external exact CAS writer won")
+        yield  # pragma: no cover
+
+    monkeypatch.setattr(
+        store_module,
+        "durable_create_binary_file",
+        external_exact_create,
+    )
+    assert store.publish(checkpoint, payloads) == checkpoint
+    assert blob_path.read_bytes() == expected
+
+
+def test_checkpoint_blob_external_corrupt_create_race_fails_closed(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    import noetrium_platform.research.experimentation.lifecycle.checkpoint.providers.directory_store as store_module
+
+    store = DirectoryRunCheckpointStore(tmp_path / "blob-corrupt-race")
+    payloads = (
+        participant_payload("method", b"owned-content", generation="g1"),
+    )
+    checkpoint = manifest(payloads, checkpoint_id="blob-corrupt-race")
+    blob_path = store._blob_path(
+        payloads[0].checkpoint.ref.payload_sha256
+    )
+    foreign = b"foreign-corrupt-content"
+
+    @contextmanager
+    def external_corrupt_create(path, *, buffering=-1):
+        del buffering
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_bytes(foreign)
+        raise FileExistsError("external corrupt CAS writer won")
+        yield  # pragma: no cover
+
+    monkeypatch.setattr(
+        store_module,
+        "durable_create_binary_file",
+        external_corrupt_create,
+    )
+    with pytest.raises(
+        RunCheckpointIntegrityError,
+        match="corrupt existing checkpoint blob",
+    ):
+        store.publish(checkpoint, payloads)
+
+    assert blob_path.read_bytes() == foreign
+    assert not store._manifest_path(checkpoint.checkpoint_id).exists()
+    assert store._intents._path(checkpoint.checkpoint_id).exists()
