@@ -16,6 +16,34 @@ def test_platform_has_no_stdlib_logging_bypass() -> None:
     ]
 
 
+def test_relative_logging_module_is_not_stdlib_bypass(tmp_path: Path) -> None:
+    logging_root = (
+        tmp_path
+        / "noetrium_platform"
+        / "evidence"
+        / "observability"
+        / "logging"
+    )
+    logging_root.mkdir(parents=True)
+    package = tmp_path / "noetrium_platform" / "composition" / "bridge"
+    package.mkdir(parents=True)
+    (package / "__init__.py").write_text(
+        "from .logging import DiagnosticLogQueryAdapter\n",
+        encoding="utf-8",
+    )
+    (package / "logging.py").write_text(
+        "class DiagnosticLogQueryAdapter: pass\n",
+        encoding="utf-8",
+    )
+
+    violations = audit_observability_logging_leaf_invariants(tmp_path)
+
+    assert not [
+        row for row in violations
+        if row.invariant == "logging_stdlib_bypass"
+    ]
+
+
 def test_stdlib_logging_bypass_is_rejected(tmp_path: Path) -> None:
     logging_root = (
         tmp_path
