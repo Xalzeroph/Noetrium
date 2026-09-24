@@ -133,6 +133,14 @@ class MachineExecutor:
             latest = self.journal.latest(self.machine_id)
             if latest is not None:
                 self._assert_commit_program_identity(latest)
+                if self.outbox is None and any(
+                    commit.emitted_commands
+                    for commit in self.journal.commits(self.machine_id)
+                ):
+                    raise MachineIntegrityError(
+                        "machine journal contains emitted commands but no "
+                        "outbox authority is bound"
+                    )
                 self._snapshot = MachineSnapshot(
                     machine_id=self.machine_id,
                     revision=latest.revision,
@@ -268,6 +276,10 @@ class MachineExecutor:
         with self._lock:
             existing = self._existing_command(command)
             if existing is not None:
+                if existing.emitted_commands and self.outbox is None:
+                    raise MachineIntegrityError(
+                        "committed emitted commands require an outbox authority"
+                    )
                 self._snapshot = MachineSnapshot(
                     machine_id=self.machine_id,
                     revision=existing.revision,
@@ -287,6 +299,11 @@ class MachineExecutor:
                 )
             proposal = interpreter.propose(command, state)
             self._validate_proposal(command, state, proposal)
+            if proposal.emitted_commands and self.outbox is None:
+                raise MachineExecutionError(
+                    "transition emitted commands require an outbox authority "
+                    "before the transition can be committed"
+                )
 
             proposal = replace(
                 proposal,
