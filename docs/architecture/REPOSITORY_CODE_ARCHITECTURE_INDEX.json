@@ -1,15 +1,15 @@
 {
   "counts": {
     "parse_errors": 0,
-    "python_files": 3667,
-    "python_import_edges": 7099,
-    "symbols": 4854,
-    "tracked_files": 4297,
+    "python_files": 3668,
+    "python_import_edges": 7105,
+    "symbols": 4855,
+    "tracked_files": 4298,
     "typescript_javascript_files": 11
   },
   "language_symbol_counts": {
     "javascript": 1,
-    "python": 4848,
+    "python": 4849,
     "typescript": 5
   },
   "parse_errors": [],
@@ -32643,6 +32643,42 @@
       "target_role": "research_reproductions"
     },
     {
+      "source_module": "tests.test_reproduction_execution_resolution_v1",
+      "source_role": "tests",
+      "target_module": "noetrium_platform.capabilities.participant.capability.api.contracts",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "tests.test_reproduction_execution_resolution_v1",
+      "source_role": "tests",
+      "target_module": "noetrium_platform.capabilities.participant.capability.api.selection",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "tests.test_reproduction_execution_resolution_v1",
+      "source_role": "tests",
+      "target_module": "noetrium_platform.foundation.kernel.kernel",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "tests.test_reproduction_execution_resolution_v1",
+      "source_role": "tests",
+      "target_module": "research.reproductions.adacm2_memory.definition",
+      "target_role": "research_reproductions"
+    },
+    {
+      "source_module": "tests.test_reproduction_execution_resolution_v1",
+      "source_role": "tests",
+      "target_module": "research.reproductions.research_os",
+      "target_role": "research_reproductions"
+    },
+    {
+      "source_module": "tests.test_reproduction_execution_resolution_v1",
+      "source_role": "tests",
+      "target_module": "research.reproductions.storm_wiki.definition",
+      "target_role": "research_reproductions"
+    },
+    {
       "source_module": "tests.test_reproduction_fleet_plan_v2",
       "source_role": "tests",
       "target_module": "scripts.run_reproduction_fleet",
@@ -42671,7 +42707,7 @@
       "target_role": "research_reproductions"
     },
     {
-      "count": 2773,
+      "count": 2776,
       "source_role": "tests",
       "target_role": "core_platform"
     },
@@ -42691,7 +42727,7 @@
       "target_role": "reference_orchestration"
     },
     {
-      "count": 327,
+      "count": 330,
       "source_role": "tests",
       "target_role": "research_reproductions"
     },
@@ -42734,7 +42770,7 @@
     "reference_components": 22,
     "reference_orchestration": 10,
     "research_reproductions": 774,
-    "tests": 809,
+    "tests": 810,
     "tooling": 78
   },
   "role_symbol_counts": {
@@ -42746,11 +42782,11 @@
     "reference_orchestration": 14,
     "research_reproductions": 413,
     "sdk": 5,
-    "tests": 970,
+    "tests": 971,
     "tooling": 38
   },
   "schema": "noetrium-repository-code-architecture-index.v1",
-  "source_git_sha": "34b6abf1a008d31a1f850c2840040f72bf135fbf",
+  "source_git_sha": "6203c940d55e07d52e6ede8506357d22ef7a6f3c",
   "symbols": [
     {
       "bases": [],
@@ -139407,6 +139443,22 @@
       "name": "ReleaseVersionAuthorityV102Tests",
       "path": "tests/test_release_version_authority_v102.py",
       "qualname": "tests.test_release_version_authority_v102.ReleaseVersionAuthorityV102Tests",
+      "role": "tests"
+    },
+    {
+      "bases": [],
+      "decorators": [],
+      "fields": [],
+      "kind": "class",
+      "language": "python",
+      "line": 24,
+      "methods": [
+        "resolve"
+      ],
+      "module": "tests.test_reproduction_execution_resolution_v1",
+      "name": "_SearchResolver",
+      "path": "tests/test_reproduction_execution_resolution_v1.py",
+      "qualname": "tests.test_reproduction_execution_resolution_v1._SearchResolver",
       "role": "tests"
     },
     {
