@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from bisect import bisect_left
 from dataclasses import dataclass, field
 from enum import StrEnum
 from typing import Protocol, runtime_checkable
@@ -315,10 +316,16 @@ class ResearchGraphExecutionSnapshot:
         object.__setattr__(self, "nodes", ordered)
 
     def node(self, node_id: str) -> ResearchGraphNodeExecutionRecord:
-        for node in self.nodes:
-            if node.node_id == node_id:
-                return node
-        raise KeyError(node_id)
+        if type(node_id) is not str or not node_id:
+            raise KeyError(node_id)
+        index = bisect_left(
+            self.nodes,
+            node_id,
+            key=lambda node: node.node_id,
+        )
+        if index >= len(self.nodes) or self.nodes[index].node_id != node_id:
+            raise KeyError(node_id)
+        return self.nodes[index]
 
     @property
     def reconciliation_required_node_ids(self) -> tuple[str, ...]:
