@@ -568,6 +568,7 @@ class SQLiteEndpointAllocationStore(AtomicEndpointReservationPort):
             release_resource_lease(
                 conn,
                 current.lease_id,
+                fencing_token=allocation.lease_fencing_token,
                 now_epoch_s=now_epoch_s,
             )
             updated = conn.execute(
