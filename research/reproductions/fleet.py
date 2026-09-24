@@ -6,11 +6,16 @@ benchmark authority, typed capability closure and existing Research OS lowering.
 from __future__ import annotations
 
 from dataclasses import dataclass, field
+from pathlib import Path
 from typing import Protocol, runtime_checkable
 
 from noetrium import api
+from noetrium_platform.composition.research_os_local import (
+    compose_local_research_os,
+)
 from noetrium_platform.composition.research_os_experiment import (
     ResearchOSExperimentClosure,
+    ResearchOSExperimentRuntimeBindingPort,
     compile_research_os_experiment_closure,
 )
 from noetrium_platform.composition.research_os_graph import CompiledResearchOSGraphNode
@@ -402,6 +407,70 @@ def materialize_repository_execution_fleet(
     )
 
 
+def execute_materialized_reproduction_fleet(
+    fleet: ReproductionFleetMaterialization,
+    *,
+    state_root: Path,
+    research_bindings: ReproductionResearchBindingResolverPort,
+    experiment_bindings: ResearchOSExperimentRuntimeBindingPort,
+    execution_id: str | None = None,
+):
+    """Commit and RUN one fully materialized fleet through canonical Research OS.
+
+    Durable stores, graph control, resource pool, value authority, Machine
+    journals and Experimentation runtime all come from the platform's single
+    local Research OS composition. No reproduction-owned launcher exists.
+    """
+
+    if type(fleet) is not ReproductionFleetMaterialization:
+        raise TypeError("fleet execution requires ReproductionFleetMaterialization")
+    if type(state_root) is not Path:
+        raise TypeError("fleet execution state_root must be pathlib.Path")
+    if not isinstance(
+        research_bindings,
+        ReproductionResearchBindingResolverPort,
+    ):
+        raise TypeError("fleet execution requires research binding resolver")
+    if not isinstance(
+        experiment_bindings,
+        ResearchOSExperimentRuntimeBindingPort,
+    ):
+        raise TypeError("fleet execution requires experiment runtime binding resolver")
+    if execution_id is None:
+        execution_id = (
+            "repository-reproductions."
+            + fleet.materialization_digest[:24]
+        )
+    if (
+        type(execution_id) is not str
+        or not execution_id.strip()
+        or execution_id != execution_id.strip()
+    ):
+        raise ValueError("fleet execution_id must be canonical non-empty text")
+
+    closures = ReproductionFleetExperimentClosureProvider(
+        fleet,
+        research_bindings,
+    )
+    composition = compose_local_research_os(
+        state_root,
+        experiment_closures=closures,
+        experiment_bindings=experiment_bindings,
+    )
+    try:
+        revision = composition.research_os.commit(
+            fleet.portfolio,
+            message=(
+                "repository reproduction fleet "
+                + fleet.materialization_digest
+            ),
+        )
+        target = api.ResearchExecutionTarget(execution_id, revision)
+        return composition.research_os.run(target)
+    finally:
+        composition.close()
+
+
 class ReproductionFleetExperimentClosureProvider:
     """Bridge materialized reproduction lanes into canonical ExperimentClosure."""
 
@@ -469,6 +538,7 @@ __all__ = [
     "ReproductionFleetLane",
     "ReproductionFleetMaterialization",
     "ReproductionResearchBindingResolverPort",
+    "execute_materialized_reproduction_fleet",
     "materialize_repository_execution_fleet",
     "resolve_repository_execution_requests",
 ]
