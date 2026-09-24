@@ -453,3 +453,152 @@ def test_windows_process_command_timeout_reaps_descendant_tree(tmp_path) -> None
     finally:
         group.close()
         runtime.close()
+
+
+def _pid_absent_or_zombie(pid: int) -> bool:
+    import os
+    from pathlib import Path
+
+    try:
+        os.kill(pid, 0)
+    except ProcessLookupError:
+        return True
+    stat_path = Path("/proc") / str(pid) / "stat"
+    if stat_path.exists():
+        fields = stat_path.read_text().split()
+        return len(fields) > 2 and fields[2] == "Z"
+    return False
+
+
+@pytest.mark.skipif(__import__("os").name != "posix", reason="POSIX process-group proof")
+def test_interactive_supervisor_term_to_kill_reaps_descendant_tree(tmp_path) -> None:
+    import os
+    import sys
+    from pathlib import Path
+
+    runtime = _runtime()
+    group = runtime.open_task_group(
+        "interactive-process-tree",
+        failure_policy=TaskFailurePolicy.COLLECT_ALL,
+    )
+    supervisor = build_process_supervisor(
+        group,
+        policy=ProcessTerminationPolicy(
+            poll_interval_seconds=0.005,
+            graceful_timeout_seconds=0.05,
+            kill_timeout_seconds=0.5,
+        ),
+    )
+    pid_file = Path(tmp_path) / "interactive-tree.pids"
+    grandchild_code = (
+        "import signal,time; "
+        "signal.signal(signal.SIGTERM, signal.SIG_IGN); "
+        "time.sleep(30)"
+    )
+    target_code = (
+        "import os,pathlib,signal,subprocess,sys,time; "
+        "signal.signal(signal.SIGTERM, signal.SIG_IGN); "
+        f"p=subprocess.Popen([sys.executable,'-c',{grandchild_code!r}]); "
+        f"pathlib.Path({str(pid_file)!r}).write_text(str(os.getpid())+','+str(p.pid)); "
+        "time.sleep(30)"
+    )
+    process = supervisor.spawn_interactive(
+        (sys.executable, "-c", target_code),
+        cwd=str(tmp_path),
+        environment=dict(os.environ),
+        start_new_session=True,
+    )
+    try:
+        deadline = time.monotonic() + 3.0
+        while not pid_file.exists() and time.monotonic() < deadline:
+            time.sleep(0.01)
+        assert pid_file.exists()
+        target_pid, grandchild_pid = map(int, pid_file.read_text().split(","))
+
+        receipt = supervisor.terminate(
+            "interactive-tree",
+            process,
+            deadline=Deadline.after(2.0),
+        ).result(3)
+        assert receipt.escalated_to_kill
+
+        deadline = time.monotonic() + 3.0
+        while time.monotonic() < deadline:
+            if all(
+                _pid_absent_or_zombie(pid)
+                for pid in (target_pid, grandchild_pid)
+            ):
+                break
+            time.sleep(0.02)
+        else:
+            raise AssertionError("interactive target tree survived force cleanup")
+    finally:
+        if process.poll() is None:
+            process.kill()
+        group.close(cancel_pending=True)
+        runtime.close()
+
+
+@pytest.mark.skipif(__import__("os").name != "posix", reason="POSIX owner-death proof")
+def test_parent_bound_guardian_reaps_tree_after_owner_sigkill(tmp_path) -> None:
+    import os
+    import subprocess
+    import sys
+    from pathlib import Path
+    from noetrium_platform.infrastructure.lifecycle.process.supervision.runtime import (
+        supervisor as supervisor_module,
+    )
+
+    root = Path(tmp_path)
+    guardian_path = Path(supervisor_module.__file__).with_name(
+        "parent_bound_child.py"
+    )
+    guardian_pid_file = root / "guardian.pid"
+    target_pid_file = root / "target-tree.pids"
+    grandchild_code = "import time; time.sleep(30)"
+    target_code = (
+        "import os,pathlib,subprocess,sys,time; "
+        f"p=subprocess.Popen([sys.executable,'-c',{grandchild_code!r}]); "
+        f"pathlib.Path({str(target_pid_file)!r}).write_text(str(os.getpid())+','+str(p.pid)); "
+        "time.sleep(30)"
+    )
+    owner_code = (
+        "import os,pathlib,subprocess,sys,time; "
+        f"p=subprocess.Popen([sys.executable,{str(guardian_path)!r},"
+        "'--parent-pid',str(os.getpid()),'--',sys.executable,'-c',"
+        f"{target_code!r}],start_new_session=True); "
+        f"pathlib.Path({str(guardian_pid_file)!r}).write_text(str(p.pid)); "
+        "time.sleep(30)"
+    )
+    owner = subprocess.Popen([sys.executable, "-c", owner_code])
+    try:
+        deadline = time.monotonic() + 5.0
+        while (
+            (not guardian_pid_file.exists() or not target_pid_file.exists())
+            and time.monotonic() < deadline
+        ):
+            time.sleep(0.01)
+        assert guardian_pid_file.exists()
+        assert target_pid_file.exists()
+        guardian_pid = int(guardian_pid_file.read_text())
+        target_pid, grandchild_pid = map(int, target_pid_file.read_text().split(","))
+
+        owner.kill()
+        owner.wait(timeout=2.0)
+
+        deadline = time.monotonic() + 4.0
+        while time.monotonic() < deadline:
+            if all(
+                _pid_absent_or_zombie(pid)
+                for pid in (guardian_pid, target_pid, grandchild_pid)
+            ):
+                break
+            time.sleep(0.02)
+        else:
+            raise AssertionError(
+                "parent-bound interactive process tree survived owner SIGKILL"
+            )
+    finally:
+        if owner.poll() is None:
+            owner.kill()
+            owner.wait(timeout=2.0)
