@@ -3,7 +3,7 @@
   "architecture_complexity": {
     "authorities": 20,
     "contract_declarations": 185,
-    "import_edges": 5308,
+    "import_edges": 5306,
     "subsystems": 15,
     "top_level_systems": 16
   },
@@ -23,7 +23,7 @@
     "effective_limits": {
       "authorities": 31,
       "contract_declarations": 185,
-      "import_edges": 5308,
+      "import_edges": 5306,
       "subsystems": 15,
       "top_level_systems": 16
     },
@@ -627,7 +627,7 @@
       "seam_id": "completed"
     }
   ],
-  "import_edges": 5308,
+  "import_edges": 5306,
   "import_violations": [],
   "layer_violations": [],
   "operation_graph": [
@@ -873,29 +873,10 @@
     }
   ],
   "package_cycles": [],
-  "report_sha256": "b4350b5066cc921ec35b84ae132ebf6fc91e17731b2b9053538976f1fb061d67",
+  "report_sha256": "4f90fe028030c354f916db8554ec7dedbc3f2246c8fd8b8a37b8cb4fa3df11b9",
   "source_authority_violations": [],
-  "source_digest": "5b373038f9b2637ad1d1e7cb6d427b26e1ae3c03181779c6ecc079c089a4f9d2",
-  "source_invariant_violations": [
-    {
-      "detail": "resource imports concrete implementation noetrium_platform.infrastructure.resources.lease.runtime.clock from resource/lease; depend on its API contract and inject the implementation from composition",
-      "invariant": "cross_subsystem_concrete_dependency",
-      "line": 31,
-      "path": "noetrium_platform/infrastructure/resources/compute/runtime/scheduler.py"
-    },
-    {
-      "detail": "resource imports concrete implementation noetrium_platform.infrastructure.resources.lease.runtime.clock from resource/lease; depend on its API contract and inject the implementation from composition",
-      "invariant": "cross_subsystem_concrete_dependency",
-      "line": 46,
-      "path": "noetrium_platform/infrastructure/resources/providers/sqlite_endpoint.py"
-    },
-    {
-      "detail": "resource imports concrete implementation noetrium_platform.infrastructure.resources.lease.runtime.clock from resource/lease; depend on its API contract and inject the implementation from composition",
-      "invariant": "cross_subsystem_concrete_dependency",
-      "line": 36,
-      "path": "noetrium_platform/infrastructure/resources/providers/sqlite_lease.py"
-    }
-  ],
+  "source_digest": "87770dc502789faa51bbfd65b8be9cfb2ee74131d4d406fdb749caa6268f18e8",
+  "source_invariant_violations": [],
   "source_root": ".",
   "subsystem_graph": [
     {
@@ -1696,12 +1677,12 @@
       "classes": 5,
       "exception_handlers": 12,
       "functions": 52,
-      "imports": 17,
+      "imports": 16,
       "max_function_lines": 87,
       "module": "noetrium_platform.infrastructure.resources.compute.runtime.scheduler",
       "path": "noetrium_platform/infrastructure/resources/compute/runtime/scheduler.py",
-      "physical_lines": 1262,
-      "score": 2427
+      "physical_lines": 1263,
+      "score": 2425
     },
     {
       "branches": 98,
@@ -1898,7 +1879,7 @@
     {
       "exception_handlers": 12,
       "import_fan_in": 1,
-      "import_fan_out": 9,
+      "import_fan_out": 8,
       "io_sites": 27,
       "lock_sites": 5,
       "long_functions": 5,
@@ -1911,7 +1892,7 @@
         "FAILURE_BRANCH_CONCENTRATION",
         "LONG_FUNCTION"
       ],
-      "risk_score": 616,
+      "risk_score": 613,
       "self_mutation_sites": 21,
       "serialization_sites": 2
     },
@@ -2060,7 +2041,7 @@
     {
       "exception_handlers": 7,
       "import_fan_in": 1,
-      "import_fan_out": 7,
+      "import_fan_out": 6,
       "io_sites": 27,
       "lock_sites": 0,
       "long_functions": 4,
@@ -2071,7 +2052,7 @@
         "FAILURE_BRANCH_CONCENTRATION",
         "LONG_FUNCTION"
       ],
-      "risk_score": 392,
+      "risk_score": 389,
       "self_mutation_sites": 3,
       "serialization_sites": 0
     },

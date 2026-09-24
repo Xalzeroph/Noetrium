@@ -40073,7 +40073,7 @@
         "systems"
       ],
       "kind": "dataclass",
-      "line": 77,
+      "line": 80,
       "methods": [],
       "module": "noetrium_platform.composition.platform_meta",
       "name": "PlatformMetaAuthorities",
@@ -78109,7 +78109,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 162,
+      "line": 161,
       "methods": [
         "__init__"
       ],
@@ -78127,7 +78127,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 370,
+      "line": 369,
       "methods": [
         "__init__",
         "_usage",
@@ -78159,7 +78159,7 @@
         "SCHEMA_VERSION"
       ],
       "kind": "class",
-      "line": 692,
+      "line": 691,
       "methods": [
         "__init__",
         "_connection",
@@ -78203,7 +78203,7 @@
         "processes_complete"
       ],
       "kind": "dataclass",
-      "line": 133,
+      "line": 132,
       "methods": [],
       "module": "noetrium_platform.infrastructure.resources.compute.runtime.scheduler",
       "name": "_GpuRuntimeIndex",
@@ -78225,7 +78225,7 @@
         "memory_bytes"
       ],
       "kind": "dataclass",
-      "line": 106,
+      "line": 105,
       "methods": [],
       "module": "noetrium_platform.infrastructure.resources.compute.runtime.scheduler",
       "name": "_HostUsage",
@@ -79542,7 +79542,7 @@
         "SCHEMA_VERSION"
       ],
       "kind": "class",
-      "line": 52,
+      "line": 49,
       "methods": [
         "__init__",
         "_connection",
@@ -79585,7 +79585,7 @@
         "SCHEMA_VERSION"
       ],
       "kind": "class",
-      "line": 41,
+      "line": 36,
       "methods": [
         "__init__",
         "_connection",
@@ -102678,11 +102678,6 @@
     },
     {
       "kind": "constructs",
-      "source": "noetrium_platform.infrastructure.resources.compute.runtime.scheduler.SQLiteComputeScheduler",
-      "target": "noetrium_platform.infrastructure.resources.lease.runtime.clock.LocalLeaseClock"
-    },
-    {
-      "kind": "constructs",
       "source": "noetrium_platform.infrastructure.resources.container.providers.docker_cli.DockerCliManagedContainerProvider",
       "target": "noetrium_platform.infrastructure.resources.container.providers.docker_cli.DockerContainerRuntimeError"
     },
@@ -102719,16 +102714,6 @@
     {
       "kind": "constructs",
       "source": "noetrium_platform.infrastructure.resources.lease.runtime.registry.InMemoryResourceLeaseRegistry",
-      "target": "noetrium_platform.infrastructure.resources.lease.runtime.clock.LocalLeaseClock"
-    },
-    {
-      "kind": "constructs",
-      "source": "noetrium_platform.infrastructure.resources.providers.sqlite_endpoint.SQLiteEndpointAllocationStore",
-      "target": "noetrium_platform.infrastructure.resources.lease.runtime.clock.LocalLeaseClock"
-    },
-    {
-      "kind": "constructs",
-      "source": "noetrium_platform.infrastructure.resources.providers.sqlite_lease.SQLiteResourceLeaseRegistry",
       "target": "noetrium_platform.infrastructure.resources.lease.runtime.clock.LocalLeaseClock"
     },
     {
@@ -103535,9 +103520,9 @@
   "counts": {
     "association_edges": 3455,
     "classes": 3369,
-    "constructor_edges": 928,
+    "constructor_edges": 925,
     "inheritance_edges": 149,
-    "module_import_edges": 5027,
+    "module_import_edges": 5025,
     "parse_errors": 0,
     "python_modules": 1914,
     "registry_authorities": 20,
@@ -110299,6 +110284,10 @@
     {
       "source": "noetrium_platform.composition.reliability_resources.recovery_lease",
       "target": "noetrium_platform.infrastructure.resources.lease.api"
+    },
+    {
+      "source": "noetrium_platform.composition.reliability_resources.recovery_lease",
+      "target": "noetrium_platform.infrastructure.resources.lease.runtime"
     },
     {
       "source": "noetrium_platform.composition.reliability_resources.recovery_lease",
@@ -121026,10 +121015,6 @@
     },
     {
       "source": "noetrium_platform.infrastructure.resources.compute.runtime.scheduler",
-      "target": "noetrium_platform.infrastructure.resources.lease.runtime.clock"
-    },
-    {
-      "source": "noetrium_platform.infrastructure.resources.compute.runtime.scheduler",
       "target": "noetrium_platform.infrastructure.resources.providers.sqlite_lease_ops"
     },
     {
@@ -121270,10 +121255,6 @@
     },
     {
       "source": "noetrium_platform.infrastructure.resources.providers.sqlite_endpoint",
-      "target": "noetrium_platform.infrastructure.resources.lease.runtime.clock"
-    },
-    {
-      "source": "noetrium_platform.infrastructure.resources.providers.sqlite_endpoint",
       "target": "noetrium_platform.infrastructure.resources.providers.sqlite_lease_ops"
     },
     {
@@ -121287,10 +121268,6 @@
     {
       "source": "noetrium_platform.infrastructure.resources.providers.sqlite_lease",
       "target": "noetrium_platform.infrastructure.resources.lease.api"
-    },
-    {
-      "source": "noetrium_platform.infrastructure.resources.providers.sqlite_lease",
-      "target": "noetrium_platform.infrastructure.resources.lease.runtime.clock"
     },
     {
       "source": "noetrium_platform.infrastructure.resources.providers.sqlite_lease",
@@ -129977,6 +129954,7 @@
         "noetrium_platform.infrastructure.reliability.recovery.api",
         "noetrium_platform.infrastructure.reliability.recovery.api.lease",
         "noetrium_platform.infrastructure.resources.lease.api",
+        "noetrium_platform.infrastructure.resources.lease.runtime",
         "noetrium_platform.infrastructure.resources.providers"
       ],
       "module": "noetrium_platform.composition.reliability_resources.recovery_lease",
@@ -141028,7 +141006,6 @@
         "noetrium_platform.infrastructure.resources.compute.api",
         "noetrium_platform.infrastructure.resources.compute.runtime.inventory",
         "noetrium_platform.infrastructure.resources.lease.api",
-        "noetrium_platform.infrastructure.resources.lease.runtime.clock",
         "noetrium_platform.infrastructure.resources.providers.sqlite_lease_ops",
         "noetrium_platform.infrastructure.resources.providers.sqlite_resource"
       ],
@@ -141330,7 +141307,6 @@
         "noetrium_platform.foundation.kernel.kernel.durability.sqlite",
         "noetrium_platform.infrastructure.resources.allocation.api",
         "noetrium_platform.infrastructure.resources.lease.api",
-        "noetrium_platform.infrastructure.resources.lease.runtime.clock",
         "noetrium_platform.infrastructure.resources.providers.sqlite_lease_ops",
         "noetrium_platform.infrastructure.resources.providers.sqlite_resource"
       ],
@@ -141343,7 +141319,6 @@
       "imports": [
         "noetrium_platform.foundation.kernel.kernel.durability.sqlite",
         "noetrium_platform.infrastructure.resources.lease.api",
-        "noetrium_platform.infrastructure.resources.lease.runtime.clock",
         "noetrium_platform.infrastructure.resources.providers.sqlite_lease_ops",
         "noetrium_platform.infrastructure.resources.providers.sqlite_resource"
       ],
@@ -144445,7 +144420,7 @@
   "parse_errors": [],
   "registry_sha256": "d3fc1bab831f1b7379e5a36048a61c00fe173429df958270d36a16f3f00171c0",
   "schema": "noetrium-code-architecture-index.v1",
-  "source_git_sha": "55496986c11d3cb95f7f665eaaec123310967bca",
+  "source_git_sha": "f9b3505f2cedc6ec90f98e5bae2fb0e4062128a6",
   "system_import_edges": [
     {
       "count": 85,
@@ -144648,7 +144623,7 @@
       "target": "research_os"
     },
     {
-      "count": 35,
+      "count": 36,
       "source": "research_os",
       "target": "resource"
     },
@@ -144673,7 +144648,7 @@
       "target": "platform"
     },
     {
-      "count": 110,
+      "count": 107,
       "source": "resource",
       "target": "resource"
     },

@@ -2,7 +2,7 @@
   "counts": {
     "parse_errors": 0,
     "python_files": 3693,
-    "python_import_edges": 7179,
+    "python_import_edges": 7178,
     "symbols": 5014,
     "tracked_files": 4329,
     "typescript_javascript_files": 11
@@ -5412,6 +5412,12 @@
       "source_module": "noetrium_platform.composition.reliability_resources.recovery_lease",
       "source_role": "core_platform",
       "target_module": "noetrium_platform.infrastructure.resources.lease.api",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "noetrium_platform.composition.reliability_resources.recovery_lease",
+      "source_role": "core_platform",
+      "target_module": "noetrium_platform.infrastructure.resources.lease.runtime",
       "target_role": "core_platform"
     },
     {
@@ -13265,12 +13271,6 @@
     {
       "source_module": "noetrium_platform.infrastructure.resources.compute.runtime.scheduler",
       "source_role": "core_platform",
-      "target_module": "noetrium_platform.infrastructure.resources.lease.runtime.clock",
-      "target_role": "core_platform"
-    },
-    {
-      "source_module": "noetrium_platform.infrastructure.resources.compute.runtime.scheduler",
-      "source_role": "core_platform",
       "target_module": "noetrium_platform.infrastructure.resources.providers.sqlite_lease_ops",
       "target_role": "core_platform"
     },
@@ -13463,12 +13463,6 @@
     {
       "source_module": "noetrium_platform.infrastructure.resources.providers.sqlite_endpoint",
       "source_role": "core_platform",
-      "target_module": "noetrium_platform.infrastructure.resources.lease.runtime.clock",
-      "target_role": "core_platform"
-    },
-    {
-      "source_module": "noetrium_platform.infrastructure.resources.providers.sqlite_endpoint",
-      "source_role": "core_platform",
       "target_module": "noetrium_platform.infrastructure.resources.providers.sqlite_lease_ops",
       "target_role": "core_platform"
     },
@@ -13488,12 +13482,6 @@
       "source_module": "noetrium_platform.infrastructure.resources.providers.sqlite_lease",
       "source_role": "core_platform",
       "target_module": "noetrium_platform.infrastructure.resources.lease.api",
-      "target_role": "core_platform"
-    },
-    {
-      "source_module": "noetrium_platform.infrastructure.resources.providers.sqlite_lease",
-      "source_role": "core_platform",
-      "target_module": "noetrium_platform.infrastructure.resources.lease.runtime.clock",
       "target_role": "core_platform"
     },
     {
@@ -24840,6 +24828,12 @@
       "source_module": "tests.test_compute_lease_lifecycle_v1",
       "source_role": "tests",
       "target_module": "noetrium_platform.infrastructure.resources.compute.runtime",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "tests.test_compute_lease_lifecycle_v1",
+      "source_role": "tests",
+      "target_module": "noetrium_platform.infrastructure.resources.lease.runtime",
       "target_role": "core_platform"
     },
     {
@@ -43091,7 +43085,7 @@
   ],
   "role_import_counts": [
     {
-      "count": 2601,
+      "count": 2599,
       "source_role": "core_platform",
       "target_role": "core_platform"
     },
@@ -43151,7 +43145,7 @@
       "target_role": "research_reproductions"
     },
     {
-      "count": 2806,
+      "count": 2807,
       "source_role": "tests",
       "target_role": "core_platform"
     },
@@ -43230,7 +43224,7 @@
     "tooling": 39
   },
   "schema": "noetrium-repository-code-architecture-index.v1",
-  "source_git_sha": "55496986c11d3cb95f7f665eaaec123310967bca",
+  "source_git_sha": "f9b3505f2cedc6ec90f98e5bae2fb0e4062128a6",
   "symbols": [
     {
       "bases": [],
@@ -65637,7 +65631,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 77,
+      "line": 80,
       "methods": [],
       "module": "noetrium_platform.composition.platform_meta",
       "name": "PlatformMetaAuthorities",
@@ -100315,7 +100309,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 106,
+      "line": 105,
       "methods": [],
       "module": "noetrium_platform.infrastructure.resources.compute.runtime.scheduler",
       "name": "_HostUsage",
@@ -100335,7 +100329,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 133,
+      "line": 132,
       "methods": [],
       "module": "noetrium_platform.infrastructure.resources.compute.runtime.scheduler",
       "name": "_GpuRuntimeIndex",
@@ -100351,7 +100345,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 162,
+      "line": 161,
       "methods": [
         "__init__"
       ],
@@ -100367,7 +100361,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 370,
+      "line": 369,
       "methods": [
         "__init__",
         "_usage",
@@ -100395,7 +100389,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 692,
+      "line": 691,
       "methods": [
         "__init__",
         "_connection",
@@ -101618,7 +101612,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 52,
+      "line": 49,
       "methods": [
         "__init__",
         "_connection",
@@ -101657,7 +101651,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 41,
+      "line": 36,
       "methods": [
         "__init__",
         "_connection",
