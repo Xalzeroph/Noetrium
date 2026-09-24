@@ -394,6 +394,18 @@ def _image_identity(tag: str) -> dict:
     }
 
 
+def _image_runtime_identity_digest(identity: dict) -> str:
+    """Return the concrete content identity of one Docker image."""
+
+    image_id = identity.get("id")
+    if (
+        type(image_id) is not str
+        or not re.fullmatch(r"sha256:[0-9a-f]{64}", image_id)
+    ):
+        raise RuntimeError("Docker image identity is not a content-addressed sha256")
+    return image_id.removeprefix("sha256:")
+
+
 def _verified_profile_image_identity(
     tag: str,
     *,
@@ -562,6 +574,9 @@ def build_environment_images(
     )
 
     base_identity["reused"] = reused_base
+    base_identity["runtime_identity_digest"] = _image_runtime_identity_digest(
+        base_identity
+    )
     images: dict[str, dict] = {"base": base_identity}
     for profile_id in profiles:
         row = by_id[profile_id]
@@ -657,13 +672,16 @@ def build_environment_images(
             profile_revision=revision,
         )
         profile_identity["reused"] = reused_profile
+        profile_identity["runtime_identity_digest"] = _image_runtime_identity_digest(
+            profile_identity
+        )
         profile_identity["profile_revision"] = revision
         profile_identity["lifecycle"] = row["lifecycle"]
         profile_identity["qualification_instance_cleaned"] = True
         images[profile_id] = profile_identity
 
     receipt = {
-        "schema": "noetrium.environment-image-build.v1",
+        "schema": "noetrium.environment-image-build.v2",
         "source_sha": source_sha,
         "branch": branch,
         "catalog_sha256": _sha256(CATALOG_PATH),
