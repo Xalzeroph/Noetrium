@@ -6,7 +6,7 @@ from noetrium_platform.research.experimentation.lifecycle.api import (
     ExecutionMode, ExperimentDefinition, ExperimentLifecycleState, ExperimentUnit,
     ExperimentUnitKind, ObservationEnvelope, ObservationKind, UnitOutcome, UnitOutcomeState,
 )
-from noetrium_platform.research.experimentation.lifecycle.experiment.runtime.matrix import (
+from noetrium_platform.research.experimentation.projection import (
     StaticUnitPlanner,
     project_experiment_run_report,
 )
