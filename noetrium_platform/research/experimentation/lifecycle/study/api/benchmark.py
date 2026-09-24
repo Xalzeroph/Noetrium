@@ -451,7 +451,7 @@ class BenchmarkCutSpec:
 
 
 __all__ = [
-    "BenchmarkCutSpec", "BenchmarkTaskSet", "TaskDefinition", "TaskPackageSpec", "TaskArtifactSpec",
+    "BenchmarkCutSpec", "BenchmarkTaskSet", "BenchmarkResolutionRegistration", "BenchmarkResolutionRegistry", "TaskDefinition", "TaskPackageSpec", "TaskArtifactSpec",
     "TaskVerifierIsolation", "TaskGraph", "TaskGraphEdge",
     "TaskGraphRelation", "TaskSetSplit", "TrialBudget", "BenchmarkSourceKind",
     "BenchmarkSourceSpec", "BenchmarkSourceResolution", "BenchmarkSourcePort",
@@ -520,6 +520,123 @@ class BenchmarkSourceResolution:
     @property
     def cut_digest(self) -> str:
         return self.task_set.cut_digest
+
+
+@dataclass(frozen=True, slots=True)
+class BenchmarkResolutionRegistration:
+    """One exact materialized Benchmark cut admitted by its owning authority."""
+
+    resolution: BenchmarkSourceResolution
+    authority_proof_digest: str
+    registration_digest: str = field(init=False)
+
+    def __post_init__(self) -> None:
+        if type(self.resolution) is not BenchmarkSourceResolution:
+            raise TypeError(
+                "benchmark resolution registration requires BenchmarkSourceResolution"
+            )
+        require_sha256(
+            self.authority_proof_digest,
+            "benchmark resolution registration authority_proof_digest",
+        )
+        object.__setattr__(
+            self,
+            "registration_digest",
+            canonical_digest(
+                {
+                    "benchmark_id": self.resolution.task_set.benchmark_id,
+                    "revision_id": self.resolution.task_set.revision_id,
+                    "resolution_digest": self.resolution.resolution_digest,
+                    "authority_proof_digest": self.authority_proof_digest,
+                }
+            ),
+        )
+
+    @property
+    def benchmark_id(self) -> str:
+        return self.resolution.task_set.benchmark_id
+
+
+class BenchmarkResolutionRegistry:
+    """Proof-backed exact Benchmark cut registry.
+
+    Materialization remains owner-system work. The registry only freezes exact
+    resolutions and refuses to choose among multiple admitted cuts implicitly.
+    """
+
+    def __init__(
+        self,
+        registrations: tuple[BenchmarkResolutionRegistration, ...] = (),
+    ) -> None:
+        if type(registrations) is not tuple or any(
+            type(row) is not BenchmarkResolutionRegistration
+            for row in registrations
+        ):
+            raise TypeError(
+                "benchmark resolution registry requires typed registration tuple"
+            )
+        ordered = tuple(
+            sorted(
+                registrations,
+                key=lambda row: (
+                    row.benchmark_id,
+                    row.resolution.task_set.revision_id,
+                    row.registration_digest,
+                ),
+            )
+        )
+        digests = tuple(row.registration_digest for row in ordered)
+        if len(digests) != len(set(digests)):
+            raise ValueError(
+                "benchmark resolution registry registrations must be unique"
+            )
+        self._registrations = ordered
+        self._identity_digest = canonical_digest(
+            {
+                "schema": "noetrium.benchmark-resolution-registry.v1",
+                "registrations": digests,
+            }
+        )
+
+    @property
+    def identity_digest(self) -> str:
+        return self._identity_digest
+
+    @property
+    def registrations(self) -> tuple[BenchmarkResolutionRegistration, ...]:
+        return self._registrations
+
+    @property
+    def benchmark_ids(self) -> tuple[str, ...]:
+        return tuple(
+            sorted({row.benchmark_id for row in self._registrations})
+        )
+
+    def registrations_for(
+        self,
+        benchmark_id: str,
+    ) -> tuple[BenchmarkResolutionRegistration, ...]:
+        _text(benchmark_id, "benchmark resolution registry benchmark_id")
+        return tuple(
+            row for row in self._registrations
+            if row.benchmark_id == benchmark_id
+        )
+
+    def resolve_exact(
+        self,
+        benchmark_id: str,
+    ) -> BenchmarkResolutionRegistration:
+        matches = self.registrations_for(benchmark_id)
+        if not matches:
+            raise LookupError(
+                f"benchmark {benchmark_id!r} has no registered materialized cut"
+            )
+        if len(matches) != 1:
+            raise LookupError(
+                f"benchmark {benchmark_id!r} has ambiguous materialized cuts: "
+                f"{tuple(row.resolution.task_set.revision_id for row in matches)}"
+            )
+        return matches[0]
 
 
 class BenchmarkSourcePort(Protocol):
