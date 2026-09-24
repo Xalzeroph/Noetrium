@@ -170,6 +170,8 @@ def _append_candidate(root: str, command_id: str, queue) -> None:
         base_revision=0, revision=1,
         proposal_digest=canonical_digest(("proposal", command_id)),
         command_digest=canonical_digest(("command", command_id)),
+        program_digest="f" * 64,
+        program_lock_digest="e" * 64,
         state={"command": command_id},
     )
     try:
