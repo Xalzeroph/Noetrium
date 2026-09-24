@@ -1299,6 +1299,52 @@ def compile_repository_reproduction_portfolio(
     )
 
 
+def compile_bound_reproduction_portfolio(
+    portfolio_id: str,
+    bindings: tuple[ReproductionExecutionBinding, ...],
+) -> api.ResearchPortfolio:
+    """Compile many exact execution lanes, including multiple lanes per paper."""
+
+    if type(bindings) is not tuple or not bindings:
+        raise ValueError("bound reproduction portfolio requires execution bindings")
+    if any(type(row) is not ReproductionExecutionBinding for row in bindings):
+        raise TypeError("bound reproduction portfolio bindings must be typed")
+    identities = tuple((row.package, row.binding_id) for row in bindings)
+    if len(identities) != len(set(identities)):
+        raise ValueError(
+            "bound reproduction portfolio binding identities must be unique"
+        )
+    definitions = {
+        row.package: row for row in discover_reproduction_definitions()
+    }
+    unknown = tuple(
+        sorted(
+            package
+            for package, _binding_id in identities
+            if package not in definitions
+        )
+    )
+    if unknown:
+        raise ReproductionResearchOSCompileError(
+            f"bound reproduction portfolio references unknown packages: {unknown}"
+        )
+    programs = tuple(
+        compile_bound_reproduction_research_program(
+            definitions[binding.package],
+            binding,
+        )
+        for binding in sorted(
+            bindings,
+            key=lambda row: (row.package, row.binding_id),
+        )
+    )
+    ids = tuple(program.program_id for program in programs)
+    if len(ids) != len(set(ids)):
+        raise ReproductionResearchOSCompileError(
+            "bound reproduction portfolio produced duplicate program identities"
+        )
+    return api.ResearchPortfolio(portfolio_id, programs)
+
 def compile_reproduction_portfolio(
     portfolio_id: str,
     definitions: tuple[ReproductionDefinition, ...],
@@ -1328,6 +1374,7 @@ __all__ = [
     "ReproductionStudyFactoryBinding",
     "ReproductionResearchOSCompileError",
     "bind_reproduction_execution",
+    "compile_bound_reproduction_portfolio",
     "compile_bound_reproduction_research_program",
     "compile_reproduction_portfolio",
     "compile_reproduction_research_program",
