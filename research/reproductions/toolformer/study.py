@@ -17,7 +17,10 @@ from noetrium_platform.research.experimentation.lifecycle.api import (
 from research.benchmarks.toolformer_eval import TOOLFORMER_BENCHMARK_ID
 
 from .fidelity import TOOLFORMER_FIDELITY
-from .program import build_toolformer_method_program
+from .program import (
+    TOOLFORMER_PAPER_CAPABILITY_IDS,
+    build_toolformer_method_program,
+)
 
 
 def toolformer_trial_protocol(
@@ -54,7 +57,7 @@ def build_toolformer_study(
     benchmark: BenchmarkTaskSet,
     *,
     split_id: str,
-    tool_capability_ids: tuple[str, ...],
+    tool_capability_ids: tuple[str, ...] = TOOLFORMER_PAPER_CAPABILITY_IDS,
     tools_enabled: bool = True,
 ) -> ResearchStudyDefinition:
     if benchmark.benchmark_id != TOOLFORMER_BENCHMARK_ID:
