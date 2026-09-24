@@ -667,6 +667,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--markdown", type=Path)
     parser.add_argument("--fail-on-shape", action="store_true")
     parser.add_argument("--fail-on-disconnected", action="store_true")
+    parser.add_argument("--fail-on-concrete-bypass", action="store_true")
     args = parser.parse_args(argv)
     report = build_report()
     if args.json:
@@ -711,6 +712,8 @@ def main(argv: list[str] | None = None) -> int:
         or report["layer_disconnected_count"]
     ):
         return 3
+    if args.fail_on_concrete_bypass and report["concrete_bypass_system_count"]:
+        return 4
     return 0
 
 
