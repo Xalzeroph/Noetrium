@@ -16,7 +16,7 @@ from noetrium_platform.infrastructure.resources.compute.api import (
 from noetrium_platform.foundation.kernel.kernel import canonical_digest
 from noetrium_platform.foundation.governance.api import ScopeIdentity, ScopeKind
 from noetrium_platform.infrastructure.resources.lease.api import (
-    ResourceIdentity, ResourceKind, ResourceLease, ResourceLeaseConflict,
+    LeaseState, ResourceIdentity, ResourceKind, ResourceLease, ResourceLeaseConflict,
     ResourceLeasePort, ResourceOwner, ResourceOwnership, ResourceOwnershipPort,
 )
 from noetrium_platform.foundation.kernel.kernel.durability.sqlite import (
@@ -153,6 +153,38 @@ def _gpu_runtime_index(
         process_count_by_uuid=process_count_by_uuid,
         processes_complete=snapshot.processes_complete,
     )
+
+
+class ComputePhysicalConvergencePending(RuntimeError):
+    """An expired compute lease still has unproven physical GPU consumers."""
+
+    def __init__(self, allocations: tuple[ComputeAllocation, ...]) -> None:
+        self.allocations = allocations
+        detail = ",".join(
+            f"{row.allocation_id}[{','.join(row.gpu_ids)}]"
+            for row in allocations
+        )
+        super().__init__(
+            "expired compute allocation physical convergence pending: " + detail
+        )
+
+
+def _gpu_allocation_physically_converged(
+    allocation: ComputeAllocation,
+    snapshot: GpuRuntimeSnapshot | None,
+) -> bool:
+    if not allocation.gpu_ids:
+        return True
+    runtime = _gpu_runtime_index(snapshot)
+    if runtime is None or not runtime.processes_complete:
+        return False
+    for gpu_id in allocation.gpu_ids:
+        device = runtime.devices_by_id.get(gpu_id)
+        if device is None:
+            return False
+        if runtime.process_count_by_uuid.get(device.uuid, 0) > 0:
+            return False
+    return True
 
 
 def _host_runtime_index(
@@ -409,22 +441,35 @@ class InMemoryComputeScheduler:
         else:
             self._usage_by_host.pop(row.host_id, None)
 
-    def _reconcile_expired_locked(self, now_epoch_s: float) -> tuple[ComputeAllocation, ...]:
-        expired_leases = self._leases.reconcile_expired(
+    def _reconcile_expired_locked(
+        self,
+        now_epoch_s: float,
+        runtime_snapshot: GpuRuntimeSnapshot | None,
+    ) -> tuple[ComputeAllocation, ...]:
+        self._leases.reconcile_expired(
             now=now_epoch_s,
             resource_kind=ResourceKind.COMPUTE,
         )
-        expired: list[ComputeAllocation] = []
-        for lease in expired_leases:
-            if lease.resource.kind is not ResourceKind.COMPUTE:
+        converged: list[ComputeAllocation] = []
+        pending: list[ComputeAllocation] = []
+        for allocation_id, row in tuple(self._allocations.items()):
+            lease = self._leases.get(
+                f"compute:{allocation_id}",
+                now=now_epoch_s,
+            )
+            if lease.state is LeaseState.ACTIVE:
                 continue
-            allocation_id = lease.resource.resource_id
-            row = self._allocations.pop(allocation_id, None)
-            if row is None:
+            if not _gpu_allocation_physically_converged(row, runtime_snapshot):
+                pending.append(row)
                 continue
+            self._allocations.pop(allocation_id, None)
             self._release_usage_locked(row)
-            expired.append(row)
-        return tuple(sorted(expired, key=lambda row: row.allocation_id))
+            converged.append(row)
+        if pending:
+            raise ComputePhysicalConvergencePending(
+                tuple(sorted(pending, key=lambda row: row.allocation_id))
+            )
+        return tuple(sorted(converged, key=lambda row: row.allocation_id))
 
     def candidates(
         self,
@@ -439,7 +484,7 @@ class InMemoryComputeScheduler:
             requirement,
         )
         with self._lock:
-            self._reconcile_expired_locked(time())
+            self._reconcile_expired_locked(time(), runtime_snapshot)
             return tuple(
                 host for _score, host, _gpu_ids
                 in self._placements_locked(
@@ -472,7 +517,7 @@ class InMemoryComputeScheduler:
             requirement,
         )
         with self._lock:
-            self._reconcile_expired_locked(now_epoch_s)
+            self._reconcile_expired_locked(now_epoch_s, runtime_snapshot)
             prior_digest = self._request_digests.get(allocation_id)
             if prior_digest is not None and prior_digest != request_digest:
                 raise ValueError(f"allocation identity conflict: {allocation_id}")
@@ -539,8 +584,9 @@ class InMemoryComputeScheduler:
         if len(set(allocation_ids)) != len(allocation_ids):
             raise ValueError("compute renewal requires unique allocation ids")
         now_epoch_s = _lease_now(now)
+        runtime_snapshot = _observe_gpu_runtime(self._gpu_runtime_observer)
         with self._lock:
-            self._reconcile_expired_locked(now_epoch_s)
+            self._reconcile_expired_locked(now_epoch_s, runtime_snapshot)
             missing = [item for item in allocation_ids if item not in self._allocations]
             if missing:
                 raise KeyError(missing[0])
@@ -569,8 +615,9 @@ class InMemoryComputeScheduler:
         now: float | None = None,
     ) -> tuple[ComputeAllocation, ...]:
         now_epoch_s = _lease_now(now)
+        runtime_snapshot = _observe_gpu_runtime(self._gpu_runtime_observer)
         with self._lock:
-            return self._reconcile_expired_locked(now_epoch_s)
+            return self._reconcile_expired_locked(now_epoch_s, runtime_snapshot)
 
     def release(self, allocation: ComputeAllocation) -> None:
         if type(allocation) is not ComputeAllocation:
@@ -589,8 +636,9 @@ class InMemoryComputeScheduler:
         *,
         scope: ScopeIdentity | None = None,
     ) -> tuple[ComputeAllocation, ...]:
+        runtime_snapshot = _observe_gpu_runtime(self._gpu_runtime_observer)
         with self._lock:
-            self._reconcile_expired_locked(time())
+            self._reconcile_expired_locked(time(), runtime_snapshot)
             return tuple(sorted(
                 (row for row in self._allocations.values() if scope is None or row.scope == scope),
                 key=lambda row: row.allocation_id,
@@ -697,6 +745,21 @@ class SQLiteComputeScheduler:
             (now_epoch_s,),
         ).fetchall()
         return tuple(self._decode_row(row) for row in rows)
+
+    def _capacity_rows(
+        self,
+        conn: sqlite3.Connection,
+    ) -> tuple[ComputeAllocation, ...]:
+        """Rows that still fence scheduler capacity, including GPU quarantine."""
+
+        rows = conn.execute(
+            f"SELECT {self._SELECT} FROM compute_allocations c "
+            "JOIN compute_allocation_identity i USING(allocation_id) "
+            "JOIN resource_leases l ON l.lease_id=c.lease_id "
+            "ORDER BY c.allocation_id"
+        ).fetchall()
+        return tuple(self._decode_row(row) for row in rows)
+
     def _active_row(
         self,
         conn: sqlite3.Connection,
@@ -717,28 +780,45 @@ class SQLiteComputeScheduler:
         self,
         conn: sqlite3.Connection,
         now_epoch_s: float,
-    ) -> tuple[ComputeAllocation, ...]:
-        rows = conn.execute(
-            f"SELECT {self._SELECT} FROM compute_allocations c "
-            "JOIN compute_allocation_identity i USING(allocation_id) "
-            "JOIN resource_leases l ON l.lease_id=c.lease_id "
-            "WHERE l.state='active' AND l.resource_kind=? "
-            "AND l.expires_at_epoch_s IS NOT NULL AND l.expires_at_epoch_s<=? "
-            "ORDER BY c.allocation_id",
-            (ResourceKind.COMPUTE.value, now_epoch_s),
-        ).fetchall()
-        expired = tuple(self._decode_row(row) for row in rows)
-        leases = reconcile_expired_resource_leases(
+        runtime_snapshot: GpuRuntimeSnapshot | None,
+    ) -> tuple[tuple[ComputeAllocation, ...], tuple[ComputeAllocation, ...]]:
+        reconcile_expired_resource_leases(
             conn,
             now_epoch_s=now_epoch_s,
             resource_kind=ResourceKind.COMPUTE,
         )
-        if leases:
-            conn.executemany(
-                "DELETE FROM compute_allocations WHERE lease_id=?",
-                ((lease.lease_id,) for lease in leases),
+        rows = conn.execute(
+            f"SELECT {self._SELECT} FROM compute_allocations c "
+            "JOIN compute_allocation_identity i USING(allocation_id) "
+            "JOIN resource_leases l ON l.lease_id=c.lease_id "
+            "WHERE l.state='expired' AND l.resource_kind=? "
+            "ORDER BY c.allocation_id",
+            (ResourceKind.COMPUTE.value,),
+        ).fetchall()
+        converged: list[ComputeAllocation] = []
+        pending: list[ComputeAllocation] = []
+        for raw in rows:
+            allocation = self._decode_row(raw)
+            if not _gpu_allocation_physically_converged(
+                allocation,
+                runtime_snapshot,
+            ):
+                pending.append(allocation)
+                continue
+            deleted = conn.execute(
+                "DELETE FROM compute_allocations WHERE allocation_id=?",
+                (allocation.allocation_id,),
             )
-        return expired
+            if deleted.rowcount != 1:
+                raise ResourceLeaseConflict(
+                    "compute quarantine cleanup lost authority: "
+                    f"{allocation.allocation_id}"
+                )
+            converged.append(allocation)
+        return (
+            tuple(sorted(converged, key=lambda row: row.allocation_id)),
+            tuple(sorted(pending, key=lambda row: row.allocation_id)),
+        )
     @staticmethod
     def _usage(rows: tuple[ComputeAllocation, ...], host_id: str) -> _HostUsage:
         usage = _HostUsage()
@@ -785,7 +865,7 @@ class SQLiteComputeScheduler:
         host_runtime_snapshot = _observe_host_runtime(self._host_runtime_observer)
         now_epoch_s = time()
         with self._connection() as conn:
-            rows = self._active_rows(conn, now_epoch_s)
+            rows = self._capacity_rows(conn)
         return tuple(
             host for _score, host, _gpu_ids
             in self._placements(
@@ -836,13 +916,20 @@ class SQLiteComputeScheduler:
         with self._connection() as conn:
             begin_immediate_sqlite_transaction(conn, timeout_seconds=self.timeout_seconds)
             try:
-                self._cleanup_expired(conn, now_epoch_s)
+                _converged, pending = self._cleanup_expired(
+                    conn,
+                    now_epoch_s,
+                    runtime_snapshot,
+                )
                 self._ensure_identity(conn, allocation_id, request_digest, scope)
                 existing = self._active_row(conn, allocation_id, now_epoch_s)
                 if existing is not None:
                     conn.commit()
                     return existing
-                rows = self._active_rows(conn, now_epoch_s)
+                if pending:
+                    conn.commit()
+                    raise ComputePhysicalConvergencePending(pending)
+                rows = self._capacity_rows(conn)
                 placements = self._placements(
                     rows,
                     requirement,
@@ -914,10 +1001,18 @@ class SQLiteComputeScheduler:
         if len(set(allocation_ids)) != len(allocation_ids):
             raise ValueError("compute renewal requires unique allocation ids")
         now_epoch_s = _lease_now(now)
+        runtime_snapshot = _observe_gpu_runtime(self._gpu_runtime_observer)
         with self._connection() as conn:
             begin_immediate_sqlite_transaction(conn, timeout_seconds=self.timeout_seconds)
             try:
-                self._cleanup_expired(conn, now_epoch_s)
+                _converged, pending = self._cleanup_expired(
+                    conn,
+                    now_epoch_s,
+                    runtime_snapshot,
+                )
+                if pending:
+                    conn.commit()
+                    raise ComputePhysicalConvergencePending(pending)
                 current: list[ComputeAllocation] = []
                 for expected in allocations:
                     row = self._active_row(
@@ -958,12 +1053,21 @@ class SQLiteComputeScheduler:
         now: float | None = None,
     ) -> tuple[ComputeAllocation, ...]:
         now_epoch_s = _lease_now(now)
+        runtime_snapshot = _observe_gpu_runtime(self._gpu_runtime_observer)
         with self._connection() as conn:
             begin_immediate_sqlite_transaction(conn, timeout_seconds=self.timeout_seconds)
             try:
-                expired = self._cleanup_expired(conn, now_epoch_s)
+                converged, pending = self._cleanup_expired(
+                    conn,
+                    now_epoch_s,
+                    runtime_snapshot,
+                )
                 conn.commit()
-                return expired
+                if pending:
+                    raise ComputePhysicalConvergencePending(pending)
+                return converged
+            except ComputePhysicalConvergencePending:
+                raise
             except BaseException as primary:
                 rollback_sqlite_writer(
                     conn,
@@ -976,10 +1080,18 @@ class SQLiteComputeScheduler:
         if type(allocation) is not ComputeAllocation:
             raise TypeError("compute release requires ComputeAllocation")
         now_epoch_s = time()
+        runtime_snapshot = _observe_gpu_runtime(self._gpu_runtime_observer)
         with self._connection() as conn:
             begin_immediate_sqlite_transaction(conn, timeout_seconds=self.timeout_seconds)
             try:
-                self._cleanup_expired(conn, now_epoch_s)
+                _converged, pending = self._cleanup_expired(
+                    conn,
+                    now_epoch_s,
+                    runtime_snapshot,
+                )
+                if pending:
+                    conn.commit()
+                    raise ComputePhysicalConvergencePending(pending)
                 current = self._active_row(
                     conn,
                     allocation.allocation_id,
@@ -1004,6 +1116,8 @@ class SQLiteComputeScheduler:
                         f"compute release lost authority: {allocation.allocation_id}"
                     )
                 conn.commit()
+            except ComputePhysicalConvergencePending:
+                raise
             except BaseException as primary:
                 rollback_sqlite_writer(
                     conn,
@@ -1017,9 +1131,8 @@ class SQLiteComputeScheduler:
         *,
         scope: ScopeIdentity | None = None,
     ) -> tuple[ComputeAllocation, ...]:
-        now_epoch_s = time()
         with self._connection() as conn:
-            rows = self._active_rows(conn, now_epoch_s)
+            rows = self._capacity_rows(conn)
         return tuple(row for row in rows if scope is None or row.scope == scope)
 
 
