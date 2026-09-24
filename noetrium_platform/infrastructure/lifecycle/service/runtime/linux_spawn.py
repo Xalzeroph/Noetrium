@@ -51,9 +51,19 @@ class LinuxProcessSpawner:
         contract: ServiceLaunchContract,
         environment: MaterializedServiceEnvironment,
         captures: ServiceCapturePaths,
+        *,
+        launch_marker: tuple[str, str] | None = None,
     ) -> tuple[ServiceProcessIdentity, tuple[str, ...]]:
         captures.stdout_path.parent.mkdir(parents=True, exist_ok=True)
         captures.stderr_path.parent.mkdir(parents=True, exist_ok=True)
+        child_environment = environment.as_dict()
+        if launch_marker is not None:
+            marker_key, marker_value = launch_marker
+            if marker_key in child_environment:
+                raise ValueError(
+                    f"service launch marker collides with frozen environment: {marker_key}"
+                )
+            child_environment[marker_key] = marker_value
         with captures.stdout_path.open("ab", buffering=0) as stdout, captures.stderr_path.open(
             "ab", buffering=0
         ) as stderr:
@@ -61,7 +71,7 @@ class LinuxProcessSpawner:
                 contract.argv,
                 executable=contract.executable,
                 cwd=contract.cwd,
-                env=environment.as_dict(),
+                env=child_environment,
                 stdin=subprocess.DEVNULL,
                 stdout=stdout,
                 stderr=stderr,
