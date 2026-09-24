@@ -395,8 +395,6 @@ def build_agent_s3_method_program() -> MethodProgram:
         "runtime_tool_creation": True,
         "code_agent_budget": f.code_agent_budget,
         "code_agent_languages": f.code_agent_languages,
-        "paper_default_step_limit": f.default_step_limit,
-        "paper_default_cost_limit": f.default_cost_limit,
         "host_safety_max_turns": _HOST_SAFETY_MAX_TURNS,
     }
     identity = MethodProgramIdentity(
