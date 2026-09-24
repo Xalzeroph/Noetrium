@@ -10,7 +10,11 @@ from pathlib import Path
 
 from noetrium_platform.composition.research_execution_pool import ResearchExecutionPool
 from noetrium_platform.composition.research_os import bind_portfolio_research_os
-from noetrium_platform.composition.research_os_execution import StrictResearchOSControl
+from noetrium_platform.composition.research_os_execution import (
+    PreparedResearchOSExecution,
+    StrictResearchOSControl,
+    prepare_research_os_execution,
+)
 from noetrium_platform.composition.research_os_experiment import (
     ResearchOSExperimentClosurePort,
 )
@@ -42,7 +46,11 @@ from noetrium_platform.evidence.artifact.retention.providers import (
 from noetrium_platform.foundation.portfolio.runtime import (
     SQLitePortfolioRevisionStore,
 )
-from noetrium_platform.product.research_os import ResearchOS
+from noetrium_platform.product.research_os import (
+    ResearchExecutionTarget,
+    ResearchOS,
+    ResearchPortfolio,
+)
 from noetrium_platform.research.execution.graph.providers import (
     SQLiteResearchGraphExecutionStore,
 )
@@ -55,6 +63,26 @@ class LocalResearchOSComposition:
     revision_store: SQLitePortfolioRevisionStore
     graph_store: SQLiteResearchGraphExecutionStore
     execution_pool: ResearchExecutionPool
+    _runtime: CanonicalResearchOSNodeRuntime
+    _values: ResearchOSValueRouter
+    _experiment_closures: ResearchOSExperimentClosurePort | None
+    _artifact_lineage: SQLiteArtifactLineageStore
+
+    def prepare(
+        self,
+        target: ResearchExecutionTarget,
+        portfolio: ResearchPortfolio,
+    ) -> PreparedResearchOSExecution:
+        """Run canonical whole-graph admission without creating a durable cut."""
+
+        return prepare_research_os_execution(
+            target,
+            portfolio,
+            self._runtime,
+            self._values,
+            experiment_closures=self._experiment_closures,
+            artifact_lineage=self._artifact_lineage,
+        )
 
     def close(self) -> None:
         self.execution_pool.close()
@@ -152,6 +180,10 @@ def compose_local_research_os(
         revisions,
         graph,
         pool,
+        runtime,
+        values,
+        experiment_closures,
+        lineage,
     )
 
 
