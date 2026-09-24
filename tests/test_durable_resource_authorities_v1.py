@@ -98,8 +98,8 @@ class DurableResourceAuthoritiesTests(TestCase):
                 probe=_AvailableProbe(),
             )
             self.assertEqual(restored.allocate(request), allocation)
-            released = restored.release(request.allocation_id)
-            self.assertEqual(restored.release(request.allocation_id), released)
+            released = restored.release(allocation)
+            self.assertEqual(restored.release(allocation), released)
             self.assertEqual(restored.active(), ())
 
     def test_durable_platform_meta_uses_one_authority_database(self) -> None:
@@ -172,7 +172,7 @@ class DurableResourceAuthoritiesTests(TestCase):
             second = build_durable_platform_meta(root)
             self.assertEqual(second.compute_inventory.host("host-1").cpu_cores, 8)
             self.assertEqual(second.compute_scheduler.allocations(), (allocation,))
-            second.compute_scheduler.release("compute-1")
+            second.compute_scheduler.release(allocation)
             self.assertEqual(second.compute_scheduler.allocations(), ())
 
     def test_environment_instance_reuse_is_generation_fenced_and_gc_safe(self) -> None:
