@@ -6,8 +6,8 @@ import sqlite3
 from threading import RLock
 
 from noetrium_platform.foundation.kernel.kernel.durability.sqlite import (
-    begin_immediate_sqlite_transaction,
     durable_sqlite_connection,
+    immediate_sqlite_transaction,
 )
 from noetrium_platform.foundation.kernel.kernel import require_sha256
 from noetrium_platform.foundation.portfolio.api.revision import (
@@ -229,8 +229,11 @@ class SQLitePortfolioRevisionStore:
         if type(revision) is not PortfolioRevision:
             raise TypeError("portfolio commit requires PortfolioRevision")
         with self._connection() as conn:
-            begin_immediate_sqlite_transaction(conn, timeout_seconds=self.timeout_seconds)
-            try:
+            with immediate_sqlite_transaction(
+                conn,
+                timeout_seconds=self.timeout_seconds,
+                label="portfolio revision",
+            ):
                 for parent in revision.parent_revision_digests:
                     self._revision_tx(conn, revision.subject_id, parent)
                 row = conn.execute(
@@ -242,7 +245,6 @@ class SQLitePortfolioRevisionStore:
                     current = self._decode_revision(row)
                     if current != revision:
                         raise PortfolioRevisionConflict("portfolio revision digest collision")
-                    conn.commit()
                     return current
                 conn.execute(
                     "INSERT INTO portfolio_revisions("
@@ -257,12 +259,7 @@ class SQLitePortfolioRevisionStore:
                         revision.message,
                     ),
                 )
-                conn.commit()
                 return revision
-            except BaseException:
-                if conn.in_transaction:
-                    conn.rollback()
-                raise
 
     def revision(self, subject_id: str, revision_digest: str) -> PortfolioRevision:
         require_sha256(revision_digest, "portfolio revision_digest")
