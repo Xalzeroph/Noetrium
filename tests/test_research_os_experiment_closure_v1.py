@@ -10,6 +10,8 @@ from noetrium_platform.composition.research_os_experiment_artifacts import (
 )
 from noetrium_platform.composition.research_os_experiment_runtime_binding import (
     ResearchOSExperimentAggregationRegistry,
+    ResearchOSExperimentReconciliationRegistration,
+    ResearchOSExperimentReconciliationRegistry,
 )
 from noetrium_platform.composition.research_os_experiment_trial_execution import (
     ResearchOSExperimentTrialProviderBinding,
@@ -1063,4 +1065,70 @@ def test_trial_provider_registry_does_not_fallback_across_provider_identity() ->
     )
 
     with pytest.raises(LookupError, match="no unique Trial provider"):
+        registry.resolve(closure)
+
+
+
+def test_reconciliation_registry_resolves_exact_trial_provider_protocol() -> None:
+    compilation = _compiled_graph()
+    node = compilation.node("paper::main")
+    definition = _study_definition()
+    resolution, binding = _resolution_and_binding(definition)
+    closure = compile_research_os_experiment_closure(
+        graph_id=compilation.plan.graph_id,
+        graph_digest=compilation.plan.graph_digest,
+        research_revision_digest=compilation.plan.research_revision_digest,
+        node=node,
+        definition=definition,
+        resolution=resolution,
+        binding=binding,
+    )
+    provider_identity = next(iter({
+        row.provider_id
+        for row in closure.research_plan.experiment_plan.bindings
+    }))
+    reconciliation = _ExperimentReconciliation()
+    registry = ResearchOSExperimentReconciliationRegistry(
+        (
+            ResearchOSExperimentReconciliationRegistration(
+                provider_identity,
+                closure.research_plan.trial_protocol_identity.digest(),
+                reconciliation,
+            ),
+        )
+    )
+
+    assert registry.resolve(closure) is reconciliation
+    assert len(registry.identity_digest) == 64
+
+
+def test_reconciliation_registry_never_falls_back_across_protocol() -> None:
+    compilation = _compiled_graph()
+    node = compilation.node("paper::main")
+    definition = _study_definition()
+    resolution, binding = _resolution_and_binding(definition)
+    closure = compile_research_os_experiment_closure(
+        graph_id=compilation.plan.graph_id,
+        graph_digest=compilation.plan.graph_digest,
+        research_revision_digest=compilation.plan.research_revision_digest,
+        node=node,
+        definition=definition,
+        resolution=resolution,
+        binding=binding,
+    )
+    provider_identity = next(iter({
+        row.provider_id
+        for row in closure.research_plan.experiment_plan.bindings
+    }))
+    registry = ResearchOSExperimentReconciliationRegistry(
+        (
+            ResearchOSExperimentReconciliationRegistration(
+                provider_identity,
+                "7" * 64,
+                _ExperimentReconciliation(),
+            ),
+        )
+    )
+
+    with pytest.raises(LookupError, match="no exact Experiment reconciliation"):
         registry.resolve(closure)
