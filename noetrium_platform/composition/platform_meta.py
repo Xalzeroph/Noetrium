@@ -232,7 +232,6 @@ def build_durable_platform_meta(
         resource_ownership=resources,
         resource_leases=resources,
         endpoint_allocations=endpoint_allocations,
-        endpoint_candidates=endpoint_candidates,
         compute_inventory=compute_inventory,
         compute_scheduler=compute_scheduler,
     )
