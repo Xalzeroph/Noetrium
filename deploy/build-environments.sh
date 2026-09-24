@@ -155,17 +155,35 @@ bootstrap_cleanup() {
 run_bootstrap_container() {
   BOOTSTRAP_ACTIVE=1
   trap bootstrap_cleanup EXIT HUP INT TERM
+  # Keep the command inside an if so set -e cannot bypass the normal
+  # convergence path on a non-zero Docker result.
   # shellcheck disable=SC2086
-  docker run --rm --init --restart no \
+  if docker run --rm --init --restart no \
     --name "$BOOTSTRAP_CONTAINER_NAME" \
     --label "$BOOTSTRAP_MANAGED_LABEL=$BOOTSTRAP_MANAGED_VALUE" \
-    --label "io.noetrium.bootstrap-owner-pid=$$" \
+    --label "io.noetrium.bootstrap-owner-pid=$" \
     --label "io.noetrium.bootstrap-owner-boot=$BOOT_ID" \
     --label "io.noetrium.bootstrap-owner-start=$OWNER_START" \
-    "$@"
-  status=$?
+    "$@"; then
+    status=0
+  else
+    status=$?
+  fi
+
+  # --rm is an optimization, not convergence evidence. A daemon restart can
+  # make command completion ambiguous after the physical container already
+  # stopped or before Docker completed auto-removal. Re-observe/remove every
+  # object owned by this exact PID + boot + process-start generation before
+  # dropping the launcher-side ownership bit.
+  cleanup_failed=0
+  cleanup_owned_bootstrap_children || cleanup_failed=1
+  cleanup_owned_bootstrap_container || cleanup_failed=1
   BOOTSTRAP_ACTIVE=0
   trap - EXIT HUP INT TERM
+  if [ "$cleanup_failed" = "1" ]; then
+    echo "Bootstrap completion did not prove physical convergence." >&2
+    [ "$status" -ne 0 ] || status=1
+  fi
   return "$status"
 }
 
