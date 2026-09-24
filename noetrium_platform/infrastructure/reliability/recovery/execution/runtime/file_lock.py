@@ -58,14 +58,19 @@ class FileLockedRecoveryExecution:
             raise RuntimeError("runtime recovery execution guard is not active")
         return self.store.assert_owned(self.owner_id, self.manifest_digest)
 
-    def __exit__(self, exc_type, exc, tb) -> None:
+    def close(self, exc_type=None, exc=None, tb=None) -> None:
         if not self._entered:
             return
+        # Durable ownership must converge before the local exclusive fence is
+        # released. If either stage fails, keep the guard active so cleanup is
+        # retryable and a competing runtime cannot enter a split-authority
+        # window.
+        self.store.release(self.owner_id, self.manifest_digest)
+        self._lock.__exit__(exc_type, exc, tb)
         self._entered = False
-        try:
-            self.store.release(self.owner_id, self.manifest_digest)
-        finally:
-            self._lock.__exit__(exc_type, exc, tb)
+
+    def __exit__(self, exc_type, exc, tb) -> None:
+        self.close(exc_type, exc, tb)
 
 
 class FileLockedRecoveryExecutionFactory:
