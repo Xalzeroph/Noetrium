@@ -430,6 +430,34 @@ def resolve_study_factory_bindings(
     return tuple(sorted(bindings, key=lambda row: (row.qualname, row.binding_digest)))
 
 
+def resolve_benchmark_split_consumers(
+    definition: ReproductionDefinition,
+) -> tuple[str, ...]:
+    """Return exact consumers of the platform-owned benchmark split axis."""
+
+    if type(definition) is not ReproductionDefinition:
+        raise TypeError("benchmark split consumers require reproduction definition")
+    consumers: set[str] = set()
+    for study in resolve_study_factory_bindings(definition):
+        if study.benchmark_split_parameter is not None:
+            consumers.add(f"study:{study.qualname}")
+
+    method_assets = tuple(
+        row
+        for row in definition.assets
+        if row.kind is ReproductionAssetKind.METHOD_PROGRAM
+    )
+    if method_assets:
+        method = resolve_method_program_binding(definition)
+        if method.factory is not None:
+            if any(
+                name in _BENCHMARK_SPLIT_PARAMETERS
+                for name in method.factory.unresolved_parameters
+            ):
+                consumers.add(f"method:{method.qualname}")
+    return tuple(sorted(consumers))
+
+
 def resolve_execution_requirements(
     definition: ReproductionDefinition,
 ) -> tuple[ReproductionExecutionRequirement, ...]:
@@ -1474,6 +1502,7 @@ __all__ = [
     "is_research_os_executable",
     "materialize_reproduction_method_program",
     "materialize_reproduction_study",
+    "resolve_benchmark_split_consumers",
     "resolve_execution_requirements",
     "resolve_method_program_binding",
     "resolve_study_factory_bindings",
