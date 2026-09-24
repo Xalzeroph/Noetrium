@@ -203,6 +203,7 @@ _SCALE_EXECUTION_TESTS = (
     "tests/test_execution_authority_singleton_v1.py",
     "tests/test_machine_journal_scale_v1.py",
     "tests/test_artifact_blob_cas_v1.py",
+    "tests/test_environment_pool_scale_v1.py",
     "tests/test_research_graph_claim_control_fence_v1.py",
     "tests/test_research_graph_cut_switch_fence_v1.py",
     "tests/test_research_os_multi_program_selection_v1.py",
