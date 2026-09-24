@@ -416,6 +416,36 @@ class SQLiteResearchGraphExecutionStore:
             raise ResearchGraphExecutionNotFound(f"{execution_id}:{node_id}")
         return self._decode_node(row)
 
+    def _nodes_tx(
+        self,
+        conn: sqlite3.Connection,
+        execution_id: str,
+        node_ids: tuple[str, ...],
+    ) -> tuple[ResearchGraphNodeExecutionRecord, ...]:
+        """Read an exact node set with one SQL query, preserving canonical order."""
+        if not node_ids:
+            return ()
+        ordered_ids = tuple(sorted(node_ids))
+        if len(ordered_ids) != len(set(ordered_ids)):
+            raise ValueError("research graph node batch ids must be unique")
+        placeholders = ",".join("?" for _ in ordered_ids)
+        rows = conn.execute(
+            "SELECT execution_id,node_id,semantic_digest,state,attempt_number,"
+            "attempt_id,lease_owner_id,lease_expires_at_ns,retry_not_before_ns,"
+            "failure_type,failure_message,blockers_json "
+            "FROM research_graph_nodes WHERE execution_id=? "
+            f"AND node_id IN ({placeholders}) ORDER BY node_id",
+            (execution_id, *ordered_ids),
+        ).fetchall()
+        records = tuple(self._decode_node(row) for row in rows)
+        actual_ids = tuple(row.node_id for row in records)
+        if actual_ids != ordered_ids:
+            missing = tuple(sorted(set(ordered_ids) - set(actual_ids)))
+            raise ResearchGraphExecutionNotFound(
+                f"research graph node batch missing nodes: {missing}"
+            )
+        return records
+
     def _snapshot_tx(
         self,
         conn: sqlite3.Connection,
@@ -604,25 +634,9 @@ class SQLiteResearchGraphExecutionStore:
         ordered_ids = tuple(sorted(node_ids))
         if len(ordered_ids) != len(set(ordered_ids)):
             raise ValueError("research graph node_states ids must be unique")
-        placeholders = ",".join("?" for _ in ordered_ids)
         with self._connection() as conn:
             self._execution_tx(conn, execution_id)
-            rows = conn.execute(
-                "SELECT execution_id,node_id,semantic_digest,state,attempt_number,"
-                "attempt_id,lease_owner_id,lease_expires_at_ns,retry_not_before_ns,"
-                "failure_type,failure_message,blockers_json "
-                "FROM research_graph_nodes WHERE execution_id=? "
-                f"AND node_id IN ({placeholders}) ORDER BY node_id",
-                (execution_id, *ordered_ids),
-            ).fetchall()
-        records = tuple(self._decode_node(row) for row in rows)
-        actual_ids = tuple(row.node_id for row in records)
-        if actual_ids != ordered_ids:
-            missing = tuple(sorted(set(ordered_ids) - set(actual_ids)))
-            raise ResearchGraphExecutionNotFound(
-                f"research graph node_states missing nodes: {missing}"
-            )
-        return records
+            return self._nodes_tx(conn, execution_id, ordered_ids)
 
     def control_state(
         self,
@@ -1472,9 +1486,13 @@ class SQLiteResearchGraphExecutionStore:
 
         with self._transaction() as conn:
             self._execution_tx(conn, execution_id)
+            current_by_node = {
+                row.node_id: row
+                for row in self._nodes_tx(conn, execution_id, ordered)
+            }
             changed: list[str] = []
             for node_id in ordered:
-                current = self._node_tx(conn, execution_id, node_id)
+                current = current_by_node[node_id]
                 if current.state is ResearchGraphLiveNodeState.READY:
                     continue
                 allowed = current.state is ResearchGraphLiveNodeState.PENDING
@@ -1503,10 +1521,7 @@ class SQLiteResearchGraphExecutionStore:
                 )
             if changed:
                 self._bump_generation(conn, execution_id)
-            return tuple(
-                self._node_tx(conn, execution_id, node_id)
-                for node_id in ordered
-            )
+            return self._nodes_tx(conn, execution_id, ordered)
     def claim(
         self,
         execution_id: str,
@@ -1693,9 +1708,12 @@ class SQLiteResearchGraphExecutionStore:
 
         with self._transaction() as conn:
             self._execution_tx(conn, execution_id)
-            current_by_node: dict[str, ResearchGraphNodeExecutionRecord] = {}
+            current_by_node = {
+                row.node_id: row
+                for row in self._nodes_tx(conn, execution_id, node_ids)
+            }
             for renewal in ordered:
-                current = self._node_tx(conn, execution_id, renewal.node_id)
+                current = current_by_node[renewal.node_id]
                 self._require_active(
                     current,
                     attempt_id=renewal.attempt_id,
@@ -1734,10 +1752,7 @@ class SQLiteResearchGraphExecutionStore:
                         "research graph lease renewal lost exact attempt identity"
                     )
             self._bump_generation(conn, execution_id)
-            return tuple(
-                self._node_tx(conn, execution_id, renewal.node_id)
-                for renewal in ordered
-            )
+            return self._nodes_tx(conn, execution_id, node_ids)
 
     def mark_succeeded(
         self,
@@ -1895,9 +1910,13 @@ class SQLiteResearchGraphExecutionStore:
 
         with self._transaction() as conn:
             self._execution_tx(conn, execution_id)
+            current_by_node = {
+                row.node_id: row
+                for row in self._nodes_tx(conn, execution_id, node_ids)
+            }
             changed: list[tuple[str, tuple[str, ...]]] = []
             for node_id, blockers in ordered:
-                current = self._node_tx(conn, execution_id, node_id)
+                current = current_by_node[node_id]
                 if current.state is ResearchGraphLiveNodeState.BLOCKED:
                     if current.blocked_by_node_ids != blockers:
                         raise ResearchGraphExecutionConflict(
@@ -1930,10 +1949,7 @@ class SQLiteResearchGraphExecutionStore:
                 )
             if changed:
                 self._bump_generation(conn, execution_id)
-            return tuple(
-                self._node_tx(conn, execution_id, node_id)
-                for node_id in node_ids
-            )
+            return self._nodes_tx(conn, execution_id, node_ids)
     def recover_expired(
         self,
         execution_id: str,
