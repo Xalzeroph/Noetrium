@@ -9,6 +9,8 @@ import tarfile
 import tempfile
 from pathlib import Path, PurePosixPath
 
+from noetrium_platform.foundation.kernel.kernel.durability import sha256_file
+
 from ._publication import (
     PublicationLock,
     PublicationLockBusy,
@@ -26,16 +28,6 @@ from ..api.materialization import (
     MaterializedTreeInspection,
     MaterializedTreeInspectionPort,
 )
-
-
-def _sha256_file(path: Path) -> tuple[str, int]:
-    digest = hashlib.sha256()
-    size = 0
-    with path.open("rb") as handle:
-        for block in iter(lambda: handle.read(1024 * 1024), b""):
-            digest.update(block)
-            size += len(block)
-    return digest.hexdigest(), size
 
 
 def _iter_tree_entries(base: Path):
@@ -76,7 +68,7 @@ def digest_materialized_tree(root: str | Path) -> tuple[str, int, int]:
             digest.update(b"dir")
         elif stat.S_ISREG(metadata.st_mode):
             digest.update(b"file\0")
-            file_digest, size = _sha256_file(path)
+            file_digest, size = sha256_file(path)
             digest.update(file_digest.encode("ascii"))
             file_count += 1
             expanded_size += size
