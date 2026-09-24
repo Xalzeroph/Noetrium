@@ -11,6 +11,9 @@ from noetrium_platform.composition.research_os import bind_portfolio_research_os
 from noetrium_platform.composition.research_os_checkpoint import (
     ResearchOSNodeCheckpointProof,
 )
+from noetrium_platform.composition.research_os_checkpoint_store import (
+    DirectoryResearchOSGraphCheckpointStore,
+)
 from noetrium_platform.composition.research_os_execution import (
     ResearchOSExecutionUnsupported,
     ResearchOSNodeAdmission,
@@ -296,6 +299,9 @@ def _bound(tmp_path: Path, runtime, values, *, artifact_lineage=None):
         runtime,
         values,
         artifact_lineage=artifact_lineage,
+        checkpoints=DirectoryResearchOSGraphCheckpointStore(
+            tmp_path / "graph-checkpoints"
+        ),
     )
     return (
         graph,
