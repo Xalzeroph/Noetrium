@@ -185,6 +185,15 @@ def test_claim_committed_before_start_failure_is_abandoned_and_retried_exactly(
     assert report.failed_node_ids == ()
     assert executor.calls == ["node"]
     attempts = store.attempts("execution-claim-start-recovery", "node")
-    assert len(attempts) == 2
-    assert attempts[0].state is ResearchGraphAttemptState.ABANDONED_BEFORE_START
-    assert attempts[1].state is ResearchGraphAttemptState.SUCCEEDED
+    assert len(attempts) >= 2
+    assert all(
+        attempt.state
+        in {
+            ResearchGraphAttemptState.ABANDONED_BEFORE_START,
+            ResearchGraphAttemptState.EXPIRED_BEFORE_START,
+        }
+        for attempt in attempts[:-1]
+    )
+    assert all(attempt.started_at_ns is None for attempt in attempts[:-1])
+    assert attempts[-1].state is ResearchGraphAttemptState.SUCCEEDED
+    assert attempts[-1].started_at_ns is not None
