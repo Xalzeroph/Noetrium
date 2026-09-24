@@ -442,7 +442,7 @@ class AgentLoopCheckpoint:
     memory_cut: MachineCut | None = None
 
     def __post_init__(self) -> None:
-        if self.schema_version != "agent-cognition-checkpoint.v3":
+        if self.schema_version != "agent-cognition-checkpoint.v4":
             raise ValueError("unsupported agent cognition checkpoint schema")
         if not self.session_id.strip() or len(self.goal_digest) != 64:
             raise ValueError("agent cognition checkpoint identity is invalid")
@@ -478,6 +478,7 @@ class AgentLoopCheckpoint:
                 "commit_id": self.memory_cut.commit_id,
                 "state_digest": self.memory_cut.state_digest,
                 "program_digest": self.memory_cut.program_digest,
+                "program_lock_digest": self.memory_cut.program_lock_digest,
                 "cut_digest": self.memory_cut.cut_digest,
             },
             "last_receipt": None if self.last_receipt is None else {
