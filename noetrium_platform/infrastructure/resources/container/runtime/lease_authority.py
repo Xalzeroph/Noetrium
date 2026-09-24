@@ -133,7 +133,19 @@ class DockerContainerLeaseAuthority:
             )
 
     @staticmethod
+    def _matches_exact_generation(
+        handle: ManagedDockerContainerLease,
+        observed: DockerContainerObservation,
+    ) -> bool:
+        expected = dict(handle.labels)
+        return (
+            observed.image == handle.image
+            and all(observed.labels.get(key) == value for key, value in expected.items())
+        )
+
+    @classmethod
     def _validate_observation(
+        cls,
         handle: ManagedDockerContainerLease,
         observed: DockerContainerObservation,
     ) -> None:
@@ -147,6 +159,16 @@ class DockerContainerLeaseAuthority:
             raise DockerContainerLeaseConflict("managed Docker image drift")
         if observed.name != handle.container_name:
             raise DockerContainerLeaseConflict("managed Docker name drift")
+
+    def _exact_physical_candidates(
+        self,
+        handle: ManagedDockerContainerLease,
+    ) -> tuple[DockerContainerObservation, ...]:
+        return tuple(
+            observed
+            for observed in self.runtime.list_managed()
+            if self._matches_exact_generation(handle, observed)
+        )
 
     def reserve(
         self,
@@ -274,14 +296,33 @@ class DockerContainerLeaseAuthority:
 
     def release(self, handle: ManagedDockerContainerLease) -> ResourceLease:
         self._require_handle_authority(handle)
-        # Resolve the physical object first, then verify its exact immutable
-        # labels before mutation. A delayed close must never delete an
-        # unrelated container that reused the old logical Docker name.
-        observed = self.runtime.inspect(handle.container_name)
-        if observed is not None:
-            self._validate_observation(handle, observed)
-            self.runtime.remove(observed.container_id, force=True)
-            if self.runtime.inspect(observed.container_id) is not None:
+        # The deterministic name is only a lookup hint, not physical identity:
+        # Docker permits external rename and later name reuse. Resolve the exact
+        # generation by immutable managed labels before any destructive effect.
+        named = self.runtime.inspect(handle.container_name)
+        target: DockerContainerObservation | None = None
+        if named is not None and self._matches_exact_generation(handle, named):
+            self._validate_observation(handle, named)
+            target = named
+        else:
+            candidates = self._exact_physical_candidates(handle)
+            if len(candidates) > 1:
+                raise DockerContainerLeaseConflict(
+                    "managed Docker generation maps to multiple physical containers"
+                )
+            if candidates:
+                target = candidates[0]
+            elif named is not None:
+                # The old name now resolves to a different physical generation,
+                # but absence of the exact target cannot be proven from that
+                # name. Keep the durable lease fenced rather than freeing it.
+                raise DockerContainerLeaseConflict(
+                    "managed Docker name was reused before exact generation converged"
+                )
+
+        if target is not None:
+            self.runtime.remove(target.container_id, force=True)
+            if self.runtime.inspect(target.container_id) is not None:
                 raise DockerContainerLeaseConflict(
                     "managed Docker container survived release"
                 )

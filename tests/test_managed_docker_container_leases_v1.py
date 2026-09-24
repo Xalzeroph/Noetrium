@@ -132,6 +132,60 @@ def test_managed_docker_release_removes_physical_container_before_logical_lease(
     assert resources.active_for(resource) == ()
 
 
+def test_managed_docker_release_follows_exact_generation_after_external_rename() -> None:
+    resources = InMemoryResourceLeaseRegistry()
+    runtime = FakeDockerRuntime()
+    authority = _authority(resources, runtime)
+    handle = _reserve(authority)
+    observed = runtime.start(handle)
+    renamed = DockerContainerObservation(
+        observed.container_id,
+        "externally-renamed-container",
+        observed.image,
+        observed.running,
+        observed.labels,
+    )
+    runtime.rows[observed.container_id] = renamed
+
+    released = authority.release(handle)
+
+    assert released.state is LeaseState.RELEASED
+    assert runtime.inspect(observed.container_id) is None
+    assert runtime.events == [f"remove:{observed.container_id}"]
+
+
+def test_managed_docker_release_ignores_reused_name_when_exact_generation_was_renamed() -> None:
+    resources = InMemoryResourceLeaseRegistry()
+    runtime = FakeDockerRuntime()
+    authority = _authority(resources, runtime)
+    handle = _reserve(authority)
+    observed = runtime.start(handle)
+    runtime.rows[observed.container_id] = DockerContainerObservation(
+        observed.container_id,
+        "externally-renamed-container",
+        observed.image,
+        observed.running,
+        observed.labels,
+    )
+    foreign_labels = dict(handle.labels)
+    foreign_labels[LABEL_OWNER_GENERATION] = "f" * 64
+    foreign = DockerContainerObservation(
+        "foreign-container",
+        handle.container_name,
+        handle.image,
+        True,
+        foreign_labels,
+    )
+    runtime.rows[foreign.container_id] = foreign
+
+    released = authority.release(handle)
+
+    assert released.state is LeaseState.RELEASED
+    assert runtime.inspect(observed.container_id) is None
+    assert runtime.inspect(foreign.container_id) == foreign
+    assert runtime.events == [f"remove:{observed.container_id}"]
+
+
 def test_managed_docker_crash_expiry_removes_orphan_on_reconcile() -> None:
     resources = InMemoryResourceLeaseRegistry()
     runtime = FakeDockerRuntime()
