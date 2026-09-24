@@ -385,3 +385,30 @@ def test_environment_bootstrap_reaps_nested_qualification_orphans() -> None:
     assert "NOETRIUM_BOOTSTRAP_OWNER_PID=$ -e" not in bootstrap
     assert "io.noetrium.bootstrap-child=qualification-v1" in builder
     assert "_qualification_label_args()" in builder
+
+
+
+def test_environment_bootstrap_orphan_reaper_fails_closed_on_unknown_docker_state() -> None:
+    bootstrap = (ROOT / "deploy" / "build-environments.sh").read_text(
+        encoding="utf-8"
+    )
+
+    assert "bootstrap_container_absent" in bootstrap
+    assert "remove_bootstrap_container_exact" in bootstrap
+    assert "Unable to prove bootstrap container absence" in bootstrap
+    assert "Failed to remove bootstrap container and absence is unproven" in bootstrap
+
+    managed_reconcile = bootstrap.split(
+        "reconcile_bootstrap_containers() {", 1
+    )[1].split("reconcile_bootstrap_children() {", 1)[0]
+    child_reconcile = bootstrap.split(
+        "reconcile_bootstrap_children() {", 1
+    )[1].split("cleanup_owned_bootstrap_children() {", 1)[0]
+
+    for block in (managed_reconcile, child_reconcile):
+        assert "docker ps -aq --no-trunc" in block
+        assert "remove_bootstrap_container_exact" in block
+        assert "docker ps -aq" not in block.replace(
+            "docker ps -aq --no-trunc", ""
+        )
+        assert "|| true" not in block
