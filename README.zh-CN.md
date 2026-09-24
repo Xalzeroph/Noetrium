@@ -21,7 +21,7 @@
 
 <!-- readme-locale:zh-CN -->
 
-<!-- readme-source-sha256:f01787f87584f9d54263a9b036a1dae6cdba72a578f3976b0972352eec6376a4 -->
+<!-- readme-source-sha256:1f432b22c69651657449ab8a823c51758cc8a8a8c5a4a5e0da04796eff0e3217 -->
 
 <p align="center">
   <strong>组合研究系统。运行可归因执行。验证证据。</strong><br>
@@ -283,6 +283,10 @@ python scripts/check_readme_i18n.py
 
 Noetrium 把执行环境作为可版本化的环境 fleet 管理，而不是“每篇论文一套可变容器”。宿主机契约只有 Docker + Compose；不要求宿主 Python。
 
+服务器统一入口是 `./deploy/noetrium`。`./deploy/noetrium run` 会以普通用户权限串联 Docker/Compose 资格检查、精确环境镜像构建或复用、fleet authority 审计、preflight 与 Research OS 执行，并保持 fail-close。它不会调用 `sudo`；账号只需能访问当前 Docker daemon（Docker 组权限或 rootless Docker），GPU 主机则需预先安装 NVIDIA container runtime。科学绑定不会被猜测：必须在宿主环境或 `deploy/.env` 中配置 `NOETRIUM_FLEET_EXECUTION_AUTHORITY=module:factory`。
+
+主机端口由 Resource authority 统一管理：从内核获取候选端口、探测当前 OS bind 状态、自动避开已占用或已租约端口、以原子 fencing 防止并发冲突、续租存活端口，并在释放后允许物理端口复用。论文、模型副本和环境 provider 不需要硬编码宿主端口。下面的 `build-environments.sh` 保留为低层 profile 检查与维护入口。
+
 ```bash
 ./deploy/build-environments.sh validate
 ./deploy/build-environments.sh list
@@ -328,10 +332,12 @@ Minecraft 是第一方可复用环境 capability profile。Java、Node、Minefla
 
 | Path | Responsibility |
 | --- | --- |
-| `noetrium/` | 公共 facade、contract、reference single-agent component 与 multi-agent orchestration |
+| `noetrium/` | 受支持的下游 Research OS facade、生成 contract、typing surface 与 shell 入口 |
+| `components/` | 可复用 component contract、provider、runtime 与 reference implementation |
+| `orchestration/` | 可复用 orchestration contract/runtime，包括 multi-agent composition |
 | `noetrium_platform/` | 内部 semantic-plane implementation、provider 与 governance tooling；不是下游 extension API |
 | `configs/` | 版本化配置示例与非机密模板 |
-| `deploy/` | 容器镜像、Compose runtime 与部署引导资产 |
+| `deploy/` | 统一 Docker-only 服务器入口、环境镜像 profile、Compose runtime 与 bootstrap 资产 |
 | `docs/` | 架构、基础设施、治理、状态与历史文档 |
 | `scripts/` | 轻量 operator、audit、release 与维护入口 |
 | `tests/` | 分层回归与 contract 测试 |

@@ -21,7 +21,7 @@
 
 <!-- readme-locale:ja -->
 
-<!-- readme-source-sha256:f01787f87584f9d54263a9b036a1dae6cdba72a578f3976b0972352eec6376a4 -->
+<!-- readme-source-sha256:1f432b22c69651657449ab8a823c51758cc8a8a8c5a4a5e0da04796eff0e3217 -->
 
 <p align="center">
   <strong>研究システムを構成する。帰属可能な実行を走らせる。証拠を検証する。</strong><br>
@@ -257,6 +257,10 @@ python scripts/check_readme_i18n.py
 
 Noetrium は execution environment を、論文ごとの可変コンテナではなく revisioned environment fleet として管理します。Host contract は Docker + Compose だけで、host Python は不要です。
 
+サーバーの統一エントリポイントは `./deploy/noetrium` です。`./deploy/noetrium run` は一般ユーザー権限のまま Docker/Compose の適格性確認、正確な environment image の build/reuse、fleet authority 監査、preflight、Research OS 実行を fail-close で連結します。`sudo` は呼び出しません。アカウントには現在の Docker daemon へのアクセス（Docker group または rootless Docker）だけが必要で、GPU host には NVIDIA container runtime が事前に必要です。科学的 binding は推測せず、host environment または `deploy/.env` に `NOETRIUM_FLEET_EXECUTION_AUTHORITY=module:factory` を設定します。
+
+Host port は Resource authority が一元管理します。kernel-selected candidate を取得し、現在の OS bind availability を probe し、使用中または lease 中の endpoint を避け、atomic fencing で並行競合を防ぎ、live lease を更新し、release 後の physical port を再利用可能にします。Paper、model replica、environment provider が host port をハードコードする必要はありません。以下の `build-environments.sh` は低レベル profile inspection / maintenance 用に残します。
+
 ```bash
 ./deploy/build-environments.sh validate
 ./deploy/build-environments.sh list
@@ -302,10 +306,12 @@ Minecraft は first-party の reusable environment capability profile です。J
 
 | Path | Responsibility |
 | --- | --- |
-| `noetrium/` | 公開 facade、contract、reference single-agent component、multi-agent orchestration |
+| `noetrium/` | サポート対象の downstream Research OS facade、generated contract、typing surface、shell entrypoint |
+| `components/` | 再利用可能な component contract、provider、runtime、reference implementation |
+| `orchestration/` | multi-agent composition を含む再利用可能な orchestration contract/runtime |
 | `noetrium_platform/` | 内部 semantic-plane implementation、provider、governance tooling。下流の extension API ではない |
 | `configs/` | バージョン管理された設定例と非機密テンプレート |
-| `deploy/` | コンテナイメージ、Compose runtime、deployment bootstrap |
+| `deploy/` | 統一 Docker-only server launcher、environment image profile、Compose runtime、bootstrap assets |
 | `docs/` | Architecture、infrastructure、governance、status、history 文書 |
 | `scripts/` | 薄い operator、audit、release、maintenance entry point |
 | `tests/` | 階層型 regression / contract tests |

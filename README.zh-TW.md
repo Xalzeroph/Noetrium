@@ -21,7 +21,7 @@
 
 <!-- readme-locale:zh-TW -->
 
-<!-- readme-source-sha256:f01787f87584f9d54263a9b036a1dae6cdba72a578f3976b0972352eec6376a4 -->
+<!-- readme-source-sha256:1f432b22c69651657449ab8a823c51758cc8a8a8c5a4a5e0da04796eff0e3217 -->
 
 <p align="center">
   <strong>組合研究系統。執行可歸因執行。驗證證據。</strong><br>
@@ -257,6 +257,10 @@ python scripts/check_readme_i18n.py
 
 Noetrium 將執行環境視為可版本化的 environment fleet，而不是「每篇論文一套可變容器」。Host contract 只有 Docker + Compose；不要求 host Python。
 
+伺服器統一入口是 `./deploy/noetrium`。`./deploy/noetrium run` 會以一般使用者權限串接 Docker/Compose 資格檢查、精確環境映像建置或重用、fleet authority 稽核、preflight 與 Research OS 執行，並維持 fail-close。它不會呼叫 `sudo`；帳號只需能存取目前的 Docker daemon（Docker 群組權限或 rootless Docker），GPU 主機則需預先安裝 NVIDIA container runtime。科學綁定不會被推測：必須在 host environment 或 `deploy/.env` 設定 `NOETRIUM_FLEET_EXECUTION_AUTHORITY=module:factory`。
+
+Host port 由 Resource authority 統一管理：從 kernel 取得候選 port、探測目前 OS bind 狀態、自動避開已占用或已 lease 的 endpoint、以原子 fencing 防止並行衝突、續租存活 endpoint，並在釋放後允許實體 port 重用。論文、model replica 與 environment provider 不需要硬編碼 host port。下方的 `build-environments.sh` 保留作為低階 profile 檢查與維護入口。
+
 ```bash
 ./deploy/build-environments.sh validate
 ./deploy/build-environments.sh list
@@ -302,10 +306,12 @@ Minecraft 是 first-party 可重用 environment capability profile。Java、Node
 
 | Path | Responsibility |
 | --- | --- |
-| `noetrium/` | 公共 facade、contract、reference single-agent component 與 multi-agent orchestration |
+| `noetrium/` | 受支援的下游 Research OS facade、生成 contract、typing surface 與 shell 入口 |
+| `components/` | 可重用 component contract、provider、runtime 與 reference implementation |
+| `orchestration/` | 可重用 orchestration contract/runtime，包括 multi-agent composition |
 | `noetrium_platform/` | 內部 semantic-plane implementation、provider 與 governance tooling；不是下游 extension API |
 | `configs/` | 版本化設定範例與非機密模板 |
-| `deploy/` | 容器映像、Compose runtime 與部署引導資產 |
+| `deploy/` | 統一 Docker-only 伺服器入口、environment image profile、Compose runtime 與 bootstrap 資產 |
 | `docs/` | 架構、基礎設施、治理、狀態與歷史文件 |
 | `scripts/` | 輕量 operator、audit、release 與維護入口 |
 | `tests/` | 分層回歸與 contract 測試 |

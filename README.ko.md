@@ -21,7 +21,7 @@
 
 <!-- readme-locale:ko -->
 
-<!-- readme-source-sha256:f01787f87584f9d54263a9b036a1dae6cdba72a578f3976b0972352eec6376a4 -->
+<!-- readme-source-sha256:1f432b22c69651657449ab8a823c51758cc8a8a8c5a4a5e0da04796eff0e3217 -->
 
 <p align="center">
   <strong>연구 시스템을 구성하고, 귀속 가능한 실행을 수행하고, 증거를 검증하세요.</strong><br>
@@ -257,6 +257,10 @@ python scripts/check_readme_i18n.py
 
 Noetrium은 실행 환경을 논문별 mutable container가 아니라 revisioned environment fleet으로 관리합니다. Host contract는 Docker + Compose뿐이며 host Python은 필요하지 않습니다.
 
+서버의 통합 진입점은 `./deploy/noetrium`입니다. `./deploy/noetrium run`은 일반 사용자 권한으로 Docker/Compose 검증, 정확한 environment image build/reuse, fleet authority 감사, preflight, Research OS 실행을 fail-close 방식으로 연결합니다. `sudo`를 호출하지 않습니다. 계정은 현재 Docker daemon에 접근할 수 있으면 되며(Docker group 또는 rootless Docker), GPU host에는 NVIDIA container runtime이 미리 설치되어 있어야 합니다. 과학적 binding은 추측하지 않으므로 host environment 또는 `deploy/.env`에 `NOETRIUM_FLEET_EXECUTION_AUTHORITY=module:factory`를 설정합니다.
+
+Host port는 Resource authority가 통합 관리합니다. kernel-selected candidate를 얻고 현재 OS bind availability를 probe하며 이미 사용 중이거나 lease된 endpoint를 피하고 atomic fencing으로 동시 충돌을 방지하고 live lease를 갱신하며 release 후 physical port를 다시 사용할 수 있게 합니다. Paper, model replica, environment provider가 host port를 하드코딩할 필요가 없습니다. 아래 `build-environments.sh`는 저수준 profile inspection / maintenance 용도로 유지됩니다.
+
 ```bash
 ./deploy/build-environments.sh validate
 ./deploy/build-environments.sh list
@@ -302,10 +306,12 @@ Minecraft는 first-party reusable environment capability profile입니다. Java,
 
 | Path | Responsibility |
 | --- | --- |
-| `noetrium/` | 공개 facade, contract, reference single-agent component, multi-agent orchestration |
+| `noetrium/` | 지원되는 downstream Research OS facade, generated contract, typing surface, shell entrypoint |
+| `components/` | 재사용 가능한 component contract, provider, runtime, reference implementation |
+| `orchestration/` | multi-agent composition을 포함한 재사용 가능한 orchestration contract/runtime |
 | `noetrium_platform/` | 내부 semantic-plane implementation, provider, governance tooling이며 다운스트림 extension API가 아님 |
 | `configs/` | 버전 관리 설정 예제와 비밀이 아닌 템플릿 |
-| `deploy/` | 컨테이너 이미지, Compose runtime, deployment bootstrap |
+| `deploy/` | 통합 Docker-only server launcher, environment image profile, Compose runtime, bootstrap assets |
 | `docs/` | Architecture, infrastructure, governance, status, history 문서 |
 | `scripts/` | 얇은 operator, audit, release, maintenance entry point |
 | `tests/` | 계층형 regression / contract tests |
