@@ -467,3 +467,16 @@ def test_environment_bootstrap_signal_cleanup_uses_exact_ids_and_surfaces_failur
     assert "cleanup_owned_bootstrap_children || cleanup_failed=1" in trap_cleanup
     assert "Bootstrap cleanup did not prove physical convergence." in trap_cleanup
     assert '[ "$status" -ne 0 ] || status=1' in trap_cleanup
+
+
+
+def test_minecraft_doctor_is_single_body_and_pipefail_safe() -> None:
+    doctor = (ROOT / "deploy" / "environments" / "minecraft" / "doctor.sh").read_text(
+        encoding="utf-8"
+    )
+
+    assert doctor.count("minecraft_bridge_root=") == 1
+    assert doctor.count("MC_BRIDGE_DIR=\"$bridge\" node - <<'JS'") == 1
+    assert "java -version 2>&1 | head" not in doctor
+    assert "${java_version%%$'\\n'*}" in doctor
+    assert "\\n'*}\"" not in doctor
