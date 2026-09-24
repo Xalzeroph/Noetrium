@@ -26,9 +26,17 @@ from research.reproductions.authority_requirements import (
 )
 from research.reproductions.benchmark_authority import RepositoryBenchmarkAuthority
 from research.reproductions.contracts import ReproductionAssetKind
+from research.reproductions.execution_authority import (
+    ReproductionFleetAuthorityMaterializerPort,
+    materialize_repository_fleet_execution_authorities,
+)
 from research.reproductions.fleet import (
     ReproductionFleetExecutionAuthorities,
+    ReproductionFleetExecutionResult,
+    audit_materialized_reproduction_fleet_authorities,
     audit_repository_execution_authorities,
+    execute_materialized_reproduction_fleet,
+    preflight_materialized_reproduction_fleet,
     preflight_repository_execution_fleet,
     run_repository_execution_fleet,
 )
@@ -507,6 +515,59 @@ def _load_execution_authorities(spec: str) -> ReproductionFleetExecutionAuthorit
     return authorities
 
 
+
+def _load_authority_materializer(
+    spec: str,
+) -> ReproductionFleetAuthorityMaterializerPort:
+    if type(spec) is not str or not spec.strip() or spec != spec.strip():
+        raise ValueError("fleet authority materializer spec must be canonical text")
+    module_name, separator, qualname = spec.partition(":")
+    if (
+        separator != ":"
+        or not module_name
+        or not qualname
+        or ":" in qualname
+    ):
+        raise ValueError(
+            "fleet authority materializer must use module:factory format"
+        )
+    module = importlib.import_module(module_name)
+    value = module
+    for part in qualname.split("."):
+        if not part or part.startswith("_"):
+            raise ValueError(
+                "fleet authority materializer factory qualname must be public"
+            )
+        value = getattr(value, part)
+    if not callable(value):
+        raise TypeError("fleet authority materializer target must be callable")
+    materializer = value()
+    if not isinstance(materializer, ReproductionFleetAuthorityMaterializerPort):
+        raise TypeError(
+            "fleet authority materializer factory must return "
+            "ReproductionFleetAuthorityMaterializerPort"
+        )
+    return materializer
+
+
+def _execution_source(args, parser):
+    if args.authority_materializer is not None:
+        materialized = materialize_repository_fleet_execution_authorities(
+            _load_authority_materializer(args.authority_materializer)
+        )
+        return (
+            materialized.execution_authorities,
+            materialized.fleet,
+            materialized.materialization_digest,
+        )
+    if args.execution_authority is not None:
+        return _load_execution_authorities(args.execution_authority), None, None
+    parser.error(
+        "execution mode requires --authority-materializer or "
+        "--execution-authority"
+    )
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(
         description=(
@@ -549,11 +610,19 @@ def main() -> int:
             "without either mode flag the command is a static authority audit"
         ),
     )
-    parser.add_argument(
+    authority_source = parser.add_mutually_exclusive_group()
+    authority_source.add_argument(
+        "--authority-materializer",
+        help=(
+            "module:factory returning ReproductionFleetAuthorityMaterializerPort; "
+            "preferred zero-glue path for --authority-audit/--preflight/--execute"
+        ),
+    )
+    authority_source.add_argument(
         "--execution-authority",
         help=(
             "module:factory returning ReproductionFleetExecutionAuthorities; "
-            "required for --authority-audit/--preflight/--execute and never inferred"
+            "low-level explicit authority override"
         ),
     )
     parser.add_argument(
@@ -565,8 +634,13 @@ def main() -> int:
     args = parser.parse_args()
 
     if args.requirements:
-        if args.execution_authority is not None:
-            parser.error("--requirements does not accept --execution-authority")
+        if (
+            args.execution_authority is not None
+            or args.authority_materializer is not None
+        ):
+            parser.error(
+                "--requirements does not accept an execution authority source"
+            )
         if args.execution_id is not None:
             parser.error("--requirements does not accept --execution-id")
         manifest = compile_repository_fleet_prerequisites()
@@ -592,16 +666,28 @@ def main() -> int:
         return 0
 
     if args.authority_audit:
-        if args.execution_authority is None:
-            parser.error("--authority-audit requires --execution-authority")
-        authorities = _load_execution_authorities(args.execution_authority)
-        result = audit_repository_execution_authorities(authorities)
+        authorities, materialized_fleet, authority_materialization_digest = (
+            _execution_source(args, parser)
+        )
+        result = (
+            audit_repository_execution_authorities(authorities)
+            if materialized_fleet is None
+            else audit_materialized_reproduction_fleet_authorities(
+                materialized_fleet,
+                research_bindings=authorities.research_bindings,
+                experiment_runtime_components=(
+                    authorities.experiment_runtime_components
+                ),
+                authority_manifest_digest=authorities.authority_manifest_digest,
+            )
+        )
         owner_requirements = compile_materialized_fleet_owner_requirements(
             result.materialization
         )
         payload = {
             "schema": "noetrium.reproduction-fleet-authority-audit.v2",
             "authority_manifest_digest": result.authority_manifest_digest,
+            "authority_materialization_digest": authority_materialization_digest,
             "materialization_digest": (
                 result.materialization.materialization_digest
             ),
@@ -668,17 +754,31 @@ def main() -> int:
         return 0 if payload["all_execution_authority_closed"] else 1
 
     if args.preflight:
-        if args.execution_authority is None:
-            parser.error("--preflight requires --execution-authority")
-        authorities = _load_execution_authorities(args.execution_authority)
-        result = preflight_repository_execution_fleet(
-            authorities,
-            state_root=args.state_root,
-            execution_id=args.execution_id,
+        authorities, materialized_fleet, authority_materialization_digest = (
+            _execution_source(args, parser)
+        )
+        result = (
+            preflight_repository_execution_fleet(
+                authorities,
+                state_root=args.state_root,
+                execution_id=args.execution_id,
+            )
+            if materialized_fleet is None
+            else preflight_materialized_reproduction_fleet(
+                materialized_fleet,
+                state_root=args.state_root,
+                research_bindings=authorities.research_bindings,
+                experiment_runtime_components=(
+                    authorities.experiment_runtime_components
+                ),
+                authority_manifest_digest=authorities.authority_manifest_digest,
+                execution_id=args.execution_id,
+            )
         )
         payload = {
-            "schema": "noetrium.reproduction-fleet-preflight.v2",
+            "schema": "noetrium.reproduction-fleet-preflight.v3",
             "authority_manifest_digest": result.authority_manifest_digest,
+            "authority_materialization_digest": authority_materialization_digest,
             "execution_id": result.execution_id,
             "revision_digest": result.revision_digest,
             "materialization_digest": result.materialization.materialization_digest,
@@ -698,17 +798,35 @@ def main() -> int:
         return 0
 
     if args.execute:
-        if args.execution_authority is None:
-            parser.error("--execute requires --execution-authority")
-        authorities = _load_execution_authorities(args.execution_authority)
-        result = run_repository_execution_fleet(
-            authorities,
-            state_root=args.state_root,
-            execution_id=args.execution_id,
+        authorities, materialized_fleet, authority_materialization_digest = (
+            _execution_source(args, parser)
         )
+        if materialized_fleet is None:
+            result = run_repository_execution_fleet(
+                authorities,
+                state_root=args.state_root,
+                execution_id=args.execution_id,
+            )
+        else:
+            receipt = execute_materialized_reproduction_fleet(
+                materialized_fleet,
+                state_root=args.state_root,
+                research_bindings=authorities.research_bindings,
+                experiment_runtime_components=(
+                    authorities.experiment_runtime_components
+                ),
+                authority_manifest_digest=authorities.authority_manifest_digest,
+                execution_id=args.execution_id,
+            )
+            result = ReproductionFleetExecutionResult(
+                materialized_fleet,
+                receipt,
+                authorities.authority_manifest_digest,
+            )
         payload = {
-            "schema": "noetrium.reproduction-fleet-execution.v2",
+            "schema": "noetrium.reproduction-fleet-execution.v3",
             "authority_manifest_digest": result.authority_manifest_digest,
+            "authority_materialization_digest": authority_materialization_digest,
             "execution_id": result.receipt.target.execution_id,
             "revision_digest": result.receipt.target.research_revision_digest,
             "materialization_digest": (
@@ -729,10 +847,13 @@ def main() -> int:
         print(rendered, end="")
         return 0 if result.receipt.state == "succeeded" else 1
 
-    if args.execution_authority is not None:
+    if (
+        args.execution_authority is not None
+        or args.authority_materializer is not None
+    ):
         parser.error(
-            "--execution-authority requires --authority-audit, --preflight, "
-            "or --execute"
+            "execution authority source requires --authority-audit, "
+            "--preflight, or --execute"
         )
     if args.execution_id is not None:
         parser.error("--execution-id requires --preflight or --execute")
