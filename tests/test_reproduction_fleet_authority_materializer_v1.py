@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import pytest
+
 import research.reproductions.authority_requirements as requirements_module
 import research.reproductions.execution_authority as authority_module
 import research.reproductions.fleet as fleet_module
@@ -36,6 +38,7 @@ from research.reproductions.adaptagent_acl2025.definition import (
 )
 from research.reproductions.execution_authority import (
     MaterializedReproductionFleetExecutionAuthorities,
+    ReproductionFleetAuthorityMaterializationError,
     ReproductionFleetAuthorityMaterializerPort,
     ReproductionFleetOwnerAuthorities,
     ReproductionFleetPrerequisiteAuthorities,
@@ -242,6 +245,16 @@ def test_two_stage_materializer_is_the_single_zero_glue_authority_pipeline(
         _RepositoryBenchmarkAuthority,
     )
 
+    class _ClosedAudit:
+        blocker_count = 0
+        gap_count = 0
+
+    monkeypatch.setattr(
+        authority_module,
+        "audit_materialized_reproduction_fleet_authorities",
+        lambda *args, **kwargs: _ClosedAudit(),
+    )
+
     materializer = _Materializer()
     assert isinstance(materializer, ReproductionFleetAuthorityMaterializerPort)
 
@@ -276,3 +289,44 @@ def test_two_stage_materializer_is_the_single_zero_glue_authority_pipeline(
         "aggregation",
         "reconciliation",
     }
+
+
+def test_two_stage_materializer_fails_closed_on_incomplete_owner_registries(
+    monkeypatch,
+) -> None:
+    monkeypatch.setattr(
+        requirements_module,
+        "executable_reproduction_definitions",
+        lambda: (ADAPTAGENT,),
+    )
+    monkeypatch.setattr(
+        fleet_module,
+        "executable_reproduction_definitions",
+        lambda: (ADAPTAGENT,),
+    )
+
+    benchmark_authority = _AdaptAgentBenchmarkAuthority()
+
+    class _RepositoryBenchmarkAuthority:
+        @staticmethod
+        def discover(registry):
+            assert type(registry) is BenchmarkResolutionRegistry
+            return benchmark_authority
+
+    monkeypatch.setattr(
+        authority_module,
+        "RepositoryBenchmarkAuthority",
+        _RepositoryBenchmarkAuthority,
+    )
+
+    with pytest.raises(
+        ReproductionFleetAuthorityMaterializationError
+    ) as captured:
+        materialize_repository_fleet_execution_authorities(_Materializer())
+
+    error = captured.value
+    assert error.audit.blocker_count > 0
+    assert error.audit.gap_count > 0
+    assert len(error.prerequisite_manifest_digest) == 64
+    assert len(error.owner_requirement_manifest_digest) == 64
+    assert len(error.error_digest) == 64
