@@ -23,12 +23,14 @@ from noetrium_platform.infrastructure.resources.container.api import (
     DockerContainerReconciliation,
     DockerManagedContainerPort,
     DockerReconcileStopPort,
+    ManagedDockerContainerLease,
+)
+from noetrium_platform.infrastructure.resources.container.api.contracts import (
     LABEL_ALLOCATION,
     LABEL_FENCING,
     LABEL_HOLDER,
     LABEL_LEASE,
     LABEL_RUNTIME,
-    ManagedDockerContainerLease,
 )
 from noetrium_platform.infrastructure.resources.lease.api import (
     LeaseState,
