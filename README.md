@@ -1,4 +1,4 @@
-# Noetrium Research OS: Evidence-Preserving Infrastructure for AI-Agent Research
+# Noetrium Research OS
 
 
 
@@ -21,11 +21,11 @@
 
 <!-- readme-locale:en -->
 
-<!-- readme-source-sha256:1d097532f66055a05778d749cb2a1cb375e5120edd090aef4857370acf9fe5ba -->
+<!-- readme-source-sha256:fe58dc78f1f88f005dd5ef21f96e7098d741120348c4bdde5ca91bbc82146271 -->
 
 <p align="center">
-  <strong>Compose research systems. Run attributable executions. Verify evidence.</strong><br>
-  A Research Operating System for reproducible, recoverable, evidence-driven AI-agent research.
+  <strong>Research infrastructure for attributable, recoverable, evidence-preserving AI-agent experiments.</strong><br>
+  Compose research programs at the top. Keep one authority for every truth underneath.
 </p>
 
 <p align="center">
@@ -47,37 +47,39 @@
 
 ## Overview
 
-Noetrium is best understood as a Research Operating System, not as another agent workflow library. Its job is to make a long-running research execution attributable, recoverable, replayable, and bounded by explicit authority. A method, model, environment, tool, or orchestration framework can change behind typed ports; the identity of the run, the facts it commits, the effects it caused, and the evidence that supports a claim remain explicit.
+Noetrium is a <strong>Research Operating System for AI-agent research</strong>. It is not another agent loop, workflow DSL, benchmark harness, or provider SDK. Its job is to make large research programs composable while keeping execution truth, scientific identity, effects, artifacts, resources, and evidence under explicit owners.
 
-The platform is organized around one directional dependency:
+The end-state model is intentionally simple:
 
-**research intent -> composition -> compiled identity -> kernel-controlled transitions -> durable evidence -> inspection, recovery, replay, and verification.**
+> <strong>Research OS composes research. Research Programs describe scientific semantics. MachineExecutor + Machine Journal accept scientific execution truth. Each domain system owns one authority. Platform kernel primitives are shared once. Composition wires systems together but never creates a second truth.</strong>
 
-The implementation is deliberately layered. The Kernel owns the smallest irreducible execution semantics. Domain VMs own domain state machines. Typed capability services and replaceable providers supply external abilities. Composition roots assemble these pieces. Projections, reports, and operator surfaces observe the result without becoming a second source of truth.
+That model is designed for the point where a research repository stops being one script and becomes a matrix of papers, methods, benchmarks, environments, models, trials, resources, interruptions, retries, revisions, and publication evidence.
 
-This gives Noetrium a larger scope than an agent SDK while keeping a narrower semantic boundary than a general-purpose application platform. It covers the reusable substrate around agent research: experiment and run identity, machine lifecycle, model and environment bindings, durable memory and artifacts, checkpointing and recovery, external-effect certainty, observability, governance, deployment, and release evidence. It does not decide what a downstream paper means, which scientific hypothesis is correct, or which trading or production action should be taken.
+Noetrium separates five concerns that are often collapsed into one framework:
 
-**Noetrium owns:**
+| Concern | Noetrium boundary |
+| --- | --- |
+| Research authoring | <code>noetrium.api</code>, Research OS, portfolios, graphs, studies, programs and explicit bindings |
+| Scientific execution | Program interpreters propose work; <code>MachineExecutor</code> accepts transitions into the Machine Journal |
+| Domain truth | Experimentation, resource, artifact, data, model, participant, environment and other authorities own their own facts |
+| Reusable mechanisms | canonical identity, content addressing, durability, CAS/fencing, leases, checkpoints and other platform primitives |
+| Observation | telemetry, diagnostics, projections and forensics observe authority; they do not replace it |
 
-- canonical identities, version binding, composition, and executable plan compilation;
-- machine lifecycle, transition commit, journal and snapshot semantics, replay, inspection, leases, fencing, and recovery boundaries;
-- typed capability contracts, provider bindings, scope and resource constraints, readiness, and failure taxonomy;
-- artifacts, evidence, lineage, metrics, diagnostics, release manifests, and exact-revision verification;
-- reusable execution support for stateful environments, long-running processes, model requests, memory, orchestration, and containerized workloads.
+The dependency direction is one-way:
 
-**A downstream project owns:**
+<strong>research intent -> explicit composition -> frozen identity -> admitted execution -> authoritative transition/effect/evidence -> recovery, replay, inspection and verification.</strong>
 
-- the research method, task and benchmark semantics, prompts, policies, and scientific protocol;
-- project-specific providers, credentials, deployment inventory, and external service choices;
-- the experiment matrix, statistical analysis, interpretation, and claims.
+Noetrium owns the reusable research substrate: canonical identities, revision/binding truth, durable machine transitions, recovery boundaries, resource admission, effect certainty, artifacts, evidence, provenance, observability and governance. Downstream projects own the scientific novelty: methods, prompts, benchmark semantics, task policies, experiment hypotheses, statistical interpretation and claims.
 
-The boundary is intentionally one-way: downstream projects compose Noetrium; Noetrium does not import a downstream project to obtain scientific meaning.
+A downstream paper should normally change a <code>MethodProgram</code>, <code>ResearchProgram</code>, rule set, policy, sub-IR, operation handler or provider binding — <strong>not the Noetrium kernel</strong>.
 
 <!-- readme-section:why -->
 
 ## Why Noetrium?
 
-Most agent frameworks focus on how agents act or collaborate. Noetrium focuses on whether research executions remain attributable, recoverable, reproducible, and evidence-bound. It can sit underneath or alongside orchestration frameworks rather than replacing them.
+Agent research becomes difficult to trust when orchestration, scientific semantics, provider mechanics and persistence are implemented as one opaque loop. The common failure modes are structural: two runners both believe they own progress, a retry silently repeats an uncertain external effect, a checkpoint diverges from execution history, a scheduler becomes scientific truth, or an updated provider changes a supposedly identical experiment.
+
+Noetrium addresses those failures by making authority explicit and machine-verifiable.
 
 ### Where Noetrium fits
 
@@ -87,23 +89,26 @@ Most agent frameworks focus on how agents act or collaborate. Noetrium focuses o
 | [AutoGen](https://github.com/microsoft/autogen) | Multi-agent applications | Experiment protocol, reproducibility, and release evidence |
 | [CrewAI](https://github.com/crewAIInc/crewAI) | Agent teams and event flows | Scientific run identity, lineage, and fail-closed recovery |
 | [OpenHands](https://github.com/All-Hands-AI/OpenHands) | AI-driven software development | General research infrastructure across agents, models, and environments |
-| **Noetrium** | Reproducible AI-agent research infrastructure | The research-systems layer itself |
+| <strong>Noetrium</strong> | Reproducible AI-agent research infrastructure | The research-systems layer itself |
 
-Noetrium is deliberately broader than an agent workflow library: experiment design, model and environment identity, runtime effects, checkpoints, evidence, and release authority are treated as one research-systems problem. Existing orchestration frameworks can remain inside a downstream method or provider; Noetrium supplies the surrounding identity, lifecycle, and evidence boundary.
+Existing orchestration frameworks can be used inside a downstream method or provider when that is scientifically appropriate. Noetrium does not need to replace them. It supplies the surrounding research identity, execution authority, resource/effect discipline, recovery and evidence closure that remain stable when the orchestration implementation changes.
 
 <!-- readme-section:capabilities -->
 
 ## Core capabilities
 
-- Public authoring surface — `noetrium.api` is the single downstream entrypoint for stable identities, ports, specifications, composition helpers, reusable reference components, orchestration, and project-facing operations.
-- Study compilation — `ExperimentRunSpec`, `ResearchStudyDefinition`, and `CompiledResearchPlan` make experiment intent explicit before any run starts.
-- Run authority — `ExperimentRunApplication` owns lifecycle decisions; checkpoint, resume, reconcile, and evidence paths remain explicit and inspectable.
-- Reusable method layers — reference single-agent building blocks and multi-agent orchestration remain internally layered but are consumed downstream through the same `noetrium.api` entrypoint.
-- Provider seams — models, environments, resources, processes, servers, and toolchains bind through typed ports instead of hidden global discovery.
-- Durable artifacts — `RunArtifactStore` records manifests, sequence, digests, lineage, raw facts, retention, and replayable evidence.
-- Effect-safe recovery — external effects carry receipts and certainty; an unresolved effect stays `UNKNOWN` until reconciliation proves the outcome.
-- Observability and governance — structured events, diagnostics, projections, forensics, architecture, concurrency, performance, release, and no-degradation gates make the system auditable.
-- Long-running environments — world cut, branch, snapshot, checkpoint, and resume semantics support recoverable stateful providers, including the bundled Minecraft integration.
+- <strong>One public authoring surface</strong> — downstream code enters through <code>noetrium.api</code>; lower packages remain implementation and composition authorities rather than accidental extension APIs.
+- <strong>Research OS composition</strong> — portfolios, research graphs, revisions, experiments, research runs and machine targets can be authored and controlled from one product-level surface without moving lower-domain truth upward.
+- <strong>Universal research programming</strong> — Method uses <code>MethodProgram</code> + UMM; Runtime, Participant, Environment, Memory, Evaluation, Optimization, Experiment and Research Run converge on the shared <code>ResearchProgram</code> host/interpreter substrate.
+- <strong>Nested Machines</strong> — one research computation can invoke another through explicit child-machine linkage instead of paper-local runners or hidden callback stacks.
+- <strong>Single scientific execution truth</strong> — accepted Machine transitions are committed by <code>MachineExecutor</code> into the Machine Journal. Checkpoints and snapshots accelerate recovery; they are not parallel histories.
+- <strong>Durable interruption and recovery</strong> — pause, resume, retry, reconcile and revision-aware continuation operate against accepted cuts and frozen identities rather than arbitrary in-memory state.
+- <strong>Explicit effect certainty</strong> — effect intents, receipts and reconciliation keep <code>UNKNOWN</code> as a real state; transport success or timeout is never silently promoted into scientific certainty.
+- <strong>Resource authority</strong> — admission, capacity, placement, lease/fencing and execution-resource ownership are centralized instead of recreated by graph, experiment or provider code.
+- <strong>Artifact, data and provenance closure</strong> — immutable content identity, references, lineage, datasets, durable facts, metrics and evidence remain attributable to exact program/run/revision identities.
+- <strong>Provider-neutral environments</strong> — Web, GUI, Software, Text World, Minecraft and embodied integrations are providers under the generic Environment authority rather than new top-level truth systems.
+- <strong>Governed architecture</strong> — topology, concrete-boundary, compatibility, degradation, execution-resource, durable-execution and scale-readiness gates reject shadow implementations and authority leaks.
+- <strong>Large-scale research scheduling</strong> — dependency-aware ResearchGraph execution, resource admission and isolated node attempts support many papers, methods and experiments without turning physical scheduling into paper semantics.
 
 <!-- noetrium-interface-catalog:start -->
 ### Public interface catalog
@@ -167,74 +172,112 @@ flowchart LR
     H --> I["Verify"]
 ```
 
-Every transition is expected to preserve identity or produce evidence about why it changed. The platform is intentionally split into three authority planes:
+The current end-state hierarchy is:
 
-| Plane | Owns | Does not own |
+<pre>
+noetrium.api
+    │
+    ▼
+Research OS
+Product / Authoring Surface
+    │
+    ├── ResearchPortfolio
+    ├── ResearchGraph + Revision / Control
+    └── Experimentation / Research Run
+                │
+                ▼
+        Research Program Layer
+                │
+      ┌─────────┴──────────────────────────────┐
+      │                                        │
+MethodProgram + UMM              ResearchProgram family
+                                 Runtime / Participant /
+                                 Environment / Memory /
+                                 Evaluation / Optimization /
+                                 Experiment / Research Run
+      │                                        │
+      └────────────────────┬───────────────────┘
+                           ▼
+                    MachineExecutor
+                           │
+                           ▼
+                    Machine Journal
+              scientific execution truth
+                           │
+          ┌────────────────┼────────────────┐
+          ▼                ▼                ▼
+      Operation          Effect       Artifact / Data /
+      authority        authority      Evidence authorities
+          └────────────────┬────────────────┘
+                           ▼
+              providers / infrastructure
+          model / environment / resource /
+          compute / lifecycle / storage
+</pre>
+
+### Authority model
+
+Noetrium is <strong>authority-shaped</strong>, not directory-shaped. A package is an authority only when it accepts truth, owns irreducible mutable state, performs fenced/CAS mutation, owns scientific identity/equivalence, owns external-effect certainty, or owns an immutable binding/source cut. Schemas, projections, provider adapters, codecs, query services, CLIs and convenience wrappers do not become authorities merely because they have stateful Python objects.
+
+| Layer | Owns | Must not become |
 | --- | --- | --- |
-| Composition | study definitions, explicit bindings, provider selection, and port wiring | durable run truth or scientific conclusions |
-| Runtime | paper-programmable execution semantics plus typed lifecycle/effect mechanics at their owning boundaries | scientific identity, evidence conclusions, or hidden provider state |
-| Observation + evidence | events, diagnostics, artifact manifests, sequence/digest/lineage, forensics, and release proof | command authority or hidden state mutation |
+| Research OS | top-level composition, portfolio/graph authoring and control | a duplicate domain authority |
+| Experimentation | Study / Experiment / Run scientific hierarchy | a second Machine execution history |
+| Research Programs | paper-programmable scientific semantics | independent persistence engines |
+| MachineExecutor + Machine Journal | accepted scientific transition history | paper-specific semantics |
+| Domain authorities | their canonical facts and bindings | hidden cross-domain coordinators |
+| Platform kernel | shared irreducible mechanisms | domain business truth |
+| Composition | wiring and provider selection | durable state owner |
+| Observability / forensics | projections, diagnostics and evidence materialization | command authority |
 
-An `ExperimentRunSpec` is compiled into an immutable plan and applied through an `ExperimentRunApplication`; a `ExperimentProgramBinding` schedules units through explicit `StudyUnitExecutionPort` implementations. The MC and non-MC paths may bind different execution ports while preserving the same identity and evidence discipline.
+### Programmable Machine family
 
-### The Research OS hierarchy
+Noetrium deliberately keeps the family small.
 
-Noetrium's scope is broad, but its ownership is intentionally hierarchical. The hierarchy groups related responsibilities without creating a monolithic registry or a universal VM.
+| Domain | Canonical program model |
+| --- | --- |
+| Method | <code>MethodProgram</code> + Universal Method Machine |
+| Runtime | <code>ResearchProgram</code> with composable Runtime modules/sub-IR |
+| Participant | <code>ResearchProgram</code> |
+| Environment | <code>ResearchProgram</code> |
+| Memory | <code>ResearchProgram</code> |
+| Evaluation | <code>ResearchProgram</code> |
+| Optimization | <code>ResearchProgram</code> |
+| Experiment | <code>ResearchProgram</code> |
+| Research Run | <code>ResearchProgram</code> |
 
-| Layer | Primary responsibility | Boundary |
-| --- | --- | --- |
-| Noetrium Kernel | identity, command dispatch, transition commit, journal, snapshot, scheduling, isolation, effect protocol, replay, and inspection | never owns scientific method semantics |
-| Experiment Machine | programmable adaptive scientific protocol, assignment, replication, aggregation and stopping semantics | executes frozen scientific identity; it does not rewrite the study definition |
-| Research Run Machine | one attributable execution, frozen bindings, lifecycle/control/checkpoint state and child-machine lineage | RunMachine Journal state is the sole run lifecycle authority |
-| Method Machine | executable research method, bounded control flow, capability calls, checkpoints, resume, and replay | MethodProgram/UMM owns method semantics but not durability authority |
-| Participant Machine | actor-local state and role/session behavior for agents, user simulators, judges, humans, teammates, and other research actors | Agent Turn is one reusable ParticipantProgram preset, not a fixed platform VM |
-| Memory Machine | programmable write/retrieval/trust/consolidation/retention semantics with journal-backed state | does not impose one universal memory algorithm or become implicit global context |
-| Environment Machine | programmable state/action/observation, branch, reset, reconciliation and recovery semantics | provider mechanics remain replaceable and do not become a second world-state authority |
-| Typed services and providers | model, tool, evidence, artifact, metrics, catalog, policy, resource, process, and deployment abilities | replaceable behind ports; no provider is a second Kernel |
-| Projections and operator surfaces | telemetry, diagnostics, forensics, reports, CLI, and release evidence | read and explain authority; never silently mutate it |
+A new paper-variable concern should first be represented as a Program, module, rule set, pure sub-IR, policy or injected operation handler. A new Machine domain is justified only when it needs independent durable scientific identity and transition history.
 
-All programmable Machine families share the Machine command/commit substrate while retaining independent Program/state schemas. Non-Method domains compile through ResearchProgram; Runtime may additionally compose concern-local RuntimeModules. Cross-machine communication uses immutable values, typed commands, and ArtifactRef, EvidenceRef, SnapshotRef, CapabilityResult, or EffectReceipt; it does not share mutable internal objects.
+### Canonical execution path
 
-### Authority map
+Accepted method/runtime semantics converge on one execution truth path:
 
-The platform has one owner for each kind of truth. This is the rule that lets a large system remain decoupled.
+<strong>Program -> interpreter / host -> command or proposal -> MachineExecutor -> Machine Journal -> evidence / artifact / effect references.</strong>
 
-| Truth or decision | Sole authority | Safe consumers |
-| --- | --- | --- |
-| machine state and commit | MachineExecutor / Kernel | machine implementations, recovery, inspection |
-| ordered machine facts | Journal | replay and rebuildable projections |
-| recovery acceleration | Snapshot | restore path, never independent truth |
-| executable identity | ProgramLock and compiled program digest | admission, replay, release verification |
-| ownership and topology | canonical system registry/catalog | generated facades and architecture gates |
-| external effect lifecycle | EffectIntentJournal and reconciliation | effect executor and evidence readers |
-| capability access | scoped typed binding and policy | method/run code through a declared port |
-| worker proposal | authenticated admission and candidate boundary | Kernel validation and commit path |
-| metrics and reports | derived evidence/projection layer | operators, analysis, publication tooling |
+UMM remains the method interpreter; it is not a second durability authority. A model call, environment action, tool call, optimization step or experiment decision does not become scientific truth because a Python function returned. It becomes authoritative only when the owning transition/effect/evidence boundary accepts it.
 
-In particular, a worker may propose a candidate but cannot write journal, snapshot, outbox, inbox, or effect-journal facts. An external effect that is not proven applied or proven to have had no effect remains UNKNOWN; timeout, restart, or operator impatience is not evidence of success or permission to blindly retry.
+### One owner per mechanism
+
+The same rule applies below the scientific layer. Shared primitives such as SQLite durability, content addressing, CAS/fencing, concurrency pools, leases, timers/heartbeats and checkpoints are centralized. Domain systems consume the primitive; they do not grow private copies because their call site is different.
+
+This distinction keeps semantic scheduling separate from physical scheduling. Runtime may define paper-variable logical order, barriers or quorum semantics. Resource and execution infrastructure own physical admission, worker capacity, leases and placement.
 
 ### One execution lifecycle
 
-A downstream study follows a stable sequence:
+A research execution follows one stable lifecycle:
 
-1. **Define** — express study, method, task, provider, resource, and evidence intent as typed specifications.
-2. **Compose** — bind capabilities and scopes explicitly at a composition root; reject missing, ambiguous, or out-of-scope providers.
-3. **Compile** — freeze program, dependency, schema, interpreter, data, and configuration identity into an executable digest.
-4. **Admit and run** — validate machine, program, revision, scope, proposal identity, and attestation before a step can execute.
-5. **Commit** — atomically record the transition, state, journal fact, effect receipts, artifacts, and evidence references under Kernel authority.
-6. **Recover and reconcile** — restore from a validated snapshot, replay the journal, and resolve external-effect uncertainty with provider evidence.
-7. **Inspect and replay** — expose procfs-like run and machine views while reconstructing state from authoritative facts.
-8. **Verify** — compare exact revisions, digests, evidence closure, release manifests, and no-degradation gates before treating an output as reproducible.
+1. <strong>Define</strong> — express study, program, provider, resource and evidence intent.
+2. <strong>Compose</strong> — bind capabilities and scopes explicitly.
+3. <strong>Compile</strong> — freeze program, schema, implementation and configuration identity.
+4. <strong>Admit</strong> — validate revision, resources, leases, scope and execution preconditions.
+5. <strong>Execute</strong> — interpreters and providers propose typed work.
+6. <strong>Commit</strong> — owning authorities accept transition/effect/artifact/evidence facts.
+7. <strong>Recover / reconcile</strong> — resume from validated cuts and resolve uncertainty with evidence.
+8. <strong>Inspect / verify</strong> — rebuild projections and verify exact-revision evidence closure.
 
-The same lifecycle applies to deterministic local runs, long-running providers, containerized workloads, and downstream scientific experiments. Their providers and policies may differ; their authority and evidence boundaries do not.
+A cache, log, checkpoint, telemetry stream, worker-local state or provider database may accelerate execution, but none can silently become the second source of scientific truth.
 
-### Decoupling rule
-
-High aggregation means that one responsibility has one home, not that every feature is placed in one object. Public facades are generated from the canonical catalog, composition roots wire narrow ports, runtime modules own lifecycle semantics, and projections consume durable facts. A new capability therefore extends its owning system and its port; it does not add a shadow registry, hidden global context, duplicate facade, duplicate provider, or cross-layer write path.
-
-Long-running providers use world cut, branch, snapshot, checkpoint, and resume semantics where applicable. Durable state has one owner, and uncertain external effects remain `UNKNOWN` until reconciliation proves otherwise.
-
-`noetrium_platform/foundation/governance/system_registry/catalog.json`
+<code>noetrium_platform/foundation/governance/system_registry/catalog.json</code>
 
 <!-- readme-section:downstream -->
 
@@ -378,22 +421,21 @@ The repository uses a hierarchical test taxonomy so every test belongs to an exp
 
 ## Design principles
 
-1. One owner per durable state.
-2. Composition before execution.
-3. Narrow runtime ports.
-4. External effects are evidence-bearing.
-5. Recovery is identity-aware.
-6. No silent degradation.
-7. Observation is not authority.
-8. Performance changes preserve semantics.
-9. Documentation moves with implementation.
-10. Downstream projects own scientific meaning and deployment policy.
-
-11. Aggregation means one authority per responsibility, not one object for every responsibility.
-12. Typed boundaries carry values, commands, and references; mutable internals do not cross layers.
-13. Failures, cancellation, partial completion, and effect uncertainty are first-class outcomes.
-14. A projection, cache, log, UI, or convenience facade can never silently become truth.
-15. Every claim-grade output is tied to an exact source revision, program identity, and evidence closure.
+1. <strong>One truth, one authority.</strong> Every durable fact, transition, effect certainty and immutable binding has one acceptance owner.
+2. <strong>One mechanism, one canonical implementation.</strong> Shared durability, concurrency, leasing, CAS, checkpointing and content primitives are reused instead of copied.
+3. <strong>Composition is wiring, not ownership.</strong> A composition root may assemble systems but must not retain a shadow state machine.
+4. <strong>Programs own scientific semantics.</strong> Paper-variable behavior belongs in Programs, modules, rules, policies, sub-IR or operation handlers before a new runtime is considered.
+5. <strong>Machine Journal is execution truth.</strong> Checkpoints, snapshots, progress stores and projections are bound to accepted cuts.
+6. <strong>Effects are evidence-bearing.</strong> <code>UNKNOWN</code> remains unknown until reconciliation proves otherwise.
+7. <strong>Physical scheduling is infrastructure.</strong> Resource placement and worker concurrency must not silently become scientific semantics.
+8. <strong>Observation is not authority.</strong> Logs, telemetry, diagnostics, forensics and UIs are read-side surfaces unless explicitly accepting their own domain truth.
+9. <strong>Fail closed.</strong> Missing identity, ambiguous binding, stale revision, unproven effect or unsafe recovery state is rejected rather than downgraded.
+10. <strong>No compatibility shadow path.</strong> The platform converges on the canonical contract rather than carrying fallback runners, aliases or silent legacy behavior.
+11. <strong>Exact revision matters.</strong> Reproducibility and release claims bind source, program, model, environment, provider and evidence identities.
+12. <strong>Downstream owns novelty.</strong> New papers should mostly change research Programs and bindings, not platform internals.
+13. <strong>Architecture is executable.</strong> Registry topology, boundary rules, complexity budgets and single-authority invariants are enforced by gates.
+14. <strong>Performance preserves semantics.</strong> Parallelism, batching and resource saturation may improve throughput without weakening authority or evidence guarantees.
+15. <strong>Delete before adding.</strong> End-state convergence prefers merge, inline, reuse and removal over new systems, new authorities or new runners.
 
 <!-- readme-section:extending -->
 
@@ -442,11 +484,15 @@ Architecture documents define reusable ownership and contracts; status documents
 
 ## Security and configuration
 
+Noetrium treats identity, credentials, provider effects and evidence as part of the execution boundary rather than incidental application configuration.
+
 - Never commit passwords, private keys, access tokens, runtime secrets or machine-local credentials.
 - Keep host-specific paths and secrets in ignored local profiles or environment-bound stores.
-- Prefer key/agent-based unattended authentication for remote automation.
+- Prefer explicit provider bindings and scoped credentials over ambient global discovery.
 - Keep external-effect commands typed, bounded, journaled and attributable to an operation identity.
-- Treat logs and evidence as potentially sensitive operational data.
+- Preserve idempotency, receipt and reconciliation information for effectful operations.
+- Treat logs, artifacts, traces, prompts and evidence as potentially sensitive research data.
+- Fail closed when a credential, provider qualification, revision or authority binding cannot be proven.
 
 <!-- readme-section:contributing -->
 
@@ -485,14 +531,14 @@ Third-party components remain governed by their own licenses; see THIRD_PARTY_NO
 
 ## Development status
 
-Noetrium 0.44.0 is the current released platform baseline. The project is still under active architecture and runtime development, so downstream consumers should pin an exact revision and verify its evidence before relying on it.
+Noetrium 0.44.0 is the current package baseline. The architecture is in <strong>end-state convergence</strong>: the top-level Research OS, programmable Machine model, canonical Machine execution path, domain authority boundaries and shared kernel mechanisms are established; active work is focused on eliminating duplicate implementations, compressing unnecessary contracts/subsystems, synchronizing generated projections with exact <code>main</code>, stress-testing failure/concurrency paths and closing release gates.
 
-Noetrium is not a hosted agent product or a turnkey scientific benchmark. Downstream projects bind their own methods, providers, protocols, and claims; this repository supplies the reusable contracts, runtime authority, and evidence machinery around them.
+This distinction is important. The project is no longer treating every new paper requirement as a reason to add another runner, storage path or system. The convergence rule is the opposite: <strong>merge, delete, centralize, inline, reuse, profile, benchmark, stress and gate</strong>.
 
-The architecture documented here is both a description of the implemented platform boundaries and the organizing target for the continuing VM materialization work. The kernel, contracts, authority boundaries, provider ports, evidence paths, and governance gates are concrete platform surfaces; the Research OS hierarchy also gives each future domain VM a precise owner and migration boundary. The README does not claim that every future VM is already an independently deployable process.
+Noetrium is not a hosted agent product and it does not own downstream scientific claims. Downstream projects bind their own methods, benchmarks, model choices, experiment matrices and interpretations. The platform supplies the reusable Research OS, execution/evidence substrate and authority discipline around those projects.
 
-For production, publication, or scientific claims, re-run the relevant gates and inspect release evidence bound to the exact source revision rather than relying on an old green result. Historical changes are intentionally kept out of this README; use `docs/history/` for immutable engineering records.
+For production, publication or scientific claims, pin the exact source revision and re-run the relevant architecture, quality, research-core, scale-readiness and evidence gates for that revision. A historical green workflow, generated projection or release artifact proves only the source cut it names.
 
-The current development truth is `docs/status/CURRENT_DEVELOPMENT_BASELINE.md`; release and scientific claims must be bound to exact evidence for the revision being evaluated.
+The current development truth is <code>docs/status/CURRENT_DEVELOPMENT_BASELINE.md</code>; exact release truth remains the release manifest/evidence generated for the revision being published.
 
-`docs/status/` · `docs/history/`
+<code>docs/status/</code> · <code>docs/history/</code>
