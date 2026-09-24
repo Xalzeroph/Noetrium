@@ -595,6 +595,7 @@ class SQLiteEndpointAllocationStore(AtomicEndpointReservationPort):
             self._require_generation(current, allocation)
             if current.state is EndpointAllocationState.RELEASED:
                 return current
+            self._require_lease_authority(conn, current, now_epoch_s)
             lease = conn.execute(
                 "SELECT fencing_token FROM resource_leases WHERE lease_id=?",
                 (current.lease_id,),
@@ -673,7 +674,7 @@ class SQLiteEndpointAllocationStore(AtomicEndpointReservationPort):
                     l.lease_id IS NULL
                     OR l.state!='active'
                     OR l.resource_kind!='network-endpoint'
-                    OR l.resource_id!=('network-endpoint:' || lower(a.protocol) || '://' || lower(a.host) || ':' || a.port)
+                    OR l.resource_id!=(lower(a.protocol) || '://' || lower(a.host) || ':' || a.port)
                     OR l.holder_scope_kind!=a.holder_scope_kind
                     OR l.holder_scope_id!=a.holder_scope_id
                     OR l.purpose!=a.purpose
