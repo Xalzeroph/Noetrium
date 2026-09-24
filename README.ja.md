@@ -21,7 +21,7 @@
 
 <!-- readme-locale:ja -->
 
-<!-- readme-source-sha256:a9bd4d748e873475c1d79c09b05377525fa7c2a703c5cffe85a797db33d64c6a -->
+<!-- readme-source-sha256:f01787f87584f9d54263a9b036a1dae6cdba72a578f3976b0972352eec6376a4 -->
 
 <p align="center">
   <strong>研究システムを構成する。帰属可能な実行を走らせる。証拠を検証する。</strong><br>
@@ -253,23 +253,45 @@ python scripts/check_readme_i18n.py
 
 <!-- readme-section:containers -->
 
-## コンテナワークフロー
+## コンテナと環境ワークフロー
 
-再利用可能な Linux image と Compose 定義は `deploy/` で管理します。
+Noetrium は execution environment を、論文ごとの可変コンテナではなく revisioned environment fleet として管理します。Host contract は Docker + Compose だけで、host Python は不要です。
 
 ```bash
-python scripts/build_environment_images.py validate
-python scripts/build_environment_images.py build --profiles text_world
+./deploy/build-environments.sh validate
+./deploy/build-environments.sh list
+./deploy/build-environments.sh build
 ```
 
-Deployment 層は immutable software と mutable runtime state を分離し、host 固有 path と secret を commit 済み composition code に入れません。
+Environment registry は `deploy/environments/catalog.json` です。Builder は環境名をハードコードせず、各 category は 1 つの active default revision を持ち、旧 revision は draining / retired として既存 execution や historical recovery に残せます。
+
+原則は **immutable content を共有し、mutable execution state はすべて隔離する** ことです。
+
+Noetrium base、environment image layer、content-addressed asset は論文間で再利用できます。一方、workspace、tmp、runtime state、secret、process/network namespace、port、browser/world/application state は execution ごとの private overlay です。Warm instance は overlay の破棄、または provider の明示的 cleanliness proof がある場合だけ pool に戻せます。不確実な instance は再利用せず破棄します。
+
+```text
+host substrate
+  -> evidence-bound Noetrium base
+  -> reusable environment capability profile
+  -> immutable content-addressed workload assets
+  -> private per-execution writable overlay
+  -> immutable artifacts / evidence / Machine Journal
+```
+
+Runtime identity は `profile_id + profile_revision` に固定され、`web`、`minecraft`、`gui`、`embodied`、`software`、`text_world` などの stable category とは分離されます。新 revision が active になっても、既存 execution が黙って新 image に移ることはありません。
+
+Retired は logical delete です。新規 binding は止めますが historical identity は保持します。Active/resumable reference がなく、retained evidence も依存しない場合だけ physical image/cache を GC できます。
+
+Profile readiness は中央 switch ではなく image-local doctor hook で検証します。新しい環境 category は registry row、image recipe、必要なら Compose overlay、doctor hook を追加するだけで、中央 deployment code の変更は不要です。
+
+[Environment profile registry](deploy/environments/README.md)
 
 ### 同梱 Minecraft Provider
 
-Minecraft は first-party の再利用可能な environment Provider です。Task suite と科学的 composition は downstream に残します。
+Minecraft は first-party の reusable environment capability profile です。Java、Node、Mineflayer prerequisites は共有し、benchmark world、task suite、paper method、writable world state は downstream または execution-private に保ちます。
 
 ```bash
-python scripts/build_environment_images.py build --profiles minecraft
+./deploy/build-environments.sh build --profiles minecraft
 ```
 
 [Minecraft infrastructure](docs/infrastructure/minecraft/README.md)
