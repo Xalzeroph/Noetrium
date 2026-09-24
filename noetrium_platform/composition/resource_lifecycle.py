@@ -185,6 +185,21 @@ class ManagedResourceReconciler:
             compute=compute,
         )
 
+    def recover_abandoned_owner_generation(
+        self,
+        *,
+        now: float | None = None,
+    ) -> ManagedResourceReconciliation:
+        """Take over one abandoned exclusive runtime generation immediately.
+
+        The interprocess runtime lock proves that no previous local controller
+        generation is still authoritative.  Waiting for TTL would strand ports
+        and GPUs after SIGKILL/SSH loss, so startup performs the same physical-
+        first dependency transaction as terminal cleanup before admitting work.
+        """
+
+        return self.shutdown_cleanup(now=now)
+
     def run(
         self,
         *,
