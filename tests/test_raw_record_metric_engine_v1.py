@@ -7,7 +7,7 @@ from noetrium_platform.research.experimentation.lifecycle.api import (
     MetricPredicate,
     RawRecord,
 )
-from noetrium_platform.research.experimentation.lifecycle.experiment.runtime.matrix import (
+from noetrium_platform.research.experimentation.projection import (
     MetricEngine,
 )
 
