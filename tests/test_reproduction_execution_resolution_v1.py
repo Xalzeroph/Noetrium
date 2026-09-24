@@ -41,19 +41,21 @@ class _SearchResolver:
         )
 
 
-def test_enum_paper_option_expands_all_scientific_variants_without_manual_values() -> None:
-    variants = resolve_reproduction_execution_variants(
+def test_adacm2_paper_interpretations_are_explicit_study_lanes() -> None:
+    eq6 = resolve_reproduction_execution_variants(
         ADACM2_REPRODUCTION,
-        study_factory="build_adacm2_lvu_study",
+        study_factory="build_adacm2_lvu_eq6_literal_study",
+    )
+    eq8 = resolve_reproduction_execution_variants(
+        ADACM2_REPRODUCTION,
+        study_factory="build_adacm2_lvu_eq8_consistent_study",
     )
 
-    assert {row.values["interpretation"] for row in variants} == {
-        "eq6_literal",
-        "eq8_consistent",
-    }
-    assert len(variants) == 2
-    assert len({row.resolution_digest for row in variants}) == 2
-    assert all(len(row.proof_digests) == 1 for row in variants)
+    assert len(eq6) == len(eq8) == 1
+    assert eq6[0].values == eq8[0].values == {}
+    assert eq6[0].study_factory != eq8[0].study_factory
+    assert eq6[0].resolution_digest != eq8[0].resolution_digest
+    assert eq6[0].proof_digests == eq8[0].proof_digests == ()
 
 
 def test_capability_requirement_uses_authoritative_selection_view_proof() -> None:
