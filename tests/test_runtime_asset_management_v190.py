@@ -265,13 +265,13 @@ class ManagementTests(unittest.TestCase):
             config = models.assets.model_config("example-model")
             self.assertEqual(config.model_type, "example_model")
             self.assertEqual(config.quantization_bits, 4)
-            started = models.deployment_runtime.start("example-deployment")
+            started = models.deployment_runtime.start(models.deployment_runtime.generation("example-deployment"))
             self.assertEqual(started.runtime_state, ModelRuntimeState.RUNNING)
             self.assertEqual(models.deployment_catalog.deployment("example-deployment").desired_state, ModelDesiredState.RUNNING)
             self.assertIn(("CUDA_VISIBLE_DEVICES", "0,1"), factory.environments[-1])
             self.assertIn(str(model_dir), factory.contracts[-1].argv)
             self.assertEqual(models.deployment_runtime.status("example-deployment").pid, 1234)
-            stopped = models.deployment_runtime.stop("example-deployment")
+            stopped = models.deployment_runtime.stop(models.deployment_runtime.generation("example-deployment"))
             self.assertEqual(stopped.runtime_state, ModelRuntimeState.STOPPED)
 
     def test_running_deployment_can_be_reconfigured_then_reconciled(self):
@@ -297,7 +297,7 @@ class ManagementTests(unittest.TestCase):
                 python_environment_id="serve",
             )
             models.deployment_catalog.put_deployment(base)
-            models.deployment_runtime.start("example-deployment")
+            models.deployment_runtime.start(models.deployment_runtime.generation("example-deployment"))
             updated = ModelDeploymentSpec(
                 deployment_id="example-deployment",
                 scope=PLATFORM_SCOPE,
@@ -333,7 +333,7 @@ class ManagementTests(unittest.TestCase):
                 executable="{python}", argv=("{python}", "-m", "server", "{model_path}"), cwd=root,
                 python_environment_id="serve",
             ))
-            models.deployment_runtime.start("d")
+            models.deployment_runtime.start(models.deployment_runtime.generation("d"))
             applied_contract = factory.contracts[-1]
             models.assets.register_model("m", PLATFORM_SCOPE, new_model)
             self.assertEqual(models.deployment_runtime.status("d").runtime_state, ModelRuntimeState.UPDATE_PENDING)
@@ -341,7 +341,7 @@ class ManagementTests(unittest.TestCase):
             pending = models.deployment_runtime.status("d")
             self.assertEqual(pending.runtime_state, ModelRuntimeState.UPDATE_PENDING)
             self.assertTrue(pending.detail.startswith("desired-resource-missing:"))
-            models.deployment_runtime.stop("d")
+            models.deployment_runtime.stop(models.deployment_runtime.generation("d"))
             self.assertEqual(factory.contracts[-1].digest(), applied_contract.digest())
 
     def test_large_model_asset_modes_cover_reference_copy_move_and_symlink(self):
@@ -422,7 +422,7 @@ class ManagementTests(unittest.TestCase):
                 scope=PLATFORM_SCOPE,
                 executable="{python}", argv=("{python}", "-m", "server"), cwd=root, python_environment_id="serve",
             ))
-            models.deployment_runtime.start("d")
+            models.deployment_runtime.start(models.deployment_runtime.generation("d"))
             tail = models.deployment_logs.tail_logs("d", stream="stdout", max_bytes=6)
             self.assertEqual(tail.text, "world\n")
             bindings = models.resources.gpu_process_bindings()
@@ -743,7 +743,7 @@ def test_model_runtime_shutdown_preserves_desired_state_for_restart() -> None:
             )
         )
 
-        models.deployment_runtime.start("d")
+        models.deployment_runtime.start(models.deployment_runtime.generation("d"))
         assert (
             models.deployment_catalog.deployment("d").desired_state
             is ModelDesiredState.RUNNING
@@ -789,7 +789,7 @@ def test_model_replacement_keeps_old_applied_generation_when_physical_stop_is_un
             python_environment_id="serve",
         )
         models.deployment_catalog.put_deployment(original)
-        models.deployment_runtime.start("d")
+        models.deployment_runtime.start(models.deployment_runtime.generation("d"))
         assert factory.runtime.start_calls == 1
         assert factory.runtime.live
 
@@ -810,7 +810,7 @@ def test_model_replacement_keeps_old_applied_generation_when_physical_stop_is_un
         factory.runtime.stop_succeeds = False
 
         try:
-            models.deployment_runtime.start("d")
+            models.deployment_runtime.start(models.deployment_runtime.generation("d"))
         except RuntimeError as exc:
             assert "did not stop before deployment replacement" in str(exc)
         else:
@@ -850,11 +850,11 @@ def test_model_remove_and_restart_require_physical_stop_convergence() -> None:
                 python_environment_id="serve",
             )
         )
-        models.deployment_runtime.start("d")
+        models.deployment_runtime.start(models.deployment_runtime.generation("d"))
         factory.runtime.stop_succeeds = False
 
         try:
-            models.deployment_runtime.remove_deployment("d")
+            models.deployment_runtime.remove_deployment(models.deployment_runtime.generation("d"))
         except RuntimeError as exc:
             assert "physical generation did not stop" in str(exc)
         else:
@@ -865,7 +865,7 @@ def test_model_remove_and_restart_require_physical_stop_convergence() -> None:
         assert factory.runtime.start_calls == 1
 
         try:
-            models.deployment_runtime.restart("d")
+            models.deployment_runtime.restart(models.deployment_runtime.generation("d"))
         except RuntimeError as exc:
             assert "prior physical generation did not stop" in str(exc)
         else:
