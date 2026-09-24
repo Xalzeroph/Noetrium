@@ -4,7 +4,10 @@ from dataclasses import dataclass
 from threading import Event, Thread
 import time
 
-from noetrium_platform.composition.managed_research_runtime import ManagedResearchRuntime
+from noetrium_platform.composition.managed_research_runtime import (
+    ManagedResearchRuntime,
+    _reconcile_startup_ownership,
+)
 
 
 class Handle:
@@ -296,4 +299,57 @@ def test_managed_runtime_never_releases_resources_when_auto_model_retirement_fai
     assert resource_controller.cleaned == 1
     assert pool.closed is True
     assert runtime_lock.released is True
+
+
+def test_startup_ownership_barrier_stops_auto_models_before_resource_reconcile() -> None:
+    events: list[str] = []
+
+    class StartupFleet:
+        def remove_selected(self, selector):
+            assert selector.tags == ("auto-managed",)
+            events.append("auto-models")
+
+    class StartupResources:
+        def reconcile(self):
+            events.append("resources")
+
+    class StartupModels:
+        fleet = StartupFleet()
+
+    class StartupManagement:
+        models = StartupModels()
+
+    _reconcile_startup_ownership(StartupManagement(), StartupResources())
+
+    assert events == ["auto-models", "resources"]
+
+
+def test_startup_ownership_barrier_never_reclaims_resources_after_model_failure() -> None:
+    events: list[str] = []
+
+    class StartupFleet:
+        def remove_selected(self, selector):
+            assert selector.tags == ("auto-managed",)
+            events.append("auto-models")
+            raise RuntimeError("surviving model process")
+
+    class StartupResources:
+        def reconcile(self):
+            events.append("resources")
+            raise AssertionError("resource reconcile must remain fenced")
+
+    class StartupModels:
+        fleet = StartupFleet()
+
+    class StartupManagement:
+        models = StartupModels()
+
+    try:
+        _reconcile_startup_ownership(StartupManagement(), StartupResources())
+    except RuntimeError as exc:
+        assert "surviving model process" in str(exc)
+    else:
+        raise AssertionError("startup model convergence failure was not surfaced")
+
+    assert events == ["auto-models"]
 
