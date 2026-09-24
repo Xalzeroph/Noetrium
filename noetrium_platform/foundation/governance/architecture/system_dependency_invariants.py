@@ -43,12 +43,42 @@ def _owner_for_module(
     return max(candidates, key=lambda row: len(row.package_prefix)) if candidates else None
 
 
+def _topology_root_systems(
+    descriptors: tuple[SystemDescriptor, ...],
+) -> dict[str, str]:
+    """Resolve every registered node to its explicit topology root.
+
+    Identity path shape is not topology authority. A node such as operator can
+    be a direct child of research_os even when its identity has no subsystem
+    path.
+    """
+
+    by_key = {row.identity.key: row for row in descriptors}
+    result: dict[str, str] = {}
+    for key, row in by_key.items():
+        current = row
+        seen: set[str] = set()
+        while current.parent_key is not None:
+            if current.identity.key in seen:
+                raise RuntimeError(f"catalog topology parent cycle at {key!r}")
+            seen.add(current.identity.key)
+            try:
+                current = by_key[current.parent_key]
+            except KeyError as exc:
+                raise RuntimeError(
+                    f"catalog topology parent {current.parent_key!r} for {key!r} is not registered"
+                ) from exc
+        result[key] = current.identity.key
+    return result
+
+
 def _root_system_prefixes(
     descriptors: tuple[SystemDescriptor, ...],
+    topology_roots: dict[str, str],
 ) -> dict[str, str]:
     result: dict[str, str] = {}
     for row in descriptors:
-        system_id = row.identity.system_id
+        system_id = topology_roots[row.identity.key]
         current = result.get(system_id)
         if current is None or len(row.package_prefix) < len(current):
             result[system_id] = row.package_prefix
@@ -79,11 +109,8 @@ def layer_dependency_findings(
         for row in hierarchy.sideplanes
     }
     sideplane_systems = set(sideplanes)
-    catalog_systems = {
-        row.identity.system_id
-        for row in descriptors
-        if row.identity.is_system
-    }
+    topology_roots = _topology_root_systems(descriptors)
+    catalog_systems = set(topology_roots.values())
     declared_systems = set(system_layer) | global_systems | sideplane_systems
     if declared_systems != catalog_systems:
         missing = sorted(catalog_systems - declared_systems)
@@ -92,7 +119,7 @@ def layer_dependency_findings(
             f"layer hierarchy membership mismatch missing={missing} extra={extra}"
         )
 
-    root_prefixes = _root_system_prefixes(descriptors)
+    root_prefixes = _root_system_prefixes(descriptors, topology_roots)
     facade_to_layer = {
         row.facade_module: row.layer_id
         for row in hierarchy.layers
@@ -161,8 +188,12 @@ def layer_dependency_findings(
 
         source = _owner_for_module(descriptors, source_module)
         target = _owner_for_module(descriptors, target_module)
-        source_system = None if source is None else source.identity.system_id
-        target_system = None if target is None else target.identity.system_id
+        source_system = (
+            None if source is None else topology_roots[source.identity.key]
+        )
+        target_system = (
+            None if target is None else topology_roots[target.identity.key]
+        )
 
         if source_system is not None and source_system == target_system:
             continue
