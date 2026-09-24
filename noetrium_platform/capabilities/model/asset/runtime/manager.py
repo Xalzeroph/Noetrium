@@ -208,12 +208,21 @@ class ModelAssetManager:
         *,
         closures: tuple[ModelAssetReferenceClosure, ...] = (),
     ) -> ModelAssetGcAssessment:
-        asset = self.model(model_id)
         references = self._references.references(model_id)
         if references:
             raise RuntimeError(
                 f"model is still referenced by a deployment: {model_id}"
             )
+        retirement = self._asset_registry.retirement(model_id)
+        if retirement is None:
+            asset = self.model(model_id)
+        else:
+            asset, _durable_delete, _durable_gc_proof = retirement
+            if asset is None:
+                raise RuntimeError(
+                    "model asset physical GC has already converged: "
+                    f"{model_id}"
+                )
         return ModelAssetGcAssessment(
             model_id=model_id,
             asset_digest=self._asset_digest(asset),
@@ -293,10 +302,18 @@ class ModelAssetManager:
                         raise RuntimeError(
                             "model asset GC proof changed across retirement retry"
                         )
+                elif delete_managed_files:
+                    # Retirement and physical GC are separate lifecycle cuts.
+                    # A later destructive request is allowed only after a fresh
+                    # complete closure assessment for this exact asset digest.
+                    physical_gc = self._require_physical_gc(asset, gc)
+                    asset = self._asset_registry.authorize_gc(
+                        asset,
+                        gc_proof_digest=physical_gc.proof_digest,
+                    )
+                    durable_delete = True
+                    durable_gc_proof = physical_gc.proof_digest
                 else:
-                    # The first durable retirement policy is authoritative.
-                    # A later caller cannot upgrade a logical retirement into
-                    # physical deletion by changing its request.
                     physical_gc = None
 
             # Deployment reference truth belongs to deployment authority.
