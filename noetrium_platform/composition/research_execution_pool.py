@@ -155,8 +155,6 @@ class ResearchExecutionPool:
         failure_policy: TaskFailurePolicy = TaskFailurePolicy.FAIL_FAST,
     ) -> TaskGroupPort:
         self._require_workloads_open()
-        if self._closed:
-            raise RuntimeError("research execution pool is closed")
         return self._experiments.open_task_group(
             group_id,
             tenant_id=tenant_id,
@@ -174,11 +172,9 @@ class ResearchExecutionPool:
         policy: ComputeLeasePolicy = DEFAULT_COMPUTE_LEASE_POLICY,
         lane_capacity: int | None = 1,
     ) -> ComputeLeaseGuardFactoryPort:
-        self._require_workloads_open()
         """Share one structured heartbeat authority across all compute leases."""
+        self._require_workloads_open()
 
-        if self._closed:
-            raise RuntimeError("research execution pool is closed")
         if self._compute_lease_group is None:
             self._compute_lease_group = self._experiments.open_task_group(
                 f"research-compute-leases:{uuid4().hex}",
@@ -203,11 +199,9 @@ class ResearchExecutionPool:
         policy: EndpointLeasePolicy = DEFAULT_ENDPOINT_LEASE_POLICY,
         lane_capacity: int | None = 1,
     ) -> EndpointLeaseGuardFactoryPort:
-        self._require_workloads_open()
         """Share one structured heartbeat authority across endpoint leases."""
+        self._require_workloads_open()
 
-        if self._closed:
-            raise RuntimeError("research execution pool is closed")
         if self._endpoint_lease_group is None:
             self._endpoint_lease_group = self._experiments.open_task_group(
                 f"research-endpoint-leases:{uuid4().hex}",
@@ -232,11 +226,9 @@ class ResearchExecutionPool:
         policy: EnvironmentInstanceLeasePolicy = DEFAULT_ENVIRONMENT_INSTANCE_LEASE_POLICY,
         lane_capacity: int | None = 1,
     ) -> EnvironmentInstanceLeaseHeartbeatFactory:
-        self._require_workloads_open()
         """Share one structured heartbeat authority across environment checkouts."""
+        self._require_workloads_open()
 
-        if self._closed:
-            raise RuntimeError("research execution pool is closed")
         if self._environment_lease_group is None:
             self._environment_lease_group = self._experiments.open_task_group(
                 f"research-environment-leases:{uuid4().hex}",
@@ -261,11 +253,9 @@ class ResearchExecutionPool:
         policy: DockerContainerLeasePolicy = DEFAULT_DOCKER_CONTAINER_LEASE_POLICY,
         lane_capacity: int | None = 1,
     ) -> DockerContainerLeaseHeartbeatFactory:
-        self._require_workloads_open()
         """Share one structured heartbeat authority across managed Docker containers."""
+        self._require_workloads_open()
 
-        if self._closed:
-            raise RuntimeError("research execution pool is closed")
         if self._container_lease_group is None:
             self._container_lease_group = self._experiments.open_task_group(
                 f"research-container-leases:{uuid4().hex}",
@@ -294,8 +284,6 @@ class ResearchExecutionPool:
         failure_policy: TaskFailurePolicy = TaskFailurePolicy.FAIL_FAST,
     ) -> TaskGroupPort:
         self._require_workloads_open()
-        if self._closed:
-            raise RuntimeError("research execution pool is closed")
         return self._model_io.open_task_group(
             group_id,
             tenant_id=tenant_id,
