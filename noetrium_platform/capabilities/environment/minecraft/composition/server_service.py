@@ -14,6 +14,7 @@ from noetrium_platform.substrate.api import (
     ServiceLaunchContract,
     ServiceLaunchPreflightPort,
     ServiceLaunchPreflightReport,
+    ServiceProcessIdentity,
     ServiceProcessLivenessPort,
     ServiceReadinessProbePort,
     ServiceReadyObservation,
@@ -387,6 +388,11 @@ class MinecraftServerServiceController:
     service_runtime: ExactServiceRuntimePort
     diagnostics: MinecraftDiagnosticsPort | None = None
     diagnostic_sink_failures: list[str] = field(default_factory=list, init=False, repr=False)
+    _process: ServiceProcessIdentity | None = field(
+        default=None,
+        init=False,
+        repr=False,
+    )
 
     def _event(
         self,
@@ -436,6 +442,16 @@ class MinecraftServerServiceController:
         except Exception as exc:
             self._failure("MC_SERVER_RECONCILE_FAILED", exc)
             raise
+        if result.process is None:
+            self._process = None
+        elif self._process is None:
+            # A freshly reconstructed controller may adopt the one process
+            # generation proven by Service reconciliation.
+            self._process = result.process
+        elif self._process != result.process:
+            raise MinecraftServerServiceError(
+                "Minecraft service process generation drifted during reconcile"
+            )
         self._event("MC_SERVER_RECONCILE_END", attributes={"state_present": result.state_present, "has_process": result.process is not None})
         return result
 
@@ -446,12 +462,24 @@ class MinecraftServerServiceController:
         except Exception as exc:
             self._failure("MC_SERVER_START_FAILED", exc)
             raise
+        if self._process is not None and self._process != result.process:
+            raise MinecraftServerServiceError(
+                "Minecraft service start returned a different process generation"
+            )
+        self._process = result.process
         self._event("MC_SERVER_READY", level="INFO", attributes={"pid": result.process.pid, "ready_ref": result.ready_evidence_ref})
         return result
 
     def verify_ready(self) -> ServiceReadyObservation:
         try:
-            return self.service_runtime.verify_ready_exact(self.contract)
+            result = self.service_runtime.verify_ready_exact(self.contract)
+            if self._process is None:
+                self._process = result.process
+            elif self._process != result.process:
+                raise MinecraftServerServiceError(
+                    "Minecraft ready process generation drifted"
+                )
+            return result
         except Exception as exc:
             self._failure("MC_SERVER_READY_VERIFICATION_FAILED", exc)
             raise
@@ -459,7 +487,22 @@ class MinecraftServerServiceController:
     def stop(self) -> ServiceStopOutcome:
         self._event("MC_SERVER_STOP", level="INFO")
         try:
-            result = self.service_runtime.stop_exact(self.contract)
+            if self._process is None:
+                observation = self.reconcile()
+                if observation.process is None:
+                    return ServiceStopOutcome(
+                        self.contract.digest(),
+                        True,
+                        tuple(observation.evidence_refs),
+                    )
+            assert self._process is not None
+            expected = self._process
+            result = self.service_runtime.stop_exact(
+                self.contract,
+                expected,
+            )
+            if result.stopped:
+                self._process = None
         except Exception as exc:
             self._failure("MC_SERVER_STOP_FAILED", exc)
             raise
