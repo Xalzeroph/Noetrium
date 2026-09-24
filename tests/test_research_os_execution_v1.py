@@ -824,10 +824,16 @@ class _ExecutionStoreWithoutActiveCut:
     def node_state(self, execution_id, node_id):
         raise AssertionError("unused")
 
+    def node_states(self, execution_id, node_ids):
+        raise AssertionError("unused")
+
     def recover_expired(self, execution_id, *, now_ns):
         raise AssertionError("unused")
 
     def mark_ready(self, execution_id, node_id, *, now_ns):
+        raise AssertionError("unused")
+
+    def mark_ready_many(self, execution_id, node_ids, *, now_ns):
         raise AssertionError("unused")
 
     def claim(
@@ -885,11 +891,12 @@ class _ExecutionStoreWithoutActiveCut:
     ):
         raise AssertionError("unused")
 
-    def schedule_retry(
+    def retry_failed_subgraph(
         self,
         execution_id,
-        node_id,
+        failed_node_id,
         *,
+        descendant_node_ids,
         retry_not_before_ns,
     ):
         raise AssertionError("unused")
@@ -901,6 +908,9 @@ class _ExecutionStoreWithoutActiveCut:
         *,
         blocked_by_node_ids,
     ):
+        raise AssertionError("unused")
+
+    def mark_blocked_many(self, execution_id, transitions):
         raise AssertionError("unused")
 
     def resolve_reconciliation(
@@ -930,6 +940,9 @@ class _ExecutionStoreWithoutActiveCut:
         raise AssertionError("unused")
 
     def reuse_record(self, execution_id, node_id):
+        raise AssertionError("unused")
+
+    def attempt_state(self, execution_id, node_id, attempt_number):
         raise AssertionError("unused")
 
     def attempts(self, execution_id, node_id):
