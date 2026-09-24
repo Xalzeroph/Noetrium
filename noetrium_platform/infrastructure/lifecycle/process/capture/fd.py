@@ -1,44 +1,25 @@
 from __future__ import annotations
 
-from noetrium_platform.foundation.kernel.kernel.durability import flush_file_descriptor
-
-import os
 from pathlib import Path
+
+from noetrium_platform.foundation.kernel.kernel.durability import PersistentAppendFile
 
 
 class CaptureFD:
-    """Owns exactly one active append fd."""
+    """Process-capture adapter over the canonical platform append primitive."""
 
-    def __init__(self,path:Path)->None:
-        self.path=path
-        self.fd:int|None=None
+    def __init__(self, path: Path) -> None:
+        self.path = path
+        self._append = PersistentAppendFile(path)
 
-    def open(self)->None:
-        if self.fd is None:
-            flags = os.O_CREAT | os.O_APPEND | os.O_WRONLY
-            if os.name == "nt":
-                flags |= getattr(os, "O_BINARY", 0)
-            self.fd=os.open(self.path,flags,0o644)
+    def open(self) -> None:
+        self._append.open()
 
-    def write_all(self,view:memoryview)->None:
-        if self.fd is None:
-            raise RuntimeError("capture fd is not open")
-        pos=0
-        while pos<len(view):
-            n=os.write(self.fd,view[pos:])
-            if n<=0:
-                raise OSError("capture write returned zero bytes")
-            pos+=n
+    def write_all(self, view: memoryview) -> None:
+        self._append.write_all(view)
 
-    def sync(self)->None:
-        if self.fd is None:
-            raise RuntimeError("capture fd is not open")
-        flush_file_descriptor(self.fd)
+    def sync(self) -> None:
+        self._append.sync()
 
-    def close(self,*,sync:bool)->None:
-        if self.fd is None:
-            return
-        if sync:
-            flush_file_descriptor(self.fd)
-        os.close(self.fd)
-        self.fd=None
+    def close(self, *, sync: bool) -> None:
+        self._append.close(sync=sync)

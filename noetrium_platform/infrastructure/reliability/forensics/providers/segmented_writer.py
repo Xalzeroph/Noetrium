@@ -1,10 +1,20 @@
 from __future__ import annotations
 
-from noetrium_platform.foundation.kernel.kernel.durability import flush_file_descriptor
-
-import os
 from dataclasses import dataclass
 from pathlib import Path
+
+from noetrium_platform.foundation.kernel.kernel.durability import (
+    AppendDurability,
+    append_bytes,
+)
+from noetrium_platform.infrastructure.reliability.forensics.providers.hashchain_core import (
+    encode_row,
+    stat_signature,
+)
+from noetrium_platform.infrastructure.reliability.forensics.providers.segmented_state import (
+    SegmentStateCell,
+    SegmentWriterState,
+)
 
 
 @dataclass(frozen=True, slots=True)
@@ -12,12 +22,9 @@ class SegmentedAppendReceipt:
     row_hash: str
     created_segment: bool
 
-from noetrium_platform.infrastructure.reliability.forensics.providers.hashchain_core import encode_row, stat_signature
-from noetrium_platform.infrastructure.reliability.forensics.providers.segmented_state import SegmentStateCell, SegmentWriterState
-
 
 class SegmentedLedgerWriter:
-    """Owns append/rotation mechanics; verification and manifest publication live elsewhere."""
+    """Owns record/rotation policy while Platform owns append mechanics."""
 
     def __init__(
         self,
@@ -35,7 +42,10 @@ class SegmentedLedgerWriter:
     def path(self, index: int) -> Path:
         return self.root / f"{index:08d}.jsonl"
 
-    def append(self, payload: dict[str, object]) -> SegmentedAppendReceipt:
+    def append(
+        self,
+        payload: dict[str, object],
+    ) -> SegmentedAppendReceipt:
         state = self.state.value
         encoded, row_hash = encode_row(state.tail_hash, payload)
         active = self.path(state.active_index)
@@ -52,12 +62,17 @@ class SegmentedLedgerWriter:
 
         due = (state.count + 1) % self.fsync_every == 0
         created_segment = not active.exists()
-        mode = "xb" if created_segment else "ab"
-        with active.open(mode, buffering=1024 * 1024) as handle:
-            handle.write(encoded)
-            handle.flush()
-            if due:
-                flush_file_descriptor(handle.fileno())
+        append_bytes(
+            active,
+            encoded,
+            durability=(
+                AppendDurability.DURABLE
+                if due
+                else AppendDurability.BUFFERED
+            ),
+            buffering=1024 * 1024,
+            exclusive_create=created_segment,
+        )
 
         self.state.replace(
             SegmentWriterState(
@@ -71,4 +86,7 @@ class SegmentedLedgerWriter:
                 directory_signature=stat_signature(self.root),
             )
         )
-        return SegmentedAppendReceipt(row_hash=row_hash, created_segment=created_segment)
+        return SegmentedAppendReceipt(
+            row_hash=row_hash,
+            created_segment=created_segment,
+        )
