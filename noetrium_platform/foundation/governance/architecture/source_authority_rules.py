@@ -10,18 +10,21 @@ DEFAULT_SOURCE_AUTHORITY_RULES: tuple[SourceAuthorityRule, ...] = (
         "sqlite3.connect",
         ("noetrium_platform.foundation.kernel.kernel.durability.sqlite",),
         exact_call("sqlite3.connect"),
+        protect_reference=True,
     ),
     SourceAuthorityRule(
         "concurrency.thread_pool",
         "concurrent.futures.ThreadPoolExecutor",
         ("noetrium_platform.foundation.kernel.concurrency.providers.executors",),
         exact_call("concurrent.futures.ThreadPoolExecutor"),
+        protect_reference=True,
     ),
     SourceAuthorityRule(
         "concurrency.process_pool",
         "concurrent.futures.ProcessPoolExecutor",
         ("noetrium_platform.foundation.kernel.concurrency.providers.executors",),
         exact_call("concurrent.futures.ProcessPoolExecutor"),
+        protect_reference=True,
     ),
     SourceAuthorityRule(
         "concurrency.thread",
@@ -32,12 +35,14 @@ DEFAULT_SOURCE_AUTHORITY_RULES: tuple[SourceAuthorityRule, ...] = (
             "noetrium_platform.foundation.kernel.concurrency.providers.timer",
         ),
         exact_call("threading.Thread"),
+        protect_reference=True,
     ),
     SourceAuthorityRule(
         "concurrency.asyncio_task",
         "asyncio.create_task",
         ("noetrium_platform.foundation.kernel.concurrency.providers.async_io",),
         exact_call("asyncio.create_task"),
+        protect_reference=True,
     ),
     SourceAuthorityRule(
         "concurrency.event_loop_task",
@@ -120,10 +125,14 @@ DEFAULT_SOURCE_AUTHORITY_RULES: tuple[SourceAuthorityRule, ...] = (
         exact_call("asyncio.create_subprocess_exec"),
     ),
     SourceAuthorityRule(
-        "service.process_spawn",
+        "lifecycle.process_spawn",
         "subprocess.Popen",
-        ("noetrium_platform.infrastructure.lifecycle.service.runtime.linux_spawn",),
+        (
+            "noetrium_platform.infrastructure.lifecycle.service.runtime.linux_spawn",
+            "noetrium_platform.infrastructure.lifecycle.process.supervision.runtime.supervisor",
+        ),
         exact_call("subprocess.Popen"),
+        protect_reference=True,
     ),
     SourceAuthorityRule(
         "process.process_group_signal",
