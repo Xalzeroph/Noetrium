@@ -91,18 +91,22 @@ class _AdaptAgentBenchmarkResolver:
     def resolve(self, definition, study_factory):
         assert definition.package == "adaptagent_acl2025"
         assert study_factory.qualname == "build_adaptagent_study"
-        return (
+        return tuple(
             ReproductionBenchmarkSelection(
                 _benchmark(
-                    "mind2web",
+                    benchmark_id,
                     split_aware=True,
                     split_id="test",
                 ),
                 ("test",),
                 canonical_digest(
-                    {"authority": "test.adaptagent.mind2web.paper-cut"}
+                    {
+                        "authority": "test.adaptagent.paper-cut",
+                        "benchmark_id": benchmark_id,
+                    }
                 ),
-            ),
+            )
+            for benchmark_id in definition.catalog.benchmark_ids
         )
 
 
@@ -142,10 +146,13 @@ def test_materialized_fleet_compiles_exact_study_and_bound_program(monkeypatch) 
         _AdaptAgentBenchmarkResolver()
     )
 
-    assert len(materialized.requests) == 1
-    assert len(materialized.lanes) == 1
-    assert len(materialized.portfolio.programs) == 1
-    lane = materialized.lanes[0]
+    assert len(materialized.requests) == 2
+    assert len(materialized.lanes) == 2
+    assert len(materialized.portfolio.programs) == 2
+    lane = next(
+        row for row in materialized.lanes
+        if row.binding.benchmark_id == "mind2web"
+    )
     assert lane.definition.package == "adaptagent_acl2025"
     assert lane.binding.benchmark_split_id == "test"
     assert lane.study.benchmark_split_id == "test"
