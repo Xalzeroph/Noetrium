@@ -1,5 +1,10 @@
 from __future__ import annotations
-from noetrium_platform.research.execution.workflow.api import AgentMethodSpec, AgentPhaseSpec
+
+from noetrium import api
+
+AgentMethodSpec = api.AgentMethodSpec
+AgentPhaseSpec = api.AgentPhaseSpec
+
 from .fidelity import ADAPTAGENT_FIDELITY
 
 ADAPTAGENT_PHASES = (
