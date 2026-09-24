@@ -12947,8 +12947,18 @@
     },
     {
       "kind": "references",
+      "source": "noetrium_platform.infrastructure.resources.directory.api.contracts.WorkspaceGcAssessment",
+      "target": "noetrium_platform.infrastructure.resources.directory.api.contracts.WorkspaceReferenceClosure"
+    },
+    {
+      "kind": "references",
       "source": "noetrium_platform.infrastructure.resources.directory.api.contracts.WorkspaceMetadataError",
       "target": "noetrium_platform.infrastructure.resources.directory.api.contracts.WorkspaceMetadataFailureCode"
+    },
+    {
+      "kind": "references",
+      "source": "noetrium_platform.infrastructure.resources.directory.api.contracts.WorkspaceReferenceClosure",
+      "target": "noetrium_platform.infrastructure.resources.directory.api.contracts.WorkspaceClosureAuthority"
     },
     {
       "kind": "references",
@@ -13019,6 +13029,16 @@
       "kind": "references",
       "source": "noetrium_platform.infrastructure.resources.directory.api.ports.WorkspaceManagementPort",
       "target": "noetrium_platform.infrastructure.resources.directory.api.contracts.WorkspaceAllocation"
+    },
+    {
+      "kind": "references",
+      "source": "noetrium_platform.infrastructure.resources.directory.api.ports.WorkspaceManagementPort",
+      "target": "noetrium_platform.infrastructure.resources.directory.api.contracts.WorkspaceGcAssessment"
+    },
+    {
+      "kind": "references",
+      "source": "noetrium_platform.infrastructure.resources.directory.api.ports.WorkspaceManagementPort",
+      "target": "noetrium_platform.infrastructure.resources.directory.api.contracts.WorkspaceReferenceClosure"
     },
     {
       "kind": "references",
@@ -78642,7 +78662,7 @@
         "path"
       ],
       "kind": "dataclass",
-      "line": 107,
+      "line": 231,
       "methods": [],
       "module": "noetrium_platform.infrastructure.resources.directory.api.contracts",
       "name": "DirectoryCleanupCandidate",
@@ -78665,7 +78685,7 @@
         "path"
       ],
       "kind": "dataclass",
-      "line": 74,
+      "line": 198,
       "methods": [],
       "module": "noetrium_platform.infrastructure.resources.directory.api.contracts",
       "name": "DirectoryContentStats",
@@ -78688,7 +78708,7 @@
         "path"
       ],
       "kind": "dataclass",
-      "line": 99,
+      "line": 223,
       "methods": [],
       "module": "noetrium_platform.infrastructure.resources.directory.api.contracts",
       "name": "DirectoryEntryStats",
@@ -78717,7 +78737,7 @@
         "workspaces"
       ],
       "kind": "dataclass",
-      "line": 44,
+      "line": 168,
       "methods": [
         "path_for",
         "entries"
@@ -78744,7 +78764,7 @@
         "used_bytes"
       ],
       "kind": "dataclass",
-      "line": 90,
+      "line": 214,
       "methods": [],
       "module": "noetrium_platform.infrastructure.resources.directory.api.contracts",
       "name": "DirectoryOverview",
@@ -78767,7 +78787,7 @@
         "used_bytes"
       ],
       "kind": "dataclass",
-      "line": 82,
+      "line": 206,
       "methods": [],
       "module": "noetrium_platform.infrastructure.resources.directory.api.contracts",
       "name": "DirectoryUsage",
@@ -78796,7 +78816,7 @@
         "WORKSPACES"
       ],
       "kind": "enum",
-      "line": 30,
+      "line": 154,
       "methods": [],
       "module": "noetrium_platform.infrastructure.resources.directory.api.contracts",
       "name": "ManagedDirectoryKind",
@@ -78821,7 +78841,7 @@
         "workspace_id"
       ],
       "kind": "dataclass",
-      "line": 64,
+      "line": 188,
       "methods": [],
       "module": "noetrium_platform.infrastructure.resources.directory.api.contracts",
       "name": "WorkspaceAllocation",
@@ -78834,12 +78854,63 @@
     },
     {
       "bases": [
+        "StrEnum"
+      ],
+      "decorators": [],
+      "fields": [
+        "EVIDENCE",
+        "EXECUTION",
+        "RECOVERY"
+      ],
+      "kind": "enum",
+      "line": 29,
+      "methods": [],
+      "module": "noetrium_platform.infrastructure.resources.directory.api.contracts",
+      "name": "WorkspaceClosureAuthority",
+      "nesting": [
+        "WorkspaceClosureAuthority"
+      ],
+      "qualname": "noetrium_platform.infrastructure.resources.directory.api.contracts.WorkspaceClosureAuthority",
+      "system_key": "resource",
+      "top_system": "resource"
+    },
+    {
+      "bases": [],
+      "decorators": [
+        "dataclass(frozen=True, slots=True)"
+      ],
+      "fields": [
+        "category",
+        "closures",
+        "proof_digest",
+        "scope",
+        "workspace_id",
+        "workspace_identity_digest"
+      ],
+      "kind": "dataclass",
+      "line": 72,
+      "methods": [
+        "__post_init__",
+        "closure_complete",
+        "eligible"
+      ],
+      "module": "noetrium_platform.infrastructure.resources.directory.api.contracts",
+      "name": "WorkspaceGcAssessment",
+      "nesting": [
+        "WorkspaceGcAssessment"
+      ],
+      "qualname": "noetrium_platform.infrastructure.resources.directory.api.contracts.WorkspaceGcAssessment",
+      "system_key": "resource",
+      "top_system": "resource"
+    },
+    {
+      "bases": [
         "RuntimeError"
       ],
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 18,
+      "line": 17,
       "methods": [
         "__init__",
         "failure_correlation_refs"
@@ -78864,7 +78935,7 @@
         "PAYLOAD_SHAPE"
       ],
       "kind": "enum",
-      "line": 12,
+      "line": 11,
       "methods": [],
       "module": "noetrium_platform.infrastructure.resources.directory.api.contracts",
       "name": "WorkspaceMetadataFailureCode",
@@ -78876,13 +78947,37 @@
       "top_system": "resource"
     },
     {
+      "bases": [],
+      "decorators": [
+        "dataclass(frozen=True, slots=True)"
+      ],
+      "fields": [
+        "authority",
+        "proof_digest",
+        "retained_reference_ids"
+      ],
+      "kind": "dataclass",
+      "line": 36,
+      "methods": [
+        "__post_init__"
+      ],
+      "module": "noetrium_platform.infrastructure.resources.directory.api.contracts",
+      "name": "WorkspaceReferenceClosure",
+      "nesting": [
+        "WorkspaceReferenceClosure"
+      ],
+      "qualname": "noetrium_platform.infrastructure.resources.directory.api.contracts.WorkspaceReferenceClosure",
+      "system_key": "resource",
+      "top_system": "resource"
+    },
+    {
       "bases": [
         "Protocol"
       ],
       "decorators": [],
       "fields": [],
       "kind": "protocol",
-      "line": 49,
+      "line": 66,
       "methods": [
         "clean_plan",
         "clean"
@@ -78903,7 +78998,7 @@
       "decorators": [],
       "fields": [],
       "kind": "protocol",
-      "line": 42,
+      "line": 59,
       "methods": [
         "usage",
         "overview",
@@ -78926,7 +79021,7 @@
       "decorators": [],
       "fields": [],
       "kind": "protocol",
-      "line": 21,
+      "line": 23,
       "methods": [
         "layout",
         "ensure_layout",
@@ -78953,7 +79048,7 @@
         "workspaces"
       ],
       "kind": "dataclass",
-      "line": 55,
+      "line": 72,
       "methods": [],
       "module": "noetrium_platform.infrastructure.resources.directory.api.ports",
       "name": "DirectoryManagementAuthorities",
@@ -78971,10 +79066,11 @@
       "decorators": [],
       "fields": [],
       "kind": "protocol",
-      "line": 28,
+      "line": 30,
       "methods": [
         "allocate_workspace",
         "list_workspaces",
+        "assess_workspace_gc",
         "remove_workspace"
       ],
       "module": "noetrium_platform.infrastructure.resources.directory.api.ports",
@@ -79055,7 +79151,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 37,
+      "line": 45,
       "methods": [
         "__init__",
         "_root",
@@ -79068,6 +79164,9 @@
         "list_workspaces",
         "_metadata_paths",
         "_decode_metadata",
+        "assess_workspace_gc",
+        "_metadata_digest",
+        "_decode_retirement",
         "remove_workspace",
         "_validate_name",
         "_validate_optional_text"
@@ -103518,11 +103617,11 @@
     }
   ],
   "counts": {
-    "association_edges": 3455,
-    "classes": 3369,
+    "association_edges": 3459,
+    "classes": 3372,
     "constructor_edges": 925,
     "inheritance_edges": 149,
-    "module_import_edges": 5025,
+    "module_import_edges": 5026,
     "parse_errors": 0,
     "python_modules": 1914,
     "registry_authorities": 20,
@@ -121092,6 +121191,10 @@
     {
       "source": "noetrium_platform.infrastructure.resources.directory.api.contracts",
       "target": "noetrium_platform.foundation.governance.api"
+    },
+    {
+      "source": "noetrium_platform.infrastructure.resources.directory.api.contracts",
+      "target": "noetrium_platform.foundation.kernel.kernel"
     },
     {
       "source": "noetrium_platform.infrastructure.resources.directory.api.ports",
@@ -141118,7 +141221,8 @@
     },
     {
       "imports": [
-        "noetrium_platform.foundation.governance.api"
+        "noetrium_platform.foundation.governance.api",
+        "noetrium_platform.foundation.kernel.kernel"
       ],
       "module": "noetrium_platform.infrastructure.resources.directory.api.contracts",
       "path": "noetrium_platform/infrastructure/resources/directory/api/contracts.py",
@@ -144420,7 +144524,7 @@
   "parse_errors": [],
   "registry_sha256": "d3fc1bab831f1b7379e5a36048a61c00fe173429df958270d36a16f3f00171c0",
   "schema": "noetrium-code-architecture-index.v1",
-  "source_git_sha": "f9b3505f2cedc6ec90f98e5bae2fb0e4062128a6",
+  "source_git_sha": "10d281e1969dad18ded747f8d0722a033f253ba4",
   "system_import_edges": [
     {
       "count": 85,
@@ -144643,7 +144747,7 @@
       "target": "governance"
     },
     {
-      "count": 16,
+      "count": 17,
       "source": "resource",
       "target": "platform"
     },

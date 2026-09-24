@@ -2,14 +2,14 @@
   "counts": {
     "parse_errors": 0,
     "python_files": 3693,
-    "python_import_edges": 7178,
-    "symbols": 5014,
+    "python_import_edges": 7179,
+    "symbols": 5017,
     "tracked_files": 4329,
     "typescript_javascript_files": 11
   },
   "language_symbol_counts": {
     "javascript": 1,
-    "python": 5008,
+    "python": 5011,
     "typescript": 5
   },
   "parse_errors": [],
@@ -13344,6 +13344,12 @@
       "source_module": "noetrium_platform.infrastructure.resources.directory.api.contracts",
       "source_role": "core_platform",
       "target_module": "noetrium_platform.foundation.governance.api",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "noetrium_platform.infrastructure.resources.directory.api.contracts",
+      "source_role": "core_platform",
+      "target_module": "noetrium_platform.foundation.kernel.kernel",
       "target_role": "core_platform"
     },
     {
@@ -43085,7 +43091,7 @@
   ],
   "role_import_counts": [
     {
-      "count": 2599,
+      "count": 2600,
       "source_role": "core_platform",
       "target_role": "core_platform"
     },
@@ -43212,7 +43218,7 @@
     "tooling": 79
   },
   "role_symbol_counts": {
-    "core_platform": 3370,
+    "core_platform": 3373,
     "examples": 3,
     "other": 23,
     "public_facade": 4,
@@ -43224,7 +43230,7 @@
     "tooling": 39
   },
   "schema": "noetrium-repository-code-architecture-index.v1",
-  "source_git_sha": "f9b3505f2cedc6ec90f98e5bae2fb0e4062128a6",
+  "source_git_sha": "10d281e1969dad18ded747f8d0722a033f253ba4",
   "symbols": [
     {
       "bases": [],
@@ -100790,7 +100796,7 @@
       ],
       "kind": "enum",
       "language": "python",
-      "line": 12,
+      "line": 11,
       "methods": [],
       "module": "noetrium_platform.infrastructure.resources.directory.api.contracts",
       "name": "WorkspaceMetadataFailureCode",
@@ -100806,7 +100812,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 18,
+      "line": 17,
       "methods": [
         "__init__",
         "failure_correlation_refs"
@@ -100815,6 +100821,75 @@
       "name": "WorkspaceMetadataError",
       "path": "noetrium_platform/infrastructure/resources/directory/api/contracts.py",
       "qualname": "noetrium_platform.infrastructure.resources.directory.api.contracts.WorkspaceMetadataError",
+      "role": "core_platform"
+    },
+    {
+      "bases": [
+        "StrEnum"
+      ],
+      "decorators": [],
+      "fields": [
+        "EXECUTION",
+        "EVIDENCE",
+        "RECOVERY"
+      ],
+      "kind": "enum",
+      "language": "python",
+      "line": 29,
+      "methods": [],
+      "module": "noetrium_platform.infrastructure.resources.directory.api.contracts",
+      "name": "WorkspaceClosureAuthority",
+      "path": "noetrium_platform/infrastructure/resources/directory/api/contracts.py",
+      "qualname": "noetrium_platform.infrastructure.resources.directory.api.contracts.WorkspaceClosureAuthority",
+      "role": "core_platform"
+    },
+    {
+      "bases": [],
+      "decorators": [
+        "dataclass(frozen=True, slots=True)"
+      ],
+      "fields": [
+        "authority: WorkspaceClosureAuthority",
+        "proof_digest: str",
+        "retained_reference_ids: tuple[str, ...]"
+      ],
+      "kind": "dataclass",
+      "language": "python",
+      "line": 36,
+      "methods": [
+        "__post_init__"
+      ],
+      "module": "noetrium_platform.infrastructure.resources.directory.api.contracts",
+      "name": "WorkspaceReferenceClosure",
+      "path": "noetrium_platform/infrastructure/resources/directory/api/contracts.py",
+      "qualname": "noetrium_platform.infrastructure.resources.directory.api.contracts.WorkspaceReferenceClosure",
+      "role": "core_platform"
+    },
+    {
+      "bases": [],
+      "decorators": [
+        "dataclass(frozen=True, slots=True)"
+      ],
+      "fields": [
+        "workspace_id: str",
+        "scope: ScopeIdentity",
+        "category: str",
+        "closures: tuple[WorkspaceReferenceClosure, ...]",
+        "workspace_identity_digest: str",
+        "proof_digest: str"
+      ],
+      "kind": "dataclass",
+      "language": "python",
+      "line": 72,
+      "methods": [
+        "__post_init__",
+        "closure_complete",
+        "eligible"
+      ],
+      "module": "noetrium_platform.infrastructure.resources.directory.api.contracts",
+      "name": "WorkspaceGcAssessment",
+      "path": "noetrium_platform/infrastructure/resources/directory/api/contracts.py",
+      "qualname": "noetrium_platform.infrastructure.resources.directory.api.contracts.WorkspaceGcAssessment",
       "role": "core_platform"
     },
     {
@@ -100836,7 +100911,7 @@
       ],
       "kind": "enum",
       "language": "python",
-      "line": 30,
+      "line": 154,
       "methods": [],
       "module": "noetrium_platform.infrastructure.resources.directory.api.contracts",
       "name": "ManagedDirectoryKind",
@@ -100863,7 +100938,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 44,
+      "line": 168,
       "methods": [
         "path_for",
         "entries"
@@ -100889,7 +100964,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 64,
+      "line": 188,
       "methods": [],
       "module": "noetrium_platform.infrastructure.resources.directory.api.contracts",
       "name": "WorkspaceAllocation",
@@ -100910,7 +100985,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 74,
+      "line": 198,
       "methods": [],
       "module": "noetrium_platform.infrastructure.resources.directory.api.contracts",
       "name": "DirectoryContentStats",
@@ -100931,7 +101006,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 82,
+      "line": 206,
       "methods": [],
       "module": "noetrium_platform.infrastructure.resources.directory.api.contracts",
       "name": "DirectoryUsage",
@@ -100953,7 +101028,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 90,
+      "line": 214,
       "methods": [],
       "module": "noetrium_platform.infrastructure.resources.directory.api.contracts",
       "name": "DirectoryOverview",
@@ -100974,7 +101049,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 99,
+      "line": 223,
       "methods": [],
       "module": "noetrium_platform.infrastructure.resources.directory.api.contracts",
       "name": "DirectoryEntryStats",
@@ -100996,7 +101071,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 107,
+      "line": 231,
       "methods": [],
       "module": "noetrium_platform.infrastructure.resources.directory.api.contracts",
       "name": "DirectoryCleanupCandidate",
@@ -101012,7 +101087,7 @@
       "fields": [],
       "kind": "protocol",
       "language": "python",
-      "line": 21,
+      "line": 23,
       "methods": [
         "layout",
         "ensure_layout",
@@ -101032,10 +101107,11 @@
       "fields": [],
       "kind": "protocol",
       "language": "python",
-      "line": 28,
+      "line": 30,
       "methods": [
         "allocate_workspace",
         "list_workspaces",
+        "assess_workspace_gc",
         "remove_workspace"
       ],
       "module": "noetrium_platform.infrastructure.resources.directory.api.ports",
@@ -101052,7 +101128,7 @@
       "fields": [],
       "kind": "protocol",
       "language": "python",
-      "line": 42,
+      "line": 59,
       "methods": [
         "usage",
         "overview",
@@ -101073,7 +101149,7 @@
       "fields": [],
       "kind": "protocol",
       "language": "python",
-      "line": 49,
+      "line": 66,
       "methods": [
         "clean_plan",
         "clean"
@@ -101097,7 +101173,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 55,
+      "line": 72,
       "methods": [],
       "module": "noetrium_platform.infrastructure.resources.directory.api.ports",
       "name": "DirectoryManagementAuthorities",
@@ -101169,7 +101245,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 37,
+      "line": 45,
       "methods": [
         "__init__",
         "_root",
@@ -101182,6 +101258,9 @@
         "list_workspaces",
         "_metadata_paths",
         "_decode_metadata",
+        "assess_workspace_gc",
+        "_metadata_digest",
+        "_decode_retirement",
         "remove_workspace",
         "_validate_name",
         "_validate_optional_text"
@@ -143929,7 +144008,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 63,
+      "line": 68,
       "methods": [
         "create",
         "python_path",
@@ -143947,7 +144026,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 79,
+      "line": 84,
       "methods": [
         "__init__",
         "run"
@@ -143966,7 +144045,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 95,
+      "line": 100,
       "methods": [],
       "module": "tests.test_runtime_asset_management_v190",
       "name": "RecordingCommandRunner",
@@ -143980,7 +144059,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 99,
+      "line": 104,
       "methods": [
         "__init__",
         "snapshot"
@@ -143997,7 +144076,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 107,
+      "line": 112,
       "methods": [
         "__init__",
         "reconcile_exact",
@@ -144017,7 +144096,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 132,
+      "line": 137,
       "methods": [
         "__init__",
         "open",
@@ -144037,7 +144116,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 173,
+      "line": 178,
       "methods": [
         "test_directory_manager_allocates_and_removes_workspaces",
         "test_python_environment_manager_is_backend_driven",
@@ -144073,7 +144152,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 442,
+      "line": 476,
       "methods": [
         "run"
       ],
@@ -144089,7 +144168,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 492,
+      "line": 526,
       "methods": [
         "__init__",
         "run"
@@ -144106,7 +144185,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 650,
+      "line": 684,
       "methods": [
         "__init__",
         "wait"

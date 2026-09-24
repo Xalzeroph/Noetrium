@@ -3,7 +3,7 @@
   "architecture_complexity": {
     "authorities": 20,
     "contract_declarations": 185,
-    "import_edges": 5306,
+    "import_edges": 5307,
     "subsystems": 15,
     "top_level_systems": 16
   },
@@ -23,7 +23,7 @@
     "effective_limits": {
       "authorities": 31,
       "contract_declarations": 185,
-      "import_edges": 5306,
+      "import_edges": 5307,
       "subsystems": 15,
       "top_level_systems": 16
     },
@@ -627,7 +627,7 @@
       "seam_id": "completed"
     }
   ],
-  "import_edges": 5306,
+  "import_edges": 5307,
   "import_violations": [],
   "layer_violations": [],
   "operation_graph": [
@@ -873,9 +873,9 @@
     }
   ],
   "package_cycles": [],
-  "report_sha256": "4f90fe028030c354f916db8554ec7dedbc3f2246c8fd8b8a37b8cb4fa3df11b9",
+  "report_sha256": "df9bb7030aa6dcea7cd621d3d5d4e6f551dead3dffd6db52a76349ed02aca814",
   "source_authority_violations": [],
-  "source_digest": "87770dc502789faa51bbfd65b8be9cfb2ee74131d4d406fdb749caa6268f18e8",
+  "source_digest": "5d563de963643b549b2947172412eeb3811cacc4a48c5153cb64c52a0cb50049",
   "source_invariant_violations": [],
   "source_root": ".",
   "subsystem_graph": [
@@ -1844,7 +1844,7 @@
   "top_optimization_risks": [
     {
       "exception_handlers": 0,
-      "import_fan_in": 451,
+      "import_fan_in": 452,
       "import_fan_out": 27,
       "io_sites": 0,
       "lock_sites": 0,
@@ -1855,7 +1855,7 @@
         "HIGH_FAN_IN",
         "HIGH_FAN_OUT"
       ],
-      "risk_score": 1885,
+      "risk_score": 1889,
       "self_mutation_sites": 0,
       "serialization_sites": 0
     },
