@@ -31,6 +31,7 @@ from noetrium_platform.infrastructure.resources.container.api.contracts import (
     LABEL_FENCING,
     LABEL_HOLDER,
     LABEL_LEASE,
+    LABEL_OWNER_GENERATION,
     LABEL_RUNTIME,
 )
 from noetrium_platform.infrastructure.resources.lease.api import (
@@ -64,19 +65,27 @@ class DockerContainerLeaseAuthority:
         leases: ResourceLeasePort,
         runtime: DockerManagedContainerPort,
         authority_id: str,
+        owner_generation_id: str,
         policy: DockerContainerLeasePolicy = DEFAULT_DOCKER_CONTAINER_LEASE_POLICY,
         reconcile_on_start: bool = True,
     ) -> None:
-        if (
-            type(authority_id) is not str
-            or len(authority_id) != 64
-            or any(ch not in "0123456789abcdef" for ch in authority_id)
+        for field_name, value in (
+            ("authority_id", authority_id),
+            ("owner_generation_id", owner_generation_id),
         ):
-            raise ValueError("Docker container authority_id must be lowercase sha256")
+            if (
+                type(value) is not str
+                or len(value) != 64
+                or any(ch not in "0123456789abcdef" for ch in value)
+            ):
+                raise ValueError(
+                    f"Docker container {field_name} must be lowercase sha256"
+                )
         self.ownership = ownership
         self.leases = leases
         self.runtime = runtime
         self.authority_id = authority_id
+        self.owner_generation_id = owner_generation_id
         self.policy = policy
         if reconcile_on_start:
             self.reconcile()
@@ -93,6 +102,7 @@ class DockerContainerLeaseAuthority:
         digest = canonical_digest(
             {
                 "authority_id": self.authority_id,
+                "owner_generation_id": self.owner_generation_id,
                 "allocation_id": allocation_id,
                 "fencing_token": fencing_token,
             }
@@ -162,6 +172,7 @@ class DockerContainerLeaseAuthority:
             image,
             runtime_identity_digest,
             self.authority_id,
+            self.owner_generation_id,
             self._name(allocation_id, lease.fencing_token),
             lease,
         )
@@ -181,9 +192,10 @@ class DockerContainerLeaseAuthority:
                 image=image,
                 runtime_identity_digest=runtime_identity_digest,
             )
-        # Exact live replay after controller/process restart: adopt, do not
-        # create a second container or advance the fencing generation.
-        return handle
+        raise DockerContainerLeaseConflict(
+            "managed Docker allocation already has a live container in the "
+            "current controller generation"
+        )
 
     def docker_run_prefix(
         self,
@@ -224,6 +236,7 @@ class DockerContainerLeaseAuthority:
             handle.image,
             handle.runtime_identity_digest,
             handle.authority_id,
+            handle.owner_generation_id,
             handle.container_name,
             renewed,
         )
@@ -267,6 +280,7 @@ class DockerContainerLeaseAuthority:
             fencing_raw = labels.get(LABEL_FENCING)
             runtime_digest = labels.get(LABEL_RUNTIME)
             authority_id = labels.get(LABEL_AUTHORITY)
+            owner_generation_id = labels.get(LABEL_OWNER_GENERATION)
             holder_key = labels.get(LABEL_HOLDER)
             lease: ResourceLease | None = None
             fencing: int | None = None
@@ -285,6 +299,7 @@ class DockerContainerLeaseAuthority:
             )
             valid = (
                 authority_id == self.authority_id
+                and owner_generation_id == self.owner_generation_id
                 and exact_resource
                 and lease is not None
                 and lease.state is LeaseState.ACTIVE
