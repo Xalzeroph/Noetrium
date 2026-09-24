@@ -180,24 +180,39 @@ class DurableResourceAuthoritiesTests(TestCase):
             meta = build_durable_platform_meta(root)
             meta.scopes.register(scope, PLATFORM_SCOPE)
             revision = "a" * 64
+            runtime_digest = "d" * 64
             instance = EnvironmentInstance(
                 "env-reuse",
                 "b" * 64,
                 "docker",
                 "container:env-reuse",
+                runtime_digest,
                 scope,
                 "web-default",
                 revision,
             )
             meta.environments.register_instance(instance)
             self.assertEqual(
-                meta.environments.reusable_instances("web-default", revision),
+                meta.environments.reusable_instances(
+                    "web-default", revision, runtime_digest
+                ),
                 (instance,),
             )
+
+            with self.assertRaises(KeyError):
+                meta.environments.acquire_reusable_instance(
+                    "web-default",
+                    revision,
+                    "e" * 64,
+                    binding_id="wrong-runtime",
+                    role="runner",
+                    scope=scope,
+                )
 
             acquisition = meta.environments.acquire_reusable_instance(
                 "web-default",
                 revision,
+                runtime_digest,
                 binding_id="binding-reuse",
                 role="runner",
                 scope=scope,
@@ -210,7 +225,9 @@ class DurableResourceAuthoritiesTests(TestCase):
             )
             self.assertEqual(acquisition.instance.generation, 1)
             self.assertEqual(
-                meta.environments.reusable_instances("web-default", revision),
+                meta.environments.reusable_instances(
+                    "web-default", revision, runtime_digest
+                ),
                 (),
             )
             restored_acquired = build_durable_platform_meta(root)
@@ -226,6 +243,7 @@ class DurableResourceAuthoritiesTests(TestCase):
             proof = EnvironmentCleanlinessProof(
                 "env-reuse",
                 revision,
+                runtime_digest,
                 dirty.generation,
                 EnvironmentCleanlinessKind.OVERLAY_DESTROYED,
                 "c" * 64,
@@ -236,13 +254,16 @@ class DurableResourceAuthoritiesTests(TestCase):
             )
             self.assertIs(clean.state, EnvironmentInstanceState.CLEAN)
             self.assertEqual(
-                meta.environments.reusable_instances("web-default", revision),
+                meta.environments.reusable_instances(
+                    "web-default", revision, runtime_digest
+                ),
                 (clean,),
             )
 
             reacquisition = meta.environments.acquire_reusable_instance(
                 "web-default",
                 revision,
+                runtime_digest,
                 binding_id=binding.binding_id,
                 role=binding.role,
                 scope=binding.scope,
@@ -322,6 +343,7 @@ class DurableResourceAuthoritiesTests(TestCase):
                 "1" * 64,
                 "local",
                 "python.exe",
+                "3" * 64,
                 scope,
                 "text-world-default",
                 "2" * 64,
