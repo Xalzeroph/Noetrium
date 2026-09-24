@@ -41,7 +41,7 @@ def _hold_run_artifact_writer_guard(
         InterprocessFileLock,
     )
 
-    guard = Path(root) / ".run-artifact-finalized" / "writer.guard.lock"
+    guard = _store(Path(root))._process_lock_path
     with InterprocessFileLock(guard):
         ready.set()
         if not release.wait(15):
