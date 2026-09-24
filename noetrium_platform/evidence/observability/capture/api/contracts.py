@@ -7,6 +7,7 @@ from enum import StrEnum
 
 from noetrium_platform.foundation.governance.api import SystemIdentity
 from noetrium_platform.foundation.kernel.kernel import ExecutionContext, JsonObject, JsonValue, freeze_json
+from noetrium_platform.foundation.kernel.kernel.durability import sha256_bytes
 
 
 class RetentionClass(StrEnum):
@@ -130,8 +131,7 @@ class RawObservationEnvelope:
 
     @property
     def raw_payload_sha256(self) -> str:
-        import hashlib
-        return hashlib.sha256(self.raw_payload).hexdigest()
+        return sha256_bytes(self.raw_payload)
 
 
 @dataclass(frozen=True, slots=True)
