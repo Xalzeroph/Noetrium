@@ -67,9 +67,9 @@ def _workflow_policy() -> ReadinessCriterion:
     )
 
 
-def _projection_build() -> ReadinessCriterion:
+def _projection_clean() -> ReadinessCriterion:
     completed = subprocess.run(
-        [sys.executable, "scripts/sync_architecture_maps.py", "--verify-build"],
+        [sys.executable, "scripts/sync_architecture_maps.py", "--check"],
         cwd=ROOT,
         text=True,
         stdout=subprocess.PIPE,
@@ -77,7 +77,7 @@ def _projection_build() -> ReadinessCriterion:
         check=False,
     )
     return ReadinessCriterion(
-        "architecture_projection_build",
+        "architecture_projection_clean",
         completed.returncode == 0,
         {
             "returncode": completed.returncode,
@@ -108,6 +108,15 @@ def _no_degradation() -> ReadinessCriterion:
                 for row in findings[:50]
             ],
         },
+    )
+
+
+def _no_compatibility_surface() -> ReadinessCriterion:
+    errors = tuple(_load_script("no_compatibility_surface_gate").validate())
+    return ReadinessCriterion(
+        "no_compatibility_surface",
+        not errors,
+        {"errors": list(errors)},
     )
 
 
@@ -193,6 +202,7 @@ def _canonical_graph_resource_binding() -> ReadinessCriterion:
 _SCALE_EXECUTION_TESTS = (
     "tests/test_research_graph_scheduler_durable_v1.py",
     "tests/test_research_graph_scale_v1.py",
+    "tests/test_research_graph_frontier_v1.py",
     "tests/test_research_graph_claim_control_fence_v1.py",
     "tests/test_research_graph_cut_switch_fence_v1.py",
     "tests/test_research_os_multi_program_selection_v1.py",
@@ -313,8 +323,9 @@ def evaluate() -> ResearchOSScaleReadiness:
     criteria = (
         _architecture_topology(),
         _workflow_policy(),
-        _projection_build(),
+        _projection_clean(),
         _no_degradation(),
+        _no_compatibility_surface(),
         _unmanaged_executor_constructors(),
         _canonical_graph_resource_binding(),
         _durable_execution_contract(),
