@@ -1,5 +1,8 @@
 from __future__ import annotations
 
+import json
+from pathlib import Path
+
 import pytest
 
 from noetrium import api
@@ -15,6 +18,7 @@ from research.reproductions.research_os import (
     executable_reproduction_definitions,
     is_research_os_executable,
     materialize_reproduction_method_program,
+    resolve_execution_requirements,
     resolve_method_program_binding,
 )
 
@@ -218,3 +222,57 @@ def test_bound_reproduction_lanes_compile_as_distinct_product_programs() -> None
     portfolio = api.ResearchPortfolio("bound-reproduction-lanes", programs)
     assert len(portfolio.programs) == 3
     assert len(portfolio.portfolio_digest) == 64
+
+
+
+def test_every_reproduction_projection_records_current_product_research_os_identity() -> None:
+    definitions = discover_reproduction_definitions()
+    for definition in definitions:
+        payload = json.loads(
+            Path(
+                "research",
+                "reproductions",
+                definition.package,
+                "reproduction.json",
+            ).read_text(encoding="utf-8")
+        )
+        assert payload["schema"] == "noetrium.reproduction.projection.v8"
+        projected = payload["research_os"]
+        assert projected["surface"] == "noetrium.api"
+
+        if not is_research_os_executable(definition):
+            assert projected == {
+                "surface": "noetrium.api",
+                "execution_state": "not_executable",
+                "program_id": None,
+                "program_digest": None,
+                "execution_requirements": [],
+            }
+            continue
+
+        program = compile_reproduction_research_program(definition)
+        requirements = resolve_execution_requirements(definition)
+        assert projected["program_id"] == program.program_id
+        assert projected["program_digest"] == program.program_digest
+        assert projected["execution_state"] == (
+            "execution_ready"
+            if not requirements
+            else "closure_binding_required"
+        )
+        assert tuple(
+            (
+                row["parameter"],
+                row["kind"],
+                tuple(row["consumers"]),
+                row["requirement_digest"],
+            )
+            for row in projected["execution_requirements"]
+        ) == tuple(
+            (
+                row.parameter,
+                row.kind.value,
+                row.consumers,
+                row.requirement_digest,
+            )
+            for row in requirements
+        )
