@@ -2,7 +2,7 @@
   "schema": "noetrium.reproduction.projection.v10",
   "authority": "generated_from_typed_definition_and_source",
   "package": "astranav_memory_cvpr2026",
-  "package_digest": "ed94adedda4df1985cd366ea56ee96dbeaa5f90668d891890dbca33912ce3748",
+  "package_digest": "ede0df15df40e4eeaaa2180ac836d0c5f0e7fd38b87211a513225ad3e0bf3c88",
   "definition_digest": "481b9e05da672245ec2a806d72b1a13530b67ed5ea12a05e2855a28bf8225b4f",
   "source_registry_digest": "304c7c3d5dc3e52eeb337cb48eef06780d286e226a126bd447de218cc3d11aae",
   "lifecycle": "protocol_bound",
@@ -97,13 +97,13 @@
       "kind": "method_program",
       "path": "research/reproductions/astranav_memory_cvpr2026/program.py",
       "declaration_digest": "510089bbd42c20644d1a4142366c2f598e0695b9ff59f6a981d684266f31d7e6",
-      "content_sha256": "556da24d809516323eb8477704e7b20ca957959b706c204344c678ac2ec07166"
+      "content_sha256": "42eb18d550ef8a795fec47983db819bf14d0f49afb568c1ac826dd9802020f55"
     },
     {
       "kind": "study",
       "path": "research/reproductions/astranav_memory_cvpr2026/study.py",
       "declaration_digest": "487093132f1a24ede9b0e531525e85911b0ab337b8d3b4dc4733443ccd197e76",
-      "content_sha256": "d6a9534c3c5b314262db1278672a0281692af27fc80c080f0423971d68a86842"
+      "content_sha256": "54d72d3fdcc14e17d72b6595d051e1611e4d7ce52a5c1d733d5b072d9c034af7"
     }
   ],
   "primary_executable": "research/reproductions/astranav_memory_cvpr2026/program.py",

@@ -9,7 +9,7 @@
       "reproductions": [
         {
           "package": "chain_of_thought_gsm8k",
-          "package_digest": "42138bb777a1c75e4d476bda061f0c14bdf0e5566e5d3cbabd743b5263aeee41",
+          "package_digest": "7a5312b1a28294488129ed14221c6186e70766bd8fe0f7a86c0f81f176cd0213",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "gsm8k"
@@ -35,7 +35,7 @@
             {
               "kind": "method_program",
               "path": "research/reproductions/chain_of_thought_gsm8k/program.py",
-              "content_sha256": "74f255793d2110e5ef49b3471035aed6ed01c6661f0f13357a2cd174aee5f665"
+              "content_sha256": "0c9aebcad7f170fbef9ef73357b8e38af2fcd9634677e3574e6f7579aa0f58f8"
             },
             {
               "kind": "study",
@@ -238,7 +238,7 @@
       "reproductions": [
         {
           "package": "camel_role_playing",
-          "package_digest": "6588d902ecafed444c40ae57d57ca5261c9897b62322fd9578cf420c2ada35ac",
+          "package_digest": "6def2091d5e6717e0c12fadfc8588ab16cc29ee6835e64f60781b00e105040fb",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "camel-ai-society"
@@ -260,7 +260,7 @@
             {
               "kind": "method_program",
               "path": "research/reproductions/camel_role_playing/program.py",
-              "content_sha256": "c13a2b70f7ee28f549e6901d47350fa18769314d58897de211ace1691b02432c"
+              "content_sha256": "bc0c2073831b7094f786305dc688a8d141fd96708468d74239bbff1a70d22596"
             },
             {
               "kind": "study",
@@ -1215,7 +1215,7 @@
       "reproductions": [
         {
           "package": "autogen_agentchat",
-          "package_digest": "69ec2a0817e055f15d4dcd3b09abc119f03c8282d51f46b661a8762ac42f3e00",
+          "package_digest": "5ab84f292437857a276196ae2fc9e925901d57d83767c08f5681f9d7e6f0d486",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "multiagentbench"
@@ -1237,7 +1237,7 @@
             {
               "kind": "method_program",
               "path": "research/reproductions/autogen_agentchat/program.py",
-              "content_sha256": "cbfb42ce4ca50b5771f1e68b8fac310b8d03cf9ef88c0bfd306a076364d884d0"
+              "content_sha256": "7f0dc4d50bb226ccea3e92499847ce8d954118c5d1d7c593fbbdcca7555e9a67"
             },
             {
               "kind": "study",
@@ -2349,7 +2349,7 @@
       "reproductions": [
         {
           "package": "adas_meta_agent_search",
-          "package_digest": "c36c96737545ddd6c8935ba900c2575aab26dc8e0d8810b60637d3383e8575a4",
+          "package_digest": "88275db14fe2555a7c32ff55ffd8c23e4404d2879d8c7bb3ee1b32324a6b3963",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "mgsm"
@@ -2371,12 +2371,12 @@
             {
               "kind": "method_program",
               "path": "research/reproductions/adas_meta_agent_search/program.py",
-              "content_sha256": "684ba636349e2a2df7b4948d97ccf7a6fd8eae9f81f3b122d4beb5b5c8ebc410"
+              "content_sha256": "b7bc5689162ab478e8c9734b97182463a374cae17f0a71abd1c34fa053168fe8"
             },
             {
               "kind": "study",
               "path": "research/reproductions/adas_meta_agent_search/study.py",
-              "content_sha256": "33da3ad616787407cc00b3bbe9872e0ca28767cd8d3f53734b166bab4f6682d1"
+              "content_sha256": "7dd0a9fa624089bca68f8fa57e048ee71b7d3e7852818e5de69cc85893f5c6eb"
             }
           ],
           "blockers": [
@@ -2552,7 +2552,7 @@
       "reproductions": [
         {
           "package": "agentsquare",
-          "package_digest": "58535e7e484e38014395260302789ec9e61a6b53e70e34a702dc35a62b4b17bb",
+          "package_digest": "6ade04cad3cf9b79dbc90c86e47b6792ad40b7dd0a9c2560548e15e300a3eaf0",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "agentboard-pddl",
@@ -2589,7 +2589,7 @@
             {
               "kind": "research_program",
               "path": "research/reproductions/agentsquare/program.py",
-              "content_sha256": "8ab2d6ce04639fccfc0716bc6d42aca8362ed6672c48df56d7a64c5bd28d9560"
+              "content_sha256": "b14e12b908525981bb13d7ac71c2f378b14eb23fe6f87d64e378ab7a5deb2ee7"
             },
             {
               "kind": "study",
@@ -2929,7 +2929,7 @@
       "reproductions": [
         {
           "package": "astranav_memory_cvpr2026",
-          "package_digest": "ed94adedda4df1985cd366ea56ee96dbeaa5f90668d891890dbca33912ce3748",
+          "package_digest": "ede0df15df40e4eeaaa2180ac836d0c5f0e7fd38b87211a513225ad3e0bf3c88",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "goat-bench",
@@ -2962,12 +2962,12 @@
             {
               "kind": "method_program",
               "path": "research/reproductions/astranav_memory_cvpr2026/program.py",
-              "content_sha256": "556da24d809516323eb8477704e7b20ca957959b706c204344c678ac2ec07166"
+              "content_sha256": "42eb18d550ef8a795fec47983db819bf14d0f49afb568c1ac826dd9802020f55"
             },
             {
               "kind": "study",
               "path": "research/reproductions/astranav_memory_cvpr2026/study.py",
-              "content_sha256": "d6a9534c3c5b314262db1278672a0281692af27fc80c080f0423971d68a86842"
+              "content_sha256": "54d72d3fdcc14e17d72b6595d051e1611e4d7ce52a5c1d733d5b072d9c034af7"
             }
           ],
           "blockers": [
@@ -2992,7 +2992,7 @@
       "reproductions": [
         {
           "package": "ces_gui_cvpr2026",
-          "package_digest": "27fcba3e3381a260f1dac2ae48c4f138d2d04f402dda8075ad7c74b503f36022",
+          "package_digest": "4c81100dc7d11cd970831ce3769d7ad48cb20906cf2d05243faa64b3fb01f4fd",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "aitz",
@@ -3026,7 +3026,7 @@
             {
               "kind": "method_program",
               "path": "research/reproductions/ces_gui_cvpr2026/program.py",
-              "content_sha256": "99826fd745f4c9a3ec2d07dee84cb80abf939e5d4dff6b75ceaa7b0d7818592f"
+              "content_sha256": "a34ae06107020f3eda673c476dfdaf73e18a84328ee32e0e06a9c2800da93e1b"
             },
             {
               "kind": "study",
@@ -3896,5 +3896,5 @@
       ]
     }
   ],
-  "projection_digest": "7cdfda092da64b9a433afd22eedf60d2a31572f14ea25d9218a4035b32dad3c8"
+  "projection_digest": "8199d1cc5407c9d17da3e06796cc6d384bfea6f123f66d64ba6237157afd5d7f"
 }

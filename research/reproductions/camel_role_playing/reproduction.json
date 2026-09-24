@@ -2,7 +2,7 @@
   "schema": "noetrium.reproduction.projection.v10",
   "authority": "generated_from_typed_definition_and_source",
   "package": "camel_role_playing",
-  "package_digest": "6588d902ecafed444c40ae57d57ca5261c9897b62322fd9578cf420c2ada35ac",
+  "package_digest": "6def2091d5e6717e0c12fadfc8588ab16cc29ee6835e64f60781b00e105040fb",
   "definition_digest": "fce235dd82ef0a923481fb22c65aa4cfe1c680a4fcf2cd9f9e69e2eb1464ec37",
   "source_registry_digest": "75df2f5db5dfa002ca6fa39a6e7e1d816a138c100af3b04dd7f85c03a55f1a46",
   "lifecycle": "protocol_bound",
@@ -77,7 +77,7 @@
       "kind": "method_program",
       "path": "research/reproductions/camel_role_playing/program.py",
       "declaration_digest": "89aa6e12e1427378ee2ba370a02a63725f55c3b086cb456bf25300b4d9b946d8",
-      "content_sha256": "c13a2b70f7ee28f549e6901d47350fa18769314d58897de211ace1691b02432c"
+      "content_sha256": "bc0c2073831b7094f786305dc688a8d141fd96708468d74239bbff1a70d22596"
     },
     {
       "kind": "study",
