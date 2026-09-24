@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import asyncio
+import subprocess
 from threading import Lock
 from typing import Callable
 from uuid import uuid4
@@ -50,6 +51,53 @@ class AsyncProcessSupervisor(ProcessSupervisorPort):
             self._sequence += 1
             sequence = self._sequence
         return f"process-supervision:{self._task_namespace}:{resolved}:{operation}:{sequence}"
+
+    def spawn_interactive(
+        self,
+        argv: tuple[str, ...],
+        *,
+        cwd: str,
+        environment: dict[str, str],
+        start_new_session: bool,
+        creationflags: int = 0,
+    ) -> SupervisedProcessPort:
+        """Spawn a pipe-backed child under the lifecycle/process authority."""
+        if (
+            type(argv) is not tuple
+            or not argv
+            or any(type(item) is not str or not item.strip() for item in argv)
+        ):
+            raise ValueError("interactive process argv must be non-empty canonical text")
+        if type(cwd) is not str or not cwd.strip():
+            raise ValueError("interactive process cwd must be non-empty text")
+        if (
+            type(environment) is not dict
+            or any(
+                type(key) is not str
+                or not key
+                or type(value) is not str
+                for key, value in environment.items()
+            )
+        ):
+            raise TypeError("interactive process environment must contain text pairs")
+        if type(start_new_session) is not bool:
+            raise TypeError("interactive process start_new_session must be bool")
+        if type(creationflags) is not int or creationflags < 0:
+            raise ValueError("interactive process creationflags must be a non-negative integer")
+        options: dict[str, object] = {
+            "cwd": cwd,
+            "env": dict(environment),
+            "stdin": subprocess.PIPE,
+            "stdout": subprocess.PIPE,
+            "stderr": subprocess.PIPE,
+            "text": True,
+            "bufsize": 1,
+            "start_new_session": start_new_session,
+        }
+        if creationflags:
+            options["creationflags"] = creationflags
+        return subprocess.Popen(list(argv), **options)
+
 
     async def _await_exit(self, context, supervision_id: str, process: SupervisedProcessPort, escalated: bool):
         while True:
