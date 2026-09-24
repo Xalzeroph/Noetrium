@@ -50,6 +50,37 @@ def test_study_protocol_expands_full_variant_repetition_matrix_and_aggregates():
     }
 
 
+def test_study_aggregation_is_stable_for_large_baseline_small_variance() -> None:
+    protocol = _protocol()
+    assignments = DeterministicStudyAssignment().assignments(protocol)
+    baseline = 1_000_000_000_000.0
+    observations = tuple(
+        StudyMetricObservation(
+            assignment,
+            (
+                ("success_rate", baseline + 2.0 * assignment.repetition),
+                ("utility", 1.0),
+            ),
+        )
+        for assignment in assignments
+    )
+
+    aggregates = BasicStudyMetricAggregator().aggregate(
+        protocol,
+        observations,
+        assignments,
+    )
+    control = next(
+        item
+        for item in aggregates
+        if item.variant_id == "control" and item.metric_name == "success_rate"
+    )
+
+    assert control.mean == pytest.approx(baseline + 1.0)
+    assert control.variance == pytest.approx(2.0)
+    assert control.standard_error == pytest.approx(1.0)
+
+
 def test_study_aggregation_rejects_incomplete_matrix() -> None:
     protocol = _protocol()
     assignments = DeterministicStudyAssignment().assignments(protocol)
