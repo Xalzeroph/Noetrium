@@ -1,15 +1,15 @@
 {
   "counts": {
     "parse_errors": 1,
-    "python_files": 3688,
-    "python_import_edges": 7140,
-    "symbols": 4984,
-    "tracked_files": 4324,
+    "python_files": 3689,
+    "python_import_edges": 7147,
+    "symbols": 4988,
+    "tracked_files": 4325,
     "typescript_javascript_files": 11
   },
   "language_symbol_counts": {
     "javascript": 1,
-    "python": 4978,
+    "python": 4982,
     "typescript": 5
   },
   "parse_errors": [
@@ -1420,6 +1420,12 @@
     {
       "source_module": "noetrium_platform.capabilities.model.deployment.runtime.deployment_registry",
       "source_role": "core_platform",
+      "target_module": "noetrium_platform.foundation.kernel.kernel",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "noetrium_platform.capabilities.model.deployment.runtime.deployment_registry",
+      "source_role": "core_platform",
       "target_module": "noetrium_platform.foundation.kernel.kernel.durability.durable_file",
       "target_role": "core_platform"
     },
@@ -1433,6 +1439,12 @@
       "source_module": "noetrium_platform.capabilities.model.deployment.runtime.deployment_runtime",
       "source_role": "core_platform",
       "target_module": "noetrium_platform.capabilities.model.deployment.api",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "noetrium_platform.capabilities.model.deployment.runtime.deployment_runtime",
+      "source_role": "core_platform",
+      "target_module": "noetrium_platform.foundation.kernel.kernel",
       "target_role": "core_platform"
     },
     {
@@ -24770,6 +24782,30 @@
       "target_role": "tests"
     },
     {
+      "source_module": "tests.test_compute_physical_convergence_v1",
+      "source_role": "tests",
+      "target_module": "noetrium_platform.foundation.scope.api",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "tests.test_compute_physical_convergence_v1",
+      "source_role": "tests",
+      "target_module": "noetrium_platform.infrastructure.resources.compute.api",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "tests.test_compute_physical_convergence_v1",
+      "source_role": "tests",
+      "target_module": "noetrium_platform.infrastructure.resources.compute.runtime",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "tests.test_compute_physical_convergence_v1",
+      "source_role": "tests",
+      "target_module": "tests.resource_compute_support",
+      "target_role": "tests"
+    },
+    {
       "source_module": "tests.test_compute_placement_efficiency_v1",
       "source_role": "tests",
       "target_module": "noetrium_platform.foundation.scope.api",
@@ -29609,6 +29645,12 @@
       "source_module": "tests.test_model_replica_pool_auto_placement_v1",
       "source_role": "tests",
       "target_module": "noetrium_platform.capabilities.model.deployment.composition",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "tests.test_model_replica_pool_auto_placement_v1",
+      "source_role": "tests",
+      "target_module": "noetrium_platform.foundation.kernel.kernel",
       "target_role": "core_platform"
     },
     {
@@ -42862,7 +42904,7 @@
   ],
   "role_import_counts": [
     {
-      "count": 2587,
+      "count": 2589,
       "source_role": "core_platform",
       "target_role": "core_platform"
     },
@@ -42922,7 +42964,7 @@
       "target_role": "research_reproductions"
     },
     {
-      "count": 2783,
+      "count": 2787,
       "source_role": "tests",
       "target_role": "core_platform"
     },
@@ -42947,7 +42989,7 @@
       "target_role": "research_reproductions"
     },
     {
-      "count": 86,
+      "count": 87,
       "source_role": "tests",
       "target_role": "tests"
     },
@@ -42985,11 +43027,11 @@
     "reference_components": 22,
     "reference_orchestration": 10,
     "research_reproductions": 780,
-    "tests": 833,
+    "tests": 834,
     "tooling": 79
   },
   "role_symbol_counts": {
-    "core_platform": 3356,
+    "core_platform": 3358,
     "examples": 3,
     "other": 23,
     "public_facade": 4,
@@ -42997,11 +43039,11 @@
     "reference_orchestration": 14,
     "research_reproductions": 448,
     "sdk": 5,
-    "tests": 1028,
+    "tests": 1030,
     "tooling": 39
   },
   "schema": "noetrium-repository-code-architecture-index.v1",
-  "source_git_sha": "bbcf2e1982040845589b888898f96509e6355846",
+  "source_git_sha": "cabb9c2ab7fdfb65a9f27c490b71b48dcfc1d6a7",
   "symbols": [
     {
       "bases": [],
@@ -53037,6 +53079,28 @@
       ],
       "fields": [
         "deployment_id: str",
+        "desired_spec_digest: str",
+        "applied_contract_digest: str | None"
+      ],
+      "kind": "dataclass",
+      "language": "python",
+      "line": 74,
+      "methods": [
+        "__post_init__"
+      ],
+      "module": "noetrium_platform.capabilities.model.deployment.api.contracts",
+      "name": "ModelDeploymentGeneration",
+      "path": "noetrium_platform/capabilities/model/deployment/api/contracts.py",
+      "qualname": "noetrium_platform.capabilities.model.deployment.api.contracts.ModelDeploymentGeneration",
+      "role": "core_platform"
+    },
+    {
+      "bases": [],
+      "decorators": [
+        "dataclass(frozen=True, slots=True)"
+      ],
+      "fields": [
+        "deployment_id: str",
         "service_id: str",
         "desired_state: ModelDesiredState",
         "runtime_state: ModelRuntimeState",
@@ -53045,7 +53109,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 74,
+      "line": 97,
       "methods": [],
       "module": "noetrium_platform.capabilities.model.deployment.api.contracts",
       "name": "ModelDeploymentStatus",
@@ -53065,7 +53129,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 84,
+      "line": 107,
       "methods": [],
       "module": "noetrium_platform.capabilities.model.deployment.api.contracts",
       "name": "ModelReconcileCycle",
@@ -53091,7 +53155,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 91,
+      "line": 114,
       "methods": [
         "__post_init__"
       ],
@@ -53115,7 +53179,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 113,
+      "line": 136,
       "methods": [],
       "module": "noetrium_platform.capabilities.model.deployment.api.contracts",
       "name": "ModelLogTail",
@@ -53136,7 +53200,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 122,
+      "line": 145,
       "methods": [],
       "module": "noetrium_platform.capabilities.model.deployment.api.contracts",
       "name": "ModelGpuProcessBinding",
@@ -53156,7 +53220,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 130,
+      "line": 153,
       "methods": [],
       "module": "noetrium_platform.capabilities.model.deployment.api.contracts",
       "name": "ModelEnvironmentUsage",
@@ -53176,7 +53240,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 137,
+      "line": 160,
       "methods": [],
       "module": "noetrium_platform.capabilities.model.deployment.api.contracts",
       "name": "ModelGpuAllocation",
@@ -53195,7 +53259,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 144,
+      "line": 167,
       "methods": [],
       "module": "noetrium_platform.capabilities.model.deployment.api.contracts",
       "name": "ModelGpuConflict",
@@ -53215,7 +53279,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 150,
+      "line": 173,
       "methods": [],
       "module": "noetrium_platform.capabilities.model.deployment.api.contracts",
       "name": "ModelDeploymentLogs",
@@ -53240,7 +53304,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 157,
+      "line": 180,
       "methods": [],
       "module": "noetrium_platform.capabilities.model.deployment.api.contracts",
       "name": "ModelControlSnapshot",
@@ -53303,6 +53367,7 @@
       "language": "python",
       "line": 28,
       "methods": [
+        "generation",
         "start",
         "stop",
         "shutdown",
@@ -53324,7 +53389,7 @@
       "fields": [],
       "kind": "protocol",
       "language": "python",
-      "line": 36,
+      "line": 37,
       "methods": [
         "status_all",
         "reconcile",
@@ -53347,7 +53412,7 @@
       "fields": [],
       "kind": "protocol",
       "language": "python",
-      "line": 44,
+      "line": 45,
       "methods": [
         "logs",
         "tail_logs"
@@ -53366,7 +53431,7 @@
       "fields": [],
       "kind": "protocol",
       "language": "python",
-      "line": 48,
+      "line": 49,
       "methods": [
         "read",
         "write"
@@ -53385,7 +53450,7 @@
       "fields": [],
       "kind": "protocol",
       "language": "python",
-      "line": 52,
+      "line": 53,
       "methods": [
         "wait"
       ],
@@ -53403,7 +53468,7 @@
       "fields": [],
       "kind": "protocol",
       "language": "python",
-      "line": 55,
+      "line": 56,
       "methods": [
         "run",
         "snapshot"
@@ -53422,7 +53487,7 @@
       "fields": [],
       "kind": "protocol",
       "language": "python",
-      "line": 59,
+      "line": 60,
       "methods": [
         "environment_usage",
         "gpu_allocations",
@@ -53459,7 +53524,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 40,
+      "line": 41,
       "methods": [
         "__post_init__"
       ],
@@ -53480,11 +53545,12 @@
         "compute: ComputeAllocation",
         "endpoint: EndpointAllocation",
         "deployment: ModelDeploymentSpec",
+        "generation: ModelDeploymentGeneration",
         "status: ModelDeploymentStatus"
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 79,
+      "line": 80,
       "methods": [
         "placement_digest"
       ],
@@ -53507,7 +53573,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 93,
+      "line": 95,
       "methods": [
         "__post_init__"
       ],
@@ -53523,7 +53589,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 128,
+      "line": 130,
       "methods": [
         "__init__",
         "assert_healthy",
@@ -53543,7 +53609,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 249,
+      "line": 251,
       "methods": [
         "__init__",
         "_target_count",
@@ -53685,13 +53751,14 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 12,
+      "line": 16,
       "methods": [
         "__init__",
         "put",
         "get",
         "all",
         "remove",
+        "_retired_path",
         "_validate_id"
       ],
       "module": "noetrium_platform.capabilities.model.deployment.runtime.deployment_registry",
@@ -53706,11 +53773,15 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 17,
+      "line": 22,
       "methods": [
         "__init__",
+        "_generation_value",
+        "_snapshot_unlocked",
+        "generation",
+        "_require_generation",
+        "_stop_applied",
         "start",
-        "_shutdown_applied",
         "stop",
         "shutdown",
         "restart",
@@ -53729,7 +53800,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 16,
+      "line": 17,
       "methods": [
         "__init__",
         "status_all",
@@ -53739,7 +53810,8 @@
         "shutdown_all",
         "remove_selected",
         "_management_failure_status",
-        "_run_fleet_action"
+        "_run_status_action",
+        "_run_mutation_action"
       ],
       "module": "noetrium_platform.capabilities.model.deployment.runtime.fleet",
       "name": "ModelFleetRuntime",
@@ -64443,7 +64515,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 386,
+      "line": 411,
       "methods": [],
       "module": "noetrium_platform.composition.environment_instance_leases",
       "name": "EnvironmentInstanceLeaseHeartbeatError",
@@ -64457,7 +64529,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 390,
+      "line": 415,
       "methods": [
         "__init__",
         "handles",
@@ -64478,7 +64550,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 495,
+      "line": 520,
       "methods": [
         "__init__",
         "policy",
@@ -100005,12 +100077,30 @@
       "role": "core_platform"
     },
     {
+      "bases": [
+        "RuntimeError"
+      ],
+      "decorators": [],
+      "fields": [],
+      "kind": "class",
+      "language": "python",
+      "line": 158,
+      "methods": [
+        "__init__"
+      ],
+      "module": "noetrium_platform.infrastructure.resources.compute.runtime.scheduler",
+      "name": "ComputePhysicalConvergencePending",
+      "path": "noetrium_platform/infrastructure/resources/compute/runtime/scheduler.py",
+      "qualname": "noetrium_platform.infrastructure.resources.compute.runtime.scheduler.ComputePhysicalConvergencePending",
+      "role": "core_platform"
+    },
+    {
       "bases": [],
       "decorators": [],
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 334,
+      "line": 366,
       "methods": [
         "__init__",
         "_usage",
@@ -100037,7 +100127,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 600,
+      "line": 648,
       "methods": [
         "__init__",
         "_connection",
@@ -100045,6 +100135,7 @@
         "_gpu_json",
         "_decode_row",
         "_active_rows",
+        "_capacity_rows",
         "_active_row",
         "_cleanup_expired",
         "_usage",
@@ -134102,6 +134193,23 @@
       "fields": [],
       "kind": "class",
       "language": "python",
+      "line": 23,
+      "methods": [
+        "__init__",
+        "snapshot"
+      ],
+      "module": "tests.test_compute_physical_convergence_v1",
+      "name": "MutableGpuObserver",
+      "path": "tests/test_compute_physical_convergence_v1.py",
+      "qualname": "tests.test_compute_physical_convergence_v1.MutableGpuObserver",
+      "role": "tests"
+    },
+    {
+      "bases": [],
+      "decorators": [],
+      "fields": [],
+      "kind": "class",
+      "language": "python",
       "line": 14,
       "methods": [
         "__init__",
@@ -134753,6 +134861,24 @@
       "name": "_Backend",
       "path": "tests/test_environment_embodied_simulator_v1.py",
       "qualname": "tests.test_environment_embodied_simulator_v1._Backend",
+      "role": "tests"
+    },
+    {
+      "bases": [],
+      "decorators": [],
+      "fields": [],
+      "kind": "class",
+      "language": "python",
+      "line": 304,
+      "methods": [
+        "__init__",
+        "__getattr__",
+        "release"
+      ],
+      "module": "tests.test_environment_instance_lease_recovery_v1",
+      "name": "_FailOnceLeaseRelease",
+      "path": "tests/test_environment_instance_lease_recovery_v1.py",
+      "qualname": "tests.test_environment_instance_lease_recovery_v1._FailOnceLeaseRelease",
       "role": "tests"
     },
     {
@@ -139021,7 +139147,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 30,
+      "line": 32,
       "methods": [
         "__init__",
         "put_deployment"
@@ -139038,10 +139164,11 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 39,
+      "line": 41,
       "methods": [
         "__init__",
         "status",
+        "generation",
         "remove_deployment"
       ],
       "module": "tests.test_model_replica_pool_auto_placement_v1",
@@ -139056,7 +139183,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 61,
+      "line": 74,
       "methods": [
         "__init__",
         "reconcile"
@@ -139073,7 +139200,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 79,
+      "line": 92,
       "methods": [
         "__init__",
         "candidates",
@@ -139092,7 +139219,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 126,
+      "line": 139,
       "methods": [
         "__init__",
         "allocate_auto",
@@ -139112,7 +139239,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 179,
+      "line": 194,
       "methods": [
         "__init__",
         "start",
@@ -139131,7 +139258,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 195,
+      "line": 210,
       "methods": [
         "__init__",
         "create"
@@ -139148,7 +139275,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 207,
+      "line": 222,
       "methods": [
         "__init__",
         "create"
@@ -139167,7 +139294,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 273,
+      "line": 288,
       "methods": [
         "allocate"
       ],
@@ -139185,7 +139312,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 319,
+      "line": 334,
       "methods": [
         "__init__",
         "remove_deployment"
@@ -143151,7 +143278,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 61,
+      "line": 63,
       "methods": [
         "create",
         "python_path",
@@ -143169,7 +143296,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 77,
+      "line": 79,
       "methods": [
         "__init__",
         "run"
@@ -143188,7 +143315,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 93,
+      "line": 95,
       "methods": [],
       "module": "tests.test_runtime_asset_management_v190",
       "name": "RecordingCommandRunner",
@@ -143202,7 +143329,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 97,
+      "line": 99,
       "methods": [
         "__init__",
         "snapshot"
@@ -143219,7 +143346,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 105,
+      "line": 107,
       "methods": [
         "__init__",
         "reconcile_exact",
@@ -143239,7 +143366,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 130,
+      "line": 132,
       "methods": [
         "__init__",
         "open",
@@ -143259,7 +143386,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 171,
+      "line": 173,
       "methods": [
         "test_directory_manager_allocates_and_removes_workspaces",
         "test_python_environment_manager_is_backend_driven",
@@ -143295,7 +143422,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 440,
+      "line": 442,
       "methods": [
         "run"
       ],
@@ -143311,7 +143438,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 490,
+      "line": 492,
       "methods": [
         "__init__",
         "run"
@@ -143328,7 +143455,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 648,
+      "line": 650,
       "methods": [
         "__init__",
         "wait"

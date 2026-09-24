@@ -1708,6 +1708,11 @@
     {
       "kind": "references",
       "source": "noetrium_platform.capabilities.model.deployment.api.ports.ModelDeploymentRuntimePort",
+      "target": "noetrium_platform.capabilities.model.deployment.api.contracts.ModelDeploymentGeneration"
+    },
+    {
+      "kind": "references",
+      "source": "noetrium_platform.capabilities.model.deployment.api.ports.ModelDeploymentRuntimePort",
       "target": "noetrium_platform.capabilities.model.deployment.api.contracts.ModelDeploymentStatus"
     },
     {
@@ -1804,6 +1809,11 @@
       "kind": "references",
       "source": "noetrium_platform.capabilities.model.deployment.runtime.deployment_logs.ModelDeploymentLogReader",
       "target": "noetrium_platform.capabilities.model.deployment.runtime.launch_materializer.ModelLaunchMaterializer"
+    },
+    {
+      "kind": "references",
+      "source": "noetrium_platform.capabilities.model.deployment.runtime.deployment_runtime.ModelDeploymentRuntime",
+      "target": "noetrium_platform.capabilities.model.deployment.runtime.applied.AppliedModelDeployment"
     },
     {
       "kind": "references",
@@ -26399,7 +26409,7 @@
         "models"
       ],
       "kind": "dataclass",
-      "line": 157,
+      "line": 180,
       "methods": [],
       "module": "noetrium_platform.capabilities.model.deployment.api.contracts",
       "name": "ModelControlSnapshot",
@@ -26449,7 +26459,7 @@
         "started_at_utc"
       ],
       "kind": "dataclass",
-      "line": 91,
+      "line": 114,
       "methods": [
         "__post_init__"
       ],
@@ -26468,12 +26478,36 @@
         "dataclass(frozen=True, slots=True)"
       ],
       "fields": [
+        "applied_contract_digest",
+        "deployment_id",
+        "desired_spec_digest"
+      ],
+      "kind": "dataclass",
+      "line": 74,
+      "methods": [
+        "__post_init__"
+      ],
+      "module": "noetrium_platform.capabilities.model.deployment.api.contracts",
+      "name": "ModelDeploymentGeneration",
+      "nesting": [
+        "ModelDeploymentGeneration"
+      ],
+      "qualname": "noetrium_platform.capabilities.model.deployment.api.contracts.ModelDeploymentGeneration",
+      "system_key": "model",
+      "top_system": "model"
+    },
+    {
+      "bases": [],
+      "decorators": [
+        "dataclass(frozen=True, slots=True)"
+      ],
+      "fields": [
         "deployment_id",
         "stderr_path",
         "stdout_path"
       ],
       "kind": "dataclass",
-      "line": 150,
+      "line": 173,
       "methods": [],
       "module": "noetrium_platform.capabilities.model.deployment.api.contracts",
       "name": "ModelDeploymentLogs",
@@ -26559,7 +26593,7 @@
         "service_id"
       ],
       "kind": "dataclass",
-      "line": 74,
+      "line": 97,
       "methods": [],
       "module": "noetrium_platform.capabilities.model.deployment.api.contracts",
       "name": "ModelDeploymentStatus",
@@ -26602,7 +26636,7 @@
         "environment_id"
       ],
       "kind": "dataclass",
-      "line": 130,
+      "line": 153,
       "methods": [],
       "module": "noetrium_platform.capabilities.model.deployment.api.contracts",
       "name": "ModelEnvironmentUsage",
@@ -26624,7 +26658,7 @@
         "gpu_devices"
       ],
       "kind": "dataclass",
-      "line": 137,
+      "line": 160,
       "methods": [],
       "module": "noetrium_platform.capabilities.model.deployment.api.contracts",
       "name": "ModelGpuAllocation",
@@ -26645,7 +26679,7 @@
         "gpu_device"
       ],
       "kind": "dataclass",
-      "line": 144,
+      "line": 167,
       "methods": [],
       "module": "noetrium_platform.capabilities.model.deployment.api.contracts",
       "name": "ModelGpuConflict",
@@ -26668,7 +26702,7 @@
         "used_memory_mb"
       ],
       "kind": "dataclass",
-      "line": 122,
+      "line": 145,
       "methods": [],
       "module": "noetrium_platform.capabilities.model.deployment.api.contracts",
       "name": "ModelGpuProcessBinding",
@@ -26692,7 +26726,7 @@
         "text"
       ],
       "kind": "dataclass",
-      "line": 113,
+      "line": 136,
       "methods": [],
       "module": "noetrium_platform.capabilities.model.deployment.api.contracts",
       "name": "ModelLogTail",
@@ -26714,7 +26748,7 @@
         "statuses"
       ],
       "kind": "dataclass",
-      "line": 84,
+      "line": 107,
       "methods": [],
       "module": "noetrium_platform.capabilities.model.deployment.api.contracts",
       "name": "ModelReconcileCycle",
@@ -26757,7 +26791,7 @@
       "decorators": [],
       "fields": [],
       "kind": "protocol",
-      "line": 48,
+      "line": 49,
       "methods": [
         "read",
         "write"
@@ -26778,7 +26812,7 @@
       "decorators": [],
       "fields": [],
       "kind": "protocol",
-      "line": 52,
+      "line": 53,
       "methods": [
         "wait"
       ],
@@ -26826,7 +26860,7 @@
       "decorators": [],
       "fields": [],
       "kind": "protocol",
-      "line": 44,
+      "line": 45,
       "methods": [
         "logs",
         "tail_logs"
@@ -26849,6 +26883,7 @@
       "kind": "protocol",
       "line": 28,
       "methods": [
+        "generation",
         "start",
         "stop",
         "shutdown",
@@ -26872,7 +26907,7 @@
       "decorators": [],
       "fields": [],
       "kind": "protocol",
-      "line": 36,
+      "line": 37,
       "methods": [
         "status_all",
         "reconcile",
@@ -26897,7 +26932,7 @@
       "decorators": [],
       "fields": [],
       "kind": "protocol",
-      "line": 55,
+      "line": 56,
       "methods": [
         "run",
         "snapshot"
@@ -26918,7 +26953,7 @@
       "decorators": [],
       "fields": [],
       "kind": "protocol",
-      "line": 59,
+      "line": 60,
       "methods": [
         "environment_usage",
         "gpu_allocations",
@@ -26963,7 +26998,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 249,
+      "line": 251,
       "methods": [
         "__init__",
         "_target_count",
@@ -26989,11 +27024,12 @@
         "deployment",
         "deployment_id",
         "endpoint",
+        "generation",
         "replica_index",
         "status"
       ],
       "kind": "dataclass",
-      "line": 79,
+      "line": 80,
       "methods": [
         "placement_digest"
       ],
@@ -27011,7 +27047,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 128,
+      "line": 130,
       "methods": [
         "__init__",
         "assert_healthy",
@@ -27040,7 +27076,7 @@
         "request_digest"
       ],
       "kind": "dataclass",
-      "line": 93,
+      "line": 95,
       "methods": [
         "__post_init__"
       ],
@@ -27073,7 +27109,7 @@
         "tags"
       ],
       "kind": "dataclass",
-      "line": 40,
+      "line": 41,
       "methods": [
         "__post_init__"
       ],
@@ -27226,13 +27262,14 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 12,
+      "line": 16,
       "methods": [
         "__init__",
         "put",
         "get",
         "all",
         "remove",
+        "_retired_path",
         "_validate_id"
       ],
       "module": "noetrium_platform.capabilities.model.deployment.runtime.deployment_registry",
@@ -27249,11 +27286,15 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 17,
+      "line": 22,
       "methods": [
         "__init__",
+        "_generation_value",
+        "_snapshot_unlocked",
+        "generation",
+        "_require_generation",
+        "_stop_applied",
         "start",
-        "_shutdown_applied",
         "stop",
         "shutdown",
         "restart",
@@ -27274,7 +27315,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 16,
+      "line": 17,
       "methods": [
         "__init__",
         "status_all",
@@ -27284,7 +27325,8 @@
         "shutdown_all",
         "remove_selected",
         "_management_failure_status",
-        "_run_fleet_action"
+        "_run_status_action",
+        "_run_mutation_action"
       ],
       "module": "noetrium_platform.capabilities.model.deployment.runtime.fleet",
       "name": "ModelFleetRuntime",
@@ -38923,7 +38965,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 386,
+      "line": 411,
       "methods": [],
       "module": "noetrium_platform.composition.environment_instance_leases",
       "name": "EnvironmentInstanceLeaseHeartbeatError",
@@ -38939,7 +38981,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 495,
+      "line": 520,
       "methods": [
         "__init__",
         "policy",
@@ -38959,7 +39001,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 390,
+      "line": 415,
       "methods": [
         "__init__",
         "handles",
@@ -77945,11 +77987,31 @@
       "top_system": "resource"
     },
     {
+      "bases": [
+        "RuntimeError"
+      ],
+      "decorators": [],
+      "fields": [],
+      "kind": "class",
+      "line": 158,
+      "methods": [
+        "__init__"
+      ],
+      "module": "noetrium_platform.infrastructure.resources.compute.runtime.scheduler",
+      "name": "ComputePhysicalConvergencePending",
+      "nesting": [
+        "ComputePhysicalConvergencePending"
+      ],
+      "qualname": "noetrium_platform.infrastructure.resources.compute.runtime.scheduler.ComputePhysicalConvergencePending",
+      "system_key": "resource",
+      "top_system": "resource"
+    },
+    {
       "bases": [],
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 334,
+      "line": 366,
       "methods": [
         "__init__",
         "_usage",
@@ -77980,7 +78042,7 @@
         "SCHEMA_VERSION"
       ],
       "kind": "class",
-      "line": 600,
+      "line": 648,
       "methods": [
         "__init__",
         "_connection",
@@ -77988,6 +78050,7 @@
         "_gpu_json",
         "_decode_row",
         "_active_rows",
+        "_capacity_rows",
         "_active_row",
         "_cleanup_expired",
         "_usage",
@@ -102248,7 +102311,17 @@
     {
       "kind": "constructs",
       "source": "noetrium_platform.infrastructure.resources.compute.runtime.scheduler.InMemoryComputeScheduler",
+      "target": "noetrium_platform.infrastructure.resources.compute.runtime.scheduler.ComputePhysicalConvergencePending"
+    },
+    {
+      "kind": "constructs",
+      "source": "noetrium_platform.infrastructure.resources.compute.runtime.scheduler.InMemoryComputeScheduler",
       "target": "noetrium_platform.infrastructure.resources.compute.runtime.scheduler._HostUsage"
+    },
+    {
+      "kind": "constructs",
+      "source": "noetrium_platform.infrastructure.resources.compute.runtime.scheduler.SQLiteComputeScheduler",
+      "target": "noetrium_platform.infrastructure.resources.compute.runtime.scheduler.ComputePhysicalConvergencePending"
     },
     {
       "kind": "constructs",
@@ -103077,11 +103150,11 @@
     }
   ],
   "counts": {
-    "association_edges": 3447,
-    "classes": 3355,
-    "constructor_edges": 914,
+    "association_edges": 3449,
+    "classes": 3357,
+    "constructor_edges": 916,
     "inheritance_edges": 146,
-    "module_import_edges": 5009,
+    "module_import_edges": 5011,
     "parse_errors": 0,
     "python_modules": 1911,
     "registry_authorities": 20,
@@ -105575,6 +105648,10 @@
     },
     {
       "source": "noetrium_platform.capabilities.model.deployment.runtime.deployment_registry",
+      "target": "noetrium_platform.foundation.kernel.kernel"
+    },
+    {
+      "source": "noetrium_platform.capabilities.model.deployment.runtime.deployment_registry",
       "target": "noetrium_platform.foundation.kernel.kernel.durability.durable_file"
     },
     {
@@ -105596,6 +105673,10 @@
     {
       "source": "noetrium_platform.capabilities.model.deployment.runtime.deployment_runtime",
       "target": "noetrium_platform.capabilities.model.deployment.runtime.launch_materializer"
+    },
+    {
+      "source": "noetrium_platform.capabilities.model.deployment.runtime.deployment_runtime",
+      "target": "noetrium_platform.foundation.kernel.kernel"
     },
     {
       "source": "noetrium_platform.capabilities.model.deployment.runtime.deployment_runtime",
@@ -125658,6 +125739,7 @@
       "imports": [
         "noetrium_platform.capabilities.model.deployment.api",
         "noetrium_platform.capabilities.model.deployment.runtime.codec",
+        "noetrium_platform.foundation.kernel.kernel",
         "noetrium_platform.foundation.kernel.kernel.durability.durable_file",
         "noetrium_platform.substrate.api"
       ],
@@ -125672,6 +125754,7 @@
         "noetrium_platform.capabilities.model.deployment.runtime.applied",
         "noetrium_platform.capabilities.model.deployment.runtime.applied_store",
         "noetrium_platform.capabilities.model.deployment.runtime.launch_materializer",
+        "noetrium_platform.foundation.kernel.kernel",
         "noetrium_platform.substrate.api"
       ],
       "module": "noetrium_platform.capabilities.model.deployment.runtime.deployment_runtime",
@@ -143860,7 +143943,7 @@
   "parse_errors": [],
   "registry_sha256": "d3fc1bab831f1b7379e5a36048a61c00fe173429df958270d36a16f3f00171c0",
   "schema": "noetrium-code-architecture-index.v1",
-  "source_git_sha": "bbcf2e1982040845589b888898f96509e6355846",
+  "source_git_sha": "cabb9c2ab7fdfb65a9f27c490b71b48dcfc1d6a7",
   "system_import_edges": [
     {
       "count": 85,
@@ -143943,7 +144026,7 @@
       "target": "model"
     },
     {
-      "count": 100,
+      "count": 102,
       "source": "model",
       "target": "platform"
     },
