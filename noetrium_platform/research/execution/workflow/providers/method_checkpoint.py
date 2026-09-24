@@ -3,22 +3,12 @@
 from __future__ import annotations
 
 import json
-from contextlib import contextmanager
 from pathlib import Path
 from threading import RLock
 from typing import Any
 
 from noetrium_platform.foundation.kernel.kernel.durability.durable_file import atomic_replace_bytes
-
-try:
-    import fcntl
-except ImportError:  # pragma: no cover - exercised on Windows hosts
-    fcntl = None
-
-try:
-    import msvcrt
-except ImportError:  # pragma: no cover - exercised on POSIX hosts
-    msvcrt = None
+from noetrium_platform.foundation.kernel.kernel.durability.file_lock import InterprocessFileLock
 
 from noetrium_platform.foundation.kernel.kernel import EffectCertainty, EffectClass, EffectReceipt, thaw_json
 
@@ -77,7 +67,6 @@ class JsonMethodCheckpointStore(MethodCheckpointStorePort):
         self._root = Path(root)
         self._root.mkdir(parents=True, exist_ok=True)
         self._process_lock_path = self._root / ".method-checkpoint.lock"
-        self._process_lock_path.touch(exist_ok=True)
         self._lock = RLock()
 
     def _path(self, run_id: str) -> Path:
@@ -121,35 +110,6 @@ class JsonMethodCheckpointStore(MethodCheckpointStorePort):
         return checkpoint
 
 
-    @contextmanager
-    def _process_lock(self, *, exclusive: bool):
-        """Serialize stores from separate processes on the same checkpoint root."""
-
-        with self._process_lock_path.open("a+b") as stream:
-            if fcntl is not None:
-                mode = fcntl.LOCK_EX if exclusive else fcntl.LOCK_SH
-                fcntl.flock(stream.fileno(), mode)
-                try:
-                    yield
-                finally:
-                    fcntl.flock(stream.fileno(), fcntl.LOCK_UN)
-            elif msvcrt is not None:  # pragma: no cover - Windows-only path
-                stream.seek(0)
-                if stream.tell() == 0:
-                    stream.write(b"0")
-                    stream.flush()
-                stream.seek(0)
-                msvcrt.locking(stream.fileno(), msvcrt.LK_LOCK, 1)
-                try:
-                    yield
-                finally:
-                    stream.seek(0)
-                    msvcrt.locking(stream.fileno(), msvcrt.LK_UNLCK, 1)
-            else:  # pragma: no cover - unsupported host family
-                raise RuntimeError(
-                    "method checkpoint durability requires POSIX flock or Windows locking"
-                )
-
     def _load_unlocked(self, path: Path, run_id: str) -> MethodCheckpoint | None:
         if not path.exists():
             return None
@@ -182,7 +142,7 @@ class JsonMethodCheckpointStore(MethodCheckpointStorePort):
             raise TypeError("method checkpoint store accepts MethodCheckpoint")
         path = self._path(checkpoint.run_id)
         with self._lock:
-            with self._process_lock(exclusive=True):
+            with InterprocessFileLock(self._process_lock_path):
                 previous = self._load_unlocked(path, checkpoint.run_id)
                 if previous is not None:
                     if checkpoint.sequence < previous.sequence:
@@ -197,7 +157,7 @@ class JsonMethodCheckpointStore(MethodCheckpointStorePort):
     def load(self, run_id: str) -> MethodCheckpoint | None:
         path = self._path(run_id)
         with self._lock:
-            with self._process_lock(exclusive=False):
+            with InterprocessFileLock(self._process_lock_path):
                 return self._load_unlocked(path, run_id)
 
 
