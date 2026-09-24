@@ -3,6 +3,7 @@ from __future__ import annotations
 import shutil
 from pathlib import Path
 
+from noetrium_platform.product.api import encode_research_project_blueprint
 from noetrium_platform.product.operator.api import (
     ProjectCreateReceipt,
     ProjectCreateRequest,
@@ -10,6 +11,12 @@ from noetrium_platform.product.operator.api import (
 )
 from noetrium_platform.composition.operator.project.project_layout import project_package_name
 from noetrium_platform.composition.operator.project.project_platform_identity import installed_platform_identity
+from noetrium_platform.composition.operator.project.research_project_codegen import (
+    default_research_project_blueprint,
+    render_generated_test_module,
+    render_research_module,
+    render_research_slots,
+)
 from noetrium_platform.foundation.kernel.kernel.durability import (
     InterprocessFileLock,
     atomic_replace_bytes,
@@ -67,141 +74,56 @@ include = ["{package}*"]
 '''
 
 
-def _research_module(request: ProjectCreateRequest) -> str:
-    return f'''"""Whole-project scientific authoring through the unified Research OS."""
-from noetrium import api
-
-
-def paper_method(payload=None):
-    """Implement the paper-specific method semantics here."""
-    return payload
-
-
-def benchmark():
-    """Return or resolve the benchmark/task semantics for this project."""
-    return ()
-
-
-def primary_metric(value):
-    """Implement the primary metric semantics here."""
-    return 0.0 if value is None else 1.0
-
-
-_builder = api.ResearchProgramBuilder({request.project_id!r})
-_builder.method("method", implementation=paper_method)
-_builder.benchmark("benchmark", implementation=benchmark)
-_builder.metric("primary-metric", implementation=primary_metric)
-_builder.experiment(
-    "main",
-    definitions=("method", "benchmark"),
-    outputs=(
-        api.ResearchOutputSpec("trajectory", api.ResearchValueKind.ARTIFACT),
-    ),
-)
-_builder.evaluation(
-    "evaluate",
-    definitions=("primary-metric",),
-    outputs=(
-        api.ResearchOutputSpec("score", api.ResearchValueKind.METRIC),
-    ),
-)
-_builder.depends(
-    "evaluate",
-    "main",
-    bindings=(
-        api.ResearchInputBinding(
-            "trajectory",
-            "trajectory",
-            api.ResearchValueKind.ARTIFACT,
-        ),
-    ),
-)
-_builder.analysis(
-    "analysis",
-    depends_on=("evaluate",),
-    outputs=(
-        api.ResearchOutputSpec("claim-evidence", api.ResearchValueKind.EVIDENCE),
-    ),
-)
-
-PROGRAM = _builder.freeze()
-PORTFOLIO = api.ResearchPortfolio({request.project_id!r}, (PROGRAM,))
-
-__all__ = ["PORTFOLIO", "PROGRAM"]
-'''
-
-
-
-def _generated_test_module(package: str) -> str:
-    return f'''import unittest
-
-from noetrium import api
-from {package}.research import PORTFOLIO, PROGRAM
-
-
-class GeneratedProjectTests(unittest.TestCase):
-    def test_project_authors_one_top_level_research_program(self):
-        self.assertIsInstance(PROGRAM, api.ResearchProgram)
-        self.assertIsInstance(PORTFOLIO, api.ResearchPortfolio)
-        self.assertEqual(PORTFOLIO.programs, (PROGRAM,))
-
-    def test_program_contains_scientific_pipeline(self):
-        self.assertEqual(
-            tuple(node.node_id for node in PROGRAM.nodes),
-            ("analysis", "evaluate", "main"),
-        )
-        self.assertEqual(
-            tuple(definition.definition_id for definition in PROGRAM.definitions),
-            ("benchmark", "method", "primary-metric"),
-        )
-        self.assertTrue(all(
-            len(definition.implementation_digest) == 64
-            for definition in PROGRAM.definitions
-        ))
-
-
-if __name__ == "__main__":
-    unittest.main()
-'''
-
-
 
 def _readme(project_id: str) -> str:
     return f'''# {project_id}
 
-This is a unified Noetrium Research OS project.
+This is a Blueprint-driven Noetrium Research OS project.
 
-Edit `research.py` to describe the complete scientific program: methods,
-benchmarks, metrics, experiments, evaluations, analyses, dependencies, and
-outputs. Use `from noetrium import api` as the only platform import.
+Edit `research.blueprint.json` to describe the complete scientific topology:
+programs, methods, benchmarks, metrics, experiments, evaluations, analyses,
+ablations, robustness/scaling studies, figures, tables, publication nodes,
+dependencies, and typed outputs.
+
+Fill only `src/<package>/slots.py` with paper-specific implementation semantics.
+`src/<package>/research.py` is generated topology and must not be hand-edited.
 
 Model/environment/resource binding, scheduling, checkpointing, evidence,
-recovery, and operator plumbing are platform-owned and are not project files.
+recovery, revision migration, and operator plumbing are platform-owned.
 
 Run `noetrium project doctor --project .` and
 `noetrium project test --project .`.
 '''
 
-
 def _scaffold_files(
     request: ProjectCreateRequest,
-) -> tuple[dict[str, bytes], str]:
+) -> tuple[dict[str, bytes], str, str]:
     platform = installed_platform_identity()
     manifest = _manifest(request, platform.version, platform.artifact_sha256)
     semantic_digest = str(project_manifest_document(manifest)["semantic_digest"])
     package = project_package_name(request.project_id)
     revision = project_template_revision()
+    blueprint = (
+        request.blueprint
+        if request.blueprint is not None
+        else default_research_project_blueprint(request.project_id)
+    )
     text_files = {
         ".noetrium-template": revision + "\n",
         "README.md": _readme(request.project_id),
         "pyproject.toml": _pyproject(request, package, platform.version),
         f"src/{package}/__init__.py": '"""Unified Noetrium downstream project."""\n',
-        f"src/{package}/research.py": _research_module(request),
-        "tests/test_generated_project.py": _generated_test_module(package),
+        f"src/{package}/research.py": render_research_module(blueprint),
+        f"src/{package}/slots.py": render_research_slots(blueprint),
+        "tests/test_generated_project.py": render_generated_test_module(
+            package,
+            blueprint,
+        ),
     }
     files = {name: text.encode("utf-8") for name, text in text_files.items()}
+    files["research.blueprint.json"] = encode_research_project_blueprint(blueprint)
     files[_MANIFEST_PATH] = encode_project_manifest(manifest)
-    return files, semantic_digest
+    return files, semantic_digest, blueprint.blueprint_digest
 
 
 def _verify_existing(root: Path, files: dict[str, bytes]) -> None:
@@ -244,7 +166,7 @@ def _write_new_project(root: Path, files: dict[str, bytes]) -> None:
 
 
 def create_project(request: ProjectCreateRequest) -> ProjectCreateReceipt:
-    files, semantic_digest = _scaffold_files(request)
+    files, semantic_digest, blueprint_digest = _scaffold_files(request)
     root = request.destination.expanduser().absolute()
     if root.is_symlink():
         raise ValueError("project destination must not be a symlink")
@@ -264,6 +186,7 @@ def create_project(request: ProjectCreateRequest) -> ProjectCreateReceipt:
         template_revision=project_template_revision(),
         manifest_path=_MANIFEST_PATH,
         manifest_semantic_digest=semantic_digest,
+        research_blueprint_digest=blueprint_digest,
         generated_files=tuple(sorted(files)),
     )
 
