@@ -1,5 +1,5 @@
 from __future__ import annotations
-from noetrium_platform.research.execution.workflow.api import AgentMethodSpec, AgentPhaseSpec
+from noetrium.api import AgentMethodSpec, AgentPhaseSpec
 METHOD_ID="hats_cvpr2026"
 TITLE="HATS: Hardness-Aware Trajectory Synthesis for GUI Agents"
 VENUE="CVPR 2026"
