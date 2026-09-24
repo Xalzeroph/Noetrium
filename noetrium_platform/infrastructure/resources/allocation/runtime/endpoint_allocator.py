@@ -576,7 +576,7 @@ class InMemoryEndpointAllocator(EndpointAllocationPort):
             _require_allocation_generation(current, allocation)
             if current.state is EndpointAllocationState.RELEASED:
                 return current
-            self._leases.release(current.lease_id)
+            self._leases.release(current.lease_id, fencing_token=current.lease_fencing_token)
             released = replace(current, state=EndpointAllocationState.RELEASED)
             self._allocations[allocation.allocation_id] = released
             return released
