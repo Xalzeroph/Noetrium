@@ -15,7 +15,6 @@ from .contracts import (
     EnvironmentProfileLifecycle,
     EnvironmentProfileReferenceSummary,
     EnvironmentProfileRevision,
-    EnvironmentProfileUseIntent,
     EnvironmentSpec,
     EnvironmentTemplate,
     ResolvedEnvironmentSpec,
@@ -43,18 +42,15 @@ class ExecutionEnvironmentCatalogPort(Protocol):
     def register_overlay(self, overlay: EnvironmentOverlay) -> None: ...
     def assign(self, assignment: EnvironmentAssignment) -> None: ...
     def resolve(self, name: str, scope: ScopeIdentity) -> ResolvedEnvironmentSpec: ...
-    def register_instance(
+    def register_instance(self, instance: EnvironmentInstance) -> None: ...
+    def register_recovery_instance(
         self,
         instance: EnvironmentInstance,
         *,
-        intent: EnvironmentProfileUseIntent = EnvironmentProfileUseIntent.NEW_EXECUTION,
+        role: str,
+        scope: ScopeIdentity,
     ) -> None: ...
-    def bind(
-        self,
-        binding: EnvironmentBinding,
-        *,
-        intent: EnvironmentProfileUseIntent = EnvironmentProfileUseIntent.NEW_EXECUTION,
-    ) -> None: ...
+    def bind(self, binding: EnvironmentBinding) -> None: ...
     def acquire_reusable_instance(
         self,
         profile_id: str,
@@ -64,7 +60,15 @@ class ExecutionEnvironmentCatalogPort(Protocol):
         binding_id: str,
         role: str,
         scope: ScopeIdentity,
-        intent: EnvironmentProfileUseIntent = EnvironmentProfileUseIntent.NEW_EXECUTION,
+    ) -> EnvironmentInstanceAcquisition: ...
+    def recover_reusable_instance(
+        self,
+        profile_id: str,
+        profile_revision: str,
+        runtime_identity_digest: str,
+        *,
+        role: str,
+        scope: ScopeIdentity,
     ) -> EnvironmentInstanceAcquisition: ...
     def unbind(self, role: str, scope: ScopeIdentity) -> EnvironmentBinding: ...
     def binding(self, role: str, scope: ScopeIdentity) -> EnvironmentBinding: ...
