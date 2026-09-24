@@ -11,11 +11,13 @@ from noetrium_platform.foundation.kernel.kernel.durability.sqlite import (
     immediate_sqlite_transaction,
 )
 from noetrium_platform.foundation.kernel.kernel import canonical_digest
+from noetrium_platform.foundation.kernel.kernel.retry import retry_until_deadline
 from noetrium_platform.capabilities.environment.catalog.api import (
     EnvironmentAssignment,
     EnvironmentBinding,
     EnvironmentCleanlinessProof,
     EnvironmentInstance,
+    EnvironmentInstanceAcquisition,
     EnvironmentInstanceState,
     EnvironmentOverlay,
     EnvironmentProfileGcAssessment,
@@ -42,6 +44,10 @@ class EnvironmentCatalogConflict(RuntimeError):
 
 class EnvironmentCatalogNotFound(KeyError):
     pass
+
+
+class EnvironmentCatalogStaleRevision(RuntimeError):
+    """Transient compare-and-swap conflict against durable catalog state."""
 
 
 class ExecutionEnvironmentCatalog:
@@ -232,6 +238,75 @@ class ExecutionEnvironmentCatalog:
         )
         self._binding_rows[key] = binding
         self._instances[binding.instance_id] = next_instance
+
+    def acquire_reusable_instance(
+        self,
+        profile_id: str,
+        profile_revision: str,
+        *,
+        binding_id: str,
+        role: str,
+        scope: ScopeIdentity,
+    ) -> EnvironmentInstanceAcquisition:
+        """Select and bind one CLEAN profile revision as one authority operation."""
+
+        for field_name, value in (
+            ("profile_id", profile_id),
+            ("binding_id", binding_id),
+            ("role", role),
+        ):
+            if (
+                type(value) is not str
+                or not value.strip()
+                or value != value.strip()
+            ):
+                raise ValueError(
+                    f"environment reusable acquisition {field_name} "
+                    "must be canonical non-empty text"
+                )
+        if (
+            type(profile_revision) is not str
+            or len(profile_revision) != 64
+            or any(ch not in "0123456789abcdef" for ch in profile_revision)
+        ):
+            raise ValueError(
+                "environment reusable acquisition profile_revision "
+                "must be lowercase sha256"
+            )
+        if type(scope) is not ScopeIdentity:
+            raise TypeError(
+                "environment reusable acquisition scope must be ScopeIdentity"
+            )
+
+        candidates = tuple(
+            sorted(
+                (
+                    row
+                    for row in self._instances.values()
+                    if row.profile_id == profile_id
+                    and row.profile_revision == profile_revision
+                    and row.state is EnvironmentInstanceState.CLEAN
+                ),
+                key=lambda row: row.instance_id,
+            )
+        )
+        if not candidates:
+            raise EnvironmentCatalogNotFound(
+                ("reusable", profile_id, profile_revision)
+            )
+
+        candidate = candidates[0]
+        binding = EnvironmentBinding(
+            binding_id,
+            scope,
+            role,
+            candidate.instance_id,
+        )
+        # Bypass virtual dispatch so a durable provider can wrap selection and
+        # binding in one persistence transition.
+        ExecutionEnvironmentCatalog.bind(self, binding)
+        acquired = self._instance(candidate.instance_id)
+        return EnvironmentInstanceAcquisition(binding, acquired)
 
     def unbind(self, role: str, scope: ScopeIdentity) -> EnvironmentBinding:
         key = (role, scope.key)
@@ -560,7 +635,7 @@ class SQLiteExecutionEnvironmentCatalog(ExecutionEnvironmentCatalog):
                     ),
                 )
                 if updated.rowcount != 1:
-                    raise RuntimeError(
+                    raise EnvironmentCatalogStaleRevision(
                         "stale environment catalog revision; reload and retry"
                     )
             self._state_generation = next_generation
@@ -678,6 +753,37 @@ class SQLiteExecutionEnvironmentCatalog(ExecutionEnvironmentCatalog):
         super().bind(binding)
         self._persist()
 
+    def acquire_reusable_instance(
+        self,
+        profile_id: str,
+        profile_revision: str,
+        *,
+        binding_id: str,
+        role: str,
+        scope: ScopeIdentity,
+    ) -> EnvironmentInstanceAcquisition:
+        def acquire_once() -> EnvironmentInstanceAcquisition:
+            self._load()
+            value = ExecutionEnvironmentCatalog.acquire_reusable_instance(
+                self,
+                profile_id,
+                profile_revision,
+                binding_id=binding_id,
+                role=role,
+                scope=scope,
+            )
+            self._persist()
+            return value
+
+        return retry_until_deadline(
+            acquire_once,
+            should_retry=lambda exc: isinstance(
+                exc,
+                EnvironmentCatalogStaleRevision,
+            ),
+            timeout_seconds=self.timeout_seconds,
+        )
+
     def unbind(self, role: str, scope: ScopeIdentity) -> EnvironmentBinding:
         self._load()
         value = super().unbind(role, scope)
@@ -750,6 +856,7 @@ class SQLiteExecutionEnvironmentCatalog(ExecutionEnvironmentCatalog):
 __all__ = [
     "EnvironmentCatalogConflict",
     "EnvironmentCatalogNotFound",
+    "EnvironmentCatalogStaleRevision",
     "ExecutionEnvironmentCatalog",
     "SQLiteExecutionEnvironmentCatalog",
 ]
