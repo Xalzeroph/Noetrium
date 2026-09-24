@@ -335,6 +335,7 @@ def build_environment_images(
     java_runtime_canonical_image: str,
     node_version: str,
     rebuild: bool = False,
+    allow_retired: bool = False,
 ) -> dict:
     source_sha = _git("rev-parse", "HEAD")
     if _git("status", "--porcelain"):
@@ -347,6 +348,12 @@ def build_environment_images(
     if unknown:
         raise RuntimeError(f"unknown environment profiles: {unknown!r}")
     validate_catalog(catalog, by_id)
+    for profile_id in profiles:
+        lifecycle = by_id[profile_id].get("lifecycle")
+        if lifecycle == "retired" and not allow_retired:
+            raise RuntimeError(
+                f"{profile_id}: retired profile requires explicit --allow-retired recovery intent"
+            )
 
     _run(("docker", "--version"))
     _run(("docker", "compose", "version"))
@@ -354,11 +361,12 @@ def build_environment_images(
     work_root = work_root.resolve()
     scratch_root = work_root / "build"
     runtime_root = work_root / "runtime"
-    runtime_root.mkdir(parents=True, exist_ok=True)
-    for state_name in ("platform-state", *profiles):
-        state_dir = runtime_root / state_name
-        state_dir.mkdir(parents=True, exist_ok=True)
-        state_dir.chmod(0o777)
+    shared_root = runtime_root / "shared"
+    instances_root = runtime_root / "instances"
+    shared_root.mkdir(parents=True, exist_ok=True)
+    instances_root.mkdir(parents=True, exist_ok=True)
+    shared_root.chmod(0o777)
+    instances_root.chmod(0o777)
 
     base_tag = f"noetrium:{source_sha}"
     reused_base = _image_exists(base_tag) and not rebuild
@@ -473,6 +481,8 @@ def build_environment_images(
             )
             profile_identity = dict(base_identity)
             profile_identity["profile_id"] = profile_id
+            profile_identity["profile_revision"] = _profile_revision(row)
+            profile_identity["lifecycle"] = row["lifecycle"]
             profile_identity["base_only"] = True
             profile_identity["reused"] = True
             images[profile_id] = profile_identity
@@ -484,13 +494,31 @@ def build_environment_images(
             raise RuntimeError(f"{profile_id}: compose path missing")
         if not isinstance(image_env, str) or not image_env:
             raise RuntimeError(f"{profile_id}: image_env missing")
-        tag = f"noetrium-env-{profile_id}:{source_sha}"
+        revision = _profile_revision(row)
+        tag = (
+            f"noetrium-env-{profile_id}:"
+            f"{source_sha[:12]}-{revision[:12]}"
+        )
         env = os.environ.copy()
         env["PLATFORM_IMAGE"] = base_tag
         env[image_env] = tag
         env["JAVA_RUNTIME_IMAGE"] = java_runtime_image
         env["NODE_VERSION"] = node_version
         env["PLATFORM_HOST_DATA_ROOT"] = str(runtime_root)
+        qualification_instance = (
+            instances_root
+            / f"doctor-{profile_id}-{source_sha[:12]}-{revision[:12]}"
+        )
+        if qualification_instance.exists():
+            shutil.rmtree(qualification_instance)
+        qualification_instance.mkdir(parents=True)
+        qualification_instance.chmod(0o777)
+        env["PLATFORM_ENVIRONMENT_INSTANCE_ROOT"] = str(qualification_instance)
+        env["PLATFORM_RUNTIME_STATE_ROOT"] = str(
+            qualification_instance / "platform-state"
+        )
+        env["NOETRIUM_ENVIRONMENT_INSTANCE_ID"] = qualification_instance.name
+        env["NOETRIUM_ENVIRONMENT_PROFILE_REVISION"] = revision
         reused_profile = _image_exists(tag) and not rebuild
         if not reused_profile:
             _run(
@@ -522,8 +550,12 @@ def build_environment_images(
             ),
             env=env,
         )
+        shutil.rmtree(qualification_instance)
         profile_identity = _image_identity(tag)
         profile_identity["reused"] = reused_profile
+        profile_identity["profile_revision"] = revision
+        profile_identity["lifecycle"] = row["lifecycle"]
+        profile_identity["qualification_instance_cleaned"] = True
         images[profile_id] = profile_identity
 
     receipt = {
@@ -554,8 +586,17 @@ def build_environment_images(
             },
         },
         "node_version": node_version,
-        "profiles": list(profiles),
+        "profiles": [
+            {
+                "profile_id": profile_id,
+                "category_id": by_id[profile_id]["category_id"],
+                "lifecycle": by_id[profile_id]["lifecycle"],
+                "profile_revision": _profile_revision(by_id[profile_id]),
+            }
+            for profile_id in profiles
+        ],
         "rebuild": rebuild,
+        "allow_retired": allow_retired,
         "build_mode": build_mode,
         "runtime_root": str(runtime_root),
         "images": images,
@@ -591,7 +632,11 @@ def main(argv: list[str] | None = None) -> int:
     build.add_argument(
         "--profiles",
         nargs="+",
-        default=sorted(EXPECTED_PROFILES),
+        default=None,
+        help=(
+            "Explicit profile ids. When omitted, build the active default "
+            "revision for every registered category."
+        ),
     )
     build.add_argument(
         "--work-root",
@@ -638,6 +683,14 @@ def main(argv: list[str] | None = None) -> int:
         action="store_true",
         help="Ignore exact-SHA image cache and rebuild base/profile images.",
     )
+    build.add_argument(
+        "--allow-retired",
+        action="store_true",
+        help=(
+            "Permit explicitly named retired revisions for historical recovery. "
+            "Retired profiles are never selected by default."
+        ),
+    )
     args = parser.parse_args(argv)
 
     try:
@@ -654,7 +707,14 @@ def main(argv: list[str] | None = None) -> int:
                         {
                             "profile_id": profile_id,
                             "category_id": row["category_id"],
-                            "build_mode": row.get("build_mode", "environment-image"),
+                            "lifecycle": row["lifecycle"],
+                            "default_for_category": row.get(
+                                "default_for_category", False
+                            ),
+                            "profile_revision": _profile_revision(row),
+                            "build_mode": row.get(
+                                "build_mode", "environment-image"
+                            ),
                             "compose": row.get("compose"),
                         },
                         sort_keys=True,
@@ -669,8 +729,15 @@ def main(argv: list[str] | None = None) -> int:
                 return 2
             return 0
 
+        selected_profiles = (
+            _default_active_profile_ids(profiles)
+            if args.profiles is None
+            else tuple(args.profiles)
+        )
+        if not selected_profiles:
+            raise RuntimeError("no environment profiles selected for build")
         build_environment_images(
-            profiles=tuple(args.profiles),
+            profiles=selected_profiles,
             work_root=args.work_root,
             output=args.output,
             python_runtime_image=args.python_runtime_image,
@@ -679,6 +746,7 @@ def main(argv: list[str] | None = None) -> int:
             java_runtime_canonical_image=args.java_runtime_canonical_image,
             node_version=args.node_version,
             rebuild=args.rebuild,
+            allow_retired=args.allow_retired,
         )
     except Exception as exc:
         print(
