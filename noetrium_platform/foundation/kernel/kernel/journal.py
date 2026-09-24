@@ -6,7 +6,6 @@ accepts one monotonic revision per machine and rejects ambiguous duplicates.
 
 from __future__ import annotations
 
-from collections import defaultdict
 from pathlib import Path
 from threading import RLock
 from typing import Protocol, runtime_checkable
@@ -201,32 +200,76 @@ class MachineJournalPort(Protocol):
     def commits(self, machine_id: str) -> tuple[MachineCommit, ...]: ...
 
 
-class _JournalRules:
-    @staticmethod
-    def accept(
-        history: list[MachineCommit],
+class _JournalHistory:
+    """Validated in-process projection of one append-only Machine journal."""
+
+    __slots__ = ("commits", "by_command_id", "by_commit_id")
+
+    def __init__(
+        self,
+        commits: list[MachineCommit] | None = None,
+    ) -> None:
+        self.commits: list[MachineCommit] = []
+        self.by_command_id: dict[str, MachineCommit] = {}
+        self.by_commit_id: dict[str, MachineCommit] = {}
+        for commit in commits or ():
+            self.accept(commit)
+
+    def clone(self) -> "_JournalHistory":
+        value = _JournalHistory()
+        value.commits = list(self.commits)
+        value.by_command_id = dict(self.by_command_id)
+        value.by_commit_id = dict(self.by_commit_id)
+        return value
+
+    def validate_next(
+        self,
         commit: MachineCommit,
-    ) -> MachineCommit:
-        for existing in history:
-            if existing.command_id == commit.command_id:
-                if existing == commit:
-                    return existing
-                raise MachineConflict(
-                    f"command_id already committed with different payload: {commit.command_id}"
-                )
-            if existing.commit_id == commit.commit_id:
+    ) -> MachineCommit | None:
+        existing = self.by_command_id.get(commit.command_id)
+        if existing is not None:
+            if existing == commit:
                 return existing
-        latest = history[-1] if history else None
+            raise MachineConflict(
+                "command_id already committed with different payload: "
+                f"{commit.command_id}"
+            )
+        existing = self.by_commit_id.get(commit.commit_id)
+        if existing is not None:
+            return existing
+        latest = self.commits[-1] if self.commits else None
         expected_base = 0 if latest is None else latest.revision
         if commit.base_revision != expected_base:
             raise MachineConflict(
-                f"stale machine revision: expected={expected_base} actual={commit.base_revision}"
+                "stale machine revision: "
+                f"expected={expected_base} actual={commit.base_revision}"
             )
         expected_previous = None if latest is None else latest.commit_id
         if commit.previous_commit_id != expected_previous:
-            raise MachineConflict("machine commit previous_commit_id does not match journal head")
-        history.append(commit)
+            raise MachineConflict(
+                "machine commit previous_commit_id does not match journal head"
+            )
+        return None
+
+    def accept(self, commit: MachineCommit) -> MachineCommit:
+        existing = self.validate_next(commit)
+        if existing is not None:
+            return existing
+        self.commits.append(commit)
+        self.by_command_id[commit.command_id] = commit
+        self.by_commit_id[commit.commit_id] = commit
         return commit
+
+    def snapshot(self) -> tuple[MachineCommit, ...]:
+        return tuple(self.commits)
+
+
+@runtime_checkable
+class MachineJournalPort(Protocol):
+    def append(self, commit: MachineCommit) -> MachineCommit: ...
+    def latest(self, machine_id: str) -> MachineCommit | None: ...
+    def get(self, commit_id: str) -> MachineCommit | None: ...
+    def commits(self, machine_id: str) -> tuple[MachineCommit, ...]: ...
 
 
 class InMemoryMachineJournal(MachineJournalPort):
@@ -235,15 +278,22 @@ class InMemoryMachineJournal(MachineJournalPort):
     durability = "process_local"
 
     def __init__(self) -> None:
-        self._histories: dict[str, list[MachineCommit]] = defaultdict(list)
+        self._histories: dict[str, _JournalHistory] = {}
         self._by_id: dict[str, MachineCommit] = {}
         self._lock = RLock()
+
+    def _history_for(self, machine_id: str) -> _JournalHistory:
+        history = self._histories.get(machine_id)
+        if history is None:
+            history = _JournalHistory()
+            self._histories[machine_id] = history
+        return history
 
     def append(self, commit: MachineCommit) -> MachineCommit:
         if not isinstance(commit, MachineCommit):
             raise TypeError("machine journal accepts MachineCommit")
         with self._lock:
-            accepted = _JournalRules.accept(self._histories[commit.machine_id], commit)
+            accepted = self._history_for(commit.machine_id).accept(commit)
             self._by_id[accepted.commit_id] = accepted
             return accepted
 
@@ -251,8 +301,10 @@ class InMemoryMachineJournal(MachineJournalPort):
         if type(machine_id) is not str or not machine_id.strip():
             raise ValueError("machine_id is required")
         with self._lock:
-            history = self._histories.get(machine_id, [])
-            return None if not history else history[-1]
+            history = self._histories.get(machine_id)
+            if history is None or not history.commits:
+                return None
+            return history.commits[-1]
 
     def get(self, commit_id: str) -> MachineCommit | None:
         with self._lock:
@@ -260,11 +312,30 @@ class InMemoryMachineJournal(MachineJournalPort):
 
     def commits(self, machine_id: str) -> tuple[MachineCommit, ...]:
         with self._lock:
-            return tuple(self._histories.get(machine_id, ()))
+            history = self._histories.get(machine_id)
+            return () if history is None else history.snapshot()
+
+
+class _DirectoryJournalCache:
+    __slots__ = ("history", "file_identity")
+
+    def __init__(
+        self,
+        history: _JournalHistory,
+        file_identity: tuple[int, int, int, int, int] | None,
+    ) -> None:
+        self.history = history
+        self.file_identity = file_identity
 
 
 class DirectoryMachineJournal(MachineJournalPort):
-    """Crash-durable line journal with cross-process single-writer locking."""
+    """Crash-durable append-only journal with derived incremental acceleration.
+
+    The journal file remains the sole authority. The in-process cache is
+    discarded and rebuilt from the complete canonical file whenever another
+    writer changes that file. Repeated appends by the same authority therefore
+    avoid O(history) rescans without introducing a sidecar truth source.
+    """
 
     durability = "crash_durable"
 
@@ -274,7 +345,7 @@ class DirectoryMachineJournal(MachineJournalPort):
         self.locks = self.root / "locks"
         self.logs.mkdir(parents=True, exist_ok=True)
         self.locks.mkdir(parents=True, exist_ok=True)
-        self._cache: dict[str, tuple[MachineCommit, ...]] = {}
+        self._cache: dict[str, _DirectoryJournalCache] = {}
         self._cache_lock = RLock()
 
     @staticmethod
@@ -288,50 +359,148 @@ class DirectoryMachineJournal(MachineJournalPort):
     def _lock_path(self, machine_id: str) -> Path:
         return self.locks / f"{self._file_key(machine_id)}.lock"
 
-    def _read(self, machine_id: str) -> list[MachineCommit]:
-        path = self._log_path(machine_id)
-        if not path.exists():
-            return []
-        result: list[MachineCommit] = []
+    @staticmethod
+    def _file_identity(
+        path: Path,
+    ) -> tuple[int, int, int, int, int] | None:
         try:
-            for line in path.read_bytes().splitlines():
-                if not line:
-                    continue
-                document = strict_json_loads(line)
-                commit = _decode_commit(document)
-                if commit.machine_id != machine_id:
-                    raise MachineIntegrityError("journal machine identity mismatch")
-                if canonical_bytes(document) != line:
-                    raise MachineIntegrityError("journal line is not canonical JSON")
-                _JournalRules.accept(result, commit)
+            stat = path.stat()
+        except FileNotFoundError:
+            return None
+        return (
+            int(stat.st_size),
+            int(stat.st_mtime_ns),
+            int(stat.st_ctime_ns),
+            int(stat.st_dev),
+            int(stat.st_ino),
+        )
+
+    @staticmethod
+    def _decode_line(
+        line: bytes,
+        *,
+        machine_id: str,
+        path: Path,
+    ) -> MachineCommit:
+        try:
+            document = strict_json_loads(line)
+            commit = _decode_commit(document)
+            if commit.machine_id != machine_id:
+                raise MachineIntegrityError(
+                    "journal machine identity mismatch"
+                )
+            if canonical_bytes(document) != line:
+                raise MachineIntegrityError(
+                    "journal line is not canonical JSON"
+                )
+            return commit
         except MachineIntegrityError:
             raise
+        except (TypeError, ValueError) as exc:
+            raise MachineIntegrityError(
+                f"cannot decode machine journal: {path}"
+            ) from exc
+
+    def _read_authoritative(
+        self,
+        machine_id: str,
+    ) -> _DirectoryJournalCache:
+        path = self._log_path(machine_id)
+        before = self._file_identity(path)
+        if before is None:
+            return _DirectoryJournalCache(_JournalHistory(), None)
+        try:
+            raw = path.read_bytes()
+        except OSError as exc:
+            raise MachineIntegrityError(
+                f"cannot read machine journal: {path}"
+            ) from exc
+        after = self._file_identity(path)
+        if after != before:
+            raise MachineIntegrityError(
+                "machine journal changed during authoritative read"
+            )
+        if raw and not raw.endswith(b"\n"):
+            raise MachineIntegrityError(
+                "machine journal contains a torn trailing record"
+            )
+        history = _JournalHistory()
+        try:
+            for line in raw.splitlines():
+                if not line:
+                    continue
+                history.accept(
+                    self._decode_line(
+                        line,
+                        machine_id=machine_id,
+                        path=path,
+                    )
+                )
         except MachineConflict as exc:
-            raise MachineIntegrityError(f"machine journal chain is invalid: {path}") from exc
-        except (OSError, TypeError, ValueError) as exc:
-            raise MachineIntegrityError(f"cannot read machine journal: {path}") from exc
-        return result
+            raise MachineIntegrityError(
+                f"machine journal chain is invalid: {path}"
+            ) from exc
+        return _DirectoryJournalCache(history, after)
+
+    def _authoritative_cache_locked(
+        self,
+        machine_id: str,
+    ) -> _DirectoryJournalCache:
+        current_identity = self._file_identity(
+            self._log_path(machine_id)
+        )
+        cached = self._cache.get(machine_id)
+        if (
+            cached is not None
+            and cached.file_identity == current_identity
+        ):
+            return cached
+        rebuilt = self._read_authoritative(machine_id)
+        self._cache[machine_id] = rebuilt
+        return rebuilt
+
+    def _history(self, machine_id: str) -> tuple[MachineCommit, ...]:
+        if type(machine_id) is not str or not machine_id.strip():
+            raise ValueError("machine_id is required")
+        path = self._log_path(machine_id)
+        identity = self._file_identity(path)
+        with self._cache_lock:
+            cached = self._cache.get(machine_id)
+            if (
+                cached is not None
+                and cached.file_identity == identity
+            ):
+                return cached.history.snapshot()
+
+        with InterprocessFileLock(self._lock_path(machine_id)):
+            with self._cache_lock:
+                return self._authoritative_cache_locked(
+                    machine_id
+                ).history.snapshot()
 
     def append(self, commit: MachineCommit) -> MachineCommit:
         if not isinstance(commit, MachineCommit):
             raise TypeError("machine journal accepts MachineCommit")
+        path = self._log_path(commit.machine_id)
         with InterprocessFileLock(self._lock_path(commit.machine_id)):
-            history = self._read(commit.machine_id)
-            accepted = _JournalRules.accept(history, commit)
-            if accepted is not commit:
-                return accepted
-            durable_append_bytes(
-                self._log_path(commit.machine_id),
-                canonical_bytes(_commit_document(commit)) + b"\n",
-            )
             with self._cache_lock:
-                self._cache[commit.machine_id] = tuple(history + [commit])
-            return commit
-
-    def _history(self, machine_id: str) -> tuple[MachineCommit, ...]:
-        # A long-lived process must observe commits written by other processes;
-        # the append path still uses the lock for the authoritative CAS.
-        return tuple(self._read(machine_id))
+                cached = self._authoritative_cache_locked(
+                    commit.machine_id
+                )
+                existing = cached.history.validate_next(commit)
+                if existing is not None:
+                    return existing
+                payload = (
+                    canonical_bytes(_commit_document(commit)) + b"\n"
+                )
+                durable_append_bytes(path, payload)
+                cached.history.accept(commit)
+                cached.file_identity = self._file_identity(path)
+                if cached.file_identity is None:
+                    raise MachineIntegrityError(
+                        "machine journal disappeared after durable append"
+                    )
+                return commit
 
     def latest(self, machine_id: str) -> MachineCommit | None:
         history = self._history(machine_id)
@@ -340,10 +509,25 @@ class DirectoryMachineJournal(MachineJournalPort):
     def get(self, commit_id: str) -> MachineCommit | None:
         if type(commit_id) is not str or not commit_id.strip():
             raise ValueError("commit_id is required")
+        with self._cache_lock:
+            for cached in self._cache.values():
+                value = cached.history.by_commit_id.get(commit_id)
+                if value is not None:
+                    return value
         for machine_id in self._machine_ids():
-            value = next((item for item in self._history(machine_id) if item.commit_id == commit_id), None)
-            if value is not None:
-                return value
+            with self._cache_lock:
+                cached = self._cache.get(machine_id)
+                if cached is not None:
+                    value = cached.history.by_commit_id.get(commit_id)
+                    if value is not None:
+                        return value
+            self._history(machine_id)
+            with self._cache_lock:
+                value = self._cache[machine_id].history.by_commit_id.get(
+                    commit_id
+                )
+                if value is not None:
+                    return value
         return None
 
     def commits(self, machine_id: str) -> tuple[MachineCommit, ...]:
@@ -351,11 +535,33 @@ class DirectoryMachineJournal(MachineJournalPort):
 
     def _machine_ids(self) -> tuple[str, ...]:
         ids: set[str] = set()
-        for path in self.logs.glob("*.journal"):
-            for line in path.read_bytes().splitlines():
+        for path in sorted(self.logs.glob("*.journal")):
+            lock_path = self.locks / f"{path.stem}.lock"
+            with InterprocessFileLock(lock_path):
+                try:
+                    with path.open("rb") as handle:
+                        line = handle.readline()
+                except OSError as exc:
+                    raise MachineIntegrityError(
+                        f"cannot read machine journal: {path}"
+                    ) from exc
                 if not line:
                     continue
-                commit = _decode_commit(strict_json_loads(line))
+                if not line.endswith(b"\n"):
+                    raise MachineIntegrityError(
+                        "machine journal contains a torn first record"
+                    )
+                commit = self._decode_line(
+                    line[:-1],
+                    machine_id=_decode_commit(
+                        strict_json_loads(line[:-1])
+                    ).machine_id,
+                    path=path,
+                )
+                if self._file_key(commit.machine_id) != path.stem:
+                    raise MachineIntegrityError(
+                        "machine journal filename identity mismatch"
+                    )
                 ids.add(commit.machine_id)
         return tuple(sorted(ids))
 
