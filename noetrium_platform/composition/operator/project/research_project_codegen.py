@@ -26,10 +26,24 @@ control remain Noetrium-owned.
 from noetrium import api
 
 
+def _bootstrap():
+    """Minimal pure executable used only until the author replaces this core."""
+    return {"ready": True}
+
+
 def build_research() -> api.ResearchPortfolio:
-    # Semantics-neutral bootstrap only. Replace this entire body.
+    # Executable semantics-neutral bootstrap only. Replace this entire body.
     program = api.ResearchProgramBuilder({project_id!r})
-    program.node("root", kind=api.ResearchNodeKind.CUSTOM)
+    program.definition(
+        "bootstrap",
+        kind=api.ResearchDefinitionKind.CUSTOM,
+        implementation=_bootstrap,
+    )
+    program.node(
+        "root",
+        kind=api.ResearchNodeKind.CUSTOM,
+        definitions=("bootstrap",),
+    )
     return api.ResearchPortfolio({project_id!r}, (program.freeze(),))
 
 
