@@ -24,6 +24,18 @@ class ArtifactBlobStoreError(RuntimeError):
     pass
 
 @runtime_checkable
+class ArtifactBlobResolverPort(Protocol):
+    """Resolve already-materialized blob identity without host-path knowledge."""
+
+    def resolve(
+        self,
+        content_sha256: str,
+        *,
+        media_type: str,
+    ) -> ArtifactBlobRef: ...
+
+
+@runtime_checkable
 class ArtifactBlobStorePort(Protocol):
     durability: str
 
@@ -36,6 +48,7 @@ class ArtifactBlobStorePort(Protocol):
 
 __all__ = [
     "ArtifactBlobRef",
+    "ArtifactBlobResolverPort",
     "ArtifactBlobStoreError",
     "ArtifactBlobStorePort",
 ]
