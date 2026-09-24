@@ -17,6 +17,7 @@ from noetrium_platform.composition.research_os_graph import (
 )
 from noetrium_platform.foundation.kernel.kernel import canonical_digest
 from research.reproductions import build_research
+from research.reproductions.benchmark_authority import RepositoryBenchmarkAuthority
 from research.reproductions.contracts import ReproductionAssetKind
 from research.reproductions.fleet import (
     ReproductionFleetExecutionAuthorities,
@@ -53,11 +54,18 @@ class Lane:
     benchmark_split_axis_consumers: tuple[str, ...]
     method_program_digest: str | None
     research_machine_program_digests: tuple[str, ...]
+    benchmark_authority_state: str
+    benchmark_selection_count: int
+    benchmark_selection_digests: tuple[str, ...]
+    benchmark_blockers: tuple[str, ...]
+    reproduction_closure_state: str
+    execution_authority_state: str
+    materialization_ready: bool
     state: str
     blockers: tuple[str, ...]
 
 
-def _lane(definition) -> Lane:
+def _lane(definition, benchmark_authority: RepositoryBenchmarkAuthority) -> Lane:
     blockers: list[str] = []
     research_program_digest = None
     graph_node_id = None
@@ -71,6 +79,11 @@ def _lane(definition) -> Lane:
     benchmark_split_axis_consumers: tuple[str, ...] = ()
     exact_study_factory_count = 0
     study_factory_count = 0
+    benchmark_selection_digests: tuple[str, ...] = ()
+    benchmark_blockers: list[str] = []
+    benchmark_authority_state = "not_audited"
+    reproduction_closure_state = "not_audited"
+    execution_authority_state = "required"
     try:
         program = compile_reproduction_research_program(definition)
         research_program_digest = program.program_digest
@@ -94,6 +107,32 @@ def _lane(definition) -> Lane:
         )
         benchmark_split_axis_consumers = resolve_benchmark_split_consumers(
             definition
+        )
+        reproduction_closure_state = (
+            "required" if execution_requirement_digests else "closed"
+        )
+
+        benchmark_selection_rows = []
+        for factory in factories:
+            try:
+                selections = benchmark_authority.resolve(definition, factory)
+            except BaseException as exc:
+                benchmark_blockers.append(
+                    type(exc).__name__ + ":" + str(exc)
+                )
+                continue
+            benchmark_selection_rows.extend(selections)
+        benchmark_selection_digests = tuple(
+            sorted(
+                row.selection_digest
+                for row in benchmark_selection_rows
+            )
+        )
+        benchmark_authority_state = (
+            "closed"
+            if not benchmark_blockers
+            and len(benchmark_selection_rows) >= len(factories)
+            else "required"
         )
 
         method_assets = tuple(
@@ -152,16 +191,27 @@ def _lane(definition) -> Lane:
         benchmark_split_axis_consumers=benchmark_split_axis_consumers,
         method_program_digest=method_program_digest,
         research_machine_program_digests=machine_program_digests,
+        benchmark_authority_state=benchmark_authority_state,
+        benchmark_selection_count=len(benchmark_selection_digests),
+        benchmark_selection_digests=benchmark_selection_digests,
+        benchmark_blockers=tuple(sorted(set(benchmark_blockers))),
+        reproduction_closure_state=reproduction_closure_state,
+        execution_authority_state=execution_authority_state,
+        materialization_ready=(
+            not compile_failure
+            and benchmark_authority_state == "closed"
+            and reproduction_closure_state == "closed"
+        ),
         state=(
             "compile_failed"
             if compile_failure
             else (
-                "closure_binding_required"
-                if execution_requirement_digests
+                "benchmark_authority_required"
+                if benchmark_authority_state != "closed"
                 else (
-                    "benchmark_binding_required"
-                    if benchmark_split_axis_consumers
-                    else "execution_ready"
+                    "reproduction_closure_required"
+                    if reproduction_closure_state != "closed"
+                    else "execution_authority_required"
                 )
             )
         ),
@@ -175,8 +225,12 @@ def build_plan() -> dict:
     non_executable = tuple(
         row for row in inventory if not is_research_os_executable(row)
     )
+    benchmark_authority = RepositoryBenchmarkAuthority.discover()
     lanes = tuple(
-        sorted((_lane(row) for row in executable), key=lambda row: row.package)
+        sorted(
+            (_lane(row, benchmark_authority) for row in executable),
+            key=lambda row: row.package,
+        )
     )
     compile_failures = tuple(
         row.package for row in lanes if row.state == "compile_failed"
@@ -206,7 +260,12 @@ def build_plan() -> dict:
         graph_node_count = 0
 
     document = {
-        "schema": "noetrium.reproduction-fleet-plan.v7",
+        "schema": "noetrium.reproduction-fleet-plan.v8",
+        "benchmark_authority_digest": benchmark_authority.authority_digest,
+        "benchmark_authority_binding_count": len(benchmark_authority.bindings),
+        "benchmark_authority_discovery_failure_count": len(
+            benchmark_authority.failures
+        ),
         "inventory_reproduction_count": len(inventory),
         "executable_reproduction_count": len(lanes),
         "non_executable_reproduction_count": len(non_executable),
@@ -219,14 +278,19 @@ def build_plan() -> dict:
         "research_os_compiled_count": sum(
             row.state != "compile_failed" for row in lanes
         ),
-        "execution_ready_count": sum(
-            row.state == "execution_ready" for row in lanes
+        "benchmark_authority_required_count": sum(
+            row.benchmark_authority_state == "required" for row in lanes
         ),
-        "benchmark_binding_required_count": sum(
-            row.state == "benchmark_binding_required" for row in lanes
+        "reproduction_closure_required_count": sum(
+            row.reproduction_closure_state == "required" for row in lanes
         ),
-        "closure_binding_required_count": sum(
-            row.state == "closure_binding_required" for row in lanes
+        "materialization_ready_count": sum(
+            row.materialization_ready for row in lanes
+        ),
+        "execution_authority_required_count": sum(
+            row.materialization_ready
+            and row.execution_authority_state == "required"
+            for row in lanes
         ),
         "compile_failure_count": len(compile_failures),
         "compile_failure_packages": compile_failures,
@@ -358,9 +422,10 @@ def main() -> int:
             "research_os_compiled_count",
             "compile_failure_count",
             "exact_study_binding_count",
-            "execution_ready_count",
-            "benchmark_binding_required_count",
-            "closure_binding_required_count",
+            "benchmark_authority_required_count",
+            "reproduction_closure_required_count",
+            "materialization_ready_count",
+            "execution_authority_required_count",
             "typed_execution_requirement_count",
             "plan_digest",
         )
