@@ -22,6 +22,7 @@ from research.reproductions.research_os import (
     discover_reproduction_definitions,
     executable_reproduction_definitions,
     is_research_os_executable,
+    resolve_benchmark_split_consumers,
     resolve_execution_requirements,
     resolve_method_program_binding,
     resolve_research_program_bindings,
@@ -44,6 +45,7 @@ class Lane:
     execution_requirement_parameters: tuple[str, ...]
     execution_requirement_kinds: tuple[str, ...]
     execution_requirement_digests: tuple[str, ...]
+    benchmark_split_axis_consumers: tuple[str, ...]
     method_program_digest: str | None
     research_machine_program_digests: tuple[str, ...]
     state: str
@@ -61,6 +63,7 @@ def _lane(definition) -> Lane:
     execution_requirement_parameters: tuple[str, ...] = ()
     execution_requirement_kinds: tuple[str, ...] = ()
     execution_requirement_digests: tuple[str, ...] = ()
+    benchmark_split_axis_consumers: tuple[str, ...] = ()
     exact_study_factory_count = 0
     study_factory_count = 0
     try:
@@ -83,6 +86,9 @@ def _lane(definition) -> Lane:
         )
         execution_requirement_digests = tuple(
             row.requirement_digest for row in requirements
+        )
+        benchmark_split_axis_consumers = resolve_benchmark_split_consumers(
+            definition
         )
 
         method_assets = tuple(
@@ -138,6 +144,7 @@ def _lane(definition) -> Lane:
         execution_requirement_parameters=execution_requirement_parameters,
         execution_requirement_kinds=execution_requirement_kinds,
         execution_requirement_digests=execution_requirement_digests,
+        benchmark_split_axis_consumers=benchmark_split_axis_consumers,
         method_program_digest=method_program_digest,
         research_machine_program_digests=machine_program_digests,
         state=(
@@ -146,7 +153,11 @@ def _lane(definition) -> Lane:
             else (
                 "closure_binding_required"
                 if execution_requirement_digests
-                else "execution_ready"
+                else (
+                    "benchmark_binding_required"
+                    if benchmark_split_axis_consumers
+                    else "execution_ready"
+                )
             )
         ),
         blockers=tuple(sorted(set(blockers))),
@@ -190,7 +201,7 @@ def build_plan() -> dict:
         graph_node_count = 0
 
     document = {
-        "schema": "noetrium.reproduction-fleet-plan.v6",
+        "schema": "noetrium.reproduction-fleet-plan.v7",
         "inventory_reproduction_count": len(inventory),
         "executable_reproduction_count": len(lanes),
         "non_executable_reproduction_count": len(non_executable),
@@ -205,6 +216,9 @@ def build_plan() -> dict:
         ),
         "execution_ready_count": sum(
             row.state == "execution_ready" for row in lanes
+        ),
+        "benchmark_binding_required_count": sum(
+            row.state == "benchmark_binding_required" for row in lanes
         ),
         "closure_binding_required_count": sum(
             row.state == "closure_binding_required" for row in lanes
@@ -250,6 +264,7 @@ def main() -> int:
             "compile_failure_count",
             "exact_study_binding_count",
             "execution_ready_count",
+            "benchmark_binding_required_count",
             "closure_binding_required_count",
             "typed_execution_requirement_count",
             "plan_digest",
