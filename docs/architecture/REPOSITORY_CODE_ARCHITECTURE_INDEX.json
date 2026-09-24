@@ -42816,7 +42816,7 @@
     "tooling": 38
   },
   "schema": "noetrium-repository-code-architecture-index.v1",
-  "source_git_sha": "1e7a5394059ac64024b586d2ecdd1ecb5106f841",
+  "source_git_sha": "3a3ce43f4a29dea7c366bcafc68975ff44e03a07",
   "symbols": [
     {
       "bases": [],
@@ -69892,6 +69892,7 @@
         "__init__",
         "_connect_writer",
         "_connect_reader",
+        "_ensure_schema",
         "_parent_documents",
         "_document",
         "_record_digest",
@@ -71194,7 +71195,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 164,
+      "line": 167,
       "methods": [
         "__init__",
         "connect_writer",
