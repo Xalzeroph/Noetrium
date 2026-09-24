@@ -306,7 +306,7 @@ class ExperimentRuntimeForTest:
         restore_checkpoint_id=None,
         restore_cycle_identity=None,
     ):
-        from noetrium_platform.research.experimentation.lifecycle.experiment.runtime.trial_protocol_identity import (
+        from noetrium_platform.research.experimentation.lifecycle.experiment.api.trial_protocol import (
             verify_trial_protocol_identity,
         )
 
@@ -328,7 +328,7 @@ class ExperimentRuntimeForTest:
         input_payload=None,
         cycle_identity=None,
     ):
-        from noetrium_platform.research.experimentation.lifecycle.experiment.runtime.trial_protocol_identity import (
+        from noetrium_platform.research.experimentation.lifecycle.experiment.api.trial_protocol import (
             verify_trial_protocol_identity,
         )
 
@@ -523,7 +523,7 @@ def build_experiment_runtime_components_for_test(
     from noetrium_platform.capabilities.participant.core.api import (
         ParticipantLifecycleAdapterRegistry,
     )
-    from noetrium_platform.research.experimentation.lifecycle.experiment.runtime import (
+    from noetrium_platform.research.experimentation.lifecycle.experiment.api.trial_protocol import (
         trial_protocol_identity,
     )
     from noetrium_platform.capabilities.participant.session.runtime.checkpoint_runtime import (
