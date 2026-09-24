@@ -27,3 +27,15 @@ __all__ += [
     "EnvironmentInstanceLeasePolicy",
     "EnvironmentInstanceReconciliation",
 ]
+
+from .lease_heartbeat import (
+    EnvironmentInstanceLeaseHeartbeatError,
+    EnvironmentInstanceLeaseHeartbeatFactory,
+    EnvironmentInstanceLeaseHeartbeatGuard,
+)
+
+__all__ += [
+    "EnvironmentInstanceLeaseHeartbeatError",
+    "EnvironmentInstanceLeaseHeartbeatFactory",
+    "EnvironmentInstanceLeaseHeartbeatGuard",
+]

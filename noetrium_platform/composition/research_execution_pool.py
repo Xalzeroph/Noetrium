@@ -4,6 +4,12 @@ from uuid import uuid4
 
 from noetrium_platform.capabilities.model.serving.api import ModelAdmissionRegistryPort
 from noetrium_platform.capabilities.model.serving.runtime import ModelAdmissionRegistry
+from noetrium_platform.capabilities.environment.catalog.runtime import (
+    DEFAULT_ENVIRONMENT_INSTANCE_LEASE_POLICY,
+    EnvironmentInstanceLeaseAuthority,
+    EnvironmentInstanceLeaseHeartbeatFactory,
+    EnvironmentInstanceLeasePolicy,
+)
 from noetrium_platform.infrastructure.resources.compute.api import (
     ComputeLeaseGuardFactoryPort,
     ComputeLeasePolicy,
@@ -89,6 +95,7 @@ class ResearchExecutionPool:
             raise
         self._compute_lease_group: TaskGroupPort | None = None
         self._endpoint_lease_group: TaskGroupPort | None = None
+        self._environment_lease_group: TaskGroupPort | None = None
         self._closed = False
 
     @property
@@ -195,6 +202,34 @@ class ResearchExecutionPool:
             task_group=self._endpoint_lease_group,
             heartbeat_scheduler=self._experiments.heartbeats,
             lane_id="research-endpoint-lease-renewal",
+            lane_capacity=lane_capacity,
+            policy=policy,
+        )
+
+    def environment_instance_lease_guard_factory(
+        self,
+        authority: EnvironmentInstanceLeaseAuthority,
+        *,
+        policy: EnvironmentInstanceLeasePolicy = DEFAULT_ENVIRONMENT_INSTANCE_LEASE_POLICY,
+        lane_capacity: int | None = 1,
+    ) -> EnvironmentInstanceLeaseHeartbeatFactory:
+        """Share one structured heartbeat authority across environment checkouts."""
+
+        if self._closed:
+            raise RuntimeError("research execution pool is closed")
+        if self._environment_lease_group is None:
+            self._environment_lease_group = self._experiments.open_task_group(
+                f"research-environment-leases:{uuid4().hex}",
+                resource_id="environment-instance-lease-heartbeats",
+                priority=ExecutionPriority.CRITICAL,
+                admission_mode=AdmissionMode.BLOCK,
+                failure_policy=TaskFailurePolicy.FAIL_FAST,
+            )
+        return EnvironmentInstanceLeaseHeartbeatFactory(
+            authority=authority,
+            task_group=self._environment_lease_group,
+            heartbeat_scheduler=self._experiments.heartbeats,
+            lane_id="research-environment-instance-lease-renewal",
             lane_capacity=lane_capacity,
             policy=policy,
         )

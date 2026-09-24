@@ -238,27 +238,34 @@ class EnvironmentInstanceLeaseAuthority:
         *,
         cleanliness: EnvironmentCleanlinessProof | None = None,
     ) -> EnvironmentInstance:
-        current_binding = self.catalog.binding(
-            handle.binding.role,
-            handle.binding.scope,
-        )
-        if current_binding != handle.binding:
+        current = self._instance(handle.instance.instance_id)
+        if (
+            current.state is not EnvironmentInstanceState.IN_USE
+            or current.generation != handle.instance.generation
+        ):
+            raise RuntimeError(
+                "environment instance generation is no longer authoritative"
+            )
+        rows = self._binding_rows(handle.instance.instance_id)
+        if handle.binding not in rows:
             raise RuntimeError("environment instance binding generation drifted")
-        self.catalog.unbind(handle.binding.role, handle.binding.scope)
-        remaining = self._binding_rows(handle.instance.instance_id)
-        if remaining:
-            if cleanliness is not None:
-                raise RuntimeError(
-                    "environment cleanliness proof cannot be committed while bindings remain"
-                )
-            return self._instance(handle.instance.instance_id)
+        if {row.scope for row in rows} != {handle.binding.scope}:
+            raise RuntimeError("environment instance binding scope drifted")
 
+        # A lease owns the whole instance generation, not one role.  Tear down
+        # every binding for that generation before releasing its Resource lease.
+        for row in rows:
+            self.catalog.unbind(row.role, row.scope)
         try:
             self.leases.release(handle.lease.lease_id)
-        finally:
-            # If lease release fails, the instance must not become CLEAN.
-            if self.leases.active_for(_instance_resource(handle.instance.instance_id)):
-                return self.catalog.mark_instance_dirty(handle.instance.instance_id)
+        except BaseException:
+            self.catalog.mark_instance_dirty(handle.instance.instance_id)
+            raise
+        if self.leases.active_for(_instance_resource(handle.instance.instance_id)):
+            self.catalog.mark_instance_dirty(handle.instance.instance_id)
+            raise RuntimeError(
+                "environment instance lease remained active after release"
+            )
         return self.catalog.release_instance(
             handle.instance.instance_id,
             cleanliness=cleanliness,
