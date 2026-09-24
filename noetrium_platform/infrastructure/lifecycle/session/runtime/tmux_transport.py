@@ -123,6 +123,7 @@ class TmuxPersistentSessionControl:
                     "snapshot",
                     (
                         parsed.session_name,
+                        parsed.session_generation,
                         parsed.controller_pid,
                         parsed.controller_dead,
                         parsed.start_command,
@@ -141,6 +142,11 @@ class TmuxPersistentSessionControl:
             raise PersistentSessionDrift(PersistentSessionReasonCode.SESSION_MISSING, "tmux session is absent")
         if snapshot.session_name != spec.session_name:
             raise PersistentSessionDrift(PersistentSessionReasonCode.SESSION_IDENTITY_DRIFT, "tmux session name differs from frozen binding")
+        if not snapshot.session_generation:
+            raise PersistentSessionDrift(
+                PersistentSessionReasonCode.SESSION_IDENTITY_DRIFT,
+                "tmux session generation missing",
+            )
         if snapshot.controller_pid is None or snapshot.controller_pid <= 0:
             raise PersistentSessionDrift(PersistentSessionReasonCode.CONTROLLER_NOT_LIVE, "tmux controller PID missing")
         if snapshot.controller_dead:
@@ -153,7 +159,14 @@ class TmuxPersistentSessionControl:
         return (
             tmux_evidence_ref(
                 "exact",
-                (spec.session_name, snapshot.controller_pid, expected, spec.cwd, self.identity_digest),
+                (
+                    spec.session_name,
+                    snapshot.session_generation,
+                    snapshot.controller_pid,
+                    expected,
+                    spec.cwd,
+                    self.identity_digest,
+                ),
             ),
         )
 
@@ -172,22 +185,41 @@ class TmuxPersistentSessionControl:
         except Exception as exc:
             raise PersistentSessionEffectUncertain("create", spec.session_name, cause=exc) from exc
 
-    def terminate(self, session_name: str) -> tuple[str, ...]:
-        # As with create, command construction is outside the external-effect
-        # window.  A definitive "session absent" response proves no live target;
-        # every other ordinary failure after submission is effect-uncertain.
-        argv = self.commands.terminate_argv(session_name)
+    def terminate(self, snapshot: PersistentSessionSnapshot) -> tuple[str, ...]:
+        if not snapshot.exists or not snapshot.session_generation:
+            raise PersistentSessionDrift(
+                PersistentSessionReasonCode.SESSION_IDENTITY_DRIFT,
+                "refusing to terminate a session without an exact physical generation",
+            )
+        # Kill the exact tmux session id, not the reusable logical name. A
+        # delayed close from an older generation therefore cannot target a
+        # replacement session with the same name in the same tmux server.
+        argv = self.commands.terminate_argv(snapshot.session_generation)
         try:
             result = self._run(argv, effect="mutation")
             if result.returncode != 0:
                 if session_is_absent(result):
-                    return (tmux_evidence_ref("kill-missing", session_name),)
+                    return (
+                        tmux_evidence_ref(
+                            "kill-missing",
+                            (snapshot.session_name, snapshot.session_generation),
+                        ),
+                    )
                 raise TmuxCommandFailed("terminate", result)
-            return (tmux_evidence_ref("killed", session_name),)
+            return (
+                tmux_evidence_ref(
+                    "killed",
+                    (snapshot.session_name, snapshot.session_generation),
+                ),
+            )
         except PersistentSessionEffectUncertain:
             raise
         except Exception as exc:
-            raise PersistentSessionEffectUncertain("terminate", session_name, cause=exc) from exc
+            raise PersistentSessionEffectUncertain(
+                "terminate",
+                snapshot.session_name,
+                cause=exc,
+            ) from exc
 
     def attach_argv(self, session_name: str) -> tuple[str, ...]:
         return self.commands.attach_argv(session_name)
