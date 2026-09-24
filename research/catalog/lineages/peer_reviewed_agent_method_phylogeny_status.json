@@ -1270,7 +1270,7 @@
       "reproductions": [
         {
           "package": "chatdev_v1",
-          "package_digest": "c0df5fedf901db622ff22af0b8538de1c00e80abb262b11b0b50553319a6a861",
+          "package_digest": "6891a14aa4180708b59db24e3b7e42872ed8f0b27febe05d310a146fa0e6c7bb",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "srdd"
@@ -1332,7 +1332,7 @@
             {
               "kind": "support",
               "path": "research/reproductions/chatdev_v1/workspace.py",
-              "content_sha256": "a22f21a46f5ad3b8c846712c4840e45835a972e0560dbe2b50d3a5937539ceab"
+              "content_sha256": "ef5b6fd7444ed5a48a2670a2e29a5d9d243d24f43861d30c10d245c1e5a98f51"
             }
           ],
           "blockers": [
@@ -3896,5 +3896,5 @@
       ]
     }
   ],
-  "projection_digest": "c532eaeac580bd34691a56cfef1559071c694de7c6aad8fc1ef70d2ce6df25fa"
+  "projection_digest": "df1e0b0a3930fec08b1d66952193e0c664c7df52eedb6b41edc1dfb17e809185"
 }

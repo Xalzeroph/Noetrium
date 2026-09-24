@@ -2,7 +2,7 @@
   "schema": "noetrium.reproduction.projection.v10",
   "authority": "generated_from_typed_definition_and_source",
   "package": "chatdev_v1",
-  "package_digest": "c0df5fedf901db622ff22af0b8538de1c00e80abb262b11b0b50553319a6a861",
+  "package_digest": "6891a14aa4180708b59db24e3b7e42872ed8f0b27febe05d310a146fa0e6c7bb",
   "definition_digest": "596185b0e8a4c8ff69611e15bb9504734d6d7575f0a187ab1214d235499e61d2",
   "source_registry_digest": "ef8ddd9ce1f6e9a889a6c727ad6145b62925d7559d7022c815721004d1c57702",
   "lifecycle": "protocol_bound",
@@ -138,7 +138,7 @@
       "kind": "support",
       "path": "research/reproductions/chatdev_v1/workspace.py",
       "declaration_digest": "0fb1c120c0ff5aed5f21e8dff64efb60f85fca967b987a09590615066bffca5f",
-      "content_sha256": "a22f21a46f5ad3b8c846712c4840e45835a972e0560dbe2b50d3a5937539ceab"
+      "content_sha256": "ef5b6fd7444ed5a48a2670a2e29a5d9d243d24f43861d30c10d245c1e5a98f51"
     }
   ],
   "primary_executable": "research/reproductions/chatdev_v1/program.py",
