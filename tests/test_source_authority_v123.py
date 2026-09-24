@@ -41,6 +41,42 @@ class SourceAuthorityV123Tests(unittest.TestCase):
             self.assertEqual(len(findings), 1)
             self.assertEqual(findings[0].authority, "lifecycle.process_spawn")
 
+    def test_protected_primitive_alias_capture_is_rejected_across_authorities(self):
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            target = root / "noetrium_platform" / "runtime_manager"
+            target.mkdir(parents=True)
+            (root / "noetrium_platform" / "__init__.py").write_text("", encoding="utf-8")
+            (target / "sqlite_ref.py").write_text(
+                "import sqlite3\n\ndef build():\n    factory = sqlite3.connect\n    return factory\n",
+                encoding="utf-8",
+            )
+            (target / "thread_ref.py").write_text(
+                "from concurrent.futures import ThreadPoolExecutor\n\ndef build():\n"
+                "    factory = ThreadPoolExecutor\n    return factory\n",
+                encoding="utf-8",
+            )
+            (target / "spawn_alias.py").write_text(
+                "from subprocess import Popen as Spawn\n\ndef build():\n"
+                "    factory = Spawn\n    return factory\n",
+                encoding="utf-8",
+            )
+
+            findings = audit_source_authorities(root)
+            by_authority = {row.authority: row for row in findings}
+
+            self.assertEqual(
+                set(by_authority),
+                {
+                    "storage.sqlite_connection",
+                    "concurrency.thread_pool",
+                    "lifecycle.process_spawn",
+                },
+            )
+            self.assertEqual(by_authority["storage.sqlite_connection"].line, 4)
+            self.assertEqual(by_authority["concurrency.thread_pool"].line, 4)
+            self.assertEqual(by_authority["lifecycle.process_spawn"].line, 4)
+
     def test_type_annotation_reference_does_not_claim_spawn_authority(self):
         with tempfile.TemporaryDirectory() as td:
             root = Path(td)
