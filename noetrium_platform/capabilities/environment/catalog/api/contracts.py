@@ -105,6 +105,8 @@ class EnvironmentInstance:
             raise ValueError(
                 "environment instance profile_revision must be lowercase sha256"
             )
+        if type(self.state) is not EnvironmentInstanceState:
+            raise TypeError("environment instance state must be EnvironmentInstanceState")
         if isinstance(self.generation, bool) or self.generation < 0:
             raise ValueError("environment instance generation must be non-negative")
         proof = self.cleanliness_proof_digest
@@ -141,6 +143,10 @@ class EnvironmentCleanlinessProof:
                 raise ValueError(
                     f"environment cleanliness {label} must be lowercase sha256"
                 )
+        if type(self.kind) is not EnvironmentCleanlinessKind:
+            raise TypeError(
+                "environment cleanliness kind must be EnvironmentCleanlinessKind"
+            )
         if isinstance(self.generation, bool) or self.generation <= 0:
             raise ValueError(
                 "environment cleanliness generation must identify an acquired generation"
@@ -163,16 +169,52 @@ class EnvironmentProfileReferenceSummary:
 
 @dataclass(frozen=True, slots=True)
 class EnvironmentProfileGcAssessment:
+    """Fail-closed profile-GC decision across local, execution and evidence truth."""
+
     profile_id: str
     profile_revision: str
     local: EnvironmentProfileReferenceSummary
-    resumable_execution_ids: tuple[str, ...] = ()
-    retained_evidence_ids: tuple[str, ...] = ()
+    resumable_execution_ids: tuple[str, ...] | None = None
+    retained_evidence_ids: tuple[str, ...] | None = None
+
+    def __post_init__(self) -> None:
+        if self.local.profile_id != self.profile_id:
+            raise ValueError("environment GC local profile identity drifted")
+        if self.local.profile_revision != self.profile_revision:
+            raise ValueError("environment GC local profile revision drifted")
+        for field_name in (
+            "resumable_execution_ids",
+            "retained_evidence_ids",
+        ):
+            values = getattr(self, field_name)
+            if values is None:
+                continue
+            if type(values) is not tuple or any(
+                type(value) is not str
+                or not value.strip()
+                or value != value.strip()
+                for value in values
+            ):
+                raise TypeError(
+                    f"environment GC {field_name} must be canonical text tuple"
+                )
+            if values != tuple(sorted(set(values))):
+                raise ValueError(
+                    f"environment GC {field_name} must be unique sorted order"
+                )
+
+    @property
+    def external_reference_closure_complete(self) -> bool:
+        return (
+            self.resumable_execution_ids is not None
+            and self.retained_evidence_ids is not None
+        )
 
     @property
     def eligible(self) -> bool:
         return (
             self.local.locally_gc_eligible
+            and self.external_reference_closure_complete
             and not self.resumable_execution_ids
             and not self.retained_evidence_ids
         )
