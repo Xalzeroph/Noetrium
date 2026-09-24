@@ -105,11 +105,13 @@ class ManagedResourceReconciler:
         *,
         now: float | None = None,
     ) -> ManagedResourceReconciliation:
-        """Best-effort terminal cleanup for one exclusively owned runtime.
+        """Terminal cleanup for one exclusively owned, quiesced runtime.
 
-        This method is intentionally separate from periodic reconciliation.
-        It may release still-live leases because callers must first quiesce the
-        runtime and hold the state-root interprocess ownership lock.
+        Docker and reusable Environment instances have authoritative cleanup
+        operations and can be reclaimed here. Endpoint and Compute allocations
+        are only reconciled for expiry; if live allocations remain, they stay
+        fenced and shutdown fails rather than pretending an unknown physical
+        listener/process disappeared.
         """
 
         now_epoch_s = time() if now is None else float(now)
@@ -121,8 +123,8 @@ class ManagedResourceReconciler:
         errors: list[BaseException] = []
         containers = DockerContainerReconciliation((), ())
         environments = EnvironmentInstanceReconciliation((), ())
-        endpoints: list[EndpointAllocation] = []
-        compute: list[ComputeAllocation] = []
+        endpoints: tuple[EndpointAllocation, ...] = ()
+        compute: tuple[ComputeAllocation, ...] = ()
 
         try:
             containers = self._containers.shutdown_cleanup(now=now_epoch_s)
@@ -135,34 +137,41 @@ class ManagedResourceReconciler:
             errors.append(exc)
 
         try:
-            for row in self._endpoints.active():
-                try:
-                    endpoints.append(
-                        self._endpoints.release(row.allocation_id)
+            endpoints = self._endpoints.reconcile(now=now_epoch_s)
+            active_endpoints = self._endpoints.active()
+            if active_endpoints:
+                errors.append(
+                    RuntimeError(
+                        "live endpoint allocations remain after owner shutdown: "
+                        + ",".join(
+                            row.allocation_id for row in active_endpoints
+                        )
                     )
-                except BaseException as exc:
-                    errors.append(exc)
+                )
         except BaseException as exc:
             errors.append(exc)
 
         try:
-            rows = self._compute.allocations()
+            compute = self._compute.reconcile_expired(now=now_epoch_s)
+            active_compute = self._compute.allocations()
+            if active_compute:
+                errors.append(
+                    RuntimeError(
+                        "live compute allocations remain after owner shutdown: "
+                        + ",".join(
+                            row.allocation_id for row in active_compute
+                        )
+                    )
+                )
         except BaseException as exc:
             errors.append(exc)
-            rows = ()
-        for row in rows:
-            try:
-                self._compute.release(row.allocation_id)
-                compute.append(row)
-            except BaseException as exc:
-                errors.append(exc)
 
         report = ManagedResourceReconciliation(
             observed_at_epoch_s=now_epoch_s,
             containers=containers,
             environments=environments,
-            endpoints=tuple(sorted(endpoints, key=lambda row: row.allocation_id)),
-            compute=tuple(sorted(compute, key=lambda row: row.allocation_id)),
+            endpoints=endpoints,
+            compute=compute,
         )
         if errors:
             raise ExceptionGroup(
