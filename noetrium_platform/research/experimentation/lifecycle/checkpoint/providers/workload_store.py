@@ -15,6 +15,12 @@ from ..api import (
     WorkloadCheckpointStore,
 )
 from .directory_store import DirectoryRunCheckpointStore
+from .publication_intent import (
+    CheckpointPublicationIntent,
+    CheckpointPublicationIntentConflict,
+    CheckpointPublicationIntentCorruptionError,
+    DirectoryCheckpointPublicationIntentStore,
+)
 from .workload_codec import WorkloadCheckpointManifestCodec
 
 
@@ -35,6 +41,10 @@ class DirectoryWorkloadCheckpointStore(WorkloadCheckpointStore):
         self._manifests.mkdir(parents=True, exist_ok=True)
         self._manifest_locks.mkdir(parents=True, exist_ok=True)
         self._codec = WorkloadCheckpointManifestCodec()
+        self._intents = DirectoryCheckpointPublicationIntentStore(
+            Path(root),
+            namespace="workload",
+        )
 
     @staticmethod
     def _sha(payload: bytes) -> str:
@@ -47,6 +57,49 @@ class DirectoryWorkloadCheckpointStore(WorkloadCheckpointStore):
     def _manifest_lock_path(self, checkpoint_id: str) -> Path:
         safe = self._sha(checkpoint_id.encode("utf-8"))
         return self._manifest_locks / f"{safe}.lock"
+
+    def _publication_intent(
+        self,
+        manifest: WorkloadCheckpointManifest,
+        encoded: bytes,
+        payloads: tuple[WorkloadCheckpointPayload, ...],
+    ) -> CheckpointPublicationIntent:
+        return CheckpointPublicationIntent(
+            namespace="workload",
+            checkpoint_id=manifest.checkpoint_id,
+            manifest_sha256=self._intents.manifest_digest(encoded),
+            blob_sha256s=tuple(
+                sorted({item.ref.payload_sha256 for item in payloads})
+            ),
+        )
+
+    def _publish_intent(
+        self,
+        intent: CheckpointPublicationIntent,
+    ) -> None:
+        try:
+            self._intents.publish(intent)
+        except CheckpointPublicationIntentConflict as exc:
+            raise RunCheckpointConflict(str(exc)) from exc
+        except CheckpointPublicationIntentCorruptionError as exc:
+            raise RunCheckpointIntegrityError(str(exc)) from exc
+
+    def _clear_intent(
+        self,
+        intent: CheckpointPublicationIntent,
+        *,
+        manifest_committed: bool,
+    ) -> None:
+        try:
+            self._intents.clear(intent)
+        except CheckpointPublicationIntentConflict as exc:
+            if manifest_committed:
+                raise RunCheckpointIntegrityError(
+                    "committed workload checkpoint has conflicting publication intent"
+                ) from exc
+            raise RunCheckpointConflict(str(exc)) from exc
+        except CheckpointPublicationIntentCorruptionError as exc:
+            raise RunCheckpointIntegrityError(str(exc)) from exc
 
     def publish(
         self,
@@ -61,6 +114,7 @@ class DirectoryWorkloadCheckpointStore(WorkloadCheckpointStore):
             ) from exc
         path = self._manifest_path(manifest.checkpoint_id)
         encoded = self._codec.encode(manifest)
+        intent = self._publication_intent(manifest, encoded, payloads)
         with InterprocessFileLock(
             self._manifest_lock_path(manifest.checkpoint_id)
         ):
@@ -71,13 +125,17 @@ class DirectoryWorkloadCheckpointStore(WorkloadCheckpointStore):
                         "workload checkpoint id is already bound to different state: "
                         f"{manifest.checkpoint_id}"
                     )
+                self._clear_intent(intent, manifest_committed=True)
                 return current
+
+            self._publish_intent(intent)
             for item in payloads:
                 self._content._write_blob(
                     item.payload,
                     item.ref.payload_sha256,
                 )
             atomic_replace_bytes(path, encoded)
+            self._clear_intent(intent, manifest_committed=True)
             return manifest
 
     def load(self, checkpoint_id: str) -> WorkloadCheckpointBundle:
