@@ -173,7 +173,6 @@ class MinecraftBridgeSpec:
 
     command: tuple[str, ...]
     cwd: str
-    stderr_log_path: str | None = None
     action_recovery_root: str | None = None
     connect_timeout_s: float = 45.0
     command_timeout_s: float = 45.0
