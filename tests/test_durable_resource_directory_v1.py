@@ -267,7 +267,11 @@ def test_workspace_remove_retries_after_retirement_publication(
             gc=gc,
         )
 
-    assert allocation.path.exists()
+    assert not allocation.path.exists()
+    quarantine_root = tmp_path / "workspaces" / ".retired-workspaces"
+    quarantined = tuple(quarantine_root.iterdir())
+    assert len(quarantined) == 1
+    assert (quarantined[0] / "payload").read_text("utf-8") == "state"
     with pytest.raises(RuntimeError, match="retired and cannot be reused"):
         authorities.workspaces.allocate_workspace(
             "run-retry",
@@ -283,6 +287,7 @@ def test_workspace_remove_retries_after_retirement_publication(
     )
     assert calls == 2
     assert not allocation.path.exists()
+    assert not quarantined[0].exists()
 
 
 def test_workspace_gc_fails_closed_without_all_reference_authorities(
@@ -439,7 +444,10 @@ def test_workspace_remove_retry_rejects_changed_gc_proof(
             category="study",
             gc=changed,
         )
-    assert allocation.path.exists()
+    assert not allocation.path.exists()
+    quarantine_root = tmp_path / "workspaces" / ".retired-workspaces"
+    quarantined = tuple(quarantine_root.iterdir())
+    assert len(quarantined) == 1
     assert authorities.workspaces.remove_workspace(
         "run-proof-retry",
         scope=scope,
@@ -447,3 +455,247 @@ def test_workspace_remove_retry_rejects_changed_gc_proof(
         gc=original,
     )
     assert not allocation.path.exists()
+    assert not quarantined[0].exists()
+
+
+
+def test_workspace_gc_recovers_rename_committed_before_phase_publication(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    import noetrium_platform.infrastructure.resources.directory.runtime.workspaces as workspace_runtime
+
+    authorities = build_local_directory_authorities(_layout(tmp_path))
+    scope = ScopeIdentity(ScopeKind.BRANCH, "branch-rename-commit")
+    allocation = authorities.workspaces.allocate_workspace(
+        "run-rename-commit",
+        scope=scope,
+        category="study",
+    )
+    payload = allocation.path / "scientific-state.bin"
+    payload.write_bytes(b"durable-state")
+    gc = _closed_workspace_gc(
+        authorities,
+        "run-rename-commit",
+        scope=scope,
+        category="study",
+    )
+
+    real_atomic_replace = workspace_runtime.atomic_replace_bytes
+    retirement_writes = 0
+
+    def fail_quarantined_publication(path, data):
+        nonlocal retirement_writes
+        retirement_writes += 1
+        if retirement_writes == 2:
+            raise OSError(
+                "simulated crash after quarantine rename before phase publication"
+            )
+        return real_atomic_replace(path, data)
+
+    monkeypatch.setattr(
+        workspace_runtime,
+        "atomic_replace_bytes",
+        fail_quarantined_publication,
+    )
+    with pytest.raises(OSError, match="after quarantine rename"):
+        authorities.workspaces.remove_workspace(
+            "run-rename-commit",
+            scope=scope,
+            category="study",
+            gc=gc,
+        )
+
+    assert not allocation.path.exists()
+    quarantine_root = tmp_path / "workspaces" / ".retired-workspaces"
+    quarantined = tuple(quarantine_root.iterdir())
+    assert len(quarantined) == 1
+    assert (quarantined[0] / "scientific-state.bin").read_bytes() == b"durable-state"
+
+    monkeypatch.setattr(
+        workspace_runtime,
+        "atomic_replace_bytes",
+        real_atomic_replace,
+    )
+    assert authorities.workspaces.remove_workspace(
+        "run-rename-commit",
+        scope=scope,
+        category="study",
+        gc=gc,
+    )
+    assert not quarantined[0].exists()
+
+
+def test_workspace_gc_recovers_purge_committed_before_terminal_publication(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    import noetrium_platform.infrastructure.resources.directory.runtime.workspaces as workspace_runtime
+
+    authorities = build_local_directory_authorities(_layout(tmp_path))
+    scope = ScopeIdentity(ScopeKind.BRANCH, "branch-purge-commit")
+    allocation = authorities.workspaces.allocate_workspace(
+        "run-purge-commit",
+        scope=scope,
+        category="study",
+    )
+    (allocation.path / "payload").write_text("state", encoding="utf-8")
+    gc = _closed_workspace_gc(
+        authorities,
+        "run-purge-commit",
+        scope=scope,
+        category="study",
+    )
+
+    real_atomic_replace = workspace_runtime.atomic_replace_bytes
+    retirement_writes = 0
+
+    def fail_terminal_publication(path, data):
+        nonlocal retirement_writes
+        retirement_writes += 1
+        if retirement_writes == 3:
+            raise OSError(
+                "simulated crash after quarantine purge before terminal publication"
+            )
+        return real_atomic_replace(path, data)
+
+    monkeypatch.setattr(
+        workspace_runtime,
+        "atomic_replace_bytes",
+        fail_terminal_publication,
+    )
+    with pytest.raises(OSError, match="after quarantine purge"):
+        authorities.workspaces.remove_workspace(
+            "run-purge-commit",
+            scope=scope,
+            category="study",
+            gc=gc,
+        )
+
+    assert not allocation.path.exists()
+    quarantine_root = tmp_path / "workspaces" / ".retired-workspaces"
+    assert not tuple(quarantine_root.glob("*"))
+
+    monkeypatch.setattr(
+        workspace_runtime,
+        "atomic_replace_bytes",
+        real_atomic_replace,
+    )
+    assert authorities.workspaces.remove_workspace(
+        "run-purge-commit",
+        scope=scope,
+        category="study",
+        gc=gc,
+    )
+    assert not allocation.path.exists()
+
+
+def test_workspace_gc_rejects_live_path_reappearance_after_quarantine(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    import noetrium_platform.infrastructure.resources.directory.runtime.workspaces as workspace_runtime
+
+    authorities = build_local_directory_authorities(_layout(tmp_path))
+    scope = ScopeIdentity(ScopeKind.BRANCH, "branch-reappeared")
+    allocation = authorities.workspaces.allocate_workspace(
+        "run-reappeared",
+        scope=scope,
+        category="study",
+    )
+    (allocation.path / "payload").write_text("owned", encoding="utf-8")
+    gc = _closed_workspace_gc(
+        authorities,
+        "run-reappeared",
+        scope=scope,
+        category="study",
+    )
+
+    real_rmtree = workspace_runtime.shutil.rmtree
+
+    def fail_purge(_path):
+        raise OSError("simulated quarantine purge interruption")
+
+    monkeypatch.setattr(workspace_runtime.shutil, "rmtree", fail_purge)
+    with pytest.raises(OSError, match="purge interruption"):
+        authorities.workspaces.remove_workspace(
+            "run-reappeared",
+            scope=scope,
+            category="study",
+            gc=gc,
+        )
+
+    assert not allocation.path.exists()
+    quarantine_root = tmp_path / "workspaces" / ".retired-workspaces"
+    quarantined = tuple(quarantine_root.iterdir())
+    assert len(quarantined) == 1
+
+    allocation.path.mkdir(parents=True)
+    residue = allocation.path / "replacement-residue"
+    residue.write_text("new-lifetime", encoding="utf-8")
+    monkeypatch.setattr(workspace_runtime.shutil, "rmtree", real_rmtree)
+
+    with pytest.raises(RuntimeError, match="live path reappeared"):
+        authorities.workspaces.remove_workspace(
+            "run-reappeared",
+            scope=scope,
+            category="study",
+            gc=gc,
+        )
+
+    assert residue.read_text("utf-8") == "new-lifetime"
+    assert quarantined[0].exists()
+
+
+def test_workspace_gc_rejects_split_live_and_quarantine_truth(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    import noetrium_platform.infrastructure.resources.directory.runtime.workspaces as workspace_runtime
+
+    authorities = build_local_directory_authorities(_layout(tmp_path))
+    scope = ScopeIdentity(ScopeKind.BRANCH, "branch-split-gc")
+    allocation = authorities.workspaces.allocate_workspace(
+        "run-split-gc",
+        scope=scope,
+        category="study",
+    )
+    (allocation.path / "payload").write_text("owned", encoding="utf-8")
+    gc = _closed_workspace_gc(
+        authorities,
+        "run-split-gc",
+        scope=scope,
+        category="study",
+    )
+
+    real_atomic_replace = workspace_runtime.atomic_replace_bytes
+    retirement_writes = 0
+
+    def fail_after_rename(path, data):
+        nonlocal retirement_writes
+        retirement_writes += 1
+        if retirement_writes == 2:
+            raise OSError("simulated phase publication loss")
+        return real_atomic_replace(path, data)
+
+    monkeypatch.setattr(workspace_runtime, "atomic_replace_bytes", fail_after_rename)
+    with pytest.raises(OSError, match="phase publication loss"):
+        authorities.workspaces.remove_workspace(
+            "run-split-gc",
+            scope=scope,
+            category="study",
+            gc=gc,
+        )
+
+    allocation.path.mkdir(parents=True)
+    (allocation.path / "foreign").write_text("do-not-delete", encoding="utf-8")
+    monkeypatch.setattr(workspace_runtime, "atomic_replace_bytes", real_atomic_replace)
+
+    with pytest.raises(RuntimeError, match="split truth"):
+        authorities.workspaces.remove_workspace(
+            "run-split-gc",
+            scope=scope,
+            category="study",
+            gc=gc,
+        )
+    assert (allocation.path / "foreign").read_text("utf-8") == "do-not-delete"

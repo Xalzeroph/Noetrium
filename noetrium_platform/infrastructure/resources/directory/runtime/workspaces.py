@@ -35,7 +35,7 @@ from noetrium_platform.foundation.governance.api import (
 
 _WORKSPACE_SCHEMA = "resource.workspace-allocation.v2"
 _WORKSPACE_FIELDS = {"workspace_id", "scope", "category", "owner", "note"}
-_WORKSPACE_RETIREMENT_SCHEMA = "resource.workspace-retirement.v1"
+_WORKSPACE_RETIREMENT_SCHEMA = "resource.workspace-retirement.v2"
 _WORKSPACE_RETIREMENT_FIELDS = {
     "workspace_identity_digest",
     "workspace_metadata_digest",
