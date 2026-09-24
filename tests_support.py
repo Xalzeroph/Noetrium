@@ -272,23 +272,105 @@ class EmptyWorkflowSurfaceFactory:
         return object()
 
 
+def context_action_runtime_from_resolver(resolver, **kwargs):
+    """Test-only low-level ExperimentRuntime composition.
+
+    Production composition must execute through Research OS. Legacy subsystem
+    tests use this helper to pressure-test Experimentation internals directly.
+    """
+
+    from noetrium_platform.composition.context_action import (
+        context_action_participant_adapters,
+    )
+    from noetrium_platform.composition.experiment_runtime import (
+        build_experiment_runtime,
+    )
+    from noetrium_platform.composition.workflows.context_action import (
+        ContextActionSurfaceFactory,
+        context_action_trial_protocol,
+    )
+
+    extra_participant_adapters = kwargs.pop(
+        "extra_participant_adapters",
+        (),
+    )
+    extra_surface_factories = kwargs.pop(
+        "extra_surface_factories",
+        (),
+    )
+    return build_experiment_runtime(
+        participant_adapters=context_action_participant_adapters(
+            resolver,
+            extra=extra_participant_adapters,
+        ),
+        trial_protocol=context_action_trial_protocol(),
+        workflow_surface_factories=(
+            ContextActionSurfaceFactory(),
+            *extra_surface_factories,
+        ),
+        **kwargs,
+    )
+
+
 def context_action_runtime(methods, environments, **kwargs):
-    from noetrium_platform.composition.context_action import compose_context_action_runtime
-    return compose_context_action_runtime(CompositeParticipantResolver(methods, environments), **kwargs)
+    return context_action_runtime_from_resolver(
+        CompositeParticipantResolver(methods, environments),
+        **kwargs,
+    )
 
 
 def agent_turn_runtime(agents, **kwargs):
-    from noetrium_platform.composition.agent_turn import compose_agent_turn_runtime
+    """Test-only low-level AgentTurn ExperimentRuntime composition."""
+
+    from noetrium_platform.composition.agent_turn import (
+        agent_turn_participant_adapters,
+    )
+    from noetrium_platform.composition.experiment_runtime import (
+        build_experiment_runtime,
+    )
+    from noetrium_platform.composition.workflows.agent_turn import (
+        AgentTurnSurfaceFactory,
+        agent_turn_trial_protocol,
+    )
+    from noetrium_platform.research.execution.capability.runtime import (
+        ScopedRegistrationRuntimeFactory,
+    )
+
     capability = kwargs.pop("capability_plugins", None)
     runtime = kwargs.pop("runtime_plugins", None)
+    extra_participant_adapters = kwargs.pop(
+        "extra_participant_adapters",
+        (),
+    )
+    extra_surface_factories = kwargs.pop(
+        "extra_surface_factories",
+        (),
+    )
+    capability_program = kwargs.pop("capability_program", None)
+    capability_mediators = kwargs.pop("capability_mediators", None)
     resolver = CompositeParticipantResolver(agents, capability, runtime)
     runtime_kinds = tuple(
-        kind for source in (runtime,) if source is not None for kind in source.kinds()
+        kind
+        for source in (runtime,)
+        if source is not None
+        for kind in source.kinds()
     )
-    return compose_agent_turn_runtime(
-        resolver,
-        runtime_kinds=runtime_kinds,
-        include_capability_provider=capability is not None,
+    return build_experiment_runtime(
+        participant_adapters=agent_turn_participant_adapters(
+            resolver,
+            runtime_kinds=runtime_kinds,
+            include_capability_provider=capability is not None,
+            extra=extra_participant_adapters,
+        ),
+        trial_protocol=agent_turn_trial_protocol(),
+        workflow_surface_factories=(
+            AgentTurnSurfaceFactory(
+                ScopedRegistrationRuntimeFactory(),
+                capability_program=capability_program,
+                capability_mediators=capability_mediators,
+            ),
+            *extra_surface_factories,
+        ),
         **kwargs,
     )
 
