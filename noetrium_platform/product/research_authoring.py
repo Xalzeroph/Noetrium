@@ -1,46 +1,13 @@
 """Product-level scientific authoring ABI.
 
 This module only re-exports immutable scientific/program contracts and pure
-authoring helpers from the systems that own them.  It does not expose provider,
+authoring helpers from the systems that own them. It does not expose provider,
 store, registry, scheduler, or runtime-composition implementations.
 
 Downstream projects import these names through :mod:`noetrium.api`.
 """
 from __future__ import annotations
 
-from noetrium_platform.capabilities.environment.api import (
-    ActionRequest,
-    ActionResult,
-    EnvironmentSession,
-)
-from noetrium_platform.capabilities.environment.embodied.api import (
-    ActionKind,
-    ActionSpec,
-    EmbodiedActionCommand,
-    EmbodiedCaptureReceipt,
-    EmbodiedEvent,
-    EmbodiedEventKind,
-    EmbodimentKind,
-    EmbodimentSpec,
-    EpisodeSpec,
-    SensorModality,
-    SensorSpec,
-)
-from noetrium_platform.capabilities.participant.capability.api import (
-    CapabilityDescriptor,
-    CapabilityPort,
-    CapabilityRequest,
-    CapabilityResult,
-    CapabilitySelectionReference,
-    CapabilitySelectionView,
-    GuardDecision,
-    GuardVerdict,
-    materialize_capability_selection_view,
-)
-from noetrium_platform.capabilities.participant.method.api import (
-    MethodIdentity,
-    MethodProgramIdentity,
-)
 from noetrium_platform.composition.environment_capabilities import (
     environment_action_capability_payload,
     environment_branch_action_spec,
@@ -48,10 +15,6 @@ from noetrium_platform.composition.environment_capabilities import (
     environment_query_capability_payload,
     environment_replay_action_payload,
     environment_reset_capability_payload,
-)
-from noetrium_platform.evidence.artifact.content.api import (
-    TensorContentRef,
-    TensorContentStorePort,
 )
 from noetrium_platform.foundation.kernel.kernel import (
     ChildMachineLink,
@@ -73,10 +36,20 @@ from noetrium_platform.foundation.kernel.kernel import (
     require_sha256,
     thaw_json,
 )
-from noetrium_platform.research.execution.api import (
-    program_execution_capability_payload,
-)
-from noetrium_platform.research.execution.machines.api import (
+from noetrium_platform.research.experimentation.api import (
+    ActionKind,
+    ActionRequest,
+    ActionResult,
+    ActionSpec,
+    AgentMethodSpec,
+    AgentPhaseSpec,
+    BenchmarkTaskSet,
+    CapabilityDescriptor,
+    CapabilityPort,
+    CapabilityRequest,
+    CapabilityResult,
+    CapabilitySelectionReference,
+    CapabilitySelectionView,
     ChildFailurePolicy,
     ChildResearchMachineBatchItem,
     ChildResearchMachineBatchPort,
@@ -84,14 +57,45 @@ from noetrium_platform.research.execution.machines.api import (
     ChildResearchMachineExecution,
     ChildResearchMachineRequest,
     DomainProgramBuilder,
+    EmbodiedActionCommand,
+    EmbodiedCaptureReceipt,
+    EmbodiedEvent,
+    EmbodiedEventKind,
+    EmbodimentKind,
+    EmbodimentSpec,
     EnvironmentConcern,
     EnvironmentProgramBuilder,
+    EnvironmentSession,
+    EpisodeSpec,
     EvaluationConcern,
     EvaluationProgramBuilder,
     ExperimentConcern,
     ExperimentProgramBuilder,
+    ExperimentTrialProtocolIdentity,
+    GuardDecision,
+    GuardVerdict,
+    MachineResearchProgram,
+    MachineResearchProgramBuilder,
+    MeasurementDefinition,
     MemoryConcern,
     MemoryProgramBuilder,
+    MethodAgentRequest,
+    MethodAgentResult,
+    MethodEvent,
+    MethodExecutionClass,
+    MethodIdentity,
+    MethodNodeKind,
+    MethodNodeRequest,
+    MethodNodeResult,
+    MethodNodeSpec,
+    MethodProgram,
+    MethodProgramBuilder,
+    MethodProgramIdentity,
+    MethodRunResult,
+    MethodRunStatus,
+    MethodRuntimeContext,
+    MethodRuntimePort,
+    MethodWorkflow,
     OptimizationConcern,
     OptimizationProgramBuilder,
     ParticipantConcern,
@@ -101,46 +105,24 @@ from noetrium_platform.research.execution.machines.api import (
     ProgramNodeResult,
     ProgramRule,
     ProgramRuleSet,
+    ReplayLevel,
     ResearchHostOperation,
-    ResearchProgram as MachineResearchProgram,
-    ResearchProgramBuilder as MachineResearchProgramBuilder,
     ResearchProgramHost,
     ResearchRunProgramBuilder,
+    ResearchStudyDefinition,
     RunConcern,
     RuntimeConcern,
     RuntimeModule,
     RuntimeModuleBuilder,
     RuntimeProgramBuilder,
-)
-from noetrium_platform.research.execution.workflow.api import (
-    AgentMethodSpec,
-    AgentPhaseSpec,
-    MethodAgentRequest,
-    MethodAgentResult,
-    MethodEvent,
-    MethodExecutionClass,
-    MethodNodeKind,
-    MethodNodeRequest,
-    MethodNodeResult,
-    MethodNodeSpec,
-    MethodProgram,
-    MethodProgramBuilder,
-    MethodRunResult,
-    MethodRunStatus,
-    MethodRuntimeContext,
-    MethodRuntimePort,
-    MethodWorkflow,
-)
-from noetrium_platform.research.experimentation.lifecycle.api import (
-    BenchmarkTaskSet,
-    ExperimentTrialProtocolIdentity,
-    MeasurementDefinition,
-    ReplayLevel,
-    ResearchStudyDefinition,
+    SensorModality,
+    SensorSpec,
     Study,
     StudyModel,
     StudyParticipant,
     TrialBudget,
+    materialize_capability_selection_view,
+    program_execution_capability_payload,
 )
 
 __all__ = [
@@ -241,8 +223,6 @@ __all__ = [
     "SensorModality",
     "SensorSpec",
     "StudyParticipant",
-    "TensorContentRef",
-    "TensorContentStorePort",
     "TrialBudget",
     "canonical_digest",
     "environment_action_capability_payload",
