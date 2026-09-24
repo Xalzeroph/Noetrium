@@ -17,7 +17,7 @@ from noetrium_platform.composition.research_os_execution import (
     StrictResearchOSControl,
 )
 from noetrium_platform.composition.research_os_value_authorities import (
-    ResearchOSArtifactValueAuthority,
+    ResearchOSImmutableValueAuthority,
 )
 from noetrium_platform.composition.research_os_values import (
     ResearchOSValueAuthorityMissing,
@@ -1028,7 +1028,7 @@ def test_derived_artifact_requires_and_records_exact_lineage(tmp_path: Path) -> 
     blobs = DirectoryArtifactBlobStore(tmp_path / "artifact-blobs")
     registry = SQLiteArtifactRegistry(tmp_path / "artifact-catalog.sqlite3")
     retention = SQLiteArtifactRetentionStore(tmp_path / "artifact-retention.sqlite3")
-    authority = ResearchOSArtifactValueAuthority(blobs, registry, retention)
+    authority = ResearchOSImmutableValueAuthority(blobs, registry, retention)
     values = ResearchOSValueRouter((authority,))
     lineage = SQLiteArtifactLineageStore(tmp_path / "artifact-lineage.sqlite3")
     graph, pool, research_os = _bound(
@@ -1085,7 +1085,7 @@ def test_derived_artifact_requires_and_records_exact_lineage(tmp_path: Path) -> 
 
 def test_derived_artifact_without_lineage_authority_fails_before_cut(tmp_path: Path) -> None:
     runtime = _ArtifactRuntime()
-    authority = ResearchOSArtifactValueAuthority(
+    authority = ResearchOSImmutableValueAuthority(
         DirectoryArtifactBlobStore(tmp_path / "artifact-blobs"),
         SQLiteArtifactRegistry(tmp_path / "artifact-catalog.sqlite3"),
         SQLiteArtifactRetentionStore(tmp_path / "artifact-retention.sqlite3"),
