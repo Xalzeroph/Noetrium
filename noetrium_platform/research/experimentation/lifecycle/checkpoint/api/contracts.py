@@ -1,9 +1,16 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
+from enum import StrEnum
 from typing import Protocol, runtime_checkable
 
-from noetrium_platform.foundation.kernel.kernel import canonical_digest
+from noetrium_platform.foundation.kernel.kernel import (
+    DurableCarrierReferenceClosure,
+    canonical_digest,
+    durable_carrier_closure_complete,
+    durable_carrier_gc_eligible,
+    validate_durable_carrier_closures,
+)
 from noetrium_platform.research.execution.api import ParticipantCheckpoint, ParticipantCheckpointRef
 
 
@@ -103,6 +110,81 @@ class RunCheckpointBundle:
             raise ValueError("run checkpoint bundle payload roles must match the manifest")
 
 
+class RunCheckpointPersistenceState(StrEnum):
+    COMMITTED = "committed"
+    PENDING = "pending"
+
+
+@dataclass(frozen=True, slots=True)
+class RunCheckpointGcAssessment:
+    """Exact proof-backed GC cut for one durable checkpoint generation."""
+
+    checkpoint_id: str
+    persistence_state: RunCheckpointPersistenceState
+    state_digest: str
+    blob_sha256s: tuple[str, ...]
+    closures: tuple[DurableCarrierReferenceClosure, ...] = ()
+    proof_digest: str = field(init=False)
+
+    def __post_init__(self) -> None:
+        if (
+            type(self.checkpoint_id) is not str
+            or not self.checkpoint_id.strip()
+            or self.checkpoint_id != self.checkpoint_id.strip()
+        ):
+            raise ValueError("checkpoint GC checkpoint_id must be canonical text")
+        if type(self.persistence_state) is not RunCheckpointPersistenceState:
+            raise TypeError("checkpoint GC persistence_state must be typed")
+        for label, value in (("state_digest", self.state_digest),):
+            if (
+                type(value) is not str
+                or len(value) != 64
+                or any(ch not in "0123456789abcdef" for ch in value)
+            ):
+                raise ValueError(f"checkpoint GC {label} must be lowercase sha256")
+        if type(self.blob_sha256s) is not tuple or any(
+            type(value) is not str
+            or len(value) != 64
+            or any(ch not in "0123456789abcdef" for ch in value)
+            for value in self.blob_sha256s
+        ):
+            raise TypeError("checkpoint GC blob_sha256s must be sha256 tuple")
+        if self.blob_sha256s != tuple(sorted(set(self.blob_sha256s))):
+            raise ValueError("checkpoint GC blob_sha256s must be unique sorted order")
+        validate_durable_carrier_closures(self.closures)
+        object.__setattr__(
+            self,
+            "proof_digest",
+            canonical_digest(
+                {
+                    "schema": "noetrium.run-checkpoint-gc-assessment.v1",
+                    "checkpoint_id": self.checkpoint_id,
+                    "persistence_state": self.persistence_state.value,
+                    "state_digest": self.state_digest,
+                    "blob_sha256s": list(self.blob_sha256s),
+                    "closures": [
+                        {
+                            "authority": value.authority.value,
+                            "proof_digest": value.proof_digest,
+                            "retained_reference_ids": list(
+                                value.retained_reference_ids
+                            ),
+                        }
+                        for value in self.closures
+                    ],
+                }
+            ),
+        )
+
+    @property
+    def closure_complete(self) -> bool:
+        return durable_carrier_closure_complete(self.closures)
+
+    @property
+    def eligible(self) -> bool:
+        return durable_carrier_gc_eligible(self.closures)
+
+
 class RunCheckpointConflict(RuntimeError):
     pass
 
@@ -151,12 +233,28 @@ class RunCheckpointStore(Protocol):
 
     def load(self, checkpoint_id: str) -> RunCheckpointBundle: ...
 
+    def assess_gc(
+        self,
+        checkpoint_id: str,
+        *,
+        closures: tuple[DurableCarrierReferenceClosure, ...] = (),
+    ) -> RunCheckpointGcAssessment: ...
+
+    def purge(
+        self,
+        checkpoint_id: str,
+        *,
+        gc: RunCheckpointGcAssessment,
+    ) -> bool: ...
+
 
 __all__ = [
     "RunCheckpointBundle",
     "RunCheckpointConflict",
+    "RunCheckpointGcAssessment",
     "RunCheckpointIntegrityError",
     "RunCheckpointManifest",
+    "RunCheckpointPersistenceState",
     "RunCheckpointRecoveryRequired",
     "RunCheckpointStore",
     "RunParticipantPayload",
