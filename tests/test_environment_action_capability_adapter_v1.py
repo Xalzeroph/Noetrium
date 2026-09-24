@@ -12,6 +12,8 @@ from noetrium_platform.capabilities.environment.api import (
 )
 from noetrium_platform.composition.environment_capabilities import (
     EnvironmentSessionCapabilityAdapter,
+)
+from noetrium_platform.research.execution.workflow.api import (
     environment_action_capability_payload,
 )
 from noetrium_platform.capabilities.participant.capability.api import (
