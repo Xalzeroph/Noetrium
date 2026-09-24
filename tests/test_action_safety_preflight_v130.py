@@ -14,7 +14,7 @@ from noetrium_platform.infrastructure.reliability.effect.runtime import SQLiteEf
 from noetrium_platform.capabilities.environment.api import EnvironmentIdentity, Observation
 from noetrium_platform.foundation.kernel.kernel import OperationExecutor, OperationFailure
 from noetrium_platform.capabilities.participant.method.api import MethodIdentity, RecallResult
-from noetrium_platform.research.experimentation.lifecycle.experiment.runtime import ExperimentRuntime
+from tests_support import ExperimentRuntimeForTest as ExperimentRuntime
 from noetrium_platform.research.experimentation.lifecycle.api import ExperimentSpec
 
 class MS:
