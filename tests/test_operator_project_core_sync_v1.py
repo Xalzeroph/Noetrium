@@ -154,3 +154,56 @@ def test_project_cli_has_one_create_shape_and_sync() -> None:
 
     sync = parser.parse_args(["project", "sync", "--project", "out"])
     assert sync.project_root == Path("out")
+
+
+
+def test_user_core_may_delegate_to_arbitrary_project_modules(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    _bind_fixed_platform(monkeypatch)
+    root = tmp_path / "modular-paper"
+    project_scaffold.create_project(
+        ProjectCreateRequest("modular-paper", "0.1.0", root)
+    )
+
+    package_root = root / "src" / "modular_paper"
+    (package_root / "semantics.py").write_text(
+        '''from noetrium import api
+
+
+def make_portfolio() -> api.ResearchPortfolio:
+    first = api.ResearchProgramBuilder("paper-a")
+    first.node("discover", kind=api.ResearchNodeKind.CUSTOM)
+    second = api.ResearchProgramBuilder("paper-b")
+    second.node("verify", kind=api.ResearchNodeKind.CUSTOM)
+    portfolio = api.ResearchPortfolioBuilder("modular-paper")
+    portfolio.program(first.freeze())
+    portfolio.program(second.freeze())
+    return portfolio.freeze()
+''',
+        encoding="utf-8",
+    )
+    (package_root / "core.py").write_text(
+        '''from noetrium import api
+from .semantics import make_portfolio
+
+
+def build_research() -> api.ResearchPortfolio:
+    return make_portfolio()
+
+
+__all__ = ["build_research"]
+''',
+        encoding="utf-8",
+    )
+
+    report = project_doctor.doctor_project(
+        root,
+        boundary_auditor=audit_downstream_project_imports,
+    )
+    checks = {row.check_id: row.disposition.value for row in report.checks}
+    assert report.ready
+    assert checks["public_import_boundary"] == "pass"
+    assert checks["standard_bindings"] == "pass"
+    assert project_testing.test_project(root).passed
