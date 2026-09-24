@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from noetrium_platform.infrastructure.lifecycle.service.api import (
     ServiceLaunchContract,
+    ServiceProcessIdentity,
     ServiceReadyObservation,
     ServiceReconcileObservation,
     ServiceStartOutcome,
@@ -60,11 +61,26 @@ class ExactServiceRuntimeEndpoint:
             evidence_refs=tuple(reconciled.evidence_refs),
         )
 
-    def stop_exact(self, contract: ServiceLaunchContract) -> ServiceStopOutcome:
+    def stop_exact(
+        self,
+        contract: ServiceLaunchContract,
+        expected_process: ServiceProcessIdentity,
+    ) -> ServiceStopOutcome:
+        if type(expected_process) is not ServiceProcessIdentity:
+            raise TypeError(
+                "service stop requires exact ServiceProcessIdentity"
+            )
         state = self._supervisor.observe_state(contract)
         if state is None:
-            return ServiceStopOutcome(contract_digest=contract.digest(), stopped=True, evidence_refs=())
-        stopped = self._supervisor.stop_exact(contract)
+            return ServiceStopOutcome(
+                contract_digest=contract.digest(),
+                stopped=True,
+                evidence_refs=(),
+            )
+        stopped = self._supervisor.stop_exact(
+            contract,
+            expected_process,
+        )
         return ServiceStopOutcome(
             contract_digest=stopped.contract_digest,
             stopped=stopped.process is None,
