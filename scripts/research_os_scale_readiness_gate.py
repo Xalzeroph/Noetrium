@@ -58,6 +58,24 @@ def _architecture_topology() -> ReadinessCriterion:
     return ReadinessCriterion("architecture_topology", passed, evidence)
 
 
+def _concrete_boundary_integrity() -> ReadinessCriterion:
+    report = _load_script("audit_system_integration").build_report()
+    offenders = {
+        row["system_key"]: list(row["concrete_bypass_consumers"])
+        for row in report["systems"]
+        if row["concrete_bypass_consumers"]
+    }
+    return ReadinessCriterion(
+        "concrete_boundary_integrity",
+        report["concrete_bypass_system_count"] == 0,
+        {
+            "concrete_binding_system_count": report["concrete_binding_system_count"],
+            "concrete_bypass_system_count": report["concrete_bypass_system_count"],
+            "bypasses": offenders,
+        },
+    )
+
+
 def _workflow_policy() -> ReadinessCriterion:
     errors = tuple(_load_script("canonical_workflow_policy_gate").validate())
     return ReadinessCriterion(
@@ -330,6 +348,7 @@ def _durable_execution_contract() -> ReadinessCriterion:
 def evaluate() -> ResearchOSScaleReadiness:
     criteria = (
         _architecture_topology(),
+        _concrete_boundary_integrity(),
         _workflow_policy(),
         _projection_clean(),
         _no_degradation(),
