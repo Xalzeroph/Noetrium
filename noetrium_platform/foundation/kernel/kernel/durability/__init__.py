@@ -7,7 +7,12 @@ from .checksummed_document import (
     payload_sha256,
 )
 from .document_integrity import DocumentIntegrityError
-from .durable_append import DurableAppendError, durable_append_bytes
+from .durable_append import (
+    AppendDurability,
+    DurableAppendError,
+    append_bytes,
+    durable_append_bytes,
+)
 from .durable_file import (
     DurableFileWriteError,
     atomic_replace_bytes,
@@ -43,7 +48,9 @@ __all__ = [
     "encode_checksummed_document",
     "payload_sha256",
     "DocumentIntegrityError",
+    "AppendDurability",
     "DurableAppendError",
+    "append_bytes",
     "durable_append_bytes",
     "DurableFileWriteError",
     "atomic_replace_bytes",
