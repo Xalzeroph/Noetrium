@@ -10,7 +10,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 import importlib
-from pathlib import PurePosixPath
+from pathlib import Path, PurePosixPath
 
 from noetrium import api
 from noetrium_platform.research.execution.machines.api import (
@@ -22,6 +22,7 @@ from .contracts import (
     ReproductionAssetKind,
     ReproductionAssetRef,
     ReproductionDefinition,
+    ReproductionLifecycle,
 )
 
 
@@ -271,7 +272,10 @@ def compile_reproduction_research_program(
             "ResearchProgram asset"
         )
 
-    builder = api.ResearchProgramBuilder(definition.identity.method_id)
+    # One top-level ResearchProgram represents one reproduction package, not the
+    # underlying method identity. Different paper/version packages may share the
+    # same method_id; package identity is the unique ResearchGraph namespace.
+    builder = api.ResearchProgramBuilder(definition.package)
     executable_definition_ids: list[str] = []
     if method_assets:
         method = resolve_method_program_binding(definition)
@@ -281,6 +285,7 @@ def compile_reproduction_research_program(
             qualname=method.qualname,
             config={
                 "reproduction_package": definition.package,
+                "reproduction_method_id": definition.identity.method_id,
                 "reproduction_definition_digest": definition.definition_digest,
                 "asset_path": method.asset.path,
                 "program_digest": method.program_digest,
@@ -307,6 +312,7 @@ def compile_reproduction_research_program(
         "study",
         config={
             "reproduction_package": definition.package,
+            "reproduction_method_id": definition.identity.method_id,
             "reproduction_definition_digest": definition.definition_digest,
             "asset_path": study.path,
         },
@@ -339,6 +345,7 @@ def compile_reproduction_research_program(
         ),
         config={
             "reproduction_package": definition.package,
+            "reproduction_method_id": definition.identity.method_id,
             "reproduction_lifecycle": definition.lifecycle.value,
             "reproduction_definition_digest": definition.definition_digest,
             "primary_executable_digest": primary_executable_digest,
@@ -348,6 +355,95 @@ def compile_reproduction_research_program(
         },
     )
     return builder.freeze()
+
+_NON_EXECUTABLE_LIFECYCLES = frozenset(
+    {
+        ReproductionLifecycle.CATALOGUED,
+        ReproductionLifecycle.PAPER_ONLY,
+        ReproductionLifecycle.ARTIFACT_ONLY,
+    }
+)
+
+
+def is_research_os_executable(definition: ReproductionDefinition) -> bool:
+    """Return whether a declaration owns the exact assets required by Research OS.
+
+    This is capability-derived, never filename-derived and never a lifecycle
+    downgrade. A Study plus at least one canonical executable IR is mandatory.
+    """
+
+    if type(definition) is not ReproductionDefinition:
+        raise TypeError("reproduction executable check requires definition")
+    kinds = tuple(asset.kind for asset in definition.assets)
+    has_study = ReproductionAssetKind.STUDY in kinds
+    has_executable = any(
+        kind in {
+            ReproductionAssetKind.METHOD_PROGRAM,
+            ReproductionAssetKind.RESEARCH_PROGRAM,
+        }
+        for kind in kinds
+    )
+    return has_study and has_executable
+
+
+def discover_reproduction_definitions() -> tuple[ReproductionDefinition, ...]:
+    """Load every package-local typed reproduction declaration in canonical order."""
+
+    root = Path(__file__).resolve().parent
+    definitions: list[ReproductionDefinition] = []
+    for package_dir in sorted(root.iterdir(), key=lambda path: path.name):
+        definition_path = package_dir / "definition.py"
+        if not package_dir.is_dir() or not definition_path.is_file():
+            continue
+        module_name = f"research.reproductions.{package_dir.name}.definition"
+        module = importlib.import_module(module_name)
+        definition = getattr(module, "REPRODUCTION", None)
+        if type(definition) is not ReproductionDefinition:
+            raise ReproductionResearchOSCompileError(
+                f"{module_name} must export typed REPRODUCTION"
+            )
+        if definition.package != package_dir.name:
+            raise ReproductionResearchOSCompileError(
+                f"reproduction package identity drifted: directory={package_dir.name} "
+                f"definition={definition.package}"
+            )
+        definitions.append(definition)
+    packages = tuple(row.package for row in definitions)
+    if len(packages) != len(set(packages)):
+        raise ReproductionResearchOSCompileError(
+            "repository reproduction package identities must be unique"
+        )
+    return tuple(definitions)
+
+
+def executable_reproduction_definitions() -> tuple[ReproductionDefinition, ...]:
+    """Return every existing reproduction that can enter the current Research OS."""
+
+    definitions = discover_reproduction_definitions()
+    invalid = tuple(
+        row.package
+        for row in definitions
+        if row.lifecycle not in _NON_EXECUTABLE_LIFECYCLES
+        and not is_research_os_executable(row)
+    )
+    if invalid:
+        raise ReproductionResearchOSCompileError(
+            "execution-bearing reproductions are missing Study/executable assets: "
+            f"{invalid}"
+        )
+    return tuple(row for row in definitions if is_research_os_executable(row))
+
+
+def compile_repository_reproduction_portfolio(
+    portfolio_id: str = "repository-reproductions",
+) -> api.ResearchPortfolio:
+    """Compile every existing executable reproduction onto the latest Research OS."""
+
+    return compile_reproduction_portfolio(
+        portfolio_id,
+        executable_reproduction_definitions(),
+    )
+
 
 def compile_reproduction_portfolio(
     portfolio_id: str,
@@ -375,6 +471,10 @@ __all__ = [
     "ReproductionResearchOSCompileError",
     "compile_reproduction_portfolio",
     "compile_reproduction_research_program",
+    "compile_repository_reproduction_portfolio",
+    "discover_reproduction_definitions",
+    "executable_reproduction_definitions",
+    "is_research_os_executable",
     "resolve_method_program_binding",
     "resolve_research_program_bindings",
 ]
