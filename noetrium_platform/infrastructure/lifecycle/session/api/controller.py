@@ -7,12 +7,11 @@ import re
 from typing import Protocol
 
 from noetrium_platform.foundation.api import is_absolute_target_path
-from noetrium_platform.foundation.kernel.kernel.durability import sha256_file
+from noetrium_platform.foundation.kernel.kernel.durability import sha256_bytes, sha256_file
 
 from .contracts import PersistentSessionSpec, process_environment_digest
 
 
-from noetrium_platform.foundation.kernel.kernel.durability import sha256_bytes
 class PersistentSessionLaunchManifestPort(Protocol):
     """Minimal read-only identity needed to bind an outer controller session."""
 
