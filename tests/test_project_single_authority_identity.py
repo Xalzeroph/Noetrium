@@ -19,7 +19,7 @@ from noetrium_platform.composition.operator.project.project_platform_identity im
 _FIXED_PLATFORM = InstalledPlatformIdentity("0.1.0", "a" * 64)
 
 
-def test_project_doctor_rejects_invalid_research_graph_drift(
+def test_project_doctor_rejects_invalid_user_core_contract(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     monkeypatch.setattr(
@@ -37,12 +37,12 @@ def test_project_doctor_rejects_invalid_research_graph_drift(
         ProjectCreateRequest("identity-drift", "0.1.0", root)
     )
 
-    research = root / "src" / "identity_drift" / "research.py"
-    source = research.read_text(encoding="utf-8")
-    research.write_text(
+    core = root / "src" / "identity_drift" / "core.py"
+    source = core.read_text(encoding="utf-8")
+    core.write_text(
         source.replace(
-            'depends_on=("evaluate",)',
-            'depends_on=("missing-upstream",)',
+            "    return api.ResearchPortfolio('identity-drift', (program.freeze(),))",
+            "    return object()",
         ),
         encoding="utf-8",
     )
@@ -53,5 +53,6 @@ def test_project_doctor_rejects_invalid_research_graph_drift(
     )
     checks = {row.check_id: row.disposition for row in report.checks}
     assert checks["public_import_boundary"] is ProjectDoctorDisposition.PASS
+    assert checks["generated_shell"] is ProjectDoctorDisposition.PASS
     assert checks["standard_bindings"] is ProjectDoctorDisposition.BLOCKED
     assert not report.ready
