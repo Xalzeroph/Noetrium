@@ -310,7 +310,7 @@ def test_startup_ownership_barrier_stops_auto_models_before_resource_reconcile()
             events.append("auto-models")
 
     class StartupResources:
-        def reconcile(self):
+        def recover_abandoned_owner_generation(self):
             events.append("resources")
 
     class StartupModels:
@@ -334,9 +334,9 @@ def test_startup_ownership_barrier_never_reclaims_resources_after_model_failure(
             raise RuntimeError("surviving model process")
 
     class StartupResources:
-        def reconcile(self):
+        def recover_abandoned_owner_generation(self):
             events.append("resources")
-            raise AssertionError("resource reconcile must remain fenced")
+            raise AssertionError("resource takeover must remain fenced")
 
     class StartupModels:
         fleet = StartupFleet()
