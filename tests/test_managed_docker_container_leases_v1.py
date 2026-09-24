@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 import pytest
 
 from noetrium_platform.infrastructure.resources.container.api import (
@@ -12,6 +13,10 @@ from noetrium_platform.infrastructure.resources.container.api import (
 )
 from noetrium_platform.infrastructure.resources.container.runtime import (
     DockerContainerLeaseAuthority,
+)
+from noetrium_platform.infrastructure.resources.container.providers import (
+    DockerCliManagedContainerProvider,
+    DockerContainerRuntimeError,
 )
 from noetrium_platform.foundation.scope.api import PLATFORM_SCOPE
 from noetrium_platform.infrastructure.resources.lease.api import (
@@ -401,3 +406,112 @@ def test_new_docker_owner_generation_cannot_close_old_generation_handle() -> Non
 
     assert runtime.inspect(old_container.container_id) == old_container
     assert resources.get(old_handle.lease.lease_id).state is LeaseState.ACTIVE
+
+
+
+class _DockerCommandResult:
+    def __init__(self, returncode: int, stdout: str = "", stderr: str = "") -> None:
+        self.returncode = returncode
+        self.stdout = stdout
+        self.stderr = stderr
+
+
+class _AmbiguousRemoveRunner:
+    def __init__(self, *, observable_after_remove: bool = True) -> None:
+        self.present = True
+        self.observable_after_remove = observable_after_remove
+        self.calls: list[tuple[str, ...]] = []
+
+    def run(self, argv: tuple[str, ...], *, timeout_seconds: float):
+        del timeout_seconds
+        self.calls.append(argv)
+        action = argv[1]
+        if action == "inspect":
+            if not self.observable_after_remove and not self.present:
+                return _DockerCommandResult(
+                    1,
+                    stderr="Cannot connect to the Docker daemon",
+                )
+            if not self.present:
+                return _DockerCommandResult(
+                    1,
+                    stderr="Error: No such container: cid-ambiguous",
+                )
+            return _DockerCommandResult(
+                0,
+                json.dumps(
+                    [
+                        {
+                            "Id": "cid-ambiguous",
+                            "Name": "/noetrium-ambiguous",
+                            "Config": {
+                                "Image": "image:exact",
+                                "Labels": {
+                                    MANAGED_CONTAINER_LABEL:
+                                        MANAGED_CONTAINER_LABEL_VALUE,
+                                    LABEL_AUTHORITY: "1" * 64,
+                                },
+                            },
+                            "State": {"Running": True},
+                        }
+                    ]
+                ),
+            )
+        if action == "rm":
+            self.present = False
+            return _DockerCommandResult(
+                125,
+                stderr="daemon connection reset after request commit",
+            )
+        raise AssertionError(f"unexpected Docker command: {argv}")
+
+
+def test_docker_provider_accepts_only_proven_absence_after_ambiguous_remove_ack() -> None:
+    runner = _AmbiguousRemoveRunner()
+    provider = DockerCliManagedContainerProvider(
+        runner,
+        authority_id="1" * 64,
+    )
+
+    provider.remove("cid-ambiguous")
+
+    assert runner.present is False
+    assert [call[1] for call in runner.calls] == ["inspect", "rm", "inspect"]
+
+
+def test_docker_provider_keeps_ambiguous_remove_fail_closed_when_daemon_unobservable() -> None:
+    runner = _AmbiguousRemoveRunner(observable_after_remove=False)
+    provider = DockerCliManagedContainerProvider(
+        runner,
+        authority_id="1" * 64,
+    )
+
+    with pytest.raises(
+        DockerContainerRuntimeError,
+        match="removal outcome is unobservable",
+    ):
+        provider.remove("cid-ambiguous")
+
+    assert runner.present is False
+    assert [call[1] for call in runner.calls] == ["inspect", "rm", "inspect"]
+
+
+class _UnavailableDockerRuntime(FakeDockerRuntime):
+    def list_managed(self):
+        raise RuntimeError("Docker daemon restarted during reconcile")
+
+
+def test_managed_docker_daemon_restart_during_reconcile_preserves_lease_authority() -> None:
+    resources = InMemoryResourceLeaseRegistry()
+    runtime = _UnavailableDockerRuntime()
+    authority = _authority(resources, runtime)
+    handle = _reserve(authority)
+    observed = runtime.start(handle)
+
+    with pytest.raises(RuntimeError, match="daemon restarted"):
+        authority.reconcile()
+
+    assert runtime.inspect(observed.container_id) == observed
+    current = resources.get(handle.lease.lease_id)
+    assert current.state is LeaseState.ACTIVE
+    assert current.fencing_token == handle.lease.fencing_token
