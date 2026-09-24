@@ -38,7 +38,6 @@ from .control import (
     RunScientificValidity,
     RunTaskOutcome,
 )
-from .diagnostics import RunDiagnosticsPort
 from .artifacts import (
     RunArtifactFinalizationError,
     RunArtifactFinalizationPort,
@@ -104,7 +103,6 @@ __all__ = [
     "RunArtifactVerificationError",
     "RunArtifactVerificationPort",
     "RunArtifactWriteActorPort",
-    "RunDiagnosticsPort",
     "ExperimentRunSpec",
     "ExperimentRunResult",
 ]
