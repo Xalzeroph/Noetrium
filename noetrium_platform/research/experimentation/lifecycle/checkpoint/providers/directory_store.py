@@ -26,11 +26,13 @@ from .publication_intent import (
     CheckpointPublicationIntentCorruptionError,
     DirectoryCheckpointPublicationIntentStore,
 )
-from ..api.contracts import (
-    RunCheckpointBundle,
+from ..api.gc import (
     CheckpointGcAssessment,
     CheckpointNamespace,
     CheckpointPersistenceState,
+)
+from ..api.contracts import (
+    RunCheckpointBundle,
     RunCheckpointConflict,
     RunCheckpointIntegrityError,
     RunCheckpointManifest,
