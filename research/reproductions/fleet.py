@@ -471,6 +471,114 @@ def execute_materialized_reproduction_fleet(
         composition.close()
 
 
+@dataclass(frozen=True, slots=True)
+class ReproductionFleetExecutionAuthorities:
+    """Complete authority bundle required for one exact fleet execution."""
+
+    benchmark_resolver: ReproductionBenchmarkResolverPort
+    research_bindings: ReproductionResearchBindingResolverPort
+    experiment_bindings: ResearchOSExperimentRuntimeBindingPort
+    capability_resolver: ReproductionCapabilityRequirementResolverPort | None = None
+
+    def __post_init__(self) -> None:
+        if not isinstance(
+            self.benchmark_resolver,
+            ReproductionBenchmarkResolverPort,
+        ):
+            raise TypeError(
+                "fleet execution authorities require benchmark resolver"
+            )
+        if not isinstance(
+            self.research_bindings,
+            ReproductionResearchBindingResolverPort,
+        ):
+            raise TypeError(
+                "fleet execution authorities require research binding resolver"
+            )
+        if not isinstance(
+            self.experiment_bindings,
+            ResearchOSExperimentRuntimeBindingPort,
+        ):
+            raise TypeError(
+                "fleet execution authorities require experiment runtime binding resolver"
+            )
+        if self.capability_resolver is not None and not isinstance(
+            self.capability_resolver,
+            ReproductionCapabilityRequirementResolverPort,
+        ):
+            raise TypeError(
+                "fleet execution authorities capability resolver must satisfy "
+                "ReproductionCapabilityRequirementResolverPort"
+            )
+
+
+@dataclass(frozen=True, slots=True)
+class ReproductionFleetExecutionResult:
+    """Materialization + canonical Research OS control receipt."""
+
+    materialization: ReproductionFleetMaterialization
+    receipt: api.ResearchControlReceipt
+    execution_digest: str = field(init=False)
+
+    def __post_init__(self) -> None:
+        if type(self.materialization) is not ReproductionFleetMaterialization:
+            raise TypeError(
+                "fleet execution result requires ReproductionFleetMaterialization"
+            )
+        if type(self.receipt) is not api.ResearchControlReceipt:
+            raise TypeError(
+                "fleet execution result requires ResearchControlReceipt"
+            )
+        object.__setattr__(
+            self,
+            "execution_digest",
+            canonical_digest(
+                {
+                    "materialization_digest": (
+                        self.materialization.materialization_digest
+                    ),
+                    "receipt_digest": self.receipt.receipt_digest,
+                    "execution_id": self.receipt.target.execution_id,
+                    "revision_digest": (
+                        self.receipt.target.research_revision_digest
+                    ),
+                    "state": self.receipt.state,
+                }
+            ),
+        )
+
+
+def run_repository_execution_fleet(
+    authorities: ReproductionFleetExecutionAuthorities,
+    *,
+    state_root: Path,
+    execution_id: str | None = None,
+) -> ReproductionFleetExecutionResult:
+    """discover -> resolve -> materialize -> compile -> commit -> RUN.
+
+    This function is the single repository fleet execution composition path.
+    It delegates whole-graph preflight, resource admission, durable cut creation,
+    scheduling, checkpointing, recovery semantics and evidence to Research OS.
+    """
+
+    if type(authorities) is not ReproductionFleetExecutionAuthorities:
+        raise TypeError(
+            "fleet run requires ReproductionFleetExecutionAuthorities"
+        )
+    fleet = materialize_repository_execution_fleet(
+        authorities.benchmark_resolver,
+        capability_resolver=authorities.capability_resolver,
+    )
+    receipt = execute_materialized_reproduction_fleet(
+        fleet,
+        state_root=state_root,
+        research_bindings=authorities.research_bindings,
+        experiment_bindings=authorities.experiment_bindings,
+        execution_id=execution_id,
+    )
+    return ReproductionFleetExecutionResult(fleet, receipt)
+
+
 class ReproductionFleetExperimentClosureProvider:
     """Bridge materialized reproduction lanes into canonical ExperimentClosure."""
 
@@ -534,6 +642,8 @@ class ReproductionFleetExperimentClosureProvider:
 __all__ = [
     "ReproductionBenchmarkResolverPort",
     "ReproductionBenchmarkSelection",
+    "ReproductionFleetExecutionAuthorities",
+    "ReproductionFleetExecutionResult",
     "ReproductionFleetExperimentClosureProvider",
     "ReproductionFleetLane",
     "ReproductionFleetMaterialization",
@@ -541,4 +651,5 @@ __all__ = [
     "execute_materialized_reproduction_fleet",
     "materialize_repository_execution_fleet",
     "resolve_repository_execution_requests",
+    "run_repository_execution_fleet",
 ]
