@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 
-from noetrium_platform.foundation.kernel.kernel import canonical_digest
+from noetrium.api import canonical_digest
 
 FLOW_LATER_OFFICIAL_COMMIT = "1bbfe1e699e6f35d5d422306c9a5bd637da84759"
 
