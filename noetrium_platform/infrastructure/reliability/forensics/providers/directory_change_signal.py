@@ -5,7 +5,6 @@ import math
 import sys
 from pathlib import Path
 
-from noetrium_platform.infrastructure.reliability.forensics.providers.hashchain_core import stat_signature
 from noetrium_platform.infrastructure.reliability.forensics.providers.linux_directory_watch import (
     LinuxDirectoryWatch,
     open_linux_directory_watch,
@@ -39,15 +38,19 @@ class DirectoryChangeSignal:
     """Detect directory-entry mutations without enumerating the directory.
 
     Linux uses inotify and Windows uses a kernel change-notification handle.
-    Other platforms use directory stat only as a portability fallback.  The caller owns the
-    authoritative expected signature; this object only owns the event cursor and
-    a fail-closed pending bit.
+    Hosts without one of those exact mutation authorities are unsupported and
+    fail closed. The caller owns the authoritative expected signature; this
+    object owns only the event cursor and a fail-closed pending bit.
     """
 
     def __init__(self, root: Path) -> None:
         self.root = root
         self._linux_watch: LinuxDirectoryWatch | None = open_linux_directory_watch(root)
         self._windows_handle = _open_windows_directory_watch(root)
+        if self._linux_watch is None and self._windows_handle is None:
+            raise RuntimeError(
+                "directory mutation authority requires Linux inotify or Windows change notifications"
+            )
         self._pending = False
         self._close_error: OSError | None = None
 
@@ -57,7 +60,7 @@ class DirectoryChangeSignal:
             return "inotify"
         if self._windows_handle is not None:
             return "windows-notify"
-        return "stat"
+        raise RuntimeError("directory mutation authority is unavailable")
 
     def _drain_events(self) -> bool:
         if self._linux_watch is None:
@@ -99,9 +102,6 @@ class DirectoryChangeSignal:
         if self._windows_changed():
             self._pending = True
             return True
-        if self._linux_watch is None and self._windows_handle is None and stat_signature(self.root) != expected_signature:
-            self._pending = True
-            return True
         return False
 
     def wait_changed_since(
@@ -130,7 +130,7 @@ class DirectoryChangeSignal:
                 self._pending = True
                 return True
             return self._pending
-        return self.changed_since(expected_signature)
+        raise RuntimeError("directory mutation authority is unavailable")
 
     def acknowledge(self) -> None:
         """Consume mutations caused by the owning writer and clear the latch."""
