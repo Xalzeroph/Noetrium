@@ -5,6 +5,7 @@ from pathlib import Path
 from typing import Iterable
 
 from .source_authority_contracts import SourceAuthorityRule, SourceAuthorityViolation
+from .source_authority_matchers import resolved_symbol_name
 from .source_index import source_nodes, source_tree
 
 
@@ -48,6 +49,7 @@ def audit_authority_rules(
     rules: Iterable[SourceAuthorityRule],
 ) -> tuple[SourceAuthorityViolation, ...]:
     findings: list[SourceAuthorityViolation] = []
+    seen: set[tuple[str, str, int]] = set()
     resolved_rules = tuple(rules)
     for path in sorted(root.rglob("*.py")):
         if not is_production_python(root, path):
@@ -56,17 +58,31 @@ def audit_authority_rules(
         module = module_name(root, path)
         aliases = import_aliases(tree)
         for node in source_nodes(path):
-            if not isinstance(node, ast.Call):
-                continue
             for rule in resolved_rules:
-                if not rule.matches(node, aliases) or module in rule.allowed_modules:
+                if module in rule.allowed_modules:
                     continue
+                matched = (
+                    isinstance(node, ast.Call) and rule.matches(node, aliases)
+                )
+                if (
+                    not matched
+                    and rule.protect_reference
+                    and isinstance(node, (ast.Name, ast.Attribute))
+                ):
+                    matched = resolved_symbol_name(node, aliases) == rule.primitive
+                if not matched:
+                    continue
+                line = int(getattr(node, "lineno", 0))
+                key = (rule.authority, module, line)
+                if key in seen:
+                    continue
+                seen.add(key)
                 findings.append(SourceAuthorityViolation(
                     authority=rule.authority,
                     primitive=rule.primitive,
                     module=module,
                     path=path.relative_to(root).as_posix(),
-                    line=node.lineno,
+                    line=line,
                     allowed_modules=rule.allowed_modules,
                     detail=(
                         f"{rule.primitive} is a protected mutation primitive; "
