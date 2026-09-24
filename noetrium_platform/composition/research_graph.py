@@ -788,57 +788,69 @@ class ResearchGraphScheduler:
 
                 progressed = False
 
-                for node_id, blockers in frontier.blocked_nodes(set(pending)):
-                    node = pending[node_id]
-                    record = store.mark_blocked(
+                blocked_rows = frontier.blocked_nodes(set(pending))
+                if blocked_rows:
+                    blocked_records = store.mark_blocked_many(
                         execution_id,
-                        node_id,
-                        blocked_by_node_ids=blockers,
+                        blocked_rows,
                     )
-                    live[node_id] = record
-                    result = ResearchGraphNodeResult(
-                        node.node_id,
-                        node.semantic_digest,
-                        ResearchGraphNodeState.BLOCKED,
-                        blocked_by_node_ids=blockers,
-                    )
-                    results[node_id] = result
-                    del pending[node_id]
-                    frontier.record_terminal(result)
-                    progressed = True
+                    blocked_by_id = {
+                        record.node_id: record
+                        for record in blocked_records
+                    }
+                    expected_blocked_ids = {
+                        node_id for node_id, _blockers in blocked_rows
+                    }
+                    if set(blocked_by_id) != expected_blocked_ids:
+                        raise ResearchGraphExecutionConflict(
+                            "blocked batch returned a different node set"
+                        )
+                    for node_id, blockers in blocked_rows:
+                        node = pending[node_id]
+                        live[node_id] = blocked_by_id[node_id]
+                        result = ResearchGraphNodeResult(
+                            node.node_id,
+                            node.semantic_digest,
+                            ResearchGraphNodeState.BLOCKED,
+                            blocked_by_node_ids=blockers,
+                        )
+                        results[node_id] = result
+                        del pending[node_id]
+                        frontier.record_terminal(result)
+                        progressed = True
 
                 now_ns = time.time_ns()
                 if not draining:
-                    node_controls = {
-                        row.node_id: row
-                        for row in node_control_store.node_control_snapshot(execution_id)
-                    }
-                    for node_id in frontier.ready_node_ids(set(pending)):
-                        node = pending[node_id]
-                        try:
-                            node_control = node_controls[node_id]
-                        except KeyError as exc:
+                    ready_node_ids = frontier.ready_node_ids(set(pending))
+                    if ready_node_ids:
+                        control_rows = node_control_store.node_control_states(
+                            execution_id,
+                            ready_node_ids,
+                        )
+                        node_controls = {
+                            row.node_id: row for row in control_rows
+                        }
+                        if set(node_controls) != set(ready_node_ids):
                             raise ResearchGraphExecutionConflict(
-                                "research graph node control snapshot lost plan node: "
-                                f"{node_id}"
-                            ) from exc
-                        if node_control.phase is ResearchGraphNodeControlPhase.CANCELLED:
-                            current = store.node_state(execution_id, node_id)
-                            if current.state is not ResearchGraphLiveNodeState.CANCELLED:
-                                raise ResearchGraphExecutionConflict(
-                                    "cancelled node control disagrees with execution state"
-                                )
-                            live[node_id] = current
-                            results[node_id] = ResearchGraphNodeResult(
-                                node.node_id,
-                                node.semantic_digest,
-                                ResearchGraphNodeState.CANCELLED,
+                                "research graph node control batch lost ready nodes"
                             )
-                            del pending[node_id]
-                            frontier.record_terminal(results[node_id])
-                            progressed = True
+                    else:
+                        node_controls = {}
+
+                    cancelled_ids: list[str] = []
+                    eligible_ids: list[str] = []
+                    for node_id in ready_node_ids:
+                        node_control = node_controls[node_id]
+                        if (
+                            node_control.phase
+                            is ResearchGraphNodeControlPhase.CANCELLED
+                        ):
+                            cancelled_ids.append(node_id)
                             continue
-                        if node_control.phase is ResearchGraphNodeControlPhase.DRAINING:
+                        if (
+                            node_control.phase
+                            is ResearchGraphNodeControlPhase.DRAINING
+                        ):
                             node_control_store.pause_node_if_quiescent(
                                 execution_id,
                                 node_id,
@@ -853,18 +865,65 @@ class ResearchGraphScheduler:
                             continue
                         current = live[node_id]
                         if (
-                            current.state is ResearchGraphLiveNodeState.RETRY_WAIT
+                            current.state
+                            is ResearchGraphLiveNodeState.RETRY_WAIT
                             and current.retry_not_before_ns is not None
                             and current.retry_not_before_ns > now_ns
                         ):
                             continue
-                        if current.state is not ResearchGraphLiveNodeState.READY:
-                            current = store.mark_ready(
-                                execution_id,
-                                node_id,
-                                now_ns=now_ns,
+                        eligible_ids.append(node_id)
+
+                    if cancelled_ids:
+                        cancelled_rows = store.node_states(
+                            execution_id,
+                            tuple(cancelled_ids),
+                        )
+                        cancelled_by_id = {
+                            row.node_id: row for row in cancelled_rows
+                        }
+                        if set(cancelled_by_id) != set(cancelled_ids):
+                            raise ResearchGraphExecutionConflict(
+                                "cancelled node-state batch lost ready nodes"
                             )
+                        for node_id in cancelled_ids:
+                            current = cancelled_by_id[node_id]
+                            if (
+                                current.state
+                                is not ResearchGraphLiveNodeState.CANCELLED
+                            ):
+                                raise ResearchGraphExecutionConflict(
+                                    "cancelled node control disagrees with "
+                                    "execution state"
+                                )
+                            node = pending[node_id]
                             live[node_id] = current
+                            results[node_id] = ResearchGraphNodeResult(
+                                node.node_id,
+                                node.semantic_digest,
+                                ResearchGraphNodeState.CANCELLED,
+                            )
+                            del pending[node_id]
+                            frontier.record_terminal(results[node_id])
+                            progressed = True
+
+                    if eligible_ids:
+                        ready_records = store.mark_ready_many(
+                            execution_id,
+                            tuple(eligible_ids),
+                            now_ns=now_ns,
+                        )
+                        ready_by_id = {
+                            row.node_id: row for row in ready_records
+                        }
+                        if set(ready_by_id) != set(eligible_ids):
+                            raise ResearchGraphExecutionConflict(
+                                "ready batch returned a different node set"
+                            )
+                        for node_id in eligible_ids:
+                            live[node_id] = ready_by_id[node_id]
+
+                    for node_id in eligible_ids:
+                        node = pending[node_id]
                         try:
                             handle = submit(
                                 node,
@@ -898,41 +957,72 @@ class ResearchGraphScheduler:
                 now_ns = time.time_ns()
                 renewal_rows: list[ResearchGraphLeaseRenewal] = []
                 renewal_node_ids: list[str] = []
+                due_attempts: dict[str, tuple[str, int]] = {}
                 for node_id in tuple(sorted(running)):
-                    node, handle = running[node_id]
+                    _node, handle = running[node_id]
                     attempt = current_attempt(node_id)
                     if handle.done() or attempt is None:
                         continue
                     attempt_id, next_renewal = attempt
-                    if now_ns < next_renewal:
-                        continue
-                    current = store.node_state(execution_id, node_id)
-                    node_control = node_control_store.node_control_state(
-                        execution_id, node_id
-                    )
-                    if (
-                        current.state is not ResearchGraphLiveNodeState.RUNNING
-                        or current.attempt_id != attempt_id
-                    ):
-                        if node_control.phase in {
-                            ResearchGraphNodeControlPhase.PAUSED,
-                            ResearchGraphNodeControlPhase.RECOVERY_REQUIRED,
-                            ResearchGraphNodeControlPhase.CANCELLED,
-                        }:
-                            handle.cancel()
-                            continue
-                        raise ResearchGraphExecutionConflict(
-                            "running scheduler attempt lost authoritative node state"
-                        )
-                    renewal_rows.append(
-                        ResearchGraphLeaseRenewal(
-                            node_id,
+                    if now_ns >= next_renewal:
+                        due_attempts[node_id] = (
                             attempt_id,
-                            self._scheduler_owner_id,
-                            now_ns + self._lease_ns,
+                            next_renewal,
                         )
+
+                if due_attempts:
+                    due_ids = tuple(sorted(due_attempts))
+                    current_rows = store.node_states(
+                        execution_id,
+                        due_ids,
                     )
-                    renewal_node_ids.append(node_id)
+                    control_rows = node_control_store.node_control_states(
+                        execution_id,
+                        due_ids,
+                    )
+                    current_by_id = {
+                        row.node_id: row for row in current_rows
+                    }
+                    control_by_id = {
+                        row.node_id: row for row in control_rows
+                    }
+                    if (
+                        set(current_by_id) != set(due_ids)
+                        or set(control_by_id) != set(due_ids)
+                    ):
+                        raise ResearchGraphExecutionConflict(
+                            "lease-renewal batch read lost active nodes"
+                        )
+                    for node_id in due_ids:
+                        _node, handle = running[node_id]
+                        attempt_id, _next_renewal = due_attempts[node_id]
+                        current = current_by_id[node_id]
+                        node_control = control_by_id[node_id]
+                        if (
+                            current.state
+                            is not ResearchGraphLiveNodeState.RUNNING
+                            or current.attempt_id != attempt_id
+                        ):
+                            if node_control.phase in {
+                                ResearchGraphNodeControlPhase.PAUSED,
+                                ResearchGraphNodeControlPhase.RECOVERY_REQUIRED,
+                                ResearchGraphNodeControlPhase.CANCELLED,
+                            }:
+                                handle.cancel()
+                                continue
+                            raise ResearchGraphExecutionConflict(
+                                "running scheduler attempt lost authoritative "
+                                "node state"
+                            )
+                        renewal_rows.append(
+                            ResearchGraphLeaseRenewal(
+                                node_id,
+                                attempt_id,
+                                self._scheduler_owner_id,
+                                now_ns + self._lease_ns,
+                            )
+                        )
+                        renewal_node_ids.append(node_id)
 
                 if renewal_rows:
                     renewed_rows = store.renew_leases(
@@ -971,9 +1061,15 @@ class ResearchGraphScheduler:
 
                 if pending and not running and not progressed:
                     local_control_ids = set(pending) | reconciliation_required
+                    local_control_tuple = tuple(
+                        sorted(local_control_ids)
+                    )
                     refreshed_controls = {
                         row.node_id: row
-                        for row in node_control_store.node_control_snapshot(execution_id)
+                        for row in node_control_store.node_control_states(
+                            execution_id,
+                            local_control_tuple,
+                        )
                     }
                     missing_local_controls = tuple(
                         sorted(local_control_ids - set(refreshed_controls))
