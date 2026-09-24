@@ -2,14 +2,14 @@
   "counts": {
     "parse_errors": 0,
     "python_files": 3683,
-    "python_import_edges": 7134,
-    "symbols": 4950,
+    "python_import_edges": 7135,
+    "symbols": 4951,
     "tracked_files": 4319,
     "typescript_javascript_files": 11
   },
   "language_symbol_counts": {
     "javascript": 1,
-    "python": 4944,
+    "python": 4945,
     "typescript": 5
   },
   "parse_errors": [],
@@ -5820,6 +5820,12 @@
       "source_module": "noetrium_platform.composition.research_os_local",
       "source_role": "core_platform",
       "target_module": "noetrium_platform.evidence.artifact.retention.providers",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "noetrium_platform.composition.research_os_local",
+      "source_role": "core_platform",
+      "target_module": "noetrium_platform.foundation.kernel.concurrency.api",
       "target_role": "core_platform"
     },
     {
@@ -42821,7 +42827,7 @@
   ],
   "role_import_counts": [
     {
-      "count": 2580,
+      "count": 2581,
       "source_role": "core_platform",
       "target_role": "core_platform"
     },
@@ -42956,11 +42962,11 @@
     "reference_orchestration": 14,
     "research_reproductions": 448,
     "sdk": 5,
-    "tests": 1000,
+    "tests": 1001,
     "tooling": 39
   },
   "schema": "noetrium-repository-code-architecture-index.v1",
-  "source_git_sha": "a46e1c5b2bd90b3cc3b84bcdfab7e4cb28fdd2d0",
+  "source_git_sha": "607b026ceaca6367ccecc4c0903b407331f9c3b7",
   "symbols": [
     {
       "bases": [],
@@ -53496,7 +53502,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 181,
+      "line": 235,
       "methods": [
         "__init__",
         "_target_count",
@@ -64610,6 +64616,8 @@
         "raw: RegistryBoundRawObservationGateway",
         "logging: LoggingSystemBinding",
         "_telemetry_backend: object",
+        "_raw_closed: bool",
+        "_telemetry_closed: bool",
         "_closed: bool"
       ],
       "kind": "dataclass",
@@ -64661,6 +64669,15 @@
         "model_replica_pool: LocalModelReplicaPoolRuntime | None",
         "_model_controller: TaskHandlePort | None",
         "_resource_controller: TaskHandlePort | None",
+        "_closing: bool",
+        "_controllers_quiesced: bool",
+        "_workloads_quiesced: bool",
+        "_models_stopped: bool",
+        "_resources_cleaned: bool",
+        "_observability_closed: bool",
+        "_orchestration_closed: bool",
+        "_pool_closed: bool",
+        "_lock_released: bool",
         "_closed: bool"
       ],
       "kind": "dataclass",
@@ -64670,6 +64687,7 @@
         "start_background_controllers",
         "quiesce_background_controllers",
         "assert_healthy",
+        "_close_stage_error",
         "close",
         "__enter__",
         "__exit__"
@@ -67073,11 +67091,15 @@
         "_values: ResearchOSValueRouter",
         "_experiment_closures: ResearchOSExperimentClosurePort | None",
         "_artifact_lineage: SQLiteArtifactLineageStore",
-        "_owns_execution_pool: bool"
+        "_artifact_group: TaskGroupPort | None",
+        "_owns_execution_pool: bool",
+        "_artifact_group_closed: bool",
+        "_execution_pool_closed: bool",
+        "_closed: bool"
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 60,
+      "line": 63,
       "methods": [
         "prepare",
         "close"
@@ -138614,6 +138636,25 @@
       "name": "BrokenScheduler",
       "path": "tests/test_model_replica_pool_auto_placement_v1.py",
       "qualname": "tests.test_model_replica_pool_auto_placement_v1.BrokenScheduler",
+      "role": "tests"
+    },
+    {
+      "bases": [
+        "Runtime"
+      ],
+      "decorators": [],
+      "fields": [],
+      "kind": "class",
+      "language": "python",
+      "line": 319,
+      "methods": [
+        "__init__",
+        "remove_deployment"
+      ],
+      "module": "tests.test_model_replica_pool_auto_placement_v1",
+      "name": "FailOnceRuntime",
+      "path": "tests/test_model_replica_pool_auto_placement_v1.py",
+      "qualname": "tests.test_model_replica_pool_auto_placement_v1.FailOnceRuntime",
       "role": "tests"
     },
     {

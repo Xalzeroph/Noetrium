@@ -3,7 +3,7 @@
   "architecture_complexity": {
     "authorities": 20,
     "contract_declarations": 185,
-    "import_edges": 5278,
+    "import_edges": 5279,
     "subsystems": 15,
     "top_level_systems": 16
   },
@@ -23,7 +23,7 @@
     "effective_limits": {
       "authorities": 31,
       "contract_declarations": 185,
-      "import_edges": 5278,
+      "import_edges": 5279,
       "subsystems": 15,
       "top_level_systems": 16
     },
@@ -627,7 +627,7 @@
       "seam_id": "completed"
     }
   ],
-  "import_edges": 5278,
+  "import_edges": 5279,
   "import_violations": [],
   "layer_violations": [],
   "operation_graph": [
@@ -873,7 +873,7 @@
     }
   ],
   "package_cycles": [],
-  "report_sha256": "76b84fbc55db3489fbcfe6a0ac00e069ca31dc1da2bb0f56b5f008dfcb0b3c64",
+  "report_sha256": "c6b24cd4f7a4165b4907bb2fc2d3ab511fb07029b49f7318ef9482edbf0c2ecc",
   "source_authority_violations": [
     {
       "allowed_modules": [
@@ -887,7 +887,7 @@
       "primitive": "time.sleep"
     }
   ],
-  "source_digest": "6180207d888b47d7f718dcfce189bd8b6cbba0f394fe2edc80da7672786b55e5",
+  "source_digest": "fb1a814347c2a74afa823c09283c5bb86e913b113ea57d4a284883d4a04574ae",
   "source_invariant_violations": [],
   "source_root": ".",
   "subsystem_graph": [
@@ -2121,6 +2121,25 @@
     },
     {
       "exception_handlers": 13,
+      "import_fan_in": 1,
+      "import_fan_out": 7,
+      "io_sites": 0,
+      "lock_sites": 4,
+      "long_functions": 2,
+      "module": "noetrium_platform.capabilities.model.deployment.composition.replica_pool",
+      "path": "noetrium_platform/capabilities/model/deployment/composition/replica_pool.py",
+      "reason_codes": [
+        "LOCK_CONTENTION_RISK",
+        "STATE_MUTATION_CONCENTRATION",
+        "FAILURE_BRANCH_CONCENTRATION",
+        "LONG_FUNCTION"
+      ],
+      "risk_score": 327,
+      "self_mutation_sites": 22,
+      "serialization_sites": 0
+    },
+    {
+      "exception_handlers": 13,
       "import_fan_in": 3,
       "import_fan_out": 7,
       "io_sites": 0,
@@ -2191,22 +2210,6 @@
       ],
       "risk_score": 296,
       "self_mutation_sites": 23,
-      "serialization_sites": 0
-    },
-    {
-      "exception_handlers": 0,
-      "import_fan_in": 71,
-      "import_fan_out": 2,
-      "io_sites": 0,
-      "lock_sites": 0,
-      "long_functions": 0,
-      "module": "noetrium_platform.foundation.kernel.concurrency.api",
-      "path": "noetrium_platform/foundation/kernel/concurrency/api/__init__.py",
-      "reason_codes": [
-        "HIGH_FAN_IN"
-      ],
-      "risk_score": 290,
-      "self_mutation_sites": 0,
       "serialization_sites": 0
     }
   ]

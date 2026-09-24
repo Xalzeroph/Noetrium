@@ -26913,7 +26913,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 181,
+      "line": 235,
       "methods": [
         "__init__",
         "_target_count",
@@ -39153,7 +39153,9 @@
       ],
       "fields": [
         "_closed",
+        "_raw_closed",
         "_telemetry_backend",
+        "_telemetry_closed",
         "logging",
         "raw",
         "telemetry"
@@ -39181,11 +39183,20 @@
       ],
       "fields": [
         "_closed",
+        "_closing",
+        "_controllers_quiesced",
+        "_lock_released",
         "_model_controller",
+        "_models_stopped",
+        "_observability_closed",
+        "_orchestration_closed",
         "_orchestration_group",
+        "_pool_closed",
         "_resource_controller",
+        "_resources_cleaned",
         "_runtime_lock",
         "_stop",
+        "_workloads_quiesced",
         "execution_pool",
         "management",
         "model_replica_pool",
@@ -39200,6 +39211,7 @@
         "start_background_controllers",
         "quiesce_background_controllers",
         "assert_healthy",
+        "_close_stage_error",
         "close",
         "__enter__",
         "__exit__"
@@ -41852,7 +41864,11 @@
         "dataclass(slots=True)"
       ],
       "fields": [
+        "_artifact_group",
+        "_artifact_group_closed",
         "_artifact_lineage",
+        "_closed",
+        "_execution_pool_closed",
         "_experiment_closures",
         "_owns_execution_pool",
         "_runtime",
@@ -41864,7 +41880,7 @@
         "state_root"
       ],
       "kind": "dataclass",
-      "line": 60,
+      "line": 63,
       "methods": [
         "prepare",
         "close"
@@ -102824,7 +102840,7 @@
     "classes": 3349,
     "constructor_edges": 911,
     "inheritance_edges": 145,
-    "module_import_edges": 4996,
+    "module_import_edges": 4997,
     "parse_errors": 0,
     "python_modules": 1909,
     "registry_authorities": 20,
@@ -109914,6 +109930,10 @@
     {
       "source": "noetrium_platform.composition.research_os_local",
       "target": "noetrium_platform.evidence.artifact.retention.providers"
+    },
+    {
+      "source": "noetrium_platform.composition.research_os_local",
+      "target": "noetrium_platform.foundation.kernel.concurrency.api"
     },
     {
       "source": "noetrium_platform.composition.research_os_local",
@@ -129319,6 +129339,7 @@
         "noetrium_platform.evidence.artifact.content.providers",
         "noetrium_platform.evidence.artifact.lineage.relation.providers",
         "noetrium_platform.evidence.artifact.retention.providers",
+        "noetrium_platform.foundation.kernel.concurrency.api",
         "noetrium_platform.foundation.portfolio.runtime",
         "noetrium_platform.product.research_os",
         "noetrium_platform.research.execution.graph.providers"
@@ -143517,7 +143538,7 @@
   "parse_errors": [],
   "registry_sha256": "d3fc1bab831f1b7379e5a36048a61c00fe173429df958270d36a16f3f00171c0",
   "schema": "noetrium-code-architecture-index.v1",
-  "source_git_sha": "a46e1c5b2bd90b3cc3b84bcdfab7e4cb28fdd2d0",
+  "source_git_sha": "607b026ceaca6367ccecc4c0903b407331f9c3b7",
   "system_import_edges": [
     {
       "count": 85,
@@ -143700,7 +143721,7 @@
       "target": "participant"
     },
     {
-      "count": 119,
+      "count": 120,
       "source": "research_os",
       "target": "platform"
     },
