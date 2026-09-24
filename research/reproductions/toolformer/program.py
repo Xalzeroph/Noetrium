@@ -226,14 +226,22 @@ def _return_result(request: MethodNodeRequest) -> MethodNodeResult:
 
 
 def build_toolformer_method_program(
-    tool_capability_ids: tuple[str, ...],
+    tool_capability_ids: Sequence[str],
     *,
     tools_enabled: bool = True,
 ) -> MethodProgram:
     if type(tools_enabled) is not bool:
         raise TypeError("Toolformer tools_enabled must be boolean")
-    if type(tool_capability_ids) is not tuple:
-        raise TypeError("Toolformer capability closure must be a tuple")
+    if isinstance(tool_capability_ids, (str, bytes, bytearray)) or not isinstance(
+        tool_capability_ids,
+        Sequence,
+    ):
+        raise TypeError("Toolformer capability closure must be a sequence")
+    tool_capability_ids = tuple(tool_capability_ids)
+    if any(type(value) is not str or not value.strip() for value in tool_capability_ids):
+        raise ValueError("Toolformer capability closure must contain canonical text")
+    if len(tool_capability_ids) != len(set(tool_capability_ids)):
+        raise ValueError("Toolformer capability closure must be unique")
     if tools_enabled and not tool_capability_ids:
         raise ValueError("enabled Toolformer requires a tool capability closure")
     if any(type(row) is not str or not row.strip() for row in tool_capability_ids):
