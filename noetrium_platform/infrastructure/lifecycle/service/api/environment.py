@@ -4,8 +4,9 @@ from dataclasses import dataclass
 import json
 from typing import Mapping
 
-
 from noetrium_platform.foundation.kernel.kernel.durability import sha256_bytes
+
+
 def service_environment_digest(
     variables: Mapping[str, str] | tuple[tuple[str, str], ...],
 ) -> str:
