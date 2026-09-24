@@ -40,7 +40,6 @@ from noetrium_platform.composition.resource_probes import LocalCommandResourcePr
 from noetrium_platform.composition.model_qualification import QUALIFICATION_INDEX_WORKER_PATH
 from noetrium_platform.infrastructure.lifecycle.python.api import PythonEnvironmentAuthorities
 from noetrium_platform.capabilities.environment.catalog.api import ExecutionEnvironmentCatalogPort
-from noetrium_platform.capabilities.environment.catalog.runtime import ExecutionEnvironmentCatalog
 from noetrium_platform.foundation.scope.api import ScopeRegistryPort
 from noetrium_platform.infrastructure.lifecycle.host.api import OperatingSystemRoute
 from noetrium_platform.infrastructure.lifecycle.python.runtime import (
@@ -198,7 +197,7 @@ def build_local_management_plane(
         ),
         runner,
     )
-    execution_environments = ExecutionEnvironmentCatalog(scopes)
+    execution_environments = meta.environments
     asset_registry = ModelAssetRegistry(directory_layout)
     deployment_registry = ModelDeploymentRegistry(directory_layout)
     applied_store = AppliedModelDeploymentStore(directory_layout)
