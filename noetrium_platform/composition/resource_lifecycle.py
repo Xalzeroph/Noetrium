@@ -100,6 +100,77 @@ class ManagedResourceReconciler:
             compute=compute,
         )
 
+    def shutdown_cleanup(
+        self,
+        *,
+        now: float | None = None,
+    ) -> ManagedResourceReconciliation:
+        """Best-effort terminal cleanup for one exclusively owned runtime.
+
+        This method is intentionally separate from periodic reconciliation.
+        It may release still-live leases because callers must first quiesce the
+        runtime and hold the state-root interprocess ownership lock.
+        """
+
+        now_epoch_s = time() if now is None else float(now)
+        if not math.isfinite(now_epoch_s) or now_epoch_s <= 0:
+            raise ValueError(
+                "managed resource shutdown time must be finite and positive"
+            )
+
+        errors: list[BaseException] = []
+        containers = DockerContainerReconciliation((), ())
+        environments = EnvironmentInstanceReconciliation((), ())
+        endpoints: list[EndpointAllocation] = []
+        compute: list[ComputeAllocation] = []
+
+        try:
+            containers = self._containers.shutdown_cleanup(now=now_epoch_s)
+        except BaseException as exc:
+            errors.append(exc)
+
+        try:
+            environments = self._environments.shutdown_cleanup(now=now_epoch_s)
+        except BaseException as exc:
+            errors.append(exc)
+
+        try:
+            for row in self._endpoints.active():
+                try:
+                    endpoints.append(
+                        self._endpoints.release(row.allocation_id)
+                    )
+                except BaseException as exc:
+                    errors.append(exc)
+        except BaseException as exc:
+            errors.append(exc)
+
+        try:
+            rows = self._compute.allocations()
+        except BaseException as exc:
+            errors.append(exc)
+            rows = ()
+        for row in rows:
+            try:
+                self._compute.release(row.allocation_id)
+                compute.append(row)
+            except BaseException as exc:
+                errors.append(exc)
+
+        report = ManagedResourceReconciliation(
+            observed_at_epoch_s=now_epoch_s,
+            containers=containers,
+            environments=environments,
+            endpoints=tuple(sorted(endpoints, key=lambda row: row.allocation_id)),
+            compute=tuple(sorted(compute, key=lambda row: row.allocation_id)),
+        )
+        if errors:
+            raise ExceptionGroup(
+                "managed resource shutdown cleanup failed",
+                errors,
+            )
+        return report
+
     def run(
         self,
         *,
