@@ -5,6 +5,7 @@ from threading import Event
 import pytest
 
 from noetrium_platform.platform import bind_research_execution_pool
+from noetrium_platform.composition.research_execution_pool import ResearchExecutionPool
 from noetrium_platform.foundation.kernel.concurrency.api import (
     ConcurrencyBudget,
     ExecutionLaneKind,
@@ -196,3 +197,104 @@ def test_workload_failure_does_not_block_physical_quiescence_or_pool_close() -> 
     with pytest.raises(RuntimeError, match="workloads are quiescing"):
         pool.open_experiment_group("late")
     pool.close()
+
+
+def test_control_plane_runs_while_orchestration_capacity_is_saturated() -> None:
+    one = ConcurrencyBudget(
+        max_blocking_io_workers=1,
+        max_blocking_io_in_flight=1,
+        max_async_io_in_flight=1,
+        max_cpu_workers=1,
+        max_cpu_in_flight=1,
+        max_serial_workers=1,
+    )
+    one_admission = AdmissionBudget(
+        max_total_in_flight=1,
+        max_in_flight_per_group=1,
+        max_in_flight_per_tenant=1,
+        max_in_flight_per_resource=1,
+        max_blocking_io_in_flight=1,
+        max_async_io_in_flight=1,
+        max_cpu_in_flight=1,
+        max_serial_in_flight=1,
+    )
+    pool = ResearchExecutionPool(
+        orchestration_concurrency_budget=one,
+        orchestration_admission_budget=one_admission,
+        control_concurrency_budget=one,
+        control_admission_budget=one_admission,
+    )
+    workload = pool.open_orchestration_group("saturated-orchestration")
+    control = pool.open_control_group("lease-maintenance")
+    workload_entered = Event()
+    release_workload = Event()
+    control_ran = Event()
+
+    def hold_workload(context: TaskContextPort) -> None:
+        context.checkpoint()
+        workload_entered.set()
+        if not release_workload.wait(2):
+            raise TimeoutError("test workload release was not signalled")
+        context.checkpoint()
+
+    def run_control(context: TaskContextPort) -> None:
+        context.checkpoint()
+        control_ran.set()
+        context.checkpoint()
+
+    try:
+        workload_handle = workload.submit(
+            ExecutionSpec(
+                task_id="hold-workload",
+                lane_kind=ExecutionLaneKind.BLOCKING_IO,
+            ),
+            hold_workload,
+        )
+        assert workload_entered.wait(1)
+        assert pool.orchestration_admission_snapshot().in_flight == 1
+
+        control_handle = control.submit(
+            ExecutionSpec(
+                task_id="renew-lease",
+                lane_kind=ExecutionLaneKind.BLOCKING_IO,
+            ),
+            run_control,
+        )
+        assert control_ran.wait(1)
+        control_handle.result(1)
+        assert pool.control_admission_snapshot().in_flight == 0
+        assert pool.orchestration_admission_snapshot().in_flight == 1
+
+        release_workload.set()
+        workload_handle.result(1)
+    finally:
+        release_workload.set()
+        pool.close_control_group(control, cancel_pending=True)
+        pool.close_orchestration_group(workload, cancel_pending=True)
+        pool.close()
+
+
+def test_workload_quiesce_keeps_owned_control_group_operational() -> None:
+    pool = ResearchExecutionPool()
+    control = pool.open_control_group("owned-resource-heartbeats")
+    ran = Event()
+    try:
+        pool.quiesce_workloads()
+
+        def maintenance(context: TaskContextPort) -> None:
+            context.checkpoint()
+            ran.set()
+            context.checkpoint()
+
+        handle = control.submit(
+            ExecutionSpec(
+                task_id="post-quiesce-maintenance",
+                lane_kind=ExecutionLaneKind.BLOCKING_IO,
+            ),
+            maintenance,
+        )
+        assert ran.wait(1)
+        handle.result(1)
+    finally:
+        pool.close_control_group(control, cancel_pending=True)
+        pool.close()
