@@ -10,6 +10,7 @@ from .document_integrity import DocumentIntegrityError
 from .durable_append import (
     AppendDurability,
     DurableAppendError,
+    PersistentAppendFile,
     append_bytes,
     durable_append_bytes,
 )
@@ -52,6 +53,7 @@ __all__ = [
     "DocumentIntegrityError",
     "AppendDurability",
     "DurableAppendError",
+    "PersistentAppendFile",
     "append_bytes",
     "durable_append_bytes",
     "DurableFileWriteError",
