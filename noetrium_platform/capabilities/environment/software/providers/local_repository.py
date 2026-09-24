@@ -31,10 +31,12 @@ from noetrium_platform.foundation.kernel.kernel import (
 from noetrium_platform.foundation.kernel.kernel.durability import atomic_replace_bytes
 from noetrium_platform.substrate.api import (
     LocalCommandRunnerPort,
+    LocalCommandTimeoutError,
 )
 
 from ..api import (
     SoftwareActionKind,
+    SoftwareActionTimeoutError,
     SoftwareEnvironmentSpec,
     SoftwareWorldPort,
 )
@@ -366,11 +368,16 @@ class _LocalRepositorySoftwareSession(
         timeout_value = payload.get("timeout_seconds")
         timeout = None if timeout_value is None else float(timeout_value)
         before = self._workspace_state_digest()
-        completed = self._runner.run(
-            argv,
-            cwd=self._root,
-            timeout_seconds=timeout,
-        )
+        try:
+            completed = self._runner.run(
+                argv,
+                cwd=self._root,
+                timeout_seconds=timeout,
+            )
+        except LocalCommandTimeoutError as exc:
+            raise SoftwareActionTimeoutError(
+                f"software {kind.value} action timed out"
+            ) from exc
         after = self._workspace_state_digest()
         effect = EffectReceipt(
             effect_id=f"software-{kind.value}:{request.action_id}",
