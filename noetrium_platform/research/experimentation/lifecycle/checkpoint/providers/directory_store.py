@@ -470,6 +470,11 @@ class DirectoryRunCheckpointStore(RunCheckpointStore):
         with InterprocessFileLock(
             self._manifest_lock_path(manifest.checkpoint_id)
         ):
+            if self._read_retirement(manifest.checkpoint_id) is not None:
+                raise RunCheckpointConflict(
+                    "checkpoint identity is retired and cannot be reused: "
+                    f"{manifest.checkpoint_id}"
+                )
             if path.exists():
                 current = self.codec.decode(path.read_bytes())
                 if current != manifest:
@@ -561,6 +566,145 @@ class DirectoryRunCheckpointStore(RunCheckpointStore):
                 )
             participants.append(RunParticipantPayload(ref, ParticipantCheckpoint(checkpoint_ref, payload)))
         return RunCheckpointBundle(manifest, tuple(participants))
+
+    def assess_gc(
+        self,
+        checkpoint_id: str,
+        *,
+        closures: tuple[DurableCarrierReferenceClosure, ...] = (),
+    ) -> RunCheckpointGcAssessment:
+        with InterprocessFileLock(
+            self._manifest_lock_path(checkpoint_id)
+        ):
+            retirement = self._read_retirement(checkpoint_id)
+            if retirement is None:
+                persistence_state, state_digest, blobs = (
+                    self._current_gc_state_unlocked(checkpoint_id)
+                )
+            else:
+                persistence_state = RunCheckpointPersistenceState(
+                    str(retirement["persistence_state"])
+                )
+                state_digest = str(retirement["state_digest"])
+                blobs = tuple(str(value) for value in retirement["blob_sha256s"])
+            return RunCheckpointGcAssessment(
+                checkpoint_id=checkpoint_id,
+                persistence_state=persistence_state,
+                state_digest=state_digest,
+                blob_sha256s=blobs,
+                closures=closures,
+            )
+
+    @staticmethod
+    def _require_gc(
+        checkpoint_id: str,
+        gc: RunCheckpointGcAssessment,
+    ) -> RunCheckpointGcAssessment:
+        if type(gc) is not RunCheckpointGcAssessment:
+            raise RuntimeError(
+                "checkpoint physical GC requires a typed GC assessment"
+            )
+        if gc.checkpoint_id != checkpoint_id:
+            raise RuntimeError(
+                "checkpoint GC assessment does not bind the requested identity"
+            )
+        if not gc.eligible:
+            raise RuntimeError(
+                "checkpoint physical GC requires complete execution, evidence, "
+                "and recovery closure with zero retained references"
+            )
+        return gc
+
+    def purge(
+        self,
+        checkpoint_id: str,
+        *,
+        gc: RunCheckpointGcAssessment,
+    ) -> bool:
+        gc = self._require_gc(checkpoint_id, gc)
+        manifest_path = self._manifest_path(checkpoint_id)
+
+        with InterprocessFileLock(
+            self._manifest_lock_path(checkpoint_id)
+        ):
+            retirement = self._read_retirement(checkpoint_id)
+            if retirement is None:
+                persistence_state, state_digest, blobs = (
+                    self._current_gc_state_unlocked(checkpoint_id)
+                )
+                if (
+                    persistence_state is not gc.persistence_state
+                    or state_digest != gc.state_digest
+                    or blobs != gc.blob_sha256s
+                ):
+                    raise RuntimeError(
+                        "checkpoint GC assessment is stale for current durable state"
+                    )
+                self._write_retirement(gc, purged=False)
+                retirement = self._read_retirement(checkpoint_id)
+                if retirement is None:
+                    raise RunCheckpointIntegrityError(
+                        "checkpoint retirement publication disappeared"
+                    )
+            else:
+                if (
+                    str(retirement["persistence_state"])
+                    != gc.persistence_state.value
+                    or str(retirement["state_digest"]) != gc.state_digest
+                    or tuple(str(v) for v in retirement["blob_sha256s"])
+                    != gc.blob_sha256s
+                ):
+                    raise RuntimeError(
+                        "checkpoint retirement generation changed across retry"
+                    )
+                if str(retirement["gc_proof_digest"]) != gc.proof_digest:
+                    raise RuntimeError(
+                        "checkpoint GC proof changed across retirement retry"
+                    )
+                if bool(retirement["purged"]):
+                    return True
+
+                # A crash may have published retirement before removing the live
+                # manifest/intent. Any reappearing state must still be the exact
+                # generation authorized by the tombstone.
+                try:
+                    current = self._current_gc_state_unlocked(checkpoint_id)
+                except FileNotFoundError:
+                    current = None
+                if current is not None and (
+                    current[0] is not gc.persistence_state
+                    or current[1] != gc.state_digest
+                    or current[2] != gc.blob_sha256s
+                ):
+                    raise RunCheckpointIntegrityError(
+                        "retired checkpoint live state reappeared with another generation"
+                    )
+
+            if manifest_path.exists():
+                durable_unlink(manifest_path)
+
+            try:
+                pending = self._intents.load(checkpoint_id)
+            except CheckpointPublicationIntentCorruptionError as exc:
+                raise RunCheckpointIntegrityError(
+                    "retired checkpoint intent is corrupt"
+                ) from exc
+            if pending is not None:
+                durable_unlink(self._intents._path(checkpoint_id))
+
+            for digest in gc.blob_sha256s:
+                with InterprocessFileLock(self._blob_lock_path(digest)):
+                    if self._blob_referenced_elsewhere(
+                        digest,
+                        excluding_run_checkpoint_id=checkpoint_id,
+                    ):
+                        continue
+                    blob_path = self._blob_path(digest)
+                    if blob_path.exists():
+                        durable_unlink(blob_path)
+
+            self._write_retirement(gc, purged=True)
+            return True
 
 
 __all__ = ["DirectoryRunCheckpointStore"]
