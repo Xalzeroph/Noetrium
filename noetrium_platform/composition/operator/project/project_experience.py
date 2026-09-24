@@ -7,10 +7,14 @@ from noetrium_platform.product.operator.api import (
     ProjectCreateReceipt,
     ProjectCreateRequest,
     ProjectDoctorReport,
+    ProjectSyncReceipt,
     ProjectTestReceipt,
 )
 from noetrium_platform.composition.operator.project.project_doctor import doctor_project
-from noetrium_platform.composition.operator.project.project_scaffold import create_project
+from noetrium_platform.composition.operator.project.project_scaffold import (
+    create_project,
+    sync_project,
+)
 from noetrium_platform.composition.operator.project.project_testing import test_project
 
 
@@ -25,6 +29,9 @@ class LocalProjectExperience:
     def create(self, request: ProjectCreateRequest) -> ProjectCreateReceipt:
         return create_project(request)
 
+    def sync(self, project_root: Path) -> ProjectSyncReceipt:
+        return sync_project(project_root)
+
     def doctor(self, project_root: Path) -> ProjectDoctorReport:
         return doctor_project(project_root, boundary_auditor=self._boundary_auditor)
 
@@ -32,4 +39,10 @@ class LocalProjectExperience:
         return test_project(project_root)
 
 
-__all__ = ["LocalProjectExperience", "create_project", "doctor_project", "test_project"]
+__all__ = [
+    "LocalProjectExperience",
+    "create_project",
+    "sync_project",
+    "doctor_project",
+    "test_project",
+]
