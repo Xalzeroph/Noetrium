@@ -181,6 +181,417 @@ class ResearchProjectManifestResolverPort(Protocol):
     def resolve(self, definition: ResearchStudyDefinition) -> ProjectManifest: ...
 
 
+@dataclass(frozen=True, slots=True)
+class ResearchCapabilityBindingRegistration:
+    project_manifest_digest: str
+    requirement_id: str
+    requirement_digest: str
+    resolutions: tuple[BindingResolution[object], ...]
+    registration_digest: str = ""
+
+    def __post_init__(self) -> None:
+        for field_name, value in (
+            ("project_manifest_digest", self.project_manifest_digest),
+            ("requirement_digest", self.requirement_digest),
+        ):
+            if (
+                type(value) is not str
+                or len(value) != 64
+                or any(ch not in "0123456789abcdef" for ch in value)
+            ):
+                raise ValueError(
+                    f"Research capability registration {field_name} "
+                    "must be lowercase SHA-256"
+                )
+        if (
+            type(self.requirement_id) is not str
+            or not self.requirement_id.strip()
+            or self.requirement_id != self.requirement_id.strip()
+        ):
+            raise ValueError(
+                "Research capability registration requirement_id "
+                "must be canonical text"
+            )
+        if type(self.resolutions) is not tuple or not self.resolutions:
+            raise TypeError(
+                "Research capability registration requires non-empty "
+                "BindingResolution tuple"
+            )
+        if any(type(row) is not BindingResolution for row in self.resolutions):
+            raise TypeError(
+                "Research capability registration resolutions must be canonical "
+                "BindingResolution values"
+            )
+        expected = canonical_digest(
+            {
+                "project_manifest_digest": self.project_manifest_digest,
+                "requirement_id": self.requirement_id,
+                "requirement_digest": self.requirement_digest,
+                "resolutions": tuple(
+                    row.resolution_digest for row in self.resolutions
+                ),
+            }
+        )
+        if self.registration_digest:
+            if self.registration_digest != expected:
+                raise ValueError(
+                    "Research capability registration digest drifted"
+                )
+        else:
+            object.__setattr__(self, "registration_digest", expected)
+
+
+class ResearchCapabilityBindingRegistry:
+    """Exact proof-backed Capability results keyed by manifest + requirement."""
+
+    def __init__(
+        self,
+        registrations: tuple[ResearchCapabilityBindingRegistration, ...],
+    ) -> None:
+        if type(registrations) is not tuple:
+            raise TypeError(
+                "Research capability registry registrations must be tuple"
+            )
+        if any(
+            type(row) is not ResearchCapabilityBindingRegistration
+            for row in registrations
+        ):
+            raise TypeError(
+                "Research capability registry registrations must be typed"
+            )
+        keys = tuple(
+            (
+                row.project_manifest_digest,
+                row.requirement_id,
+                row.requirement_digest,
+            )
+            for row in registrations
+        )
+        if len(keys) != len(set(keys)):
+            raise ValueError(
+                "Research capability registry contains duplicate requirement authority"
+            )
+        self._registrations = tuple(
+            sorted(registrations, key=lambda row: row.registration_digest)
+        )
+        self._by_key = {
+            (
+                row.project_manifest_digest,
+                row.requirement_id,
+                row.requirement_digest,
+            ): row
+            for row in self._registrations
+        }
+        self._identity_digest = canonical_digest(
+            {
+                "schema": "noetrium.research-capability-binding-registry.v1",
+                "registrations": tuple(
+                    row.registration_digest for row in self._registrations
+                ),
+            }
+        )
+
+    @property
+    def identity_digest(self) -> str:
+        return self._identity_digest
+
+    def resolve(
+        self,
+        requirement: ProjectCapabilityRequirement,
+        context: ResearchBindingResolutionContext,
+    ) -> tuple[BindingResolution[object], ...]:
+        if type(requirement) is not ProjectCapabilityRequirement:
+            raise TypeError(
+                "Research capability registry requires ProjectCapabilityRequirement"
+            )
+        requirement_digest = canonical_digest(requirement)
+        key = (
+            context.manifest.semantic_digest,
+            requirement.requirement_id,
+            requirement_digest,
+        )
+        registration = self._by_key.get(key)
+        if registration is None:
+            raise LookupError(
+                "no exact Capability binding registration for "
+                f"{requirement.requirement_id!r}"
+            )
+        for resolution in registration.resolutions:
+            if resolution.binding is None:
+                continue
+            proof = resolution.proof
+            if proof is None:
+                raise ValueError(
+                    "bound Capability resolution lost BindingProof"
+                )
+            if proof.subject != context.resolution.project_subject:
+                raise ValueError(
+                    "Capability binding proof project subject drifted"
+                )
+            if proof.requirement_digest.value != requirement_digest:
+                raise ValueError(
+                    "Capability binding proof requirement identity drifted"
+                )
+        return registration.resolutions
+
+
+@dataclass(frozen=True, slots=True)
+class ResearchParticipantBindingRegistration:
+    project_manifest_digest: str
+    research_requirement_digest: str
+    resolution: BindingResolution[ProjectParticipantBinding]
+    registration_digest: str = ""
+
+    def __post_init__(self) -> None:
+        for field_name, value in (
+            ("project_manifest_digest", self.project_manifest_digest),
+            ("research_requirement_digest", self.research_requirement_digest),
+        ):
+            if (
+                type(value) is not str
+                or len(value) != 64
+                or any(ch not in "0123456789abcdef" for ch in value)
+            ):
+                raise ValueError(
+                    f"Research participant registration {field_name} "
+                    "must be lowercase SHA-256"
+                )
+        if type(self.resolution) is not BindingResolution:
+            raise TypeError(
+                "Research participant registration requires BindingResolution"
+            )
+        expected = canonical_digest(
+            {
+                "project_manifest_digest": self.project_manifest_digest,
+                "research_requirement_digest": self.research_requirement_digest,
+                "resolution_digest": self.resolution.resolution_digest,
+            }
+        )
+        if self.registration_digest:
+            if self.registration_digest != expected:
+                raise ValueError(
+                    "Research participant registration digest drifted"
+                )
+        else:
+            object.__setattr__(self, "registration_digest", expected)
+
+
+class ResearchParticipantBindingRegistry:
+    """Exact Participant owner results keyed by manifest + Research requirement."""
+
+    def __init__(
+        self,
+        registrations: tuple[ResearchParticipantBindingRegistration, ...],
+    ) -> None:
+        if type(registrations) is not tuple:
+            raise TypeError(
+                "Research participant registry registrations must be tuple"
+            )
+        if any(
+            type(row) is not ResearchParticipantBindingRegistration
+            for row in registrations
+        ):
+            raise TypeError(
+                "Research participant registry registrations must be typed"
+            )
+        keys = tuple(
+            (
+                row.project_manifest_digest,
+                row.research_requirement_digest,
+            )
+            for row in registrations
+        )
+        if len(keys) != len(set(keys)):
+            raise ValueError(
+                "Research participant registry contains duplicate requirement authority"
+            )
+        self._registrations = tuple(
+            sorted(registrations, key=lambda row: row.registration_digest)
+        )
+        self._by_key = {
+            (
+                row.project_manifest_digest,
+                row.research_requirement_digest,
+            ): row
+            for row in self._registrations
+        }
+        self._identity_digest = canonical_digest(
+            {
+                "schema": "noetrium.research-participant-binding-registry.v1",
+                "registrations": tuple(
+                    row.registration_digest for row in self._registrations
+                ),
+            }
+        )
+
+    @property
+    def identity_digest(self) -> str:
+        return self._identity_digest
+
+    def resolve(
+        self,
+        requirement: ResearchParticipantRequirement,
+        context: ResearchBindingResolutionContext,
+    ) -> BindingResolution[ProjectParticipantBinding]:
+        if type(requirement) is not ResearchParticipantRequirement:
+            raise TypeError(
+                "Research participant registry requires "
+                "ResearchParticipantRequirement"
+            )
+        registration = self._by_key.get(
+            (
+                context.manifest.semantic_digest,
+                requirement.requirement_digest,
+            )
+        )
+        if registration is None:
+            raise LookupError(
+                "no exact Participant binding registration for "
+                f"role={requirement.role!r}"
+            )
+        resolution = registration.resolution
+        if resolution.binding is not None:
+            proof = resolution.proof
+            if proof is None:
+                raise ValueError(
+                    "bound Participant resolution lost BindingProof"
+                )
+            if proof.subject != context.resolution.project_subject:
+                raise ValueError(
+                    "Participant binding proof project subject drifted"
+                )
+        return resolution
+
+
+@dataclass(frozen=True, slots=True)
+class ResearchModelRoleBindingRegistration:
+    project_manifest_digest: str
+    research_requirement_digest: str
+    resolutions: tuple[BindingResolution[ProjectModelBinding], ...]
+    registration_digest: str = ""
+
+    def __post_init__(self) -> None:
+        for field_name, value in (
+            ("project_manifest_digest", self.project_manifest_digest),
+            ("research_requirement_digest", self.research_requirement_digest),
+        ):
+            if (
+                type(value) is not str
+                or len(value) != 64
+                or any(ch not in "0123456789abcdef" for ch in value)
+            ):
+                raise ValueError(
+                    f"Research model registration {field_name} "
+                    "must be lowercase SHA-256"
+                )
+        if type(self.resolutions) is not tuple:
+            raise TypeError(
+                "Research model registration resolutions must be tuple"
+            )
+        if any(type(row) is not BindingResolution for row in self.resolutions):
+            raise TypeError(
+                "Research model registration resolutions must be canonical "
+                "BindingResolution values"
+            )
+        expected = canonical_digest(
+            {
+                "project_manifest_digest": self.project_manifest_digest,
+                "research_requirement_digest": self.research_requirement_digest,
+                "resolutions": tuple(
+                    row.resolution_digest for row in self.resolutions
+                ),
+            }
+        )
+        if self.registration_digest:
+            if self.registration_digest != expected:
+                raise ValueError("Research model registration digest drifted")
+        else:
+            object.__setattr__(self, "registration_digest", expected)
+
+
+class ResearchModelRoleBindingRegistry:
+    """Exact Model owner results keyed by manifest + Research model requirement."""
+
+    def __init__(
+        self,
+        registrations: tuple[ResearchModelRoleBindingRegistration, ...],
+    ) -> None:
+        if type(registrations) is not tuple:
+            raise TypeError("Research model registry registrations must be tuple")
+        if any(
+            type(row) is not ResearchModelRoleBindingRegistration
+            for row in registrations
+        ):
+            raise TypeError(
+                "Research model registry registrations must be typed"
+            )
+        keys = tuple(
+            (
+                row.project_manifest_digest,
+                row.research_requirement_digest,
+            )
+            for row in registrations
+        )
+        if len(keys) != len(set(keys)):
+            raise ValueError(
+                "Research model registry contains duplicate requirement authority"
+            )
+        self._registrations = tuple(
+            sorted(registrations, key=lambda row: row.registration_digest)
+        )
+        self._by_key = {
+            (
+                row.project_manifest_digest,
+                row.research_requirement_digest,
+            ): row
+            for row in self._registrations
+        }
+        self._identity_digest = canonical_digest(
+            {
+                "schema": "noetrium.research-model-binding-registry.v1",
+                "registrations": tuple(
+                    row.registration_digest for row in self._registrations
+                ),
+            }
+        )
+
+    @property
+    def identity_digest(self) -> str:
+        return self._identity_digest
+
+    def resolve(
+        self,
+        requirement: ResearchModelRoleRequirement,
+        context: ResearchBindingResolutionContext,
+    ) -> tuple[BindingResolution[ProjectModelBinding], ...]:
+        if type(requirement) is not ResearchModelRoleRequirement:
+            raise TypeError(
+                "Research model registry requires ResearchModelRoleRequirement"
+            )
+        registration = self._by_key.get(
+            (
+                context.manifest.semantic_digest,
+                requirement.requirement_digest,
+            )
+        )
+        if registration is None:
+            if requirement.required:
+                raise LookupError(
+                    "no exact Model binding registration for "
+                    f"role={requirement.role!r}"
+                )
+            return ()
+        for resolution in registration.resolutions:
+            if resolution.binding is None:
+                continue
+            proof = resolution.proof
+            if proof is None:
+                raise ValueError("bound Model resolution lost BindingProof")
+            if proof.subject != context.resolution.project_subject:
+                raise ValueError("Model binding proof project subject drifted")
+        return registration.resolutions
+
+
 @runtime_checkable
 class ResearchCapabilityBindingResolverPort(Protocol):
     """Capability owner resolver; one-or-more requirements may return many proofs."""
@@ -485,6 +896,12 @@ __all__ = [
     "ResearchBindingAuthorityError",
     "ResearchBindingResolutionContext",
     "ResearchCapabilityBindingResolverPort",
+    "ResearchModelRoleBindingRegistry",
+    "ResearchModelRoleBindingRegistration",
+    "ResearchParticipantBindingRegistry",
+    "ResearchParticipantBindingRegistration",
+    "ResearchCapabilityBindingRegistry",
+    "ResearchCapabilityBindingRegistration",
     "ResearchModelRoleBindingResolverPort",
     "ResearchParticipantBindingResolverPort",
     "ResearchProjectManifestRegistry",
