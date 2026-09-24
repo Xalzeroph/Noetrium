@@ -2,7 +2,10 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from .atomic_publication import publish_atomic_directory, write_atomic_file
+from noetrium_platform.foundation.kernel.kernel.durability.durable_file import (
+    atomic_replace_bytes,
+    durable_replace_directory,
+)
 from .generation_codec import EncodedGeneration, decode_generation
 from .generation_contracts import PromptGenerationManifest
 from .generation_reader import PromptGenerationReader, validate_generation_id
@@ -51,10 +54,10 @@ class PromptGenerationStager:
         # it blindly: verify exact identity and finish the same atomic publication.
         if tmp.exists():
             self._validate_encoded_file(tmp / "generation.json", encoded)
-            publish_atomic_directory(tmp, target, self.generations)
+            durable_replace_directory(tmp, target)
             return self._manifest(encoded)
 
         tmp.mkdir()
-        write_atomic_file(tmp / "generation.json", encoded.envelope_bytes)
-        publish_atomic_directory(tmp, target, self.generations)
+        atomic_replace_bytes(tmp / "generation.json", encoded.envelope_bytes)
+        durable_replace_directory(tmp, target)
         return self._manifest(encoded)
