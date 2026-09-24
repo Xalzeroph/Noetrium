@@ -505,8 +505,8 @@ def _scopes_overlap(left: Iterable[str], right: Iterable[str]) -> bool:
 def current_architecture_complexity(*, import_edges: int) -> ArchitectureComplexity:
     descriptors = system_catalog()
     return ArchitectureComplexity(
-        top_level_systems=sum(row.identity.is_system for row in descriptors),
-        subsystems=sum(not row.identity.is_system for row in descriptors),
+        top_level_systems=sum(row.parent_key is None for row in descriptors),
+        subsystems=sum(row.parent_key is not None for row in descriptors),
         contract_declarations=sum(len(row.requires) + len(row.provides) for row in descriptors),
         authorities=sum(len(row.authorities) for row in descriptors),
         import_edges=int(import_edges),
