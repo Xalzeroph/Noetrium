@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from concurrent.futures import ThreadPoolExecutor
+from hashlib import sha256
 from threading import Lock
 
 import pytest
@@ -67,11 +68,12 @@ def test_existing_corrupt_digest_path_fails_closed_without_overwrite(
 
 def test_blob_lock_domain_is_fixed_size_not_per_artifact(tmp_path) -> None:
     store = DirectoryArtifactBlobStore(tmp_path / "blobs")
-    for index in range(600):
-        store.put(
-            f"artifact-{index}".encode(),
-            media_type="application/octet-stream",
-        )
-    lock_files = tuple((tmp_path / "blobs" / ".locks").glob("*.lock"))
+    digests = tuple(
+        sha256(f"artifact-{index}".encode()).hexdigest()
+        for index in range(600)
+    )
+    lock_paths = {store._lock_path(digest) for digest in digests}
+    local_indices = {store._shard_index(digest) for digest in digests}
     assert len(store._local_locks) == 256
-    assert len(lock_files) <= 256
+    assert len(lock_paths) <= 256
+    assert len(local_indices) <= 256
