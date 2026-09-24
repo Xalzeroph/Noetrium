@@ -25,6 +25,8 @@ on:
       - "scripts/generate_code_architecture_map.py"
       - "scripts/generate_repository_code_architecture_map.py"
       - "scripts/sync_architecture_maps.py"
+      - "scripts/sync_development_architecture_report.py"
+      - "scripts/generate_development_snapshot.py"
       - "scripts/sync_platform_architecture_map.py"
       - "sdk/**"
       - "examples/**"
@@ -76,9 +78,11 @@ jobs:
 
             python scripts/update_generated_docs.py
             python scripts/sync_architecture_maps.py
+            python scripts/sync_development_architecture_report.py
 
             python scripts/update_generated_docs.py --check
             python scripts/sync_architecture_maps.py --check
+            python scripts/sync_development_architecture_report.py --check
 
             if [[ -z "$(git status --porcelain --untracked-files=all)" ]]; then
               echo "Platform projections are current."

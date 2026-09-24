@@ -7,7 +7,6 @@ release qualification.
 
 from __future__ import annotations
 
-from dataclasses import asdict
 from datetime import datetime, timezone
 import hashlib
 import json
@@ -20,7 +19,9 @@ ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
-from noetrium_platform.foundation.governance.architecture.report import build_architecture_report
+from sync_development_architecture_report import (
+    build_development_architecture_projection,
+)
 from noetrium_platform.foundation.governance.release.runtime.manifest import (
     EXCLUDED_DIRS,
     EXCLUDED_NAME_MARKERS,
@@ -76,8 +77,8 @@ def main() -> int:
     platform_version = str(project_metadata.get("version", "")).strip()
     if not platform_version:
         raise RuntimeError("pyproject.toml project.version is required for a snapshot")
-    report = build_architecture_report(root)
-    _write_json(root / SNAPSHOT_REPORT, asdict(report))
+    report, report_document = build_development_architecture_projection(root)
+    _write_json(root / SNAPSHOT_REPORT, report_document)
 
     files = _snapshot_files(root)
     python_files = tuple(path for path in files if path.suffix == ".py")
