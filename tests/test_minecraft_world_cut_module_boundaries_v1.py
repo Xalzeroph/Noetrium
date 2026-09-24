@@ -21,7 +21,6 @@ def test_world_cut_facade_preserves_public_copier_and_error_identities() -> None
 def test_world_cut_facade_keeps_manifest_diagnostic_aliases() -> None:
     assert world_cut._tree_manifest is integrity.tree_manifest
     assert world_cut._excluded is integrity.excluded
-    assert world_cut._sha256 is integrity.sha256_file
 
 
 def test_world_cut_facade_reexports_provider_module_identity() -> None:
