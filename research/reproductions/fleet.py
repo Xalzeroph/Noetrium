@@ -1144,10 +1144,37 @@ def execute_materialized_reproduction_fleet(
         execution_pool=execution_pool,
     )
     try:
+        # Build the exact would-be revision identity and prove the entire fleet
+        # admission closure before writing revision/blob state.  RUN performs
+        # the same fail-closed preflight again immediately before cut
+        # activation, so provider drift between proof and execution is detected
+        # without ever starting partial fleet work.
+        message = _fleet_revision_message(fleet, authority_manifest_digest)
+        prospective_revision = api.ResearchGraphRevision(
+            fleet.portfolio.portfolio_id,
+            fleet.portfolio.portfolio_digest,
+            (),
+            message,
+        )
+        prospective_target = api.ResearchExecutionTarget(
+            execution_id,
+            prospective_revision,
+        )
+        prepared = composition.prepare(
+            prospective_target,
+            fleet.portfolio,
+        )
+        if prepared.target != prospective_target:
+            raise ValueError("fleet preflight target identity drifted")
+
         revision = composition.research_os.commit(
             fleet.portfolio,
-            message=_fleet_revision_message(fleet, authority_manifest_digest),
+            message=message,
         )
+        if revision != prospective_revision:
+            raise ValueError(
+                "fleet revision commit drifted from preflighted revision identity"
+            )
         target = api.ResearchExecutionTarget(execution_id, revision)
         return composition.research_os.run(target)
     finally:

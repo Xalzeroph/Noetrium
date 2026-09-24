@@ -973,6 +973,27 @@ class StrictResearchOSControl(
             raise ResearchGraphExecutionConflict(
                 "Research OS migration source cut is not safely switchable"
             )
+
+        # Prove the complete target execution closure before staging any target
+        # cut state or switching the active revision.  A revision that compiles
+        # but cannot be admitted by its exact lower runtime/value authorities is
+        # not a safe migration target.
+        target_prepared = prepare_research_os_execution(
+            request.target,
+            target_portfolio,
+            self._runtime,
+            self._values,
+            experiment_closures=self._experiment_closures,
+            artifact_lineage=self._artifact_lineage,
+        )
+        if (
+            target_prepared.compilation != target
+            or target_prepared.cut != plan.target_cut
+        ):
+            raise ValueError(
+                "Research OS migration target preflight identity drifted"
+            )
+
         source_lowering = compile_research_os_lowering(
             source,
             experiment_closures=self._experiment_closures,
@@ -1017,6 +1038,7 @@ class StrictResearchOSControl(
                     materialized.preserved_cancelled_node_ids
                 ),
                 "control_transfer_digest": materialized.control_transfer_digest,
+                "target_preflight_digest": target_prepared.preflight_digest,
             },
         )
 
@@ -1382,10 +1404,11 @@ class StrictResearchOSControl(
                     else "node_draining"
                 ),
             )
+        transition_now_ns = time.time_ns()
         control = self._store.request_drain(
             cut.cut_id,
             expected_generation=control.generation,
-            now_ns=time.time_ns(),
+            now_ns=transition_now_ns,
         )
         snapshot = self._store.snapshot(cut.cut_id)
         active_nodes = tuple(
