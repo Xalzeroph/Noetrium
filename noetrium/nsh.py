@@ -15,6 +15,7 @@ from noetrium_platform.foundation.kernel.kernel import (
     ProgramSource,
     strict_json_loads,
 )
+from noetrium_platform.foundation.kernel.kernel.durability import atomic_replace_bytes
 
 
 def _read_object(path: Path) -> dict[str, object]:
@@ -40,7 +41,7 @@ def compile_file(
     )
     manifest = compiled.manifest()
     from noetrium_platform.foundation.kernel.kernel import canonical_bytes
-    Path(output_path).write_bytes(canonical_bytes(manifest, indent=2))
+    atomic_replace_bytes(Path(output_path), canonical_bytes(manifest, indent=2))
     return manifest
 
 
