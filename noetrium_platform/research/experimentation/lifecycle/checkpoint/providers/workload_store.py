@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import hashlib
+from contextlib import ExitStack
 from pathlib import Path
 
 from noetrium_platform.foundation.kernel.kernel.durability import InterprocessFileLock
@@ -129,15 +130,25 @@ class DirectoryWorkloadCheckpointStore(WorkloadCheckpointStore):
                 self._clear_intent(intent, manifest_committed=True)
                 return current
 
-            self._publish_intent(intent)
-            for item in payloads:
-                self._content._write_blob(
-                    item.payload,
-                    item.ref.payload_sha256,
-                )
-            atomic_replace_bytes(path, encoded)
-            self._clear_intent(intent, manifest_committed=True)
-            return manifest
+            digests = tuple(
+                sorted({item.ref.payload_sha256 for item in payloads})
+            )
+            with ExitStack() as blob_locks:
+                for digest in digests:
+                    blob_locks.enter_context(
+                        InterprocessFileLock(
+                            self._content._blob_lock_path(digest)
+                        )
+                    )
+                self._publish_intent(intent)
+                for item in payloads:
+                    self._content._write_blob_under_lock(
+                        item.payload,
+                        item.ref.payload_sha256,
+                    )
+                atomic_replace_bytes(path, encoded)
+                self._clear_intent(intent, manifest_committed=True)
+                return manifest
 
     def load(self, checkpoint_id: str) -> WorkloadCheckpointBundle:
         path = self._manifest_path(checkpoint_id)
