@@ -113,7 +113,8 @@ class ModelDeploymentRuntime:
             if observation.process is not None
             else None
         )
-        if outcome is None or outcome.stopped:
+        stopped_converged = outcome is None or outcome.stopped
+        if stopped_converged:
             # The runtime-wide mutation lock plus the exact persisted process
             # identity make this clear a CAS over one physical lifetime.
             current = self._applied_store.read(desired.deployment_id)
@@ -130,7 +131,7 @@ class ModelDeploymentRuntime:
             desired.deployment_id,
             desired.service_id,
             desired.desired_state,
-            ModelRuntimeState.STOPPED if outcome.stopped else ModelRuntimeState.ERROR,
+            ModelRuntimeState.STOPPED if stopped_converged else ModelRuntimeState.ERROR,
         )
 
     def start(
