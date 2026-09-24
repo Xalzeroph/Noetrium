@@ -11,6 +11,7 @@ from noetrium_platform.foundation.kernel.kernel import (
     canonical_digest,
     strict_json_loads,
 )
+from noetrium_platform.foundation.kernel.kernel.durability import atomic_replace_bytes
 
 
 PLANES = frozenset({"foundation", "capabilities", "evidence", "research", "product"})
@@ -191,7 +192,10 @@ def load_catalog(path: str | Path) -> dict[str, JsonInput]:
 
 
 def write_matrix(matrix: OwnershipMatrix, path: str | Path) -> None:
-    Path(path).write_bytes(canonical_bytes(matrix.as_dict(), indent=2))
+    atomic_replace_bytes(
+        Path(path),
+        canonical_bytes(matrix.as_dict(), indent=2),
+    )
 
 
 __all__ = [
