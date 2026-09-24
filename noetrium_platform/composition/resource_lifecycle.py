@@ -107,11 +107,13 @@ class ManagedResourceReconciler:
     ) -> ManagedResourceReconciliation:
         """Terminal cleanup for one exclusively owned, quiesced runtime.
 
-        Docker and reusable Environment instances have authoritative cleanup
-        operations and can be reclaimed here. Endpoint and Compute allocations
-        are only reconciled for expiry; if live allocations remain, they stay
-        fenced and shutdown fails rather than pretending an unknown physical
-        listener/process disappeared.
+        Cleanup is a dependency transaction, not best-effort fan-out:
+
+          Docker physical processes -> Environment generations -> endpoints -> compute.
+
+        A stage must prove convergence before the next ownership layer is
+        released.  On failure, later layers remain fenced and a later call may
+        retry from durable/provider truth.
         """
 
         now_epoch_s = time() if now is None else float(now)
@@ -120,29 +122,34 @@ class ManagedResourceReconciler:
                 "managed resource shutdown time must be finite and positive"
             )
 
-        errors: list[BaseException] = []
-        containers = DockerContainerReconciliation((), ())
-        environments = EnvironmentInstanceReconciliation((), ())
-        endpoints: tuple[EndpointAllocation, ...] = ()
-        compute: tuple[ComputeAllocation, ...] = ()
-
         try:
             containers = self._containers.shutdown_cleanup(now=now_epoch_s)
         except BaseException as exc:
-            errors.append(exc)
+            raise ExceptionGroup(
+                "managed resource shutdown failed during container cleanup",
+                [exc],
+            ) from exc
 
         try:
             environments = self._environments.shutdown_cleanup(now=now_epoch_s)
         except BaseException as exc:
-            errors.append(exc)
+            raise ExceptionGroup(
+                "managed resource shutdown failed during environment cleanup",
+                [exc],
+            ) from exc
 
         try:
-            endpoints = self._endpoints.reconcile(now=now_epoch_s)
-            active_endpoints = self._endpoints.active()
-            released_endpoints: list[EndpointAllocation] = list(endpoints)
-            for allocation in active_endpoints:
+            reconciled_endpoints = self._endpoints.reconcile(now=now_epoch_s)
+            released_endpoints: list[EndpointAllocation] = list(
+                reconciled_endpoints
+            )
+            for allocation in self._endpoints.active():
                 released_endpoints.append(
                     self._endpoints.release(allocation.allocation_id)
+                )
+            if self._endpoints.active():
+                raise RuntimeError(
+                    "endpoint allocations survived owner shutdown cleanup"
                 )
             endpoints = tuple(
                 sorted(
@@ -150,38 +157,33 @@ class ManagedResourceReconciler:
                     key=lambda row: row.allocation_id,
                 )
             )
-            if self._endpoints.active():
-                raise RuntimeError(
-                    "endpoint allocations survived owner shutdown cleanup"
-                )
         except BaseException as exc:
-            errors.append(exc)
+            raise ExceptionGroup(
+                "managed resource shutdown failed during endpoint cleanup",
+                [exc],
+            ) from exc
 
         try:
             compute = self._compute.reconcile_expired(now=now_epoch_s)
-            active_compute = self._compute.allocations()
-            for allocation in active_compute:
+            for allocation in self._compute.allocations():
                 self._compute.release(allocation.allocation_id)
             if self._compute.allocations():
                 raise RuntimeError(
                     "compute allocations survived owner shutdown cleanup"
                 )
         except BaseException as exc:
-            errors.append(exc)
+            raise ExceptionGroup(
+                "managed resource shutdown failed during compute cleanup",
+                [exc],
+            ) from exc
 
-        report = ManagedResourceReconciliation(
+        return ManagedResourceReconciliation(
             observed_at_epoch_s=now_epoch_s,
             containers=containers,
             environments=environments,
             endpoints=endpoints,
             compute=compute,
         )
-        if errors:
-            raise ExceptionGroup(
-                "managed resource shutdown cleanup failed",
-                errors,
-            )
-        return report
 
     def run(
         self,
