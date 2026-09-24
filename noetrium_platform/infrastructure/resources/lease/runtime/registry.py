@@ -4,18 +4,22 @@ import heapq
 import math
 from dataclasses import replace
 from threading import RLock
-from time import time
 
 from noetrium_platform.infrastructure.resources.lease.api import (
+    LeaseClockPort,
+    LeaseClockReading,
     LeaseState,
     ResourceIdentity,
     ResourceKind,
     ResourceLease,
+    ResourceLeaseClockConflict,
     ResourceLeaseConflict,
     ResourceLeaseExpired,
     ResourceOwner,
     ResourceOwnershipConflict,
 )
+
+from .clock import LocalLeaseClock
 
 
 class InMemoryResourceLeaseRegistry:
@@ -26,13 +30,52 @@ class InMemoryResourceLeaseRegistry:
     leases does not turn acquire/get into a full-registry scan.
     """
 
-    def __init__(self) -> None:
+    def __init__(self, *, clock: LeaseClockPort | None = None) -> None:
         self._owners: dict[ResourceIdentity, ResourceOwner] = {}
         self._leases: dict[str, ResourceLease] = {}
         self._active_by_resource: dict[ResourceIdentity, str] = {}
         self._last_fencing_by_resource: dict[ResourceIdentity, int] = {}
         self._expiry_heap: list[tuple[float, int, str]] = []
+        self._clock = LocalLeaseClock() if clock is None else clock
+        self._clock_anchor: LeaseClockReading | None = None
         self._lock = RLock()
+
+    def _authority_now(self, explicit_now: float | None) -> float:
+        if explicit_now is not None:
+            value = float(explicit_now)
+            if not math.isfinite(value) or value <= 0:
+                raise ValueError(
+                    "lease observation time must be finite and positive"
+                )
+            return value
+
+        reading = self._clock.read()
+        anchor = self._clock_anchor
+        if anchor is None:
+            self._clock_anchor = reading
+            return reading.wall_epoch_seconds
+        if anchor.host_identity_digest != reading.host_identity_digest:
+            raise ResourceLeaseClockConflict(
+                "resource authority belongs to a different host clock domain"
+            )
+        if anchor.boot_identity_digest != reading.boot_identity_digest:
+            for lease_id, current in tuple(self._leases.items()):
+                if current.state is LeaseState.ACTIVE:
+                    self._leases[lease_id] = replace(
+                        current,
+                        state=LeaseState.EXPIRED,
+                    )
+            self._active_by_resource.clear()
+            self._expiry_heap.clear()
+            self._clock_anchor = reading
+            return reading.wall_epoch_seconds
+        if reading.elapsed_seconds < anchor.elapsed_seconds:
+            raise ResourceLeaseClockConflict(
+                "same-boot suspend-aware lease clock moved backwards"
+            )
+        return anchor.wall_epoch_seconds + (
+            reading.elapsed_seconds - anchor.elapsed_seconds
+        )
 
     def register_owner(self, owner: ResourceOwner) -> None:
         with self._lock:
@@ -50,7 +93,7 @@ class InMemoryResourceLeaseRegistry:
 
     def remove_owner(self, resource: ResourceIdentity) -> None:
         with self._lock:
-            self._expire_resource(resource, time())
+            self._expire_resource(resource, self._authority_now(None))
             if resource in self._active_by_resource:
                 raise ResourceOwnershipConflict(f"resource has active leases: {resource.key}")
             self._owners.pop(resource, None)
@@ -87,7 +130,7 @@ class InMemoryResourceLeaseRegistry:
         ttl_seconds: float | None = None,
         now: float | None = None,
     ) -> ResourceLease:
-        now_epoch_s = time() if now is None else float(now)
+        now_epoch_s = self._authority_now(now)
         if not math.isfinite(now_epoch_s):
             raise ValueError("lease observation time must be finite")
         if ttl_seconds is not None and (
@@ -147,7 +190,7 @@ class InMemoryResourceLeaseRegistry:
     ) -> ResourceLease:
         if not math.isfinite(float(ttl_seconds)) or ttl_seconds <= 0:
             raise ValueError("lease ttl_seconds must be finite and > 0")
-        now_epoch_s = time() if now is None else float(now)
+        now_epoch_s = self._authority_now(now)
         if not math.isfinite(now_epoch_s):
             raise ValueError("lease observation time must be finite")
         with self._lock:
@@ -170,7 +213,7 @@ class InMemoryResourceLeaseRegistry:
         fencing_token: int,
         now: float | None = None,
     ) -> ResourceLease:
-        now_epoch_s = time() if now is None else float(now)
+        now_epoch_s = self._authority_now(now)
         if not math.isfinite(now_epoch_s):
             raise ValueError("lease observation time must be finite")
         if type(fencing_token) is not int or fencing_token < 1:
@@ -194,7 +237,7 @@ class InMemoryResourceLeaseRegistry:
             return released
 
     def get(self, lease_id: str, *, now: float | None = None) -> ResourceLease:
-        now_epoch_s = time() if now is None else float(now)
+        now_epoch_s = self._authority_now(now)
         if not math.isfinite(now_epoch_s):
             raise ValueError("lease observation time must be finite")
         with self._lock:
@@ -206,7 +249,7 @@ class InMemoryResourceLeaseRegistry:
     def active_for(
         self, resource: ResourceIdentity, *, now: float | None = None
     ) -> tuple[ResourceLease, ...]:
-        now_epoch_s = time() if now is None else float(now)
+        now_epoch_s = self._authority_now(now)
         if not math.isfinite(now_epoch_s):
             raise ValueError("lease observation time must be finite")
         with self._lock:
@@ -222,7 +265,7 @@ class InMemoryResourceLeaseRegistry:
         resource_kind: ResourceKind | None = None,
         now: float | None = None,
     ) -> tuple[ResourceLease, ...]:
-        now_epoch_s = time() if now is None else float(now)
+        now_epoch_s = self._authority_now(now)
         if not math.isfinite(now_epoch_s):
             raise ValueError("lease observation time must be finite")
         if resource_kind is not None and type(resource_kind) is not ResourceKind:
@@ -251,7 +294,7 @@ class InMemoryResourceLeaseRegistry:
     def history_for(
         self, resource: ResourceIdentity, *, now: float | None = None
     ) -> tuple[ResourceLease, ...]:
-        now_epoch_s = time() if now is None else float(now)
+        now_epoch_s = self._authority_now(now)
         if not math.isfinite(now_epoch_s):
             raise ValueError("lease observation time must be finite")
         with self._lock:
@@ -267,7 +310,7 @@ class InMemoryResourceLeaseRegistry:
         now: float | None = None,
         resource_kind: ResourceKind | None = None,
     ) -> tuple[ResourceLease, ...]:
-        now_epoch_s = time() if now is None else float(now)
+        now_epoch_s = self._authority_now(now)
         if not math.isfinite(now_epoch_s):
             raise ValueError("lease observation time must be finite")
         if resource_kind is not None and type(resource_kind) is not ResourceKind:
