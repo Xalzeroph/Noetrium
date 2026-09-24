@@ -5,7 +5,6 @@ from noetrium_platform.research.execution.api import DecisionCycleResult
 from noetrium_platform.research.experimentation.lifecycle.run.api.identity import RunIdentity
 from noetrium_platform.research.experimentation.lifecycle.experiment.api import ExperimentSpec, ExperimentTrialProtocolIdentityMismatch
 
-from .components import ExperimentRuntimeComponents
 from .trial_protocol_identity import verify_trial_protocol_identity
 
 
@@ -14,26 +13,18 @@ class ExperimentRuntime:
 
     def __init__(
         self,
-        components: ExperimentRuntimeComponents,
+        trial_protocol_identity: object,
+        cycle_runtime: object,
+        run_runtime: object,
         *,
         run_identity_provider: object,
         cycle_identity_provider: DecisionCycleIdentityProvider,
     ) -> None:
-        self._components = components
+        self.trial_protocol_identity = trial_protocol_identity
+        self.cycle_runtime = cycle_runtime
+        self.run_runtime = run_runtime
         self.cycle_identity_provider = cycle_identity_provider
         self.run_identity_provider = run_identity_provider
-
-    @property
-    def trial_protocol_identity(self):
-        return self._components.trial_protocol_identity
-
-    @property
-    def cycle_runtime(self):
-        return self._components.cycle_runtime
-
-    @property
-    def run_runtime(self):
-        return self._components.run_runtime
 
     def open_run(
         self,
