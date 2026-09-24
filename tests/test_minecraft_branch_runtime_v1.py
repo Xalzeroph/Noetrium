@@ -845,3 +845,108 @@ def test_branch_runtime_guard_close_failure_keeps_endpoint_fenced_until_retry() 
     assert not allocations.active()
     assert guard.close_calls == 2
     assert events.count("server.stop") == 1
+
+
+
+def test_branch_runtime_session_close_failure_fences_lower_teardown_until_retry() -> None:
+    leases = InMemoryResourceLeaseRegistry()
+    allocations = InMemoryEndpointAllocator(
+        ownership=leases,
+        leases=leases,
+        probe=AlwaysAvailableProbe(),
+        candidates=FixedCandidatePorts(),
+    )
+    events: list[str] = []
+    guards: list[object] = []
+
+    class FlakySession(RecordingSession):
+        def __init__(self, events: list[str]) -> None:
+            super().__init__(events)
+            self.close_calls = 0
+
+        def close(self) -> None:
+            self.close_calls += 1
+            self.events.append("session.close")
+            if self.close_calls == 1:
+                raise RuntimeError("simulated bridge close failure")
+
+    class RuntimeWithFlakySession(RecordingEnvironmentRuntime):
+        def __init__(self, events: list[str]) -> None:
+            super().__init__(events)
+            self.session = FlakySession(events)
+
+        def open_session(
+            self,
+            implementation: object,
+            *,
+            session_id: str,
+            services: object,
+        ) -> FlakySession:
+            del implementation, services
+            self.events.append(f"environment.open:{session_id}")
+            return self.session
+
+    class RecordingGuard(NoopGuard):
+        def __init__(self) -> None:
+            self.close_calls = 0
+
+        def close(self) -> None:
+            self.close_calls += 1
+            events.append("guard.close")
+
+    guard = RecordingGuard()
+
+    class GuardFactory:
+        def create(self, allocation_rows):
+            assert allocation_rows
+            guards.append(guard)
+            return guard
+
+    runtime = RuntimeWithFlakySession(events)
+
+    def compose_environment(spec: MinecraftEnvironmentSpec) -> MinecraftEnvironmentAssembly:
+        return MinecraftEnvironmentAssembly(
+            MinecraftEnvironmentImplementation(
+                spec=spec,
+                bridge_factory=lambda _: object(),
+            ),
+            runtime,
+        )
+
+    class ServerFactory:
+        def create(
+            self,
+            spec: MinecraftServerSpec,
+            *,
+            environment_generation: str,
+        ) -> RecordingServer:
+            del spec, environment_generation
+            return RecordingServer(events)
+
+    factory = MinecraftBranchRuntimeFactory(
+        endpoint_allocations=allocations,
+        lease_guard_factory=GuardFactory(),
+        environment_factory=type(
+            "EnvironmentFactory",
+            (),
+            {"compose": staticmethod(compose_environment)},
+        )(),
+        server_factory=ServerFactory(),
+    )
+    binding = factory.open(_request())
+    binding.open_session(services=object())
+
+    with pytest.raises(Exception, match="session convergence"):
+        binding.close()
+
+    assert allocations.active(), "endpoint must remain fenced while bridge close is unproven"
+    assert "server.stop" not in events
+    assert "guard.close" not in events
+    assert runtime.session.close_calls == 1
+
+    binding.close()
+
+    assert not allocations.active()
+    assert runtime.session.close_calls == 2
+    assert events.count("server.stop") == 1
+    assert guard.close_calls == 1
