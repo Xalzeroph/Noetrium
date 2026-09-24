@@ -2552,7 +2552,7 @@
       "reproductions": [
         {
           "package": "agentsquare",
-          "package_digest": "66f448124bda7ff227ab0acab517bc5492c4389ad6c2dbbd0460468ad7f6f77e",
+          "package_digest": "fccd8843d0249cb1c76e5e519fe6beadb9558d28852bcdb015640526359f16c3",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "agentboard-pddl",
@@ -2619,7 +2619,7 @@
             },
             {
               "path": "tests/test_scientific_agentsquare_webshop_cut_v1.py",
-              "content_sha256": "afb88951bf85b66ff194ab8c674d518a6cf26b78f022f94243af9bc8ffcda6ed"
+              "content_sha256": "903f2761417445500a78f58b51160a7adbca405d083261b4b77321a48566a318"
             }
           ]
         }
@@ -3896,5 +3896,5 @@
       ]
     }
   ],
-  "projection_digest": "a605c56c90af4c4304c4a87d12c02258beeadb121f71a97d9e51a1dcdcd673d4"
+  "projection_digest": "fb91a75ad6e586afd79082362148daae05abac7a6df646426276a2a89b2384fc"
 }

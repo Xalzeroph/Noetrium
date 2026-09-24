@@ -2,7 +2,7 @@
   "schema": "noetrium.reproduction.projection.v7",
   "authority": "generated_from_typed_definition_and_source",
   "package": "agentsquare",
-  "package_digest": "66f448124bda7ff227ab0acab517bc5492c4389ad6c2dbbd0460468ad7f6f77e",
+  "package_digest": "fccd8843d0249cb1c76e5e519fe6beadb9558d28852bcdb015640526359f16c3",
   "definition_digest": "7a28adc381ac559387f01015d08ae15ad26c548ef93de9662c7a88c33fad1e95",
   "source_registry_digest": "7b145319e1ac2f8a0a7f4f82a53ec059ffbca8e90126ab15ca7742977508805d",
   "lifecycle": "protocol_bound",
@@ -225,7 +225,7 @@
     },
     {
       "path": "tests/test_scientific_agentsquare_webshop_cut_v1.py",
-      "content_sha256": "afb88951bf85b66ff194ab8c674d518a6cf26b78f022f94243af9bc8ffcda6ed"
+      "content_sha256": "903f2761417445500a78f58b51160a7adbca405d083261b4b77321a48566a318"
     }
   ]
 }
