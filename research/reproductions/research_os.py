@@ -94,6 +94,105 @@ class ReproductionExecutionRequirement:
             )
 
 
+@dataclass(frozen=True, slots=True)
+class ReproductionCapabilitySelectionRegistration:
+    """Exact CapabilitySelectionView bound to one reproduction requirement."""
+
+    requirement_digest: str
+    view: CapabilitySelectionView
+    registration_digest: str = field(init=False)
+
+    def __post_init__(self) -> None:
+        if (
+            type(self.requirement_digest) is not str
+            or len(self.requirement_digest) != 64
+            or any(ch not in "0123456789abcdef" for ch in self.requirement_digest)
+        ):
+            raise ValueError(
+                "reproduction capability registration requirement_digest "
+                "must be lowercase SHA-256"
+            )
+        if type(self.view) is not CapabilitySelectionView:
+            raise TypeError(
+                "reproduction capability registration requires "
+                "CapabilitySelectionView"
+            )
+        object.__setattr__(
+            self,
+            "registration_digest",
+            canonical_digest(
+                {
+                    "requirement_digest": self.requirement_digest,
+                    "capability_selection_view_digest": self.view.view_digest,
+                }
+            ),
+        )
+
+
+class ReproductionCapabilitySelectionRegistry:
+    """Exact reproduction capability authority keyed by typed requirement digest."""
+
+    def __init__(
+        self,
+        registrations: tuple[
+            ReproductionCapabilitySelectionRegistration, ...
+        ],
+    ) -> None:
+        if type(registrations) is not tuple:
+            raise TypeError(
+                "reproduction capability registry registrations must be tuple"
+            )
+        if any(
+            type(row) is not ReproductionCapabilitySelectionRegistration
+            for row in registrations
+        ):
+            raise TypeError(
+                "reproduction capability registry registrations must be typed"
+            )
+        keys = tuple(row.requirement_digest for row in registrations)
+        if len(keys) != len(set(keys)):
+            raise ValueError(
+                "reproduction capability registry contains duplicate requirement "
+                "authority"
+            )
+        self._registrations = tuple(
+            sorted(registrations, key=lambda row: row.requirement_digest)
+        )
+        self._by_requirement = {
+            row.requirement_digest: row for row in self._registrations
+        }
+        self._identity_digest = canonical_digest(
+            {
+                "schema": "noetrium.reproduction-capability-registry.v1",
+                "registrations": tuple(
+                    row.registration_digest for row in self._registrations
+                ),
+            }
+        )
+
+    @property
+    def identity_digest(self) -> str:
+        return self._identity_digest
+
+    def resolve(
+        self,
+        requirement: ReproductionExecutionRequirement,
+    ) -> CapabilitySelectionView:
+        if type(requirement) is not ReproductionExecutionRequirement:
+            raise TypeError(
+                "reproduction capability registry requires typed requirement"
+            )
+        registration = self._by_requirement.get(
+            requirement.requirement_digest
+        )
+        if registration is None:
+            raise LookupError(
+                "no exact CapabilitySelectionView for reproduction requirement "
+                f"{requirement.package}:{requirement.parameter}"
+            )
+        return registration.view
+
+
 @runtime_checkable
 class ReproductionCapabilityRequirementResolverPort(Protocol):
     """Resolve one semantic capability requirement from authoritative platform state.
@@ -2058,6 +2157,8 @@ def compile_reproduction_portfolio(
 
 __all__ = [
     "ReproductionCapabilityRequirementResolverPort",
+    "ReproductionCapabilitySelectionRegistry",
+    "ReproductionCapabilitySelectionRegistration",
     "ReproductionExecutionBinding",
     "ReproductionExecutionRequirement",
     "ReproductionExecutionRequest",
