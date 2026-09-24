@@ -2,19 +2,19 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-from noetrium_platform.capabilities.participant.capability.api import (
+from noetrium.api import (
     CapabilityDescriptor,
     CapabilityPort,
     CapabilitySelectionReference,
     CapabilitySelectionView,
     materialize_capability_selection_view,
 )
-from noetrium_platform.evidence.data.projection.api import SemanticProjectionSnapshot
-from noetrium_platform.evidence.data.query.api import (
+from noetrium.api import SemanticProjectionSnapshot
+from noetrium.api import (
     SemanticSimilarityQuery,
     SemanticSimilarityQueryPort,
 )
-from noetrium_platform.foundation.kernel.kernel import canonical_digest, require_sha256
+from noetrium.api import canonical_digest, require_sha256
 
 
 @dataclass(frozen=True, slots=True)

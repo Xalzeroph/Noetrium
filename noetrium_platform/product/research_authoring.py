@@ -8,6 +8,12 @@ Downstream projects import these names through :mod:`noetrium.api`.
 """
 from __future__ import annotations
 
+from noetrium_platform.evidence.data.projection.api import SemanticProjectionSnapshot
+from noetrium_platform.evidence.data.query.api import (
+    SemanticSimilarityQuery,
+    SemanticSimilarityQueryPort,
+)
+
 from noetrium_platform.foundation.kernel.kernel import (
     ChildMachineLink,
     EffectCertainty,
@@ -238,6 +244,9 @@ __all__ = [
     "RuntimeProgramBuilder",
     "Study",
     "StudyModel",
+    "SemanticProjectionSnapshot",
+    "SemanticSimilarityQuery",
+    "SemanticSimilarityQueryPort",
     "SensorModality",
     "SensorSpec",
     "StudyParticipant",
