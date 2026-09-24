@@ -3,10 +3,14 @@ from __future__ import annotations
 import shutil
 from pathlib import Path
 
-from noetrium_platform.product.api import encode_research_project_blueprint
+from noetrium_platform.product.api import (
+    decode_research_project_blueprint,
+    encode_research_project_blueprint,
+)
 from noetrium_platform.product.operator.api import (
     ProjectCreateReceipt,
     ProjectCreateRequest,
+    ProjectSyncReceipt,
     project_template_revision,
 )
 from noetrium_platform.composition.operator.project.project_layout import project_package_name
@@ -26,6 +30,7 @@ from noetrium_platform.foundation.portfolio.api import (
     ProjectSpec,
     ProjectToolProvenance,
     ProjectIdentity,
+    decode_project_manifest_bytes,
     encode_project_manifest,
     project_manifest_document,
 )
@@ -191,4 +196,67 @@ def create_project(request: ProjectCreateRequest) -> ProjectCreateReceipt:
     )
 
 
-__all__ = ["create_project"]
+def sync_project(project_root: Path) -> ProjectSyncReceipt:
+    root = project_root.expanduser().absolute()
+    if root.is_symlink() or not root.is_dir():
+        raise ValueError("project sync requires a real project directory")
+    manifest_path = root / _MANIFEST_PATH
+    if not manifest_path.is_file() or manifest_path.is_symlink():
+        raise ValueError("project sync requires canonical project.manifest.json")
+    manifest = decode_project_manifest_bytes(manifest_path.read_bytes())
+    if manifest.template_revision != project_template_revision():
+        raise ValueError(
+            "project sync requires the current project template revision"
+        )
+    project_id = manifest.project.identity.project_id
+    package = project_package_name(project_id)
+    blueprint_path = root / "research.blueprint.json"
+    slots_path = root / "src" / package / "slots.py"
+    if (
+        not blueprint_path.is_file()
+        or blueprint_path.is_symlink()
+        or not slots_path.is_file()
+        or slots_path.is_symlink()
+    ):
+        raise ValueError(
+            "project sync requires research.blueprint.json and user-owned slots.py"
+        )
+    blueprint = decode_research_project_blueprint(blueprint_path.read_bytes())
+    if blueprint.portfolio.portfolio_id != project_id:
+        raise ValueError(
+            "project blueprint portfolio_id does not match project manifest identity"
+        )
+    generated = {
+        f"src/{package}/research.py": render_research_module(blueprint).encode("utf-8"),
+        "tests/test_generated_project.py": render_generated_test_module(
+            package,
+            blueprint,
+        ).encode("utf-8"),
+    }
+    lock_path = root.parent / f".{root.name}.noetrium-sync.lock"
+    with InterprocessFileLock(lock_path):
+        # Re-read blueprint under the lock so a concurrent author edit cannot
+        # produce topology from stale bytes.
+        locked_blueprint = decode_research_project_blueprint(
+            blueprint_path.read_bytes()
+        )
+        if locked_blueprint.blueprint_digest != blueprint.blueprint_digest:
+            raise ValueError(
+                "research blueprint changed during project sync; retry from the new cut"
+            )
+        for relative, payload in sorted(generated.items()):
+            target = root / relative
+            if target.is_symlink():
+                raise ValueError(
+                    f"project sync refuses generated symlink target: {relative}"
+                )
+            target.parent.mkdir(parents=True, exist_ok=True)
+            atomic_replace_bytes(target, payload)
+    return ProjectSyncReceipt(
+        project_root=str(root),
+        research_blueprint_digest=blueprint.blueprint_digest,
+        regenerated_files=tuple(sorted(generated)),
+    )
+
+
+__all__ = ["create_project", "sync_project"]
