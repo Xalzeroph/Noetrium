@@ -318,9 +318,8 @@ class EnvironmentInstanceLeaseAuthority:
         released: list[str] = []
         for lease in self.leases.active_leases(
             resource_kind=ResourceKind.EXECUTION_ENVIRONMENT,
-            now=now_epoch_s,
         ):
-            self.leases.release(lease.lease_id, fencing_token=lease.fencing_token, now=now_epoch_s)
+            self.leases.release(lease.lease_id, fencing_token=lease.fencing_token)
             released.append(lease.lease_id)
 
         dirtied: list[str] = []
@@ -343,7 +342,6 @@ class EnvironmentInstanceLeaseAuthority:
         if not math.isfinite(now_epoch_s):
             raise ValueError("environment lease reconciliation time must be finite")
         self.leases.reconcile_expired(
-            now=now_epoch_s,
             resource_kind=ResourceKind.EXECUTION_ENVIRONMENT,
         )
         dirtied: list[str] = []
@@ -356,7 +354,7 @@ class EnvironmentInstanceLeaseAuthority:
 
         for instance in self.catalog.instances():
             resource = _instance_resource(instance.instance_id)
-            active = self.leases.active_for(resource, now=now_epoch_s)
+            active = self.leases.active_for(resource)
             rows = tuple(by_instance.get(instance.instance_id, ()))
             if instance.state is EnvironmentInstanceState.IN_USE:
                 expected_id = _lease_id(instance)
@@ -375,7 +373,6 @@ class EnvironmentInstanceLeaseAuthority:
                     self.leases.release(
                         lease.lease_id,
                         fencing_token=lease.fencing_token,
-                        now=now_epoch_s,
                     )
                     released.append(lease.lease_id)
                 self.catalog.mark_instance_dirty(instance.instance_id)
@@ -386,7 +383,6 @@ class EnvironmentInstanceLeaseAuthority:
                 self.leases.release(
                     lease.lease_id,
                     fencing_token=lease.fencing_token,
-                    now=now_epoch_s,
                 )
                 released.append(lease.lease_id)
 
