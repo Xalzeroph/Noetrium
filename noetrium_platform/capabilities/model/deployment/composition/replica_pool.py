@@ -112,7 +112,12 @@ class ModelReplicaPoolReport:
 
 
 class ModelReplicaPoolLease:
-    """Own model services and both resource-lease families for one pool."""
+    """Own model services and both resource-lease families for one pool.
+
+    Cleanup is dependency ordered and retryable. Serving processes must be
+    proven gone before lease heartbeats stop, and each resource family is
+    released only after its own renewal guard has converged.
+    """
 
     def __init__(
         self,
@@ -130,9 +135,16 @@ class ModelReplicaPoolLease:
         self._endpoint_allocations = endpoint_allocations
         self._compute_guard = compute_guard
         self._endpoint_guard = endpoint_guard
+        self._removed_deployment_ids: set[str] = set()
+        self._endpoint_guard_closed = False
+        self._compute_guard_closed = False
+        self._released_endpoint_ids: set[str] = set()
+        self._released_compute_ids: set[str] = set()
         self._closed = False
 
     def assert_healthy(self) -> None:
+        if self._closed:
+            raise RuntimeError("model replica pool lease is closed")
         self._compute_guard.assert_healthy()
         self._endpoint_guard.assert_healthy()
         for row in self.report.placements:
@@ -146,29 +158,71 @@ class ModelReplicaPoolLease:
     def close(self) -> None:
         if self._closed:
             return
-        self._closed = True
+
         errors: list[BaseException] = []
         for row in reversed(self.report.placements):
+            if row.deployment_id in self._removed_deployment_ids:
+                continue
             try:
                 self._deployment_runtime.remove_deployment(row.deployment_id)
             except BaseException as exc:
                 errors.append(exc)
-        for guard in (self._endpoint_guard, self._compute_guard):
+            else:
+                self._removed_deployment_ids.add(row.deployment_id)
+
+        if len(self._removed_deployment_ids) != len(self.report.placements):
+            raise ExceptionGroup("model replica pool cleanup failed", errors)
+
+        if not self._endpoint_guard_closed:
             try:
-                guard.close()
+                self._endpoint_guard.close()
             except BaseException as exc:
                 errors.append(exc)
-        for row in reversed(self.report.placements):
+            else:
+                self._endpoint_guard_closed = True
+        if not self._compute_guard_closed:
             try:
-                self._endpoint_allocations.release(row.endpoint.allocation_id)
+                self._compute_guard.close()
             except BaseException as exc:
                 errors.append(exc)
-            try:
-                self._compute_scheduler.release(row.compute.allocation_id)
-            except BaseException as exc:
-                errors.append(exc)
+            else:
+                self._compute_guard_closed = True
+
+        if self._endpoint_guard_closed:
+            for row in reversed(self.report.placements):
+                allocation_id = row.endpoint.allocation_id
+                if allocation_id in self._released_endpoint_ids:
+                    continue
+                try:
+                    self._endpoint_allocations.release(allocation_id)
+                except BaseException as exc:
+                    errors.append(exc)
+                else:
+                    self._released_endpoint_ids.add(allocation_id)
+
+        if self._compute_guard_closed:
+            for row in reversed(self.report.placements):
+                allocation_id = row.compute.allocation_id
+                if allocation_id in self._released_compute_ids:
+                    continue
+                try:
+                    self._compute_scheduler.release(allocation_id)
+                except BaseException as exc:
+                    errors.append(exc)
+                else:
+                    self._released_compute_ids.add(allocation_id)
+
         if errors:
             raise ExceptionGroup("model replica pool cleanup failed", errors)
+
+        self._closed = (
+            self._endpoint_guard_closed
+            and self._compute_guard_closed
+            and len(self._released_endpoint_ids) == len(self.report.placements)
+            and len(self._released_compute_ids) == len(self.report.placements)
+        )
+        if not self._closed:
+            raise RuntimeError("model replica pool cleanup did not converge")
 
     def __enter__(self) -> "ModelReplicaPoolLease":
         return self
@@ -348,32 +402,51 @@ class LocalModelReplicaPoolRuntime:
             )
             lease.assert_healthy()
             return lease
-        except BaseException:
+        except BaseException as primary:
+            cleanup_errors: list[BaseException] = []
+            deployments_removed = True
             for spec in reversed(specs):
                 try:
                     self._deployment_runtime.remove_deployment(spec.deployment_id)
-                except BaseException:
-                    pass
-            if endpoint_guard is not None:
+                except BaseException as exc:
+                    deployments_removed = False
+                    cleanup_errors.append(exc)
+
+            endpoint_guard_closed = endpoint_guard is None
+            compute_guard_closed = compute_guard is None
+            if deployments_removed and endpoint_guard is not None:
                 try:
                     endpoint_guard.close()
-                except BaseException:
-                    pass
-            if compute_guard is not None:
+                except BaseException as exc:
+                    cleanup_errors.append(exc)
+                else:
+                    endpoint_guard_closed = True
+            if deployments_removed and compute_guard is not None:
                 try:
                     compute_guard.close()
-                except BaseException:
-                    pass
-            for endpoint in reversed(endpoint_rows):
-                try:
-                    self._endpoint_allocations.release(endpoint.allocation_id)
-                except BaseException:
-                    pass
-            for compute in reversed(compute_rows):
-                try:
-                    self._compute_scheduler.release(compute.allocation_id)
-                except BaseException:
-                    pass
+                except BaseException as exc:
+                    cleanup_errors.append(exc)
+                else:
+                    compute_guard_closed = True
+
+            if deployments_removed and endpoint_guard_closed:
+                for endpoint in reversed(endpoint_rows):
+                    try:
+                        self._endpoint_allocations.release(endpoint.allocation_id)
+                    except BaseException as exc:
+                        cleanup_errors.append(exc)
+            if deployments_removed and compute_guard_closed:
+                for compute in reversed(compute_rows):
+                    try:
+                        self._compute_scheduler.release(compute.allocation_id)
+                    except BaseException as exc:
+                        cleanup_errors.append(exc)
+
+            if cleanup_errors:
+                raise ExceptionGroup(
+                    "model replica pool creation failed with cleanup errors",
+                    [primary, *cleanup_errors],
+                )
             raise
 
 
