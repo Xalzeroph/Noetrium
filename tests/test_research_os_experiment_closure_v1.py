@@ -5,6 +5,9 @@ from dataclasses import replace
 import pytest
 
 from noetrium import api
+from noetrium_platform.composition.research_os_experiment_artifacts import (
+    DirectoryResearchOSExperimentArtifactStoreFactory,
+)
 from noetrium_platform.composition.research_os_experiment import (
     ResearchOSExperimentArtifactStoreBinding,
     ResearchOSExperimentClosure,
@@ -430,32 +433,54 @@ def test_experiment_artifact_store_binding_is_execution_cut_local(tmp_path) -> N
         resolution=resolution,
         binding=binding,
     )
-    factory = _ExperimentArtifactFactory(tmp_path / "run-artifacts")
-    runtime_binding = _ExperimentRuntimeBindings(factory).resolve(closure)
+    pool = ResearchExecutionPool()
+    group = pool.open_experiment_group(
+        "experiment-artifact-factory-test",
+        resource_id="experiment-artifact-factory-test",
+    )
+    factory = DirectoryResearchOSExperimentArtifactStoreFactory(
+        tmp_path / "run-artifacts",
+        task_group=group,
+    )
+    runtime_binding = ResearchOSExperimentRuntimeBinding(
+        closure.closure_digest,
+        closure.experiment_program.plan.plan_digest,
+        closure.research_plan.binding_digest,
+        _BoundAdapter(),
+        BasicStudyMetricAggregator(),
+        factory,
+        _ExperimentReconciliation(),
+        canonical_digest({"adapter": "test.bound-study-execution.v1"}),
+        canonical_digest({"aggregation": "basic-study-metric-aggregator.v1"}),
+        factory.identity_digest,
+        _ExperimentReconciliation.identity_digest,
+    )
     left_cut = "1" * 64
     right_cut = "2" * 64
+    try:
+        left = runtime_binding.bind_artifacts(
+            closure,
+            execution_cut_id=left_cut,
+        )
+        left_again = runtime_binding.bind_artifacts(
+            closure,
+            execution_cut_id=left_cut,
+        )
+        right = runtime_binding.bind_artifacts(
+            closure,
+            execution_cut_id=right_cut,
+        )
 
-    left = runtime_binding.bind_artifacts(
-        closure,
-        execution_cut_id=left_cut,
-    )
-    left_again = runtime_binding.bind_artifacts(
-        closure,
-        execution_cut_id=left_cut,
-    )
-    right = runtime_binding.bind_artifacts(
-        closure,
-        execution_cut_id=right_cut,
-    )
-
-    assert left.binding_digest == left_again.binding_digest
-    assert left.store_identity_digest == left_again.store_identity_digest
-    assert left.execution_cut_id == left_cut
-    assert right.execution_cut_id == right_cut
-    assert left.binding_digest != right.binding_digest
-    assert left.store_identity_digest != right.store_identity_digest
-    assert left.artifacts is left_again.artifacts
-    assert left.artifacts is not right.artifacts
+        assert left.binding_digest == left_again.binding_digest
+        assert left.store_identity_digest == left_again.store_identity_digest
+        assert left.execution_cut_id == left_cut
+        assert right.execution_cut_id == right_cut
+        assert left.binding_digest != right.binding_digest
+        assert left.store_identity_digest != right.store_identity_digest
+        assert left.artifacts.run_id == left_cut
+        assert right.artifacts.run_id == right_cut
+    finally:
+        pool.close()
 
 
 def test_public_research_os_runs_exact_experiment_program_with_durable_machine_journal(
