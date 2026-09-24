@@ -174,7 +174,6 @@ class TransitionProposal:
     accepted_status: MachineStatus | None = None
     before_state_digest: str | None = None
     input_digest: str | None = None
-    program_digest: str | None = None
     machine_kind: str | None = None
     machine_version: str | None = None
     input_refs: tuple[str, ...] = ()
@@ -217,7 +216,6 @@ class TransitionProposal:
         for name, value in ((
             ("before_state_digest", self.before_state_digest),
             ("input_digest", self.input_digest),
-            ("program_digest", self.program_digest),
         )):
             if value is not None:
                 require_sha256(value, f"transition proposal {name}")
@@ -263,6 +261,7 @@ class TransitionProposal:
                 "before_state_digest": self.before_state_digest,
                 "input_digest": self.input_digest,
                 "program_digest": self.program_digest,
+                "program_lock_digest": self.program_lock_digest,
                 "machine_kind": self.machine_kind,
                 "machine_version": self.machine_version,
                 "input_refs": self.input_refs,
@@ -285,6 +284,8 @@ class MachineCommit:
     revision: int
     proposal_digest: str
     command_digest: str
+    program_digest: str
+    program_lock_digest: str
     state: JsonObject = field(default_factory=dict)
     output_refs: tuple[str, ...] = ()
     event_payloads: tuple[JsonValue, ...] = ()
@@ -314,6 +315,11 @@ class MachineCommit:
                 raise ValueError("machine commit identity fields are required")
         require_sha256(self.proposal_digest, "machine commit proposal_digest")
         require_sha256(self.command_digest, "machine commit command_digest")
+        require_sha256(self.program_digest, "machine commit program_digest")
+        require_sha256(
+            self.program_lock_digest,
+            "machine commit program_lock_digest",
+        )
         if type(self.base_revision) is not int or self.base_revision < 0:
             raise ValueError("machine commit base_revision must be non-negative")
         if type(self.revision) is not int or self.revision != self.base_revision + 1:
@@ -409,6 +415,7 @@ class MachineCut:
     commit_id: str
     state_digest: str
     program_digest: str
+    program_lock_digest: str
 
     def __post_init__(self) -> None:
         if type(self.machine_id) is not str or not self.machine_id.strip():
@@ -419,6 +426,7 @@ class MachineCut:
             ("commit_id", self.commit_id),
             ("state_digest", self.state_digest),
             ("program_digest", self.program_digest),
+            ("program_lock_digest", self.program_lock_digest),
         ):
             require_sha256(value, f"machine cut {name}")
 
@@ -426,14 +434,13 @@ class MachineCut:
     def from_commit(cls, commit: "MachineCommit") -> "MachineCut":
         if not isinstance(commit, MachineCommit):
             raise TypeError("MachineCut.from_commit requires MachineCommit")
-        if commit.program_digest is None:
-            raise MachineIntegrityError("accepted commit does not bind a program digest")
         return cls(
             machine_id=commit.machine_id,
             revision=commit.revision,
             commit_id=commit.commit_id,
             state_digest=commit.state_digest,
             program_digest=commit.program_digest,
+            program_lock_digest=commit.program_lock_digest,
         )
 
     @property
@@ -444,6 +451,7 @@ class MachineCut:
             "commit_id": self.commit_id,
             "state_digest": self.state_digest,
             "program_digest": self.program_digest,
+            "program_lock_digest": self.program_lock_digest,
         })
 
 
