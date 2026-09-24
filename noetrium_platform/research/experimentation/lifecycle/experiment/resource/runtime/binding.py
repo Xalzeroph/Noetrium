@@ -4,6 +4,7 @@ from threading import Lock
 
 from noetrium_platform.research.execution.api import ScopeIdentity
 from noetrium_platform.research.execution.api import (
+    ComputeAllocation,
     ComputeLeaseGuardFactoryPort,
     ComputeLeaseGuardPort,
     ComputeRequirement,
@@ -23,10 +24,18 @@ class ResourceAllocationLease(ResourceAllocationLeasePort):
         receipt: ResourceAllocationReceipt,
         scheduler: ComputeSchedulerPort | None,
         guard: ComputeLeaseGuardPort | None = None,
+        allocation: ComputeAllocation | None = None,
     ) -> None:
+        if (scheduler is None) != (allocation is None):
+            raise ValueError(
+                "resource allocation lease requires scheduler/allocation together"
+            )
         self._receipt = receipt
         self._scheduler = scheduler
         self._guard = guard
+        self._allocation = allocation
+        self._guard_closed = guard is None
+        self._allocation_released = allocation is None
         self._released = False
         self._lock = Lock()
 
@@ -42,20 +51,36 @@ class ResourceAllocationLease(ResourceAllocationLeasePort):
         with self._lock:
             if self._released:
                 return
-            self._released = True
+
         errors: list[BaseException] = []
-        if self._guard is not None:
+        if not self._guard_closed and self._guard is not None:
             try:
                 self._guard.close()
             except BaseException as exc:
                 errors.append(exc)
-        if self._scheduler is not None and self._receipt.allocation_id is not None:
+            else:
+                self._guard_closed = True
+
+        if (
+            self._guard_closed
+            and not self._allocation_released
+            and self._scheduler is not None
+            and self._allocation is not None
+        ):
             try:
-                self._scheduler.release(self._receipt.allocation_id)
+                self._scheduler.release(self._allocation)
             except BaseException as exc:
                 errors.append(exc)
+            else:
+                self._allocation_released = True
+
         if errors:
             raise ExceptionGroup("resource allocation lease release failed", errors)
+
+        with self._lock:
+            self._released = self._guard_closed and self._allocation_released
+            if not self._released:
+                raise RuntimeError("resource allocation lease release did not converge")
 
     def __enter__(self) -> "ResourceAllocationLease":
         return self
@@ -139,13 +164,13 @@ class ExperimentResourceBinder:
             # Exact-id retries may reuse a lease close to expiry. Refresh it
             # before the first delayed heartbeat so ownership has a full TTL.
             allocation = self._scheduler.renew_many(
-                (allocation.allocation_id,),
+                (allocation,),
                 ttl_seconds=lease_policy.ttl_seconds,
             )[0]
-            guard = self._lease_guard_factory.create((allocation.allocation_id,))
+            guard = self._lease_guard_factory.create((allocation,))
             guard.start()
         except BaseException:
-            self._scheduler.release(allocation.allocation_id)
+            self._scheduler.release(allocation)
             raise
         receipt = ResourceAllocationReceipt(
             policy_digest=policy.policy_digest,
@@ -159,7 +184,12 @@ class ExperimentResourceBinder:
             lease_fencing_token=allocation.lease_fencing_token,
             lease_expires_at_epoch_s=allocation.lease_expires_at_epoch_s,
         )
-        return ResourceAllocationLease(receipt, self._scheduler, guard)
+        return ResourceAllocationLease(
+            receipt,
+            self._scheduler,
+            guard,
+            allocation,
+        )
 
 
 __all__ = ["ExperimentResourceBinder", "ResourceAllocationLease"]
