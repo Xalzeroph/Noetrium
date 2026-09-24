@@ -306,10 +306,19 @@ def _durable_execution_contract() -> ReadinessCriterion:
         ROOT
         / "noetrium_platform/research/execution/graph/providers/sqlite.py"
     ).read_text(encoding="utf-8")
+    durability_source = (
+        ROOT
+        / "noetrium_platform/foundation/kernel/kernel/durability/sqlite.py"
+    ).read_text(encoding="utf-8")
     invariants = {
-        "wal": 'PRAGMA journal_mode=WAL' in source,
-        "synchronous_full": 'PRAGMA synchronous=FULL' in source,
-        "immediate_transactions": 'BEGIN IMMEDIATE' in source,
+        "canonical_sqlite_durability_binding": (
+            "durability.sqlite import" in source
+            and "durable_sqlite_connection" in source
+            and "begin_immediate_sqlite_transaction" in source
+        ),
+        "wal": 'PRAGMA journal_mode=WAL' in durability_source,
+        "synchronous_full": '"FULL"' in durability_source,
+        "immediate_transactions": 'BEGIN IMMEDIATE' in durability_source,
         "active_cut_expected_cas": "expected_cut_id" in source,
         "active_cut_source_fence": "source_fence" in source,
         "claim_graph_control_fence": "claim requires active graph control" in source,
