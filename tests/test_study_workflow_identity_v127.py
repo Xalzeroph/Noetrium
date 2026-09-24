@@ -3,7 +3,7 @@ from tests_support import FakeParticipantResolver, build_experiment_runtime_for_
 from tests_support import EmptyWorkflowSurfaceFactory, context_action_spec
 import unittest
 
-from noetrium_platform.research.experimentation.lifecycle.experiment.runtime import ExperimentRuntime
+from tests_support import ExperimentRuntimeForTest as ExperimentRuntime
 from noetrium_platform.research.experimentation.lifecycle.api import ExperimentTrialProtocolIdentityMismatch
 from noetrium_platform.research.experimentation.lifecycle.api import ExperimentSpec
 
