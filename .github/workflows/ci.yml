@@ -62,7 +62,12 @@ jobs:
             tests/test_research_graph_scale_v1.py \
             tests/test_research_graph_claim_control_fence_v1.py \
             tests/test_research_graph_cut_switch_fence_v1.py \
+            tests/test_research_graph_batch_lease_renewal_v1.py \
+            tests/test_research_graph_attempt_point_read_v1.py \
+            tests/test_research_graph_cancellation_propagation_v1.py \
+            tests/test_research_graph_reconcile_retry_control_v1.py \
             tests/test_research_os_multi_program_selection_v1.py \
+            tests/test_research_os_retry_pause_intent_v1.py \
             tests/test_research_os_retry_scope_v1.py \
             tests/test_research_os_migration_v1.py \
             tests/test_research_os_migration_node_control_intent_v1.py \
