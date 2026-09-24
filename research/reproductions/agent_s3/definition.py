@@ -15,7 +15,7 @@ from research.reproductions.contracts import (
 
 REPRODUCTION = ReproductionDefinition(
     package='agent_s3',
-    lifecycle=ReproductionLifecycle('catalogued'),
+    lifecycle=ReproductionLifecycle('protocol_bound'),
     identity=ReproductionIdentity(
         method_id='agent-s3',
         title='The Unreasonable Effectiveness of Scaling Agents for Computer Use',
@@ -40,6 +40,14 @@ REPRODUCTION = ReproductionDefinition(
         ReproductionAssetRef(
             kind=ReproductionAssetKind('fidelity'),
             path='research/reproductions/agent_s3/fidelity.py',
+        ),
+        ReproductionAssetRef(
+            kind=ReproductionAssetKind('method_program'),
+            path='research/reproductions/agent_s3/program.py',
+        ),
+        ReproductionAssetRef(
+            kind=ReproductionAssetKind('study'),
+            path='research/reproductions/agent_s3/study.py',
         ),
     ),
     reported_results=(
