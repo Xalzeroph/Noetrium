@@ -21,6 +21,7 @@ from research.reproductions.benchmark_authority import RepositoryBenchmarkAuthor
 from research.reproductions.contracts import ReproductionAssetKind
 from research.reproductions.fleet import (
     ReproductionFleetExecutionAuthorities,
+    preflight_repository_execution_fleet,
     run_repository_execution_fleet,
 )
 from research.reproductions.research_os import (
@@ -349,19 +350,28 @@ def main() -> int:
         )
     )
     parser.add_argument("--output", type=Path)
-    parser.add_argument(
+    mode = parser.add_mutually_exclusive_group()
+    mode.add_argument(
+        "--preflight",
+        action="store_true",
+        help=(
+            "resolve exact closure and run canonical whole-graph admission "
+            "without creating an execution cut or starting tasks"
+        ),
+    )
+    mode.add_argument(
         "--execute",
         action="store_true",
         help=(
             "resolve exact execution closure and RUN the materialized fleet; "
-            "without this flag the command is read-only admission audit"
+            "without either mode flag the command is a static authority audit"
         ),
     )
     parser.add_argument(
         "--execution-authority",
         help=(
             "module:factory returning ReproductionFleetExecutionAuthorities; "
-            "required for --execute and never inferred"
+            "required for --preflight/--execute and never inferred"
         ),
     )
     parser.add_argument(
@@ -371,6 +381,35 @@ def main() -> int:
     )
     parser.add_argument("--execution-id")
     args = parser.parse_args()
+
+    if args.preflight:
+        if args.execution_authority is None:
+            parser.error("--preflight requires --execution-authority")
+        authorities = _load_execution_authorities(args.execution_authority)
+        result = preflight_repository_execution_fleet(
+            authorities,
+            state_root=args.state_root,
+            execution_id=args.execution_id,
+        )
+        payload = {
+            "schema": "noetrium.reproduction-fleet-preflight.v1",
+            "execution_id": result.execution_id,
+            "revision_digest": result.revision_digest,
+            "materialization_digest": result.materialization.materialization_digest,
+            "portfolio_digest": result.materialization.portfolio.portfolio_digest,
+            "request_count": len(result.materialization.requests),
+            "lane_count": len(result.materialization.lanes),
+            "selected_node_count": len(result.selected_node_ids),
+            "admission_count": len(result.admission_digests),
+            "preflight_digest": result.preflight_digest,
+            "result_digest": result.result_digest,
+        }
+        rendered = json.dumps(payload, indent=2, sort_keys=True) + "\n"
+        if args.output:
+            args.output.parent.mkdir(parents=True, exist_ok=True)
+            args.output.write_text(rendered, encoding="utf-8")
+        print(rendered, end="")
+        return 0
 
     if args.execute:
         if args.execution_authority is None:
@@ -404,9 +443,11 @@ def main() -> int:
         return 0 if result.receipt.state == "succeeded" else 1
 
     if args.execution_authority is not None:
-        parser.error("--execution-authority is valid only with --execute")
+        parser.error(
+            "--execution-authority requires --preflight or --execute"
+        )
     if args.execution_id is not None:
-        parser.error("--execution-id is valid only with --execute")
+        parser.error("--execution-id requires --preflight or --execute")
 
     payload = build_plan()
     rendered = json.dumps(payload, indent=2, sort_keys=True) + "\n"
@@ -431,8 +472,11 @@ def main() -> int:
         )
     }, sort_keys=True))
     for row in payload["lanes"]:
-        if row["blockers"]:
-            print("BINDING_REQUIRED", row["package"], ",".join(row["blockers"]))
+        reasons = tuple(row["blockers"]) + tuple(row["benchmark_blockers"])
+        if row["reproduction_closure_state"] == "required":
+            reasons += ("typed-reproduction-closure-required",)
+        if reasons:
+            print("BINDING_REQUIRED", row["package"], ",".join(reasons))
     return 0 if payload["compile_failure_count"] == 0 else 1
 
 
