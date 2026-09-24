@@ -73,6 +73,8 @@ from noetrium_platform.foundation.api import (
     ScopeKind,
     ScopeRegistryPort,
     SystemIdentity,
+    TensorContentRef,
+    TensorContentStorePort,
     component_catalog,
     interface_contract_digest,
     is_absolute_target_path,
@@ -80,8 +82,6 @@ from noetrium_platform.foundation.api import (
     scope_from_data,
     scope_to_data,
     system_catalog,
-    TensorContentRef,
-    TensorContentStorePort,
 )
 
 from noetrium_platform.foundation.portfolio.api import (
@@ -212,8 +212,6 @@ __all__ = (
     "METHOD_COMPOSITION_PORTS_V1",
     "ManagedDirectoryKind",
     "MaterializedServiceEnvironment",
-    "TensorContentRef",
-    "TensorContentStorePort",
     "MultimodalPart",
     "OperatingSystemRoute",
     "PLATFORM_SCOPE",
@@ -266,6 +264,8 @@ __all__ = (
     "ServiceStartOutcome",
     "ServiceStopOutcome",
     "SystemIdentity",
+    "TensorContentRef",
+    "TensorContentStorePort",
     "component_catalog",
     "interface_contract_digest",
     "is_absolute_target_path",
