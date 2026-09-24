@@ -13,6 +13,7 @@ from .contracts import (
     EnvironmentOverlay,
     EnvironmentProfileGcAssessment,
     EnvironmentProfileLifecycle,
+    EnvironmentProfileMaterialization,
     EnvironmentProfileReferenceSummary,
     EnvironmentProfileRevision,
     EnvironmentRuntimeGcAssessment,
@@ -33,6 +34,19 @@ class ExecutionEnvironmentCatalogPort(Protocol):
         profile_id: str,
         profile_revision: str,
     ) -> EnvironmentProfileRevision: ...
+    def register_profile_materialization(
+        self,
+        materialization: EnvironmentProfileMaterialization,
+    ) -> None: ...
+    def profile_materialization(
+        self,
+        materialization_digest: str,
+    ) -> EnvironmentProfileMaterialization: ...
+    def profile_materializations(
+        self,
+        profile_id: str,
+        profile_revision: str,
+    ) -> tuple[EnvironmentProfileMaterialization, ...]: ...
     def transition_profile_revision(
         self,
         profile_id: str,
@@ -58,6 +72,7 @@ class ExecutionEnvironmentCatalogPort(Protocol):
         profile_id: str,
         profile_revision: str,
         runtime_identity_digest: str,
+        materialization_digest: str,
         *,
         binding_id: str,
         role: str,
@@ -68,6 +83,7 @@ class ExecutionEnvironmentCatalogPort(Protocol):
         profile_id: str,
         profile_revision: str,
         runtime_identity_digest: str,
+        materialization_digest: str,
         *,
         role: str,
         scope: ScopeIdentity,
@@ -87,6 +103,7 @@ class ExecutionEnvironmentCatalogPort(Protocol):
         profile_id: str,
         profile_revision: str,
         runtime_identity_digest: str,
+        materialization_digest: str,
     ) -> tuple[EnvironmentInstance, ...]: ...
     def profile_references(
         self,
