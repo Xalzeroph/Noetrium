@@ -17,15 +17,10 @@ class ExactFabricPlacementPolicy(GpuPlacementPolicyPort):
 
     @staticmethod
     def _fabric_index(host: HostInventory) -> dict[tuple[str, str], float]:
-        index: dict[tuple[str, str], float] = {}
-        for link in host.fabric:
-            key = tuple(sorted((link.a_uuid, link.b_uuid)))
-            # Multiple reported links between the same pair contribute exactly as
-            # the old first-match semantics only when inventory contains duplicates.
-            # Host inventories are expected to expose one aggregate edge; retain the
-            # first edge deterministically to preserve legacy behavior.
-            index.setdefault(key, link.bandwidth_gbps)
-        return index
+        return {
+            tuple(sorted((link.a_uuid, link.b_uuid))): link.bandwidth_gbps
+            for link in host.fabric
+        }
 
     def select(
         self,
