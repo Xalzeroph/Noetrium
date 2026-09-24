@@ -2,14 +2,14 @@
   "counts": {
     "parse_errors": 0,
     "python_files": 3667,
-    "python_import_edges": 7098,
-    "symbols": 4852,
+    "python_import_edges": 7099,
+    "symbols": 4854,
     "tracked_files": 4297,
     "typescript_javascript_files": 11
   },
   "language_symbol_counts": {
     "javascript": 1,
-    "python": 4846,
+    "python": 4848,
     "typescript": 5
   },
   "parse_errors": [],
@@ -20461,6 +20461,12 @@
       "source_role": "research_reproductions",
       "target_module": "noetrium",
       "target_role": "public_facade"
+    },
+    {
+      "source_module": "research.reproductions.research_os",
+      "source_role": "research_reproductions",
+      "target_module": "noetrium_platform.capabilities.participant.capability.api.selection",
+      "target_role": "core_platform"
     },
     {
       "source_module": "research.reproductions.research_os",
@@ -42650,7 +42656,7 @@
       "target_role": "public_facade"
     },
     {
-      "count": 664,
+      "count": 665,
       "source_role": "research_reproductions",
       "target_role": "core_platform"
     },
@@ -42738,13 +42744,13 @@
     "public_facade": 4,
     "reference_components": 64,
     "reference_orchestration": 14,
-    "research_reproductions": 411,
+    "research_reproductions": 413,
     "sdk": 5,
     "tests": 970,
     "tooling": 38
   },
   "schema": "noetrium-repository-code-architecture-index.v1",
-  "source_git_sha": "aba747c951f72336c0c7d7b881e2e6486fdce438",
+  "source_git_sha": "34b6abf1a008d31a1f850c2840040f72bf135fbf",
   "symbols": [
     {
       "bases": [],
@@ -82372,7 +82378,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 15,
+      "line": 17,
       "methods": [],
       "module": "noetrium_platform.foundation.kernel.kernel.durability.durable_file",
       "name": "DurableFileWriteError",
@@ -125445,7 +125451,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 43,
+      "line": 47,
       "methods": [],
       "module": "research.reproductions.research_os",
       "name": "ReproductionResearchOSCompileError",
@@ -125465,7 +125471,7 @@
       ],
       "kind": "enum",
       "language": "python",
-      "line": 47,
+      "line": 51,
       "methods": [],
       "module": "research.reproductions.research_os",
       "name": "ReproductionExecutionRequirementKind",
@@ -125487,7 +125493,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 56,
+      "line": 60,
       "methods": [
         "__post_init__"
       ],
@@ -125495,6 +125501,50 @@
       "name": "ReproductionExecutionRequirement",
       "path": "research/reproductions/research_os.py",
       "qualname": "research.reproductions.research_os.ReproductionExecutionRequirement",
+      "role": "research_reproductions"
+    },
+    {
+      "bases": [
+        "Protocol"
+      ],
+      "decorators": [
+        "runtime_checkable"
+      ],
+      "fields": [],
+      "kind": "protocol",
+      "language": "python",
+      "line": 98,
+      "methods": [
+        "resolve"
+      ],
+      "module": "research.reproductions.research_os",
+      "name": "ReproductionCapabilityRequirementResolverPort",
+      "path": "research/reproductions/research_os.py",
+      "qualname": "research.reproductions.research_os.ReproductionCapabilityRequirementResolverPort",
+      "role": "research_reproductions"
+    },
+    {
+      "bases": [],
+      "decorators": [
+        "dataclass(frozen=True, slots=True)"
+      ],
+      "fields": [
+        "package: str",
+        "study_factory: str",
+        "values: Mapping[str, JsonValue]",
+        "proof_digests: tuple[str, ...]",
+        "resolution_digest: str"
+      ],
+      "kind": "dataclass",
+      "language": "python",
+      "line": 112,
+      "methods": [
+        "__post_init__"
+      ],
+      "module": "research.reproductions.research_os",
+      "name": "ReproductionExecutionResolution",
+      "path": "research/reproductions/research_os.py",
+      "qualname": "research.reproductions.research_os.ReproductionExecutionResolution",
       "role": "research_reproductions"
     },
     {
@@ -125510,11 +125560,12 @@
         "benchmark_split_id: str | None",
         "values: Mapping[str, JsonValue]",
         "requirement_digests: tuple[str, ...]",
+        "resolution_proof_digests: tuple[str, ...]",
         "binding_digest: str"
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 106,
+      "line": 173,
       "methods": [
         "__post_init__"
       ],
@@ -125540,7 +125591,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 181,
+      "line": 269,
       "methods": [
         "__post_init__"
       ],
@@ -125567,7 +125618,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 206,
+      "line": 294,
       "methods": [
         "__post_init__",
         "benchmark_split_parameter",
@@ -125596,7 +125647,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 261,
+      "line": 349,
       "methods": [
         "__post_init__",
         "exact",
@@ -144872,7 +144923,8 @@
         "test_prepared_capability_effect_calls_cannot_bypass_effect_executor",
         "test_sqlite_connection_outside_platform_durability_is_rejected",
         "test_thread_pool_outside_concurrency_provider_is_rejected",
-        "test_raw_thread_outside_concurrency_provider_is_rejected"
+        "test_raw_thread_outside_concurrency_provider_is_rejected",
+        "test_write_mode_path_open_outside_durability_is_rejected"
       ],
       "module": "tests.test_source_authority_v123",
       "name": "SourceAuthorityV123Tests",

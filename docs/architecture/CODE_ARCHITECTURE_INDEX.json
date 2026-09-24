@@ -58842,7 +58842,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 15,
+      "line": 17,
       "methods": [],
       "module": "noetrium_platform.foundation.kernel.kernel.durability.durable_file",
       "name": "DurableFileWriteError",
@@ -143787,7 +143787,7 @@
   "parse_errors": [],
   "registry_sha256": "d3fc1bab831f1b7379e5a36048a61c00fe173429df958270d36a16f3f00171c0",
   "schema": "noetrium-code-architecture-index.v1",
-  "source_git_sha": "aba747c951f72336c0c7d7b881e2e6486fdce438",
+  "source_git_sha": "34b6abf1a008d31a1f850c2840040f72bf135fbf",
   "system_import_edges": [
     {
       "count": 85,
