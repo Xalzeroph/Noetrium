@@ -2,7 +2,7 @@
   "counts": {
     "parse_errors": 0,
     "python_files": 3665,
-    "python_import_edges": 7068,
+    "python_import_edges": 7069,
     "symbols": 4903,
     "tracked_files": 4295,
     "typescript_javascript_files": 11
@@ -42237,6 +42237,12 @@
       "target_role": "core_platform"
     },
     {
+      "source_module": "tests_runtime_harness.run_runtime",
+      "source_role": "other",
+      "target_module": "noetrium_platform.research.experimentation.lifecycle.run.runtime.program",
+      "target_role": "core_platform"
+    },
+    {
       "source_module": "tests_support",
       "source_role": "other",
       "target_module": "noetrium_platform.capabilities.environment.api",
@@ -42440,7 +42446,7 @@
       "target_role": "reference_components"
     },
     {
-      "count": 54,
+      "count": 55,
       "source_role": "other",
       "target_role": "core_platform"
     },
@@ -42564,7 +42570,7 @@
     "tooling": 38
   },
   "schema": "noetrium-repository-code-architecture-index.v1",
-  "source_git_sha": "283ec7e9dd8f0df71b79915f00f0e37bdc6d026d",
+  "source_git_sha": "a1f84a47e7679a2406e65ff6972e8fb50cd28995",
   "symbols": [
     {
       "bases": [],
@@ -148527,7 +148533,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 140,
+      "line": 144,
       "methods": [
         "cleanup_report"
       ],
@@ -148543,7 +148549,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 624,
+      "line": 628,
       "methods": [
         "__init__",
         "close"
@@ -148560,7 +148566,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 673,
+      "line": 677,
       "methods": [
         "__init__",
         "open"
