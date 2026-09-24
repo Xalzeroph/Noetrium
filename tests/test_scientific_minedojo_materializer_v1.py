@@ -9,6 +9,7 @@ from research.benchmarks.minedojo import (
     MINEDOJO_TASK_SOURCE_BLOBS,
     bind_official_minedojo_registry,
     materialize_official_minedojo_records,
+    register_official_minedojo_registry,
     minedojo_task_source_manifest_digest,
 )
 from research.reproductions.minedojo.fidelity import (
@@ -131,3 +132,14 @@ def test_minedojo_materializer_rejects_unverified_source_commit() -> None:
             _registry(),
             installed_source_commit="0" * 40,
         )
+
+
+def test_minedojo_materialization_registers_exact_benchmark_authority() -> None:
+    registration = register_official_minedojo_registry(
+        _registry(),
+        installed_source_commit=MINEDOJO_AUDITED_COMMIT,
+    )
+    assert registration.benchmark_id == "minedojo"
+    assert len(registration.resolution.task_set.tasks) == 3142
+    assert len(registration.authority_proof_digest) == 64
+    assert len(registration.registration_digest) == 64
