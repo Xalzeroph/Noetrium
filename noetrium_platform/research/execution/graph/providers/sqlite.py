@@ -599,6 +599,41 @@ class SQLiteResearchGraphExecutionStore:
             self._execution_tx(conn, execution_id)
             return self._node_tx(conn, execution_id, node_id)
 
+    def node_states(
+        self,
+        execution_id: str,
+        node_ids: tuple[str, ...],
+    ) -> tuple[ResearchGraphNodeExecutionRecord, ...]:
+        if type(node_ids) is not tuple or not node_ids or any(
+            type(node_id) is not str or not node_id.strip()
+            for node_id in node_ids
+        ):
+            raise TypeError(
+                "research graph node_states requires a non-empty text tuple"
+            )
+        ordered_ids = tuple(sorted(node_ids))
+        if len(ordered_ids) != len(set(ordered_ids)):
+            raise ValueError("research graph node_states ids must be unique")
+        placeholders = ",".join("?" for _ in ordered_ids)
+        with self._connection() as conn:
+            self._execution_tx(conn, execution_id)
+            rows = conn.execute(
+                "SELECT execution_id,node_id,semantic_digest,state,attempt_number,"
+                "attempt_id,lease_owner_id,lease_expires_at_ns,retry_not_before_ns,"
+                "failure_type,failure_message,blockers_json "
+                "FROM research_graph_nodes WHERE execution_id=? "
+                f"AND node_id IN ({placeholders}) ORDER BY node_id",
+                (execution_id, *ordered_ids),
+            ).fetchall()
+        records = tuple(self._decode_node(row) for row in rows)
+        actual_ids = tuple(row.node_id for row in records)
+        if actual_ids != ordered_ids:
+            missing = tuple(sorted(set(ordered_ids) - set(actual_ids)))
+            raise ResearchGraphExecutionNotFound(
+                f"research graph node_states missing nodes: {missing}"
+            )
+        return records
+
     def control_state(
         self,
         execution_id: str,
@@ -632,6 +667,41 @@ class SQLiteResearchGraphExecutionStore:
         if not rows:
             raise RuntimeError("durable research graph execution has no node control state")
         return tuple(self._decode_node_control(row) for row in rows)
+
+    def node_control_states(
+        self,
+        execution_id: str,
+        node_ids: tuple[str, ...],
+    ) -> tuple[ResearchGraphNodeControlRecord, ...]:
+        if type(node_ids) is not tuple or not node_ids or any(
+            type(node_id) is not str or not node_id.strip()
+            for node_id in node_ids
+        ):
+            raise TypeError(
+                "research graph node_control_states requires a non-empty text tuple"
+            )
+        ordered_ids = tuple(sorted(node_ids))
+        if len(ordered_ids) != len(set(ordered_ids)):
+            raise ValueError(
+                "research graph node_control_states ids must be unique"
+            )
+        placeholders = ",".join("?" for _ in ordered_ids)
+        with self._connection() as conn:
+            self._execution_tx(conn, execution_id)
+            rows = conn.execute(
+                "SELECT execution_id,node_id,phase,generation,updated_at_ns "
+                "FROM research_graph_node_control WHERE execution_id=? "
+                f"AND node_id IN ({placeholders}) ORDER BY node_id",
+                (execution_id, *ordered_ids),
+            ).fetchall()
+        records = tuple(self._decode_node_control(row) for row in rows)
+        actual_ids = tuple(row.node_id for row in records)
+        if actual_ids != ordered_ids:
+            missing = tuple(sorted(set(ordered_ids) - set(actual_ids)))
+            raise ResearchGraphExecutionNotFound(
+                f"research graph node_control_states missing nodes: {missing}"
+            )
+        return records
 
     def request_node_drain(
         self,
