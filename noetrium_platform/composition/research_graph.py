@@ -90,6 +90,49 @@ class ResearchGraphNodeControlHalt(RuntimeError):
         )
 
 
+class _DurableAttemptBook:
+    """Thread-safe local mirror of active durable graph attempts."""
+
+    def __init__(self) -> None:
+        self._lock = RLock()
+        self._attempts: dict[str, tuple[str, int]] = {}
+
+    def current(self, node_id: str) -> tuple[str, int] | None:
+        with self._lock:
+            return self._attempts.get(node_id)
+
+    def publish(
+        self,
+        node_id: str,
+        attempt_id: str,
+        next_renewal_ns: int,
+    ) -> None:
+        with self._lock:
+            if node_id in self._attempts:
+                raise RuntimeError(
+                    f"research graph attempt published twice: {node_id}"
+                )
+            self._attempts[node_id] = (attempt_id, next_renewal_ns)
+
+    def renew(
+        self,
+        node_id: str,
+        attempt_id: str,
+        next_renewal_ns: int,
+    ) -> None:
+        with self._lock:
+            current = self._attempts.get(node_id)
+            if current is None or current[0] != attempt_id:
+                raise ResearchGraphExecutionConflict(
+                    "research graph renewal lost local attempt identity"
+                )
+            self._attempts[node_id] = (attempt_id, next_renewal_ns)
+
+    def drop(self, node_id: str) -> tuple[str, int] | None:
+        with self._lock:
+            return self._attempts.pop(node_id, None)
+
+
 class ResearchGraphScheduler:
     """Single dependency-aware scheduler for all research orchestration.
 
@@ -530,48 +573,8 @@ class ResearchGraphScheduler:
 
         running: dict[str, tuple[ResearchGraphNode, object]] = {}
         renewal_interval_ns = max(1, self._lease_ns // 3)
-        attempt_lock = RLock()
-        attempt_state: dict[str, tuple[str, int]] = {}
+        attempts = _DurableAttemptBook()
         completion_queue: Queue[str] = Queue()
-
-        def current_attempt(node_id: str) -> tuple[str, int] | None:
-            with attempt_lock:
-                return attempt_state.get(node_id)
-
-        def publish_attempt(
-            node_id: str,
-            attempt_id: str,
-            next_renewal_ns: int,
-        ) -> None:
-            with attempt_lock:
-                if node_id in attempt_state:
-                    raise RuntimeError(
-                        f"research graph attempt published twice: {node_id}"
-                    )
-                attempt_state[node_id] = (
-                    attempt_id,
-                    next_renewal_ns,
-                )
-
-        def update_attempt_renewal(
-            node_id: str,
-            attempt_id: str,
-            next_renewal_ns: int,
-        ) -> None:
-            with attempt_lock:
-                current = attempt_state.get(node_id)
-                if current is None or current[0] != attempt_id:
-                    raise ResearchGraphExecutionConflict(
-                        "research graph renewal lost local attempt identity"
-                    )
-                attempt_state[node_id] = (
-                    attempt_id,
-                    next_renewal_ns,
-                )
-
-        def drop_attempt(node_id: str) -> tuple[str, int] | None:
-            with attempt_lock:
-                return attempt_state.pop(node_id, None)
 
         def submit(
             node: ResearchGraphNode,
@@ -604,7 +607,7 @@ class ResearchGraphScheduler:
                         owner_id=self._scheduler_owner_id,
                         now_ns=time.time_ns(),
                     )
-                    publish_attempt(
+                    attempts.publish(
                         owned_node.node_id,
                         attempt_id,
                         time.time_ns() + renewal_interval_ns,
@@ -633,7 +636,7 @@ class ResearchGraphScheduler:
 
         def record_completion(node_id: str) -> None:
             node, handle = running.pop(node_id)
-            attempt = drop_attempt(node_id)
+            attempt = attempts.drop(node_id)
             attempt_id = None if attempt is None else attempt[0]
             try:
                 handle.result()
@@ -960,7 +963,7 @@ class ResearchGraphScheduler:
                 due_attempts: dict[str, tuple[str, int]] = {}
                 for node_id in tuple(sorted(running)):
                     _node, handle = running[node_id]
-                    attempt = current_attempt(node_id)
+                    attempt = attempts.current(node_id)
                     if handle.done() or attempt is None:
                         continue
                     attempt_id, next_renewal = attempt
@@ -1038,14 +1041,14 @@ class ResearchGraphScheduler:
                             "batch lease renewal returned a different node set"
                         )
                     for node_id in renewal_node_ids:
-                        attempt = current_attempt(node_id)
+                        attempt = attempts.current(node_id)
                         if attempt is None:
                             raise ResearchGraphExecutionConflict(
                                 "renewed research graph node lost local attempt"
                             )
                         attempt_id, _next_renewal = attempt
                         live[node_id] = renewed_by_node[node_id]
-                        update_attempt_renewal(
+                        attempts.renew(
                             node_id,
                             attempt_id,
                             now_ns + renewal_interval_ns,
@@ -1132,7 +1135,7 @@ class ResearchGraphScheduler:
                 renewal_deadlines = tuple(
                     attempt[1]
                     for node_id in running
-                    if (attempt := current_attempt(node_id)) is not None
+                    if (attempt := attempts.current(node_id)) is not None
                 )
                 if renewal_deadlines:
                     next_renewal_ns = min(renewal_deadlines)
