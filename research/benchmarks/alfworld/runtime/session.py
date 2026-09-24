@@ -97,6 +97,9 @@ class _ManagedDockerWorkerTransport:
         self._container_leases = container_leases
         self._lease = lease
         self._lease_guard = lease_guard
+        self._delegate_closed = False
+        self._lease_guard_closed = False
+        self._lease_released = False
         self._closed = False
 
     @property
@@ -109,27 +112,14 @@ class _ManagedDockerWorkerTransport:
             self._container_leases.confirm_running(self._lease)
             self._lease_guard.start()
             self._lease_guard.assert_healthy()
-        except BaseException:
-            cleanup_errors: list[BaseException] = []
+        except BaseException as primary:
             try:
-                self._delegate.close()
-            except BaseException as exc:
-                cleanup_errors.append(exc)
-            try:
-                self._lease_guard.close()
-            except BaseException as exc:
-                cleanup_errors.append(exc)
-            try:
-                self._container_leases.release(self._lease)
-            except BaseException as exc:
-                cleanup_errors.append(exc)
-            if cleanup_errors:
-                # Preserve the launch failure as primary; cleanup errors remain
-                # chained in a structured group instead of being discarded.
-                raise ExceptionGroup(
-                    "ALFWorld managed Docker launch cleanup failed",
-                    cleanup_errors,
-                )
+                self.close()
+            except BaseException as cleanup:
+                raise BaseExceptionGroup(
+                    "ALFWorld managed Docker launch failed with cleanup error",
+                    [primary, cleanup],
+                ) from primary
             raise
 
     def send(
@@ -149,22 +139,45 @@ class _ManagedDockerWorkerTransport:
     def close(self) -> None:
         if self._closed:
             return
-        self._closed = True
-        errors: list[BaseException] = []
-        try:
-            self._delegate.close()
-        except BaseException as exc:
-            errors.append(exc)
-        try:
-            self._lease_guard.close()
-        except BaseException as exc:
-            errors.append(exc)
-        try:
-            self._container_leases.release(self._lease)
-        except BaseException as exc:
-            errors.append(exc)
-        if errors:
-            raise ExceptionGroup("ALFWorld managed Docker close failed", errors)
+
+        # Physical worker/container convergence is above heartbeat/lease
+        # release.  Never expose the container generation as free while a
+        # possibly-live docker-run child can still own it.
+        if not self._delegate_closed:
+            try:
+                self._delegate.close()
+            except BaseException as exc:
+                raise BaseExceptionGroup(
+                    "ALFWorld managed Docker close failed before physical convergence",
+                    [exc],
+                ) from exc
+            self._delegate_closed = True
+
+        if not self._lease_guard_closed:
+            try:
+                self._lease_guard.close()
+            except BaseException as exc:
+                raise BaseExceptionGroup(
+                    "ALFWorld managed Docker close failed while stopping heartbeat",
+                    [exc],
+                ) from exc
+            self._lease_guard_closed = True
+
+        if not self._lease_released:
+            try:
+                self._container_leases.release(self._lease)
+            except BaseException as exc:
+                raise BaseExceptionGroup(
+                    "ALFWorld managed Docker close failed while releasing container",
+                    [exc],
+                ) from exc
+            self._lease_released = True
+
+        self._closed = (
+            self._delegate_closed
+            and self._lease_guard_closed
+            and self._lease_released
+        )
 
 
 @dataclass(frozen=True, slots=True)
