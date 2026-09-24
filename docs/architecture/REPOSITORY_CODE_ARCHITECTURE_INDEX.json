@@ -3,13 +3,13 @@
     "parse_errors": 0,
     "python_files": 3634,
     "python_import_edges": 6893,
-    "symbols": 4828,
+    "symbols": 4829,
     "tracked_files": 4263,
     "typescript_javascript_files": 11
   },
   "language_symbol_counts": {
     "javascript": 1,
-    "python": 4822,
+    "python": 4823,
     "typescript": 5
   },
   "parse_errors": [],
@@ -41502,7 +41502,7 @@
     "tooling": 78
   },
   "role_symbol_counts": {
-    "core_platform": 3329,
+    "core_platform": 3330,
     "examples": 3,
     "other": 5,
     "public_facade": 4,
@@ -41514,7 +41514,7 @@
     "tooling": 38
   },
   "schema": "noetrium-repository-code-architecture-index.v1",
-  "source_git_sha": "c43c71a0d458a51485999f30a981a08bd7082e08",
+  "source_git_sha": "639447a5504dc6f6bdd5cb4410ec4115a2fa6d04",
   "symbols": [
     {
       "bases": [],
@@ -100407,6 +100407,29 @@
         "dataclass(frozen=True, slots=True)"
       ],
       "fields": [
+        "node_id: str",
+        "attempt_id: str",
+        "owner_id: str",
+        "lease_expires_at_ns: int"
+      ],
+      "kind": "dataclass",
+      "language": "python",
+      "line": 288,
+      "methods": [
+        "__post_init__"
+      ],
+      "module": "noetrium_platform.research.execution.graph.api.state",
+      "name": "ResearchGraphLeaseRenewal",
+      "path": "noetrium_platform/research/execution/graph/api/state.py",
+      "qualname": "noetrium_platform.research.execution.graph.api.state.ResearchGraphLeaseRenewal",
+      "role": "core_platform"
+    },
+    {
+      "bases": [],
+      "decorators": [
+        "dataclass(frozen=True, slots=True)"
+      ],
+      "fields": [
         "execution_id: str",
         "graph_id: str",
         "graph_digest: str",
@@ -100416,7 +100439,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 288,
+      "line": 305,
       "methods": [
         "__post_init__",
         "node",
@@ -100444,7 +100467,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 340,
+      "line": 357,
       "methods": [
         "__post_init__"
       ],
@@ -100469,7 +100492,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 362,
+      "line": 379,
       "methods": [
         "__post_init__"
       ],
@@ -100493,7 +100516,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 426,
+      "line": 443,
       "methods": [
         "__post_init__"
       ],
@@ -100511,7 +100534,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 445,
+      "line": 462,
       "methods": [
         "__init__"
       ],
@@ -100529,7 +100552,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 466,
+      "line": 483,
       "methods": [],
       "module": "noetrium_platform.research.execution.graph.api.state",
       "name": "ResearchGraphExecutionConflict",
@@ -100545,7 +100568,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 470,
+      "line": 487,
       "methods": [],
       "module": "noetrium_platform.research.execution.graph.api.state",
       "name": "ResearchGraphExecutionNotFound",
@@ -100563,7 +100586,7 @@
       "fields": [],
       "kind": "protocol",
       "language": "python",
-      "line": 475,
+      "line": 492,
       "methods": [
         "ensure_execution",
         "snapshot",
@@ -100571,7 +100594,7 @@
         "mark_ready",
         "claim",
         "mark_running",
-        "renew_lease",
+        "renew_leases",
         "mark_succeeded",
         "mark_failed",
         "mark_blocked",
@@ -100599,7 +100622,7 @@
       "fields": [],
       "kind": "protocol",
       "language": "python",
-      "line": 622,
+      "line": 636,
       "methods": [
         "control_state",
         "request_drain",
@@ -100626,7 +100649,7 @@
       "fields": [],
       "kind": "protocol",
       "language": "python",
-      "line": 692,
+      "line": 706,
       "methods": [
         "node_control_state",
         "node_control_snapshot",
@@ -100653,7 +100676,7 @@
       "fields": [],
       "kind": "protocol",
       "language": "python",
-      "line": 763,
+      "line": 777,
       "methods": [
         "active_cut",
         "move_active_cut"
@@ -100670,7 +100693,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 33,
+      "line": 34,
       "methods": [
         "__init__",
         "_connection",
@@ -100721,7 +100744,7 @@
         "_require_active",
         "_require_unexpired_lease",
         "mark_running",
-        "renew_lease",
+        "renew_leases",
         "mark_succeeded",
         "mark_failed",
         "mark_blocked",

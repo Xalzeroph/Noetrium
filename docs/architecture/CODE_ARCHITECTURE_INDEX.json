@@ -13143,6 +13143,11 @@
     {
       "kind": "references",
       "source": "noetrium_platform.research.execution.graph.api.state.ResearchGraphExecutionStorePort",
+      "target": "noetrium_platform.research.execution.graph.api.state.ResearchGraphLeaseRenewal"
+    },
+    {
+      "kind": "references",
+      "source": "noetrium_platform.research.execution.graph.api.state.ResearchGraphExecutionStorePort",
       "target": "noetrium_platform.research.execution.graph.api.state.ResearchGraphNodeExecutionRecord"
     },
     {
@@ -79638,7 +79643,7 @@
         "research_revision_digest"
       ],
       "kind": "dataclass",
-      "line": 426,
+      "line": 443,
       "methods": [
         "__post_init__"
       ],
@@ -79660,7 +79665,7 @@
       ],
       "fields": [],
       "kind": "protocol",
-      "line": 763,
+      "line": 777,
       "methods": [
         "active_cut",
         "move_active_cut"
@@ -79794,7 +79799,7 @@
       ],
       "fields": [],
       "kind": "protocol",
-      "line": 622,
+      "line": 636,
       "methods": [
         "control_state",
         "request_drain",
@@ -79828,7 +79833,7 @@
         "source_execution_id"
       ],
       "kind": "dataclass",
-      "line": 362,
+      "line": 379,
       "methods": [
         "__post_init__"
       ],
@@ -79848,7 +79853,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 466,
+      "line": 483,
       "methods": [],
       "module": "noetrium_platform.research.execution.graph.api.state",
       "name": "ResearchGraphExecutionConflict",
@@ -79866,7 +79871,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 470,
+      "line": 487,
       "methods": [],
       "module": "noetrium_platform.research.execution.graph.api.state",
       "name": "ResearchGraphExecutionNotFound",
@@ -79891,7 +79896,7 @@
         "research_revision_digest"
       ],
       "kind": "dataclass",
-      "line": 288,
+      "line": 305,
       "methods": [
         "__post_init__",
         "node",
@@ -79915,7 +79920,7 @@
       ],
       "fields": [],
       "kind": "protocol",
-      "line": 475,
+      "line": 492,
       "methods": [
         "ensure_execution",
         "snapshot",
@@ -79923,7 +79928,7 @@
         "mark_ready",
         "claim",
         "mark_running",
-        "renew_lease",
+        "renew_leases",
         "mark_succeeded",
         "mark_failed",
         "mark_blocked",
@@ -79941,6 +79946,31 @@
         "ResearchGraphExecutionStorePort"
       ],
       "qualname": "noetrium_platform.research.execution.graph.api.state.ResearchGraphExecutionStorePort",
+      "system_key": "execution",
+      "top_system": "execution"
+    },
+    {
+      "bases": [],
+      "decorators": [
+        "dataclass(frozen=True, slots=True)"
+      ],
+      "fields": [
+        "attempt_id",
+        "lease_expires_at_ns",
+        "node_id",
+        "owner_id"
+      ],
+      "kind": "dataclass",
+      "line": 288,
+      "methods": [
+        "__post_init__"
+      ],
+      "module": "noetrium_platform.research.execution.graph.api.state",
+      "name": "ResearchGraphLeaseRenewal",
+      "nesting": [
+        "ResearchGraphLeaseRenewal"
+      ],
+      "qualname": "noetrium_platform.research.execution.graph.api.state.ResearchGraphLeaseRenewal",
       "system_key": "execution",
       "top_system": "execution"
     },
@@ -80033,7 +80063,7 @@
       ],
       "fields": [],
       "kind": "protocol",
-      "line": 692,
+      "line": 706,
       "methods": [
         "node_control_state",
         "node_control_snapshot",
@@ -80116,7 +80146,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 445,
+      "line": 462,
       "methods": [
         "__init__"
       ],
@@ -80144,7 +80174,7 @@
         "source_node_id"
       ],
       "kind": "dataclass",
-      "line": 340,
+      "line": 357,
       "methods": [
         "__post_init__"
       ],
@@ -80164,7 +80194,7 @@
         "SCHEMA_VERSION"
       ],
       "kind": "class",
-      "line": 33,
+      "line": 34,
       "methods": [
         "__init__",
         "_connection",
@@ -80215,7 +80245,7 @@
         "_require_active",
         "_require_unexpired_lease",
         "mark_running",
-        "renew_lease",
+        "renew_leases",
         "mark_succeeded",
         "mark_failed",
         "mark_blocked",
@@ -102060,8 +102090,8 @@
     }
   ],
   "counts": {
-    "association_edges": 3410,
-    "classes": 3328,
+    "association_edges": 3411,
+    "classes": 3329,
     "constructor_edges": 928,
     "inheritance_edges": 149,
     "module_import_edges": 5048,
@@ -143177,7 +143207,7 @@
   "parse_errors": [],
   "registry_sha256": "d3fc1bab831f1b7379e5a36048a61c00fe173429df958270d36a16f3f00171c0",
   "schema": "noetrium-code-architecture-index.v1",
-  "source_git_sha": "c43c71a0d458a51485999f30a981a08bd7082e08",
+  "source_git_sha": "639447a5504dc6f6bdd5cb4410ec4115a2fa6d04",
   "system_import_edges": [
     {
       "count": 90,
