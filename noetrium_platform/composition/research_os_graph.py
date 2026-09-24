@@ -1,6 +1,7 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
+from bisect import bisect_left
+from dataclasses import dataclass, field
 from typing import Protocol, runtime_checkable
 
 from noetrium_platform.composition.research_execution_pool import ResearchExecutionPool
@@ -127,6 +128,7 @@ class CompiledResearchOSGraph:
     portfolio: ResearchPortfolio
     plan: ResearchGraphPlan
     nodes: tuple[CompiledResearchOSGraphNode, ...]
+    _node_ids: tuple[str, ...] = field(init=False, repr=False, compare=False)
 
     def __post_init__(self) -> None:
         if type(self.revision) is not ResearchGraphRevision:
@@ -144,12 +146,15 @@ class CompiledResearchOSGraph:
         ids = tuple(node.graph_node_id for node in self.nodes)
         if ids != tuple(sorted(ids)) or len(ids) != len(set(ids)):
             raise ValueError("compiled Research OS nodes must be canonical unique order")
+        object.__setattr__(self, "_node_ids", ids)
 
     def node(self, graph_node_id: str) -> CompiledResearchOSGraphNode:
-        for node in self.nodes:
-            if node.graph_node_id == graph_node_id:
-                return node
-        raise KeyError(graph_node_id)
+        if type(graph_node_id) is not str or not graph_node_id:
+            raise KeyError(graph_node_id)
+        index = bisect_left(self._node_ids, graph_node_id)
+        if index >= len(self._node_ids) or self._node_ids[index] != graph_node_id:
+            raise KeyError(graph_node_id)
+        return self.nodes[index]
 
 
 def compile_research_portfolio_graph(
