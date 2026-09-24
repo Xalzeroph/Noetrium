@@ -1,5 +1,5 @@
 from __future__ import annotations
-from noetrium_platform.research.execution.workflow.api import AgentMethodSpec, AgentPhaseSpec
+from noetrium.api import AgentMethodSpec, AgentPhaseSpec
 METHOD_ID="roboagent_cvpr2026"
 TITLE="RoboAgent: Chaining Basic Capabilities for Embodied Task Planning"
 VENUE="CVPR 2026"
