@@ -8,19 +8,13 @@ from noetrium_platform.foundation.kernel.kernel import (
     JsonValue,
     MachineCommit,
     MachineCut,
-    MachineJournalPort,
     MachineKind,
     MachineSnapshot,
-    MachineSnapshotStorePort,
     MachineStatus,
 )
 
-from ..program import ProgramHandlerRegistry, ResearchProgram
-from ..program_host import (
-    ResearchHostBindingRestorer,
-    ResearchHostExecution,
-    ResearchHostOperation,
-)
+from ..program import ResearchProgram
+from ..program_host import ResearchHostExecution
 
 
 @runtime_checkable
@@ -120,26 +114,8 @@ class ResearchProgramHostPort(Protocol):
     ) -> ResearchHostExecution: ...
 
 
-@runtime_checkable
-class ResearchProgramHostFactoryPort(Protocol):
-    def build(
-        self,
-        *,
-        host_id: str,
-        program: ResearchProgram,
-        operations: tuple[ResearchHostOperation, ...] = (),
-        journal: MachineJournalPort,
-        base_handlers: ProgramHandlerRegistry | None = None,
-        snapshot_store: MachineSnapshotStorePort | None = None,
-        max_steps: int = 10_000,
-        dependency_identity: JsonValue = None,
-        binding_restorer: ResearchHostBindingRestorer | None = None,
-    ) -> ResearchProgramHostPort: ...
-
-
 __all__ = [
     "ResearchMachineRunPort",
     "ResearchMachineSessionPort",
-    "ResearchProgramHostFactoryPort",
     "ResearchProgramHostPort",
 ]
