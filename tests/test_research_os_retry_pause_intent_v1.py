@@ -103,7 +103,7 @@ def test_retry_respects_local_pause_until_explicit_resume(tmp_path: Path) -> Non
 
         first = research_os.run(node_target)
         assert first.state == "failed"
-        assert runtime.execute_calls == 1
+        assert runtime.execute_calls == 1, first.payload
 
         active = graph.active_cut(target.execution_id)
         assert active is not None
