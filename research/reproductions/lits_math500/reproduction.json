@@ -2,8 +2,8 @@
   "schema": "noetrium.reproduction.projection.v7",
   "authority": "generated_from_typed_definition_and_source",
   "package": "lits_math500",
-  "package_digest": "d3ccef8bd8d751ce2d8b075a46941eab4e410af877323ecc935e97e1cce42aec",
-  "definition_digest": "1872d21311a5e175496735542625d6b2d3bd16877631dc6ee9b8bc1d323e908f",
+  "package_digest": "bbb9a8cfed8fc2acc49e48e3fe28b64b79ca02c44db7f71cada082643b567dbc",
+  "definition_digest": "64d14dcfdb367210995e4970fd5495260e2240036ab33df64f29717e85a0addf",
   "source_registry_digest": "a7690832f13476ee4b23d5467a46ea3041e9a9bc011a9268b12aee7a7ade8709",
   "lifecycle": "protocol_bound",
   "identity": {
@@ -78,13 +78,19 @@
       "content_sha256": "04b936f2f89d762e2160bb8f1d06c7841c00789399fed185628d201c8a5e7964"
     },
     {
+      "kind": "method_program",
+      "path": "research/reproductions/lits_math500/program.py",
+      "declaration_digest": "cd98e4e187fea750ec6aeceac755f6eaec676105cb9644ac1662decc7045b38e",
+      "content_sha256": "054844977c222481abe6a4405a1b6472a5df07d81897ce6adedcfda3e3986544"
+    },
+    {
       "kind": "study",
       "path": "research/reproductions/lits_math500/study.py",
       "declaration_digest": "d8ff589b2c868062190b411a48aee1cb05922ba1ab2484091dc81782bfe0934f",
       "content_sha256": "da8e2cbca3738a9846563e31c6d78a7730305e36a2e883154d934accbfca34d1"
     }
   ],
-  "primary_executable": null,
+  "primary_executable": "research/reproductions/lits_math500/program.py",
   "reported_results": [],
   "reference_baselines": [],
   "deltas": [

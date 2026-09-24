@@ -2,8 +2,8 @@
   "schema": "noetrium.reproduction.projection.v7",
   "authority": "generated_from_typed_definition_and_source",
   "package": "agent_q_surrogate",
-  "package_digest": "65bbe8b7af1606403e653f68774a5be3bae5816acfa5bf2b53e0b2874ac09183",
-  "definition_digest": "37d8411f47bed76826b2845eb7e3112c802509ada12fafd73d6e8e27cdad9c11",
+  "package_digest": "d282d63b1cc004a05dafae53d0dce506115ce013b53e5f70703c51f1ba41e01f",
+  "definition_digest": "adb14872ff53d0b984a3420c279f0098c198a1c4c22ebeb43da214993f7a3c76",
   "source_registry_digest": "8bdcaf30e155f5233d8316f881d65c740a1d1e5122830c07c1a8978485beadb5",
   "lifecycle": "protocol_bound",
   "identity": {
@@ -84,13 +84,19 @@
       "content_sha256": "13ed4b5481f66fc5afce8e39eeee596948809293281dba5a37de79c0a2b08917"
     },
     {
+      "kind": "method_program",
+      "path": "research/reproductions/agent_q_surrogate/program.py",
+      "declaration_digest": "8775f5648e7cf212c29699e9be8c3fdcd2e2d631c6427214ae0d48b01e709ef3",
+      "content_sha256": "9011211af6992e0d96ecc4f3a5d18723152bcf09d246f0cee637cf1a546616db"
+    },
+    {
       "kind": "study",
       "path": "research/reproductions/agent_q_surrogate/study.py",
       "declaration_digest": "76c02b2c601d914d74d7a324b1547b768cc9924636c13307b08ea02bca686872",
       "content_sha256": "43408af5bd9837ebc48d3735e58d4b3b4ae9c533872dccfb7d668be4206d9a95"
     }
   ],
-  "primary_executable": null,
+  "primary_executable": "research/reproductions/agent_q_surrogate/program.py",
   "reported_results": [],
   "reference_baselines": [],
   "deltas": [
