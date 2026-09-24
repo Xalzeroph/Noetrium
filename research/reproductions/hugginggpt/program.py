@@ -290,9 +290,15 @@ def _return_result(request: MethodNodeRequest) -> MethodNodeResult:
 
 
 def build_hugginggpt_method_program(
-    expert_capability_ids: tuple[str, ...],
+    expert_capability_ids: Sequence[str],
 ) -> MethodProgram:
-    if type(expert_capability_ids) is not tuple or not expert_capability_ids:
+    if isinstance(expert_capability_ids, (str, bytes, bytearray)) or not isinstance(
+        expert_capability_ids,
+        Sequence,
+    ):
+        raise TypeError("HuggingGPT expert capability closure must be a sequence")
+    expert_capability_ids = tuple(expert_capability_ids)
+    if not expert_capability_ids:
         raise ValueError("HuggingGPT requires non-empty expert capability closure")
     if any(type(row) is not str or not row.strip() for row in expert_capability_ids):
         raise ValueError("HuggingGPT expert capabilities must be canonical text")
