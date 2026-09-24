@@ -76,7 +76,7 @@ class ModelDeploymentGeneration:
 
     deployment_id: str
     desired_spec_digest: str
-    applied_contract_digest: str | None
+    applied_runtime_digest: str | None
 
     def __post_init__(self) -> None:
         if not self.deployment_id.strip():
@@ -86,11 +86,11 @@ class ModelDeploymentGeneration:
             or any(ch not in "0123456789abcdef" for ch in self.desired_spec_digest)
         ):
             raise ValueError("model desired generation must be lowercase SHA-256")
-        if self.applied_contract_digest is not None and (
-            len(self.applied_contract_digest) != 64
-            or any(ch not in "0123456789abcdef" for ch in self.applied_contract_digest)
+        if self.applied_runtime_digest is not None and (
+            len(self.applied_runtime_digest) != 64
+            or any(ch not in "0123456789abcdef" for ch in self.applied_runtime_digest)
         ):
-            raise ValueError("model applied generation must be lowercase SHA-256")
+            raise ValueError("model applied runtime generation must be lowercase SHA-256")
 
 
 @dataclass(frozen=True, slots=True)
