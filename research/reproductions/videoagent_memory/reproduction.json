@@ -2,7 +2,7 @@
   "schema": "noetrium.reproduction.projection.v10",
   "authority": "generated_from_typed_definition_and_source",
   "package": "videoagent_memory",
-  "package_digest": "39408462c21d33dc41c98363ed0b0463e00c0c918683e8057905b96c2514a424",
+  "package_digest": "6e2566b5ba32ff4a914b03a49990706471ab7ebd96e27f1231822219f1248640",
   "definition_digest": "b6a07d721d7dd58c2212cbab3afce909293e26aeebaaafddd8228fe68fdf8381",
   "source_registry_digest": "2c4ad0c7f51054bfd49d84df431ced1c43641a42cd98243c8343899ebc7ce56e",
   "lifecycle": "protocol_bound",
@@ -125,7 +125,7 @@
       "kind": "benchmark",
       "path": "research/reproductions/videoagent_memory/benchmark.py",
       "declaration_digest": "3532fc85c6b33131c7e3d9ec79a9f95a6c8393ff1d9e65d0f1721c0ffc834e16",
-      "content_sha256": "963ea6dbab341b59175534d9681848cc2936a38d7d3b6207cffc1095ae81ac20"
+      "content_sha256": "a48c687b4d69748bbc566c8c4c240b46d91058b0c04f8e1f7fdc164026c0d904"
     },
     {
       "kind": "fidelity",
