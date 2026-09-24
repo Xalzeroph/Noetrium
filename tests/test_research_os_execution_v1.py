@@ -128,6 +128,7 @@ class _Runtime:
     def execute(
         self,
         context,
+        task_context,
         node,
         lowering,
         inputs,
@@ -137,7 +138,7 @@ class _Runtime:
     ):
         del lowering, deadline
         assert len(execution_cut_id) == 64
-        context.checkpoint()
+        task_context.checkpoint()
         self.executed.append(node.graph_node_id)
         if node.graph_node_id == "paper::source":
             return {"value": 7}
@@ -957,6 +958,7 @@ class _ArtifactRuntime(_Runtime):
     def execute(
         self,
         context,
+        task_context,
         node,
         lowering,
         inputs,
@@ -965,7 +967,7 @@ class _ArtifactRuntime(_Runtime):
         deadline,
     ):
         del lowering, deadline
-        context.checkpoint()
+        task_context.checkpoint()
         self.executed.append(node.graph_node_id)
         if node.graph_node_id == "paper::source":
             return {"stage": "source"}
