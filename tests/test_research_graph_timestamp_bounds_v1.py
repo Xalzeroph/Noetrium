@@ -6,6 +6,7 @@ import pytest
 
 from noetrium_platform.foundation.kernel.kernel import canonical_digest
 from noetrium_platform.research.execution.graph.api import (
+    ResearchGraphLeaseRenewal,
     ResearchGraphLiveNodeState,
     ResearchGraphNode,
     ResearchGraphPlan,
@@ -76,13 +77,17 @@ def test_sqlite_graph_timestamp_overflow_fails_before_durable_mutation(
         now_ns=3,
     )
     with pytest.raises(ValueError, match="signed 64-bit storage"):
-        store.renew_lease(
+        store.renew_leases(
             "execution",
-            "node",
-            attempt_id=claim.attempt_id or "",
-            owner_id="worker",
+            (
+                ResearchGraphLeaseRenewal(
+                    "node",
+                    claim.attempt_id or "",
+                    "worker",
+                    _INT64_MAX + 1,
+                ),
+            ),
             now_ns=4,
-            lease_expires_at_ns=_INT64_MAX + 1,
         )
     attempts = store.attempts("execution", "node")
     assert len(attempts) == 1
