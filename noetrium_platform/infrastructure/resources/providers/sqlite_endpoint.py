@@ -101,7 +101,6 @@ class SQLiteEndpointAllocationStore(AtomicEndpointReservationPort):
                 raise ValueError(
                     "endpoint observation time must be finite and positive"
                 )
-            return value
         return authoritative_lease_now(conn, self._clock.read())
 
     @contextmanager
