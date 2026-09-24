@@ -11,7 +11,7 @@ from noetrium_platform.foundation.governance.architecture.system_dependency_inva
 
 class ArchitecturePlaneTests(unittest.TestCase):
     def test_composition_module_is_explicit_architecture_plane(self):
-        self.assertTrue(is_composition_module("noetrium_platform.composition.experiment_runtime"))
+        self.assertTrue(is_composition_module("noetrium_platform.composition.research_os_local"))
         self.assertTrue(is_composition_module("noetrium_platform.capabilities.model.composition.runtime"))
         self.assertFalse(is_composition_module("noetrium_platform.capabilities.model.runtime.serving"))
 
