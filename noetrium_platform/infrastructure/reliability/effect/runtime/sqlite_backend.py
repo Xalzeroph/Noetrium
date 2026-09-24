@@ -5,7 +5,11 @@ import math
 from pathlib import Path
 import sqlite3
 
-from noetrium_platform.foundation.kernel.kernel.durability.sqlite import open_durable_sqlite_writer
+from noetrium_platform.foundation.kernel.kernel.durability.sqlite import (
+    begin_immediate_sqlite_transaction,
+    open_durable_sqlite_writer,
+    rollback_sqlite_writer,
+)
 
 from .persistence import EffectJournalPersistenceBackend, EncodedEffectIntentRecord
 
@@ -29,7 +33,10 @@ class SQLiteEffectJournalWriteSession(AbstractContextManager["SQLiteEffectJourna
         self.backend = backend
         self.conn = backend.connect()
         try:
-            self.conn.execute("BEGIN IMMEDIATE")
+            begin_immediate_sqlite_transaction(
+                self.conn,
+                timeout_seconds=backend.timeout_seconds,
+            )
         except BaseException:
             self.conn.close()
             raise
@@ -74,9 +81,17 @@ class SQLiteEffectJournalWriteSession(AbstractContextManager["SQLiteEffectJourna
         self._committed = True
 
     def __exit__(self, exc_type, exc, tb) -> bool:
+        del tb
         try:
             if exc_type is not None or not self._committed:
-                self.conn.rollback()
+                if isinstance(exc, BaseException):
+                    rollback_sqlite_writer(
+                        self.conn,
+                        exc,
+                        label="effect",
+                    )
+                else:
+                    self.conn.rollback()
         finally:
             self.conn.close()
         return False
@@ -116,7 +131,10 @@ class SQLiteEffectJournalBackend(EffectJournalPersistenceBackend):
 
     def _initialize(self) -> None:
         with self.connection() as conn:
-            conn.execute("BEGIN IMMEDIATE")
+            begin_immediate_sqlite_transaction(
+                conn,
+                timeout_seconds=self.timeout_seconds,
+            )
             try:
                 conn.execute(f"CREATE TABLE IF NOT EXISTS {_META_TABLE} (key TEXT PRIMARY KEY, value TEXT NOT NULL)")
                 conn.execute(
@@ -153,8 +171,12 @@ class SQLiteEffectJournalBackend(EffectJournalPersistenceBackend):
                     if current_version != self.SCHEMA_VERSION:
                         raise RuntimeError("unsupported SQLiteEffectIntentJournal schema")
                 conn.commit()
-            except BaseException:
-                conn.rollback()
+            except BaseException as primary:
+                rollback_sqlite_writer(
+                    conn,
+                    primary,
+                    label="effect",
+                )
                 raise
 
     def read(self, intent_id: str) -> EncodedEffectIntentRecord | None:
