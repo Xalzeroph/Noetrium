@@ -20,6 +20,7 @@ from noetrium_platform.foundation.kernel.kernel import (
     MachineProgramRef,
     ProgramLock,
     MachineExecutor,
+    MachineExecutionError,
     TransitionProposal,
     canonical_digest,
 )
@@ -217,7 +218,7 @@ def test_runtime_rejects_emitted_commands_without_outbox_before_commit() -> None
     runtime.open({"count": 0})
 
     with pytest.raises(
-        Exception,
+        MachineExecutionError,
         match="emitted commands require an outbox authority",
     ):
         runtime.step(
