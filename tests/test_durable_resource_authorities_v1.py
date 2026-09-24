@@ -183,7 +183,15 @@ class DurableResourceAuthoritiesTests(TestCase):
             )
             first.environments.register_spec(spec)
             first.environments.assign(EnvironmentAssignment("default", "python-base", scope))
-            instance = EnvironmentInstance("env-1", "1" * 64, "local", "python.exe", scope)
+            instance = EnvironmentInstance(
+                "env-1",
+                "1" * 64,
+                "local",
+                "python.exe",
+                scope,
+                "text-world-default",
+                "2" * 64,
+            )
             first.environments.register_instance(instance)
             binding = EnvironmentBinding("binding-1", scope, "runner", "env-1")
             first.environments.bind(binding)
@@ -191,3 +199,7 @@ class DurableResourceAuthoritiesTests(TestCase):
             resolved = second.environments.resolve("default", scope)
             self.assertEqual(resolved.requirements, (("python", "3.12"),))
             self.assertEqual(second.environments.binding("runner", scope), binding)
+            self.assertEqual(
+                second.environments.binding("runner", scope).instance_id,
+                "env-1",
+            )
