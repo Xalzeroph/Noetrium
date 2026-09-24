@@ -2,7 +2,7 @@
   "schema": "noetrium.reproduction.projection.v8",
   "authority": "generated_from_typed_definition_and_source",
   "package": "agentless_swebench",
-  "package_digest": "f1d026bf310cefea26fc2cb236449eae175548d4e817b04e5163ccf6288405f1",
+  "package_digest": "5abfed18581c557c52ac347138f78d345a636242de7565b43bf2c0a9b37a2198",
   "definition_digest": "a524a3b376569393b5288022c9b83d133898b4316cb95a6c86c17792d2fbbcb8",
   "source_registry_digest": "6c3f3a35e76b0138dfbc16be29a802509c86aa537b696a15da6f10d9b8a8dedf",
   "lifecycle": "protocol_bound",
@@ -150,18 +150,9 @@
   ],
   "research_os": {
     "surface": "noetrium.api",
-    "execution_state": "closure_binding_required",
+    "execution_state": "execution_ready",
     "program_id": "agentless_swebench",
-    "program_digest": "a5ad2379743be8f24dab8bcc1ad93e84dc75e6bda1e4e5bd552b0bd8bec4c8cc",
-    "execution_requirements": [
-      {
-        "parameter": "split_id",
-        "kind": "benchmark_split",
-        "consumers": [
-          "study:build_agentless_swebench_lite_study"
-        ],
-        "requirement_digest": "d19b0c696e06c4351c94156cac6907379a5075bcdc4ab380c64deefbd38feca5"
-      }
-    ]
+    "program_digest": "4fb32133f5798f0a3dc2cd41cd77acf9d62253f20ebc9d9681e2caf99cd79fe2",
+    "execution_requirements": []
   }
 }

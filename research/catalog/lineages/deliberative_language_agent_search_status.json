@@ -81,7 +81,7 @@
       "reproductions": [
         {
           "package": "self_refine",
-          "package_digest": "7fe8d7cefe1397631c7e7c78ec13e2fbf318cbe1cb687d0ee6de4716b6fe1ca4",
+          "package_digest": "3b68ba59e638f7b009477e94cfcb4a80d37fa7643b4d8d9dbc570bb3ca2b6114",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "commongen"
@@ -478,5 +478,5 @@
       ]
     }
   ],
-  "projection_digest": "86edd2321268e5fac419fb4c5f30246deb6e6c620816d8ca426d199a86a10ba8"
+  "projection_digest": "f79cfa0c52896be33f91e23bb392d8b3958462bc6f7744283343f6e4f3b290e9"
 }

@@ -2,7 +2,7 @@
   "schema": "noetrium.reproduction.projection.v8",
   "authority": "generated_from_typed_definition_and_source",
   "package": "d3d_vlp_cvpr2026",
-  "package_digest": "6b6d07a69cedaa604d5be48221ef80d74814d3857a5fd16c965852412ea1be97",
+  "package_digest": "29c73bf6f05132af44935de699913d2d386eb2f029795b0c32c9c655ce1c190c",
   "definition_digest": "826cbc66bb82023852c07b6f2b9035bfbeb20d4d0f0d674660824ada0e451f4b",
   "source_registry_digest": "2cdeb4231d82b4960adc04b241fa45eae325f9b560c0d815e9fa4a73b8b941ac",
   "lifecycle": "protocol_bound",
@@ -175,18 +175,9 @@
   ],
   "research_os": {
     "surface": "noetrium.api",
-    "execution_state": "closure_binding_required",
+    "execution_state": "execution_ready",
     "program_id": "d3d_vlp_cvpr2026",
-    "program_digest": "9036e36f5352c3ad05d0fe30cb45b2177176054905aa7926d67f5a63c850081a",
-    "execution_requirements": [
-      {
-        "parameter": "benchmark_split_id",
-        "kind": "benchmark_split",
-        "consumers": [
-          "study:build_study"
-        ],
-        "requirement_digest": "70300df3e87bbca7c26cb29ca96fd4630df6c8b6445a19970fe3c809928ca8a0"
-      }
-    ]
+    "program_digest": "ebebaa864234a467d88e8b6a923993174d1b664b4dbd359ccc62d12fb6cec244",
+    "execution_requirements": []
   }
 }

@@ -2,7 +2,7 @@
   "schema": "noetrium.reproduction.projection.v8",
   "authority": "generated_from_typed_definition_and_source",
   "package": "refact_cvpr2026",
-  "package_digest": "1123b5cef6301221970f9001f635fcd3eaa5309ca8b8f40d64039317db13fd18",
+  "package_digest": "ed1715369f913bacf0432f735917332ba25593747bd98be428d12233c1649c2a",
   "definition_digest": "2edaaab0273d70e8999ac875be0675620443d83300bf28fefa6167d5528d0dd6",
   "source_registry_digest": "53720c064b39a3602333deb72b1dc6075b6c3cae6594bfa084990681eb67baff",
   "lifecycle": "protocol_bound",
@@ -120,18 +120,9 @@
   ],
   "research_os": {
     "surface": "noetrium.api",
-    "execution_state": "closure_binding_required",
+    "execution_state": "execution_ready",
     "program_id": "refact_cvpr2026",
-    "program_digest": "81a2ca853c0984832aa17562bc0b4d4cbbde2177b7a06ee5418f8829d9ed958c",
-    "execution_requirements": [
-      {
-        "parameter": "benchmark_split_id",
-        "kind": "benchmark_split",
-        "consumers": [
-          "study:build_study"
-        ],
-        "requirement_digest": "7417f0be674e176274bebd5a10c9e3930c063a5cffd196db12a243d00de788c6"
-      }
-    ]
+    "program_digest": "3e00ae4a8065304a137c7861a466511570d3a7678f8173440eac4db4f01da1ef",
+    "execution_requirements": []
   }
 }

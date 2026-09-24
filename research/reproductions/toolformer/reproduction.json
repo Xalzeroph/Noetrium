@@ -2,7 +2,7 @@
   "schema": "noetrium.reproduction.projection.v8",
   "authority": "generated_from_typed_definition_and_source",
   "package": "toolformer",
-  "package_digest": "86c2d81535004e77de0c6b478ca927e1911d40ff55057a67c1aed4f59cc61dfa",
+  "package_digest": "946cf7cee8c9390fa829a5becd47eb96c46599726d7d6d3b30c0780a1e44274a",
   "definition_digest": "1e0d762a99b9c4f4941b6b6c61534071f20ca4efd34eee3045ef6942383cc8d5",
   "source_registry_digest": "0aa5c4ef466c87b4808d296ec9f3b44ddcff08ee64566c34ac93be4e38815682",
   "lifecycle": "protocol_bound",
@@ -168,16 +168,8 @@
     "surface": "noetrium.api",
     "execution_state": "closure_binding_required",
     "program_id": "toolformer",
-    "program_digest": "d08665a6d978e42c6f77562c14aa5e8d3c8312fa8a9e7c72444b701a8f5006d9",
+    "program_digest": "7625046d1e4d02d0c53fa19af5faab520fa23c955005d8a788b4101f33827ce8",
     "execution_requirements": [
-      {
-        "parameter": "split_id",
-        "kind": "benchmark_split",
-        "consumers": [
-          "study:build_toolformer_study"
-        ],
-        "requirement_digest": "339d0210c555269a7fdf0f20a31ac9e04706e8a4c8cd2c1ef235fda95c6afe33"
-      },
       {
         "parameter": "tool_capability_ids",
         "kind": "capability_closure",

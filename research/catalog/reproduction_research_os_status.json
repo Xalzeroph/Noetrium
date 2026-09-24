@@ -3,12 +3,11 @@
   "authority": "generated_from_typed_reproduction_definitions",
   "package_count": 100,
   "state_counts": {
-    "closure_binding_required": 53,
-    "execution_ready": 42,
+    "closure_binding_required": 6,
+    "execution_ready": 89,
     "not_executable": 5
   },
   "requirement_kind_counts": {
-    "benchmark_split": 51,
     "capability_closure": 3,
     "capability_id": 1,
     "paper_option": 2
@@ -37,23 +36,14 @@
     {
       "package": "adaptagent_acl2025",
       "lifecycle": "protocol_bound",
-      "execution_state": "closure_binding_required",
+      "execution_state": "execution_ready",
       "program_id": "adaptagent_acl2025",
-      "program_digest": "bc76d9b8886a43f75db9f7fd4cf3e04d2e46f3c58c0f9a90d3f17055a827ce9e",
+      "program_digest": "b4dfa2bf54eff2f92871b7570e5a7a91e54471ecb789675ca02888776c603683",
       "benchmark_ids": [
         "mind2web",
         "visualwebarena"
       ],
-      "execution_requirements": [
-        {
-          "parameter": "split_id",
-          "kind": "benchmark_split",
-          "consumers": [
-            "study:build_adaptagent_study"
-          ],
-          "requirement_digest": "c1c6a3902adff8455f7529d4a67bad7f7ee1f33cb97afd167973f7f1508d2cc9"
-        }
-      ]
+      "execution_requirements": []
     },
     {
       "package": "adas_meta_agent_search",
@@ -80,9 +70,9 @@
     {
       "package": "agemem_acl2026",
       "lifecycle": "protocol_bound",
-      "execution_state": "closure_binding_required",
+      "execution_state": "execution_ready",
       "program_id": "agemem_acl2026",
-      "program_digest": "6e33ea8af79b28a4dcd539d26de824188de0ab0bda17ef7384eee638f7d6f60e",
+      "program_digest": "6479b01f49d26b110a37f56f952d2704696deb917d7ead60400a742406448228",
       "benchmark_ids": [
         "agentboard-pddl",
         "alfworld",
@@ -90,16 +80,7 @@
         "hotpotqa",
         "scienceworld"
       ],
-      "execution_requirements": [
-        {
-          "parameter": "benchmark_split_id",
-          "kind": "benchmark_split",
-          "consumers": [
-            "study:build_study"
-          ],
-          "requirement_digest": "0dfa1dba24ab5c3dd9edfd78bfafc25c30a71c9543e48763798af4632ed662d9"
-        }
-      ]
+      "execution_requirements": []
     },
     {
       "package": "agent_q_surrogate",
@@ -116,42 +97,24 @@
     {
       "package": "agent_s3",
       "lifecycle": "protocol_bound",
-      "execution_state": "closure_binding_required",
+      "execution_state": "execution_ready",
       "program_id": "agent_s3",
-      "program_digest": "d9b41a7a8bb31326d0436b425301b13ca230e3b64e14226d694d57b74824ced9",
+      "program_digest": "31e8ce9c22615fc3c3bfb4c1ef135c41eaf598541ed84627da31778f985d889e",
       "benchmark_ids": [
         "osworld"
       ],
-      "execution_requirements": [
-        {
-          "parameter": "split_id",
-          "kind": "benchmark_split",
-          "consumers": [
-            "study:build_agent_s3_osworld_study"
-          ],
-          "requirement_digest": "c953b9ba717a6e66111604fe3af16da06ac2665741ef4e4ce63b327299be17ab"
-        }
-      ]
+      "execution_requirements": []
     },
     {
       "package": "agentless_swebench",
       "lifecycle": "protocol_bound",
-      "execution_state": "closure_binding_required",
+      "execution_state": "execution_ready",
       "program_id": "agentless_swebench",
-      "program_digest": "a5ad2379743be8f24dab8bcc1ad93e84dc75e6bda1e4e5bd552b0bd8bec4c8cc",
+      "program_digest": "4fb32133f5798f0a3dc2cd41cd77acf9d62253f20ebc9d9681e2caf99cd79fe2",
       "benchmark_ids": [
         "swe-bench"
       ],
-      "execution_requirements": [
-        {
-          "parameter": "split_id",
-          "kind": "benchmark_split",
-          "consumers": [
-            "study:build_agentless_swebench_lite_study"
-          ],
-          "requirement_digest": "d19b0c696e06c4351c94156cac6907379a5075bcdc4ab380c64deefbd38feca5"
-        }
-      ]
+      "execution_requirements": []
     },
     {
       "package": "agentsquare",
@@ -190,43 +153,25 @@
     {
       "package": "astranav_memory_cvpr2026",
       "lifecycle": "protocol_bound",
-      "execution_state": "closure_binding_required",
+      "execution_state": "execution_ready",
       "program_id": "astranav_memory_cvpr2026",
-      "program_digest": "967a0e97dbc9ef20b43ed266ef7729b7d9b3331ad01dbff01165a01dc3ac18d3",
+      "program_digest": "34ee8fc9f34dbaa24d64c717a6e7b18bd298a292839ea19b4a11c39b2f5f220d",
       "benchmark_ids": [
         "goat-bench",
         "hm3d-ovon"
       ],
-      "execution_requirements": [
-        {
-          "parameter": "benchmark_split_id",
-          "kind": "benchmark_split",
-          "consumers": [
-            "study:build_study"
-          ],
-          "requirement_digest": "7bff16af30e92698c5e6ca1df6fa4d9419d6ca671758ce967842e5d52e120b66"
-        }
-      ]
+      "execution_requirements": []
     },
     {
       "package": "autogen_agentchat",
       "lifecycle": "protocol_bound",
-      "execution_state": "closure_binding_required",
+      "execution_state": "execution_ready",
       "program_id": "autogen_agentchat",
-      "program_digest": "02dbdb47a2fa2fc98ef87afe855bb3b51787fed538a7520a955cc43bac8f2517",
+      "program_digest": "fe33b44dadaf7921e345d9e2bb865a07988172a6f89895e870617024b9310496",
       "benchmark_ids": [
         "multiagentbench"
       ],
-      "execution_requirements": [
-        {
-          "parameter": "split_id",
-          "kind": "benchmark_split",
-          "consumers": [
-            "study:build_autogen_multiagentbench_study"
-          ],
-          "requirement_digest": "397247db7d411d9e4555e4f70978a53da9cb435f7badb0a99ea2e490f726916d"
-        }
-      ]
+      "execution_requirements": []
     },
     {
       "package": "camel_role_playing",
@@ -242,45 +187,27 @@
     {
       "package": "cer_acl2025",
       "lifecycle": "protocol_bound",
-      "execution_state": "closure_binding_required",
+      "execution_state": "execution_ready",
       "program_id": "cer_acl2025",
-      "program_digest": "70e0773621bbe5492d73cae961888febbd91993f860bec7d3cb82287ba8ebb66",
+      "program_digest": "8ebfc988f65a4c7c013fcd5a228dd2b8cf9ec6f85399f4b80513350e061d5c6b",
       "benchmark_ids": [
         "visualwebarena",
         "webarena"
       ],
-      "execution_requirements": [
-        {
-          "parameter": "split_id",
-          "kind": "benchmark_split",
-          "consumers": [
-            "study:build_contextual_experience_replay_study"
-          ],
-          "requirement_digest": "ba5ebcc65942dc4eeeb9f9e13ccd24400ffad7da6858d715d2593df1969ad4ac"
-        }
-      ]
+      "execution_requirements": []
     },
     {
       "package": "ces_gui_cvpr2026",
       "lifecycle": "protocol_bound",
-      "execution_state": "closure_binding_required",
+      "execution_state": "execution_ready",
       "program_id": "ces_gui_cvpr2026",
-      "program_digest": "de862dd9bc7b65e3a481e50ad56fcf3345a6ad80a9eba840ecdd5dd31c756c19",
+      "program_digest": "76b2a4d0e09da826327a2e1051c6cc56195e7212cee2a85c50d434a90648faab",
       "benchmark_ids": [
         "aitz",
         "amex",
         "gui-odyssey"
       ],
-      "execution_requirements": [
-        {
-          "parameter": "benchmark_split_id",
-          "kind": "benchmark_split",
-          "consumers": [
-            "study:build_study"
-          ],
-          "requirement_digest": "a413a5664313b8dd724f241fb8663d3e0f7454b354586352e0801a88c8090d14"
-        }
-      ]
+      "execution_requirements": []
     },
     {
       "package": "chain_of_thought_gsm8k",
@@ -318,49 +245,31 @@
     {
       "package": "cogagent",
       "lifecycle": "protocol_bound",
-      "execution_state": "closure_binding_required",
+      "execution_state": "execution_ready",
       "program_id": "cogagent",
-      "program_digest": "20e233c2467d4aff5362be94c53a4d6c2186d435512d203f476248e88ec16a62",
+      "program_digest": "f5f69ab33d1dc2a5aa88c7e6a54b77117b5fb4bb2d8f01d4cd94387a57563f38",
       "benchmark_ids": [
         "mind2web"
       ],
-      "execution_requirements": [
-        {
-          "parameter": "split_id",
-          "kind": "benchmark_split",
-          "consumers": [
-            "study:build_cogagent_mind2web_study"
-          ],
-          "requirement_digest": "d959ccb97983a970f7a54fefddc672e235fc4024aae3b88ace9ebe97a9b95c7f"
-        }
-      ]
+      "execution_requirements": []
     },
     {
       "package": "crossha_cvpr2026",
       "lifecycle": "protocol_bound",
-      "execution_state": "closure_binding_required",
+      "execution_state": "execution_ready",
       "program_id": "crossha_cvpr2026",
-      "program_digest": "905d11dc487763706e951299f335ae1b6f4ad3951a9186fae2715313ca3cc668",
+      "program_digest": "73392aeaad928544764d91737e70c7054d073be64e8bd77394279090ed5a13ef",
       "benchmark_ids": [
         "minecraft-openha"
       ],
-      "execution_requirements": [
-        {
-          "parameter": "benchmark_split_id",
-          "kind": "benchmark_split",
-          "consumers": [
-            "study:build_study"
-          ],
-          "requirement_digest": "f333a651fbd87c200e8500d8fd2957dcfc70913bf7ba5f998adfef0b33270348"
-        }
-      ]
+      "execution_requirements": []
     },
     {
       "package": "d3d_vlp_cvpr2026",
       "lifecycle": "protocol_bound",
-      "execution_state": "closure_binding_required",
+      "execution_state": "execution_ready",
       "program_id": "d3d_vlp_cvpr2026",
-      "program_digest": "9036e36f5352c3ad05d0fe30cb45b2177176054905aa7926d67f5a63c850081a",
+      "program_digest": "ebebaa864234a467d88e8b6a923993174d1b664b4dbd359ccc62d12fb6cec244",
       "benchmark_ids": [
         "hm3d-ovon",
         "navrag-ce",
@@ -368,56 +277,29 @@
         "reverie-ce",
         "sg3d"
       ],
-      "execution_requirements": [
-        {
-          "parameter": "benchmark_split_id",
-          "kind": "benchmark_split",
-          "consumers": [
-            "study:build_study"
-          ],
-          "requirement_digest": "70300df3e87bbca7c26cb29ca96fd4630df6c8b6445a19970fe3c809928ca8a0"
-        }
-      ]
+      "execution_requirements": []
     },
     {
       "package": "dars_acl2025",
       "lifecycle": "protocol_bound",
-      "execution_state": "closure_binding_required",
+      "execution_state": "execution_ready",
       "program_id": "dars_acl2025",
-      "program_digest": "acb3e7f6d8162936e800451b1708f0a76d7acf5e1c9890b8cf2cc2a76ed0957b",
+      "program_digest": "ee4bf7a68f005ecced139dd388e203a140f049d95245b04537b31d7d9d6cf1c6",
       "benchmark_ids": [
         "swe-bench"
       ],
-      "execution_requirements": [
-        {
-          "parameter": "split_id",
-          "kind": "benchmark_split",
-          "consumers": [
-            "study:build_dars_study"
-          ],
-          "requirement_digest": "e5b6f2df7580d13427958ff2232eacff3baf19ee3d2c550abc4767560e9be8da"
-        }
-      ]
+      "execution_requirements": []
     },
     {
       "package": "dejavu_cvpr2026",
       "lifecycle": "protocol_bound",
-      "execution_state": "closure_binding_required",
+      "execution_state": "execution_ready",
       "program_id": "dejavu_cvpr2026",
-      "program_digest": "24d7ca96b268a66929585d633576fbab9ac21811ce9a31f182fa584467a82249",
+      "program_digest": "87ce0781da7dd54d1ffd42386834bbefd15fd70b4db8d55a5da8b57f17d5cb02",
       "benchmark_ids": [
         "libero"
       ],
-      "execution_requirements": [
-        {
-          "parameter": "benchmark_split_id",
-          "kind": "benchmark_split",
-          "consumers": [
-            "study:build_study"
-          ],
-          "requirement_digest": "6dee4603bd8062849f03f89022d0e5f415303e57dd138355bf969a66483ae5a9"
-        }
-      ]
+      "execution_requirements": []
     },
     {
       "package": "deps_minecraft",
@@ -444,87 +326,51 @@
     {
       "package": "eaglet_acl2026",
       "lifecycle": "protocol_bound",
-      "execution_state": "closure_binding_required",
+      "execution_state": "execution_ready",
       "program_id": "eaglet_acl2026",
-      "program_digest": "8574696a429e3003718724c6ac273dc9a22119ba608be27553fbe48123754185",
+      "program_digest": "a8cd3879be7693e70196ca689f656e06a6302eb444684a58e9715d48763ce591",
       "benchmark_ids": [
         "alfworld",
         "scienceworld",
         "webshop"
       ],
-      "execution_requirements": [
-        {
-          "parameter": "benchmark_split_id",
-          "kind": "benchmark_split",
-          "consumers": [
-            "study:build_study"
-          ],
-          "requirement_digest": "f2cd49c17fb23ccbf75ff7dcfe167c07b1be890533a1cc1b0b1ed35dd396f6d2"
-        }
-      ]
+      "execution_requirements": []
     },
     {
       "package": "echotrail_gui_cvprf2026",
       "lifecycle": "protocol_bound",
-      "execution_state": "closure_binding_required",
+      "execution_state": "execution_ready",
       "program_id": "echotrail_gui_cvprf2026",
-      "program_digest": "7e1fa662af3f4c55f3a89f6fe16ae14cf7f67c462f43ad8bbb7ad187a18bea4c",
+      "program_digest": "b373d0c368cb70c8a99bc05100cbede037d54fa9fb0125f902347d67fa2d878f",
       "benchmark_ids": [
         "androidlab",
         "androidworld"
       ],
-      "execution_requirements": [
-        {
-          "parameter": "benchmark_split_id",
-          "kind": "benchmark_split",
-          "consumers": [
-            "study:build_study"
-          ],
-          "requirement_digest": "deea713eaf72c1be42ec47b7b67791a0fb8eb04472edab3a0f99595a70d44864"
-        }
-      ]
+      "execution_requirements": []
     },
     {
       "package": "ego2web_cvpr2026",
       "lifecycle": "protocol_bound",
-      "execution_state": "closure_binding_required",
+      "execution_state": "execution_ready",
       "program_id": "ego2web_cvpr2026",
-      "program_digest": "fcedb3373e576eb73f33347691c9b7f428635e7c05d9ecf0f6eab6447dad9b40",
+      "program_digest": "68adbfbe735bccb0a94b2e212184afa063e2991bc8a2a6caca0a5cc5a0adc803",
       "benchmark_ids": [
         "ego2web"
       ],
-      "execution_requirements": [
-        {
-          "parameter": "benchmark_split_id",
-          "kind": "benchmark_split",
-          "consumers": [
-            "study:build_study"
-          ],
-          "requirement_digest": "5ba920276057605f20eda2b914ee393575594bd232e781e3e6fd72848e71536a"
-        }
-      ]
+      "execution_requirements": []
     },
     {
       "package": "embodied_videoagent_iccv2025",
       "lifecycle": "protocol_bound",
-      "execution_state": "closure_binding_required",
+      "execution_state": "execution_ready",
       "program_id": "embodied_videoagent_iccv2025",
-      "program_digest": "78a572f53c6bac7c9b216beea3a028fc32f27c98d8ae0ec2e60970a6366a8e5b",
+      "program_digest": "17b9d21abcf2ca9e1c61c2b0cb22fdbeff003d2d9b439ba8aa062d8e43cf1462",
       "benchmark_ids": [
         "ego4d-vq3d",
         "envqa",
         "open-eqa"
       ],
-      "execution_requirements": [
-        {
-          "parameter": "split_id",
-          "kind": "benchmark_split",
-          "consumers": [
-            "study:build_embodied_videoagent_study"
-          ],
-          "requirement_digest": "a1f3e44e45285ccd453500fd8952248531e1f4f2666f6469fdae5ff54b19c77c"
-        }
-      ]
+      "execution_requirements": []
     },
     {
       "package": "exact_vwa",
@@ -563,22 +409,13 @@
     {
       "package": "foreact_cvpr2026",
       "lifecycle": "protocol_bound",
-      "execution_state": "closure_binding_required",
+      "execution_state": "execution_ready",
       "program_id": "foreact_cvpr2026",
-      "program_digest": "0a9c818c9c2af59603d73a34e49849daf8017edaac1f0d02e4b7915a69ef9fb4",
+      "program_digest": "0bcd82980326e78a34c4df7bbabff3496533bed75e5ad585f53d24bfd22e7dd1",
       "benchmark_ids": [
         "foreact-real11"
       ],
-      "execution_requirements": [
-        {
-          "parameter": "benchmark_split_id",
-          "kind": "benchmark_split",
-          "consumers": [
-            "study:build_study"
-          ],
-          "requirement_digest": "4582a261b40b1d398f7311542931881e8c4646faef899a889a59cc5b492ca671"
-        }
-      ]
+      "execution_requirements": []
     },
     {
       "package": "gats",
@@ -614,30 +451,21 @@
     {
       "package": "hats_cvpr2026",
       "lifecycle": "protocol_bound",
-      "execution_state": "closure_binding_required",
+      "execution_state": "execution_ready",
       "program_id": "hats_cvpr2026",
-      "program_digest": "ef541a5f2fc8c7e175aef6d503673a2a1310a53853ab17ebe9e971df1da6e795",
+      "program_digest": "00233cd8ea8275a6c5ea97d170928af607121c462ac9a8ebf069f7e1b055d1f5",
       "benchmark_ids": [
         "androidworld",
         "webarena"
       ],
-      "execution_requirements": [
-        {
-          "parameter": "benchmark_split_id",
-          "kind": "benchmark_split",
-          "consumers": [
-            "study:build_study"
-          ],
-          "requirement_digest": "843071598f389e844bc173ae6323a162372107705d4e541216f7e9206632a39f"
-        }
-      ]
+      "execution_requirements": []
     },
     {
       "package": "hugginggpt",
       "lifecycle": "protocol_bound",
       "execution_state": "closure_binding_required",
       "program_id": "hugginggpt",
-      "program_digest": "e42d01f936a8316fa58af64475401a62f190eda433eb979a89f9caf27f95ed0f",
+      "program_digest": "b74dd49a9f096097924e4ee5a2c404404ecefb58f03ef1cf4704e2dfa8094310",
       "benchmark_ids": [
         "hugginggpt-paper-tasks"
       ],
@@ -650,59 +478,33 @@
             "study:build_hugginggpt_study"
           ],
           "requirement_digest": "a505952e039246b74a86ac49b3a34a186eddc66fbe22bc9acc9318334760839c"
-        },
-        {
-          "parameter": "split_id",
-          "kind": "benchmark_split",
-          "consumers": [
-            "study:build_hugginggpt_study"
-          ],
-          "requirement_digest": "2ecc3d52df5b0127f8bc58355054a467d38d1ebc6b1bcfca781794e6a32ce54b"
         }
       ]
     },
     {
       "package": "implement_acl2026",
       "lifecycle": "protocol_bound",
-      "execution_state": "closure_binding_required",
+      "execution_state": "execution_ready",
       "program_id": "implement_acl2026",
-      "program_digest": "559c08957106290fc23430dd2580fa52a48339d6fb04e7bbef11f36d086c2efd",
+      "program_digest": "8bf8f01fe419f8660bea9aec3f078b4b53ebef23579627e6d5443f332a9d037f",
       "benchmark_ids": [
         "alfworld"
       ],
-      "execution_requirements": [
-        {
-          "parameter": "benchmark_split_id",
-          "kind": "benchmark_split",
-          "consumers": [
-            "study:build_study"
-          ],
-          "requirement_digest": "6d38215ea0ccf67dbc71e36930583813b93edccc95204964ea2ecfe96bb01f6c"
-        }
-      ]
+      "execution_requirements": []
     },
     {
       "package": "ishift_cvpr2026",
       "lifecycle": "protocol_bound",
-      "execution_state": "closure_binding_required",
+      "execution_state": "execution_ready",
       "program_id": "ishift_cvpr2026",
-      "program_digest": "4f69968e64a6eefc9e9383333ec5a4e0a98494e92821679ea96a783095e5967e",
+      "program_digest": "b3bd8993b02155dc5cb3b4095953e054d93ee2453717b1c5958fcd4df54dde8c",
       "benchmark_ids": [
         "aitw",
         "androidcontrol",
         "gui-odyssey",
         "guiact"
       ],
-      "execution_requirements": [
-        {
-          "parameter": "benchmark_split_id",
-          "kind": "benchmark_split",
-          "consumers": [
-            "study:build_study"
-          ],
-          "requirement_digest": "1cda766b67a9516260d3517d1691e6d53d22c543310587f351cd94a24fb6746f"
-        }
-      ]
+      "execution_requirements": []
     },
     {
       "package": "jarvis1_minecraft",
@@ -740,62 +542,35 @@
     {
       "package": "live_swe_agent",
       "lifecycle": "protocol_bound",
-      "execution_state": "closure_binding_required",
+      "execution_state": "execution_ready",
       "program_id": "live_swe_agent",
-      "program_digest": "483f17cfdd244086f57e54a9ec1fd78dbc278e198bfd2d80346a77835f4efabb",
+      "program_digest": "540ea04fbb0a6961a2828350577834a460cc99b35ba0438025e59e701cc4b7d1",
       "benchmark_ids": [
         "swe-bench"
       ],
-      "execution_requirements": [
-        {
-          "parameter": "split_id",
-          "kind": "benchmark_split",
-          "consumers": [
-            "study:build_live_swe_agent_study"
-          ],
-          "requirement_digest": "b4b167486968c7c5bff7590b444d8a300f6bef2aad3551b6af561f87127324a9"
-        }
-      ]
+      "execution_requirements": []
     },
     {
       "package": "lmee_cvpr2026",
       "lifecycle": "protocol_bound",
-      "execution_state": "closure_binding_required",
+      "execution_state": "execution_ready",
       "program_id": "lmee_cvpr2026",
-      "program_digest": "d37d1f14b825710bbec770f3c3bbd14e9eb4b2b6d2a09f3b445f5f43deb3be10",
+      "program_digest": "56af943331571951c7be5af30341e9288dcb65e65a89a37aede1dfcdaedf7dc7",
       "benchmark_ids": [
         "lmee-bench"
       ],
-      "execution_requirements": [
-        {
-          "parameter": "benchmark_split_id",
-          "kind": "benchmark_split",
-          "consumers": [
-            "study:build_study"
-          ],
-          "requirement_digest": "7459ddd3553c562e321fa3ff988149dcb96fbb329baff0476947f3cf8da6c183"
-        }
-      ]
+      "execution_requirements": []
     },
     {
       "package": "lvagent_iccv2025",
       "lifecycle": "protocol_bound",
-      "execution_state": "closure_binding_required",
+      "execution_state": "execution_ready",
       "program_id": "lvagent_iccv2025",
-      "program_digest": "6ae042b392c0185eb8bebdd9c24186aa53525ed3eb168009ac8d229cb54bd6da",
+      "program_digest": "7b90a8ba499f088f28143ab38b235084fefa966443f7f1ae3264a98fdc4b2e4a",
       "benchmark_ids": [
         "egoschema"
       ],
-      "execution_requirements": [
-        {
-          "parameter": "split_id",
-          "kind": "benchmark_split",
-          "consumers": [
-            "study:build_lvagent_study"
-          ],
-          "requirement_digest": "073533046f044b37fb237509c854ceb11b0f846df12e3e6f11570259f399da15"
-        }
-      ]
+      "execution_requirements": []
     },
     {
       "package": "ma_lmm_memory",
@@ -822,63 +597,36 @@
     {
       "package": "mem_gallery_acl2026",
       "lifecycle": "protocol_bound",
-      "execution_state": "closure_binding_required",
+      "execution_state": "execution_ready",
       "program_id": "mem_gallery_acl2026",
-      "program_digest": "0611f43e5016f180ed51f9eb74234a5c7b0b9a2256eb0cb839fb1ab46ab11dda",
+      "program_digest": "814bfd588c81175fea63bd1759b1c1ee49ae71779a800055ee941d99261aa168",
       "benchmark_ids": [
         "mem-gallery"
       ],
-      "execution_requirements": [
-        {
-          "parameter": "benchmark_split_id",
-          "kind": "benchmark_split",
-          "consumers": [
-            "study:build_study"
-          ],
-          "requirement_digest": "0204911b8aec41b4d2134482f90641bb0bd33a15fc5bac772f1061abeef9134b"
-        }
-      ]
+      "execution_requirements": []
     },
     {
       "package": "memevolve",
       "lifecycle": "protocol_bound",
-      "execution_state": "closure_binding_required",
+      "execution_state": "execution_ready",
       "program_id": "memevolve",
-      "program_digest": "84cc37c5d4744cd97de2fe697904260780350b8d0faff1cd61b065b10c0fe46c",
+      "program_digest": "6274d764a4a63301f5a9c0cc5b861fac56b62c315079a8adcebda68eb075070a",
       "benchmark_ids": [
         "evomembench",
         "memoryarena"
       ],
-      "execution_requirements": [
-        {
-          "parameter": "split_id",
-          "kind": "benchmark_split",
-          "consumers": [
-            "study:build_memevolve_study"
-          ],
-          "requirement_digest": "31ea096147121085916b77e6a404d7d70d1170481ca0f124283ce2d326f37d1e"
-        }
-      ]
+      "execution_requirements": []
     },
     {
       "package": "memgpt_classic",
       "lifecycle": "protocol_bound",
-      "execution_state": "closure_binding_required",
+      "execution_state": "execution_ready",
       "program_id": "memgpt_classic",
-      "program_digest": "7a1f2fcdedbdc861c9a3d7e0300e9cbd31e5bc0047a74477647ba281c9e27733",
+      "program_digest": "b870ad5f6585fb7e22d49de60104f490a5fadd73695f26c6249de2e7a5503e9c",
       "benchmark_ids": [
         "memoryarena"
       ],
-      "execution_requirements": [
-        {
-          "parameter": "split_id",
-          "kind": "benchmark_split",
-          "consumers": [
-            "study:build_memgpt_memoryarena_study"
-          ],
-          "requirement_digest": "d43281b4ba1c71e5ca10056cac2ee1f8ae7c59e80e0d2c25fef6e56bc24d99cc"
-        }
-      ]
+      "execution_requirements": []
     },
     {
       "package": "metagpt_software_company",
@@ -905,66 +653,39 @@
     {
       "package": "mm_mem_acl2026",
       "lifecycle": "protocol_bound",
-      "execution_state": "closure_binding_required",
+      "execution_state": "execution_ready",
       "program_id": "mm_mem_acl2026",
-      "program_digest": "1acef860c66130f51b269604ffb8b17a795608590ac0e5583570ea05df096434",
+      "program_digest": "86305140193d6349bf323bd96de5cc308a94178334c2d8416f59a0b3dd6fd344",
       "benchmark_ids": [
         "hd-epic",
         "mlvu",
         "video-mme",
         "vstream-qa"
       ],
-      "execution_requirements": [
-        {
-          "parameter": "benchmark_split_id",
-          "kind": "benchmark_split",
-          "consumers": [
-            "study:build_study"
-          ],
-          "requirement_digest": "22eeebda80cc6513568f6ec13b0fb5dff4b45faea503c0d4eb35f2139a136ba2"
-        }
-      ]
+      "execution_requirements": []
     },
     {
       "package": "mmbench_gui_cvpr2026",
       "lifecycle": "protocol_bound",
-      "execution_state": "closure_binding_required",
+      "execution_state": "execution_ready",
       "program_id": "mmbench_gui_cvpr2026",
-      "program_digest": "97496f4251fd02a72d468a7d5e9a00a04a56c8cc22dc82205db828c263aca057",
+      "program_digest": "116617a0797dd937b5363e7ff0e7986c0b6055bcfbbbcca248a013acfb8d9410",
       "benchmark_ids": [
         "mmbench-gui"
       ],
-      "execution_requirements": [
-        {
-          "parameter": "benchmark_split_id",
-          "kind": "benchmark_split",
-          "consumers": [
-            "study:build_study"
-          ],
-          "requirement_digest": "6f574c92c515fee8899b7e5bcbb49e6fbda894a7ff5d9d541224544833683a35"
-        }
-      ]
+      "execution_requirements": []
     },
     {
       "package": "motus_cvpr2026",
       "lifecycle": "protocol_bound",
-      "execution_state": "closure_binding_required",
+      "execution_state": "execution_ready",
       "program_id": "motus_cvpr2026",
-      "program_digest": "c9ec224a37329560b9df2811af4e2a0311d3104d727e60e028b0c5ee67e37db5",
+      "program_digest": "b947f3a6b8d82d2297866b2e091ce4fa6f75b57a5932dde394d4223b09da5009",
       "benchmark_ids": [
         "motus-realworld",
         "robotwin2"
       ],
-      "execution_requirements": [
-        {
-          "parameter": "benchmark_split_id",
-          "kind": "benchmark_split",
-          "consumers": [
-            "study:build_study"
-          ],
-          "requirement_digest": "c78453004e25a9186d8d1e19a0661abeee2b5ad903da1810420f9badf2a6141c"
-        }
-      ]
+      "execution_requirements": []
     },
     {
       "package": "moviechat_memory",
@@ -991,23 +712,14 @@
     {
       "package": "openwebvoyager_acl2025",
       "lifecycle": "protocol_bound",
-      "execution_state": "closure_binding_required",
+      "execution_state": "execution_ready",
       "program_id": "openwebvoyager_acl2025",
-      "program_digest": "3b53567d9d67311487e474e568733cc8c004402b04a8879488e26985b461018a",
+      "program_digest": "997ac2ce5f24c16756ac2354a94841cfe71200561d392d4fd5e88edb1dbce364",
       "benchmark_ids": [
         "mind2web",
         "webvoyager"
       ],
-      "execution_requirements": [
-        {
-          "parameter": "split_id",
-          "kind": "benchmark_split",
-          "consumers": [
-            "study:build_openwebvoyager_study"
-          ],
-          "requirement_digest": "8df22c12d38473d08f9921d076e389b1cd9adf80518771d3c33227834ad106fe"
-        }
-      ]
+      "execution_requirements": []
     },
     {
       "package": "optimus1_minecraft",
@@ -1034,66 +746,39 @@
     {
       "package": "optimusvla_cvpr2026",
       "lifecycle": "protocol_bound",
-      "execution_state": "closure_binding_required",
+      "execution_state": "execution_ready",
       "program_id": "optimusvla_cvpr2026",
-      "program_digest": "6e075d8975e6743be1252d1e235e8a42ea9b6ff02e0336ce14d242053c8161a8",
+      "program_digest": "c3b1e54ed980c6918de8b69a87206434c48b95da37fa8c5d8ac31a6dbec71fa9",
       "benchmark_ids": [
         "calvin",
         "libero",
         "robotwin2-hard"
       ],
-      "execution_requirements": [
-        {
-          "parameter": "benchmark_split_id",
-          "kind": "benchmark_split",
-          "consumers": [
-            "study:build_study"
-          ],
-          "requirement_digest": "a969ac38bc0c3cc5dce9de11e9b0d8c303885be3729e17fd6b9080533db64718"
-        }
-      ]
+      "execution_requirements": []
     },
     {
       "package": "orbit_acl2026",
       "lifecycle": "protocol_bound",
-      "execution_state": "closure_binding_required",
+      "execution_state": "execution_ready",
       "program_id": "orbit_acl2026",
-      "program_digest": "b18a6ab669de4d5065119eaa0988430405cf2342ba8b14ff9554d44ad101dc4b",
+      "program_digest": "53092527c1c4e408c8697c35305c9a78491340ef96db46d5268801666eda01ec",
       "benchmark_ids": [
         "embodiedbench"
       ],
-      "execution_requirements": [
-        {
-          "parameter": "benchmark_split_id",
-          "kind": "benchmark_split",
-          "consumers": [
-            "study:build_study"
-          ],
-          "requirement_digest": "1c01bfaa6275d450eba62e970ea0cb19aaa1009159222d2a69c582536f916624"
-        }
-      ]
+      "execution_requirements": []
     },
     {
       "package": "os_symphony_acl2026",
       "lifecycle": "protocol_bound",
-      "execution_state": "closure_binding_required",
+      "execution_state": "execution_ready",
       "program_id": "os_symphony_acl2026",
-      "program_digest": "682ff0bde9e310ec45d9415950c8abe7af38232af0ebcd5abde9e3e9ba5081ca",
+      "program_digest": "b8ea69c60fb28178df1a92c5c254e25ea1b111b50d3eba95c9504de96cc91d92",
       "benchmark_ids": [
         "macosarena",
         "osworld-verified",
         "windowsagentarena"
       ],
-      "execution_requirements": [
-        {
-          "parameter": "benchmark_split_id",
-          "kind": "benchmark_split",
-          "consumers": [
-            "study:build_study"
-          ],
-          "requirement_digest": "205c96ffb47cbc0c125ef4dfd814db56b1547f1f2a5f8f9beed6a42572168308"
-        }
-      ]
+      "execution_requirements": []
     },
     {
       "package": "pi05_openpi",
@@ -1130,22 +815,13 @@
     {
       "package": "r2d2_acl2025",
       "lifecycle": "protocol_bound",
-      "execution_state": "closure_binding_required",
+      "execution_state": "execution_ready",
       "program_id": "r2d2_acl2025",
-      "program_digest": "3c0132553d4445949c8a1c4b219e62ea7548e970f5092d105642f50611aac011",
+      "program_digest": "0b9dbaeb49f6ce024abbd30555b6f2ac3267a195c53146fc18e0803e9f025dfa",
       "benchmark_ids": [
         "webarena"
       ],
-      "execution_requirements": [
-        {
-          "parameter": "split_id",
-          "kind": "benchmark_split",
-          "consumers": [
-            "study:build_r2d2_study"
-          ],
-          "requirement_digest": "53f43e7dd8a4c015f4e38f321bf16e318e102c96a5d1b1679002995445e5831d"
-        }
-      ]
+      "execution_requirements": []
     },
     {
       "package": "rap_reasoning",
@@ -1173,22 +849,13 @@
     {
       "package": "refact_cvpr2026",
       "lifecycle": "protocol_bound",
-      "execution_state": "closure_binding_required",
+      "execution_state": "execution_ready",
       "program_id": "refact_cvpr2026",
-      "program_digest": "81a2ca853c0984832aa17562bc0b4d4cbbde2177b7a06ee5418f8829d9ed958c",
+      "program_digest": "3e00ae4a8065304a137c7861a466511570d3a7678f8173440eac4db4f01da1ef",
       "benchmark_ids": [
         "groundedvqa"
       ],
-      "execution_requirements": [
-        {
-          "parameter": "benchmark_split_id",
-          "kind": "benchmark_split",
-          "consumers": [
-            "study:build_study"
-          ],
-          "requirement_digest": "7417f0be674e176274bebd5a10c9e3930c063a5cffd196db12a243d00de788c6"
-        }
-      ]
+      "execution_requirements": []
     },
     {
       "package": "reflexion_alfworld",
@@ -1215,23 +882,14 @@
     {
       "package": "roboagent_cvpr2026",
       "lifecycle": "protocol_bound",
-      "execution_state": "closure_binding_required",
+      "execution_state": "execution_ready",
       "program_id": "roboagent_cvpr2026",
-      "program_digest": "a2269ea02e51edb546ee3c73c49aa71680740cf94131d09c65f5fd19e30776fe",
+      "program_digest": "61781f097f34409ff72babf1833023b50dc56ff4e05098b14b06d414e55f44b6",
       "benchmark_ids": [
         "alfworld",
         "embodiedbench"
       ],
-      "execution_requirements": [
-        {
-          "parameter": "benchmark_split_id",
-          "kind": "benchmark_split",
-          "consumers": [
-            "study:build_study"
-          ],
-          "requirement_digest": "2e0324b12718d1f5669b880d9294d48ff2f6fa4ef24cce80f57c4bc5491afc82"
-        }
-      ]
+      "execution_requirements": []
     },
     {
       "package": "saycan",
@@ -1247,22 +905,13 @@
     {
       "package": "seeclick",
       "lifecycle": "protocol_bound",
-      "execution_state": "closure_binding_required",
+      "execution_state": "execution_ready",
       "program_id": "seeclick",
-      "program_digest": "f965d59088823e8925bab83fe1ef09a970221de0dfdbc58eff671a150772c641",
+      "program_digest": "68c422d8021a89689b1fd22f8eccc17f0e5751f12dde10320ed3323358c62224",
       "benchmark_ids": [
         "screenspot"
       ],
-      "execution_requirements": [
-        {
-          "parameter": "split_id",
-          "kind": "benchmark_split",
-          "consumers": [
-            "study:build_seeclick_screenspot_study"
-          ],
-          "requirement_digest": "e8ed0b2de0ace4418704e703f5aeeec8c183aa83c079e4fe323fef483fe39b0c"
-        }
-      ]
+      "execution_requirements": []
     },
     {
       "package": "self_consistency_gsm8k",
@@ -1278,42 +927,24 @@
     {
       "package": "self_refine",
       "lifecycle": "protocol_bound",
-      "execution_state": "closure_binding_required",
+      "execution_state": "execution_ready",
       "program_id": "self_refine",
-      "program_digest": "9cee5dbdfb390e7714dbd2044c8d552bebf06a6690bf3769d60460c011357b14",
+      "program_digest": "37e7e8c481e9f9f44247dafb87021e827058eb29cb32e535178a4bac3752c74b",
       "benchmark_ids": [
         "commongen"
       ],
-      "execution_requirements": [
-        {
-          "parameter": "split_id",
-          "kind": "benchmark_split",
-          "consumers": [
-            "study:build_self_refine_commongen_study"
-          ],
-          "requirement_digest": "0d5b956e7eb91cb53c788229972b7d8326594ad97c3a0d6a1b365bd5059756aa"
-        }
-      ]
+      "execution_requirements": []
     },
     {
       "package": "star_toggle_cvpr2026",
       "lifecycle": "protocol_bound",
-      "execution_state": "closure_binding_required",
+      "execution_state": "execution_ready",
       "program_id": "star_toggle_cvpr2026",
-      "program_digest": "48852937486fa3f7c6792deaba47047c5ebdcf3446c039c2814db95ab7826b83",
+      "program_digest": "88274af24f47c5292e7a9b1a580d00203d6c8b736524359f03dbd685e18315fa",
       "benchmark_ids": [
         "state-control-benchmark"
       ],
-      "execution_requirements": [
-        {
-          "parameter": "benchmark_split_id",
-          "kind": "benchmark_split",
-          "consumers": [
-            "study:build_study"
-          ],
-          "requirement_digest": "3c91a241e20e92db102781412a247e0a3426900e6a89168121d48f8c6aaad6e3"
-        }
-      ]
+      "execution_requirements": []
     },
     {
       "package": "steve1_minecraft",
@@ -1331,7 +962,7 @@
       "lifecycle": "protocol_bound",
       "execution_state": "closure_binding_required",
       "program_id": "storm_wiki",
-      "program_digest": "6731dde3aa1865cfc0cc998e31cc290a6208a632e4cfc012dc7d4adb3b3be626",
+      "program_digest": "a9dd0a6e2f0faf7239fe98136ca3ba37db96d1529e3c4e41528a0d4044814f25",
       "benchmark_ids": [
         "freshwiki"
       ],
@@ -1343,55 +974,30 @@
             "study:build_storm_freshwiki_study"
           ],
           "requirement_digest": "52286be5265c197296585c48aea97c63de1add0fca06e37c537f1e89f057de48"
-        },
-        {
-          "parameter": "split_id",
-          "kind": "benchmark_split",
-          "consumers": [
-            "study:build_storm_freshwiki_study"
-          ],
-          "requirement_digest": "daa582227dc912aae861a0ca213499d13a2715e7955a63fec0cee779d91521bb"
         }
       ]
     },
     {
       "package": "swe_agent_swebench",
       "lifecycle": "protocol_bound",
-      "execution_state": "closure_binding_required",
+      "execution_state": "execution_ready",
       "program_id": "swe_agent_swebench",
-      "program_digest": "f58ccd499e108cc035edfef603381e786cb0efbf9b27085bbd5193fd486018e2",
+      "program_digest": "f3fd4fe910399a52fee901c523cc911f6ef69cc7e11048ef9468ec5d531a1c4f",
       "benchmark_ids": [
         "swe-bench"
       ],
-      "execution_requirements": [
-        {
-          "parameter": "split_id",
-          "kind": "benchmark_split",
-          "consumers": [
-            "study:build_swe_agent_swebench_study"
-          ],
-          "requirement_digest": "832f85893506060ce940cf6da7303443260ed9d8966cf301eaff529868449dbe"
-        }
-      ]
+      "execution_requirements": []
     },
     {
       "package": "toolformer",
       "lifecycle": "protocol_bound",
       "execution_state": "closure_binding_required",
       "program_id": "toolformer",
-      "program_digest": "d08665a6d978e42c6f77562c14aa5e8d3c8312fa8a9e7c72444b701a8f5006d9",
+      "program_digest": "7625046d1e4d02d0c53fa19af5faab520fa23c955005d8a788b4101f33827ce8",
       "benchmark_ids": [
         "toolformer-eval"
       ],
       "execution_requirements": [
-        {
-          "parameter": "split_id",
-          "kind": "benchmark_split",
-          "consumers": [
-            "study:build_toolformer_study"
-          ],
-          "requirement_digest": "339d0210c555269a7fdf0f20a31ac9e04706e8a4c8cd2c1ef235fda95c6afe33"
-        },
         {
           "parameter": "tool_capability_ids",
           "kind": "capability_closure",
@@ -1407,7 +1013,7 @@
       "lifecycle": "protocol_bound",
       "execution_state": "closure_binding_required",
       "program_id": "toolllm_toolbench",
-      "program_digest": "a725424647781ecbc63f1821feeb3f5152022cd3797fa5a5a83871431ab012a2",
+      "program_digest": "edaa479449c168a42d0d2ab3ec287c666da860ab71209a8f5b9d02f2e4643470",
       "benchmark_ids": [
         "toolbench"
       ],
@@ -1420,14 +1026,6 @@
             "study:build_toolllm_toolbench_study"
           ],
           "requirement_digest": "5f78e48bb26e9655f491c4d0132fb6f346c78e42583b99bff7f9be01c5942f60"
-        },
-        {
-          "parameter": "split_id",
-          "kind": "benchmark_split",
-          "consumers": [
-            "study:build_toolllm_toolbench_study"
-          ],
-          "requirement_digest": "eff7b5669a4344e7715b733174d7283c4467443ca8ff5a71286aae79adce219b"
         }
       ]
     },
@@ -1457,44 +1055,26 @@
     {
       "package": "ui_agile_cvprf2026",
       "lifecycle": "protocol_bound",
-      "execution_state": "closure_binding_required",
+      "execution_state": "execution_ready",
       "program_id": "ui_agile_cvprf2026",
-      "program_digest": "923bfd248dff759fb26e6ad60f1b9960ce9a062ab88760971fe50224eca43853",
+      "program_digest": "209ad95381ad60ad840c93130bb53abdd5285f78aad8e27fbe3f6bf2b143c298",
       "benchmark_ids": [
         "androidcontrol",
         "screenspot-pro",
         "screenspot-v2"
       ],
-      "execution_requirements": [
-        {
-          "parameter": "benchmark_split_id",
-          "kind": "benchmark_split",
-          "consumers": [
-            "study:build_study"
-          ],
-          "requirement_digest": "843df3260bf8b52aae7a74f1f79b4b01aadc9aaa43cf491d60cfc57569625026"
-        }
-      ]
+      "execution_requirements": []
     },
     {
       "package": "ui_tars_desktop_v001",
       "lifecycle": "protocol_bound",
-      "execution_state": "closure_binding_required",
+      "execution_state": "execution_ready",
       "program_id": "ui_tars_desktop_v001",
-      "program_digest": "5a9b6a5d62f2d9c12bc21419c2f3447fb7d15c6b624b0d2c6c3a80e85eeb3260",
+      "program_digest": "b83b11a9b627ca228fb2bafbca98b517c09e0641e9653ac5418596caedd6d576",
       "benchmark_ids": [
         "osworld"
       ],
-      "execution_requirements": [
-        {
-          "parameter": "split_id",
-          "kind": "benchmark_split",
-          "consumers": [
-            "study:build_ui_tars_osworld_study"
-          ],
-          "requirement_digest": "d54ddf1c60d749d4fa3a554e43b487b7f757f18267e204ee07364726211232c0"
-        }
-      ]
+      "execution_requirements": []
     },
     {
       "package": "vca_video",
@@ -1530,22 +1110,13 @@
     {
       "package": "videoarm_cvpr2026",
       "lifecycle": "protocol_bound",
-      "execution_state": "closure_binding_required",
+      "execution_state": "execution_ready",
       "program_id": "videoarm_cvpr2026",
-      "program_digest": "6ee28efeea06365d33f2051a241ceb44621d4a3a3e053eb39c4b03367f3e333f",
+      "program_digest": "fff22652932e88ecda3809c00fa8045269414f409d065275ada914f9be0b0b2e",
       "benchmark_ids": [
         "egoschema"
       ],
-      "execution_requirements": [
-        {
-          "parameter": "split_id",
-          "kind": "benchmark_split",
-          "consumers": [
-            "study:build_videoarm_study"
-          ],
-          "requirement_digest": "4f2b37a07ec74863ea8c32d4e73dd3a58634af93bde3d806565f4f58f1a012dc"
-        }
-      ]
+      "execution_requirements": []
     },
     {
       "package": "videollamb_memory",
@@ -1561,9 +1132,9 @@
     {
       "package": "vilomem_cvpr2026",
       "lifecycle": "protocol_bound",
-      "execution_state": "closure_binding_required",
+      "execution_state": "execution_ready",
       "program_id": "vilomem_cvpr2026",
-      "program_digest": "ead8aa12d25905d83e65e991e56f5fc08c175efa71971ffef6d4db0407819a17",
+      "program_digest": "b2f93f4aaa88eb273bc39a35188617681ea3d06c78300043a3c62b837189f4db",
       "benchmark_ids": [
         "hallusionbench",
         "mathvision",
@@ -1572,16 +1143,7 @@
         "mmstar",
         "realworldqa"
       ],
-      "execution_requirements": [
-        {
-          "parameter": "benchmark_split_id",
-          "kind": "benchmark_split",
-          "consumers": [
-            "study:build_study"
-          ],
-          "requirement_digest": "4089dee0a87863d3edeb40815fac22f78c786266dd3191a6ecef2bef07b05635"
-        }
-      ]
+      "execution_requirements": []
     },
     {
       "package": "vima_embodied",
@@ -1608,42 +1170,24 @@
     {
       "package": "watch_learn_cvpr2026",
       "lifecycle": "protocol_bound",
-      "execution_state": "closure_binding_required",
+      "execution_state": "execution_ready",
       "program_id": "watch_learn_cvpr2026",
-      "program_digest": "21d12896fc53e5f55e07f7be45ef083668879d89d31bc0ed1c2a7b961666b994",
+      "program_digest": "f82edfa5184a31613143de7b69f86477dd3dc1be376940c506a8e164dc5e5fd6",
       "benchmark_ids": [
         "osworld"
       ],
-      "execution_requirements": [
-        {
-          "parameter": "split_id",
-          "kind": "benchmark_split",
-          "consumers": [
-            "study:build_watch_and_learn_study"
-          ],
-          "requirement_digest": "2e044e665234fbfd622a394223e21e5371766d96e7510e133cdf466e745a6ee0"
-        }
-      ]
+      "execution_requirements": []
     },
     {
       "package": "webagent_r1_emnlp2025",
       "lifecycle": "protocol_bound",
-      "execution_state": "closure_binding_required",
+      "execution_state": "execution_ready",
       "program_id": "webagent_r1_emnlp2025",
-      "program_digest": "77a85b7764a35e4e1761ef124d6610c2e7eed6d7ef7962c09c37fb16c511bf67",
+      "program_digest": "4be7ab399e0ce55f83c30ee2bb6832eff771e54c880efb3632cc617819a0cd96",
       "benchmark_ids": [
         "webarena"
       ],
-      "execution_requirements": [
-        {
-          "parameter": "split_id",
-          "kind": "benchmark_split",
-          "consumers": [
-            "study:build_webagent_r1_study"
-          ],
-          "requirement_digest": "07f103960bb29439ef11647a32082dbe548aa7b0a341fffab6e5079cbf4cd57c"
-        }
-      ]
+      "execution_requirements": []
     },
     {
       "package": "webvoyager",
@@ -1668,5 +1212,5 @@
       "execution_requirements": []
     }
   ],
-  "status_digest": "da08802fa633e1c69d09d41f74550406960a0beaa060842578b27e8235481c32"
+  "status_digest": "78295d240f62859ddc091f625d0f8c2ef0ac8f616b700827e2b8352ea2054c24"
 }

@@ -2,7 +2,7 @@
   "schema": "noetrium.reproduction.projection.v8",
   "authority": "generated_from_typed_definition_and_source",
   "package": "storm_wiki",
-  "package_digest": "02ec9b4ae052952b4babe9c70889ee132401327e97982d1a4dd489d765a6d3bd",
+  "package_digest": "0406670da13240b939617b9315c20a40da2deeae0be4016386d05d9cbd22b978",
   "definition_digest": "6984850bbaaa1139acee2db5aee2b4bfbeb80ccd94ddd7f49c298c04d45bc06d",
   "source_registry_digest": "a81615aa99cc6d96340bca8447ebe87504c9bdb0bcc0f961f51286299458a9b0",
   "lifecycle": "protocol_bound",
@@ -168,7 +168,7 @@
     "surface": "noetrium.api",
     "execution_state": "closure_binding_required",
     "program_id": "storm_wiki",
-    "program_digest": "6731dde3aa1865cfc0cc998e31cc290a6208a632e4cfc012dc7d4adb3b3be626",
+    "program_digest": "a9dd0a6e2f0faf7239fe98136ca3ba37db96d1529e3c4e41528a0d4044814f25",
     "execution_requirements": [
       {
         "parameter": "search_capability_id",
@@ -177,14 +177,6 @@
           "study:build_storm_freshwiki_study"
         ],
         "requirement_digest": "52286be5265c197296585c48aea97c63de1add0fca06e37c537f1e89f057de48"
-      },
-      {
-        "parameter": "split_id",
-        "kind": "benchmark_split",
-        "consumers": [
-          "study:build_storm_freshwiki_study"
-        ],
-        "requirement_digest": "daa582227dc912aae861a0ca213499d13a2715e7955a63fec0cee779d91521bb"
       }
     ]
   }

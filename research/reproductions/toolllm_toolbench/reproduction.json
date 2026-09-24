@@ -2,7 +2,7 @@
   "schema": "noetrium.reproduction.projection.v8",
   "authority": "generated_from_typed_definition_and_source",
   "package": "toolllm_toolbench",
-  "package_digest": "5927c4c37ef4ec08424c96b35b8cfe5b541ef1f0fb4928b82c2276b53fc2599e",
+  "package_digest": "48d950713ff5ac423813110b8626c701146cc0db25cbe213fb2d02cb656f0a00",
   "definition_digest": "c0fa5ef40151d3008d2c62449c48af0768b8e5896be45afaf33d45c003a7a30a",
   "source_registry_digest": "87536d5be60f9ec27323a2924c41fbf0380a3f575e43cc044fc3f39779050898",
   "lifecycle": "protocol_bound",
@@ -227,7 +227,7 @@
     "surface": "noetrium.api",
     "execution_state": "closure_binding_required",
     "program_id": "toolllm_toolbench",
-    "program_digest": "a725424647781ecbc63f1821feeb3f5152022cd3797fa5a5a83871431ab012a2",
+    "program_digest": "edaa479449c168a42d0d2ab3ec287c666da860ab71209a8f5b9d02f2e4643470",
     "execution_requirements": [
       {
         "parameter": "capability_ids",
@@ -237,14 +237,6 @@
           "study:build_toolllm_toolbench_study"
         ],
         "requirement_digest": "5f78e48bb26e9655f491c4d0132fb6f346c78e42583b99bff7f9be01c5942f60"
-      },
-      {
-        "parameter": "split_id",
-        "kind": "benchmark_split",
-        "consumers": [
-          "study:build_toolllm_toolbench_study"
-        ],
-        "requirement_digest": "eff7b5669a4344e7715b733174d7283c4467443ca8ff5a71286aae79adce219b"
       }
     ]
   }

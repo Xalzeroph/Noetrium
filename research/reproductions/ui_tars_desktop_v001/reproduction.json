@@ -2,7 +2,7 @@
   "schema": "noetrium.reproduction.projection.v8",
   "authority": "generated_from_typed_definition_and_source",
   "package": "ui_tars_desktop_v001",
-  "package_digest": "591c093be297a6e58ab9f20f974c3e94f782f346477e2e6f598c56a9a5b15dd2",
+  "package_digest": "649ec9a5ceed5484caf3a1765ca0683b111cb7a0551615a7f776467383323a47",
   "definition_digest": "b727da12acd74c46bfc6227a712a2b0ec9e1315c89e10ebf370bbbf9aa7aee77",
   "source_registry_digest": "c7505a81ddcc5278a50aea896538f01d33110fb19d48872fa2f45a553c1a3768",
   "lifecycle": "protocol_bound",
@@ -111,18 +111,9 @@
   ],
   "research_os": {
     "surface": "noetrium.api",
-    "execution_state": "closure_binding_required",
+    "execution_state": "execution_ready",
     "program_id": "ui_tars_desktop_v001",
-    "program_digest": "5a9b6a5d62f2d9c12bc21419c2f3447fb7d15c6b624b0d2c6c3a80e85eeb3260",
-    "execution_requirements": [
-      {
-        "parameter": "split_id",
-        "kind": "benchmark_split",
-        "consumers": [
-          "study:build_ui_tars_osworld_study"
-        ],
-        "requirement_digest": "d54ddf1c60d749d4fa3a554e43b487b7f757f18267e204ee07364726211232c0"
-      }
-    ]
+    "program_digest": "b83b11a9b627ca228fb2bafbca98b517c09e0641e9653ac5418596caedd6d576",
+    "execution_requirements": []
   }
 }
