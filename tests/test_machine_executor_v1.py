@@ -34,6 +34,18 @@ class IncrementInterpreter:
             base_revision=state.revision,
             state_delta={"count": count + 1},
             event_payloads=({"type": "increment", "command_id": command.command_id},),
+        )
+
+
+class EmittingIncrementInterpreter:
+    def propose(self, command, state):
+        count = cast(int, state.state.get("count", 0))
+        return TransitionProposal(
+            machine_id=state.machine_id,
+            command_id=command.command_id,
+            base_revision=state.revision,
+            state_delta={"count": count + 1},
+            event_payloads=({"type": "increment", "command_id": command.command_id},),
             emitted_commands=(MachineCommand(
                 command_id=f"child-{command.command_id}",
                 machine_id="agent-1",
@@ -181,7 +193,7 @@ def test_runtime_reconciles_outbox_and_inbox_deduplicates() -> None:
     outbox = InMemoryMachineOutbox()
     runtime = make_runtime(journal, outbox=outbox)
     runtime.open({"count": 0})
-    first = runtime.step(command(0, "command-1"), IncrementInterpreter())
+    first = runtime.step(command(0, "command-1"), EmittingIncrementInterpreter())
     pending = outbox.pending()
     assert len(pending) == 1
     assert runtime.reconcile_outbox() == pending
@@ -197,6 +209,41 @@ def test_runtime_reconciles_outbox_and_inbox_deduplicates() -> None:
     outbox.mark(receipt)
     assert outbox.pending() == ()
     assert first.emitted_commands[0].command_id == pending[0].command.command_id
+
+
+def test_runtime_rejects_emitted_commands_without_outbox_before_commit() -> None:
+    journal = InMemoryMachineJournal()
+    runtime = make_runtime(journal)
+    runtime.open({"count": 0})
+
+    with pytest.raises(
+        Exception,
+        match="emitted commands require an outbox authority",
+    ):
+        runtime.step(
+            command(0, "command-with-child"),
+            EmittingIncrementInterpreter(),
+        )
+
+    assert journal.latest("run-1") is None
+
+
+def test_runtime_rejects_reopen_of_emitting_history_without_outbox() -> None:
+    journal = InMemoryMachineJournal()
+    outbox = InMemoryMachineOutbox()
+    writer = make_runtime(journal, outbox=outbox)
+    writer.open({"count": 0})
+    writer.step(
+        command(0, "command-with-child"),
+        EmittingIncrementInterpreter(),
+    )
+
+    restarted_without_delivery = make_runtime(journal)
+    with pytest.raises(
+        MachineIntegrityError,
+        match="no outbox authority is bound",
+    ):
+        restarted_without_delivery.open({"count": 0})
 
 
 def test_runtime_rejects_command_outside_family_contract() -> None:
