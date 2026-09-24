@@ -58807,7 +58807,7 @@
         "DURABLE"
       ],
       "kind": "enum",
-      "line": 13,
+      "line": 14,
       "methods": [],
       "module": "noetrium_platform.foundation.kernel.kernel.durability.durable_append",
       "name": "AppendDurability",
@@ -58825,7 +58825,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 9,
+      "line": 10,
       "methods": [],
       "module": "noetrium_platform.foundation.kernel.kernel.durability.durable_append",
       "name": "DurableAppendError",
@@ -58833,6 +58833,31 @@
         "DurableAppendError"
       ],
       "qualname": "noetrium_platform.foundation.kernel.kernel.durability.durable_append.DurableAppendError",
+      "system_key": "platform",
+      "top_system": "platform"
+    },
+    {
+      "bases": [],
+      "decorators": [],
+      "fields": [],
+      "kind": "class",
+      "line": 19,
+      "methods": [
+        "__init__",
+        "is_open",
+        "open",
+        "write_all",
+        "sync",
+        "close",
+        "__enter__",
+        "__exit__"
+      ],
+      "module": "noetrium_platform.foundation.kernel.kernel.durability.durable_append",
+      "name": "PersistentAppendFile",
+      "nesting": [
+        "PersistentAppendFile"
+      ],
+      "qualname": "noetrium_platform.foundation.kernel.kernel.durability.durable_append.PersistentAppendFile",
       "system_key": "platform",
       "top_system": "platform"
     },
@@ -102401,7 +102426,7 @@
   ],
   "counts": {
     "association_edges": 3426,
-    "classes": 3337,
+    "classes": 3338,
     "constructor_edges": 932,
     "inheritance_edges": 149,
     "module_import_edges": 5113,
@@ -143846,7 +143871,7 @@
   "parse_errors": [],
   "registry_sha256": "d3fc1bab831f1b7379e5a36048a61c00fe173429df958270d36a16f3f00171c0",
   "schema": "noetrium-code-architecture-index.v1",
-  "source_git_sha": "b0ff6f03f9819c59c3dfe9e3599038a3c948be22",
+  "source_git_sha": "2f84ee62dc7f3b0950e2e7d00a04626304b59ee5",
   "system_import_edges": [
     {
       "count": 85,
