@@ -25,16 +25,15 @@ class StudyWorkflowDecouplingV126Tests(unittest.TestCase):
             / "runtime"
             / "engine.py"
         ).read_text(encoding="utf-8")
-        composition_source = (
+        retired_root = (
             root
             / "noetrium_platform"
             / "composition"
             / "experiment_runtime.py"
-        ).read_text(encoding="utf-8")
+        )
         self.assertNotIn("trial_protocol=", runtime_source)
         self.assertNotIn("participant_runtime", runtime_source)
-        self.assertIn("ExecutionTrialProtocolPort", composition_source)
-        self.assertIn("build_experiment_runtime", composition_source)
+        self.assertFalse(retired_root.exists())
         self.assertNotIn('environment.observe"', runtime_source)
         self.assertNotIn('method.recall"', runtime_source)
 
