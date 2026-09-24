@@ -255,6 +255,9 @@ class DirectoryRunArtifactStore(RunArtifactStorePort):
             )
             if recorded == payload:
                 return
+            raise RunArtifactFinalizationError(
+                "run artifact generation ledger conflicts with finalized receipt"
+            )
         atomic_replace_bytes(ledger, payload)
 
     def finalize(
