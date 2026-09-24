@@ -5,7 +5,11 @@ import json
 from pathlib import Path
 
 from noetrium_platform.foundation.kernel.kernel import JsonObject, JsonValue, canonical_bytes, canonical_digest
-from noetrium_platform.foundation.kernel.kernel.durability import atomic_replace_bytes, durable_append_bytes
+from noetrium_platform.foundation.kernel.kernel.durability import (
+    InterprocessFileLock,
+    atomic_replace_bytes,
+    durable_append_bytes,
+)
 
 from ..api.artifacts import (
     RunArtifactFinalizationError,
@@ -39,6 +43,9 @@ class DirectoryRunArtifactStore(RunArtifactStorePort):
         self.root = Path(root).expanduser().resolve()
         self.run_id = run_id
         self._writer_actor = writer_actor
+        self._process_lock_path = (
+            self.root / _FINALIZED_DIR / "writer.guard.lock"
+        )
 
     def _resolve_ref(self, name: str, *, create_parent: bool) -> Path:
         if type(name) is not str or not name.strip() or "\\" in name or Path(name).is_absolute():
@@ -99,9 +106,10 @@ class DirectoryRunArtifactStore(RunArtifactStorePort):
         target = self._resolve_ref(name, create_parent=True)
 
         def publish_owned() -> str:
-            self._require_unsealed(name)
-            atomic_replace_bytes(target, content.encode("utf-8"))
-            return str(target)
+            with InterprocessFileLock(self._process_lock_path):
+                self._require_unsealed(name)
+                atomic_replace_bytes(target, content.encode("utf-8"))
+                return str(target)
 
         return self._writer_actor.call(f"publish:{name}", publish_owned)
 
@@ -116,9 +124,10 @@ class DirectoryRunArtifactStore(RunArtifactStorePort):
         encoded = canonical_bytes(payload).decode("utf-8") + "\n"
 
         def append_owned() -> str:
-            self._require_unsealed(name)
-            durable_append_bytes(target, encoded.encode("utf-8"))
-            return str(target)
+            with InterprocessFileLock(self._process_lock_path):
+                self._require_unsealed(name)
+                durable_append_bytes(target, encoded.encode("utf-8"))
+                return str(target)
 
         return self._writer_actor.call(f"append:{name}", append_owned)
 
@@ -268,8 +277,24 @@ class DirectoryRunArtifactStore(RunArtifactStorePort):
         record_stream: bool,
     ) -> RunArtifactSnapshotReceipt:
         def finalize_owned() -> RunArtifactSnapshotReceipt:
-            seal = self._seal_path(artifact_ref)
-            if seal.exists():
+            with InterprocessFileLock(self._process_lock_path):
+                return self._finalize_locked(
+                    artifact_ref,
+                    kind=kind,
+                    record_stream=record_stream,
+                )
+
+        return self._writer_actor.call(f"finalize:{artifact_ref}", finalize_owned)
+
+    def _finalize_locked(
+        self,
+        artifact_ref: str,
+        *,
+        kind: RunArtifactKind,
+        record_stream: bool,
+    ) -> RunArtifactSnapshotReceipt:
+        seal = self._seal_path(artifact_ref)
+        if seal.exists():
                 recorded = self._decode_receipt(
                     self._read_bytes(seal, error_type=RunArtifactFinalizationError, label="seal"),
                     error_type=RunArtifactFinalizationError,
@@ -282,32 +307,35 @@ class DirectoryRunArtifactStore(RunArtifactStorePort):
                 except RunArtifactVerificationError as exc:
                     raise RunArtifactFinalizationError("sealed run artifact no longer matches its receipt") from exc
 
-            receipt = self._snapshot_unlocked(
-                artifact_ref,
-                kind=kind,
-                record_stream=record_stream,
-                error_type=RunArtifactFinalizationError,
-            )
-            payload = canonical_bytes(receipt, indent=2) + b"\n"
-            atomic_replace_bytes(seal, payload)
-            try:
-                verified = self._verify_finalized_unlocked(receipt)
-            except RunArtifactVerificationError as exc:
-                raise RunArtifactFinalizationError("finalized run artifact failed immediate verification") from exc
-            self._ensure_generation_index(receipt)
-            return verified
-
-        return self._writer_actor.call(f"finalize:{artifact_ref}", finalize_owned)
+        receipt = self._snapshot_unlocked(
+            artifact_ref,
+            kind=kind,
+            record_stream=record_stream,
+            error_type=RunArtifactFinalizationError,
+        )
+        payload = canonical_bytes(receipt, indent=2) + b"\n"
+        atomic_replace_bytes(seal, payload)
+        try:
+            verified = self._verify_finalized_unlocked(receipt)
+        except RunArtifactVerificationError as exc:
+            raise RunArtifactFinalizationError(
+                "finalized run artifact failed immediate verification"
+            ) from exc
+        self._ensure_generation_index(receipt)
+        return verified
 
     def verify_finalized(self, receipt: RunArtifactSnapshotReceipt) -> RunArtifactSnapshotReceipt:
         if type(receipt) is not RunArtifactSnapshotReceipt:
             raise RunArtifactVerificationError("run artifact verification requires a typed snapshot receipt")
         if receipt.run_id != self.run_id:
             raise RunArtifactVerificationError("run artifact snapshot belongs to a different run")
+        def verify_owned() -> RunArtifactSnapshotReceipt:
+            with InterprocessFileLock(self._process_lock_path):
+                return self._verify_finalized_unlocked(receipt)
+
         return self._writer_actor.call(
             f"verify-finalized:{receipt.artifact_ref}",
-            self._verify_finalized_unlocked,
-            receipt,
+            verify_owned,
         )
 
 
