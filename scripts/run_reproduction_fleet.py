@@ -12,6 +12,9 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 from noetrium import api
+from noetrium_platform.composition.research_binding_authority import (
+    ResearchProjectManifestRequirement,
+)
 from noetrium_platform.composition.research_os_graph import (
     compile_research_portfolio_graph,
 )
@@ -54,6 +57,7 @@ class StudyExecutionAuthorityRequirement:
     trial_provider_requirement_id: str
     trial_protocol_identity_digest: str
     aggregation_requirement_id: str
+    project_manifest_requirement_digest: str
     participant_requirements: tuple[tuple[str, str, str, str, str], ...]
     model_role_requirements: tuple[
         tuple[str, str, str | None, str, bool, int | None, str],
@@ -191,6 +195,9 @@ def _lane(definition, benchmark_authority: RepositoryBenchmarkAuthority) -> Lane
                             selection.benchmark,
                         )
                         requirements = study.binding_requirements
+                        project_manifest_requirement = (
+                            ResearchProjectManifestRequirement.from_study(study)
+                        )
                         participant_requirements = tuple(
                             (
                                 row.role,
@@ -233,6 +240,9 @@ def _lane(definition, benchmark_authority: RepositoryBenchmarkAuthority) -> Lane
                             ),
                             "aggregation_requirement_id": (
                                 study.aggregation_requirement_id
+                            ),
+                            "project_manifest_requirement_digest": (
+                                project_manifest_requirement.requirement_digest
                             ),
                             "participant_requirements": participant_requirements,
                             "model_role_requirements": model_role_requirements,
