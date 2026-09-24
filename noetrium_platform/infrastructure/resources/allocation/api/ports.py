@@ -66,7 +66,12 @@ class AtomicEndpointReservationPort(Protocol):
     def reconcile(
         self, *, now: float | None = None
     ) -> tuple[EndpointAllocation, ...]: ...
-    def reconcile_orphans(self, *, now: float | None = None) -> tuple[EndpointAllocation, ...]: ...
+    def expire_orphans(
+        self, *, now: float | None = None
+    ) -> tuple[EndpointAllocation, ...]: ...
+    def retire_orphan(
+        self, allocation: EndpointAllocation, *, now: float | None = None
+    ) -> EndpointAllocation: ...
 
 
 class EndpointLeaseGuardPort(Protocol):
