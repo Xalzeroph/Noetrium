@@ -23,7 +23,7 @@ from noetrium_platform.research.experimentation.lifecycle.api import (
     ExperimentSpec,
     ExperimentTrialProtocolIdentityMismatch,
 )
-from noetrium_platform.research.experimentation.lifecycle.experiment.runtime import (
+from noetrium_platform.research.experimentation.lifecycle.experiment.api.trial_protocol import (
     trial_protocol_identity,
     verify_trial_protocol_identity,
 )
