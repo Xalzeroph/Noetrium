@@ -172,6 +172,11 @@ def test_noetrium_api_exposes_only_research_os_product_surface() -> None:
         "ResearchCampaignPlan",
         "bind_research_campaign",
         "bind_research_execution_pool",
+        "ExperimentRuntime",
+        "DecisionCycleRuntimePort",
+        "RunRuntimePort",
+        "ExperimentComponentBindingPort",
+        "ExperimentTrialCycleExecutorPort",
     }
     assert retired.isdisjoint(api.__all__)
     for name in retired:
