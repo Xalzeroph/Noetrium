@@ -707,3 +707,50 @@ class ManagementTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+def test_model_runtime_shutdown_preserves_desired_state_for_restart() -> None:
+    with TemporaryDirectory() as td:
+        root = Path(td)
+        directories = build_local_directory_authorities(layout(root))
+        environments = build_environments(directories)
+        environments.lifecycle.create(
+            PythonEnvironmentSpec("serve", PLATFORM_SCOPE, backend="fake")
+        )
+        model_dir = root / "model"
+        model_dir.mkdir()
+        factory = FakeFactory()
+        models = build_models(directories, environments, factory)
+        models.assets.register_model("m", PLATFORM_SCOPE, model_dir)
+        models.deployment_catalog.put_deployment(
+            ModelDeploymentSpec(
+                deployment_id="d",
+                service_id="model:d",
+                model_id="m",
+                engine="custom",
+                scope=PLATFORM_SCOPE,
+                executable="{python}",
+                argv=("{python}", "-m", "server"),
+                cwd=root,
+                python_environment_id="serve",
+            )
+        )
+
+        models.deployment_runtime.start("d")
+        assert (
+            models.deployment_catalog.deployment("d").desired_state
+            is ModelDesiredState.RUNNING
+        )
+        assert factory.runtime.live is True
+
+        stopped = models.fleet.shutdown_all()[0]
+        assert stopped.runtime_state is ModelRuntimeState.STOPPED
+        assert (
+            models.deployment_catalog.deployment("d").desired_state
+            is ModelDesiredState.RUNNING
+        )
+        assert factory.runtime.live is False
+
+        restarted = models.fleet.reconcile()[0]
+        assert restarted.runtime_state is ModelRuntimeState.RUNNING
+        assert factory.runtime.live is True
