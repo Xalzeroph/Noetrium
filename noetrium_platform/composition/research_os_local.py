@@ -13,7 +13,12 @@ from noetrium_platform.composition.research_os import bind_portfolio_research_os
 from noetrium_platform.composition.research_os_execution import StrictResearchOSControl
 from noetrium_platform.composition.research_os_experiment import (
     ResearchOSExperimentClosurePort,
-    ResearchOSExperimentRuntimeBindingPort,
+)
+from noetrium_platform.composition.research_os_experiment_artifacts import (
+    DirectoryResearchOSExperimentArtifactStoreFactory,
+)
+from noetrium_platform.composition.research_os_experiment_runtime_binding import (
+    ResearchOSExperimentRuntimeComponents,
 )
 from noetrium_platform.composition.research_os_runtime import (
     CanonicalResearchOSNodeRuntime,
@@ -59,13 +64,13 @@ def compose_local_research_os(
     state_root: Path,
     *,
     experiment_closures: ResearchOSExperimentClosurePort | None = None,
-    experiment_bindings: ResearchOSExperimentRuntimeBindingPort | None = None,
+    experiment_runtime_components: ResearchOSExperimentRuntimeComponents | None = None,
 ) -> LocalResearchOSComposition:
     """Compose the single durable local Research OS implementation.
 
-    Experimentation is enabled only when both closure authority and exact
-    runtime-binding authority are supplied. Half-bound experiment execution is
-    rejected at composition time.
+    Experimentation is enabled only when both closure authority and owner-system
+    runtime components are supplied. The local composition owns the execution
+    pool and cut-local Artifact-store wiring; half-bound execution is rejected.
     """
 
     if type(state_root) is not Path:
@@ -73,10 +78,10 @@ def compose_local_research_os(
     root = state_root.expanduser().absolute()
     if root.exists() and (root.is_symlink() or not root.is_dir()):
         raise ValueError("local Research OS state_root must be a real directory")
-    if (experiment_closures is None) != (experiment_bindings is None):
+    if (experiment_closures is None) != (experiment_runtime_components is None):
         raise ValueError(
-            "local Research OS Experimentation requires both closure and "
-            "runtime-binding authorities"
+            "local Research OS Experimentation requires both closure authority "
+            "and runtime components"
         )
     if experiment_closures is not None and not isinstance(
         experiment_closures,
@@ -85,12 +90,13 @@ def compose_local_research_os(
         raise TypeError(
             "local Research OS experiment_closures must satisfy typed port"
         )
-    if experiment_bindings is not None and not isinstance(
-        experiment_bindings,
-        ResearchOSExperimentRuntimeBindingPort,
+    if (
+        experiment_runtime_components is not None
+        and type(experiment_runtime_components)
+        is not ResearchOSExperimentRuntimeComponents
     ):
         raise TypeError(
-            "local Research OS experiment_bindings must satisfy typed port"
+            "local Research OS experiment_runtime_components must be typed"
         )
 
     root.mkdir(parents=True, exist_ok=True)
@@ -107,9 +113,20 @@ def compose_local_research_os(
     )
     pool = ResearchExecutionPool()
 
-    if experiment_bindings is None:
+    if experiment_runtime_components is None:
         runtime = CanonicalResearchOSNodeRuntime(root / "machine-state")
     else:
+        artifact_group = pool.open_experiment_group(
+            "research-os-experiment-artifact-authority",
+            resource_id="research-os-experiment-artifacts",
+        )
+        artifact_factory = DirectoryResearchOSExperimentArtifactStoreFactory(
+            root / "run-artifacts",
+            task_group=artifact_group,
+        )
+        experiment_bindings = experiment_runtime_components.bind(
+            artifact_factory
+        )
         runtime = CanonicalResearchOSNodeRuntime(
             root / "machine-state",
             execution_pool=pool,
