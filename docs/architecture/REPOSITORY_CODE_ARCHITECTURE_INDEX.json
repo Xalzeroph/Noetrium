@@ -2,14 +2,14 @@
   "counts": {
     "parse_errors": 0,
     "python_files": 3673,
-    "python_import_edges": 7132,
-    "symbols": 4859,
+    "python_import_edges": 7141,
+    "symbols": 4863,
     "tracked_files": 4303,
     "typescript_javascript_files": 11
   },
   "language_symbol_counts": {
     "javascript": 1,
-    "python": 4853,
+    "python": 4857,
     "typescript": 5
   },
   "parse_errors": [],
@@ -4607,6 +4607,12 @@
     {
       "source_module": "noetrium_platform.composition.operator.project.project_doctor",
       "source_role": "core_platform",
+      "target_module": "noetrium_platform.infrastructure.lifecycle.process.api",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "noetrium_platform.composition.operator.project.project_doctor",
+      "source_role": "core_platform",
       "target_module": "noetrium_platform.product.operator.api",
       "target_role": "core_platform"
     },
@@ -4632,6 +4638,12 @@
       "source_module": "noetrium_platform.composition.operator.project.project_experience",
       "source_role": "core_platform",
       "target_module": "noetrium_platform.foundation.governance.architecture.repository_boundary.api",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "noetrium_platform.composition.operator.project.project_experience",
+      "source_role": "core_platform",
+      "target_module": "noetrium_platform.infrastructure.lifecycle.process.api",
       "target_role": "core_platform"
     },
     {
@@ -4781,6 +4793,12 @@
     {
       "source_module": "noetrium_platform.composition.operator.project.project_testing",
       "source_role": "core_platform",
+      "target_module": "noetrium_platform.infrastructure.lifecycle.process.api",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "noetrium_platform.composition.operator.project.project_testing",
+      "source_role": "core_platform",
       "target_module": "noetrium_platform.product.operator.api",
       "target_role": "core_platform"
     },
@@ -4889,7 +4907,19 @@
     {
       "source_module": "noetrium_platform.composition.operator.wiring.project_experience",
       "source_role": "core_platform",
+      "target_module": "noetrium_platform.infrastructure.lifecycle.process.api",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "noetrium_platform.composition.operator.wiring.project_experience",
+      "source_role": "core_platform",
       "target_module": "noetrium_platform.product.operator.api",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "noetrium_platform.composition.operator.wiring.research",
+      "source_role": "core_platform",
+      "target_module": "noetrium_platform.composition.concurrency",
       "target_role": "core_platform"
     },
     {
@@ -4902,6 +4932,12 @@
       "source_module": "noetrium_platform.composition.operator.wiring.research",
       "source_role": "core_platform",
       "target_module": "noetrium_platform.composition.operator.project",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "noetrium_platform.composition.operator.wiring.research",
+      "source_role": "core_platform",
+      "target_module": "noetrium_platform.infrastructure.lifecycle.process.supervision.composition",
       "target_role": "core_platform"
     },
     {
@@ -30407,6 +30443,12 @@
     {
       "source_module": "tests.test_operator_project_core_sync_v1",
       "source_role": "tests",
+      "target_module": "noetrium_platform.infrastructure.lifecycle.process.api",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "tests.test_operator_project_core_sync_v1",
+      "source_role": "tests",
       "target_module": "noetrium_platform.product.operator.api",
       "target_role": "core_platform"
     },
@@ -30450,6 +30492,12 @@
       "source_module": "tests.test_operator_project_experience",
       "source_role": "tests",
       "target_module": "noetrium_platform.foundation.portfolio.api",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "tests.test_operator_project_experience",
+      "source_role": "tests",
+      "target_module": "noetrium_platform.infrastructure.lifecycle.process.api",
       "target_role": "core_platform"
     },
     {
@@ -31464,6 +31512,12 @@
       "source_module": "tests.test_project_single_authority_identity",
       "source_role": "tests",
       "target_module": "noetrium_platform.foundation.governance.architecture.repository_boundary.runtime",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "tests.test_project_single_authority_identity",
+      "source_role": "tests",
+      "target_module": "noetrium_platform.infrastructure.lifecycle.process.api",
       "target_role": "core_platform"
     },
     {
@@ -42809,7 +42863,7 @@
   ],
   "role_import_counts": [
     {
-      "count": 2664,
+      "count": 2670,
       "source_role": "core_platform",
       "target_role": "core_platform"
     },
@@ -42869,7 +42923,7 @@
       "target_role": "research_reproductions"
     },
     {
-      "count": 2790,
+      "count": 2793,
       "source_role": "tests",
       "target_role": "core_platform"
     },
@@ -42944,11 +42998,11 @@
     "reference_orchestration": 14,
     "research_reproductions": 414,
     "sdk": 5,
-    "tests": 971,
+    "tests": 975,
     "tooling": 38
   },
   "schema": "noetrium-repository-code-architecture-index.v1",
-  "source_git_sha": "708dab14f0a80f1216eab610ef998cd2aa7a5d4b",
+  "source_git_sha": "9a657b4c50546a47214f3d9e0b50248fe47b6194",
   "symbols": [
     {
       "bases": [],
@@ -64528,7 +64582,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 21,
+      "line": 22,
       "methods": [
         "__init__",
         "create",
@@ -137838,6 +137892,54 @@
       "fields": [],
       "kind": "class",
       "language": "python",
+      "line": 29,
+      "methods": [
+        "run"
+      ],
+      "module": "tests.test_operator_project_core_sync_v1",
+      "name": "_TestCommandRunner",
+      "path": "tests/test_operator_project_core_sync_v1.py",
+      "qualname": "tests.test_operator_project_core_sync_v1._TestCommandRunner",
+      "role": "tests"
+    },
+    {
+      "bases": [],
+      "decorators": [],
+      "fields": [],
+      "kind": "class",
+      "language": "python",
+      "line": 42,
+      "methods": [
+        "run"
+      ],
+      "module": "tests.test_operator_project_experience",
+      "name": "_TestCommandRunner",
+      "path": "tests/test_operator_project_experience.py",
+      "qualname": "tests.test_operator_project_experience._TestCommandRunner",
+      "role": "tests"
+    },
+    {
+      "bases": [],
+      "decorators": [],
+      "fields": [],
+      "kind": "class",
+      "language": "python",
+      "line": 57,
+      "methods": [
+        "run"
+      ],
+      "module": "tests.test_operator_project_experience",
+      "name": "_TimeoutCommandRunner",
+      "path": "tests/test_operator_project_experience.py",
+      "qualname": "tests.test_operator_project_experience._TimeoutCommandRunner",
+      "role": "tests"
+    },
+    {
+      "bases": [],
+      "decorators": [],
+      "fields": [],
+      "kind": "class",
+      "language": "python",
       "line": 23,
       "methods": [
         "__init__",
@@ -138546,6 +138648,22 @@
       "name": "_StaticBinding",
       "path": "tests/test_programmable_research_machine_v1.py",
       "qualname": "tests.test_programmable_research_machine_v1._StaticBinding",
+      "role": "tests"
+    },
+    {
+      "bases": [],
+      "decorators": [],
+      "fields": [],
+      "kind": "class",
+      "language": "python",
+      "line": 24,
+      "methods": [
+        "run"
+      ],
+      "module": "tests.test_project_single_authority_identity",
+      "name": "_TestCommandRunner",
+      "path": "tests/test_project_single_authority_identity.py",
+      "qualname": "tests.test_project_single_authority_identity._TestCommandRunner",
       "role": "tests"
     },
     {

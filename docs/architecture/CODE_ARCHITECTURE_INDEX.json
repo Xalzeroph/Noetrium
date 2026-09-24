@@ -39056,7 +39056,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 21,
+      "line": 22,
       "methods": [
         "__init__",
         "create",
@@ -102518,7 +102518,7 @@
     "classes": 3340,
     "constructor_edges": 933,
     "inheritance_edges": 149,
-    "module_import_edges": 5115,
+    "module_import_edges": 5121,
     "parse_errors": 0,
     "python_modules": 1928,
     "registry_authorities": 20,
@@ -108635,6 +108635,10 @@
     },
     {
       "source": "noetrium_platform.composition.operator.project.project_doctor",
+      "target": "noetrium_platform.infrastructure.lifecycle.process.api"
+    },
+    {
+      "source": "noetrium_platform.composition.operator.project.project_doctor",
       "target": "noetrium_platform.product.operator.api"
     },
     {
@@ -108652,6 +108656,10 @@
     {
       "source": "noetrium_platform.composition.operator.project.project_experience",
       "target": "noetrium_platform.foundation.governance.architecture.repository_boundary.api"
+    },
+    {
+      "source": "noetrium_platform.composition.operator.project.project_experience",
+      "target": "noetrium_platform.infrastructure.lifecycle.process.api"
     },
     {
       "source": "noetrium_platform.composition.operator.project.project_experience",
@@ -108752,6 +108760,10 @@
     {
       "source": "noetrium_platform.composition.operator.project.project_testing",
       "target": "noetrium_platform.composition.operator.project.project_subprocess"
+    },
+    {
+      "source": "noetrium_platform.composition.operator.project.project_testing",
+      "target": "noetrium_platform.infrastructure.lifecycle.process.api"
     },
     {
       "source": "noetrium_platform.composition.operator.project.project_testing",
@@ -108863,7 +108875,15 @@
     },
     {
       "source": "noetrium_platform.composition.operator.wiring.project_experience",
+      "target": "noetrium_platform.infrastructure.lifecycle.process.api"
+    },
+    {
+      "source": "noetrium_platform.composition.operator.wiring.project_experience",
       "target": "noetrium_platform.product.operator.api"
+    },
+    {
+      "source": "noetrium_platform.composition.operator.wiring.research",
+      "target": "noetrium_platform.composition.concurrency"
     },
     {
       "source": "noetrium_platform.composition.operator.wiring.research",
@@ -108880,6 +108900,10 @@
     {
       "source": "noetrium_platform.composition.operator.wiring.research",
       "target": "noetrium_platform.composition.operator.wiring.project_experience"
+    },
+    {
+      "source": "noetrium_platform.composition.operator.wiring.research",
+      "target": "noetrium_platform.infrastructure.lifecycle.process.supervision.composition"
     },
     {
       "source": "noetrium_platform.composition.operator.wiring.research",
@@ -128805,6 +128829,7 @@
         "noetrium_platform.composition.operator.project.research_project_codegen",
         "noetrium_platform.foundation.governance.architecture.repository_boundary.api",
         "noetrium_platform.foundation.portfolio.api",
+        "noetrium_platform.infrastructure.lifecycle.process.api",
         "noetrium_platform.product.operator.api"
       ],
       "module": "noetrium_platform.composition.operator.project.project_doctor",
@@ -128818,6 +128843,7 @@
         "noetrium_platform.composition.operator.project.project_scaffold",
         "noetrium_platform.composition.operator.project.project_testing",
         "noetrium_platform.foundation.governance.architecture.repository_boundary.api",
+        "noetrium_platform.infrastructure.lifecycle.process.api",
         "noetrium_platform.product.operator.api"
       ],
       "module": "noetrium_platform.composition.operator.project.project_experience",
@@ -128889,6 +128915,7 @@
     {
       "imports": [
         "noetrium_platform.composition.operator.project.project_subprocess",
+        "noetrium_platform.infrastructure.lifecycle.process.api",
         "noetrium_platform.product.operator.api"
       ],
       "module": "noetrium_platform.composition.operator.project.project_testing",
@@ -129010,6 +129037,7 @@
       "imports": [
         "noetrium_platform.composition.operator.project",
         "noetrium_platform.foundation.governance.architecture.repository_boundary.runtime",
+        "noetrium_platform.infrastructure.lifecycle.process.api",
         "noetrium_platform.product.operator.api"
       ],
       "module": "noetrium_platform.composition.operator.wiring.project_experience",
@@ -129019,10 +129047,12 @@
     },
     {
       "imports": [
+        "noetrium_platform.composition.concurrency",
         "noetrium_platform.composition.operator.maintenance_wiring.cli",
         "noetrium_platform.composition.operator.project",
         "noetrium_platform.composition.operator.wiring.cli",
         "noetrium_platform.composition.operator.wiring.project_experience",
+        "noetrium_platform.infrastructure.lifecycle.process.supervision.composition",
         "noetrium_platform.product.operator.runtime.research_cli"
       ],
       "module": "noetrium_platform.composition.operator.wiring.research",
@@ -143970,7 +144000,7 @@
   "parse_errors": [],
   "registry_sha256": "d3fc1bab831f1b7379e5a36048a61c00fe173429df958270d36a16f3f00171c0",
   "schema": "noetrium-code-architecture-index.v1",
-  "source_git_sha": "708dab14f0a80f1216eab610ef998cd2aa7a5d4b",
+  "source_git_sha": "9a657b4c50546a47214f3d9e0b50248fe47b6194",
   "system_import_edges": [
     {
       "count": 85,
@@ -144173,7 +144203,7 @@
       "target": "reliability"
     },
     {
-      "count": 319,
+      "count": 320,
       "source": "research_os",
       "target": "research_os"
     },
@@ -144183,7 +144213,7 @@
       "target": "resource"
     },
     {
-      "count": 64,
+      "count": 69,
       "source": "research_os",
       "target": "runtime"
     },
