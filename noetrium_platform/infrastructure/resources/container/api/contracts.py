@@ -16,6 +16,7 @@ from noetrium_platform.infrastructure.resources.lease.api import (
 MANAGED_CONTAINER_LABEL = "io.noetrium.managed"
 MANAGED_CONTAINER_LABEL_VALUE = "leased-container-v1"
 
+LABEL_AUTHORITY = "io.noetrium.authority-id"
 LABEL_ALLOCATION = "io.noetrium.allocation-id"
 LABEL_LEASE = "io.noetrium.lease-id"
 LABEL_FENCING = "io.noetrium.fencing-token"
@@ -68,20 +69,24 @@ class ManagedDockerContainerLease:
     holder_scope: ScopeIdentity
     image: str
     runtime_identity_digest: str
+    authority_id: str
     container_name: str
     lease: ResourceLease
 
     def __post_init__(self) -> None:
         if not self.allocation_id.strip() or not self.image.strip():
             raise ValueError("managed Docker container identity is incomplete")
-        if (
-            len(self.runtime_identity_digest) != 64
-            or any(
-                ch not in "0123456789abcdef"
-                for ch in self.runtime_identity_digest
-            )
+        for field_name, value in (
+            ("runtime_identity_digest", self.runtime_identity_digest),
+            ("authority_id", self.authority_id),
         ):
-            raise ValueError("managed Docker runtime identity must be lowercase sha256")
+            if (
+                len(value) != 64
+                or any(ch not in "0123456789abcdef" for ch in value)
+            ):
+                raise ValueError(
+                    f"managed Docker {field_name} must be lowercase sha256"
+                )
         if self.lease.resource != ResourceIdentity(
             ResourceKind.CONTAINER, self.allocation_id
         ):
@@ -95,6 +100,7 @@ class ManagedDockerContainerLease:
     def labels(self) -> tuple[tuple[str, str], ...]:
         return (
             (MANAGED_CONTAINER_LABEL, MANAGED_CONTAINER_LABEL_VALUE),
+            (LABEL_AUTHORITY, self.authority_id),
             (LABEL_ALLOCATION, self.allocation_id),
             (LABEL_LEASE, self.lease.lease_id),
             (LABEL_FENCING, str(self.lease.fencing_token)),
@@ -126,6 +132,7 @@ __all__ = [
     "DockerContainerLeasePolicy",
     "DockerContainerObservation",
     "DockerContainerReconciliation",
+    "LABEL_AUTHORITY",
     "LABEL_ALLOCATION",
     "LABEL_FENCING",
     "LABEL_HOLDER",
