@@ -1,16 +1,22 @@
 from __future__ import annotations
 
 from pathlib import Path
+import ctypes
 import errno
 import os
 import sys
 from tempfile import TemporaryDirectory
+from threading import Lock, RLock
 import unittest
 from unittest.mock import patch
 
 from noetrium_platform.infrastructure.reliability.forensics.providers.segmented_hashlog import SegmentedHashChainedJSONL
 from noetrium_platform.infrastructure.reliability.forensics.providers.hashlog import HashChainError
 from noetrium_platform.infrastructure.reliability.forensics.providers.directory_change_signal import DirectoryChangeSignal
+from noetrium_platform.infrastructure.reliability.forensics.providers.linux_directory_watch import (
+    LinuxDirectoryWatch,
+    _LinuxInotifyHub,
+)
 
 
 class SegmentedEventHotPathV173Tests(unittest.TestCase):
@@ -41,6 +47,95 @@ class SegmentedEventHotPathV173Tests(unittest.TestCase):
             (root / "99999999.jsonl").write_text("", encoding="utf-8")
             with self.assertRaises(Exception):
                 ledger.append({"event": 2})
+
+    def test_linux_watch_wrapper_keeps_token_when_unregister_fails(self) -> None:
+        class FailingHub:
+            def __init__(self) -> None:
+                self.calls = 0
+
+            def unregister(self, token: int) -> None:
+                self.calls += 1
+                self.last_token = token
+                if self.calls == 1:
+                    raise OSError(errno.EIO, "simulated rm_watch failure")
+
+        hub = FailingHub()
+        watch = object.__new__(LinuxDirectoryWatch)
+        watch._hub = hub
+        watch._token = 7
+
+        with self.assertRaises(OSError):
+            watch.close()
+        self.assertEqual(watch._token, 7)
+
+        watch.close()
+        self.assertIsNone(watch._token)
+        self.assertEqual(hub.calls, 2)
+
+    def test_linux_last_watch_unregister_is_retryable_after_kernel_failure(self) -> None:
+        hub = object.__new__(_LinuxInotifyHub)
+        hub._owner_pid = os.getpid()
+        hub._lock = RLock()
+        hub._read_lock = Lock()
+        hub._fd = 123
+        hub._closed = False
+        hub._watch_by_token = {7: 11}
+        hub._tokens_by_watch = {11: {7}}
+        hub._pending = {7}
+        hub._drain = lambda: None
+
+        def fail_remove(fd: int, watch: int) -> int:
+            self.assertEqual((fd, watch), (123, 11))
+            ctypes.set_errno(errno.EIO)
+            return -1
+
+        hub._remove_watch = fail_remove
+        with self.assertRaises(OSError):
+            hub.unregister(7)
+
+        self.assertEqual(hub._watch_by_token, {7: 11})
+        self.assertEqual(hub._tokens_by_watch, {11: {7}})
+        self.assertEqual(hub._pending, {7})
+
+        hub._remove_watch = lambda fd, watch: 0
+        hub.unregister(7)
+        self.assertEqual(hub._watch_by_token, {})
+        self.assertEqual(hub._tokens_by_watch, {})
+        self.assertEqual(hub._pending, set())
+
+    def test_linux_hub_close_keeps_fd_and_state_retryable_on_close_failure(self) -> None:
+        hub = object.__new__(_LinuxInotifyHub)
+        hub._owner_pid = os.getpid()
+        hub._lock = RLock()
+        hub._read_lock = Lock()
+        hub._fd = 123
+        hub._closed = False
+        hub._watch_by_token = {7: 11}
+        hub._tokens_by_watch = {11: {7}}
+        hub._pending = {7}
+
+        close_error = OSError(errno.EIO, "simulated close failure")
+        with patch(
+            "noetrium_platform.infrastructure.reliability.forensics.providers.linux_directory_watch.os.close",
+            side_effect=(close_error, None),
+        ) as close_fd:
+            with self.assertRaises(OSError):
+                hub.close()
+
+            self.assertFalse(hub._closed)
+            self.assertEqual(hub._fd, 123)
+            self.assertEqual(hub._watch_by_token, {7: 11})
+            self.assertEqual(hub._tokens_by_watch, {11: {7}})
+            self.assertEqual(hub._pending, {7})
+
+            hub.close()
+
+        self.assertTrue(hub._closed)
+        self.assertEqual(hub._fd, -1)
+        self.assertEqual(hub._watch_by_token, {})
+        self.assertEqual(hub._tokens_by_watch, {})
+        self.assertEqual(hub._pending, set())
+        self.assertEqual(close_fd.call_count, 2)
 
     @unittest.skipUnless(sys.platform.startswith("linux"), "Linux shared-inotify contract")
     def test_linux_many_directory_signals_do_not_fall_back_to_stat(self) -> None:
