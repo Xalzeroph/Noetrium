@@ -77,5 +77,50 @@ class SourceAuthorityV123Tests(unittest.TestCase):
 
 
 
+    def test_sqlite_connection_outside_platform_durability_is_rejected(self):
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            target = root / "noetrium_platform" / "rogue_storage"
+            target.mkdir(parents=True)
+            (root / "noetrium_platform" / "__init__.py").write_text("", encoding="utf-8")
+            (target / "x.py").write_text(
+                "import sqlite3\n\ndef connect(path):\n    return sqlite3.connect(path)\n",
+                encoding="utf-8",
+            )
+            findings = audit_source_authorities(root)
+            self.assertEqual(len(findings), 1)
+            self.assertEqual(findings[0].authority, "storage.sqlite_connection")
+
+    def test_thread_pool_outside_concurrency_provider_is_rejected(self):
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            target = root / "noetrium_platform" / "rogue_runtime"
+            target.mkdir(parents=True)
+            (root / "noetrium_platform" / "__init__.py").write_text("", encoding="utf-8")
+            (target / "x.py").write_text(
+                "from concurrent.futures import ThreadPoolExecutor\n\n"
+                "def build():\n    return ThreadPoolExecutor(max_workers=2)\n",
+                encoding="utf-8",
+            )
+            findings = audit_source_authorities(root)
+            self.assertEqual(len(findings), 1)
+            self.assertEqual(findings[0].authority, "concurrency.thread_pool")
+
+    def test_raw_thread_outside_concurrency_provider_is_rejected(self):
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            target = root / "noetrium_platform" / "rogue_runtime"
+            target.mkdir(parents=True)
+            (root / "noetrium_platform" / "__init__.py").write_text("", encoding="utf-8")
+            (target / "x.py").write_text(
+                "from threading import Thread\n\n"
+                "def build(fn):\n    return Thread(target=fn)\n",
+                encoding="utf-8",
+            )
+            findings = audit_source_authorities(root)
+            self.assertEqual(len(findings), 1)
+            self.assertEqual(findings[0].authority, "concurrency.thread")
+
+
 if __name__ == "__main__":
     unittest.main()
