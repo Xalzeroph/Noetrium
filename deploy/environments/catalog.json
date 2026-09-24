@@ -1,5 +1,5 @@
 {
-  "schema": "noetrium.environment-profile-registry.v2",
+  "schema": "noetrium.environment-profile-registry.v3",
   "boundary": "Upstream profiles provide reusable execution prerequisites only. Benchmarks, tasks, paper methods, datasets, checkpoints and scientific protocols are downstream-owned.",
   "lifecycle": {
     "states": [
@@ -82,6 +82,22 @@
           "ports"
         ],
         "cleanliness": "destroy-overlay-or-verified-reset"
+      },
+      "build_inputs": {
+        "images": [
+          {
+            "name": "java_runtime",
+            "environment_variable": "JAVA_RUNTIME_IMAGE",
+            "canonical_image": "eclipse-temurin:21-jre-jammy"
+          }
+        ],
+        "parameters": [
+          {
+            "name": "node_version",
+            "environment_variable": "NODE_VERSION",
+            "default": "22.22.2"
+          }
+        ]
       }
     },
     {
