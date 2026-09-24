@@ -2,14 +2,14 @@
   "counts": {
     "parse_errors": 0,
     "python_files": 3654,
-    "python_import_edges": 6977,
-    "symbols": 4845,
+    "python_import_edges": 6993,
+    "symbols": 4846,
     "tracked_files": 4283,
     "typescript_javascript_files": 11
   },
   "language_symbol_counts": {
     "javascript": 1,
-    "python": 4839,
+    "python": 4840,
     "typescript": 5
   },
   "parse_errors": [],
@@ -17273,6 +17273,12 @@
     {
       "source_module": "research.reproductions.astranav_memory_cvpr2026.study",
       "source_role": "research_reproductions",
+      "target_module": "noetrium_platform.research.experimentation.lifecycle.api",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "research.reproductions.astranav_memory_cvpr2026.study",
+      "source_role": "research_reproductions",
       "target_module": "research.authoring.frontier_2026.study",
       "target_role": "research_reproductions"
     },
@@ -17431,6 +17437,12 @@
       "source_role": "research_reproductions",
       "target_module": "research.reproductions.provenance",
       "target_role": "research_reproductions"
+    },
+    {
+      "source_module": "research.reproductions.ces_gui_cvpr2026.study",
+      "source_role": "research_reproductions",
+      "target_module": "noetrium_platform.research.experimentation.lifecycle.api",
+      "target_role": "core_platform"
     },
     {
       "source_module": "research.reproductions.ces_gui_cvpr2026.study",
@@ -17813,6 +17825,12 @@
     {
       "source_module": "research.reproductions.crossha_cvpr2026.study",
       "source_role": "research_reproductions",
+      "target_module": "noetrium_platform.research.experimentation.lifecycle.api",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "research.reproductions.crossha_cvpr2026.study",
+      "source_role": "research_reproductions",
       "target_module": "research.authoring.frontier_2026.study",
       "target_role": "research_reproductions"
     },
@@ -17833,6 +17851,12 @@
       "source_role": "research_reproductions",
       "target_module": "research.reproductions.provenance",
       "target_role": "research_reproductions"
+    },
+    {
+      "source_module": "research.reproductions.d3d_vlp_cvpr2026.study",
+      "source_role": "research_reproductions",
+      "target_module": "noetrium_platform.research.experimentation.lifecycle.api",
+      "target_role": "core_platform"
     },
     {
       "source_module": "research.reproductions.d3d_vlp_cvpr2026.study",
@@ -17893,6 +17917,12 @@
       "source_role": "research_reproductions",
       "target_module": "research.reproductions.provenance",
       "target_role": "research_reproductions"
+    },
+    {
+      "source_module": "research.reproductions.dejavu_cvpr2026.study",
+      "source_role": "research_reproductions",
+      "target_module": "noetrium_platform.research.experimentation.lifecycle.api",
+      "target_role": "core_platform"
     },
     {
       "source_module": "research.reproductions.dejavu_cvpr2026.study",
@@ -18359,6 +18389,12 @@
     {
       "source_module": "research.reproductions.foreact_cvpr2026.study",
       "source_role": "research_reproductions",
+      "target_module": "noetrium_platform.research.experimentation.lifecycle.api",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "research.reproductions.foreact_cvpr2026.study",
+      "source_role": "research_reproductions",
       "target_module": "research.authoring.frontier_2026.study",
       "target_role": "research_reproductions"
     },
@@ -18509,6 +18545,12 @@
     {
       "source_module": "research.reproductions.hats_cvpr2026.study",
       "source_role": "research_reproductions",
+      "target_module": "noetrium_platform.research.experimentation.lifecycle.api",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "research.reproductions.hats_cvpr2026.study",
+      "source_role": "research_reproductions",
       "target_module": "research.authoring.frontier_2026.study",
       "target_role": "research_reproductions"
     },
@@ -18607,6 +18649,12 @@
       "source_role": "research_reproductions",
       "target_module": "research.reproductions.provenance",
       "target_role": "research_reproductions"
+    },
+    {
+      "source_module": "research.reproductions.ishift_cvpr2026.study",
+      "source_role": "research_reproductions",
+      "target_module": "noetrium_platform.research.experimentation.lifecycle.api",
+      "target_role": "core_platform"
     },
     {
       "source_module": "research.reproductions.ishift_cvpr2026.study",
@@ -18859,6 +18907,12 @@
       "source_role": "research_reproductions",
       "target_module": "research.reproductions.provenance",
       "target_role": "research_reproductions"
+    },
+    {
+      "source_module": "research.reproductions.lmee_cvpr2026.study",
+      "source_role": "research_reproductions",
+      "target_module": "noetrium_platform.research.experimentation.lifecycle.api",
+      "target_role": "core_platform"
     },
     {
       "source_module": "research.reproductions.lmee_cvpr2026.study",
@@ -19277,6 +19331,12 @@
     {
       "source_module": "research.reproductions.motus_cvpr2026.study",
       "source_role": "research_reproductions",
+      "target_module": "noetrium_platform.research.experimentation.lifecycle.api",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "research.reproductions.motus_cvpr2026.study",
+      "source_role": "research_reproductions",
       "target_module": "research.authoring.frontier_2026.study",
       "target_role": "research_reproductions"
     },
@@ -19555,6 +19615,12 @@
       "source_role": "research_reproductions",
       "target_module": "research.reproductions.provenance",
       "target_role": "research_reproductions"
+    },
+    {
+      "source_module": "research.reproductions.optimusvla_cvpr2026.study",
+      "source_role": "research_reproductions",
+      "target_module": "noetrium_platform.research.experimentation.lifecycle.api",
+      "target_role": "core_platform"
     },
     {
       "source_module": "research.reproductions.optimusvla_cvpr2026.study",
@@ -20027,6 +20093,12 @@
     {
       "source_module": "research.reproductions.research_os",
       "source_role": "research_reproductions",
+      "target_module": "noetrium_platform.foundation.kernel.kernel",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "research.reproductions.research_os",
+      "source_role": "research_reproductions",
       "target_module": "noetrium_platform.research.execution.machines.api",
       "target_role": "core_platform"
     },
@@ -20034,6 +20106,12 @@
       "source_module": "research.reproductions.research_os",
       "source_role": "research_reproductions",
       "target_module": "noetrium_platform.research.execution.workflow.api",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "research.reproductions.research_os",
+      "source_role": "research_reproductions",
+      "target_module": "noetrium_platform.research.experimentation.lifecycle.api",
       "target_role": "core_platform"
     },
     {
@@ -20113,6 +20191,12 @@
       "source_role": "research_reproductions",
       "target_module": "research.reproductions.provenance",
       "target_role": "research_reproductions"
+    },
+    {
+      "source_module": "research.reproductions.roboagent_cvpr2026.study",
+      "source_role": "research_reproductions",
+      "target_module": "noetrium_platform.research.experimentation.lifecycle.api",
+      "target_role": "core_platform"
     },
     {
       "source_module": "research.reproductions.roboagent_cvpr2026.study",
@@ -20885,6 +20969,12 @@
     {
       "source_module": "research.reproductions.ui_agile_cvprf2026.study",
       "source_role": "research_reproductions",
+      "target_module": "noetrium_platform.research.experimentation.lifecycle.api",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "research.reproductions.ui_agile_cvprf2026.study",
+      "source_role": "research_reproductions",
       "target_module": "research.authoring.frontier_2026.study",
       "target_role": "research_reproductions"
     },
@@ -21187,6 +21277,12 @@
       "source_role": "research_reproductions",
       "target_module": "research.reproductions.provenance",
       "target_role": "research_reproductions"
+    },
+    {
+      "source_module": "research.reproductions.vilomem_cvpr2026.study",
+      "source_role": "research_reproductions",
+      "target_module": "noetrium_platform.research.experimentation.lifecycle.api",
+      "target_role": "core_platform"
     },
     {
       "source_module": "research.reproductions.vilomem_cvpr2026.study",
@@ -41924,7 +42020,7 @@
       "target_role": "public_facade"
     },
     {
-      "count": 627,
+      "count": 643,
       "source_role": "research_reproductions",
       "target_role": "core_platform"
     },
@@ -42012,13 +42108,13 @@
     "public_facade": 4,
     "reference_components": 64,
     "reference_orchestration": 14,
-    "research_reproductions": 407,
+    "research_reproductions": 408,
     "sdk": 5,
     "tests": 968,
     "tooling": 38
   },
   "schema": "noetrium-repository-code-architecture-index.v1",
-  "source_git_sha": "90d86a156f79806abf8de44ec89049d755bad72c",
+  "source_git_sha": "d90b16d35b55b5a02b01abdfc0c734f579075931",
   "symbols": [
     {
       "bases": [],
@@ -124697,7 +124793,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 31,
+      "line": 36,
       "methods": [],
       "module": "research.reproductions.research_os",
       "name": "ReproductionResearchOSCompileError",
@@ -124721,7 +124817,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 36,
+      "line": 41,
       "methods": [
         "__post_init__"
       ],
@@ -124741,13 +124837,42 @@
         "asset: ReproductionAssetRef",
         "module: str",
         "qualname: str",
+        "benchmark_parameter: str",
+        "parameter_names: tuple[str, ...]",
+        "required_parameters: tuple[str, ...]",
+        "binding_digest: str"
+      ],
+      "kind": "dataclass",
+      "language": "python",
+      "line": 66,
+      "methods": [
+        "__post_init__",
+        "unresolved_parameters",
+        "exact_after_benchmark"
+      ],
+      "module": "research.reproductions.research_os",
+      "name": "ReproductionStudyFactoryBinding",
+      "path": "research/reproductions/research_os.py",
+      "qualname": "research.reproductions.research_os.ReproductionStudyFactoryBinding",
+      "role": "research_reproductions"
+    },
+    {
+      "bases": [],
+      "decorators": [
+        "dataclass(frozen=True, slots=True)"
+      ],
+      "fields": [
+        "package: str",
+        "asset: ReproductionAssetRef",
+        "module: str",
+        "qualname: str",
         "program_digest: str | None",
         "binding_kind: str",
         "factory: ReproductionMethodProgramFactoryBinding | None"
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 61,
+      "line": 105,
       "methods": [
         "__post_init__",
         "exact",
