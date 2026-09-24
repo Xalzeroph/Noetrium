@@ -24,13 +24,17 @@ def is_production_python(root: Path, path: Path) -> bool:
         for part in relative.parts
     ):
         return False
-    return bool(relative.parts) and relative.parts[0] in {
+    if not relative.parts:
+        return False
+    if relative.parts[0] in {
         "noetrium_platform",
         "noetrium",
         "projects",
         "components",
         "orchestration",
-    }
+    }:
+        return True
+    return len(relative.parts) >= 2 and relative.parts[:2] == ("research", "runtime")
 
 
 def _annotation_node_ids(tree: ast.AST) -> frozenset[int]:
