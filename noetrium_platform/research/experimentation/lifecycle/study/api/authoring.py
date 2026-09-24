@@ -22,6 +22,7 @@ from noetrium_platform.research.experimentation.identity import ModelRoleUsage, 
 from .benchmark import BenchmarkTaskSet, TrialBudget
 from .design import (
     BenchmarkAssignmentMode,
+    DEFAULT_STUDY_AGGREGATION_REQUIREMENT_ID,
     ResearchRevision,
     ResearchStudyDefinition,
     StudyExecutionPolicy,
@@ -150,6 +151,7 @@ class Study:
         limits: TrialBudget,
         benchmark_split_id: str | None = None,
         benchmark_assignment_mode: BenchmarkAssignmentMode = BenchmarkAssignmentMode.TASK,
+        aggregation_requirement_id: str = DEFAULT_STUDY_AGGREGATION_REQUIREMENT_ID,
         experiment_id: str | None = None,
         workload_id: str = "method-program",
         trial_provider_requirement_id: str = "trial.method-program",
@@ -254,6 +256,7 @@ class Study:
             revision=revision,
             execution_policy=policy,
             benchmark_assignment_mode=benchmark_assignment_mode,
+            aggregation_requirement_id=aggregation_requirement_id,
         )
 
     @property
@@ -291,6 +294,7 @@ class AgentStudySpec:
     repetitions: int = 1
     seeds: tuple[str, ...] | None = None
     benchmark_assignment_mode: BenchmarkAssignmentMode = BenchmarkAssignmentMode.TASK
+    aggregation_requirement_id: str = DEFAULT_STUDY_AGGREGATION_REQUIREMENT_ID
     experiment_id: str | None = None
     workload_id: str = "method-program"
     trial_provider_requirement_id: str = "trial.method-program"
@@ -350,6 +354,7 @@ class AgentStudySpec:
             object.__setattr__(self, "seeds", _tokens(self.seeds, "agent study seeds"))
         if not isinstance(self.benchmark_assignment_mode, BenchmarkAssignmentMode):
             raise TypeError("agent study benchmark_assignment_mode must be BenchmarkAssignmentMode")
+        _text(self.aggregation_requirement_id, "agent study aggregation_requirement_id")
         if self.experiment_id is not None:
             _text(self.experiment_id, "agent study experiment_id")
         _text(self.workload_id, "agent study workload_id")
@@ -394,6 +399,7 @@ class AgentStudySpec:
         repetitions: int | None = None,
         seeds: tuple[str, ...] | None = None,
         benchmark_assignment_mode: BenchmarkAssignmentMode | None = None,
+        aggregation_requirement_id: str | None = None,
         experiment_id: str | None = None,
         workload_id: str | None = None,
         trial_provider_requirement_id: str | None = None,
@@ -448,6 +454,11 @@ class AgentStudySpec:
             if benchmark_assignment_mode is None
             else benchmark_assignment_mode
         )
+        resolved_aggregation_requirement_id = (
+            self.aggregation_requirement_id
+            if aggregation_requirement_id is None
+            else aggregation_requirement_id
+        )
         resolved_experiment_id = (
             self.experiment_id if experiment_id is None else experiment_id
         )
@@ -491,6 +502,7 @@ class AgentStudySpec:
             seeds=resolved_seeds,
             limits=resolved_limits,
             benchmark_assignment_mode=resolved_assignment_mode,
+            aggregation_requirement_id=resolved_aggregation_requirement_id,
             experiment_id=resolved_experiment_id,
             workload_id=resolved_workload_id,
             trial_provider_requirement_id=resolved_trial_requirement,
