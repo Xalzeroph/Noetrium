@@ -35,7 +35,6 @@ from noetrium_platform.capabilities.model.qualification.composition import (
 )
 from noetrium_platform.infrastructure.resources.compute.api import ComputeSchedulerPort
 from noetrium_platform.infrastructure.resources.compute.providers import LocalHostRuntimeObserver, NvidiaSmiGpuRuntimeObserver
-from noetrium_platform.infrastructure.resources.allocation.providers.local_candidates import LocalTcpEndpointCandidateSource
 from noetrium_platform.composition.resource_probes import LocalCommandResourceProbe
 from noetrium_platform.composition.model_qualification import QUALIFICATION_INDEX_WORKER_PATH
 from noetrium_platform.infrastructure.lifecycle.python.api import PythonEnvironmentAuthorities
@@ -296,7 +295,6 @@ def bind_local_model_replica_pool(
         fleet=plane.models.fleet,
         compute_scheduler=plane.compute_scheduler,
         endpoint_allocations=plane.platform_meta.endpoint_allocations,
-        endpoint_candidates=LocalTcpEndpointCandidateSource(),
         compute_lease_guards=execution_pool.compute_lease_guard_factory(
             plane.compute_scheduler
         ),

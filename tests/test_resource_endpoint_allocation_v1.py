@@ -20,8 +20,8 @@ from noetrium_platform.infrastructure.resources.allocation.runtime import (
 from noetrium_platform.infrastructure.resources.allocation.providers import (
     SocketEndpointProbe,
 )
-from noetrium_platform.infrastructure.resources.allocation.providers.local_candidates import (
-    LocalTcpEndpointCandidateSource,
+from noetrium_platform.infrastructure.resources.allocation.providers import (
+    LocalEndpointCandidateSource,
 )
 from noetrium_platform.infrastructure.resources.lease.api import ResourceIdentity, ResourceKind
 from noetrium_platform.infrastructure.resources.lease.runtime import InMemoryResourceLeaseRegistry
@@ -89,25 +89,27 @@ def test_existing_endpoint_system_skips_real_os_bound_port_and_uses_kernel_candi
     blocker.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 0)
     blocker.bind(("127.0.0.1", 0))
     occupied = int(blocker.getsockname()[1])
-    candidates = LocalTcpEndpointCandidateSource().candidate_ports(
-        host="127.0.0.1",
-        count=8,
-    )
     leases = InMemoryResourceLeaseRegistry()
     allocator = InMemoryEndpointAllocator(
         ownership=leases,
         leases=leases,
         probe=SocketEndpointProbe(),
+        candidates=LocalEndpointCandidateSource(),
     )
     try:
-        allocation = allocator.allocate(
-            _request("branch-os-busy", (occupied, *candidates))
+        allocation = allocator.allocate_auto(
+            allocation_id="branch-os-busy",
+            holder_scope=ScopeIdentity(ScopeKind.BRANCH, "branch-os-busy"),
+            owner_scope=PLATFORM_SCOPE,
+            purpose="automatic endpoint conflict avoidance",
+            host="127.0.0.1",
+            preferred_ports=(occupied,),
+            candidate_count=8,
         )
     finally:
         blocker.close()
 
     assert allocation.endpoint.port != occupied
-    assert allocation.endpoint.port in candidates
     assert len(leases.active_for(allocation.endpoint.resource)) == 1
 
 
@@ -229,3 +231,9 @@ def test_in_memory_endpoint_reconciles_underlying_fencing_drift() -> None:
     leases.drifted = True
     assert allocator.get(reserved.allocation_id).state is EndpointAllocationState.RELEASED
     assert allocator.active() == ()
+
+
+def test_automatic_endpoint_request_identity_ignores_transient_candidate_set() -> None:
+    left = _request("stable-request", (25001, 25002))
+    right = _request("stable-request", (26001, 26002, 26003))
+    assert left.digest() == right.digest()
