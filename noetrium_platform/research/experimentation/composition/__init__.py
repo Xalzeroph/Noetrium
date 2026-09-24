@@ -37,3 +37,19 @@ __all__ += [
     "bind_method_workload",
     "bind_paired_evaluation_host",
 ]
+
+from .binding_authority import (
+    CanonicalResearchBindingAuthority,
+    ResearchCapabilityBindingResolverPort,
+    ResearchModelRoleBindingResolverPort,
+    ResearchParticipantBindingResolverPort,
+    ResearchProjectManifestResolverPort,
+)
+
+__all__ += [
+    "CanonicalResearchBindingAuthority",
+    "ResearchCapabilityBindingResolverPort",
+    "ResearchModelRoleBindingResolverPort",
+    "ResearchParticipantBindingResolverPort",
+    "ResearchProjectManifestResolverPort",
+]
