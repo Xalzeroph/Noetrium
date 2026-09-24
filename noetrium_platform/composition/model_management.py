@@ -5,6 +5,7 @@ from pathlib import Path
 from typing import Mapping
 
 from noetrium_platform.foundation.kernel.concurrency.api import TaskGroupPort
+from noetrium_platform.foundation.kernel.kernel import canonical_digest
 from noetrium_platform.infrastructure.lifecycle.process.supervision.composition import build_local_command_runner
 
 from noetrium_platform.infrastructure.resources.directory.api import DirectoryLayout, DirectoryLayoutPort, DirectoryManagementAuthorities
@@ -175,10 +176,20 @@ def build_local_management_plane(
         gpu_runtime_observer=gpu_runtime,
         host_runtime_observer=host_runtime,
     )
+    docker_authority_id = canonical_digest(
+        {
+            "schema": "noetrium.docker-container-authority.v1",
+            "state_root": str(directory_layout.layout.state.resolve()),
+        }
+    )
     docker_containers = DockerContainerLeaseAuthority(
         ownership=meta.resource_ownership,
         leases=meta.resource_leases,
-        runtime=DockerCliManagedContainerProvider(local_commands),
+        runtime=DockerCliManagedContainerProvider(
+            local_commands,
+            authority_id=docker_authority_id,
+        ),
+        authority_id=docker_authority_id,
         reconcile_on_start=False,
     )
     try:
