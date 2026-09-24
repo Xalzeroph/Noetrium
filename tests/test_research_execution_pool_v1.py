@@ -153,3 +153,23 @@ def test_orchestration_experiment_model_dependency_chain_has_no_nested_admission
         pool.close_model_io_group(model)
         pool.close()
 
+
+
+def test_workload_quiesce_seals_work_domains_but_keeps_cleanup_orchestration_alive() -> None:
+    pool = bind_research_execution_pool()
+    pool.quiesce_workloads()
+
+    for operation in (
+        lambda: pool.open_experiment_group("late-experiment"),
+        lambda: pool.open_model_io_group("late-model-io"),
+        lambda: pool.compute_lease_guard_factory(object()),
+        lambda: pool.endpoint_lease_guard_factory(object()),
+        lambda: pool.environment_instance_lease_guard_factory(object()),
+        lambda: pool.docker_container_lease_guard_factory(object()),
+    ):
+        with pytest.raises(RuntimeError, match="workloads are quiesced"):
+            operation()
+
+    cleanup = pool.open_orchestration_group("terminal-cleanup")
+    pool.close_orchestration_group(cleanup)
+    pool.close()
