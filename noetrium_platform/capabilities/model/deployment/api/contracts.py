@@ -71,6 +71,29 @@ class ModelDeploymentSelector:
 
 
 @dataclass(frozen=True, slots=True)
+class ModelDeploymentGeneration:
+    """CAS snapshot for one mutable desired/applied deployment identity."""
+
+    deployment_id: str
+    desired_spec_digest: str
+    applied_contract_digest: str | None
+
+    def __post_init__(self) -> None:
+        if not self.deployment_id.strip():
+            raise ValueError("model deployment generation requires deployment_id")
+        if (
+            len(self.desired_spec_digest) != 64
+            or any(ch not in "0123456789abcdef" for ch in self.desired_spec_digest)
+        ):
+            raise ValueError("model desired generation must be lowercase SHA-256")
+        if self.applied_contract_digest is not None and (
+            len(self.applied_contract_digest) != 64
+            or any(ch not in "0123456789abcdef" for ch in self.applied_contract_digest)
+        ):
+            raise ValueError("model applied generation must be lowercase SHA-256")
+
+
+@dataclass(frozen=True, slots=True)
 class ModelDeploymentStatus:
     deployment_id: str
     service_id: str
@@ -167,7 +190,7 @@ class ModelControlSnapshot:
 
 __all__ = [
     "ModelControlSnapshot", "ModelControllerPhase", "ModelControllerState", "ModelDeploymentLogs",
-    "ModelDeploymentSelector", "ModelDeploymentSpec", "ModelDeploymentStatus", "ModelDesiredState",
+    "ModelDeploymentGeneration", "ModelDeploymentSelector", "ModelDeploymentSpec", "ModelDeploymentStatus", "ModelDesiredState",
     "ModelEnvironmentUsage", "ModelGpuAllocation", "ModelGpuConflict", "ModelGpuProcessBinding",
     "ModelLogTail", "ModelReconcileCycle", "ModelRuntimeState",
 ]
