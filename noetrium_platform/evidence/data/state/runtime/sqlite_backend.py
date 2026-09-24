@@ -7,6 +7,7 @@ import sqlite3
 
 from noetrium_platform.evidence.data._sqlite_types import require_blob, require_integer, require_text
 from noetrium_platform.foundation.kernel.kernel.durability.sqlite import (
+    begin_immediate_sqlite_transaction,
     open_durable_sqlite_reader,
     open_durable_sqlite_writer,
     rollback_sqlite_writer,
@@ -28,7 +29,7 @@ class SQLiteStateWriteSession(AbstractContextManager["SQLiteStateWriteSession"])
     def __init__(self, backend: "SQLiteStateBackend") -> None:
         self.backend = backend
         self.conn = backend.connect_writer()
-        self.conn.execute("BEGIN IMMEDIATE")
+        begin_immediate_sqlite_transaction(self.conn, timeout_seconds=self.timeout_seconds)
         self._complete = False
 
     def read(self, aggregate_id: str) -> EncodedAggregate | None:
@@ -214,7 +215,7 @@ class SQLiteStateBackend:
 
     def initialize(self, initial: tuple[EncodedAggregate, ...]) -> None:
         with self.writer_connection() as conn:
-            conn.execute("BEGIN IMMEDIATE")
+            begin_immediate_sqlite_transaction(conn, timeout_seconds=self.timeout_seconds)
             try:
                 self._ensure_schema(conn)
                 for value in initial:
