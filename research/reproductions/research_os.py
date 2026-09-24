@@ -997,6 +997,7 @@ def _validated_execution_binding(
         binding_id=binding.binding_id,
         study_factory=binding.study_factory,
         benchmark_id=binding.benchmark_id,
+        benchmark_split_id=binding.benchmark_split_id,
         values=binding.values,
     )
     if validated.binding_digest != binding.binding_digest:
@@ -1013,6 +1014,10 @@ def _method_factory_call(
         raise TypeError("reproduction MethodProgram symbol has no factory call")
     kwargs: dict[str, JsonValue] = dict(method.factory.kwargs)
     if binding is not None:
+        if binding.benchmark_split_id is not None:
+            for parameter in method.factory.unresolved_parameters:
+                if parameter in _BENCHMARK_SPLIT_PARAMETERS:
+                    kwargs[parameter] = binding.benchmark_split_id
         for requirement in _requirements_for_study(
             definition,
             binding.study_factory,
@@ -1215,6 +1220,7 @@ def _compile_reproduction_research_program(
                     "binding_digest": execution_binding.binding_digest,
                     "study_factory": execution_binding.study_factory,
                     "benchmark_id": execution_binding.benchmark_id,
+                    "benchmark_split_id": execution_binding.benchmark_split_id,
                     "values": execution_binding.values,
                 }
             ),
