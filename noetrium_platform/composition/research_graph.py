@@ -916,12 +916,16 @@ class ResearchGraphScheduler:
                     record_completion(completed_id)
 
             if reconciliation_required:
+                reconciliation_controls = {
+                    row.node_id: row
+                    for row in node_control_store.node_control_snapshot(execution_id)
+                    if row.node_id in reconciliation_required
+                }
                 local_recovery = tuple(
-                    node_control_store.node_control_state(execution_id, node_id)
-                    for node_id in sorted(reconciliation_required)
-                    if node_control_store.node_control_state(
-                        execution_id, node_id
-                    ).phase is ResearchGraphNodeControlPhase.RECOVERY_REQUIRED
+                    reconciliation_controls[node_id]
+                    for node_id in sorted(reconciliation_controls)
+                    if reconciliation_controls[node_id].phase
+                    is ResearchGraphNodeControlPhase.RECOVERY_REQUIRED
                 )
                 if len(local_recovery) == len(reconciliation_required):
                     raise ResearchGraphNodeControlHalt(local_recovery)
