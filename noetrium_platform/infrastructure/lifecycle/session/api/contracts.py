@@ -2,7 +2,6 @@ from __future__ import annotations
 
 from dataclasses import asdict, dataclass
 from enum import StrEnum
-import hashlib
 import json
 from pathlib import Path
 import re
@@ -10,6 +9,7 @@ import re
 from noetrium_platform.foundation.kernel.kernel.errors import redact_text
 from noetrium_platform.foundation.api import is_absolute_target_path
 
+from noetrium_platform.foundation.kernel.kernel.durability import sha256_bytes
 _SESSION_RE = re.compile(r"^[A-Za-z0-9_.-]{1,96}$")
 _BACKEND_RE = re.compile(r"^[A-Za-z0-9_.-]{1,64}$")
 
@@ -33,7 +33,7 @@ def process_environment_digest(environment: tuple[tuple[str, str], ...]) -> str:
     ):
         raise ValueError("controller process environment contains an unsafe entry")
     raw = json.dumps(environment, ensure_ascii=False, separators=(",", ":")).encode("utf-8")
-    return hashlib.sha256(raw).hexdigest()
+    return sha256_bytes(raw)
 
 
 class PersistentSessionReasonCode(StrEnum):
@@ -114,7 +114,7 @@ class PersistentSessionSpec:
         raw = json.dumps(
             asdict(self), sort_keys=True, ensure_ascii=False, separators=(",", ":")
         ).encode("utf-8")
-        return hashlib.sha256(raw).hexdigest()
+        return sha256_bytes(raw)
 
 
 @dataclass(frozen=True, slots=True)
@@ -173,7 +173,7 @@ class ServerSessionPolicy:
 
     def digest(self) -> str:
         raw = json.dumps(asdict(self), sort_keys=True, separators=(",", ":")).encode()
-        return hashlib.sha256(raw).hexdigest()
+        return sha256_bytes(raw)
 
 
 __all__ = [
