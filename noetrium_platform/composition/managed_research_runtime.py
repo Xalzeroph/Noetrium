@@ -64,7 +64,7 @@ def _reconcile_startup_ownership(
     management.models.fleet.remove_selected(
         ModelDeploymentSelector(tags=("auto-managed",))
     )
-    resources.reconcile()
+    resources.recover_abandoned_owner_generation()
 
 
 @dataclass(slots=True)
