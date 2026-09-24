@@ -21,6 +21,7 @@ from noetrium_platform.foundation.kernel.kernel import (
 )
 from noetrium_platform.evidence.artifact.contracts import ArtifactContentIdentity
 from noetrium_platform.foundation.kernel.kernel.durability.sqlite import (
+    begin_immediate_sqlite_transaction,
     open_durable_sqlite_reader,
     open_durable_sqlite_writer,
     rollback_sqlite_writer,
@@ -183,7 +184,7 @@ class SQLiteArtifactRegistry:
     def put(self, artifact: ArtifactRecord) -> ArtifactRecord:
         encoded = self._encode(artifact)
         with closing(self._connect_writer()) as db:
-            db.execute("BEGIN IMMEDIATE")
+            begin_immediate_sqlite_transaction(db, timeout_seconds=self.timeout_seconds)
             try:
                 current_row = db.execute(
                     f"SELECT {self._select_columns()} FROM artifacts WHERE artifact_id=?",
