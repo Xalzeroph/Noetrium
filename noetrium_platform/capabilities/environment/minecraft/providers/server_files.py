@@ -4,7 +4,6 @@ from noetrium_platform.foundation.kernel.kernel.durability import atomic_replace
 
 import hashlib
 from pathlib import Path
-import socket
 from typing import Mapping
 
 from noetrium_platform.foundation.kernel.kernel import JsonValue
@@ -100,20 +99,9 @@ def prepare_server_files(
     )
 
 
-def ensure_port_available(host: str, port: int) -> None:
-    probe = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    try:
-        probe.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-        probe.bind((host, port))
-    except OSError as exc:
-        raise MinecraftServerPreparationError("SERVER_PORT_COLLISION", f"{host}:{port}: {exc}") from exc
-    finally:
-        probe.close()
-
 
 __all__ = [
     "MinecraftServerPreparationError",
-    "ensure_port_available",
-    "prepare_server_files",
+        "prepare_server_files",
     "render_server_properties",
 ]
