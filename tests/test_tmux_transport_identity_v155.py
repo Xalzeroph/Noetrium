@@ -30,7 +30,7 @@ class Runner:
         if args[0]=='display-message':
             name=args[args.index('-t')+1].lstrip('=').split(':', 1)[0]
             if name not in self.sessions: return TmuxCommandResult(1,'','missing')
-            command,cwd=self.sessions[name]; return TmuxCommandResult(0,f'{name}\t88\t0\t{command}\t{cwd}\n','')
+            command,cwd=self.sessions[name]; return TmuxCommandResult(0,f'{name}\t$88\t88\t0\t{command}\t{cwd}\n','')
         if args[0]=='new-session': self.sessions[args[args.index('-s')+1]]=(args[-1],args[args.index('-c')+1]); return TmuxCommandResult(0,'','')
         if args[0]=='kill-session': return TmuxCommandResult(0,'','')
         raise AssertionError(args)
