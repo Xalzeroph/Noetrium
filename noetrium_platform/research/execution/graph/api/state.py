@@ -459,6 +459,34 @@ class ResearchGraphActiveCutRef:
             raise ValueError("research graph active cut generation must be positive")
 
 
+@dataclass(frozen=True, slots=True)
+class ResearchGraphActiveExecutionSnapshot:
+    """One atomically observed logical-execution cut and its graph control truth."""
+
+    active_cut: ResearchGraphActiveCutRef
+    execution: ResearchGraphExecutionSnapshot
+    control: ResearchGraphControlRecord
+
+    def __post_init__(self) -> None:
+        if type(self.active_cut) is not ResearchGraphActiveCutRef:
+            raise TypeError("active execution snapshot active_cut must be typed")
+        if type(self.execution) is not ResearchGraphExecutionSnapshot:
+            raise TypeError("active execution snapshot execution must be typed")
+        if type(self.control) is not ResearchGraphControlRecord:
+            raise TypeError("active execution snapshot control must be typed")
+        if self.active_cut.cut_id != self.execution.execution_id:
+            raise ValueError("active execution snapshot cut identity drifted")
+        if self.control.execution_id != self.execution.execution_id:
+            raise ValueError("active execution snapshot control identity drifted")
+        if self.active_cut.graph_digest != self.execution.graph_digest:
+            raise ValueError("active execution snapshot graph digest drifted")
+        if (
+            self.active_cut.research_revision_digest
+            != self.execution.research_revision_digest
+        ):
+            raise ValueError("active execution snapshot revision digest drifted")
+
+
 class ResearchGraphReconciliationRequired(RuntimeError):
     def __init__(self, execution_id: str, node_ids: tuple[str, ...]) -> None:
         _text(execution_id, "research graph reconciliation execution_id")
@@ -808,6 +836,11 @@ class ResearchGraphActiveCutStorePort(Protocol):
         logical_execution_id: str,
     ) -> ResearchGraphActiveCutRef | None: ...
 
+    def active_execution_snapshot(
+        self,
+        logical_execution_id: str,
+    ) -> ResearchGraphActiveExecutionSnapshot | None: ...
+
     def move_active_cut(
         self,
         logical_execution_id: str,
@@ -821,6 +854,7 @@ class ResearchGraphActiveCutStorePort(Protocol):
 __all__ = [
     "ResearchGraphActiveCutRef",
     "ResearchGraphActiveCutStorePort",
+    "ResearchGraphActiveExecutionSnapshot",
     "ResearchGraphAttemptRecord",
     "ResearchGraphAttemptState",
     "ResearchGraphControlPhase",
