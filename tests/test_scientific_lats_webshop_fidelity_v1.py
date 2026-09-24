@@ -7,7 +7,7 @@ import pytest
 from hashlib import sha256
 
 from noetrium_platform.capabilities.environment.api import EnvironmentBranchState, EnvironmentIdentity
-from noetrium_platform.composition.execution_lineage import ExecutionStateAnchor
+from noetrium_platform.research.execution.api import ExecutionStateAnchor
 from noetrium_platform.foundation.kernel.kernel import ExecutionContext
 from research.reproductions.lats_webshop import (
     FailedTrajectory,
