@@ -4,7 +4,6 @@ from noetrium_platform.research.execution.api import DecisionCycleIdentity, Deci
 from noetrium_platform.research.execution.api import DecisionCycleResult
 from noetrium_platform.research.experimentation.lifecycle.run.api.identity import RunIdentity
 from noetrium_platform.research.experimentation.lifecycle.run.api.identity_ports import RunIdentityProvider
-from noetrium_platform.research.experimentation.lifecycle.run.api.lifecycle_ports import RunSessionPort
 from noetrium_platform.research.experimentation.lifecycle.experiment.api import ExperimentSpec, ExperimentTrialProtocolIdentityMismatch
 
 from .components import ExperimentRuntimeComponents
@@ -44,7 +43,7 @@ class ExperimentRuntime:
         run_identity: RunIdentity | None = None,
         restore_checkpoint_id: str | None = None,
         restore_cycle_identity: DecisionCycleIdentity | None = None,
-    ) -> RunSessionPort:
+    ) -> object:
         verify_trial_protocol_identity(spec, self.trial_protocol_identity)
         identity = run_identity or self.run_identity_provider.allocate()
         return self.run_runtime.open(
