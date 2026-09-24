@@ -204,6 +204,38 @@ class InMemoryResourceLeaseRegistry:
                 return ()
             return (self._leases[lease_id],)
 
+    def active_leases(
+        self,
+        *,
+        resource_kind: ResourceKind | None = None,
+        now: float | None = None,
+    ) -> tuple[ResourceLease, ...]:
+        now_epoch_s = time() if now is None else float(now)
+        if not math.isfinite(now_epoch_s):
+            raise ValueError("lease observation time must be finite")
+        if resource_kind is not None and type(resource_kind) is not ResourceKind:
+            raise TypeError("resource_kind must be ResourceKind when provided")
+        with self._lock:
+            # Explicitly reconcile only the requested kind so enumeration cannot
+            # mutate unrelated resource families.
+            if resource_kind is None:
+                self.reconcile_expired(now=now_epoch_s)
+            else:
+                self.reconcile_expired(
+                    now=now_epoch_s,
+                    resource_kind=resource_kind,
+                )
+            rows = tuple(
+                lease
+                for lease in self._leases.values()
+                if lease.state is LeaseState.ACTIVE
+                and (
+                    resource_kind is None
+                    or lease.resource.kind is resource_kind
+                )
+            )
+            return tuple(sorted(rows, key=lambda row: row.lease_id))
+
     def history_for(
         self, resource: ResourceIdentity, *, now: float | None = None
     ) -> tuple[ResourceLease, ...]:
