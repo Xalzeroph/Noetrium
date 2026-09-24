@@ -13,6 +13,7 @@ from noetrium_platform.composition.research_os_lowering import (
 from research.reproductions.contracts import (
     ReproductionAssetKind,
     ReproductionDefinition,
+    ReproductionLifecycle,
 )
 from research.reproductions.research_os import (
     compile_reproduction_portfolio,
@@ -48,6 +49,20 @@ def _research_os_ready(
             or ReproductionAssetKind.RESEARCH_PROGRAM in kinds
         )
     )
+
+
+def test_every_protocol_bound_reproduction_is_current_research_os_ready() -> None:
+    definitions = _definitions()
+    protocol_bound = tuple(
+        row
+        for row in definitions
+        if row.lifecycle is ReproductionLifecycle.PROTOCOL_BOUND
+    )
+    assert len(protocol_bound) >= 91
+    missing = tuple(
+        sorted(row.package for row in protocol_bound if not _research_os_ready(row))
+    )
+    assert missing == ()
 
 
 def test_every_executable_study_reproduction_compiles_to_current_research_os() -> None:
@@ -108,8 +123,14 @@ def test_every_executable_study_reproduction_compiles_to_current_research_os() -
     )
 
 
-def test_all_ready_reproductions_compile_as_one_multi_paper_portfolio() -> None:
-    definitions = tuple(row for row in _definitions() if _research_os_ready(row))
+def test_all_protocol_bound_reproductions_compile_as_one_multi_paper_portfolio() -> None:
+    definitions = tuple(
+        row
+        for row in _definitions()
+        if row.lifecycle is ReproductionLifecycle.PROTOCOL_BOUND
+    )
+    assert definitions
+    assert all(_research_os_ready(row) for row in definitions)
     portfolio = compile_reproduction_portfolio(
         "repository-reproductions.current-research-os",
         definitions,
