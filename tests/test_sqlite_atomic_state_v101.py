@@ -8,9 +8,8 @@ from pathlib import Path
 import hashlib
 
 from noetrium_platform.evidence.artifact.catalog.api import ArtifactKind, ArtifactQuery, ArtifactRecord, ArtifactRegistryConflict, ArtifactRegistryCorruptionError
-from noetrium_platform.evidence.artifact._sqlite_connection import rollback_artifact_writer
 from noetrium_platform.evidence.artifact.catalog.providers import SQLiteArtifactRegistry
-from noetrium_platform.evidence.data._sqlite_transaction import rollback_data_writer
+from noetrium_platform.foundation.kernel.kernel.durability.sqlite import rollback_sqlite_writer
 from noetrium_platform.evidence.data.dataset.api import DatasetIdentity, DatasetQuery, DatasetRegistryConflict, DatasetRegistryCorruptionError, DatasetVersion
 from noetrium_platform.evidence.data.dataset.providers import SQLiteDatasetRegistry
 from noetrium_platform.evidence.data.fact.api import DurableFact, DurableFactConflict, DurableFactCorruptionError, FactCriticality
@@ -29,13 +28,13 @@ class _RollbackFailureConnection:
 class SQLiteFailureCausalityV207Tests(unittest.TestCase):
     def test_data_rollback_failure_is_attached_to_primary_failure(self):
         primary = RuntimeError("primary data failure")
-        rollback_data_writer(_RollbackFailureConnection(), primary)
+        rollback_sqlite_writer(_RollbackFailureConnection(), primary, label="data")
         notes = getattr(primary, "__notes__", ())
         self.assertTrue(any("data sqlite rollback failed: PermissionError" in note for note in notes))
 
     def test_artifact_rollback_failure_is_attached_to_primary_failure(self):
         primary = RuntimeError("primary artifact failure")
-        rollback_artifact_writer(_RollbackFailureConnection(), primary)
+        rollback_sqlite_writer(_RollbackFailureConnection(), primary, label="artifact")
         notes = getattr(primary, "__notes__", ())
         self.assertTrue(any("artifact sqlite rollback failed: PermissionError" in note for note in notes))
 
