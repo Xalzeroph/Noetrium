@@ -13,7 +13,10 @@ from research.reproductions.adacm2_memory.definition import (
     REPRODUCTION as ADACM2_REPRODUCTION,
 )
 from research.reproductions.research_os import (
+    ReproductionCapabilitySelectionRegistration,
+    ReproductionCapabilitySelectionRegistry,
     ReproductionResearchOSCompileError,
+    resolve_execution_requirements,
     resolve_reproduction_execution_variants,
 )
 from research.reproductions.storm_wiki.definition import (
@@ -80,4 +83,55 @@ def test_capability_requirement_never_invents_default_provider() -> None:
         resolve_reproduction_execution_variants(
             STORM_REPRODUCTION,
             study_factory="build_storm_freshwiki_study",
+        )
+
+
+
+def test_capability_registry_closes_exact_reproduction_requirement() -> None:
+    requirement = next(
+        row
+        for row in resolve_execution_requirements(STORM_REPRODUCTION)
+        if row.parameter == "search_capability_id"
+    )
+    view = CapabilitySelectionView(
+        source_cut_digest=canonical_digest({"capability-cut": "registry"}),
+        selection_provenance_digest=canonical_digest(
+            {"selector": "registry-search"}
+        ),
+        descriptors=(
+            CapabilityDescriptor(
+                "search.web",
+                "v1",
+                "search.request.v1",
+                "search.result.v1",
+            ),
+        ),
+    )
+    registry = ReproductionCapabilitySelectionRegistry(
+        (
+            ReproductionCapabilitySelectionRegistration(
+                requirement.requirement_digest,
+                view,
+            ),
+        )
+    )
+
+    variants = resolve_reproduction_execution_variants(
+        STORM_REPRODUCTION,
+        study_factory="build_storm_freshwiki_study",
+        capability_resolver=registry,
+    )
+
+    assert len(variants) == 1
+    assert variants[0].values == {"search_capability_id": "search.web"}
+    assert len(registry.identity_digest) == 64
+
+
+def test_capability_registry_never_falls_back_to_unregistered_requirement() -> None:
+    registry = ReproductionCapabilitySelectionRegistry(())
+    with pytest.raises(LookupError, match="no exact CapabilitySelectionView"):
+        resolve_reproduction_execution_variants(
+            STORM_REPRODUCTION,
+            study_factory="build_storm_freshwiki_study",
+            capability_resolver=registry,
         )
