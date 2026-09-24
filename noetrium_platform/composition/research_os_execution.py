@@ -1601,6 +1601,18 @@ class StrictResearchOSControl(
                 "retry target does not identify exactly one compiled graph node"
             )
         root = matches[0]
+        root_control = self._store.node_control_state(
+            cut.cut_id,
+            root.graph_node_id,
+        )
+        if root_control.phase not in {
+            ResearchGraphNodeControlPhase.ACTIVE,
+            ResearchGraphNodeControlPhase.PAUSED,
+        }:
+            raise ResearchGraphExecutionConflict(
+                "research graph retry root control must be active or paused, "
+                f"actual={root_control.phase.value}"
+            )
         descendants = self._retry_descendants(
             compilation,
             root.graph_node_id,
@@ -1612,7 +1624,10 @@ class StrictResearchOSControl(
             retry_not_before_ns=time.time_ns(),
         )
         retry_seed_node_ids = (root.graph_node_id, *descendants)
-        if control.phase is ResearchGraphControlPhase.PAUSED:
+        if (
+            control.phase is ResearchGraphControlPhase.PAUSED
+            or root_control.phase is ResearchGraphNodeControlPhase.PAUSED
+        ):
             snapshot = self._store.snapshot(cut.cut_id)
             return self._durable_control_receipt(
                 request,
@@ -1625,6 +1640,7 @@ class StrictResearchOSControl(
                 extra={
                     "retry_root_node_id": root.graph_node_id,
                     "retry_descendant_node_ids": descendants,
+                    "retry_root_control_phase": root_control.phase.value,
                 },
             )
         execution_target = ResearchExecutionTarget(
