@@ -8,6 +8,7 @@ import tomllib
 from noetrium_platform.foundation.governance.architecture.repository_boundary.api import (
     RepositoryBoundaryAuditor,
 )
+from noetrium_platform.product.api import decode_research_project_blueprint
 from noetrium_platform.product.operator.api import (
     ProjectDoctorCheck,
     ProjectDoctorDisposition,
@@ -17,6 +18,10 @@ from noetrium_platform.product.operator.api import (
 from noetrium_platform.composition.operator.project.project_layout import project_package_name
 from noetrium_platform.composition.operator.project.project_platform_identity import (
     installed_platform_identity,
+)
+from noetrium_platform.composition.operator.project.research_project_codegen import (
+    render_generated_test_module,
+    render_research_module,
 )
 from noetrium_platform.composition.operator.project.project_subprocess import (
     isolated_environment,
@@ -33,16 +38,20 @@ _PACKAGE = re.compile(r"[a-z][a-z0-9_]*")
 _PROBE_TIMEOUT_S = 30
 _PROBE_SCRIPT = r'''
 from noetrium import api
-from __PACKAGE__.research import PORTFOLIO, PROGRAM
+from __PACKAGE__.research import BLUEPRINT_DIGEST, PORTFOLIO, PROGRAMS
 
-if not isinstance(PROGRAM, api.ResearchProgram):
-    raise TypeError("research module must export ResearchProgram")
 if not isinstance(PORTFOLIO, api.ResearchPortfolio):
     raise TypeError("research module must export ResearchPortfolio")
-if PORTFOLIO.programs != (PROGRAM,):
-    raise ValueError("project portfolio must contain the authored program")
-if not PROGRAM.nodes or not PROGRAM.definitions:
-    raise ValueError("research program must contain definitions and nodes")
+if type(PROGRAMS) is not tuple or PROGRAMS != PORTFOLIO.programs:
+    raise ValueError("research module PROGRAMS must equal portfolio programs")
+if not PROGRAMS:
+    raise ValueError("research portfolio must contain at least one program")
+if any(not isinstance(program, api.ResearchProgram) for program in PROGRAMS):
+    raise TypeError("research module PROGRAMS must contain ResearchProgram values")
+if any(not program.nodes or not program.definitions for program in PROGRAMS):
+    raise ValueError("every generated research program must contain definitions and nodes")
+if type(BLUEPRINT_DIGEST) is not str or len(BLUEPRINT_DIGEST) != 64:
+    raise ValueError("generated research module lost blueprint identity")
 print("ready")
 '''
 
@@ -188,7 +197,9 @@ def doctor_project(
         package = ""
     required_files = () if not package else (
         _MANIFEST_PATH,
+        "research.blueprint.json",
         f"src/{package}/research.py",
+        f"src/{package}/slots.py",
         "tests/test_generated_project.py",
     )
     files_ok = bool(required_files) and all(
@@ -200,6 +211,41 @@ def doctor_project(
         files_ok,
         "generated files match the unified project template",
         "restore or regenerate the deterministic project scaffold",
+    ))
+
+    blueprint_projection_ok = False
+    blueprint_projection_detail = "research blueprint or generated topology is incomplete"
+    if files_ok:
+        try:
+            blueprint = decode_research_project_blueprint(
+                (root / "research.blueprint.json").read_bytes()
+            )
+            expected_research = render_research_module(blueprint).encode("utf-8")
+            expected_test = render_generated_test_module(
+                package,
+                blueprint,
+            ).encode("utf-8")
+            blueprint_projection_ok = (
+                (root / f"src/{package}/research.py").read_bytes()
+                == expected_research
+                and (root / "tests/test_generated_project.py").read_bytes()
+                == expected_test
+            )
+            blueprint_projection_detail = (
+                "generated research topology/test projection drifted from "
+                "research.blueprint.json"
+            )
+        except (OSError, TypeError, ValueError, UnicodeError):
+            blueprint_projection_ok = False
+            blueprint_projection_detail = (
+                "research.blueprint.json cannot be decoded through the canonical "
+                "Research OS blueprint codec"
+            )
+    checks.append(_check(
+        "blueprint_projection",
+        blueprint_projection_ok,
+        "generated Research OS topology exactly matches the typed blueprint",
+        blueprint_projection_detail,
     ))
 
     try:
