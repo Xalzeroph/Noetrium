@@ -86,6 +86,80 @@ class LocalServiceProcessV110Tests(unittest.TestCase):
                 stopped=supervisor.stop_exact(c)
                 self.assertEqual(stopped.phase,ServicePhase.EXITED)
 
+    @unittest.skipUnless(sys.platform.startswith("linux"), "Linux process backend requires /proc and POSIX process groups")
+    def test_local_process_is_recovered_after_crash_between_spawn_and_process_journal(self):
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            environment = MaterializedServiceEnvironment.from_mapping(
+                {"RP_SENTINEL": "recovery-value"}, "env:recovery"
+            )
+            launch = contract(root, environment)
+            state = FileServiceStateStore(root / "state.json")
+            first_backend = LinuxProcessBackend(
+                build_process_supervisor(self._task_group)
+            )
+            first_adapter = LocalServiceProcessAdapter(
+                StaticServiceEnvironmentProvider((environment,)),
+                DirectoryCapturePathProvider(root / "captures"),
+                first_backend,
+                ProcessAliveReadinessProbe(self._task_group, poll_interval_s=0.01),
+            )
+            first = make_service_supervisor(state, first_adapter)
+            from noetrium_platform.infrastructure.lifecycle.service.runtime.start_journal import (
+                ServiceStartJournal,
+            )
+
+            spawned: dict[str, object] = {}
+
+            def crash_before_process_journal(self, intent, process):
+                del self, intent
+                spawned["process"] = process
+                raise RuntimeError("simulated controller crash after physical spawn")
+
+            with patch.object(
+                ServiceStartJournal,
+                "record_process",
+                crash_before_process_journal,
+            ):
+                with self.assertRaisesRegex(
+                    RuntimeError,
+                    "simulated controller crash after physical spawn",
+                ):
+                    first.start_exact(launch)
+
+            original = spawned["process"]
+            self.assertTrue(first_backend.alive(original))
+            self.assertEqual(state.read().phase, ServicePhase.START_CHILD)
+
+            # Recompose every process-owned object. The new backend has no
+            # in-memory Popen/child registry and must recover only from the
+            # durable start intent plus the exact /proc launch marker.
+            second_backend = LinuxProcessBackend(
+                build_process_supervisor(self._task_group)
+            )
+            second_adapter = LocalServiceProcessAdapter(
+                StaticServiceEnvironmentProvider((environment,)),
+                DirectoryCapturePathProvider(root / "captures"),
+                second_backend,
+                ProcessAliveReadinessProbe(self._task_group, poll_interval_s=0.01),
+            )
+            second = make_service_supervisor(state, second_adapter)
+            report = second.start_exact(launch)
+            self.assertEqual(report.state.phase, ServicePhase.RUNNING)
+            self.assertEqual(report.state.process, original)
+            self.assertTrue(second_backend.alive(original))
+            try:
+                actual_env = (
+                    Path("/proc") / str(original.pid) / "environ"
+                ).read_bytes()
+                self.assertIn(
+                    b"NOETRIUM_INTERNAL_SERVICE_START_TOKEN=",
+                    actual_env,
+                )
+            finally:
+                stopped = second.stop_exact(launch)
+                self.assertEqual(stopped.phase, ServicePhase.EXITED)
+
     def test_materialized_environment_drift_fails_before_spawn(self):
         with tempfile.TemporaryDirectory() as td:
             root=Path(td)
