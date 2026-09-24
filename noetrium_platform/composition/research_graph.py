@@ -1215,7 +1215,23 @@ class ResearchGraphScheduler:
 
         try:
             while pending or running:
-                lease_heartbeat.assert_healthy()
+                try:
+                    lease_heartbeat.assert_healthy()
+                except BaseException as heartbeat_failure:
+                    reason = (
+                        "research graph durable lease heartbeat lost owner authority"
+                    )
+                    # A failed renewal authority means active workers are no
+                    # longer permitted to keep executing merely because their
+                    # physical thread/process is still alive. Cancel both
+                    # workload groups before surfacing the failure; durable
+                    # leases remain fenced and recover through normal expiry /
+                    # reconciliation if a worker does not converge promptly.
+                    opportunistic_group.cancel(reason)
+                    fair_group.cancel(reason)
+                    for _node_id, (_node, handle) in tuple(running.items()):
+                        handle.cancel()
+                    raise ResearchGraphExecutionConflict(reason) from heartbeat_failure
                 current_control = control_store.control_state(execution_id)
                 if current_control.phase in {
                     ResearchGraphControlPhase.PAUSED,
