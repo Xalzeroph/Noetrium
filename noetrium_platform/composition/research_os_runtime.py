@@ -100,7 +100,7 @@ class CanonicalResearchOSNodeRuntime(ResearchOSNodeRuntimePort):
         experiment_bindings: ResearchOSExperimentRuntimeBindingPort | None = None,
         max_steps: int = 10_000,
     ) -> None:
-        if type(state_root) not in {str, Path}:
+        if not isinstance(state_root, (str, Path)):
             raise TypeError("canonical Research OS runtime state_root is required")
         root = Path(state_root).absolute()
         if root.exists() and not root.is_dir():
