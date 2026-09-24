@@ -301,6 +301,7 @@ class CanonicalResearchOSNodeRuntime(ResearchOSNodeRuntimePort):
                 machine_id,
                 lowering,
                 admission.runtime_binding_digest,
+                execution_cut_id=execution_cut_id,
                 deadline=deadline,
             )
         if lowering.target is ResearchOSLoweringTarget.METHOD_MACHINE:
@@ -392,15 +393,22 @@ class CanonicalResearchOSNodeRuntime(ResearchOSNodeRuntimePort):
         lowering: LoweredResearchOSGraphNode,
         runtime_binding: ResearchOSExperimentRuntimeBinding,
         report,
+        *,
+        execution_cut_id: str,
     ) -> JsonObject:
         closure = lowering.experiment_closure
         if closure is None:
             raise CanonicalResearchOSRuntimeUnsupported(
                 "Experiment report publication has no canonical closure"
             )
+        artifact_binding = runtime_binding.bind_artifacts(
+            closure,
+            execution_cut_id=execution_cut_id,
+        )
+        artifacts = artifact_binding.artifacts
         prefix = f"research-os/experiments/{closure.closure_digest}"
         protocol = self._publish_exact_finalized_json(
-            runtime_binding.artifacts,
+            artifacts,
             f"{prefix}/protocol.json",
             {
                 "protocol": asdict(closure.experiment_program.plan.protocol),
@@ -412,20 +420,22 @@ class CanonicalResearchOSNodeRuntime(ResearchOSNodeRuntimePort):
             kind=RunArtifactKind.MANIFEST,
         )
         observations = self._publish_exact_finalized_json(
-            runtime_binding.artifacts,
+            artifacts,
             f"{prefix}/observations.json",
             tuple(asdict(row) for row in report.observations),
             kind=RunArtifactKind.METRIC,
         )
         aggregates = self._publish_exact_finalized_json(
-            runtime_binding.artifacts,
+            artifacts,
             f"{prefix}/aggregates.json",
             tuple(asdict(row) for row in report.aggregates),
             kind=RunArtifactKind.METRIC,
         )
         manifest_payload: JsonObject = {
-            "schema": "research-os.experiment-report-manifest.v1",
+            "schema": "research-os.experiment-report-manifest.v2",
             "closure_digest": closure.closure_digest,
+            "execution_cut_id": execution_cut_id,
+            "artifact_store_binding_digest": artifact_binding.binding_digest,
             "research_plan_digest": closure.research_plan.research_plan_digest,
             "experiment_program_digest": (
                 closure.experiment_program.program.program_digest
@@ -440,14 +450,16 @@ class CanonicalResearchOSNodeRuntime(ResearchOSNodeRuntimePort):
             "aggregates_artifact": self._receipt_json(aggregates),
         }
         manifest = self._publish_exact_finalized_json(
-            runtime_binding.artifacts,
+            artifacts,
             f"{prefix}/report-manifest.json",
             manifest_payload,
             kind=RunArtifactKind.MANIFEST,
         )
         return {
-            "schema": "research-os.experiment-report-ref.v1",
+            "schema": "research-os.experiment-report-ref.v2",
             "closure_digest": closure.closure_digest,
+            "execution_cut_id": execution_cut_id,
+            "artifact_store_binding_digest": artifact_binding.binding_digest,
             "manifest": self._receipt_json(manifest),
         }
 
@@ -457,6 +469,7 @@ class CanonicalResearchOSNodeRuntime(ResearchOSNodeRuntimePort):
         lowering: LoweredResearchOSGraphNode,
         admission_binding_digest: str,
         *,
+        execution_cut_id: str,
         deadline: Deadline | None,
     ) -> JsonValue:
         closure = lowering.experiment_closure
@@ -528,6 +541,7 @@ class CanonicalResearchOSNodeRuntime(ResearchOSNodeRuntimePort):
                 lowering,
                 runtime_binding,
                 report,
+                execution_cut_id=execution_cut_id,
             )
             completed = True
             return report_ref if lowering.source.node.outputs else None
@@ -713,6 +727,7 @@ class CanonicalResearchOSNodeRuntime(ResearchOSNodeRuntimePort):
                     node,
                     lowering,
                     head.state,
+                    execution_cut_id=execution_cut_id,
                 )
                 return ResearchOSNodeReconciliationProof(
                     execution_cut_id,
@@ -803,6 +818,8 @@ class CanonicalResearchOSNodeRuntime(ResearchOSNodeRuntimePort):
         node: CompiledResearchOSGraphNode,
         lowering: LoweredResearchOSGraphNode,
         machine_state: JsonObject,
+        *,
+        execution_cut_id: str,
     ) -> JsonValue:
         if lowering.target is ResearchOSLoweringTarget.METHOD_MACHINE:
             method_state = machine_state.get("method")
@@ -838,6 +855,7 @@ class CanonicalResearchOSNodeRuntime(ResearchOSNodeRuntimePort):
                 lowering,
                 binding,
                 report,
+                execution_cut_id=execution_cut_id,
             )
             return report_ref if node.node.outputs else None
         return program_state.get("previous_value")
