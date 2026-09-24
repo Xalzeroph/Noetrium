@@ -204,15 +204,18 @@ class DirectoryMachineSnapshotStore(MachineSnapshotStorePort):
     def load(self, machine_id: str) -> MachineSnapshot | None:
         if type(machine_id) is not str or not machine_id.strip():
             raise ValueError("snapshot machine_id is required")
-        with self._cache_lock:
-            cached = self._cache.get(machine_id)
-        if cached is not None:
-            return cached
-        snapshot = self._read(machine_id)
-        if snapshot is not None:
+        # Snapshot bytes are a recovery accelerator, but durable storage is
+        # still the read authority. Another process may advance the snapshot
+        # while this process remains alive, so an in-memory cache must never
+        # hide a newer durable generation.
+        with InterprocessFileLock(self._lock_path(machine_id)):
+            snapshot = self._read(machine_id)
             with self._cache_lock:
-                self._cache[machine_id] = snapshot
-        return snapshot
+                if snapshot is None:
+                    self._cache.pop(machine_id, None)
+                else:
+                    self._cache[machine_id] = snapshot
+            return snapshot
 
 
 __all__ = [
