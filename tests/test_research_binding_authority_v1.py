@@ -24,6 +24,7 @@ from noetrium_platform.composition.research_binding_authority import (
     ResearchParticipantBindingRegistration,
     ResearchParticipantBindingRegistry,
     ResearchProjectManifestRegistry,
+    ResearchProjectManifestRequirement,
 )
 from noetrium_platform.foundation.governance.architecture.api import (
     BindingDiagnostic,
@@ -54,6 +55,7 @@ from noetrium_platform.foundation.portfolio.api import (
 from noetrium_platform.research.experimentation.api import (
     resolve_research_requirements,
 )
+from research.reproductions.fleet import _research_binding_gap
 from noetrium_platform.research.experimentation.lifecycle.api import (
     BenchmarkTaskSet,
     ExperimentTrialProtocolIdentity,
@@ -452,3 +454,43 @@ def test_binding_registries_close_study_without_custom_resolver_logic() -> None:
     assert len(capability_registry.identity_digest) == 64
     assert len(participant_registry.identity_digest) == 64
     assert len(model_registry.identity_digest) == 64
+
+
+
+def test_fleet_gap_classifies_missing_manifest_by_canonical_requirement() -> None:
+    definition = _definition()
+    requirement = ResearchProjectManifestRequirement.from_study(definition)
+    gap = _research_binding_gap(
+        definition,
+        LookupError("manifest unavailable"),
+    )
+
+    assert gap.stage == "project_manifest"
+    assert gap.requirement_key == "demo-project:demo-study"
+    assert gap.requirement_digest == requirement.requirement_digest
+    assert gap.error_type == "LookupError"
+    assert len(gap.gap_digest) == 64
+
+
+def test_fleet_gap_preserves_structured_model_owner_diagnostics() -> None:
+    authority = ResearchBindingAuthority(
+        _Manifests(),
+        _Capabilities(),
+        _Participants(),
+        _UnavailableModels(),
+    )
+    definition = _definition()
+    with pytest.raises(ResearchBindingAuthorityError) as captured:
+        authority.resolve(definition)
+
+    gap = _research_binding_gap(definition, captured.value)
+    model_requirement = definition.binding_requirements.model_role("solver")
+
+    assert gap.stage == "model"
+    assert gap.requirement_key == "solver"
+    assert gap.requirement_digest == model_requirement.requirement_digest
+    assert gap.error_type == "ResearchBindingAuthorityError"
+    assert gap.diagnostics == tuple(
+        row.machine_digest for row in captured.value.diagnostics
+    )
+    assert len(gap.gap_digest) == 64
