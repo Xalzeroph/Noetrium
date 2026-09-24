@@ -42960,7 +42960,7 @@
     "tooling": 39
   },
   "schema": "noetrium-repository-code-architecture-index.v1",
-  "source_git_sha": "cec40a6e1d4a92b193b4061fed625e4d7a7b20b7",
+  "source_git_sha": "a46e1c5b2bd90b3cc3b84bcdfab7e4cb28fdd2d0",
   "symbols": [
     {
       "bases": [],
@@ -46274,7 +46274,7 @@
         "_spec",
         "_overlay",
         "_assignment",
-        "_instance",
+        "_instance_payload",
         "_binding",
         "_state",
         "_persist",
@@ -124433,7 +124433,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 1158,
+      "line": 1185,
       "methods": [
         "__post_init__"
       ],
@@ -124456,7 +124456,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 1208,
+      "line": 1235,
       "methods": [
         "__post_init__"
       ],
@@ -124472,7 +124472,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 1315,
+      "line": 1342,
       "methods": [
         "__init__",
         "resolve"

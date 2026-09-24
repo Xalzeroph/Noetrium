@@ -873,7 +873,7 @@
     }
   ],
   "package_cycles": [],
-  "report_sha256": "29c48cc48469e4276f2d6aacbc45e5a09a941a36cc56fda46330e808eee4d84f",
+  "report_sha256": "76b84fbc55db3489fbcfe6a0ac00e069ca31dc1da2bb0f56b5f008dfcb0b3c64",
   "source_authority_violations": [
     {
       "allowed_modules": [
@@ -887,7 +887,7 @@
       "primitive": "time.sleep"
     }
   ],
-  "source_digest": "0275784b6c35c4d27bcb4f93fc110f5ab20449c194bea0e9a6f7a6a7b5ea3717",
+  "source_digest": "6180207d888b47d7f718dcfce189bd8b6cbba0f394fe2edc80da7672786b55e5",
   "source_invariant_violations": [],
   "source_root": ".",
   "subsystem_graph": [
@@ -1625,7 +1625,7 @@
       "score": 4079
     },
     {
-      "branches": 199,
+      "branches": 200,
       "classes": 6,
       "exception_handlers": 2,
       "functions": 37,
@@ -1633,8 +1633,8 @@
       "max_function_lines": 172,
       "module": "noetrium_platform.composition.research_os_execution",
       "path": "noetrium_platform/composition/research_os_execution.py",
-      "physical_lines": 2043,
-      "score": 3959
+      "physical_lines": 2066,
+      "score": 3990
     },
     {
       "branches": 150,
@@ -1717,8 +1717,8 @@
       "max_function_lines": 95,
       "module": "noetrium_platform.capabilities.environment.catalog.runtime.catalog",
       "path": "noetrium_platform/capabilities/environment/catalog/runtime/catalog.py",
-      "physical_lines": 1523,
-      "score": 2287
+      "physical_lines": 1526,
+      "score": 2290
     },
     {
       "branches": 116,

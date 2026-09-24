@@ -19138,7 +19138,7 @@
         "_spec",
         "_overlay",
         "_assignment",
-        "_instance",
+        "_instance_payload",
         "_binding",
         "_state",
         "_persist",
@@ -143517,7 +143517,7 @@
   "parse_errors": [],
   "registry_sha256": "d3fc1bab831f1b7379e5a36048a61c00fe173429df958270d36a16f3f00171c0",
   "schema": "noetrium-code-architecture-index.v1",
-  "source_git_sha": "cec40a6e1d4a92b193b4061fed625e4d7a7b20b7",
+  "source_git_sha": "a46e1c5b2bd90b3cc3b84bcdfab7e4cb28fdd2d0",
   "system_import_edges": [
     {
       "count": 85,
