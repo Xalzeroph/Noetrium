@@ -5,9 +5,11 @@ FROM ${PLATFORM_BASE_IMAGE}
 ARG NOETRIUM_ENVIRONMENT_PROFILE_ID
 ARG NOETRIUM_ENVIRONMENT_CATEGORY_ID
 ARG NOETRIUM_ENVIRONMENT_PROFILE_REVISION
+ARG NOETRIUM_ENVIRONMENT_BUILD_INPUT_DIGEST
 LABEL org.opencontainers.image.noetrium.environment.profile-id="${NOETRIUM_ENVIRONMENT_PROFILE_ID}" \
       org.opencontainers.image.noetrium.environment.category-id="${NOETRIUM_ENVIRONMENT_CATEGORY_ID}" \
-      org.opencontainers.image.noetrium.environment.profile-revision="${NOETRIUM_ENVIRONMENT_PROFILE_REVISION}"
+      org.opencontainers.image.noetrium.environment.profile-revision="${NOETRIUM_ENVIRONMENT_PROFILE_REVISION}" \
+      org.opencontainers.image.noetrium.environment.build-input.sha256="${NOETRIUM_ENVIRONMENT_BUILD_INPUT_DIGEST}"
 
 ENV NOETRIUM_ENVIRONMENT_PROFILE=gui
 
