@@ -312,6 +312,50 @@ class DockerContainerLeaseAuthority:
             tuple(sorted(set(released))),
         )
 
+    def shutdown_cleanup(
+        self,
+        *,
+        now: float | None = None,
+    ) -> DockerContainerReconciliation:
+        """Remove every managed physical container, then end container leases.
+
+        This is only for an exclusively owned, quiesced platform runtime. The
+        physical effect is completed before logical ownership is released.
+        """
+
+        now_epoch_s = time() if now is None else float(now)
+        if not math.isfinite(now_epoch_s):
+            raise ValueError("Docker shutdown cleanup time must be finite")
+
+        removed: list[str] = []
+        for observed in self.runtime.list_managed():
+            self.runtime.remove(observed.container_id, force=True)
+            if self.runtime.inspect(observed.container_id) is not None:
+                raise DockerContainerLeaseConflict(
+                    "managed Docker container survived shutdown cleanup"
+                )
+            removed.append(observed.container_id)
+
+        released: list[str] = []
+        for lease in self.leases.active_leases(
+            resource_kind=ResourceKind.CONTAINER,
+            now=now_epoch_s,
+        ):
+            released_lease = self.leases.release(
+                lease.lease_id,
+                now=now_epoch_s,
+            )
+            if released_lease.state is not LeaseState.RELEASED:
+                raise DockerContainerLeaseConflict(
+                    "managed Docker shutdown failed to release lease"
+                )
+            released.append(lease.lease_id)
+
+        return DockerContainerReconciliation(
+            tuple(sorted(set(removed))),
+            tuple(sorted(set(released))),
+        )
+
     def run_reconciler(
         self,
         *,
