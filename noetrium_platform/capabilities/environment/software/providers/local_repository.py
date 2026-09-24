@@ -28,6 +28,7 @@ from noetrium_platform.foundation.kernel.kernel import (
     require_sha256,
     thaw_json,
 )
+from noetrium_platform.foundation.kernel.kernel.durability import atomic_replace_bytes
 from noetrium_platform.substrate.api import (
     LocalCommandRunnerPort,
 )
@@ -326,8 +327,7 @@ class _LocalRepositorySoftwareSession(
         if type(content) is not str:
             raise TypeError("software edit content must be text")
         before = self._workspace_state_digest()
-        path.parent.mkdir(parents=True, exist_ok=True)
-        path.write_text(content, encoding="utf-8")
+        atomic_replace_bytes(path, content.encode("utf-8"))
         after = self._workspace_state_digest()
         effect = EffectReceipt(
             effect_id=f"software-edit:{request.action_id}",
