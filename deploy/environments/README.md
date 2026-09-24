@@ -143,6 +143,18 @@ Host Python is not part of the deployment contract. Qualification and image orch
 
 With no `--profiles`, build selects exactly one active default revision for every registered category.
 
+Profile-specific immutable build inputs are declared by the registry, not hard-coded in the builder. An image input declares its canonical image selector and environment variable; a parameter input declares its canonical default and environment variable. The builder resolves image inputs to concrete content digests, includes those digests and parameter values in `build_input_digest`, injects the values into the profile Compose build, and records the complete resolved input set in the build receipt.
+
+Deployment-specific mirrors or parameter substitutions use the generic override surface:
+
+```bash
+./deploy/build-environments.sh build --profiles minecraft \
+  --build-input JAVA_RUNTIME_IMAGE=registry.example/java/runtime \
+  --build-input NODE_VERSION=22.22.2
+```
+
+An override that is not declared by one of the selected profiles fails closed. Adding a new profile-specific runtime input therefore changes only the registry row and that profile's recipe/Compose wiring; the central builder remains unchanged.
+
 Explicit recovery is separated by lifecycle:
 
 ```bash
@@ -174,7 +186,7 @@ release source
 
 Build receipts include source SHA, wheel SHA-256, distribution-evidence SHA-256, exact upstream runtime-source identities, profile id, category, profile lifecycle, profile revision digest, `build_input_digest`, Docker image metadata, and the final normalized `runtime_identity_digest`.
 
-The base cache key includes the exact Python runtime source identity, and the base image carries that digest as an OCI label verified by the formal container verifier. Profile cache keys use the complete `build_input_digest`; profile images carry the same digest as an OCI label. For Minecraft this build-input identity includes the exact Java runtime image identity and Node version in addition to the base image.
+The base cache key includes the exact Python runtime source identity, and the base image carries that digest as an OCI label verified by the formal container verifier. Profile cache keys use the complete `build_input_digest`; profile images carry the same digest as an OCI label. Profile-specific inputs are generic registry data. For the current Minecraft profile this includes the exact Java runtime image identity, Node version, and the pinned SHA-256 of the Node Linux x64 archive in addition to the base image.
 
 Registry mirrors are deployment configuration. Canonical runtime identities remain separately recorded from the actual source registry image.
 
@@ -198,11 +210,12 @@ A downstream paper must never force a paper-specific layer into this registry. P
 To add a profile without changing central platform code:
 
 1. add a registry row with `profile_id`, `category_id`, lifecycle and isolation policy;
-2. add a Dockerfile that extends `PLATFORM_BASE_IMAGE` unless the profile is `base-only`;
-3. add a profile-local doctor hook;
-4. add a Compose overlay if the profile needs one;
-5. run `./deploy/build-environments.sh validate`;
-6. build and doctor the new revision.
+2. declare any profile-specific immutable image/parameter inputs under `build_inputs`; do not add profile-name conditionals to the builder;
+3. add a Dockerfile that extends `PLATFORM_BASE_IMAGE` unless the profile is `base-only`;
+4. add a profile-local doctor hook;
+5. add a Compose overlay if the profile needs one and wire every declared build-input environment variable through it;
+6. run `./deploy/build-environments.sh validate`;
+7. build and doctor the new revision.
 
 The registry gate rejects downstream benchmark/paper content in platform-owned images.
 
