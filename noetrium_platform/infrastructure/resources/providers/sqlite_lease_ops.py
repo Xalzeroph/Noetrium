@@ -201,10 +201,13 @@ def release_resource_lease(
     conn: sqlite3.Connection,
     lease_id: str,
     *,
+    fencing_token: int,
     now_epoch_s: float,
 ) -> ResourceLease:
     if not math.isfinite(float(now_epoch_s)):
         raise ValueError("lease observation time must be finite")
+    if type(fencing_token) is not int or fencing_token < 1:
+        raise ValueError("lease release fencing_token must be a positive integer")
     expire_lease(conn, lease_id, now_epoch_s)
     row = conn.execute(
         "SELECT * FROM resource_leases WHERE lease_id=?",
@@ -213,15 +216,22 @@ def release_resource_lease(
     if row is None:
         raise KeyError(lease_id)
     current = decode_resource_lease(row)
-    if current.state is not LeaseState.RELEASED:
-        conn.execute(
-            "UPDATE resource_leases SET state='released', released_at_epoch_s=? WHERE lease_id=?",
-            (now_epoch_s, lease_id),
-        )
-        current = replace(
-            current, state=LeaseState.RELEASED, released_at_epoch_s=now_epoch_s
-        )
-    return current
+    if current.fencing_token != fencing_token:
+        raise ResourceLeaseConflict(f"stale lease fencing token: {lease_id}")
+    if current.state is LeaseState.EXPIRED:
+        raise ResourceLeaseExpired(lease_id)
+    if current.state is LeaseState.RELEASED:
+        return current
+    cursor = conn.execute(
+        "UPDATE resource_leases SET state='released', released_at_epoch_s=? "
+        "WHERE lease_id=? AND state='active' AND fencing_token=?",
+        (now_epoch_s, lease_id, fencing_token),
+    )
+    if cursor.rowcount != 1:
+        raise ResourceLeaseConflict(f"lease release lost authority: {lease_id}")
+    return replace(
+        current, state=LeaseState.RELEASED, released_at_epoch_s=now_epoch_s
+    )
 
 
 def reconcile_expired_resource_leases(
