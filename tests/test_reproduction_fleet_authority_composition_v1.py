@@ -54,6 +54,8 @@ class _ReproductionCapabilities:
 
 
 class _Benchmarks:
+    authority_digest = "f" * 64
+
     def resolve(self, definition, study_factory):
         raise AssertionError((definition, study_factory))
 
@@ -94,6 +96,7 @@ def test_fleet_authority_manifest_changes_with_aggregation_registry() -> None:
         "trial_provider_registry_digest": "e" * 64,
         "reconciliation_registry_digest": "a" * 64,
         "benchmark_registry_digest": "b" * 64,
+        "benchmark_authority_digest": "f" * 64,
     }
     first = ReproductionFleetAuthorityManifest(
         aggregation_registry_digest="c" * 64,
@@ -105,4 +108,28 @@ def test_fleet_authority_manifest_changes_with_aggregation_registry() -> None:
     )
 
     assert first.aggregation_registry_digest != second.aggregation_registry_digest
+    assert first.manifest_digest != second.manifest_digest
+
+
+def test_fleet_authority_manifest_changes_with_benchmark_authority() -> None:
+    common = {
+        "manifest_registry_digest": "a" * 64,
+        "research_capability_registry_digest": "b" * 64,
+        "participant_registry_digest": "c" * 64,
+        "model_registry_digest": "d" * 64,
+        "trial_provider_registry_digest": "e" * 64,
+        "aggregation_registry_digest": "f" * 64,
+        "reconciliation_registry_digest": "a" * 64,
+        "benchmark_registry_digest": "b" * 64,
+    }
+    first = ReproductionFleetAuthorityManifest(
+        benchmark_authority_digest="c" * 64,
+        **common,
+    )
+    second = ReproductionFleetAuthorityManifest(
+        benchmark_authority_digest="d" * 64,
+        **common,
+    )
+
+    assert first.benchmark_authority_digest != second.benchmark_authority_digest
     assert first.manifest_digest != second.manifest_digest
