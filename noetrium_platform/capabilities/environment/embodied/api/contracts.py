@@ -3,8 +3,8 @@ from __future__ import annotations
 from collections.abc import Mapping
 from dataclasses import dataclass, field
 from enum import StrEnum
-import hashlib
 
+from noetrium_platform.foundation.kernel.kernel.durability import sha256_bytes
 from noetrium_platform.foundation.kernel.kernel import (
     ExecutionContext,
     JsonInput,
@@ -244,7 +244,7 @@ class EmbodiedActionCommand:
 
     @property
     def raw_payload_sha256(self) -> str:
-        return hashlib.sha256(self.raw_payload).hexdigest()
+        return sha256_bytes(self.raw_payload)
 
 
 
@@ -298,7 +298,7 @@ class EmbodiedEvent:
 
     @property
     def raw_payload_sha256(self) -> str:
-        return hashlib.sha256(self.raw_payload).hexdigest()
+        return sha256_bytes(self.raw_payload)
 
     @property
     def event_digest(self) -> str:
