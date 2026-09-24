@@ -136,7 +136,7 @@ class JsonlProcessTransport:
             for key, value in self._environment_overrides.items()
         ):
             raise ValueError("JSONL process environment overrides must be text pairs")
-        self._process_factory = process_factory or subprocess.Popen
+        self._process_factory = process_factory
         self._failure_reporter = failure_reporter
         self._stderr_tail: deque[str] = deque(maxlen=max(20, stderr_tail_lines))
         self._stdout_queue: queue.Queue[str | object] = queue.Queue(
@@ -248,7 +248,25 @@ class JsonlProcessTransport:
         process_environment = os.environ.copy()
         process_environment.update(self._environment_overrides)
         process_options["env"] = process_environment
-        self._process = self._process_factory(list(self.spec.command), **process_options)
+        if self._process_factory is None:
+            self._process = cast(
+                JsonlProcess,
+                self._process_supervisor.spawn_interactive(
+                    self.spec.command,
+                    cwd=self.spec.cwd,
+                    environment=process_environment,
+                    start_new_session=self._operating_system.is_posix,
+                    creationflags=(
+                        subprocess.CREATE_NEW_PROCESS_GROUP
+                        if self._operating_system.is_windows
+                        else 0
+                    ),
+                ),
+            )
+        else:
+            self._process = self._process_factory(
+                list(self.spec.command), **process_options
+            )
         self._stdout_task = self._task_group.submit(
             ExecutionSpec(
                 task_id=f"{self._task_namespace}:{self._transport_identity}:stdout:{uuid4().hex}",
