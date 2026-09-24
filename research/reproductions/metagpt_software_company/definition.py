@@ -11,6 +11,7 @@ from research.reproductions.contracts import (
     ReproductionDeltaKind,
     ReproductionIdentity,
     ReproductionLifecycle,
+    ReproductionMethodProgramFactoryBinding,
 )
 
 REPRODUCTION = ReproductionDefinition(
@@ -45,6 +46,10 @@ REPRODUCTION = ReproductionDefinition(
             kind=ReproductionAssetKind('study'),
             path='research/reproductions/metagpt_software_company/study.py',
         ),
+    ),
+    method_program_factory=ReproductionMethodProgramFactoryBinding(
+        qualname="build_metagpt_software_company_method_program",
+        kwargs={"use_code_review": False},
     ),
     reported_results=(
         ReportedResult(
