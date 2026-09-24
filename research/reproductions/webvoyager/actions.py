@@ -3,7 +3,7 @@ from __future__ import annotations
 import re
 from dataclasses import dataclass
 
-from noetrium_platform.composition.environment_capabilities import (
+from noetrium.api import (
     environment_action_capability_payload,
 )
 from noetrium_platform.foundation.kernel.kernel import JsonInput
