@@ -42,8 +42,8 @@ class AdmissionLease:
         with self._release_lock:
             if self._released:
                 return
+            self._controller._release(self._owner_id)
             self._released = True
-        self._controller._release(self._owner_id)
 
     def __enter__(self) -> "AdmissionLease":
         return self
