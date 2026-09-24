@@ -1118,7 +1118,7 @@
       "reproductions": [
         {
           "package": "vima_embodied",
-          "package_digest": "2c3be3ebe84d433485979924e013bdb94ccdbce6a5728affbdde25049675b7bb",
+          "package_digest": "8ce4d2889de67dc1837d4d2037cce3491c44987c808b7a3c87f613eb49bbcb54",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "vima-bench"
@@ -1161,7 +1161,7 @@
             {
               "kind": "method_program",
               "path": "research/reproductions/vima_embodied/program.py",
-              "content_sha256": "b931d05ff224bd3ac931fe1df6bd23cbb3c1351e949b45355441bc2d3ac823e3"
+              "content_sha256": "55ff03bebe8ddf2d604d726d8af580998a33f2446ff4c172236e510aaabba7d7"
             },
             {
               "kind": "study",
@@ -1176,7 +1176,7 @@
             {
               "kind": "support",
               "path": "research/reproductions/vima_embodied/policy.py",
-              "content_sha256": "2230d49cc16c6dda8c28d8defbc8e7d71b534528bb6ce65b3a0afc79a8d9e601"
+              "content_sha256": "e9cffac0e19442d59b666e9ae5e39f64642b42fc7c2f96a79a041c3b52b2dca0"
             },
             {
               "kind": "support",
@@ -2006,7 +2006,7 @@
       "reproductions": [
         {
           "package": "videoagent_memory",
-          "package_digest": "6e2566b5ba32ff4a914b03a49990706471ab7ebd96e27f1231822219f1248640",
+          "package_digest": "8ceccc183ee6466ecf967f2eb510f5cdaefbe2dbace01d956bd9ad4184fc74a1",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "egoschema"
@@ -2065,7 +2065,7 @@
             {
               "kind": "study",
               "path": "research/reproductions/videoagent_memory/study.py",
-              "content_sha256": "725d41ea26914cded9c2a072f5cf4e81bfbb3e43afdafe07e98b9559d6e5b535"
+              "content_sha256": "10df1d998e65a06a1ffacf5839d0e1dd0b1bc4bc5465deb8010135027db65e44"
             },
             {
               "kind": "support",
@@ -3746,7 +3746,7 @@
       "reproductions": [
         {
           "package": "vilomem_cvpr2026",
-          "package_digest": "38a8442733d1592703ff04ccef257322f29b6e153859dad153cd0b62daefea95",
+          "package_digest": "edfba0d4e3374fdb0ac129e1534cb64a873a4f63bfd99432140f539be2762a4f",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "hallusionbench",
@@ -3783,7 +3783,7 @@
             {
               "kind": "method_program",
               "path": "research/reproductions/vilomem_cvpr2026/program.py",
-              "content_sha256": "07f03e9859736039866ba3130878a88444561b640cb3be5297a8fa0c2243fd44"
+              "content_sha256": "435deab537ab8d0f459dbdabb860057c949a4281d614c6a9afb06ccab07be5a2"
             },
             {
               "kind": "study",
@@ -3896,5 +3896,5 @@
       ]
     }
   ],
-  "projection_digest": "4e292dd5743695ea6c2bbd0c6f7950e03a95de55d218de35f0c1249b7c299728"
+  "projection_digest": "81cde56276d4dcbb96cb3bfb0ede4cb4140d9b06707cc37a79b3e4befebb2212"
 }

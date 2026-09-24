@@ -2,7 +2,7 @@
   "schema": "noetrium.reproduction.projection.v10",
   "authority": "generated_from_typed_definition_and_source",
   "package": "videollamb_memory",
-  "package_digest": "b29fea6d960259765128f88dec91b52313638af30ff67258f570c765350563cb",
+  "package_digest": "784ab549b4e5c71157a5687a5490a89c4e5a40bc8e2f62c1f442bf9fdcc53226",
   "definition_digest": "42a30c2635f4d6f36393e0c3a88bb81b6d814281cc4bfc4f78d4b752084dc7f0",
   "source_registry_digest": "c17becefb55b8781ad39e27af3679464881cd5acc66fa8fc09bb257204f8f639",
   "lifecycle": "protocol_bound",
@@ -109,7 +109,7 @@
       "kind": "research_program",
       "path": "research/reproductions/videollamb_memory/memory.py",
       "declaration_digest": "493715a6f1755df086e9d01a1dfe1056fdb67f1a8672ba3eefc708cad58a776a",
-      "content_sha256": "c1e9921a4b642354e3bf72d7ee3502454e302741b78facd9dd51ae8794888c89"
+      "content_sha256": "d9343d595c82a94a2f66d37744dbc7d5888181e0aae2dae21d50fc675ccf7cf2"
     },
     {
       "kind": "study",
