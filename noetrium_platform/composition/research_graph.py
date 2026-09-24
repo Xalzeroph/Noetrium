@@ -22,6 +22,7 @@ from noetrium_platform.research.execution.graph.api import (
     ResearchGraphControlPhase,
     ResearchGraphControlRecord,
     ResearchGraphControlStorePort,
+    ResearchGraphClaimRecoveryPort,
     ResearchGraphExecutionConflict,
     ResearchGraphExecutionReport,
     ResearchGraphExecutionSnapshot,
@@ -624,35 +625,71 @@ class ResearchGraphScheduler:
             live[node_id] = current
 
         if attempt_id is None:
-            node_control = node_control_store.node_control_state(
-                execution_id,
-                node_id,
-            )
-            control = control_store.control_state(execution_id)
+            # The local attempt book is a renewal cache, not durable truth. A
+            # claim may have committed immediately before the worker failed or
+            # was descheduled. Recover that exact identity from the store.
             if (
-                current.state in {
-                    ResearchGraphLiveNodeState.PENDING,
-                    ResearchGraphLiveNodeState.READY,
+                current.state
+                in {
+                    ResearchGraphLiveNodeState.CLAIMED,
+                    ResearchGraphLiveNodeState.RUNNING,
                 }
-                and (
-                    node_control.phase is not ResearchGraphNodeControlPhase.ACTIVE
-                    or control.phase is not ResearchGraphControlPhase.ACTIVE
-                )
+                and current.attempt_id is not None
+                and current.lease_owner_id == self._scheduler_owner_id
             ):
-                pending[node_id] = node
-                frontier.restore_ready(node_id)
-                return
-            if current.state is ResearchGraphLiveNodeState.CANCELLED:
-                results[node_id] = ResearchGraphNodeResult(
-                    node.node_id,
-                    node.semantic_digest,
-                    ResearchGraphNodeState.CANCELLED,
+                attempt_id = current.attempt_id
+            else:
+                node_control = node_control_store.node_control_state(
+                    execution_id,
+                    node_id,
                 )
-                frontier.record_terminal(results[node_id])
-                return
-            raise ResearchGraphExecutionConflict(
-                "research graph worker failed before acquiring durable claim"
-            ) from failure
+                control = control_store.control_state(execution_id)
+                if (
+                    current.state in {
+                        ResearchGraphLiveNodeState.PENDING,
+                        ResearchGraphLiveNodeState.READY,
+                    }
+                    and (
+                        node_control.phase
+                        is not ResearchGraphNodeControlPhase.ACTIVE
+                        or control.phase is not ResearchGraphControlPhase.ACTIVE
+                    )
+                ):
+                    pending[node_id] = node
+                    frontier.restore_ready(node_id)
+                    return
+                if current.state is ResearchGraphLiveNodeState.CANCELLED:
+                    results[node_id] = ResearchGraphNodeResult(
+                        node.node_id,
+                        node.semantic_digest,
+                        ResearchGraphNodeState.CANCELLED,
+                    )
+                    frontier.record_terminal(results[node_id])
+                    return
+                raise ResearchGraphExecutionConflict(
+                    "research graph worker failed before acquiring durable claim"
+                ) from failure
+
+        if (
+            current.state is ResearchGraphLiveNodeState.CLAIMED
+            and current.attempt_id == attempt_id
+            and current.lease_owner_id == self._scheduler_owner_id
+        ):
+            if not isinstance(store, ResearchGraphClaimRecoveryPort):
+                raise ResearchGraphExecutionConflict(
+                    "research graph store cannot recover a never-started claim"
+                ) from failure
+            current = store.abandon_claim(
+                execution_id,
+                node.node_id,
+                attempt_id=attempt_id,
+                owner_id=self._scheduler_owner_id,
+                now_ns=time.time_ns(),
+            )
+            live[node_id] = current
+            pending[node_id] = node
+            frontier.restore_ready(node_id)
+            return
 
         if (
             current.state is ResearchGraphLiveNodeState.RUNNING
@@ -772,7 +809,11 @@ class ResearchGraphScheduler:
             current = current_by_id[node_id]
             node_control = control_by_id[node_id]
             if (
-                current.state is not ResearchGraphLiveNodeState.RUNNING
+                current.state
+                not in {
+                    ResearchGraphLiveNodeState.CLAIMED,
+                    ResearchGraphLiveNodeState.RUNNING,
+                }
                 or current.attempt_id != attempt_id
             ):
                 if node_control.phase in {
@@ -984,17 +1025,21 @@ class ResearchGraphScheduler:
                         raise RuntimeError(
                             "claimed research graph node lost attempt id"
                         )
+                    # Publish the local renewal mirror immediately after the
+                    # durable claim. The durable store remains authority; this
+                    # mirror must never lag a committed claim into a false
+                    # "never claimed" completion state.
+                    attempts.publish(
+                        owned_node.node_id,
+                        attempt_id,
+                        time.time_ns() + renewal_interval_ns,
+                    )
                     store.mark_running(
                         execution_id,
                         owned_node.node_id,
                         attempt_id=attempt_id,
                         owner_id=self._scheduler_owner_id,
                         now_ns=time.time_ns(),
-                    )
-                    attempts.publish(
-                        owned_node.node_id,
-                        attempt_id,
-                        time.time_ns() + renewal_interval_ns,
                     )
                     context.checkpoint()
                     self._executor.execute(
