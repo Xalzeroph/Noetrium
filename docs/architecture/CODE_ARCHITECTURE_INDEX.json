@@ -102334,7 +102334,7 @@
     "classes": 3335,
     "constructor_edges": 931,
     "inheritance_edges": 149,
-    "module_import_edges": 5051,
+    "module_import_edges": 5052,
     "parse_errors": 0,
     "python_modules": 1929,
     "registry_authorities": 20,
@@ -108799,6 +108799,10 @@
     },
     {
       "source": "noetrium_platform.composition.platform_meta",
+      "target": "noetrium_platform.foundation.kernel.kernel.durability.sqlite"
+    },
+    {
+      "source": "noetrium_platform.composition.platform_meta",
       "target": "noetrium_platform.foundation.portfolio.api"
     },
     {
@@ -108848,10 +108852,6 @@
     {
       "source": "noetrium_platform.composition.platform_meta",
       "target": "noetrium_platform.infrastructure.resources.providers"
-    },
-    {
-      "source": "noetrium_platform.composition.platform_meta",
-      "target": "noetrium_platform.infrastructure.resources.providers.sqlite_connection"
     },
     {
       "source": "noetrium_platform.composition.platform_meta",
@@ -115163,6 +115163,10 @@
     },
     {
       "source": "noetrium_platform.foundation.kernel.kernel.durability",
+      "target": "noetrium_platform.foundation.kernel.kernel.sqlite"
+    },
+    {
+      "source": "noetrium_platform.foundation.kernel.kernel.durability",
       "target": "noetrium_platform.foundation.kernel.kernel.stream_digest"
     },
     {
@@ -115188,6 +115192,10 @@
     {
       "source": "noetrium_platform.foundation.kernel.kernel.durability.file_lock",
       "target": "noetrium_platform.foundation.kernel.kernel.logical_path"
+    },
+    {
+      "source": "noetrium_platform.foundation.kernel.kernel.durability.sqlite",
+      "target": "noetrium_platform.foundation.kernel.kernel.retry"
     },
     {
       "source": "noetrium_platform.foundation.kernel.kernel.durable_delivery",
@@ -119407,6 +119415,10 @@
     },
     {
       "source": "noetrium_platform.infrastructure.resources.compute.runtime.scheduler",
+      "target": "noetrium_platform.foundation.kernel.kernel.durability.sqlite"
+    },
+    {
+      "source": "noetrium_platform.infrastructure.resources.compute.runtime.scheduler",
       "target": "noetrium_platform.infrastructure.resources.compute.api"
     },
     {
@@ -119416,10 +119428,6 @@
     {
       "source": "noetrium_platform.infrastructure.resources.compute.runtime.scheduler",
       "target": "noetrium_platform.infrastructure.resources.lease.api"
-    },
-    {
-      "source": "noetrium_platform.infrastructure.resources.compute.runtime.scheduler",
-      "target": "noetrium_platform.infrastructure.resources.providers.sqlite_connection"
     },
     {
       "source": "noetrium_platform.infrastructure.resources.compute.runtime.scheduler",
@@ -119562,12 +119570,12 @@
       "target": "noetrium_platform.infrastructure.resources.sqlite_lease"
     },
     {
-      "source": "noetrium_platform.infrastructure.resources.providers.sqlite_connection",
-      "target": "noetrium_platform.foundation.kernel.kernel.retry"
+      "source": "noetrium_platform.infrastructure.resources.providers.sqlite_endpoint",
+      "target": "noetrium_platform.foundation.governance.api"
     },
     {
       "source": "noetrium_platform.infrastructure.resources.providers.sqlite_endpoint",
-      "target": "noetrium_platform.foundation.governance.api"
+      "target": "noetrium_platform.foundation.kernel.kernel.durability.sqlite"
     },
     {
       "source": "noetrium_platform.infrastructure.resources.providers.sqlite_endpoint",
@@ -119579,10 +119587,6 @@
     },
     {
       "source": "noetrium_platform.infrastructure.resources.providers.sqlite_endpoint",
-      "target": "noetrium_platform.infrastructure.resources.providers.sqlite_connection"
-    },
-    {
-      "source": "noetrium_platform.infrastructure.resources.providers.sqlite_endpoint",
       "target": "noetrium_platform.infrastructure.resources.providers.sqlite_lease_ops"
     },
     {
@@ -119591,11 +119595,11 @@
     },
     {
       "source": "noetrium_platform.infrastructure.resources.providers.sqlite_lease",
-      "target": "noetrium_platform.infrastructure.resources.lease.api"
+      "target": "noetrium_platform.foundation.kernel.kernel.durability.sqlite"
     },
     {
       "source": "noetrium_platform.infrastructure.resources.providers.sqlite_lease",
-      "target": "noetrium_platform.infrastructure.resources.providers.sqlite_connection"
+      "target": "noetrium_platform.infrastructure.resources.lease.api"
     },
     {
       "source": "noetrium_platform.infrastructure.resources.providers.sqlite_lease",
@@ -128695,6 +128699,7 @@
         "noetrium_platform.foundation.governance.evolution.runtime",
         "noetrium_platform.foundation.governance.system_registry.api",
         "noetrium_platform.foundation.governance.system_registry.runtime",
+        "noetrium_platform.foundation.kernel.kernel.durability.sqlite",
         "noetrium_platform.foundation.portfolio.api",
         "noetrium_platform.foundation.portfolio.runtime",
         "noetrium_platform.foundation.scope.api",
@@ -128708,7 +128713,6 @@
         "noetrium_platform.infrastructure.resources.lease.api",
         "noetrium_platform.infrastructure.resources.lease.runtime",
         "noetrium_platform.infrastructure.resources.providers",
-        "noetrium_platform.infrastructure.resources.providers.sqlite_connection",
         "noetrium_platform.research.experimentation.api",
         "noetrium_platform.research.experimentation.runtime"
       ],
@@ -135209,6 +135213,7 @@
         "noetrium_platform.foundation.kernel.kernel.durable_append",
         "noetrium_platform.foundation.kernel.kernel.durable_file",
         "noetrium_platform.foundation.kernel.kernel.file_lock",
+        "noetrium_platform.foundation.kernel.kernel.sqlite",
         "noetrium_platform.foundation.kernel.kernel.stream_digest"
       ],
       "module": "noetrium_platform.foundation.kernel.kernel.durability",
@@ -135267,6 +135272,15 @@
       ],
       "module": "noetrium_platform.foundation.kernel.kernel.durability.file_lock",
       "path": "noetrium_platform/foundation/kernel/kernel/durability/file_lock.py",
+      "system_key": "platform",
+      "top_system": "platform"
+    },
+    {
+      "imports": [
+        "noetrium_platform.foundation.kernel.kernel.retry"
+      ],
+      "module": "noetrium_platform.foundation.kernel.kernel.durability.sqlite",
+      "path": "noetrium_platform/foundation/kernel/kernel/durability/sqlite.py",
       "system_key": "platform",
       "top_system": "platform"
     },
@@ -139764,10 +139778,10 @@
       "imports": [
         "noetrium_platform.foundation.governance.api",
         "noetrium_platform.foundation.kernel.kernel",
+        "noetrium_platform.foundation.kernel.kernel.durability.sqlite",
         "noetrium_platform.infrastructure.resources.compute.api",
         "noetrium_platform.infrastructure.resources.compute.runtime.inventory",
         "noetrium_platform.infrastructure.resources.lease.api",
-        "noetrium_platform.infrastructure.resources.providers.sqlite_connection",
         "noetrium_platform.infrastructure.resources.providers.sqlite_lease_ops",
         "noetrium_platform.infrastructure.resources.providers.sqlite_resource"
       ],
@@ -139966,19 +139980,10 @@
     },
     {
       "imports": [
-        "noetrium_platform.foundation.kernel.kernel.retry"
-      ],
-      "module": "noetrium_platform.infrastructure.resources.providers.sqlite_connection",
-      "path": "noetrium_platform/infrastructure/resources/providers/sqlite_connection.py",
-      "system_key": "resource",
-      "top_system": "resource"
-    },
-    {
-      "imports": [
         "noetrium_platform.foundation.governance.api",
+        "noetrium_platform.foundation.kernel.kernel.durability.sqlite",
         "noetrium_platform.infrastructure.resources.allocation.api",
         "noetrium_platform.infrastructure.resources.lease.api",
-        "noetrium_platform.infrastructure.resources.providers.sqlite_connection",
         "noetrium_platform.infrastructure.resources.providers.sqlite_lease_ops",
         "noetrium_platform.infrastructure.resources.providers.sqlite_resource"
       ],
@@ -139989,8 +139994,8 @@
     },
     {
       "imports": [
+        "noetrium_platform.foundation.kernel.kernel.durability.sqlite",
         "noetrium_platform.infrastructure.resources.lease.api",
-        "noetrium_platform.infrastructure.resources.providers.sqlite_connection",
         "noetrium_platform.infrastructure.resources.providers.sqlite_lease_ops",
         "noetrium_platform.infrastructure.resources.providers.sqlite_resource"
       ],
@@ -143469,7 +143474,7 @@
   "parse_errors": [],
   "registry_sha256": "d3fc1bab831f1b7379e5a36048a61c00fe173429df958270d36a16f3f00171c0",
   "schema": "noetrium-code-architecture-index.v1",
-  "source_git_sha": "c3ce9a85af7f1902905faa8efc67117d3d651f3b",
+  "source_git_sha": "d798ef17a19965d78b2e7f33802186ffda629d3a",
   "system_import_edges": [
     {
       "count": 90,
@@ -143582,7 +143587,7 @@
       "target": "platform"
     },
     {
-      "count": 181,
+      "count": 183,
       "source": "platform",
       "target": "platform"
     },
@@ -143652,7 +143657,7 @@
       "target": "participant"
     },
     {
-      "count": 118,
+      "count": 119,
       "source": "research_os",
       "target": "platform"
     },
@@ -143672,7 +143677,7 @@
       "target": "research_os"
     },
     {
-      "count": 28,
+      "count": 27,
       "source": "research_os",
       "target": "resource"
     },
@@ -143692,12 +143697,12 @@
       "target": "governance"
     },
     {
-      "count": 8,
+      "count": 10,
       "source": "resource",
       "target": "platform"
     },
     {
-      "count": 92,
+      "count": 89,
       "source": "resource",
       "target": "resource"
     },
