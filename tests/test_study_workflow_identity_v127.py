@@ -1,6 +1,5 @@
 from noetrium_platform.research.execution.workflow.api import ExecutionTrialProtocolKind
-from noetrium_platform.composition.experiment_runtime import build_experiment_runtime
-from tests_support import FakeParticipantResolver
+from tests_support import FakeParticipantResolver, build_experiment_runtime_for_test
 from tests_support import EmptyWorkflowSurfaceFactory, context_action_spec
 import unittest
 
@@ -30,7 +29,7 @@ class ExperimentTrialProtocolIdentityV127Tests(unittest.TestCase):
         self.assertNotEqual(default.identity_digest(), alternate.identity_digest())
 
     def test_runtime_rejects_workflow_drift_before_plugin_construction(self):
-        runtime = build_experiment_runtime(participant_adapters=(), trial_protocol=AlternateTrialProtocol(), workflow_surface_factories=(EmptyWorkflowSurfaceFactory(),))
+        runtime = build_experiment_runtime_for_test(participant_adapters=(), trial_protocol=AlternateTrialProtocol(), workflow_surface_factories=(EmptyWorkflowSurfaceFactory(),))
         frozen_default = context_action_spec(study_id="s", method_id="missing-method", environment_id="missing-env", workload_digest="b" * 64, seed_digest="c" * 64, repetitions=1)
         with self.assertRaises(ExperimentTrialProtocolIdentityMismatch):
             runtime.execute_cycle(
@@ -47,7 +46,7 @@ class ExperimentTrialProtocolIdentityV127Tests(unittest.TestCase):
             def run(self, operations, context, *, task, input_kind, input_payload):
                 return None
         with self.assertRaises(TypeError):
-            build_experiment_runtime(participant_adapters=(), trial_protocol=Anonymous(), workflow_surface_factories=(EmptyWorkflowSurfaceFactory(),))
+            build_experiment_runtime_for_test(participant_adapters=(), trial_protocol=Anonymous(), workflow_surface_factories=(EmptyWorkflowSurfaceFactory(),))
 
 
 if __name__ == "__main__":
