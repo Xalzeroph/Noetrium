@@ -2,7 +2,7 @@
   "schema": "noetrium.reproduction.projection.v10",
   "authority": "generated_from_typed_definition_and_source",
   "package": "metagpt_software_company",
-  "package_digest": "5d29c8e631ab084fb8512285e0034fdfaa7baa434cf555fa076832a34c051a6e",
+  "package_digest": "28dca1ccbb52b4b3c4d10f7ac305f3d193a9bb9f3e2ea747fe098cdb74b7befc",
   "definition_digest": "d0f862bc522c6e4fd2d5a5647b6cdb65cdd1f64cf91919c6ead7a801c443e990",
   "source_registry_digest": "1ce38ee388bf0eb998ce4109eafce04c083c168dbd6b10ee369a739c76c06ae8",
   "lifecycle": "protocol_bound",
@@ -77,13 +77,13 @@
       "kind": "method_program",
       "path": "research/reproductions/metagpt_software_company/program.py",
       "declaration_digest": "f90688f8c40d8561519362bac5b59757870e4fde33d9a8c95c1ff10cdfb4eba1",
-      "content_sha256": "41e3df1cd15cbc27c140e88910a44d42d8441d671c48646058331bb7249d4c87"
+      "content_sha256": "a3b18969b8f29ebb9ae878a3b03e95eb32ccc9ce827edd6706b540c0a1c16b88"
     },
     {
       "kind": "study",
       "path": "research/reproductions/metagpt_software_company/study.py",
       "declaration_digest": "3df4936cc049d6ede34826e493f24fd64edfaa865998ec6af4846bdd8a651e8f",
-      "content_sha256": "33703b8dce3e668e7151b78fdd9d989a21dab31ed33ae7c71b127d76deee0ced"
+      "content_sha256": "1165498b3684fb8e9426ec74f40ac6900bc3dc90e6ba233cbc47f7cc155300d4"
     }
   ],
   "primary_executable": "research/reproductions/metagpt_software_company/program.py",

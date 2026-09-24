@@ -2,7 +2,7 @@
   "schema": "noetrium.reproduction.projection.v10",
   "authority": "generated_from_typed_definition_and_source",
   "package": "memgpt_classic",
-  "package_digest": "d3d35e39e1607435033a429e8573d36e76dfa74c1f3d615a354e2d7bc1bd6cb4",
+  "package_digest": "32a060a8497d4071b2b8765634d5d3b03e007e4cf27dbaeff32b4511c67eb53c",
   "definition_digest": "2f942be8c2fe1f5d37cda1e7f2e0f91b7fa18f3e7d4393d96a5cf4967e31a6ed",
   "source_registry_digest": "a344ec7fde772c9140ac33832d9b9438b417ea0804035281115501feecff9998",
   "lifecycle": "protocol_bound",
@@ -84,13 +84,13 @@
       "kind": "method_program",
       "path": "research/reproductions/memgpt_classic/program.py",
       "declaration_digest": "01a026e9cee38216e995446ff2d96cf65a47ec4b272247506ee0e1f797566a1d",
-      "content_sha256": "fc2be76ad5a00cf585edf888fa42328d95e5fd61cbcd61921b5cf81f60873bc2"
+      "content_sha256": "aac069c2fd1d66ef8ae61c8afeb7037a196aee54b3ede7458b97f7b8742a3823"
     },
     {
       "kind": "semantics",
       "path": "research/reproductions/memgpt_classic/semantics.py",
       "declaration_digest": "dce3d0a41bb5a5e246353fe4049c1f795fdc17f6e923dda0b6208f8729c38d32",
-      "content_sha256": "41855d21ac7b144690deb87dc87ff8e63fd6ed7aab64efaa4dc0bd862cc56c36"
+      "content_sha256": "ab81f65678343a10a4371a26cbe55c15bf19ba958bed47aa9a8253aca8ac4964"
     },
     {
       "kind": "study",

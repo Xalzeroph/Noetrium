@@ -2,7 +2,7 @@
   "schema": "noetrium.reproduction.projection.v10",
   "authority": "generated_from_typed_definition_and_source",
   "package": "minedojo",
-  "package_digest": "f6c546dbb3c64ed2ba28b2ffb2ffe12b863ee042c9a9a1105ee4d3fbd7186c1d",
+  "package_digest": "008896ce43ecad6f209cf2882d134d1477fb3a296117b97994aeeee3f1c07b5c",
   "definition_digest": "859f1c1220814ec7377557548db8c0a5703d0ebd323a8be89adff59072207a5e",
   "source_registry_digest": "4e2bb1c63f4746aac56e56ee71551b01971ab4476cff7f802b1806783b01b3b1",
   "lifecycle": "protocol_bound",
@@ -122,13 +122,13 @@
       "kind": "method_program",
       "path": "research/reproductions/minedojo/program.py",
       "declaration_digest": "421ce9ae94216aa14c9a506f46af015655f801c606d339cec0175fcdff47196c",
-      "content_sha256": "f2e1f253d76223caf37ee6a7e6ed074dca67a49e4a6e341d06e3151d3db5ed14"
+      "content_sha256": "c35fbb733ec9571fb63a271e2358073c50175e0329b542ea163d7d84a300a047"
     },
     {
       "kind": "semantics",
       "path": "research/reproductions/minedojo/reward.py",
       "declaration_digest": "20371c53cce7dd83428151834edcd26bd86599fc9fb48098d566094ea52d8086",
-      "content_sha256": "831ee7833933101bc0b143976779f150365d5f614e9e11f24496d7b19d053a93"
+      "content_sha256": "dadb54fc5e9f5df79223ec88c3ce1d010545cee47329b3e86cfa857583532b06"
     },
     {
       "kind": "study",

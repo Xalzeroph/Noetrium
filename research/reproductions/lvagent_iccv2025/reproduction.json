@@ -2,7 +2,7 @@
   "schema": "noetrium.reproduction.projection.v10",
   "authority": "generated_from_typed_definition_and_source",
   "package": "lvagent_iccv2025",
-  "package_digest": "b6a4cd72fd072bd05bbc4b881c16930139219be3d1a2517edd8d52c1db24fe5e",
+  "package_digest": "00d655da89f1d5ad515a9d10730b6c26fea3380bb31f4b4711d373110ec58df0",
   "definition_digest": "f0c06386df47c869aebdcd2643c691d7669f53c9264f920dba9c07ff78096029",
   "source_registry_digest": "c265547efa25c65b88369b73d855b68becbf18f48656a3f63ac40fc95d7456a2",
   "lifecycle": "protocol_bound",
@@ -102,7 +102,7 @@
       "kind": "study",
       "path": "research/reproductions/lvagent_iccv2025/study.py",
       "declaration_digest": "9c4f18520eabc3f155029b9613611ffd07c53b52227777618158763d396f7757",
-      "content_sha256": "230cec884d37f28844aea522bd53d14ac04233bde0f65e98b77ba1327cf81c91"
+      "content_sha256": "7df065e8d0e079d7a18a367b358c9c7c38b0bdcac45f0feffccb1846bb765257"
     }
   ],
   "primary_executable": "research/reproductions/lvagent_iccv2025/program.py",

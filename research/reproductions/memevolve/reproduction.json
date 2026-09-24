@@ -2,7 +2,7 @@
   "schema": "noetrium.reproduction.projection.v10",
   "authority": "generated_from_typed_definition_and_source",
   "package": "memevolve",
-  "package_digest": "e33e44b3a92b0c3796d3bf71626981eafbe318fb17677cb84c1da5f84324a067",
+  "package_digest": "7adde71b5221023bb409130da1403e55240f3ab799ccdc249fa04bf248a743d2",
   "definition_digest": "1336421e8f467dea1b177f6c4ccda7e283bae802349d03cb8ba35f3d874e75b9",
   "source_registry_digest": "a92e273188a3b65a11542aa445022569964e21f942fb4412164a0c5f6a9ec7d7",
   "lifecycle": "protocol_bound",
@@ -73,7 +73,7 @@
       "kind": "method_program",
       "path": "research/reproductions/memevolve/program.py",
       "declaration_digest": "72b1338481d40bd99d6d6fc58836f84734532fbbdb4c6347a64c3f5d1c0cbf00",
-      "content_sha256": "8bf6847fd04b683e5f1dc81ce3d5e2688de7671208297cafb8c34c3a8c334a83"
+      "content_sha256": "595df586431c0c8c3e22b5e4583caab7563b61fb833536f12e7b90b7e99930b1"
     },
     {
       "kind": "study",

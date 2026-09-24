@@ -68,7 +68,7 @@
       "reproductions": [
         {
           "package": "minedojo",
-          "package_digest": "f6c546dbb3c64ed2ba28b2ffb2ffe12b863ee042c9a9a1105ee4d3fbd7186c1d",
+          "package_digest": "008896ce43ecad6f209cf2882d134d1477fb3a296117b97994aeeee3f1c07b5c",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "minedojo"
@@ -111,12 +111,12 @@
             {
               "kind": "method_program",
               "path": "research/reproductions/minedojo/program.py",
-              "content_sha256": "f2e1f253d76223caf37ee6a7e6ed074dca67a49e4a6e341d06e3151d3db5ed14"
+              "content_sha256": "c35fbb733ec9571fb63a271e2358073c50175e0329b542ea163d7d84a300a047"
             },
             {
               "kind": "semantics",
               "path": "research/reproductions/minedojo/reward.py",
-              "content_sha256": "831ee7833933101bc0b143976779f150365d5f614e9e11f24496d7b19d053a93"
+              "content_sha256": "dadb54fc5e9f5df79223ec88c3ce1d010545cee47329b3e86cfa857583532b06"
             },
             {
               "kind": "study",
@@ -1503,7 +1503,7 @@
       "reproductions": [
         {
           "package": "ma_lmm_memory",
-          "package_digest": "aaecdd904597d62b8055d5ff9265b6889c711f45d30bd110f152fbd555f6974b",
+          "package_digest": "7f09608eef3c40ec3b266f64dcbf43b493a2e3823e814b04926eb8d02d857453",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "lvu"
@@ -1546,7 +1546,7 @@
             {
               "kind": "research_program",
               "path": "research/reproductions/ma_lmm_memory/memory.py",
-              "content_sha256": "e3ee13bfe68f5558602c0a545fa0e6e9a7f4bbedb1053b243bbdb8f48b6fbef2"
+              "content_sha256": "3d5e07fcc796d82ad85cce93c2a31aea6b9544013e9e74aaec6e578faf648606"
             },
             {
               "kind": "study",
@@ -1581,7 +1581,7 @@
       "reproductions": [
         {
           "package": "metagpt_software_company",
-          "package_digest": "5d29c8e631ab084fb8512285e0034fdfaa7baa434cf555fa076832a34c051a6e",
+          "package_digest": "28dca1ccbb52b4b3c4d10f7ac305f3d193a9bb9f3e2ea747fe098cdb74b7befc",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "humaneval"
@@ -1603,12 +1603,12 @@
             {
               "kind": "method_program",
               "path": "research/reproductions/metagpt_software_company/program.py",
-              "content_sha256": "41e3df1cd15cbc27c140e88910a44d42d8441d671c48646058331bb7249d4c87"
+              "content_sha256": "a3b18969b8f29ebb9ae878a3b03e95eb32ccc9ce827edd6706b540c0a1c16b88"
             },
             {
               "kind": "study",
               "path": "research/reproductions/metagpt_software_company/study.py",
-              "content_sha256": "33703b8dce3e668e7151b78fdd9d989a21dab31ed33ae7c71b127d76deee0ced"
+              "content_sha256": "1165498b3684fb8e9426ec74f40ac6900bc3dc90e6ba233cbc47f7cc155300d4"
             }
           ],
           "blockers": [
@@ -3896,5 +3896,5 @@
       ]
     }
   ],
-  "projection_digest": "ad860025e12a7bcf14d317f24e196f7852aee19a1cf1c2934c1181054523aafd"
+  "projection_digest": "89d18071979fc02d7c52ef0cca89f67109a3f35d5de5e7ab76a92ff30d28bbfc"
 }
