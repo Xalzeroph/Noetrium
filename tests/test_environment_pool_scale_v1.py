@@ -111,6 +111,7 @@ def test_concurrent_reusable_acquisition_never_double_assigns_instance(tmp_path)
         profile_id,
         profile_revision,
         runtime_identity_digest,
+        materialization.materialization_digest,
         binding_id="binding-reacquired",
         role="runner-reacquired",
         scope=scope,
