@@ -30,12 +30,36 @@ from research.reproductions.research_os import (
     discover_reproduction_definitions,
     executable_reproduction_definitions,
     is_research_os_executable,
+    expand_reproduction_benchmark_lanes,
+    materialize_reproduction_study,
     resolve_benchmark_split_consumers,
     resolve_execution_requirements,
     resolve_method_program_binding,
     resolve_research_program_bindings,
     resolve_study_factory_bindings,
 )
+
+
+@dataclass(frozen=True)
+class StudyExecutionAuthorityRequirement:
+    package: str
+    study_factory: str
+    benchmark_id: str
+    benchmark_split_id: str | None
+    project_id: str
+    experiment_id: str
+    study_id: str
+    study_definition_digest: str
+    binding_requirement_digest: str
+    trial_provider_requirement_id: str
+    trial_protocol_identity_digest: str
+    aggregation_requirement_id: str
+    participant_requirements: tuple[tuple[str, str, str, str, str], ...]
+    model_role_requirements: tuple[
+        tuple[str, str, str | None, str, bool, int | None, str],
+        ...
+    ]
+    authority_requirement_digest: str
 
 
 @dataclass(frozen=True)
@@ -62,6 +86,9 @@ class Lane:
     benchmark_blockers: tuple[str, ...]
     reproduction_closure_state: str
     execution_authority_state: str
+    materialized_study_count: int
+    study_authority_requirements: tuple[StudyExecutionAuthorityRequirement, ...]
+    study_authority_requirement_digests: tuple[str, ...]
     materialization_ready: bool
     state: str
     blockers: tuple[str, ...]
@@ -86,6 +113,7 @@ def _lane(definition, benchmark_authority: RepositoryBenchmarkAuthority) -> Lane
     benchmark_authority_state = "not_audited"
     reproduction_closure_state = "not_audited"
     execution_authority_state = "required"
+    study_authority_requirements: tuple[StudyExecutionAuthorityRequirement, ...] = ()
     try:
         program = compile_reproduction_research_program(definition)
         research_program_digest = program.program_digest
@@ -115,6 +143,7 @@ def _lane(definition, benchmark_authority: RepositoryBenchmarkAuthority) -> Lane
         )
 
         benchmark_selection_rows = []
+        benchmark_selection_by_factory = []
         for factory in factories:
             try:
                 selections = benchmark_authority.resolve(definition, factory)
@@ -124,6 +153,7 @@ def _lane(definition, benchmark_authority: RepositoryBenchmarkAuthority) -> Lane
                 )
                 continue
             benchmark_selection_rows.extend(selections)
+            benchmark_selection_by_factory.append((factory, selections))
         benchmark_selection_digests = tuple(
             sorted(
                 row.selection_digest
@@ -136,6 +166,91 @@ def _lane(definition, benchmark_authority: RepositoryBenchmarkAuthority) -> Lane
             and len(benchmark_selection_rows) >= len(factories)
             else "required"
         )
+
+        if (
+            benchmark_authority_state == "closed"
+            and reproduction_closure_state == "closed"
+        ):
+            authority_rows: list[StudyExecutionAuthorityRequirement] = []
+            for factory, selections in benchmark_selection_by_factory:
+                for selection in selections:
+                    bindings = expand_reproduction_benchmark_lanes(
+                        definition,
+                        study_factory=factory.qualname,
+                        benchmark=selection.benchmark,
+                        benchmark_split_ids=selection.benchmark_split_ids,
+                        values={},
+                        resolution_proof_digests=(
+                            selection.resolution_proof_digest,
+                        ),
+                    )
+                    for binding in bindings:
+                        study = materialize_reproduction_study(
+                            definition,
+                            binding,
+                            selection.benchmark,
+                        )
+                        requirements = study.binding_requirements
+                        participant_requirements = tuple(
+                            (
+                                row.role,
+                                row.participant_kind,
+                                row.method_id,
+                                row.treatment_id,
+                                row.requirement_digest,
+                            )
+                            for row in requirements.participants
+                        )
+                        model_role_requirements = tuple(
+                            (
+                                row.role,
+                                row.requirement_id,
+                                row.prompt_configuration_id,
+                                row.usage.value,
+                                row.required,
+                                row.max_bindings,
+                                row.requirement_digest,
+                            )
+                            for row in requirements.model_roles
+                        )
+                        requirement_payload = {
+                            "package": definition.package,
+                            "study_factory": factory.qualname,
+                            "benchmark_id": selection.benchmark.benchmark_id,
+                            "benchmark_split_id": binding.benchmark_split_id,
+                            "project_id": study.project_id,
+                            "experiment_id": study.experiment_id,
+                            "study_id": study.study_id,
+                            "study_definition_digest": study.definition_digest,
+                            "binding_requirement_digest": (
+                                study.binding_requirement_digest
+                            ),
+                            "trial_provider_requirement_id": (
+                                requirements.trial_provider_requirement_id
+                            ),
+                            "trial_protocol_identity_digest": (
+                                study.trial_protocol_identity.digest()
+                            ),
+                            "aggregation_requirement_id": (
+                                study.aggregation_requirement_id
+                            ),
+                            "participant_requirements": participant_requirements,
+                            "model_role_requirements": model_role_requirements,
+                        }
+                        authority_rows.append(
+                            StudyExecutionAuthorityRequirement(
+                                **requirement_payload,
+                                authority_requirement_digest=canonical_digest(
+                                    requirement_payload
+                                ),
+                            )
+                        )
+            study_authority_requirements = tuple(
+                sorted(
+                    authority_rows,
+                    key=lambda row: row.authority_requirement_digest,
+                )
+            )
 
         method_assets = tuple(
             row for row in definition.assets
@@ -199,6 +314,12 @@ def _lane(definition, benchmark_authority: RepositoryBenchmarkAuthority) -> Lane
         benchmark_blockers=tuple(sorted(set(benchmark_blockers))),
         reproduction_closure_state=reproduction_closure_state,
         execution_authority_state=execution_authority_state,
+        materialized_study_count=len(study_authority_requirements),
+        study_authority_requirements=study_authority_requirements,
+        study_authority_requirement_digests=tuple(
+            row.authority_requirement_digest
+            for row in study_authority_requirements
+        ),
         materialization_ready=(
             not compile_failure
             and benchmark_authority_state == "closed"
@@ -262,7 +383,7 @@ def build_plan() -> dict:
         graph_node_count = 0
 
     document = {
-        "schema": "noetrium.reproduction-fleet-plan.v8",
+        "schema": "noetrium.reproduction-fleet-plan.v9",
         "benchmark_authority_digest": benchmark_authority.authority_digest,
         "benchmark_authority_binding_count": len(benchmark_authority.bindings),
         "benchmark_authority_discovery_failure_count": len(
@@ -293,6 +414,12 @@ def build_plan() -> dict:
             row.materialization_ready
             and row.execution_authority_state == "required"
             for row in lanes
+        ),
+        "materialized_study_count": sum(
+            row.materialized_study_count for row in lanes
+        ),
+        "study_authority_requirement_count": sum(
+            len(row.study_authority_requirement_digests) for row in lanes
         ),
         "compile_failure_count": len(compile_failures),
         "compile_failure_packages": compile_failures,
@@ -523,6 +650,8 @@ def main() -> int:
             "reproduction_closure_required_count",
             "materialization_ready_count",
             "execution_authority_required_count",
+            "materialized_study_count",
+            "study_authority_requirement_count",
             "typed_execution_requirement_count",
             "plan_digest",
         )
