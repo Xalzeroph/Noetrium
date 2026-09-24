@@ -13,8 +13,9 @@ from noetrium_platform.research.experimentation.lifecycle.api import (
     ObservationKind,
 )
 from noetrium_platform.research.experimentation.lifecycle.experiment.runtime.matrix import (
+    ExperimentDoctor,
     InMemoryObservationProjection,
-    UniversalExperimentKernel,
+    StaticUnitPlanner,
 )
 
 SHA = "a" * 64
@@ -64,8 +65,8 @@ def observation(unit_id: str, sequence: int = 0) -> ObservationEnvelope:
 
 
 def test_generic_kernel_compiles_non_benchmark_units() -> None:
-    kernel = UniversalExperimentKernel()
-    plan = kernel.compile(definition(), (unit("session-a", 0), unit("session-b", 1)))
+    planner = StaticUnitPlanner()
+    plan = planner.plan(definition(), (unit("session-a", 0), unit("session-b", 1)))
 
     assert plan.experiment_id == "experiment"
     assert tuple(item.unit_id for item in plan.units) == ("session-a", "session-b")
@@ -74,7 +75,7 @@ def test_generic_kernel_compiles_non_benchmark_units() -> None:
 
 def test_all_execution_modes_share_the_same_contract() -> None:
     for mode in ExecutionMode:
-        plan = UniversalExperimentKernel().compile(
+        plan = StaticUnitPlanner().plan(
             definition(mode), (unit(f"{mode.value}-unit", 0),)
         )
         assert plan.units[0].kind is ExperimentUnitKind.SESSION
@@ -89,9 +90,9 @@ def test_observation_ledger_enforces_per_unit_order() -> None:
 
 
 def test_doctor_detects_missing_and_unknown_units() -> None:
-    kernel = UniversalExperimentKernel()
-    plan = kernel.compile(definition(), (unit("session-a", 0), unit("session-b", 1)))
-    report = kernel.inspect(plan, (observation("foreign"),))
+    planner = StaticUnitPlanner()
+    plan = planner.plan(definition(), (unit("session-a", 0), unit("session-b", 1)))
+    report = ExperimentDoctor().report(plan, (observation("foreign"),))
 
     assert not report.healthy
     assert {item.code for item in report.findings} == {"unit.missing", "unit.unknown"}
@@ -99,9 +100,9 @@ def test_doctor_detects_missing_and_unknown_units() -> None:
 
 
 def test_doctor_accepts_complete_observation_cut() -> None:
-    kernel = UniversalExperimentKernel()
-    plan = kernel.compile(definition(), (unit("session-a", 0), unit("session-b", 1)))
-    report = kernel.inspect(plan, (observation("session-a"), observation("session-b")))
+    planner = StaticUnitPlanner()
+    plan = planner.plan(definition(), (unit("session-a", 0), unit("session-b", 1)))
+    report = ExperimentDoctor().report(plan, (observation("session-a"), observation("session-b")))
 
     assert report.healthy
     assert report.findings == ()
