@@ -8,6 +8,11 @@ import threading
 
 import pytest
 
+from noetrium_platform.foundation.kernel.kernel import (
+    DurableCarrierClosureAuthority,
+    DurableCarrierReferenceClosure,
+)
+
 from noetrium_platform.research.experimentation.lifecycle.api import (
     RunCheckpointConflict,
     RunCheckpointIntegrityError,
@@ -21,6 +26,9 @@ from noetrium_platform.research.experimentation.lifecycle.api import (
 from noetrium_platform.research.experimentation.lifecycle.checkpoint.providers import DirectoryWorkloadCheckpointStore
 from noetrium_platform.research.experimentation.lifecycle.checkpoint.providers.workload_codec import (
     WorkloadCheckpointManifestCodec,
+)
+from noetrium_platform.research.experimentation.lifecycle.checkpoint.providers.publication_intent import (
+    CheckpointPublicationIntent,
 )
 
 
@@ -86,6 +94,29 @@ def test_workload_checkpoint_manifest_codec_rejects_execution_cut_type_drift(
     document["manifest"]["execution_cut"][field] = value
     with pytest.raises(RunCheckpointIntegrityError):
         _decode(document)
+
+
+def _closed_gc(store: DirectoryWorkloadCheckpointStore, checkpoint_id: str):
+    return store.assess_gc(
+        checkpoint_id,
+        closures=(
+            DurableCarrierReferenceClosure(
+                DurableCarrierClosureAuthority.EVIDENCE,
+                "1" * 64,
+                (),
+            ),
+            DurableCarrierReferenceClosure(
+                DurableCarrierClosureAuthority.EXECUTION,
+                "2" * 64,
+                (),
+            ),
+            DurableCarrierReferenceClosure(
+                DurableCarrierClosureAuthority.RECOVERY,
+                "3" * 64,
+                (),
+            ),
+        ),
+    )
 
 
 def _direct_manifest_and_payload():
