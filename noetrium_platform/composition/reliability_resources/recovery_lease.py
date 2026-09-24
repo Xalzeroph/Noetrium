@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import json
 import math
-from time import time
 
 from noetrium_platform.foundation.kernel.kernel import canonical_digest
 from noetrium_platform.foundation.scope.api import PLATFORM_SCOPE
@@ -77,12 +76,16 @@ class RecoveryLeaseAdapter:
             )
         )
     @staticmethod
-    def _validate_time(ttl_seconds: float, now: float | None) -> float:
+    def _validate_time(ttl_seconds: float, now: float | None) -> float | None:
         if not math.isfinite(float(ttl_seconds)) or ttl_seconds <= 0:
             raise ValueError("ttl_seconds must be finite and positive")
-        observed = time() if now is None else float(now)
-        if not math.isfinite(observed):
-            raise ValueError("recovery lease observation time must be finite")
+        if now is None:
+            return None
+        observed = float(now)
+        if not math.isfinite(observed) or observed <= 0:
+            raise ValueError(
+                "recovery lease observation time must be finite and positive"
+            )
         return observed
 
     @staticmethod
@@ -191,9 +194,13 @@ class RecoveryLeaseAdapter:
         *,
         now: float | None = None,
     ) -> RecoveryLease:
-        observed = time() if now is None else float(now)
-        if not math.isfinite(observed):
-            raise ValueError("recovery lease observation time must be finite")
+        observed = None if now is None else float(now)
+        if observed is not None and (
+            not math.isfinite(observed) or observed <= 0
+        ):
+            raise ValueError(
+                "recovery lease observation time must be finite and positive"
+            )
         current = self._active(now=observed)
         if current is None:
             raise RecoveryLeaseBusy("runtime recovery lease not held")
