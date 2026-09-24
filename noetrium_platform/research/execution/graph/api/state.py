@@ -703,9 +703,19 @@ class ResearchGraphExecutionStorePort(Protocol):
 
 @runtime_checkable
 class ResearchGraphClaimRecoveryPort(Protocol):
-    """Exact recovery authority for a claimed node that never started."""
+    """Exact attempt recovery for pre-start abandonment and lease expiry."""
 
     def abandon_claim(
+        self,
+        execution_id: str,
+        node_id: str,
+        *,
+        attempt_id: str,
+        owner_id: str,
+        now_ns: int,
+    ) -> ResearchGraphNodeExecutionRecord: ...
+
+    def recover_expired_attempt(
         self,
         execution_id: str,
         node_id: str,
