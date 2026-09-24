@@ -61,6 +61,17 @@ def _add_project_commands(subparsers) -> None:
         help="typed Research OS blueprint JSON; defaults to canonical fill-in scaffold",
     )
 
+    sync = project_subparsers.add_parser(
+        "sync",
+        help="regenerate blueprint-owned topology without touching implementation slots",
+    )
+    sync.add_argument(
+        "--project",
+        dest="project_root",
+        type=Path,
+        default=Path("."),
+    )
+
     doctor = project_subparsers.add_parser("doctor", help="validate project/platform/provider readiness")
     doctor.add_argument("--project", dest="project_root", type=Path, default=Path("."))
 
@@ -123,6 +134,10 @@ def _run_project(args: argparse.Namespace, project_experience: ProjectFacade) ->
             blueprint,
         )
         _emit({"ok": True, "command": "project create", "result": receipt})
+        return 0
+    if args.project_command == "sync":
+        receipt = project_experience.sync(args.project_root)
+        _emit({"ok": True, "command": "project sync", "result": receipt})
         return 0
     if args.project_command == "doctor":
         report = project_experience.doctor(args.project_root)
