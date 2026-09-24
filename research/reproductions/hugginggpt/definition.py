@@ -11,6 +11,7 @@ from research.reproductions.contracts import (
     ReproductionDeltaKind,
     ReproductionIdentity,
     ReproductionLifecycle,
+    ReproductionMethodProgramFactoryBinding,
 )
 
 REPRODUCTION = ReproductionDefinition(
@@ -49,6 +50,10 @@ REPRODUCTION = ReproductionDefinition(
             kind=ReproductionAssetKind('study'),
             path='research/reproductions/hugginggpt/study.py',
         ),
+    ),
+    method_program_factory=ReproductionMethodProgramFactoryBinding(
+        qualname="build_hugginggpt_method_program",
+        unresolved_parameters=("expert_capability_ids",),
     ),
     reported_results=(
         ReportedResult(
