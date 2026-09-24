@@ -518,7 +518,7 @@ class InMemoryComputeScheduler:
                 self._request_digests[allocation_id] = request_digest
                 return allocation
             except BaseException:
-                self._leases.release(granted.lease_id)
+                self._leases.release(granted.lease_id, fencing_token=granted.fencing_token)
                 raise
 
     def renew_many(
@@ -580,7 +580,7 @@ class InMemoryComputeScheduler:
             if row is None:
                 return
             _require_compute_generation(row, allocation)
-            self._leases.release(f"compute:{allocation.allocation_id}")
+            self._leases.release(f"compute:{allocation.allocation_id}", fencing_token=row.lease_fencing_token)
             self._allocations.pop(allocation.allocation_id, None)
             self._release_usage_locked(row)
 
@@ -992,6 +992,7 @@ class SQLiteComputeScheduler:
                 release_resource_lease(
                     conn,
                     f"compute:{allocation.allocation_id}",
+                    fencing_token=allocation.lease_fencing_token,
                     now_epoch_s=now_epoch_s,
                 )
                 deleted = conn.execute(
