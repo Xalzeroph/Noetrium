@@ -16,10 +16,10 @@ from noetrium_platform.composition.research_os_graph import (
 )
 from noetrium_platform.foundation.kernel.kernel import canonical_digest
 from research.reproductions import build_research
-from research.reproductions.contracts import ReproductionAssetKind, ReproductionLifecycle
+from research.reproductions.contracts import ReproductionAssetKind
 from research.reproductions.research_os import (
     compile_reproduction_research_program,
-    discover_reproduction_definitions,
+    executable_reproduction_definitions,
     resolve_execution_requirements,
     resolve_method_program_binding,
     resolve_research_program_bindings,
@@ -152,13 +152,9 @@ def _lane(definition) -> Lane:
 
 
 def build_plan() -> dict:
-    definitions = discover_reproduction_definitions()
-    protocol_bound = tuple(
-        row for row in definitions
-        if row.lifecycle is ReproductionLifecycle.PROTOCOL_BOUND
-    )
+    executable = executable_reproduction_definitions()
     lanes = tuple(
-        sorted((_lane(row) for row in protocol_bound), key=lambda row: row.package)
+        sorted((_lane(row) for row in executable), key=lambda row: row.package)
     )
     compile_failures = tuple(
         row.package for row in lanes if row.state == "compile_failed"
@@ -166,17 +162,17 @@ def build_plan() -> dict:
     if not compile_failures:
         portfolio = build_research()
         if tuple(program.program_id for program in portfolio.programs) != tuple(
-            sorted(row.package for row in protocol_bound)
+            sorted(row.package for row in executable)
         ):
             raise RuntimeError(
-                "top-level reproduction ResearchPortfolio drifted from protocol-bound "
+                "top-level reproduction ResearchPortfolio drifted from executable "
                 "reproduction authority"
             )
         revision = api.ResearchGraphRevision(
             portfolio.portfolio_id,
             portfolio.portfolio_digest,
             (),
-            "all protocol-bound reproductions on current Research OS",
+            "all executable reproductions on current Research OS",
         )
         graph = compile_research_portfolio_graph(revision, portfolio)
         portfolio_digest = portfolio.portfolio_digest
@@ -188,8 +184,8 @@ def build_plan() -> dict:
         graph_node_count = 0
 
     document = {
-        "schema": "noetrium.reproduction-fleet-plan.v4",
-        "protocol_bound_count": len(lanes),
+        "schema": "noetrium.reproduction-fleet-plan.v5",
+        "executable_reproduction_count": len(lanes),
         "research_os_compiled_count": sum(
             row.state != "compile_failed" for row in lanes
         ),
@@ -233,7 +229,7 @@ def main() -> int:
     print(json.dumps({
         key: payload[key]
         for key in (
-            "protocol_bound_count",
+            "executable_reproduction_count",
             "research_os_compiled_count",
             "compile_failure_count",
             "exact_study_binding_count",
