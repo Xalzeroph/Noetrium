@@ -50,7 +50,7 @@ def _sqlite_connect_calls(path: Path) -> tuple[int, ...]:
 
 
 def _sqlite_session_policy_calls(path: Path) -> tuple[tuple[int, str], ...]:
-    """Find raw SQLite durability/session policy outside the canonical primitive."""
+    """Find raw SQLite durability/transaction policy outside the canonical primitive."""
     tree = source_tree(path)
     protected_prefixes = (
         "PRAGMA journal_mode",
@@ -74,8 +74,11 @@ def _sqlite_session_policy_calls(path: Path) -> tuple[tuple[int, str], ...]:
             continue
         statement = first.value.strip()
         upper = statement.upper()
-        if upper == "BEGIN IMMEDIATE":
-            rows.append((node.lineno, "BEGIN IMMEDIATE"))
+        if upper.startswith("BEGIN"):
+            rows.append((node.lineno, upper))
+            continue
+        if upper in {"COMMIT", "ROLLBACK"}:
+            rows.append((node.lineno, upper))
             continue
         if any(statement.startswith(prefix) for prefix in protected_prefixes):
             rows.append((node.lineno, statement.split("=", 1)[0]))
@@ -118,7 +121,7 @@ def audit_sqlite_durability_invariants(
                     "sqlite_durability_authority",
                     line,
                     (
-                        f"raw SQLite session policy {primitive!r} bypasses the canonical "
+                        f"raw SQLite durability/transaction policy {primitive!r} bypasses the canonical "
                         "Platform durability authority; use "
                         "foundation.kernel.kernel.durability.sqlite"
                     ),
