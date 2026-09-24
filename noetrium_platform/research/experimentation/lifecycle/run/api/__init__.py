@@ -53,7 +53,7 @@ from .artifacts import (
     RunArtifactWriteActorPort,
 )
 from .spec import ExperimentRunSpec
-from .execution import ExperimentRunExecutionPort, ExperimentRunResult
+from .execution import ExperimentRunResult
 
 __all__ = [
     "RunIdentity",
@@ -115,6 +115,5 @@ __all__ = [
     "RunSessionPort",
     "RunSessionFactoryPort",
     "ExperimentRunSpec",
-    "ExperimentRunExecutionPort",
     "ExperimentRunResult",
 ]
