@@ -4,14 +4,16 @@ import pytest
 
 from noetrium_platform.foundation.kernel.kernel import canonical_digest
 from noetrium_platform.research.experimentation.lifecycle.api import (
-    BenchmarkResolutionRegistration,
-    BenchmarkResolutionRegistry,
     BenchmarkSourceKind,
     BenchmarkSourceResolution,
     BenchmarkSourceSpec,
     BenchmarkTaskSet,
     TaskDefinition,
     TaskSetSplit,
+)
+from noetrium_platform.research.experimentation.lifecycle.study.api import (
+    BenchmarkResolutionRegistration,
+    BenchmarkResolutionRegistry,
 )
 from research.reproductions.benchmark_authority import (
     RepositoryBenchmarkAuthority,
