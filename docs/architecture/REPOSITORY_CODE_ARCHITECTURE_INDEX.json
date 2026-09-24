@@ -1,15 +1,15 @@
 {
   "counts": {
     "parse_errors": 0,
-    "python_files": 3688,
-    "python_import_edges": 6950,
-    "symbols": 5044,
-    "tracked_files": 4324,
+    "python_files": 3691,
+    "python_import_edges": 6953,
+    "symbols": 5047,
+    "tracked_files": 4328,
     "typescript_javascript_files": 11
   },
   "language_symbol_counts": {
     "javascript": 1,
-    "python": 5038,
+    "python": 5041,
     "typescript": 5
   },
   "parse_errors": [],
@@ -27015,6 +27015,18 @@
       "target_role": "core_platform"
     },
     {
+      "source_module": "tests.test_machine_journal_gc_v1",
+      "source_role": "tests",
+      "target_module": "noetrium_platform.foundation.kernel.kernel",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "tests.test_machine_journal_gc_v1",
+      "source_role": "tests",
+      "target_module": "noetrium_platform.foundation.kernel.kernel.journal",
+      "target_role": "core_platform"
+    },
+    {
       "source_module": "tests.test_machine_journal_scale_v1",
       "source_role": "tests",
       "target_module": "noetrium_platform.foundation.kernel.kernel",
@@ -30655,6 +30667,12 @@
       "source_role": "tests",
       "target_module": "noetrium_platform.capabilities.model.serving.runtime",
       "target_role": "core_platform"
+    },
+    {
+      "source_module": "tests.test_recovery_physical_crash_matrix_v1",
+      "source_role": "tests",
+      "target_module": "scripts.verify_physical_crash_assurance",
+      "target_role": "tooling"
     },
     {
       "source_module": "tests.test_registered_public_api_facade_v205",
@@ -41777,7 +41795,7 @@
       "target_role": "research_reproductions"
     },
     {
-      "count": 2812,
+      "count": 2814,
       "source_role": "tests",
       "target_role": "core_platform"
     },
@@ -41807,7 +41825,7 @@
       "target_role": "tests"
     },
     {
-      "count": 24,
+      "count": 25,
       "source_role": "tests",
       "target_role": "tooling"
     },
@@ -41840,11 +41858,11 @@
     "reference_components": 22,
     "reference_orchestration": 10,
     "research_reproductions": 778,
-    "tests": 834,
-    "tooling": 79
+    "tests": 836,
+    "tooling": 80
   },
   "role_symbol_counts": {
-    "core_platform": 3389,
+    "core_platform": 3392,
     "examples": 3,
     "other": 23,
     "public_facade": 4,
@@ -41856,7 +41874,7 @@
     "tooling": 39
   },
   "schema": "noetrium-repository-code-architecture-index.v1",
-  "source_git_sha": "81861919ea9fc84c86bf9530240e644a2233c343",
+  "source_git_sha": "474df5b65912682902ba978fdda884eea16d1a8d",
   "symbols": [
     {
       "bases": [],
@@ -84033,6 +84051,54 @@
     },
     {
       "bases": [
+        "StrEnum"
+      ],
+      "decorators": [],
+      "fields": [
+        "RETIRED",
+        "QUARANTINED",
+        "PURGED"
+      ],
+      "kind": "enum",
+      "language": "python",
+      "line": 235,
+      "methods": [],
+      "module": "noetrium_platform.foundation.kernel.kernel.journal",
+      "name": "MachineJournalRetirementPhase",
+      "path": "noetrium_platform/foundation/kernel/kernel/journal.py",
+      "qualname": "noetrium_platform.foundation.kernel.kernel.journal.MachineJournalRetirementPhase",
+      "role": "core_platform"
+    },
+    {
+      "bases": [],
+      "decorators": [
+        "dataclass(frozen=True, slots=True)"
+      ],
+      "fields": [
+        "machine_id: str",
+        "terminal_commit_id: str",
+        "terminal_revision: int",
+        "content_sha256: str",
+        "byte_size: int",
+        "closures: tuple[DurableCarrierReferenceClosure, ...]",
+        "proof_digest: str"
+      ],
+      "kind": "dataclass",
+      "language": "python",
+      "line": 242,
+      "methods": [
+        "__post_init__",
+        "closure_complete",
+        "eligible"
+      ],
+      "module": "noetrium_platform.foundation.kernel.kernel.journal",
+      "name": "MachineJournalGcAssessment",
+      "path": "noetrium_platform/foundation/kernel/kernel/journal.py",
+      "qualname": "noetrium_platform.foundation.kernel.kernel.journal.MachineJournalGcAssessment",
+      "role": "core_platform"
+    },
+    {
+      "bases": [
         "Protocol"
       ],
       "decorators": [
@@ -84041,7 +84107,28 @@
       "fields": [],
       "kind": "protocol",
       "language": "python",
-      "line": 205,
+      "line": 313,
+      "methods": [
+        "assess_gc",
+        "purge"
+      ],
+      "module": "noetrium_platform.foundation.kernel.kernel.journal",
+      "name": "MachineJournalGcPort",
+      "path": "noetrium_platform/foundation/kernel/kernel/journal.py",
+      "qualname": "noetrium_platform.foundation.kernel.kernel.journal.MachineJournalGcPort",
+      "role": "core_platform"
+    },
+    {
+      "bases": [
+        "Protocol"
+      ],
+      "decorators": [
+        "runtime_checkable"
+      ],
+      "fields": [],
+      "kind": "protocol",
+      "language": "python",
+      "line": 330,
       "methods": [
         "append",
         "latest",
@@ -84060,7 +84147,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 212,
+      "line": 337,
       "methods": [
         "__init__",
         "clone",
@@ -84084,7 +84171,7 @@
       "fields": [],
       "kind": "protocol",
       "language": "python",
-      "line": 284,
+      "line": 409,
       "methods": [
         "append",
         "latest",
@@ -84105,7 +84192,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 291,
+      "line": 416,
       "methods": [
         "__init__",
         "_history_for",
@@ -84126,7 +84213,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 335,
+      "line": 460,
       "methods": [
         "__init__"
       ],
@@ -84144,12 +84231,18 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 347,
+      "line": 472,
       "methods": [
         "__init__",
         "_file_key",
         "_log_path",
         "_lock_path",
+        "_retirement_path",
+        "_quarantine_path",
+        "_load_retirement",
+        "_publish_retirement",
+        "_gc_identity_locked",
+        "_require_gc_identity",
         "_file_identity",
         "_decode_line",
         "_read_authoritative",
@@ -142199,7 +142292,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 197,
+      "line": 200,
       "methods": [
         "__init__",
         "mark_running"
@@ -142216,7 +142309,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 209,
+      "line": 212,
       "methods": [
         "__init__",
         "execute"

@@ -3,7 +3,7 @@
   "architecture_complexity": {
     "authorities": 20,
     "contract_declarations": 184,
-    "import_edges": 5324,
+    "import_edges": 5325,
     "subsystems": 15,
     "top_level_systems": 16
   },
@@ -23,7 +23,7 @@
     "effective_limits": {
       "authorities": 31,
       "contract_declarations": 184,
-      "import_edges": 5324,
+      "import_edges": 5325,
       "subsystems": 15,
       "top_level_systems": 16
     },
@@ -627,7 +627,7 @@
       "seam_id": "completed"
     }
   ],
-  "import_edges": 5324,
+  "import_edges": 5325,
   "import_violations": [],
   "layer_violations": [],
   "operation_graph": [
@@ -873,9 +873,9 @@
     }
   ],
   "package_cycles": [],
-  "report_sha256": "d44bd8b287afdf4ad221480b9e4fd3f613656ab142ea1b348e098c82f75a38cb",
+  "report_sha256": "f352531e2cb049539935813071f34c9bee4f7be482f1407bd4b8b6bd6658ff24",
   "source_authority_violations": [],
-  "source_digest": "1380a6507e03e32ed07439e24882d573f6b244f161512744fc4a8e3a55bf4f61",
+  "source_digest": "f87dd2ea3b3b5f1e9580a6d7f72eb5f38645484b1235903692a0d1d141904eb6",
   "source_invariant_violations": [],
   "source_root": ".",
   "subsystem_graph": [

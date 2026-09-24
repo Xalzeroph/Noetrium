@@ -9633,6 +9633,16 @@
     {
       "kind": "references",
       "source": "noetrium_platform.foundation.kernel.kernel.journal.DirectoryMachineJournal",
+      "target": "noetrium_platform.foundation.kernel.kernel.journal.MachineJournalGcAssessment"
+    },
+    {
+      "kind": "references",
+      "source": "noetrium_platform.foundation.kernel.kernel.journal.DirectoryMachineJournal",
+      "target": "noetrium_platform.foundation.kernel.kernel.journal.MachineJournalRetirementPhase"
+    },
+    {
+      "kind": "references",
+      "source": "noetrium_platform.foundation.kernel.kernel.journal.DirectoryMachineJournal",
       "target": "noetrium_platform.foundation.kernel.kernel.journal._DirectoryJournalCache"
     },
     {
@@ -9649,6 +9659,21 @@
       "kind": "references",
       "source": "noetrium_platform.foundation.kernel.kernel.journal.InMemoryMachineJournal",
       "target": "noetrium_platform.foundation.kernel.kernel.machine.MachineCommit"
+    },
+    {
+      "kind": "references",
+      "source": "noetrium_platform.foundation.kernel.kernel.journal.MachineJournalGcAssessment",
+      "target": "noetrium_platform.foundation.kernel.kernel.durable_closure.DurableCarrierReferenceClosure"
+    },
+    {
+      "kind": "references",
+      "source": "noetrium_platform.foundation.kernel.kernel.journal.MachineJournalGcPort",
+      "target": "noetrium_platform.foundation.kernel.kernel.durable_closure.DurableCarrierReferenceClosure"
+    },
+    {
+      "kind": "references",
+      "source": "noetrium_platform.foundation.kernel.kernel.journal.MachineJournalGcPort",
+      "target": "noetrium_platform.foundation.kernel.kernel.journal.MachineJournalGcAssessment"
     },
     {
       "kind": "references",
@@ -61910,12 +61935,18 @@
         "durability"
       ],
       "kind": "class",
-      "line": 347,
+      "line": 472,
       "methods": [
         "__init__",
         "_file_key",
         "_log_path",
         "_lock_path",
+        "_retirement_path",
+        "_quarantine_path",
+        "_load_retirement",
+        "_publish_retirement",
+        "_gc_identity_locked",
+        "_require_gc_identity",
         "_file_identity",
         "_decode_line",
         "_read_authoritative",
@@ -61945,7 +61976,7 @@
         "durability"
       ],
       "kind": "class",
-      "line": 291,
+      "line": 416,
       "methods": [
         "__init__",
         "_history_for",
@@ -61964,6 +61995,36 @@
       "top_system": "platform"
     },
     {
+      "bases": [],
+      "decorators": [
+        "dataclass(frozen=True, slots=True)"
+      ],
+      "fields": [
+        "byte_size",
+        "closures",
+        "content_sha256",
+        "machine_id",
+        "proof_digest",
+        "terminal_commit_id",
+        "terminal_revision"
+      ],
+      "kind": "dataclass",
+      "line": 242,
+      "methods": [
+        "__post_init__",
+        "closure_complete",
+        "eligible"
+      ],
+      "module": "noetrium_platform.foundation.kernel.kernel.journal",
+      "name": "MachineJournalGcAssessment",
+      "nesting": [
+        "MachineJournalGcAssessment"
+      ],
+      "qualname": "noetrium_platform.foundation.kernel.kernel.journal.MachineJournalGcAssessment",
+      "system_key": "platform",
+      "top_system": "platform"
+    },
+    {
       "bases": [
         "Protocol"
       ],
@@ -61972,7 +62033,30 @@
       ],
       "fields": [],
       "kind": "protocol",
-      "line": 205,
+      "line": 313,
+      "methods": [
+        "assess_gc",
+        "purge"
+      ],
+      "module": "noetrium_platform.foundation.kernel.kernel.journal",
+      "name": "MachineJournalGcPort",
+      "nesting": [
+        "MachineJournalGcPort"
+      ],
+      "qualname": "noetrium_platform.foundation.kernel.kernel.journal.MachineJournalGcPort",
+      "system_key": "platform",
+      "top_system": "platform"
+    },
+    {
+      "bases": [
+        "Protocol"
+      ],
+      "decorators": [
+        "runtime_checkable"
+      ],
+      "fields": [],
+      "kind": "protocol",
+      "line": 330,
       "methods": [
         "append",
         "latest",
@@ -61997,7 +62081,7 @@
       ],
       "fields": [],
       "kind": "protocol",
-      "line": 284,
+      "line": 409,
       "methods": [
         "append",
         "latest",
@@ -62010,6 +62094,28 @@
         "MachineJournalPort"
       ],
       "qualname": "noetrium_platform.foundation.kernel.kernel.journal.MachineJournalPort",
+      "system_key": "platform",
+      "top_system": "platform"
+    },
+    {
+      "bases": [
+        "StrEnum"
+      ],
+      "decorators": [],
+      "fields": [
+        "PURGED",
+        "QUARANTINED",
+        "RETIRED"
+      ],
+      "kind": "enum",
+      "line": 235,
+      "methods": [],
+      "module": "noetrium_platform.foundation.kernel.kernel.journal",
+      "name": "MachineJournalRetirementPhase",
+      "nesting": [
+        "MachineJournalRetirementPhase"
+      ],
+      "qualname": "noetrium_platform.foundation.kernel.kernel.journal.MachineJournalRetirementPhase",
       "system_key": "platform",
       "top_system": "platform"
     },
@@ -62018,7 +62124,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 335,
+      "line": 460,
       "methods": [
         "__init__"
       ],
@@ -62036,7 +62142,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 212,
+      "line": 337,
       "methods": [
         "__init__",
         "clone",
@@ -102174,12 +102280,22 @@
     {
       "kind": "constructs",
       "source": "noetrium_platform.foundation.kernel.kernel.journal.DirectoryMachineJournal",
+      "target": "noetrium_platform.foundation.kernel.kernel.journal.MachineJournalRetirementPhase"
+    },
+    {
+      "kind": "constructs",
+      "source": "noetrium_platform.foundation.kernel.kernel.journal.DirectoryMachineJournal",
       "target": "noetrium_platform.foundation.kernel.kernel.journal._DirectoryJournalCache"
     },
     {
       "kind": "constructs",
       "source": "noetrium_platform.foundation.kernel.kernel.journal.DirectoryMachineJournal",
       "target": "noetrium_platform.foundation.kernel.kernel.journal._JournalHistory"
+    },
+    {
+      "kind": "constructs",
+      "source": "noetrium_platform.foundation.kernel.kernel.journal.DirectoryMachineJournal",
+      "target": "noetrium_platform.foundation.kernel.kernel.machine.MachineConflict"
     },
     {
       "kind": "constructs",
@@ -104313,11 +104429,11 @@
     }
   ],
   "counts": {
-    "association_edges": 3484,
-    "classes": 3388,
-    "constructor_edges": 946,
+    "association_edges": 3489,
+    "classes": 3391,
+    "constructor_edges": 948,
     "inheritance_edges": 150,
-    "module_import_edges": 5046,
+    "module_import_edges": 5047,
     "parse_errors": 0,
     "python_modules": 1912,
     "registry_authorities": 20,
@@ -117680,6 +117796,10 @@
     {
       "source": "noetrium_platform.foundation.kernel.kernel.journal",
       "target": "noetrium_platform.foundation.kernel.kernel.durability"
+    },
+    {
+      "source": "noetrium_platform.foundation.kernel.kernel.journal",
+      "target": "noetrium_platform.foundation.kernel.kernel.durable_closure"
     },
     {
       "source": "noetrium_platform.foundation.kernel.kernel.journal",
@@ -137513,6 +137633,7 @@
         "noetrium_platform.foundation.kernel.kernel.canonical",
         "noetrium_platform.foundation.kernel.kernel.contracts",
         "noetrium_platform.foundation.kernel.kernel.durability",
+        "noetrium_platform.foundation.kernel.kernel.durable_closure",
         "noetrium_platform.foundation.kernel.kernel.machine"
       ],
       "module": "noetrium_platform.foundation.kernel.kernel.journal",
@@ -145308,7 +145429,7 @@
   "parse_errors": [],
   "registry_sha256": "276e2729e0b700e814e98f8460d87e0ebee66c4620226fe2d880fe55cc970aec",
   "schema": "noetrium-code-architecture-index.v1",
-  "source_git_sha": "81861919ea9fc84c86bf9530240e644a2233c343",
+  "source_git_sha": "474df5b65912682902ba978fdda884eea16d1a8d",
   "system_import_edges": [
     {
       "count": 85,
@@ -145421,7 +145542,7 @@
       "target": "platform"
     },
     {
-      "count": 187,
+      "count": 188,
       "source": "platform",
       "target": "platform"
     },
