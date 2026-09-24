@@ -996,7 +996,7 @@
       "reproductions": [
         {
           "package": "toolformer",
-          "package_digest": "4f7ae83d9f0acbfbf01597e0b34fb889ca3cf7998b4ef5984cb93162f5170c23",
+          "package_digest": "e253ce3dc0e57b209165ebae845f451334ea66f5eff9676212ac9de0ac9c7c4d",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "toolformer-eval"
@@ -1022,7 +1022,7 @@
             {
               "kind": "method_program",
               "path": "research/reproductions/toolformer/program.py",
-              "content_sha256": "96061ea771f41004ab10a5bee713a71249d513e94281a861ddac4269a0900719"
+              "content_sha256": "d8002ad7d852163b75c0b198916c535e99c00dbdbe4f58d03c8b46388176e17f"
             },
             {
               "kind": "study",
@@ -3896,5 +3896,5 @@
       ]
     }
   ],
-  "projection_digest": "c39ea900ddc8fa3f221cbcfdf6323cdbeb6baa51eecb27b3b52b7936114957e2"
+  "projection_digest": "190d6d43d105eef5e8e6869cf86984aa95dc9e142fbe34bf2b5760314eb7b543"
 }
