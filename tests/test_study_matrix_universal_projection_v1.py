@@ -1,5 +1,5 @@
 from noetrium_platform.research.experimentation.lifecycle.api import StudyAssignment
-from noetrium_platform.research.experimentation.lifecycle.experiment.runtime.matrix import (
+from noetrium_platform.research.experimentation.projection import (
     StudyMatrixUniversalProjection,
 )
 from noetrium_platform.research.experimentation.lifecycle.api import ExperimentUnitKind
