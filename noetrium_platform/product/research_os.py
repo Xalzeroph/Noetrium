@@ -265,6 +265,204 @@ class ResearchMethodProgramImplementation:
 
 
 @dataclass(frozen=True, slots=True)
+class ResearchMachineProgramImplementation:
+    """Import-resolvable immutable non-Method ResearchProgram + operation set.
+
+    Downstream authors own the Program IR and operation handlers. Research OS
+    freezes only their import coordinates and exact digests; execution remains
+    exclusively on the canonical programmable Machine path.
+    """
+
+    implementation_id: str
+    program_module: str
+    program_qualname: str
+    operations_module: str
+    operations_qualname: str
+    program_digest: str
+    machine_kind: str
+    operations_digest: str
+    operation_identities: tuple[tuple[str, str], ...]
+    implementation_digest: str = field(init=False)
+
+    def __post_init__(self) -> None:
+        _token(self.implementation_id, "research machine-program implementation_id")
+        for field_name, value in (
+            ("program_module", self.program_module),
+            ("program_qualname", self.program_qualname),
+            ("operations_module", self.operations_module),
+            ("operations_qualname", self.operations_qualname),
+            ("machine_kind", self.machine_kind),
+        ):
+            if type(value) is not str or not value.strip():
+                raise ValueError(
+                    f"research machine-program {field_name} must be non-empty"
+                )
+            if field_name.endswith("qualname") and (
+                "<locals>" in value or "<lambda>" in value
+            ):
+                raise ValueError(
+                    "research machine-program bindings must be module-resolvable"
+                )
+            object.__setattr__(self, field_name, value.strip())
+        if self.machine_kind == "method":
+            raise ValueError("Method semantics must use MethodProgram/UMM")
+        require_sha256(
+            self.program_digest,
+            "research machine-program program_digest",
+        )
+        require_sha256(
+            self.operations_digest,
+            "research machine-program operations_digest",
+        )
+        identities = self.operation_identities
+        if type(identities) is not tuple or any(
+            type(row) is not tuple
+            or len(row) != 2
+            or type(row[0]) is not str
+            or not row[0].strip()
+            or type(row[1]) is not str
+            for row in identities
+        ):
+            raise TypeError(
+                "research machine-program operation identities must be text pairs"
+            )
+        normalized = tuple(sorted((name.strip(), digest) for name, digest in identities))
+        if len({name for name, _digest in normalized}) != len(normalized):
+            raise ValueError("research machine-program operation names must be unique")
+        for _name, digest in normalized:
+            require_sha256(
+                digest,
+                "research machine-program operation implementation_digest",
+            )
+        if canonical_digest(normalized) != self.operations_digest:
+            raise ValueError("research machine-program operations digest drifted")
+        object.__setattr__(self, "operation_identities", normalized)
+        object.__setattr__(
+            self,
+            "implementation_digest",
+            canonical_digest(
+                {
+                    "implementation_type": "research_machine_program",
+                    "implementation_id": self.implementation_id,
+                    "program_module": self.program_module,
+                    "program_qualname": self.program_qualname,
+                    "operations_module": self.operations_module,
+                    "operations_qualname": self.operations_qualname,
+                    "program_digest": self.program_digest,
+                    "machine_kind": self.machine_kind,
+                    "operations_digest": self.operations_digest,
+                    "operation_identities": normalized,
+                }
+            ),
+        )
+
+    @staticmethod
+    def _import(module: str, qualname: str) -> object:
+        if type(module) is not str or not module.strip():
+            raise ValueError("research machine-program module must be non-empty")
+        if type(qualname) is not str or not qualname.strip():
+            raise ValueError("research machine-program qualname must be non-empty")
+        try:
+            value: object = importlib.import_module(module.strip())
+            for part in qualname.strip().split("."):
+                value = getattr(value, part)
+        except (ImportError, AttributeError) as exc:
+            raise ValueError(
+                "research machine-program binding cannot be imported: "
+                f"{module}:{qualname}"
+            ) from exc
+        return value
+
+    @classmethod
+    def from_symbols(
+        cls,
+        implementation_id: str,
+        *,
+        program_module: str,
+        program_qualname: str,
+        operations_module: str,
+        operations_qualname: str,
+    ) -> "ResearchMachineProgramImplementation":
+        program = cls._import(program_module, program_qualname)
+        program_digest = getattr(program, "program_digest", None)
+        kind = getattr(program, "kind", None)
+        machine_kind = getattr(kind, "value", None)
+        nodes = getattr(program, "nodes", None)
+        if type(program_digest) is not str or type(machine_kind) is not str:
+            raise TypeError(
+                "research machine-program symbol must expose program_digest and kind"
+            )
+        require_sha256(
+            program_digest,
+            "research machine-program symbol program_digest",
+        )
+        if machine_kind == "method":
+            raise ValueError("Method semantics must use MethodProgram/UMM")
+        if type(nodes) is not tuple:
+            raise TypeError("research machine-program symbol must expose typed nodes")
+
+        factory = cls._import(operations_module, operations_qualname)
+        if not callable(factory):
+            raise TypeError(
+                "research machine-program operations binding must be callable"
+            )
+        try:
+            operations = factory()
+        except Exception as exc:
+            raise ValueError(
+                "research machine-program operation factory failed to materialize"
+            ) from exc
+        if type(operations) is not tuple:
+            raise TypeError(
+                "research machine-program operation factory must return a tuple"
+            )
+        identities: list[tuple[str, str]] = []
+        for operation in operations:
+            name = getattr(operation, "operation", None)
+            digest = getattr(operation, "implementation_digest", None)
+            if type(name) is not str or not name.strip() or type(digest) is not str:
+                raise TypeError(
+                    "research machine-program operation set contains invalid entries"
+                )
+            require_sha256(
+                digest,
+                "research machine-program operation implementation_digest",
+            )
+            identities.append((name.strip(), digest))
+        normalized = tuple(sorted(identities))
+        if len({name for name, _digest in normalized}) != len(normalized):
+            raise ValueError("research machine-program operation names must be unique")
+
+        required_operations = tuple(
+            sorted(
+                {
+                    getattr(node, "operation")
+                    for node in nodes
+                    if type(getattr(node, "operation", None)) is str
+                    and not getattr(node, "operation").startswith("core.")
+                }
+            )
+        )
+        actual_operations = tuple(name for name, _digest in normalized)
+        if actual_operations != required_operations:
+            raise ValueError(
+                "research machine-program operation closure is not exact: "
+                f"required={required_operations}, actual={actual_operations}"
+            )
+        return cls(
+            implementation_id,
+            program_module.strip(),
+            program_qualname.strip(),
+            operations_module.strip(),
+            operations_qualname.strip(),
+            program_digest,
+            machine_kind,
+            canonical_digest(normalized),
+            normalized,
+        )
+
+
+@dataclass(frozen=True, slots=True)
 class ResearchImplementation:
     """Import-resolvable authoring implementation with automatic source identity.
 
@@ -353,7 +551,10 @@ class ResearchDefinition:
     definition_id: str
     kind: ResearchDefinitionKind
     implementation: (
-        ResearchImplementation | ResearchMethodProgramImplementation | None
+        ResearchImplementation
+        | ResearchMethodProgramImplementation
+        | ResearchMachineProgramImplementation
+        | None
     ) = None
     config: JsonValue = None
     definition_digest: str = field(init=False)
@@ -365,6 +566,7 @@ class ResearchDefinition:
         if self.implementation is not None and type(self.implementation) not in {
             ResearchImplementation,
             ResearchMethodProgramImplementation,
+            ResearchMachineProgramImplementation,
         }:
             raise TypeError(
                 "research definition implementation must be a typed Research "
@@ -376,6 +578,13 @@ class ResearchDefinition:
         ):
             raise ValueError(
                 "MethodProgram implementation may only back METHOD definitions"
+            )
+        if (
+            type(self.implementation) is ResearchMachineProgramImplementation
+            and self.kind is ResearchDefinitionKind.METHOD
+        ):
+            raise ValueError(
+                "ResearchProgram implementation cannot back METHOD definitions"
             )
         config = freeze_json(self.config)
         object.__setattr__(self, "config", config)
@@ -752,6 +961,20 @@ def _research_implementation_document(
             "binding_kind": implementation.binding_kind.value,
             "factory_args": implementation.factory_args,
             "factory_kwargs": implementation.factory_kwargs,
+            "implementation_digest": implementation.implementation_digest,
+        }
+    if type(implementation) is ResearchMachineProgramImplementation:
+        return {
+            "implementation_type": "research_machine_program",
+            "implementation_id": implementation.implementation_id,
+            "program_module": implementation.program_module,
+            "program_qualname": implementation.program_qualname,
+            "operations_module": implementation.operations_module,
+            "operations_qualname": implementation.operations_qualname,
+            "program_digest": implementation.program_digest,
+            "machine_kind": implementation.machine_kind,
+            "operations_digest": implementation.operations_digest,
+            "operation_identities": implementation.operation_identities,
             "implementation_digest": implementation.implementation_digest,
         }
     raise TypeError("research implementation document requires typed implementation")
@@ -1464,6 +1687,7 @@ class ResearchProgramBuilder:
         implementation: (
             ResearchImplementation
             | ResearchMethodProgramImplementation
+            | ResearchMachineProgramImplementation
             | Callable[..., object]
             | None
         ) = None,
@@ -1475,7 +1699,11 @@ class ResearchProgramBuilder:
             else (
                 implementation
                 if type(implementation)
-                in {ResearchImplementation, ResearchMethodProgramImplementation}
+                in {
+                    ResearchImplementation,
+                    ResearchMethodProgramImplementation,
+                    ResearchMachineProgramImplementation,
+                }
                 else ResearchImplementation.from_callable(
                     definition_id,
                     implementation,
@@ -1549,6 +1777,34 @@ class ResearchProgramBuilder:
                 qualname=qualname,
                 args=args,
                 kwargs=kwargs,
+            ),
+            config=config,
+        )
+
+    def machine_program(
+        self,
+        definition_id: str,
+        *,
+        program_module: str,
+        program_qualname: str,
+        operations_module: str,
+        operations_qualname: str,
+        kind: ResearchDefinitionKind = ResearchDefinitionKind.CUSTOM,
+        config: JsonInput = None,
+    ) -> "ResearchProgramBuilder":
+        """Bind an exact arbitrary non-Method ResearchProgram + operation set."""
+
+        if kind is ResearchDefinitionKind.METHOD:
+            raise ValueError("Method semantics must use method_program")
+        return self.definition(
+            definition_id,
+            kind=kind,
+            implementation=ResearchMachineProgramImplementation.from_symbols(
+                definition_id,
+                program_module=program_module,
+                program_qualname=program_qualname,
+                operations_module=operations_module,
+                operations_qualname=operations_qualname,
             ),
             config=config,
         )
