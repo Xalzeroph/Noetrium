@@ -6,6 +6,7 @@ from pathlib import Path
 import sqlite3
 
 from noetrium_platform.foundation.kernel.kernel.durability.sqlite import (
+    abort_sqlite_writer,
     begin_immediate_sqlite_transaction,
     open_durable_sqlite_writer,
     rollback_sqlite_writer,
@@ -91,7 +92,7 @@ class SQLiteEffectJournalWriteSession(AbstractContextManager["SQLiteEffectJourna
                         label="effect",
                     )
                 else:
-                    self.conn.rollback()
+                    abort_sqlite_writer(self.conn)
         finally:
             self.conn.close()
         return False
