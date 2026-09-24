@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from collections.abc import Mapping
 from dataclasses import asdict, replace
 import hashlib
 from pathlib import Path
@@ -805,14 +806,14 @@ class CanonicalResearchOSNodeRuntime(ResearchOSNodeRuntimePort):
     ) -> JsonValue:
         if lowering.target is ResearchOSLoweringTarget.METHOD_MACHINE:
             method_state = machine_state.get("method")
-            if not isinstance(method_state, dict):
+            if not isinstance(method_state, Mapping):
                 raise CanonicalResearchOSRuntimeFailure(
                     "completed Method Machine lost canonical method state"
                 )
             return method_state.get("previous_value")
 
         program_state = machine_state.get("_program")
-        if not isinstance(program_state, dict):
+        if not isinstance(program_state, Mapping):
             raise CanonicalResearchOSRuntimeFailure(
                 "completed ResearchProgram Machine lost canonical program state"
             )
