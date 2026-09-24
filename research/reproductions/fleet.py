@@ -402,6 +402,126 @@ def materialize_repository_execution_fleet(
     )
 
 
+def _fleet_execution_id(
+    fleet: ReproductionFleetMaterialization,
+    execution_id: str | None,
+) -> str:
+    if type(fleet) is not ReproductionFleetMaterialization:
+        raise TypeError("fleet execution requires ReproductionFleetMaterialization")
+    resolved = (
+        "repository-reproductions." + fleet.materialization_digest[:24]
+        if execution_id is None
+        else execution_id
+    )
+    if (
+        type(resolved) is not str
+        or not resolved.strip()
+        or resolved != resolved.strip()
+    ):
+        raise ValueError("fleet execution_id must be canonical non-empty text")
+    return resolved
+
+
+def _fleet_revision_message(fleet: ReproductionFleetMaterialization) -> str:
+    if type(fleet) is not ReproductionFleetMaterialization:
+        raise TypeError("fleet revision requires ReproductionFleetMaterialization")
+    return "repository reproduction fleet " + fleet.materialization_digest
+
+
+@dataclass(frozen=True, slots=True)
+class ReproductionFleetPreflightResult:
+    """Exact whole-graph admission proof without creating an execution cut."""
+
+    materialization: ReproductionFleetMaterialization
+    execution_id: str
+    revision_digest: str
+    selected_node_ids: tuple[str, ...]
+    admission_digests: tuple[str, ...]
+    preflight_digest: str
+    result_digest: str = field(init=False)
+
+    def __post_init__(self) -> None:
+        if type(self.materialization) is not ReproductionFleetMaterialization:
+            raise TypeError("fleet preflight requires materialization")
+        if type(self.execution_id) is not str or not self.execution_id.strip():
+            raise ValueError("fleet preflight execution_id is required")
+        _require_sha256(self.revision_digest, "fleet preflight revision")
+        _require_sha256(self.preflight_digest, "fleet preflight digest")
+        if type(self.selected_node_ids) is not tuple or not self.selected_node_ids:
+            raise ValueError("fleet preflight requires selected nodes")
+        if tuple(sorted(self.selected_node_ids)) != self.selected_node_ids:
+            raise ValueError("fleet preflight selected nodes must be ordered")
+        if type(self.admission_digests) is not tuple or any(
+            type(value) is not str for value in self.admission_digests
+        ):
+            raise TypeError("fleet preflight admission digests must be tuple")
+        for value in self.admission_digests:
+            _require_sha256(value, "fleet preflight admission")
+        if len(self.admission_digests) != len(self.selected_node_ids):
+            raise ValueError("fleet preflight admission closure is incomplete")
+        object.__setattr__(
+            self,
+            "result_digest",
+            canonical_digest(
+                {
+                    "materialization_digest": self.materialization.materialization_digest,
+                    "execution_id": self.execution_id,
+                    "revision_digest": self.revision_digest,
+                    "selected_node_ids": self.selected_node_ids,
+                    "admission_digests": self.admission_digests,
+                    "preflight_digest": self.preflight_digest,
+                }
+            ),
+        )
+
+
+def preflight_materialized_reproduction_fleet(
+    fleet: ReproductionFleetMaterialization,
+    *,
+    state_root: Path,
+    research_bindings: ResearchBindingAuthorityPort,
+    experiment_runtime_components: ResearchOSExperimentRuntimeComponents,
+    execution_id: str | None = None,
+) -> ReproductionFleetPreflightResult:
+    """Resolve the exact fleet and run canonical whole-graph admission only."""
+
+    if type(state_root) is not Path:
+        raise TypeError("fleet preflight state_root must be pathlib.Path")
+    if not isinstance(research_bindings, ResearchBindingAuthorityPort):
+        raise TypeError("fleet preflight requires research binding resolver")
+    if type(experiment_runtime_components) is not ResearchOSExperimentRuntimeComponents:
+        raise TypeError("fleet preflight requires typed Experiment runtime components")
+    resolved_execution_id = _fleet_execution_id(fleet, execution_id)
+    revision = api.ResearchGraphRevision(
+        fleet.portfolio.portfolio_id,
+        fleet.portfolio.portfolio_digest,
+        (),
+        _fleet_revision_message(fleet),
+    )
+    target = api.ResearchExecutionTarget(resolved_execution_id, revision)
+    closures = ReproductionFleetExperimentClosureProvider(
+        fleet,
+        research_bindings,
+    )
+    composition = compose_local_research_os(
+        state_root,
+        experiment_closures=closures,
+        experiment_runtime_components=experiment_runtime_components,
+    )
+    try:
+        prepared = composition.prepare(target, fleet.portfolio)
+        return ReproductionFleetPreflightResult(
+            fleet,
+            resolved_execution_id,
+            revision.revision_digest,
+            prepared.selected_node_ids,
+            tuple(row.admission_digest for row in prepared.admissions),
+            prepared.preflight_digest,
+        )
+    finally:
+        composition.close()
+
+
 def execute_materialized_reproduction_fleet(
     fleet: ReproductionFleetMaterialization,
     *,
@@ -428,17 +548,7 @@ def execute_materialized_reproduction_fleet(
         raise TypeError("fleet execution requires research binding resolver")
     if type(experiment_runtime_components) is not ResearchOSExperimentRuntimeComponents:
         raise TypeError("fleet execution requires typed Experiment runtime components")
-    if execution_id is None:
-        execution_id = (
-            "repository-reproductions."
-            + fleet.materialization_digest[:24]
-        )
-    if (
-        type(execution_id) is not str
-        or not execution_id.strip()
-        or execution_id != execution_id.strip()
-    ):
-        raise ValueError("fleet execution_id must be canonical non-empty text")
+    execution_id = _fleet_execution_id(fleet, execution_id)
 
     closures = ReproductionFleetExperimentClosureProvider(
         fleet,
@@ -452,10 +562,7 @@ def execute_materialized_reproduction_fleet(
     try:
         revision = composition.research_os.commit(
             fleet.portfolio,
-            message=(
-                "repository reproduction fleet "
-                + fleet.materialization_digest
-            ),
+            message=_fleet_revision_message(fleet),
         )
         target = api.ResearchExecutionTarget(execution_id, revision)
         return composition.research_os.run(target)
@@ -538,6 +645,31 @@ class ReproductionFleetExecutionResult:
                 }
             ),
         )
+
+
+def preflight_repository_execution_fleet(
+    authorities: ReproductionFleetExecutionAuthorities,
+    *,
+    state_root: Path,
+    execution_id: str | None = None,
+) -> ReproductionFleetPreflightResult:
+    """Materialize all executable reproductions and prove canonical admission."""
+
+    if type(authorities) is not ReproductionFleetExecutionAuthorities:
+        raise TypeError(
+            "fleet preflight requires ReproductionFleetExecutionAuthorities"
+        )
+    fleet = materialize_repository_execution_fleet(
+        authorities.benchmark_resolver,
+        capability_resolver=authorities.capability_resolver,
+    )
+    return preflight_materialized_reproduction_fleet(
+        fleet,
+        state_root=state_root,
+        research_bindings=authorities.research_bindings,
+        experiment_runtime_components=authorities.experiment_runtime_components,
+        execution_id=execution_id,
+    )
 
 
 def run_repository_execution_fleet(
@@ -639,7 +771,10 @@ __all__ = [
     "ReproductionFleetExperimentClosureProvider",
     "ReproductionFleetLane",
     "ReproductionFleetMaterialization",
+    "ReproductionFleetPreflightResult",
     "execute_materialized_reproduction_fleet",
+    "preflight_materialized_reproduction_fleet",
+    "preflight_repository_execution_fleet",
     "materialize_repository_execution_fleet",
     "resolve_repository_execution_requests",
     "run_repository_execution_fleet",
