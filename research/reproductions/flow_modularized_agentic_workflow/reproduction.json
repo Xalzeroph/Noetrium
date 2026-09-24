@@ -2,7 +2,7 @@
   "schema": "noetrium.reproduction.projection.v10",
   "authority": "generated_from_typed_definition_and_source",
   "package": "flow_modularized_agentic_workflow",
-  "package_digest": "d7b384de49f85dac1187e549a225fa7d5e9f791e2f663dcc8a962b8d7c2f2a8c",
+  "package_digest": "32a09bc9a31c0c62898edf7026c2155250e6d39258982f90793b47edea7faffe",
   "definition_digest": "c0df097174fd40ce218adc9f396a11ad78c05b08fd6b8b3219e047b249be0bee",
   "source_registry_digest": "871ee9bf57337e607fa5a5ed65434e3cc122df43f3db5d6cca12cb61261175b4",
   "lifecycle": "protocol_bound",
@@ -113,7 +113,7 @@
       "kind": "research_program",
       "path": "research/reproductions/flow_modularized_agentic_workflow/subtask.py",
       "declaration_digest": "4f8d9deabfbc2ccc19d0cb3e9a4bfc5873e0abdf5552acdeb6cd7fe4bb3390fb",
-      "content_sha256": "1371e25d1ce98a6bd95b630b449dbe1d565befedd4e62b29f22e41b8dcf9be19"
+      "content_sha256": "e65d6ccd88ce82240c37bac333208cdb129f8d25e3e7aa14a38f9b2482bcd78e"
     },
     {
       "kind": "study",

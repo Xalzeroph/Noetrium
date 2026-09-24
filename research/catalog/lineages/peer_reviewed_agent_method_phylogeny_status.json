@@ -473,7 +473,7 @@
       "reproductions": [
         {
           "package": "generative_agents_memory",
-          "package_digest": "798fd70be248963ae23496de020558f30e38181fc08204c72310ff5e84eb29f2",
+          "package_digest": "e5ec40489fb35d6757e172170e504d0b37802f4c80a49d60544ea572b8612da2",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "generative-agents-smallville"
@@ -495,12 +495,12 @@
             {
               "kind": "method_program",
               "path": "research/reproductions/generative_agents_memory/program.py",
-              "content_sha256": "473c0f62c10c6e6a486cf66cd8992fad7c4bf9e54ce3e57a28d6e5c74ea58534"
+              "content_sha256": "1cf478fdc30e41b3b7dd4a5c96b47a3aa352581283ff7e5a85a385726ca4915e"
             },
             {
               "kind": "study",
               "path": "research/reproductions/generative_agents_memory/study.py",
-              "content_sha256": "dc7e74d456b9dad61d12ecdf9d5d88734b82ea17cce34dd9fa336a153a8d38d1"
+              "content_sha256": "6d0b34bf2ca6fafd83a0b3e477092ed4b39d041c0a993cd387bc847e02ed72be"
             },
             {
               "kind": "support",
@@ -533,7 +533,7 @@
       "reproductions": [
         {
           "package": "hugginggpt",
-          "package_digest": "24205223bccd1e7f615f2181dac08c3debb9e452cd0dc2559951b030f4c300a3",
+          "package_digest": "95a843973e0071d06410b9c7e472b19cd67d42e29e932c44ac98715cfc02fc51",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "hugginggpt-paper-tasks"
@@ -555,12 +555,12 @@
             {
               "kind": "method_program",
               "path": "research/reproductions/hugginggpt/program.py",
-              "content_sha256": "eb28e470a22b75e2980770752b5aaf9bdf42c923c69bcb51951987848a847cfc"
+              "content_sha256": "88446edd8902da4f810ad6947e90b3af745f127778b798b058c3bccfcf7e1ca9"
             },
             {
               "kind": "study",
               "path": "research/reproductions/hugginggpt/study.py",
-              "content_sha256": "205c7e64d327e6adfb45cf3b103bc3e742bf15c81383caa7728159a8b40a0b2e"
+              "content_sha256": "5542a7f435c2fb3490fc64bba6d43bdb10b5676c6e147f495c80b071f750dbd5"
             },
             {
               "kind": "support",
@@ -2630,7 +2630,7 @@
       "reproductions": [
         {
           "package": "flow_modularized_agentic_workflow",
-          "package_digest": "d7b384de49f85dac1187e549a225fa7d5e9f791e2f663dcc8a962b8d7c2f2a8c",
+          "package_digest": "32a09bc9a31c0c62898edf7026c2155250e6d39258982f90793b47edea7faffe",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "flow-practical-tasks"
@@ -2667,7 +2667,7 @@
             {
               "kind": "research_program",
               "path": "research/reproductions/flow_modularized_agentic_workflow/subtask.py",
-              "content_sha256": "1371e25d1ce98a6bd95b630b449dbe1d565befedd4e62b29f22e41b8dcf9be19"
+              "content_sha256": "e65d6ccd88ce82240c37bac333208cdb129f8d25e3e7aa14a38f9b2482bcd78e"
             },
             {
               "kind": "study",
@@ -3240,7 +3240,7 @@
       "reproductions": [
         {
           "package": "foreact_cvpr2026",
-          "package_digest": "ae9a4570aaf9bb0fadce58d68c810eb03470ed61377cc17f4bfeb47a0235693a",
+          "package_digest": "595b6f64085fdda3e05c3fe0b35e3414ef76a0cda24b53897a250e9bf6e4ec25",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "foreact-real11"
@@ -3272,7 +3272,7 @@
             {
               "kind": "method_program",
               "path": "research/reproductions/foreact_cvpr2026/program.py",
-              "content_sha256": "c3b1a93a1a5fa6c3cc600697dd42656e5a9b40c124b0030f429207e9e418eb7b"
+              "content_sha256": "931239bb4a5c317371ef63b9578ef5fe0b535eedf78c2daff2fdfb88eced7b47"
             },
             {
               "kind": "study",
@@ -3302,7 +3302,7 @@
       "reproductions": [
         {
           "package": "hats_cvpr2026",
-          "package_digest": "332fb5c99885711940ab88c14ed26e4567fa0bfdb937fb54338b2170e4cc2241",
+          "package_digest": "45d40a7756089a88e8f7bb8dbc82247c8df9badd2cfe502150a3a55743562226",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "androidworld",
@@ -3335,7 +3335,7 @@
             {
               "kind": "method_program",
               "path": "research/reproductions/hats_cvpr2026/program.py",
-              "content_sha256": "e1155617cfebf17ebe10626c32b23c2015bbc32cf6ff4590de9ffe36b303b506"
+              "content_sha256": "f47242c538d30795c56a745c0372926b79993f0c2485a714361fb6eaa52fca51"
             },
             {
               "kind": "study",
@@ -3896,5 +3896,5 @@
       ]
     }
   ],
-  "projection_digest": "9bd5fae31a7c8ae43265554f71e794c103e5c42a7c87a3a167b82ffd95bfe8be"
+  "projection_digest": "ff9dd11cbe7b4c5f4d9f49f81bebaf2d63f1df84673b23a3d1e68ba7ccfe6a9c"
 }

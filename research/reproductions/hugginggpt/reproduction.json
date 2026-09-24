@@ -2,7 +2,7 @@
   "schema": "noetrium.reproduction.projection.v10",
   "authority": "generated_from_typed_definition_and_source",
   "package": "hugginggpt",
-  "package_digest": "24205223bccd1e7f615f2181dac08c3debb9e452cd0dc2559951b030f4c300a3",
+  "package_digest": "95a843973e0071d06410b9c7e472b19cd67d42e29e932c44ac98715cfc02fc51",
   "definition_digest": "2e0b013dd19a762c3afd8eda0a66bf0d9878f7b35aedb4659f5c9ea7f7be8afc",
   "source_registry_digest": "694e1acf36f5bdc067e93ab86f80e49a41f98113ac5297bc5380a4dc00ad4428",
   "lifecycle": "protocol_bound",
@@ -78,13 +78,13 @@
       "kind": "method_program",
       "path": "research/reproductions/hugginggpt/program.py",
       "declaration_digest": "fd8bdd512084088eb4035a3e0188a2e02d0e839b5db732cd115c07c282a5a0b6",
-      "content_sha256": "eb28e470a22b75e2980770752b5aaf9bdf42c923c69bcb51951987848a847cfc"
+      "content_sha256": "88446edd8902da4f810ad6947e90b3af745f127778b798b058c3bccfcf7e1ca9"
     },
     {
       "kind": "study",
       "path": "research/reproductions/hugginggpt/study.py",
       "declaration_digest": "ecd6a486a16df6a678ae3b81a5e038253805d211354b3a5c0e29bfd349a9d496",
-      "content_sha256": "205c7e64d327e6adfb45cf3b103bc3e742bf15c81383caa7728159a8b40a0b2e"
+      "content_sha256": "5542a7f435c2fb3490fc64bba6d43bdb10b5676c6e147f495c80b071f750dbd5"
     },
     {
       "kind": "support",
