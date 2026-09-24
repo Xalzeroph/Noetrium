@@ -20,6 +20,10 @@ from noetrium_platform.composition.research_os_graph import (
 )
 from noetrium_platform.foundation.kernel.kernel import canonical_digest
 from research.reproductions import build_research
+from research.reproductions.authority_requirements import (
+    compile_materialized_fleet_owner_requirements,
+    compile_repository_fleet_prerequisites,
+)
 from research.reproductions.benchmark_authority import RepositoryBenchmarkAuthority
 from research.reproductions.contracts import ReproductionAssetKind
 from research.reproductions.fleet import (
@@ -408,8 +412,15 @@ def build_plan() -> dict:
         graph_digest = None
         graph_node_count = 0
 
+    prerequisites = compile_repository_fleet_prerequisites()
     document = {
-        "schema": "noetrium.reproduction-fleet-plan.v9",
+        "schema": "noetrium.reproduction-fleet-plan.v10",
+        "prerequisite_manifest_digest": prerequisites.manifest_digest,
+        "prerequisite_requirement_count": len(prerequisites.requirements),
+        "prerequisite_stage_counts": {
+            stage: sum(row.stage == stage for row in prerequisites.requirements)
+            for stage in sorted({row.stage for row in prerequisites.requirements})
+        },
         "benchmark_authority_digest": benchmark_authority.authority_digest,
         "benchmark_authority_binding_count": len(benchmark_authority.bindings),
         "benchmark_authority_discovery_failure_count": len(
@@ -506,6 +517,14 @@ def main() -> int:
     parser.add_argument("--output", type=Path)
     mode = parser.add_mutually_exclusive_group()
     mode.add_argument(
+        "--requirements",
+        action="store_true",
+        help=(
+            "emit the content-addressed repository prerequisite manifest for "
+            "benchmark, reproduction-capability and paper-option authorities"
+        ),
+    )
+    mode.add_argument(
         "--authority-audit",
         action="store_true",
         help=(
@@ -545,17 +564,61 @@ def main() -> int:
     parser.add_argument("--execution-id")
     args = parser.parse_args()
 
+    if args.requirements:
+        if args.execution_authority is not None:
+            parser.error("--requirements does not accept --execution-authority")
+        if args.execution_id is not None:
+            parser.error("--requirements does not accept --execution-id")
+        manifest = compile_repository_fleet_prerequisites()
+        payload = {
+            "schema": "noetrium.reproduction-fleet-prerequisites.v1",
+            "manifest_digest": manifest.manifest_digest,
+            "requirement_count": len(manifest.requirements),
+            "stage_counts": {
+                stage: sum(row.stage == stage for row in manifest.requirements)
+                for stage in sorted({row.stage for row in manifest.requirements})
+            },
+            "owner_counts": {
+                owner: sum(row.owner == owner for row in manifest.requirements)
+                for owner in sorted({row.owner for row in manifest.requirements})
+            },
+            "requirements": [asdict(row) for row in manifest.requirements],
+        }
+        rendered = json.dumps(payload, indent=2, sort_keys=True) + "\n"
+        if args.output:
+            args.output.parent.mkdir(parents=True, exist_ok=True)
+            args.output.write_text(rendered, encoding="utf-8")
+        print(rendered, end="")
+        return 0
+
     if args.authority_audit:
         if args.execution_authority is None:
             parser.error("--authority-audit requires --execution-authority")
         authorities = _load_execution_authorities(args.execution_authority)
         result = audit_repository_execution_authorities(authorities)
+        owner_requirements = compile_materialized_fleet_owner_requirements(
+            result.materialization
+        )
         payload = {
             "schema": "noetrium.reproduction-fleet-authority-audit.v2",
             "authority_manifest_digest": result.authority_manifest_digest,
             "materialization_digest": (
                 result.materialization.materialization_digest
             ),
+            "owner_requirement_manifest_digest": owner_requirements.manifest_digest,
+            "owner_requirement_count": len(owner_requirements.requirements),
+            "owner_requirement_stage_counts": {
+                stage: sum(
+                    row.stage == stage
+                    for row in owner_requirements.requirements
+                )
+                for stage in sorted(
+                    {row.stage for row in owner_requirements.requirements}
+                )
+            },
+            "owner_requirements": [
+                asdict(row) for row in owner_requirements.requirements
+            ],
             "portfolio_digest": result.materialization.portfolio.portfolio_digest,
             "revision_digest": result.revision_digest,
             "lane_count": len(result.lanes),
@@ -695,6 +758,8 @@ def main() -> int:
             "materialized_study_count",
             "study_authority_requirement_count",
             "typed_execution_requirement_count",
+            "prerequisite_requirement_count",
+            "prerequisite_manifest_digest",
             "plan_digest",
         )
     }, sort_keys=True))
