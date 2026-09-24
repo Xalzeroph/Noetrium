@@ -94092,7 +94092,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 27,
+      "line": 31,
       "methods": [
         "__init__",
         "_resolve_ref",
@@ -94111,6 +94111,7 @@
         "_verify_finalized_unlocked",
         "_ensure_generation_index",
         "finalize",
+        "_finalize_locked",
         "verify_finalized"
       ],
       "module": "noetrium_platform.research.experimentation.lifecycle.run.runtime.artifacts",
@@ -144458,7 +144459,7 @@
   "parse_errors": [],
   "registry_sha256": "276e2729e0b700e814e98f8460d87e0ebee66c4620226fe2d880fe55cc970aec",
   "schema": "noetrium-code-architecture-index.v1",
-  "source_git_sha": "85732d5f6326989a8863ec0739913ba302497de4",
+  "source_git_sha": "ede304d013aef270e68c3f639ae926966c924cc1",
   "system_import_edges": [
     {
       "count": 85,

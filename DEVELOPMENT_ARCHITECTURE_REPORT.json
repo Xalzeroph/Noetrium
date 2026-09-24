@@ -873,9 +873,9 @@
     }
   ],
   "package_cycles": [],
-  "report_sha256": "09c76ffc4cdb07600cf14ab045cd9bd6826995b3c19f1dbf09ce3750535549db",
+  "report_sha256": "747904d4fcd328e271a01de7579f94d02d42a6847958db5289ef290b4ee8335a",
   "source_authority_violations": [],
-  "source_digest": "c649fad387a8cac9ece0ce958f4891f4d4e21dec171786ce1deb086716e77512",
+  "source_digest": "9163e1c61dde9638017e47decab1b05d7502e13299d870e53a53417a8333d09a",
   "source_invariant_violations": [
     {
       "detail": "noetrium_platform.product.research_authoring -> noetrium_platform.capabilities.environment.software.api; required facade=noetrium_platform.research.experimentation.api",

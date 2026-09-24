@@ -42678,7 +42678,7 @@
     "tooling": 39
   },
   "schema": "noetrium-repository-code-architecture-index.v1",
-  "source_git_sha": "85732d5f6326989a8863ec0739913ba302497de4",
+  "source_git_sha": "ede304d013aef270e68c3f639ae926966c924cc1",
   "symbols": [
     {
       "bases": [],
@@ -114423,7 +114423,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 27,
+      "line": 31,
       "methods": [
         "__init__",
         "_resolve_ref",
@@ -114442,6 +114442,7 @@
         "_verify_finalized_unlocked",
         "_ensure_generation_index",
         "finalize",
+        "_finalize_locked",
         "verify_finalized"
       ],
       "module": "noetrium_platform.research.experimentation.lifecycle.run.runtime.artifacts",
@@ -143481,7 +143482,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 21,
+      "line": 23,
       "methods": [
         "call"
       ],
