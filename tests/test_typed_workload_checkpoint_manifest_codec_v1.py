@@ -224,3 +224,89 @@ def test_workload_checkpoint_publish_fences_conflicting_concurrent_writers(
     assert loaded.payloads == (first_payload,)
     losing_blob = second_store._content._blob_path(other_ref.payload_sha256)
     assert not losing_blob.exists()
+
+
+
+def test_workload_checkpoint_publish_intent_recovers_manifest_crash(
+    tmp_path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    import noetrium_platform.research.experimentation.lifecycle.checkpoint.providers.workload_store as store_module
+
+    root = tmp_path / "workload-intent-crash"
+    store = DirectoryWorkloadCheckpointStore(root)
+    owned_manifest, owned_payload = _direct_manifest_and_payload()
+
+    real_atomic_replace = store_module.atomic_replace_bytes
+    failed = False
+
+    def fail_manifest_once(path, payload):
+        nonlocal failed
+        if path.parent == store._manifests and not failed:
+            failed = True
+            raise OSError("simulated workload manifest crash")
+        return real_atomic_replace(path, payload)
+
+    monkeypatch.setattr(
+        store_module,
+        "atomic_replace_bytes",
+        fail_manifest_once,
+    )
+    with pytest.raises(OSError, match="workload manifest crash"):
+        store.publish(owned_manifest, (owned_payload,))
+
+    intent_path = store._intents._path(owned_manifest.checkpoint_id)
+    assert intent_path.exists()
+    assert not store._manifest_path(owned_manifest.checkpoint_id).exists()
+    assert store._content._blob_path(
+        owned_payload.ref.payload_sha256
+    ).exists()
+
+    other_bytes = b"conflict"
+    other_ref = WorkloadCheckpointComponentRef(
+        "component-1",
+        "codec-1",
+        "1",
+        hashlib.sha256(other_bytes).hexdigest(),
+        len(other_bytes),
+    )
+    other_payload = WorkloadCheckpointPayload(other_ref, other_bytes)
+    other_manifest = build_workload_checkpoint_manifest(
+        run_id="run-1",
+        study_id="study-1",
+        workload_id="workload-1",
+        branch_id="branch-1",
+        source_cut_id="cut-1",
+        environment_generation="env-1",
+        method_generation="method-1",
+        task_manifest_digest="tasks-1",
+        checkpoint_compatibility_digest="a" * 64,
+        execution_cut=WorkloadExecutionCut(("task-9",)),
+        component_refs=(other_ref,),
+    )
+    other_manifest = replace(
+        other_manifest,
+        checkpoint_id=owned_manifest.checkpoint_id,
+    )
+
+    with pytest.raises(RunCheckpointConflict):
+        DirectoryWorkloadCheckpointStore(root).publish(
+            other_manifest,
+            (other_payload,),
+        )
+    assert not store._content._blob_path(other_ref.payload_sha256).exists()
+
+    monkeypatch.setattr(
+        store_module,
+        "atomic_replace_bytes",
+        real_atomic_replace,
+    )
+    reopened = DirectoryWorkloadCheckpointStore(root)
+    assert reopened.publish(
+        owned_manifest,
+        (owned_payload,),
+    ) == owned_manifest
+    assert not reopened._intents._path(
+        owned_manifest.checkpoint_id
+    ).exists()
+    assert reopened.load(owned_manifest.checkpoint_id).manifest == owned_manifest
