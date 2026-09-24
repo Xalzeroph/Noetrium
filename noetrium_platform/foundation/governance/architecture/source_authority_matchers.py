@@ -14,13 +14,17 @@ def dotted_name(node: ast.AST) -> str | None:
     return None
 
 
-def resolved_call_name(call: ast.Call, aliases: dict[str, str]) -> str | None:
-    dotted = dotted_name(call.func)
+def resolved_symbol_name(node: ast.AST, aliases: dict[str, str]) -> str | None:
+    dotted = dotted_name(node)
     if not dotted:
         return None
     first, *rest = dotted.split(".")
     resolved = aliases.get(first, first)
     return ".".join([resolved, *rest]) if rest else resolved
+
+
+def resolved_call_name(call: ast.Call, aliases: dict[str, str]) -> str | None:
+    return resolved_symbol_name(call.func, aliases)
 
 
 def exact_call(*names: str) -> AuthorityMatcher:
@@ -64,6 +68,7 @@ def suffix_call(*suffixes: str) -> AuthorityMatcher:
 __all__ = [
     "dotted_name",
     "resolved_call_name",
+    "resolved_symbol_name",
     "exact_call",
     "path_open_write_mode",
     "suffix_call",
