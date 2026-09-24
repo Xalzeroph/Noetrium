@@ -3,8 +3,8 @@ from __future__ import annotations
 import pytest
 
 from noetrium_platform.capabilities.participant.agent.api.cognition import AgentLoopCheckpoint
-from noetrium_platform.composition.environment_fork import EnvironmentForkReceipt
-from noetrium_platform.composition.execution_lineage import (
+from noetrium_platform.capabilities.environment.api import EnvironmentForkReceipt
+from noetrium_platform.research.execution.api import (
     ExecutionSourceCut,
     ExecutionStateAnchor,
     bind_execution_fork,
