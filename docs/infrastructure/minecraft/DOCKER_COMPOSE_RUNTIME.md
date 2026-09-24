@@ -14,14 +14,14 @@ The base platform image remains provider-neutral and lightweight. The base image
 
 Use the canonical environment image entrypoint. It builds the exact evidence-bound base only when needed, reuses exact-SHA images when available, runs the Minecraft doctor, and writes the provenance receipt:
 
-    python scripts/build_environment_images.py build --profiles minecraft
+    ./deploy/build-environments.sh build --profiles minecraft
 
 Use `--rebuild` only when intentionally invalidating the exact-SHA cache. The Compose overlay remains an implementation detail consumed by the build entrypoint, not the downstream operational interface.
 
-Mutable Minecraft provider state is bound below `${PLATFORM_HOST_DATA_ROOT}/minecraft`; generic platform state remains below `${PLATFORM_HOST_DATA_ROOT}/platform-state`.
+Mutable Minecraft provider state is bound below the required per-instance `PLATFORM_ENVIRONMENT_INSTANCE_ROOT`; generic platform runtime state is bound below the required per-instance `PLATFORM_RUNTIME_STATE_ROOT`. The Compose overlay fails closed when either writable root is missing, so two papers cannot silently share world or platform state.
 
 The environment profile does not publish a Minecraft TCP port and does not ship a Minecraft server artifact. Downstream scientific deployments own the exact server/world cut, task manifest, benchmark adapter, method, model/checkpoint bindings, metrics, seeds, and claims.
 
 ## Reproducibility
 
-Production automation should pin the base image digest, environment image digest, Node version, Java runtime image digest, Minecraft server artifact digest, and downstream world/task identities. Build immutable images once and reuse those exact identities across execution nodes.
+Production automation should pin the base image digest, `profile_id + profile_revision`, environment image digest, Node version, Java runtime image digest, Minecraft server artifact digest, and downstream world/task identities. The environment image itself carries OCI labels for profile id, category id and profile revision, and the builder verifies those labels before accepting reuse. Build immutable images once and reuse those exact identities across execution nodes.
