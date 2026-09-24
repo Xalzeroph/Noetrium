@@ -8,7 +8,6 @@ import tomllib
 from noetrium_platform.foundation.governance.architecture.repository_boundary.api import (
     RepositoryBoundaryAuditor,
 )
-from noetrium_platform.product.api import decode_research_project_blueprint
 from noetrium_platform.product.operator.api import (
     ProjectDoctorCheck,
     ProjectDoctorDisposition,
@@ -38,20 +37,16 @@ _PACKAGE = re.compile(r"[a-z][a-z0-9_]*")
 _PROBE_TIMEOUT_S = 30
 _PROBE_SCRIPT = r'''
 from noetrium import api
-from __PACKAGE__.research import BLUEPRINT_DIGEST, PORTFOLIO, PROGRAMS
+from __PACKAGE__.research import PORTFOLIO, PROGRAMS
 
 if not isinstance(PORTFOLIO, api.ResearchPortfolio):
     raise TypeError("research module must export ResearchPortfolio")
+if PORTFOLIO.portfolio_id != __PROJECT_ID__:
+    raise ValueError("research portfolio identity must match the project identity")
 if type(PROGRAMS) is not tuple or PROGRAMS != PORTFOLIO.programs:
     raise ValueError("research module PROGRAMS must equal portfolio programs")
-if not PROGRAMS:
-    raise ValueError("research portfolio must contain at least one program")
 if any(not isinstance(program, api.ResearchProgram) for program in PROGRAMS):
     raise TypeError("research module PROGRAMS must contain ResearchProgram values")
-if any(not program.nodes or not program.definitions for program in PROGRAMS):
-    raise ValueError("every generated research program must contain definitions and nodes")
-if type(BLUEPRINT_DIGEST) is not str or len(BLUEPRINT_DIGEST) != 64:
-    raise ValueError("generated research module lost blueprint identity")
 print("ready")
 '''
 
@@ -93,11 +88,17 @@ def _manifest(root: Path) -> ProjectManifest | None:
         return None
 
 
-def _compile_readiness(root: Path, package: str) -> tuple[bool, str]:
+def _compile_readiness(
+    root: Path,
+    package: str,
+    project_id: str,
+) -> tuple[bool, str]:
     if not _PACKAGE.fullmatch(package):
         return False, "invalid project package identity"
     command = isolated_script_command(
-        _PROBE_SCRIPT.replace("__PACKAGE__", package),
+        _PROBE_SCRIPT
+        .replace("__PACKAGE__", package)
+        .replace("__PROJECT_ID__", repr(project_id)),
         project_src=root / "src",
     )
     try:
@@ -197,9 +198,8 @@ def doctor_project(
         package = ""
     required_files = () if not package else (
         _MANIFEST_PATH,
-        "research.blueprint.json",
+        f"src/{package}/core.py",
         f"src/{package}/research.py",
-        f"src/{package}/slots.py",
         "tests/test_generated_project.py",
     )
     files_ok = bool(required_files) and all(
@@ -213,39 +213,32 @@ def doctor_project(
         "restore or regenerate the deterministic project scaffold",
     ))
 
-    blueprint_projection_ok = False
-    blueprint_projection_detail = "research blueprint or generated topology is incomplete"
+    generated_shell_ok = False
+    generated_shell_detail = "generated Research OS shell is incomplete"
     if files_ok:
         try:
-            blueprint = decode_research_project_blueprint(
-                (root / "research.blueprint.json").read_bytes()
-            )
-            expected_research = render_research_module(blueprint).encode("utf-8")
+            expected_research = render_research_module(project_id).encode("utf-8")
             expected_test = render_generated_test_module(
                 package,
-                blueprint,
+                project_id,
             ).encode("utf-8")
-            blueprint_projection_ok = (
+            generated_shell_ok = (
                 (root / f"src/{package}/research.py").read_bytes()
                 == expected_research
                 and (root / "tests/test_generated_project.py").read_bytes()
                 == expected_test
             )
-            blueprint_projection_detail = (
-                "generated research topology/test projection drifted from "
-                "research.blueprint.json"
+            generated_shell_detail = (
+                "platform-owned Research OS shell/test projection drifted"
             )
         except (OSError, TypeError, ValueError, UnicodeError):
-            blueprint_projection_ok = False
-            blueprint_projection_detail = (
-                "research.blueprint.json cannot be decoded through the canonical "
-                "Research OS blueprint codec"
-            )
+            generated_shell_ok = False
+            generated_shell_detail = "generated Research OS shell cannot be validated"
     checks.append(_check(
-        "blueprint_projection",
-        blueprint_projection_ok,
-        "generated Research OS topology exactly matches the typed blueprint",
-        blueprint_projection_detail,
+        "generated_shell",
+        generated_shell_ok,
+        "platform-owned shell is deterministic and core remains user-owned",
+        generated_shell_detail,
     ))
 
     try:
@@ -264,13 +257,17 @@ def doctor_project(
     ))
 
     if files_ok:
-        compile_ready, compile_detail = _compile_readiness(root, package)
+        compile_ready, compile_detail = _compile_readiness(
+            root,
+            package,
+            project_id,
+        )
     else:
         compile_ready, compile_detail = False, "unified project files are incomplete"
     checks.append(_check(
         "standard_bindings",
         compile_ready,
-        "whole-project ResearchProgram and ResearchPortfolio compile through noetrium.api",
+        "user core produces a valid top-level ResearchPortfolio through noetrium.api",
         "resolve project compile readiness: " + compile_detail,
     ))
 
