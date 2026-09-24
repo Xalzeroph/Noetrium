@@ -6,7 +6,13 @@ from research.reproductions.live_swe_agent import (
 from research.reproductions.live_swe_agent.definition import (
     REPRODUCTION as LIVE_SWE_REPRODUCTION,
 )
-from research.reproductions.memevolve import MEMEVOLVE_FIDELITY
+from research.reproductions.memevolve import (
+    MEMEVOLVE_FIDELITY,
+    MEMEVOLVE_METHOD_PROGRAM,
+)
+from research.reproductions.memevolve.definition import (
+    REPRODUCTION as MEMEVOLVE_REPRODUCTION,
+)
 from research.reproductions.research_os import (
     ReproductionExecutionRequirementKind,
     compile_reproduction_research_program,
@@ -85,4 +91,38 @@ def test_live_swe_agent_enters_current_research_os_with_typed_swebench_split() -
 
     research_program = compile_reproduction_research_program(LIVE_SWE_REPRODUCTION)
     assert research_program.program_id == "live_swe_agent"
+    assert tuple(node.node_id for node in research_program.nodes) == ("reproduction",)
+
+
+
+def test_memevolve_method_program_preserves_meta_evolution_phases() -> None:
+    program = MEMEVOLVE_METHOD_PROGRAM
+
+    assert program.configuration["manual_phases"] == (
+        "analyze_trajectories",
+        "generate_memory_system",
+        "create_implementation",
+        "validate_system",
+    )
+    assert program.configuration["round_process"] == (
+        "collect_base_logs",
+        "generate_candidates",
+        "tournament_base_plus_candidates",
+        "finals_top_t_on_extended_tasks",
+        "select_winner_as_next_base",
+    )
+    assert program.configuration["candidate_generation_independent"] is True
+    assert program.configuration["same_task_tournament_required"] is True
+    assert program.required_capabilities == ("workbench.candidate-program.execute",)
+
+
+def test_memevolve_enters_current_research_os_with_typed_benchmark_split() -> None:
+    assert is_research_os_executable(MEMEVOLVE_REPRODUCTION)
+    requirements = resolve_execution_requirements(MEMEVOLVE_REPRODUCTION)
+
+    assert tuple(row.parameter for row in requirements) == ("split_id",)
+    assert requirements[0].kind is ReproductionExecutionRequirementKind.BENCHMARK_SPLIT
+
+    research_program = compile_reproduction_research_program(MEMEVOLVE_REPRODUCTION)
+    assert research_program.program_id == "memevolve"
     assert tuple(node.node_id for node in research_program.nodes) == ("reproduction",)
