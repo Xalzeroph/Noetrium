@@ -1,9 +1,8 @@
 from __future__ import annotations
 
-import os
 from pathlib import Path
 
-from .durable_file import fsync_directory
+from .durable_file import flush_file_descriptor, fsync_directory
 
 
 class DurableAppendError(RuntimeError):
@@ -24,7 +23,7 @@ def durable_append_bytes(path: Path, payload: bytes) -> None:
         with path.open("ab") as handle:
             handle.write(payload)
             handle.flush()
-            os.fsync(handle.fileno())
+            flush_file_descriptor(handle.fileno())
         if not existed:
             fsync_directory(parent)
     except BaseException as exc:
