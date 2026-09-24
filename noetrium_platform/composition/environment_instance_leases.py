@@ -271,6 +271,44 @@ class EnvironmentInstanceLeaseAuthority:
             cleanliness=cleanliness,
         )
 
+    def shutdown_cleanup(
+        self,
+        *,
+        now: float | None = None,
+    ) -> EnvironmentInstanceReconciliation:
+        """Abandon every live environment generation fail-closed.
+
+        Used only after the owning runtime is quiesced and exclusively fenced.
+        Unknown/unfinished generations become DIRTY; none are promoted to CLEAN.
+        """
+
+        now_epoch_s = time() if now is None else float(now)
+        if not math.isfinite(now_epoch_s):
+            raise ValueError("environment shutdown cleanup time must be finite")
+
+        bindings = self.catalog.bindings()
+        for row in bindings:
+            self.catalog.unbind(row.role, row.scope)
+
+        released: list[str] = []
+        for lease in self.leases.active_leases(
+            resource_kind=ResourceKind.EXECUTION_ENVIRONMENT,
+            now=now_epoch_s,
+        ):
+            self.leases.release(lease.lease_id, now=now_epoch_s)
+            released.append(lease.lease_id)
+
+        dirtied: list[str] = []
+        for instance in self.catalog.instances():
+            if instance.state is EnvironmentInstanceState.IN_USE:
+                self.catalog.mark_instance_dirty(instance.instance_id)
+                dirtied.append(instance.instance_id)
+
+        return EnvironmentInstanceReconciliation(
+            tuple(sorted(set(dirtied))),
+            tuple(sorted(set(released))),
+        )
+
     def reconcile(
         self,
         *,
