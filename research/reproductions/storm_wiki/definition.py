@@ -11,6 +11,7 @@ from research.reproductions.contracts import (
     ReproductionDeltaKind,
     ReproductionIdentity,
     ReproductionLifecycle,
+    ReproductionMethodProgramFactoryBinding,
 )
 
 REPRODUCTION = ReproductionDefinition(
@@ -49,6 +50,10 @@ REPRODUCTION = ReproductionDefinition(
             kind=ReproductionAssetKind('study'),
             path='research/reproductions/storm_wiki/study.py',
         ),
+    ),
+    method_program_factory=ReproductionMethodProgramFactoryBinding(
+        qualname="build_storm_wiki_method_program",
+        kwargs={"search_capability_id": "retrieval.search.paper-era"},
     ),
     reported_results=(
         ReportedResult(
