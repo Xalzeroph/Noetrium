@@ -401,3 +401,39 @@ def test_workload_checkpoint_gc_preserves_shared_cas_until_last_reference(
     assert not blob.exists()
     with pytest.raises(RunCheckpointConflict, match="retired"):
         store.publish(first, (payload,))
+
+
+def test_workload_checkpoint_gc_handles_pending_publication(
+    tmp_path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    import noetrium_platform.research.experimentation.lifecycle.checkpoint.providers.workload_store as store_module
+
+    manifest, payload = _direct_manifest_and_payload()
+    manifest = replace(manifest, checkpoint_id="workload-pending-gc")
+    store = DirectoryWorkloadCheckpointStore(tmp_path / "gc-pending")
+    real_atomic_replace = store_module.atomic_replace_bytes
+    failed = False
+
+    def fail_manifest_once(path, data):
+        nonlocal failed
+        if path.parent == store._manifests and not failed:
+            failed = True
+            raise OSError("simulated workload manifest publication crash")
+        return real_atomic_replace(path, data)
+
+    monkeypatch.setattr(store_module, "atomic_replace_bytes", fail_manifest_once)
+    with pytest.raises(OSError, match="publication crash"):
+        store.publish(manifest, (payload,))
+    monkeypatch.setattr(store_module, "atomic_replace_bytes", real_atomic_replace)
+
+    blob = store._content._blob_path(payload.ref.payload_sha256)
+    assert store._intents.load(manifest.checkpoint_id) is not None
+    assert blob.exists()
+    gc = _closed_gc(store, manifest.checkpoint_id)
+    assert gc.persistence_state.value == "pending"
+    assert store.purge(manifest.checkpoint_id, gc=gc)
+    assert store._intents.load(manifest.checkpoint_id) is None
+    assert not blob.exists()
+    with pytest.raises(RunCheckpointConflict, match="retired"):
+        store.publish(manifest, (payload,))
