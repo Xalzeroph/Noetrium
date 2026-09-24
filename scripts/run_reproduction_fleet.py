@@ -551,8 +551,8 @@ def main() -> int:
         authorities = _load_execution_authorities(args.execution_authority)
         result = audit_repository_execution_authorities(authorities)
         payload = {
-            "schema": "noetrium.reproduction-fleet-authority-audit.v1",
-            "authority_manifest_digest": authorities.authority_manifest_digest,
+            "schema": "noetrium.reproduction-fleet-authority-audit.v2",
+            "authority_manifest_digest": result.authority_manifest_digest,
             "materialization_digest": (
                 result.materialization.materialization_digest
             ),
