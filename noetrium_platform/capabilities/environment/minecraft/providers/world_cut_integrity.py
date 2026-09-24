@@ -1,12 +1,12 @@
 from __future__ import annotations
 
-import hashlib
 import json
 import os
 import stat
 from pathlib import Path
 
 from noetrium_platform.foundation.kernel.kernel import JsonObject, canonical_digest
+from noetrium_platform.foundation.kernel.kernel.durability import sha256_file
 from noetrium_platform.foundation.kernel.kernel.errors import describe_exception
 from noetrium_platform.substrate.api import is_absolute_target_path
 
@@ -26,14 +26,6 @@ class MinecraftWorldCutError(RuntimeError):
 def safe_exception_message(exc: BaseException) -> str:
     descriptor = describe_exception(exc)
     return f"{descriptor.error_type}[{descriptor.error_digest[:16]}]"
-
-
-def sha256_file(path: Path) -> str:
-    digest = hashlib.sha256()
-    with path.open("rb") as handle:
-        for block in iter(lambda: handle.read(1024 * 1024), b""):
-            digest.update(block)
-    return digest.hexdigest()
 
 
 def local_path(value: str, *, field: str) -> Path:
@@ -128,7 +120,7 @@ def tree_manifest(root: Path) -> tuple[dict[str, JsonValue], ...]:
             files.append((relative.as_posix(), info.st_size, child))
 
     rows = tuple(
-        {"path": relative, "size": size, "sha256": sha256_file(path)}
+        {"path": relative, "size": size, "sha256": sha256_file(path)[0]}
         for relative, size, path in sorted(files, key=lambda item: item[0])
     )
     if not rows:
