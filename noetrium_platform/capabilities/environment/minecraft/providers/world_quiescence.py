@@ -2,7 +2,6 @@ from __future__ import annotations
 
 from collections.abc import Callable
 import threading
-import time
 from pathlib import Path
 
 from noetrium_platform.foundation.kernel.kernel import canonical_digest
@@ -45,7 +44,6 @@ class MinecraftSaveQuiescenceProvider(MinecraftWorldQuiescencePort):
         server_contract_digest: str,
         process_identity_digest: Callable[[], str],
         command_timeout_s: float = 10.0,
-        settle_after_flush_s: float = 0.0,
     ) -> None:
         source = Path(source_workdir).expanduser().resolve(strict=False)
         if not is_absolute_target_path(source):
@@ -59,15 +57,14 @@ class MinecraftSaveQuiescenceProvider(MinecraftWorldQuiescencePort):
             raise ValueError("Minecraft quiescence level_name is invalid")
         if not _is_sha256(server_contract_digest):
             raise ValueError("Minecraft quiescence server_contract_digest must be SHA-256")
-        if command_timeout_s <= 0 or settle_after_flush_s < 0:
-            raise ValueError("Minecraft quiescence timing values are invalid")
+        if command_timeout_s <= 0:
+            raise ValueError("Minecraft quiescence command_timeout_s must be positive")
         self.console = console
         self.source_workdir = str(source)
         self.level_name = level_name
         self.server_contract_digest = server_contract_digest.lower()
         self._process_identity_digest = process_identity_digest
         self.command_timeout_s = command_timeout_s
-        self.settle_after_flush_s = settle_after_flush_s
         self._lock = threading.RLock()
         self._active: tuple[str, MinecraftWorldQuiescence] | None = None
         self._transition_session: str | None = None
@@ -112,8 +109,6 @@ class MinecraftSaveQuiescenceProvider(MinecraftWorldQuiescencePort):
             save_off_attempted = True
             save_off = self._command("save-off")
             save_flush = self._command("save-all flush")
-            if self.settle_after_flush_s:
-                time.sleep(self.settle_after_flush_s)
             if self._identity() != process_identity:
                 raise MinecraftWorldQuiescenceError(
                     "PROCESS_IDENTITY_CHANGED",
