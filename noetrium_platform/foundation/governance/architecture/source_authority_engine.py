@@ -26,6 +26,7 @@ def is_production_python(root: Path, path: Path) -> bool:
         return False
     return bool(relative.parts) and relative.parts[0] in {
         "noetrium_platform",
+        "noetrium",
         "projects",
         "components",
         "orchestration",
