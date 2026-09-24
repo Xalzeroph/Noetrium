@@ -49,7 +49,7 @@ class ModelDeploymentRuntime:
         return ModelDeploymentGeneration(
             desired.deployment_id,
             canonical_digest(desired),
-            None if applied is None else applied.contract.digest(),
+            None if applied is None else applied.runtime_digest,
         )
 
     def _snapshot_unlocked(
@@ -99,14 +99,27 @@ class ModelDeploymentRuntime:
             environment=applied.environment,
             readiness_url=applied.spec.readiness_url,
         )
-        outcome = runtime.stop_exact(applied.contract)
-        if outcome.stopped:
-            # The runtime-wide mutation lock and the exact contract snapshot make
-            # this clear a CAS over the currently applied generation.
+        observation = runtime.reconcile_exact(applied.contract)
+        if (
+            observation.process is not None
+            and observation.process != applied.process
+        ):
+            raise RuntimeError(
+                "model applied process generation drifted before physical stop: "
+                f"{desired.deployment_id}"
+            )
+        outcome = (
+            runtime.stop_exact(applied.contract)
+            if observation.process is not None
+            else None
+        )
+        if outcome is None or outcome.stopped:
+            # The runtime-wide mutation lock plus the exact persisted process
+            # identity make this clear a CAS over one physical lifetime.
             current = self._applied_store.read(desired.deployment_id)
             if (
                 current is None
-                or current.contract.digest() != applied.contract.digest()
+                or current.runtime_digest != applied.runtime_digest
             ):
                 raise RuntimeError(
                     "model applied generation changed during physical stop: "
@@ -141,6 +154,14 @@ class ModelDeploymentRuntime:
                 observation = runtime.reconcile_exact(applied.contract)
                 if (
                     observation.process is not None
+                    and observation.process != applied.process
+                ):
+                    raise RuntimeError(
+                        "model applied process generation drifted before replacement: "
+                        f"{spec.deployment_id}"
+                    )
+                if (
+                    observation.process == applied.process
                     and applied.contract.digest() == desired_contract.digest()
                 ):
                     return ModelDeploymentStatus(
@@ -161,7 +182,7 @@ class ModelDeploymentRuntime:
                 current = self._applied_store.read(spec.deployment_id)
                 if (
                     current is None
-                    or current.contract.digest() != applied.contract.digest()
+                    or current.runtime_digest != applied.runtime_digest
                 ):
                     raise RuntimeError(
                         "model applied generation changed during replacement: "
@@ -176,7 +197,12 @@ class ModelDeploymentRuntime:
             )
             outcome = runtime.start_exact(desired_contract)
             self._applied_store.put(
-                AppliedModelDeployment(spec, desired_contract, desired_environment)
+                AppliedModelDeployment(
+                    spec,
+                    desired_contract,
+                    desired_environment,
+                    outcome.process,
+                )
             )
             return ModelDeploymentStatus(
                 spec.deployment_id,
@@ -257,6 +283,15 @@ class ModelDeploymentRuntime:
                     ModelRuntimeState.STOPPED,
                     detail="applied-process-missing",
                 )
+            if observation.process != applied.process:
+                return ModelDeploymentStatus(
+                    desired.deployment_id,
+                    desired.service_id,
+                    desired.desired_state,
+                    ModelRuntimeState.DRIFTED,
+                    observation.process.pid,
+                    "applied-process-generation-drift",
+                )
             try:
                 desired_contract, _ = self._materializer.materialize(desired)
             except (FileNotFoundError, KeyError) as exc:
@@ -306,9 +341,9 @@ class ModelDeploymentRuntime:
                 )
             if applied is not None:
                 if (
-                    generation.applied_contract_digest is None
-                    or current.applied_contract_digest
-                    != generation.applied_contract_digest
+                    generation.applied_runtime_digest is None
+                    or current.applied_runtime_digest
+                    != generation.applied_runtime_digest
                 ):
                     raise RuntimeError(
                         "stale model deployment generation: "
@@ -320,7 +355,7 @@ class ModelDeploymentRuntime:
                         "model deployment removal refused because the physical "
                         f"generation did not stop: {generation.deployment_id}"
                     )
-            elif generation.applied_contract_digest is None:
+            elif generation.applied_runtime_digest is None:
                 # No physical generation existed in the captured snapshot.
                 pass
             else:
