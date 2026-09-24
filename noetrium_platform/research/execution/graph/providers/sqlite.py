@@ -616,6 +616,22 @@ class SQLiteResearchGraphExecutionStore:
             self._node_tx(conn, execution_id, node_id)
             return self._node_control_tx(conn, execution_id, node_id)
 
+    def node_control_snapshot(
+        self,
+        execution_id: str,
+    ) -> tuple[ResearchGraphNodeControlRecord, ...]:
+        with self._connection() as conn:
+            self._execution_tx(conn, execution_id)
+            rows = conn.execute(
+                "SELECT execution_id,node_id,phase,generation,updated_at_ns "
+                "FROM research_graph_node_control WHERE execution_id=? "
+                "ORDER BY node_id",
+                (execution_id,),
+            ).fetchall()
+        if not rows:
+            raise RuntimeError("durable research graph execution has no node control state")
+        return tuple(self._decode_node_control(row) for row in rows)
+
     def request_node_drain(
         self,
         execution_id: str,
