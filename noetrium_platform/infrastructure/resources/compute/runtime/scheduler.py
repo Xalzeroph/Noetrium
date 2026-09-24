@@ -1140,4 +1140,8 @@ class SQLiteComputeScheduler:
         return tuple(row for row in rows if scope is None or row.scope == scope)
 
 
-__all__ = ["InMemoryComputeScheduler", "SQLiteComputeScheduler"]
+__all__ = [
+    "ComputePhysicalConvergencePending",
+    "InMemoryComputeScheduler",
+    "SQLiteComputeScheduler",
+]
