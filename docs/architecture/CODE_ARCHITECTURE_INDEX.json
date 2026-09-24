@@ -357,6 +357,41 @@
     },
     {
       "kind": "references",
+      "source": "noetrium_platform.capabilities.environment.catalog.runtime.lease_heartbeat.EnvironmentInstanceLeaseHeartbeatFactory",
+      "target": "noetrium_platform.capabilities.environment.catalog.runtime.lease_authority.EnvironmentInstanceLeaseAuthority"
+    },
+    {
+      "kind": "references",
+      "source": "noetrium_platform.capabilities.environment.catalog.runtime.lease_heartbeat.EnvironmentInstanceLeaseHeartbeatFactory",
+      "target": "noetrium_platform.capabilities.environment.catalog.runtime.lease_authority.EnvironmentInstanceLeaseHandle"
+    },
+    {
+      "kind": "references",
+      "source": "noetrium_platform.capabilities.environment.catalog.runtime.lease_heartbeat.EnvironmentInstanceLeaseHeartbeatFactory",
+      "target": "noetrium_platform.capabilities.environment.catalog.runtime.lease_authority.EnvironmentInstanceLeasePolicy"
+    },
+    {
+      "kind": "references",
+      "source": "noetrium_platform.capabilities.environment.catalog.runtime.lease_heartbeat.EnvironmentInstanceLeaseHeartbeatFactory",
+      "target": "noetrium_platform.capabilities.environment.catalog.runtime.lease_heartbeat.EnvironmentInstanceLeaseHeartbeatGuard"
+    },
+    {
+      "kind": "references",
+      "source": "noetrium_platform.capabilities.environment.catalog.runtime.lease_heartbeat.EnvironmentInstanceLeaseHeartbeatGuard",
+      "target": "noetrium_platform.capabilities.environment.catalog.runtime.lease_authority.EnvironmentInstanceLeaseAuthority"
+    },
+    {
+      "kind": "references",
+      "source": "noetrium_platform.capabilities.environment.catalog.runtime.lease_heartbeat.EnvironmentInstanceLeaseHeartbeatGuard",
+      "target": "noetrium_platform.capabilities.environment.catalog.runtime.lease_authority.EnvironmentInstanceLeaseHandle"
+    },
+    {
+      "kind": "references",
+      "source": "noetrium_platform.capabilities.environment.catalog.runtime.lease_heartbeat.EnvironmentInstanceLeaseHeartbeatGuard",
+      "target": "noetrium_platform.capabilities.environment.catalog.runtime.lease_authority.EnvironmentInstanceLeasePolicy"
+    },
+    {
+      "kind": "references",
       "source": "noetrium_platform.capabilities.environment.category.api.contracts.EnvironmentCategoryDescriptor",
       "target": "noetrium_platform.capabilities.environment.category.api.contracts.EnvironmentCategoryId"
     },
@@ -19380,6 +19415,67 @@
         "EnvironmentInstanceReconciliation"
       ],
       "qualname": "noetrium_platform.capabilities.environment.catalog.runtime.lease_authority.EnvironmentInstanceReconciliation",
+      "system_key": "environment",
+      "top_system": "environment"
+    },
+    {
+      "bases": [
+        "RuntimeError"
+      ],
+      "decorators": [],
+      "fields": [],
+      "kind": "class",
+      "line": 21,
+      "methods": [],
+      "module": "noetrium_platform.capabilities.environment.catalog.runtime.lease_heartbeat",
+      "name": "EnvironmentInstanceLeaseHeartbeatError",
+      "nesting": [
+        "EnvironmentInstanceLeaseHeartbeatError"
+      ],
+      "qualname": "noetrium_platform.capabilities.environment.catalog.runtime.lease_heartbeat.EnvironmentInstanceLeaseHeartbeatError",
+      "system_key": "environment",
+      "top_system": "environment"
+    },
+    {
+      "bases": [],
+      "decorators": [],
+      "fields": [],
+      "kind": "class",
+      "line": 120,
+      "methods": [
+        "__init__",
+        "policy",
+        "create"
+      ],
+      "module": "noetrium_platform.capabilities.environment.catalog.runtime.lease_heartbeat",
+      "name": "EnvironmentInstanceLeaseHeartbeatFactory",
+      "nesting": [
+        "EnvironmentInstanceLeaseHeartbeatFactory"
+      ],
+      "qualname": "noetrium_platform.capabilities.environment.catalog.runtime.lease_heartbeat.EnvironmentInstanceLeaseHeartbeatFactory",
+      "system_key": "environment",
+      "top_system": "environment"
+    },
+    {
+      "bases": [],
+      "decorators": [],
+      "fields": [],
+      "kind": "class",
+      "line": 25,
+      "methods": [
+        "__init__",
+        "handles",
+        "start",
+        "_renew_once",
+        "assert_healthy",
+        "close"
+      ],
+      "module": "noetrium_platform.capabilities.environment.catalog.runtime.lease_heartbeat",
+      "name": "EnvironmentInstanceLeaseHeartbeatGuard",
+      "nesting": [
+        "EnvironmentInstanceLeaseHeartbeatGuard"
+      ],
+      "qualname": "noetrium_platform.capabilities.environment.catalog.runtime.lease_heartbeat.EnvironmentInstanceLeaseHeartbeatGuard",
       "system_key": "environment",
       "top_system": "environment"
     },
@@ -40724,7 +40820,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 35,
+      "line": 41,
       "methods": [
         "__init__",
         "model_admission",
@@ -40732,6 +40828,7 @@
         "open_experiment_group",
         "compute_lease_guard_factory",
         "endpoint_lease_guard_factory",
+        "environment_instance_lease_guard_factory",
         "open_model_io_group",
         "close_orchestration_group",
         "close_experiment_group",
@@ -98632,6 +98729,16 @@
     },
     {
       "kind": "constructs",
+      "source": "noetrium_platform.capabilities.environment.catalog.runtime.lease_heartbeat.EnvironmentInstanceLeaseHeartbeatFactory",
+      "target": "noetrium_platform.capabilities.environment.catalog.runtime.lease_heartbeat.EnvironmentInstanceLeaseHeartbeatGuard"
+    },
+    {
+      "kind": "constructs",
+      "source": "noetrium_platform.capabilities.environment.catalog.runtime.lease_heartbeat.EnvironmentInstanceLeaseHeartbeatGuard",
+      "target": "noetrium_platform.capabilities.environment.catalog.runtime.lease_heartbeat.EnvironmentInstanceLeaseHeartbeatError"
+    },
+    {
+      "kind": "constructs",
       "source": "noetrium_platform.capabilities.environment.embodied.composition.provider_adapter.EmbodiedEnvironmentProviderAdapter",
       "target": "noetrium_platform.capabilities.environment.embodied.composition.provider_adapter._EmbodiedSessionAdapter"
     },
@@ -103182,13 +103289,13 @@
     }
   ],
   "counts": {
-    "association_edges": 3459,
-    "classes": 3358,
-    "constructor_edges": 918,
+    "association_edges": 3466,
+    "classes": 3361,
+    "constructor_edges": 920,
     "inheritance_edges": 150,
-    "module_import_edges": 5007,
+    "module_import_edges": 5011,
     "parse_errors": 0,
-    "python_modules": 1907,
+    "python_modules": 1908,
     "registry_authorities": 20,
     "registry_nodes": 31,
     "top_level_systems": 16
@@ -104199,6 +104306,10 @@
       "target": "noetrium_platform.capabilities.environment.catalog.lease_authority"
     },
     {
+      "source": "noetrium_platform.capabilities.environment.catalog.runtime",
+      "target": "noetrium_platform.capabilities.environment.catalog.lease_heartbeat"
+    },
+    {
       "source": "noetrium_platform.capabilities.environment.catalog.runtime.catalog",
       "target": "noetrium_platform.capabilities.environment.catalog.api"
     },
@@ -104229,6 +104340,14 @@
     {
       "source": "noetrium_platform.capabilities.environment.catalog.runtime.lease_authority",
       "target": "noetrium_platform.infrastructure.resources.lease.api"
+    },
+    {
+      "source": "noetrium_platform.capabilities.environment.catalog.runtime.lease_heartbeat",
+      "target": "noetrium_platform.capabilities.environment.catalog.runtime.lease_authority"
+    },
+    {
+      "source": "noetrium_platform.capabilities.environment.catalog.runtime.lease_heartbeat",
+      "target": "noetrium_platform.foundation.kernel.concurrency.api"
     },
     {
       "source": "noetrium_platform.capabilities.environment.category",
@@ -109977,6 +110096,10 @@
     {
       "source": "noetrium_platform.composition.research_child_machine_batch",
       "target": "noetrium_platform.research.execution.machines.child_machine_batch"
+    },
+    {
+      "source": "noetrium_platform.composition.research_execution_pool",
+      "target": "noetrium_platform.capabilities.environment.catalog.runtime"
     },
     {
       "source": "noetrium_platform.composition.research_execution_pool",
@@ -124225,7 +124348,8 @@
     {
       "imports": [
         "noetrium_platform.capabilities.environment.catalog.catalog",
-        "noetrium_platform.capabilities.environment.catalog.lease_authority"
+        "noetrium_platform.capabilities.environment.catalog.lease_authority",
+        "noetrium_platform.capabilities.environment.catalog.lease_heartbeat"
       ],
       "module": "noetrium_platform.capabilities.environment.catalog.runtime",
       "path": "noetrium_platform/capabilities/environment/catalog/runtime/__init__.py",
@@ -124253,6 +124377,16 @@
       ],
       "module": "noetrium_platform.capabilities.environment.catalog.runtime.lease_authority",
       "path": "noetrium_platform/capabilities/environment/catalog/runtime/lease_authority.py",
+      "system_key": "environment",
+      "top_system": "environment"
+    },
+    {
+      "imports": [
+        "noetrium_platform.capabilities.environment.catalog.runtime.lease_authority",
+        "noetrium_platform.foundation.kernel.concurrency.api"
+      ],
+      "module": "noetrium_platform.capabilities.environment.catalog.runtime.lease_heartbeat",
+      "path": "noetrium_platform/capabilities/environment/catalog/runtime/lease_heartbeat.py",
       "system_key": "environment",
       "top_system": "environment"
     },
@@ -129589,6 +129723,7 @@
     },
     {
       "imports": [
+        "noetrium_platform.capabilities.environment.catalog.runtime",
         "noetrium_platform.capabilities.model.serving.api",
         "noetrium_platform.capabilities.model.serving.runtime",
         "noetrium_platform.composition.concurrency",
@@ -143943,7 +144078,7 @@
   "parse_errors": [],
   "registry_sha256": "d3fc1bab831f1b7379e5a36048a61c00fe173429df958270d36a16f3f00171c0",
   "schema": "noetrium-code-architecture-index.v1",
-  "source_git_sha": "3ef1b158240dfc842dd1be51835aa8e1b47ac49e",
+  "source_git_sha": "e73721a7bf215ed8a088b9195c3d5b2dfdedded0",
   "system_import_edges": [
     {
       "count": 85,
@@ -143971,7 +144106,7 @@
       "target": "platform"
     },
     {
-      "count": 216,
+      "count": 218,
       "source": "environment",
       "target": "environment"
     },
@@ -143981,7 +144116,7 @@
       "target": "governance"
     },
     {
-      "count": 74,
+      "count": 75,
       "source": "environment",
       "target": "platform"
     },
@@ -144101,7 +144236,7 @@
       "target": "data"
     },
     {
-      "count": 43,
+      "count": 44,
       "source": "research_os",
       "target": "environment"
     },

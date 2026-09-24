@@ -3,7 +3,7 @@
   "architecture_complexity": {
     "authorities": 20,
     "contract_declarations": 185,
-    "import_edges": 5296,
+    "import_edges": 5300,
     "subsystems": 15,
     "top_level_systems": 16
   },
@@ -23,7 +23,7 @@
     "effective_limits": {
       "authorities": 31,
       "contract_declarations": 185,
-      "import_edges": 5296,
+      "import_edges": 5300,
       "subsystems": 15,
       "top_level_systems": 16
     },
@@ -627,7 +627,7 @@
       "seam_id": "completed"
     }
   ],
-  "import_edges": 5296,
+  "import_edges": 5300,
   "import_violations": [],
   "layer_violations": [],
   "operation_graph": [
@@ -873,9 +873,9 @@
     }
   ],
   "package_cycles": [],
-  "report_sha256": "d5f6224a65e9617bc282168ad548ac157f7d016152cd79a55863c0c6067be678",
+  "report_sha256": "627ab31d8c3ca13838e256be5a7e55dd1bbc41d711905abd8fc7bfce705daa66",
   "source_authority_violations": [],
-  "source_digest": "e36e1e90b4143c0213fe4d59e70081de0ca3966a364b1dc0c46d55e383ffe274",
+  "source_digest": "75ee56113633046b3c24bad301201386d9d4521b2e30ca74303a581210075d9d",
   "source_invariant_violations": [
     {
       "detail": "noetrium_platform.capabilities.environment.catalog.runtime.lease_authority -> noetrium_platform.foundation.governance.api; required facade=noetrium_platform.substrate.api",
