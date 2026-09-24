@@ -10,6 +10,7 @@ from collections.abc import Callable
 from dataclasses import dataclass, field
 from enum import StrEnum
 import hashlib
+import importlib
 import inspect
 import re
 from typing import Protocol, runtime_checkable
@@ -79,6 +80,93 @@ class ResearchValueKind(StrEnum):
     SELECTION = "selection"
     METRIC = "metric"
     DATA = "data"
+
+
+@dataclass(frozen=True, slots=True)
+class ResearchMethodProgramImplementation:
+    """Import-resolvable immutable MethodProgram identity.
+
+    Complex paper methods already authored as MethodProgram IR are referenced by
+    module-level symbols rather than wrapped as ordinary Python callables.  The
+    frozen ResearchProgram stores only import coordinates plus the exact
+    MethodProgram digest; lowering re-imports the symbol and fails closed on any
+    type or digest drift.
+    """
+
+    implementation_id: str
+    module: str
+    qualname: str
+    program_digest: str
+    implementation_digest: str = field(init=False)
+
+    def __post_init__(self) -> None:
+        _token(self.implementation_id, "research method-program implementation_id")
+        if type(self.module) is not str or not self.module.strip():
+            raise ValueError("research method-program module must be non-empty")
+        if type(self.qualname) is not str or not self.qualname.strip():
+            raise ValueError("research method-program qualname must be non-empty")
+        if "<locals>" in self.qualname or "<lambda>" in self.qualname:
+            raise ValueError(
+                "research method-program must be a module-resolvable named symbol"
+            )
+        require_sha256(
+            self.program_digest,
+            "research method-program program_digest",
+        )
+        module = self.module.strip()
+        qualname = self.qualname.strip()
+        object.__setattr__(self, "module", module)
+        object.__setattr__(self, "qualname", qualname)
+        object.__setattr__(
+            self,
+            "implementation_digest",
+            canonical_digest(
+                {
+                    "implementation_type": "method_program",
+                    "implementation_id": self.implementation_id,
+                    "module": module,
+                    "qualname": qualname,
+                    "program_digest": self.program_digest,
+                }
+            ),
+        )
+
+    @classmethod
+    def from_symbol(
+        cls,
+        implementation_id: str,
+        *,
+        module: str,
+        qualname: str,
+    ) -> "ResearchMethodProgramImplementation":
+        if type(module) is not str or not module.strip():
+            raise ValueError("research method-program module must be non-empty")
+        if type(qualname) is not str or not qualname.strip():
+            raise ValueError("research method-program qualname must be non-empty")
+        try:
+            value: object = importlib.import_module(module.strip())
+            for part in qualname.strip().split("."):
+                value = getattr(value, part)
+        except (ImportError, AttributeError) as exc:
+            raise ValueError(
+                "research method-program symbol cannot be imported: "
+                f"{module}:{qualname}"
+            ) from exc
+        program_digest = getattr(value, "program_digest", None)
+        if type(program_digest) is not str:
+            raise TypeError(
+                "research method-program symbol does not expose program_digest"
+            )
+        require_sha256(
+            program_digest,
+            "research method-program symbol program_digest",
+        )
+        return cls(
+            implementation_id,
+            module.strip(),
+            qualname.strip(),
+            program_digest,
+        )
 
 
 @dataclass(frozen=True, slots=True)
@@ -169,7 +257,9 @@ class ResearchImplementation:
 class ResearchDefinition:
     definition_id: str
     kind: ResearchDefinitionKind
-    implementation: ResearchImplementation | None = None
+    implementation: (
+        ResearchImplementation | ResearchMethodProgramImplementation | None
+    ) = None
     config: JsonValue = None
     definition_digest: str = field(init=False)
 
@@ -177,9 +267,20 @@ class ResearchDefinition:
         _token(self.definition_id, "research definition_id")
         if not isinstance(self.kind, ResearchDefinitionKind):
             raise TypeError("research definition kind must be typed")
-        if self.implementation is not None and type(self.implementation) is not ResearchImplementation:
+        if self.implementation is not None and type(self.implementation) not in {
+            ResearchImplementation,
+            ResearchMethodProgramImplementation,
+        }:
             raise TypeError(
-                "research definition implementation must be ResearchImplementation or None"
+                "research definition implementation must be a typed Research "
+                "implementation or None"
+            )
+        if (
+            type(self.implementation) is ResearchMethodProgramImplementation
+            and self.kind is not ResearchDefinitionKind.METHOD
+        ):
+            raise ValueError(
+                "MethodProgram implementation may only back METHOD definitions"
             )
         config = freeze_json(self.config)
         object.__setattr__(self, "config", config)
@@ -523,7 +624,7 @@ class ResearchPortfolioDependency:
         )
 
 
-RESEARCH_PORTFOLIO_SCHEMA = "noetrium.research-portfolio.v1"
+RESEARCH_PORTFOLIO_SCHEMA = "noetrium.research-portfolio.v2"
 
 
 def _research_binding_document(binding: ResearchInputBinding) -> dict[str, object]:
@@ -535,15 +636,27 @@ def _research_binding_document(binding: ResearchInputBinding) -> dict[str, objec
 
 
 def _research_implementation_document(
-    implementation: ResearchImplementation,
+    implementation: ResearchImplementation | ResearchMethodProgramImplementation,
 ) -> dict[str, object]:
-    return {
-        "implementation_id": implementation.implementation_id,
-        "module": implementation.module,
-        "qualname": implementation.qualname,
-        "source_digest": implementation.source_digest,
-        "implementation_digest": implementation.implementation_digest,
-    }
+    if type(implementation) is ResearchImplementation:
+        return {
+            "implementation_type": "callable",
+            "implementation_id": implementation.implementation_id,
+            "module": implementation.module,
+            "qualname": implementation.qualname,
+            "source_digest": implementation.source_digest,
+            "implementation_digest": implementation.implementation_digest,
+        }
+    if type(implementation) is ResearchMethodProgramImplementation:
+        return {
+            "implementation_type": "method_program",
+            "implementation_id": implementation.implementation_id,
+            "module": implementation.module,
+            "qualname": implementation.qualname,
+            "program_digest": implementation.program_digest,
+            "implementation_digest": implementation.implementation_digest,
+        }
+    raise TypeError("research implementation document requires typed implementation")
 
 
 def _research_definition_document(
@@ -1250,7 +1363,12 @@ class ResearchProgramBuilder:
         definition_id: str,
         *,
         kind: ResearchDefinitionKind,
-        implementation: ResearchImplementation | Callable[..., object] | None = None,
+        implementation: (
+            ResearchImplementation
+            | ResearchMethodProgramImplementation
+            | Callable[..., object]
+            | None
+        ) = None,
         config: JsonInput = None,
     ) -> "ResearchProgramBuilder":
         resolved = (
@@ -1258,8 +1376,12 @@ class ResearchProgramBuilder:
             if implementation is None
             else (
                 implementation
-                if type(implementation) is ResearchImplementation
-                else ResearchImplementation.from_callable(definition_id, implementation)
+                if type(implementation)
+                in {ResearchImplementation, ResearchMethodProgramImplementation}
+                else ResearchImplementation.from_callable(
+                    definition_id,
+                    implementation,
+                )
             )
         )
         row = ResearchDefinition(
@@ -1284,6 +1406,27 @@ class ResearchProgramBuilder:
             definition_id,
             kind=ResearchDefinitionKind.METHOD,
             implementation=implementation,
+            config=config,
+        )
+
+    def method_program(
+        self,
+        definition_id: str,
+        *,
+        module: str,
+        qualname: str,
+        config: JsonInput = None,
+    ) -> "ResearchProgramBuilder":
+        """Bind an existing immutable MethodProgram as METHOD semantics."""
+
+        return self.definition(
+            definition_id,
+            kind=ResearchDefinitionKind.METHOD,
+            implementation=ResearchMethodProgramImplementation.from_symbol(
+                definition_id,
+                module=module,
+                qualname=qualname,
+            ),
             config=config,
         )
 
@@ -1764,6 +1907,7 @@ __all__ = [
     "ResearchGraphRevision",
     "ResearchImpactState",
     "ResearchImplementation",
+    "ResearchMethodProgramImplementation",
     "ResearchInputBinding",
     "ResearchNode",
     "ResearchNodeImpact",
