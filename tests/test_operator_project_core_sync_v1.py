@@ -207,3 +207,50 @@ __all__ = ["build_research"]
     assert checks["public_import_boundary"] == "pass"
     assert checks["standard_bindings"] == "pass"
     assert project_testing.test_project(root).passed
+
+
+
+def test_generated_shell_is_independent_of_scientific_topology(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    _bind_fixed_platform(monkeypatch)
+    root = tmp_path / "topology-independent"
+    project_scaffold.create_project(
+        ProjectCreateRequest("topology-independent", "0.1.0", root)
+    )
+    shell_path = root / "src" / "topology_independent" / "research.py"
+    original_shell = shell_path.read_bytes()
+
+    core_path = root / "src" / "topology_independent" / "core.py"
+    core_path.write_text(
+        '''from noetrium import api
+
+
+def build_research() -> api.ResearchPortfolio:
+    programs = []
+    for program_id, node_ids in (
+        ("paper-a", ("a0", "a1", "a2")),
+        ("paper-b", ("b0", "b1")),
+        ("paper-c", ("c0",)),
+    ):
+        builder = api.ResearchProgramBuilder(program_id)
+        previous = None
+        for node_id in node_ids:
+            builder.node(node_id, kind=api.ResearchNodeKind.CUSTOM)
+            if previous is not None:
+                builder.depends(node_id, previous)
+            previous = node_id
+        programs.append(builder.freeze())
+    return api.ResearchPortfolio("topology-independent", tuple(programs))
+
+
+__all__ = ["build_research"]
+''',
+        encoding="utf-8",
+    )
+
+    project_scaffold.sync_project(root)
+
+    assert shell_path.read_bytes() == original_shell
+    assert project_testing.test_project(root).passed
