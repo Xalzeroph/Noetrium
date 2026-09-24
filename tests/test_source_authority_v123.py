@@ -24,8 +24,22 @@ class SourceAuthorityV123Tests(unittest.TestCase):
             )
             findings = audit_source_authorities(root)
             self.assertEqual(len(findings), 1)
-            self.assertEqual(findings[0].authority, "service.process_spawn")
+            self.assertEqual(findings[0].authority, "lifecycle.process_spawn")
             self.assertEqual(findings[0].line, 4)
+
+    def test_indirect_process_spawn_reference_is_rejected(self):
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            target = root / "noetrium_platform" / "runtime_manager"
+            target.mkdir(parents=True)
+            (root / "noetrium_platform" / "__init__.py").write_text("", encoding="utf-8")
+            (target / "x.py").write_text(
+                "import subprocess\n\ndef build():\n    factory = subprocess.Popen\n    return factory\n",
+                encoding="utf-8",
+            )
+            findings = audit_source_authorities(root)
+            self.assertEqual(len(findings), 1)
+            self.assertEqual(findings[0].authority, "lifecycle.process_spawn")
 
     def test_raw_file_replace_outside_durable_filesystem_authority_is_rejected(self):
         with tempfile.TemporaryDirectory() as td:
