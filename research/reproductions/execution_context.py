@@ -12,6 +12,9 @@ from noetrium_platform.composition.managed_research_runtime import (
 from noetrium_platform.infrastructure.resources.directory.runtime import (
     standard_local_directory_layout,
 )
+from noetrium_platform.foundation.kernel.kernel.durability.file_lock import (
+    InterprocessFileLock,
+)
 
 
 @dataclass(frozen=True, slots=True)
@@ -61,18 +64,69 @@ def open_local_reproduction_fleet_execution_context(
 
     if type(state_root) is not Path:
         raise TypeError("fleet execution state_root must be pathlib.Path")
-    platform_root = state_root.expanduser().absolute() / "platform-runtime"
-    runtime = build_local_managed_research_runtime(
-        standard_local_directory_layout(platform_root),
-        start_background_controllers=start_background_controllers,
+    resolved_root = state_root.expanduser().absolute()
+    platform_root = resolved_root / "platform-runtime"
+    runtime_lock = InterprocessFileLock(
+        platform_root / "locks" / "fleet-runtime.lock",
+        blocking=False,
     )
-    try:
-        yield ReproductionFleetExecutionContext(
-            state_root=state_root.expanduser().absolute(),
+
+    with runtime_lock:
+        runtime = build_local_managed_research_runtime(
+            standard_local_directory_layout(platform_root),
+            start_background_controllers=start_background_controllers,
+        )
+        context = ReproductionFleetExecutionContext(
+            state_root=resolved_root,
             runtime=runtime,
         )
-    finally:
-        runtime.close()
+        try:
+            yield context
+        except BaseException as primary:
+            cleanup_errors: list[BaseException] = []
+            quiesced = False
+            try:
+                runtime.quiesce_background_controllers()
+                quiesced = True
+            except BaseException as exc:
+                cleanup_errors.append(exc)
+            if quiesced:
+                try:
+                    runtime.resources.shutdown_cleanup()
+                except BaseException as exc:
+                    cleanup_errors.append(exc)
+            try:
+                runtime.close()
+            except BaseException as exc:
+                cleanup_errors.append(exc)
+            if cleanup_errors:
+                raise ExceptionGroup(
+                    "fleet execution and shutdown cleanup failed",
+                    [primary, *cleanup_errors],
+                )
+            raise
+        else:
+            cleanup_errors: list[BaseException] = []
+            quiesced = False
+            try:
+                runtime.quiesce_background_controllers()
+                quiesced = True
+            except BaseException as exc:
+                cleanup_errors.append(exc)
+            if quiesced:
+                try:
+                    runtime.resources.shutdown_cleanup()
+                except BaseException as exc:
+                    cleanup_errors.append(exc)
+            try:
+                runtime.close()
+            except BaseException as exc:
+                cleanup_errors.append(exc)
+            if cleanup_errors:
+                raise ExceptionGroup(
+                    "fleet shutdown cleanup failed",
+                    cleanup_errors,
+                )
 
 
 __all__ = [
