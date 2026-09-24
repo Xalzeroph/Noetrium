@@ -53,6 +53,13 @@ class Pool:
     def __init__(self):
         self.group_closed = False
         self.closed = False
+        self.workloads_quiesced = False
+        self.quiesce_error = None
+
+    def quiesce_workloads(self, *, deadline=None):
+        if self.quiesce_error is not None:
+            raise self.quiesce_error
+        self.workloads_quiesced = True
 
     def close_orchestration_group(self, group, *, cancel_pending=False, deadline=None):
         self.group_closed = True
@@ -173,6 +180,7 @@ def test_managed_runtime_owns_background_controller_lifecycle() -> None:
     managed.assert_healthy()
     managed.close()
 
+    assert pool.workloads_quiesced is True
     assert pool.group_closed is True
     assert pool.closed is True
     assert group.closed is True
@@ -208,3 +216,31 @@ def test_managed_research_runtime_is_available_from_public_platform_facade() -> 
 
     assert platform.ManagedResearchRuntime is ManagedResearchRuntime
     assert callable(platform.bind_local_managed_research_runtime)
+
+
+def test_managed_runtime_does_not_release_resources_when_workloads_fail_to_quiesce() -> None:
+    (
+        managed,
+        pool,
+        _group,
+        _controller,
+        resource_controller,
+        fleet,
+        runtime_lock,
+    ) = runtime()
+    pool.quiesce_error = TimeoutError("workloads still live")
+
+    try:
+        managed.close()
+    except ExceptionGroup as error:
+        assert any(
+            isinstance(item, TimeoutError)
+            for item in error.exceptions
+        )
+    else:
+        raise AssertionError("workload quiesce failure was not surfaced")
+
+    assert resource_controller.cleaned == 0
+    assert fleet.shutdowns == 0
+    assert pool.closed is True
+    assert runtime_lock.released is True
