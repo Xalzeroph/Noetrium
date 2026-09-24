@@ -59,6 +59,7 @@ def _authorities() -> ReproductionFleetExecutionAuthorities:
             _ExperimentAggregation(),
             _ExperimentReconciliation(),
         ),
+        authority_manifest_digest="a" * 64,
         capability_resolver=_CapabilityResolver(),
     )
 
@@ -71,6 +72,7 @@ def test_execution_authorities_require_all_runtime_closure_ports() -> None:
         type(authorities.experiment_runtime_components)
         is ResearchOSExperimentRuntimeComponents
     )
+    assert authorities.authority_manifest_digest == "a" * 64
     assert isinstance(authorities.capability_resolver, _CapabilityResolver)
 
 
