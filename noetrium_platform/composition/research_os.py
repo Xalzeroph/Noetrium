@@ -28,6 +28,7 @@ from noetrium_platform.product.research_os import (
     ResearchGraphRevision,
     ResearchImpactState,
     ResearchImplementation,
+    ResearchMethodProgramImplementation,
     ResearchInputBinding,
     ResearchNode,
     ResearchNodeImpact,
@@ -46,7 +47,7 @@ from noetrium_platform.product.research_os import (
 )
 
 
-RESEARCH_PORTFOLIO_MEDIA_TYPE = "application/vnd.noetrium.research-portfolio.v1+json"
+RESEARCH_PORTFOLIO_MEDIA_TYPE = "application/vnd.noetrium.research-portfolio.v2+json"
 
 
 def _object(value: object, field: str) -> dict[str, object]:
@@ -82,27 +83,64 @@ def _decode_binding(value: object, field: str) -> ResearchInputBinding:
     )
 
 
-def _decode_implementation(value: object, field: str) -> ResearchImplementation:
+def _decode_implementation(
+    value: object,
+    field: str,
+) -> ResearchImplementation | ResearchMethodProgramImplementation:
     row = _object(value, field)
-    _exact(
-        row,
-        frozenset(
-            {
-                "implementation_id",
-                "module",
-                "qualname",
-                "source_digest",
-                "implementation_digest",
-            }
-        ),
-        field,
+    implementation_type = _text(
+        row.get("implementation_type"),
+        field + ".implementation_type",
     )
-    implementation = ResearchImplementation(
-        _text(row["implementation_id"], field + ".implementation_id"),
-        _text(row["module"], field + ".module"),
-        _text(row["qualname"], field + ".qualname"),
-        _text(row["source_digest"], field + ".source_digest"),
-    )
+    if implementation_type == "callable":
+        _exact(
+            row,
+            frozenset(
+                {
+                    "implementation_type",
+                    "implementation_id",
+                    "module",
+                    "qualname",
+                    "source_digest",
+                    "implementation_digest",
+                }
+            ),
+            field,
+        )
+        implementation: ResearchImplementation | ResearchMethodProgramImplementation = (
+            ResearchImplementation(
+                _text(row["implementation_id"], field + ".implementation_id"),
+                _text(row["module"], field + ".module"),
+                _text(row["qualname"], field + ".qualname"),
+                _text(row["source_digest"], field + ".source_digest"),
+            )
+        )
+    elif implementation_type == "method_program":
+        _exact(
+            row,
+            frozenset(
+                {
+                    "implementation_type",
+                    "implementation_id",
+                    "module",
+                    "qualname",
+                    "program_digest",
+                    "implementation_digest",
+                }
+            ),
+            field,
+        )
+        implementation = ResearchMethodProgramImplementation(
+            _text(row["implementation_id"], field + ".implementation_id"),
+            _text(row["module"], field + ".module"),
+            _text(row["qualname"], field + ".qualname"),
+            _text(row["program_digest"], field + ".program_digest"),
+        )
+    else:
+        raise ValueError(
+            f"{field}.implementation_type is not canonical: "
+            f"{implementation_type!r}"
+        )
     if implementation.implementation_digest != _text(
         row["implementation_digest"], field + ".implementation_digest"
     ):
