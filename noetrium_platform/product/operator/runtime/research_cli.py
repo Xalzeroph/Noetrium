@@ -6,6 +6,7 @@ import json
 from pathlib import Path
 import sys
 
+from noetrium_platform.product.api import decode_research_project_blueprint
 from noetrium_platform.product.operator.api import (
     ProjectCreateRequest, ResearchAction, ResearchFacade, ResearchOperationFailure,
 )
@@ -54,6 +55,11 @@ def _add_project_commands(subparsers) -> None:
     create.add_argument("project_id")
     create.add_argument("destination", type=Path, nargs="?")
     create.add_argument("--version", default="0.1.0")
+    create.add_argument(
+        "--blueprint",
+        type=Path,
+        help="typed Research OS blueprint JSON; defaults to canonical fill-in scaffold",
+    )
 
     doctor = project_subparsers.add_parser("doctor", help="validate project/platform/provider readiness")
     doctor.add_argument("--project", dest="project_root", type=Path, default=Path("."))
@@ -105,7 +111,17 @@ def _run_project_lifecycle(args: argparse.Namespace, project_application_loader:
 def _run_project(args: argparse.Namespace, project_experience: ProjectFacade) -> int:
     if args.project_command == "create":
         destination = args.destination or Path(args.project_id)
-        receipt = project_experience.create(args.project_id, args.version, destination)
+        blueprint = (
+            None
+            if args.blueprint is None
+            else decode_research_project_blueprint(args.blueprint.read_bytes())
+        )
+        receipt = project_experience.create(
+            args.project_id,
+            args.version,
+            destination,
+            blueprint,
+        )
         _emit({"ok": True, "command": "project create", "result": receipt})
         return 0
     if args.project_command == "doctor":
