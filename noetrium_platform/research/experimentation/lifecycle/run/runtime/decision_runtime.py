@@ -43,10 +43,6 @@ from noetrium_platform.research.execution.api import (
 )
 from noetrium_platform.research.execution.api import TrialCycleExecution
 from noetrium_platform.research.experimentation.lifecycle.experiment.api import ExperimentSpec
-from noetrium_platform.research.experimentation.lifecycle.experiment.api.ports import (
-    ExperimentComponentBindingPort,
-    ExperimentTrialCycleExecutorPort,
-)
 from noetrium_platform.research.experimentation.lifecycle.run.api.lifecycle import (
     RunCleanupFailure,
     RunCleanupReport,
@@ -98,9 +94,9 @@ DECISION_CYCLE_RUNTIME_PROGRAM = (
 class _CycleFrame:
     spec: ExperimentSpec
     identity: DecisionCycleIdentity
-    binder: ExperimentComponentBindingPort
+    binder: object
     lifecycle: ParticipantSessionLifecyclePort
-    trial: ExperimentTrialCycleExecutorPort
+    trial: object
     task: object
     input_kind: str
     input_payload: object
@@ -454,9 +450,9 @@ class DecisionCycleRuntime:
 
     def __init__(
         self,
-        binder: ExperimentComponentBindingPort,
+        binder: object,
         lifecycle: ParticipantSessionLifecyclePort,
-        trial: ExperimentTrialCycleExecutorPort,
+        trial: object,
         *,
         journal: MachineJournalPort | None = None,
         snapshot_store: MachineSnapshotStorePort | None = None,
