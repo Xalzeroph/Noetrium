@@ -8,6 +8,9 @@ import pytest
 from noetrium import api
 from noetrium_platform.composition.research_execution_pool import ResearchExecutionPool
 from noetrium_platform.composition.research_os import bind_portfolio_research_os
+from noetrium_platform.composition.research_os_checkpoint_store import (
+    DirectoryResearchOSGraphCheckpointStore,
+)
 from noetrium_platform.composition.research_os_execution import StrictResearchOSControl
 from noetrium_platform.composition.research_os_experiment import (
     ResearchOSExperimentClosureMissing,
@@ -196,6 +199,9 @@ def test_canonical_runtime_checkpoint_binds_real_machine_journal_heads(
             pool,
             runtime,
             values,
+            checkpoints=DirectoryResearchOSGraphCheckpointStore(
+                tmp_path / "graph-checkpoints"
+            ),
         ),
     )
     try:
@@ -216,6 +222,19 @@ def test_canonical_runtime_checkpoint_binds_real_machine_journal_heads(
             assert len(row["machine_commit_id"]) == 64
             assert len(row["machine_cut_digest"]) == 64
             assert len(row["checkpoint_proof_digest"]) == 64
+
+        restarted_store = DirectoryResearchOSGraphCheckpointStore(
+            tmp_path / "graph-checkpoints"
+        )
+        durable = restarted_store.load(checkpoint.payload["checkpoint_digest"])
+        assert durable is not None
+        assert durable.checkpoint_digest == checkpoint.payload["checkpoint_digest"]
+        assert durable.execution_cut_id == checkpoint.payload["cut_id"]
+        assert durable.selected_node_ids == ("paper::evaluate", "paper::source")
+        assert restarted_store.latest(
+            durable.execution_cut_id,
+            durable.selected_node_ids,
+        ) == durable
     finally:
         pool.close()
 
