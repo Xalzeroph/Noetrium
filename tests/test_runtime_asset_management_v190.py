@@ -9,7 +9,12 @@ from unittest.mock import patch
 
 from noetrium_platform.foundation.scope.api import PLATFORM_SCOPE
 from noetrium_platform.foundation.scope.runtime import InMemoryScopeRegistry
-from noetrium_platform.infrastructure.resources.directory.api import DirectoryLayout, ManagedDirectoryKind
+from noetrium_platform.infrastructure.resources.directory.api import (
+    DirectoryLayout,
+    ManagedDirectoryKind,
+    WorkspaceClosureAuthority,
+    WorkspaceReferenceClosure,
+)
 from noetrium_platform.infrastructure.resources.directory.runtime import build_local_directory_authorities
 from noetrium_platform.capabilities.model.asset.api import ModelAssetMode, ModelSourceSpec
 from noetrium_platform.capabilities.model.api import ModelAuthorities
@@ -185,7 +190,36 @@ class ManagementTests(unittest.TestCase):
             entries = manager.inspection.entries(ManagedDirectoryKind.CACHE, limit=1)
             self.assertEqual(entries[0].path.name, "large.bin")
             self.assertEqual(entries[0].bytes, 32)
-            self.assertTrue(manager.workspaces.remove_workspace("run-1", scope=PLATFORM_SCOPE, category="study"))
+            gc = manager.workspaces.assess_workspace_gc(
+                "run-1",
+                scope=PLATFORM_SCOPE,
+                category="study",
+                closures=(
+                    WorkspaceReferenceClosure(
+                        WorkspaceClosureAuthority.EVIDENCE,
+                        "1" * 64,
+                        (),
+                    ),
+                    WorkspaceReferenceClosure(
+                        WorkspaceClosureAuthority.EXECUTION,
+                        "2" * 64,
+                        (),
+                    ),
+                    WorkspaceReferenceClosure(
+                        WorkspaceClosureAuthority.RECOVERY,
+                        "3" * 64,
+                        (),
+                    ),
+                ),
+            )
+            self.assertTrue(
+                manager.workspaces.remove_workspace(
+                    "run-1",
+                    scope=PLATFORM_SCOPE,
+                    category="study",
+                    gc=gc,
+                )
+            )
 
     def test_python_environment_manager_is_backend_driven(self):
         with TemporaryDirectory() as td:

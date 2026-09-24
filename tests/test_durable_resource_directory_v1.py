@@ -11,11 +11,44 @@ from noetrium_platform.foundation.kernel.kernel.durability.checksummed_document 
 from noetrium_platform.infrastructure.resources.directory.api import (
     DirectoryLayout,
     ManagedDirectoryKind,
+    WorkspaceClosureAuthority,
     WorkspaceMetadataError,
     WorkspaceMetadataFailureCode,
+    WorkspaceReferenceClosure,
 )
 from noetrium_platform.infrastructure.resources.directory.runtime import build_local_directory_authorities
 from noetrium_platform.foundation.scope.api import ScopeIdentity, ScopeKind, scope_to_data
+
+
+def _closed_workspace_gc(
+    authorities,
+    workspace_id: str,
+    *,
+    scope: ScopeIdentity,
+    category: str,
+):
+    return authorities.workspaces.assess_workspace_gc(
+        workspace_id,
+        scope=scope,
+        category=category,
+        closures=(
+            WorkspaceReferenceClosure(
+                WorkspaceClosureAuthority.EVIDENCE,
+                "1" * 64,
+                (),
+            ),
+            WorkspaceReferenceClosure(
+                WorkspaceClosureAuthority.EXECUTION,
+                "2" * 64,
+                (),
+            ),
+            WorkspaceReferenceClosure(
+                WorkspaceClosureAuthority.RECOVERY,
+                "3" * 64,
+                (),
+            ),
+        ),
+    )
 
 
 def _layout(root: Path) -> DirectoryLayout:
@@ -166,16 +199,24 @@ def test_removed_workspace_identity_is_terminal(
     )
     (allocation.path / "payload").write_text("state", encoding="utf-8")
 
+    gc = _closed_workspace_gc(
+        authorities,
+        "run-retired",
+        scope=scope,
+        category="study",
+    )
     assert authorities.workspaces.remove_workspace(
         "run-retired",
         scope=scope,
         category="study",
+        gc=gc,
     )
     assert not allocation.path.exists()
     assert authorities.workspaces.remove_workspace(
         "run-retired",
         scope=scope,
         category="study",
+        gc=gc,
     )
     with pytest.raises(RuntimeError, match="retired and cannot be reused"):
         authorities.workspaces.allocate_workspace(
@@ -212,11 +253,18 @@ def test_workspace_remove_retries_after_retirement_publication(
         return real_rmtree(path)
 
     monkeypatch.setattr(workspace_runtime.shutil, "rmtree", fail_once)
+    gc = _closed_workspace_gc(
+        authorities,
+        "run-retry",
+        scope=scope,
+        category="study",
+    )
     with pytest.raises(OSError, match="delete interruption"):
         authorities.workspaces.remove_workspace(
             "run-retry",
             scope=scope,
             category="study",
+            gc=gc,
         )
 
     assert allocation.path.exists()
@@ -231,6 +279,171 @@ def test_workspace_remove_retries_after_retirement_publication(
         "run-retry",
         scope=scope,
         category="study",
+        gc=gc,
     )
     assert calls == 2
+    assert not allocation.path.exists()
+
+
+def test_workspace_gc_fails_closed_without_all_reference_authorities(
+    tmp_path: Path,
+) -> None:
+    authorities = build_local_directory_authorities(_layout(tmp_path))
+    scope = ScopeIdentity(ScopeKind.BRANCH, "branch-gc-blocked")
+    allocation = authorities.workspaces.allocate_workspace(
+        "run-gc-blocked",
+        scope=scope,
+        category="study",
+    )
+    partial = authorities.workspaces.assess_workspace_gc(
+        "run-gc-blocked",
+        scope=scope,
+        category="study",
+        closures=(
+            WorkspaceReferenceClosure(
+                WorkspaceClosureAuthority.EXECUTION,
+                "4" * 64,
+                (),
+            ),
+        ),
+    )
+    assert not partial.closure_complete
+    assert not partial.eligible
+    with pytest.raises(
+        RuntimeError,
+        match="complete execution, evidence, and recovery",
+    ):
+        authorities.workspaces.remove_workspace(
+            "run-gc-blocked",
+            scope=scope,
+            category="study",
+            gc=partial,
+        )
+    assert allocation.path.exists()
+
+
+@pytest.mark.parametrize(
+    ("authority", "reference_id"),
+    (
+        (WorkspaceClosureAuthority.EXECUTION, "run-resumable"),
+        (WorkspaceClosureAuthority.EVIDENCE, "evidence-retained"),
+        (WorkspaceClosureAuthority.RECOVERY, "checkpoint-retained"),
+    ),
+)
+def test_workspace_gc_blocks_any_retained_recovery_reference(
+    tmp_path: Path,
+    authority: WorkspaceClosureAuthority,
+    reference_id: str,
+) -> None:
+    authorities = build_local_directory_authorities(_layout(tmp_path))
+    scope = ScopeIdentity(ScopeKind.BRANCH, f"branch-{authority.value}")
+    workspace_id = f"run-{authority.value}"
+    allocation = authorities.workspaces.allocate_workspace(
+        workspace_id,
+        scope=scope,
+        category="study",
+    )
+    closures = tuple(
+        WorkspaceReferenceClosure(
+            current,
+            str(index) * 64,
+            (reference_id,) if current is authority else (),
+        )
+        for index, current in enumerate(
+            (
+                WorkspaceClosureAuthority.EVIDENCE,
+                WorkspaceClosureAuthority.EXECUTION,
+                WorkspaceClosureAuthority.RECOVERY,
+            ),
+            start=5,
+        )
+    )
+    assessment = authorities.workspaces.assess_workspace_gc(
+        workspace_id,
+        scope=scope,
+        category="study",
+        closures=closures,
+    )
+    assert assessment.closure_complete
+    assert not assessment.eligible
+    with pytest.raises(RuntimeError, match="zero retained references"):
+        authorities.workspaces.remove_workspace(
+            workspace_id,
+            scope=scope,
+            category="study",
+            gc=assessment,
+        )
+    assert allocation.path.exists()
+
+
+def test_workspace_remove_retry_rejects_changed_gc_proof(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    import noetrium_platform.infrastructure.resources.directory.runtime.workspaces as workspace_runtime
+
+    authorities = build_local_directory_authorities(_layout(tmp_path))
+    scope = ScopeIdentity(ScopeKind.BRANCH, "branch-proof-retry")
+    allocation = authorities.workspaces.allocate_workspace(
+        "run-proof-retry",
+        scope=scope,
+        category="study",
+    )
+    real_rmtree = workspace_runtime.shutil.rmtree
+
+    def fail_delete(_path):
+        raise OSError("simulated interruption after durable retirement")
+
+    monkeypatch.setattr(workspace_runtime.shutil, "rmtree", fail_delete)
+    original = _closed_workspace_gc(
+        authorities,
+        "run-proof-retry",
+        scope=scope,
+        category="study",
+    )
+    with pytest.raises(OSError, match="interruption"):
+        authorities.workspaces.remove_workspace(
+            "run-proof-retry",
+            scope=scope,
+            category="study",
+            gc=original,
+        )
+
+    changed = authorities.workspaces.assess_workspace_gc(
+        "run-proof-retry",
+        scope=scope,
+        category="study",
+        closures=(
+            WorkspaceReferenceClosure(
+                WorkspaceClosureAuthority.EVIDENCE,
+                "a" * 64,
+                (),
+            ),
+            WorkspaceReferenceClosure(
+                WorkspaceClosureAuthority.EXECUTION,
+                "b" * 64,
+                (),
+            ),
+            WorkspaceReferenceClosure(
+                WorkspaceClosureAuthority.RECOVERY,
+                "c" * 64,
+                (),
+            ),
+        ),
+    )
+    monkeypatch.setattr(workspace_runtime.shutil, "rmtree", real_rmtree)
+    with pytest.raises(RuntimeError, match="GC proof changed across retry"):
+        authorities.workspaces.remove_workspace(
+            "run-proof-retry",
+            scope=scope,
+            category="study",
+            gc=changed,
+        )
+    assert allocation.path.exists()
+    assert authorities.workspaces.remove_workspace(
+        "run-proof-retry",
+        scope=scope,
+        category="study",
+        gc=original,
+    )
     assert not allocation.path.exists()
