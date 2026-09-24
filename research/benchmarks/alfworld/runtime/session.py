@@ -39,9 +39,11 @@ from noetrium_platform.foundation.kernel.kernel import (
 from noetrium_platform.foundation.kernel.kernel.durability import atomic_replace_bytes, durable_unlink
 from noetrium_platform.infrastructure.lifecycle.host.providers import LocalOperatingSystemRoute
 from noetrium_platform.substrate.api import ProcessSupervisorPort, ScopeIdentity
-from noetrium_platform.composition.docker_container_leases import (
-    DockerContainerLeaseAuthority,
+from noetrium_platform.infrastructure.resources.container.api import (
     ManagedDockerContainerLease,
+)
+from noetrium_platform.infrastructure.resources.container.runtime import (
+    DockerContainerLeaseAuthority,
 )
 from noetrium_platform.infrastructure.reliability.effect.api import PreparedEffectHandle
 

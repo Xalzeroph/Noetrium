@@ -15,6 +15,15 @@ from noetrium_platform.infrastructure.resources.allocation.api import (
     EndpointLeaseGuardFactoryPort,
     EndpointLeaseGuardPort,
 )
+from noetrium_platform.infrastructure.resources.container.api import (
+    DEFAULT_DOCKER_CONTAINER_LEASE_POLICY,
+    DockerContainerLeaseGuardFactoryPort,
+    DockerContainerLeaseGuardPort,
+    DockerContainerLeasePolicy,
+    DockerContainerObservation,
+    DockerManagedContainerPort,
+    ManagedDockerContainerLease,
+)
 from noetrium_platform.infrastructure.resources.compute.api import (
     ComputeAllocation,
     ComputeLeaseGuardFactoryPort,
@@ -37,6 +46,13 @@ from noetrium_platform.infrastructure.resources.resolution.api import (
 
 _RESOURCE_PARENT_EXTRA_EXPORTS = (
     "ComputeAllocation",
+    "DEFAULT_DOCKER_CONTAINER_LEASE_POLICY",
+    "DockerContainerLeaseGuardFactoryPort",
+    "DockerContainerLeaseGuardPort",
+    "DockerContainerLeasePolicy",
+    "DockerContainerObservation",
+    "DockerManagedContainerPort",
+    "ManagedDockerContainerLease",
     "ComputeLeaseGuardFactoryPort",
     "ComputeLeaseGuardPort",
     "ComputePlacementUnavailable",

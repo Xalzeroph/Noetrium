@@ -4,11 +4,13 @@ from uuid import uuid4
 
 from noetrium_platform.capabilities.model.serving.api import ModelAdmissionRegistryPort
 from noetrium_platform.capabilities.model.serving.runtime import ModelAdmissionRegistry
-from noetrium_platform.composition.docker_container_leases import (
+from noetrium_platform.infrastructure.resources.container.api import (
     DEFAULT_DOCKER_CONTAINER_LEASE_POLICY,
+    DockerContainerLeasePolicy,
+)
+from noetrium_platform.infrastructure.resources.container.runtime import (
     DockerContainerLeaseAuthority,
     DockerContainerLeaseHeartbeatFactory,
-    DockerContainerLeasePolicy,
 )
 from noetrium_platform.composition.environment_instance_leases import (
     DEFAULT_ENVIRONMENT_INSTANCE_LEASE_POLICY,

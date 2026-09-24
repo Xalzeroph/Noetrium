@@ -2,14 +2,14 @@ from __future__ import annotations
 
 import pytest
 
-from noetrium_platform.capabilities.environment.providers.docker_containers import (
+from noetrium_platform.infrastructure.resources.container.api import (
+    DockerContainerLeasePolicy,
     DockerContainerObservation,
     MANAGED_CONTAINER_LABEL,
     MANAGED_CONTAINER_LABEL_VALUE,
 )
-from noetrium_platform.composition.docker_container_leases import (
+from noetrium_platform.infrastructure.resources.container.runtime import (
     DockerContainerLeaseAuthority,
-    DockerContainerLeasePolicy,
 )
 from noetrium_platform.foundation.scope.api import PLATFORM_SCOPE
 from noetrium_platform.infrastructure.resources.lease.api import (
@@ -138,7 +138,7 @@ def test_managed_docker_crash_expiry_removes_orphan_on_reconcile() -> None:
     ).state is LeaseState.EXPIRED
 
 
-def test_managed_docker_restart_before_ttl_fails_closed_without_split_brain() -> None:
+def test_managed_docker_restart_before_ttl_adopts_exact_generation_without_split_brain() -> None:
     resources = InMemoryResourceLeaseRegistry()
     runtime = FakeDockerRuntime()
     first = _authority(resources, runtime)
@@ -146,10 +146,11 @@ def test_managed_docker_restart_before_ttl_fails_closed_without_split_brain() ->
     observed = runtime.start(handle)
 
     restarted = _authority(resources, runtime)
-    with pytest.raises(RuntimeError):
-        _reserve(restarted)
+    adopted = _reserve(restarted)
 
+    assert adopted == handle
     assert runtime.inspect(observed.container_id) == observed
+    assert len(runtime.rows) == 1
     assert resources.active_for(
         ResourceIdentity(ResourceKind.CONTAINER, handle.allocation_id)
     ) == (handle.lease,)
@@ -186,3 +187,27 @@ def test_managed_docker_reconcile_removes_malformed_noetrium_container() -> None
 
     assert report.removed_container_ids == ("malformed",)
     assert runtime.rows == {}
+
+
+def test_managed_docker_stopped_live_generation_is_reaped_and_fence_advances() -> None:
+    resources = InMemoryResourceLeaseRegistry()
+    runtime = FakeDockerRuntime()
+    authority = _authority(resources, runtime)
+    first = _reserve(authority)
+    observed = runtime.start(first)
+    runtime.rows[observed.container_id] = DockerContainerObservation(
+        observed.container_id,
+        observed.name,
+        observed.image,
+        False,
+        observed.labels,
+    )
+
+    report = authority.reconcile()
+    assert report.removed_container_ids == (observed.container_id,)
+    assert report.released_lease_ids == (first.lease.lease_id,)
+    assert runtime.rows == {}
+
+    second = _reserve(authority)
+    assert second.lease.fencing_token > first.lease.fencing_token
+    assert second.container_name != first.container_name

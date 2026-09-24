@@ -40,10 +40,10 @@ from noetrium_platform.composition.resource_probes import LocalCommandResourcePr
 from noetrium_platform.composition.model_qualification import QUALIFICATION_INDEX_WORKER_PATH
 from noetrium_platform.infrastructure.lifecycle.python.api import PythonEnvironmentAuthorities
 from noetrium_platform.capabilities.environment.catalog.api import ExecutionEnvironmentCatalogPort
-from noetrium_platform.capabilities.environment.providers import (
+from noetrium_platform.infrastructure.resources.container.providers import (
     DockerCliManagedContainerProvider,
 )
-from noetrium_platform.composition.docker_container_leases import (
+from noetrium_platform.infrastructure.resources.container.runtime import (
     DockerContainerLeaseAuthority,
 )
 from noetrium_platform.foundation.scope.api import ScopeRegistryPort
