@@ -169,6 +169,11 @@ def test_runtime_rejects_program_lock_drift_after_restart_and_replay() -> None:
         drifted.open({"count": 0})
     with pytest.raises(MachineIntegrityError, match="ProgramLock"):
         drifted.replay()
+    with pytest.raises(MachineIntegrityError, match="ProgramLock"):
+        drifted.step(
+            command(0, "command-1"),
+            IncrementInterpreter(),
+        )
 
 
 def test_runtime_reconciles_outbox_and_inbox_deduplicates() -> None:
