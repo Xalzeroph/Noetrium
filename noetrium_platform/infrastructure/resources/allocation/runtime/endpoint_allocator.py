@@ -117,7 +117,7 @@ class AtomicEndpointAllocator(EndpointAllocationPort):
         preferred_ports: tuple[int, ...] = (),
         protocol: EndpointProtocol = EndpointProtocol.TCP,
         owner_scope: ScopeIdentity = PLATFORM_SCOPE,
-        ownership: ResourceOwnership = ResourceOwnership.EXTERNAL,
+        ownership: ResourceOwnership = ResourceOwnership.PLATFORM_MANAGED,
     ) -> EndpointAllocation:
         return self.allocate(
             _automatic_request(
@@ -323,7 +323,7 @@ class InMemoryEndpointAllocator(EndpointAllocationPort):
         preferred_ports: tuple[int, ...] = (),
         protocol: EndpointProtocol = EndpointProtocol.TCP,
         owner_scope: ScopeIdentity = PLATFORM_SCOPE,
-        ownership: ResourceOwnership = ResourceOwnership.EXTERNAL,
+        ownership: ResourceOwnership = ResourceOwnership.PLATFORM_MANAGED,
     ) -> EndpointAllocation:
         return self.allocate(
             _automatic_request(
