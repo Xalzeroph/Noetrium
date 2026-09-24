@@ -16,7 +16,7 @@ from noetrium_platform.infrastructure.resources.compute.api import (
 from noetrium_platform.foundation.kernel.kernel import canonical_digest
 from noetrium_platform.foundation.governance.api import ScopeIdentity, ScopeKind
 from noetrium_platform.infrastructure.resources.lease.api import (
-    LeaseState, ResourceIdentity, ResourceKind, ResourceLease, ResourceLeaseConflict,
+    LeaseClockPort, LeaseState, ResourceIdentity, ResourceKind, ResourceLease, ResourceLeaseConflict,
     ResourceLeasePort, ResourceOwner, ResourceOwnership, ResourceOwnershipPort,
 )
 from noetrium_platform.foundation.kernel.kernel.durability.sqlite import (
@@ -24,7 +24,11 @@ from noetrium_platform.foundation.kernel.kernel.durability.sqlite import (
     durable_sqlite_connection,
     rollback_sqlite_writer,
 )
-from noetrium_platform.infrastructure.resources.providers.sqlite_resource import ensure_resource_schema
+from noetrium_platform.infrastructure.resources.providers.sqlite_resource import (
+    authoritative_lease_now,
+    ensure_resource_schema,
+)
+from noetrium_platform.infrastructure.resources.lease.runtime.clock import LocalLeaseClock
 from noetrium_platform.infrastructure.resources.providers.sqlite_lease_ops import (
     acquire_resource_lease, ensure_resource_owner, reconcile_expired_resource_leases,
     release_resource_lease, renew_resource_lease,
@@ -696,12 +700,14 @@ class SQLiteComputeScheduler:
         inventory: InMemoryComputeInventory,
         *,
         timeout_seconds: float = 30.0,
+        clock: LeaseClockPort | None = None,
         gpu_runtime_observer: GpuRuntimeObserverPort | None = None,
         host_runtime_observer: HostRuntimeObserverPort | None = None,
     ) -> None:
         self.path = Path(path).absolute()
         self.path.parent.mkdir(parents=True, exist_ok=True)
         self._inventory = inventory
+        self._clock = LocalLeaseClock() if clock is None else clock
         self._gpu_runtime_observer = gpu_runtime_observer
         self._host_runtime_observer = host_runtime_observer
         self.timeout_seconds = float(timeout_seconds)
@@ -716,6 +722,16 @@ class SQLiteComputeScheduler:
             self.path,
             timeout_seconds=self.timeout_seconds,
         )
+
+    def _authority_now(
+        self,
+        conn: sqlite3.Connection,
+        explicit_now: float | None,
+    ) -> float:
+        if explicit_now is not None:
+            return _lease_now(explicit_now)
+        return authoritative_lease_now(conn, self._clock.read())
+
     def _ensure_schema(self, conn: sqlite3.Connection) -> None:
         conn.execute(
             "CREATE TABLE IF NOT EXISTS compute_scheduler_meta("
@@ -904,7 +920,6 @@ class SQLiteComputeScheduler:
     ) -> tuple[ComputeHost, ...]:
         runtime_snapshot = _observe_gpu_runtime(self._gpu_runtime_observer)
         host_runtime_snapshot = _observe_host_runtime(self._host_runtime_observer)
-        now_epoch_s = time()
         with self._connection() as conn:
             rows = self._capacity_rows(conn)
         return tuple(
@@ -950,13 +965,13 @@ class SQLiteComputeScheduler:
         ttl_seconds: float | None = None,
         now: float | None = None,
     ) -> ComputeAllocation:
-        now_epoch_s = _lease_now(now)
         request_digest = _allocation_request_digest(scope, placement_scope, requirement)
         runtime_snapshot = _observe_gpu_runtime(self._gpu_runtime_observer)
         host_runtime_snapshot = _observe_host_runtime(self._host_runtime_observer)
         with self._connection() as conn:
             begin_immediate_sqlite_transaction(conn, timeout_seconds=self.timeout_seconds)
             try:
+                now_epoch_s = self._authority_now(conn, now)
                 _converged, pending = self._cleanup_expired(
                     conn,
                     now_epoch_s,
@@ -1044,11 +1059,11 @@ class SQLiteComputeScheduler:
         allocation_ids = tuple(row.allocation_id for row in allocations)
         if len(set(allocation_ids)) != len(allocation_ids):
             raise ValueError("compute renewal requires unique allocation ids")
-        now_epoch_s = _lease_now(now)
         runtime_snapshot = _observe_gpu_runtime(self._gpu_runtime_observer)
         with self._connection() as conn:
             begin_immediate_sqlite_transaction(conn, timeout_seconds=self.timeout_seconds)
             try:
+                now_epoch_s = self._authority_now(conn, now)
                 self._cleanup_expired(
                     conn,
                     now_epoch_s,
@@ -1095,11 +1110,11 @@ class SQLiteComputeScheduler:
         *,
         now: float | None = None,
     ) -> tuple[ComputeAllocation, ...]:
-        now_epoch_s = _lease_now(now)
         runtime_snapshot = _observe_gpu_runtime(self._gpu_runtime_observer)
         with self._connection() as conn:
             begin_immediate_sqlite_transaction(conn, timeout_seconds=self.timeout_seconds)
             try:
+                now_epoch_s = self._authority_now(conn, now)
                 _converged, pending = self._cleanup_expired(
                     conn,
                     now_epoch_s,
@@ -1122,11 +1137,11 @@ class SQLiteComputeScheduler:
     def release(self, allocation: ComputeAllocation) -> None:
         if type(allocation) is not ComputeAllocation:
             raise TypeError("compute release requires ComputeAllocation")
-        now_epoch_s = time()
         runtime_snapshot = _observe_gpu_runtime(self._gpu_runtime_observer)
         with self._connection() as conn:
             begin_immediate_sqlite_transaction(conn, timeout_seconds=self.timeout_seconds)
             try:
+                now_epoch_s = self._authority_now(conn, None)
                 self._cleanup_expired(
                     conn,
                     now_epoch_s,
@@ -1171,13 +1186,13 @@ class SQLiteComputeScheduler:
 
         if type(allocation) is not ComputeAllocation:
             raise TypeError("compute recovery release requires ComputeAllocation")
-        now_epoch_s = time()
         with self._connection() as conn:
             begin_immediate_sqlite_transaction(
                 conn,
                 timeout_seconds=self.timeout_seconds,
             )
             try:
+                now_epoch_s = self._authority_now(conn, None)
                 reconcile_expired_resource_leases(
                     conn,
                     now_epoch_s=now_epoch_s,
