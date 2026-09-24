@@ -13,7 +13,6 @@ from noetrium_platform.research.experimentation.lifecycle.experiment.api import 
 from noetrium_platform.research.experimentation.lifecycle.run.api.identity import RunIdentity
 from noetrium_platform.research.experimentation.lifecycle.run.runtime.program import RunMachineSession
 
-from ..api.lifecycle_ports import RunCycleExecutorPort, RunLifetimePort
 from ..api.lifecycle import RunCleanupFailure, RunCleanupReport
 
 
@@ -25,8 +24,8 @@ class RunSession:
         *,
         spec: ExperimentSpec,
         identity: RunIdentity,
-        cycle_executor: RunCycleExecutorPort,
-        lifetime: RunLifetimePort,
+        cycle_executor: object,
+        lifetime: object,
         run_machine: RunMachineSession,
         open_operations: tuple[OperationResult[JsonValue], ...],
         initial_context: ExecutionContext,
