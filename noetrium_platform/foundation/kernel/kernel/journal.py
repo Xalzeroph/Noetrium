@@ -122,13 +122,17 @@ def _decode_child_link(value: object) -> ChildMachineLink:
     row = _require_object(value, "journal child link")
     _require_exact(row, {
         "parent_machine_id", "child_machine_id", "child_program_digest",
-        "child_snapshot_ref", "child_transition_start", "child_transition_end",
+        "child_program_lock_digest", "child_snapshot_ref", "child_transition_start", "child_transition_end",
         "child_result_ref", "failure_policy", "link_digest",
     }, "journal child link")
     link = ChildMachineLink(
         parent_machine_id=_require_text(row["parent_machine_id"], "parent_machine_id"),
         child_machine_id=_require_text(row["child_machine_id"], "child_machine_id"),
         child_program_digest=_require_text(row["child_program_digest"], "child_program_digest"),
+        child_program_lock_digest=_require_text(
+            row["child_program_lock_digest"],
+            "child_program_lock_digest",
+        ),
         child_snapshot_ref=_require_text(row["child_snapshot_ref"], "child_snapshot_ref"),
         child_transition_start=_require_int(row["child_transition_start"], "child_transition_start"),
         child_transition_end=_require_int(row["child_transition_end"], "child_transition_end"),
