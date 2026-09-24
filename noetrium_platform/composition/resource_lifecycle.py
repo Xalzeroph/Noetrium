@@ -87,10 +87,11 @@ class ManagedResourceReconciler:
                 "managed resource reconciliation time must be finite and positive"
             )
 
-        containers = self._containers.reconcile(now=now_epoch_s)
-        environments = self._environments.reconcile(now=now_epoch_s)
-        endpoints = self._endpoints.reconcile(now=now_epoch_s)
-        compute = self._compute.reconcile_expired(now=now_epoch_s)
+        lease_now = None if now is None else now_epoch_s
+        containers = self._containers.reconcile(now=lease_now)
+        environments = self._environments.reconcile(now=lease_now)
+        endpoints = self._endpoints.reconcile(now=lease_now)
+        compute = self._compute.reconcile_expired(now=lease_now)
 
         return ManagedResourceReconciliation(
             observed_at_epoch_s=now_epoch_s,
@@ -122,8 +123,10 @@ class ManagedResourceReconciler:
                 "managed resource shutdown time must be finite and positive"
             )
 
+        lease_now = None if now is None else now_epoch_s
+
         try:
-            containers = self._containers.shutdown_cleanup(now=now_epoch_s)
+            containers = self._containers.shutdown_cleanup(now=lease_now)
         except BaseException as exc:
             raise ExceptionGroup(
                 "managed resource shutdown failed during container cleanup",
@@ -131,7 +134,7 @@ class ManagedResourceReconciler:
             ) from exc
 
         try:
-            environments = self._environments.shutdown_cleanup(now=now_epoch_s)
+            environments = self._environments.shutdown_cleanup(now=lease_now)
         except BaseException as exc:
             raise ExceptionGroup(
                 "managed resource shutdown failed during environment cleanup",
@@ -139,7 +142,7 @@ class ManagedResourceReconciler:
             ) from exc
 
         try:
-            reconciled_endpoints = self._endpoints.reconcile(now=now_epoch_s)
+            reconciled_endpoints = self._endpoints.reconcile(now=lease_now)
             released_endpoints: list[EndpointAllocation] = list(
                 reconciled_endpoints
             )
