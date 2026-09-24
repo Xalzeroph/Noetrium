@@ -71,6 +71,18 @@ class ArtifactBlobGeneration:
 
 
 @runtime_checkable
+class ArtifactBlobFencePort(Protocol):
+    ref: ArtifactBlobRef
+    generation: ArtifactBlobGeneration
+
+    def purge(
+        self,
+        *,
+        gc_proof_digest: str,
+    ) -> ArtifactBlobGeneration: ...
+
+
+@runtime_checkable
 class ArtifactBlobLifecyclePort(Protocol):
     """Physical generation/fencing authority for a content-addressed blob."""
 
@@ -80,6 +92,11 @@ class ArtifactBlobLifecyclePort(Protocol):
         *,
         media_type: str,
     ) -> ContextManager[ArtifactBlobRef]: ...
+
+    def fence(
+        self,
+        ref: ArtifactBlobRef,
+    ) -> ContextManager[ArtifactBlobFencePort]: ...
 
     def generation(
         self,
@@ -122,6 +139,7 @@ class ArtifactBlobStorePort(Protocol):
 
 
 __all__ = [
+    "ArtifactBlobFencePort",
     "ArtifactBlobGeneration",
     "ArtifactBlobLifecyclePort",
     "ArtifactBlobLifecycleState",
