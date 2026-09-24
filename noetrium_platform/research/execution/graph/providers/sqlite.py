@@ -2086,6 +2086,31 @@ class SQLiteResearchGraphExecutionStore:
             ).fetchone()
         return None if row is None else self._decode_reuse(row)
 
+    def attempt_state(
+        self,
+        execution_id: str,
+        node_id: str,
+        attempt_number: int,
+    ) -> ResearchGraphAttemptRecord:
+        if type(attempt_number) is not int or attempt_number < 1:
+            raise ValueError("research graph attempt_number must be positive")
+        with self._connection() as conn:
+            self._node_tx(conn, execution_id, node_id)
+            row = conn.execute(
+                "SELECT execution_id,node_id,attempt_number,attempt_id,owner_id,"
+                "state,claimed_at_ns,lease_expires_at_ns,started_at_ns,"
+                "finished_at_ns,failure_type,failure_message "
+                "FROM research_graph_attempts "
+                "WHERE execution_id=? AND node_id=? AND attempt_number=?",
+                (execution_id, node_id, attempt_number),
+            ).fetchone()
+        if row is None:
+            raise ResearchGraphExecutionNotFound(
+                f"research graph attempt not found: "
+                f"{execution_id}:{node_id}:{attempt_number}"
+            )
+        return self._decode_attempt(row)
+
     def attempts(
         self,
         execution_id: str,
