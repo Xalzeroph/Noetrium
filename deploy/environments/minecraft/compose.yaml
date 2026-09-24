@@ -13,7 +13,7 @@ services:
       MC_DATA_DIR: /var/lib/minecraft
     volumes:
       - type: bind
-        source: ${PLATFORM_HOST_DATA_ROOT:-./.runtime}/minecraft
+        source: ${PLATFORM_ENVIRONMENT_INSTANCE_ROOT:-./.runtime/instances/unscoped}/minecraft
         target: /var/lib/minecraft
     healthcheck:
       test: ["CMD", "/usr/local/bin/noetrium-entrypoint", "environment-doctor", "minecraft"]
