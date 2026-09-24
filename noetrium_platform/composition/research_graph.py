@@ -561,7 +561,7 @@ class ResearchGraphScheduler:
                     description.safe_message.strip()
                     or type(failure).__name__
                 )
-                current = store.snapshot(execution_id).node(node_id)
+                current = store.node_state(execution_id, node_id)
                 live[node_id] = current
                 if (
                     current.state is ResearchGraphLiveNodeState.RUNNING
@@ -694,7 +694,7 @@ class ResearchGraphScheduler:
                             execution_id, node_id
                         )
                         if node_control.phase is ResearchGraphNodeControlPhase.CANCELLED:
-                            current = store.snapshot(execution_id).node(node_id)
+                            current = store.node_state(execution_id, node_id)
                             if current.state is not ResearchGraphLiveNodeState.CANCELLED:
                                 raise ResearchGraphExecutionConflict(
                                     "cancelled node control disagrees with execution state"
@@ -751,8 +751,7 @@ class ResearchGraphScheduler:
                                 lease_expires_at_ns=now_ns + self._lease_ns,
                             )
                         except ResearchGraphExecutionConflict:
-                            current_snapshot = store.snapshot(execution_id)
-                            live[node_id] = current_snapshot.node(node_id)
+                            live[node_id] = store.node_state(execution_id, node_id)
                             raise
                         live[node_id] = claim
                         attempt_id = claim.attempt_id
@@ -788,7 +787,7 @@ class ResearchGraphScheduler:
                     node, handle, attempt_id, next_renewal = running[node_id]
                     if handle.done() or now_ns < next_renewal:
                         continue
-                    current = store.snapshot(execution_id).node(node_id)
+                    current = store.node_state(execution_id, node_id)
                     node_control = node_control_store.node_control_state(
                         execution_id, node_id
                     )
