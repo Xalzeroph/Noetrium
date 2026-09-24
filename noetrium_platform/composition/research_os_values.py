@@ -122,6 +122,16 @@ class ResearchOSValueAuthorityPort(Protocol):
 
 
 @runtime_checkable
+class ResearchOSValueExecutionReleasePort(Protocol):
+    """Optional lower-authority release of one terminal execution reference."""
+
+    def release_execution(
+        self,
+        subject: ResearchOSValueSubject,
+    ) -> str: ...
+
+
+@runtime_checkable
 class ResearchOSValueReusePort(Protocol):
     """Optional lower-authority capability for immutable cross-cut value reuse."""
 
@@ -251,6 +261,26 @@ class ResearchOSValueRouter:
         if reference.subject.kind not in authority.supported_kinds:
             raise ValueError("research value reference kind/authority drifted")
         return freeze_json(authority.resolve(reference))
+
+    def release_execution(
+        self,
+        subject: ResearchOSValueSubject,
+    ) -> str | None:
+        """Release this execution's retention reason without deleting content.
+
+        Authorities without explicit release semantics are left untouched.  The
+        caller therefore cannot mistake router-level release for physical GC.
+        """
+
+        if type(subject) is not ResearchOSValueSubject:
+            raise TypeError("research value execution release subject must be typed")
+        authority = self.authority(subject.kind)
+        if not isinstance(authority, ResearchOSValueExecutionReleasePort):
+            return None
+        return require_sha256(
+            authority.release_execution(subject),
+            "research value execution release proof",
+        )
 
     def reuse(
         self,
@@ -515,6 +545,7 @@ __all__ = [
     "ResearchOSValueAuthorityMissing",
     "ResearchOSValueAuthorityPort",
     "ResearchOSValueReference",
+    "ResearchOSValueExecutionReleasePort",
     "ResearchOSValueReusePort",
     "ResearchOSValueRouter",
     "ResearchOSValueSubject",
