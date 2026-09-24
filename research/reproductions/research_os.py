@@ -165,6 +165,7 @@ class ReproductionExecutionRequest:
     study_factory: str
     benchmark: BenchmarkTaskSet
     benchmark_split_ids: tuple[str, ...]
+    benchmark_resolution_proof_digest: str
 
     def __post_init__(self) -> None:
         if type(self.package) is not str or not self.package.strip():
@@ -193,6 +194,18 @@ class ReproductionExecutionRequest:
                 "reproduction execution request benchmark_split_ids must be "
                 "unique canonical text in sorted order"
             )
+        if (
+            type(self.benchmark_resolution_proof_digest) is not str
+            or len(self.benchmark_resolution_proof_digest) != 64
+            or any(
+                ch not in "0123456789abcdef"
+                for ch in self.benchmark_resolution_proof_digest
+            )
+        ):
+            raise ValueError(
+                "reproduction execution request benchmark resolution proof "
+                "must be lowercase SHA-256"
+            )
         declared_split_ids = {row.split_id for row in self.benchmark.splits}
         unknown_split_ids = tuple(
             split_id
@@ -214,6 +227,9 @@ class ReproductionExecutionRequest:
             "benchmark_revision_id": self.benchmark.revision_id,
             "benchmark_cut_digest": self.benchmark.cut_digest,
             "benchmark_split_ids": self.benchmark_split_ids,
+            "benchmark_resolution_proof_digest": (
+                self.benchmark_resolution_proof_digest
+            ),
         })
 
 
@@ -1134,9 +1150,19 @@ def expand_resolved_reproduction_benchmark_lanes(
     study_factory: str,
     benchmark: BenchmarkTaskSet,
     benchmark_split_ids: tuple[str, ...],
+    benchmark_resolution_proof_digest: str,
     capability_resolver: ReproductionCapabilityRequirementResolverPort | None = None,
 ) -> tuple[ReproductionExecutionBinding, ...]:
     """One-call closure + benchmark expansion for an executable paper Study."""
+
+    if (
+        type(benchmark_resolution_proof_digest) is not str
+        or len(benchmark_resolution_proof_digest) != 64
+        or any(ch not in "0123456789abcdef" for ch in benchmark_resolution_proof_digest)
+    ):
+        raise ValueError(
+            "benchmark resolution proof digest must be lowercase SHA-256"
+        )
 
     bindings: list[ReproductionExecutionBinding] = []
     for resolution in resolve_reproduction_execution_variants(
@@ -1151,7 +1177,10 @@ def expand_resolved_reproduction_benchmark_lanes(
                 benchmark=benchmark,
                 benchmark_split_ids=benchmark_split_ids,
                 values=resolution.values,
-                resolution_proof_digests=resolution.proof_digests,
+                resolution_proof_digests=tuple(sorted({
+                    *resolution.proof_digests,
+                    benchmark_resolution_proof_digest,
+                })),
             )
         )
     ordered = tuple(
@@ -1948,6 +1977,9 @@ def compile_resolved_reproduction_portfolio(
                 study_factory=request.study_factory,
                 benchmark=request.benchmark,
                 benchmark_split_ids=request.benchmark_split_ids,
+                benchmark_resolution_proof_digest=(
+                    request.benchmark_resolution_proof_digest
+                ),
                 capability_resolver=capability_resolver,
             )
         )
