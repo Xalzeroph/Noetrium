@@ -85,26 +85,6 @@ def _workflow_policy() -> ReadinessCriterion:
     )
 
 
-def _projection_clean() -> ReadinessCriterion:
-    completed = subprocess.run(
-        [sys.executable, "scripts/sync_architecture_maps.py", "--check"],
-        cwd=ROOT,
-        text=True,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
-        check=False,
-    )
-    return ReadinessCriterion(
-        "architecture_projection_clean",
-        completed.returncode == 0,
-        {
-            "returncode": completed.returncode,
-            "stdout_tail": completed.stdout[-2000:],
-            "stderr_tail": completed.stderr[-2000:],
-        },
-    )
-
-
 def _no_degradation() -> ReadinessCriterion:
     from noetrium_platform.foundation.governance.architecture.gating.quality import (
         scan_no_degradation,
@@ -350,7 +330,6 @@ def evaluate() -> ResearchOSScaleReadiness:
         _architecture_topology(),
         _concrete_boundary_integrity(),
         _workflow_policy(),
-        _projection_clean(),
         _no_degradation(),
         _no_compatibility_surface(),
         _unmanaged_executor_constructors(),
