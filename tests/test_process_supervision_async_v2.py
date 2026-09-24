@@ -602,3 +602,77 @@ def test_parent_bound_guardian_reaps_tree_after_owner_sigkill(tmp_path) -> None:
         if owner.poll() is None:
             owner.kill()
             owner.wait(timeout=2.0)
+
+
+
+@pytest.mark.skipif(__import__("os").name != "posix", reason="POSIX process-group proof")
+def test_interactive_guardian_survives_root_exit_until_descendant_kill(tmp_path) -> None:
+    import os
+    import sys
+    from pathlib import Path
+
+    runtime = _runtime()
+    group = runtime.open_task_group(
+        "interactive-root-exit-tree",
+        failure_policy=TaskFailurePolicy.COLLECT_ALL,
+    )
+    supervisor = build_process_supervisor(
+        group,
+        policy=ProcessTerminationPolicy(
+            poll_interval_seconds=0.005,
+            graceful_timeout_seconds=0.08,
+            kill_timeout_seconds=0.8,
+        ),
+    )
+    pid_file = Path(tmp_path) / "root-exit-tree.pids"
+    grandchild_code = (
+        "import signal,time; "
+        "signal.signal(signal.SIGTERM, signal.SIG_IGN); "
+        "time.sleep(30)"
+    )
+    # The root intentionally keeps Python's default SIGTERM behavior while its
+    # descendant ignores TERM. This is the window where the old guardian exited
+    # with the root and abandoned the surviving process group before escalation.
+    target_code = (
+        "import os,pathlib,subprocess,sys,time; "
+        f"p=subprocess.Popen([sys.executable,'-c',{grandchild_code!r}]); "
+        f"pathlib.Path({str(pid_file)!r}).write_text(str(os.getpid())+','+str(p.pid)); "
+        "time.sleep(30)"
+    )
+    process = supervisor.spawn_interactive(
+        (sys.executable, "-c", target_code),
+        cwd=str(tmp_path),
+        environment=dict(os.environ),
+        start_new_session=True,
+    )
+    try:
+        deadline = time.monotonic() + 3.0
+        while not pid_file.exists() and time.monotonic() < deadline:
+            time.sleep(0.01)
+        assert pid_file.exists()
+        target_pid, grandchild_pid = map(int, pid_file.read_text().split(","))
+
+        receipt = supervisor.terminate(
+            "interactive-root-exit-tree",
+            process,
+            deadline=Deadline.after(2.0),
+        ).result(3)
+        assert receipt.escalated_to_kill
+
+        deadline = time.monotonic() + 3.0
+        while time.monotonic() < deadline:
+            if all(
+                _pid_absent_or_zombie(pid)
+                for pid in (target_pid, grandchild_pid)
+            ):
+                break
+            time.sleep(0.02)
+        else:
+            raise AssertionError(
+                "descendant survived after root exited during graceful termination"
+            )
+    finally:
+        if process.poll() is None:
+            process.kill()
+        group.close(cancel_pending=True)
+        runtime.close()
