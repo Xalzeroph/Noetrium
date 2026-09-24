@@ -91,6 +91,33 @@ class DirectoryArtifactBlobStore(ArtifactBlobStorePort):
                 atomic_replace_bytes(path, payload)
         return ref
 
+    def resolve(
+        self,
+        content_sha256: str,
+        *,
+        media_type: str,
+    ) -> ArtifactBlobRef:
+        if (
+            type(content_sha256) is not str
+            or len(content_sha256) != 64
+            or any(ch not in "0123456789abcdef" for ch in content_sha256)
+        ):
+            raise ValueError(
+                "artifact blob resolver content_sha256 must be lowercase SHA-256"
+            )
+        if type(media_type) is not str or not media_type.strip():
+            raise ValueError(
+                "artifact blob resolver media_type must be non-empty"
+            )
+        path = self._path(content_sha256)
+        try:
+            size_bytes = path.stat().st_size
+        except OSError as exc:
+            raise ArtifactBlobStoreError("artifact blob is missing") from exc
+        ref = ArtifactBlobRef(content_sha256, size_bytes, media_type)
+        self.get(ref)
+        return ref
+
     def get(self, ref: ArtifactBlobRef) -> bytes:
         if type(ref) is not ArtifactBlobRef:
             raise TypeError("artifact blob ref must be ArtifactBlobRef")
