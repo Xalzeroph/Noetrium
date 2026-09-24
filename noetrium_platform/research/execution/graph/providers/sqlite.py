@@ -1767,6 +1767,125 @@ class SQLiteResearchGraphExecutionStore:
             self._bump_generation(conn, execution_id)
             return self._node_tx(conn, execution_id, node_id)
 
+    def recover_expired_attempt(
+        self,
+        execution_id: str,
+        node_id: str,
+        *,
+        attempt_id: str,
+        owner_id: str,
+        now_ns: int,
+    ) -> ResearchGraphNodeExecutionRecord:
+        """Recover one exact expired claim/run without touching peer nodes."""
+
+        now_ns = self._require_now(now_ns)
+        with self._transaction() as conn:
+            current = self._node_tx(conn, execution_id, node_id)
+            if (
+                current.state
+                not in {
+                    ResearchGraphLiveNodeState.CLAIMED,
+                    ResearchGraphLiveNodeState.RUNNING,
+                }
+                or current.attempt_id != attempt_id
+                or current.lease_owner_id != owner_id
+            ):
+                raise ResearchGraphExecutionConflict(
+                    "research graph expired-attempt recovery lost exact authority"
+                )
+            if (
+                current.lease_expires_at_ns is None
+                or current.lease_expires_at_ns > now_ns
+            ):
+                raise ResearchGraphExecutionConflict(
+                    "research graph attempt lease has not expired"
+                )
+
+            if current.state is ResearchGraphLiveNodeState.CLAIMED:
+                node_state = ResearchGraphLiveNodeState.READY
+                attempt_state = ResearchGraphAttemptState.EXPIRED_BEFORE_START
+                conn.execute(
+                    "UPDATE research_graph_nodes SET state=?,attempt_id=NULL,"
+                    "lease_owner_id=NULL,lease_expires_at_ns=NULL "
+                    "WHERE execution_id=? AND node_id=? AND state=? "
+                    "AND attempt_id=? AND lease_owner_id=?",
+                    (
+                        node_state.value,
+                        execution_id,
+                        node_id,
+                        ResearchGraphLiveNodeState.CLAIMED.value,
+                        attempt_id,
+                        owner_id,
+                    ),
+                )
+                history = conn.execute(
+                    "UPDATE research_graph_attempts SET state=?,finished_at_ns=? "
+                    "WHERE attempt_id=? AND owner_id=? AND state=?",
+                    (
+                        attempt_state.value,
+                        now_ns,
+                        attempt_id,
+                        owner_id,
+                        ResearchGraphAttemptState.CLAIMED.value,
+                    ),
+                )
+                if history.rowcount != 1:
+                    raise ResearchGraphExecutionConflict(
+                        "research graph expired claim history lost exact attempt"
+                    )
+            else:
+                node_state = ResearchGraphLiveNodeState.RECONCILE_REQUIRED
+                updated = conn.execute(
+                    "UPDATE research_graph_nodes SET state=?,"
+                    "lease_owner_id=NULL,lease_expires_at_ns=NULL "
+                    "WHERE execution_id=? AND node_id=? AND state=? "
+                    "AND attempt_id=? AND lease_owner_id=?",
+                    (
+                        node_state.value,
+                        execution_id,
+                        node_id,
+                        ResearchGraphLiveNodeState.RUNNING.value,
+                        attempt_id,
+                        owner_id,
+                    ),
+                )
+                if updated.rowcount != 1:
+                    raise ResearchGraphExecutionConflict(
+                        "research graph expired run recovery lost exact attempt"
+                    )
+                history = conn.execute(
+                    "UPDATE research_graph_attempts SET state=? "
+                    "WHERE attempt_id=? AND owner_id=? AND state=?",
+                    (
+                        ResearchGraphAttemptState.RECONCILE_REQUIRED.value,
+                        attempt_id,
+                        owner_id,
+                        ResearchGraphAttemptState.RUNNING.value,
+                    ),
+                )
+                if history.rowcount != 1:
+                    raise ResearchGraphExecutionConflict(
+                        "research graph expired run history lost exact attempt"
+                    )
+                node_control = self._node_control_tx(
+                    conn, execution_id, node_id
+                )
+                if (
+                    node_control.phase
+                    is not ResearchGraphNodeControlPhase.RECOVERY_REQUIRED
+                ):
+                    self._write_node_control_phase_tx(
+                        conn,
+                        execution_id,
+                        node_id,
+                        expected_generation=node_control.generation,
+                        phase=ResearchGraphNodeControlPhase.RECOVERY_REQUIRED,
+                        now_ns=now_ns,
+                    )
+
+            self._bump_generation(conn, execution_id)
+            return self._node_tx(conn, execution_id, node_id)
+
     def renew_leases(
         self,
         execution_id: str,
