@@ -11,6 +11,11 @@ from .contracts import (
     SensorModality,
     SensorSpec,
 )
+from .simulator import (
+    EmbodiedSimulatorBackendPort,
+    SimulatorObservation,
+    SimulatorStep,
+)
 from .ports import (
     EmbodiedCapabilityPort,
     EmbodiedCheckpointPort,
@@ -36,4 +41,7 @@ __all__ = [
     "EpisodeSpec",
     "SensorModality",
     "SensorSpec",
+    "EmbodiedSimulatorBackendPort",
+    "SimulatorObservation",
+    "SimulatorStep",
 ]
