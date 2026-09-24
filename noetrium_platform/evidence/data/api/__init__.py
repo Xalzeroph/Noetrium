@@ -1,3 +1,4 @@
+from noetrium_platform.evidence.data.projection.api import SemanticProjectionSnapshot
 from noetrium_platform.evidence.data.query.api import (
     ResearchDimension,
     ResearchDimensionKind,
@@ -8,6 +9,8 @@ from noetrium_platform.evidence.data.query.api import (
     ResearchResultReference,
     ResearchSourceDisposition,
     ResearchSourceSnapshot,
+    SemanticSimilarityQuery,
+    SemanticSimilarityQueryPort,
 )
 from noetrium_platform.evidence.data.query.api import source_cut
 
@@ -21,5 +24,8 @@ __all__ = [
     "ResearchResultReference",
     "ResearchSourceDisposition",
     "ResearchSourceSnapshot",
+    "SemanticProjectionSnapshot",
+    "SemanticSimilarityQuery",
+    "SemanticSimilarityQueryPort",
     "source_cut",
 ]
