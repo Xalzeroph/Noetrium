@@ -9,6 +9,7 @@ from .contracts import (
     EnvironmentBinding,
     EnvironmentCleanlinessProof,
     EnvironmentInstance,
+    EnvironmentInstanceAcquisition,
     EnvironmentOverlay,
     EnvironmentProfileGcAssessment,
     EnvironmentProfileReferenceSummary,
@@ -26,6 +27,15 @@ class ExecutionEnvironmentCatalogPort(Protocol):
     def resolve(self, name: str, scope: ScopeIdentity) -> ResolvedEnvironmentSpec: ...
     def register_instance(self, instance: EnvironmentInstance) -> None: ...
     def bind(self, binding: EnvironmentBinding) -> None: ...
+    def acquire_reusable_instance(
+        self,
+        profile_id: str,
+        profile_revision: str,
+        *,
+        binding_id: str,
+        role: str,
+        scope: ScopeIdentity,
+    ) -> EnvironmentInstanceAcquisition: ...
     def unbind(self, role: str, scope: ScopeIdentity) -> EnvironmentBinding: ...
     def binding(self, role: str, scope: ScopeIdentity) -> EnvironmentBinding: ...
     def release_instance(
