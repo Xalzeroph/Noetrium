@@ -274,6 +274,9 @@ class MinecraftBranchRuntimeBinding(MinecraftBranchRuntimePort):
         self._endpoint_allocations = endpoint_allocations
         self._lease_guard = lease_guard
         self._session: EnvironmentSession | None = None
+        self._session_closed = False
+        self._server_stopped = False
+        self._lease_guard_closed = False
         self._closed = False
         self._released_allocation_ids: set[str] = set()
 
@@ -315,25 +318,14 @@ class MinecraftBranchRuntimeBinding(MinecraftBranchRuntimePort):
             self._lease_guard.assert_healthy()
             return self._session
         except BaseException as exc:
-            cleanup_errors: list[BaseException] = []
             try:
-                self._server.stop()
+                self.close()
             except BaseException as cleanup_exc:
-                cleanup_errors.append(cleanup_exc)
-            try:
-                self._lease_guard.close()
-            except BaseException as cleanup_exc:
-                cleanup_errors.append(cleanup_exc)
-            try:
-                self._release_allocations()
-            except BaseException as cleanup_exc:
-                cleanup_errors.append(cleanup_exc)
-            if cleanup_errors:
                 raise MinecraftBranchRuntimeError(
                     "branch runtime start failed and cleanup failed",
                     phase="start",
                     cause=exc,
-                    cleanup_errors=tuple(cleanup_errors),
+                    cleanup_errors=(cleanup_exc,),
                 ) from exc
             raise MinecraftBranchRuntimeError(
                 "branch runtime start failed",
@@ -344,31 +336,65 @@ class MinecraftBranchRuntimeBinding(MinecraftBranchRuntimePort):
     def close(self) -> None:
         if self._closed:
             return
+
         errors: list[BaseException] = []
-        if self._session is not None:
+        if self._session is not None and not self._session_closed:
             try:
                 self._session.close()
             except BaseException as exc:
                 errors.append(exc)
-        try:
-            self._server.stop()
-        except BaseException as exc:
-            errors.append(exc)
-        try:
-            self._lease_guard.close()
-        except BaseException as exc:
-            errors.append(exc)
+            else:
+                self._session_closed = True
+
+        if not self._server_stopped:
+            try:
+                self._server.stop()
+            except BaseException as exc:
+                errors.append(exc)
+                raise MinecraftBranchRuntimeError(
+                    f"branch runtime close failed ({len(errors)} cleanup errors)",
+                    phase="close",
+                    cleanup_errors=tuple(errors),
+                ) from exc
+            else:
+                self._server_stopped = True
+
+        if not self._lease_guard_closed:
+            try:
+                self._lease_guard.close()
+            except BaseException as exc:
+                errors.append(exc)
+                raise MinecraftBranchRuntimeError(
+                    f"branch runtime close failed ({len(errors)} cleanup errors)",
+                    phase="close",
+                    cleanup_errors=tuple(errors),
+                ) from exc
+            else:
+                self._lease_guard_closed = True
+
         try:
             self._release_allocations()
         except BaseException as exc:
             errors.append(exc)
+
         if errors:
             raise MinecraftBranchRuntimeError(
                 f"branch runtime close failed ({len(errors)} cleanup errors)",
                 phase="close",
                 cleanup_errors=tuple(errors),
             ) from errors[0]
-        self._closed = True
+        self._closed = (
+            (self._session is None or self._session_closed)
+            and self._server_stopped
+            and self._lease_guard_closed
+            and len(self._released_allocation_ids)
+            == len(tuple(row for row in (self.rcon_allocation, self.allocation) if row is not None))
+        )
+        if not self._closed:
+            raise MinecraftBranchRuntimeError(
+                "branch runtime close did not converge",
+                phase="close",
+            )
 
     def _release_allocations(self) -> None:
         errors: list[BaseException] = []
