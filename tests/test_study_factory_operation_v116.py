@@ -13,7 +13,7 @@ from tests._concurrency_support import OwnedForensicStore as ForensicStore
 from noetrium_platform.composition.operation_forensics import OperationForensicFailureSink
 from noetrium_platform.composition.context_action import context_action_failure_classifier_chain
 from noetrium_platform.foundation.kernel.kernel import OperationExecutor, OperationFailure
-from noetrium_platform.research.experimentation.lifecycle.experiment.runtime import ExperimentRuntime
+from tests_support import ExperimentRuntimeForTest as ExperimentRuntime
 from noetrium_platform.research.experimentation.lifecycle.api import ExperimentSpec
 
 
