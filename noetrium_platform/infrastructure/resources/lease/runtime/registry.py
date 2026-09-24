@@ -163,14 +163,26 @@ class InMemoryResourceLeaseRegistry:
             heapq.heappush(self._expiry_heap, (renewed.expires_at_epoch_s, renewed.fencing_token, lease_id))
             return renewed
 
-    def release(self, lease_id: str, *, now: float | None = None) -> ResourceLease:
+    def release(
+        self,
+        lease_id: str,
+        *,
+        fencing_token: int,
+        now: float | None = None,
+    ) -> ResourceLease:
         now_epoch_s = time() if now is None else float(now)
         if not math.isfinite(now_epoch_s):
             raise ValueError("lease observation time must be finite")
+        if type(fencing_token) is not int or fencing_token < 1:
+            raise ValueError("lease release fencing_token must be a positive integer")
         with self._lock:
             current = self._expire_lease_if_needed(lease_id, now_epoch_s)
             if current is None:
                 raise KeyError(lease_id)
+            if current.fencing_token != fencing_token:
+                raise ResourceLeaseConflict(f"stale lease fencing token: {lease_id}")
+            if current.state is LeaseState.EXPIRED:
+                raise ResourceLeaseExpired(lease_id)
             if current.state is LeaseState.RELEASED:
                 return current
             released = replace(
