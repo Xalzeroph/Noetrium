@@ -1,7 +1,8 @@
 from __future__ import annotations
 
+from noetrium_platform.foundation.kernel.kernel.durability import sha256_bytes
+
 from dataclasses import asdict, dataclass
-import hashlib
 import json
 from .contracts import RecoveryAction, RiskLevel
 
@@ -31,7 +32,7 @@ class FailureSpec:
             sort_keys=True,
             separators=(",", ":"),
         ).encode("utf-8")
-        return hashlib.sha256(raw).hexdigest()
+        return sha256_bytes(raw)
 
 
 class FailureCatalog:
