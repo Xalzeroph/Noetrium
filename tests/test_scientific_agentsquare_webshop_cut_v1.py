@@ -47,7 +47,7 @@ def test_agentsquare_webshop_cut_rejects_lats_sized_subset() -> None:
 
 
 def test_agentsquare_webshop_record_rejects_out_of_range_session() -> None:
-    with pytest.raises(ValueError, match="\[0, 500\)"):
+    with pytest.raises(ValueError, match=r"\[0, 500\)"):
         AgentSquareWebShopTaskRecord(
             index=500,
             content_digest="a" * 64,
