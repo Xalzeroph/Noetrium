@@ -59,6 +59,13 @@ class ProjectCreateReceipt:
 
 
 @dataclass(frozen=True, slots=True)
+class ProjectSyncReceipt:
+    project_root: str
+    research_blueprint_digest: str
+    regenerated_files: tuple[str, ...]
+
+
+@dataclass(frozen=True, slots=True)
 class ProjectDoctorCheck:
     check_id: str
     disposition: ProjectDoctorDisposition
@@ -113,6 +120,7 @@ class ProjectTestReceipt:
 
 class ProjectExperiencePort(Protocol):
     def create(self, request: ProjectCreateRequest) -> ProjectCreateReceipt: ...
+    def sync(self, project_root: Path) -> ProjectSyncReceipt: ...
     def doctor(self, project_root: Path) -> ProjectDoctorReport: ...
     def test(self, project_root: Path) -> ProjectTestReceipt: ...
 
@@ -121,7 +129,7 @@ class ProjectFacade:
     """Topology-hiding Python facade over the unified project experience."""
 
     def __init__(self, experience: ProjectExperiencePort) -> None:
-        for name in ("create", "doctor", "test"):
+        for name in ("create", "sync", "doctor", "test"):
             if not callable(getattr(experience, name, None)):
                 raise TypeError(f"project experience must implement {name}()")
         self._experience = experience
@@ -136,6 +144,9 @@ class ProjectFacade:
         return self._experience.create(
             ProjectCreateRequest(project_id, version, destination, blueprint)
         )
+
+    def sync(self, project_root: Path) -> ProjectSyncReceipt:
+        return self._experience.sync(project_root)
 
     def doctor(self, project_root: Path) -> ProjectDoctorReport:
         return self._experience.doctor(project_root)
@@ -153,6 +164,7 @@ __all__ = [
     "ProjectDoctorReport",
     "ProjectExperiencePort",
     "ProjectFacade",
+    "ProjectSyncReceipt",
     "ProjectTestReceipt",
     "ProjectTestStage",
     "ProjectTestStageReceipt",
