@@ -75,13 +75,6 @@ REPRODUCTION = ReproductionDefinition(
     ),
     method_program_factory=ReproductionMethodProgramFactoryBinding(
         qualname="build_toolformer_method_program",
-        args=((
-            "tool.question-answering",
-            "tool.wikipedia-search",
-            "tool.calculator",
-            "tool.calendar",
-            "tool.machine-translation",
-        ),),
         kwargs={"tools_enabled": True},
     ),
     reported_results=(
