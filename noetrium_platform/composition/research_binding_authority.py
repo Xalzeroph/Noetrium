@@ -135,6 +135,16 @@ class ResearchModelRoleBindingResolverPort(Protocol):
     ) -> tuple[BindingResolution[ProjectModelBinding], ...]: ...
 
 
+@runtime_checkable
+class ResearchBindingAuthorityPort(Protocol):
+    """Single platform seam that closes one Study into exact Research bindings."""
+
+    def resolve(
+        self,
+        definition: ResearchStudyDefinition,
+    ) -> tuple[ResearchRequirementResolution, ResearchBindingContribution]: ...
+
+
 class ResearchBindingAuthorityError(RuntimeError):
     """An owner resolver could not provide a proof-backed binding."""
 
@@ -392,6 +402,7 @@ class ResearchBindingAuthority:
 
 __all__ = [
     "ResearchBindingAuthority",
+    "ResearchBindingAuthorityPort",
     "ResearchBindingAuthorityError",
     "ResearchBindingResolutionContext",
     "ResearchCapabilityBindingResolverPort",
