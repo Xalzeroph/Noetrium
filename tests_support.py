@@ -517,9 +517,6 @@ def agent_turn_runtime(agents, **kwargs):
     from noetrium_platform.composition.agent_turn import (
         agent_turn_participant_adapters,
     )
-    from noetrium_platform.composition.experiment_runtime import (
-        build_experiment_runtime,
-    )
     from noetrium_platform.composition.workflows.agent_turn import (
         AgentTurnSurfaceFactory,
         agent_turn_trial_protocol,
