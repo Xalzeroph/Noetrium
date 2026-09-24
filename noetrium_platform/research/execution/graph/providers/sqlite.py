@@ -10,12 +10,14 @@ from noetrium_platform.foundation.kernel.kernel import require_sha256
 from noetrium_platform.foundation.kernel.kernel.durability.sqlite import (
     durable_sqlite_connection,
     immediate_sqlite_transaction,
+    sqlite_read_snapshot,
 )
 _SQLITE_INT64_MAX = (1 << 63) - 1
 
 
 from noetrium_platform.research.execution.graph.api import (
     ResearchGraphActiveCutRef,
+    ResearchGraphActiveExecutionSnapshot,
     ResearchGraphAttemptRecord,
     ResearchGraphAttemptState,
     ResearchGraphControlPhase,
@@ -384,6 +386,19 @@ class SQLiteResearchGraphExecutionStore:
             graph_digest=str(row[3]),
             generation=int(row[4]),
         )
+
+    def _active_cut_tx(
+        self,
+        conn: sqlite3.Connection,
+        logical_execution_id: str,
+    ) -> ResearchGraphActiveCutRef | None:
+        row = conn.execute(
+            "SELECT logical_execution_id,cut_id,research_revision_digest,"
+            "graph_digest,generation FROM research_graph_active_cuts "
+            "WHERE logical_execution_id=?",
+            (logical_execution_id,),
+        ).fetchone()
+        return None if row is None else self._decode_active_cut(row)
 
     def _execution_tx(
         self,
@@ -1322,13 +1337,25 @@ class SQLiteResearchGraphExecutionStore:
         if type(logical_execution_id) is not str or not logical_execution_id.strip():
             raise ValueError("research graph logical_execution_id must be non-empty")
         with self._connection() as conn:
-            row = conn.execute(
-                "SELECT logical_execution_id,cut_id,research_revision_digest,"
-                "graph_digest,generation FROM research_graph_active_cuts "
-                "WHERE logical_execution_id=?",
-                (logical_execution_id,),
-            ).fetchone()
-        return None if row is None else self._decode_active_cut(row)
+            return self._active_cut_tx(conn, logical_execution_id)
+
+    def active_execution_snapshot(
+        self,
+        logical_execution_id: str,
+    ) -> ResearchGraphActiveExecutionSnapshot | None:
+        if type(logical_execution_id) is not str or not logical_execution_id.strip():
+            raise ValueError("research graph logical_execution_id must be non-empty")
+        with self._connection() as conn, sqlite_read_snapshot(conn):
+            active = self._active_cut_tx(conn, logical_execution_id)
+            if active is None:
+                return None
+            execution = self._snapshot_tx(conn, active.cut_id)
+            control = self._control_tx(conn, active.cut_id)
+            return ResearchGraphActiveExecutionSnapshot(
+                active,
+                execution,
+                control,
+            )
 
     def move_active_cut(
         self,
