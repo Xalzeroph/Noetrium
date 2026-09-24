@@ -272,6 +272,201 @@ class EmptyWorkflowSurfaceFactory:
         return object()
 
 
+def build_experiment_runtime_components_for_test(
+    *,
+    participant_adapters,
+    trial_protocol,
+    workflow_surface_factories,
+    services=None,
+    operation_executor=None,
+    effect_journal=None,
+    checkpoint_store=None,
+    machine_journal=None,
+    machine_snapshot_store=None,
+    state_root=None,
+):
+    """Test-only legacy ExperimentRuntime component assembly.
+
+    Production execution must enter through the canonical Research OS
+    composition root. This fixture exists only to pressure-test low-level
+    Experimentation contracts after the production parallel root was removed.
+    """
+
+    from pathlib import Path
+
+    from noetrium_platform.infrastructure.reliability.effect.api import (
+        EffectIntentJournal,
+    )
+    from noetrium_platform.foundation.kernel.kernel import (
+        DirectoryMachineJournal,
+        DirectoryMachineSnapshotStore,
+        InMemoryMachineJournal,
+        OperationExecutor,
+    )
+    from noetrium_platform.capabilities.participant.core.api import (
+        ParticipantLifecycleAdapterRegistry,
+    )
+    from noetrium_platform.research.experimentation.lifecycle.experiment.runtime import (
+        ExperimentComponentBinder,
+        ExperimentRuntimeComponents,
+        ExperimentTrialCycleExecutor,
+        trial_protocol_identity,
+    )
+    from noetrium_platform.capabilities.participant.session.runtime.checkpoint_runtime import (
+        ParticipantCheckpointRuntime,
+    )
+    from noetrium_platform.research.execution.participants import (
+        ParticipantCheckpointOperations,
+        ParticipantResolutionOperations,
+        ParticipantSessionLifecycle,
+    )
+    from noetrium_platform.research.experimentation.lifecycle.checkpoint.composition import (
+        build_project_run_checkpoint_store,
+    )
+    from noetrium_platform.research.experimentation.lifecycle.checkpoint.runtime.coordination import (
+        RunCheckpointCoordinator,
+    )
+    from noetrium_platform.research.experimentation.lifecycle.run.runtime.decision_runtime import (
+        DecisionCycleRuntime,
+    )
+    from noetrium_platform.research.experimentation.lifecycle.run.runtime.run_runtime import (
+        RunRuntime,
+    )
+    from noetrium_platform.research.execution.workflow.runtime import (
+        EffectIntentOperations,
+        KernelOperationDispatcher,
+        WORKFLOW_RUNTIME_IDENTITY,
+    )
+
+    del EffectIntentJournal
+    if state_root is not None:
+        root = Path(state_root)
+        root.mkdir(parents=True, exist_ok=True)
+        if machine_journal is None:
+            machine_journal = DirectoryMachineJournal(root / "machine-journal")
+        if machine_snapshot_store is None:
+            machine_snapshot_store = DirectoryMachineSnapshotStore(
+                root / "machine-snapshots"
+            )
+        if checkpoint_store is None:
+            checkpoint_store = build_project_run_checkpoint_store(
+                root / "run-checkpoints"
+            )
+
+    shared_machine_journal = (
+        machine_journal
+        if machine_journal is not None
+        else InMemoryMachineJournal()
+    )
+    dispatcher = KernelOperationDispatcher(
+        operation_executor or OperationExecutor(),
+        caller=WORKFLOW_RUNTIME_IDENTITY,
+    )
+    adapters = ParticipantLifecycleAdapterRegistry(participant_adapters)
+    participant_resolution = ParticipantResolutionOperations(
+        dispatcher,
+        adapters,
+    )
+    binder = ExperimentComponentBinder(participant_resolution)
+    lifecycle = ParticipantSessionLifecycle(dispatcher, services)
+    participant_checkpoints = ParticipantCheckpointOperations(
+        dispatcher,
+        ParticipantCheckpointRuntime(),
+    )
+    effect_intents = (
+        EffectIntentOperations(dispatcher, effect_journal)
+        if effect_journal is not None
+        else None
+    )
+    trial_cycle = ExperimentTrialCycleExecutor(
+        dispatcher,
+        trial_protocol,
+        effect_intents=effect_intents,
+        workflow_surface_factories=workflow_surface_factories,
+        machine_journal=shared_machine_journal,
+        machine_snapshot_store=machine_snapshot_store,
+    )
+    checkpoint = (
+        RunCheckpointCoordinator(
+            dispatcher,
+            checkpoint_store,
+            participant_checkpoints,
+        )
+        if checkpoint_store is not None
+        else None
+    )
+    return ExperimentRuntimeComponents(
+        trial_protocol_identity(trial_protocol),
+        DecisionCycleRuntime(
+            binder,
+            lifecycle,
+            trial_cycle,
+            journal=shared_machine_journal,
+            snapshot_store=machine_snapshot_store,
+        ),
+        RunRuntime(
+            binder,
+            lifecycle,
+            trial_cycle,
+            checkpoint,
+            machine_journal=shared_machine_journal,
+            machine_snapshot_store=machine_snapshot_store,
+        ),
+    )
+
+
+def build_experiment_runtime_for_test(
+    *,
+    participant_adapters,
+    trial_protocol,
+    workflow_surface_factories,
+    services=None,
+    operation_executor=None,
+    cycle_identity_provider=None,
+    run_identity_provider=None,
+    effect_journal=None,
+    checkpoint_store=None,
+    machine_journal=None,
+    machine_snapshot_store=None,
+    state_root=None,
+):
+    """Test-only legacy ExperimentRuntime wrapper over the fixture components."""
+
+    from noetrium_platform.research.experimentation.lifecycle.experiment.runtime import (
+        ExperimentRuntime,
+    )
+    from noetrium_platform.research.experimentation.lifecycle.run.providers.identity import (
+        RandomRunIdentityProvider,
+    )
+    from noetrium_platform.research.execution.decision.cycle_identity import (
+        RandomDecisionCycleIdentityProvider,
+    )
+
+    components = build_experiment_runtime_components_for_test(
+        participant_adapters=participant_adapters,
+        trial_protocol=trial_protocol,
+        workflow_surface_factories=workflow_surface_factories,
+        services=services,
+        operation_executor=operation_executor,
+        effect_journal=effect_journal,
+        checkpoint_store=checkpoint_store,
+        machine_journal=machine_journal,
+        machine_snapshot_store=machine_snapshot_store,
+        state_root=state_root,
+    )
+    return ExperimentRuntime(
+        components,
+        run_identity_provider=(
+            run_identity_provider
+            or RandomRunIdentityProvider()
+        ),
+        cycle_identity_provider=(
+            cycle_identity_provider
+            or RandomDecisionCycleIdentityProvider()
+        ),
+    )
+
+
 def context_action_runtime_from_resolver(resolver, **kwargs):
     """Test-only low-level ExperimentRuntime composition.
 
@@ -281,9 +476,6 @@ def context_action_runtime_from_resolver(resolver, **kwargs):
 
     from noetrium_platform.composition.context_action import (
         context_action_participant_adapters,
-    )
-    from noetrium_platform.composition.experiment_runtime import (
-        build_experiment_runtime,
     )
     from noetrium_platform.composition.workflows.context_action import (
         ContextActionSurfaceFactory,
@@ -298,7 +490,7 @@ def context_action_runtime_from_resolver(resolver, **kwargs):
         "extra_surface_factories",
         (),
     )
-    return build_experiment_runtime(
+    return build_experiment_runtime_for_test(
         participant_adapters=context_action_participant_adapters(
             resolver,
             extra=extra_participant_adapters,
@@ -355,7 +547,7 @@ def agent_turn_runtime(agents, **kwargs):
         if source is not None
         for kind in source.kinds()
     )
-    return build_experiment_runtime(
+    return build_experiment_runtime_for_test(
         participant_adapters=agent_turn_participant_adapters(
             resolver,
             runtime_kinds=runtime_kinds,
