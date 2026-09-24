@@ -74,6 +74,15 @@ class ManagedResearchRuntime:
     model_replica_pool: LocalModelReplicaPoolRuntime | None = None
     _model_controller: TaskHandlePort | None = None
     _resource_controller: TaskHandlePort | None = None
+    _closing: bool = False
+    _controllers_quiesced: bool = False
+    _workloads_quiesced: bool = False
+    _models_stopped: bool = False
+    _resources_cleaned: bool = False
+    _observability_closed: bool = False
+    _orchestration_closed: bool = False
+    _pool_closed: bool = False
+    _lock_released: bool = False
     _closed: bool = False
 
     def start_background_controllers(
@@ -84,6 +93,8 @@ class ManagedResearchRuntime:
     ) -> None:
         if self._closed:
             raise RuntimeError("managed research runtime is closed")
+        if self._closing:
+            raise RuntimeError("managed research runtime is closing")
         if self._stop.is_set():
             raise RuntimeError("managed research runtime is quiescing")
 
@@ -147,33 +158,48 @@ class ManagedResearchRuntime:
     def assert_healthy(self) -> None:
         if self._closed:
             raise RuntimeError("managed research runtime is closed")
+        if self._closing:
+            raise RuntimeError("managed research runtime is closing")
         self._orchestration_group.assert_healthy()
         for controller in (self._model_controller, self._resource_controller):
             if controller is not None and controller.done():
                 controller.result()
 
+    @staticmethod
+    def _close_stage_error(stage: str, error: BaseException) -> ExceptionGroup:
+        nested = (
+            list(error.exceptions)
+            if isinstance(error, BaseExceptionGroup)
+            else [error]
+        )
+        return ExceptionGroup(
+            f"managed research runtime close failed during {stage}",
+            nested,
+        )
+
     def close(self) -> None:
         if self._closed:
             return
-        errors: list[BaseException] = []
+        self._closing = True
 
-        try:
-            self.quiesce_background_controllers()
-        except BaseException as exc:
-            errors.append(exc)
+        if not self._controllers_quiesced:
+            try:
+                self.quiesce_background_controllers()
+            except BaseException as exc:
+                raise self._close_stage_error("controller quiescence", exc)
+            self._controllers_quiesced = True
 
-        workloads_quiesced = False
-        try:
-            self.execution_pool.quiesce_workloads()
-            workloads_quiesced = True
-        except BaseException as exc:
-            errors.append(exc)
+        if not self._workloads_quiesced:
+            try:
+                self.execution_pool.quiesce_workloads()
+            except BaseException as exc:
+                raise self._close_stage_error("workload quiescence", exc)
+            self._workloads_quiesced = True
 
-        # Releasing ephemeral resources is safe only after every workload domain
-        # has physically joined. If workload quiescence cannot be proven, leave
-        # leases/resources fenced for TTL + next-start reconciliation rather
-        # than releasing them underneath potentially live work.
-        if workloads_quiesced:
+        # Model processes sit above endpoint/compute/container resources.
+        # Releasing those resources before every service is physically gone
+        # would permit split ownership after restart.
+        if not self._models_stopped:
             try:
                 statuses = self.management.models.fleet.shutdown_all()
                 failed = tuple(
@@ -191,39 +217,51 @@ class ManagedResearchRuntime:
                         )
                     )
             except BaseException as exc:
-                errors.append(exc)
+                raise self._close_stage_error("model shutdown", exc)
+            self._models_stopped = True
 
+        if not self._resources_cleaned:
             try:
                 self.resources.shutdown_cleanup()
             except BaseException as exc:
-                errors.append(exc)
+                raise self._close_stage_error("resource cleanup", exc)
+            self._resources_cleaned = True
+
+        if not self._observability_closed:
+            try:
+                self.observability.close()
+            except BaseException as exc:
+                raise self._close_stage_error("observability shutdown", exc)
+            self._observability_closed = True
+
+        if not self._orchestration_closed:
+            try:
+                self.execution_pool.close_orchestration_group(
+                    self._orchestration_group,
+                    cancel_pending=True,
+                )
+            except BaseException as exc:
+                raise self._close_stage_error("orchestration shutdown", exc)
+            self._orchestration_closed = True
+
+        if not self._pool_closed:
+            try:
+                self.execution_pool.close()
+            except BaseException as exc:
+                raise self._close_stage_error("execution-pool shutdown", exc)
+            self._pool_closed = True
+
+        # This lock is the final local ownership fence. It is intentionally
+        # retained after any earlier failure so a second runtime cannot adopt
+        # resources while this process has not yet proved convergence.
+        if not self._lock_released:
+            try:
+                self._runtime_lock.__exit__(None, None, None)
+            except BaseException as exc:
+                raise self._close_stage_error("runtime-lock release", exc)
+            self._lock_released = True
 
         self._closed = True
-        try:
-            self.observability.close()
-        except BaseException as exc:
-            errors.append(exc)
-        try:
-            self.execution_pool.close_orchestration_group(
-                self._orchestration_group,
-                cancel_pending=True,
-            )
-        except BaseException as exc:
-            errors.append(exc)
-        try:
-            self.execution_pool.close()
-        except BaseException as exc:
-            errors.append(exc)
-        try:
-            self._runtime_lock.__exit__(None, None, None)
-        except BaseException as exc:
-            errors.append(exc)
-
-        if errors:
-            raise ExceptionGroup(
-                "managed research runtime close failed",
-                errors,
-            )
 
     def __enter__(self) -> "ManagedResearchRuntime":
         return self
