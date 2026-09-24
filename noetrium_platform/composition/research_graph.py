@@ -1000,6 +1000,7 @@ class ResearchGraphScheduler:
         renewal_interval_ns = max(1, self._lease_ns // 3)
         attempts = _DurableAttemptBook()
         completion_queue: Queue[str] = Queue()
+        submission_counts: dict[str, int] = {}
 
         def submit(
             node: ResearchGraphNode,
@@ -1009,6 +1010,8 @@ class ResearchGraphScheduler:
             target_group = (
                 fair_group if block_for_capacity else opportunistic_group
             )
+            submission_number = submission_counts.get(node.node_id, 0) + 1
+            submission_counts[node.node_id] = submission_number
 
             def run(context, owned_node=node):
                 try:
@@ -1032,7 +1035,7 @@ class ResearchGraphScheduler:
                     attempts.publish(
                         owned_node.node_id,
                         attempt_id,
-                        time.time_ns() + renewal_interval_ns,
+                        claim_now_ns,
                     )
                     store.mark_running(
                         execution_id,
@@ -1054,7 +1057,8 @@ class ResearchGraphScheduler:
             return target_group.submit(
                 ExecutionSpec(
                     task_id=(
-                        f"research-graph-node:{execution_id}:{node.node_id}"
+                        f"research-graph-node:{execution_id}:{node.node_id}:"
+                        f"submission:{submission_number}"
                     ),
                     lane_kind=ExecutionLaneKind.BLOCKING_IO,
                     failure_scope=TaskFailureScope.CALLER,
