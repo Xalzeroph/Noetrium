@@ -38,6 +38,7 @@ from .research_os_experiment_runtime_binding import (
 class ResearchOSExperimentTrialProviderBinding:
     """Exact Trial provider/verifier authority for one Experiment closure."""
 
+    provider_identity: str
     provider: TrialProviderPort
     provider_identity_digest: str
     verifier: TaskVerifierPort | None = None
@@ -45,6 +46,14 @@ class ResearchOSExperimentTrialProviderBinding:
     binding_digest: str = ""
 
     def __post_init__(self) -> None:
+        if (
+            type(self.provider_identity) is not str
+            or not self.provider_identity.strip()
+            or self.provider_identity != self.provider_identity.strip()
+        ):
+            raise ValueError(
+                "Experiment Trial provider_identity must be canonical text"
+            )
         if not isinstance(self.provider, TrialProviderPort):
             raise TypeError(
                 "Experiment Trial provider binding requires TrialProviderPort"
@@ -73,6 +82,7 @@ class ResearchOSExperimentTrialProviderBinding:
             )
         expected = canonical_digest(
             {
+                "provider_identity": self.provider_identity,
                 "provider_identity_digest": self.provider_identity_digest,
                 "verifier_identity_digest": self.verifier_identity_digest,
             }
@@ -117,6 +127,13 @@ class _TrialBoundStudyExecution(BoundStudyExecutionPort):
             row.variant.variant_id: row
             for row in closure.research_plan.experiment_plan.bindings
         }
+        selected_provider_ids = {
+            row.provider_id for row in self._binding_by_variant.values()
+        }
+        if selected_provider_ids != {provider_binding.provider_identity}:
+            raise ValueError(
+                "Trial provider identity does not match Research binding authority"
+            )
         self._intervention_by_variant = {
             row.intervention_id: row
             for row in closure.research_plan.interventions
