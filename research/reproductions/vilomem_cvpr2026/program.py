@@ -1,5 +1,5 @@
 from __future__ import annotations
-from noetrium_platform.research.execution.workflow.api import AgentMethodSpec, AgentPhaseSpec
+from noetrium.api import AgentMethodSpec, AgentPhaseSpec
 METHOD_ID="vilomem_cvpr2026"
 TITLE="ViLoMem: Agentic Learner with Grow-and-Refine Multimodal Semantic Memory"
 VENUE="CVPR 2026"
