@@ -1035,7 +1035,7 @@ def test_minecraft_bridge_spec_requires_bounded_stdout_queue_capacity() -> None:
 
 
 def test_jsonl_bridge_preserves_action_identity_and_reconciliation_proof() -> None:
-    endpoint = MinecraftEndpointSpec()
+    endpoint = MinecraftEndpointSpec(port=25565)
     agent = MinecraftAgentSpec(version="1.21.6")
     spec = MinecraftBridgeSpec(command=("fake-node",), cwd=".", command_timeout_s=1, connect_timeout_s=1)
     diagnostics = _Diagnostics()
@@ -1069,7 +1069,7 @@ def test_jsonl_bridge_preserves_action_identity_and_reconciliation_proof() -> No
 def test_jsonl_bridge_fails_handshake_on_provider_capability_drift() -> None:
     task_group = make_task_group("minecraft-bridge-drift")
     bridge = JsonlMinecraftBridge(
-        endpoint=MinecraftEndpointSpec(),
+        endpoint=MinecraftEndpointSpec(port=25566),
         spec=MinecraftBridgeSpec(
             command=("fake-node",), cwd=".", command_timeout_s=1, connect_timeout_s=1
         ),
