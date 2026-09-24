@@ -62,3 +62,21 @@ def test_directory_snapshot_store_rejects_tampering(tmp_path: Path) -> None:
     path.write_bytes(path.read_bytes().replace(b'"state"', b' "state"', 1))
     with pytest.raises(MachineIntegrityError):
         DirectoryMachineSnapshotStore(tmp_path).load("machine-1")
+
+
+def test_directory_snapshot_store_observes_external_advance_after_cached_read(
+    tmp_path: Path,
+) -> None:
+    first = DirectoryMachineSnapshotStore(tmp_path)
+    second = DirectoryMachineSnapshotStore(tmp_path)
+    initial = make_snapshot(0, {"value": "initial"})
+    advanced = make_snapshot(1, {"value": "advanced"})
+
+    assert first.save(initial) == initial
+    assert first.load("machine-1") == initial
+
+    assert second.save(advanced) == advanced
+
+    # The first store must not let its process-local cache shadow the newer
+    # durable snapshot published by another authority.
+    assert first.load("machine-1") == advanced
