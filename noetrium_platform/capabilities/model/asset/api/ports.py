@@ -5,7 +5,8 @@ from typing import Protocol
 
 from noetrium_platform.substrate.api import ScopeIdentity
 from .contracts import (
-    ManagedModelAsset, ModelAcquisitionReceipt, ModelAssetMode, ModelAssetStats, ModelAssetUsage,
+    ManagedModelAsset, ModelAcquisitionReceipt, ModelAssetGcAssessment, ModelAssetMode,
+    ModelAssetReferenceClosure, ModelAssetStats, ModelAssetUsage,
     ModelConfigSummary, ModelSourceSpec, ModelStoragePoolStatus,
 )
 
@@ -46,7 +47,19 @@ class ModelAssetManagementPort(ModelAssetLookupPort, Protocol):
     def model_stats(self, model_id: str) -> ModelAssetStats: ...
     def model_config(self, model_id: str) -> ModelConfigSummary | None: ...
     def model_usage(self, model_id: str) -> ModelAssetUsage: ...
-    def unregister_model(self, model_id: str, *, delete_managed_files: bool = False) -> bool: ...
+    def assess_model_gc(
+        self,
+        model_id: str,
+        *,
+        closures: tuple[ModelAssetReferenceClosure, ...] = (),
+    ) -> ModelAssetGcAssessment: ...
+    def unregister_model(
+        self,
+        model_id: str,
+        *,
+        delete_managed_files: bool = False,
+        gc: ModelAssetGcAssessment | None = None,
+    ) -> bool: ...
 
 
 __all__ = ["ModelAssetLookupPort", "ModelAssetManagementPort", "ModelAssetStoragePort", "ModelAssetUsagePort", "ModelSourceBackend"]
