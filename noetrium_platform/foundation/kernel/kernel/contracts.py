@@ -100,6 +100,7 @@ class RunBinding:
     kernel_abi_version: str
     machine_implementation_digest: str
     program_digest: str
+    program_lock_digest: str
     capability_provider_versions: tuple[tuple[str, str], ...]
     schema_versions: tuple[str, ...]
     environment_version: str
@@ -111,6 +112,7 @@ class RunBinding:
         _text(self.policy_version, "policy_version")
         require_sha256(self.machine_implementation_digest, "machine_implementation_digest")
         require_sha256(self.program_digest, "program_digest")
+        require_sha256(self.program_lock_digest, "program_lock_digest")
         if type(self.capability_provider_versions) is not tuple:
             raise TypeError("capability_provider_versions must be a tuple")
         for item in self.capability_provider_versions:
@@ -125,6 +127,7 @@ class RunBinding:
                 "kernel_abi_version": self.kernel_abi_version,
                 "machine_implementation_digest": self.machine_implementation_digest,
                 "program_digest": self.program_digest,
+                "program_lock_digest": self.program_lock_digest,
                 "capability_provider_versions": self.capability_provider_versions,
                 "schema_versions": self.schema_versions,
                 "environment_version": self.environment_version,
