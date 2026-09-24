@@ -225,23 +225,47 @@ El código downstream importa contracts estables y componentes reutilizables des
 
 <!-- readme-section:containers -->
 
-## Flujo de contenedores
+## Container workflow
 
-La imagen Linux reutilizable y la definición Compose se mantienen en `deploy/`.
+Noetrium treats execution environments as a revisioned fleet, not as one mutable container per paper. The host contract is Docker + Compose; host Python is not required.
 
 ```bash
-python scripts/build_environment_images.py validate
-python scripts/build_environment_images.py build --profiles text_world
+./deploy/build-environments.sh validate
+./deploy/build-environments.sh list
+./deploy/build-environments.sh build
 ```
 
-La capa de deployment separa software inmutable de runtime state mutable; paths del host y secrets quedan fuera del composition code versionado.
+The environment registry is `deploy/environments/catalog.json`. It is dynamic: the builder does not contain a fixed list of environment names. Every category has an active default profile revision, while draining and retired revisions remain available for already-pinned execution or explicit historical recovery.
 
-### Provider Minecraft incluido
+The sharing rule is strict:
 
-Minecraft es un Provider de entorno reutilizable de primera parte. Task suites y composición científica permanecen downstream.
+> **Share immutable content; isolate every mutable execution state.**
+
+Noetrium therefore reuses the qualified base image, environment image layers and content-addressed assets across papers, while each execution gets a private workspace, temporary/runtime state, secrets, process/network namespace, ports, browser/world/application state and other writable overlays. A warm environment may be reused only after its overlay is destroyed or a provider emits an explicit cleanliness proof; uncertain instances are destroyed rather than recycled.
+
+```text
+host substrate
+  -> evidence-bound Noetrium base
+  -> reusable environment capability profile
+  -> immutable content-addressed workload assets
+  -> private per-execution writable overlay
+  -> immutable artifacts / evidence / Machine Journal
+```
+
+Environment identity is pinned at runtime as `profile_id + profile_revision`, separate from the stable category such as `web`, `minecraft`, `gui`, `embodied`, `software` or `text_world`. This allows a new profile revision to become active without changing or contaminating executions that started on an older revision.
+
+Retirement is logical deletion: new work stops binding the revision, but historical identity is retained. Physical image/cache garbage collection is only safe after there are no active or resumable references and no retained evidence depends on the revision.
+
+Profile-specific readiness checks are image-local hooks rather than a central switch statement. A new environment category can therefore be added with a registry row, image recipe, optional Compose overlay and doctor hook without editing central deployment code.
+
+[Environment profile registry](deploy/environments/README.md)
+
+### Bundled Minecraft provider
+
+Minecraft is a first-party reusable environment capability profile. Java, Node and Mineflayer prerequisites are shared; benchmark worlds, task suites, paper methods and writable world state stay downstream or per execution.
 
 ```bash
-python scripts/build_environment_images.py build --profiles minecraft
+./deploy/build-environments.sh build --profiles minecraft
 ```
 
 [Minecraft infrastructure](docs/infrastructure/minecraft/README.md)
