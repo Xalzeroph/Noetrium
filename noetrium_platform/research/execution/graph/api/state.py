@@ -476,6 +476,12 @@ class ResearchGraphExecutionStorePort(Protocol):
 
     def snapshot(self, execution_id: str) -> ResearchGraphExecutionSnapshot: ...
 
+    def node_state(
+        self,
+        execution_id: str,
+        node_id: str,
+    ) -> ResearchGraphNodeExecutionRecord: ...
+
     def mark_ready(
         self,
         execution_id: str,
