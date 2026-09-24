@@ -13,6 +13,7 @@ from noetrium import api
 from noetrium_platform.composition.research_binding_authority import (
     ResearchBindingAuthorityError,
     ResearchBindingAuthorityPort,
+    ResearchBindingRequirementMissing,
     ResearchProjectManifestRequirement,
 )
 from noetrium_platform.composition.research_os_local import (
@@ -514,6 +515,15 @@ def _research_binding_gap(
     study: ResearchStudyDefinition,
     exc: BaseException,
 ) -> ReproductionFleetAuthorityGap:
+    if isinstance(exc, ResearchBindingRequirementMissing):
+        return ReproductionFleetAuthorityGap(
+            stage=exc.stage,
+            requirement_key=exc.requirement_id,
+            requirement_digest=exc.requirement_digest,
+            error_type=type(exc).__name__,
+            message=str(exc),
+        )
+
     if isinstance(exc, ResearchBindingAuthorityError):
         if exc.stage == "participant":
             matches = tuple(
@@ -570,7 +580,7 @@ def _research_binding_gap(
         )
 
     manifest = ResearchProjectManifestRequirement.from_study(study)
-    if isinstance(exc, (LookupError, ValueError)):
+    if isinstance(exc, ValueError):
         return ReproductionFleetAuthorityGap(
             stage="project_manifest",
             requirement_key=f"{study.project_id}:{study.study_id}",
