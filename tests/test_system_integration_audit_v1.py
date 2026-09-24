@@ -47,3 +47,14 @@ def test_environment_family_contracts_are_subsystems_of_environment_authority() 
         assert row.package_prefix.startswith(
             "noetrium_platform.capabilities.environment."
         )
+
+
+def test_cross_system_concrete_dependencies_are_composition_only() -> None:
+    report = _audit_module().build_report()
+    assert report["concrete_bypass_system_count"] == 0
+    offenders = {
+        row["system_key"]: row["concrete_bypass_consumers"]
+        for row in report["systems"]
+        if row["concrete_bypass_consumers"]
+    }
+    assert offenders == {}
