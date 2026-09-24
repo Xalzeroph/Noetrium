@@ -2,7 +2,7 @@
   "schema": "noetrium.reproduction.projection.v10",
   "authority": "generated_from_typed_definition_and_source",
   "package": "r2d2_acl2025",
-  "package_digest": "5ee3fb27fd15a39e36c69196021938953ff79edd9a75255c997eac2c84832b1e",
+  "package_digest": "46e517e2a5648e46f418f2afb93cc0ccb63c3281b2cf31e2a7f0b42d826ae827",
   "definition_digest": "bbe3561172dcb641e719208eea8385c919e49942e5c4ddf12c29f60c539bc9e4",
   "source_registry_digest": "8d79934f44114bad0dcb49471b4eb91eb57933384e01bad96921f469dc20e06b",
   "lifecycle": "protocol_bound",
@@ -72,7 +72,7 @@
       "kind": "benchmark",
       "path": "research/reproductions/r2d2_acl2025/benchmark.py",
       "declaration_digest": "44e7f11702267565d31cd0eabe9fe117beec214f60946dce7a2930ea0b668770",
-      "content_sha256": "44be6101cf20aca52d24cf4278609d5bac6c6aae3e83ec1beded403144d4ccd9"
+      "content_sha256": "3c12822e5b7d438ab25fd520da4d3e2c522484bd20100ed0ada8c432f1973f99"
     },
     {
       "kind": "fidelity",

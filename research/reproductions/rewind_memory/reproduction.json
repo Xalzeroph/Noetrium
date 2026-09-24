@@ -2,7 +2,7 @@
   "schema": "noetrium.reproduction.projection.v10",
   "authority": "generated_from_typed_definition_and_source",
   "package": "rewind_memory",
-  "package_digest": "f896b34ef9f79f63fca725257e8af4eb5b9816dc73a7418f0c1a9ddfb3340503",
+  "package_digest": "35b9535f2ac003181080c7c20fd622f5edfc51909cadd20f5d39a911258f5a35",
   "definition_digest": "2505e0ddfe3973e23ea352c3d354a1e4d37a6fcdf1b6b0b6caa9a947814ef8f5",
   "source_registry_digest": "fdb866db6a3c5cbcf051cd40e55caf5bb510d3af332ad4d5f61455c3af25568c",
   "lifecycle": "protocol_bound",
@@ -77,7 +77,7 @@
       "kind": "benchmark",
       "path": "research/reproductions/rewind_memory/benchmark.py",
       "declaration_digest": "3c6b9afffd97aac83b82a48e3af3684655f024d3825e1db74088fb5ba01b1795",
-      "content_sha256": "c9244a56f0bee57f534a3c22b9e99916bb7a6771f204be2e69ed23dfc10bbeb1"
+      "content_sha256": "44d6e04fd9bf6f2ece629f99acfc08c065a87c0a29aca46485f04b5ee9229940"
     },
     {
       "kind": "fidelity",

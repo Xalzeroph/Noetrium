@@ -215,7 +215,7 @@
       "reproductions": [
         {
           "package": "tree_of_thoughts",
-          "package_digest": "5921c240005d7c2650df9e331b54e59c28cd404146c1e1ecca6f514029ff7c5e",
+          "package_digest": "fb068d5af0f68f5020ca4709f94dfde03570782b3965f97a1d06fb9f52facb73",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "game24"
@@ -242,7 +242,7 @@
             {
               "kind": "study",
               "path": "research/reproductions/tree_of_thoughts/study.py",
-              "content_sha256": "30100c0755774665bb6446cef6412ab94e79f9cd241abb3416a9ca0d6dc757e4"
+              "content_sha256": "22c94c937a30c1fad331ee23c0b475d8fa55d2a7824d83c31d7a4db787d5686a"
             },
             {
               "kind": "support",
@@ -478,5 +478,5 @@
       ]
     }
   ],
-  "projection_digest": "975d2ca4ddd136d98fbdf992b10b16cd6adf3afaecaa7a636594a7409baad320"
+  "projection_digest": "688f97b5e5e35a0e85aaa3d4379671ba4e9f5b61ab4507d03efdf66035751e25"
 }

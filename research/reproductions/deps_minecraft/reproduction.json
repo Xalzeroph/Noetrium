@@ -2,7 +2,7 @@
   "schema": "noetrium.reproduction.projection.v10",
   "authority": "generated_from_typed_definition_and_source",
   "package": "deps_minecraft",
-  "package_digest": "a5a83268be91a8ef732543e6749089a2e7cb10144cd160f1abcbd47e4a4d712a",
+  "package_digest": "8583cad7c7d9814d3b84daac400e84fbefbcab3b431276e683b4241f0932c7ff",
   "definition_digest": "dfd76e1e43edd424426db654c8291f1984f6b6f4f4368f6906645298dc042218",
   "source_registry_digest": "b34ac82a645a66821c20029f19473c146715222483bfaf316120b963fd884a90",
   "lifecycle": "protocol_bound",
@@ -130,7 +130,7 @@
       "kind": "study",
       "path": "research/reproductions/deps_minecraft/study.py",
       "declaration_digest": "735ad684b39590c1b3de0ced1bd5b24011cf47d49fc26061212c31e56d92f79b",
-      "content_sha256": "6c512e550ead4ee58ef7d0e8a246efdcca2f8e308156614e523414342c3ee9d9"
+      "content_sha256": "39d73a28bd59c45a5d3fe3cde453115811a7ec996a7934174d23372e34280a6c"
     },
     {
       "kind": "support",

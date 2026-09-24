@@ -394,7 +394,7 @@
       "reproductions": [
         {
           "package": "deps_minecraft",
-          "package_digest": "a5a83268be91a8ef732543e6749089a2e7cb10144cd160f1abcbd47e4a4d712a",
+          "package_digest": "8583cad7c7d9814d3b84daac400e84fbefbcab3b431276e683b4241f0932c7ff",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "deps-minecraft-70"
@@ -442,7 +442,7 @@
             {
               "kind": "study",
               "path": "research/reproductions/deps_minecraft/study.py",
-              "content_sha256": "6c512e550ead4ee58ef7d0e8a246efdcca2f8e308156614e523414342c3ee9d9"
+              "content_sha256": "39d73a28bd59c45a5d3fe3cde453115811a7ec996a7934174d23372e34280a6c"
             },
             {
               "kind": "support",
@@ -1058,7 +1058,7 @@
       "reproductions": [
         {
           "package": "tree_of_thoughts",
-          "package_digest": "5921c240005d7c2650df9e331b54e59c28cd404146c1e1ecca6f514029ff7c5e",
+          "package_digest": "fb068d5af0f68f5020ca4709f94dfde03570782b3965f97a1d06fb9f52facb73",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "game24"
@@ -1085,7 +1085,7 @@
             {
               "kind": "study",
               "path": "research/reproductions/tree_of_thoughts/study.py",
-              "content_sha256": "30100c0755774665bb6446cef6412ab94e79f9cd241abb3416a9ca0d6dc757e4"
+              "content_sha256": "22c94c937a30c1fad331ee23c0b475d8fa55d2a7824d83c31d7a4db787d5686a"
             },
             {
               "kind": "support",
@@ -1503,7 +1503,7 @@
       "reproductions": [
         {
           "package": "ma_lmm_memory",
-          "package_digest": "6d21a2f3eeef1d7fa1bb16c28e79de056b8298fcc87ef3b96650ac9cd20f738b",
+          "package_digest": "aaecdd904597d62b8055d5ff9265b6889c711f45d30bd110f152fbd555f6974b",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "lvu"
@@ -1536,7 +1536,7 @@
             {
               "kind": "benchmark",
               "path": "research/reproductions/ma_lmm_memory/benchmark.py",
-              "content_sha256": "7ff79e642b08de33ffb3022dde223bca55c98a65518a4c81ad22a81c370f0d20"
+              "content_sha256": "470f38ff9ec9e071d598aaa50b9ee563a66a521734f8a1fc951efa29584376ba"
             },
             {
               "kind": "fidelity",
@@ -1927,7 +1927,7 @@
       "reproductions": [
         {
           "package": "toolllm_toolbench",
-          "package_digest": "a1ffb3f7709f2d83d9ac630d4ead34450b667819d05204ab9e276c3562d369e8",
+          "package_digest": "f5d96121c80c6e87076c2249f3e00ceb841f9881905a2eee682bba25de08f05c",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "toolbench"
@@ -1954,7 +1954,7 @@
             {
               "kind": "study",
               "path": "research/reproductions/toolllm_toolbench/study.py",
-              "content_sha256": "48e2f3e4af5dd67400dd2bedb1b8d11f6294499a4f93a786c0498dca425a293c"
+              "content_sha256": "5156fabadf3552028fb36ebbbecb27fc7164c36a711b4461763a50d1216ef805"
             },
             {
               "kind": "support",
@@ -2862,7 +2862,7 @@
       "reproductions": [
         {
           "package": "rewind_memory",
-          "package_digest": "f896b34ef9f79f63fca725257e8af4eb5b9816dc73a7418f0c1a9ddfb3340503",
+          "package_digest": "35b9535f2ac003181080c7c20fd622f5edfc51909cadd20f5d39a911258f5a35",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "moviechat-1k"
@@ -2883,7 +2883,7 @@
             {
               "kind": "benchmark",
               "path": "research/reproductions/rewind_memory/benchmark.py",
-              "content_sha256": "c9244a56f0bee57f534a3c22b9e99916bb7a6771f204be2e69ed23dfc10bbeb1"
+              "content_sha256": "44d6e04fd9bf6f2ece629f99acfc08c065a87c0a29aca46485f04b5ee9229940"
             },
             {
               "kind": "fidelity",
@@ -3746,7 +3746,7 @@
       "reproductions": [
         {
           "package": "vilomem_cvpr2026",
-          "package_digest": "a37466aec5d81515d882baac79b73505609ca3b75f963fc67711a111d8aea609",
+          "package_digest": "38a8442733d1592703ff04ccef257322f29b6e153859dad153cd0b62daefea95",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "hallusionbench",
@@ -3788,7 +3788,7 @@
             {
               "kind": "study",
               "path": "research/reproductions/vilomem_cvpr2026/study.py",
-              "content_sha256": "d6a9534c3c5b314262db1278672a0281692af27fc80c080f0423971d68a86842"
+              "content_sha256": "54d72d3fdcc14e17d72b6595d051e1611e4d7ce52a5c1d733d5b072d9c034af7"
             }
           ],
           "blockers": [
@@ -3896,5 +3896,5 @@
       ]
     }
   ],
-  "projection_digest": "56358c40f085d557f150ad185fa8396150b0242cb7d1dc085c212a7f7039e385"
+  "projection_digest": "f96e5779b0b2417b425c6b8894568cdf1665e53de6dd3c5ab47a16fa53e83e41"
 }
