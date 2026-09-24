@@ -31,6 +31,7 @@ class ExecutionEnvironmentCatalogPort(Protocol):
         self,
         profile_id: str,
         profile_revision: str,
+        runtime_identity_digest: str,
         *,
         binding_id: str,
         role: str,
