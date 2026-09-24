@@ -4,11 +4,11 @@ from collections.abc import Mapping, Sequence
 from dataclasses import dataclass, field
 from typing import Protocol, runtime_checkable
 
-from noetrium_platform.evidence.artifact.content.api import (
+from noetrium.api import (
     TensorContentRef,
     TensorContentStorePort,
 )
-from noetrium_platform.foundation.kernel.kernel import (
+from noetrium.api import (
     JsonObject,
     JsonValue,
     MachineJournalPort,
@@ -18,7 +18,7 @@ from noetrium_platform.foundation.kernel.kernel import (
     require_sha256,
     thaw_json,
 )
-from noetrium_platform.research.execution.machines.api import (
+from noetrium.api import (
     MemoryConcern,
     MemoryProgramBuilder,
     ProgramNodeRequest,
