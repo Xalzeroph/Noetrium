@@ -5,7 +5,7 @@ from noetrium_platform.substrate.api import ExactServiceRuntimePort, ServiceStar
 from noetrium_platform.substrate.api import ServiceLaunchContract
 from noetrium_platform.substrate.api import GpuDeviceStatus, GpuRuntimeSnapshot
 from .contracts import (
-    ModelControlSnapshot, ModelControllerState, ModelDeploymentLogs, ModelDeploymentSelector,
+    ModelControlSnapshot, ModelControllerState, ModelDeploymentGeneration, ModelDeploymentLogs, ModelDeploymentSelector,
     ModelDeploymentSpec, ModelDeploymentStatus, ModelDesiredState, ModelEnvironmentUsage,
     ModelGpuAllocation, ModelGpuConflict, ModelGpuProcessBinding, ModelLogTail,
 )
