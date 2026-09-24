@@ -149,7 +149,8 @@ def _source_digest(value) -> str:
         raise ValueError(
             "benchmark authority callable source must be a real Python file"
         )
-    return sha256_file(path)
+    digest, _size = sha256_file(path)
+    return digest
 
 
 def discover_repository_benchmark_bindings() -> tuple[
