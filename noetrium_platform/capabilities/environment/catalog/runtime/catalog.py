@@ -24,6 +24,7 @@ from noetrium_platform.capabilities.environment.catalog.api import (
     EnvironmentProfileLifecycle,
     EnvironmentProfileReferenceSummary,
     EnvironmentProfileRevision,
+    EnvironmentProfileUseIntent,
     EnvironmentSpec,
     EnvironmentTemplate,
     ExecutionEnvironmentKind,
@@ -153,17 +154,33 @@ class ExecutionEnvironmentCatalog:
         profile_id: str,
         profile_revision: str,
         *,
-        recovery: bool,
+        intent: EnvironmentProfileUseIntent,
     ) -> EnvironmentProfileRevision:
+        if type(intent) is not EnvironmentProfileUseIntent:
+            raise TypeError(
+                "environment profile admission intent must be EnvironmentProfileUseIntent"
+            )
         profile = self.profile_revision(profile_id, profile_revision)
-        if profile.lifecycle is EnvironmentProfileLifecycle.ACTIVE:
-            return profile
-        if recovery:
+        allowed_intents = {
+            EnvironmentProfileLifecycle.ACTIVE: frozenset(
+                {
+                    EnvironmentProfileUseIntent.NEW_EXECUTION,
+                    EnvironmentProfileUseIntent.RESUME_PINNED,
+                }
+            ),
+            EnvironmentProfileLifecycle.DRAINING: frozenset(
+                {EnvironmentProfileUseIntent.RESUME_PINNED}
+            ),
+            EnvironmentProfileLifecycle.RETIRED: frozenset(
+                {EnvironmentProfileUseIntent.HISTORICAL_RECOVERY}
+            ),
+        }
+        if intent in allowed_intents[profile.lifecycle]:
             return profile
         raise EnvironmentCatalogConflict(
-            "environment profile revision does not admit new work: "
+            "environment profile revision rejects use intent: "
             f"{profile.profile_id}@{profile.profile_revision} "
-            f"state={profile.lifecycle.value}"
+            f"state={profile.lifecycle.value} intent={intent.value}"
         )
 
     def register_template(self, template: EnvironmentTemplate) -> None:
@@ -246,12 +263,12 @@ class ExecutionEnvironmentCatalog:
         self,
         instance: EnvironmentInstance,
         *,
-        recovery: bool = False,
+        intent: EnvironmentProfileUseIntent = EnvironmentProfileUseIntent.NEW_EXECUTION,
     ) -> None:
         self._require_profile_admission(
             instance.profile_id,
             instance.profile_revision,
-            recovery=recovery,
+            intent=intent,
         )
         if instance.state is not EnvironmentInstanceState.CLEAN:
             raise EnvironmentCatalogConflict(
@@ -302,7 +319,7 @@ class ExecutionEnvironmentCatalog:
         self,
         binding: EnvironmentBinding,
         *,
-        recovery: bool = False,
+        intent: EnvironmentProfileUseIntent = EnvironmentProfileUseIntent.NEW_EXECUTION,
     ) -> None:
         instance = self._instance(binding.instance_id)
         key = (binding.role, binding.scope.key)
@@ -319,7 +336,7 @@ class ExecutionEnvironmentCatalog:
             self._require_profile_admission(
                 instance.profile_id,
                 instance.profile_revision,
-                recovery=recovery,
+                intent=intent,
             )
             next_instance = replace(
                 instance,
@@ -360,7 +377,7 @@ class ExecutionEnvironmentCatalog:
         binding_id: str,
         role: str,
         scope: ScopeIdentity,
-        recovery: bool = False,
+        intent: EnvironmentProfileUseIntent = EnvironmentProfileUseIntent.NEW_EXECUTION,
     ) -> EnvironmentInstanceAcquisition:
         """Select and bind one CLEAN profile revision as one authority operation."""
 
@@ -398,7 +415,7 @@ class ExecutionEnvironmentCatalog:
         self._require_profile_admission(
             profile_id,
             profile_revision,
-            recovery=recovery,
+            intent=intent,
         )
 
         candidates = tuple(
@@ -431,7 +448,7 @@ class ExecutionEnvironmentCatalog:
         ExecutionEnvironmentCatalog.bind(
             self,
             binding,
-            recovery=recovery,
+            intent=intent,
         )
         acquired = self._instance(candidate.instance_id)
         return EnvironmentInstanceAcquisition(binding, acquired)
@@ -939,20 +956,20 @@ class SQLiteExecutionEnvironmentCatalog(ExecutionEnvironmentCatalog):
         self,
         instance: EnvironmentInstance,
         *,
-        recovery: bool = False,
+        intent: EnvironmentProfileUseIntent = EnvironmentProfileUseIntent.NEW_EXECUTION,
     ) -> None:
         self._load()
-        super().register_instance(instance, recovery=recovery)
+        super().register_instance(instance, intent=intent)
         self._persist()
 
     def bind(
         self,
         binding: EnvironmentBinding,
         *,
-        recovery: bool = False,
+        intent: EnvironmentProfileUseIntent = EnvironmentProfileUseIntent.NEW_EXECUTION,
     ) -> None:
         self._load()
-        super().bind(binding, recovery=recovery)
+        super().bind(binding, intent=intent)
         self._persist()
 
     def acquire_reusable_instance(
@@ -964,7 +981,7 @@ class SQLiteExecutionEnvironmentCatalog(ExecutionEnvironmentCatalog):
         binding_id: str,
         role: str,
         scope: ScopeIdentity,
-        recovery: bool = False,
+        intent: EnvironmentProfileUseIntent = EnvironmentProfileUseIntent.NEW_EXECUTION,
     ) -> EnvironmentInstanceAcquisition:
         def acquire_once() -> EnvironmentInstanceAcquisition:
             self._load()
@@ -976,7 +993,7 @@ class SQLiteExecutionEnvironmentCatalog(ExecutionEnvironmentCatalog):
                 binding_id=binding_id,
                 role=role,
                 scope=scope,
-                recovery=recovery,
+                intent=intent,
             )
             self._persist()
             return value
