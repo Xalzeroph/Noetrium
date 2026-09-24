@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from noetrium_platform.foundation.kernel.kernel.durability import flush_file_descriptor
+from noetrium_platform.foundation.kernel.kernel.durability import durable_create_binary_file
 
 import os
 from pathlib import Path
@@ -46,10 +46,8 @@ def extract_tar_plan(
                 "MEMBER_READ_FAILED",
                 f"regular archive member cannot be read: {member.name}",
             )
-        with source, target.open("xb") as output:
+        with source, durable_create_binary_file(target) as output:
             shutil.copyfileobj(source, output, length=1024 * 1024)
-            output.flush()
-            flush_file_descriptor(output.fileno())
         if target.stat().st_size != member.size:
             raise ArchiveMaterializationError(
                 "MEMBER_SIZE_MISMATCH",
