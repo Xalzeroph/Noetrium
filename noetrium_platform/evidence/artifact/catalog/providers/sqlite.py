@@ -21,10 +21,9 @@ from noetrium_platform.foundation.kernel.kernel import (
 )
 from noetrium_platform.evidence.artifact.contracts import ArtifactContentIdentity
 from noetrium_platform.foundation.kernel.kernel.durability.sqlite import (
-    begin_immediate_sqlite_transaction,
+    immediate_sqlite_transaction,
     open_durable_sqlite_reader,
     open_durable_sqlite_writer,
-    rollback_sqlite_writer,
 )
 from noetrium_platform.evidence.artifact._sqlite_types import require_optional_text, require_text
 from noetrium_platform.foundation.governance.api import ScopeIdentity, ScopeKind
@@ -184,8 +183,11 @@ class SQLiteArtifactRegistry:
     def put(self, artifact: ArtifactRecord) -> ArtifactRecord:
         encoded = self._encode(artifact)
         with closing(self._connect_writer()) as db:
-            begin_immediate_sqlite_transaction(db, timeout_seconds=self.timeout_seconds)
-            try:
+            with immediate_sqlite_transaction(
+                db,
+                timeout_seconds=self.timeout_seconds,
+                label="artifact catalog",
+            ):
                 current_row = db.execute(
                     f"SELECT {self._select_columns()} FROM artifacts WHERE artifact_id=?",
                     (artifact.artifact_id,),
@@ -194,16 +196,11 @@ class SQLiteArtifactRegistry:
                     current = self._decode(current_row)
                     if current != artifact:
                         raise ArtifactRegistryConflict(artifact.artifact_id)
-                    db.execute("COMMIT")
                     return current
                 db.execute(
                     "INSERT INTO artifacts VALUES(?,?,?,?,?,?,?,?,?,?,?,?)",
                     encoded,
                 )
-                db.execute("COMMIT")
-            except BaseException as primary:
-                rollback_sqlite_writer(db, primary, label="artifact")
-                raise
         return artifact
 
     def get(self, artifact_id: str) -> ArtifactRecord:
