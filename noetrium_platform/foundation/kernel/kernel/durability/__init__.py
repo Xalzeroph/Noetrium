@@ -29,6 +29,7 @@ from .file_lock import InterprocessFileLock, InterprocessLockBusy, InterprocessL
 from .stream_digest import sha256_bytes, sha256_file
 from .sqlite import (
     SQLiteDurabilityProfile,
+    abort_sqlite_writer,
     begin_immediate_sqlite_transaction,
     is_sqlite_lock_contention,
     durable_sqlite_connection,
@@ -71,6 +72,7 @@ __all__ = [
     "sha256_bytes",
     "sha256_file",
     "SQLiteDurabilityProfile",
+    "abort_sqlite_writer",
     "begin_immediate_sqlite_transaction",
     "is_sqlite_lock_contention",
     "durable_sqlite_connection",
