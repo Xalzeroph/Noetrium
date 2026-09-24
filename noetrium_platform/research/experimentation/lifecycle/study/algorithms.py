@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import math
+from dataclasses import dataclass
 
 from noetrium_platform.foundation.kernel.kernel import canonical_digest
 
@@ -100,29 +101,43 @@ def _require_complete_matrix(
         )
 
 
-def _append_metric_values(
-    grouped: dict[tuple[str, str], list[float]],
-    observation: StudyMetricObservation,
-    allowed: set[str],
-) -> None:
-    for name, value in observation.metrics:
-        if name not in allowed:
-            raise ValueError(f"study observation contains undeclared metric: {name}")
-        grouped.setdefault((observation.assignment.variant_id, name), []).append(
-            float(value)
-        )
+@dataclass(slots=True)
+class _OnlineMetricStats:
+    """Numerically stable single-pass sample statistics."""
+
+    count: int = 0
+    mean: float = 0.0
+    m2: float = 0.0
+
+    def add(self, value: float) -> None:
+        self.count += 1
+        delta = value - self.mean
+        self.mean += delta / self.count
+        self.m2 += delta * (value - self.mean)
+
+    @property
+    def variance(self) -> float:
+        return self.m2 / (self.count - 1) if self.count > 1 else 0.0
 
 
-def _group_metric_values(
+def _group_metric_stats(
     protocol: StudyProtocol,
     observations: tuple[StudyMetricObservation, ...],
-) -> dict[tuple[str, str], list[float]]:
-    grouped: dict[tuple[str, str], list[float]] = {}
+) -> dict[tuple[str, str], _OnlineMetricStats]:
+    grouped: dict[tuple[str, str], _OnlineMetricStats] = {}
     allowed = set(protocol.metric_names)
     for observation in observations:
         if observation.assignment.study_id != protocol.study_id:
             raise ValueError("study observation belongs to another study")
-        _append_metric_values(grouped, observation, allowed)
+        for name, value in observation.metrics:
+            if name not in allowed:
+                raise ValueError(
+                    f"study observation contains undeclared metric: {name}"
+                )
+            grouped.setdefault(
+                (observation.assignment.variant_id, name),
+                _OnlineMetricStats(),
+            ).add(float(value))
     return grouped
 
 
@@ -130,23 +145,17 @@ def _aggregate_group(
     protocol: StudyProtocol,
     variant_id: str,
     metric_name: str,
-    values: list[float],
+    stats: _OnlineMetricStats,
 ) -> StudyMetricAggregate:
-    count = len(values)
-    mean = sum(values) / count
-    variance = (
-        sum((value - mean) ** 2 for value in values) / (count - 1)
-        if count > 1
-        else 0.0
-    )
+    variance = stats.variance
     return StudyMetricAggregate(
         protocol.study_id,
         variant_id,
         metric_name,
-        count,
-        mean,
+        stats.count,
+        stats.mean,
         variance,
-        math.sqrt(variance / count),
+        math.sqrt(variance / stats.count),
     )
 
 
@@ -165,10 +174,10 @@ class BasicStudyMetricAggregator(StudyMetricAggregationPort):
             protocol, expected_by_digest, observations
         )
         _require_complete_matrix(expected_by_digest, observed_by_digest)
-        grouped = _group_metric_values(protocol, observations)
+        grouped = _group_metric_stats(protocol, observations)
         return tuple(
-            _aggregate_group(protocol, variant_id, metric_name, values)
-            for (variant_id, metric_name), values in sorted(grouped.items())
+            _aggregate_group(protocol, variant_id, metric_name, stats)
+            for (variant_id, metric_name), stats in sorted(grouped.items())
         )
 
 
