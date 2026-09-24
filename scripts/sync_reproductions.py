@@ -31,8 +31,13 @@ from research.reproductions.contracts import (
     ReproductionEvidenceRef,
     ReproductionMatchCriterion,
 )
+from research.reproductions.research_os import (
+    compile_reproduction_research_program,
+    is_research_os_executable,
+    resolve_execution_requirements,
+)
 
-PROJECTION_SCHEMA = "noetrium.reproduction.projection.v7"
+PROJECTION_SCHEMA = "noetrium.reproduction.projection.v8"
 REPRODUCTION_CATALOG_SCHEMA = "noetrium.reproduction-catalog.projection.v1"
 REPRODUCTION_CATALOG_AUTHORITY = "generated_from_typed_reproduction_definitions"
 _ALLOWED_DEFINITION_IMPORTS = {"__future__", "research.reproductions.contracts"}
@@ -223,12 +228,43 @@ def _projection(
 ) -> dict[str, Any]:
     assets = [_asset(row) for row in definition.assets]
     scientific_tests = [_scientific_test(path) for path in definition.scientific_tests]
+    if is_research_os_executable(definition):
+        program = compile_reproduction_research_program(definition)
+        requirements = resolve_execution_requirements(definition)
+        research_os = {
+            "surface": "noetrium.api",
+            "execution_state": (
+                "execution_ready"
+                if not requirements
+                else "closure_binding_required"
+            ),
+            "program_id": program.program_id,
+            "program_digest": program.program_digest,
+            "execution_requirements": [
+                {
+                    "parameter": row.parameter,
+                    "kind": row.kind.value,
+                    "consumers": list(row.consumers),
+                    "requirement_digest": row.requirement_digest,
+                }
+                for row in requirements
+            ],
+        }
+    else:
+        research_os = {
+            "surface": "noetrium.api",
+            "execution_state": "not_executable",
+            "program_id": None,
+            "program_digest": None,
+            "execution_requirements": [],
+        }
     package_digest = canonical_digest(
         {
             "definition_digest": definition.definition_digest,
             "source_registry_digest": sources.registry_digest,
             "assets": assets,
             "scientific_tests": scientific_tests,
+            "research_os": research_os,
         }
     )
     return {
@@ -268,6 +304,7 @@ def _projection(
         "blockers": list(definition.blockers),
         "evidence_refs": [_evidence(row) for row in definition.evidence_refs],
         "scientific_tests": scientific_tests,
+        "research_os": research_os,
     }
 
 
