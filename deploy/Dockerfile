@@ -5,9 +5,11 @@ FROM ${PYTHON_RUNTIME_IMAGE}
 ARG PLATFORM_SOURCE_SHA=unknown
 ARG PLATFORM_WHEEL_SHA256=unknown
 ARG PLATFORM_DISTRIBUTION_EVIDENCE_SHA256=unknown
+ARG PLATFORM_PYTHON_RUNTIME_IDENTITY_DIGEST
 LABEL org.opencontainers.image.revision="${PLATFORM_SOURCE_SHA}" \
       org.opencontainers.image.noetrium.wheel.sha256="${PLATFORM_WHEEL_SHA256}" \
-      org.opencontainers.image.noetrium.distribution-evidence.sha256="${PLATFORM_DISTRIBUTION_EVIDENCE_SHA256}"
+      org.opencontainers.image.noetrium.distribution-evidence.sha256="${PLATFORM_DISTRIBUTION_EVIDENCE_SHA256}" \
+      org.opencontainers.image.noetrium.python-runtime.sha256="${PLATFORM_PYTHON_RUNTIME_IDENTITY_DIGEST}"
 
 ENV DEBIAN_FRONTEND=noninteractive \
     PYTHONUNBUFFERED=1 \
