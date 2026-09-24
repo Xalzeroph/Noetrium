@@ -298,23 +298,30 @@ class InMemoryComputeScheduler:
 
     def _usage(self, host_id: str) -> _HostUsage:
         return self._usage_by_host.get(host_id, _HostUsage())
-    def _placements_locked(
-        self,
+    @staticmethod
+    def _eligible_inventory_hosts(
+        hosts: tuple[ComputeHost, ...],
         requirement: ComputeRequirement,
-        *,
-        scope: ScopeIdentity | None,
-        runtime_snapshot: GpuRuntimeSnapshot | None,
-        host_runtime_snapshot: HostRuntimeSnapshot | None,
-    ):
+    ) -> tuple[ComputeHost, ...]:
         required_labels = dict(requirement.required_labels)
-        hosts = tuple(
-            host for host in self._inventory.list_hosts(scope=scope)
+        return tuple(
+            host
+            for host in hosts
             if host.enabled
             and not any(
                 dict(host.labels).get(key) != value
                 for key, value in required_labels.items()
             )
         )
+
+    def _placements_locked(
+        self,
+        hosts: tuple[ComputeHost, ...],
+        requirement: ComputeRequirement,
+        *,
+        runtime_snapshot: GpuRuntimeSnapshot | None,
+        host_runtime_snapshot: HostRuntimeSnapshot | None,
+    ):
         return _ordered_placements(
             hosts,
             self._usage,
@@ -363,13 +370,17 @@ class InMemoryComputeScheduler:
     ) -> tuple[ComputeHost, ...]:
         runtime_snapshot = _observe_gpu_runtime(self._gpu_runtime_observer)
         host_runtime_snapshot = _observe_host_runtime(self._host_runtime_observer)
+        hosts = self._eligible_inventory_hosts(
+            tuple(self._inventory.list_hosts(scope=scope)),
+            requirement,
+        )
         with self._lock:
             self._reconcile_expired_locked(time())
             return tuple(
                 host for _score, host, _gpu_ids
                 in self._placements_locked(
+                    hosts,
                     requirement,
-                    scope=scope,
                     runtime_snapshot=runtime_snapshot,
                     host_runtime_snapshot=host_runtime_snapshot,
                 )
@@ -388,6 +399,14 @@ class InMemoryComputeScheduler:
         request_digest = _allocation_request_digest(scope, placement_scope, requirement)
         runtime_snapshot = _observe_gpu_runtime(self._gpu_runtime_observer)
         host_runtime_snapshot = _observe_host_runtime(self._host_runtime_observer)
+        hosts = self._eligible_inventory_hosts(
+            tuple(
+                self._inventory.list_hosts(
+                    scope=scope if placement_scope is None else placement_scope
+                )
+            ),
+            requirement,
+        )
         with self._lock:
             self._reconcile_expired_locked(now_epoch_s)
             prior_digest = self._request_digests.get(allocation_id)
@@ -397,8 +416,8 @@ class InMemoryComputeScheduler:
             if existing is not None:
                 return existing
             placements = self._placements_locked(
+                hosts,
                 requirement,
-                scope=scope if placement_scope is None else placement_scope,
                 runtime_snapshot=runtime_snapshot,
                 host_runtime_snapshot=host_runtime_snapshot,
             )
