@@ -107,6 +107,13 @@ class _DirectoryArtifactBlobFence(ArtifactBlobFencePort):
     ref: ArtifactBlobRef
     generation: ArtifactBlobGeneration
 
+    def read(self) -> bytes:
+        if self.generation.state is not ArtifactBlobLifecycleState.ACTIVE:
+            raise ArtifactBlobStoreError(
+                "artifact blob generation is not active"
+            )
+        return self._store._read_ref_payload_unlocked(self.ref)
+
     def purge(
         self,
         *,
