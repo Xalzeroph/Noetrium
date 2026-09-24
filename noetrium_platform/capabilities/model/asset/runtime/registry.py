@@ -221,6 +221,69 @@ class ModelAssetRegistry:
             )
             return current
 
+    def authorize_gc(
+        self,
+        expected: ManagedModelAsset,
+        *,
+        gc_proof_digest: str,
+    ) -> ManagedModelAsset:
+        """Upgrade logical retirement into proof-bound physical GC intent."""
+
+        if type(expected) is not ManagedModelAsset:
+            raise TypeError("model asset GC authorization requires ManagedModelAsset")
+        if (
+            type(gc_proof_digest) is not str
+            or len(gc_proof_digest) != 64
+            or any(ch not in "0123456789abcdef" for ch in gc_proof_digest)
+        ):
+            raise ValueError("model asset GC proof must be lowercase sha256")
+        self._validate_id(expected.model_id)
+        with self._lock(expected.model_id):
+            retired = self._retired_path(expected.model_id)
+            if not retired.exists():
+                raise RuntimeError(
+                    "model asset must be logically retired before physical GC: "
+                    f"{expected.model_id}"
+                )
+            expected_digest = self._digest(expected)
+            retired_digest, durable_delete, durable_proof = self._decode_retirement(
+                retired.read_bytes()
+            )
+            if retired_digest != expected_digest:
+                raise RuntimeError(
+                    "model asset GC generation drifted: "
+                    f"{expected.model_id}"
+                )
+            path = self._path(expected.model_id)
+            if not path.exists():
+                if durable_delete and durable_proof == gc_proof_digest:
+                    return expected
+                raise RuntimeError(
+                    "retired model asset metadata disappeared before GC authorization: "
+                    f"{expected.model_id}"
+                )
+            current = self._read(expected.model_id)
+            if self._digest(current) != expected_digest:
+                raise RuntimeError(
+                    "retired model asset metadata drifted before GC authorization: "
+                    f"{expected.model_id}"
+                )
+            if durable_delete:
+                if durable_proof != gc_proof_digest:
+                    raise RuntimeError(
+                        "model asset GC proof changed across retirement retry"
+                    )
+                return current
+            atomic_replace_bytes(
+                retired,
+                self._retirement_payload(
+                    expected_digest,
+                    True,
+                    gc_proof_digest,
+                ),
+            )
+            return current
+
     def retirement(
         self,
         model_id: str,
@@ -268,7 +331,7 @@ class ModelAssetRegistry:
                 )
             (
                 retired_digest,
-                _delete_managed_files,
+                delete_managed_files,
                 _gc_proof_digest,
             ) = self._decode_retirement(retired.read_bytes())
             if retired_digest != expected_digest:
@@ -285,6 +348,11 @@ class ModelAssetRegistry:
                     "retiring model asset metadata drifted: "
                     f"{expected.model_id}"
                 )
+            if not delete_managed_files:
+                # Logical retirement fences new use but deliberately retains
+                # exact metadata so a later proof-backed GC can still locate
+                # and delete the managed bytes without guessing a path.
+                return True
             durable_unlink(path)
             return True
 
