@@ -21,7 +21,7 @@
 
 <!-- readme-locale:en -->
 
-<!-- readme-source-sha256:f01787f87584f9d54263a9b036a1dae6cdba72a578f3976b0972352eec6376a4 -->
+<!-- readme-source-sha256:1f432b22c69651657449ab8a823c51758cc8a8a8c5a4a5e0da04796eff0e3217 -->
 
 <p align="center">
   <strong>Research infrastructure for attributable, recoverable, evidence-preserving AI-agent experiments.</strong><br>
@@ -354,6 +354,10 @@ Downstream code imports stable contracts and reusable components from `noetrium`
 
 Noetrium treats execution environments as a revisioned fleet, not as one mutable container per paper. The host contract is Docker + Compose; host Python is not required.
 
+The canonical server entrypoint is `./deploy/noetrium`. `./deploy/noetrium run` performs ordinary-user Docker/Compose qualification, exact environment build or reuse, fleet authority audit, preflight, and Research OS execution as one fail-closed path. It never invokes `sudo`; the account only needs access to the active Docker daemon (Docker group access or rootless Docker), while GPU hosts must already provide the NVIDIA container runtime. Scientific bindings are never guessed: configure `NOETRIUM_FLEET_EXECUTION_AUTHORITY=module:factory` in the host environment or `deploy/.env`.
+
+The Resource authority owns host-port placement. It obtains kernel-selected candidates, probes current OS bind availability, skips endpoints already occupied or leased, atomically fences concurrent claims, renews live leases, and makes released physical ports eligible for reuse. Papers, model replicas and environment providers therefore do not need to hard-code host ports. The lower-level environment commands below remain available for profile inspection and maintenance.
+
 ```bash
 ./deploy/build-environments.sh validate
 ./deploy/build-environments.sh list
@@ -405,10 +409,12 @@ Minecraft is a first-party reusable environment capability profile. Java, Node a
 
 | Path | Responsibility |
 | --- | --- |
-| `noetrium/` | Public facade, contracts, reference single-agent components, and multi-agent orchestration |
+| `noetrium/` | Supported downstream Research OS facade, generated contracts, typing surface, and shell entrypoints |
+| `components/` | Reusable component contracts, providers, runtime, and reference implementations |
+| `orchestration/` | Reusable orchestration contracts/runtime, including multi-agent composition |
 | `noetrium_platform/` | Internal semantic-plane implementation, providers, and governance tooling; not a downstream extension API |
 | `configs/` | Versioned configuration examples and non-secret templates |
-| `deploy/` | Container image, Compose runtime, and deployment bootstrap assets |
+| `deploy/` | Canonical Docker-only server launcher, image profiles, Compose runtime, and bootstrap assets |
 | `docs/` | Architecture, infrastructure, governance, status, and history |
 | `scripts/` | Thin operator, audit, release, and maintenance entry points |
 | `tests/` | Hierarchical regression and contract tests |
