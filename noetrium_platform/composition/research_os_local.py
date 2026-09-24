@@ -67,6 +67,7 @@ class LocalResearchOSComposition:
     _values: ResearchOSValueRouter
     _experiment_closures: ResearchOSExperimentClosurePort | None
     _artifact_lineage: SQLiteArtifactLineageStore
+    _owns_execution_pool: bool
 
     def prepare(
         self,
@@ -85,7 +86,8 @@ class LocalResearchOSComposition:
         )
 
     def close(self) -> None:
-        self.execution_pool.close()
+        if self._owns_execution_pool:
+            self.execution_pool.close()
 
 
 def compose_local_research_os(
@@ -93,12 +95,14 @@ def compose_local_research_os(
     *,
     experiment_closures: ResearchOSExperimentClosurePort | None = None,
     experiment_runtime_components: ResearchOSExperimentRuntimeComponents | None = None,
+    execution_pool: ResearchExecutionPool | None = None,
 ) -> LocalResearchOSComposition:
     """Compose the single durable local Research OS implementation.
 
     Experimentation is enabled only when both closure authority and owner-system
-    runtime components are supplied. The local composition owns the execution
-    pool and cut-local Artifact-store wiring; half-bound execution is rejected.
+    runtime components are supplied. Callers may inject the platform's canonical
+    ResearchExecutionPool; injected pools are borrowed and never closed here.
+    Half-bound execution is rejected.
     """
 
     if type(state_root) is not Path:
@@ -139,7 +143,10 @@ def compose_local_research_os(
     values = ResearchOSValueRouter(
         (ResearchOSImmutableValueAuthority(blobs, registry, retention),)
     )
-    pool = ResearchExecutionPool()
+    owns_execution_pool = execution_pool is None
+    pool = ResearchExecutionPool() if execution_pool is None else execution_pool
+    if not isinstance(pool, ResearchExecutionPool):
+        raise TypeError("local Research OS execution_pool must be ResearchExecutionPool")
 
     if experiment_runtime_components is None:
         runtime = CanonicalResearchOSNodeRuntime(root / "machine-state")
@@ -184,6 +191,7 @@ def compose_local_research_os(
         values,
         experiment_closures,
         lineage,
+        owns_execution_pool,
     )
 
 
