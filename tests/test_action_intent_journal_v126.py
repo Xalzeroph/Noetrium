@@ -19,7 +19,7 @@ from noetrium_platform.capabilities.environment.api import action_request_digest
 from noetrium_platform.infrastructure.reliability.effect.api import PreparedEffectHandle
 from noetrium_platform.foundation.kernel.kernel import ComponentIdentity, EffectCertainty, EffectClass, EffectReceipt, ExecutionContext, OperationFailure
 from noetrium_platform.capabilities.participant.method.api import MethodIdentity, RecallResult
-from noetrium_platform.research.experimentation.lifecycle.experiment.runtime import ExperimentRuntime
+from tests_support import ExperimentRuntimeForTest as ExperimentRuntime
 from noetrium_platform.research.experimentation.lifecycle.api import ExperimentSpec
 from noetrium_platform.research.execution.decision import FixedDecisionCycleIdentityProvider, DecisionCycleIdentity
 from noetrium_platform.composition.workflows.context_action.safe_action import ActionRecoveryRequired
