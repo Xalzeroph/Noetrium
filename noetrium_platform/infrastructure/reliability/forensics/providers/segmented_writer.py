@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from noetrium_platform.foundation.kernel.kernel.durability import flush_file_descriptor
+
 import os
 from dataclasses import dataclass
 from pathlib import Path
@@ -55,7 +57,7 @@ class SegmentedLedgerWriter:
             handle.write(encoded)
             handle.flush()
             if due:
-                os.fsync(handle.fileno())
+                flush_file_descriptor(handle.fileno())
 
         self.state.replace(
             SegmentWriterState(
