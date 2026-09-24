@@ -263,6 +263,7 @@ def _durable_execution_contract() -> ReadinessCriterion:
         "ensure_execution",
         "snapshot",
         "node_state",
+        "attempt_state",
         "recover_expired",
         "mark_ready",
         "claim",
