@@ -53,7 +53,7 @@ Provider qualification is intentionally layered:
 
 - Python contract/runtime tests validate task types, world cuts, readiness and action evidence without a live server.
 - `node --test actions.test.js` validates the locked Mineflayer bridge against installed JavaScript dependencies.
-- `minecraft-doctor` validates the optional container runtime (Java, Node and bridge dependencies).
+- `environment-doctor minecraft` runs the image-local Minecraft doctor hook and validates Java, Node and bridge dependencies after the generic Noetrium base doctor.
 - A live server qualification validates real server readiness, RCON provisioning, bot login and bounded external effects.
 
 A live qualification proves infrastructure capability only. Scientific interpretation belongs to the downstream experiment that consumes the provider.
