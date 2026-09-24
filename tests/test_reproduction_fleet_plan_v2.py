@@ -9,62 +9,78 @@ def _lane(plan: dict, package: str) -> dict:
     return rows[0]
 
 
-def test_fleet_plan_is_derived_only_from_current_research_os_compilers() -> None:
+def test_fleet_plan_separates_materialization_from_true_execution_readiness() -> None:
     plan = build_plan()
-    assert plan["schema"] == "noetrium.reproduction-fleet-plan.v7"
+    assert plan["schema"] == "noetrium.reproduction-fleet-plan.v8"
     assert plan["compile_failure_count"] == 0
     assert plan["research_os_compiled_count"] == plan["executable_reproduction_count"]
-    assert (
-        plan["execution_ready_count"]
-        + plan["benchmark_binding_required_count"]
-        + plan["closure_binding_required_count"]
-        == plan["executable_reproduction_count"]
-    )
     assert plan["graph_node_count"] == plan["executable_reproduction_count"]
+    assert len(plan["benchmark_authority_digest"]) == 64
+    assert plan["benchmark_authority_binding_count"] >= 1
     assert len(plan["portfolio_digest"]) == 64
     assert len(plan["graph_digest"]) == 64
     assert len(plan["plan_digest"]) == 64
+    assert "execution_ready_count" not in plan
+
+    states = {
+        "benchmark_authority_required",
+        "reproduction_closure_required",
+        "execution_authority_required",
+    }
+    assert sum(
+        plan[key]
+        for key in (
+            "benchmark_authority_required_count",
+            "reproduction_closure_required_count",
+            "execution_authority_required_count",
+        )
+    ) >= plan["executable_reproduction_count"]
+    assert plan["materialization_ready_count"] == plan[
+        "execution_authority_required_count"
+    ]
+
     for row in plan["lanes"]:
-        assert row["state"] in {
-            "execution_ready",
-            "benchmark_binding_required",
-            "closure_binding_required",
-        }
+        assert row["state"] in states
         assert row["study_factory_count"] >= 1
         assert len(row["research_program_digest"]) == 64
         assert len(row["research_graph_semantic_digest"]) == 64
         assert row["research_graph_node_id"] == row["package"] + "::reproduction"
         assert row["blockers"] == ()
+        assert row["benchmark_authority_state"] in {"closed", "required"}
+        assert row["reproduction_closure_state"] in {"closed", "required"}
+        assert row["execution_authority_state"] == "required"
+        if row["materialization_ready"]:
+            assert row["state"] == "execution_authority_required"
+            assert row["benchmark_authority_state"] == "closed"
+            assert row["reproduction_closure_state"] == "closed"
+            assert row["benchmark_blockers"] == ()
 
 
-def test_fleet_plan_separates_benchmark_axis_from_typed_non_benchmark_closure() -> None:
+def test_fleet_plan_uses_repository_benchmark_authority_instead_of_split_heuristics() -> None:
     plan = build_plan()
 
+    vima = _lane(plan, "vima_embodied")
+    assert vima["benchmark_authority_state"] == "closed"
+    assert vima["benchmark_selection_count"] >= 1
+    assert vima["benchmark_blockers"] == ()
+    assert vima["reproduction_closure_state"] == "closed"
+    assert vima["state"] == "execution_authority_required"
+    assert vima["materialization_ready"] is True
+
     react = _lane(plan, "react_alfworld")
-    assert react["state"] == "execution_ready"
-    assert react["execution_requirement_parameters"] == ()
-    assert react["execution_requirement_kinds"] == ()
     assert react["benchmark_split_axis_consumers"] == ()
+    assert react["benchmark_authority_state"] == "required"
+    assert react["benchmark_blockers"]
+    assert react["state"] == "benchmark_authority_required"
+    assert react["materialization_ready"] is False
 
-    adapt = _lane(plan, "adaptagent_acl2025")
-    assert adapt["state"] == "benchmark_binding_required"
-    assert adapt["execution_requirement_parameters"] == ()
-    assert adapt["execution_requirement_kinds"] == ()
-    assert adapt["benchmark_split_axis_consumers"] == (
-        "study:build_adaptagent_study",
-    )
 
-    frontier = _lane(plan, "astranav_memory_cvpr2026")
-    assert frontier["state"] == "benchmark_binding_required"
-    assert frontier["execution_requirement_parameters"] == ()
-    assert frontier["execution_requirement_kinds"] == ()
-    assert frontier["benchmark_split_axis_consumers"] == ("study:build_study",)
-    assert frontier["study_factory_count"] >= 1
-
+def test_fleet_plan_keeps_reproduction_closure_independent_from_benchmark_authority() -> None:
+    plan = build_plan()
     storm = _lane(plan, "storm_wiki")
-    assert storm["state"] == "closure_binding_required"
     assert storm["execution_requirement_parameters"] == ("search_capability_id",)
     assert storm["execution_requirement_kinds"] == ("capability_id",)
+    assert storm["reproduction_closure_state"] == "required"
     assert storm["benchmark_split_axis_consumers"] == (
         "study:build_storm_freshwiki_study",
     )
@@ -85,11 +101,10 @@ def test_every_remaining_non_benchmark_execution_input_is_typed_and_digest_bound
         digests = tuple(row["execution_requirement_digests"])
         assert len(parameters) == len(kinds) == len(digests)
         assert len(parameters) == len(set(parameters))
-        assert all(kind in {
-            "capability_id",
-            "capability_closure",
-            "paper_option",
-        } for kind in kinds)
+        assert all(
+            kind in {"capability_id", "capability_closure", "paper_option"}
+            for kind in kinds
+        )
         assert all(
             len(digest) == 64
             and all(ch in "0123456789abcdef" for ch in digest)
