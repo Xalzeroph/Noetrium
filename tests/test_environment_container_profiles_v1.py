@@ -12,36 +12,80 @@ def _catalog() -> dict:
     return json.loads((ENV_ROOT / "catalog.json").read_text(encoding="utf-8"))
 
 
-def test_environment_profile_catalog_matches_canonical_categories() -> None:
+def test_environment_profile_registry_is_dynamic_and_lifecycle_driven() -> None:
     data = _catalog()
-    assert data["schema"] == "noetrium.environment-container-profiles.v1"
-    profiles = {row["profile_id"]: row for row in data["profiles"]}
-    assert set(profiles) == {"minecraft", "embodied", "gui", "web", "software", "text_world"}
-    assert {row["category_id"] for row in profiles.values()} == set(profiles)
-    assert profiles["text_world"]["build_mode"] == "base-only"
+    assert data["schema"] == "noetrium.environment-profile-registry.v2"
+    profiles = data["profiles"]
+    assert profiles
+    profile_ids = [row["profile_id"] for row in profiles]
+    assert len(profile_ids) == len(set(profile_ids))
+
+    active_categories = {
+        row["category_id"]
+        for row in profiles
+        if row["lifecycle"] == "active"
+    }
+    defaults = {
+        row["category_id"]: row["profile_id"]
+        for row in profiles
+        if row.get("default_for_category")
+    }
+    assert set(defaults) == active_categories
+    assert {row["lifecycle"] for row in profiles} <= {"active", "draining", "retired"}
+
+    builder = (ROOT / "scripts" / "build_environment_images.py").read_text(encoding="utf-8")
+    assert "EXPECTED_PROFILES" not in builder
+    assert "_default_active_profile_ids" in builder
+    assert "--allow-retired" in builder
 
 
-def test_environment_images_extend_qualified_base_only() -> None:
+def test_environment_registry_declares_share_vs_isolate_policy() -> None:
+    data = _catalog()
+    policy = data["sharing_policy"]
+    assert "share immutable content" in policy["principle"]
+    assert "runtime-state" in policy["private_per_execution"]
+    assert "workspace" in policy["private_per_execution"]
+    assert "content-addressed-assets" in policy["shared_read_only"]
+    assert "zero active/resumable references" in policy["gc_rule"]
+
+    required_private = {
+        "workspace", "tmp", "runtime-state", "secrets",
+        "process-namespace", "network-namespace", "ports",
+    }
+    for row in data["profiles"]:
+        isolation = row["isolation"]
+        assert isolation["shared_read_only"]
+        assert required_private <= set(isolation["private_writable"])
+        assert isolation["cleanliness"] == "destroy-overlay-or-verified-reset"
+
+
+def test_environment_images_extend_qualified_base_and_install_local_doctors() -> None:
     data = _catalog()
     for row in data["profiles"]:
         if row.get("build_mode") == "base-only":
             continue
         dockerfile = ROOT / row["dockerfile"]
         compose = ROOT / row["compose"]
+        hook = ENV_ROOT / row["profile_id"] / "doctor.sh"
         assert dockerfile.is_file()
         assert compose.is_file()
+        assert hook.is_file()
         text = dockerfile.read_text(encoding="utf-8")
         assert "ARG PLATFORM_BASE_IMAGE" in text
         assert "FROM ${PLATFORM_BASE_IMAGE}" in text
+        assert "environment-doctor.d" in text
+        assert f"/environment-doctor.d/{row['profile_id']}" in text
         lowered = text.lower()
-        for forbidden in (
-            "copy research",
-            "copy benchmarks",
-            "copy datasets",
-            "copy checkpoints",
-            "copy experiments",
-        ):
+        for forbidden in ("copy research", "copy benchmarks", "copy datasets", "copy checkpoints", "copy experiments"):
             assert forbidden not in lowered
+
+
+def test_environment_doctor_dispatch_is_profile_extensible() -> None:
+    entrypoint = (ROOT / "deploy" / "container-entrypoint.sh").read_text(encoding="utf-8")
+    assert "environment-doctor.d" in entrypoint
+    assert 'local hook="$PROFILE_DOCTOR_ROOT/$profile"' in entrypoint
+    for profile_id in ("minecraft", "embodied", "gui", "web", "software"):
+        assert f"{profile_id}_doctor()" not in entrypoint
 
 
 def test_environment_compose_overlays_have_profile_doctors() -> None:
@@ -53,6 +97,18 @@ def test_environment_compose_overlays_have_profile_doctors() -> None:
         text = (ROOT / compose_path).read_text(encoding="utf-8")
         assert "environment-doctor" in text
         assert row["profile_id"] in text
+
+
+def test_environment_writable_state_is_instance_scoped() -> None:
+    base = (ROOT / "deploy" / "compose.yaml").read_text(encoding="utf-8")
+    minecraft = (ROOT / "deploy" / "environments" / "minecraft" / "compose.yaml").read_text(encoding="utf-8")
+    assert "PLATFORM_RUNTIME_STATE_ROOT" in base
+    assert "PLATFORM_ENVIRONMENT_INSTANCE_ROOT" in minecraft
+    assert "${PLATFORM_HOST_DATA_ROOT:-./.runtime}/minecraft" not in minecraft
+    builder = (ROOT / "scripts" / "build_environment_images.py").read_text(encoding="utf-8")
+    assert "qualification_instance" in builder
+    assert "PLATFORM_ENVIRONMENT_INSTANCE_ROOT" in builder
+    assert "qualification_instance_cleaned" in builder
 
 
 def test_base_compose_does_not_rebuild_mutable_checkout() -> None:
@@ -86,9 +142,7 @@ def test_environment_bootstrap_supports_linked_git_worktrees_without_host_git() 
 
 def test_deployment_runtime_images_are_source_configurable_without_remote_frontend() -> None:
     base = (ROOT / "deploy" / "Dockerfile").read_text(encoding="utf-8")
-    builder = (ROOT / "scripts" / "build_environment_images.py").read_text(
-        encoding="utf-8"
-    )
+    builder = (ROOT / "scripts" / "build_environment_images.py").read_text(encoding="utf-8")
     assert "ARG PYTHON_RUNTIME_IMAGE=python:3.12-slim-bookworm" in base
     assert "FROM ${PYTHON_RUNTIME_IMAGE}" in base
     assert "--python-runtime-image" in builder
@@ -96,6 +150,7 @@ def test_deployment_runtime_images_are_source_configurable_without_remote_fronte
     assert "--java-runtime-image" in builder
     assert "--java-runtime-canonical-image" in builder
     assert '"runtime_image_sources"' in builder
+    assert "profile_revision" in builder
     for dockerfile in (ROOT / "deploy").rglob("Dockerfile"):
         text = dockerfile.read_text(encoding="utf-8")
         assert "# syntax=docker/dockerfile:" not in text
