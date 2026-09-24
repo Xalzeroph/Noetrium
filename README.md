@@ -368,6 +368,8 @@ The sharing rule is strict:
 
 Noetrium therefore reuses the qualified base image, environment image layers and content-addressed assets across papers, while each execution gets a private workspace, temporary/runtime state, secrets, process/network namespace, ports, browser/world/application state and other writable overlays. A warm environment may be reused only after its overlay is destroyed or a provider emits an explicit cleanliness proof; uncertain instances are destroyed rather than recycled.
 
+This is enforced by the Environment authority, not left to convention. Each `EnvironmentInstance` moves through `CLEAN -> IN_USE -> CLEAN/DIRTY -> DESTROYED`. Checkout increments an instance generation; a cleanliness proof must bind the exact instance, profile revision and generation, so an old reset proof cannot be replayed after later work. Only `CLEAN` instances are eligible for reuse. Profile garbage collection is fail-closed: the Environment catalog first proves that no non-destroyed local instance or live binding remains, then Execution/Evidence authorities must additionally report no resumable execution or retained evidence reference before the revision is eligible for physical cache deletion.
+
 ```text
 host substrate
   -> evidence-bound Noetrium base
