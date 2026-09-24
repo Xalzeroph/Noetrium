@@ -12,7 +12,10 @@ from noetrium_platform.infrastructure.resources.lease.api import (
     ResourceOwnershipConflict,
     ResourceOwnershipPort,
 )
-from noetrium_platform.foundation.kernel.kernel.durability.sqlite import durable_sqlite_connection
+from noetrium_platform.foundation.kernel.kernel.durability.sqlite import (
+    begin_immediate_sqlite_transaction,
+    durable_sqlite_connection,
+)
 from noetrium_platform.infrastructure.resources.providers.sqlite_lease_ops import (
     acquire_resource_lease,
     decode_resource_lease,
@@ -47,7 +50,7 @@ class SQLiteResourceLeaseRegistry(ResourceOwnershipPort, ResourceLeasePort):
             raise ValueError("SQLite resource timeout_seconds must be finite and positive")
         self.timeout_seconds = float(timeout_seconds)
         with self._connection() as conn:
-            conn.execute("BEGIN IMMEDIATE")
+            begin_immediate_sqlite_transaction(conn, timeout_seconds=self.timeout_seconds)
             try:
                 ensure_resource_schema(conn)
                 conn.commit()
@@ -60,7 +63,7 @@ class SQLiteResourceLeaseRegistry(ResourceOwnershipPort, ResourceLeasePort):
 
     def register_owner(self, owner: ResourceOwner) -> None:
         with self._connection() as conn:
-            conn.execute("BEGIN IMMEDIATE")
+            begin_immediate_sqlite_transaction(conn, timeout_seconds=self.timeout_seconds)
             try:
                 ensure_resource_owner(conn, owner)
                 conn.commit()
@@ -78,7 +81,7 @@ class SQLiteResourceLeaseRegistry(ResourceOwnershipPort, ResourceLeasePort):
     def remove_owner(self, resource: ResourceIdentity) -> None:
         now_epoch_s = time()
         with self._connection() as conn:
-            conn.execute("BEGIN IMMEDIATE")
+            begin_immediate_sqlite_transaction(conn, timeout_seconds=self.timeout_seconds)
             expire_resource(conn, resource.key, now_epoch_s)
             active = conn.execute(
                 "SELECT 1 FROM resource_leases WHERE resource_key=? AND state='active'", (resource.key,)
@@ -98,7 +101,7 @@ class SQLiteResourceLeaseRegistry(ResourceOwnershipPort, ResourceLeasePort):
     ) -> ResourceLease:
         now_epoch_s = time() if now is None else float(now)
         with self._connection() as conn:
-            conn.execute("BEGIN IMMEDIATE")
+            begin_immediate_sqlite_transaction(conn, timeout_seconds=self.timeout_seconds)
             try:
                 granted = acquire_resource_lease(
                     conn, lease, ttl_seconds=ttl_seconds, now_epoch_s=now_epoch_s
@@ -119,7 +122,7 @@ class SQLiteResourceLeaseRegistry(ResourceOwnershipPort, ResourceLeasePort):
     ) -> ResourceLease:
         now_epoch_s = time() if now is None else float(now)
         with self._connection() as conn:
-            conn.execute("BEGIN IMMEDIATE")
+            begin_immediate_sqlite_transaction(conn, timeout_seconds=self.timeout_seconds)
             try:
                 renewed = renew_resource_lease(
                     conn,
@@ -137,7 +140,7 @@ class SQLiteResourceLeaseRegistry(ResourceOwnershipPort, ResourceLeasePort):
     def release(self, lease_id: str, *, now: float | None = None) -> ResourceLease:
         now_epoch_s = time() if now is None else float(now)
         with self._connection() as conn:
-            conn.execute("BEGIN IMMEDIATE")
+            begin_immediate_sqlite_transaction(conn, timeout_seconds=self.timeout_seconds)
             try:
                 released = release_resource_lease(
                     conn, lease_id, now_epoch_s=now_epoch_s
@@ -160,7 +163,7 @@ class SQLiteResourceLeaseRegistry(ResourceOwnershipPort, ResourceLeasePort):
         if not current.expired_at(now_epoch_s):
             return current
         with self._connection() as conn:
-            conn.execute("BEGIN IMMEDIATE")
+            begin_immediate_sqlite_transaction(conn, timeout_seconds=self.timeout_seconds)
             expire_lease(conn, lease_id, now_epoch_s)
             row = conn.execute("SELECT * FROM resource_leases WHERE lease_id=?", (lease_id,)).fetchone()
             conn.commit()
@@ -175,7 +178,7 @@ class SQLiteResourceLeaseRegistry(ResourceOwnershipPort, ResourceLeasePort):
         if not math.isfinite(now_epoch_s):
             raise ValueError("lease observation time must be finite")
         with self._connection() as conn:
-            conn.execute("BEGIN IMMEDIATE")
+            begin_immediate_sqlite_transaction(conn, timeout_seconds=self.timeout_seconds)
             expire_resource(conn, resource.key, now_epoch_s)
             rows = conn.execute(
                 "SELECT * FROM resource_leases WHERE resource_key=? AND state='active' ORDER BY lease_id",
@@ -191,7 +194,7 @@ class SQLiteResourceLeaseRegistry(ResourceOwnershipPort, ResourceLeasePort):
         if not math.isfinite(now_epoch_s):
             raise ValueError("lease observation time must be finite")
         with self._connection() as conn:
-            conn.execute("BEGIN IMMEDIATE")
+            begin_immediate_sqlite_transaction(conn, timeout_seconds=self.timeout_seconds)
             expire_resource(conn, resource.key, now_epoch_s)
             rows = conn.execute(
                 "SELECT * FROM resource_leases WHERE resource_key=? "
@@ -206,7 +209,7 @@ class SQLiteResourceLeaseRegistry(ResourceOwnershipPort, ResourceLeasePort):
         if not math.isfinite(now_epoch_s):
             raise ValueError("lease observation time must be finite")
         with self._connection() as conn:
-            conn.execute("BEGIN IMMEDIATE")
+            begin_immediate_sqlite_transaction(conn, timeout_seconds=self.timeout_seconds)
             try:
                 rows = reconcile_expired_resource_leases(
                     conn, now_epoch_s=now_epoch_s
