@@ -6,12 +6,19 @@ import json
 from pathlib import Path
 
 from noetrium_platform.foundation.kernel.kernel import canonical_digest
+from noetrium_platform.research.experimentation.lifecycle.api import (
+    BenchmarkSourceResolution,
+)
+from noetrium_platform.research.experimentation.lifecycle.study.api import (
+    BenchmarkResolutionRegistration,
+)
 
 from .cut import (
     GSM8K_ARCHIVED_COMMIT,
     GSM8K_FINAL_ANSWER_MARKER,
     GSM8K_SPLIT_COUNTS,
     GSM8KTaskRecord,
+    build_gsm8k_source,
     build_gsm8k_task_set,
 )
 
@@ -58,6 +65,37 @@ def _final_answer(answer: str, index: int) -> str:
     if not value:
         raise ValueError(f"GSM8K row {index} has empty final answer")
     return value
+
+
+def register_gsm8k_materialization(
+    materialization: GSM8KMaterialization,
+) -> BenchmarkResolutionRegistration:
+    """Freeze one verified GSM8K materialization into Benchmark authority."""
+
+    if type(materialization) is not GSM8KMaterialization:
+        raise TypeError(
+            "GSM8K benchmark registration requires GSM8KMaterialization"
+        )
+    resolution = BenchmarkSourceResolution(
+        source=build_gsm8k_source(
+            dataset_content_sha256=materialization.file_sha256,
+        ),
+        task_set=materialization.cut,
+    )
+    proof_digest = canonical_digest(
+        {
+            "schema": "gsm8k.materialized.benchmark-authority-proof.v1",
+            "archived_commit": GSM8K_ARCHIVED_COMMIT,
+            "git_blob_sha1": materialization.git_blob_sha1,
+            "file_sha256": materialization.file_sha256,
+            "split_id": materialization.split_id,
+            "resolution_digest": resolution.resolution_digest,
+        }
+    )
+    return BenchmarkResolutionRegistration(
+        resolution,
+        proof_digest,
+    )
 
 
 def materialize_gsm8k_jsonl(
@@ -152,4 +190,5 @@ __all__ = [
     "GSM8KMaterializedTask",
     "materialize_archived_gsm8k_test",
     "materialize_gsm8k_jsonl",
+    "register_gsm8k_materialization",
 ]
