@@ -1,0 +1,1672 @@
+{
+  "schema": "noetrium.reproduction-research-os-status.v1",
+  "authority": "generated_from_typed_reproduction_definitions",
+  "package_count": 100,
+  "state_counts": {
+    "closure_binding_required": 53,
+    "execution_ready": 42,
+    "not_executable": 5
+  },
+  "requirement_kind_counts": {
+    "benchmark_split": 51,
+    "capability_closure": 3,
+    "capability_id": 1,
+    "paper_option": 2
+  },
+  "packages": [
+    {
+      "package": "adacm2_memory",
+      "lifecycle": "protocol_bound",
+      "execution_state": "closure_binding_required",
+      "program_id": "adacm2_memory",
+      "program_digest": "98b658cfd1cf36d0932d3f3cb1df1f2bd1a86587e86b4c0adceda306f292c791",
+      "benchmark_ids": [
+        "lvu"
+      ],
+      "execution_requirements": [
+        {
+          "parameter": "interpretation",
+          "kind": "paper_option",
+          "consumers": [
+            "study:build_adacm2_lvu_study"
+          ],
+          "requirement_digest": "aef7cdc5d12a5cc76a2c671c7261b57114898023cd2eeb26f6c572de06700080"
+        }
+      ]
+    },
+    {
+      "package": "adaptagent_acl2025",
+      "lifecycle": "protocol_bound",
+      "execution_state": "closure_binding_required",
+      "program_id": "adaptagent_acl2025",
+      "program_digest": "bc76d9b8886a43f75db9f7fd4cf3e04d2e46f3c58c0f9a90d3f17055a827ce9e",
+      "benchmark_ids": [
+        "mind2web",
+        "visualwebarena"
+      ],
+      "execution_requirements": [
+        {
+          "parameter": "split_id",
+          "kind": "benchmark_split",
+          "consumers": [
+            "study:build_adaptagent_study"
+          ],
+          "requirement_digest": "c1c6a3902adff8455f7529d4a67bad7f7ee1f33cb97afd167973f7f1508d2cc9"
+        }
+      ]
+    },
+    {
+      "package": "adas_meta_agent_search",
+      "lifecycle": "protocol_bound",
+      "execution_state": "execution_ready",
+      "program_id": "adas_meta_agent_search",
+      "program_digest": "cf35b036a70e74c0a60f5b73568b2af0e7c5ec63943d475cf08499b51b90540b",
+      "benchmark_ids": [
+        "mgsm"
+      ],
+      "execution_requirements": []
+    },
+    {
+      "package": "aflow",
+      "lifecycle": "protocol_bound",
+      "execution_state": "execution_ready",
+      "program_id": "aflow",
+      "program_digest": "c875e41d17d6a143ed5f2bfc21ad1747a5d448cb463949bc8a62a4d14a75ad55",
+      "benchmark_ids": [
+        "humaneval"
+      ],
+      "execution_requirements": []
+    },
+    {
+      "package": "agemem_acl2026",
+      "lifecycle": "protocol_bound",
+      "execution_state": "closure_binding_required",
+      "program_id": "agemem_acl2026",
+      "program_digest": "6e33ea8af79b28a4dcd539d26de824188de0ab0bda17ef7384eee638f7d6f60e",
+      "benchmark_ids": [
+        "agentboard-pddl",
+        "alfworld",
+        "babyai",
+        "hotpotqa",
+        "scienceworld"
+      ],
+      "execution_requirements": [
+        {
+          "parameter": "benchmark_split_id",
+          "kind": "benchmark_split",
+          "consumers": [
+            "study:build_study"
+          ],
+          "requirement_digest": "0dfa1dba24ab5c3dd9edfd78bfafc25c30a71c9543e48763798af4632ed662d9"
+        }
+      ]
+    },
+    {
+      "package": "agent_q_surrogate",
+      "lifecycle": "protocol_bound",
+      "execution_state": "execution_ready",
+      "program_id": "agent_q_surrogate",
+      "program_digest": "329a63291f3ac6bf6c063da22222c49541f9e24358b45602588100d7de074558",
+      "benchmark_ids": [
+        "webshop",
+        "webvoyager"
+      ],
+      "execution_requirements": []
+    },
+    {
+      "package": "agent_s3",
+      "lifecycle": "protocol_bound",
+      "execution_state": "closure_binding_required",
+      "program_id": "agent_s3",
+      "program_digest": "d9b41a7a8bb31326d0436b425301b13ca230e3b64e14226d694d57b74824ced9",
+      "benchmark_ids": [
+        "osworld"
+      ],
+      "execution_requirements": [
+        {
+          "parameter": "split_id",
+          "kind": "benchmark_split",
+          "consumers": [
+            "study:build_agent_s3_osworld_study"
+          ],
+          "requirement_digest": "c953b9ba717a6e66111604fe3af16da06ac2665741ef4e4ce63b327299be17ab"
+        }
+      ]
+    },
+    {
+      "package": "agentless_swebench",
+      "lifecycle": "protocol_bound",
+      "execution_state": "closure_binding_required",
+      "program_id": "agentless_swebench",
+      "program_digest": "a5ad2379743be8f24dab8bcc1ad93e84dc75e6bda1e4e5bd552b0bd8bec4c8cc",
+      "benchmark_ids": [
+        "swe-bench"
+      ],
+      "execution_requirements": [
+        {
+          "parameter": "split_id",
+          "kind": "benchmark_split",
+          "consumers": [
+            "study:build_agentless_swebench_lite_study"
+          ],
+          "requirement_digest": "d19b0c696e06c4351c94156cac6907379a5075bcdc4ab380c64deefbd38feca5"
+        }
+      ]
+    },
+    {
+      "package": "agentsquare",
+      "lifecycle": "protocol_bound",
+      "execution_state": "execution_ready",
+      "program_id": "agentsquare",
+      "program_digest": "f25dccd045b864277dc435461e82c9d0bf8118844769169bd9ca8436598074b7",
+      "benchmark_ids": [
+        "agentboard-pddl",
+        "alfworld",
+        "m3tooleval",
+        "scienceworld",
+        "travelplanner",
+        "webshop"
+      ],
+      "execution_requirements": []
+    },
+    {
+      "package": "ai_scientist_v1",
+      "lifecycle": "catalogued",
+      "execution_state": "not_executable",
+      "program_id": null,
+      "program_digest": null,
+      "benchmark_ids": [],
+      "execution_requirements": []
+    },
+    {
+      "package": "ai_scientist_v2",
+      "lifecycle": "catalogued",
+      "execution_state": "not_executable",
+      "program_id": null,
+      "program_digest": null,
+      "benchmark_ids": [],
+      "execution_requirements": []
+    },
+    {
+      "package": "astranav_memory_cvpr2026",
+      "lifecycle": "protocol_bound",
+      "execution_state": "closure_binding_required",
+      "program_id": "astranav_memory_cvpr2026",
+      "program_digest": "967a0e97dbc9ef20b43ed266ef7729b7d9b3331ad01dbff01165a01dc3ac18d3",
+      "benchmark_ids": [
+        "goat-bench",
+        "hm3d-ovon"
+      ],
+      "execution_requirements": [
+        {
+          "parameter": "benchmark_split_id",
+          "kind": "benchmark_split",
+          "consumers": [
+            "study:build_study"
+          ],
+          "requirement_digest": "7bff16af30e92698c5e6ca1df6fa4d9419d6ca671758ce967842e5d52e120b66"
+        }
+      ]
+    },
+    {
+      "package": "autogen_agentchat",
+      "lifecycle": "protocol_bound",
+      "execution_state": "closure_binding_required",
+      "program_id": "autogen_agentchat",
+      "program_digest": "02dbdb47a2fa2fc98ef87afe855bb3b51787fed538a7520a955cc43bac8f2517",
+      "benchmark_ids": [
+        "multiagentbench"
+      ],
+      "execution_requirements": [
+        {
+          "parameter": "split_id",
+          "kind": "benchmark_split",
+          "consumers": [
+            "study:build_autogen_multiagentbench_study"
+          ],
+          "requirement_digest": "397247db7d411d9e4555e4f70978a53da9cb435f7badb0a99ea2e490f726916d"
+        }
+      ]
+    },
+    {
+      "package": "camel_role_playing",
+      "lifecycle": "protocol_bound",
+      "execution_state": "execution_ready",
+      "program_id": "camel_role_playing",
+      "program_digest": "d68a209ebe0853f895daeb2d8a1b62e183f4790da60e5409fcf99441601fb278",
+      "benchmark_ids": [
+        "camel-ai-society"
+      ],
+      "execution_requirements": []
+    },
+    {
+      "package": "cer_acl2025",
+      "lifecycle": "protocol_bound",
+      "execution_state": "closure_binding_required",
+      "program_id": "cer_acl2025",
+      "program_digest": "70e0773621bbe5492d73cae961888febbd91993f860bec7d3cb82287ba8ebb66",
+      "benchmark_ids": [
+        "visualwebarena",
+        "webarena"
+      ],
+      "execution_requirements": [
+        {
+          "parameter": "split_id",
+          "kind": "benchmark_split",
+          "consumers": [
+            "study:build_contextual_experience_replay_study"
+          ],
+          "requirement_digest": "ba5ebcc65942dc4eeeb9f9e13ccd24400ffad7da6858d715d2593df1969ad4ac"
+        }
+      ]
+    },
+    {
+      "package": "ces_gui_cvpr2026",
+      "lifecycle": "protocol_bound",
+      "execution_state": "closure_binding_required",
+      "program_id": "ces_gui_cvpr2026",
+      "program_digest": "de862dd9bc7b65e3a481e50ad56fcf3345a6ad80a9eba840ecdd5dd31c756c19",
+      "benchmark_ids": [
+        "aitz",
+        "amex",
+        "gui-odyssey"
+      ],
+      "execution_requirements": [
+        {
+          "parameter": "benchmark_split_id",
+          "kind": "benchmark_split",
+          "consumers": [
+            "study:build_study"
+          ],
+          "requirement_digest": "a413a5664313b8dd724f241fb8663d3e0f7454b354586352e0801a88c8090d14"
+        }
+      ]
+    },
+    {
+      "package": "chain_of_thought_gsm8k",
+      "lifecycle": "protocol_bound",
+      "execution_state": "execution_ready",
+      "program_id": "chain_of_thought_gsm8k",
+      "program_digest": "5558d77b82cb846d396e41d006c431b10f88a375a405bdcfb7337a87220c4808",
+      "benchmark_ids": [
+        "gsm8k"
+      ],
+      "execution_requirements": []
+    },
+    {
+      "package": "chatdev_v1",
+      "lifecycle": "protocol_bound",
+      "execution_state": "execution_ready",
+      "program_id": "chatdev_v1",
+      "program_digest": "001e150a6f5b263ab66509d8ec4d28eccd55b8573437faaaba61ae6a2c421964",
+      "benchmark_ids": [
+        "srdd"
+      ],
+      "execution_requirements": []
+    },
+    {
+      "package": "code_as_policies",
+      "lifecycle": "protocol_bound",
+      "execution_state": "execution_ready",
+      "program_id": "code_as_policies",
+      "program_digest": "dd15e10086514286a6eaecd8048c802a0cfeb99fb25033397eb54744c64e1c1d",
+      "benchmark_ids": [
+        "robocodegen-37"
+      ],
+      "execution_requirements": []
+    },
+    {
+      "package": "cogagent",
+      "lifecycle": "protocol_bound",
+      "execution_state": "closure_binding_required",
+      "program_id": "cogagent",
+      "program_digest": "20e233c2467d4aff5362be94c53a4d6c2186d435512d203f476248e88ec16a62",
+      "benchmark_ids": [
+        "mind2web"
+      ],
+      "execution_requirements": [
+        {
+          "parameter": "split_id",
+          "kind": "benchmark_split",
+          "consumers": [
+            "study:build_cogagent_mind2web_study"
+          ],
+          "requirement_digest": "d959ccb97983a970f7a54fefddc672e235fc4024aae3b88ace9ebe97a9b95c7f"
+        }
+      ]
+    },
+    {
+      "package": "crossha_cvpr2026",
+      "lifecycle": "protocol_bound",
+      "execution_state": "closure_binding_required",
+      "program_id": "crossha_cvpr2026",
+      "program_digest": "905d11dc487763706e951299f335ae1b6f4ad3951a9186fae2715313ca3cc668",
+      "benchmark_ids": [
+        "minecraft-openha"
+      ],
+      "execution_requirements": [
+        {
+          "parameter": "benchmark_split_id",
+          "kind": "benchmark_split",
+          "consumers": [
+            "study:build_study"
+          ],
+          "requirement_digest": "f333a651fbd87c200e8500d8fd2957dcfc70913bf7ba5f998adfef0b33270348"
+        }
+      ]
+    },
+    {
+      "package": "d3d_vlp_cvpr2026",
+      "lifecycle": "protocol_bound",
+      "execution_state": "closure_binding_required",
+      "program_id": "d3d_vlp_cvpr2026",
+      "program_digest": "9036e36f5352c3ad05d0fe30cb45b2177176054905aa7926d67f5a63c850081a",
+      "benchmark_ids": [
+        "hm3d-ovon",
+        "navrag-ce",
+        "r2r-ce",
+        "reverie-ce",
+        "sg3d"
+      ],
+      "execution_requirements": [
+        {
+          "parameter": "benchmark_split_id",
+          "kind": "benchmark_split",
+          "consumers": [
+            "study:build_study"
+          ],
+          "requirement_digest": "70300df3e87bbca7c26cb29ca96fd4630df6c8b6445a19970fe3c809928ca8a0"
+        }
+      ]
+    },
+    {
+      "package": "dars_acl2025",
+      "lifecycle": "protocol_bound",
+      "execution_state": "closure_binding_required",
+      "program_id": "dars_acl2025",
+      "program_digest": "acb3e7f6d8162936e800451b1708f0a76d7acf5e1c9890b8cf2cc2a76ed0957b",
+      "benchmark_ids": [
+        "swe-bench"
+      ],
+      "execution_requirements": [
+        {
+          "parameter": "split_id",
+          "kind": "benchmark_split",
+          "consumers": [
+            "study:build_dars_study"
+          ],
+          "requirement_digest": "e5b6f2df7580d13427958ff2232eacff3baf19ee3d2c550abc4767560e9be8da"
+        }
+      ]
+    },
+    {
+      "package": "dejavu_cvpr2026",
+      "lifecycle": "protocol_bound",
+      "execution_state": "closure_binding_required",
+      "program_id": "dejavu_cvpr2026",
+      "program_digest": "24d7ca96b268a66929585d633576fbab9ac21811ce9a31f182fa584467a82249",
+      "benchmark_ids": [
+        "libero"
+      ],
+      "execution_requirements": [
+        {
+          "parameter": "benchmark_split_id",
+          "kind": "benchmark_split",
+          "consumers": [
+            "study:build_study"
+          ],
+          "requirement_digest": "6dee4603bd8062849f03f89022d0e5f415303e57dd138355bf969a66483ae5a9"
+        }
+      ]
+    },
+    {
+      "package": "deps_minecraft",
+      "lifecycle": "protocol_bound",
+      "execution_state": "execution_ready",
+      "program_id": "deps_minecraft",
+      "program_digest": "707506f34646907dcc6f451e18e3319fce90cf817f39152b0705a87b7ce1c1f9",
+      "benchmark_ids": [
+        "deps-minecraft-70"
+      ],
+      "execution_requirements": []
+    },
+    {
+      "package": "drvideo",
+      "lifecycle": "protocol_bound",
+      "execution_state": "execution_ready",
+      "program_id": "drvideo",
+      "program_digest": "481e2208f0bd729a7ef4c338aa6ae49124fbd9d5205359bbdd82ea4c0a150499",
+      "benchmark_ids": [
+        "egoschema"
+      ],
+      "execution_requirements": []
+    },
+    {
+      "package": "eaglet_acl2026",
+      "lifecycle": "protocol_bound",
+      "execution_state": "closure_binding_required",
+      "program_id": "eaglet_acl2026",
+      "program_digest": "8574696a429e3003718724c6ac273dc9a22119ba608be27553fbe48123754185",
+      "benchmark_ids": [
+        "alfworld",
+        "scienceworld",
+        "webshop"
+      ],
+      "execution_requirements": [
+        {
+          "parameter": "benchmark_split_id",
+          "kind": "benchmark_split",
+          "consumers": [
+            "study:build_study"
+          ],
+          "requirement_digest": "f2cd49c17fb23ccbf75ff7dcfe167c07b1be890533a1cc1b0b1ed35dd396f6d2"
+        }
+      ]
+    },
+    {
+      "package": "echotrail_gui_cvprf2026",
+      "lifecycle": "protocol_bound",
+      "execution_state": "closure_binding_required",
+      "program_id": "echotrail_gui_cvprf2026",
+      "program_digest": "7e1fa662af3f4c55f3a89f6fe16ae14cf7f67c462f43ad8bbb7ad187a18bea4c",
+      "benchmark_ids": [
+        "androidlab",
+        "androidworld"
+      ],
+      "execution_requirements": [
+        {
+          "parameter": "benchmark_split_id",
+          "kind": "benchmark_split",
+          "consumers": [
+            "study:build_study"
+          ],
+          "requirement_digest": "deea713eaf72c1be42ec47b7b67791a0fb8eb04472edab3a0f99595a70d44864"
+        }
+      ]
+    },
+    {
+      "package": "ego2web_cvpr2026",
+      "lifecycle": "protocol_bound",
+      "execution_state": "closure_binding_required",
+      "program_id": "ego2web_cvpr2026",
+      "program_digest": "fcedb3373e576eb73f33347691c9b7f428635e7c05d9ecf0f6eab6447dad9b40",
+      "benchmark_ids": [
+        "ego2web"
+      ],
+      "execution_requirements": [
+        {
+          "parameter": "benchmark_split_id",
+          "kind": "benchmark_split",
+          "consumers": [
+            "study:build_study"
+          ],
+          "requirement_digest": "5ba920276057605f20eda2b914ee393575594bd232e781e3e6fd72848e71536a"
+        }
+      ]
+    },
+    {
+      "package": "embodied_videoagent_iccv2025",
+      "lifecycle": "protocol_bound",
+      "execution_state": "closure_binding_required",
+      "program_id": "embodied_videoagent_iccv2025",
+      "program_digest": "78a572f53c6bac7c9b216beea3a028fc32f27c98d8ae0ec2e60970a6366a8e5b",
+      "benchmark_ids": [
+        "ego4d-vq3d",
+        "envqa",
+        "open-eqa"
+      ],
+      "execution_requirements": [
+        {
+          "parameter": "split_id",
+          "kind": "benchmark_split",
+          "consumers": [
+            "study:build_embodied_videoagent_study"
+          ],
+          "requirement_digest": "a1f3e44e45285ccd453500fd8952248531e1f4f2666f6469fdae5ff54b19c77c"
+        }
+      ]
+    },
+    {
+      "package": "exact_vwa",
+      "lifecycle": "protocol_bound",
+      "execution_state": "execution_ready",
+      "program_id": "exact_vwa",
+      "program_digest": "44ae76151d89782c0a7399500bf203a40411e74b902d72f5155c4c6ff3918cb3",
+      "benchmark_ids": [
+        "osworld",
+        "visualwebarena"
+      ],
+      "execution_requirements": []
+    },
+    {
+      "package": "flash_vstream_memory",
+      "lifecycle": "protocol_bound",
+      "execution_state": "execution_ready",
+      "program_id": "flash_vstream_memory",
+      "program_digest": "db4b3fc8a3d1c18feb9bf2fda199308bf60e390e1be59d493cf473ca6d6ad9f8",
+      "benchmark_ids": [
+        "egoschema"
+      ],
+      "execution_requirements": []
+    },
+    {
+      "package": "flow_modularized_agentic_workflow",
+      "lifecycle": "protocol_bound",
+      "execution_state": "execution_ready",
+      "program_id": "flow_modularized_agentic_workflow",
+      "program_digest": "728dc6f6cb3a948a2cf3cfecde8a52ae24f483e820d171927724a47470b9172a",
+      "benchmark_ids": [
+        "flow-practical-tasks"
+      ],
+      "execution_requirements": []
+    },
+    {
+      "package": "foreact_cvpr2026",
+      "lifecycle": "protocol_bound",
+      "execution_state": "closure_binding_required",
+      "program_id": "foreact_cvpr2026",
+      "program_digest": "0a9c818c9c2af59603d73a34e49849daf8017edaac1f0d02e4b7915a69ef9fb4",
+      "benchmark_ids": [
+        "foreact-real11"
+      ],
+      "execution_requirements": [
+        {
+          "parameter": "benchmark_split_id",
+          "kind": "benchmark_split",
+          "consumers": [
+            "study:build_study"
+          ],
+          "requirement_digest": "4582a261b40b1d398f7311542931881e8c4646faef899a889a59cc5b492ca671"
+        }
+      ]
+    },
+    {
+      "package": "gats",
+      "lifecycle": "protocol_bound",
+      "execution_state": "execution_ready",
+      "program_id": "gats",
+      "program_digest": "43d1362a434dd035086812c7454c237a455bf812d8b048e94c16e578cf67c79a",
+      "benchmark_ids": [
+        "gats-synthetic"
+      ],
+      "execution_requirements": []
+    },
+    {
+      "package": "generative_agents_memory",
+      "lifecycle": "protocol_bound",
+      "execution_state": "execution_ready",
+      "program_id": "generative_agents_memory",
+      "program_digest": "fa678ee040ee291772fc45702d6b68e7a5b4023ff9575138c58d7b9dd274997f",
+      "benchmark_ids": [
+        "generative-agents-smallville"
+      ],
+      "execution_requirements": []
+    },
+    {
+      "package": "gorilla_apibench",
+      "lifecycle": "catalogued",
+      "execution_state": "not_executable",
+      "program_id": null,
+      "program_digest": null,
+      "benchmark_ids": [],
+      "execution_requirements": []
+    },
+    {
+      "package": "hats_cvpr2026",
+      "lifecycle": "protocol_bound",
+      "execution_state": "closure_binding_required",
+      "program_id": "hats_cvpr2026",
+      "program_digest": "ef541a5f2fc8c7e175aef6d503673a2a1310a53853ab17ebe9e971df1da6e795",
+      "benchmark_ids": [
+        "androidworld",
+        "webarena"
+      ],
+      "execution_requirements": [
+        {
+          "parameter": "benchmark_split_id",
+          "kind": "benchmark_split",
+          "consumers": [
+            "study:build_study"
+          ],
+          "requirement_digest": "843071598f389e844bc173ae6323a162372107705d4e541216f7e9206632a39f"
+        }
+      ]
+    },
+    {
+      "package": "hugginggpt",
+      "lifecycle": "protocol_bound",
+      "execution_state": "closure_binding_required",
+      "program_id": "hugginggpt",
+      "program_digest": "e42d01f936a8316fa58af64475401a62f190eda433eb979a89f9caf27f95ed0f",
+      "benchmark_ids": [
+        "hugginggpt-paper-tasks"
+      ],
+      "execution_requirements": [
+        {
+          "parameter": "expert_capability_ids",
+          "kind": "capability_closure",
+          "consumers": [
+            "method:build_hugginggpt_method_program",
+            "study:build_hugginggpt_study"
+          ],
+          "requirement_digest": "a505952e039246b74a86ac49b3a34a186eddc66fbe22bc9acc9318334760839c"
+        },
+        {
+          "parameter": "split_id",
+          "kind": "benchmark_split",
+          "consumers": [
+            "study:build_hugginggpt_study"
+          ],
+          "requirement_digest": "2ecc3d52df5b0127f8bc58355054a467d38d1ebc6b1bcfca781794e6a32ce54b"
+        }
+      ]
+    },
+    {
+      "package": "implement_acl2026",
+      "lifecycle": "protocol_bound",
+      "execution_state": "closure_binding_required",
+      "program_id": "implement_acl2026",
+      "program_digest": "559c08957106290fc23430dd2580fa52a48339d6fb04e7bbef11f36d086c2efd",
+      "benchmark_ids": [
+        "alfworld"
+      ],
+      "execution_requirements": [
+        {
+          "parameter": "benchmark_split_id",
+          "kind": "benchmark_split",
+          "consumers": [
+            "study:build_study"
+          ],
+          "requirement_digest": "6d38215ea0ccf67dbc71e36930583813b93edccc95204964ea2ecfe96bb01f6c"
+        }
+      ]
+    },
+    {
+      "package": "ishift_cvpr2026",
+      "lifecycle": "protocol_bound",
+      "execution_state": "closure_binding_required",
+      "program_id": "ishift_cvpr2026",
+      "program_digest": "4f69968e64a6eefc9e9383333ec5a4e0a98494e92821679ea96a783095e5967e",
+      "benchmark_ids": [
+        "aitw",
+        "androidcontrol",
+        "gui-odyssey",
+        "guiact"
+      ],
+      "execution_requirements": [
+        {
+          "parameter": "benchmark_split_id",
+          "kind": "benchmark_split",
+          "consumers": [
+            "study:build_study"
+          ],
+          "requirement_digest": "1cda766b67a9516260d3517d1691e6d53d22c543310587f351cd94a24fb6746f"
+        }
+      ]
+    },
+    {
+      "package": "jarvis1_minecraft",
+      "lifecycle": "protocol_bound",
+      "execution_state": "execution_ready",
+      "program_id": "jarvis1_minecraft",
+      "program_digest": "bd05d081096e521fe2f6e178e47f369a7b08aa316a44c45a41eff3df23af7264",
+      "benchmark_ids": [
+        "jarvis1-offline-185"
+      ],
+      "execution_requirements": []
+    },
+    {
+      "package": "lats_webshop",
+      "lifecycle": "protocol_bound",
+      "execution_state": "execution_ready",
+      "program_id": "lats_webshop",
+      "program_digest": "203a7d05f3054d168c58d20c8afe6686d96f39dba729574af8c4f7ae5d66cca2",
+      "benchmark_ids": [
+        "webshop"
+      ],
+      "execution_requirements": []
+    },
+    {
+      "package": "lits_math500",
+      "lifecycle": "protocol_bound",
+      "execution_state": "execution_ready",
+      "program_id": "lits_math500",
+      "program_digest": "b5098d27e6b7d8f858d24b57c921b87cc079cb946d4a8fabb1722ca0a56bdb42",
+      "benchmark_ids": [
+        "math500"
+      ],
+      "execution_requirements": []
+    },
+    {
+      "package": "live_swe_agent",
+      "lifecycle": "protocol_bound",
+      "execution_state": "closure_binding_required",
+      "program_id": "live_swe_agent",
+      "program_digest": "483f17cfdd244086f57e54a9ec1fd78dbc278e198bfd2d80346a77835f4efabb",
+      "benchmark_ids": [
+        "swe-bench"
+      ],
+      "execution_requirements": [
+        {
+          "parameter": "split_id",
+          "kind": "benchmark_split",
+          "consumers": [
+            "study:build_live_swe_agent_study"
+          ],
+          "requirement_digest": "b4b167486968c7c5bff7590b444d8a300f6bef2aad3551b6af561f87127324a9"
+        }
+      ]
+    },
+    {
+      "package": "lmee_cvpr2026",
+      "lifecycle": "protocol_bound",
+      "execution_state": "closure_binding_required",
+      "program_id": "lmee_cvpr2026",
+      "program_digest": "d37d1f14b825710bbec770f3c3bbd14e9eb4b2b6d2a09f3b445f5f43deb3be10",
+      "benchmark_ids": [
+        "lmee-bench"
+      ],
+      "execution_requirements": [
+        {
+          "parameter": "benchmark_split_id",
+          "kind": "benchmark_split",
+          "consumers": [
+            "study:build_study"
+          ],
+          "requirement_digest": "7459ddd3553c562e321fa3ff988149dcb96fbb329baff0476947f3cf8da6c183"
+        }
+      ]
+    },
+    {
+      "package": "lvagent_iccv2025",
+      "lifecycle": "protocol_bound",
+      "execution_state": "closure_binding_required",
+      "program_id": "lvagent_iccv2025",
+      "program_digest": "6ae042b392c0185eb8bebdd9c24186aa53525ed3eb168009ac8d229cb54bd6da",
+      "benchmark_ids": [
+        "egoschema"
+      ],
+      "execution_requirements": [
+        {
+          "parameter": "split_id",
+          "kind": "benchmark_split",
+          "consumers": [
+            "study:build_lvagent_study"
+          ],
+          "requirement_digest": "073533046f044b37fb237509c854ceb11b0f846df12e3e6f11570259f399da15"
+        }
+      ]
+    },
+    {
+      "package": "ma_lmm_memory",
+      "lifecycle": "protocol_bound",
+      "execution_state": "execution_ready",
+      "program_id": "ma_lmm_memory",
+      "program_digest": "41140ec744986d38e9a6e998b6c7e4352f5889acea9d669ed2643f963224f1e3",
+      "benchmark_ids": [
+        "lvu"
+      ],
+      "execution_requirements": []
+    },
+    {
+      "package": "mars_automated_ai_research",
+      "lifecycle": "artifact_only",
+      "execution_state": "not_executable",
+      "program_id": null,
+      "program_digest": null,
+      "benchmark_ids": [
+        "mle-bench"
+      ],
+      "execution_requirements": []
+    },
+    {
+      "package": "mem_gallery_acl2026",
+      "lifecycle": "protocol_bound",
+      "execution_state": "closure_binding_required",
+      "program_id": "mem_gallery_acl2026",
+      "program_digest": "0611f43e5016f180ed51f9eb74234a5c7b0b9a2256eb0cb839fb1ab46ab11dda",
+      "benchmark_ids": [
+        "mem-gallery"
+      ],
+      "execution_requirements": [
+        {
+          "parameter": "benchmark_split_id",
+          "kind": "benchmark_split",
+          "consumers": [
+            "study:build_study"
+          ],
+          "requirement_digest": "0204911b8aec41b4d2134482f90641bb0bd33a15fc5bac772f1061abeef9134b"
+        }
+      ]
+    },
+    {
+      "package": "memevolve",
+      "lifecycle": "protocol_bound",
+      "execution_state": "closure_binding_required",
+      "program_id": "memevolve",
+      "program_digest": "84cc37c5d4744cd97de2fe697904260780350b8d0faff1cd61b065b10c0fe46c",
+      "benchmark_ids": [
+        "evomembench",
+        "memoryarena"
+      ],
+      "execution_requirements": [
+        {
+          "parameter": "split_id",
+          "kind": "benchmark_split",
+          "consumers": [
+            "study:build_memevolve_study"
+          ],
+          "requirement_digest": "31ea096147121085916b77e6a404d7d70d1170481ca0f124283ce2d326f37d1e"
+        }
+      ]
+    },
+    {
+      "package": "memgpt_classic",
+      "lifecycle": "protocol_bound",
+      "execution_state": "closure_binding_required",
+      "program_id": "memgpt_classic",
+      "program_digest": "7a1f2fcdedbdc861c9a3d7e0300e9cbd31e5bc0047a74477647ba281c9e27733",
+      "benchmark_ids": [
+        "memoryarena"
+      ],
+      "execution_requirements": [
+        {
+          "parameter": "split_id",
+          "kind": "benchmark_split",
+          "consumers": [
+            "study:build_memgpt_memoryarena_study"
+          ],
+          "requirement_digest": "d43281b4ba1c71e5ca10056cac2ee1f8ae7c59e80e0d2c25fef6e56bc24d99cc"
+        }
+      ]
+    },
+    {
+      "package": "metagpt_software_company",
+      "lifecycle": "protocol_bound",
+      "execution_state": "execution_ready",
+      "program_id": "metagpt_software_company",
+      "program_digest": "41dccf6e16e8757360f2977fe28b4dedd63750366cd23f8aeb15b899c4b0cde3",
+      "benchmark_ids": [
+        "humaneval"
+      ],
+      "execution_requirements": []
+    },
+    {
+      "package": "minedojo",
+      "lifecycle": "protocol_bound",
+      "execution_state": "execution_ready",
+      "program_id": "minedojo",
+      "program_digest": "0b6ea403d57b97c00b92175804b721f2e5757f13589f46c5051ff8637d1ac6b8",
+      "benchmark_ids": [
+        "minedojo"
+      ],
+      "execution_requirements": []
+    },
+    {
+      "package": "mm_mem_acl2026",
+      "lifecycle": "protocol_bound",
+      "execution_state": "closure_binding_required",
+      "program_id": "mm_mem_acl2026",
+      "program_digest": "1acef860c66130f51b269604ffb8b17a795608590ac0e5583570ea05df096434",
+      "benchmark_ids": [
+        "hd-epic",
+        "mlvu",
+        "video-mme",
+        "vstream-qa"
+      ],
+      "execution_requirements": [
+        {
+          "parameter": "benchmark_split_id",
+          "kind": "benchmark_split",
+          "consumers": [
+            "study:build_study"
+          ],
+          "requirement_digest": "22eeebda80cc6513568f6ec13b0fb5dff4b45faea503c0d4eb35f2139a136ba2"
+        }
+      ]
+    },
+    {
+      "package": "mmbench_gui_cvpr2026",
+      "lifecycle": "protocol_bound",
+      "execution_state": "closure_binding_required",
+      "program_id": "mmbench_gui_cvpr2026",
+      "program_digest": "97496f4251fd02a72d468a7d5e9a00a04a56c8cc22dc82205db828c263aca057",
+      "benchmark_ids": [
+        "mmbench-gui"
+      ],
+      "execution_requirements": [
+        {
+          "parameter": "benchmark_split_id",
+          "kind": "benchmark_split",
+          "consumers": [
+            "study:build_study"
+          ],
+          "requirement_digest": "6f574c92c515fee8899b7e5bcbb49e6fbda894a7ff5d9d541224544833683a35"
+        }
+      ]
+    },
+    {
+      "package": "motus_cvpr2026",
+      "lifecycle": "protocol_bound",
+      "execution_state": "closure_binding_required",
+      "program_id": "motus_cvpr2026",
+      "program_digest": "c9ec224a37329560b9df2811af4e2a0311d3104d727e60e028b0c5ee67e37db5",
+      "benchmark_ids": [
+        "motus-realworld",
+        "robotwin2"
+      ],
+      "execution_requirements": [
+        {
+          "parameter": "benchmark_split_id",
+          "kind": "benchmark_split",
+          "consumers": [
+            "study:build_study"
+          ],
+          "requirement_digest": "c78453004e25a9186d8d1e19a0661abeee2b5ad903da1810420f9badf2a6141c"
+        }
+      ]
+    },
+    {
+      "package": "moviechat_memory",
+      "lifecycle": "protocol_bound",
+      "execution_state": "execution_ready",
+      "program_id": "moviechat_memory",
+      "program_digest": "534538e4e5d67e8777e762469fd6b6e1ba5e26eda7bfa19717aab9315632d916",
+      "benchmark_ids": [
+        "moviechat-1k"
+      ],
+      "execution_requirements": []
+    },
+    {
+      "package": "multiagent_debate",
+      "lifecycle": "protocol_bound",
+      "execution_state": "execution_ready",
+      "program_id": "multiagent_debate",
+      "program_digest": "ebfce1966bfc6a632c05d44603908ff0a7453df727993b3a6bdcba4200a75c16",
+      "benchmark_ids": [
+        "gsm8k"
+      ],
+      "execution_requirements": []
+    },
+    {
+      "package": "openwebvoyager_acl2025",
+      "lifecycle": "protocol_bound",
+      "execution_state": "closure_binding_required",
+      "program_id": "openwebvoyager_acl2025",
+      "program_digest": "3b53567d9d67311487e474e568733cc8c004402b04a8879488e26985b461018a",
+      "benchmark_ids": [
+        "mind2web",
+        "webvoyager"
+      ],
+      "execution_requirements": [
+        {
+          "parameter": "split_id",
+          "kind": "benchmark_split",
+          "consumers": [
+            "study:build_openwebvoyager_study"
+          ],
+          "requirement_digest": "8df22c12d38473d08f9921d076e389b1cd9adf80518771d3c33227834ad106fe"
+        }
+      ]
+    },
+    {
+      "package": "optimus1_minecraft",
+      "lifecycle": "protocol_bound",
+      "execution_state": "execution_ready",
+      "program_id": "optimus1_minecraft",
+      "program_digest": "331088f1e05bfd018f9e567e55c900fa21c34eb350551d01bb2c89f10bac43c2",
+      "benchmark_ids": [
+        "minecraft-long-horizon-67"
+      ],
+      "execution_requirements": []
+    },
+    {
+      "package": "optimus2_minecraft",
+      "lifecycle": "protocol_bound",
+      "execution_state": "execution_ready",
+      "program_id": "optimus2_minecraft",
+      "program_digest": "82ff7207440219b9ed042d43bb8d539be73efea3491d4a8196bbd14b01b61c30",
+      "benchmark_ids": [
+        "minecraft-long-horizon-67"
+      ],
+      "execution_requirements": []
+    },
+    {
+      "package": "optimusvla_cvpr2026",
+      "lifecycle": "protocol_bound",
+      "execution_state": "closure_binding_required",
+      "program_id": "optimusvla_cvpr2026",
+      "program_digest": "6e075d8975e6743be1252d1e235e8a42ea9b6ff02e0336ce14d242053c8161a8",
+      "benchmark_ids": [
+        "calvin",
+        "libero",
+        "robotwin2-hard"
+      ],
+      "execution_requirements": [
+        {
+          "parameter": "benchmark_split_id",
+          "kind": "benchmark_split",
+          "consumers": [
+            "study:build_study"
+          ],
+          "requirement_digest": "a969ac38bc0c3cc5dce9de11e9b0d8c303885be3729e17fd6b9080533db64718"
+        }
+      ]
+    },
+    {
+      "package": "orbit_acl2026",
+      "lifecycle": "protocol_bound",
+      "execution_state": "closure_binding_required",
+      "program_id": "orbit_acl2026",
+      "program_digest": "b18a6ab669de4d5065119eaa0988430405cf2342ba8b14ff9554d44ad101dc4b",
+      "benchmark_ids": [
+        "embodiedbench"
+      ],
+      "execution_requirements": [
+        {
+          "parameter": "benchmark_split_id",
+          "kind": "benchmark_split",
+          "consumers": [
+            "study:build_study"
+          ],
+          "requirement_digest": "1c01bfaa6275d450eba62e970ea0cb19aaa1009159222d2a69c582536f916624"
+        }
+      ]
+    },
+    {
+      "package": "os_symphony_acl2026",
+      "lifecycle": "protocol_bound",
+      "execution_state": "closure_binding_required",
+      "program_id": "os_symphony_acl2026",
+      "program_digest": "682ff0bde9e310ec45d9415950c8abe7af38232af0ebcd5abde9e3e9ba5081ca",
+      "benchmark_ids": [
+        "macosarena",
+        "osworld-verified",
+        "windowsagentarena"
+      ],
+      "execution_requirements": [
+        {
+          "parameter": "benchmark_split_id",
+          "kind": "benchmark_split",
+          "consumers": [
+            "study:build_study"
+          ],
+          "requirement_digest": "205c96ffb47cbc0c125ef4dfd814db56b1547f1f2a5f8f9beed6a42572168308"
+        }
+      ]
+    },
+    {
+      "package": "pi05_openpi",
+      "lifecycle": "catalogued",
+      "execution_state": "not_executable",
+      "program_id": null,
+      "program_digest": null,
+      "benchmark_ids": [],
+      "execution_requirements": []
+    },
+    {
+      "package": "providellm_memory",
+      "lifecycle": "protocol_bound",
+      "execution_state": "execution_ready",
+      "program_id": "providellm_memory",
+      "program_digest": "2a3e2265f561db1e9db0af56629cd5c812389b7422b827b8c6dbb8632a263124",
+      "benchmark_ids": [
+        "ego4d-goalstep"
+      ],
+      "execution_requirements": []
+    },
+    {
+      "package": "qlass_alfworld",
+      "lifecycle": "protocol_bound",
+      "execution_state": "execution_ready",
+      "program_id": "qlass_alfworld",
+      "program_digest": "10db5e9ccca62b8abbfd42fef1b164fc5bd8d341efd5113c51047d76eadc4b19",
+      "benchmark_ids": [
+        "alfworld",
+        "webshop"
+      ],
+      "execution_requirements": []
+    },
+    {
+      "package": "r2d2_acl2025",
+      "lifecycle": "protocol_bound",
+      "execution_state": "closure_binding_required",
+      "program_id": "r2d2_acl2025",
+      "program_digest": "3c0132553d4445949c8a1c4b219e62ea7548e970f5092d105642f50611aac011",
+      "benchmark_ids": [
+        "webarena"
+      ],
+      "execution_requirements": [
+        {
+          "parameter": "split_id",
+          "kind": "benchmark_split",
+          "consumers": [
+            "study:build_r2d2_study"
+          ],
+          "requirement_digest": "53f43e7dd8a4c015f4e38f321bf16e318e102c96a5d1b1679002995445e5831d"
+        }
+      ]
+    },
+    {
+      "package": "rap_reasoning",
+      "lifecycle": "protocol_bound",
+      "execution_state": "execution_ready",
+      "program_id": "rap_reasoning",
+      "program_digest": "792acb6fdd56a3d9b2cc13f30036f3815644aa5cbf3605de31250e54713e4871",
+      "benchmark_ids": [
+        "blocksworld"
+      ],
+      "execution_requirements": []
+    },
+    {
+      "package": "react_alfworld",
+      "lifecycle": "protocol_bound",
+      "execution_state": "execution_ready",
+      "program_id": "react_alfworld",
+      "program_digest": "af725426a190ed100ed007d9421fed39b0af03a7288818e60f81fcbf432beaed",
+      "benchmark_ids": [
+        "alfworld",
+        "webshop"
+      ],
+      "execution_requirements": []
+    },
+    {
+      "package": "refact_cvpr2026",
+      "lifecycle": "protocol_bound",
+      "execution_state": "closure_binding_required",
+      "program_id": "refact_cvpr2026",
+      "program_digest": "81a2ca853c0984832aa17562bc0b4d4cbbde2177b7a06ee5418f8829d9ed958c",
+      "benchmark_ids": [
+        "groundedvqa"
+      ],
+      "execution_requirements": [
+        {
+          "parameter": "benchmark_split_id",
+          "kind": "benchmark_split",
+          "consumers": [
+            "study:build_study"
+          ],
+          "requirement_digest": "7417f0be674e176274bebd5a10c9e3930c063a5cffd196db12a243d00de788c6"
+        }
+      ]
+    },
+    {
+      "package": "reflexion_alfworld",
+      "lifecycle": "protocol_bound",
+      "execution_state": "execution_ready",
+      "program_id": "reflexion_alfworld",
+      "program_digest": "0ae6a8f4653099d5cf6c639e10171f9a57cd6d49cef0fd1cb18c0b3f43892c44",
+      "benchmark_ids": [
+        "alfworld"
+      ],
+      "execution_requirements": []
+    },
+    {
+      "package": "rewind_memory",
+      "lifecycle": "protocol_bound",
+      "execution_state": "execution_ready",
+      "program_id": "rewind_memory",
+      "program_digest": "e8bd11f4a35558e876d7055f24db3b2ad2c788323c229c99dc68ebce6537aa34",
+      "benchmark_ids": [
+        "moviechat-1k"
+      ],
+      "execution_requirements": []
+    },
+    {
+      "package": "roboagent_cvpr2026",
+      "lifecycle": "protocol_bound",
+      "execution_state": "closure_binding_required",
+      "program_id": "roboagent_cvpr2026",
+      "program_digest": "a2269ea02e51edb546ee3c73c49aa71680740cf94131d09c65f5fd19e30776fe",
+      "benchmark_ids": [
+        "alfworld",
+        "embodiedbench"
+      ],
+      "execution_requirements": [
+        {
+          "parameter": "benchmark_split_id",
+          "kind": "benchmark_split",
+          "consumers": [
+            "study:build_study"
+          ],
+          "requirement_digest": "2e0324b12718d1f5669b880d9294d48ff2f6fa4ef24cce80f57c4bc5491afc82"
+        }
+      ]
+    },
+    {
+      "package": "saycan",
+      "lifecycle": "protocol_bound",
+      "execution_state": "execution_ready",
+      "program_id": "saycan",
+      "program_digest": "1e3111be8e6840cdfa680310569b1fed3097001fc129a01204f7220d7f37d9af",
+      "benchmark_ids": [
+        "saycan-101"
+      ],
+      "execution_requirements": []
+    },
+    {
+      "package": "seeclick",
+      "lifecycle": "protocol_bound",
+      "execution_state": "closure_binding_required",
+      "program_id": "seeclick",
+      "program_digest": "f965d59088823e8925bab83fe1ef09a970221de0dfdbc58eff671a150772c641",
+      "benchmark_ids": [
+        "screenspot"
+      ],
+      "execution_requirements": [
+        {
+          "parameter": "split_id",
+          "kind": "benchmark_split",
+          "consumers": [
+            "study:build_seeclick_screenspot_study"
+          ],
+          "requirement_digest": "e8ed0b2de0ace4418704e703f5aeeec8c183aa83c079e4fe323fef483fe39b0c"
+        }
+      ]
+    },
+    {
+      "package": "self_consistency_gsm8k",
+      "lifecycle": "protocol_bound",
+      "execution_state": "execution_ready",
+      "program_id": "self_consistency_gsm8k",
+      "program_digest": "7d0c19734b87a0dd8e64809db280a29a52523160fb3fd81ce7fade3ca77eea6e",
+      "benchmark_ids": [
+        "gsm8k"
+      ],
+      "execution_requirements": []
+    },
+    {
+      "package": "self_refine",
+      "lifecycle": "protocol_bound",
+      "execution_state": "closure_binding_required",
+      "program_id": "self_refine",
+      "program_digest": "9cee5dbdfb390e7714dbd2044c8d552bebf06a6690bf3769d60460c011357b14",
+      "benchmark_ids": [
+        "commongen"
+      ],
+      "execution_requirements": [
+        {
+          "parameter": "split_id",
+          "kind": "benchmark_split",
+          "consumers": [
+            "study:build_self_refine_commongen_study"
+          ],
+          "requirement_digest": "0d5b956e7eb91cb53c788229972b7d8326594ad97c3a0d6a1b365bd5059756aa"
+        }
+      ]
+    },
+    {
+      "package": "star_toggle_cvpr2026",
+      "lifecycle": "protocol_bound",
+      "execution_state": "closure_binding_required",
+      "program_id": "star_toggle_cvpr2026",
+      "program_digest": "48852937486fa3f7c6792deaba47047c5ebdcf3446c039c2814db95ab7826b83",
+      "benchmark_ids": [
+        "state-control-benchmark"
+      ],
+      "execution_requirements": [
+        {
+          "parameter": "benchmark_split_id",
+          "kind": "benchmark_split",
+          "consumers": [
+            "study:build_study"
+          ],
+          "requirement_digest": "3c91a241e20e92db102781412a247e0a3426900e6a89168121d48f8c6aaad6e3"
+        }
+      ]
+    },
+    {
+      "package": "steve1_minecraft",
+      "lifecycle": "protocol_bound",
+      "execution_state": "execution_ready",
+      "program_id": "steve1_minecraft",
+      "program_digest": "b69b84e4ab2a9c7741ca819074db63776d2988599e029a0582f0e8805938975e",
+      "benchmark_ids": [
+        "steve1-paper-prompts"
+      ],
+      "execution_requirements": []
+    },
+    {
+      "package": "storm_wiki",
+      "lifecycle": "protocol_bound",
+      "execution_state": "closure_binding_required",
+      "program_id": "storm_wiki",
+      "program_digest": "6731dde3aa1865cfc0cc998e31cc290a6208a632e4cfc012dc7d4adb3b3be626",
+      "benchmark_ids": [
+        "freshwiki"
+      ],
+      "execution_requirements": [
+        {
+          "parameter": "search_capability_id",
+          "kind": "capability_id",
+          "consumers": [
+            "study:build_storm_freshwiki_study"
+          ],
+          "requirement_digest": "52286be5265c197296585c48aea97c63de1add0fca06e37c537f1e89f057de48"
+        },
+        {
+          "parameter": "split_id",
+          "kind": "benchmark_split",
+          "consumers": [
+            "study:build_storm_freshwiki_study"
+          ],
+          "requirement_digest": "daa582227dc912aae861a0ca213499d13a2715e7955a63fec0cee779d91521bb"
+        }
+      ]
+    },
+    {
+      "package": "swe_agent_swebench",
+      "lifecycle": "protocol_bound",
+      "execution_state": "closure_binding_required",
+      "program_id": "swe_agent_swebench",
+      "program_digest": "f58ccd499e108cc035edfef603381e786cb0efbf9b27085bbd5193fd486018e2",
+      "benchmark_ids": [
+        "swe-bench"
+      ],
+      "execution_requirements": [
+        {
+          "parameter": "split_id",
+          "kind": "benchmark_split",
+          "consumers": [
+            "study:build_swe_agent_swebench_study"
+          ],
+          "requirement_digest": "832f85893506060ce940cf6da7303443260ed9d8966cf301eaff529868449dbe"
+        }
+      ]
+    },
+    {
+      "package": "toolformer",
+      "lifecycle": "protocol_bound",
+      "execution_state": "closure_binding_required",
+      "program_id": "toolformer",
+      "program_digest": "d08665a6d978e42c6f77562c14aa5e8d3c8312fa8a9e7c72444b701a8f5006d9",
+      "benchmark_ids": [
+        "toolformer-eval"
+      ],
+      "execution_requirements": [
+        {
+          "parameter": "split_id",
+          "kind": "benchmark_split",
+          "consumers": [
+            "study:build_toolformer_study"
+          ],
+          "requirement_digest": "339d0210c555269a7fdf0f20a31ac9e04706e8a4c8cd2c1ef235fda95c6afe33"
+        },
+        {
+          "parameter": "tool_capability_ids",
+          "kind": "capability_closure",
+          "consumers": [
+            "study:build_toolformer_study"
+          ],
+          "requirement_digest": "4e66301f9a974f65aca8c5355a083c3887f0ab956a6b4f5972cc7bf1ef68b157"
+        }
+      ]
+    },
+    {
+      "package": "toolllm_toolbench",
+      "lifecycle": "protocol_bound",
+      "execution_state": "closure_binding_required",
+      "program_id": "toolllm_toolbench",
+      "program_digest": "a725424647781ecbc63f1821feeb3f5152022cd3797fa5a5a83871431ab012a2",
+      "benchmark_ids": [
+        "toolbench"
+      ],
+      "execution_requirements": [
+        {
+          "parameter": "capability_ids",
+          "kind": "capability_closure",
+          "consumers": [
+            "method:build_toolllm_toolbench_method_program",
+            "study:build_toolllm_toolbench_study"
+          ],
+          "requirement_digest": "5f78e48bb26e9655f491c4d0132fb6f346c78e42583b99bff7f9be01c5942f60"
+        },
+        {
+          "parameter": "split_id",
+          "kind": "benchmark_split",
+          "consumers": [
+            "study:build_toolllm_toolbench_study"
+          ],
+          "requirement_digest": "eff7b5669a4344e7715b733174d7283c4467443ca8ff5a71286aae79adce219b"
+        }
+      ]
+    },
+    {
+      "package": "tree_of_thoughts",
+      "lifecycle": "protocol_bound",
+      "execution_state": "execution_ready",
+      "program_id": "tree_of_thoughts",
+      "program_digest": "ddf1eadaa7460952fa6140b845ee739fb26a5c463450549897e0ada242a124c1",
+      "benchmark_ids": [
+        "game24"
+      ],
+      "execution_requirements": []
+    },
+    {
+      "package": "tree_search_language_model_agents",
+      "lifecycle": "protocol_bound",
+      "execution_state": "execution_ready",
+      "program_id": "tree_search_language_model_agents",
+      "program_digest": "c128710d2dddc1fe3dd5ecfe8695e37ca7282952d5873374cc88b49fb03f2fc3",
+      "benchmark_ids": [
+        "visualwebarena",
+        "webarena"
+      ],
+      "execution_requirements": []
+    },
+    {
+      "package": "ui_agile_cvprf2026",
+      "lifecycle": "protocol_bound",
+      "execution_state": "closure_binding_required",
+      "program_id": "ui_agile_cvprf2026",
+      "program_digest": "923bfd248dff759fb26e6ad60f1b9960ce9a062ab88760971fe50224eca43853",
+      "benchmark_ids": [
+        "androidcontrol",
+        "screenspot-pro",
+        "screenspot-v2"
+      ],
+      "execution_requirements": [
+        {
+          "parameter": "benchmark_split_id",
+          "kind": "benchmark_split",
+          "consumers": [
+            "study:build_study"
+          ],
+          "requirement_digest": "843df3260bf8b52aae7a74f1f79b4b01aadc9aaa43cf491d60cfc57569625026"
+        }
+      ]
+    },
+    {
+      "package": "ui_tars_desktop_v001",
+      "lifecycle": "protocol_bound",
+      "execution_state": "closure_binding_required",
+      "program_id": "ui_tars_desktop_v001",
+      "program_digest": "5a9b6a5d62f2d9c12bc21419c2f3447fb7d15c6b624b0d2c6c3a80e85eeb3260",
+      "benchmark_ids": [
+        "osworld"
+      ],
+      "execution_requirements": [
+        {
+          "parameter": "split_id",
+          "kind": "benchmark_split",
+          "consumers": [
+            "study:build_ui_tars_osworld_study"
+          ],
+          "requirement_digest": "d54ddf1c60d749d4fa3a554e43b487b7f757f18267e204ee07364726211232c0"
+        }
+      ]
+    },
+    {
+      "package": "vca_video",
+      "lifecycle": "protocol_bound",
+      "execution_state": "closure_binding_required",
+      "program_id": "vca_video",
+      "program_digest": "02a4c15c081050572c5db1d3c3ab724ff16e81f71981c1d27234368c034cba44",
+      "benchmark_ids": [
+        "egoschema"
+      ],
+      "execution_requirements": [
+        {
+          "parameter": "sampling_frame_number",
+          "kind": "paper_option",
+          "consumers": [
+            "study:build_vca_egoschema_public_study"
+          ],
+          "requirement_digest": "ddc05f3df29e09b12bd35f9e4a6877fcdbbbe2298373b493437dcd6443c303d3"
+        }
+      ]
+    },
+    {
+      "package": "videoagent_memory",
+      "lifecycle": "protocol_bound",
+      "execution_state": "execution_ready",
+      "program_id": "videoagent_memory",
+      "program_digest": "3290f872b44e13a9fed33eb9647b13309d9ae63f6e12a3d31db9d56b8c48994e",
+      "benchmark_ids": [
+        "egoschema"
+      ],
+      "execution_requirements": []
+    },
+    {
+      "package": "videoarm_cvpr2026",
+      "lifecycle": "protocol_bound",
+      "execution_state": "closure_binding_required",
+      "program_id": "videoarm_cvpr2026",
+      "program_digest": "6ee28efeea06365d33f2051a241ceb44621d4a3a3e053eb39c4b03367f3e333f",
+      "benchmark_ids": [
+        "egoschema"
+      ],
+      "execution_requirements": [
+        {
+          "parameter": "split_id",
+          "kind": "benchmark_split",
+          "consumers": [
+            "study:build_videoarm_study"
+          ],
+          "requirement_digest": "4f2b37a07ec74863ea8c32d4e73dd3a58634af93bde3d806565f4f58f1a012dc"
+        }
+      ]
+    },
+    {
+      "package": "videollamb_memory",
+      "lifecycle": "protocol_bound",
+      "execution_state": "execution_ready",
+      "program_id": "videollamb_memory",
+      "program_digest": "80f2b5ca3c89cd57a916b766f5b9775d1e9e2c769772f12c74dfdbd7a22a3fd4",
+      "benchmark_ids": [
+        "egoschema"
+      ],
+      "execution_requirements": []
+    },
+    {
+      "package": "vilomem_cvpr2026",
+      "lifecycle": "protocol_bound",
+      "execution_state": "closure_binding_required",
+      "program_id": "vilomem_cvpr2026",
+      "program_digest": "ead8aa12d25905d83e65e991e56f5fc08c175efa71971ffef6d4db0407819a17",
+      "benchmark_ids": [
+        "hallusionbench",
+        "mathvision",
+        "mathvista",
+        "mmmu",
+        "mmstar",
+        "realworldqa"
+      ],
+      "execution_requirements": [
+        {
+          "parameter": "benchmark_split_id",
+          "kind": "benchmark_split",
+          "consumers": [
+            "study:build_study"
+          ],
+          "requirement_digest": "4089dee0a87863d3edeb40815fac22f78c786266dd3191a6ecef2bef07b05635"
+        }
+      ]
+    },
+    {
+      "package": "vima_embodied",
+      "lifecycle": "protocol_bound",
+      "execution_state": "execution_ready",
+      "program_id": "vima_embodied",
+      "program_digest": "ba0a1e7c09d29e8c46795c35b7d975cc662724766867fe103680f517cb291393",
+      "benchmark_ids": [
+        "vima-bench"
+      ],
+      "execution_requirements": []
+    },
+    {
+      "package": "voyager_minecraft",
+      "lifecycle": "protocol_bound",
+      "execution_state": "execution_ready",
+      "program_id": "voyager_minecraft",
+      "program_digest": "ccc9eb46c8c12a127ca080e7d0305b18ea4bc94620793aca1971f15df97a229f",
+      "benchmark_ids": [
+        "voyager-minecraft"
+      ],
+      "execution_requirements": []
+    },
+    {
+      "package": "watch_learn_cvpr2026",
+      "lifecycle": "protocol_bound",
+      "execution_state": "closure_binding_required",
+      "program_id": "watch_learn_cvpr2026",
+      "program_digest": "21d12896fc53e5f55e07f7be45ef083668879d89d31bc0ed1c2a7b961666b994",
+      "benchmark_ids": [
+        "osworld"
+      ],
+      "execution_requirements": [
+        {
+          "parameter": "split_id",
+          "kind": "benchmark_split",
+          "consumers": [
+            "study:build_watch_and_learn_study"
+          ],
+          "requirement_digest": "2e044e665234fbfd622a394223e21e5371766d96e7510e133cdf466e745a6ee0"
+        }
+      ]
+    },
+    {
+      "package": "webagent_r1_emnlp2025",
+      "lifecycle": "protocol_bound",
+      "execution_state": "closure_binding_required",
+      "program_id": "webagent_r1_emnlp2025",
+      "program_digest": "77a85b7764a35e4e1761ef124d6610c2e7eed6d7ef7962c09c37fb16c511bf67",
+      "benchmark_ids": [
+        "webarena"
+      ],
+      "execution_requirements": [
+        {
+          "parameter": "split_id",
+          "kind": "benchmark_split",
+          "consumers": [
+            "study:build_webagent_r1_study"
+          ],
+          "requirement_digest": "07f103960bb29439ef11647a32082dbe548aa7b0a341fffab6e5079cbf4cd57c"
+        }
+      ]
+    },
+    {
+      "package": "webvoyager",
+      "lifecycle": "protocol_bound",
+      "execution_state": "execution_ready",
+      "program_id": "webvoyager",
+      "program_digest": "6af022cad8657774f755301888528e141ab92f6a25bdf81401ab890b1aae0ac9",
+      "benchmark_ids": [
+        "webvoyager"
+      ],
+      "execution_requirements": []
+    },
+    {
+      "package": "worldmm_memory",
+      "lifecycle": "protocol_bound",
+      "execution_state": "execution_ready",
+      "program_id": "worldmm_memory",
+      "program_digest": "10b3ef727c3218eaa685fdf7edcbe4bca2b3fc064258ab1c73cf8d8792a5e8f5",
+      "benchmark_ids": [
+        "egolifeqa"
+      ],
+      "execution_requirements": []
+    }
+  ],
+  "status_digest": "da08802fa633e1c69d09d41f74550406960a0beaa060842578b27e8235481c32"
+}
