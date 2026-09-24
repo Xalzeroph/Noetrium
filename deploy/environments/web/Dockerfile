@@ -2,6 +2,13 @@
 ARG PLATFORM_BASE_IMAGE=noetrium:local
 FROM ${PLATFORM_BASE_IMAGE}
 
+ARG NOETRIUM_ENVIRONMENT_PROFILE_ID
+ARG NOETRIUM_ENVIRONMENT_CATEGORY_ID
+ARG NOETRIUM_ENVIRONMENT_PROFILE_REVISION
+LABEL org.opencontainers.image.noetrium.environment.profile-id="${NOETRIUM_ENVIRONMENT_PROFILE_ID}" \
+      org.opencontainers.image.noetrium.environment.category-id="${NOETRIUM_ENVIRONMENT_CATEGORY_ID}" \
+      org.opencontainers.image.noetrium.environment.profile-revision="${NOETRIUM_ENVIRONMENT_PROFILE_REVISION}"
+
 ENV NOETRIUM_ENVIRONMENT_PROFILE=web
 
 USER root
