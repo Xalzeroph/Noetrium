@@ -24,6 +24,13 @@ from noetrium_platform.research.execution.workflow.api import (
 from .fidelity import TOOLFORMER_FIDELITY
 
 _MODEL_AGENT = "toolformer.gpt-j"
+TOOLFORMER_PAPER_CAPABILITY_IDS = (
+    "tool.question-answering",
+    "tool.wikipedia-search",
+    "tool.calculator",
+    "tool.calendar",
+    "tool.machine-translation",
+)
 
 
 def _text(value: object, field: str, *, allow_empty: bool = False) -> str:
@@ -226,7 +233,7 @@ def _return_result(request: MethodNodeRequest) -> MethodNodeResult:
 
 
 def build_toolformer_method_program(
-    tool_capability_ids: Sequence[str],
+    tool_capability_ids: Sequence[str] = TOOLFORMER_PAPER_CAPABILITY_IDS,
     *,
     tools_enabled: bool = True,
 ) -> MethodProgram:
@@ -335,4 +342,8 @@ def build_toolformer_method_program(
     )
 
 
-__all__ = ["build_toolformer_method_program", "toolformer_initial_state"]
+__all__ = [
+    "TOOLFORMER_PAPER_CAPABILITY_IDS",
+    "build_toolformer_method_program",
+    "toolformer_initial_state",
+]
