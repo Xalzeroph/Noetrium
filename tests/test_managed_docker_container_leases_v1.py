@@ -189,7 +189,10 @@ def test_managed_docker_reconcile_removes_malformed_noetrium_container() -> None
         "noetrium-malformed",
         "noetrium-env-text:sha256",
         True,
-        {MANAGED_CONTAINER_LABEL: MANAGED_CONTAINER_LABEL_VALUE},
+        {
+            MANAGED_CONTAINER_LABEL: MANAGED_CONTAINER_LABEL_VALUE,
+            LABEL_AUTHORITY: runtime.authority_id,
+        },
     )
     authority = _authority(resources, runtime)
 
