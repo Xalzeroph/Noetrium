@@ -22,4 +22,25 @@ def build_research() -> api.ResearchPortfolio:
     )
 
 
-__all__ = ["build_research"]
+def build_bound_research(bindings: tuple[object, ...]) -> api.ResearchPortfolio:
+    """Compile exact paper-owned execution bindings into one runnable portfolio.
+
+    The caller supplies only scientific closure values. Study/Method/ResearchMachine
+    lowering and all platform wiring remain owned by the central Research OS compiler.
+    """
+    from .research_os import (
+        ReproductionExecutionBinding,
+        compile_bound_reproduction_portfolio,
+    )
+
+    if type(bindings) is not tuple or not bindings:
+        raise ValueError("bound research requires a non-empty binding tuple")
+    if any(type(row) is not ReproductionExecutionBinding for row in bindings):
+        raise TypeError("bound research requires typed ReproductionExecutionBinding values")
+    return compile_bound_reproduction_portfolio(
+        "repository-reproductions.bound-research",
+        bindings,
+    )
+
+
+__all__ = ["build_bound_research", "build_research"]
