@@ -206,6 +206,37 @@ def test_wall_clock_backward_jump_does_not_block_exact_release(
 
 
 @pytest.mark.parametrize("kind", ("memory", "sqlite"))
+def test_caller_supplied_wall_time_cannot_force_lease_expiry(
+    tmp_path: Path,
+    kind: str,
+) -> None:
+    clock = ManualLeaseClock(
+        elapsed_seconds=10.0,
+        wall_epoch_seconds=55_000.0,
+    )
+    registry = _registry(kind, tmp_path, clock)
+    resource = ResourceIdentity(ResourceKind.CONTAINER, "caller-now")
+    registry.register_owner(ResourceOwner(resource, PLATFORM_SCOPE))
+    granted = registry.acquire(
+        ResourceLease(
+            "lease-caller-now",
+            resource,
+            PLATFORM_SCOPE,
+            "caller now must not be authority",
+        ),
+        ttl_seconds=10.0,
+        now=1.0,
+    )
+
+    assert granted.expires_at_epoch_s == pytest.approx(55_010.0)
+    assert registry.reconcile_expired(now=10**12) == ()
+    assert registry.get(granted.lease_id, now=10**12).state is LeaseState.ACTIVE
+
+    clock.advance(11.0, wall_seconds=0.0)
+    assert registry.get(granted.lease_id, now=1.0).state is LeaseState.EXPIRED
+
+
+@pytest.mark.parametrize("kind", ("memory", "sqlite"))
 def test_recovery_authority_ignores_wall_clock_jumps(
     tmp_path: Path,
     kind: str,
