@@ -1,3 +1,10 @@
+from .lease_clock import (
+    LeaseClockPort,
+    LeaseClockReading,
+    LeaseClockUnavailable,
+    LocalLeaseClock,
+    ManualLeaseClock,
+)
 from .authority import (
     DirectoryMachineAuthority,
     InMemoryMachineAuthority,
@@ -109,6 +116,7 @@ from .nir import NIREnvelope
 
 __all__ = [
     "ExecutionContext", "ComponentIdentity", "ImmutableModelIdentity",
+    "LeaseClockPort", "LeaseClockReading", "LeaseClockUnavailable", "LocalLeaseClock", "ManualLeaseClock",
     "DurableCarrierClosureAuthority", "DurableCarrierReferenceClosure",
     "durable_carrier_closure_complete", "durable_carrier_gc_eligible", "validate_durable_carrier_closures",
     "DirectoryMachineAuthority", "InMemoryMachineAuthority", "MachineAuthorityError",
