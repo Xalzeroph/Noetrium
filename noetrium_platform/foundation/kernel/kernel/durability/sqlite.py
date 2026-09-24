@@ -15,6 +15,14 @@ class SQLiteDurabilityProfile(StrEnum):
     PROJECTION = "projection"
 
 
+def is_sqlite_lock_contention(exc: BaseException) -> bool:
+    """Return whether SQLite reported transient lock/busy contention."""
+    if not isinstance(exc, sqlite3.OperationalError):
+        return False
+    message = str(exc).lower()
+    return "locked" in message or "busy" in message
+
+
 def _validated_timeout(timeout_seconds: float) -> float:
     timeout = float(timeout_seconds)
     if not math.isfinite(timeout) or timeout <= 0:
@@ -45,10 +53,7 @@ def open_durable_sqlite_writer(
         )
         retry_until_deadline(
             lambda: conn.execute("PRAGMA journal_mode=WAL"),
-            should_retry=lambda exc: (
-                isinstance(exc, sqlite3.OperationalError)
-                and "locked" in str(exc).lower()
-            ),
+            should_retry=is_sqlite_lock_contention,
             timeout_seconds=timeout,
         )
         conn.execute(
@@ -111,6 +116,20 @@ def durable_sqlite_connection(
         conn.close()
 
 
+def begin_immediate_sqlite_transaction(
+    db: sqlite3.Connection,
+    *,
+    timeout_seconds: float,
+) -> None:
+    """Acquire one IMMEDIATE write transaction under canonical lock retry policy."""
+    timeout = _validated_timeout(timeout_seconds)
+    retry_until_deadline(
+        lambda: db.execute("BEGIN IMMEDIATE"),
+        should_retry=is_sqlite_lock_contention,
+        timeout_seconds=timeout,
+    )
+
+
 def rollback_sqlite_writer(
     db: sqlite3.Connection,
     primary: BaseException,
@@ -132,6 +151,8 @@ def rollback_sqlite_writer(
 
 
 __all__ = [
+    "begin_immediate_sqlite_transaction",
+    "is_sqlite_lock_contention",
     "SQLiteDurabilityProfile",
     "durable_sqlite_connection",
     "open_durable_sqlite_reader",
