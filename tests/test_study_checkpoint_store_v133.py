@@ -1,5 +1,4 @@
 from concurrent.futures import ThreadPoolExecutor, TimeoutError as FutureTimeoutError
-from contextlib import contextmanager
 from pathlib import Path
 import hashlib
 import tempfile
@@ -274,17 +273,15 @@ def test_checkpoint_blob_external_exact_create_race_is_verified(
         payloads[0].checkpoint.ref.payload_sha256
     )
 
-    @contextmanager
-    def external_exact_create(path, *, buffering=-1):
-        del buffering
+    def external_exact_create(path, payload, *, staging_dir=None):
+        del payload, staging_dir
         path.parent.mkdir(parents=True, exist_ok=True)
         path.write_bytes(expected)
         raise FileExistsError("external exact CAS writer won")
-        yield  # pragma: no cover
 
     monkeypatch.setattr(
         store_module,
-        "durable_create_binary_file",
+        "durable_publish_immutable_bytes",
         external_exact_create,
     )
     assert store.publish(checkpoint, payloads) == checkpoint
@@ -307,17 +304,15 @@ def test_checkpoint_blob_external_corrupt_create_race_fails_closed(
     )
     foreign = b"foreign-corrupt-content"
 
-    @contextmanager
-    def external_corrupt_create(path, *, buffering=-1):
-        del buffering
+    def external_corrupt_create(path, payload, *, staging_dir=None):
+        del payload, staging_dir
         path.parent.mkdir(parents=True, exist_ok=True)
         path.write_bytes(foreign)
         raise FileExistsError("external corrupt CAS writer won")
-        yield  # pragma: no cover
 
     monkeypatch.setattr(
         store_module,
-        "durable_create_binary_file",
+        "durable_publish_immutable_bytes",
         external_corrupt_create,
     )
     with pytest.raises(
@@ -329,3 +324,26 @@ def test_checkpoint_blob_external_corrupt_create_race_fails_closed(
     assert blob_path.read_bytes() == foreign
     assert not store._manifest_path(checkpoint.checkpoint_id).exists()
     assert store._intents._path(checkpoint.checkpoint_id).exists()
+
+
+def test_checkpoint_blob_retry_discards_hard_kill_staging_residue(
+    tmp_path: Path,
+) -> None:
+    store = DirectoryRunCheckpointStore(tmp_path / "blob-hard-kill")
+    payloads = (
+        participant_payload("method", b"complete-owned-content", generation="g1"),
+    )
+    checkpoint = manifest(payloads, checkpoint_id="blob-hard-kill")
+    digest = payloads[0].checkpoint.ref.payload_sha256
+    blob_path = store._blob_path(digest)
+    stranded = store.blob_staging / (
+        f"{blob_path.name}.immutable.999999.simulated-hard-kill"
+    )
+    stranded.write_bytes(b"partial-crash-residue")
+
+    assert not blob_path.exists()
+    assert stranded.exists()
+    assert store.publish(checkpoint, payloads) == checkpoint
+    assert blob_path.read_bytes() == payloads[0].checkpoint.opaque_payload
+    assert not stranded.exists()
+    assert tuple(store.blob_staging.iterdir()) == ()
