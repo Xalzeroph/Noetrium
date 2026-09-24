@@ -11,7 +11,7 @@ EXPECTED = {
     "capability": ("environment", "model", "participant"),
     "execution": ("execution",),
     "experimentation": ("experimentation",),
-    "product": ("operator",),
+    "product": ("operator", "research_os"),
 }
 
 
@@ -29,6 +29,7 @@ def test_layer_hierarchy_is_canonical_and_total() -> None:
     assert hierarchy.sideplane_for_system("observability") == sideplane
     assert hierarchy.is_global_system("platform")
     assert hierarchy.lower_layer("operator").layer_id == "experimentation"
+    assert hierarchy.lower_layer("research_os").layer_id == "experimentation"
     assert hierarchy.lower_layer("experimentation").layer_id == "execution"
     assert hierarchy.lower_layer("execution").layer_id == "capability"
     assert hierarchy.lower_layer("model").layer_id == "substrate"
