@@ -5063,6 +5063,11 @@
     {
       "kind": "references",
       "source": "noetrium_platform.composition.research_os_lowering.LoweredResearchOSGraphNode",
+      "target": "noetrium_platform.composition.research_os_lowering.ResolvedResearchMachineProgramImplementation"
+    },
+    {
+      "kind": "references",
+      "source": "noetrium_platform.composition.research_os_lowering.LoweredResearchOSGraphNode",
       "target": "noetrium_platform.composition.research_os_lowering.ResolvedResearchMethodProgramImplementation"
     },
     {
@@ -5128,6 +5133,11 @@
     {
       "kind": "references",
       "source": "noetrium_platform.composition.research_os_lowering.ResearchOSLoweringCompiler",
+      "target": "noetrium_platform.composition.research_os_lowering.ResolvedResearchMachineProgramImplementation"
+    },
+    {
+      "kind": "references",
+      "source": "noetrium_platform.composition.research_os_lowering.ResearchOSLoweringCompiler",
       "target": "noetrium_platform.composition.research_os_lowering.ResolvedResearchMethodProgramImplementation"
     },
     {
@@ -5144,6 +5154,11 @@
       "kind": "references",
       "source": "noetrium_platform.composition.research_os_lowering.ResolvedResearchImplementation",
       "target": "noetrium_platform.product.research_os.ResearchImplementation"
+    },
+    {
+      "kind": "references",
+      "source": "noetrium_platform.composition.research_os_lowering.ResolvedResearchMachineProgramImplementation",
+      "target": "noetrium_platform.product.research_os.ResearchMachineProgramImplementation"
     },
     {
       "kind": "references",
@@ -40525,7 +40540,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 161,
+      "line": 162,
       "methods": [
         "resolve"
       ],
@@ -40546,13 +40561,14 @@
       "fields": [
         "definition_id",
         "machine_kind",
-        "operation",
+        "operations",
         "program"
       ],
       "kind": "dataclass",
-      "line": 398,
+      "line": 506,
       "methods": [
-        "__post_init__"
+        "__post_init__",
+        "operations_digest"
       ],
       "module": "noetrium_platform.composition.research_os_lowering",
       "name": "LoweredResearchMachineProgram",
@@ -40573,7 +40589,7 @@
         "program"
       ],
       "kind": "dataclass",
-      "line": 511,
+      "line": 646,
       "methods": [
         "__post_init__"
       ],
@@ -40602,7 +40618,7 @@
         "target"
       ],
       "kind": "dataclass",
-      "line": 525,
+      "line": 660,
       "methods": [
         "__post_init__"
       ],
@@ -40622,7 +40638,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 107,
+      "line": 108,
       "methods": [],
       "module": "noetrium_platform.composition.research_os_lowering",
       "name": "ResearchImplementationResolutionError",
@@ -40642,7 +40658,7 @@
       ],
       "fields": [],
       "kind": "protocol",
-      "line": 154,
+      "line": 155,
       "methods": [
         "resolve"
       ],
@@ -40660,7 +40676,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 753,
+      "line": 891,
       "methods": [
         "__init__",
         "compile_node",
@@ -40689,7 +40705,7 @@
         "research_revision_digest"
       ],
       "kind": "dataclass",
-      "line": 701,
+      "line": 839,
       "methods": [
         "__post_init__",
         "node"
@@ -40719,7 +40735,7 @@
         "RUN_MACHINE"
       ],
       "kind": "enum",
-      "line": 55,
+      "line": 56,
       "methods": [],
       "module": "noetrium_platform.composition.research_os_lowering",
       "name": "ResearchOSLoweringTarget",
@@ -40741,7 +40757,7 @@
         "implementation"
       ],
       "kind": "dataclass",
-      "line": 112,
+      "line": 113,
       "methods": [
         "__post_init__"
       ],
@@ -40762,10 +40778,35 @@
       "fields": [
         "declared",
         "definition_id",
+        "operations",
         "program"
       ],
       "kind": "dataclass",
-      "line": 127,
+      "line": 277,
+      "methods": [
+        "__post_init__"
+      ],
+      "module": "noetrium_platform.composition.research_os_lowering",
+      "name": "ResolvedResearchMachineProgramImplementation",
+      "nesting": [
+        "ResolvedResearchMachineProgramImplementation"
+      ],
+      "qualname": "noetrium_platform.composition.research_os_lowering.ResolvedResearchMachineProgramImplementation",
+      "system_key": "research_os",
+      "top_system": "research_os"
+    },
+    {
+      "bases": [],
+      "decorators": [
+        "dataclass(frozen=True, slots=True)"
+      ],
+      "fields": [
+        "declared",
+        "definition_id",
+        "program"
+      ],
+      "kind": "dataclass",
+      "line": 128,
       "methods": [
         "__post_init__"
       ],
@@ -98984,6 +99025,11 @@
     {
       "kind": "constructs",
       "source": "noetrium_platform.composition.research_os_lowering.ResearchOSLoweringCompiler",
+      "target": "noetrium_platform.composition.research_os_lowering.LoweredResearchMachineProgram"
+    },
+    {
+      "kind": "constructs",
+      "source": "noetrium_platform.composition.research_os_lowering.ResearchOSLoweringCompiler",
       "target": "noetrium_platform.composition.research_os_lowering.LoweredResearchMethodProgram"
     },
     {
@@ -102468,11 +102514,11 @@
     }
   ],
   "counts": {
-    "association_edges": 3428,
-    "classes": 3339,
-    "constructor_edges": 932,
+    "association_edges": 3431,
+    "classes": 3340,
+    "constructor_edges": 933,
     "inheritance_edges": 149,
-    "module_import_edges": 5113,
+    "module_import_edges": 5115,
     "parse_errors": 0,
     "python_modules": 1928,
     "registry_authorities": 20,
@@ -120129,6 +120175,10 @@
     },
     {
       "source": "noetrium_platform.product.research_authoring",
+      "target": "noetrium_platform.capabilities.environment.embodied.api"
+    },
+    {
+      "source": "noetrium_platform.product.research_authoring",
       "target": "noetrium_platform.capabilities.participant.capability.api"
     },
     {
@@ -120138,6 +120188,10 @@
     {
       "source": "noetrium_platform.product.research_authoring",
       "target": "noetrium_platform.composition.environment_capabilities"
+    },
+    {
+      "source": "noetrium_platform.product.research_authoring",
+      "target": "noetrium_platform.evidence.artifact.content.api"
     },
     {
       "source": "noetrium_platform.product.research_authoring",
@@ -140697,9 +140751,11 @@
     {
       "imports": [
         "noetrium_platform.capabilities.environment.api",
+        "noetrium_platform.capabilities.environment.embodied.api",
         "noetrium_platform.capabilities.participant.capability.api",
         "noetrium_platform.capabilities.participant.method.api",
         "noetrium_platform.composition.environment_capabilities",
+        "noetrium_platform.evidence.artifact.content.api",
         "noetrium_platform.foundation.kernel.kernel",
         "noetrium_platform.research.execution.api",
         "noetrium_platform.research.execution.machines.api",
@@ -143914,7 +143970,7 @@
   "parse_errors": [],
   "registry_sha256": "d3fc1bab831f1b7379e5a36048a61c00fe173429df958270d36a16f3f00171c0",
   "schema": "noetrium-code-architecture-index.v1",
-  "source_git_sha": "a5e59ac3099ea8df219a9b56d658c2ad0d971ffb",
+  "source_git_sha": "708dab14f0a80f1216eab610ef998cd2aa7a5d4b",
   "system_import_edges": [
     {
       "count": 85,
@@ -144057,7 +144113,7 @@
       "target": "reliability"
     },
     {
-      "count": 15,
+      "count": 16,
       "source": "research_os",
       "target": "artifact"
     },
@@ -144067,7 +144123,7 @@
       "target": "data"
     },
     {
-      "count": 47,
+      "count": 48,
       "source": "research_os",
       "target": "environment"
     },

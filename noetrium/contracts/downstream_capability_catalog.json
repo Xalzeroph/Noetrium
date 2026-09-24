@@ -1,9 +1,11 @@
 {
   "ambiguous_symbol_sources": {},
-  "catalog_digest": "aaf0c3ed4b22bfe5d2d25a03dfb40a1334a13585aa4a69906b89943decbfca56",
+  "catalog_digest": "82894bceaa9ca6da32de508b232a550605fea3643e54e18ed2e86adece14cda1",
   "direct_symbol_sources": {
+    "ActionKind": "noetrium_platform.product.api",
     "ActionRequest": "noetrium_platform.product.api",
     "ActionResult": "noetrium_platform.product.api",
+    "ActionSpec": "noetrium_platform.product.api",
     "AgentMethodSpec": "noetrium_platform.product.api",
     "AgentPhaseSpec": "noetrium_platform.product.api",
     "BenchmarkTaskSet": "noetrium_platform.product.api",
@@ -24,9 +26,16 @@
     "EffectCertainty": "noetrium_platform.product.api",
     "EffectClass": "noetrium_platform.product.api",
     "EffectReceipt": "noetrium_platform.product.api",
+    "EmbodiedActionCommand": "noetrium_platform.product.api",
+    "EmbodiedCaptureReceipt": "noetrium_platform.product.api",
+    "EmbodiedEvent": "noetrium_platform.product.api",
+    "EmbodiedEventKind": "noetrium_platform.product.api",
+    "EmbodimentKind": "noetrium_platform.product.api",
+    "EmbodimentSpec": "noetrium_platform.product.api",
     "EnvironmentConcern": "noetrium_platform.product.api",
     "EnvironmentProgramBuilder": "noetrium_platform.product.api",
     "EnvironmentSession": "noetrium_platform.product.api",
+    "EpisodeSpec": "noetrium_platform.product.api",
     "EvaluationConcern": "noetrium_platform.product.api",
     "EvaluationProgramBuilder": "noetrium_platform.product.api",
     "ExecutionContext": "noetrium_platform.product.api",
@@ -36,6 +45,7 @@
     "GuardDecision": "noetrium_platform.product.api",
     "GuardVerdict": "noetrium_platform.product.api",
     "MachineJournalPort": "noetrium_platform.product.api",
+    "MachineKind": "noetrium_platform.product.api",
     "MachineResearchProgram": "noetrium_platform.product.api",
     "MachineResearchProgramBuilder": "noetrium_platform.product.api",
     "MachineSnapshotStorePort": "noetrium_platform.product.api",
@@ -83,6 +93,7 @@
     "ResearchImpactState": "noetrium_platform.product.api",
     "ResearchImplementation": "noetrium_platform.product.api",
     "ResearchInputBinding": "noetrium_platform.product.api",
+    "ResearchMachineProgramImplementation": "noetrium_platform.product.api",
     "ResearchMethodProgramBindingKind": "noetrium_platform.product.api",
     "ResearchMethodProgramImplementation": "noetrium_platform.product.api",
     "ResearchNode": "noetrium_platform.product.api",
@@ -107,9 +118,13 @@
     "RuntimeModule": "noetrium_platform.product.api",
     "RuntimeModuleBuilder": "noetrium_platform.product.api",
     "RuntimeProgramBuilder": "noetrium_platform.product.api",
+    "SensorModality": "noetrium_platform.product.api",
+    "SensorSpec": "noetrium_platform.product.api",
     "Study": "noetrium_platform.product.api",
     "StudyModel": "noetrium_platform.product.api",
     "StudyParticipant": "noetrium_platform.product.api",
+    "TensorContentRef": "noetrium_platform.product.api",
+    "TensorContentStorePort": "noetrium_platform.product.api",
     "TrialBudget": "noetrium_platform.product.api",
     "environment_action_capability_payload": "noetrium_platform.product.api",
     "environment_branch_action_spec": "noetrium_platform.product.api",
@@ -117,16 +132,23 @@
     "environment_query_capability_payload": "noetrium_platform.product.api",
     "environment_replay_action_payload": "noetrium_platform.product.api",
     "environment_reset_capability_payload": "noetrium_platform.product.api",
+    "materialize_capability_selection_view": "noetrium_platform.product.api",
     "program_execution_capability_payload": "noetrium_platform.product.api"
   },
   "entrypoint": "noetrium.api",
   "generator": "scripts/generate_downstream_contracts.py",
   "schema": "noetrium-downstream-contracts.v5",
   "symbol_index": {
+    "ActionKind": [
+      "research_os"
+    ],
     "ActionRequest": [
       "research_os"
     ],
     "ActionResult": [
+      "research_os"
+    ],
+    "ActionSpec": [
       "research_os"
     ],
     "AgentMethodSpec": [
@@ -189,6 +211,24 @@
     "EffectReceipt": [
       "research_os"
     ],
+    "EmbodiedActionCommand": [
+      "research_os"
+    ],
+    "EmbodiedCaptureReceipt": [
+      "research_os"
+    ],
+    "EmbodiedEvent": [
+      "research_os"
+    ],
+    "EmbodiedEventKind": [
+      "research_os"
+    ],
+    "EmbodimentKind": [
+      "research_os"
+    ],
+    "EmbodimentSpec": [
+      "research_os"
+    ],
     "EnvironmentConcern": [
       "research_os"
     ],
@@ -196,6 +236,9 @@
       "research_os"
     ],
     "EnvironmentSession": [
+      "research_os"
+    ],
+    "EpisodeSpec": [
       "research_os"
     ],
     "EvaluationConcern": [
@@ -223,6 +266,9 @@
       "research_os"
     ],
     "MachineJournalPort": [
+      "research_os"
+    ],
+    "MachineKind": [
       "research_os"
     ],
     "MachineResearchProgram": [
@@ -366,6 +412,9 @@
     "ResearchInputBinding": [
       "research_os"
     ],
+    "ResearchMachineProgramImplementation": [
+      "research_os"
+    ],
     "ResearchMethodProgramBindingKind": [
       "research_os"
     ],
@@ -438,6 +487,12 @@
     "RuntimeProgramBuilder": [
       "research_os"
     ],
+    "SensorModality": [
+      "research_os"
+    ],
+    "SensorSpec": [
+      "research_os"
+    ],
     "Study": [
       "research_os"
     ],
@@ -445,6 +500,12 @@
       "research_os"
     ],
     "StudyParticipant": [
+      "research_os"
+    ],
+    "TensorContentRef": [
+      "research_os"
+    ],
+    "TensorContentStorePort": [
       "research_os"
     ],
     "TrialBudget": [
@@ -466,6 +527,9 @@
       "research_os"
     ],
     "environment_reset_capability_payload": [
+      "research_os"
+    ],
+    "materialize_capability_selection_view": [
       "research_os"
     ],
     "program_execution_capability_payload": [
@@ -1059,6 +1123,7 @@
             "ResearchImpactState",
             "ResearchImplementation",
             "ResearchMethodProgramBindingKind",
+            "ResearchMachineProgramImplementation",
             "ResearchMethodProgramImplementation",
             "ResearchInputBinding",
             "ResearchNode",
@@ -1075,8 +1140,10 @@
             "ResearchRevisionDiff",
             "ResearchTag",
             "ResearchValueKind",
+            "ActionKind",
             "ActionRequest",
             "ActionResult",
+            "ActionSpec",
             "AgentMethodSpec",
             "AgentPhaseSpec",
             "BenchmarkTaskSet",
@@ -1097,9 +1164,16 @@
             "EffectCertainty",
             "EffectClass",
             "EffectReceipt",
+            "EmbodiedActionCommand",
+            "EmbodiedCaptureReceipt",
+            "EmbodiedEvent",
+            "EmbodiedEventKind",
+            "EmbodimentKind",
+            "EmbodimentSpec",
             "EnvironmentConcern",
             "EnvironmentProgramBuilder",
             "EnvironmentSession",
+            "EpisodeSpec",
             "EvaluationConcern",
             "EvaluationProgramBuilder",
             "ExecutionContext",
@@ -1109,6 +1183,7 @@
             "GuardDecision",
             "GuardVerdict",
             "MachineJournalPort",
+            "MachineKind",
             "MachineResearchProgram",
             "MachineResearchProgramBuilder",
             "MachineSnapshotStorePort",
@@ -1147,6 +1222,8 @@
             "ResearchProgramHost",
             "ResearchRunProgramBuilder",
             "ResearchStudyDefinition",
+            "SensorModality",
+            "SensorSpec",
             "RunConcern",
             "RuntimeConcern",
             "RuntimeModule",
@@ -1156,12 +1233,15 @@
             "StudyModel",
             "StudyParticipant",
             "TrialBudget",
+            "TensorContentRef",
+            "TensorContentStorePort",
             "environment_action_capability_payload",
             "environment_branch_action_spec",
             "environment_fork_action_payload",
             "environment_query_capability_payload",
             "environment_replay_action_payload",
             "environment_reset_capability_payload",
+            "materialize_capability_selection_view",
             "program_execution_capability_payload"
           ]
         }
@@ -1170,7 +1250,7 @@
       "canonical_authority": null,
       "downstream_surface": "public",
       "facade_module": "noetrium.contracts.systems.research_os",
-      "interface_digest": "fa0625b9792670307ac92e190d0483f8d5ab8243c805c32e786d6ebc02d36b0b",
+      "interface_digest": "6a792b5b7b2435146173d22a89ead5670284afc9d8e694a3256a8d1992e46de1",
       "must_not_own": "domain authority, scientific execution truth, provider state or duplicated evidence",
       "node_kind": "product_surface",
       "owns": "single downstream research authoring, revision, graph-control and live-intervention product surface",

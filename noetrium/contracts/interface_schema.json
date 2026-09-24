@@ -1,6 +1,6 @@
 {
   "generator": "scripts/generate_interface_schemas.py",
-  "interface_digest": "30c29be5203c7a3c24a93bb5523f75adc1b1880922546009609c424695beffff",
+  "interface_digest": "387193b82671230b4033bab31941e3230f65aad55fe12d7c3fd003dc6ed3a890",
   "interface_schema": {
     "description": "Generated signatures, annotations, class members, decorators, docs and re-export provenance for every public API symbol.",
     "schema_id": "noetrium.interface-schema",
@@ -281,6 +281,15 @@
             {
               "doc": null,
               "kind": "reexport",
+              "name": "ResearchMachineProgramImplementation",
+              "origin_module": "..research_os",
+              "origin_name": "ResearchMachineProgramImplementation",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "reexport",
               "name": "ResearchMethodProgramImplementation",
               "origin_module": "..research_os",
               "origin_name": "ResearchMethodProgramImplementation",
@@ -425,6 +434,15 @@
             {
               "doc": null,
               "kind": "reexport",
+              "name": "ActionKind",
+              "origin_module": "..research_authoring",
+              "origin_name": "ActionKind",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "reexport",
               "name": "ActionRequest",
               "origin_module": "..research_authoring",
               "origin_name": "ActionRequest",
@@ -437,6 +455,15 @@
               "name": "ActionResult",
               "origin_module": "..research_authoring",
               "origin_name": "ActionResult",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "reexport",
+              "name": "ActionSpec",
+              "origin_module": "..research_authoring",
+              "origin_name": "ActionSpec",
               "schema_id": "noetrium.interface-schema",
               "schema_version": "1"
             },
@@ -623,6 +650,60 @@
             {
               "doc": null,
               "kind": "reexport",
+              "name": "EmbodiedActionCommand",
+              "origin_module": "..research_authoring",
+              "origin_name": "EmbodiedActionCommand",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "reexport",
+              "name": "EmbodiedCaptureReceipt",
+              "origin_module": "..research_authoring",
+              "origin_name": "EmbodiedCaptureReceipt",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "reexport",
+              "name": "EmbodiedEvent",
+              "origin_module": "..research_authoring",
+              "origin_name": "EmbodiedEvent",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "reexport",
+              "name": "EmbodiedEventKind",
+              "origin_module": "..research_authoring",
+              "origin_name": "EmbodiedEventKind",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "reexport",
+              "name": "EmbodimentKind",
+              "origin_module": "..research_authoring",
+              "origin_name": "EmbodimentKind",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "reexport",
+              "name": "EmbodimentSpec",
+              "origin_module": "..research_authoring",
+              "origin_name": "EmbodimentSpec",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "reexport",
               "name": "EnvironmentConcern",
               "origin_module": "..research_authoring",
               "origin_name": "EnvironmentConcern",
@@ -644,6 +725,15 @@
               "name": "EnvironmentSession",
               "origin_module": "..research_authoring",
               "origin_name": "EnvironmentSession",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "reexport",
+              "name": "EpisodeSpec",
+              "origin_module": "..research_authoring",
+              "origin_name": "EpisodeSpec",
               "schema_id": "noetrium.interface-schema",
               "schema_version": "1"
             },
@@ -725,6 +815,15 @@
               "name": "MachineJournalPort",
               "origin_module": "..research_authoring",
               "origin_name": "MachineJournalPort",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "reexport",
+              "name": "MachineKind",
+              "origin_module": "..research_authoring",
+              "origin_name": "MachineKind",
               "schema_id": "noetrium.interface-schema",
               "schema_version": "1"
             },
@@ -1073,6 +1172,24 @@
             {
               "doc": null,
               "kind": "reexport",
+              "name": "SensorModality",
+              "origin_module": "..research_authoring",
+              "origin_name": "SensorModality",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "reexport",
+              "name": "SensorSpec",
+              "origin_module": "..research_authoring",
+              "origin_name": "SensorSpec",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "reexport",
               "name": "RunConcern",
               "origin_module": "..research_authoring",
               "origin_name": "RunConcern",
@@ -1154,6 +1271,24 @@
             {
               "doc": null,
               "kind": "reexport",
+              "name": "TensorContentRef",
+              "origin_module": "..research_authoring",
+              "origin_name": "TensorContentRef",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "reexport",
+              "name": "TensorContentStorePort",
+              "origin_module": "..research_authoring",
+              "origin_name": "TensorContentStorePort",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "reexport",
               "name": "environment_action_capability_payload",
               "origin_module": "..research_authoring",
               "origin_name": "environment_action_capability_payload",
@@ -1208,6 +1343,15 @@
             {
               "doc": null,
               "kind": "reexport",
+              "name": "materialize_capability_selection_view",
+              "origin_module": "..research_authoring",
+              "origin_name": "materialize_capability_selection_view",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "reexport",
               "name": "program_execution_capability_payload",
               "origin_module": "..research_authoring",
               "origin_name": "program_execution_capability_payload",
@@ -1228,6 +1372,7 @@
             "ResearchImpactState",
             "ResearchImplementation",
             "ResearchMethodProgramBindingKind",
+            "ResearchMachineProgramImplementation",
             "ResearchMethodProgramImplementation",
             "ResearchInputBinding",
             "ResearchNode",
@@ -1244,8 +1389,10 @@
             "ResearchRevisionDiff",
             "ResearchTag",
             "ResearchValueKind",
+            "ActionKind",
             "ActionRequest",
             "ActionResult",
+            "ActionSpec",
             "AgentMethodSpec",
             "AgentPhaseSpec",
             "BenchmarkTaskSet",
@@ -1266,9 +1413,16 @@
             "EffectCertainty",
             "EffectClass",
             "EffectReceipt",
+            "EmbodiedActionCommand",
+            "EmbodiedCaptureReceipt",
+            "EmbodiedEvent",
+            "EmbodiedEventKind",
+            "EmbodimentKind",
+            "EmbodimentSpec",
             "EnvironmentConcern",
             "EnvironmentProgramBuilder",
             "EnvironmentSession",
+            "EpisodeSpec",
             "EvaluationConcern",
             "EvaluationProgramBuilder",
             "ExecutionContext",
@@ -1278,6 +1432,7 @@
             "GuardDecision",
             "GuardVerdict",
             "MachineJournalPort",
+            "MachineKind",
             "MachineResearchProgram",
             "MachineResearchProgramBuilder",
             "MachineSnapshotStorePort",
@@ -1316,6 +1471,8 @@
             "ResearchProgramHost",
             "ResearchRunProgramBuilder",
             "ResearchStudyDefinition",
+            "SensorModality",
+            "SensorSpec",
             "RunConcern",
             "RuntimeConcern",
             "RuntimeModule",
@@ -1325,12 +1482,15 @@
             "StudyModel",
             "StudyParticipant",
             "TrialBudget",
+            "TensorContentRef",
+            "TensorContentStorePort",
             "environment_action_capability_payload",
             "environment_branch_action_spec",
             "environment_fork_action_payload",
             "environment_query_capability_payload",
             "environment_replay_action_payload",
             "environment_reset_capability_payload",
+            "materialize_capability_selection_view",
             "program_execution_capability_payload"
           ]
         }
