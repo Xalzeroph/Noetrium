@@ -7,7 +7,6 @@ from pathlib import Path
 from noetrium_platform.foundation.kernel.kernel import JsonObject, JsonValue, canonical_bytes, canonical_digest
 from noetrium_platform.foundation.kernel.kernel.durability import atomic_replace_bytes, durable_append_bytes
 
-from .diagnostics import json_default
 from ..api.artifacts import (
     RunArtifactFinalizationError,
     RunArtifactKind,
@@ -93,7 +92,7 @@ class DirectoryRunArtifactStore(RunArtifactStorePort):
         return str(target)
 
     def publish_json(self, name: str, payload: JsonValue, *, kind: RunArtifactKind) -> str:
-        body = json.dumps(payload, ensure_ascii=False, indent=2, default=json_default) + "\n"
+        body = canonical_bytes(payload, indent=2).decode("utf-8") + "\n"
         return self.publish_text(name, body, kind=kind)
 
     def publish_text(self, name: str, content: str, *, kind: RunArtifactKind) -> str:
@@ -114,7 +113,7 @@ class DirectoryRunArtifactStore(RunArtifactStorePort):
         kind: RunArtifactKind,
     ) -> str:
         target = self._resolve_ref(name, create_parent=True)
-        encoded = json.dumps(payload, ensure_ascii=False, sort_keys=True, default=json_default) + "\n"
+        encoded = canonical_bytes(payload).decode("utf-8") + "\n"
 
         def append_owned() -> str:
             self._require_unsealed(name)
