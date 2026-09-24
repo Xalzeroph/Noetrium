@@ -7,6 +7,7 @@ from pathlib import Path
 
 from noetrium_platform.infrastructure.lifecycle.service.api.environment import MaterializedServiceEnvironment
 from .linux_procfs import LinuxProcfsReader
+from .linux_start_marker import process_environment_without_start_marker
 from .process_contracts import ProcessReconcileResult, ProcessReconcileStatus
 
 
@@ -78,18 +79,22 @@ class LinuxExactProcessVerifier:
         if facts.start_identity != process.start_identity:
             return self._missing(process, "proc-pid-reused")
         expected_exe = str(Path(contract.executable).resolve())
+        observed_environment, prepared_start_marker = (
+            process_environment_without_start_marker(facts.environment)
+        )
         evidence_facts = {
             "exe": facts.executable,
             "argv": facts.argv,
             "cwd": facts.cwd,
             "pgid": facts.process_group_id,
             "environment_digest": environment.digest,
+            "prepared_start_marker_present": prepared_start_marker is not None,
         }
         exact = (
             facts.executable == expected_exe
             and facts.argv == contract.argv
             and facts.cwd == str(Path(contract.cwd).resolve())
-            and facts.environment == environment.as_dict()
+            and observed_environment == environment.as_dict()
             and (
                 process.process_group_id is None
                 or facts.process_group_id == process.process_group_id
