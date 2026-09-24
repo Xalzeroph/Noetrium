@@ -48,16 +48,7 @@ class ForensicIndexWriter:
     def project_mutation(self,mutation:MutationRecord,*,rows:int,tail_hash:str)->None:
         self.backend.project(mutation_projection(mutation),ledger="mutations",rows=rows,tail_hash=tail_hash)
 
-    # Rebuild/compat APIs intentionally bypass freshness because caller owns the rebuild cut.
-    def add_event(self,event:EventEnvelope)->None:
-        self.backend.upsert(event_projection(event))
-
-    def add_failure(self,failure:FailureEnvelope)->None:
-        self.backend.upsert(failure_projection(failure))
-
-    def add_mutation(self,mutation:MutationRecord)->None:
-        self.backend.upsert(mutation_projection(mutation))
-
+    # Rebuild writes are raw fixed-cut projections and never alias live project_* APIs.
     def set_freshness(self,ledger:str,rows:int,tail_hash:str)->None:
         self.backend.set_freshness(ledger,rows,tail_hash)
 
