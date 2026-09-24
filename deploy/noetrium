@@ -10,11 +10,12 @@ BOOTSTRAP_READY=0
 
 usage() {
   cat <<'EOF'
-Usage: ./deploy/noetrium <doctor|build|plan|preflight|run|env> [args]
+Usage: ./deploy/noetrium <doctor|build|plan|requirements|preflight|run|env> [args]
 
   doctor     verify ordinary-user Docker/Compose access and environment registry
   build      build or reuse all active environment profiles
   plan       compile the repository reproduction fleet without starting work
+  requirements emit the machine-readable owner authority prerequisite manifest
   preflight  authority-audit and admit the exact fleet without starting work
   run        build/reuse environments, preflight, then execute the fleet
   env        pass remaining arguments to the low-level environment bootstrap
@@ -53,9 +54,23 @@ execution_authority() {
   authority_from_env_file
 }
 
+authority_requirements_path() {
+  printf '%s\n' "$FLEET_STATE_ROOT/authority-prerequisites.json"
+}
+
+emit_authority_requirements() {
+  path="$(authority_requirements_path)"
+  mkdir -p "$FLEET_STATE_ROOT"
+  fleet --requirements --output "$path"
+  printf 'noetrium_authority_requirements=%s\n' "$path"
+}
+
 require_execution_authority() {
   authority="$(execution_authority)"
-  [ -n "$authority" ] || die "run/preflight requires NOETRIUM_FLEET_EXECUTION_AUTHORITY=module:factory (host env or deploy/.env)"
+  if [ -z "$authority" ]; then
+    emit_authority_requirements
+    die "execution authority is unresolved; owner systems must materialize the emitted prerequisite manifest before preflight/run"
+  fi
   printf '%s\n' "$authority"
 }
 
@@ -98,6 +113,10 @@ case "$command" in
   plan)
     host_doctor
     fleet "$@"
+    ;;
+  requirements)
+    host_doctor
+    emit_authority_requirements
     ;;
   preflight)
     host_doctor
