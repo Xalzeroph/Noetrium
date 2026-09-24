@@ -1,4 +1,5 @@
 import hashlib
+from dataclasses import replace
 import unittest
 
 from noetrium_platform.foundation.kernel.kernel import ImmutableModelIdentity
@@ -41,6 +42,30 @@ class CapacityV20Tests(unittest.TestCase):
         self.assertEqual(a.identity_digest(),transient.identity_digest())
         self.assertNotEqual(a.snapshot_digest(),transient.snapshot_digest())
         self.assertNotEqual(a.identity_digest(),runtime_drift.identity_digest())
+
+    def test_host_inventory_rejects_ambiguous_fabric_topology(self):
+        base = host()
+        with self.assertRaisesRegex(ValueError, "duplicate GPU fabric pair"):
+            replace(
+                base,
+                fabric=base.fabric + (
+                    GPUFabricLink("g1", "g0", "NVLink", 900),
+                ),
+            )
+        with self.assertRaisesRegex(ValueError, "self-link"):
+            replace(
+                base,
+                fabric=base.fabric + (
+                    GPUFabricLink("g0", "g0", "NVLink", 900),
+                ),
+            )
+        with self.assertRaisesRegex(ValueError, "unknown GPU UUID"):
+            replace(
+                base,
+                fabric=base.fabric + (
+                    GPUFabricLink("g0", "missing", "PCIe", 64),
+                ),
+            )
 
     def test_planner_prefers_nvlink_and_local_numa(self):
         h=host(); st=stack(); plan=ExactCapacityPlanner().plan(h,st,cert(h,st),DeploymentRequirements("d",8000,"/srv/models"))
