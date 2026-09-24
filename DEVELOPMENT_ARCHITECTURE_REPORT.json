@@ -10,7 +10,7 @@
   "architecture_complexity": {
     "authorities": 20,
     "contract_declarations": 185,
-    "import_edges": 5388,
+    "import_edges": 5390,
     "subsystems": 14,
     "top_level_systems": 17
   },
@@ -30,7 +30,7 @@
     "effective_limits": {
       "authorities": 31,
       "contract_declarations": 185,
-      "import_edges": 5388,
+      "import_edges": 5390,
       "subsystems": 15,
       "top_level_systems": 16
     },
@@ -634,7 +634,7 @@
       "seam_id": "completed"
     }
   ],
-  "import_edges": 5388,
+  "import_edges": 5390,
   "import_violations": [],
   "layer_violations": [],
   "operation_graph": [
@@ -885,7 +885,7 @@
       "noetrium_platform.product"
     ]
   ],
-  "report_sha256": "71e3d3ea1feab72f96718b536857012c6a04b4bc28e16770bb94ae5afc021f50",
+  "report_sha256": "10e7a5da8cca75a6a6b61e8a8725758acfc3ad82b15f218d70e3657446077d00",
   "source_authority_violations": [
     {
       "allowed_modules": [
@@ -910,7 +910,7 @@
       "primitive": "time.sleep"
     }
   ],
-  "source_digest": "cb390bb73cf1631994f16cef268176e8a3a53296cdc2913777aaaac29761b330",
+  "source_digest": "f1913dcafbbae7402f52673546a4859f9d10f2e25ef4ac9246a5cbb631d4b451",
   "source_invariant_violations": [
     {
       "detail": "raw exception text is surfaced directly (str(exc)); use error_api.describe_exception",

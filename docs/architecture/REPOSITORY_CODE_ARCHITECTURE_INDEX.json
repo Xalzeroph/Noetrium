@@ -2,7 +2,7 @@
   "counts": {
     "parse_errors": 0,
     "python_files": 3679,
-    "python_import_edges": 7159,
+    "python_import_edges": 7162,
     "symbols": 4891,
     "tracked_files": 4309,
     "typescript_javascript_files": 11
@@ -15029,7 +15029,7 @@
     {
       "source_module": "noetrium_platform.research.experimentation.lifecycle.experiment.runtime.components",
       "source_role": "core_platform",
-      "target_module": "noetrium_platform.research.experimentation.lifecycle.run.api",
+      "target_module": "noetrium_platform.research.experimentation.lifecycle.run.api.ports",
       "target_role": "core_platform"
     },
     {
@@ -15047,12 +15047,6 @@
     {
       "source_module": "noetrium_platform.research.experimentation.lifecycle.experiment.runtime.engine",
       "source_role": "core_platform",
-      "target_module": "noetrium_platform.research.experimentation.lifecycle.run.api",
-      "target_role": "core_platform"
-    },
-    {
-      "source_module": "noetrium_platform.research.experimentation.lifecycle.experiment.runtime.engine",
-      "source_role": "core_platform",
       "target_module": "noetrium_platform.research.experimentation.lifecycle.run.api.identity",
       "target_role": "core_platform"
     },
@@ -15060,6 +15054,12 @@
       "source_module": "noetrium_platform.research.experimentation.lifecycle.experiment.runtime.engine",
       "source_role": "core_platform",
       "target_module": "noetrium_platform.research.experimentation.lifecycle.run.api.identity_ports",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "noetrium_platform.research.experimentation.lifecycle.experiment.runtime.engine",
+      "source_role": "core_platform",
+      "target_module": "noetrium_platform.research.experimentation.lifecycle.run.api.lifecycle_ports",
       "target_role": "core_platform"
     },
     {
@@ -15441,6 +15441,12 @@
       "target_role": "core_platform"
     },
     {
+      "source_module": "noetrium_platform.research.experimentation.lifecycle.run.runtime.cycle",
+      "source_role": "core_platform",
+      "target_module": "noetrium_platform.research.experimentation.lifecycle.experiment.api.ports",
+      "target_role": "core_platform"
+    },
+    {
       "source_module": "noetrium_platform.research.experimentation.lifecycle.run.runtime.decision_runtime",
       "source_role": "core_platform",
       "target_module": "noetrium_platform.foundation.kernel.kernel",
@@ -15456,6 +15462,12 @@
       "source_module": "noetrium_platform.research.experimentation.lifecycle.run.runtime.decision_runtime",
       "source_role": "core_platform",
       "target_module": "noetrium_platform.research.experimentation.lifecycle.experiment.api",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "noetrium_platform.research.experimentation.lifecycle.run.runtime.decision_runtime",
+      "source_role": "core_platform",
+      "target_module": "noetrium_platform.research.experimentation.lifecycle.experiment.api.ports",
       "target_role": "core_platform"
     },
     {
@@ -15588,6 +15600,12 @@
       "source_module": "noetrium_platform.research.experimentation.lifecycle.run.runtime.run_runtime",
       "source_role": "core_platform",
       "target_module": "noetrium_platform.research.experimentation.lifecycle.experiment.api",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "noetrium_platform.research.experimentation.lifecycle.run.runtime.run_runtime",
+      "source_role": "core_platform",
+      "target_module": "noetrium_platform.research.experimentation.lifecycle.experiment.api.ports",
       "target_role": "core_platform"
     },
     {
@@ -42971,7 +42989,7 @@
   ],
   "role_import_counts": [
     {
-      "count": 2644,
+      "count": 2647,
       "source_role": "core_platform",
       "target_role": "core_platform"
     },
@@ -43110,7 +43128,7 @@
     "tooling": 38
   },
   "schema": "noetrium-repository-code-architecture-index.v1",
-  "source_git_sha": "6b0b6c2f2d555a46e0b736460d34ca0d3e84930f",
+  "source_git_sha": "30b2dae8897b776ea48bf039e13925e39e155114",
   "symbols": [
     {
       "bases": [],
