@@ -269,9 +269,9 @@ def test_clean_room_verifies_research_identity_across_fresh_processes(
     monkeypatch.setattr(npe, "_run", fake_run)
     result = npe.verify_npe_cleanroom(artifact)
 
-    assert result.schema == "noetrium.npe-clean-room.v4"
+    assert result.schema == "noetrium.npe-clean-room.v5"
     assert result.doctor_ready is True
-    assert result.research_program_loaded is True
+    assert result.research_portfolio_loaded is True
     assert result.fresh_process_identity_stable is True
     assert result.npe_verified is True
     assert result.blocker_codes == ()
@@ -339,7 +339,7 @@ def test_clean_room_rejects_fresh_process_research_identity_drift(
     monkeypatch.setattr(npe, "_run", fake_run)
     result = npe.verify_npe_cleanroom(artifact)
 
-    assert result.research_program_loaded is True
+    assert result.research_portfolio_loaded is True
     assert result.fresh_process_identity_stable is False
     assert result.npe_verified is False
     assert result.blocker_codes == ("RESEARCH_IDENTITY_DRIFT",)
