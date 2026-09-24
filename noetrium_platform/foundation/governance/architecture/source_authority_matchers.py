@@ -28,6 +28,28 @@ def exact_call(*names: str) -> AuthorityMatcher:
     return lambda call, aliases: resolved_call_name(call, aliases) in wanted
 
 
+def path_open_write_mode() -> AuthorityMatcher:
+    """Match pathlib-style .open() calls whose explicit mode can mutate bytes."""
+
+    def matches(call: ast.Call, aliases: dict[str, str]) -> bool:
+        del aliases
+        dotted = dotted_name(call.func) or ""
+        if not dotted.endswith(".open"):
+            return False
+        mode_node: ast.AST | None = call.args[0] if call.args else None
+        for keyword in call.keywords:
+            if keyword.arg == "mode":
+                mode_node = keyword.value
+                break
+        if not isinstance(mode_node, ast.Constant) or not isinstance(
+            mode_node.value, str
+        ):
+            return False
+        return any(flag in mode_node.value for flag in ("w", "a", "x", "+"))
+
+    return matches
+
+
 def suffix_call(*suffixes: str) -> AuthorityMatcher:
     wanted = tuple(suffixes)
 
@@ -39,4 +61,10 @@ def suffix_call(*suffixes: str) -> AuthorityMatcher:
     return matches
 
 
-__all__ = ["dotted_name", "resolved_call_name", "exact_call", "suffix_call"]
+__all__ = [
+    "dotted_name",
+    "resolved_call_name",
+    "exact_call",
+    "path_open_write_mode",
+    "suffix_call",
+]
