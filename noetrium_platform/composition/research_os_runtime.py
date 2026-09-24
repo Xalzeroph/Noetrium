@@ -8,7 +8,7 @@ from noetrium_platform.composition.method_runtime import (
     bind_standard_method_runtime,
     standard_method_runtime_binder,
 )
-from noetrium_platform.foundation.kernel.concurrency.api import Deadline
+from noetrium_platform.foundation.kernel.concurrency.api import Deadline, TaskContextPort
 from noetrium_platform.composition.research_execution_pool import ResearchExecutionPool
 from noetrium_platform.foundation.kernel.kernel import (
     DirectoryMachineJournal,
@@ -263,6 +263,7 @@ class CanonicalResearchOSNodeRuntime(ResearchOSNodeRuntimePort):
     def execute(
         self,
         context: ExecutionContext,
+        task_context: TaskContextPort,
         node: CompiledResearchOSGraphNode,
         lowering: LoweredResearchOSGraphNode,
         inputs: JsonObject,
@@ -272,6 +273,7 @@ class CanonicalResearchOSNodeRuntime(ResearchOSNodeRuntimePort):
     ) -> JsonValue:
         if not isinstance(context, ExecutionContext):
             raise TypeError("canonical Research OS runtime requires ExecutionContext")
+        task_context.checkpoint()
         if type(inputs) is not dict:
             raise TypeError("canonical Research OS runtime inputs must be JsonObject")
         require_sha256(execution_cut_id, "canonical Research OS execution_cut_id")
