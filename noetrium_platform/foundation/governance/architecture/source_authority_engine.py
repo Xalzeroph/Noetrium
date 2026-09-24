@@ -32,6 +32,20 @@ def is_production_python(root: Path, path: Path) -> bool:
     }
 
 
+def _annotation_node_ids(tree: ast.AST) -> frozenset[int]:
+    """Return AST nodes that occur only inside Python type annotations."""
+
+    roots: list[ast.AST] = []
+    for node in ast.walk(tree):
+        if isinstance(node, ast.arg) and node.annotation is not None:
+            roots.append(node.annotation)
+        elif isinstance(node, ast.AnnAssign):
+            roots.append(node.annotation)
+        elif isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)) and node.returns is not None:
+            roots.append(node.returns)
+    return frozenset(id(item) for root in roots for item in ast.walk(root))
+
+
 def import_aliases(tree: ast.AST) -> dict[str, str]:
     aliases: dict[str, str] = {}
     for node in ast.walk(tree):
@@ -57,6 +71,7 @@ def audit_authority_rules(
         tree = source_tree(path)
         module = module_name(root, path)
         aliases = import_aliases(tree)
+        annotation_node_ids = _annotation_node_ids(tree)
         for node in source_nodes(path):
             for rule in resolved_rules:
                 if module in rule.allowed_modules:
@@ -67,6 +82,7 @@ def audit_authority_rules(
                 if (
                     not matched
                     and rule.protect_reference
+                    and id(node) not in annotation_node_ids
                     and isinstance(node, (ast.Name, ast.Attribute))
                 ):
                     matched = resolved_symbol_name(node, aliases) == rule.primitive
