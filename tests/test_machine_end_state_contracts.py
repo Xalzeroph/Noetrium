@@ -270,8 +270,15 @@ def test_runtime_enforces_granted_capability_scopes(tmp_path: Path) -> None:
 
 def test_child_supervisor_requires_terminal_join() -> None:
     link = ChildMachineLink(
-        "parent-1", "child-supervised", canonical_digest("child-program"),
-        "snapshot/child", 0, 2, None, "fail_parent",
+        parent_machine_id="parent-1",
+        child_machine_id="child-supervised",
+        child_program_digest=canonical_digest("child-program"),
+        child_program_lock_digest=canonical_digest("child-program-lock"),
+        child_snapshot_ref="snapshot/child",
+        child_transition_start=0,
+        child_transition_end=2,
+        child_result_ref=None,
+        failure_policy="fail_parent",
     )
     supervisor = InMemoryChildMachineSupervisor()
     created = supervisor.register(link)
@@ -301,8 +308,15 @@ def test_artifact_blob_store_survives_restart_and_detects_tampering(tmp_path: Pa
 
 def test_directory_child_supervisor_survives_restart(tmp_path: Path) -> None:
     link = ChildMachineLink(
-        "parent-durable", "child-durable", canonical_digest("program"),
-        "snapshot/child", 1, 3, "result/child", "fail_parent",
+        parent_machine_id="parent-durable",
+        child_machine_id="child-durable",
+        child_program_digest=canonical_digest("program"),
+        child_program_lock_digest=canonical_digest("program-lock"),
+        child_snapshot_ref="snapshot/child",
+        child_transition_start=1,
+        child_transition_end=3,
+        child_result_ref="result/child",
+        failure_policy="fail_parent",
     )
     first = DirectoryChildMachineSupervisor(tmp_path)
     first.register(link)
@@ -316,8 +330,15 @@ def test_directory_child_supervisor_survives_restart(tmp_path: Path) -> None:
 
 def test_directory_child_records_reject_corruption(tmp_path: Path) -> None:
     link = ChildMachineLink(
-        "parent-corrupt", "child-corrupt", canonical_digest("program"),
-        "snapshot/child", 1, 3, "result/child", "fail_parent",
+        parent_machine_id="parent-corrupt",
+        child_machine_id="child-corrupt",
+        child_program_digest=canonical_digest("program"),
+        child_program_lock_digest=canonical_digest("program-lock"),
+        child_snapshot_ref="snapshot/child",
+        child_transition_start=1,
+        child_transition_end=3,
+        child_result_ref="result/child",
+        failure_policy="fail_parent",
     )
     child_root = tmp_path / "children-corrupt"
     child = DirectoryChildMachineSupervisor(child_root)
