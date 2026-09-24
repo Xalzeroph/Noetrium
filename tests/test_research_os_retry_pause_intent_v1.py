@@ -103,13 +103,15 @@ def test_retry_respects_local_pause_until_explicit_resume(tmp_path: Path) -> Non
 
         first = research_os.run(node_target)
         assert first.state == "failed"
-        assert runtime.execute_calls == 1, first.payload
-
         active = graph.active_cut(target.execution_id)
         assert active is not None
-        assert graph.snapshot(active.cut_id).node("paper::task").state is (
-            ResearchGraphLiveNodeState.FAILED
+        first_record = graph.snapshot(active.cut_id).node("paper::task")
+        assert runtime.execute_calls == 1, (
+            first_record.failure_type,
+            first_record.failure_message,
+            first.payload,
         )
+        assert first_record.state is ResearchGraphLiveNodeState.FAILED
 
         paused = research_os.pause(node_target)
         assert paused.state == "node_paused"
