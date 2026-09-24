@@ -109,7 +109,7 @@ class ModelDeploymentRuntime:
                 f"{desired.deployment_id}"
             )
         outcome = (
-            runtime.stop_exact(applied.contract)
+            runtime.stop_exact(applied.contract, applied.process)
             if observation.process is not None
             else None
         )
@@ -177,7 +177,7 @@ class ModelDeploymentRuntime:
                         "already-running",
                     )
                 if observation.process is not None:
-                    stopped = runtime.stop_exact(applied.contract)
+                    stopped = runtime.stop_exact(applied.contract, applied.process)
                     if not stopped.stopped:
                         raise RuntimeError(
                             "existing model process did not stop before deployment replacement: "
