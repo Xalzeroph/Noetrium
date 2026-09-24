@@ -279,7 +279,10 @@ class EnvironmentInstanceLeaseAuthority:
         now_epoch_s = time() if now is None else float(now)
         if not math.isfinite(now_epoch_s):
             raise ValueError("environment lease reconciliation time must be finite")
-        self.leases.reconcile_expired(now=now_epoch_s)
+        self.leases.reconcile_expired(
+            now=now_epoch_s,
+            resource_kind=ResourceKind.EXECUTION_ENVIRONMENT,
+        )
         dirtied: list[str] = []
         released: list[str] = []
 
