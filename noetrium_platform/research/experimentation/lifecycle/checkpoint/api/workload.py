@@ -5,7 +5,11 @@ from enum import StrEnum
 import hashlib
 from typing import Protocol, runtime_checkable
 
-from noetrium_platform.foundation.kernel.kernel import canonical_digest
+from noetrium_platform.foundation.kernel.kernel import (
+    DurableCarrierReferenceClosure,
+    canonical_digest,
+)
+from .gc import CheckpointGcAssessment
 
 
 _HEX = frozenset("0123456789abcdef")
@@ -256,6 +260,20 @@ class WorkloadCheckpointStore(Protocol):
     ) -> WorkloadCheckpointManifest: ...
 
     def load(self, checkpoint_id: str) -> WorkloadCheckpointBundle: ...
+
+    def assess_gc(
+        self,
+        checkpoint_id: str,
+        *,
+        closures: tuple[DurableCarrierReferenceClosure, ...] = (),
+    ) -> CheckpointGcAssessment: ...
+
+    def purge(
+        self,
+        checkpoint_id: str,
+        *,
+        gc: CheckpointGcAssessment,
+    ) -> bool: ...
 
 
 @runtime_checkable
