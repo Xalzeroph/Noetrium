@@ -32,3 +32,18 @@ def test_raw_sqlite_transaction_control_is_forbidden(tmp_path: Path) -> None:
         in sqlite_invariants._sqlite_session_policy_calls(source)
     )
     assert primitives == ("BEGIN IMMEDIATE", "COMMIT", "ROLLBACK")
+
+
+def test_reference_sqlite_transaction_control_is_forbidden(tmp_path: Path) -> None:
+    source = tmp_path / "components" / "reference" / "rogue.py"
+    source.parent.mkdir(parents=True)
+    source.write_text(
+        "import sqlite3\n"
+        "def mutate(path):\n"
+        "    db = sqlite3.connect(path)\n"
+        "    db.execute(\"BEGIN IMMEDIATE\")\n",
+        encoding="utf-8",
+    )
+    findings = audit_sqlite_durability_invariants(tmp_path)
+    assert {row.invariant for row in findings} == {"sqlite_durability_authority"}
+    assert {row.line for row in findings} == {3, 4}
