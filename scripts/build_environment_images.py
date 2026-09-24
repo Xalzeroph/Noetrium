@@ -229,8 +229,10 @@ def validate_catalog(data: dict, profiles: dict[str, dict]) -> dict:
         if compose_text:
             if "environment-doctor" not in compose_text:
                 errors.append(f"{profile_id}: compose overlay lacks environment doctor")
-            if profile_id not in compose_text:
-                errors.append(f"{profile_id}: compose overlay lacks profile identity")
+            if category_id not in compose_text:
+                errors.append(
+                    f"{profile_id}: compose overlay lacks category identity {category_id!r}"
+                )
 
     for category_id, defaults in sorted(active_defaults.items()):
         if len(defaults) != 1:
@@ -476,7 +478,7 @@ def build_environment_images(
                     "--rm",
                     base_tag,
                     "environment-doctor",
-                    profile_id,
+                    row["category_id"],
                 )
             )
             profile_identity = dict(base_identity)
@@ -518,6 +520,7 @@ def build_environment_images(
             qualification_instance / "platform-state"
         )
         env["NOETRIUM_ENVIRONMENT_INSTANCE_ID"] = qualification_instance.name
+        env["NOETRIUM_ENVIRONMENT_PROFILE_ID"] = profile_id
         env["NOETRIUM_ENVIRONMENT_PROFILE_REVISION"] = revision
         reused_profile = _image_exists(tag) and not rebuild
         if not reused_profile:
@@ -546,7 +549,7 @@ def build_environment_images(
                 "--rm",
                 "platform-runtime",
                 "environment-doctor",
-                profile_id,
+                row["category_id"],
             ),
             env=env,
         )
@@ -580,7 +583,11 @@ def build_environment_images(
                 "source_image": java_runtime_image,
                 "source_identity": (
                     _image_identity(java_runtime_image)
-                    if "minecraft" in profiles and _image_exists(java_runtime_image)
+                    if any(
+                        by_id[profile_id]["category_id"] == "minecraft"
+                        for profile_id in profiles
+                    )
+                    and _image_exists(java_runtime_image)
                     else None
                 ),
             },
