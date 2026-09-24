@@ -1,5 +1,5 @@
 from __future__ import annotations
-from noetrium_platform.research.execution.workflow.api import AgentMethodSpec, AgentPhaseSpec
+from noetrium.api import AgentMethodSpec, AgentPhaseSpec
 METHOD_ID="ishift_cvpr2026"
 TITLE="iSHIFT: Lightweight Slow-Fast GUI Agent with Adaptive Perception"
 VENUE="CVPR 2026"
