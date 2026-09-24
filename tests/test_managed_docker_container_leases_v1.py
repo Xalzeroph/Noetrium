@@ -211,3 +211,32 @@ def test_managed_docker_stopped_live_generation_is_reaped_and_fence_advances() -
     second = _reserve(authority)
     assert second.lease.fencing_token > first.lease.fencing_token
     assert second.container_name != first.container_name
+
+
+def test_managed_docker_shutdown_cleanup_releases_prestart_lease() -> None:
+    resources = InMemoryResourceLeaseRegistry()
+    runtime = FakeDockerRuntime()
+    authority = _authority(resources, runtime)
+    handle = _reserve(authority)
+    resource = ResourceIdentity(ResourceKind.CONTAINER, handle.allocation_id)
+
+    report = authority.shutdown_cleanup()
+
+    assert report.removed_container_ids == ()
+    assert report.released_lease_ids == (handle.lease.lease_id,)
+    assert resources.active_for(resource) == ()
+
+
+def test_managed_docker_shutdown_cleanup_removes_physical_before_releasing() -> None:
+    resources = InMemoryResourceLeaseRegistry()
+    runtime = FakeDockerRuntime()
+    authority = _authority(resources, runtime)
+    handle = _reserve(authority)
+    observed = runtime.start(handle)
+
+    report = authority.shutdown_cleanup()
+
+    assert report.removed_container_ids == (observed.container_id,)
+    assert report.released_lease_ids == (handle.lease.lease_id,)
+    assert runtime.events == [f"remove:{observed.container_id}"]
+    assert resources.get(handle.lease.lease_id).state is LeaseState.RELEASED
