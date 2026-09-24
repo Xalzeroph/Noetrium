@@ -15,7 +15,7 @@ from research.reproductions.contracts import (
 
 REPRODUCTION = ReproductionDefinition(
     package='memevolve',
-    lifecycle=ReproductionLifecycle('catalogued'),
+    lifecycle=ReproductionLifecycle('protocol_bound'),
     identity=ReproductionIdentity(
         method_id='memevolve',
         title='MemEvolve: Meta-Evolution of Agent Memory Systems',
@@ -36,6 +36,14 @@ REPRODUCTION = ReproductionDefinition(
         ReproductionAssetRef(
             kind=ReproductionAssetKind('fidelity'),
             path='research/reproductions/memevolve/fidelity.py',
+        ),
+        ReproductionAssetRef(
+            kind=ReproductionAssetKind('method_program'),
+            path='research/reproductions/memevolve/program.py',
+        ),
+        ReproductionAssetRef(
+            kind=ReproductionAssetKind('study'),
+            path='research/reproductions/memevolve/study.py',
         ),
     ),
     reported_results=(
