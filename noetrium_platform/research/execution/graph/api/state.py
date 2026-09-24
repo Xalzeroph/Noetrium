@@ -604,6 +604,13 @@ class ResearchGraphExecutionStorePort(Protocol):
         node_id: str,
     ) -> ResearchGraphReuseRecord | None: ...
 
+    def attempt_state(
+        self,
+        execution_id: str,
+        node_id: str,
+        attempt_number: int,
+    ) -> ResearchGraphAttemptRecord: ...
+
     def attempts(
         self,
         execution_id: str,
