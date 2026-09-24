@@ -14,10 +14,9 @@ from noetrium_platform.evidence.artifact.retention.api import (
 )
 from noetrium_platform.foundation.kernel.kernel import strict_finite_json_digest as canonical_digest
 from noetrium_platform.foundation.kernel.kernel.durability.sqlite import (
-    begin_immediate_sqlite_transaction,
+    immediate_sqlite_transaction,
     open_durable_sqlite_reader,
     open_durable_sqlite_writer,
-    rollback_sqlite_writer,
 )
 from noetrium_platform.evidence.artifact._sqlite_types import require_integer, require_text
 
@@ -146,10 +145,15 @@ class SQLiteArtifactRetentionStore:
         reason_refs: tuple[str, ...] = (),
     ) -> ArtifactRetentionState:
         if isinstance(expected_generation, bool) or expected_generation < 0:
-            raise ValueError("artifact retention expected_generation must be a non-negative integer")
+            raise ValueError(
+                "artifact retention expected_generation must be a "
+                "non-negative integer"
+            )
         if not isinstance(pinned, bool):
             raise TypeError("artifact retention pinned must be bool")
-        candidate_generation = 1 if expected_generation == 0 else expected_generation + 1
+        candidate_generation = (
+            1 if expected_generation == 0 else expected_generation + 1
+        )
         candidate = ArtifactRetentionState(
             artifact_id,
             retention,
@@ -158,31 +162,35 @@ class SQLiteArtifactRetentionStore:
             reason_refs,
         )
         with closing(self._connect_writer()) as db:
-            begin_immediate_sqlite_transaction(db, timeout_seconds=self.timeout_seconds)
-            try:
+            with immediate_sqlite_transaction(
+                db,
+                timeout_seconds=self.timeout_seconds,
+                label="artifact retention",
+            ):
                 row = self._select(db, artifact_id)
                 if row is None:
                     if expected_generation != 0:
                         raise ArtifactRetentionConflict(
-                            f"missing retention state {artifact_id!r}; expected generation {expected_generation}"
+                            f"missing retention state {artifact_id!r}; "
+                            f"expected generation {expected_generation}"
                         )
                     db.execute(
                         "INSERT INTO artifact_retention VALUES(?,?,?,?,?,?)",
                         self._encode(candidate),
                     )
-                    db.execute("COMMIT")
                     return candidate
                 current = self._decode(row)
                 if current.generation != expected_generation:
                     raise ArtifactRetentionConflict(
-                        f"retention generation conflict: expected {expected_generation}, actual {current.generation}"
+                        "retention generation conflict: "
+                        f"expected {expected_generation}, "
+                        f"actual {current.generation}"
                     )
                 if (
                     current.retention is retention
                     and current.pinned is pinned
                     and current.reason_refs == reason_refs
                 ):
-                    db.execute("COMMIT")
                     return current
                 updated = ArtifactRetentionState(
                     artifact_id,
@@ -192,22 +200,24 @@ class SQLiteArtifactRetentionStore:
                     reason_refs,
                 )
                 db.execute(
-                    "UPDATE artifact_retention SET retention=?,pinned=?,generation=?,reason_refs_json=?,record_sha256=? "
+                    "UPDATE artifact_retention "
+                    "SET retention=?,pinned=?,generation=?,"
+                    "reason_refs_json=?,record_sha256=? "
                     "WHERE artifact_id=?",
                     (
                         updated.retention.value,
                         int(updated.pinned),
                         updated.generation,
-                        json.dumps(updated.reason_refs, ensure_ascii=False, separators=(",", ":")),
+                        json.dumps(
+                            updated.reason_refs,
+                            ensure_ascii=False,
+                            separators=(",", ":"),
+                        ),
                         self._record_digest(updated),
                         artifact_id,
                     ),
                 )
-                db.execute("COMMIT")
                 return updated
-            except BaseException as primary:
-                rollback_sqlite_writer(db, primary, label="artifact")
-                raise
 
 
 __all__ = ["SQLiteArtifactRetentionStore"]
