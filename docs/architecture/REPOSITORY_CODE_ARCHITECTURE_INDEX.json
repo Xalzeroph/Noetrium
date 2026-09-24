@@ -1,15 +1,15 @@
 {
   "counts": {
     "parse_errors": 0,
-    "python_files": 3636,
-    "python_import_edges": 6899,
-    "symbols": 4829,
-    "tracked_files": 4265,
+    "python_files": 3637,
+    "python_import_edges": 6906,
+    "symbols": 4831,
+    "tracked_files": 4266,
     "typescript_javascript_files": 11
   },
   "language_symbol_counts": {
     "javascript": 1,
-    "python": 4823,
+    "python": 4825,
     "typescript": 5
   },
   "parse_errors": [],
@@ -31905,6 +31905,48 @@
       "target_role": "core_platform"
     },
     {
+      "source_module": "tests.test_research_graph_admission_claim_v1",
+      "source_role": "tests",
+      "target_module": "noetrium_platform.composition.research_execution_pool",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "tests.test_research_graph_admission_claim_v1",
+      "source_role": "tests",
+      "target_module": "noetrium_platform.composition.research_graph",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "tests.test_research_graph_admission_claim_v1",
+      "source_role": "tests",
+      "target_module": "noetrium_platform.foundation.kernel.concurrency.api",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "tests.test_research_graph_admission_claim_v1",
+      "source_role": "tests",
+      "target_module": "noetrium_platform.foundation.kernel.kernel",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "tests.test_research_graph_admission_claim_v1",
+      "source_role": "tests",
+      "target_module": "noetrium_platform.research.execution.graph.api",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "tests.test_research_graph_admission_claim_v1",
+      "source_role": "tests",
+      "target_module": "noetrium_platform.research.execution.graph.providers",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "tests.test_research_graph_admission_claim_v1",
+      "source_role": "tests",
+      "target_module": "noetrium_platform.research.execution.policy.api",
+      "target_role": "core_platform"
+    },
+    {
       "source_module": "tests.test_research_graph_attempt_point_read_v1",
       "source_role": "tests",
       "target_module": "noetrium_platform.foundation.kernel.kernel",
@@ -41471,7 +41513,7 @@
       "target_role": "research_reproductions"
     },
     {
-      "count": 2725,
+      "count": 2732,
       "source_role": "tests",
       "target_role": "core_platform"
     },
@@ -41534,7 +41576,7 @@
     "reference_components": 22,
     "reference_orchestration": 10,
     "research_reproductions": 760,
-    "tests": 791,
+    "tests": 792,
     "tooling": 78
   },
   "role_symbol_counts": {
@@ -41546,11 +41588,11 @@
     "reference_orchestration": 14,
     "research_reproductions": 403,
     "sdk": 5,
-    "tests": 963,
+    "tests": 965,
     "tooling": 38
   },
   "schema": "noetrium-repository-code-architecture-index.v1",
-  "source_git_sha": "f9faf50829b98cd01913868784d1512c29f4bab1",
+  "source_git_sha": "14ffd64c4db50123afeb8eec1d1771525b6720c1",
   "symbols": [
     {
       "bases": [],
@@ -63861,7 +63903,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 59,
+      "line": 64,
       "methods": [
         "__init__"
       ],
@@ -63879,7 +63921,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 72,
+      "line": 77,
       "methods": [
         "__init__"
       ],
@@ -63895,7 +63937,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 88,
+      "line": 93,
       "methods": [
         "__init__",
         "plan",
@@ -100628,6 +100670,7 @@
         "ensure_execution",
         "snapshot",
         "node_state",
+        "node_states",
         "mark_ready",
         "claim",
         "mark_running",
@@ -100659,7 +100702,7 @@
       "fields": [],
       "kind": "protocol",
       "language": "python",
-      "line": 636,
+      "line": 642,
       "methods": [
         "control_state",
         "request_drain",
@@ -100686,10 +100729,11 @@
       "fields": [],
       "kind": "protocol",
       "language": "python",
-      "line": 706,
+      "line": 712,
       "methods": [
         "node_control_state",
         "node_control_snapshot",
+        "node_control_states",
         "request_node_drain",
         "pause_node_if_quiescent",
         "resume_node",
@@ -100713,7 +100757,7 @@
       "fields": [],
       "kind": "protocol",
       "language": "python",
-      "line": 777,
+      "line": 789,
       "methods": [
         "active_cut",
         "move_active_cut"
@@ -100758,9 +100802,11 @@
         "ensure_execution",
         "snapshot",
         "node_state",
+        "node_states",
         "control_state",
         "node_control_state",
         "node_control_snapshot",
+        "node_control_states",
         "request_node_drain",
         "pause_node_if_quiescent",
         "resume_node",
@@ -137843,6 +137889,43 @@
       "name": "_Binding",
       "path": "tests/test_research_checkpoint_participant_v1.py",
       "qualname": "tests.test_research_checkpoint_participant_v1._Binding",
+      "role": "tests"
+    },
+    {
+      "bases": [
+        "SQLiteResearchGraphExecutionStore"
+      ],
+      "decorators": [],
+      "fields": [],
+      "kind": "class",
+      "language": "python",
+      "line": 19,
+      "methods": [
+        "__init__",
+        "claim",
+        "renew_leases"
+      ],
+      "module": "tests.test_research_graph_admission_claim_v1",
+      "name": "_AdmissionAwareStore",
+      "path": "tests/test_research_graph_admission_claim_v1.py",
+      "qualname": "tests.test_research_graph_admission_claim_v1._AdmissionAwareStore",
+      "role": "tests"
+    },
+    {
+      "bases": [],
+      "decorators": [],
+      "fields": [],
+      "kind": "class",
+      "language": "python",
+      "line": 41,
+      "methods": [
+        "__init__",
+        "execute"
+      ],
+      "module": "tests.test_research_graph_admission_claim_v1",
+      "name": "_Executor",
+      "path": "tests/test_research_graph_admission_claim_v1.py",
+      "qualname": "tests.test_research_graph_admission_claim_v1._Executor",
       "role": "tests"
     },
     {

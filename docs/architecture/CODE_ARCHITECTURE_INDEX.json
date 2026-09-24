@@ -39770,7 +39770,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 59,
+      "line": 64,
       "methods": [
         "__init__"
       ],
@@ -39790,7 +39790,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 72,
+      "line": 77,
       "methods": [
         "__init__"
       ],
@@ -39808,7 +39808,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 88,
+      "line": 93,
       "methods": [
         "__init__",
         "plan",
@@ -79666,7 +79666,7 @@
       ],
       "fields": [],
       "kind": "protocol",
-      "line": 777,
+      "line": 789,
       "methods": [
         "active_cut",
         "move_active_cut"
@@ -79800,7 +79800,7 @@
       ],
       "fields": [],
       "kind": "protocol",
-      "line": 636,
+      "line": 642,
       "methods": [
         "control_state",
         "request_drain",
@@ -79926,6 +79926,7 @@
         "ensure_execution",
         "snapshot",
         "node_state",
+        "node_states",
         "mark_ready",
         "claim",
         "mark_running",
@@ -80064,10 +80065,11 @@
       ],
       "fields": [],
       "kind": "protocol",
-      "line": 706,
+      "line": 712,
       "methods": [
         "node_control_state",
         "node_control_snapshot",
+        "node_control_states",
         "request_node_drain",
         "pause_node_if_quiescent",
         "resume_node",
@@ -80223,9 +80225,11 @@
         "ensure_execution",
         "snapshot",
         "node_state",
+        "node_states",
         "control_state",
         "node_control_state",
         "node_control_snapshot",
+        "node_control_states",
         "request_node_drain",
         "pause_node_if_quiescent",
         "resume_node",
@@ -143208,7 +143212,7 @@
   "parse_errors": [],
   "registry_sha256": "d3fc1bab831f1b7379e5a36048a61c00fe173429df958270d36a16f3f00171c0",
   "schema": "noetrium-code-architecture-index.v1",
-  "source_git_sha": "f9faf50829b98cd01913868784d1512c29f4bab1",
+  "source_git_sha": "14ffd64c4db50123afeb8eec1d1771525b6720c1",
   "system_import_edges": [
     {
       "count": 90,
