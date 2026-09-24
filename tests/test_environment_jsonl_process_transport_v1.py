@@ -157,3 +157,56 @@ def test_close_retains_exact_process_identity_until_physical_exit_is_proven() ->
     assert transport.started is False
     assert transport.process_id is None
     assert supervisor.terminate_calls == 3
+
+
+
+class _FailingSubmitGroup:
+    def __init__(self, *, fail_on: int) -> None:
+        self.fail_on = fail_on
+        self.calls = 0
+
+    def submit(self, *args, **kwargs):
+        del args, kwargs
+        self.calls += 1
+        if self.calls == self.fail_on:
+            raise RuntimeError("simulated drain task registration failure")
+        return _Result(value=None)
+
+
+class _ImmediateTerminationSupervisor:
+    def __init__(self, process: _LiveProcess) -> None:
+        self.process = process
+        self.terminate_calls = 0
+
+    def await_exit(self, *args, **kwargs):
+        del args, kwargs
+        return _Result(error=TimeoutError("process still live"))
+
+    def terminate(self, *args, **kwargs):
+        del args, kwargs
+        self.terminate_calls += 1
+        self.process.alive = False
+        return _Result(value=None)
+
+
+@pytest.mark.parametrize("fail_on", (1, 2))
+def test_partial_start_failure_rolls_back_spawned_process(fail_on: int) -> None:
+    process = _LiveProcess()
+    supervisor = _ImmediateTerminationSupervisor(process)
+    task_group = _FailingSubmitGroup(fail_on=fail_on)
+    transport = JsonlProcessTransport(
+        spec=JsonlProcessSpec(("worker",), "."),
+        operating_system=LocalOperatingSystemRoute(),
+        task_group=task_group,
+        process_supervisor=supervisor,
+        transport_identity=f"partial-start-{fail_on}",
+        process_factory=lambda _command, **_options: process,
+    )
+
+    with pytest.raises(RuntimeError, match="drain task registration failure"):
+        transport.start()
+
+    assert process.alive is False
+    assert transport.started is False
+    assert transport.process_id is None
+    assert supervisor.terminate_calls == 1
