@@ -69,6 +69,7 @@ class PythonEnvironmentLifecycle:
     def create(self, spec: PythonEnvironmentSpec) -> ManagedPythonEnvironment:
         self._validate_id(spec.environment_id)
         self._recover_transaction(spec.environment_id)
+        self._registry.ensure_not_retired(spec.environment_id)
         backend = self._backend(spec.backend)
         root = self._root / spec.environment_id
         expected_python = backend.python_path(root)
@@ -126,6 +127,7 @@ class PythonEnvironmentLifecycle:
     def register_existing(self, spec: PythonEnvironmentSpec, root: Path) -> ManagedPythonEnvironment:
         self._validate_id(spec.environment_id)
         self._recover_transaction(spec.environment_id)
+        self._registry.ensure_not_retired(spec.environment_id)
         backend = self._backend(spec.backend)
         resolved = root.expanduser().resolve()
         python_path = backend.python_path(resolved)
@@ -166,11 +168,13 @@ class PythonEnvironmentLifecycle:
     def remove(self, environment_id: str) -> bool:
         self._validate_id(environment_id)
         self._recover_transaction(environment_id)
+        if self._registry.is_retired(environment_id):
+            return True
         value = self._registry_optional(environment_id)
         if value is None:
             return False
         if value.ownership is PythonEnvironmentOwnership.EXTERNAL:
-            return self._registry.remove(environment_id)
+            return self._registry.retire(value)
         transaction = PythonEnvironmentLifecycleTransaction(
             "remove",
             "prepared",
@@ -247,15 +251,19 @@ class PythonEnvironmentLifecycle:
             raise RuntimeError(
                 f"Managed removal transaction has external ownership: {transaction.environment_id}"
             )
-        existing = self._registry_optional(transaction.environment_id)
-        if existing is not None:
-            self._require_same_environment(existing, transaction.environment(state=existing.state))
-            self._registry.remove(transaction.environment_id)
+        # Retirement is terminal and is published before managed root deletion.
+        # The transaction itself carries the immutable environment generation,
+        # so recovery never has to reinterpret a same-id replacement.
+        self._registry.retire(transaction.environment())
         if transaction.phase == "prepared":
-            transaction = self._transactions.put(transaction.with_phase("unregistered"))
+            transaction = self._transactions.put(
+                transaction.with_phase("unregistered")
+            )
         self._remove_managed_root(transaction.root)
         if transaction.phase != "committed":
-            transaction = self._transactions.put(transaction.with_phase("committed"))
+            transaction = self._transactions.put(
+                transaction.with_phase("committed")
+            )
         self._transactions.remove(transaction.environment_id)
 
     def _remove_managed_root(self, root: Path) -> None:
