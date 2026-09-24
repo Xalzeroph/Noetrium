@@ -77,3 +77,25 @@ def test_blob_lock_domain_is_fixed_size_not_per_artifact(tmp_path) -> None:
     assert len(store._local_locks) == 256
     assert len(lock_paths) <= 256
     assert len(local_indices) <= 256
+
+
+def test_blob_resolver_reconstructs_verified_ref_without_host_path(tmp_path) -> None:
+    store = DirectoryArtifactBlobStore(tmp_path / "blobs")
+    payload = b"materialized-benchmark-bytes"
+    published = store.put(payload, media_type="application/jsonl")
+
+    resolved = store.resolve(
+        published.content_sha256,
+        media_type=published.media_type,
+    )
+
+    assert resolved == published
+    assert store.get(resolved) == payload
+
+
+def test_blob_resolver_fails_closed_on_missing_or_invalid_digest(tmp_path) -> None:
+    store = DirectoryArtifactBlobStore(tmp_path / "blobs")
+    with pytest.raises(ValueError, match="lowercase SHA-256"):
+        store.resolve("invalid", media_type="application/octet-stream")
+    with pytest.raises(ArtifactBlobStoreError, match="missing"):
+        store.resolve("a" * 64, media_type="application/octet-stream")
