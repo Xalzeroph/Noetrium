@@ -2,7 +2,7 @@
   "counts": {
     "parse_errors": 0,
     "python_files": 3654,
-    "python_import_edges": 6993,
+    "python_import_edges": 6996,
     "symbols": 4846,
     "tracked_files": 4283,
     "typescript_javascript_files": 11
@@ -9936,12 +9936,6 @@
       "source_module": "noetrium_platform.foundation.scope.providers.sqlite",
       "source_role": "core_platform",
       "target_module": "noetrium_platform.foundation.kernel.kernel.logical_path",
-      "target_role": "core_platform"
-    },
-    {
-      "source_module": "noetrium_platform.foundation.scope.providers.sqlite",
-      "source_role": "core_platform",
-      "target_module": "noetrium_platform.foundation.kernel.kernel.retry",
       "target_role": "core_platform"
     },
     {
@@ -22187,8 +22181,32 @@
     {
       "source_module": "scripts.run_reproduction_fleet",
       "source_role": "tooling",
-      "target_module": "noetrium_platform.research.execution.workflow.api",
+      "target_module": "noetrium",
+      "target_role": "public_facade"
+    },
+    {
+      "source_module": "scripts.run_reproduction_fleet",
+      "source_role": "tooling",
+      "target_module": "noetrium_platform.composition.research_os_graph",
       "target_role": "core_platform"
+    },
+    {
+      "source_module": "scripts.run_reproduction_fleet",
+      "source_role": "tooling",
+      "target_module": "noetrium_platform.foundation.kernel.kernel",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "scripts.run_reproduction_fleet",
+      "source_role": "tooling",
+      "target_module": "research.reproductions.contracts",
+      "target_role": "research_reproductions"
+    },
+    {
+      "source_module": "scripts.run_reproduction_fleet",
+      "source_role": "tooling",
+      "target_module": "research.reproductions.research_os",
+      "target_role": "research_reproductions"
     },
     {
       "source_module": "scripts.server_common",
@@ -41975,7 +41993,7 @@
   ],
   "role_import_counts": [
     {
-      "count": 2617,
+      "count": 2616,
       "source_role": "core_platform",
       "target_role": "core_platform"
     },
@@ -42070,17 +42088,17 @@
       "target_role": "tooling"
     },
     {
-      "count": 110,
+      "count": 111,
       "source_role": "tooling",
       "target_role": "core_platform"
     },
     {
-      "count": 1,
+      "count": 2,
       "source_role": "tooling",
       "target_role": "public_facade"
     },
     {
-      "count": 2,
+      "count": 4,
       "source_role": "tooling",
       "target_role": "research_reproductions"
     },
@@ -42114,7 +42132,7 @@
     "tooling": 38
   },
   "schema": "noetrium-repository-code-architecture-index.v1",
-  "source_git_sha": "d90b16d35b55b5a02b01abdfc0c734f579075931",
+  "source_git_sha": "f8bfcbb582684b8ca02fe69160d1d529fecac50d",
   "symbols": [
     {
       "bases": [],
@@ -84783,10 +84801,9 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 13,
+      "line": 15,
       "methods": [
         "__init__",
-        "_is_lock_contention",
         "_connection",
         "_ensure_schema",
         "_validate_parent",
@@ -94190,7 +94207,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 27,
+      "line": 31,
       "methods": [
         "__init__",
         "read",
@@ -94213,7 +94230,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 85,
+      "line": 100,
       "methods": [
         "__init__",
         "connect",
@@ -105475,7 +105492,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 18,
+      "line": 22,
       "methods": [
         "__init__",
         "durability",
@@ -105521,7 +105538,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 26,
+      "line": 30,
       "methods": [
         "__init__",
         "durability",
@@ -128874,32 +128891,25 @@
         "dataclass(frozen=True)"
       ],
       "fields": [
-        "method_id: str",
         "package: str",
+        "method_id: str",
         "lifecycle: str",
         "benchmark_ids: tuple[str, ...]",
-        "environment_kinds: tuple[str, ...]",
-        "modalities: tuple[str, ...]",
-        "has_program: bool",
-        "has_study: bool",
-        "has_runtime: bool",
-        "runtime_has_main: bool",
-        "runtime_mode: str",
-        "program_export: str | None",
-        "program_digest: str | None",
-        "runtime_requirements_digest: str | None",
-        "runtime_ports: tuple[str, ...]",
-        "agent_ids: tuple[str, ...]",
-        "capability_ids: tuple[str, ...]",
-        "benchmark_materializers: tuple[str, ...]",
-        "pressure_ready: bool | None",
-        "pressure_claim_ready: bool | None",
+        "research_program_digest: str | None",
+        "research_graph_node_id: str | None",
+        "research_graph_semantic_digest: str | None",
+        "study_factory_count: int",
+        "exact_study_factory_count: int",
+        "study_factory_digests: tuple[str, ...]",
+        "unresolved_study_parameters: tuple[str, ...]",
+        "method_program_digest: str | None",
+        "research_machine_program_digests: tuple[str, ...]",
         "state: str",
         "blockers: tuple[str, ...]"
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 122,
+      "line": 30,
       "methods": [],
       "module": "scripts.run_reproduction_fleet",
       "name": "Lane",

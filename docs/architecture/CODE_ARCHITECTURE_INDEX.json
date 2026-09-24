@@ -62154,10 +62154,9 @@
         "SCHEMA_VERSION"
       ],
       "kind": "class",
-      "line": 13,
+      "line": 15,
       "methods": [
         "__init__",
-        "_is_lock_contention",
         "_connection",
         "_ensure_schema",
         "_validate_parent",
@@ -72490,7 +72489,7 @@
         "durability"
       ],
       "kind": "class",
-      "line": 85,
+      "line": 100,
       "methods": [
         "__init__",
         "connect",
@@ -72516,7 +72515,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 27,
+      "line": 31,
       "methods": [
         "__init__",
         "read",
@@ -84791,7 +84790,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 18,
+      "line": 22,
       "methods": [
         "__init__",
         "durability",
@@ -84841,7 +84840,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 26,
+      "line": 30,
       "methods": [
         "__init__",
         "durability",
@@ -102354,7 +102353,7 @@
     "classes": 3336,
     "constructor_edges": 931,
     "inheritance_edges": 149,
-    "module_import_edges": 5072,
+    "module_import_edges": 5071,
     "parse_errors": 0,
     "python_modules": 1928,
     "registry_authorities": 20,
@@ -115652,10 +115651,6 @@
     {
       "source": "noetrium_platform.foundation.scope.providers.sqlite",
       "target": "noetrium_platform.foundation.kernel.kernel.logical_path"
-    },
-    {
-      "source": "noetrium_platform.foundation.scope.providers.sqlite",
-      "target": "noetrium_platform.foundation.kernel.kernel.retry"
     },
     {
       "source": "noetrium_platform.foundation.scope.providers.sqlite",
@@ -135950,7 +135945,6 @@
       "imports": [
         "noetrium_platform.foundation.kernel.kernel.durability.sqlite",
         "noetrium_platform.foundation.kernel.kernel.logical_path",
-        "noetrium_platform.foundation.kernel.kernel.retry",
         "noetrium_platform.foundation.scope.api",
         "noetrium_platform.foundation.scope.runtime"
       ],
@@ -143589,7 +143583,7 @@
   "parse_errors": [],
   "registry_sha256": "d3fc1bab831f1b7379e5a36048a61c00fe173429df958270d36a16f3f00171c0",
   "schema": "noetrium-code-architecture-index.v1",
-  "source_git_sha": "d90b16d35b55b5a02b01abdfc0c734f579075931",
+  "source_git_sha": "f8bfcbb582684b8ca02fe69160d1d529fecac50d",
   "system_import_edges": [
     {
       "count": 85,
@@ -143832,7 +143826,7 @@
       "target": "runtime"
     },
     {
-      "count": 4,
+      "count": 3,
       "source": "scope",
       "target": "platform"
     },
