@@ -1,5 +1,5 @@
 from __future__ import annotations
-from noetrium_platform.research.execution.workflow.api import AgentMethodSpec, AgentPhaseSpec
+from noetrium.api import AgentMethodSpec, AgentPhaseSpec
 METHOD_ID="ces_gui_cvpr2026"
 TITLE="Training High-Level Schedulers with Execution-Feedback Reinforcement Learning for Long-Horizon GUI Automation"
 VENUE="CVPR 2026"
