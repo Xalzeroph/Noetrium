@@ -1700,6 +1700,73 @@ class SQLiteResearchGraphExecutionStore:
             self._bump_generation(conn, execution_id)
             return self._node_tx(conn, execution_id, node_id)
 
+    def abandon_claim(
+        self,
+        execution_id: str,
+        node_id: str,
+        *,
+        attempt_id: str,
+        owner_id: str,
+        now_ns: int,
+    ) -> ResearchGraphNodeExecutionRecord:
+        """Return one exact never-started claim to READY.
+
+        This transition is safe after lease expiry because it can only remove
+        the exact CLAIMED attempt owned by owner_id. A replacement claim or
+        RUNNING generation fails the CAS instead of being retargeted.
+        """
+
+        now_ns = self._require_now(now_ns)
+        with self._transaction() as conn:
+            current = self._node_tx(conn, execution_id, node_id)
+            self._require_active(
+                current,
+                attempt_id=attempt_id,
+                owner_id=owner_id,
+                expected_state=ResearchGraphLiveNodeState.CLAIMED,
+            )
+            attempt_state = (
+                ResearchGraphAttemptState.EXPIRED_BEFORE_START
+                if current.lease_expires_at_ns is not None
+                and current.lease_expires_at_ns <= now_ns
+                else ResearchGraphAttemptState.ABANDONED_BEFORE_START
+            )
+            updated = conn.execute(
+                "UPDATE research_graph_nodes SET state=?,attempt_id=NULL,"
+                "lease_owner_id=NULL,lease_expires_at_ns=NULL "
+                "WHERE execution_id=? AND node_id=? AND state=? "
+                "AND attempt_id=? AND lease_owner_id=?",
+                (
+                    ResearchGraphLiveNodeState.READY.value,
+                    execution_id,
+                    node_id,
+                    ResearchGraphLiveNodeState.CLAIMED.value,
+                    attempt_id,
+                    owner_id,
+                ),
+            )
+            if updated.rowcount != 1:
+                raise ResearchGraphExecutionConflict(
+                    "research graph claimed-attempt recovery lost authority"
+                )
+            history = conn.execute(
+                "UPDATE research_graph_attempts SET state=?,finished_at_ns=? "
+                "WHERE attempt_id=? AND owner_id=? AND state=?",
+                (
+                    attempt_state.value,
+                    now_ns,
+                    attempt_id,
+                    owner_id,
+                    ResearchGraphAttemptState.CLAIMED.value,
+                ),
+            )
+            if history.rowcount != 1:
+                raise ResearchGraphExecutionConflict(
+                    "research graph claim history recovery lost exact attempt"
+                )
+            self._bump_generation(conn, execution_id)
+            return self._node_tx(conn, execution_id, node_id)
+
     def renew_leases(
         self,
         execution_id: str,
