@@ -189,6 +189,40 @@ class _Runtime:
         )
 
 
+class _ExecutionFailureRuntime(_Runtime):
+    def __init__(
+        self,
+        *,
+        reject: frozenset[str] = frozenset(),
+        fail_execute: frozenset[str] = frozenset(),
+    ) -> None:
+        super().__init__(reject=reject)
+        self.fail_execute = fail_execute
+
+    def execute(
+        self,
+        context,
+        task_context,
+        node,
+        lowering,
+        inputs,
+        *,
+        execution_cut_id,
+        deadline,
+    ):
+        if node.graph_node_id in self.fail_execute:
+            raise RuntimeError(f"execution failed: {node.graph_node_id}")
+        return super().execute(
+            context,
+            task_context,
+            node,
+            lowering,
+            inputs,
+            execution_cut_id=execution_cut_id,
+            deadline=deadline,
+        )
+
+
 class _ReconciliationRuntime(_Runtime):
     def reconcile_node(
         self,
@@ -531,6 +565,33 @@ def test_quiescent_graph_control_pause_checkpoint_resume_drain_cancel(
         pool.close()
 
 
+def test_resume_admission_failure_preserves_paused_control(tmp_path: Path) -> None:
+    runtime = _Runtime()
+    values = ResearchOSValueRouter((_ValueAuthority(),))
+    graph, pool, research_os = _bound(tmp_path, runtime, values)
+    try:
+        portfolio = _portfolio()
+        revision = research_os.commit(portfolio, message="resume-preflight")
+        target = api.ResearchExecutionTarget("execution-resume-preflight", revision)
+        assert research_os.run(target).state == "succeeded"
+        assert research_os.pause(target).state == "paused"
+
+        active = graph.active_cut(target.execution_id)
+        assert active is not None
+        paused = graph.control_state(active.cut_id)
+        assert paused.phase is ResearchGraphControlPhase.PAUSED
+
+        runtime.reject = frozenset({"paper::consume"})
+        with pytest.raises(RuntimeError, match="runtime rejected: paper::consume"):
+            research_os.resume(target)
+
+        after = graph.control_state(active.cut_id)
+        assert after.phase is ResearchGraphControlPhase.PAUSED
+        assert after.generation == paused.generation
+    finally:
+        pool.close()
+
+
 def test_node_pause_inspect_and_resume_preserve_graph_wide_activity(
     tmp_path: Path,
 ) -> None:
@@ -787,6 +848,38 @@ def test_running_interrupt_fences_attempt_and_requires_reconciliation(
             match="checkpoint",
         ):
             research_os.checkpoint(target)
+    finally:
+        pool.close()
+
+
+def test_active_retry_admission_failure_preserves_failed_attempt(tmp_path: Path) -> None:
+    runtime = _ExecutionFailureRuntime(
+        fail_execute=frozenset({"paper::consume"}),
+    )
+    values = ResearchOSValueRouter((_ValueAuthority(),))
+    graph, pool, research_os = _bound(tmp_path, runtime, values)
+    try:
+        portfolio = _portfolio()
+        revision = research_os.commit(portfolio, message="retry-preflight")
+        target = api.ResearchExecutionTarget("execution-retry-preflight", revision)
+        receipt = research_os.run(target)
+        assert receipt.state == "failed"
+
+        active = graph.active_cut(target.execution_id)
+        assert active is not None
+        before = graph.node_state(active.cut_id, "paper::consume")
+        assert before.state is ResearchGraphLiveNodeState.FAILED
+
+        runtime.fail_execute = frozenset()
+        runtime.reject = frozenset({"paper::consume"})
+        with pytest.raises(RuntimeError, match="runtime rejected: paper::consume"):
+            research_os.retry(target.for_node("paper", "consume"))
+
+        after = graph.node_state(active.cut_id, "paper::consume")
+        assert after.state is ResearchGraphLiveNodeState.FAILED
+        assert after.attempt_number == before.attempt_number
+        assert after.failure_type == before.failure_type
+        assert after.failure_message == before.failure_message
     finally:
         pool.close()
 
