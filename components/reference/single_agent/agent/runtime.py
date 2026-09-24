@@ -9,7 +9,6 @@ from __future__ import annotations
 
 from collections.abc import Mapping
 from dataclasses import dataclass, field
-import os
 from pathlib import Path
 from typing import Protocol
 
@@ -20,6 +19,7 @@ from noetrium_platform.capabilities.participant.capability.api import (
     CapabilityPort, CapabilityRequest,
 )
 from noetrium_platform.foundation.kernel.kernel import ExecutionContext
+from noetrium_platform.foundation.kernel.kernel.durability.durable_append import PersistentAppendFile
 
 from .contracts import (
     ReferenceAgentAction, ReferenceAgentActionKind, ReferenceAgentObservation,
@@ -165,16 +165,9 @@ class JsonlReferenceAgentProgress(ReferenceAgentProgressPort):
             "payload": event.payload,
         }
         line = (canonical_text(document) + "\n").encode("utf-8")
-        descriptor = os.open(
-            self._path,
-            os.O_WRONLY | os.O_CREAT | os.O_APPEND,
-            0o600,
-        )
-        try:
-            os.write(descriptor, line)
-            os.fsync(descriptor)
-        finally:
-            os.close(descriptor)
+        with PersistentAppendFile(self._path, mode=0o600) as append_file:
+            append_file.write_all(line)
+            append_file.sync()
 
     def checkpoint(self, state: ReferenceAgentState, *, context: ExecutionContext) -> str:
         event = ReferenceAgentEvent(
