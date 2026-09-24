@@ -31,8 +31,9 @@ from noetrium_platform.foundation.kernel.concurrency.api import (
     TaskGroupPort,
 )
 from noetrium_platform.foundation.kernel.kernel.errors import describe_exception
+from noetrium_platform.foundation.kernel.kernel.durability import sha256_file
 from ..providers.rcon import MinecraftRconConsole
-from ..providers.server_files import prepare_server_files, sha256_file
+from ..providers.server_files import prepare_server_files
 
 from ..api import MinecraftDiagnosticsPort, MinecraftServerSpec
 
@@ -523,7 +524,7 @@ class MinecraftServerServiceFactory:
             accept_eula=self.config.accept_eula,
             rcon_password=rcon_password,
         )
-        artifact_digest = sha256_file(spec.jar_path)
+        artifact_digest, _artifact_size = sha256_file(Path(spec.jar_path))
         runtime_identity_digest = canonical_digest({
             "environment_generation": environment_generation,
             "java_executable": spec.java_executable,
