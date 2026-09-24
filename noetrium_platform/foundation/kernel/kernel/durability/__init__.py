@@ -15,6 +15,7 @@ from .durable_file import (
     durable_replace_directory,
     durable_unlink,
     fsync_directory,
+    flush_file_descriptor,
 )
 from .file_lock import InterprocessFileLock, InterprocessLockBusy, InterprocessLockUnavailable
 from .stream_digest import sha256_file
@@ -50,6 +51,7 @@ __all__ = [
     "durable_replace_directory",
     "durable_unlink",
     "fsync_directory",
+    "flush_file_descriptor",
     "InterprocessFileLock",
     "InterprocessLockBusy",
     "InterprocessLockUnavailable",
