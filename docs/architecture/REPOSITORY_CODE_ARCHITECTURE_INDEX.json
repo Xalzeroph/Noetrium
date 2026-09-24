@@ -2,7 +2,7 @@
   "counts": {
     "parse_errors": 0,
     "python_files": 3673,
-    "python_import_edges": 7141,
+    "python_import_edges": 7146,
     "symbols": 4863,
     "tracked_files": 4303,
     "typescript_javascript_files": 11
@@ -315,6 +315,12 @@
       "target_role": "core_platform"
     },
     {
+      "source_module": "noetrium_platform.capabilities.environment.api.interaction",
+      "source_role": "core_platform",
+      "target_module": "noetrium_platform.foundation.kernel.kernel.durability",
+      "target_role": "core_platform"
+    },
+    {
       "source_module": "noetrium_platform.capabilities.environment.api.reset",
       "source_role": "core_platform",
       "target_module": "noetrium_platform.foundation.kernel.kernel",
@@ -396,6 +402,12 @@
       "source_module": "noetrium_platform.capabilities.environment.embodied.api.contracts",
       "source_role": "core_platform",
       "target_module": "noetrium_platform.foundation.kernel.kernel",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "noetrium_platform.capabilities.environment.embodied.api.contracts",
+      "source_role": "core_platform",
+      "target_module": "noetrium_platform.foundation.kernel.kernel.durability",
       "target_role": "core_platform"
     },
     {
@@ -1842,6 +1854,12 @@
       "source_module": "noetrium_platform.capabilities.model.request.prompt.runtime.promotion_store",
       "source_role": "core_platform",
       "target_module": "noetrium_platform.capabilities.model.request.prompt.api",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "noetrium_platform.capabilities.model.request.prompt.runtime.publication_common",
+      "source_role": "core_platform",
+      "target_module": "noetrium_platform.foundation.kernel.kernel.durability",
       "target_role": "core_platform"
     },
     {
@@ -8181,6 +8199,12 @@
       "target_role": "core_platform"
     },
     {
+      "source_module": "noetrium_platform.evidence.data.state.runtime.sqlite_codec",
+      "source_role": "core_platform",
+      "target_module": "noetrium_platform.foundation.kernel.kernel.durability",
+      "target_role": "core_platform"
+    },
+    {
       "source_module": "noetrium_platform.evidence.data.state.runtime.sqlite_store",
       "source_role": "core_platform",
       "target_module": "noetrium_platform.evidence.data._canonical",
@@ -8262,6 +8286,12 @@
       "source_module": "noetrium_platform.evidence.observability.capture.api.contracts",
       "source_role": "core_platform",
       "target_module": "noetrium_platform.foundation.kernel.kernel",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "noetrium_platform.evidence.observability.capture.api.contracts",
+      "source_role": "core_platform",
+      "target_module": "noetrium_platform.foundation.kernel.kernel.durability",
       "target_role": "core_platform"
     },
     {
@@ -42863,7 +42893,7 @@
   ],
   "role_import_counts": [
     {
-      "count": 2670,
+      "count": 2675,
       "source_role": "core_platform",
       "target_role": "core_platform"
     },
@@ -43002,7 +43032,7 @@
     "tooling": 38
   },
   "schema": "noetrium-repository-code-architecture-index.v1",
-  "source_git_sha": "9a657b4c50546a47214f3d9e0b50248fe47b6194",
+  "source_git_sha": "7f9682ee805f11eee9729895c6259b81ec017001",
   "symbols": [
     {
       "bases": [],
@@ -45047,7 +45077,7 @@
       ],
       "kind": "enum",
       "language": "python",
-      "line": 19,
+      "line": 20,
       "methods": [],
       "module": "noetrium_platform.capabilities.environment.api.interaction",
       "name": "EnvironmentActionPhase",
@@ -45070,7 +45100,7 @@
       ],
       "kind": "enum",
       "language": "python",
-      "line": 29,
+      "line": 30,
       "methods": [],
       "module": "noetrium_platform.capabilities.environment.api.interaction",
       "name": "EnvironmentQueryKind",
@@ -45092,7 +45122,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 39,
+      "line": 40,
       "methods": [
         "__post_init__"
       ],
@@ -45115,7 +45145,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 55,
+      "line": 56,
       "methods": [
         "__post_init__"
       ],
@@ -45139,7 +45169,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 68,
+      "line": 69,
       "methods": [
         "__post_init__"
       ],
@@ -45165,7 +45195,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 85,
+      "line": 86,
       "methods": [
         "__post_init__"
       ],
@@ -45195,7 +45225,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 105,
+      "line": 106,
       "methods": [
         "__post_init__",
         "raw_payload_sha256",
@@ -55810,7 +55840,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 16,
+      "line": 13,
       "methods": [],
       "module": "noetrium_platform.capabilities.model.request.prompt.runtime.publication_common",
       "name": "PromptPublicationError",
@@ -55824,7 +55854,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 20,
+      "line": 17,
       "methods": [
         "__init__",
         "__enter__",
@@ -71652,7 +71682,7 @@
       ],
       "kind": "enum",
       "language": "python",
-      "line": 12,
+      "line": 13,
       "methods": [],
       "module": "noetrium_platform.evidence.observability.capture.api.contracts",
       "name": "RetentionClass",
@@ -71674,7 +71704,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 19,
+      "line": 20,
       "methods": [
         "__post_init__"
       ],
@@ -71700,7 +71730,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 36,
+      "line": 37,
       "methods": [
         "__post_init__"
       ],
@@ -71743,7 +71773,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 55,
+      "line": 56,
       "methods": [
         "__post_init__",
         "raw_payload_sha256"

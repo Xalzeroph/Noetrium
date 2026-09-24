@@ -17726,7 +17726,7 @@
         "terminal"
       ],
       "kind": "dataclass",
-      "line": 85,
+      "line": 86,
       "methods": [
         "__post_init__"
       ],
@@ -17754,7 +17754,7 @@
         "VALIDATED"
       ],
       "kind": "enum",
-      "line": 19,
+      "line": 20,
       "methods": [],
       "module": "noetrium_platform.capabilities.environment.api.interaction",
       "name": "EnvironmentActionPhase",
@@ -17778,7 +17778,7 @@
         "version"
       ],
       "kind": "dataclass",
-      "line": 39,
+      "line": 40,
       "methods": [
         "__post_init__"
       ],
@@ -17895,7 +17895,7 @@
         "query_type"
       ],
       "kind": "dataclass",
-      "line": 55,
+      "line": 56,
       "methods": [
         "__post_init__"
       ],
@@ -17922,7 +17922,7 @@
         "TASK"
       ],
       "kind": "enum",
-      "line": 29,
+      "line": 30,
       "methods": [],
       "module": "noetrium_platform.capabilities.environment.api.interaction",
       "name": "EnvironmentQueryKind",
@@ -17968,7 +17968,7 @@
         "supported"
       ],
       "kind": "dataclass",
-      "line": 68,
+      "line": 69,
       "methods": [
         "__post_init__"
       ],
@@ -18026,7 +18026,7 @@
         "stream_id"
       ],
       "kind": "dataclass",
-      "line": 105,
+      "line": 106,
       "methods": [
         "__post_init__",
         "raw_payload_sha256",
@@ -29474,7 +29474,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 16,
+      "line": 13,
       "methods": [],
       "module": "noetrium_platform.capabilities.model.request.prompt.runtime.publication_common",
       "name": "PromptPublicationError",
@@ -29490,7 +29490,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 20,
+      "line": 17,
       "methods": [
         "__init__",
         "__enter__",
@@ -46910,7 +46910,7 @@
         "system"
       ],
       "kind": "dataclass",
-      "line": 55,
+      "line": 56,
       "methods": [
         "__post_init__",
         "raw_payload_sha256"
@@ -46939,7 +46939,7 @@
         "sequence"
       ],
       "kind": "dataclass",
-      "line": 36,
+      "line": 37,
       "methods": [
         "__post_init__"
       ],
@@ -46965,7 +46965,7 @@
         "schema_version"
       ],
       "kind": "dataclass",
-      "line": 19,
+      "line": 20,
       "methods": [
         "__post_init__"
       ],
@@ -46989,7 +46989,7 @@
         "SCIENTIFIC_DURABLE"
       ],
       "kind": "enum",
-      "line": 12,
+      "line": 13,
       "methods": [],
       "module": "noetrium_platform.evidence.observability.capture.api.contracts",
       "name": "RetentionClass",
@@ -102518,7 +102518,7 @@
     "classes": 3340,
     "constructor_edges": 933,
     "inheritance_edges": 149,
-    "module_import_edges": 5121,
+    "module_import_edges": 5126,
     "parse_errors": 0,
     "python_modules": 1928,
     "registry_authorities": 20,
@@ -103430,6 +103430,10 @@
       "target": "noetrium_platform.foundation.kernel.kernel"
     },
     {
+      "source": "noetrium_platform.capabilities.environment.api.interaction",
+      "target": "noetrium_platform.foundation.kernel.kernel.durability"
+    },
+    {
       "source": "noetrium_platform.capabilities.environment.api.provider",
       "target": "noetrium_platform.capabilities.environment.api.contracts"
     },
@@ -103552,6 +103556,10 @@
     {
       "source": "noetrium_platform.capabilities.environment.embodied.api.contracts",
       "target": "noetrium_platform.foundation.kernel.kernel"
+    },
+    {
+      "source": "noetrium_platform.capabilities.environment.embodied.api.contracts",
+      "target": "noetrium_platform.foundation.kernel.kernel.durability"
     },
     {
       "source": "noetrium_platform.capabilities.environment.embodied.api.ports",
@@ -105736,6 +105744,10 @@
     {
       "source": "noetrium_platform.capabilities.model.request.prompt.runtime.publication",
       "target": "noetrium_platform.capabilities.model.request.prompt.runtime.spec"
+    },
+    {
+      "source": "noetrium_platform.capabilities.model.request.prompt.runtime.publication_common",
+      "target": "noetrium_platform.foundation.kernel.kernel.durability"
     },
     {
       "source": "noetrium_platform.capabilities.model.request.prompt.runtime.publication_common",
@@ -112026,6 +112038,10 @@
       "target": "noetrium_platform.foundation.kernel.kernel"
     },
     {
+      "source": "noetrium_platform.evidence.data.state.runtime.sqlite_codec",
+      "target": "noetrium_platform.foundation.kernel.kernel.durability"
+    },
+    {
       "source": "noetrium_platform.evidence.data.state.runtime.sqlite_store",
       "target": "noetrium_platform.evidence.data._canonical"
     },
@@ -112136,6 +112152,10 @@
     {
       "source": "noetrium_platform.evidence.observability.capture.api.contracts",
       "target": "noetrium_platform.foundation.kernel.kernel"
+    },
+    {
+      "source": "noetrium_platform.evidence.observability.capture.api.contracts",
+      "target": "noetrium_platform.foundation.kernel.kernel.durability"
     },
     {
       "source": "noetrium_platform.evidence.observability.capture.api.ports",
@@ -123891,7 +123911,8 @@
     {
       "imports": [
         "noetrium_platform.capabilities.environment.api.contracts",
-        "noetrium_platform.foundation.kernel.kernel"
+        "noetrium_platform.foundation.kernel.kernel",
+        "noetrium_platform.foundation.kernel.kernel.durability"
       ],
       "module": "noetrium_platform.capabilities.environment.api.interaction",
       "path": "noetrium_platform/capabilities/environment/api/interaction.py",
@@ -124100,7 +124121,8 @@
     },
     {
       "imports": [
-        "noetrium_platform.foundation.kernel.kernel"
+        "noetrium_platform.foundation.kernel.kernel",
+        "noetrium_platform.foundation.kernel.kernel.durability"
       ],
       "module": "noetrium_platform.capabilities.environment.embodied.api.contracts",
       "path": "noetrium_platform/capabilities/environment/embodied/api/contracts.py",
@@ -126238,6 +126260,7 @@
     },
     {
       "imports": [
+        "noetrium_platform.foundation.kernel.kernel.durability",
         "noetrium_platform.foundation.kernel.kernel.durability.file_lock"
       ],
       "module": "noetrium_platform.capabilities.model.request.prompt.runtime.publication_common",
@@ -131670,7 +131693,8 @@
     {
       "imports": [
         "noetrium_platform.evidence.data._canonical",
-        "noetrium_platform.foundation.kernel.kernel"
+        "noetrium_platform.foundation.kernel.kernel",
+        "noetrium_platform.foundation.kernel.kernel.durability"
       ],
       "module": "noetrium_platform.evidence.data.state.runtime.sqlite_codec",
       "path": "noetrium_platform/evidence/data/state/runtime/sqlite_codec.py",
@@ -131806,7 +131830,8 @@
     {
       "imports": [
         "noetrium_platform.foundation.governance.api",
-        "noetrium_platform.foundation.kernel.kernel"
+        "noetrium_platform.foundation.kernel.kernel",
+        "noetrium_platform.foundation.kernel.kernel.durability"
       ],
       "module": "noetrium_platform.evidence.observability.capture.api.contracts",
       "path": "noetrium_platform/evidence/observability/capture/api/contracts.py",
@@ -144000,7 +144025,7 @@
   "parse_errors": [],
   "registry_sha256": "d3fc1bab831f1b7379e5a36048a61c00fe173429df958270d36a16f3f00171c0",
   "schema": "noetrium-code-architecture-index.v1",
-  "source_git_sha": "9a657b4c50546a47214f3d9e0b50248fe47b6194",
+  "source_git_sha": "7f9682ee805f11eee9729895c6259b81ec017001",
   "system_import_edges": [
     {
       "count": 85,
@@ -144023,7 +144048,7 @@
       "target": "data"
     },
     {
-      "count": 9,
+      "count": 10,
       "source": "data",
       "target": "platform"
     },
@@ -144038,7 +144063,7 @@
       "target": "environment"
     },
     {
-      "count": 68,
+      "count": 70,
       "source": "environment",
       "target": "platform"
     },
@@ -144088,7 +144113,7 @@
       "target": "model"
     },
     {
-      "count": 91,
+      "count": 92,
       "source": "model",
       "target": "platform"
     },
@@ -144103,7 +144128,7 @@
       "target": "observability"
     },
     {
-      "count": 47,
+      "count": 48,
       "source": "observability",
       "target": "platform"
     },
