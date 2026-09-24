@@ -98,25 +98,16 @@ def test_all_protocol_bound_reproductions_have_only_typed_execution_requirements
 
 
 
-def test_toolformer_execution_binding_cannot_drift_from_method_capability_closure() -> None:
+def test_toolformer_execution_binding_uses_only_paper_owned_capability_closure() -> None:
     from research.reproductions.toolformer.definition import REPRODUCTION
 
-    capabilities = (
-        "tool.question-answering",
-        "tool.wikipedia-search",
-        "tool.calculator",
-        "tool.calendar",
-        "tool.machine-translation",
-    )
     binding = bind_reproduction_execution(
         REPRODUCTION,
         binding_id="paper-eval",
         study_factory="build_toolformer_study",
         benchmark_id="toolformer-eval",
         benchmark_split_id="paper-eval",
-        values={
-            "tool_capability_ids": capabilities,
-        },
+        values={},
     )
     implementation = materialize_reproduction_method_program(
         REPRODUCTION,
@@ -129,7 +120,7 @@ def test_toolformer_execution_binding_cannot_drift_from_method_capability_closur
 
     with pytest.raises(
         ReproductionResearchOSCompileError,
-        match="Study/Method binding disagrees",
+        match="value set drifted",
     ):
         bind_reproduction_execution(
             REPRODUCTION,
@@ -137,9 +128,7 @@ def test_toolformer_execution_binding_cannot_drift_from_method_capability_closur
             study_factory="build_toolformer_study",
             benchmark_id="toolformer-eval",
             benchmark_split_id="paper-eval",
-            values={
-                "tool_capability_ids": ("tool.calculator",),
-            },
+            values={"tool_capability_ids": ("tool.calculator",)},
         )
 
 
@@ -196,15 +185,7 @@ def test_bound_reproduction_lanes_compile_as_distinct_product_programs() -> None
         study_factory="build_toolformer_study",
         benchmark_id="toolformer-eval",
         benchmark_split_id="paper-eval",
-        values={
-            "tool_capability_ids": (
-                "tool.question-answering",
-                "tool.wikipedia-search",
-                "tool.calculator",
-                "tool.calendar",
-                "tool.machine-translation",
-            ),
-        },
+        values={},
     )
 
     programs = (
