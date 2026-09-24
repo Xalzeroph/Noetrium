@@ -112,8 +112,10 @@ def _gpu_runtime_index(
         return None
     devices_by_id: dict[str, GpuDeviceStatus] = {}
     for device in snapshot.devices:
-        devices_by_id[device.uuid] = device
-        devices_by_id[device.index] = device
+        # Preserve the previous first-match lookup semantics for malformed or
+        # colliding runtime identities while avoiding repeated linear scans.
+        devices_by_id.setdefault(device.uuid, device)
+        devices_by_id.setdefault(device.index, device)
     process_count_by_uuid: dict[str, int] = {}
     for process in snapshot.processes:
         process_count_by_uuid[process.gpu_uuid] = (
