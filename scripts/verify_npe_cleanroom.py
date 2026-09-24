@@ -40,7 +40,7 @@ class NpeCleanRoomReceipt:
     doctor_ready: bool
     generated_tests_passed: bool
     public_import_boundary_passed: bool
-    research_program_loaded: bool
+    research_portfolio_loaded: bool
     fresh_process_identity_stable: bool
     npe_verified: bool
     blocker_codes: tuple[str, ...]
@@ -211,12 +211,12 @@ def _blocked_receipt(
     doctor_ready: bool = False,
     generated_tests_passed: bool = False,
     public_import_boundary_passed: bool = False,
-    research_program_loaded: bool = False,
+    research_portfolio_loaded: bool = False,
     fresh_process_identity_stable: bool = False,
     npe_verified: bool = False,
 ) -> NpeCleanRoomReceipt:
     return NpeCleanRoomReceipt(
-        schema="noetrium.npe-clean-room.v4",
+        schema="noetrium.npe-clean-room.v5",
         artifact_name=artifact.name,
         artifact_sha256=_sha256_file(artifact),
         artifact_size=artifact.stat().st_size,
@@ -228,7 +228,7 @@ def _blocked_receipt(
         doctor_ready=doctor_ready,
         generated_tests_passed=generated_tests_passed,
         public_import_boundary_passed=public_import_boundary_passed,
-        research_program_loaded=research_program_loaded,
+        research_portfolio_loaded=research_portfolio_loaded,
         fresh_process_identity_stable=fresh_process_identity_stable,
         npe_verified=npe_verified,
         blocker_codes=tuple(blockers),
@@ -260,15 +260,15 @@ def _research_identity_command(
         "sys.path.insert(0,project_src);"
         "module=importlib.import_module(module_name);"
         "from noetrium import api;"
-        "program=module.PROGRAM;portfolio=module.PORTFOLIO;"
-        "assert isinstance(program,api.ResearchProgram);"
+        "portfolio=module.PORTFOLIO;programs=module.PROGRAMS;"
         "assert isinstance(portfolio,api.ResearchPortfolio);"
-        "assert portfolio.programs==(program,);"
+        "assert isinstance(programs,tuple) and programs==portfolio.programs;"
+        "assert all(isinstance(program,api.ResearchProgram) for program in programs);"
         "print(json.dumps({"
-        "'program_id':program.program_id,"
-        "'program_digest':program.program_digest,"
         "'portfolio_id':portfolio.portfolio_id,"
-        "'portfolio_digest':portfolio.portfolio_digest"
+        "'portfolio_digest':portfolio.portfolio_digest,"
+        "'programs':[{'program_id':program.program_id,'program_digest':program.program_digest}"
+        " for program in programs]"
         "},sort_keys=True))"
     )
     return [
@@ -283,26 +283,39 @@ def _research_identity_command(
 
 def _research_identity_facts(
     receipt: CommandReceipt,
-) -> dict[str, str] | None:
+) -> dict[str, object] | None:
     document = _json_output(receipt)
     if receipt.returncode != 0 or document is None:
         return None
-    required = (
-        "program_id",
-        "program_digest",
-        "portfolio_id",
-        "portfolio_digest",
-    )
-    if set(document) != set(required):
+    if set(document) != {"portfolio_id", "portfolio_digest", "programs"}:
         return None
-    if any(not isinstance(document[key], str) or not document[key] for key in required):
+    portfolio_id = document["portfolio_id"]
+    portfolio_digest = document["portfolio_digest"]
+    programs = document["programs"]
+    if not isinstance(portfolio_id, str) or not portfolio_id:
         return None
-    if any(
-        len(document[key]) != 64
-        for key in ("program_digest", "portfolio_digest")
-    ):
+    if not isinstance(portfolio_digest, str) or len(portfolio_digest) != 64:
         return None
-    return {key: str(document[key]) for key in required}
+    if not isinstance(programs, list) or not programs:
+        return None
+    normalized_programs: list[dict[str, str]] = []
+    for row in programs:
+        if not isinstance(row, dict) or set(row) != {"program_id", "program_digest"}:
+            return None
+        program_id = row["program_id"]
+        program_digest = row["program_digest"]
+        if not isinstance(program_id, str) or not program_id:
+            return None
+        if not isinstance(program_digest, str) or len(program_digest) != 64:
+            return None
+        normalized_programs.append(
+            {"program_id": program_id, "program_digest": program_digest}
+        )
+    return {
+        "portfolio_id": portfolio_id,
+        "portfolio_digest": portfolio_digest,
+        "programs": normalized_programs,
+    }
 
 
 def verify_npe_cleanroom(artifact: Path) -> NpeCleanRoomReceipt:
@@ -470,7 +483,7 @@ def verify_npe_cleanroom(artifact: Path) -> NpeCleanRoomReceipt:
         if not public_boundary:
             blockers.append("PUBLIC_IMPORT_BOUNDARY_FAILED")
 
-        research_program_loaded = False
+        research_portfolio_loaded = False
         fresh_process_identity_stable = False
         if doctor_ready and tests_passed and public_boundary:
             package = _research_project_package(project)
@@ -478,19 +491,19 @@ def verify_npe_cleanroom(artifact: Path) -> NpeCleanRoomReceipt:
                 blockers.append("RESEARCH_PROJECT_PACKAGE_INVALID")
             else:
                 first = _run(
-                    "research-program-load-1",
+                    "research-portfolio-load-1",
                     _research_identity_command(python, project, package),
                     cwd=project,
                     env=env,
                 )
                 commands.append(first)
                 first_identity = _research_identity_facts(first)
-                research_program_loaded = first_identity is not None
-                if not research_program_loaded:
-                    blockers.append("RESEARCH_PROGRAM_LOAD_FAILED")
+                research_portfolio_loaded = first_identity is not None
+                if not research_portfolio_loaded:
+                    blockers.append("RESEARCH_PORTFOLIO_LOAD_FAILED")
                 else:
                     second = _run(
-                        "research-program-load-2",
+                        "research-portfolio-load-2",
                         _research_identity_command(python, project, package),
                         cwd=project,
                         env=env,
@@ -508,7 +521,7 @@ def verify_npe_cleanroom(artifact: Path) -> NpeCleanRoomReceipt:
             doctor_ready
             and tests_passed
             and public_boundary
-            and research_program_loaded
+            and research_portfolio_loaded
             and fresh_process_identity_stable
             and not blockers
         )
@@ -528,7 +541,7 @@ def verify_npe_cleanroom(artifact: Path) -> NpeCleanRoomReceipt:
             doctor_ready=doctor_ready,
             generated_tests_passed=tests_passed,
             public_import_boundary_passed=public_boundary,
-            research_program_loaded=research_program_loaded,
+            research_portfolio_loaded=research_portfolio_loaded,
             fresh_process_identity_stable=fresh_process_identity_stable,
             npe_verified=verified,
         )
