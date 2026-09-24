@@ -319,31 +319,18 @@ class DirectoryRunArtifactStore(RunArtifactStorePort):
             ) from exc
         raise RunArtifactSealedError(f"run artifact is finalized and sealed: {artifact_ref}")
 
-    def path(self, name: str, *, kind: RunArtifactKind) -> str:
-        self._require_active()
-        if type(kind) is not RunArtifactKind:
-            raise ValueError("run artifact kind must be RunArtifactKind")
-        return str(self._resolve_ref(name, create_parent=True))
-
-    def directory(self, name: str, *, kind: RunArtifactKind) -> str:
-        self._require_active()
-        if type(kind) is not RunArtifactKind:
-            raise ValueError("run artifact kind must be RunArtifactKind")
-        target = self._resolve_ref(name, create_parent=False)
-        target.mkdir(parents=True, exist_ok=True)
-        return str(target)
-
     def publish_json(self, name: str, payload: JsonValue, *, kind: RunArtifactKind) -> str:
-        self._require_active()
         body = canonical_bytes(payload, indent=2).decode("utf-8") + "\n"
         return self.publish_text(name, body, kind=kind)
 
     def publish_text(self, name: str, content: str, *, kind: RunArtifactKind) -> str:
-        self._require_active()
-        target = self._resolve_ref(name, create_parent=True)
+        if type(kind) is not RunArtifactKind:
+            raise ValueError("run artifact kind must be RunArtifactKind")
 
         def publish_owned() -> str:
             with InterprocessFileLock(self._process_lock_path):
+                self._require_active()
+                target = self._resolve_ref(name, create_parent=True)
                 self._require_unsealed(name)
                 atomic_replace_bytes(target, content.encode("utf-8"))
                 return str(target)
@@ -357,12 +344,14 @@ class DirectoryRunArtifactStore(RunArtifactStorePort):
         *,
         kind: RunArtifactKind,
     ) -> str:
-        self._require_active()
-        target = self._resolve_ref(name, create_parent=True)
+        if type(kind) is not RunArtifactKind:
+            raise ValueError("run artifact kind must be RunArtifactKind")
         encoded = canonical_bytes(payload).decode("utf-8") + "\n"
 
         def append_owned() -> str:
             with InterprocessFileLock(self._process_lock_path):
+                self._require_active()
+                target = self._resolve_ref(name, create_parent=True)
                 self._require_unsealed(name)
                 durable_append_bytes(target, encoded.encode("utf-8"))
                 return str(target)
@@ -514,9 +503,9 @@ class DirectoryRunArtifactStore(RunArtifactStorePort):
         kind: RunArtifactKind,
         record_stream: bool,
     ) -> RunArtifactSnapshotReceipt:
-        self._require_active()
         def finalize_owned() -> RunArtifactSnapshotReceipt:
             with InterprocessFileLock(self._process_lock_path):
+                self._require_active()
                 return self._finalize_locked(
                     artifact_ref,
                     kind=kind,
@@ -575,13 +564,13 @@ class DirectoryRunArtifactStore(RunArtifactStorePort):
         return verified
 
     def verify_finalized(self, receipt: RunArtifactSnapshotReceipt) -> RunArtifactSnapshotReceipt:
-        self._require_active()
         if type(receipt) is not RunArtifactSnapshotReceipt:
             raise RunArtifactVerificationError("run artifact verification requires a typed snapshot receipt")
         if receipt.run_id != self.run_id:
             raise RunArtifactVerificationError("run artifact snapshot belongs to a different run")
         def verify_owned() -> RunArtifactSnapshotReceipt:
             with InterprocessFileLock(self._process_lock_path):
+                self._require_active()
                 return self._verify_finalized_unlocked(receipt)
 
         return self._writer_actor.call(
