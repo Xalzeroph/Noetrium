@@ -1,8 +1,7 @@
 from __future__ import annotations
 
-from tests_support import model_role_for_test
+from tests_support import model_role_for_test, build_experiment_runtime_for_test
 
-from noetrium_platform.composition.experiment_runtime import build_experiment_runtime
 from dataclasses import dataclass
 from typing import get_type_hints
 
@@ -97,7 +96,7 @@ def test_study_can_run_remote_endpoint_without_local_implementation_catalog():
         trial_protocol_id="remote-noop.v1",
         trial_protocol_configuration_digest="44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
     )
-    runtime = build_experiment_runtime(
+    runtime = build_experiment_runtime_for_test(
         participant_adapters=(generic_participant_adapter("robot", resolver),),
         trial_protocol=NoOpTrialProtocol(),
         workflow_surface_factories=(EmptyWorkflowSurfaceFactory(),),
