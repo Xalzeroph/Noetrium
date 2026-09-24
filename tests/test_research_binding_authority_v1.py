@@ -54,6 +54,7 @@ from noetrium_platform.foundation.portfolio.api import (
     ProjectToolProvenance,
 )
 from noetrium_platform.research.experimentation.api import (
+    ResearchManifestRequirementsUnresolved,
     resolve_research_requirements,
 )
 from research.reproductions.fleet import _research_binding_gap
@@ -505,4 +506,61 @@ def test_fleet_gap_preserves_structured_model_owner_diagnostics() -> None:
     assert gap.diagnostics == tuple(
         row.machine_digest for row in captured.value.diagnostics
     )
+    assert len(gap.gap_digest) == 64
+
+
+
+def test_incomplete_project_manifest_raises_typed_coverage_error() -> None:
+    definition = _definition()
+    complete = _manifest()
+    incomplete = ProjectManifest(
+        complete.project,
+        complete.template_revision,
+        complete.provenance,
+        capability_requirements=(
+            complete.capability_requirements[0],
+        ),
+        provider_bindings=(
+            complete.provider_bindings[0],
+        ),
+        method_requirements=complete.method_requirements,
+        configuration_refs=complete.configuration_refs,
+        study_ids=complete.study_ids,
+    )
+
+    with pytest.raises(ResearchManifestRequirementsUnresolved) as captured:
+        resolve_research_requirements(definition, incomplete)
+
+    error = captured.value
+    assert error.missing_capability_requirement_ids == ("model.generate",)
+    assert error.missing_method_requirement_keys == ()
+    assert error.missing_configuration_ref_ids == ()
+    assert len(error.keys.keys_digest) == 64
+    assert len(error.error_digest) == 64
+
+    gap = _research_binding_gap(definition, error)
+    requirement = ResearchProjectManifestRequirement.from_study(definition)
+    assert gap.stage == "project_manifest"
+    assert gap.requirement_digest == requirement.requirement_digest
+
+
+def test_missing_capability_registry_is_not_misclassified_as_manifest() -> None:
+    definition = _definition()
+    manifest = _manifest()
+    resolution = resolve_research_requirements(definition, manifest)
+    context = ResearchBindingResolutionContext.create(
+        definition,
+        manifest,
+        resolution,
+    )
+    requirement = resolution.capability_requirements[0]
+    registry = ResearchCapabilityBindingRegistry(())
+
+    with pytest.raises(ResearchBindingRequirementMissing) as captured:
+        registry.resolve(requirement, context)
+
+    gap = _research_binding_gap(definition, captured.value)
+    assert gap.stage == "capability"
+    assert gap.requirement_key == requirement.requirement_id
+    assert gap.requirement_digest == canonical_digest(requirement)
     assert len(gap.gap_digest) == 64
