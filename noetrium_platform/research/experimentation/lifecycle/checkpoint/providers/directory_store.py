@@ -7,6 +7,7 @@ from noetrium_platform.research.execution.api import ParticipantCheckpoint
 from noetrium_platform.foundation.kernel.kernel.durability import (
     InterprocessFileLock,
     atomic_replace_bytes,
+    durable_create_binary_file,
     sha256_file,
 )
 
@@ -35,9 +36,11 @@ class DirectoryRunCheckpointStore(RunCheckpointStore):
     def __init__(self, root: Path) -> None:
         self.root = Path(root)
         self.blobs = self.root / "blobs"
+        self.blob_locks = self.root / "blob_locks"
         self.manifests = self.root / "manifests"
         self.manifest_locks = self.root / "manifest_locks"
         self.blobs.mkdir(parents=True, exist_ok=True)
+        self.blob_locks.mkdir(parents=True, exist_ok=True)
         self.manifests.mkdir(parents=True, exist_ok=True)
         self.manifest_locks.mkdir(parents=True, exist_ok=True)
         self.codec = RunCheckpointManifestCodec()
@@ -52,6 +55,30 @@ class DirectoryRunCheckpointStore(RunCheckpointStore):
 
     def _blob_path(self, digest: str) -> Path:
         return self.blobs / digest[:2] / f"{digest}.bin"
+
+    def _blob_lock_path(self, digest: str) -> Path:
+        return self.blob_locks / f"{digest}.lock"
+
+    def _verify_blob(
+        self,
+        path: Path,
+        *,
+        expected_digest: str,
+        expected_size: int,
+    ) -> None:
+        try:
+            stored_digest, stored_size = sha256_file(path)
+        except OSError as exc:
+            raise RunCheckpointIntegrityError(
+                f"checkpoint blob cannot be verified: {expected_digest}"
+            ) from exc
+        if (
+            stored_digest != expected_digest
+            or stored_size != expected_size
+        ):
+            raise RunCheckpointIntegrityError(
+                f"corrupt existing checkpoint blob: {expected_digest}"
+            )
 
     def _manifest_path(self, checkpoint_id: str) -> Path:
         safe = hashlib.sha256(checkpoint_id.encode("utf-8")).hexdigest()
@@ -116,12 +143,33 @@ class DirectoryRunCheckpointStore(RunCheckpointStore):
                 f"checkpoint payload digest mismatch: expected={expected_digest} actual={actual}"
             )
         path = self._blob_path(actual)
-        if path.exists():
-            stored_digest, stored_size = sha256_file(path)
-            if stored_digest != actual or stored_size != len(payload):
-                raise RunCheckpointIntegrityError(f"corrupt existing checkpoint blob: {actual}")
-            return
-        atomic_replace_bytes(path, payload)
+        with InterprocessFileLock(self._blob_lock_path(actual)):
+            if path.exists():
+                self._verify_blob(
+                    path,
+                    expected_digest=actual,
+                    expected_size=len(payload),
+                )
+                return
+
+            # Immutable CAS content is exclusively created, never replaced.
+            # The digest lock serializes managed writers; O_EXCL also fences an
+            # uncoordinated pathname race rather than silently overwriting it.
+            try:
+                with durable_create_binary_file(path) as handle:
+                    handle.write(payload)
+            except FileExistsError:
+                self._verify_blob(
+                    path,
+                    expected_digest=actual,
+                    expected_size=len(payload),
+                )
+                return
+            self._verify_blob(
+                path,
+                expected_digest=actual,
+                expected_size=len(payload),
+            )
 
     def publish(
         self,
