@@ -3,10 +3,6 @@ from __future__ import annotations
 import shutil
 from pathlib import Path
 
-from noetrium_platform.product.api import (
-    decode_research_project_blueprint,
-    encode_research_project_blueprint,
-)
 from noetrium_platform.product.operator.api import (
     ProjectCreateReceipt,
     ProjectCreateRequest,
@@ -16,10 +12,9 @@ from noetrium_platform.product.operator.api import (
 from noetrium_platform.composition.operator.project.project_layout import project_package_name
 from noetrium_platform.composition.operator.project.project_platform_identity import installed_platform_identity
 from noetrium_platform.composition.operator.project.research_project_codegen import (
-    default_research_project_blueprint,
     render_generated_test_module,
+    render_research_core,
     render_research_module,
-    render_research_slots,
 )
 from noetrium_platform.foundation.kernel.kernel.durability import (
     InterprocessFileLock,
@@ -83,18 +78,16 @@ include = ["{package}*"]
 def _readme(project_id: str) -> str:
     return f'''# {project_id}
 
-This is a Blueprint-driven Noetrium Research OS project.
+This is a Noetrium Research OS project with one unconstrained scientific core.
 
-Edit `research.blueprint.json` to describe the complete scientific topology:
-programs, methods, benchmarks, metrics, experiments, evaluations, analyses,
-ablations, robustness/scaling studies, figures, tables, publication nodes,
-dependencies, and typed outputs.
+Edit only `src/<package>/core.py`. Its `build_research()` function may construct
+any valid ResearchPortfolio: one paper or hundreds, arbitrary ResearchPrograms,
+custom DAGs, methods, benchmarks, experiments, analyses, Machine-backed
+semantics, and cross-program dependencies.
 
-Fill only `src/<package>/slots.py` with paper-specific implementation semantics.
-`src/<package>/research.py` is generated topology and must not be hand-edited.
-
-Model/environment/resource binding, scheduling, checkpointing, evidence,
-recovery, revision migration, and operator plumbing are platform-owned.
+`src/<package>/research.py`, project metadata, tests, execution wiring,
+model/environment/resource composition, scheduling, checkpointing, evidence,
+artifacts, recovery, revision migration, and operator plumbing are platform-owned.
 
 Run `noetrium project doctor --project .` and
 `noetrium project test --project .`.
@@ -102,33 +95,27 @@ Run `noetrium project doctor --project .` and
 
 def _scaffold_files(
     request: ProjectCreateRequest,
-) -> tuple[dict[str, bytes], str, str]:
+) -> tuple[dict[str, bytes], str]:
     platform = installed_platform_identity()
     manifest = _manifest(request, platform.version, platform.artifact_sha256)
     semantic_digest = str(project_manifest_document(manifest)["semantic_digest"])
     package = project_package_name(request.project_id)
     revision = project_template_revision()
-    blueprint = (
-        request.blueprint
-        if request.blueprint is not None
-        else default_research_project_blueprint(request.project_id)
-    )
     text_files = {
         ".noetrium-template": revision + "\n",
         "README.md": _readme(request.project_id),
         "pyproject.toml": _pyproject(request, package, platform.version),
         f"src/{package}/__init__.py": '"""Unified Noetrium downstream project."""\n',
-        f"src/{package}/research.py": render_research_module(blueprint),
-        f"src/{package}/slots.py": render_research_slots(blueprint),
+        f"src/{package}/core.py": render_research_core(request.project_id),
+        f"src/{package}/research.py": render_research_module(request.project_id),
         "tests/test_generated_project.py": render_generated_test_module(
             package,
-            blueprint,
+            request.project_id,
         ),
     }
     files = {name: text.encode("utf-8") for name, text in text_files.items()}
-    files["research.blueprint.json"] = encode_research_project_blueprint(blueprint)
     files[_MANIFEST_PATH] = encode_project_manifest(manifest)
-    return files, semantic_digest, blueprint.blueprint_digest
+    return files, semantic_digest
 
 
 def _verify_existing(root: Path, files: dict[str, bytes]) -> None:
@@ -171,7 +158,7 @@ def _write_new_project(root: Path, files: dict[str, bytes]) -> None:
 
 
 def create_project(request: ProjectCreateRequest) -> ProjectCreateReceipt:
-    files, semantic_digest, blueprint_digest = _scaffold_files(request)
+    files, semantic_digest = _scaffold_files(request)
     root = request.destination.expanduser().absolute()
     if root.is_symlink():
         raise ValueError("project destination must not be a symlink")
@@ -191,7 +178,6 @@ def create_project(request: ProjectCreateRequest) -> ProjectCreateReceipt:
         template_revision=project_template_revision(),
         manifest_path=_MANIFEST_PATH,
         manifest_semantic_digest=semantic_digest,
-        research_blueprint_digest=blueprint_digest,
         generated_files=tuple(sorted(files)),
     )
 
@@ -210,40 +196,22 @@ def sync_project(project_root: Path) -> ProjectSyncReceipt:
         )
     project_id = manifest.project.identity.project_id
     package = project_package_name(project_id)
-    blueprint_path = root / "research.blueprint.json"
-    slots_path = root / "src" / package / "slots.py"
-    if (
-        not blueprint_path.is_file()
-        or blueprint_path.is_symlink()
-        or not slots_path.is_file()
-        or slots_path.is_symlink()
-    ):
-        raise ValueError(
-            "project sync requires research.blueprint.json and user-owned slots.py"
-        )
-    blueprint = decode_research_project_blueprint(blueprint_path.read_bytes())
-    if blueprint.portfolio.portfolio_id != project_id:
-        raise ValueError(
-            "project blueprint portfolio_id does not match project manifest identity"
-        )
+    core_path = root / "src" / package / "core.py"
+    if not core_path.is_file() or core_path.is_symlink():
+        raise ValueError("project sync requires user-owned core.py")
     generated = {
-        f"src/{package}/research.py": render_research_module(blueprint).encode("utf-8"),
+        f"src/{package}/research.py": render_research_module(project_id).encode("utf-8"),
         "tests/test_generated_project.py": render_generated_test_module(
             package,
-            blueprint,
+            project_id,
         ).encode("utf-8"),
     }
     lock_path = root.parent / f".{root.name}.noetrium-sync.lock"
     with InterprocessFileLock(lock_path):
-        # Re-read blueprint under the lock so a concurrent author edit cannot
-        # produce topology from stale bytes.
-        locked_blueprint = decode_research_project_blueprint(
-            blueprint_path.read_bytes()
-        )
-        if locked_blueprint.blueprint_digest != blueprint.blueprint_digest:
-            raise ValueError(
-                "research blueprint changed during project sync; retry from the new cut"
-            )
+        # core.py is user-owned and intentionally not parsed or rewritten by sync.
+        # The generated shell is independent of scientific topology.
+        if not core_path.is_file() or core_path.is_symlink():
+            raise ValueError("project core changed identity during sync")
         for relative, payload in sorted(generated.items()):
             target = root / relative
             if target.is_symlink():
@@ -254,7 +222,6 @@ def sync_project(project_root: Path) -> ProjectSyncReceipt:
             atomic_replace_bytes(target, payload)
     return ProjectSyncReceipt(
         project_root=str(root),
-        research_blueprint_digest=blueprint.blueprint_digest,
         regenerated_files=tuple(sorted(generated)),
     )
 
