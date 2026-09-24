@@ -28,7 +28,6 @@ from noetrium_platform.infrastructure.resources.providers.sqlite_resource import
     authoritative_lease_now,
     ensure_resource_schema,
 )
-from noetrium_platform.infrastructure.resources.lease.runtime.clock import LocalLeaseClock
 from noetrium_platform.infrastructure.resources.providers.sqlite_lease_ops import (
     acquire_resource_lease, ensure_resource_owner, reconcile_expired_resource_leases,
     release_resource_lease, renew_resource_lease,
@@ -700,14 +699,16 @@ class SQLiteComputeScheduler:
         inventory: InMemoryComputeInventory,
         *,
         timeout_seconds: float = 30.0,
-        clock: LeaseClockPort | None = None,
+        clock: LeaseClockPort,
         gpu_runtime_observer: GpuRuntimeObserverPort | None = None,
         host_runtime_observer: HostRuntimeObserverPort | None = None,
     ) -> None:
         self.path = Path(path).absolute()
         self.path.parent.mkdir(parents=True, exist_ok=True)
         self._inventory = inventory
-        self._clock = LocalLeaseClock() if clock is None else clock
+        if not isinstance(clock, LeaseClockPort):
+            raise TypeError("SQLite compute scheduler requires LeaseClockPort")
+        self._clock = clock
         self._gpu_runtime_observer = gpu_runtime_observer
         self._host_runtime_observer = host_runtime_observer
         self.timeout_seconds = float(timeout_seconds)
