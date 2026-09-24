@@ -33,7 +33,7 @@ def test_every_reproduction_has_typed_authorities_and_generated_projection() -> 
         assert (package / "definition.py").is_file()
         assert (package / "source.py").is_file()
         document = json.loads((package / "reproduction.json").read_text(encoding="utf-8"))
-        assert document["schema"] == "noetrium.reproduction.projection.v7"
+        assert document["schema"] == "noetrium.reproduction.projection.v9"
         assert document["authority"] == "generated_from_typed_definition_and_source"
         assert document["package"] == package.name
         assert "scientific_contract" not in document
