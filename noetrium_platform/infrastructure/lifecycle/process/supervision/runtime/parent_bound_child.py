@@ -14,7 +14,8 @@ import os
 import signal
 import subprocess
 import sys
-import time
+
+from noetrium_platform.foundation.kernel.kernel.retry import blocking_wait
 
 
 _child_group: int | None = None
@@ -94,7 +95,7 @@ def main(argv: list[str] | None = None) -> int:
             return int(code) if code >= 0 else 128 + abs(int(code))
         if os.getppid() != ns.parent_pid:
             _owner_died()
-        time.sleep(0.05)
+        blocking_wait(0.05)
 
 
 if __name__ == "__main__":

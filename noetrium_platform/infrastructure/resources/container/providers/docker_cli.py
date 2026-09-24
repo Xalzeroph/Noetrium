@@ -1,8 +1,9 @@
 from __future__ import annotations
 
 import json
-from time import monotonic, sleep
+from time import monotonic
 
+from noetrium_platform.foundation.kernel.kernel.retry import blocking_wait
 from noetrium_platform.infrastructure.resources.container.api import (
     DockerCommandRunnerPort,
     DockerContainerObservation,
@@ -134,7 +135,7 @@ class DockerCliManagedContainerProvider(DockerManagedContainerPort):
             last = self.inspect(reference)
             if last is not None and last.running:
                 return last
-            sleep(0.05)
+            blocking_wait(0.05)
         state = "missing" if last is None else "not-running"
         raise DockerContainerRuntimeError(
             f"Docker container did not become running before timeout: {state}"

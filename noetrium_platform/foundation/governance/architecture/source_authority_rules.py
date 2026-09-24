@@ -130,6 +130,7 @@ DEFAULT_SOURCE_AUTHORITY_RULES: tuple[SourceAuthorityRule, ...] = (
         (
             "noetrium_platform.infrastructure.lifecycle.service.runtime.linux_spawn",
             "noetrium_platform.infrastructure.lifecycle.process.supervision.runtime.supervisor",
+            "noetrium_platform.infrastructure.lifecycle.process.supervision.runtime.parent_bound_child",
         ),
         exact_call("subprocess.Popen"),
         protect_reference=True,
@@ -139,6 +140,7 @@ DEFAULT_SOURCE_AUTHORITY_RULES: tuple[SourceAuthorityRule, ...] = (
         "os.killpg",
         (
             "noetrium_platform.infrastructure.lifecycle.process.supervision.runtime.command_runner",
+            "noetrium_platform.infrastructure.lifecycle.process.supervision.runtime.parent_bound_child",
             "noetrium_platform.infrastructure.lifecycle.service.runtime.linux_signal",
         ),
         exact_call("os.killpg"),
