@@ -57,6 +57,9 @@ class ComputeSchedulerPort(ComputeCandidatePort, Protocol):
         self, *, now: float | None = None
     ) -> tuple[ComputeAllocation, ...]: ...
     def release(self, allocation: ComputeAllocation) -> None: ...
+    def recover_release(self, allocation: ComputeAllocation) -> None:
+        """Exclusive recovery/shutdown retirement after upper physical convergence."""
+        ...
     def allocations(
         self,
         *,

@@ -134,10 +134,14 @@ class ComputeShutdownAuthority:
     def allocations(self, *, scope=None):
         return tuple(Allocation(value) for value in sorted(self.live))
 
-    def release(self, allocation_id):
-        self.events.append(f"compute-release:{allocation_id}")
-        self.live.remove(allocation_id)
-        return Allocation(allocation_id)
+    def release(self, allocation):
+        self.events.append(f"compute-release:{allocation.allocation_id}")
+        self.live.remove(allocation.allocation_id)
+        return allocation
+
+    def recover_release(self, allocation):
+        self.events.append(f"compute-recover-release:{allocation.allocation_id}")
+        self.live.remove(allocation.allocation_id)
 
 
 def test_managed_resource_shutdown_actively_reclaims_endpoint_and_compute() -> None:
@@ -163,8 +167,7 @@ def test_managed_resource_shutdown_actively_reclaims_endpoint_and_compute() -> N
     assert events == [
         "endpoint-reconcile",
         "endpoint-release:endpoint-live",
-        "compute-reconcile",
-        "compute-release:compute-live",
+        "compute-recover-release:compute-live",
     ]
 
 

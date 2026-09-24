@@ -446,11 +446,15 @@ class InMemoryComputeScheduler:
         now_epoch_s: float,
         runtime_snapshot: GpuRuntimeSnapshot | None,
     ) -> tuple[ComputeAllocation, ...]:
+        del runtime_snapshot
         self._leases.reconcile_expired(
             now=now_epoch_s,
             resource_kind=ResourceKind.COMPUTE,
         )
-        converged: list[ComputeAllocation] = []
+        # Lease expiry revokes holder mutation authority; it is not proof that
+        # the workload/model process stopped. Keep every expired allocation in
+        # the usage index so CPU, memory and GPU capacity remain quarantined
+        # until an exclusive recovery owner proves upper physical convergence.
         pending: list[ComputeAllocation] = []
         for allocation_id, row in tuple(self._allocations.items()):
             lease = self._leases.get(
@@ -459,17 +463,12 @@ class InMemoryComputeScheduler:
             )
             if lease.state is LeaseState.ACTIVE:
                 continue
-            if not _gpu_allocation_physically_converged(row, runtime_snapshot):
-                pending.append(row)
-                continue
-            self._allocations.pop(allocation_id, None)
-            self._release_usage_locked(row)
-            converged.append(row)
-        if pending:
-            raise ComputePhysicalConvergencePending(
-                tuple(sorted(pending, key=lambda row: row.allocation_id))
-            )
-        return tuple(sorted(converged, key=lambda row: row.allocation_id))
+            if lease.fencing_token != row.lease_fencing_token:
+                raise ResourceLeaseConflict(
+                    f"compute allocation lease generation drifted: {allocation_id}"
+                )
+            pending.append(row)
+        return tuple(sorted(pending, key=lambda row: row.allocation_id))
 
     def candidates(
         self,
@@ -523,7 +522,16 @@ class InMemoryComputeScheduler:
                 raise ValueError(f"allocation identity conflict: {allocation_id}")
             existing = self._allocations.get(allocation_id)
             if existing is not None:
-                return existing
+                lease = self._leases.get(
+                    f"compute:{allocation_id}",
+                    now=now_epoch_s,
+                )
+                if (
+                    lease.state is LeaseState.ACTIVE
+                    and lease.fencing_token == existing.lease_fencing_token
+                ):
+                    return existing
+                raise ComputePhysicalConvergencePending((existing,))
             placements = self._placements_locked(
                 hosts,
                 requirement,
@@ -617,7 +625,10 @@ class InMemoryComputeScheduler:
         now_epoch_s = _lease_now(now)
         runtime_snapshot = _observe_gpu_runtime(self._gpu_runtime_observer)
         with self._lock:
-            return self._reconcile_expired_locked(now_epoch_s, runtime_snapshot)
+            pending = self._reconcile_expired_locked(now_epoch_s, runtime_snapshot)
+            if pending:
+                raise ComputePhysicalConvergencePending(pending)
+            return ()
 
     def release(self, allocation: ComputeAllocation) -> None:
         if type(allocation) is not ComputeAllocation:
@@ -630,6 +641,102 @@ class InMemoryComputeScheduler:
             self._leases.release(f"compute:{allocation.allocation_id}", fencing_token=row.lease_fencing_token)
             self._allocations.pop(allocation.allocation_id, None)
             self._release_usage_locked(row)
+
+    def recover_release(self, allocation: ComputeAllocation) -> None:
+        """Retire one exact generation under exclusive upper-layer recovery."""
+
+        if type(allocation) is not ComputeAllocation:
+            raise TypeError("compute recovery release requires ComputeAllocation")
+        now_epoch_s = time()
+        with self._lock:
+            row = self._allocations.get(allocation.allocation_id)
+            if row is None:
+                return
+            _require_compute_generation(row, allocation)
+            lease = self._leases.get(
+                f"compute:{allocation.allocation_id}",
+                now=now_epoch_s,
+            )
+            if lease.fencing_token != allocation.lease_fencing_token:
+                raise ResourceLeaseConflict(
+                    f"stale compute recovery generation: {allocation.allocation_id}"
+                )
+            if lease.state is LeaseState.ACTIVE:
+                self._leases.release(
+                    f"compute:{allocation.allocation_id}",
+                    fencing_token=allocation.lease_fencing_token,
+                    now=now_epoch_s,
+                )
+            elif lease.state not in {LeaseState.EXPIRED, LeaseState.RELEASED}:
+                raise ResourceLeaseConflict(
+                    f"compute recovery lease state is not terminal: {allocation.allocation_id}"
+                )
+            self._allocations.pop(allocation.allocation_id, None)
+            self._release_usage_locked(row)
+
+    def recover_release(self, allocation: ComputeAllocation) -> None:
+        """Retire one exact generation under exclusive upper-layer recovery."""
+
+        if type(allocation) is not ComputeAllocation:
+            raise TypeError("compute recovery release requires ComputeAllocation")
+        now_epoch_s = time()
+        with self._connection() as conn:
+            begin_immediate_sqlite_transaction(
+                conn,
+                timeout_seconds=self.timeout_seconds,
+            )
+            try:
+                reconcile_expired_resource_leases(
+                    conn,
+                    now_epoch_s=now_epoch_s,
+                    resource_kind=ResourceKind.COMPUTE,
+                )
+                current = self._capacity_row(conn, allocation.allocation_id)
+                if current is None:
+                    conn.commit()
+                    return
+                _require_compute_generation(current, allocation)
+                lease_row = conn.execute(
+                    "SELECT state,fencing_token FROM resource_leases WHERE lease_id=?",
+                    (f"compute:{allocation.allocation_id}",),
+                ).fetchone()
+                if lease_row is None:
+                    raise ResourceLeaseConflict(
+                        f"compute recovery lease is missing: {allocation.allocation_id}"
+                    )
+                lease_state = LeaseState(str(lease_row[0]))
+                lease_fencing = int(lease_row[1])
+                if lease_fencing != allocation.lease_fencing_token:
+                    raise ResourceLeaseConflict(
+                        f"stale compute recovery generation: {allocation.allocation_id}"
+                    )
+                if lease_state is LeaseState.ACTIVE:
+                    release_resource_lease(
+                        conn,
+                        f"compute:{allocation.allocation_id}",
+                        fencing_token=allocation.lease_fencing_token,
+                        now_epoch_s=now_epoch_s,
+                    )
+                elif lease_state not in {LeaseState.EXPIRED, LeaseState.RELEASED}:
+                    raise ResourceLeaseConflict(
+                        f"compute recovery lease state is not terminal: {allocation.allocation_id}"
+                    )
+                deleted = conn.execute(
+                    "DELETE FROM compute_allocations WHERE allocation_id=?",
+                    (allocation.allocation_id,),
+                )
+                if deleted.rowcount != 1:
+                    raise ResourceLeaseConflict(
+                        f"compute recovery release lost authority: {allocation.allocation_id}"
+                    )
+                conn.commit()
+            except BaseException as primary:
+                rollback_sqlite_writer(
+                    conn,
+                    primary,
+                    label="compute recovery release",
+                )
+                raise
 
     def allocations(
         self,
@@ -776,6 +883,20 @@ class SQLiteComputeScheduler:
         ).fetchone()
         return None if row is None else self._decode_row(row)
 
+    def _capacity_row(
+        self,
+        conn: sqlite3.Connection,
+        allocation_id: str,
+    ) -> ComputeAllocation | None:
+        row = conn.execute(
+            f"SELECT {self._SELECT} FROM compute_allocations c "
+            "JOIN compute_allocation_identity i USING(allocation_id) "
+            "JOIN resource_leases l ON l.lease_id=c.lease_id "
+            "WHERE c.allocation_id=?",
+            (allocation_id,),
+        ).fetchone()
+        return None if row is None else self._decode_row(row)
+
     def _cleanup_expired(
         self,
         conn: sqlite3.Connection,
@@ -795,30 +916,17 @@ class SQLiteComputeScheduler:
             "ORDER BY c.allocation_id",
             (ResourceKind.COMPUTE.value,),
         ).fetchall()
-        converged: list[ComputeAllocation] = []
-        pending: list[ComputeAllocation] = []
-        for raw in rows:
-            allocation = self._decode_row(raw)
-            if not _gpu_allocation_physically_converged(
-                allocation,
-                runtime_snapshot,
-            ):
-                pending.append(allocation)
-                continue
-            deleted = conn.execute(
-                "DELETE FROM compute_allocations WHERE allocation_id=?",
-                (allocation.allocation_id,),
+        del runtime_snapshot
+        pending = tuple(
+            sorted(
+                (self._decode_row(raw) for raw in rows),
+                key=lambda row: row.allocation_id,
             )
-            if deleted.rowcount != 1:
-                raise ResourceLeaseConflict(
-                    "compute quarantine cleanup lost authority: "
-                    f"{allocation.allocation_id}"
-                )
-            converged.append(allocation)
-        return (
-            tuple(sorted(converged, key=lambda row: row.allocation_id)),
-            tuple(sorted(pending, key=lambda row: row.allocation_id)),
         )
+        # Expired rows remain in compute_allocations and therefore continue to
+        # fence capacity. Only recover_release(), called after upper physical
+        # owners converge, may remove them.
+        return (), pending
     @staticmethod
     def _usage(rows: tuple[ComputeAllocation, ...], host_id: str) -> _HostUsage:
         usage = _HostUsage()
@@ -926,9 +1034,10 @@ class SQLiteComputeScheduler:
                 if existing is not None:
                     conn.commit()
                     return existing
-                if pending:
+                quarantined = self._capacity_row(conn, allocation_id)
+                if quarantined is not None:
                     conn.commit()
-                    raise ComputePhysicalConvergencePending(pending)
+                    raise ComputePhysicalConvergencePending((quarantined,))
                 rows = self._capacity_rows(conn)
                 placements = self._placements(
                     rows,
@@ -1007,14 +1116,11 @@ class SQLiteComputeScheduler:
         with self._connection() as conn:
             begin_immediate_sqlite_transaction(conn, timeout_seconds=self.timeout_seconds)
             try:
-                _converged, pending = self._cleanup_expired(
+                self._cleanup_expired(
                     conn,
                     now_epoch_s,
                     runtime_snapshot,
                 )
-                if pending:
-                    conn.commit()
-                    raise ComputePhysicalConvergencePending(pending)
                 current: list[ComputeAllocation] = []
                 for expected in allocations:
                     row = self._active_row(
@@ -1061,7 +1167,7 @@ class SQLiteComputeScheduler:
         with self._connection() as conn:
             begin_immediate_sqlite_transaction(conn, timeout_seconds=self.timeout_seconds)
             try:
-                converged, pending = self._cleanup_expired(
+                _converged, pending = self._cleanup_expired(
                     conn,
                     now_epoch_s,
                     runtime_snapshot,
@@ -1069,7 +1175,7 @@ class SQLiteComputeScheduler:
                 conn.commit()
                 if pending:
                     raise ComputePhysicalConvergencePending(pending)
-                return converged
+                return ()
             except ComputePhysicalConvergencePending:
                 raise
             except BaseException as primary:
@@ -1088,14 +1194,11 @@ class SQLiteComputeScheduler:
         with self._connection() as conn:
             begin_immediate_sqlite_transaction(conn, timeout_seconds=self.timeout_seconds)
             try:
-                _converged, pending = self._cleanup_expired(
+                self._cleanup_expired(
                     conn,
                     now_epoch_s,
                     runtime_snapshot,
                 )
-                if pending:
-                    conn.commit()
-                    raise ComputePhysicalConvergencePending(pending)
                 current = self._active_row(
                     conn,
                     allocation.allocation_id,

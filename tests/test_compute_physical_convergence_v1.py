@@ -122,7 +122,10 @@ def test_expired_gpu_lease_does_not_release_capacity_while_process_survives(
         )
 
     observer.busy = False
-    assert scheduler.reconcile_expired(now=103.0) == (first,)
+    with pytest.raises(ComputePhysicalConvergencePending):
+        scheduler.reconcile_expired(now=103.0)
+
+    scheduler.recover_release(first)
     replacement = scheduler.allocate(
         "gpu-job",
         _scope(),
@@ -165,13 +168,22 @@ def test_expired_gpu_lease_fails_closed_when_process_visibility_is_incomplete(
         scheduler.reconcile_expired(now=102.0)
 
     observer.complete = True
-    assert scheduler.reconcile_expired(now=103.0)
+    with pytest.raises(ComputePhysicalConvergencePending):
+        scheduler.reconcile_expired(now=103.0)
 
 
-def test_cpu_only_expiry_does_not_require_gpu_observation() -> None:
+@pytest.mark.parametrize("durable", [False, True])
+def test_cpu_only_expiry_quarantines_capacity_until_exclusive_recovery(
+    tmp_path,
+    durable: bool,
+) -> None:
     inventory = InMemoryComputeInventory()
     inventory.register_host(ComputeHost("cpu-node", _scope(), 2, 4096))
-    scheduler = in_memory_compute_scheduler(inventory)
+    scheduler = (
+        SQLiteComputeScheduler(tmp_path / "cpu-quarantine.sqlite", inventory)
+        if durable
+        else in_memory_compute_scheduler(inventory)
+    )
     requirement = ComputeRequirement(cpu_cores=2, memory_bytes=1024)
     first = scheduler.allocate(
         "cpu-job",
@@ -180,4 +192,101 @@ def test_cpu_only_expiry_does_not_require_gpu_observation() -> None:
         ttl_seconds=1.0,
         now=100.0,
     )
-    assert scheduler.reconcile_expired(now=102.0) == (first,)
+    with pytest.raises(ComputePhysicalConvergencePending):
+        scheduler.reconcile_expired(now=102.0)
+    assert scheduler.allocations() == (first,)
+    with pytest.raises(Exception):
+        scheduler.allocate(
+            "replacement",
+            _scope(),
+            requirement,
+            ttl_seconds=30.0,
+            now=103.0,
+        )
+
+    scheduler.recover_release(first)
+    replacement = scheduler.allocate(
+        "replacement",
+        _scope(),
+        requirement,
+        ttl_seconds=30.0,
+        now=104.0,
+    )
+    assert replacement.host_id == "cpu-node"
+
+
+
+@pytest.mark.parametrize("durable", [False, True])
+def test_quarantined_compute_generation_does_not_globally_block_spare_capacity(
+    tmp_path,
+    durable: bool,
+) -> None:
+    inventory = InMemoryComputeInventory()
+    inventory.register_host(ComputeHost("cpu-wide", _scope(), 4, 8192))
+    scheduler = (
+        SQLiteComputeScheduler(tmp_path / "compute-spare.sqlite", inventory)
+        if durable
+        else in_memory_compute_scheduler(inventory)
+    )
+    requirement = ComputeRequirement(cpu_cores=1, memory_bytes=1024)
+    first = scheduler.allocate(
+        "stale",
+        _scope(),
+        requirement,
+        ttl_seconds=1.0,
+        now=100.0,
+    )
+    with pytest.raises(ComputePhysicalConvergencePending):
+        scheduler.reconcile_expired(now=102.0)
+
+    second = scheduler.allocate(
+        "independent",
+        _scope(),
+        requirement,
+        ttl_seconds=30.0,
+        now=103.0,
+    )
+    assert second.host_id == first.host_id
+    assert {row.allocation_id for row in scheduler.allocations()} == {
+        "stale",
+        "independent",
+    }
+
+
+@pytest.mark.parametrize("durable", [False, True])
+def test_stale_recovery_release_cannot_delete_replacement_generation(
+    tmp_path,
+    durable: bool,
+) -> None:
+    inventory = InMemoryComputeInventory()
+    inventory.register_host(ComputeHost("cpu-reuse", _scope(), 2, 4096))
+    scheduler = (
+        SQLiteComputeScheduler(tmp_path / "compute-reuse.sqlite", inventory)
+        if durable
+        else in_memory_compute_scheduler(inventory)
+    )
+    requirement = ComputeRequirement(cpu_cores=1, memory_bytes=1024)
+    first = scheduler.allocate(
+        "same",
+        _scope(),
+        requirement,
+        ttl_seconds=1.0,
+        now=100.0,
+    )
+    with pytest.raises(ComputePhysicalConvergencePending):
+        scheduler.reconcile_expired(now=102.0)
+    scheduler.recover_release(first)
+
+    replacement = scheduler.allocate(
+        "same",
+        _scope(),
+        requirement,
+        ttl_seconds=30.0,
+        now=103.0,
+    )
+    assert replacement.lease_fencing_token > first.lease_fencing_token
+
+    with pytest.raises(Exception):
+        scheduler.recover_release(first)
+
+    assert scheduler.allocations() == (replacement,)

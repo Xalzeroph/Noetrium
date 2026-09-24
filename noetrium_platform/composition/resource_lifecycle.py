@@ -164,9 +164,9 @@ class ManagedResourceReconciler:
             ) from exc
 
         try:
-            compute = self._compute.reconcile_expired(now=now_epoch_s)
-            for allocation in self._compute.allocations():
-                self._compute.release(allocation)
+            compute = self._compute.allocations()
+            for allocation in compute:
+                self._compute.recover_release(allocation)
             if self._compute.allocations():
                 raise RuntimeError(
                     "compute allocations survived owner shutdown cleanup"
