@@ -112,6 +112,17 @@ def test_environment_profile_lifecycle_blocks_new_work_without_recovery_intent()
     )
 
 
+def test_environment_build_receipt_uses_concrete_content_addressed_runtime_identity() -> None:
+    digest = "a" * 64
+    assert _image_runtime_identity_digest({"id": "sha256:" + digest}) == digest
+
+    builder = (ROOT / "scripts" / "build_environment_images.py").read_text(
+        encoding="utf-8"
+    )
+    assert '"schema": "noetrium.environment-image-build.v2"' in builder
+    assert '"runtime_identity_digest"' in builder
+
+
 def test_environment_registry_declares_share_vs_isolate_policy() -> None:
     data = _catalog()
     policy = data["sharing_policy"]
