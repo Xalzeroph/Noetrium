@@ -533,7 +533,7 @@
       "reproductions": [
         {
           "package": "hugginggpt",
-          "package_digest": "1d91c9598b1cff676ff28ace622a227f1129e4798494aadbca130f90edf15f95",
+          "package_digest": "ac6b6b3c3a85442562e2e0c2f0190395f38619c62d892805eb17a30339730b90",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "hugginggpt-paper-tasks"
@@ -555,7 +555,7 @@
             {
               "kind": "method_program",
               "path": "research/reproductions/hugginggpt/program.py",
-              "content_sha256": "99cf5426bb6a189be74d375dafd1eebd6ba544eed314c3a9e84e10ca675612f5"
+              "content_sha256": "eb28e470a22b75e2980770752b5aaf9bdf42c923c69bcb51951987848a847cfc"
             },
             {
               "kind": "study",
@@ -1927,7 +1927,7 @@
       "reproductions": [
         {
           "package": "toolllm_toolbench",
-          "package_digest": "488d3abaace61fdfb2aab954d490a3c60b7b4f32a48273db3c65e49d230ff6de",
+          "package_digest": "c3db2f03ded0f7981ab0bbdbd05112aa0c4e4e1c1eda0f0b1e98f7b21b91e767",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "toolbench"
@@ -1949,7 +1949,7 @@
             {
               "kind": "method_program",
               "path": "research/reproductions/toolllm_toolbench/program.py",
-              "content_sha256": "ec5f5bfd52a67c98bc368376538b5d06d0f28ece4e1facd973e689679e902ef4"
+              "content_sha256": "19a1b899e4770a4fb1239fc58b49ec3ca791cdabb59d5380a6fe02f9899437cf"
             },
             {
               "kind": "study",
@@ -3896,5 +3896,5 @@
       ]
     }
   ],
-  "projection_digest": "190d6d43d105eef5e8e6869cf86984aa95dc9e142fbe34bf2b5760314eb7b543"
+  "projection_digest": "fb40cd62093433d58ce43071d6a983d6a9af4f23700511cf7e7f30ac0166ede2"
 }
