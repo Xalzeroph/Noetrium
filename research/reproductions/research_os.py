@@ -686,6 +686,94 @@ def bind_reproduction_execution(
     )
 
 
+def expand_reproduction_benchmark_lanes(
+    definition: ReproductionDefinition,
+    *,
+    study_factory: str,
+    benchmark: BenchmarkTaskSet,
+    values: Mapping[str, object],
+) -> tuple[ReproductionExecutionBinding, ...]:
+    """Expand one immutable benchmark cut into exact Research OS execution lanes.
+
+    Benchmark split identity is platform-owned.  A split-aware Study gets one
+    lane per split declared by the bound BenchmarkTaskSet; no default split is
+    invented.  A Study without an external split axis gets exactly one cut lane.
+    """
+
+    if type(definition) is not ReproductionDefinition:
+        raise TypeError("benchmark lane expansion requires reproduction definition")
+    if not isinstance(benchmark, BenchmarkTaskSet):
+        raise TypeError("benchmark lane expansion requires BenchmarkTaskSet")
+    if benchmark.benchmark_id not in definition.catalog.benchmark_ids:
+        raise ReproductionResearchOSCompileError(
+            f"{definition.package} benchmark {benchmark.benchmark_id!r} is outside "
+            "paper catalog"
+        )
+    studies = resolve_study_factory_bindings(definition)
+    study = next(
+        (row for row in studies if row.qualname == study_factory),
+        None,
+    )
+    if study is None:
+        raise ReproductionResearchOSCompileError(
+            f"{definition.package} has no Study factory {study_factory!r}"
+        )
+
+    method_split_axis = False
+    method_assets = tuple(
+        row
+        for row in definition.assets
+        if row.kind is ReproductionAssetKind.METHOD_PROGRAM
+    )
+    if method_assets:
+        method = resolve_method_program_binding(definition)
+        if method.factory is not None:
+            method_split_axis = any(
+                name in _BENCHMARK_SPLIT_PARAMETERS
+                for name in method.factory.unresolved_parameters
+            )
+    split_aware = (
+        study.benchmark_split_parameter is not None
+        or method_split_axis
+    )
+
+    if split_aware:
+        if not benchmark.splits:
+            raise ReproductionResearchOSCompileError(
+                f"{definition.package} split-aware Study cannot bind benchmark "
+                f"{benchmark.benchmark_id!r} without declared TaskSetSplit entries"
+            )
+        split_ids = tuple(row.split_id for row in benchmark.splits)
+    else:
+        split_ids = (None,)
+
+    bindings: list[ReproductionExecutionBinding] = []
+    for split_id in split_ids:
+        lane_identity = canonical_digest(
+            {
+                "package": definition.package,
+                "study_factory": study_factory,
+                "benchmark_cut_digest": benchmark.cut_digest,
+                "benchmark_split_id": split_id,
+            }
+        )
+        binding_id = (
+            f"{benchmark.benchmark_id}.{benchmark.revision_id}."
+            f"{lane_identity[:12]}"
+        )
+        bindings.append(
+            bind_reproduction_execution(
+                definition,
+                binding_id=binding_id,
+                study_factory=study_factory,
+                benchmark_id=benchmark.benchmark_id,
+                benchmark_split_id=split_id,
+                values=values,
+            )
+        )
+    return tuple(bindings)
+
+
 def _coerce_study_value(annotation: object, value: JsonValue) -> object:
     if (
         inspect.isclass(annotation)
@@ -1499,6 +1587,7 @@ __all__ = [
     "compile_repository_reproduction_portfolio",
     "discover_reproduction_definitions",
     "executable_reproduction_definitions",
+    "expand_reproduction_benchmark_lanes",
     "is_research_os_executable",
     "materialize_reproduction_method_program",
     "materialize_reproduction_study",
