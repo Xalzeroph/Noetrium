@@ -34,6 +34,10 @@ from noetrium_platform.foundation.kernel.kernel import (
     require_sha256,
     thaw_json,
 )
+from noetrium_platform.research.experimentation.workbench.api import (
+    candidate_program_capability_payload,
+)
+
 from noetrium_platform.research.experimentation.api import (
     ActionKind,
     ActionRequest,
@@ -41,6 +45,7 @@ from noetrium_platform.research.experimentation.api import (
     ActionSpec,
     AgentMethodSpec,
     AgentPhaseSpec,
+    BenchmarkAssignmentMode,
     BenchmarkTaskSet,
     CapabilityDescriptor,
     CapabilityPort,
@@ -150,6 +155,7 @@ __all__ = [
     "ActionSpec",
     "AgentMethodSpec",
     "AgentPhaseSpec",
+    "BenchmarkAssignmentMode",
     "BenchmarkTaskSet",
     "CapabilityDescriptor",
     "CapabilityPort",
@@ -254,6 +260,7 @@ __all__ = [
     "TensorContentStorePort",
     "TrialBudget",
     "canonical_digest",
+    "candidate_program_capability_payload",
     "ExecutionForkReceipt",
     "ExecutionSourceCut",
     "ExecutionStateAnchor",
