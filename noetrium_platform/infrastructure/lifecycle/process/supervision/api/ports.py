@@ -32,6 +32,16 @@ class ProcessCommandRunnerPort(Protocol):
 
 
 class ProcessSupervisorPort(Protocol):
+    def spawn_interactive(
+        self,
+        argv: tuple[str, ...],
+        *,
+        cwd: str,
+        environment: dict[str, str],
+        start_new_session: bool,
+        creationflags: int = 0,
+    ) -> SupervisedProcessPort: ...
+
     def await_exit(
         self,
         supervision_id: str,
