@@ -3,6 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Mapping
+from uuid import uuid4
 
 from noetrium_platform.foundation.kernel.concurrency.api import TaskGroupPort
 from noetrium_platform.foundation.kernel.kernel import canonical_digest
@@ -182,6 +183,13 @@ def build_local_management_plane(
             "state_root": str(directory_layout.layout.state.resolve()),
         }
     )
+    docker_owner_generation_id = canonical_digest(
+        {
+            "schema": "noetrium.docker-controller-generation.v1",
+            "authority_id": docker_authority_id,
+            "nonce": uuid4().hex,
+        }
+    )
     docker_containers = DockerContainerLeaseAuthority(
         ownership=meta.resource_ownership,
         leases=meta.resource_leases,
@@ -190,6 +198,7 @@ def build_local_management_plane(
             authority_id=docker_authority_id,
         ),
         authority_id=docker_authority_id,
+        owner_generation_id=docker_owner_generation_id,
         reconcile_on_start=False,
     )
     try:
