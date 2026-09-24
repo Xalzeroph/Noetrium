@@ -674,70 +674,6 @@ class InMemoryComputeScheduler:
             self._allocations.pop(allocation.allocation_id, None)
             self._release_usage_locked(row)
 
-    def recover_release(self, allocation: ComputeAllocation) -> None:
-        """Retire one exact generation under exclusive upper-layer recovery."""
-
-        if type(allocation) is not ComputeAllocation:
-            raise TypeError("compute recovery release requires ComputeAllocation")
-        now_epoch_s = time()
-        with self._connection() as conn:
-            begin_immediate_sqlite_transaction(
-                conn,
-                timeout_seconds=self.timeout_seconds,
-            )
-            try:
-                reconcile_expired_resource_leases(
-                    conn,
-                    now_epoch_s=now_epoch_s,
-                    resource_kind=ResourceKind.COMPUTE,
-                )
-                current = self._capacity_row(conn, allocation.allocation_id)
-                if current is None:
-                    conn.commit()
-                    return
-                _require_compute_generation(current, allocation)
-                lease_row = conn.execute(
-                    "SELECT state,fencing_token FROM resource_leases WHERE lease_id=?",
-                    (f"compute:{allocation.allocation_id}",),
-                ).fetchone()
-                if lease_row is None:
-                    raise ResourceLeaseConflict(
-                        f"compute recovery lease is missing: {allocation.allocation_id}"
-                    )
-                lease_state = LeaseState(str(lease_row[0]))
-                lease_fencing = int(lease_row[1])
-                if lease_fencing != allocation.lease_fencing_token:
-                    raise ResourceLeaseConflict(
-                        f"stale compute recovery generation: {allocation.allocation_id}"
-                    )
-                if lease_state is LeaseState.ACTIVE:
-                    release_resource_lease(
-                        conn,
-                        f"compute:{allocation.allocation_id}",
-                        fencing_token=allocation.lease_fencing_token,
-                        now_epoch_s=now_epoch_s,
-                    )
-                elif lease_state not in {LeaseState.EXPIRED, LeaseState.RELEASED}:
-                    raise ResourceLeaseConflict(
-                        f"compute recovery lease state is not terminal: {allocation.allocation_id}"
-                    )
-                deleted = conn.execute(
-                    "DELETE FROM compute_allocations WHERE allocation_id=?",
-                    (allocation.allocation_id,),
-                )
-                if deleted.rowcount != 1:
-                    raise ResourceLeaseConflict(
-                        f"compute recovery release lost authority: {allocation.allocation_id}"
-                    )
-                conn.commit()
-            except BaseException as primary:
-                rollback_sqlite_writer(
-                    conn,
-                    primary,
-                    label="compute recovery release",
-                )
-                raise
-
     def allocations(
         self,
         *,
@@ -1230,6 +1166,70 @@ class SQLiteComputeScheduler:
                     conn,
                     primary,
                     label="compute scheduler",
+                )
+                raise
+
+    def recover_release(self, allocation: ComputeAllocation) -> None:
+        """Retire one exact generation under exclusive upper-layer recovery."""
+
+        if type(allocation) is not ComputeAllocation:
+            raise TypeError("compute recovery release requires ComputeAllocation")
+        now_epoch_s = time()
+        with self._connection() as conn:
+            begin_immediate_sqlite_transaction(
+                conn,
+                timeout_seconds=self.timeout_seconds,
+            )
+            try:
+                reconcile_expired_resource_leases(
+                    conn,
+                    now_epoch_s=now_epoch_s,
+                    resource_kind=ResourceKind.COMPUTE,
+                )
+                current = self._capacity_row(conn, allocation.allocation_id)
+                if current is None:
+                    conn.commit()
+                    return
+                _require_compute_generation(current, allocation)
+                lease_row = conn.execute(
+                    "SELECT state,fencing_token FROM resource_leases WHERE lease_id=?",
+                    (f"compute:{allocation.allocation_id}",),
+                ).fetchone()
+                if lease_row is None:
+                    raise ResourceLeaseConflict(
+                        f"compute recovery lease is missing: {allocation.allocation_id}"
+                    )
+                lease_state = LeaseState(str(lease_row[0]))
+                lease_fencing = int(lease_row[1])
+                if lease_fencing != allocation.lease_fencing_token:
+                    raise ResourceLeaseConflict(
+                        f"stale compute recovery generation: {allocation.allocation_id}"
+                    )
+                if lease_state is LeaseState.ACTIVE:
+                    release_resource_lease(
+                        conn,
+                        f"compute:{allocation.allocation_id}",
+                        fencing_token=allocation.lease_fencing_token,
+                        now_epoch_s=now_epoch_s,
+                    )
+                elif lease_state not in {LeaseState.EXPIRED, LeaseState.RELEASED}:
+                    raise ResourceLeaseConflict(
+                        f"compute recovery lease state is not terminal: {allocation.allocation_id}"
+                    )
+                deleted = conn.execute(
+                    "DELETE FROM compute_allocations WHERE allocation_id=?",
+                    (allocation.allocation_id,),
+                )
+                if deleted.rowcount != 1:
+                    raise ResourceLeaseConflict(
+                        f"compute recovery release lost authority: {allocation.allocation_id}"
+                    )
+                conn.commit()
+            except BaseException as primary:
+                rollback_sqlite_writer(
+                    conn,
+                    primary,
+                    label="compute recovery release",
                 )
                 raise
 
