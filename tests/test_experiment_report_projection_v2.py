@@ -7,7 +7,7 @@ from noetrium_platform.research.experimentation.lifecycle.api import (
     ExperimentUnitKind, ObservationEnvelope, ObservationKind, UnitOutcome, UnitOutcomeState,
 )
 from noetrium_platform.research.experimentation.lifecycle.experiment.runtime.matrix import (
-    UniversalExperimentKernel,
+    StaticUnitPlanner,
     project_experiment_run_report,
 )
 
@@ -29,7 +29,7 @@ def observation(unit_id: str, sequence: int = 0) -> ObservationEnvelope:
     )
 
 def test_report_projection_consumes_committed_facts_without_executing_units() -> None:
-    plan = UniversalExperimentKernel().compile(definition(), (unit("episode-a", 0), unit("episode-b", 1)))
+    plan = StaticUnitPlanner().plan(definition(), (unit("episode-a", 0), unit("episode-b", 1)))
     outcomes = (
         UnitOutcome("episode-a", UnitOutcomeState.SUCCEEDED, 1, (observation("episode-a").observation_digest,)),
         UnitOutcome("episode-b", UnitOutcomeState.SUCCEEDED, 1, (observation("episode-b").observation_digest,)),
@@ -42,7 +42,7 @@ def test_report_projection_consumes_committed_facts_without_executing_units() ->
     assert report.findings == ()
 
 def test_report_projection_derives_partial_from_committed_outcomes() -> None:
-    plan = UniversalExperimentKernel().compile(definition(), (unit("episode-a", 0), unit("episode-b", 1)))
+    plan = StaticUnitPlanner().plan(definition(), (unit("episode-a", 0), unit("episode-b", 1)))
     outcomes = (
         UnitOutcome("episode-a", UnitOutcomeState.SUCCEEDED, 1, (observation("episode-a").observation_digest,)),
         UnitOutcome("episode-b", UnitOutcomeState.FAILED, 1, error_code="executor.RuntimeError"),
@@ -52,7 +52,7 @@ def test_report_projection_derives_partial_from_committed_outcomes() -> None:
     assert report.outcomes[1].error_code == "executor.RuntimeError"
 
 def test_report_projection_rejects_non_plan_outcome_order() -> None:
-    plan = UniversalExperimentKernel().compile(definition(), (unit("episode-a", 0), unit("episode-b", 1)))
+    plan = StaticUnitPlanner().plan(definition(), (unit("episode-a", 0), unit("episode-b", 1)))
     outcomes = (
         UnitOutcome("episode-b", UnitOutcomeState.SUCCEEDED, 1),
         UnitOutcome("episode-a", UnitOutcomeState.SUCCEEDED, 1),
@@ -61,7 +61,7 @@ def test_report_projection_rejects_non_plan_outcome_order() -> None:
         project_experiment_run_report(plan, "run-3", outcomes, ())
 
 def test_doctor_findings_can_make_an_otherwise_successful_cut_partial() -> None:
-    plan = UniversalExperimentKernel().compile(definition(), (unit("episode-a", 0),))
+    plan = StaticUnitPlanner().plan(definition(), (unit("episode-a", 0),))
     outcomes = (UnitOutcome("episode-a", UnitOutcomeState.SUCCEEDED, 1),)
     late = observation("episode-a", sequence=1)
     report = project_experiment_run_report(plan, "run-4", outcomes, (late,))
