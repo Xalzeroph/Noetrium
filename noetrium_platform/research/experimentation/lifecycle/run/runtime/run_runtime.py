@@ -47,7 +47,6 @@ from noetrium_platform.research.experimentation.lifecycle.run.api.lifecycle impo
     RunCleanupFailure,
     RunCleanupReport,
 )
-from noetrium_platform.research.experimentation.lifecycle.run.api.lifecycle_ports import RunSessionPort
 from .lifecycle_session import RunSession
 from .cycle import RunCycleExecutor
 from .decision_runtime import identity_context
@@ -712,7 +711,7 @@ class RunRuntime:
         *,
         restore_checkpoint_id: str | None = None,
         restore_cycle_identity: DecisionCycleIdentity | None = None,
-    ) -> RunSessionPort:
+    ) -> RunSession:
         if not isinstance(spec, ExperimentSpec):
             raise TypeError("RunRuntime.open requires ExperimentSpec")
         if not isinstance(identity, RunIdentity):
