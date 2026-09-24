@@ -248,41 +248,56 @@ class JsonlProcessTransport:
         process_environment = os.environ.copy()
         process_environment.update(self._environment_overrides)
         process_options["env"] = process_environment
-        if self._process_factory is None:
-            self._process = cast(
-                JsonlProcess,
-                self._process_supervisor.spawn_interactive(
-                    self.spec.command,
-                    cwd=self.spec.cwd,
-                    environment=process_environment,
-                    start_new_session=self._operating_system.is_posix,
-                    creationflags=(
-                        subprocess.CREATE_NEW_PROCESS_GROUP
-                        if self._operating_system.is_windows
-                        else 0
+        try:
+            if self._process_factory is None:
+                self._process = cast(
+                    JsonlProcess,
+                    self._process_supervisor.spawn_interactive(
+                        self.spec.command,
+                        cwd=self.spec.cwd,
+                        environment=process_environment,
+                        start_new_session=self._operating_system.is_posix,
+                        creationflags=(
+                            subprocess.CREATE_NEW_PROCESS_GROUP
+                            if self._operating_system.is_windows
+                            else 0
+                        ),
                     ),
+                )
+            else:
+                self._process = self._process_factory(
+                    list(self.spec.command), **process_options
+                )
+            self._stdout_task = self._task_group.submit(
+                ExecutionSpec(
+                    task_id=f"{self._task_namespace}:{self._transport_identity}:stdout:{uuid4().hex}",
+                    lane_kind=ExecutionLaneKind.BLOCKING_IO,
+                    failure_scope=TaskFailureScope.CALLER,
                 ),
+                self._drain_stdout_task,
             )
-        else:
-            self._process = self._process_factory(
-                list(self.spec.command), **process_options
+            self._stderr_task = self._task_group.submit(
+                ExecutionSpec(
+                    task_id=f"{self._task_namespace}:{self._transport_identity}:stderr:{uuid4().hex}",
+                    lane_kind=ExecutionLaneKind.BLOCKING_IO,
+                    failure_scope=TaskFailureScope.CALLER,
+                ),
+                self._drain_stderr_task,
             )
-        self._stdout_task = self._task_group.submit(
-            ExecutionSpec(
-                task_id=f"{self._task_namespace}:{self._transport_identity}:stdout:{uuid4().hex}",
-                lane_kind=ExecutionLaneKind.BLOCKING_IO,
-                failure_scope=TaskFailureScope.CALLER,
-            ),
-            self._drain_stdout_task,
-        )
-        self._stderr_task = self._task_group.submit(
-            ExecutionSpec(
-                task_id=f"{self._task_namespace}:{self._transport_identity}:stderr:{uuid4().hex}",
-                lane_kind=ExecutionLaneKind.BLOCKING_IO,
-                failure_scope=TaskFailureScope.CALLER,
-            ),
-            self._drain_stderr_task,
-        )
+        except BaseException as primary:
+            # A physical child may already exist even though transport startup
+            # never reached the logical "ready" point. Converge that child here
+            # instead of requiring every environment adapter to remember a
+            # compensating close. If cleanup is transiently unproven, close()
+            # retains the exact process/task handles so a later retry can finish.
+            try:
+                self.close()
+            except BaseException as cleanup:
+                raise BaseExceptionGroup(
+                    f"{self._task_namespace} start failed with cleanup error",
+                    [primary, cleanup],
+                ) from primary
+            raise
 
     def send(
         self,
