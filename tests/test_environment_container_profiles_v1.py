@@ -148,19 +148,12 @@ def test_environment_profile_build_input_changes_with_runtime_sources() -> None:
         "images": {
             "java_runtime": {
                 "runtime_identity_digest": "a" * 64,
-            }
-        },
-        "parameters": {
-            "node_linux_x64_sha256": {
-                "value": (
-                    "88fd1ce767091fd8d4a99fdb2356e98c"
-                    "819f93f3b1f8663853a2dee9b438068a"
-                ),
             },
-            "node_version": {
-                "value": "22.22.2",
+            "node_runtime": {
+                "runtime_identity_digest": "b" * 64,
             },
         },
+        "parameters": {},
     }
     mc_first = _profile_build_input_digest(
         minecraft,
@@ -179,26 +172,17 @@ def test_environment_profile_build_input_changes_with_runtime_sources() -> None:
         resolved_build_inputs=mc_java_changed_inputs,
     )
     mc_node_changed_inputs = deepcopy(mc_inputs)
-    mc_node_changed_inputs["parameters"]["node_version"]["value"] = "22.23.0"
+    mc_node_changed_inputs["images"]["node_runtime"][
+        "runtime_identity_digest"
+    ] = "c" * 64
     mc_node_changed = _profile_build_input_digest(
         minecraft,
         profile_revision="d" * 64,
         base_runtime_identity_digest="e" * 64,
         resolved_build_inputs=mc_node_changed_inputs,
     )
-    mc_node_hash_changed_inputs = deepcopy(mc_inputs)
-    mc_node_hash_changed_inputs["parameters"]["node_linux_x64_sha256"][
-        "value"
-    ] = "f" * 64
-    mc_node_hash_changed = _profile_build_input_digest(
-        minecraft,
-        profile_revision="d" * 64,
-        base_runtime_identity_digest="e" * 64,
-        resolved_build_inputs=mc_node_hash_changed_inputs,
-    )
     assert mc_first != mc_java_changed
     assert mc_first != mc_node_changed
-    assert mc_first != mc_node_hash_changed
 
 
 def test_environment_profile_build_inputs_are_registry_driven() -> None:
@@ -212,23 +196,14 @@ def test_environment_profile_build_inputs_are_registry_driven() -> None:
             "name": "java_runtime",
             "environment_variable": "JAVA_RUNTIME_IMAGE",
             "canonical_image": "eclipse-temurin:21-jre-jammy",
-        }
-    ]
-    assert inputs["parameters"] == [
-        {
-            "name": "node_linux_x64_sha256",
-            "environment_variable": "NODE_LINUX_X64_SHA256",
-            "default": (
-                "88fd1ce767091fd8d4a99fdb2356e98c"
-                "819f93f3b1f8663853a2dee9b438068a"
-            ),
         },
         {
-            "name": "node_version",
-            "environment_variable": "NODE_VERSION",
-            "default": "22.22.2",
+            "name": "node_runtime",
+            "environment_variable": "NODE_RUNTIME_IMAGE",
+            "canonical_image": "node:22.22.2-bookworm-slim",
         },
     ]
+    assert inputs["parameters"] == []
 
     builder = (ROOT / "scripts" / "build_environment_images.py").read_text(
         encoding="utf-8"
@@ -242,9 +217,10 @@ def test_environment_profile_build_inputs_are_registry_driven() -> None:
     minecraft_dockerfile = (
         ROOT / "deploy" / "environments" / "minecraft" / "Dockerfile"
     ).read_text(encoding="utf-8")
-    assert "NODE_LINUX_X64_SHA256" in minecraft_dockerfile
-    assert "SHASUMS256.txt" not in minecraft_dockerfile
-    assert "sha256sum -c -" in minecraft_dockerfile
+    assert "ARG NODE_RUNTIME_IMAGE=node:22.22.2-bookworm-slim" in minecraft_dockerfile
+    assert "FROM ${NODE_RUNTIME_IMAGE} AS node-runtime" in minecraft_dockerfile
+    assert "curl -fsSLO" not in minecraft_dockerfile
+    assert "apt-get install" not in minecraft_dockerfile
 
 
 def test_environment_profile_build_input_override_parser_fails_closed() -> None:
