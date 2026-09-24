@@ -43,6 +43,8 @@ from noetrium_platform.research.execution.graph.api import (
 
 from .research_os import ResearchOSControlPort
 from .research_os_checkpoint import (
+    ResearchOSGraphCheckpoint,
+    ResearchOSGraphCheckpointStorePort,
     ResearchOSNodeCheckpointPort,
     ResearchOSNodeCheckpointProof,
 )
@@ -444,6 +446,7 @@ class PreparedResearchOSNodeExecutor:
         *,
         experiment_closures: ResearchOSExperimentClosurePort | None = None,
         artifact_lineage: ArtifactLineageRelationPort | None = None,
+        checkpoints: ResearchOSGraphCheckpointStorePort | None = None,
     ) -> None:
         if type(prepared) is not PreparedResearchOSExecution:
             raise TypeError("research node executor requires prepared execution")
@@ -667,6 +670,15 @@ class StrictResearchOSControl(
                 "ArtifactLineageRelationPort"
             )
         self._artifact_lineage = artifact_lineage
+        if checkpoints is not None and not isinstance(
+            checkpoints,
+            ResearchOSGraphCheckpointStorePort,
+        ):
+            raise TypeError(
+                "Research OS control checkpoints must satisfy "
+                "ResearchOSGraphCheckpointStorePort"
+            )
+        self._checkpoints = checkpoints
 
     def active_revision_digest(self, execution_id: str) -> str:
         if type(execution_id) is not str or not execution_id.strip():
@@ -1974,21 +1986,25 @@ class StrictResearchOSControl(
                 )
             rows.append(row)
 
-        checkpoint_digest = canonical_digest(
-            {
-                "schema": "noetrium.research-graph-checkpoint.v2",
-                "cut_id": cut.cut_id,
-                "graph_digest": compilation.plan.graph_digest,
-                "research_revision_digest": (
-                    compilation.plan.research_revision_digest
-                ),
-                "snapshot_generation": snapshot.generation,
-                "control_generation": control.generation,
-                "control_phase": control.phase.value,
-                "selected_node_ids": tuple(sorted(selected_ids)),
-                "nodes": tuple(rows),
-            }
+        if self._checkpoints is None:
+            raise ResearchOSExecutionUnsupported(
+                "graph checkpoint requires durable ResearchOSGraphCheckpointStorePort"
+            )
+        checkpoint = ResearchOSGraphCheckpoint(
+            execution_cut_id=cut.cut_id,
+            graph_digest=compilation.plan.graph_digest,
+            research_revision_digest=compilation.plan.research_revision_digest,
+            snapshot_generation=snapshot.generation,
+            control_generation=control.generation,
+            control_phase=control.phase.value,
+            selected_node_ids=tuple(sorted(selected_ids)),
+            nodes=tuple(rows),
         )
+        published = self._checkpoints.publish(checkpoint)
+        if published != checkpoint:
+            raise RuntimeError(
+                "graph checkpoint store changed content-addressed checkpoint"
+            )
         return self._durable_control_receipt(
             request,
             compilation,
@@ -1998,8 +2014,10 @@ class StrictResearchOSControl(
             control,
             state="checkpointed",
             extra={
-                "checkpoint_digest": checkpoint_digest,
-                "checkpoint_node_ids": tuple(sorted(selected_ids)),
+                "checkpoint_digest": checkpoint.checkpoint_digest,
+                "checkpoint_scope_digest": checkpoint.scope_digest,
+                "checkpoint_durability": self._checkpoints.durability,
+                "checkpoint_node_ids": checkpoint.selected_node_ids,
                 "checkpoint_nodes": tuple(rows),
             },
         )
