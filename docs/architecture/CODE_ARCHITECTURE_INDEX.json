@@ -84816,13 +84816,12 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 22,
+      "line": 20,
       "methods": [
         "__init__",
         "durability",
         "_connect",
         "_initialize",
-        "_initialize_once",
         "_decode",
         "_values",
         "_same",
@@ -84866,7 +84865,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 30,
+      "line": 28,
       "methods": [
         "__init__",
         "durability",
@@ -102383,7 +102382,7 @@
     "classes": 3336,
     "constructor_edges": 932,
     "inheritance_edges": 149,
-    "module_import_edges": 5086,
+    "module_import_edges": 5084,
     "parse_errors": 0,
     "python_modules": 1927,
     "registry_authorities": 20,
@@ -120784,10 +120783,6 @@
     },
     {
       "source": "noetrium_platform.research.execution.operation.command.providers.sqlite",
-      "target": "noetrium_platform.foundation.kernel.kernel.retry"
-    },
-    {
-      "source": "noetrium_platform.research.execution.operation.command.providers.sqlite",
       "target": "noetrium_platform.research.execution.operation.command.api"
     },
     {
@@ -120817,10 +120812,6 @@
     {
       "source": "noetrium_platform.research.execution.operation.providers.sqlite",
       "target": "noetrium_platform.foundation.kernel.kernel.durability.sqlite"
-    },
-    {
-      "source": "noetrium_platform.research.execution.operation.providers.sqlite",
-      "target": "noetrium_platform.foundation.kernel.kernel.retry"
     },
     {
       "source": "noetrium_platform.research.execution.operation.providers.sqlite",
@@ -141219,7 +141210,6 @@
     {
       "imports": [
         "noetrium_platform.foundation.kernel.kernel.durability.sqlite",
-        "noetrium_platform.foundation.kernel.kernel.retry",
         "noetrium_platform.research.execution.operation.command.api"
       ],
       "module": "noetrium_platform.research.execution.operation.command.providers.sqlite",
@@ -141268,7 +141258,6 @@
     {
       "imports": [
         "noetrium_platform.foundation.kernel.kernel.durability.sqlite",
-        "noetrium_platform.foundation.kernel.kernel.retry",
         "noetrium_platform.research.execution.operation.api",
         "noetrium_platform.research.execution.operation.command.api"
       ],
@@ -143680,7 +143669,7 @@
   "parse_errors": [],
   "registry_sha256": "d3fc1bab831f1b7379e5a36048a61c00fe173429df958270d36a16f3f00171c0",
   "schema": "noetrium-code-architecture-index.v1",
-  "source_git_sha": "54e276cea47eb8aa500aecc2cdab16639f83a95e",
+  "source_git_sha": "85d665f38dccbec852ac0248f213cd4f9e600186",
   "system_import_edges": [
     {
       "count": 85,
@@ -143728,7 +143717,7 @@
       "target": "execution"
     },
     {
-      "count": 80,
+      "count": 78,
       "source": "execution",
       "target": "platform"
     },

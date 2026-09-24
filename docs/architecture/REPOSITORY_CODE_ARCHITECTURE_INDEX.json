@@ -2,7 +2,7 @@
   "counts": {
     "parse_errors": 0,
     "python_files": 3655,
-    "python_import_edges": 7031,
+    "python_import_edges": 7029,
     "symbols": 4851,
     "tracked_files": 4284,
     "typescript_javascript_files": 11
@@ -13709,12 +13709,6 @@
     {
       "source_module": "noetrium_platform.research.execution.operation.command.providers.sqlite",
       "source_role": "core_platform",
-      "target_module": "noetrium_platform.foundation.kernel.kernel.retry",
-      "target_role": "core_platform"
-    },
-    {
-      "source_module": "noetrium_platform.research.execution.operation.command.providers.sqlite",
-      "source_role": "core_platform",
       "target_module": "noetrium_platform.research.execution.operation.command.api",
       "target_role": "core_platform"
     },
@@ -13740,12 +13734,6 @@
       "source_module": "noetrium_platform.research.execution.operation.providers.sqlite",
       "source_role": "core_platform",
       "target_module": "noetrium_platform.foundation.kernel.kernel.durability.sqlite",
-      "target_role": "core_platform"
-    },
-    {
-      "source_module": "noetrium_platform.research.execution.operation.providers.sqlite",
-      "source_role": "core_platform",
-      "target_module": "noetrium_platform.foundation.kernel.kernel.retry",
       "target_role": "core_platform"
     },
     {
@@ -42203,7 +42191,7 @@
   ],
   "role_import_counts": [
     {
-      "count": 2636,
+      "count": 2634,
       "source_role": "core_platform",
       "target_role": "core_platform"
     },
@@ -42342,7 +42330,7 @@
     "tooling": 38
   },
   "schema": "noetrium-repository-code-architecture-index.v1",
-  "source_git_sha": "54e276cea47eb8aa500aecc2cdab16639f83a95e",
+  "source_git_sha": "85d665f38dccbec852ac0248f213cd4f9e600186",
   "symbols": [
     {
       "bases": [],
@@ -105708,13 +105696,12 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 22,
+      "line": 20,
       "methods": [
         "__init__",
         "durability",
         "_connect",
         "_initialize",
-        "_initialize_once",
         "_decode",
         "_values",
         "_same",
@@ -105754,7 +105741,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 30,
+      "line": 28,
       "methods": [
         "__init__",
         "durability",
