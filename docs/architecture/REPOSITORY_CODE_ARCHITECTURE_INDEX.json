@@ -42138,7 +42138,7 @@
     "tooling": 38
   },
   "schema": "noetrium-repository-code-architecture-index.v1",
-  "source_git_sha": "e0d7655aa1429ad0b80eb812096cbd6089aaab60",
+  "source_git_sha": "fae6120789422f06b1c268face8bbfc4f26d5698",
   "symbols": [
     {
       "bases": [],
@@ -65636,9 +65636,9 @@
         "reuse_proof"
       ],
       "module": "noetrium_platform.composition.research_os_value_authorities",
-      "name": "ResearchOSArtifactValueAuthority",
+      "name": "ResearchOSImmutableValueAuthority",
       "path": "noetrium_platform/composition/research_os_value_authorities.py",
-      "qualname": "noetrium_platform.composition.research_os_value_authorities.ResearchOSArtifactValueAuthority",
+      "qualname": "noetrium_platform.composition.research_os_value_authorities.ResearchOSImmutableValueAuthority",
       "role": "core_platform"
     },
     {
@@ -67802,7 +67802,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 32,
+      "line": 33,
       "methods": [
         "__init__",
         "_connect_writer",
@@ -68612,7 +68612,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 24,
+      "line": 25,
       "methods": [
         "__init__",
         "_connect_writer",
@@ -68799,7 +68799,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 23,
+      "line": 24,
       "methods": [
         "__init__",
         "_connect_writer",
@@ -68919,7 +68919,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 23,
+      "line": 24,
       "methods": [
         "__init__",
         "_connect_writer",
@@ -69038,7 +69038,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 24,
+      "line": 25,
       "methods": [
         "__init__",
         "_connect_writer",
@@ -69205,7 +69205,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 26,
+      "line": 27,
       "methods": [
         "__init__",
         "_connect_writer",
@@ -69471,7 +69471,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 30,
+      "line": 31,
       "methods": [
         "__init__",
         "_connect_writer",
@@ -70474,7 +70474,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 18,
+      "line": 19,
       "methods": [],
       "module": "noetrium_platform.evidence.data.state.runtime.sqlite_backend",
       "name": "EncodedAggregate",
@@ -70490,7 +70490,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 27,
+      "line": 28,
       "methods": [
         "__init__",
         "read",
@@ -70512,7 +70512,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 163,
+      "line": 164,
       "methods": [
         "__init__",
         "connect_writer",
@@ -84524,7 +84524,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 18,
+      "line": 21,
       "methods": [],
       "module": "noetrium_platform.foundation.portfolio.runtime.catalog",
       "name": "PortfolioConflict",
@@ -84540,7 +84540,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 22,
+      "line": 25,
       "methods": [],
       "module": "noetrium_platform.foundation.portfolio.runtime.catalog",
       "name": "PortfolioNotFound",
@@ -84554,7 +84554,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 26,
+      "line": 29,
       "methods": [
         "__init__",
         "_validate_put",
@@ -84578,7 +84578,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 96,
+      "line": 99,
       "methods": [
         "__init__",
         "_connection",
@@ -84606,7 +84606,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 32,
+      "line": 35,
       "methods": [
         "__init__",
         "commit",
@@ -84628,7 +84628,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 133,
+      "line": 136,
       "methods": [
         "__init__",
         "_connection",
@@ -97468,7 +97468,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 13,
+      "line": 16,
       "methods": [
         "__init__",
         "register_host",
@@ -97489,7 +97489,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 68,
+      "line": 71,
       "methods": [
         "__init__",
         "_connection",
@@ -97579,7 +97579,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 71,
+      "line": 74,
       "methods": [],
       "module": "noetrium_platform.infrastructure.resources.compute.runtime.scheduler",
       "name": "_HostUsage",
@@ -97593,7 +97593,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 269,
+      "line": 272,
       "methods": [
         "__init__",
         "_usage",
@@ -97619,7 +97619,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 500,
+      "line": 503,
       "methods": [
         "__init__",
         "_connection",
@@ -98321,7 +98321,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 44,
+      "line": 47,
       "methods": [
         "__init__",
         "_connection",
@@ -98354,7 +98354,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 33,
+      "line": 36,
       "methods": [
         "__init__",
         "_connection",
@@ -101484,7 +101484,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 35,
+      "line": 38,
       "methods": [
         "__init__",
         "_connection",
@@ -115256,7 +115256,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 22,
+      "line": 25,
       "methods": [],
       "module": "noetrium_platform.research.experimentation.runtime.catalog",
       "name": "ExperimentationCatalogConflict",
@@ -115272,7 +115272,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 26,
+      "line": 29,
       "methods": [],
       "module": "noetrium_platform.research.experimentation.runtime.catalog",
       "name": "ExperimentationCatalogNotFound",
@@ -115286,7 +115286,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 30,
+      "line": 33,
       "methods": [
         "__init__",
         "_put",
@@ -115309,7 +115309,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 93,
+      "line": 96,
       "methods": [
         "__init__",
         "_connection",

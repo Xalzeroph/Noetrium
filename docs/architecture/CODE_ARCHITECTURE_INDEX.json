@@ -5212,12 +5212,12 @@
     },
     {
       "kind": "references",
-      "source": "noetrium_platform.composition.research_os_value_authorities.ResearchOSArtifactValueAuthority",
+      "source": "noetrium_platform.composition.research_os_value_authorities.ResearchOSImmutableValueAuthority",
       "target": "noetrium_platform.composition.research_os_values.ResearchOSValueReference"
     },
     {
       "kind": "references",
-      "source": "noetrium_platform.composition.research_os_value_authorities.ResearchOSArtifactValueAuthority",
+      "source": "noetrium_platform.composition.research_os_value_authorities.ResearchOSImmutableValueAuthority",
       "target": "noetrium_platform.composition.research_os_values.ResearchOSValueSubject"
     },
     {
@@ -41119,11 +41119,11 @@
         "reuse_proof"
       ],
       "module": "noetrium_platform.composition.research_os_value_authorities",
-      "name": "ResearchOSArtifactValueAuthority",
+      "name": "ResearchOSImmutableValueAuthority",
       "nesting": [
-        "ResearchOSArtifactValueAuthority"
+        "ResearchOSImmutableValueAuthority"
       ],
-      "qualname": "noetrium_platform.composition.research_os_value_authorities.ResearchOSArtifactValueAuthority",
+      "qualname": "noetrium_platform.composition.research_os_value_authorities.ResearchOSImmutableValueAuthority",
       "system_key": "research_os",
       "top_system": "research_os"
     },
@@ -43513,7 +43513,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 32,
+      "line": 33,
       "methods": [
         "__init__",
         "_connect_writer",
@@ -44403,7 +44403,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 24,
+      "line": 25,
       "methods": [
         "__init__",
         "_connect_writer",
@@ -44608,7 +44608,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 23,
+      "line": 24,
       "methods": [
         "__init__",
         "_connect_writer",
@@ -44740,7 +44740,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 23,
+      "line": 24,
       "methods": [
         "__init__",
         "_connect_writer",
@@ -44871,7 +44871,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 24,
+      "line": 25,
       "methods": [
         "__init__",
         "_connect_writer",
@@ -45054,7 +45054,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 26,
+      "line": 27,
       "methods": [
         "__init__",
         "_connect_writer",
@@ -45346,7 +45346,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 30,
+      "line": 31,
       "methods": [
         "__init__",
         "_connect_writer",
@@ -46449,7 +46449,7 @@
         "version"
       ],
       "kind": "dataclass",
-      "line": 18,
+      "line": 19,
       "methods": [],
       "module": "noetrium_platform.evidence.data.state.runtime.sqlite_backend",
       "name": "EncodedAggregate",
@@ -46467,7 +46467,7 @@
         "SCHEMA_VERSION"
       ],
       "kind": "class",
-      "line": 163,
+      "line": 164,
       "methods": [
         "__init__",
         "connect_writer",
@@ -46497,7 +46497,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 27,
+      "line": 28,
       "methods": [
         "__init__",
         "read",
@@ -61836,7 +61836,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 26,
+      "line": 29,
       "methods": [
         "__init__",
         "_validate_put",
@@ -61864,7 +61864,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 18,
+      "line": 21,
       "methods": [],
       "module": "noetrium_platform.foundation.portfolio.runtime.catalog",
       "name": "PortfolioConflict",
@@ -61882,7 +61882,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 22,
+      "line": 25,
       "methods": [],
       "module": "noetrium_platform.foundation.portfolio.runtime.catalog",
       "name": "PortfolioNotFound",
@@ -61900,7 +61900,7 @@
         "SCHEMA_VERSION"
       ],
       "kind": "class",
-      "line": 96,
+      "line": 99,
       "methods": [
         "__init__",
         "_connection",
@@ -61930,7 +61930,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 32,
+      "line": 35,
       "methods": [
         "__init__",
         "commit",
@@ -61956,7 +61956,7 @@
         "SCHEMA_VERSION"
       ],
       "kind": "class",
-      "line": 133,
+      "line": 136,
       "methods": [
         "__init__",
         "_connection",
@@ -76046,7 +76046,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 13,
+      "line": 16,
       "methods": [
         "__init__",
         "register_host",
@@ -76071,7 +76071,7 @@
         "SCHEMA_VERSION"
       ],
       "kind": "class",
-      "line": 68,
+      "line": 71,
       "methods": [
         "__init__",
         "_connection",
@@ -76163,7 +76163,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 269,
+      "line": 272,
       "methods": [
         "__init__",
         "_usage",
@@ -76193,7 +76193,7 @@
         "SCHEMA_VERSION"
       ],
       "kind": "class",
-      "line": 500,
+      "line": 503,
       "methods": [
         "__init__",
         "_connection",
@@ -76233,7 +76233,7 @@
         "memory_bytes"
       ],
       "kind": "dataclass",
-      "line": 71,
+      "line": 74,
       "methods": [],
       "module": "noetrium_platform.infrastructure.resources.compute.runtime.scheduler",
       "name": "_HostUsage",
@@ -76983,7 +76983,7 @@
         "SCHEMA_VERSION"
       ],
       "kind": "class",
-      "line": 44,
+      "line": 47,
       "methods": [
         "__init__",
         "_connection",
@@ -77020,7 +77020,7 @@
         "SCHEMA_VERSION"
       ],
       "kind": "class",
-      "line": 33,
+      "line": 36,
       "methods": [
         "__init__",
         "_connection",
@@ -80430,7 +80430,7 @@
         "SCHEMA_VERSION"
       ],
       "kind": "class",
-      "line": 35,
+      "line": 38,
       "methods": [
         "__init__",
         "_connection",
@@ -95423,7 +95423,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 22,
+      "line": 25,
       "methods": [],
       "module": "noetrium_platform.research.experimentation.runtime.catalog",
       "name": "ExperimentationCatalogConflict",
@@ -95441,7 +95441,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 26,
+      "line": 29,
       "methods": [],
       "module": "noetrium_platform.research.experimentation.runtime.catalog",
       "name": "ExperimentationCatalogNotFound",
@@ -95457,7 +95457,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 30,
+      "line": 33,
       "methods": [
         "__init__",
         "_put",
@@ -95484,7 +95484,7 @@
         "SCHEMA_VERSION"
       ],
       "kind": "class",
-      "line": 93,
+      "line": 96,
       "methods": [
         "__init__",
         "_connection",
@@ -98923,7 +98923,7 @@
     },
     {
       "kind": "constructs",
-      "source": "noetrium_platform.composition.research_os_value_authorities.ResearchOSArtifactValueAuthority",
+      "source": "noetrium_platform.composition.research_os_value_authorities.ResearchOSImmutableValueAuthority",
       "target": "noetrium_platform.composition.research_os_values.ResearchOSValueReference"
     },
     {
@@ -143592,7 +143592,7 @@
   "parse_errors": [],
   "registry_sha256": "d3fc1bab831f1b7379e5a36048a61c00fe173429df958270d36a16f3f00171c0",
   "schema": "noetrium-code-architecture-index.v1",
-  "source_git_sha": "e0d7655aa1429ad0b80eb812096cbd6089aaab60",
+  "source_git_sha": "fae6120789422f06b1c268face8bbfc4f26d5698",
   "system_import_edges": [
     {
       "count": 85,
