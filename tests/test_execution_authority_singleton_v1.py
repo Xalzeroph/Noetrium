@@ -14,6 +14,12 @@ _CANONICAL_DEFINITIONS = {
 }
 _FORBIDDEN_CLASS_NAMES = {
     "UniversalExperimentKernel",
+    "ExperimentRuntime",
+    "DecisionCycleRuntime",
+    "RunRuntime",
+    "RunCycleExecutor",
+    "RunSession",
+    "ExperimentTrialCycleExecutor",
 }
 _FORBIDDEN_FUNCTION_NAMES = {
     "build_experiment_runtime",
