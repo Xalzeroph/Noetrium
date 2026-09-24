@@ -2,7 +2,7 @@
   "schema": "noetrium.reproduction.projection.v10",
   "authority": "generated_from_typed_definition_and_source",
   "package": "qlass_alfworld",
-  "package_digest": "4eb504f29775c4b8b00e5db3bef7b2759b6f5e6dd344d7351101d84fe4d7eacd",
+  "package_digest": "68e6a177651603a4f28413f4aeb44909c563f54b8ea2f5754e6f0eaea6a77ef9",
   "definition_digest": "6c1ca24aa65adba5bd222ebed3ed260aa2f051c62dadbec51751e6cf4c03efb3",
   "source_registry_digest": "819fd0e885a29c9300eee6b6c1b86d1cea8854f8e10d988bf56fb3022f71ed29",
   "lifecycle": "protocol_bound",
@@ -92,7 +92,7 @@
       "kind": "method_program",
       "path": "research/reproductions/qlass_alfworld/program.py",
       "declaration_digest": "e4522932c78db1d96a6a71e417332c218b46e1b501328a14347dc56281c04680",
-      "content_sha256": "192b5a4c8970494d686d46dfd7970e4b03c46fb1521ed9d085eea3bc7c450460"
+      "content_sha256": "4ecdb0987bd330f43a84a3208ccafd85d642a42d3e4d86373bac46cd5f6a0757"
     },
     {
       "kind": "study",

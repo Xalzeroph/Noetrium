@@ -2,7 +2,7 @@
   "schema": "noetrium.reproduction.projection.v10",
   "authority": "generated_from_typed_definition_and_source",
   "package": "os_symphony_acl2026",
-  "package_digest": "8a763e8f4cb0132bb80a944bae8e0795d23ac7342fe7a92b2f634f3a23fc7bbc",
+  "package_digest": "c4f592d2ec86972a35970cfdfafa71ecfc4568e75458f3e37a5823adf1c90cd1",
   "definition_digest": "7fa399213644ed7f7edcf9afcd794b2f1cc649d74c1f376e348d8063473eb2be",
   "source_registry_digest": "fc096b46d72730d9dfe7cca9c304958c130cbd6207015f6b6fd8d51ca25b7584",
   "lifecycle": "protocol_bound",
@@ -95,7 +95,7 @@
       "kind": "method_program",
       "path": "research/reproductions/os_symphony_acl2026/program.py",
       "declaration_digest": "8fd38f886379b6b8c6de1780a5107aad3c24e60674bc26815e4a870426ce14cc",
-      "content_sha256": "b0f5dfe06109ba76619da88703b2d9d37b04c2484613f6327ec6c749c07e9b72"
+      "content_sha256": "5408ccd104c24f80f966c0d2eb292c4997360582160a877ab7684e03c38e1699"
     },
     {
       "kind": "study",

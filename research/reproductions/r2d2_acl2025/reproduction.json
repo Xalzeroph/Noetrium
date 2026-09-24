@@ -2,7 +2,7 @@
   "schema": "noetrium.reproduction.projection.v10",
   "authority": "generated_from_typed_definition_and_source",
   "package": "r2d2_acl2025",
-  "package_digest": "46e517e2a5648e46f418f2afb93cc0ccb63c3281b2cf31e2a7f0b42d826ae827",
+  "package_digest": "a79f12773201c2776ce4ca2478bfb0c70602145064b936f93bce64b05c3ea8e0",
   "definition_digest": "bbe3561172dcb641e719208eea8385c919e49942e5c4ddf12c29f60c539bc9e4",
   "source_registry_digest": "8d79934f44114bad0dcb49471b4eb91eb57933384e01bad96921f469dc20e06b",
   "lifecycle": "protocol_bound",
@@ -90,7 +90,7 @@
       "kind": "study",
       "path": "research/reproductions/r2d2_acl2025/study.py",
       "declaration_digest": "29cf48064a8a9a40604703d9afc1d553b73305249c58b61666f41c065f4bd05e",
-      "content_sha256": "72c88655de55264742155e2b7d279cfb160370944442d2fbb8093b84d28ea927"
+      "content_sha256": "7a0a5c6277be60580ee685d29bb3dc78c239fe1418f9db5fd07de8497ec8f8b6"
     }
   ],
   "primary_executable": "research/reproductions/r2d2_acl2025/program.py",
