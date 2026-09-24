@@ -157,7 +157,7 @@ class DockerCliManagedContainerProvider(DockerManagedContainerPort):
             # still-present container remains fail-closed.
             try:
                 remaining = self.inspect(observed.container_id)
-            except BaseException as exc:
+            except Exception as exc:
                 raise DockerContainerRuntimeError(
                     "Docker container removal outcome is unobservable"
                 ) from exc
