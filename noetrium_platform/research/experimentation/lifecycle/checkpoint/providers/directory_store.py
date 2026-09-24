@@ -4,7 +4,11 @@ import hashlib
 from pathlib import Path
 
 from noetrium_platform.research.execution.api import ParticipantCheckpoint
-from noetrium_platform.foundation.kernel.kernel.durability import atomic_replace_bytes, sha256_file
+from noetrium_platform.foundation.kernel.kernel.durability import (
+    InterprocessFileLock,
+    atomic_replace_bytes,
+    sha256_file,
+)
 
 from .codec import RunCheckpointManifestCodec
 from ..api.contracts import (
@@ -26,8 +30,10 @@ class DirectoryRunCheckpointStore(RunCheckpointStore):
         self.root = Path(root)
         self.blobs = self.root / "blobs"
         self.manifests = self.root / "manifests"
+        self.manifest_locks = self.root / "manifest_locks"
         self.blobs.mkdir(parents=True, exist_ok=True)
         self.manifests.mkdir(parents=True, exist_ok=True)
+        self.manifest_locks.mkdir(parents=True, exist_ok=True)
         self.codec = RunCheckpointManifestCodec()
 
     @staticmethod
@@ -40,6 +46,10 @@ class DirectoryRunCheckpointStore(RunCheckpointStore):
     def _manifest_path(self, checkpoint_id: str) -> Path:
         safe = hashlib.sha256(checkpoint_id.encode("utf-8")).hexdigest()
         return self.manifests / f"{safe}.json"
+
+    def _manifest_lock_path(self, checkpoint_id: str) -> Path:
+        safe = hashlib.sha256(checkpoint_id.encode("utf-8")).hexdigest()
+        return self.manifest_locks / f"{safe}.lock"
 
     def _write_blob(self, payload: bytes, expected_digest: str) -> None:
         actual = self._sha(payload)
@@ -66,20 +76,29 @@ class DirectoryRunCheckpointStore(RunCheckpointStore):
             raise RunCheckpointIntegrityError(
                 "participant payload refs do not match checkpoint manifest"
             ) from exc
-        for item in participant_payloads:
-            self._write_blob(item.checkpoint.opaque_payload, item.checkpoint.ref.payload_sha256)
-
         path = self._manifest_path(manifest.checkpoint_id)
         encoded = self.codec.encode(manifest)
-        if path.exists():
-            current = self.codec.decode(path.read_bytes())
-            if current != manifest:
-                raise RunCheckpointConflict(
-                    f"checkpoint id is already bound to different state: {manifest.checkpoint_id}"
+        with InterprocessFileLock(
+            self._manifest_lock_path(manifest.checkpoint_id)
+        ):
+            if path.exists():
+                current = self.codec.decode(path.read_bytes())
+                if current != manifest:
+                    raise RunCheckpointConflict(
+                        "checkpoint id is already bound to different state: "
+                        f"{manifest.checkpoint_id}"
+                    )
+                return current
+            # Bind the checkpoint identity before admitting any competing
+            # publisher. Blob publication is inside the same exact-id fence so
+            # a losing conflicting writer cannot leave unreferenced payloads.
+            for item in participant_payloads:
+                self._write_blob(
+                    item.checkpoint.opaque_payload,
+                    item.checkpoint.ref.payload_sha256,
                 )
-            return current
-        atomic_replace_bytes(path, encoded)
-        return manifest
+            atomic_replace_bytes(path, encoded)
+            return manifest
 
     def load(self, checkpoint_id: str) -> RunCheckpointBundle:
         path = self._manifest_path(checkpoint_id)
