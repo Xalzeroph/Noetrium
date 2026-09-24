@@ -100,6 +100,12 @@ class ForensicIndexDB:
             profile=SQLiteDurabilityProfile.PROJECTION,
         )
 
+    def connect_reader(self) -> sqlite3.Connection:
+        return open_durable_sqlite_reader(
+            self.path,
+            timeout_seconds=30.0,
+        )
+
     def initialize(self) -> None:
         if self.read_only:
             raise PermissionError("read-only forensic index cannot initialize schema")
