@@ -83,7 +83,16 @@ class Controller:
 
 class Fleet:
     def __init__(self):
+        self.removals = 0
+        self.remove_error = None
         self.shutdowns = 0
+
+    def remove_selected(self, selector):
+        self.removals += 1
+        if self.remove_error is not None:
+            raise self.remove_error
+        assert selector.tags == ("auto-managed",)
+        return ()
 
     def shutdown_all(self):
         self.shutdowns += 1
@@ -188,6 +197,7 @@ def test_managed_runtime_owns_background_controller_lifecycle() -> None:
     assert controller.cycles >= 1
     assert resource_controller.cycles >= 1
     assert resource_controller.cleaned == 1
+    assert fleet.removals == 1
     assert fleet.shutdowns == 1
     assert runtime_lock.released is True
 
@@ -241,6 +251,7 @@ def test_managed_runtime_does_not_release_resources_when_workloads_fail_to_quies
         raise AssertionError("workload quiesce failure was not surfaced")
 
     assert resource_controller.cleaned == 0
+    assert fleet.removals == 0
     assert fleet.shutdowns == 0
     assert pool.closed is False
     assert runtime_lock.released is False
@@ -251,3 +262,38 @@ def test_managed_runtime_does_not_release_resources_when_workloads_fail_to_quies
     assert fleet.shutdowns == 1
     assert pool.closed is True
     assert runtime_lock.released is True
+
+def test_managed_runtime_never_releases_resources_when_auto_model_retirement_fails() -> None:
+    (
+        managed,
+        pool,
+        _group,
+        _controller,
+        resource_controller,
+        fleet,
+        runtime_lock,
+    ) = runtime()
+    fleet.remove_error = RuntimeError("auto model process survived")
+
+    try:
+        managed.close()
+    except ExceptionGroup as error:
+        assert "auto-managed model retirement" in str(error)
+    else:
+        raise AssertionError("auto model retirement failure was not surfaced")
+
+    assert pool.workloads_quiesced is True
+    assert fleet.removals == 1
+    assert fleet.shutdowns == 0
+    assert resource_controller.cleaned == 0
+    assert pool.closed is False
+    assert runtime_lock.released is False
+
+    fleet.remove_error = None
+    managed.close()
+    assert fleet.removals == 2
+    assert fleet.shutdowns == 1
+    assert resource_controller.cleaned == 1
+    assert pool.closed is True
+    assert runtime_lock.released is True
+
