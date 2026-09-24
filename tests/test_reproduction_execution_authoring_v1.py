@@ -49,6 +49,9 @@ def test_top_level_execution_request_preserves_exact_benchmark_split_selection()
         "build_adaptagent_study",
         benchmark,
         benchmark_split_ids=("test",),
+        benchmark_resolution_proof_digest=canonical_digest(
+            {"authority": "test.mind2web.paper-cut"}
+        ),
     )
 
     portfolio = build_execution_research((request,))
