@@ -3,7 +3,7 @@ from __future__ import annotations
 from collections.abc import Mapping, Sequence
 import math
 
-from noetrium_platform.composition.environment_capabilities import (
+from noetrium.api import (
     environment_fork_action_payload,
 )
 from noetrium_platform.capabilities.participant.method.api import (
