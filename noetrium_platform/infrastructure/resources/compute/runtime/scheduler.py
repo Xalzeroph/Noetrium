@@ -16,8 +16,8 @@ from noetrium_platform.infrastructure.resources.compute.api import (
 from noetrium_platform.foundation.kernel.kernel import canonical_digest
 from noetrium_platform.foundation.governance.api import ScopeIdentity, ScopeKind
 from noetrium_platform.infrastructure.resources.lease.api import (
-    ResourceIdentity, ResourceKind, ResourceLease, ResourceLeasePort, ResourceOwner,
-    ResourceOwnership, ResourceOwnershipPort,
+    ResourceIdentity, ResourceKind, ResourceLease, ResourceLeaseConflict,
+    ResourceLeasePort, ResourceOwner, ResourceOwnership, ResourceOwnershipPort,
 )
 from noetrium_platform.foundation.kernel.kernel.durability.sqlite import (
     begin_immediate_sqlite_transaction,
@@ -69,6 +69,33 @@ def _allocation_matches(
         and gpu_map[gpu_id].memory_bytes >= requirement.minimum_gpu_memory_bytes
         for gpu_id in allocation.gpu_ids
     )
+
+
+def _same_compute_generation(
+    current: ComputeAllocation,
+    expected: ComputeAllocation,
+) -> bool:
+    return (
+        current.allocation_id == expected.allocation_id
+        and current.scope == expected.scope
+        and current.host_id == expected.host_id
+        and current.cpu_cores == expected.cpu_cores
+        and current.memory_bytes == expected.memory_bytes
+        and current.gpu_ids == expected.gpu_ids
+        and current.lease_fencing_token == expected.lease_fencing_token
+    )
+
+
+def _require_compute_generation(
+    current: ComputeAllocation,
+    expected: ComputeAllocation,
+) -> None:
+    if type(expected) is not ComputeAllocation:
+        raise TypeError("compute lease operation requires ComputeAllocation")
+    if not _same_compute_generation(current, expected):
+        raise ResourceLeaseConflict(
+            f"stale compute allocation generation: {expected.allocation_id}"
+        )
 
 
 @dataclass(slots=True)
@@ -496,12 +523,20 @@ class InMemoryComputeScheduler:
 
     def renew_many(
         self,
-        allocation_ids: tuple[str, ...],
+        allocations: tuple[ComputeAllocation, ...],
         *,
         ttl_seconds: float,
         now: float | None = None,
     ) -> tuple[ComputeAllocation, ...]:
-        if not allocation_ids or len(set(allocation_ids)) != len(allocation_ids):
+        if (
+            not allocations
+            or any(type(row) is not ComputeAllocation for row in allocations)
+        ):
+            raise ValueError(
+                "compute renewal requires typed allocation generations"
+            )
+        allocation_ids = tuple(row.allocation_id for row in allocations)
+        if len(set(allocation_ids)) != len(allocation_ids):
             raise ValueError("compute renewal requires unique allocation ids")
         now_epoch_s = _lease_now(now)
         with self._lock:
@@ -510,11 +545,12 @@ class InMemoryComputeScheduler:
             if missing:
                 raise KeyError(missing[0])
             renewed: list[ComputeAllocation] = []
-            for allocation_id in allocation_ids:
-                current = self._allocations[allocation_id]
+            for expected in allocations:
+                current = self._allocations[expected.allocation_id]
+                _require_compute_generation(current, expected)
                 granted = self._leases.renew(
-                    f"compute:{allocation_id}",
-                    fencing_token=current.lease_fencing_token,
+                    f"compute:{expected.allocation_id}",
+                    fencing_token=expected.lease_fencing_token,
                     ttl_seconds=ttl_seconds,
                     now=now_epoch_s,
                 )
@@ -523,7 +559,7 @@ class InMemoryComputeScheduler:
                     lease_fencing_token=granted.fencing_token,
                     lease_expires_at_epoch_s=granted.expires_at_epoch_s,
                 )
-                self._allocations[allocation_id] = updated
+                self._allocations[expected.allocation_id] = updated
                 renewed.append(updated)
             return tuple(renewed)
 
@@ -536,12 +572,16 @@ class InMemoryComputeScheduler:
         with self._lock:
             return self._reconcile_expired_locked(now_epoch_s)
 
-    def release(self, allocation_id: str) -> None:
+    def release(self, allocation: ComputeAllocation) -> None:
+        if type(allocation) is not ComputeAllocation:
+            raise TypeError("compute release requires ComputeAllocation")
         with self._lock:
-            row = self._allocations.pop(allocation_id, None)
+            row = self._allocations.get(allocation.allocation_id)
             if row is None:
                 return
-            self._leases.release(f"compute:{allocation_id}")
+            _require_compute_generation(row, allocation)
+            self._leases.release(f"compute:{allocation.allocation_id}")
+            self._allocations.pop(allocation.allocation_id, None)
             self._release_usage_locked(row)
 
     def allocations(
@@ -858,12 +898,20 @@ class SQLiteComputeScheduler:
                 raise
     def renew_many(
         self,
-        allocation_ids: tuple[str, ...],
+        allocations: tuple[ComputeAllocation, ...],
         *,
         ttl_seconds: float,
         now: float | None = None,
     ) -> tuple[ComputeAllocation, ...]:
-        if not allocation_ids or len(set(allocation_ids)) != len(allocation_ids):
+        if (
+            not allocations
+            or any(type(row) is not ComputeAllocation for row in allocations)
+        ):
+            raise ValueError(
+                "compute renewal requires typed allocation generations"
+            )
+        allocation_ids = tuple(row.allocation_id for row in allocations)
+        if len(set(allocation_ids)) != len(allocation_ids):
             raise ValueError("compute renewal requires unique allocation ids")
         now_epoch_s = _lease_now(now)
         with self._connection() as conn:
@@ -871,17 +919,22 @@ class SQLiteComputeScheduler:
             try:
                 self._cleanup_expired(conn, now_epoch_s)
                 current: list[ComputeAllocation] = []
-                for allocation_id in allocation_ids:
-                    row = self._active_row(conn, allocation_id, now_epoch_s)
+                for expected in allocations:
+                    row = self._active_row(
+                        conn,
+                        expected.allocation_id,
+                        now_epoch_s,
+                    )
                     if row is None:
-                        raise KeyError(allocation_id)
+                        raise KeyError(expected.allocation_id)
+                    _require_compute_generation(row, expected)
                     current.append(row)
                 renewed: list[ComputeAllocation] = []
-                for row in current:
+                for row, expected in zip(current, allocations, strict=True):
                     lease = renew_resource_lease(
                         conn,
                         f"compute:{row.allocation_id}",
-                        fencing_token=row.lease_fencing_token,
+                        fencing_token=expected.lease_fencing_token,
                         ttl_seconds=ttl_seconds,
                         now_epoch_s=now_epoch_s,
                     )
@@ -919,27 +972,36 @@ class SQLiteComputeScheduler:
                 )
                 raise
 
-    def release(self, allocation_id: str) -> None:
+    def release(self, allocation: ComputeAllocation) -> None:
+        if type(allocation) is not ComputeAllocation:
+            raise TypeError("compute release requires ComputeAllocation")
         now_epoch_s = time()
         with self._connection() as conn:
             begin_immediate_sqlite_transaction(conn, timeout_seconds=self.timeout_seconds)
             try:
-                row = conn.execute(
-                    "SELECT lease_id FROM compute_allocations WHERE allocation_id=?",
-                    (allocation_id,),
-                ).fetchone()
-                if row is None:
+                self._cleanup_expired(conn, now_epoch_s)
+                current = self._active_row(
+                    conn,
+                    allocation.allocation_id,
+                    now_epoch_s,
+                )
+                if current is None:
                     conn.commit()
                     return
+                _require_compute_generation(current, allocation)
                 release_resource_lease(
                     conn,
-                    str(row[0]),
+                    f"compute:{allocation.allocation_id}",
                     now_epoch_s=now_epoch_s,
                 )
-                conn.execute(
+                deleted = conn.execute(
                     "DELETE FROM compute_allocations WHERE allocation_id=?",
-                    (allocation_id,),
+                    (allocation.allocation_id,),
                 )
+                if deleted.rowcount != 1:
+                    raise ResourceLeaseConflict(
+                        f"compute release lost authority: {allocation.allocation_id}"
+                    )
                 conn.commit()
             except BaseException as primary:
                 rollback_sqlite_writer(
