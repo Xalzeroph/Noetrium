@@ -364,11 +364,23 @@ def test_migration_cas_rejects_stale_source_cut(tmp_path) -> None:
         expected_cut_id=activation.cut.cut_id,
     )
 
+    stable = {
+        row.graph_node_id: row
+        for row in plan.nodes
+    }["paper-b::main"]
+    assert stable.new_semantic_digest is not None
+    proof = ResearchOSReuseProof(
+        "paper-b::main",
+        plan.source_cut.cut_id,
+        stable.new_semantic_digest,
+        canonical_digest({"stale-source-proof": "paper-b::main"}),
+    )
     with pytest.raises(ResearchGraphExecutionConflict, match="no longer the active"):
         materialize_research_os_execution_migration(
             plan,
             new,
             store,
+            reuse_proofs=(proof,),
             now_ns=20,
         )
 
