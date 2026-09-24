@@ -173,23 +173,24 @@ def default_regression_state_path(root: Path) -> Path:
     return resolved.parent / f".{resolved.name}.release-regression-state.json"
 
 
-def _decode_planned_shards(raw_rows: list[object], *, legacy_parallel_bool: bool = False) -> tuple[ReleaseRegressionShardPlan, ...]:
+def _decode_planned_shards(
+    raw_rows: list[object],
+) -> tuple[ReleaseRegressionShardPlan, ...]:
     planned: list[ReleaseRegressionShardPlan] = []
+    expected = {"shard_index", "relative_test_files", "isolation_class"}
     for raw in raw_rows:
         if not isinstance(raw, dict):
             raise TypeError("planned shard must be an object")
+        if set(raw) != expected:
+            raise ValueError("planned shard has unexpected fields")
         raw_files = raw["relative_test_files"]
         if not isinstance(raw_files, list):
             raise TypeError("planned shard files must be a list")
-        if legacy_parallel_bool:
-            isolation_class = "parallel-safe" if bool(raw.get("parallel_safe", False)) else "exclusive"
-        else:
-            isolation_class = str(raw["isolation_class"])
         planned.append(
             ReleaseRegressionShardPlan(
                 shard_index=int(raw["shard_index"]),
                 relative_test_files=tuple(str(value) for value in raw_files),
-                isolation_class=isolation_class,
+                isolation_class=str(raw["isolation_class"]),
             )
         )
     return tuple(planned)
@@ -200,39 +201,33 @@ def decode_regression_state(raw: bytes) -> ReleaseRegressionState:
         payload = json.loads(raw.decode("utf-8"))
         if not isinstance(payload, dict):
             raise TypeError("regression state must be an object")
-        schema_version = int(payload.get("schema_version", 0))
-        shards_raw = payload.get("completed_shards")
+        expected = {
+            "schema_version",
+            "source_manifest_digest",
+            "test_inventory_sha256",
+            "runtime_sha256",
+            "shard_size",
+            "planned_shards",
+            "completed_shards",
+        }
+        if set(payload) != expected:
+            raise ValueError("release regression state has unexpected fields")
+        schema_version = int(payload["schema_version"])
+        if schema_version != REGRESSION_STATE_SCHEMA_VERSION:
+            raise ValueError(
+                f"unsupported regression state schema {schema_version}"
+            )
+        shards_raw = payload["completed_shards"]
+        planned_raw = payload["planned_shards"]
         if not isinstance(shards_raw, list):
             raise TypeError("completed_shards must be a list")
-
-        completed: list[ReleaseRegressionShardResult] = []
-        if schema_version == 1:
-            for item in shards_raw:
-                if not isinstance(item, dict):
-                    raise TypeError("shard result must be an object")
-                passed = int(item["passed"])
-                skipped = int(item["skipped"])
-                completed.append(
-                    ReleaseRegressionShardResult(
-                        shard_index=int(item["shard_index"]),
-                        shard_identity_sha256=str(item["shard_identity_sha256"]),
-                        first_test_file=str(item["first_test_file"]),
-                        last_test_file=str(item["last_test_file"]),
-                        collected=passed + skipped,
-                        passed=passed,
-                        skipped=skipped,
-                        duration_seconds=0.0,
-                    )
-                )
-        elif schema_version in {2, 3, REGRESSION_STATE_SCHEMA_VERSION}:
-            completed = [ReleaseRegressionShardResult(**item) for item in shards_raw]
-        else:
-            raise ValueError(f"unsupported regression state schema {schema_version}")
-
-        planned_raw = payload.get("planned_shards", []) if schema_version >= 3 else []
         if not isinstance(planned_raw, list):
             raise TypeError("planned_shards must be a list")
-        planned = _decode_planned_shards(planned_raw, legacy_parallel_bool=schema_version == 3)
+        completed = tuple(
+            ReleaseRegressionShardResult(**item)
+            for item in shards_raw
+        )
+        planned = _decode_planned_shards(planned_raw)
         return ReleaseRegressionState(
             schema_version=REGRESSION_STATE_SCHEMA_VERSION,
             source_manifest_digest=str(payload["source_manifest_digest"]),
@@ -240,11 +235,10 @@ def decode_regression_state(raw: bytes) -> ReleaseRegressionState:
             runtime_sha256=str(payload["runtime_sha256"]),
             shard_size=int(payload["shard_size"]),
             planned_shards=planned,
-            completed_shards=tuple(completed),
+            completed_shards=completed,
         )
     except (UnicodeDecodeError, json.JSONDecodeError, KeyError, TypeError, ValueError) as exc:
         raise ValueError("release regression state violates its schema") from exc
-
 
 def load_regression_state(path: Path) -> ReleaseRegressionState | None:
     path = Path(path)
