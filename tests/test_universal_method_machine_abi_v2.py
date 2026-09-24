@@ -349,15 +349,28 @@ def test_public_facade_preserves_method_wall_clock_budget():
     assert result.failure_code == "METHOD_TIMEOUT"
 
 
-def test_durable_checkpoint_fails_closed_without_process_lock_authority(
+def test_durable_checkpoint_fails_closed_when_canonical_process_lock_is_unavailable(
     tmp_path,
     monkeypatch,
 ) -> None:
-    monkeypatch.setattr(method_checkpoint_provider, "fcntl", None)
-    monkeypatch.setattr(method_checkpoint_provider, "msvcrt", None)
+    class UnavailableLock:
+        def __init__(self, *_args, **_kwargs) -> None:
+            pass
+
+        def __enter__(self):
+            raise RuntimeError("canonical interprocess lock unavailable")
+
+        def __exit__(self, *_args) -> None:
+            return None
+
+    monkeypatch.setattr(
+        method_checkpoint_provider,
+        "InterprocessFileLock",
+        UnavailableLock,
+    )
     store = JsonMethodCheckpointStore(tmp_path / "unsupported-lock")
     with pytest.raises(
         RuntimeError,
-        match="requires POSIX flock or Windows locking",
+        match="canonical interprocess lock unavailable",
     ):
         store.load("run")
