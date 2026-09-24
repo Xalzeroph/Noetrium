@@ -266,9 +266,48 @@ def test_checkpoint_publish_retry_clears_intent_after_manifest_commit(
         real_durable_unlink,
     )
     reopened = DirectoryRunCheckpointStore(root)
+    # The manifest is already durable, so an exact stale intent does not make
+    # the checkpoint unreadable while retry is converging its cleanup.
+    assert reopened.load(owned.checkpoint_id).manifest == owned
     assert reopened.publish(owned, payloads) == owned
     assert not reopened._intents._path(owned.checkpoint_id).exists()
 
+
+def test_checkpoint_load_fails_closed_on_committed_intent_conflict(
+    tmp_path: Path,
+) -> None:
+    from noetrium_platform.research.experimentation.lifecycle.checkpoint.providers.publication_intent import (
+        CheckpointPublicationIntent,
+    )
+
+    store = DirectoryRunCheckpointStore(tmp_path / "committed-intent-conflict")
+    payloads = (
+        participant_payload("method", b"payload", generation="g1"),
+    )
+    owned = manifest(payloads, checkpoint_id="committed-intent-conflict")
+    assert store.publish(owned, payloads) == owned
+
+    store._intents.publish(
+        CheckpointPublicationIntent(
+            namespace=store._intents.namespace,
+            checkpoint_id=owned.checkpoint_id,
+            manifest_sha256="0" * 64,
+            blob_sha256s=tuple(
+                sorted(
+                    {
+                        item.checkpoint.ref.payload_sha256
+                        for item in payloads
+                    }
+                )
+            ),
+        )
+    )
+
+    with pytest.raises(
+        RunCheckpointIntegrityError,
+        match="conflicts with pending publication intent",
+    ):
+        store.load(owned.checkpoint_id)
 
 
 def test_checkpoint_blob_external_exact_create_race_is_verified(
