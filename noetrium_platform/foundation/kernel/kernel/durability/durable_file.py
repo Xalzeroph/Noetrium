@@ -1,7 +1,9 @@
 from __future__ import annotations
 
+from contextlib import contextmanager
 import os
 from pathlib import Path
+from typing import BinaryIO, Iterator
 from uuid import uuid4
 
 from noetrium_platform.foundation.kernel.kernel.retry import retry_until_deadline
@@ -121,6 +123,71 @@ def fsync_directory(path: Path) -> None:
         os.close(fd)
 
 
+@contextmanager
+def durable_create_binary_file(
+    path: Path,
+    *,
+    buffering: int = -1,
+) -> Iterator[BinaryIO]:
+    """Create one new binary file and make its completed contents durable.
+
+    The caller owns the streamed payload and domain validation. Platform
+    durability owns exclusive creation, flush/fsync, parent publication and
+    partial-file cleanup on failure.
+    """
+    if type(buffering) is not int or buffering < -1:
+        raise ValueError("durable file buffering must be -1 or non-negative")
+    parent = path.parent
+    parent.mkdir(parents=True, exist_ok=True)
+    handle = path.open("xb", buffering=buffering)
+    primary: BaseException | None = None
+    try:
+        yield handle
+        handle.flush()
+        flush_file_descriptor(handle.fileno())
+    except BaseException as exc:
+        primary = exc
+        raise
+    finally:
+        try:
+            handle.close()
+        except BaseException as close_exc:
+            if primary is None:
+                raise
+            primary.add_note(
+                "durable create close failed: "
+                f"{type(close_exc).__name__}"
+            )
+        if primary is None:
+            fsync_directory(parent)
+        else:
+            try:
+                _windows_file_operation(lambda: path.unlink(missing_ok=True))
+                fsync_directory(parent)
+            except BaseException as cleanup_exc:
+                primary.add_note(
+                    "durable create cleanup failed: "
+                    f"{type(cleanup_exc).__name__}"
+                )
+
+
+def durable_truncate_file(path: Path, size: int) -> None:
+    """Truncate an existing file and persist the new durable byte boundary."""
+    if type(size) is not int or size < 0:
+        raise ValueError("durable truncate size must be a non-negative integer")
+    try:
+        with path.open("r+b") as handle:
+            handle.truncate(size)
+            handle.flush()
+            flush_file_descriptor(handle.fileno())
+    except BaseException as exc:
+        if isinstance(exc, (KeyboardInterrupt, SystemExit)):
+            raise
+        raise DurableFileWriteError(
+            f"durable truncate failed for {path}"
+        ) from exc
+
+
 def atomic_replace_bytes(path: Path, payload: bytes) -> None:
     """Durably publish *payload* at *path* using same-directory atomic replace.
 
@@ -211,6 +278,8 @@ def durable_unlink(path: Path) -> None:
 __all__ = [
     "DurableFileWriteError",
     "atomic_replace_bytes",
+    "durable_create_binary_file",
+    "durable_truncate_file",
     "durable_replace_file",
     "durable_replace_directory",
     "durable_unlink",
