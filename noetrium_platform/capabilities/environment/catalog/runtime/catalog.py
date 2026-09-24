@@ -1061,7 +1061,7 @@ class SQLiteExecutionEnvironmentCatalog(ExecutionEnvironmentCatalog):
         }
 
     @classmethod
-    def _instance(cls, value: EnvironmentInstance) -> dict[str, object]:
+    def _instance_payload(cls, value: EnvironmentInstance) -> dict[str, object]:
         return {
             "instance_id": value.instance_id,
             "resolved_spec_digest": value.resolved_spec_digest,
@@ -1098,7 +1098,10 @@ class SQLiteExecutionEnvironmentCatalog(ExecutionEnvironmentCatalog):
             "specs": [self._spec(row) for row in self._specs.values()],
             "overlays": [self._overlay(row) for row in self._overlays.values()],
             "assignments": [self._assignment(row) for row in self._assignment_rows.values()],
-            "instances": [self._instance(row) for row in self._instances.values()],
+            "instances": [
+                self._instance_payload(row)
+                for row in self._instances.values()
+            ],
             "bindings": [self._binding(row) for row in self._binding_rows.values()],
         }, sort_keys=True, separators=(",", ":"))
 
