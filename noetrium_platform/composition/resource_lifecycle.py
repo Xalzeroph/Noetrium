@@ -139,14 +139,20 @@ class ManagedResourceReconciler:
         try:
             endpoints = self._endpoints.reconcile(now=now_epoch_s)
             active_endpoints = self._endpoints.active()
-            if active_endpoints:
-                errors.append(
-                    RuntimeError(
-                        "live endpoint allocations remain after owner shutdown: "
-                        + ",".join(
-                            row.allocation_id for row in active_endpoints
-                        )
-                    )
+            released_endpoints: list[EndpointAllocation] = list(endpoints)
+            for allocation in active_endpoints:
+                released_endpoints.append(
+                    self._endpoints.release(allocation.allocation_id)
+                )
+            endpoints = tuple(
+                sorted(
+                    released_endpoints,
+                    key=lambda row: row.allocation_id,
+                )
+            )
+            if self._endpoints.active():
+                raise RuntimeError(
+                    "endpoint allocations survived owner shutdown cleanup"
                 )
         except BaseException as exc:
             errors.append(exc)
@@ -154,14 +160,11 @@ class ManagedResourceReconciler:
         try:
             compute = self._compute.reconcile_expired(now=now_epoch_s)
             active_compute = self._compute.allocations()
-            if active_compute:
-                errors.append(
-                    RuntimeError(
-                        "live compute allocations remain after owner shutdown: "
-                        + ",".join(
-                            row.allocation_id for row in active_compute
-                        )
-                    )
+            for allocation in active_compute:
+                self._compute.release(allocation.allocation_id)
+            if self._compute.allocations():
+                raise RuntimeError(
+                    "compute allocations survived owner shutdown cleanup"
                 )
         except BaseException as exc:
             errors.append(exc)
