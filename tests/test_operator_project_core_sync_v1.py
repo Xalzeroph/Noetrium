@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from pathlib import Path
+import subprocess
 
 import pytest
 
@@ -16,12 +17,31 @@ from noetrium_platform.foundation.governance.architecture.repository_boundary.ru
     audit_downstream_project_imports,
 )
 from noetrium_platform.product.operator.api import ProjectCreateRequest
+from noetrium_platform.infrastructure.lifecycle.process.api import LocalCommandResult
 from noetrium_platform.product.operator.runtime.research_cli import (
     build_research_parser,
 )
 
 
 _FIXED_PLATFORM = InstalledPlatformIdentity("0.1.0", "a" * 64)
+
+
+class _TestCommandRunner:
+    def run(self, argv, *, cwd=None, environment=None, timeout_seconds=None):
+        completed = subprocess.run(
+            argv,
+            cwd=cwd,
+            env=None if environment is None else dict(environment),
+            timeout=timeout_seconds,
+            text=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            check=False,
+        )
+        return LocalCommandResult(tuple(argv), completed.returncode, completed.stdout, completed.stderr)
+
+
+_COMMAND_RUNNER = _TestCommandRunner()
 
 
 def _bind_fixed_platform(monkeypatch: pytest.MonkeyPatch) -> None:
@@ -102,12 +122,13 @@ __all__ = ["build_research"]
     report = project_doctor.doctor_project(
         root,
         boundary_auditor=audit_downstream_project_imports,
+        command_runner=_COMMAND_RUNNER,
     )
     checks = {row.check_id: row.disposition.value for row in report.checks}
     assert report.ready
     assert checks["generated_shell"] == "pass"
     assert checks["standard_bindings"] == "pass"
-    assert project_testing.test_project(root).passed
+    assert project_testing.test_project(root, command_runner=_COMMAND_RUNNER).passed
 
 
 def test_doctor_rejects_hand_edited_generated_shell(
