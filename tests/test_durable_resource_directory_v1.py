@@ -91,3 +91,146 @@ def test_workspace_metadata_cannot_claim_another_identity(tmp_path: Path) -> Non
     with pytest.raises(WorkspaceMetadataError) as raised:
         authorities.workspaces.list_workspaces(scope=scope, category="study")
     assert raised.value.code is WorkspaceMetadataFailureCode.IDENTITY_MISMATCH
+
+
+def test_workspace_exact_reallocation_is_idempotent_without_adopting_new_identity(
+    tmp_path: Path,
+) -> None:
+    authorities = build_local_directory_authorities(_layout(tmp_path))
+    scope = ScopeIdentity(ScopeKind.BRANCH, "branch-idempotent")
+    first = authorities.workspaces.allocate_workspace(
+        "run-stable",
+        scope=scope,
+        category="study",
+        owner="paper-1",
+        note="stable",
+    )
+    payload = first.path / "result.bin"
+    payload.write_bytes(b"scientific-state")
+
+    second = authorities.workspaces.allocate_workspace(
+        "run-stable",
+        scope=scope,
+        category="study",
+        owner="paper-1",
+        note="stable",
+    )
+
+    assert second == first
+    assert payload.read_bytes() == b"scientific-state"
+    with pytest.raises(RuntimeError, match="different metadata"):
+        authorities.workspaces.allocate_workspace(
+            "run-stable",
+            scope=scope,
+            category="study",
+            owner="paper-2",
+            note="stable",
+        )
+
+
+def test_workspace_allocation_refuses_unowned_residue(
+    tmp_path: Path,
+) -> None:
+    authorities = build_local_directory_authorities(_layout(tmp_path))
+    scope = ScopeIdentity(ScopeKind.BRANCH, "branch-residue")
+    residue = (
+        tmp_path
+        / "workspaces"
+        / scope.kind.value
+        / scope.scope_id
+        / "study"
+        / "run-residue"
+    )
+    residue.mkdir(parents=True)
+    (residue / "old-output.txt").write_text("old", encoding="utf-8")
+
+    with pytest.raises(RuntimeError, match="unowned residue"):
+        authorities.workspaces.allocate_workspace(
+            "run-residue",
+            scope=scope,
+            category="study",
+        )
+    assert (residue / "old-output.txt").read_text("utf-8") == "old"
+
+
+def test_removed_workspace_identity_is_terminal(
+    tmp_path: Path,
+) -> None:
+    authorities = build_local_directory_authorities(_layout(tmp_path))
+    scope = ScopeIdentity(ScopeKind.BRANCH, "branch-retired")
+    allocation = authorities.workspaces.allocate_workspace(
+        "run-retired",
+        scope=scope,
+        category="study",
+        owner="paper-1",
+    )
+    (allocation.path / "payload").write_text("state", encoding="utf-8")
+
+    assert authorities.workspaces.remove_workspace(
+        "run-retired",
+        scope=scope,
+        category="study",
+    )
+    assert not allocation.path.exists()
+    assert authorities.workspaces.remove_workspace(
+        "run-retired",
+        scope=scope,
+        category="study",
+    )
+    with pytest.raises(RuntimeError, match="retired and cannot be reused"):
+        authorities.workspaces.allocate_workspace(
+            "run-retired",
+            scope=scope,
+            category="study",
+            owner="paper-1",
+        )
+
+
+def test_workspace_remove_retries_after_retirement_publication(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    import noetrium_platform.infrastructure.resources.directory.runtime.workspaces as workspace_runtime
+
+    authorities = build_local_directory_authorities(_layout(tmp_path))
+    scope = ScopeIdentity(ScopeKind.BRANCH, "branch-remove-retry")
+    allocation = authorities.workspaces.allocate_workspace(
+        "run-retry",
+        scope=scope,
+        category="study",
+    )
+    (allocation.path / "payload").write_text("state", encoding="utf-8")
+
+    real_rmtree = workspace_runtime.shutil.rmtree
+    calls = 0
+
+    def fail_once(path):
+        nonlocal calls
+        calls += 1
+        if calls == 1:
+            raise OSError("simulated recursive delete interruption")
+        return real_rmtree(path)
+
+    monkeypatch.setattr(workspace_runtime.shutil, "rmtree", fail_once)
+    with pytest.raises(OSError, match="delete interruption"):
+        authorities.workspaces.remove_workspace(
+            "run-retry",
+            scope=scope,
+            category="study",
+        )
+
+    assert allocation.path.exists()
+    with pytest.raises(RuntimeError, match="retired and cannot be reused"):
+        authorities.workspaces.allocate_workspace(
+            "run-retry",
+            scope=scope,
+            category="study",
+        )
+
+    assert authorities.workspaces.remove_workspace(
+        "run-retry",
+        scope=scope,
+        category="study",
+    )
+    assert calls == 2
+    assert not allocation.path.exists()
