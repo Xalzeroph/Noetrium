@@ -2,14 +2,14 @@
   "counts": {
     "parse_errors": 0,
     "python_files": 3679,
-    "python_import_edges": 7190,
-    "symbols": 4881,
+    "python_import_edges": 7159,
+    "symbols": 4891,
     "tracked_files": 4309,
     "typescript_javascript_files": 11
   },
   "language_symbol_counts": {
     "javascript": 1,
-    "python": 4875,
+    "python": 4885,
     "typescript": 5
   },
   "parse_errors": [],
@@ -37,6 +37,12 @@
       "source_role": "reference_components",
       "target_module": "noetrium.contracts.json",
       "target_role": "public_facade"
+    },
+    {
+      "source_module": "components.reference.graph",
+      "source_role": "reference_components",
+      "target_module": "noetrium_platform.foundation.kernel.kernel.durability.sqlite",
+      "target_role": "core_platform"
     },
     {
       "source_module": "components.reference.single_agent.agent.contracts",
@@ -81,6 +87,12 @@
       "target_role": "core_platform"
     },
     {
+      "source_module": "components.reference.single_agent.agent.runtime",
+      "source_role": "reference_components",
+      "target_module": "noetrium_platform.foundation.kernel.kernel.durability.durable_append",
+      "target_role": "core_platform"
+    },
+    {
       "source_module": "components.reference.single_agent.agent.self_refine",
       "source_role": "reference_components",
       "target_module": "noetrium_platform.foundation.kernel.kernel",
@@ -103,6 +115,12 @@
       "source_role": "reference_components",
       "target_module": "noetrium.contracts.json",
       "target_role": "public_facade"
+    },
+    {
+      "source_module": "components.reference.single_agent.memory.persistence",
+      "source_role": "reference_components",
+      "target_module": "noetrium_platform.foundation.kernel.kernel.durability.sqlite",
+      "target_role": "core_platform"
     },
     {
       "source_module": "components.reference.single_agent.memory.stores",
@@ -3167,12 +3185,6 @@
     {
       "source_module": "noetrium_platform.composition.agent_turn",
       "source_role": "core_platform",
-      "target_module": "noetrium_platform.composition.experiment_runtime",
-      "target_role": "core_platform"
-    },
-    {
-      "source_module": "noetrium_platform.composition.agent_turn",
-      "source_role": "core_platform",
       "target_module": "noetrium_platform.composition.operation_forensics",
       "target_role": "core_platform"
     },
@@ -3197,61 +3209,7 @@
     {
       "source_module": "noetrium_platform.composition.agent_turn",
       "source_role": "core_platform",
-      "target_module": "noetrium_platform.composition.workflows.agent_turn",
-      "target_role": "core_platform"
-    },
-    {
-      "source_module": "noetrium_platform.composition.agent_turn",
-      "source_role": "core_platform",
       "target_module": "noetrium_platform.composition.workflows.agent_turn.failure_classifier",
-      "target_role": "core_platform"
-    },
-    {
-      "source_module": "noetrium_platform.composition.agent_turn",
-      "source_role": "core_platform",
-      "target_module": "noetrium_platform.foundation.kernel.kernel",
-      "target_role": "core_platform"
-    },
-    {
-      "source_module": "noetrium_platform.composition.agent_turn",
-      "source_role": "core_platform",
-      "target_module": "noetrium_platform.infrastructure.reliability.effect.api",
-      "target_role": "core_platform"
-    },
-    {
-      "source_module": "noetrium_platform.composition.agent_turn",
-      "source_role": "core_platform",
-      "target_module": "noetrium_platform.research.execution.capability.runtime",
-      "target_role": "core_platform"
-    },
-    {
-      "source_module": "noetrium_platform.composition.agent_turn",
-      "source_role": "core_platform",
-      "target_module": "noetrium_platform.research.execution.decision.cycle_identity",
-      "target_role": "core_platform"
-    },
-    {
-      "source_module": "noetrium_platform.composition.agent_turn",
-      "source_role": "core_platform",
-      "target_module": "noetrium_platform.research.execution.machines",
-      "target_role": "core_platform"
-    },
-    {
-      "source_module": "noetrium_platform.composition.agent_turn",
-      "source_role": "core_platform",
-      "target_module": "noetrium_platform.research.execution.workflow.api",
-      "target_role": "core_platform"
-    },
-    {
-      "source_module": "noetrium_platform.composition.agent_turn",
-      "source_role": "core_platform",
-      "target_module": "noetrium_platform.research.experimentation.lifecycle.checkpoint",
-      "target_role": "core_platform"
-    },
-    {
-      "source_module": "noetrium_platform.composition.agent_turn",
-      "source_role": "core_platform",
-      "target_module": "noetrium_platform.research.experimentation.lifecycle.experiment.runtime",
       "target_role": "core_platform"
     },
     {
@@ -3347,12 +3305,6 @@
     {
       "source_module": "noetrium_platform.composition.context_action",
       "source_role": "core_platform",
-      "target_module": "noetrium_platform.composition.experiment_runtime",
-      "target_role": "core_platform"
-    },
-    {
-      "source_module": "noetrium_platform.composition.context_action",
-      "source_role": "core_platform",
       "target_module": "noetrium_platform.composition.operation_forensics",
       "target_role": "core_platform"
     },
@@ -3371,49 +3323,7 @@
     {
       "source_module": "noetrium_platform.composition.context_action",
       "source_role": "core_platform",
-      "target_module": "noetrium_platform.composition.workflows.context_action",
-      "target_role": "core_platform"
-    },
-    {
-      "source_module": "noetrium_platform.composition.context_action",
-      "source_role": "core_platform",
       "target_module": "noetrium_platform.composition.workflows.context_action.failure_classifier",
-      "target_role": "core_platform"
-    },
-    {
-      "source_module": "noetrium_platform.composition.context_action",
-      "source_role": "core_platform",
-      "target_module": "noetrium_platform.foundation.kernel.kernel",
-      "target_role": "core_platform"
-    },
-    {
-      "source_module": "noetrium_platform.composition.context_action",
-      "source_role": "core_platform",
-      "target_module": "noetrium_platform.infrastructure.reliability.effect.api",
-      "target_role": "core_platform"
-    },
-    {
-      "source_module": "noetrium_platform.composition.context_action",
-      "source_role": "core_platform",
-      "target_module": "noetrium_platform.research.execution.decision.cycle_identity",
-      "target_role": "core_platform"
-    },
-    {
-      "source_module": "noetrium_platform.composition.context_action",
-      "source_role": "core_platform",
-      "target_module": "noetrium_platform.research.execution.workflow.api",
-      "target_role": "core_platform"
-    },
-    {
-      "source_module": "noetrium_platform.composition.context_action",
-      "source_role": "core_platform",
-      "target_module": "noetrium_platform.research.experimentation.lifecycle.checkpoint",
-      "target_role": "core_platform"
-    },
-    {
-      "source_module": "noetrium_platform.composition.context_action",
-      "source_role": "core_platform",
-      "target_module": "noetrium_platform.research.experimentation.lifecycle.experiment.runtime",
       "target_role": "core_platform"
     },
     {
@@ -3726,96 +3636,6 @@
       "source_module": "noetrium_platform.composition.experiment_observation",
       "source_role": "core_platform",
       "target_module": "noetrium_platform.research.experimentation.lifecycle.api",
-      "target_role": "core_platform"
-    },
-    {
-      "source_module": "noetrium_platform.composition.experiment_runtime",
-      "source_role": "core_platform",
-      "target_module": "noetrium_platform.capabilities.participant.core.api",
-      "target_role": "core_platform"
-    },
-    {
-      "source_module": "noetrium_platform.composition.experiment_runtime",
-      "source_role": "core_platform",
-      "target_module": "noetrium_platform.capabilities.participant.session.runtime.checkpoint_runtime",
-      "target_role": "core_platform"
-    },
-    {
-      "source_module": "noetrium_platform.composition.experiment_runtime",
-      "source_role": "core_platform",
-      "target_module": "noetrium_platform.foundation.kernel.kernel",
-      "target_role": "core_platform"
-    },
-    {
-      "source_module": "noetrium_platform.composition.experiment_runtime",
-      "source_role": "core_platform",
-      "target_module": "noetrium_platform.infrastructure.reliability.effect.api",
-      "target_role": "core_platform"
-    },
-    {
-      "source_module": "noetrium_platform.composition.experiment_runtime",
-      "source_role": "core_platform",
-      "target_module": "noetrium_platform.research.execution.decision.cycle_identity",
-      "target_role": "core_platform"
-    },
-    {
-      "source_module": "noetrium_platform.composition.experiment_runtime",
-      "source_role": "core_platform",
-      "target_module": "noetrium_platform.research.execution.participants",
-      "target_role": "core_platform"
-    },
-    {
-      "source_module": "noetrium_platform.composition.experiment_runtime",
-      "source_role": "core_platform",
-      "target_module": "noetrium_platform.research.execution.workflow.api",
-      "target_role": "core_platform"
-    },
-    {
-      "source_module": "noetrium_platform.composition.experiment_runtime",
-      "source_role": "core_platform",
-      "target_module": "noetrium_platform.research.execution.workflow.runtime",
-      "target_role": "core_platform"
-    },
-    {
-      "source_module": "noetrium_platform.composition.experiment_runtime",
-      "source_role": "core_platform",
-      "target_module": "noetrium_platform.research.experimentation.lifecycle.api",
-      "target_role": "core_platform"
-    },
-    {
-      "source_module": "noetrium_platform.composition.experiment_runtime",
-      "source_role": "core_platform",
-      "target_module": "noetrium_platform.research.experimentation.lifecycle.checkpoint.composition",
-      "target_role": "core_platform"
-    },
-    {
-      "source_module": "noetrium_platform.composition.experiment_runtime",
-      "source_role": "core_platform",
-      "target_module": "noetrium_platform.research.experimentation.lifecycle.checkpoint.runtime.coordination",
-      "target_role": "core_platform"
-    },
-    {
-      "source_module": "noetrium_platform.composition.experiment_runtime",
-      "source_role": "core_platform",
-      "target_module": "noetrium_platform.research.experimentation.lifecycle.experiment.runtime",
-      "target_role": "core_platform"
-    },
-    {
-      "source_module": "noetrium_platform.composition.experiment_runtime",
-      "source_role": "core_platform",
-      "target_module": "noetrium_platform.research.experimentation.lifecycle.run.providers.identity",
-      "target_role": "core_platform"
-    },
-    {
-      "source_module": "noetrium_platform.composition.experiment_runtime",
-      "source_role": "core_platform",
-      "target_module": "noetrium_platform.research.experimentation.lifecycle.run.runtime.decision_runtime",
-      "target_role": "core_platform"
-    },
-    {
-      "source_module": "noetrium_platform.composition.experiment_runtime",
-      "source_role": "core_platform",
-      "target_module": "noetrium_platform.research.experimentation.lifecycle.run.runtime.run_runtime",
       "target_role": "core_platform"
     },
     {
@@ -5565,51 +5385,39 @@
       "target_role": "core_platform"
     },
     {
-      "source_module": "noetrium_platform.composition.research_campaign",
+      "source_module": "noetrium_platform.composition.research_binding_authority",
       "source_role": "core_platform",
-      "target_module": "noetrium_platform.composition.research_execution_pool",
+      "target_module": "noetrium_platform.capabilities.model.api",
       "target_role": "core_platform"
     },
     {
-      "source_module": "noetrium_platform.composition.research_campaign",
+      "source_module": "noetrium_platform.composition.research_binding_authority",
       "source_role": "core_platform",
-      "target_module": "noetrium_platform.composition.research_graph",
+      "target_module": "noetrium_platform.capabilities.participant.api",
       "target_role": "core_platform"
     },
     {
-      "source_module": "noetrium_platform.composition.research_campaign",
+      "source_module": "noetrium_platform.composition.research_binding_authority",
       "source_role": "core_platform",
-      "target_module": "noetrium_platform.foundation.kernel.concurrency.api",
+      "target_module": "noetrium_platform.foundation.governance.architecture.api",
       "target_role": "core_platform"
     },
     {
-      "source_module": "noetrium_platform.composition.research_campaign",
+      "source_module": "noetrium_platform.composition.research_binding_authority",
       "source_role": "core_platform",
-      "target_module": "noetrium_platform.research.execution.graph.api",
+      "target_module": "noetrium_platform.foundation.kernel.kernel",
       "target_role": "core_platform"
     },
     {
-      "source_module": "noetrium_platform.composition.research_campaign",
+      "source_module": "noetrium_platform.composition.research_binding_authority",
       "source_role": "core_platform",
-      "target_module": "noetrium_platform.research.execution.policy.api",
+      "target_module": "noetrium_platform.foundation.portfolio.api",
       "target_role": "core_platform"
     },
     {
-      "source_module": "noetrium_platform.composition.research_campaign",
+      "source_module": "noetrium_platform.composition.research_binding_authority",
       "source_role": "core_platform",
-      "target_module": "noetrium_platform.research.experimentation.api.campaign",
-      "target_role": "core_platform"
-    },
-    {
-      "source_module": "noetrium_platform.composition.research_campaign",
-      "source_role": "core_platform",
-      "target_module": "noetrium_platform.research.experimentation.api.program",
-      "target_role": "core_platform"
-    },
-    {
-      "source_module": "noetrium_platform.composition.research_campaign",
-      "source_role": "core_platform",
-      "target_module": "noetrium_platform.research.experimentation.lifecycle.study.algorithms",
+      "target_module": "noetrium_platform.research.experimentation.api",
       "target_role": "core_platform"
     },
     {
@@ -5817,6 +5625,36 @@
       "target_role": "core_platform"
     },
     {
+      "source_module": "noetrium_platform.composition.research_os_experiment_artifacts",
+      "source_role": "core_platform",
+      "target_module": "noetrium_platform.foundation.kernel.concurrency.api",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "noetrium_platform.composition.research_os_experiment_artifacts",
+      "source_role": "core_platform",
+      "target_module": "noetrium_platform.foundation.kernel.kernel",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "noetrium_platform.composition.research_os_experiment_artifacts",
+      "source_role": "core_platform",
+      "target_module": "noetrium_platform.research.experimentation.lifecycle.run.composition.artifacts",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "noetrium_platform.composition.research_os_experiment_runtime_binding",
+      "source_role": "core_platform",
+      "target_module": "noetrium_platform.foundation.kernel.kernel",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "noetrium_platform.composition.research_os_experiment_runtime_binding",
+      "source_role": "core_platform",
+      "target_module": "noetrium_platform.research.experimentation.lifecycle.api",
+      "target_role": "core_platform"
+    },
+    {
       "source_module": "noetrium_platform.composition.research_os_graph",
       "source_role": "core_platform",
       "target_module": "noetrium_platform.composition.research_execution_pool",
@@ -5880,6 +5718,18 @@
       "source_module": "noetrium_platform.composition.research_os_local",
       "source_role": "core_platform",
       "target_module": "noetrium_platform.composition.research_os_experiment",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "noetrium_platform.composition.research_os_local",
+      "source_role": "core_platform",
+      "target_module": "noetrium_platform.composition.research_os_experiment_artifacts",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "noetrium_platform.composition.research_os_local",
+      "source_role": "core_platform",
+      "target_module": "noetrium_platform.composition.research_os_experiment_runtime_binding",
       "target_role": "core_platform"
     },
     {
@@ -13881,30 +13731,6 @@
       "target_role": "core_platform"
     },
     {
-      "source_module": "noetrium_platform.research.execution.machines.composition.host_factory",
-      "source_role": "core_platform",
-      "target_module": "noetrium_platform.foundation.kernel.kernel",
-      "target_role": "core_platform"
-    },
-    {
-      "source_module": "noetrium_platform.research.execution.machines.composition.host_factory",
-      "source_role": "core_platform",
-      "target_module": "noetrium_platform.research.execution.machines.api.host_runtime",
-      "target_role": "core_platform"
-    },
-    {
-      "source_module": "noetrium_platform.research.execution.machines.composition.host_factory",
-      "source_role": "core_platform",
-      "target_module": "noetrium_platform.research.execution.machines.program",
-      "target_role": "core_platform"
-    },
-    {
-      "source_module": "noetrium_platform.research.execution.machines.composition.host_factory",
-      "source_role": "core_platform",
-      "target_module": "noetrium_platform.research.execution.machines.program_host",
-      "target_role": "core_platform"
-    },
-    {
       "source_module": "noetrium_platform.research.execution.machines.context_program",
       "source_role": "core_platform",
       "target_module": "noetrium_platform.foundation.kernel.kernel",
@@ -15335,12 +15161,6 @@
     {
       "source_module": "noetrium_platform.research.experimentation.lifecycle.run.api.execution",
       "source_role": "core_platform",
-      "target_module": "noetrium_platform.research.experimentation.lifecycle.run.api.spec",
-      "target_role": "core_platform"
-    },
-    {
-      "source_module": "noetrium_platform.research.experimentation.lifecycle.run.api.execution",
-      "source_role": "core_platform",
       "target_module": "noetrium_platform.research.experimentation.lifecycle.study.api",
       "target_role": "core_platform"
     },
@@ -15372,18 +15192,6 @@
       "source_module": "noetrium_platform.research.experimentation.lifecycle.run.api.lifecycle_ports",
       "source_role": "core_platform",
       "target_module": "noetrium_platform.research.execution.api",
-      "target_role": "core_platform"
-    },
-    {
-      "source_module": "noetrium_platform.research.experimentation.lifecycle.run.api.lifecycle_ports",
-      "source_role": "core_platform",
-      "target_module": "noetrium_platform.research.experimentation.lifecycle.experiment.api",
-      "target_role": "core_platform"
-    },
-    {
-      "source_module": "noetrium_platform.research.experimentation.lifecycle.run.api.lifecycle_ports",
-      "source_role": "core_platform",
-      "target_module": "noetrium_platform.research.experimentation.lifecycle.run.api.identity",
       "target_role": "core_platform"
     },
     {
@@ -15438,30 +15246,6 @@
       "source_module": "noetrium_platform.research.experimentation.lifecycle.run.api.spec",
       "source_role": "core_platform",
       "target_module": "noetrium_platform.foundation.kernel.kernel",
-      "target_role": "core_platform"
-    },
-    {
-      "source_module": "noetrium_platform.research.experimentation.lifecycle.run.composition.application",
-      "source_role": "core_platform",
-      "target_module": "noetrium_platform.research.experimentation.lifecycle.run.api",
-      "target_role": "core_platform"
-    },
-    {
-      "source_module": "noetrium_platform.research.experimentation.lifecycle.run.composition.application",
-      "source_role": "core_platform",
-      "target_module": "noetrium_platform.research.experimentation.lifecycle.run.runtime",
-      "target_role": "core_platform"
-    },
-    {
-      "source_module": "noetrium_platform.research.experimentation.lifecycle.run.composition.application",
-      "source_role": "core_platform",
-      "target_module": "noetrium_platform.research.experimentation.lifecycle.study.algorithms",
-      "target_role": "core_platform"
-    },
-    {
-      "source_module": "noetrium_platform.research.experimentation.lifecycle.run.composition.application",
-      "source_role": "core_platform",
-      "target_module": "noetrium_platform.research.experimentation.lifecycle.study.composition",
       "target_role": "core_platform"
     },
     {
@@ -15696,84 +15480,6 @@
       "source_module": "noetrium_platform.research.experimentation.lifecycle.run.runtime.diagnostics",
       "source_role": "core_platform",
       "target_module": "noetrium_platform.foundation.kernel.kernel.errors",
-      "target_role": "core_platform"
-    },
-    {
-      "source_module": "noetrium_platform.research.experimentation.lifecycle.run.runtime.execution",
-      "source_role": "core_platform",
-      "target_module": "noetrium_platform.foundation.kernel.concurrency.api",
-      "target_role": "core_platform"
-    },
-    {
-      "source_module": "noetrium_platform.research.experimentation.lifecycle.run.runtime.execution",
-      "source_role": "core_platform",
-      "target_module": "noetrium_platform.research.experimentation.api.program",
-      "target_role": "core_platform"
-    },
-    {
-      "source_module": "noetrium_platform.research.experimentation.lifecycle.run.runtime.execution",
-      "source_role": "core_platform",
-      "target_module": "noetrium_platform.research.experimentation.lifecycle.run.api",
-      "target_role": "core_platform"
-    },
-    {
-      "source_module": "noetrium_platform.research.experimentation.lifecycle.run.runtime.execution",
-      "source_role": "core_platform",
-      "target_module": "noetrium_platform.research.experimentation.lifecycle.run.api.spec",
-      "target_role": "core_platform"
-    },
-    {
-      "source_module": "noetrium_platform.research.experimentation.lifecycle.run.runtime.execution",
-      "source_role": "core_platform",
-      "target_module": "noetrium_platform.research.experimentation.lifecycle.study.api",
-      "target_role": "core_platform"
-    },
-    {
-      "source_module": "noetrium_platform.research.experimentation.lifecycle.run.runtime.lifecycle_closer",
-      "source_role": "core_platform",
-      "target_module": "noetrium_platform.foundation.kernel.kernel",
-      "target_role": "core_platform"
-    },
-    {
-      "source_module": "noetrium_platform.research.experimentation.lifecycle.run.runtime.lifecycle_closer",
-      "source_role": "core_platform",
-      "target_module": "noetrium_platform.research.execution.api",
-      "target_role": "core_platform"
-    },
-    {
-      "source_module": "noetrium_platform.research.experimentation.lifecycle.run.runtime.lifecycle_closer",
-      "source_role": "core_platform",
-      "target_module": "noetrium_platform.research.experimentation.lifecycle.experiment.api",
-      "target_role": "core_platform"
-    },
-    {
-      "source_module": "noetrium_platform.research.experimentation.lifecycle.run.runtime.lifecycle_factory",
-      "source_role": "core_platform",
-      "target_module": "noetrium_platform.foundation.kernel.kernel",
-      "target_role": "core_platform"
-    },
-    {
-      "source_module": "noetrium_platform.research.experimentation.lifecycle.run.runtime.lifecycle_factory",
-      "source_role": "core_platform",
-      "target_module": "noetrium_platform.research.execution.api",
-      "target_role": "core_platform"
-    },
-    {
-      "source_module": "noetrium_platform.research.experimentation.lifecycle.run.runtime.lifecycle_factory",
-      "source_role": "core_platform",
-      "target_module": "noetrium_platform.research.experimentation.lifecycle.experiment.api",
-      "target_role": "core_platform"
-    },
-    {
-      "source_module": "noetrium_platform.research.experimentation.lifecycle.run.runtime.lifecycle_factory",
-      "source_role": "core_platform",
-      "target_module": "noetrium_platform.research.experimentation.lifecycle.run.api.identity",
-      "target_role": "core_platform"
-    },
-    {
-      "source_module": "noetrium_platform.research.experimentation.lifecycle.run.runtime.lifecycle_factory",
-      "source_role": "core_platform",
-      "target_module": "noetrium_platform.research.experimentation.lifecycle.run.runtime.program",
       "target_role": "core_platform"
     },
     {
@@ -18765,6 +18471,18 @@
       "target_role": "research_reproductions"
     },
     {
+      "source_module": "research.reproductions.execution_authority",
+      "source_role": "research_reproductions",
+      "target_module": "noetrium_platform.composition.research_binding_authority",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "research.reproductions.execution_authority",
+      "source_role": "research_reproductions",
+      "target_module": "noetrium_platform.composition.research_os_experiment_runtime_binding",
+      "target_role": "core_platform"
+    },
+    {
       "source_module": "research.reproductions.flash_vstream_memory.benchmark",
       "source_role": "research_reproductions",
       "target_module": "noetrium_platform.research.experimentation.lifecycle.api",
@@ -18833,7 +18551,19 @@
     {
       "source_module": "research.reproductions.fleet",
       "source_role": "research_reproductions",
+      "target_module": "noetrium_platform.composition.research_binding_authority",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "research.reproductions.fleet",
+      "source_role": "research_reproductions",
       "target_module": "noetrium_platform.composition.research_os_experiment",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "research.reproductions.fleet",
+      "source_role": "research_reproductions",
+      "target_module": "noetrium_platform.composition.research_os_experiment_runtime_binding",
       "target_role": "core_platform"
     },
     {
@@ -22595,12 +22325,6 @@
     {
       "source_module": "scripts.generate_development_snapshot",
       "source_role": "tooling",
-      "target_module": "noetrium_platform.foundation.governance.architecture.report",
-      "target_role": "core_platform"
-    },
-    {
-      "source_module": "scripts.generate_development_snapshot",
-      "source_role": "tooling",
       "target_module": "noetrium_platform.foundation.governance.release.runtime.manifest",
       "target_role": "core_platform"
     },
@@ -23274,6 +22998,12 @@
       "source_module": "scripts.sync_benchmark_manifests",
       "source_role": "tooling",
       "target_module": "noetrium_platform.capabilities.environment.category.api",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "scripts.sync_development_architecture_report",
+      "source_role": "tooling",
+      "target_module": "noetrium_platform.foundation.governance.architecture.report",
       "target_role": "core_platform"
     },
     {
@@ -27123,48 +26853,6 @@
       "target_role": "tests"
     },
     {
-      "source_module": "tests.test_experiment_run_application_v1",
-      "source_role": "tests",
-      "target_module": "noetrium_platform.foundation.kernel.kernel",
-      "target_role": "core_platform"
-    },
-    {
-      "source_module": "tests.test_experiment_run_application_v1",
-      "source_role": "tests",
-      "target_module": "noetrium_platform.research.execution.decision.cycle_identity",
-      "target_role": "core_platform"
-    },
-    {
-      "source_module": "tests.test_experiment_run_application_v1",
-      "source_role": "tests",
-      "target_module": "noetrium_platform.research.experimentation.lifecycle.api",
-      "target_role": "core_platform"
-    },
-    {
-      "source_module": "tests.test_experiment_run_application_v1",
-      "source_role": "tests",
-      "target_module": "noetrium_platform.research.experimentation.lifecycle.run.runtime",
-      "target_role": "core_platform"
-    },
-    {
-      "source_module": "tests.test_experiment_run_application_v1",
-      "source_role": "tests",
-      "target_module": "noetrium_platform.research.experimentation.lifecycle.run.runtime.decision_runtime",
-      "target_role": "core_platform"
-    },
-    {
-      "source_module": "tests.test_experiment_run_application_v1",
-      "source_role": "tests",
-      "target_module": "noetrium_platform.research.experimentation.lifecycle.run.runtime.resources",
-      "target_role": "core_platform"
-    },
-    {
-      "source_module": "tests.test_experiment_run_application_v1",
-      "source_role": "tests",
-      "target_module": "noetrium_platform.research.experimentation.lifecycle.study.algorithms",
-      "target_role": "core_platform"
-    },
-    {
       "source_module": "tests.test_experiment_run_evidence_finalizer_v1",
       "source_role": "tests",
       "target_module": "noetrium_platform.foundation.kernel.kernel",
@@ -27216,12 +26904,6 @@
       "source_module": "tests.test_experiment_run_spec_v1",
       "source_role": "tests",
       "target_module": "noetrium_platform.research.experimentation.lifecycle.api",
-      "target_role": "core_platform"
-    },
-    {
-      "source_module": "tests.test_experiment_runtime_durable_default_v1",
-      "source_role": "tests",
-      "target_module": "noetrium_platform.composition.experiment_runtime",
       "target_role": "core_platform"
     },
     {
@@ -27864,12 +27546,6 @@
       "source_module": "tests.test_generic_participant_topology_v162",
       "source_role": "tests",
       "target_module": "noetrium_platform.capabilities.participant.core.api",
-      "target_role": "core_platform"
-    },
-    {
-      "source_module": "tests.test_generic_participant_topology_v162",
-      "source_role": "tests",
-      "target_module": "noetrium_platform.composition.experiment_runtime",
       "target_role": "core_platform"
     },
     {
@@ -28818,12 +28494,6 @@
       "source_module": "tests.test_low_level_participant_api_v166",
       "source_role": "tests",
       "target_module": "noetrium_platform.capabilities.participant.core.api",
-      "target_role": "core_platform"
-    },
-    {
-      "source_module": "tests.test_low_level_participant_api_v166",
-      "source_role": "tests",
-      "target_module": "noetrium_platform.composition.experiment_runtime",
       "target_role": "core_platform"
     },
     {
@@ -31199,12 +30869,6 @@
     {
       "source_module": "tests.test_participant_runtime_endpoint_decoupling_v169",
       "source_role": "tests",
-      "target_module": "noetrium_platform.composition.experiment_runtime",
-      "target_role": "core_platform"
-    },
-    {
-      "source_module": "tests.test_participant_runtime_endpoint_decoupling_v169",
-      "source_role": "tests",
       "target_module": "noetrium_platform.composition.participants.generic",
       "target_role": "core_platform"
     },
@@ -33051,6 +32715,36 @@
       "target_role": "research_reproductions"
     },
     {
+      "source_module": "tests.test_reproduction_fleet_authority_composition_v1",
+      "source_role": "tests",
+      "target_module": "noetrium_platform.composition.research_binding_authority",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "tests.test_reproduction_fleet_authority_composition_v1",
+      "source_role": "tests",
+      "target_module": "noetrium_platform.composition.research_os_experiment_runtime_binding",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "tests.test_reproduction_fleet_authority_composition_v1",
+      "source_role": "tests",
+      "target_module": "research.reproductions.execution_authority",
+      "target_role": "research_reproductions"
+    },
+    {
+      "source_module": "tests.test_reproduction_fleet_authority_composition_v1",
+      "source_role": "tests",
+      "target_module": "research.reproductions.fleet",
+      "target_role": "research_reproductions"
+    },
+    {
+      "source_module": "tests.test_reproduction_fleet_execution_authority_v1",
+      "source_role": "tests",
+      "target_module": "noetrium_platform.composition.research_os_experiment_runtime_binding",
+      "target_role": "core_platform"
+    },
+    {
       "source_module": "tests.test_reproduction_fleet_execution_authority_v1",
       "source_role": "tests",
       "target_module": "research.reproductions.fleet",
@@ -33309,15 +33003,57 @@
       "target_role": "research_reproductions"
     },
     {
-      "source_module": "tests.test_research_campaign_v1",
+      "source_module": "tests.test_research_binding_authority_v1",
       "source_role": "tests",
-      "target_module": "noetrium_platform.foundation.kernel.concurrency.api",
+      "target_module": "noetrium_platform.capabilities.model.api",
       "target_role": "core_platform"
     },
     {
-      "source_module": "tests.test_research_campaign_v1",
+      "source_module": "tests.test_research_binding_authority_v1",
       "source_role": "tests",
-      "target_module": "noetrium_platform.platform",
+      "target_module": "noetrium_platform.capabilities.participant.api",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "tests.test_research_binding_authority_v1",
+      "source_role": "tests",
+      "target_module": "noetrium_platform.capabilities.participant.core.api",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "tests.test_research_binding_authority_v1",
+      "source_role": "tests",
+      "target_module": "noetrium_platform.composition.research_binding_authority",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "tests.test_research_binding_authority_v1",
+      "source_role": "tests",
+      "target_module": "noetrium_platform.foundation.governance.architecture.api",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "tests.test_research_binding_authority_v1",
+      "source_role": "tests",
+      "target_module": "noetrium_platform.foundation.governance.system_registry.api",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "tests.test_research_binding_authority_v1",
+      "source_role": "tests",
+      "target_module": "noetrium_platform.foundation.kernel.kernel",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "tests.test_research_binding_authority_v1",
+      "source_role": "tests",
+      "target_module": "noetrium_platform.foundation.portfolio.api",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "tests.test_research_binding_authority_v1",
+      "source_role": "tests",
+      "target_module": "noetrium_platform.research.experimentation.lifecycle.api",
       "target_role": "core_platform"
     },
     {
@@ -34128,6 +33864,12 @@
       "source_module": "tests.test_research_os_experiment_closure_v1",
       "source_role": "tests",
       "target_module": "noetrium_platform.composition.research_os_experiment",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "tests.test_research_os_experiment_closure_v1",
+      "source_role": "tests",
+      "target_module": "noetrium_platform.composition.research_os_experiment_artifacts",
       "target_role": "core_platform"
     },
     {
@@ -40937,12 +40679,6 @@
     {
       "source_module": "tests.test_study_identity_freeze_v107",
       "source_role": "tests",
-      "target_module": "noetrium_platform.composition.context_action",
-      "target_role": "core_platform"
-    },
-    {
-      "source_module": "tests.test_study_identity_freeze_v107",
-      "source_role": "tests",
       "target_module": "noetrium_platform.foundation.kernel.kernel",
       "target_role": "core_platform"
     },
@@ -41088,12 +40824,6 @@
       "source_module": "tests.test_study_workflow_decoupling_v126",
       "source_role": "tests",
       "target_module": "noetrium_platform.research.experimentation.lifecycle.experiment.runtime",
-      "target_role": "core_platform"
-    },
-    {
-      "source_module": "tests.test_study_workflow_identity_v127",
-      "source_role": "tests",
-      "target_module": "noetrium_platform.composition.experiment_runtime",
       "target_role": "core_platform"
     },
     {
@@ -43061,6 +42791,12 @@
     {
       "source_module": "tests_support",
       "source_role": "other",
+      "target_module": "noetrium_platform.capabilities.participant.core.api",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "tests_support",
+      "source_role": "other",
       "target_module": "noetrium_platform.capabilities.participant.core.api.contracts",
       "target_role": "core_platform"
     },
@@ -43085,6 +42821,12 @@
     {
       "source_module": "tests_support",
       "source_role": "other",
+      "target_module": "noetrium_platform.capabilities.participant.session.runtime.checkpoint_runtime",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "tests_support",
+      "source_role": "other",
       "target_module": "noetrium_platform.composition.agent_turn",
       "target_role": "core_platform"
     },
@@ -43104,6 +42846,18 @@
       "source_module": "tests_support",
       "source_role": "other",
       "target_module": "noetrium_platform.composition.reliability_resources",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "tests_support",
+      "source_role": "other",
+      "target_module": "noetrium_platform.composition.workflows.agent_turn",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "tests_support",
+      "source_role": "other",
+      "target_module": "noetrium_platform.composition.workflows.context_action",
       "target_role": "core_platform"
     },
     {
@@ -43139,7 +42893,31 @@
     {
       "source_module": "tests_support",
       "source_role": "other",
+      "target_module": "noetrium_platform.research.execution.capability.runtime",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "tests_support",
+      "source_role": "other",
+      "target_module": "noetrium_platform.research.execution.decision.cycle_identity",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "tests_support",
+      "source_role": "other",
+      "target_module": "noetrium_platform.research.execution.participants",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "tests_support",
+      "source_role": "other",
       "target_module": "noetrium_platform.research.execution.workflow.api",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "tests_support",
+      "source_role": "other",
+      "target_module": "noetrium_platform.research.execution.workflow.runtime",
       "target_role": "core_platform"
     },
     {
@@ -43153,11 +42931,47 @@
       "source_role": "other",
       "target_module": "noetrium_platform.research.experimentation.lifecycle.api",
       "target_role": "core_platform"
+    },
+    {
+      "source_module": "tests_support",
+      "source_role": "other",
+      "target_module": "noetrium_platform.research.experimentation.lifecycle.checkpoint.composition",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "tests_support",
+      "source_role": "other",
+      "target_module": "noetrium_platform.research.experimentation.lifecycle.checkpoint.runtime.coordination",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "tests_support",
+      "source_role": "other",
+      "target_module": "noetrium_platform.research.experimentation.lifecycle.experiment.runtime",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "tests_support",
+      "source_role": "other",
+      "target_module": "noetrium_platform.research.experimentation.lifecycle.run.providers.identity",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "tests_support",
+      "source_role": "other",
+      "target_module": "noetrium_platform.research.experimentation.lifecycle.run.runtime.decision_runtime",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "tests_support",
+      "source_role": "other",
+      "target_module": "noetrium_platform.research.experimentation.lifecycle.run.runtime.run_runtime",
+      "target_role": "core_platform"
     }
   ],
   "role_import_counts": [
     {
-      "count": 2696,
+      "count": 2644,
       "source_role": "core_platform",
       "target_role": "core_platform"
     },
@@ -43172,7 +42986,7 @@
       "target_role": "reference_components"
     },
     {
-      "count": 17,
+      "count": 31,
       "source_role": "other",
       "target_role": "core_platform"
     },
@@ -43182,7 +42996,7 @@
       "target_role": "core_platform"
     },
     {
-      "count": 9,
+      "count": 12,
       "source_role": "reference_components",
       "target_role": "core_platform"
     },
@@ -43202,7 +43016,7 @@
       "target_role": "public_facade"
     },
     {
-      "count": 628,
+      "count": 632,
       "source_role": "research_reproductions",
       "target_role": "core_platform"
     },
@@ -43217,7 +43031,7 @@
       "target_role": "research_reproductions"
     },
     {
-      "count": 2797,
+      "count": 2795,
       "source_role": "tests",
       "target_role": "core_platform"
     },
@@ -43237,7 +43051,7 @@
       "target_role": "reference_orchestration"
     },
     {
-      "count": 339,
+      "count": 341,
       "source_role": "tests",
       "target_role": "research_reproductions"
     },
@@ -43273,30 +43087,30 @@
     }
   ],
   "role_python_module_counts": {
-    "core_platform": 1929,
+    "core_platform": 1924,
     "examples": 6,
     "other": 1,
     "public_facade": 40,
     "reference_components": 22,
     "reference_orchestration": 10,
-    "research_reproductions": 776,
-    "tests": 817,
-    "tooling": 78
+    "research_reproductions": 777,
+    "tests": 820,
+    "tooling": 79
   },
   "role_symbol_counts": {
-    "core_platform": 3342,
+    "core_platform": 3345,
     "examples": 3,
     "other": 5,
     "public_facade": 4,
     "reference_components": 64,
     "reference_orchestration": 14,
-    "research_reproductions": 425,
+    "research_reproductions": 424,
     "sdk": 5,
-    "tests": 981,
+    "tests": 989,
     "tooling": 38
   },
   "schema": "noetrium-repository-code-architecture-index.v1",
-  "source_git_sha": "813ece36bea7a0f5dd860e047f03e216eb4dfd1f",
+  "source_git_sha": "6b0b6c2f2d555a46e0b736460d34ca0d3e84930f",
   "symbols": [
     {
       "bases": [],
@@ -43327,7 +43141,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 26,
+      "line": 29,
       "methods": [
         "__post_init__"
       ],
@@ -43348,7 +43162,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 41,
+      "line": 44,
       "methods": [
         "__post_init__"
       ],
@@ -43374,7 +43188,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 50,
+      "line": 53,
       "methods": [
         "__post_init__"
       ],
@@ -43399,7 +43213,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 81,
+      "line": 84,
       "methods": [
         "__post_init__"
       ],
@@ -43417,7 +43231,7 @@
       "fields": [],
       "kind": "protocol",
       "language": "python",
-      "line": 101,
+      "line": 104,
       "methods": [
         "save",
         "load",
@@ -43438,7 +43252,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 108,
+      "line": 111,
       "methods": [
         "__init__"
       ],
@@ -43456,7 +43270,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 114,
+      "line": 117,
       "methods": [
         "__init__",
         "save",
@@ -43478,7 +43292,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 148,
+      "line": 151,
       "methods": [
         "__init__",
         "_connection",
@@ -43502,7 +43316,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 290,
+      "line": 281,
       "methods": [
         "__init__",
         "add_node",
@@ -43523,7 +43337,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 335,
+      "line": 326,
       "methods": [
         "__init__",
         "invoke",
@@ -44300,7 +44114,7 @@
       ],
       "kind": "protocol",
       "language": "python",
-      "line": 16,
+      "line": 19,
       "methods": [
         "load",
         "upsert",
@@ -44321,7 +44135,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 28,
+      "line": 31,
       "methods": [
         "__init__",
         "_connection",
@@ -60067,7 +59881,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 499,
+      "line": 500,
       "methods": [
         "__post_init__"
       ],
@@ -65008,7 +64822,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 313,
+      "line": 314,
       "methods": [
         "__init__",
         "execute"
@@ -65516,24 +65330,144 @@
     },
     {
       "bases": [],
+      "decorators": [
+        "dataclass(frozen=True, slots=True)"
+      ],
+      "fields": [
+        "definition: ResearchStudyDefinition",
+        "manifest: ProjectManifest",
+        "resolution: ResearchRequirementResolution",
+        "context_digest: str"
+      ],
+      "kind": "dataclass",
+      "language": "python",
+      "line": 41,
+      "methods": [
+        "create",
+        "__post_init__"
+      ],
+      "module": "noetrium_platform.composition.research_binding_authority",
+      "name": "ResearchBindingResolutionContext",
+      "path": "noetrium_platform/composition/research_binding_authority.py",
+      "qualname": "noetrium_platform.composition.research_binding_authority.ResearchBindingResolutionContext",
+      "role": "core_platform"
+    },
+    {
+      "bases": [
+        "Protocol"
+      ],
+      "decorators": [
+        "runtime_checkable"
+      ],
+      "fields": [],
+      "kind": "protocol",
+      "language": "python",
+      "line": 99,
+      "methods": [
+        "resolve"
+      ],
+      "module": "noetrium_platform.composition.research_binding_authority",
+      "name": "ResearchProjectManifestResolverPort",
+      "path": "noetrium_platform/composition/research_binding_authority.py",
+      "qualname": "noetrium_platform.composition.research_binding_authority.ResearchProjectManifestResolverPort",
+      "role": "core_platform"
+    },
+    {
+      "bases": [
+        "Protocol"
+      ],
+      "decorators": [
+        "runtime_checkable"
+      ],
+      "fields": [],
+      "kind": "protocol",
+      "language": "python",
+      "line": 106,
+      "methods": [
+        "resolve"
+      ],
+      "module": "noetrium_platform.composition.research_binding_authority",
+      "name": "ResearchCapabilityBindingResolverPort",
+      "path": "noetrium_platform/composition/research_binding_authority.py",
+      "qualname": "noetrium_platform.composition.research_binding_authority.ResearchCapabilityBindingResolverPort",
+      "role": "core_platform"
+    },
+    {
+      "bases": [
+        "Protocol"
+      ],
+      "decorators": [
+        "runtime_checkable"
+      ],
+      "fields": [],
+      "kind": "protocol",
+      "language": "python",
+      "line": 117,
+      "methods": [
+        "resolve"
+      ],
+      "module": "noetrium_platform.composition.research_binding_authority",
+      "name": "ResearchParticipantBindingResolverPort",
+      "path": "noetrium_platform/composition/research_binding_authority.py",
+      "qualname": "noetrium_platform.composition.research_binding_authority.ResearchParticipantBindingResolverPort",
+      "role": "core_platform"
+    },
+    {
+      "bases": [
+        "Protocol"
+      ],
+      "decorators": [
+        "runtime_checkable"
+      ],
+      "fields": [],
+      "kind": "protocol",
+      "language": "python",
+      "line": 128,
+      "methods": [
+        "resolve"
+      ],
+      "module": "noetrium_platform.composition.research_binding_authority",
+      "name": "ResearchModelRoleBindingResolverPort",
+      "path": "noetrium_platform/composition/research_binding_authority.py",
+      "qualname": "noetrium_platform.composition.research_binding_authority.ResearchModelRoleBindingResolverPort",
+      "role": "core_platform"
+    },
+    {
+      "bases": [
+        "Protocol"
+      ],
+      "decorators": [
+        "runtime_checkable"
+      ],
+      "fields": [],
+      "kind": "protocol",
+      "language": "python",
+      "line": 139,
+      "methods": [
+        "resolve"
+      ],
+      "module": "noetrium_platform.composition.research_binding_authority",
+      "name": "ResearchBindingAuthorityPort",
+      "path": "noetrium_platform/composition/research_binding_authority.py",
+      "qualname": "noetrium_platform.composition.research_binding_authority.ResearchBindingAuthorityPort",
+      "role": "core_platform"
+    },
+    {
+      "bases": [
+        "RuntimeError"
+      ],
       "decorators": [],
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 37,
+      "line": 148,
       "methods": [
-        "__init__",
-        "plan",
-        "_run_lane",
-        "execute",
-        "close",
-        "__enter__",
-        "__exit__"
+        "__init__"
       ],
-      "module": "noetrium_platform.composition.research_campaign",
-      "name": "ResearchCampaignBinding",
-      "path": "noetrium_platform/composition/research_campaign.py",
-      "qualname": "noetrium_platform.composition.research_campaign.ResearchCampaignBinding",
+      "module": "noetrium_platform.composition.research_binding_authority",
+      "name": "ResearchBindingAuthorityError",
+      "path": "noetrium_platform/composition/research_binding_authority.py",
+      "qualname": "noetrium_platform.composition.research_binding_authority.ResearchBindingAuthorityError",
       "role": "core_platform"
     },
     {
@@ -65542,14 +65476,18 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 142,
+      "line": 210,
       "methods": [
-        "execute"
+        "__init__",
+        "_capability_bindings",
+        "_participant_bindings",
+        "_model_bindings",
+        "resolve"
       ],
-      "module": "noetrium_platform.composition.research_campaign",
-      "name": "CampaignNodeExecutor",
-      "path": "noetrium_platform/composition/research_campaign.py",
-      "qualname": "noetrium_platform.composition.research_campaign.ResearchCampaignBinding.CampaignNodeExecutor",
+      "module": "noetrium_platform.composition.research_binding_authority",
+      "name": "ResearchBindingAuthority",
+      "path": "noetrium_platform/composition/research_binding_authority.py",
+      "qualname": "noetrium_platform.composition.research_binding_authority.ResearchBindingAuthority",
       "role": "core_platform"
     },
     {
@@ -66039,24 +65977,72 @@
       ],
       "fields": [
         "closure_digest: str",
-        "study_plan_digest: str",
-        "research_binding_digest: str",
-        "adapter: BoundStudyExecutionPort",
-        "aggregation: StudyMetricAggregationPort",
+        "execution_cut_id: str",
         "artifacts: RunArtifactStorePort",
-        "reconciliation: ResearchOSExperimentReconciliationPort",
-        "adapter_identity_digest: str",
-        "aggregation_identity_digest: str",
-        "artifact_store_identity_digest: str",
-        "reconciliation_identity_digest: str",
-        "runtime_binding_digest: str"
+        "factory_identity_digest: str",
+        "store_identity_digest: str",
+        "binding_digest: str"
       ],
       "kind": "dataclass",
       "language": "python",
       "line": 213,
       "methods": [
         "__post_init__",
-        "validate_closure"
+        "validate_context"
+      ],
+      "module": "noetrium_platform.composition.research_os_experiment",
+      "name": "ResearchOSExperimentArtifactStoreBinding",
+      "path": "noetrium_platform/composition/research_os_experiment.py",
+      "qualname": "noetrium_platform.composition.research_os_experiment.ResearchOSExperimentArtifactStoreBinding",
+      "role": "core_platform"
+    },
+    {
+      "bases": [
+        "Protocol"
+      ],
+      "decorators": [
+        "runtime_checkable"
+      ],
+      "fields": [],
+      "kind": "protocol",
+      "language": "python",
+      "line": 287,
+      "methods": [
+        "identity_digest",
+        "resolve"
+      ],
+      "module": "noetrium_platform.composition.research_os_experiment",
+      "name": "ResearchOSExperimentArtifactStoreFactoryPort",
+      "path": "noetrium_platform/composition/research_os_experiment.py",
+      "qualname": "noetrium_platform.composition.research_os_experiment.ResearchOSExperimentArtifactStoreFactoryPort",
+      "role": "core_platform"
+    },
+    {
+      "bases": [],
+      "decorators": [
+        "dataclass(frozen=True, slots=True)"
+      ],
+      "fields": [
+        "closure_digest: str",
+        "study_plan_digest: str",
+        "research_binding_digest: str",
+        "adapter: BoundStudyExecutionPort",
+        "aggregation: StudyMetricAggregationPort",
+        "artifact_store_factory: ResearchOSExperimentArtifactStoreFactoryPort",
+        "reconciliation: ResearchOSExperimentReconciliationPort",
+        "adapter_identity_digest: str",
+        "aggregation_identity_digest: str",
+        "artifact_store_factory_identity_digest: str",
+        "reconciliation_identity_digest: str",
+        "runtime_binding_digest: str"
+      ],
+      "kind": "dataclass",
+      "language": "python",
+      "line": 302,
+      "methods": [
+        "__post_init__",
+        "validate_closure",
+        "bind_artifacts"
       ],
       "module": "noetrium_platform.composition.research_os_experiment",
       "name": "ResearchOSExperimentRuntimeBinding",
@@ -66074,7 +66060,7 @@
       "fields": [],
       "kind": "protocol",
       "language": "python",
-      "line": 311,
+      "line": 453,
       "methods": [
         "resolve"
       ],
@@ -66094,7 +66080,7 @@
       "fields": [],
       "kind": "protocol",
       "language": "python",
-      "line": 319,
+      "line": 461,
       "methods": [
         "resolve"
       ],
@@ -66102,6 +66088,172 @@
       "name": "ResearchOSExperimentClosurePort",
       "path": "noetrium_platform/composition/research_os_experiment.py",
       "qualname": "noetrium_platform.composition.research_os_experiment.ResearchOSExperimentClosurePort",
+      "role": "core_platform"
+    },
+    {
+      "bases": [
+        "ResearchOSExperimentArtifactStoreFactoryPort"
+      ],
+      "decorators": [],
+      "fields": [],
+      "kind": "class",
+      "language": "python",
+      "line": 19,
+      "methods": [
+        "__init__",
+        "identity_digest",
+        "root",
+        "resolve"
+      ],
+      "module": "noetrium_platform.composition.research_os_experiment_artifacts",
+      "name": "DirectoryResearchOSExperimentArtifactStoreFactory",
+      "path": "noetrium_platform/composition/research_os_experiment_artifacts.py",
+      "qualname": "noetrium_platform.composition.research_os_experiment_artifacts.DirectoryResearchOSExperimentArtifactStoreFactory",
+      "role": "core_platform"
+    },
+    {
+      "bases": [],
+      "decorators": [
+        "dataclass(frozen=True, slots=True)"
+      ],
+      "fields": [
+        "adapter: BoundStudyExecutionPort",
+        "identity_digest: str"
+      ],
+      "kind": "dataclass",
+      "language": "python",
+      "line": 29,
+      "methods": [
+        "__post_init__"
+      ],
+      "module": "noetrium_platform.composition.research_os_experiment_runtime_binding",
+      "name": "ResearchOSExperimentStudyExecutionBinding",
+      "path": "noetrium_platform/composition/research_os_experiment_runtime_binding.py",
+      "qualname": "noetrium_platform.composition.research_os_experiment_runtime_binding.ResearchOSExperimentStudyExecutionBinding",
+      "role": "core_platform"
+    },
+    {
+      "bases": [],
+      "decorators": [
+        "dataclass(frozen=True, slots=True)"
+      ],
+      "fields": [
+        "aggregation: StudyMetricAggregationPort",
+        "identity_digest: str"
+      ],
+      "kind": "dataclass",
+      "language": "python",
+      "line": 45,
+      "methods": [
+        "__post_init__"
+      ],
+      "module": "noetrium_platform.composition.research_os_experiment_runtime_binding",
+      "name": "ResearchOSExperimentAggregationBinding",
+      "path": "noetrium_platform/composition/research_os_experiment_runtime_binding.py",
+      "qualname": "noetrium_platform.composition.research_os_experiment_runtime_binding.ResearchOSExperimentAggregationBinding",
+      "role": "core_platform"
+    },
+    {
+      "bases": [
+        "Protocol"
+      ],
+      "decorators": [
+        "runtime_checkable"
+      ],
+      "fields": [],
+      "kind": "protocol",
+      "language": "python",
+      "line": 61,
+      "methods": [
+        "resolve"
+      ],
+      "module": "noetrium_platform.composition.research_os_experiment_runtime_binding",
+      "name": "ResearchOSExperimentStudyExecutionResolverPort",
+      "path": "noetrium_platform/composition/research_os_experiment_runtime_binding.py",
+      "qualname": "noetrium_platform.composition.research_os_experiment_runtime_binding.ResearchOSExperimentStudyExecutionResolverPort",
+      "role": "core_platform"
+    },
+    {
+      "bases": [
+        "Protocol"
+      ],
+      "decorators": [
+        "runtime_checkable"
+      ],
+      "fields": [],
+      "kind": "protocol",
+      "language": "python",
+      "line": 69,
+      "methods": [
+        "resolve"
+      ],
+      "module": "noetrium_platform.composition.research_os_experiment_runtime_binding",
+      "name": "ResearchOSExperimentAggregationResolverPort",
+      "path": "noetrium_platform/composition/research_os_experiment_runtime_binding.py",
+      "qualname": "noetrium_platform.composition.research_os_experiment_runtime_binding.ResearchOSExperimentAggregationResolverPort",
+      "role": "core_platform"
+    },
+    {
+      "bases": [
+        "Protocol"
+      ],
+      "decorators": [
+        "runtime_checkable"
+      ],
+      "fields": [],
+      "kind": "protocol",
+      "language": "python",
+      "line": 77,
+      "methods": [
+        "resolve"
+      ],
+      "module": "noetrium_platform.composition.research_os_experiment_runtime_binding",
+      "name": "ResearchOSExperimentReconciliationResolverPort",
+      "path": "noetrium_platform/composition/research_os_experiment_runtime_binding.py",
+      "qualname": "noetrium_platform.composition.research_os_experiment_runtime_binding.ResearchOSExperimentReconciliationResolverPort",
+      "role": "core_platform"
+    },
+    {
+      "bases": [],
+      "decorators": [
+        "dataclass(frozen=True, slots=True)"
+      ],
+      "fields": [
+        "study_execution: ResearchOSExperimentStudyExecutionResolverPort",
+        "aggregation: ResearchOSExperimentAggregationResolverPort",
+        "reconciliation: ResearchOSExperimentReconciliationResolverPort"
+      ],
+      "kind": "dataclass",
+      "language": "python",
+      "line": 85,
+      "methods": [
+        "__post_init__",
+        "bind"
+      ],
+      "module": "noetrium_platform.composition.research_os_experiment_runtime_binding",
+      "name": "ResearchOSExperimentRuntimeComponents",
+      "path": "noetrium_platform/composition/research_os_experiment_runtime_binding.py",
+      "qualname": "noetrium_platform.composition.research_os_experiment_runtime_binding.ResearchOSExperimentRuntimeComponents",
+      "role": "core_platform"
+    },
+    {
+      "bases": [
+        "ResearchOSExperimentRuntimeBindingPort"
+      ],
+      "decorators": [],
+      "fields": [],
+      "kind": "class",
+      "language": "python",
+      "line": 134,
+      "methods": [
+        "__init__",
+        "artifact_store_factory",
+        "resolve"
+      ],
+      "module": "noetrium_platform.composition.research_os_experiment_runtime_binding",
+      "name": "ResearchOSExperimentRuntimeBindingAuthority",
+      "path": "noetrium_platform/composition/research_os_experiment_runtime_binding.py",
+      "qualname": "noetrium_platform.composition.research_os_experiment_runtime_binding.ResearchOSExperimentRuntimeBindingAuthority",
       "role": "core_platform"
     },
     {
@@ -66231,7 +66383,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 47,
+      "line": 52,
       "methods": [
         "close"
       ],
@@ -78087,7 +78239,8 @@
         "authority: str",
         "primitive: str",
         "allowed_modules: tuple[str, ...]",
-        "matches: AuthorityMatcher"
+        "matches: AuthorityMatcher",
+        "protect_reference: bool"
       ],
       "kind": "dataclass",
       "language": "python",
@@ -82542,6 +82695,7 @@
         "kernel_abi_version: str",
         "machine_implementation_digest: str",
         "program_digest: str",
+        "program_lock_digest: str",
         "capability_provider_versions: tuple[tuple[str, str], ...]",
         "schema_versions: tuple[str, ...]",
         "environment_version: str",
@@ -82569,6 +82723,7 @@
         "parent_machine_id: str",
         "child_machine_id: str",
         "child_program_digest: str",
+        "child_program_lock_digest: str",
         "child_snapshot_ref: str",
         "child_transition_start: int",
         "child_transition_end: int",
@@ -82578,7 +82733,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 137,
+      "line": 140,
       "methods": [
         "__post_init__",
         "as_dict"
@@ -82747,7 +82902,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 68,
+      "line": 73,
       "methods": [
         "__init__",
         "_reload",
@@ -83283,6 +83438,7 @@
       "methods": [
         "__init__",
         "machine_id",
+        "_assert_commit_program_identity",
         "open",
         "checkpoint",
         "restore",
@@ -83657,7 +83813,7 @@
       "fields": [],
       "kind": "protocol",
       "language": "python",
-      "line": 196,
+      "line": 205,
       "methods": [
         "append",
         "latest",
@@ -83676,7 +83832,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 203,
+      "line": 212,
       "methods": [
         "__init__",
         "clone",
@@ -83700,7 +83856,7 @@
       "fields": [],
       "kind": "protocol",
       "language": "python",
-      "line": 268,
+      "line": 284,
       "methods": [
         "append",
         "latest",
@@ -83721,7 +83877,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 275,
+      "line": 291,
       "methods": [
         "__init__",
         "_history_for",
@@ -83742,7 +83898,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 319,
+      "line": 335,
       "methods": [
         "__init__"
       ],
@@ -83760,7 +83916,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 331,
+      "line": 347,
       "methods": [
         "__init__",
         "_file_key",
@@ -84205,6 +84361,7 @@
         "before_state_digest: str | None",
         "input_digest: str | None",
         "program_digest: str | None",
+        "program_lock_digest: str | None",
         "machine_kind: str | None",
         "machine_version: str | None",
         "input_refs: tuple[str, ...]",
@@ -84241,6 +84398,8 @@
         "revision: int",
         "proposal_digest: str",
         "command_digest: str",
+        "program_digest: str",
+        "program_lock_digest: str",
         "state: JsonObject",
         "output_refs: tuple[str, ...]",
         "event_payloads: tuple[JsonValue, ...]",
@@ -84249,7 +84408,6 @@
         "previous_commit_id: str | None",
         "before_state_digest: str | None",
         "input_digest: str | None",
-        "program_digest: str | None",
         "machine_kind: str | None",
         "machine_version: str | None",
         "input_refs: tuple[str, ...]",
@@ -84266,7 +84424,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 281,
+      "line": 284,
       "methods": [
         "__post_init__"
       ],
@@ -84286,11 +84444,12 @@
         "revision: int",
         "commit_id: str",
         "state_digest: str",
-        "program_digest: str"
+        "program_digest: str",
+        "program_lock_digest: str"
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 404,
+      "line": 413,
       "methods": [
         "__post_init__",
         "from_commit",
@@ -84317,7 +84476,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 451,
+      "line": 462,
       "methods": [
         "__post_init__"
       ],
@@ -84343,7 +84502,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 485,
+      "line": 496,
       "methods": [
         "__post_init__"
       ],
@@ -84363,7 +84522,7 @@
       "fields": [],
       "kind": "protocol",
       "language": "python",
-      "line": 503,
+      "line": 514,
       "methods": [
         "open",
         "step",
@@ -88188,6 +88347,7 @@
       "language": "python",
       "line": 34,
       "methods": [
+        "spawn_interactive",
         "await_exit",
         "terminate"
       ],
@@ -88274,10 +88434,11 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 19,
+      "line": 20,
       "methods": [
         "__init__",
         "_task_id",
+        "spawn_interactive",
         "_await_exit",
         "await_exit",
         "_terminate",
@@ -102853,7 +103014,7 @@
       "fields": [],
       "kind": "protocol",
       "language": "python",
-      "line": 27,
+      "line": 21,
       "methods": [
         "commits",
         "status",
@@ -102876,7 +103037,7 @@
       "fields": [],
       "kind": "protocol",
       "language": "python",
-      "line": 42,
+      "line": 36,
       "methods": [
         "machine_id",
         "kind",
@@ -102911,7 +103072,7 @@
       ],
       "kind": "protocol",
       "language": "python",
-      "line": 99,
+      "line": 93,
       "methods": [
         "open_session",
         "execute"
@@ -102920,26 +103081,6 @@
       "name": "ResearchProgramHostPort",
       "path": "noetrium_platform/research/execution/machines/api/host_runtime.py",
       "qualname": "noetrium_platform.research.execution.machines.api.host_runtime.ResearchProgramHostPort",
-      "role": "core_platform"
-    },
-    {
-      "bases": [
-        "Protocol"
-      ],
-      "decorators": [
-        "runtime_checkable"
-      ],
-      "fields": [],
-      "kind": "protocol",
-      "language": "python",
-      "line": 124,
-      "methods": [
-        "build"
-      ],
-      "module": "noetrium_platform.research.execution.machines.api.host_runtime",
-      "name": "ResearchProgramHostFactoryPort",
-      "path": "noetrium_platform/research/execution/machines/api/host_runtime.py",
-      "qualname": "noetrium_platform.research.execution.machines.api.host_runtime.ResearchProgramHostFactoryPort",
       "role": "core_platform"
     },
     {
@@ -103334,7 +103475,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 368,
+      "line": 375,
       "methods": [
         "__init__",
         "_project_execution",
@@ -103513,7 +103654,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 284,
+      "line": 287,
       "methods": [
         "__init__",
         "identity_digest",
@@ -103531,7 +103672,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 368,
+      "line": 371,
       "methods": [
         "__init__",
         "identity_digest",
@@ -103553,7 +103694,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 414,
+      "line": 417,
       "methods": [
         "__init__",
         "identity_digest",
@@ -103585,24 +103726,6 @@
       "name": "CommunicationRuntimeSpec",
       "path": "noetrium_platform/research/execution/machines/communication_program.py",
       "qualname": "noetrium_platform.research.execution.machines.communication_program.CommunicationRuntimeSpec",
-      "role": "core_platform"
-    },
-    {
-      "bases": [
-        "ResearchProgramHostFactoryPort"
-      ],
-      "decorators": [],
-      "fields": [],
-      "kind": "class",
-      "language": "python",
-      "line": 23,
-      "methods": [
-        "build"
-      ],
-      "module": "noetrium_platform.research.execution.machines.composition.host_factory",
-      "name": "DefaultResearchProgramHostFactory",
-      "path": "noetrium_platform/research/execution/machines/composition/host_factory.py",
-      "qualname": "noetrium_platform.research.execution.machines.composition.host_factory.DefaultResearchProgramHostFactory",
       "role": "core_platform"
     },
     {
@@ -109418,7 +109541,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 39,
+      "line": 34,
       "methods": [
         "__post_init__",
         "from_compiled"
@@ -109441,7 +109564,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 130,
+      "line": 125,
       "methods": [
         "__post_init__"
       ],
@@ -109465,7 +109588,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 171,
+      "line": 166,
       "methods": [
         "__post_init__"
       ],
@@ -109486,7 +109609,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 200,
+      "line": 195,
       "methods": [
         "__post_init__"
       ],
@@ -109507,7 +109630,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 211,
+      "line": 206,
       "methods": [
         "__post_init__"
       ],
@@ -109515,118 +109638,6 @@
       "name": "CompiledResearchCampaign",
       "path": "noetrium_platform/research/experimentation/api/campaign.py",
       "qualname": "noetrium_platform.research.experimentation.api.campaign.CompiledResearchCampaign",
-      "role": "core_platform"
-    },
-    {
-      "bases": [],
-      "decorators": [
-        "dataclass(frozen=True, slots=True)"
-      ],
-      "fields": [
-        "lane_id: str",
-        "adapter: BoundStudyExecutionPort",
-        "aggregation: StudyMetricAggregationPort | None"
-      ],
-      "kind": "dataclass",
-      "language": "python",
-      "line": 279,
-      "methods": [
-        "__post_init__"
-      ],
-      "module": "noetrium_platform.research.experimentation.api.campaign",
-      "name": "ResearchCampaignStudyBinding",
-      "path": "noetrium_platform/research/experimentation/api/campaign.py",
-      "qualname": "noetrium_platform.research.experimentation.api.campaign.ResearchCampaignStudyBinding",
-      "role": "core_platform"
-    },
-    {
-      "bases": [
-        "StrEnum"
-      ],
-      "decorators": [],
-      "fields": [
-        "SUCCEEDED",
-        "FAILED",
-        "BLOCKED"
-      ],
-      "kind": "enum",
-      "language": "python",
-      "line": 294,
-      "methods": [],
-      "module": "noetrium_platform.research.experimentation.api.campaign",
-      "name": "ResearchCampaignLaneState",
-      "path": "noetrium_platform/research/experimentation/api/campaign.py",
-      "qualname": "noetrium_platform.research.experimentation.api.campaign.ResearchCampaignLaneState",
-      "role": "core_platform"
-    },
-    {
-      "bases": [],
-      "decorators": [
-        "dataclass(frozen=True, slots=True)"
-      ],
-      "fields": [
-        "lane_id: str",
-        "research_plan_digest: str",
-        "study_plan_digest: str",
-        "state: ResearchCampaignLaneState",
-        "report: StudyMatrixExecutionReport | None",
-        "failure_type: str | None",
-        "failure_message: str | None",
-        "blocked_by_lane_ids: tuple[str, ...]"
-      ],
-      "kind": "dataclass",
-      "language": "python",
-      "line": 301,
-      "methods": [
-        "__post_init__"
-      ],
-      "module": "noetrium_platform.research.experimentation.api.campaign",
-      "name": "ResearchCampaignLaneResult",
-      "path": "noetrium_platform/research/experimentation/api/campaign.py",
-      "qualname": "noetrium_platform.research.experimentation.api.campaign.ResearchCampaignLaneResult",
-      "role": "core_platform"
-    },
-    {
-      "bases": [],
-      "decorators": [
-        "dataclass(frozen=True, slots=True)"
-      ],
-      "fields": [
-        "campaign_id: str",
-        "campaign_digest: str",
-        "lanes: tuple[ResearchCampaignLaneResult, ...]"
-      ],
-      "kind": "dataclass",
-      "language": "python",
-      "line": 355,
-      "methods": [
-        "__post_init__",
-        "succeeded_lane_ids",
-        "failed_lane_ids",
-        "blocked_lane_ids"
-      ],
-      "module": "noetrium_platform.research.experimentation.api.campaign",
-      "name": "ResearchCampaignExecutionReport",
-      "path": "noetrium_platform/research/experimentation/api/campaign.py",
-      "qualname": "noetrium_platform.research.experimentation.api.campaign.ResearchCampaignExecutionReport",
-      "role": "core_platform"
-    },
-    {
-      "bases": [
-        "Protocol"
-      ],
-      "decorators": [],
-      "fields": [],
-      "kind": "protocol",
-      "language": "python",
-      "line": 395,
-      "methods": [
-        "execute"
-      ],
-      "module": "noetrium_platform.research.experimentation.api.campaign",
-      "name": "ResearchCampaignExecutionPort",
-      "path": "noetrium_platform/research/experimentation/api/campaign.py",
-      "qualname": "noetrium_platform.research.experimentation.api.campaign.ResearchCampaignExecutionPort",
       "role": "core_platform"
     },
     {
@@ -109729,7 +109740,7 @@
       ],
       "kind": "enum",
       "language": "python",
-      "line": 53,
+      "line": 54,
       "methods": [],
       "module": "noetrium_platform.research.experimentation.api.program",
       "name": "ExperimentBatchKind",
@@ -109751,7 +109762,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 59,
+      "line": 60,
       "methods": [
         "create",
         "__post_init__"
@@ -109775,7 +109786,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 112,
+      "line": 113,
       "methods": [
         "initial_data"
       ],
@@ -109791,7 +109802,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 289,
+      "line": 290,
       "methods": [
         "__init__",
         "_parallel",
@@ -112484,24 +112495,6 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 397,
-      "methods": [
-        "__init__",
-        "compile",
-        "inspect"
-      ],
-      "module": "noetrium_platform.research.experimentation.lifecycle.experiment.runtime.matrix",
-      "name": "UniversalExperimentKernel",
-      "path": "noetrium_platform/research/experimentation/lifecycle/experiment/runtime/matrix.py",
-      "qualname": "noetrium_platform.research.experimentation.lifecycle.experiment.runtime.matrix.UniversalExperimentKernel",
-      "role": "core_platform"
-    },
-    {
-      "bases": [],
-      "decorators": [],
-      "fields": [],
-      "kind": "class",
-      "language": "python",
       "line": 26,
       "methods": [
         "__init__",
@@ -113237,7 +113230,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 16,
+      "line": 11,
       "methods": [
         "__post_init__"
       ],
@@ -113245,24 +113238,6 @@
       "name": "ExperimentRunResult",
       "path": "noetrium_platform/research/experimentation/lifecycle/run/api/execution.py",
       "qualname": "noetrium_platform.research.experimentation.lifecycle.run.api.execution.ExperimentRunResult",
-      "role": "core_platform"
-    },
-    {
-      "bases": [
-        "Protocol"
-      ],
-      "decorators": [],
-      "fields": [],
-      "kind": "protocol",
-      "language": "python",
-      "line": 38,
-      "methods": [
-        "execute"
-      ],
-      "module": "noetrium_platform.research.experimentation.lifecycle.run.api.execution",
-      "name": "ExperimentRunExecutionPort",
-      "path": "noetrium_platform/research/experimentation/lifecycle/run/api/execution.py",
-      "qualname": "noetrium_platform.research.experimentation.lifecycle.run.api.execution.ExperimentRunExecutionPort",
       "role": "core_platform"
     },
     {
@@ -113386,7 +113361,7 @@
       "fields": [],
       "kind": "protocol",
       "language": "python",
-      "line": 19,
+      "line": 15,
       "methods": [
         "result",
         "final_context",
@@ -113406,7 +113381,7 @@
       "fields": [],
       "kind": "protocol",
       "language": "python",
-      "line": 32,
+      "line": 28,
       "methods": [
         "execute"
       ],
@@ -113424,7 +113399,7 @@
       "fields": [],
       "kind": "protocol",
       "language": "python",
-      "line": 46,
+      "line": 42,
       "methods": [
         "close"
       ],
@@ -113442,7 +113417,7 @@
       "fields": [],
       "kind": "protocol",
       "language": "python",
-      "line": 57,
+      "line": 53,
       "methods": [
         "latest_checkpoint_id",
         "requires_recovery",
@@ -113453,24 +113428,6 @@
       "name": "RunSessionPort",
       "path": "noetrium_platform/research/experimentation/lifecycle/run/api/lifecycle_ports.py",
       "qualname": "noetrium_platform.research.experimentation.lifecycle.run.api.lifecycle_ports.RunSessionPort",
-      "role": "core_platform"
-    },
-    {
-      "bases": [
-        "Protocol"
-      ],
-      "decorators": [],
-      "fields": [],
-      "kind": "protocol",
-      "language": "python",
-      "line": 78,
-      "methods": [
-        "create"
-      ],
-      "module": "noetrium_platform.research.experimentation.lifecycle.run.api.lifecycle_ports",
-      "name": "RunSessionFactoryPort",
-      "path": "noetrium_platform/research/experimentation/lifecycle/run/api/lifecycle_ports.py",
-      "qualname": "noetrium_platform.research.experimentation.lifecycle.run.api.lifecycle_ports.RunSessionFactoryPort",
       "role": "core_platform"
     },
     {
@@ -114021,60 +113978,6 @@
       "name": "JsonlRunDiagnostics",
       "path": "noetrium_platform/research/experimentation/lifecycle/run/runtime/diagnostics.py",
       "qualname": "noetrium_platform.research.experimentation.lifecycle.run.runtime.diagnostics.JsonlRunDiagnostics",
-      "role": "core_platform"
-    },
-    {
-      "bases": [
-        "ExperimentRunExecutionPort"
-      ],
-      "decorators": [],
-      "fields": [],
-      "kind": "class",
-      "language": "python",
-      "line": 21,
-      "methods": [
-        "__init__",
-        "execute",
-        "_validate_run_identity"
-      ],
-      "module": "noetrium_platform.research.experimentation.lifecycle.run.runtime.execution",
-      "name": "ExperimentRunApplication",
-      "path": "noetrium_platform/research/experimentation/lifecycle/run/runtime/execution.py",
-      "qualname": "noetrium_platform.research.experimentation.lifecycle.run.runtime.execution.ExperimentRunApplication",
-      "role": "core_platform"
-    },
-    {
-      "bases": [],
-      "decorators": [],
-      "fields": [],
-      "kind": "class",
-      "language": "python",
-      "line": 12,
-      "methods": [
-        "__init__",
-        "close"
-      ],
-      "module": "noetrium_platform.research.experimentation.lifecycle.run.runtime.lifecycle_closer",
-      "name": "RunCloser",
-      "path": "noetrium_platform/research/experimentation/lifecycle/run/runtime/lifecycle_closer.py",
-      "qualname": "noetrium_platform.research.experimentation.lifecycle.run.runtime.lifecycle_closer.RunCloser",
-      "role": "core_platform"
-    },
-    {
-      "bases": [],
-      "decorators": [],
-      "fields": [],
-      "kind": "class",
-      "language": "python",
-      "line": 26,
-      "methods": [
-        "__init__",
-        "create"
-      ],
-      "module": "noetrium_platform.research.experimentation.lifecycle.run.runtime.lifecycle_factory",
-      "name": "DefaultRunSessionFactory",
-      "path": "noetrium_platform/research/experimentation/lifecycle/run/runtime/lifecycle_factory.py",
-      "qualname": "noetrium_platform.research.experimentation.lifecycle.run.runtime.lifecycle_factory.DefaultRunSessionFactory",
       "role": "core_platform"
     },
     {
@@ -116436,6 +116339,7 @@
         "run_id: str",
         "head_commit_id: str",
         "program_digest: str",
+        "program_lock_digest: str",
         "binding_digest: str",
         "result_digest: str",
         "status: str"
@@ -116467,7 +116371,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 67,
+      "line": 73,
       "methods": [
         "__post_init__",
         "document"
@@ -116493,7 +116397,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 92,
+      "line": 98,
       "methods": [
         "__post_init__",
         "document"
@@ -116520,7 +116424,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 156,
+      "line": 162,
       "methods": [
         "__post_init__",
         "document",
@@ -121849,7 +121753,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 282,
+      "line": 283,
       "methods": [
         "__init__",
         "discover",
@@ -123849,7 +123753,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 58,
+      "line": 63,
       "methods": [
         "__post_init__"
       ],
@@ -123869,7 +123773,7 @@
       "fields": [],
       "kind": "protocol",
       "language": "python",
-      "line": 115,
+      "line": 120,
       "methods": [
         "resolve"
       ],
@@ -123877,26 +123781,6 @@
       "name": "ReproductionBenchmarkResolverPort",
       "path": "research/reproductions/fleet.py",
       "qualname": "research.reproductions.fleet.ReproductionBenchmarkResolverPort",
-      "role": "research_reproductions"
-    },
-    {
-      "bases": [
-        "Protocol"
-      ],
-      "decorators": [
-        "runtime_checkable"
-      ],
-      "fields": [],
-      "kind": "protocol",
-      "language": "python",
-      "line": 126,
-      "methods": [
-        "resolve"
-      ],
-      "module": "research.reproductions.fleet",
-      "name": "ReproductionResearchBindingResolverPort",
-      "path": "research/reproductions/fleet.py",
-      "qualname": "research.reproductions.fleet.ReproductionResearchBindingResolverPort",
       "role": "research_reproductions"
     },
     {
@@ -123914,7 +123798,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 136,
+      "line": 131,
       "methods": [
         "__post_init__"
       ],
@@ -123937,7 +123821,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 189,
+      "line": 184,
       "methods": [
         "__post_init__"
       ],
@@ -123954,13 +123838,13 @@
       ],
       "fields": [
         "benchmark_resolver: ReproductionBenchmarkResolverPort",
-        "research_bindings: ReproductionResearchBindingResolverPort",
-        "experiment_bindings: ResearchOSExperimentRuntimeBindingPort",
+        "research_bindings: ResearchBindingAuthorityPort",
+        "experiment_runtime_components: ResearchOSExperimentRuntimeComponents",
         "capability_resolver: ReproductionCapabilityRequirementResolverPort | None"
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 475,
+      "line": 467,
       "methods": [
         "__post_init__"
       ],
@@ -123982,7 +123866,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 516,
+      "line": 508,
       "methods": [
         "__post_init__"
       ],
@@ -123998,7 +123882,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 582,
+      "line": 574,
       "methods": [
         "__init__",
         "resolve"
@@ -134207,7 +134091,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 82,
+      "line": 83,
       "methods": [
         "execute_bound",
         "execute_bound_variant"
@@ -134224,7 +134108,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 139,
+      "line": 140,
       "methods": [
         "execute_bound",
         "execute_bound_variant"
@@ -134241,7 +134125,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 259,
+      "line": 260,
       "methods": [
         "execute_bound",
         "execute_bound_variant"
@@ -134258,7 +134142,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 296,
+      "line": 297,
       "methods": [
         "execute_bound"
       ],
@@ -134266,107 +134150,6 @@
       "name": "IncompleteAdapter",
       "path": "tests/test_experiment_program_execution_v1.py",
       "qualname": "tests.test_experiment_program_execution_v1.IncompleteAdapter",
-      "role": "tests"
-    },
-    {
-      "bases": [],
-      "decorators": [],
-      "fields": [],
-      "kind": "class",
-      "language": "python",
-      "line": 30,
-      "methods": [
-        "__init__",
-        "publish_protocol",
-        "publish_observations",
-        "publish_aggregates"
-      ],
-      "module": "tests.test_experiment_run_application_v1",
-      "name": "_Publication",
-      "path": "tests/test_experiment_run_application_v1.py",
-      "qualname": "tests.test_experiment_run_application_v1._Publication",
-      "role": "tests"
-    },
-    {
-      "bases": [],
-      "decorators": [],
-      "fields": [],
-      "kind": "class",
-      "language": "python",
-      "line": 50,
-      "methods": [
-        "execute_bound",
-        "execute_bound_variant"
-      ],
-      "module": "tests.test_experiment_run_application_v1",
-      "name": "_BoundAdapter",
-      "path": "tests/test_experiment_run_application_v1.py",
-      "qualname": "tests.test_experiment_run_application_v1._BoundAdapter",
-      "role": "tests"
-    },
-    {
-      "bases": [],
-      "decorators": [],
-      "fields": [],
-      "kind": "class",
-      "language": "python",
-      "line": 146,
-      "methods": [
-        "bind"
-      ],
-      "module": "tests.test_experiment_run_application_v1",
-      "name": "_NoneBinder",
-      "path": "tests/test_experiment_run_application_v1.py",
-      "qualname": "tests.test_experiment_run_application_v1._NoneBinder",
-      "role": "tests"
-    },
-    {
-      "bases": [],
-      "decorators": [],
-      "fields": [],
-      "kind": "class",
-      "language": "python",
-      "line": 151,
-      "methods": [
-        "bind"
-      ],
-      "module": "tests.test_experiment_run_application_v1",
-      "name": "_EmptyBinder",
-      "path": "tests/test_experiment_run_application_v1.py",
-      "qualname": "tests.test_experiment_run_application_v1._EmptyBinder",
-      "role": "tests"
-    },
-    {
-      "bases": [],
-      "decorators": [],
-      "fields": [],
-      "kind": "class",
-      "language": "python",
-      "line": 156,
-      "methods": [
-        "open_participant",
-        "close_participant"
-      ],
-      "module": "tests.test_experiment_run_application_v1",
-      "name": "_NoopLifecycle",
-      "path": "tests/test_experiment_run_application_v1.py",
-      "qualname": "tests.test_experiment_run_application_v1._NoopLifecycle",
-      "role": "tests"
-    },
-    {
-      "bases": [],
-      "decorators": [],
-      "fields": [],
-      "kind": "class",
-      "language": "python",
-      "line": 164,
-      "methods": [
-        "execute"
-      ],
-      "module": "tests.test_experiment_run_application_v1",
-      "name": "_NoneScientific",
-      "path": "tests/test_experiment_run_application_v1.py",
-      "qualname": "tests.test_experiment_run_application_v1._NoneScientific",
       "role": "tests"
     },
     {
@@ -134914,7 +134697,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 19,
+      "line": 18,
       "methods": [],
       "module": "tests.test_generic_participant_topology_v162",
       "name": "SidecarPlugin",
@@ -134930,7 +134713,7 @@
       ],
       "kind": "class",
       "language": "python",
-      "line": 23,
+      "line": 22,
       "methods": [
         "__init__",
         "close"
@@ -134947,7 +134730,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 36,
+      "line": 35,
       "methods": [
         "_component",
         "frozen_component",
@@ -134971,7 +134754,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 77,
+      "line": 76,
       "methods": [
         "run"
       ],
@@ -134987,7 +134770,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 142,
+      "line": 141,
       "methods": [
         "__init__"
       ],
@@ -135005,7 +134788,7 @@
       ],
       "kind": "class",
       "language": "python",
-      "line": 147,
+      "line": 146,
       "methods": [
         "__init__",
         "close"
@@ -135022,7 +134805,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 158,
+      "line": 157,
       "methods": [
         "_component",
         "frozen_component",
@@ -135797,7 +135580,7 @@
       ],
       "kind": "class",
       "language": "python",
-      "line": 16,
+      "line": 15,
       "methods": [
         "__init__",
         "checkpoint",
@@ -135816,7 +135599,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 34,
+      "line": 33,
       "methods": [
         "open_session"
       ],
@@ -135832,7 +135615,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 42,
+      "line": 41,
       "methods": [
         "run"
       ],
@@ -135864,7 +135647,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 146,
+      "line": 153,
       "methods": [
         "verify"
       ],
@@ -135880,7 +135663,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 27,
+      "line": 28,
       "methods": [
         "propose"
       ],
@@ -138631,7 +138414,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 75,
+      "line": 76,
       "methods": [
         "__init__",
         "execute"
@@ -138648,7 +138431,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 258,
+      "line": 259,
       "methods": [
         "execute"
       ],
@@ -138664,7 +138447,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 271,
+      "line": 272,
       "methods": [
         "execute"
       ],
@@ -138892,7 +138675,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 25,
+      "line": 24,
       "methods": [
         "__init__",
         "checkpoint",
@@ -138911,7 +138694,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 41,
+      "line": 40,
       "methods": [
         "open_session"
       ],
@@ -138927,7 +138710,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 52,
+      "line": 51,
       "methods": [
         "__init__",
         "resolve"
@@ -138944,7 +138727,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 64,
+      "line": 63,
       "methods": [
         "run"
       ],
@@ -140418,7 +140201,151 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 14,
+      "line": 15,
+      "methods": [
+        "resolve"
+      ],
+      "module": "tests.test_reproduction_fleet_authority_composition_v1",
+      "name": "_Manifests",
+      "path": "tests/test_reproduction_fleet_authority_composition_v1.py",
+      "qualname": "tests.test_reproduction_fleet_authority_composition_v1._Manifests",
+      "role": "tests"
+    },
+    {
+      "bases": [],
+      "decorators": [],
+      "fields": [],
+      "kind": "class",
+      "language": "python",
+      "line": 20,
+      "methods": [
+        "resolve"
+      ],
+      "module": "tests.test_reproduction_fleet_authority_composition_v1",
+      "name": "_ResearchCapabilities",
+      "path": "tests/test_reproduction_fleet_authority_composition_v1.py",
+      "qualname": "tests.test_reproduction_fleet_authority_composition_v1._ResearchCapabilities",
+      "role": "tests"
+    },
+    {
+      "bases": [],
+      "decorators": [],
+      "fields": [],
+      "kind": "class",
+      "language": "python",
+      "line": 25,
+      "methods": [
+        "resolve"
+      ],
+      "module": "tests.test_reproduction_fleet_authority_composition_v1",
+      "name": "_Participants",
+      "path": "tests/test_reproduction_fleet_authority_composition_v1.py",
+      "qualname": "tests.test_reproduction_fleet_authority_composition_v1._Participants",
+      "role": "tests"
+    },
+    {
+      "bases": [],
+      "decorators": [],
+      "fields": [],
+      "kind": "class",
+      "language": "python",
+      "line": 30,
+      "methods": [
+        "resolve"
+      ],
+      "module": "tests.test_reproduction_fleet_authority_composition_v1",
+      "name": "_Models",
+      "path": "tests/test_reproduction_fleet_authority_composition_v1.py",
+      "qualname": "tests.test_reproduction_fleet_authority_composition_v1._Models",
+      "role": "tests"
+    },
+    {
+      "bases": [],
+      "decorators": [],
+      "fields": [],
+      "kind": "class",
+      "language": "python",
+      "line": 35,
+      "methods": [
+        "resolve"
+      ],
+      "module": "tests.test_reproduction_fleet_authority_composition_v1",
+      "name": "_ExperimentStudyExecution",
+      "path": "tests/test_reproduction_fleet_authority_composition_v1.py",
+      "qualname": "tests.test_reproduction_fleet_authority_composition_v1._ExperimentStudyExecution",
+      "role": "tests"
+    },
+    {
+      "bases": [],
+      "decorators": [],
+      "fields": [],
+      "kind": "class",
+      "language": "python",
+      "line": 40,
+      "methods": [
+        "resolve"
+      ],
+      "module": "tests.test_reproduction_fleet_authority_composition_v1",
+      "name": "_ExperimentAggregation",
+      "path": "tests/test_reproduction_fleet_authority_composition_v1.py",
+      "qualname": "tests.test_reproduction_fleet_authority_composition_v1._ExperimentAggregation",
+      "role": "tests"
+    },
+    {
+      "bases": [],
+      "decorators": [],
+      "fields": [],
+      "kind": "class",
+      "language": "python",
+      "line": 45,
+      "methods": [
+        "resolve"
+      ],
+      "module": "tests.test_reproduction_fleet_authority_composition_v1",
+      "name": "_ExperimentReconciliation",
+      "path": "tests/test_reproduction_fleet_authority_composition_v1.py",
+      "qualname": "tests.test_reproduction_fleet_authority_composition_v1._ExperimentReconciliation",
+      "role": "tests"
+    },
+    {
+      "bases": [],
+      "decorators": [],
+      "fields": [],
+      "kind": "class",
+      "language": "python",
+      "line": 50,
+      "methods": [
+        "resolve"
+      ],
+      "module": "tests.test_reproduction_fleet_authority_composition_v1",
+      "name": "_ReproductionCapabilities",
+      "path": "tests/test_reproduction_fleet_authority_composition_v1.py",
+      "qualname": "tests.test_reproduction_fleet_authority_composition_v1._ReproductionCapabilities",
+      "role": "tests"
+    },
+    {
+      "bases": [],
+      "decorators": [],
+      "fields": [],
+      "kind": "class",
+      "language": "python",
+      "line": 55,
+      "methods": [
+        "resolve"
+      ],
+      "module": "tests.test_reproduction_fleet_authority_composition_v1",
+      "name": "_Benchmarks",
+      "path": "tests/test_reproduction_fleet_authority_composition_v1.py",
+      "qualname": "tests.test_reproduction_fleet_authority_composition_v1._Benchmarks",
+      "role": "tests"
+    },
+    {
+      "bases": [],
+      "decorators": [],
+      "fields": [],
+      "kind": "class",
+      "language": "python",
+      "line": 17,
       "methods": [
         "resolve"
       ],
@@ -140434,7 +140361,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 20,
+      "line": 23,
       "methods": [
         "resolve"
       ],
@@ -140450,14 +140377,14 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 26,
+      "line": 29,
       "methods": [
         "resolve"
       ],
       "module": "tests.test_reproduction_fleet_execution_authority_v1",
-      "name": "_ExperimentBindings",
+      "name": "_ExperimentStudyExecution",
       "path": "tests/test_reproduction_fleet_execution_authority_v1.py",
-      "qualname": "tests.test_reproduction_fleet_execution_authority_v1._ExperimentBindings",
+      "qualname": "tests.test_reproduction_fleet_execution_authority_v1._ExperimentStudyExecution",
       "role": "tests"
     },
     {
@@ -140466,7 +140393,39 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 32,
+      "line": 35,
+      "methods": [
+        "resolve"
+      ],
+      "module": "tests.test_reproduction_fleet_execution_authority_v1",
+      "name": "_ExperimentAggregation",
+      "path": "tests/test_reproduction_fleet_execution_authority_v1.py",
+      "qualname": "tests.test_reproduction_fleet_execution_authority_v1._ExperimentAggregation",
+      "role": "tests"
+    },
+    {
+      "bases": [],
+      "decorators": [],
+      "fields": [],
+      "kind": "class",
+      "language": "python",
+      "line": 41,
+      "methods": [
+        "resolve"
+      ],
+      "module": "tests.test_reproduction_fleet_execution_authority_v1",
+      "name": "_ExperimentReconciliation",
+      "path": "tests/test_reproduction_fleet_execution_authority_v1.py",
+      "qualname": "tests.test_reproduction_fleet_execution_authority_v1._ExperimentReconciliation",
+      "role": "tests"
+    },
+    {
+      "bases": [],
+      "decorators": [],
+      "fields": [],
+      "kind": "class",
+      "language": "python",
+      "line": 47,
       "methods": [
         "resolve"
       ],
@@ -140514,15 +140473,14 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 74,
+      "line": 183,
       "methods": [
-        "execute_bound",
-        "execute_bound_variant"
+        "resolve"
       ],
-      "module": "tests.test_research_campaign_v1",
-      "name": "_SuccessAdapter",
-      "path": "tests/test_research_campaign_v1.py",
-      "qualname": "tests.test_research_campaign_v1._SuccessAdapter",
+      "module": "tests.test_research_binding_authority_v1",
+      "name": "_Manifests",
+      "path": "tests/test_research_binding_authority_v1.py",
+      "qualname": "tests.test_research_binding_authority_v1._Manifests",
       "role": "tests"
     },
     {
@@ -140531,15 +140489,14 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 91,
+      "line": 189,
       "methods": [
-        "execute_bound",
-        "execute_bound_variant"
+        "resolve"
       ],
-      "module": "tests.test_research_campaign_v1",
-      "name": "_FailingAdapter",
-      "path": "tests/test_research_campaign_v1.py",
-      "qualname": "tests.test_research_campaign_v1._FailingAdapter",
+      "module": "tests.test_research_binding_authority_v1",
+      "name": "_Capabilities",
+      "path": "tests/test_research_binding_authority_v1.py",
+      "qualname": "tests.test_research_binding_authority_v1._Capabilities",
       "role": "tests"
     },
     {
@@ -140548,16 +140505,48 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 102,
+      "line": 208,
       "methods": [
-        "__init__",
-        "execute_bound",
-        "execute_bound_variant"
+        "resolve"
       ],
-      "module": "tests.test_research_campaign_v1",
-      "name": "_RecordingAdapter",
-      "path": "tests/test_research_campaign_v1.py",
-      "qualname": "tests.test_research_campaign_v1._RecordingAdapter",
+      "module": "tests.test_research_binding_authority_v1",
+      "name": "_Participants",
+      "path": "tests/test_research_binding_authority_v1.py",
+      "qualname": "tests.test_research_binding_authority_v1._Participants",
+      "role": "tests"
+    },
+    {
+      "bases": [],
+      "decorators": [],
+      "fields": [],
+      "kind": "class",
+      "language": "python",
+      "line": 240,
+      "methods": [
+        "resolve"
+      ],
+      "module": "tests.test_research_binding_authority_v1",
+      "name": "_Models",
+      "path": "tests/test_research_binding_authority_v1.py",
+      "qualname": "tests.test_research_binding_authority_v1._Models",
+      "role": "tests"
+    },
+    {
+      "bases": [
+        "_Models"
+      ],
+      "decorators": [],
+      "fields": [],
+      "kind": "class",
+      "language": "python",
+      "line": 309,
+      "methods": [
+        "resolve"
+      ],
+      "module": "tests.test_research_binding_authority_v1",
+      "name": "_UnavailableModels",
+      "path": "tests/test_research_binding_authority_v1.py",
+      "qualname": "tests.test_research_binding_authority_v1._UnavailableModels",
       "role": "tests"
     },
     {
@@ -140866,7 +140855,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 183,
+      "line": 189,
       "methods": [
         "reconcile_node"
       ],
@@ -140882,7 +140871,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 817,
+      "line": 823,
       "methods": [
         "ensure_execution",
         "snapshot",
@@ -140919,7 +140908,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 967,
+      "line": 973,
       "methods": [
         "execute"
       ],
@@ -140935,7 +140924,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 289,
+      "line": 293,
       "methods": [
         "__init__",
         "resolve"
@@ -140952,7 +140941,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 314,
+      "line": 318,
       "methods": [
         "execute_bound",
         "execute_bound_variant"
@@ -140969,7 +140958,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 327,
+      "line": 331,
       "methods": [
         "reconcile"
       ],
@@ -140985,7 +140974,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 356,
+      "line": 360,
       "methods": [
         "call"
       ],
@@ -141001,7 +140990,24 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 364,
+      "line": 368,
+      "methods": [
+        "__init__",
+        "resolve"
+      ],
+      "module": "tests.test_research_os_experiment_closure_v1",
+      "name": "_ExperimentArtifactFactory",
+      "path": "tests/test_research_os_experiment_closure_v1.py",
+      "qualname": "tests.test_research_os_experiment_closure_v1._ExperimentArtifactFactory",
+      "role": "tests"
+    },
+    {
+      "bases": [],
+      "decorators": [],
+      "fields": [],
+      "kind": "class",
+      "language": "python",
+      "line": 402,
       "methods": [
         "__init__",
         "resolve"
@@ -146017,9 +146023,13 @@
       "methods": [
         "test_current_tree_has_no_source_authority_violation",
         "test_process_spawn_outside_backend_is_rejected_even_when_import_is_legal",
+        "test_indirect_process_spawn_reference_is_rejected",
+        "test_type_annotation_reference_does_not_claim_spawn_authority",
         "test_raw_file_replace_outside_durable_filesystem_authority_is_rejected",
         "test_checkpoint_publish_cannot_escape_checkpoint_coordinator",
         "test_prepared_capability_effect_calls_cannot_bypass_effect_executor",
+        "test_reference_component_cannot_bypass_platform_durability",
+        "test_public_noetrium_package_cannot_bypass_kernel_authority",
         "test_sqlite_connection_outside_platform_durability_is_rejected",
         "test_thread_pool_outside_concurrency_provider_is_rejected",
         "test_raw_thread_outside_concurrency_provider_is_rejected",
@@ -146428,7 +146438,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 18,
+      "line": 21,
       "methods": [
         "ingest",
         "recall",
@@ -146450,7 +146460,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 26,
+      "line": 29,
       "methods": [
         "open_session"
       ],
@@ -146466,7 +146476,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 29,
+      "line": 32,
       "methods": [
         "observe",
         "act",
@@ -146487,7 +146497,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 36,
+      "line": 39,
       "methods": [
         "open_session"
       ],
@@ -146503,7 +146513,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 42,
+      "line": 45,
       "methods": [
         "__init__",
         "runtime_identity",
@@ -146523,7 +146533,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 49,
+      "line": 52,
       "methods": [
         "_runtime",
         "test_unknown_method_configuration_fails_during_participant_resolution",
@@ -146775,7 +146785,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 12,
+      "line": 11,
       "methods": [
         "run"
       ],
@@ -146793,7 +146803,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 22,
+      "line": 21,
       "methods": [
         "test_workflow_changes_study_identity",
         "test_runtime_rejects_workflow_drift_before_plugin_construction",
@@ -146811,7 +146821,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 44,
+      "line": 43,
       "methods": [
         "run"
       ],
@@ -148371,7 +148381,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 102,
+      "line": 103,
       "methods": [
         "__init__",
         "execute"
@@ -149055,7 +149065,7 @@
       "fields": [],
       "kind": "protocol",
       "language": "typescript",
-      "line": 37,
+      "line": 38,
       "methods": [],
       "module": "sdk/typescript/src/index.ts",
       "name": "MachineInspection",

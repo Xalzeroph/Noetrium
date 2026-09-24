@@ -1,24 +1,18 @@
 {
   "architecture_budget_violations": [
     {
-      "detail": "subsystems complexity budget exceeded: observed=155 limit=154",
-      "dimension": "subsystems",
-      "limit": 154,
-      "observed": 155
-    },
-    {
-      "detail": "contract_declarations complexity budget exceeded: observed=214 limit=209",
-      "dimension": "contract_declarations",
-      "limit": 209,
-      "observed": 214
+      "detail": "top_level_systems complexity budget exceeded: observed=17 limit=16",
+      "dimension": "top_level_systems",
+      "limit": 16,
+      "observed": 17
     }
   ],
   "architecture_complexity": {
-    "authorities": 22,
-    "contract_declarations": 214,
-    "import_edges": 5675,
-    "subsystems": 155,
-    "top_level_systems": 18
+    "authorities": 20,
+    "contract_declarations": 185,
+    "import_edges": 5388,
+    "subsystems": 14,
+    "top_level_systems": 17
   },
   "architecture_complexity_budget": {
     "applicable_migration_ids": [],
@@ -34,11 +28,11 @@
       "source_digest": "e7f22278dd0cf7f797c16b583ef411a6fcee75cde18f19de7dd594166033f2ee"
     },
     "effective_limits": {
-      "authorities": 172,
-      "contract_declarations": 209,
-      "import_edges": 5866,
-      "subsystems": 154,
-      "top_level_systems": 18
+      "authorities": 31,
+      "contract_declarations": 185,
+      "import_edges": 5388,
+      "subsystems": 15,
+      "top_level_systems": 16
     },
     "migrations": [
       {
@@ -545,7 +539,7 @@
     },
     {
       "kind": "event",
-      "line": 41,
+      "line": 44,
       "module": "noetrium_platform.evidence.observability.api.auxiliary_events",
       "path": "noetrium_platform/evidence/observability/api/auxiliary_events.py",
       "relation": "emits",
@@ -561,7 +555,7 @@
     },
     {
       "kind": "event",
-      "line": 8,
+      "line": 9,
       "module": "noetrium_platform.evidence.observability.api.operation_events",
       "path": "noetrium_platform/evidence/observability/api/operation_events.py",
       "relation": "emits",
@@ -577,7 +571,7 @@
     },
     {
       "kind": "event",
-      "line": 8,
+      "line": 9,
       "module": "noetrium_platform.evidence.observability.api.operation_events",
       "path": "noetrium_platform/evidence/observability/api/operation_events.py",
       "relation": "emits",
@@ -593,7 +587,7 @@
     },
     {
       "kind": "event",
-      "line": 8,
+      "line": 9,
       "module": "noetrium_platform.evidence.observability.api.operation_events",
       "path": "noetrium_platform/evidence/observability/api/operation_events.py",
       "relation": "emits",
@@ -609,7 +603,7 @@
     },
     {
       "kind": "event",
-      "line": 8,
+      "line": 9,
       "module": "noetrium_platform.evidence.observability.api.operation_events",
       "path": "noetrium_platform/evidence/observability/api/operation_events.py",
       "relation": "emits",
@@ -625,7 +619,7 @@
     },
     {
       "kind": "event",
-      "line": 8,
+      "line": 9,
       "module": "noetrium_platform.evidence.observability.api.operation_events",
       "path": "noetrium_platform/evidence/observability/api/operation_events.py",
       "relation": "emits",
@@ -633,46 +627,46 @@
     },
     {
       "kind": "event",
-      "line": 365,
+      "line": 356,
       "module": "components.reference.graph",
       "path": "components/reference/graph.py",
       "relation": "consumes",
       "seam_id": "completed"
     }
   ],
-  "import_edges": 5675,
+  "import_edges": 5388,
   "import_violations": [],
   "layer_violations": [],
   "operation_graph": [
     {
       "kind": "operation",
       "line": 82,
-      "module": "noetrium_platform.research.execution.workflow.implementations.agent_turn.agent_turn_operations",
-      "path": "noetrium_platform/research/execution/workflow/implementations/agent_turn/agent_turn_operations.py",
+      "module": "noetrium_platform.composition.workflows.agent_turn.agent_turn_operations",
+      "path": "noetrium_platform/composition/workflows/agent_turn/agent_turn_operations.py",
       "relation": "emits",
       "seam_id": "agent.run_turn"
     },
     {
       "kind": "operation",
       "line": 48,
-      "module": "noetrium_platform.research.execution.workflow.implementations.agent_turn.capability_effect_provider",
-      "path": "noetrium_platform/research/execution/workflow/implementations/agent_turn/capability_effect_provider.py",
+      "module": "noetrium_platform.composition.workflows.agent_turn.capability_effect_provider",
+      "path": "noetrium_platform/composition/workflows/agent_turn/capability_effect_provider.py",
       "relation": "emits",
       "seam_id": "capability.effect.prepare"
     },
     {
       "kind": "operation",
       "line": 118,
-      "module": "noetrium_platform.research.execution.workflow.implementations.agent_turn.capability_effect_provider",
-      "path": "noetrium_platform/research/execution/workflow/implementations/agent_turn/capability_effect_provider.py",
+      "module": "noetrium_platform.composition.workflows.agent_turn.capability_effect_provider",
+      "path": "noetrium_platform/composition/workflows/agent_turn/capability_effect_provider.py",
       "relation": "emits",
       "seam_id": "capability.effect.reconcile"
     },
     {
       "kind": "operation",
       "line": 49,
-      "module": "noetrium_platform.research.execution.workflow.implementations.agent_turn.capability_operations",
-      "path": "noetrium_platform/research/execution/workflow/implementations/agent_turn/capability_operations.py",
+      "module": "noetrium_platform.composition.workflows.agent_turn.capability_operations",
+      "path": "noetrium_platform/composition/workflows/agent_turn/capability_operations.py",
       "relation": "emits",
       "seam_id": "capability.invoke"
     },
@@ -735,586 +729,282 @@
     {
       "kind": "operation",
       "line": 59,
-      "module": "noetrium_platform.research.execution.workflow.implementations.context_action.action_effect_provider",
-      "path": "noetrium_platform/research/execution/workflow/implementations/context_action/action_effect_provider.py",
+      "module": "noetrium_platform.composition.workflows.context_action.action_effect_provider",
+      "path": "noetrium_platform/composition/workflows/context_action/action_effect_provider.py",
       "relation": "emits",
       "seam_id": "environment.act"
     },
     {
       "kind": "operation",
       "line": 95,
-      "module": "noetrium_platform.research.execution.workflow.implementations.context_action.action_effect_provider",
-      "path": "noetrium_platform/research/execution/workflow/implementations/context_action/action_effect_provider.py",
+      "module": "noetrium_platform.composition.workflows.context_action.action_effect_provider",
+      "path": "noetrium_platform/composition/workflows/context_action/action_effect_provider.py",
       "relation": "emits",
       "seam_id": "environment.act_prepared"
     },
     {
       "kind": "operation",
       "line": 52,
-      "module": "noetrium_platform.research.execution.workflow.implementations.context_action.action_reconciliation_operations",
-      "path": "noetrium_platform/research/execution/workflow/implementations/context_action/action_reconciliation_operations.py",
+      "module": "noetrium_platform.composition.workflows.context_action.action_reconciliation_operations",
+      "path": "noetrium_platform/composition/workflows/context_action/action_reconciliation_operations.py",
       "relation": "emits",
       "seam_id": "environment.action_commit_consistency"
     },
     {
       "kind": "operation",
       "line": 28,
-      "module": "noetrium_platform.research.execution.workflow.implementations.context_action.action_recovery_binding",
-      "path": "noetrium_platform/research/execution/workflow/implementations/context_action/action_recovery_binding.py",
+      "module": "noetrium_platform.composition.workflows.context_action.action_recovery_binding",
+      "path": "noetrium_platform/composition/workflows/context_action/action_recovery_binding.py",
       "relation": "emits",
       "seam_id": "environment.action_recovery.bind_request"
     },
     {
       "kind": "operation",
       "line": 58,
-      "module": "noetrium_platform.research.execution.workflow.implementations.context_action.action_authorization",
-      "path": "noetrium_platform/research/execution/workflow/implementations/context_action/action_authorization.py",
+      "module": "noetrium_platform.composition.workflows.context_action.action_authorization",
+      "path": "noetrium_platform/composition/workflows/context_action/action_authorization.py",
       "relation": "emits",
       "seam_id": "environment.action_recovery.prepare"
     },
     {
       "kind": "operation",
       "line": 32,
-      "module": "noetrium_platform.research.execution.workflow.implementations.context_action.action_reconciliation_operations",
-      "path": "noetrium_platform/research/execution/workflow/implementations/context_action/action_reconciliation_operations.py",
+      "module": "noetrium_platform.composition.workflows.context_action.action_reconciliation_operations",
+      "path": "noetrium_platform/composition/workflows/context_action/action_reconciliation_operations.py",
       "relation": "emits",
       "seam_id": "environment.action_recovery_decision"
     },
     {
       "kind": "operation",
       "line": 40,
-      "module": "noetrium_platform.research.execution.workflow.implementations.context_action.action_capability",
-      "path": "noetrium_platform/research/execution/workflow/implementations/context_action/action_capability.py",
+      "module": "noetrium_platform.composition.workflows.context_action.action_capability",
+      "path": "noetrium_platform/composition/workflows/context_action/action_capability.py",
       "relation": "emits",
       "seam_id": "environment.action_safety_preflight"
     },
     {
       "kind": "operation",
-      "line": 128,
-      "module": "noetrium_platform.research.execution.workflow.implementations.context_action.action_slot_guard",
-      "path": "noetrium_platform/research/execution/workflow/implementations/context_action/action_slot_guard.py",
+      "line": 51,
+      "module": "noetrium_platform.composition.workflows.context_action.action_slot_guard",
+      "path": "noetrium_platform/composition/workflows/context_action/action_slot_guard.py",
       "relation": "emits",
       "seam_id": "environment.effect.recovery_anchor_guard"
     },
     {
       "kind": "operation",
-      "line": 108,
-      "module": "noetrium_platform.research.execution.workflow.implementations.context_action.action_slot_guard",
-      "path": "noetrium_platform/research/execution/workflow/implementations/context_action/action_slot_guard.py",
+      "line": 47,
+      "module": "noetrium_platform.composition.workflows.context_action.action_slot_guard",
+      "path": "noetrium_platform/composition/workflows/context_action/action_slot_guard.py",
       "relation": "emits",
       "seam_id": "environment.effect.replay_guard"
     },
     {
       "kind": "operation",
-      "line": 67,
-      "module": "noetrium_platform.research.execution.workflow.implementations.context_action.context_action_operations",
-      "path": "noetrium_platform/research/execution/workflow/implementations/context_action/context_action_operations.py",
+      "line": 66,
+      "module": "noetrium_platform.composition.workflows.context_action.context_action_operations",
+      "path": "noetrium_platform/composition/workflows/context_action/context_action_operations.py",
       "relation": "emits",
       "seam_id": "environment.observe"
     },
     {
       "kind": "operation",
       "line": 135,
-      "module": "noetrium_platform.research.execution.workflow.implementations.context_action.action_effect_provider",
-      "path": "noetrium_platform/research/execution/workflow/implementations/context_action/action_effect_provider.py",
+      "module": "noetrium_platform.composition.workflows.context_action.action_effect_provider",
+      "path": "noetrium_platform/composition/workflows/context_action/action_effect_provider.py",
       "relation": "emits",
       "seam_id": "environment.reconcile"
     },
     {
       "kind": "operation",
       "line": 165,
-      "module": "noetrium_platform.research.execution.workflow.implementations.context_action.action_effect_provider",
-      "path": "noetrium_platform/research/execution/workflow/implementations/context_action/action_effect_provider.py",
+      "module": "noetrium_platform.composition.workflows.context_action.action_effect_provider",
+      "path": "noetrium_platform/composition/workflows/context_action/action_effect_provider.py",
       "relation": "emits",
       "seam_id": "environment.reconcile_prepared_action"
     },
     {
       "kind": "operation",
-      "line": 80,
-      "module": "noetrium_platform.research.execution.workflow.implementations.context_action.context_action_operations",
-      "path": "noetrium_platform/research/execution/workflow/implementations/context_action/context_action_operations.py",
+      "line": 79,
+      "module": "noetrium_platform.composition.workflows.context_action.context_action_operations",
+      "path": "noetrium_platform/composition/workflows/context_action/context_action_operations.py",
       "relation": "emits",
       "seam_id": "method.ingest"
     },
     {
       "kind": "operation",
-      "line": 95,
-      "module": "noetrium_platform.research.execution.workflow.implementations.context_action.context_action_operations",
-      "path": "noetrium_platform/research/execution/workflow/implementations/context_action/context_action_operations.py",
+      "line": 94,
+      "module": "noetrium_platform.composition.workflows.context_action.context_action_operations",
+      "path": "noetrium_platform/composition/workflows/context_action/context_action_operations.py",
       "relation": "emits",
       "seam_id": "method.recall"
     },
     {
       "kind": "operation",
       "line": 95,
-      "module": "noetrium_platform.research.execution.workflow.implementations.context_action.method_completion",
-      "path": "noetrium_platform/research/execution/workflow/implementations/context_action/method_completion.py",
+      "module": "noetrium_platform.composition.workflows.context_action.method_completion",
+      "path": "noetrium_platform/composition/workflows/context_action/method_completion.py",
       "relation": "emits",
       "seam_id": "method.task_completed"
     },
     {
       "kind": "operation",
       "line": 126,
-      "module": "noetrium_platform.research.execution.workflow.implementations.context_action.method_completion",
-      "path": "noetrium_platform/research/execution/workflow/implementations/context_action/method_completion.py",
+      "module": "noetrium_platform.composition.workflows.context_action.method_completion",
+      "path": "noetrium_platform/composition/workflows/context_action/method_completion.py",
       "relation": "emits",
       "seam_id": "method.task_completion_reconcile"
     },
     {
       "kind": "operation",
       "line": 50,
-      "module": "noetrium_platform.research.execution.workflow.implementations.context_action.method_completion",
-      "path": "noetrium_platform/research/execution/workflow/implementations/context_action/method_completion.py",
+      "module": "noetrium_platform.composition.workflows.context_action.method_completion",
+      "path": "noetrium_platform/composition/workflows/context_action/method_completion.py",
       "relation": "emits",
       "seam_id": "method.task_completion_safety_preflight"
     },
     {
       "kind": "operation",
       "line": 58,
-      "module": "noetrium_platform.research.experimentation.checkpoint.runtime.restore",
-      "path": "noetrium_platform/research/experimentation/checkpoint/runtime/restore.py",
+      "module": "noetrium_platform.research.experimentation.lifecycle.checkpoint.runtime.restore",
+      "path": "noetrium_platform/research/experimentation/lifecycle/checkpoint/runtime/restore.py",
       "relation": "emits",
       "seam_id": "run.checkpoint.load"
     },
     {
       "kind": "operation",
       "line": 73,
-      "module": "noetrium_platform.research.experimentation.checkpoint.runtime.capture",
-      "path": "noetrium_platform/research/experimentation/checkpoint/runtime/capture.py",
+      "module": "noetrium_platform.research.experimentation.lifecycle.checkpoint.runtime.capture",
+      "path": "noetrium_platform/research/experimentation/lifecycle/checkpoint/runtime/capture.py",
       "relation": "emits",
       "seam_id": "run.checkpoint.publish"
     }
   ],
-  "package_cycles": [],
-  "report_sha256": "f2aa1b2a74312ae215b6c7403becc164f4bf270b5f17e021abee8cf3fe32a0d5",
-  "source_authority_violations": [],
-  "source_digest": "bc9927354ef72950c2529c5e83e33fb903e9b38a1e2d625e09ae8bdf9b1e92e1",
-  "source_invariant_violations": [
+  "package_cycles": [
+    [
+      "noetrium_platform.composition",
+      "noetrium_platform.product"
+    ]
+  ],
+  "report_sha256": "71e3d3ea1feab72f96718b536857012c6a04b4bc28e16770bb94ae5afc021f50",
+  "source_authority_violations": [
     {
-      "detail": "artifact/lineage/relation authority_id drift: catalog='' leaf_contract='artifact_lineage_edge'",
-      "invariant": "leaf_contract_catalog_drift",
-      "line": 13,
-      "path": "noetrium_platform/evidence/artifact/lineage/relation/api/boundary.py"
+      "allowed_modules": [
+        "noetrium_platform.foundation.kernel.kernel.durability.durable_file"
+      ],
+      "authority": "filesystem.direct_bytes_write",
+      "detail": "Path.write_bytes is a protected mutation primitive; authority belongs to noetrium_platform.foundation.kernel.kernel.durability.durable_file",
+      "line": 43,
+      "module": "noetrium.nsh",
+      "path": "noetrium/nsh.py",
+      "primitive": "Path.write_bytes"
     },
     {
-      "detail": "artifact/reference authority_id drift: catalog='' leaf_contract='artifact_reference'",
-      "invariant": "leaf_contract_catalog_drift",
-      "line": 15,
-      "path": "noetrium_platform/evidence/artifact/reference/api/boundary.py"
-    },
-    {
-      "detail": "artifact/retention authority_id drift: catalog='' leaf_contract='artifact_retention'",
-      "invariant": "leaf_contract_catalog_drift",
-      "line": 15,
-      "path": "noetrium_platform/evidence/artifact/retention/api/boundary.py"
-    },
-    {
-      "detail": "environment/binding authority_id drift: catalog='' leaf_contract='environment_binding'",
-      "invariant": "leaf_contract_catalog_drift",
-      "line": 15,
-      "path": "noetrium_platform/capabilities/environment/binding/api/boundary.py"
-    },
-    {
-      "detail": "environment/instance/identity authority_id drift: catalog='' leaf_contract='environment_instance_identity'",
-      "invariant": "leaf_contract_catalog_drift",
-      "line": 13,
-      "path": "noetrium_platform/capabilities/environment/instance/identity/api/boundary.py"
-    },
-    {
-      "detail": "environment/instance/readiness authority_id drift: catalog='' leaf_contract='environment_readiness'",
-      "invariant": "leaf_contract_catalog_drift",
-      "line": 13,
-      "path": "noetrium_platform/capabilities/environment/instance/readiness/api/boundary.py"
-    },
-    {
-      "detail": "environment/resolution authority_id drift: catalog='' leaf_contract='environment_resolution'",
-      "invariant": "leaf_contract_catalog_drift",
-      "line": 15,
-      "path": "noetrium_platform/capabilities/environment/resolution/api/boundary.py"
-    },
-    {
-      "detail": "environment/specification/digest authority_id drift: catalog='' leaf_contract='environment_digest'",
-      "invariant": "leaf_contract_catalog_drift",
-      "line": 13,
-      "path": "noetrium_platform/capabilities/environment/specification/digest/api/boundary.py"
-    },
-    {
-      "detail": "environment/specification/schema authority_id drift: catalog='' leaf_contract='environment_schema'",
-      "invariant": "leaf_contract_catalog_drift",
-      "line": 13,
-      "path": "noetrium_platform/capabilities/environment/specification/schema/api/boundary.py"
-    },
-    {
-      "detail": "execution/admission authority_id drift: catalog='' leaf_contract='admission_decision'",
-      "invariant": "leaf_contract_catalog_drift",
-      "line": 15,
-      "path": "noetrium_platform/research/execution/admission/api/boundary.py"
-    },
-    {
-      "detail": "execution/scheduling authority_id drift: catalog='' leaf_contract='schedule_intent'",
-      "invariant": "leaf_contract_catalog_drift",
-      "line": 15,
-      "path": "noetrium_platform/research/execution/scheduling/api/boundary.py"
-    },
-    {
-      "detail": "experimentation/branch authority_id drift: catalog='' leaf_contract='branch_state'",
-      "invariant": "leaf_contract_catalog_drift",
-      "line": 15,
-      "path": "noetrium_platform/research/experimentation/branch/api/boundary.py"
-    },
-    {
-      "detail": "experimentation/variant authority_id drift: catalog='' leaf_contract='variant_state'",
-      "invariant": "leaf_contract_catalog_drift",
-      "line": 15,
-      "path": "noetrium_platform/research/experimentation/variant/api/boundary.py"
-    },
-    {
-      "detail": "governance/schema authority_id drift: catalog='' leaf_contract='schema_authority'",
-      "invariant": "leaf_contract_catalog_drift",
-      "line": 15,
-      "path": "noetrium_platform/foundation/governance/schema/api/boundary.py"
-    },
-    {
-      "detail": "governance/security authority_id drift: catalog='' leaf_contract='security_policy'",
-      "invariant": "leaf_contract_catalog_drift",
-      "line": 15,
-      "path": "noetrium_platform/foundation/governance/security/api/boundary.py"
-    },
-    {
-      "detail": "model/catalog/family authority_id drift: catalog='' leaf_contract='model_family'",
-      "invariant": "leaf_contract_catalog_drift",
-      "line": 13,
-      "path": "noetrium_platform/capabilities/model/catalog/family/api/boundary.py"
-    },
-    {
-      "detail": "model/catalog/revision authority_id drift: catalog='' leaf_contract='model_revision'",
-      "invariant": "leaf_contract_catalog_drift",
-      "line": 13,
-      "path": "noetrium_platform/capabilities/model/catalog/revision/api/boundary.py"
-    },
-    {
-      "detail": "model/deployment/closure authority_id drift: catalog='' leaf_contract='deployment_closure'",
-      "invariant": "leaf_contract_catalog_drift",
-      "line": 13,
-      "path": "noetrium_platform/capabilities/model/deployment/closure/api/boundary.py"
-    },
-    {
-      "detail": "model/request/input authority_id drift: catalog='' leaf_contract='request_input'",
-      "invariant": "leaf_contract_catalog_drift",
-      "line": 13,
-      "path": "noetrium_platform/capabilities/model/request/input/api/boundary.py"
-    },
-    {
-      "detail": "model/request/output authority_id drift: catalog='' leaf_contract='request_output'",
-      "invariant": "leaf_contract_catalog_drift",
-      "line": 13,
-      "path": "noetrium_platform/capabilities/model/request/output/api/boundary.py"
-    },
-    {
-      "detail": "observability/diagnostic/correlation authority_id drift: catalog='' leaf_contract='diagnostic_correlation'",
-      "invariant": "leaf_contract_catalog_drift",
-      "line": 13,
-      "path": "noetrium_platform/evidence/observability/diagnostic/correlation/api/boundary.py"
-    },
-    {
-      "detail": "observability/diagnostic/query authority_id drift: catalog='' leaf_contract='diagnostic_query'",
-      "invariant": "leaf_contract_catalog_drift",
-      "line": 13,
-      "path": "noetrium_platform/evidence/observability/diagnostic/query/api/boundary.py"
-    },
-    {
-      "detail": "observability/diagnostic/snapshot authority_id drift: catalog='' leaf_contract='diagnostic_snapshot'",
-      "invariant": "leaf_contract_catalog_drift",
-      "line": 13,
-      "path": "noetrium_platform/evidence/observability/diagnostic/snapshot/api/boundary.py"
-    },
-    {
-      "detail": "observability/logging/capture authority_id drift: catalog='' leaf_contract='raw_capture'",
-      "invariant": "leaf_contract_catalog_drift",
-      "line": 13,
-      "path": "noetrium_platform/evidence/observability/logging/capture/api/boundary.py"
-    },
-    {
-      "detail": "observability/logging/projection authority_id drift: catalog='' leaf_contract='log_projection'",
-      "invariant": "leaf_contract_catalog_drift",
-      "line": 13,
-      "path": "noetrium_platform/evidence/observability/logging/projection/api/boundary.py"
-    },
-    {
-      "detail": "observability/logging/retention authority_id drift: catalog='' leaf_contract='log_retention'",
-      "invariant": "leaf_contract_catalog_drift",
-      "line": 13,
-      "path": "noetrium_platform/evidence/observability/logging/retention/api/boundary.py"
-    },
-    {
-      "detail": "observability/projection authority_id drift: catalog='' leaf_contract='observation_projection'",
-      "invariant": "leaf_contract_catalog_drift",
-      "line": 15,
-      "path": "noetrium_platform/evidence/observability/projection/api/boundary.py"
-    },
-    {
-      "detail": "observability/status/health authority_id drift: catalog='' leaf_contract='health_observation'",
-      "invariant": "leaf_contract_catalog_drift",
-      "line": 13,
-      "path": "noetrium_platform/evidence/observability/status/health/api/boundary.py"
-    },
-    {
-      "detail": "observability/status/lifecycle_view authority_id drift: catalog='' leaf_contract='lifecycle_projection'",
-      "invariant": "leaf_contract_catalog_drift",
-      "line": 13,
-      "path": "noetrium_platform/evidence/observability/status/lifecycle_view/api/boundary.py"
-    },
-    {
-      "detail": "observability/tracing/context authority_id drift: catalog='' leaf_contract='trace_context'",
-      "invariant": "leaf_contract_catalog_drift",
-      "line": 13,
-      "path": "noetrium_platform/evidence/observability/tracing/context/api/boundary.py"
-    },
-    {
-      "detail": "observability/tracing/propagation authority_id drift: catalog='' leaf_contract='trace_propagation'",
-      "invariant": "leaf_contract_catalog_drift",
-      "line": 13,
-      "path": "noetrium_platform/evidence/observability/tracing/propagation/api/boundary.py"
-    },
-    {
-      "detail": "observability/tracing/storage authority_id drift: catalog='' leaf_contract='trace_storage'",
-      "invariant": "leaf_contract_catalog_drift",
-      "line": 13,
-      "path": "noetrium_platform/evidence/observability/tracing/storage/api/boundary.py"
-    },
-    {
-      "detail": "operator/command/intent authority_id drift: catalog='' leaf_contract='operator_command_intent'",
-      "invariant": "leaf_contract_catalog_drift",
-      "line": 13,
-      "path": "noetrium_platform/product/operator/command/intent/api/boundary.py"
-    },
-    {
-      "detail": "operator/incident authority_id drift: catalog='' leaf_contract='operator_incident_view'",
-      "invariant": "leaf_contract_catalog_drift",
-      "line": 15,
-      "path": "noetrium_platform/product/operator/incident/api/boundary.py"
-    },
-    {
-      "detail": "operator/query/search authority_id drift: catalog='' leaf_contract='operator_search'",
-      "invariant": "leaf_contract_catalog_drift",
-      "line": 13,
-      "path": "noetrium_platform/product/operator/query/search/api/boundary.py"
-    },
-    {
-      "detail": "platform/configuration authority_id drift: catalog='' leaf_contract='platform_configuration'",
-      "invariant": "leaf_contract_catalog_drift",
-      "line": 15,
-      "path": "noetrium_platform/foundation/kernel/configuration/api/boundary.py"
-    },
-    {
-      "detail": "platform/identity authority_id drift: catalog='' leaf_contract='platform_identity'",
-      "invariant": "leaf_contract_catalog_drift",
-      "line": 15,
-      "path": "noetrium_platform/foundation/kernel/identity/api/boundary.py"
-    },
-    {
-      "detail": "platform/lifecycle authority_id drift: catalog='' leaf_contract='platform_lifecycle'",
-      "invariant": "leaf_contract_catalog_drift",
-      "line": 15,
-      "path": "noetrium_platform/foundation/kernel/lifecycle/api/boundary.py"
-    },
-    {
-      "detail": "portfolio/membership authority_id drift: catalog='' leaf_contract='portfolio_membership'",
-      "invariant": "leaf_contract_catalog_drift",
-      "line": 15,
-      "path": "noetrium_platform/foundation/portfolio/membership/api/boundary.py"
-    },
-    {
-      "detail": "portfolio/program authority_id drift: catalog='' leaf_contract='program_metadata'",
-      "invariant": "leaf_contract_catalog_drift",
-      "line": 15,
-      "path": "noetrium_platform/foundation/portfolio/program/api/boundary.py"
-    },
-    {
-      "detail": "portfolio/workspace authority_id drift: catalog='' leaf_contract='workspace_metadata'",
-      "invariant": "leaf_contract_catalog_drift",
-      "line": 15,
-      "path": "noetrium_platform/foundation/portfolio/workspace/api/boundary.py"
-    },
-    {
-      "detail": "runtime/process/supervision authority_id drift: catalog='' leaf_contract='process_supervision'",
-      "invariant": "leaf_contract_catalog_drift",
-      "line": 13,
-      "path": "noetrium_platform/infrastructure/lifecycle/process/supervision/api/boundary.py"
-    },
-    {
-      "detail": "scope/hierarchy authority_id drift: catalog='' leaf_contract='scope_hierarchy'",
-      "invariant": "leaf_contract_catalog_drift",
-      "line": 15,
-      "path": "noetrium_platform/foundation/scope/hierarchy/api/boundary.py"
-    },
-    {
-      "detail": "scope/identity authority_id drift: catalog='' leaf_contract='scope_identity'",
-      "invariant": "leaf_contract_catalog_drift",
-      "line": 15,
-      "path": "noetrium_platform/foundation/scope/identity/api/boundary.py"
-    },
-    {
-      "detail": "scope/membership authority_id drift: catalog='' leaf_contract='scope_membership'",
-      "invariant": "leaf_contract_catalog_drift",
-      "line": 15,
-      "path": "noetrium_platform/foundation/scope/membership/api/boundary.py"
-    },
-    {
-      "detail": "scope/ownership authority_id drift: catalog='' leaf_contract='scope_ownership'",
-      "invariant": "leaf_contract_catalog_drift",
-      "line": 13,
-      "path": "noetrium_platform/foundation/scope/ownership/api/boundary.py"
-    },
-    {
-      "detail": "scope/resolution authority_id drift: catalog='' leaf_contract='scope_resolution'",
-      "invariant": "leaf_contract_catalog_drift",
-      "line": 13,
-      "path": "noetrium_platform/foundation/scope/resolution/api/boundary.py"
-    },
-    {
-      "detail": "resource/compute imports concrete implementation noetrium_platform.infrastructure.resources.providers.sqlite_connection from resource; depend on its API contract and inject the implementation from composition",
-      "invariant": "cross_subsystem_concrete_dependency",
-      "line": 21,
-      "path": "noetrium_platform/infrastructure/resources/compute/runtime/scheduler.py"
-    },
-    {
-      "detail": "resource/compute imports concrete implementation noetrium_platform.infrastructure.resources.providers.sqlite_resource from resource; depend on its API contract and inject the implementation from composition",
-      "invariant": "cross_subsystem_concrete_dependency",
-      "line": 22,
-      "path": "noetrium_platform/infrastructure/resources/compute/runtime/scheduler.py"
-    },
-    {
-      "detail": "resource/compute imports concrete implementation noetrium_platform.infrastructure.resources.providers.sqlite_lease_ops from resource; depend on its API contract and inject the implementation from composition",
-      "invariant": "cross_subsystem_concrete_dependency",
-      "line": 23,
-      "path": "noetrium_platform/infrastructure/resources/compute/runtime/scheduler.py"
-    },
-    {
-      "detail": "resource/compute imports concrete implementation noetrium_platform.infrastructure.resources.lease.runtime from resource/lease; depend on its API contract and inject the implementation from composition",
-      "invariant": "cross_subsystem_concrete_dependency",
-      "line": 282,
-      "path": "noetrium_platform/infrastructure/resources/compute/runtime/scheduler.py"
-    },
-    {
-      "detail": "model depends on artifact but the dependency is not declared for the subsystem or its parent system",
-      "invariant": "system_dependency_declaration",
-      "line": 7,
-      "path": "noetrium_platform/capabilities/model/api/multimodal.py"
-    },
-    {
-      "detail": "model depends on artifact but the dependency is not declared for the subsystem or its parent system",
-      "invariant": "system_dependency_declaration",
-      "line": 9,
-      "path": "noetrium_platform/capabilities/model/api/project.py"
-    },
-    {
-      "detail": "model/request depends on artifact but the dependency is not declared for the subsystem or its parent system",
-      "invariant": "system_dependency_declaration",
-      "line": 7,
-      "path": "noetrium_platform/capabilities/model/request/api/contracts.py"
-    },
-    {
-      "detail": "model/request depends on artifact but the dependency is not declared for the subsystem or its parent system",
-      "invariant": "system_dependency_declaration",
-      "line": 18,
-      "path": "noetrium_platform/capabilities/model/request/runtime/ledger.py"
-    },
-    {
-      "detail": "model/request depends on artifact but the dependency is not declared for the subsystem or its parent system",
-      "invariant": "system_dependency_declaration",
-      "line": 9,
-      "path": "noetrium_platform/capabilities/model/request/runtime/recorder.py"
-    },
-    {
-      "detail": "model/serving depends on artifact but the dependency is not declared for the subsystem or its parent system",
-      "invariant": "system_dependency_declaration",
-      "line": 8,
-      "path": "noetrium_platform/capabilities/model/serving/runtime/runtime_canary.py"
-    },
-    {
-      "detail": "reliability/recovery depends on resource but the dependency is not declared for the subsystem or its parent system",
-      "invariant": "system_dependency_declaration",
-      "line": 9,
-      "path": "noetrium_platform/infrastructure/reliability/recovery/runtime/lease_adapter.py"
+      "allowed_modules": [
+        "noetrium_platform.foundation.kernel.concurrency.runtime.execution"
+      ],
+      "authority": "concurrency.blocking_sleep",
+      "detail": "time.sleep is a protected mutation primitive; authority belongs to noetrium_platform.foundation.kernel.concurrency.runtime.execution",
+      "line": 36,
+      "module": "noetrium_platform.foundation.kernel.kernel.retry",
+      "path": "noetrium_platform/foundation/kernel/kernel/retry.py",
+      "primitive": "time.sleep"
     }
   ],
-  "source_root": "E:\\Agent-Research-Workspace\\projects\\_scratch\\noetrium-resource-scheduling-20260916",
+  "source_digest": "cb390bb73cf1631994f16cef268176e8a3a53296cdc2913777aaaac29761b330",
+  "source_invariant_violations": [
+    {
+      "detail": "raw exception text is surfaced directly (str(exc)); use error_api.describe_exception",
+      "invariant": "error_semantic_authority",
+      "line": 22,
+      "path": "noetrium_platform/foundation/kernel/kernel/durability/sqlite.py"
+    },
+    {
+      "detail": "platform modules must use Observability/Logging typed ports instead of the Python stdlib logging implementation",
+      "invariant": "logging_stdlib_bypass",
+      "line": 4,
+      "path": "noetrium_platform/composition/reliability_observability/__init__.py"
+    },
+    {
+      "detail": "raw SQLite durability/transaction policy 'BEGIN' bypasses the canonical Platform durability authority; use foundation.kernel.kernel.durability.sqlite",
+      "invariant": "sqlite_durability_authority",
+      "line": 128,
+      "path": "noetrium_platform/evidence/observability/telemetry/metric/providers/query.py"
+    },
+    {
+      "detail": "noetrium_platform.capabilities.environment.minecraft.composition.server_artifact -> noetrium_platform.evidence.artifact.content.providers.download; required facade=noetrium_platform.substrate.api",
+      "invariant": "skip_layer_dependency",
+      "line": 9,
+      "path": "noetrium_platform/capabilities/environment/minecraft/composition/server_artifact.py"
+    },
+    {
+      "detail": "noetrium_platform.infrastructure.lifecycle.toolchain.composition -> noetrium_platform.evidence.artifact.content.providers.download; required facade=noetrium_platform.foundation.api",
+      "invariant": "bypass_lower_layer_facade",
+      "line": 11,
+      "path": "noetrium_platform/infrastructure/lifecycle/toolchain/composition/__init__.py"
+    },
+    {
+      "detail": "noetrium_platform.product.operator.runtime.research_cli -> noetrium_platform.product.research_os; required facade=noetrium_platform.research.experimentation.api",
+      "invariant": "sibling_system_dependency",
+      "line": 13,
+      "path": "noetrium_platform/product/operator/runtime/research_cli.py"
+    },
+    {
+      "detail": "noetrium_platform.product.research_authoring -> noetrium_platform.capabilities.environment.api; required facade=noetrium_platform.research.experimentation.api",
+      "invariant": "skip_layer_dependency",
+      "line": 11,
+      "path": "noetrium_platform/product/research_authoring.py"
+    },
+    {
+      "detail": "noetrium_platform.product.research_authoring -> noetrium_platform.capabilities.environment.embodied.api; required facade=noetrium_platform.research.experimentation.api",
+      "invariant": "skip_layer_dependency",
+      "line": 16,
+      "path": "noetrium_platform/product/research_authoring.py"
+    },
+    {
+      "detail": "noetrium_platform.product.research_authoring -> noetrium_platform.capabilities.participant.capability.api; required facade=noetrium_platform.research.experimentation.api",
+      "invariant": "skip_layer_dependency",
+      "line": 29,
+      "path": "noetrium_platform/product/research_authoring.py"
+    },
+    {
+      "detail": "noetrium_platform.product.research_authoring -> noetrium_platform.capabilities.participant.method.api; required facade=noetrium_platform.research.experimentation.api",
+      "invariant": "skip_layer_dependency",
+      "line": 40,
+      "path": "noetrium_platform/product/research_authoring.py"
+    },
+    {
+      "detail": "noetrium_platform.product.research_authoring -> noetrium_platform.evidence.artifact.content.api; required facade=noetrium_platform.research.experimentation.api",
+      "invariant": "skip_layer_dependency",
+      "line": 52,
+      "path": "noetrium_platform/product/research_authoring.py"
+    },
+    {
+      "detail": "noetrium_platform.product.research_authoring -> noetrium_platform.research.execution.api; required facade=noetrium_platform.research.experimentation.api",
+      "invariant": "non_adjacent_layer_facade_dependency",
+      "line": 76,
+      "path": "noetrium_platform/product/research_authoring.py"
+    },
+    {
+      "detail": "noetrium_platform.product.research_authoring -> noetrium_platform.research.execution.machines.api; required facade=noetrium_platform.research.experimentation.api",
+      "invariant": "skip_layer_dependency",
+      "line": 79,
+      "path": "noetrium_platform/product/research_authoring.py"
+    },
+    {
+      "detail": "noetrium_platform.product.research_authoring -> noetrium_platform.research.execution.workflow.api; required facade=noetrium_platform.research.experimentation.api",
+      "invariant": "skip_layer_dependency",
+      "line": 115,
+      "path": "noetrium_platform/product/research_authoring.py"
+    },
+    {
+      "detail": "noetrium_platform.product.research_authoring -> noetrium_platform.research.experimentation.lifecycle.api; required facade=noetrium_platform.research.experimentation.api",
+      "invariant": "bypass_lower_layer_facade",
+      "line": 134,
+      "path": "noetrium_platform/product/research_authoring.py"
+    }
+  ],
+  "source_root": ".",
   "subsystem_graph": [
-    {
-      "authorities": [],
-      "components": [],
-      "package_prefix": "noetrium_platform.evidence.artifact.catalog",
-      "provides": [
-        "artifact.registry"
-      ],
-      "relation": "contains",
-      "requires": [],
-      "source": "artifact",
-      "target": "artifact/catalog"
-    },
-    {
-      "authorities": [],
-      "components": [],
-      "package_prefix": "noetrium_platform.evidence.artifact.content",
-      "provides": [],
-      "relation": "contains",
-      "requires": [],
-      "source": "artifact",
-      "target": "artifact/content"
-    },
-    {
-      "authorities": [],
-      "components": [],
-      "package_prefix": "noetrium_platform.evidence.artifact.lineage",
-      "provides": [],
-      "relation": "contains",
-      "requires": [],
-      "source": "artifact",
-      "target": "artifact/lineage"
-    },
-    {
-      "authorities": [],
-      "components": [],
-      "package_prefix": "noetrium_platform.evidence.artifact.lineage.relation",
-      "provides": [],
-      "relation": "contains",
-      "requires": [],
-      "source": "artifact/lineage",
-      "target": "artifact/lineage/relation"
-    },
-    {
-      "authorities": [],
-      "components": [],
-      "package_prefix": "noetrium_platform.evidence.artifact.reference",
-      "provides": [],
-      "relation": "contains",
-      "requires": [],
-      "source": "artifact",
-      "target": "artifact/reference"
-    },
-    {
-      "authorities": [],
-      "components": [],
-      "package_prefix": "noetrium_platform.evidence.artifact.retention",
-      "provides": [],
-      "relation": "contains",
-      "requires": [],
-      "source": "artifact",
-      "target": "artifact/retention"
-    },
-    {
-      "authorities": [],
-      "components": [],
-      "package_prefix": "noetrium_platform.evidence.data.dataset",
-      "provides": [
-        "dataset.registry"
-      ],
-      "relation": "contains",
-      "requires": [],
-      "source": "data",
-      "target": "data/dataset"
-    },
     {
       "authorities": [
         "fact_authority"
@@ -1328,50 +1018,6 @@
       "requires": [],
       "source": "data",
       "target": "data/fact"
-    },
-    {
-      "authorities": [],
-      "components": [],
-      "package_prefix": "noetrium_platform.evidence.data.projection",
-      "provides": [
-        "projection.runtime"
-      ],
-      "relation": "contains",
-      "requires": [],
-      "source": "data",
-      "target": "data/projection"
-    },
-    {
-      "authorities": [],
-      "components": [],
-      "package_prefix": "noetrium_platform.evidence.data.query",
-      "provides": [],
-      "relation": "contains",
-      "requires": [],
-      "source": "data",
-      "target": "data/query"
-    },
-    {
-      "authorities": [],
-      "components": [],
-      "package_prefix": "noetrium_platform.evidence.data.query.cross",
-      "provides": [],
-      "relation": "contains",
-      "requires": [],
-      "source": "data/query",
-      "target": "data/query/cross"
-    },
-    {
-      "authorities": [],
-      "components": [],
-      "package_prefix": "noetrium_platform.evidence.data.record",
-      "provides": [
-        "record.plane"
-      ],
-      "relation": "contains",
-      "requires": [],
-      "source": "data",
-      "target": "data/record"
     },
     {
       "authorities": [
@@ -1392,59 +1038,6 @@
     {
       "authorities": [],
       "components": [],
-      "package_prefix": "noetrium_platform.capabilities.environment.binding",
-      "provides": [],
-      "relation": "contains",
-      "requires": [],
-      "source": "environment",
-      "target": "environment/binding"
-    },
-    {
-      "authorities": [],
-      "components": [],
-      "package_prefix": "noetrium_platform.capabilities.environment.catalog",
-      "provides": [
-        "environment.catalog"
-      ],
-      "relation": "contains",
-      "requires": [],
-      "source": "environment",
-      "target": "environment/catalog"
-    },
-    {
-      "authorities": [],
-      "components": [],
-      "package_prefix": "noetrium_platform.capabilities.environment.category",
-      "provides": [
-        "environment.category"
-      ],
-      "relation": "contains",
-      "requires": [
-        "governance/system_registry",
-        "platform"
-      ],
-      "source": "environment",
-      "target": "environment/category"
-    },
-    {
-      "authorities": [],
-      "components": [],
-      "package_prefix": "noetrium_platform.capabilities.environment.embodied",
-      "provides": [
-        "environment.embodied.contract"
-      ],
-      "relation": "contains",
-      "requires": [
-        "environment",
-        "reliability",
-        "resource"
-      ],
-      "source": "environment",
-      "target": "environment/embodied"
-    },
-    {
-      "authorities": [],
-      "components": [],
       "package_prefix": "noetrium_platform.capabilities.environment.gui",
       "provides": [
         "environment.gui.contract"
@@ -1456,36 +1049,6 @@
       ],
       "source": "environment",
       "target": "environment/gui"
-    },
-    {
-      "authorities": [],
-      "components": [],
-      "package_prefix": "noetrium_platform.capabilities.environment.instance",
-      "provides": [],
-      "relation": "contains",
-      "requires": [],
-      "source": "environment",
-      "target": "environment/instance"
-    },
-    {
-      "authorities": [],
-      "components": [],
-      "package_prefix": "noetrium_platform.capabilities.environment.instance.identity",
-      "provides": [],
-      "relation": "contains",
-      "requires": [],
-      "source": "environment/instance",
-      "target": "environment/instance/identity"
-    },
-    {
-      "authorities": [],
-      "components": [],
-      "package_prefix": "noetrium_platform.capabilities.environment.instance.readiness",
-      "provides": [],
-      "relation": "contains",
-      "requires": [],
-      "source": "environment/instance",
-      "target": "environment/instance/readiness"
     },
     {
       "authorities": [],
@@ -1508,28 +1071,6 @@
     {
       "authorities": [],
       "components": [],
-      "package_prefix": "noetrium_platform.capabilities.environment.resolution",
-      "provides": [],
-      "relation": "contains",
-      "requires": [],
-      "source": "environment",
-      "target": "environment/resolution"
-    },
-    {
-      "authorities": [],
-      "components": [],
-      "package_prefix": "noetrium_platform.capabilities.environment.runtime",
-      "provides": [
-        "environment.contract"
-      ],
-      "relation": "contains",
-      "requires": [],
-      "source": "environment",
-      "target": "environment/runtime"
-    },
-    {
-      "authorities": [],
-      "components": [],
       "package_prefix": "noetrium_platform.capabilities.environment.software",
       "provides": [
         "environment.software.contract"
@@ -1537,41 +1078,11 @@
       "relation": "contains",
       "requires": [
         "environment",
-        "runtime",
-        "resource"
+        "resource",
+        "runtime"
       ],
       "source": "environment",
       "target": "environment/software"
-    },
-    {
-      "authorities": [],
-      "components": [],
-      "package_prefix": "noetrium_platform.capabilities.environment.specification",
-      "provides": [],
-      "relation": "contains",
-      "requires": [],
-      "source": "environment",
-      "target": "environment/specification"
-    },
-    {
-      "authorities": [],
-      "components": [],
-      "package_prefix": "noetrium_platform.capabilities.environment.specification.digest",
-      "provides": [],
-      "relation": "contains",
-      "requires": [],
-      "source": "environment/specification",
-      "target": "environment/specification/digest"
-    },
-    {
-      "authorities": [],
-      "components": [],
-      "package_prefix": "noetrium_platform.capabilities.environment.specification.schema",
-      "provides": [],
-      "relation": "contains",
-      "requires": [],
-      "source": "environment/specification",
-      "target": "environment/specification/schema"
     },
     {
       "authorities": [],
@@ -1603,41 +1114,6 @@
       "target": "environment/web"
     },
     {
-      "authorities": [],
-      "components": [],
-      "package_prefix": "noetrium_platform.research.execution.admission",
-      "provides": [],
-      "relation": "contains",
-      "requires": [],
-      "source": "execution",
-      "target": "execution/admission"
-    },
-    {
-      "authorities": [],
-      "components": [],
-      "package_prefix": "noetrium_platform.research.execution.capability",
-      "provides": [
-        "capability.invocation",
-        "capability.registration"
-      ],
-      "relation": "contains",
-      "requires": [],
-      "source": "execution",
-      "target": "execution/capability"
-    },
-    {
-      "authorities": [
-        "command_intent"
-      ],
-      "components": [],
-      "package_prefix": "noetrium_platform.research.execution.command",
-      "provides": [],
-      "relation": "contains",
-      "requires": [],
-      "source": "execution",
-      "target": "execution/command"
-    },
-    {
       "authorities": [
         "operation_state"
       ],
@@ -1648,316 +1124,6 @@
       "requires": [],
       "source": "execution",
       "target": "execution/operation"
-    },
-    {
-      "authorities": [],
-      "components": [],
-      "package_prefix": "noetrium_platform.research.execution.scheduling",
-      "provides": [],
-      "relation": "contains",
-      "requires": [],
-      "source": "execution",
-      "target": "execution/scheduling"
-    },
-    {
-      "authorities": [],
-      "components": [],
-      "package_prefix": "noetrium_platform.research.execution.workflow",
-      "provides": [
-        "workflow.runtime",
-        "method.machine",
-        "method.abi",
-        "method.checkpoint"
-      ],
-      "relation": "contains",
-      "requires": [
-        "participant/capability",
-        "participant/method",
-        "platform"
-      ],
-      "source": "execution",
-      "target": "execution/workflow"
-    },
-    {
-      "authorities": [],
-      "components": [],
-      "package_prefix": "noetrium_platform.research.experimentation.branch",
-      "provides": [],
-      "relation": "contains",
-      "requires": [],
-      "source": "experimentation",
-      "target": "experimentation/branch"
-    },
-    {
-      "authorities": [],
-      "components": [],
-      "package_prefix": "noetrium_platform.research.experimentation.catalog",
-      "provides": [
-        "experiment.catalog"
-      ],
-      "relation": "contains",
-      "requires": [
-        "experimentation/experiment",
-        "experimentation/run/identity",
-        "experimentation/study",
-        "scope"
-      ],
-      "source": "experimentation",
-      "target": "experimentation/catalog"
-    },
-    {
-      "authorities": [],
-      "components": [],
-      "package_prefix": "noetrium_platform.research.experimentation.checkpoint",
-      "provides": [
-        "run.checkpoint"
-      ],
-      "relation": "contains",
-      "requires": [],
-      "source": "experimentation",
-      "target": "experimentation/checkpoint"
-    },
-    {
-      "authorities": [],
-      "components": [],
-      "package_prefix": "noetrium_platform.research.experimentation.evaluation",
-      "provides": [],
-      "relation": "contains",
-      "requires": [],
-      "source": "experimentation",
-      "target": "experimentation/evaluation"
-    },
-    {
-      "authorities": [],
-      "components": [],
-      "package_prefix": "noetrium_platform.research.experimentation.experiment",
-      "provides": [
-        "experiment.definition",
-        "experiment.runtime"
-      ],
-      "relation": "contains",
-      "requires": [],
-      "source": "experimentation",
-      "target": "experimentation/experiment"
-    },
-    {
-      "authorities": [],
-      "components": [],
-      "package_prefix": "noetrium_platform.research.experimentation.resource",
-      "provides": [
-        "experiment.resource-policy"
-      ],
-      "relation": "contains",
-      "requires": [
-        "experimentation/experiment",
-        "resource/compute",
-        "scope"
-      ],
-      "source": "experimentation",
-      "target": "experimentation/resource"
-    },
-    {
-      "authorities": [],
-      "components": [],
-      "package_prefix": "noetrium_platform.research.experimentation.run",
-      "provides": [
-        "run.lifecycle",
-        "run.decision"
-      ],
-      "relation": "contains",
-      "requires": [],
-      "source": "experimentation",
-      "target": "experimentation/run"
-    },
-    {
-      "authorities": [
-        "run_control"
-      ],
-      "components": [],
-      "package_prefix": "noetrium_platform.research.experimentation.run.control",
-      "provides": [
-        "run.control"
-      ],
-      "relation": "contains",
-      "requires": [
-        "execution",
-        "execution/operation",
-        "experimentation/checkpoint",
-        "experimentation/run",
-        "experimentation/run/identity",
-        "experimentation/run/lifecycle",
-        "experimentation/run/manifest",
-        "platform"
-      ],
-      "source": "experimentation/run",
-      "target": "experimentation/run/control"
-    },
-    {
-      "authorities": [],
-      "components": [],
-      "package_prefix": "noetrium_platform.research.experimentation.run.identity",
-      "provides": [],
-      "relation": "contains",
-      "requires": [],
-      "source": "experimentation/run",
-      "target": "experimentation/run/identity"
-    },
-    {
-      "authorities": [],
-      "components": [],
-      "package_prefix": "noetrium_platform.research.experimentation.run.lifecycle",
-      "provides": [],
-      "relation": "contains",
-      "requires": [],
-      "source": "experimentation/run",
-      "target": "experimentation/run/lifecycle"
-    },
-    {
-      "authorities": [],
-      "components": [],
-      "package_prefix": "noetrium_platform.research.experimentation.run.manifest",
-      "provides": [],
-      "relation": "contains",
-      "requires": [],
-      "source": "experimentation/run",
-      "target": "experimentation/run/manifest"
-    },
-    {
-      "authorities": [],
-      "components": [],
-      "package_prefix": "noetrium_platform.research.experimentation.study",
-      "provides": [
-        "study.definition"
-      ],
-      "relation": "contains",
-      "requires": [
-        "artifact"
-      ],
-      "source": "experimentation",
-      "target": "experimentation/study"
-    },
-    {
-      "authorities": [],
-      "components": [],
-      "package_prefix": "noetrium_platform.research.experimentation.variant",
-      "provides": [],
-      "relation": "contains",
-      "requires": [],
-      "source": "experimentation",
-      "target": "experimentation/variant"
-    },
-    {
-      "authorities": [],
-      "components": [],
-      "package_prefix": "noetrium_platform.research.experimentation.workbench",
-      "provides": [
-        "research.workbench"
-      ],
-      "relation": "contains",
-      "requires": [
-        "experimentation/study"
-      ],
-      "source": "experimentation",
-      "target": "experimentation/workbench"
-    },
-    {
-      "authorities": [],
-      "components": [],
-      "package_prefix": "noetrium_platform.research.experimentation.workload",
-      "provides": [
-        "experiment.workload"
-      ],
-      "relation": "contains",
-      "requires": [
-        "environment/runtime",
-        "experimentation/experiment",
-        "experimentation/run",
-        "participant/method",
-        "platform"
-      ],
-      "source": "experimentation",
-      "target": "experimentation/workload"
-    },
-    {
-      "authorities": [],
-      "components": [],
-      "package_prefix": "noetrium_platform.foundation.governance.algorithm",
-      "provides": [],
-      "relation": "contains",
-      "requires": [],
-      "source": "governance",
-      "target": "governance/algorithm"
-    },
-    {
-      "authorities": [],
-      "components": [],
-      "package_prefix": "noetrium_platform.foundation.governance.architecture",
-      "provides": [
-        "architecture.audit"
-      ],
-      "relation": "contains",
-      "requires": [
-        "scope"
-      ],
-      "source": "governance",
-      "target": "governance/architecture"
-    },
-    {
-      "authorities": [],
-      "components": [],
-      "package_prefix": "noetrium_platform.foundation.governance.concurrency",
-      "provides": [],
-      "relation": "contains",
-      "requires": [],
-      "source": "governance",
-      "target": "governance/concurrency"
-    },
-    {
-      "authorities": [],
-      "components": [],
-      "package_prefix": "noetrium_platform.foundation.governance.evolution",
-      "provides": [
-        "governance.evolution"
-      ],
-      "relation": "contains",
-      "requires": [
-        "governance/system_registry",
-        "observability"
-      ],
-      "source": "governance",
-      "target": "governance/evolution"
-    },
-    {
-      "authorities": [],
-      "components": [],
-      "package_prefix": "noetrium_platform.foundation.governance.gate",
-      "provides": [],
-      "relation": "contains",
-      "requires": [],
-      "source": "governance",
-      "target": "governance/gate"
-    },
-    {
-      "authorities": [],
-      "components": [],
-      "package_prefix": "noetrium_platform.foundation.governance.performance",
-      "provides": [],
-      "relation": "contains",
-      "requires": [],
-      "source": "governance",
-      "target": "governance/performance"
-    },
-    {
-      "authorities": [],
-      "components": [],
-      "package_prefix": "noetrium_platform.foundation.governance.quality",
-      "provides": [
-        "quality.audit"
-      ],
-      "relation": "contains",
-      "requires": [],
-      "source": "governance",
-      "target": "governance/quality"
     },
     {
       "authorities": [
@@ -1974,36 +1140,6 @@
       "target": "governance/release"
     },
     {
-      "authorities": [],
-      "components": [],
-      "package_prefix": "noetrium_platform.foundation.governance.repository_boundary",
-      "provides": [],
-      "relation": "contains",
-      "requires": [],
-      "source": "governance",
-      "target": "governance/repository_boundary"
-    },
-    {
-      "authorities": [],
-      "components": [],
-      "package_prefix": "noetrium_platform.foundation.governance.schema",
-      "provides": [],
-      "relation": "contains",
-      "requires": [],
-      "source": "governance",
-      "target": "governance/schema"
-    },
-    {
-      "authorities": [],
-      "components": [],
-      "package_prefix": "noetrium_platform.foundation.governance.security",
-      "provides": [],
-      "relation": "contains",
-      "requires": [],
-      "source": "governance",
-      "target": "governance/security"
-    },
-    {
       "authorities": [
         "system_topology"
       ],
@@ -2018,686 +1154,28 @@
     {
       "authorities": [],
       "components": [],
-      "package_prefix": "noetrium_platform.capabilities.model.asset",
-      "provides": [
-        "model.asset",
-        "model.asset-acquisition"
-      ],
-      "relation": "contains",
-      "requires": [],
-      "source": "model",
-      "target": "model/asset"
-    },
-    {
-      "authorities": [],
-      "components": [],
-      "package_prefix": "noetrium_platform.capabilities.model.assignment",
-      "provides": [
-        "model.assignment"
-      ],
-      "relation": "contains",
-      "requires": [],
-      "source": "model",
-      "target": "model/assignment"
-    },
-    {
-      "authorities": [],
-      "components": [],
-      "package_prefix": "noetrium_platform.capabilities.model.catalog",
-      "provides": [],
-      "relation": "contains",
-      "requires": [],
-      "source": "model",
-      "target": "model/catalog"
-    },
-    {
-      "authorities": [],
-      "components": [],
-      "package_prefix": "noetrium_platform.capabilities.model.catalog.family",
-      "provides": [],
-      "relation": "contains",
-      "requires": [],
-      "source": "model/catalog",
-      "target": "model/catalog/family"
-    },
-    {
-      "authorities": [],
-      "components": [],
-      "package_prefix": "noetrium_platform.capabilities.model.catalog.revision",
-      "provides": [],
-      "relation": "contains",
-      "requires": [],
-      "source": "model/catalog",
-      "target": "model/catalog/revision"
-    },
-    {
-      "authorities": [],
-      "components": [],
-      "package_prefix": "noetrium_platform.capabilities.model.deployment",
-      "provides": [
-        "model.deployment",
-        "model.deployment-control"
-      ],
-      "relation": "contains",
-      "requires": [],
-      "source": "model",
-      "target": "model/deployment"
-    },
-    {
-      "authorities": [],
-      "components": [],
-      "package_prefix": "noetrium_platform.capabilities.model.deployment.closure",
-      "provides": [],
-      "relation": "contains",
-      "requires": [],
-      "source": "model/deployment",
-      "target": "model/deployment/closure"
-    },
-    {
-      "authorities": [],
-      "components": [],
-      "package_prefix": "noetrium_platform.capabilities.model.qualification",
-      "provides": [],
-      "relation": "contains",
-      "requires": [],
-      "source": "model",
-      "target": "model/qualification"
-    },
-    {
-      "authorities": [],
-      "components": [],
-      "package_prefix": "noetrium_platform.capabilities.model.request",
-      "provides": [
-        "model.request"
-      ],
-      "relation": "contains",
-      "requires": [],
-      "source": "model",
-      "target": "model/request"
-    },
-    {
-      "authorities": [],
-      "components": [],
-      "package_prefix": "noetrium_platform.capabilities.model.request.input",
-      "provides": [],
-      "relation": "contains",
-      "requires": [],
-      "source": "model/request",
-      "target": "model/request/input"
-    },
-    {
-      "authorities": [],
-      "components": [],
-      "package_prefix": "noetrium_platform.capabilities.model.request.output",
-      "provides": [],
-      "relation": "contains",
-      "requires": [],
-      "source": "model/request",
-      "target": "model/request/output"
-    },
-    {
-      "authorities": [],
-      "components": [],
-      "package_prefix": "noetrium_platform.capabilities.model.request.prompt",
-      "provides": [],
-      "relation": "contains",
-      "requires": [],
-      "source": "model/request",
-      "target": "model/request/prompt"
-    },
-    {
-      "authorities": [],
-      "components": [],
-      "package_prefix": "noetrium_platform.capabilities.model.serving",
-      "provides": [
-        "model.serving",
-        "model.qualification"
-      ],
-      "relation": "contains",
-      "requires": [],
-      "source": "model",
-      "target": "model/serving"
-    },
-    {
-      "authorities": [],
-      "components": [],
-      "package_prefix": "noetrium_platform.capabilities.model.serving.endpoint",
-      "provides": [],
-      "relation": "contains",
-      "requires": [],
-      "source": "model/serving",
-      "target": "model/serving/endpoint"
-    },
-    {
-      "authorities": [],
-      "components": [],
-      "package_prefix": "noetrium_platform.capabilities.model.stack",
-      "provides": [],
-      "relation": "contains",
-      "requires": [],
-      "source": "model",
-      "target": "model/stack"
-    },
-    {
-      "authorities": [],
-      "components": [],
-      "package_prefix": "noetrium_platform.evidence.observability.capture",
-      "provides": [],
-      "relation": "contains",
-      "requires": [],
-      "source": "observability",
-      "target": "observability/capture"
-    },
-    {
-      "authorities": [],
-      "components": [],
-      "package_prefix": "noetrium_platform.evidence.observability.diagnostic",
-      "provides": [],
-      "relation": "contains",
-      "requires": [],
-      "source": "observability",
-      "target": "observability/diagnostic"
-    },
-    {
-      "authorities": [],
-      "components": [],
-      "package_prefix": "noetrium_platform.evidence.observability.diagnostic.correlation",
-      "provides": [],
-      "relation": "contains",
-      "requires": [],
-      "source": "observability/diagnostic",
-      "target": "observability/diagnostic/correlation"
-    },
-    {
-      "authorities": [],
-      "components": [],
-      "package_prefix": "noetrium_platform.evidence.observability.diagnostic.query",
-      "provides": [],
-      "relation": "contains",
-      "requires": [],
-      "source": "observability/diagnostic",
-      "target": "observability/diagnostic/query"
-    },
-    {
-      "authorities": [],
-      "components": [],
-      "package_prefix": "noetrium_platform.evidence.observability.diagnostic.snapshot",
-      "provides": [],
-      "relation": "contains",
-      "requires": [],
-      "source": "observability/diagnostic",
-      "target": "observability/diagnostic/snapshot"
-    },
-    {
-      "authorities": [],
-      "components": [],
-      "package_prefix": "noetrium_platform.evidence.observability.logging",
-      "provides": [
-        "logging.observation"
-      ],
-      "relation": "contains",
-      "requires": [],
-      "source": "observability",
-      "target": "observability/logging"
-    },
-    {
-      "authorities": [],
-      "components": [],
-      "package_prefix": "noetrium_platform.evidence.observability.logging.capture",
-      "provides": [],
-      "relation": "contains",
-      "requires": [],
-      "source": "observability/logging",
-      "target": "observability/logging/capture"
-    },
-    {
-      "authorities": [],
-      "components": [],
-      "package_prefix": "noetrium_platform.evidence.observability.logging.context",
-      "provides": [],
-      "relation": "contains",
-      "requires": [],
-      "source": "observability/logging",
-      "target": "observability/logging/context"
-    },
-    {
-      "authorities": [],
-      "components": [],
-      "package_prefix": "noetrium_platform.evidence.observability.logging.projection",
-      "provides": [],
-      "relation": "contains",
-      "requires": [],
-      "source": "observability/logging",
-      "target": "observability/logging/projection"
-    },
-    {
-      "authorities": [],
-      "components": [],
-      "package_prefix": "noetrium_platform.evidence.observability.logging.query",
-      "provides": [],
-      "relation": "contains",
-      "requires": [],
-      "source": "observability/logging",
-      "target": "observability/logging/query"
-    },
-    {
-      "authorities": [],
-      "components": [],
-      "package_prefix": "noetrium_platform.evidence.observability.logging.record",
-      "provides": [],
-      "relation": "contains",
-      "requires": [],
-      "source": "observability/logging",
-      "target": "observability/logging/record"
-    },
-    {
-      "authorities": [],
-      "components": [],
-      "package_prefix": "noetrium_platform.evidence.observability.logging.retention",
-      "provides": [],
-      "relation": "contains",
-      "requires": [],
-      "source": "observability/logging",
-      "target": "observability/logging/retention"
-    },
-    {
-      "authorities": [],
-      "components": [],
-      "package_prefix": "noetrium_platform.evidence.observability.logging.routing",
-      "provides": [
-        "logging.routing"
-      ],
-      "relation": "contains",
-      "requires": [],
-      "source": "observability/logging",
-      "target": "observability/logging/routing"
-    },
-    {
-      "authorities": [],
-      "components": [],
-      "package_prefix": "noetrium_platform.evidence.observability.logging.sink",
-      "provides": [],
-      "relation": "contains",
-      "requires": [],
-      "source": "observability/logging",
-      "target": "observability/logging/sink"
-    },
-    {
-      "authorities": [],
-      "components": [],
       "package_prefix": "noetrium_platform.evidence.observability.logging.storage",
       "provides": [],
       "relation": "contains",
       "requires": [],
-      "source": "observability/logging",
+      "source": "observability",
       "target": "observability/logging/storage"
     },
     {
       "authorities": [],
       "components": [],
-      "package_prefix": "noetrium_platform.evidence.observability.projection",
-      "provides": [],
-      "relation": "contains",
-      "requires": [],
-      "source": "observability",
-      "target": "observability/projection"
-    },
-    {
-      "authorities": [],
-      "components": [],
-      "package_prefix": "noetrium_platform.evidence.observability.status",
-      "provides": [
-        "status.read-model"
-      ],
-      "relation": "contains",
-      "requires": [],
-      "source": "observability",
-      "target": "observability/status"
-    },
-    {
-      "authorities": [],
-      "components": [],
-      "package_prefix": "noetrium_platform.evidence.observability.status.health",
-      "provides": [],
-      "relation": "contains",
-      "requires": [],
-      "source": "observability/status",
-      "target": "observability/status/health"
-    },
-    {
-      "authorities": [],
-      "components": [],
-      "package_prefix": "noetrium_platform.evidence.observability.status.lifecycle_view",
-      "provides": [],
-      "relation": "contains",
-      "requires": [],
-      "source": "observability/status",
-      "target": "observability/status/lifecycle_view"
-    },
-    {
-      "authorities": [],
-      "components": [],
-      "package_prefix": "noetrium_platform.evidence.observability.telemetry",
-      "provides": [
-        "telemetry.metrics"
-      ],
-      "relation": "contains",
-      "requires": [],
-      "source": "observability",
-      "target": "observability/telemetry"
-    },
-    {
-      "authorities": [],
-      "components": [],
-      "package_prefix": "noetrium_platform.evidence.observability.telemetry.event",
-      "provides": [],
-      "relation": "contains",
-      "requires": [],
-      "source": "observability/telemetry",
-      "target": "observability/telemetry/event"
-    },
-    {
-      "authorities": [],
-      "components": [],
-      "package_prefix": "noetrium_platform.evidence.observability.telemetry.metric",
-      "provides": [],
-      "relation": "contains",
-      "requires": [],
-      "source": "observability/telemetry",
-      "target": "observability/telemetry/metric"
-    },
-    {
-      "authorities": [],
-      "components": [],
-      "package_prefix": "noetrium_platform.evidence.observability.tracing",
-      "provides": [],
-      "relation": "contains",
-      "requires": [],
-      "source": "observability",
-      "target": "observability/tracing"
-    },
-    {
-      "authorities": [],
-      "components": [],
-      "package_prefix": "noetrium_platform.evidence.observability.tracing.context",
-      "provides": [],
-      "relation": "contains",
-      "requires": [],
-      "source": "observability/tracing",
-      "target": "observability/tracing/context"
-    },
-    {
-      "authorities": [],
-      "components": [],
-      "package_prefix": "noetrium_platform.evidence.observability.tracing.propagation",
-      "provides": [],
-      "relation": "contains",
-      "requires": [],
-      "source": "observability/tracing",
-      "target": "observability/tracing/propagation"
-    },
-    {
-      "authorities": [],
-      "components": [],
-      "package_prefix": "noetrium_platform.evidence.observability.tracing.storage",
-      "provides": [],
-      "relation": "contains",
-      "requires": [],
-      "source": "observability/tracing",
-      "target": "observability/tracing/storage"
-    },
-    {
-      "authorities": [],
-      "components": [],
-      "package_prefix": "noetrium_platform.product.operator.audit",
-      "provides": [],
-      "relation": "contains",
-      "requires": [],
-      "source": "operator",
-      "target": "operator/audit"
-    },
-    {
-      "authorities": [],
-      "components": [],
-      "package_prefix": "noetrium_platform.product.operator.command",
-      "provides": [],
-      "relation": "contains",
-      "requires": [],
-      "source": "operator",
-      "target": "operator/command"
-    },
-    {
-      "authorities": [],
-      "components": [],
-      "package_prefix": "noetrium_platform.product.operator.command.intent",
-      "provides": [],
-      "relation": "contains",
-      "requires": [],
-      "source": "operator/command",
-      "target": "operator/command/intent"
-    },
-    {
-      "authorities": [],
-      "components": [],
-      "package_prefix": "noetrium_platform.product.operator.incident",
-      "provides": [],
-      "relation": "contains",
-      "requires": [],
-      "source": "operator",
-      "target": "operator/incident"
-    },
-    {
-      "authorities": [],
-      "components": [],
-      "package_prefix": "noetrium_platform.product.operator.maintenance",
+      "package_prefix": "noetrium_platform.product.operator",
       "provides": [],
       "relation": "contains",
       "requires": [
-        "runtime"
+        "governance",
+        "platform",
+        "research_os",
+        "runtime",
+        "scope"
       ],
-      "source": "operator",
-      "target": "operator/maintenance"
-    },
-    {
-      "authorities": [],
-      "components": [],
-      "package_prefix": "noetrium_platform.product.operator.query",
-      "provides": [],
-      "relation": "contains",
-      "requires": [],
-      "source": "operator",
-      "target": "operator/query"
-    },
-    {
-      "authorities": [],
-      "components": [],
-      "package_prefix": "noetrium_platform.product.operator.query.search",
-      "provides": [],
-      "relation": "contains",
-      "requires": [],
-      "source": "operator/query",
-      "target": "operator/query/search"
-    },
-    {
-      "authorities": [],
-      "components": [],
-      "package_prefix": "noetrium_platform.capabilities.participant.agent",
-      "provides": [
-        "agent.contract"
-      ],
-      "relation": "contains",
-      "requires": [
-        "model"
-      ],
-      "source": "participant",
-      "target": "participant/agent"
-    },
-    {
-      "authorities": [],
-      "components": [],
-      "package_prefix": "noetrium_platform.capabilities.participant.binding",
-      "provides": [],
-      "relation": "contains",
-      "requires": [],
-      "source": "participant",
-      "target": "participant/binding"
-    },
-    {
-      "authorities": [],
-      "components": [],
-      "package_prefix": "noetrium_platform.capabilities.participant.capability",
-      "provides": [
-        "capability.contract"
-      ],
-      "relation": "contains",
-      "requires": [],
-      "source": "participant",
-      "target": "participant/capability"
-    },
-    {
-      "authorities": [],
-      "components": [],
-      "package_prefix": "noetrium_platform.capabilities.participant.core",
-      "provides": [
-        "participant.runtime.abi"
-      ],
-      "relation": "contains",
-      "requires": [
-        "platform"
-      ],
-      "source": "participant",
-      "target": "participant/core"
-    },
-    {
-      "authorities": [],
-      "components": [],
-      "package_prefix": "noetrium_platform.capabilities.participant.definition",
-      "provides": [
-        "participant.definition"
-      ],
-      "relation": "contains",
-      "requires": [],
-      "source": "participant",
-      "target": "participant/definition"
-    },
-    {
-      "authorities": [],
-      "components": [],
-      "package_prefix": "noetrium_platform.capabilities.participant.method",
-      "provides": [
-        "method.contract",
-        "method.runtime"
-      ],
-      "relation": "contains",
-      "requires": [
-        "governance"
-      ],
-      "source": "participant",
-      "target": "participant/method"
-    },
-    {
-      "authorities": [],
-      "components": [],
-      "package_prefix": "noetrium_platform.capabilities.participant.session",
-      "provides": [
-        "participant.session"
-      ],
-      "relation": "contains",
-      "requires": [],
-      "source": "participant",
-      "target": "participant/session"
-    },
-    {
-      "authorities": [],
-      "components": [],
-      "package_prefix": "noetrium_platform.foundation.kernel.concurrency",
-      "provides": [],
-      "relation": "contains",
-      "requires": [],
-      "source": "platform",
-      "target": "platform/concurrency"
-    },
-    {
-      "authorities": [],
-      "components": [],
-      "package_prefix": "noetrium_platform.foundation.kernel.configuration",
-      "provides": [],
-      "relation": "contains",
-      "requires": [],
-      "source": "platform",
-      "target": "platform/configuration"
-    },
-    {
-      "authorities": [],
-      "components": [],
-      "package_prefix": "noetrium_platform.foundation.kernel.identity",
-      "provides": [],
-      "relation": "contains",
-      "requires": [],
-      "source": "platform",
-      "target": "platform/identity"
-    },
-    {
-      "authorities": [],
-      "components": [],
-      "package_prefix": "noetrium_platform.foundation.kernel.lifecycle",
-      "provides": [],
-      "relation": "contains",
-      "requires": [],
-      "source": "platform",
-      "target": "platform/lifecycle"
-    },
-    {
-      "authorities": [],
-      "components": [],
-      "package_prefix": "noetrium_platform.foundation.portfolio.membership",
-      "provides": [],
-      "relation": "contains",
-      "requires": [],
-      "source": "portfolio",
-      "target": "portfolio/membership"
-    },
-    {
-      "authorities": [],
-      "components": [],
-      "package_prefix": "noetrium_platform.foundation.portfolio.program",
-      "provides": [],
-      "relation": "contains",
-      "requires": [],
-      "source": "portfolio",
-      "target": "portfolio/program"
-    },
-    {
-      "authorities": [],
-      "components": [],
-      "package_prefix": "noetrium_platform.foundation.portfolio.project",
-      "provides": [],
-      "relation": "contains",
-      "requires": [],
-      "source": "portfolio",
-      "target": "portfolio/project"
-    },
-    {
-      "authorities": [],
-      "components": [],
-      "package_prefix": "noetrium_platform.foundation.portfolio.workspace",
-      "provides": [],
-      "relation": "contains",
-      "requires": [],
-      "source": "portfolio",
-      "target": "portfolio/workspace"
-    },
-    {
-      "authorities": [],
-      "components": [],
-      "package_prefix": "noetrium_platform.infrastructure.reliability.diagnostics",
-      "provides": [
-        "diagnostics.causal"
-      ],
-      "relation": "contains",
-      "requires": [],
-      "source": "reliability",
-      "target": "reliability/diagnostics"
+      "source": "research_os",
+      "target": "operator"
     },
     {
       "authorities": [
@@ -2706,8 +1184,8 @@
       "components": [],
       "package_prefix": "noetrium_platform.infrastructure.reliability.effect",
       "provides": [
-        "effect.safety",
-        "effect.journal"
+        "effect.journal",
+        "effect.safety"
       ],
       "relation": "contains",
       "requires": [],
@@ -2729,85 +1207,6 @@
       "target": "reliability/failure"
     },
     {
-      "authorities": [],
-      "components": [],
-      "package_prefix": "noetrium_platform.infrastructure.reliability.forensics",
-      "provides": [
-        "forensics.ledger"
-      ],
-      "relation": "contains",
-      "requires": [],
-      "source": "reliability",
-      "target": "reliability/forensics"
-    },
-    {
-      "authorities": [],
-      "components": [],
-      "package_prefix": "noetrium_platform.infrastructure.reliability.recovery",
-      "provides": [
-        "recovery.runtime"
-      ],
-      "relation": "contains",
-      "requires": [],
-      "source": "reliability",
-      "target": "reliability/recovery"
-    },
-    {
-      "authorities": [],
-      "components": [],
-      "package_prefix": "noetrium_platform.infrastructure.reliability.recovery.execution",
-      "provides": [
-        "recovery.execution"
-      ],
-      "relation": "contains",
-      "requires": [],
-      "source": "reliability/recovery",
-      "target": "reliability/recovery/execution"
-    },
-    {
-      "authorities": [],
-      "components": [],
-      "package_prefix": "noetrium_platform.infrastructure.resources.allocation",
-      "provides": [
-        "resource.endpoint-allocation"
-      ],
-      "relation": "contains",
-      "requires": [
-        "resource/lease"
-      ],
-      "source": "resource",
-      "target": "resource/allocation"
-    },
-    {
-      "authorities": [],
-      "components": [],
-      "package_prefix": "noetrium_platform.infrastructure.resources.compute",
-      "provides": [
-        "compute.inventory",
-        "compute.scheduler"
-      ],
-      "relation": "contains",
-      "requires": [
-        "runtime/process",
-        "resource/lease"
-      ],
-      "source": "resource",
-      "target": "resource/compute"
-    },
-    {
-      "authorities": [],
-      "components": [],
-      "package_prefix": "noetrium_platform.infrastructure.resources.directory",
-      "provides": [
-        "directory.layout",
-        "workspace.storage"
-      ],
-      "relation": "contains",
-      "requires": [],
-      "source": "resource",
-      "target": "resource/directory"
-    },
-    {
       "authorities": [
         "resource_lease"
       ],
@@ -2822,227 +1221,6 @@
       ],
       "source": "resource",
       "target": "resource/lease"
-    },
-    {
-      "authorities": [],
-      "components": [],
-      "package_prefix": "noetrium_platform.infrastructure.resources.resolution",
-      "provides": [
-        "resource.hierarchical-resolution"
-      ],
-      "relation": "contains",
-      "requires": [],
-      "source": "resource",
-      "target": "resource/resolution"
-    },
-    {
-      "authorities": [],
-      "components": [],
-      "package_prefix": "noetrium_platform.infrastructure.lifecycle.host",
-      "provides": [
-        "host.runtime"
-      ],
-      "relation": "contains",
-      "requires": [],
-      "source": "runtime",
-      "target": "runtime/host"
-    },
-    {
-      "authorities": [],
-      "components": [],
-      "package_prefix": "noetrium_platform.infrastructure.lifecycle.process",
-      "provides": [
-        "process.execution",
-        "process.capture"
-      ],
-      "relation": "contains",
-      "requires": [],
-      "source": "runtime",
-      "target": "runtime/process"
-    },
-    {
-      "authorities": [],
-      "components": [],
-      "package_prefix": "noetrium_platform.infrastructure.lifecycle.process.supervision",
-      "provides": [],
-      "relation": "contains",
-      "requires": [],
-      "source": "runtime/process",
-      "target": "runtime/process/supervision"
-    },
-    {
-      "authorities": [],
-      "components": [],
-      "package_prefix": "noetrium_platform.infrastructure.lifecycle.python",
-      "provides": [
-        "python-environment.registry",
-        "python-environment.lifecycle",
-        "python-environment.execution",
-        "python-environment.packages"
-      ],
-      "relation": "contains",
-      "requires": [
-        "runtime",
-        "resource"
-      ],
-      "source": "runtime",
-      "target": "runtime/python"
-    },
-    {
-      "authorities": [],
-      "components": [],
-      "package_prefix": "noetrium_platform.infrastructure.lifecycle.server",
-      "provides": [],
-      "relation": "contains",
-      "requires": [],
-      "source": "runtime",
-      "target": "runtime/server"
-    },
-    {
-      "authorities": [],
-      "components": [],
-      "package_prefix": "noetrium_platform.infrastructure.lifecycle.host.bootstrap",
-      "provides": [
-        "server.bootstrap"
-      ],
-      "relation": "contains",
-      "requires": [
-        "governance/release",
-        "platform",
-        "runtime/session"
-      ],
-      "source": "runtime/server",
-      "target": "runtime/server/bootstrap"
-    },
-    {
-      "authorities": [],
-      "components": [],
-      "package_prefix": "noetrium_platform.infrastructure.lifecycle.server.health",
-      "provides": [],
-      "relation": "contains",
-      "requires": [],
-      "source": "runtime/server",
-      "target": "runtime/server/health"
-    },
-    {
-      "authorities": [],
-      "components": [],
-      "package_prefix": "noetrium_platform.infrastructure.lifecycle.server.identity",
-      "provides": [],
-      "relation": "contains",
-      "requires": [],
-      "source": "runtime/server",
-      "target": "runtime/server/identity"
-    },
-    {
-      "authorities": [],
-      "components": [],
-      "package_prefix": "noetrium_platform.infrastructure.lifecycle.server.lifecycle",
-      "provides": [],
-      "relation": "contains",
-      "requires": [
-        "runtime/server/bootstrap"
-      ],
-      "source": "runtime/server",
-      "target": "runtime/server/lifecycle"
-    },
-    {
-      "authorities": [],
-      "components": [],
-      "package_prefix": "noetrium_platform.infrastructure.lifecycle.service",
-      "provides": [
-        "service.runtime"
-      ],
-      "relation": "contains",
-      "requires": [],
-      "source": "runtime",
-      "target": "runtime/service"
-    },
-    {
-      "authorities": [],
-      "components": [],
-      "package_prefix": "noetrium_platform.infrastructure.lifecycle.session",
-      "provides": [
-        "persistent-session.runtime"
-      ],
-      "relation": "contains",
-      "requires": [],
-      "source": "runtime",
-      "target": "runtime/session"
-    },
-    {
-      "authorities": [],
-      "components": [],
-      "package_prefix": "noetrium_platform.infrastructure.lifecycle.toolchain",
-      "provides": [
-        "runtime.toolchain"
-      ],
-      "relation": "contains",
-      "requires": [
-        "artifact"
-      ],
-      "source": "runtime",
-      "target": "runtime/toolchain"
-    },
-    {
-      "authorities": [],
-      "components": [],
-      "package_prefix": "noetrium_platform.foundation.scope.hierarchy",
-      "provides": [],
-      "relation": "contains",
-      "requires": [],
-      "source": "scope",
-      "target": "scope/hierarchy"
-    },
-    {
-      "authorities": [],
-      "components": [],
-      "package_prefix": "noetrium_platform.foundation.scope.identity",
-      "provides": [],
-      "relation": "contains",
-      "requires": [],
-      "source": "scope",
-      "target": "scope/identity"
-    },
-    {
-      "authorities": [],
-      "components": [],
-      "package_prefix": "noetrium_platform.foundation.scope.membership",
-      "provides": [],
-      "relation": "contains",
-      "requires": [],
-      "source": "scope",
-      "target": "scope/membership"
-    },
-    {
-      "authorities": [],
-      "components": [],
-      "package_prefix": "noetrium_platform.foundation.scope.ownership",
-      "provides": [],
-      "relation": "contains",
-      "requires": [],
-      "source": "scope",
-      "target": "scope/ownership"
-    },
-    {
-      "authorities": [],
-      "components": [],
-      "package_prefix": "noetrium_platform.foundation.scope.path",
-      "provides": [],
-      "relation": "contains",
-      "requires": [],
-      "source": "scope",
-      "target": "scope/path"
-    },
-    {
-      "authorities": [],
-      "components": [],
-      "package_prefix": "noetrium_platform.foundation.scope.resolution",
-      "provides": [],
-      "relation": "contains",
-      "requires": [],
-      "source": "scope",
-      "target": "scope/resolution"
     }
   ],
   "system_graph": [
@@ -3055,11 +1233,6 @@
       "relation": "requires",
       "source": "artifact",
       "target": "scope"
-    },
-    {
-      "relation": "requires",
-      "source": "components",
-      "target": "platform"
     },
     {
       "relation": "requires",
@@ -3078,6 +1251,16 @@
     },
     {
       "relation": "requires",
+      "source": "data/state",
+      "target": "platform"
+    },
+    {
+      "relation": "requires",
+      "source": "environment",
+      "target": "governance/system_registry"
+    },
+    {
+      "relation": "requires",
       "source": "environment",
       "target": "platform"
     },
@@ -3094,7 +1277,82 @@
     {
       "relation": "requires",
       "source": "environment",
+      "target": "runtime"
+    },
+    {
+      "relation": "requires",
+      "source": "environment",
       "target": "scope"
+    },
+    {
+      "relation": "requires",
+      "source": "environment/gui",
+      "target": "environment"
+    },
+    {
+      "relation": "requires",
+      "source": "environment/gui",
+      "target": "runtime"
+    },
+    {
+      "relation": "requires",
+      "source": "environment/minecraft",
+      "target": "artifact"
+    },
+    {
+      "relation": "requires",
+      "source": "environment/minecraft",
+      "target": "environment"
+    },
+    {
+      "relation": "requires",
+      "source": "environment/minecraft",
+      "target": "reliability"
+    },
+    {
+      "relation": "requires",
+      "source": "environment/minecraft",
+      "target": "resource"
+    },
+    {
+      "relation": "requires",
+      "source": "environment/minecraft",
+      "target": "runtime"
+    },
+    {
+      "relation": "requires",
+      "source": "environment/software",
+      "target": "environment"
+    },
+    {
+      "relation": "requires",
+      "source": "environment/software",
+      "target": "resource"
+    },
+    {
+      "relation": "requires",
+      "source": "environment/software",
+      "target": "runtime"
+    },
+    {
+      "relation": "requires",
+      "source": "environment/text_world",
+      "target": "environment"
+    },
+    {
+      "relation": "requires",
+      "source": "environment/web",
+      "target": "environment"
+    },
+    {
+      "relation": "requires",
+      "source": "environment/web",
+      "target": "runtime"
+    },
+    {
+      "relation": "requires",
+      "source": "execution",
+      "target": "artifact"
     },
     {
       "relation": "requires",
@@ -3144,6 +1402,11 @@
     {
       "relation": "requires",
       "source": "experimentation",
+      "target": "artifact"
+    },
+    {
+      "relation": "requires",
+      "source": "experimentation",
       "target": "environment"
     },
     {
@@ -3175,6 +1438,11 @@
       "relation": "requires",
       "source": "experimentation",
       "target": "portfolio"
+    },
+    {
+      "relation": "requires",
+      "source": "experimentation",
+      "target": "resource"
     },
     {
       "relation": "requires",
@@ -3184,7 +1452,22 @@
     {
       "relation": "requires",
       "source": "governance",
+      "target": "governance/system_registry"
+    },
+    {
+      "relation": "requires",
+      "source": "governance",
       "target": "platform"
+    },
+    {
+      "relation": "requires",
+      "source": "governance",
+      "target": "scope"
+    },
+    {
+      "relation": "requires",
+      "source": "model",
+      "target": "artifact"
     },
     {
       "relation": "requires",
@@ -3214,11 +1497,6 @@
     {
       "relation": "requires",
       "source": "observability",
-      "target": "data"
-    },
-    {
-      "relation": "requires",
-      "source": "observability",
       "target": "governance"
     },
     {
@@ -3228,122 +1506,167 @@
     },
     {
       "relation": "requires",
-      "source": "observability",
+      "source": "operator",
+      "target": "governance"
+    },
+    {
+      "relation": "requires",
+      "source": "operator",
+      "target": "platform"
+    },
+    {
+      "relation": "requires",
+      "source": "operator",
+      "target": "research_os"
+    },
+    {
+      "relation": "requires",
+      "source": "operator",
+      "target": "runtime"
+    },
+    {
+      "relation": "requires",
+      "source": "operator",
       "target": "scope"
     },
     {
       "relation": "requires",
-      "source": "operator",
-      "target": "environment"
+      "source": "participant",
+      "target": "artifact"
     },
     {
       "relation": "requires",
-      "source": "operator",
-      "target": "execution"
+      "source": "participant",
+      "target": "data"
     },
     {
       "relation": "requires",
-      "source": "operator",
-      "target": "experimentation"
-    },
-    {
-      "relation": "requires",
-      "source": "operator",
+      "source": "participant",
       "target": "governance"
     },
     {
       "relation": "requires",
-      "source": "operator",
-      "target": "model"
-    },
-    {
-      "relation": "requires",
-      "source": "operator",
-      "target": "observability"
-    },
-    {
-      "relation": "requires",
-      "source": "operator",
+      "source": "participant",
       "target": "platform"
     },
     {
       "relation": "requires",
-      "source": "operator",
-      "target": "portfolio"
-    },
-    {
-      "relation": "requires",
-      "source": "operator",
+      "source": "participant",
       "target": "reliability"
     },
     {
       "relation": "requires",
-      "source": "operator",
+      "source": "portfolio",
+      "target": "platform"
+    },
+    {
+      "relation": "requires",
+      "source": "portfolio",
+      "target": "scope"
+    },
+    {
+      "relation": "requires",
+      "source": "reliability",
+      "target": "data"
+    },
+    {
+      "relation": "requires",
+      "source": "reliability",
+      "target": "governance"
+    },
+    {
+      "relation": "requires",
+      "source": "reliability",
+      "target": "observability"
+    },
+    {
+      "relation": "requires",
+      "source": "reliability",
+      "target": "platform"
+    },
+    {
+      "relation": "requires",
+      "source": "reliability",
       "target": "resource"
     },
     {
       "relation": "requires",
-      "source": "operator",
+      "source": "reliability",
       "target": "scope"
     },
     {
       "relation": "requires",
-      "source": "orchestration",
-      "target": "components"
+      "source": "research_os",
+      "target": "artifact"
     },
     {
       "relation": "requires",
-      "source": "orchestration",
-      "target": "platform"
-    },
-    {
-      "relation": "requires",
-      "source": "participant",
+      "source": "research_os",
       "target": "data"
     },
     {
       "relation": "requires",
-      "source": "participant",
-      "target": "platform"
+      "source": "research_os",
+      "target": "environment"
     },
     {
       "relation": "requires",
-      "source": "participant",
-      "target": "reliability"
+      "source": "research_os",
+      "target": "execution"
     },
     {
       "relation": "requires",
-      "source": "portfolio",
-      "target": "platform"
+      "source": "research_os",
+      "target": "experimentation"
     },
     {
       "relation": "requires",
-      "source": "portfolio",
-      "target": "scope"
-    },
-    {
-      "relation": "requires",
-      "source": "reliability",
-      "target": "data"
-    },
-    {
-      "relation": "requires",
-      "source": "reliability",
+      "source": "research_os",
       "target": "governance"
     },
     {
       "relation": "requires",
-      "source": "reliability",
+      "source": "research_os",
+      "target": "model"
+    },
+    {
+      "relation": "requires",
+      "source": "research_os",
       "target": "observability"
     },
     {
       "relation": "requires",
-      "source": "reliability",
+      "source": "research_os",
+      "target": "participant"
+    },
+    {
+      "relation": "requires",
+      "source": "research_os",
       "target": "platform"
     },
     {
       "relation": "requires",
-      "source": "reliability",
+      "source": "research_os",
+      "target": "portfolio"
+    },
+    {
+      "relation": "requires",
+      "source": "research_os",
+      "target": "reliability"
+    },
+    {
+      "relation": "requires",
+      "source": "research_os",
+      "target": "resource"
+    },
+    {
+      "relation": "requires",
+      "source": "research_os",
+      "target": "runtime"
+    },
+    {
+      "relation": "requires",
+      "source": "research_os",
       "target": "scope"
     },
     {
@@ -3354,7 +1677,22 @@
     {
       "relation": "requires",
       "source": "resource",
+      "target": "resource/lease"
+    },
+    {
+      "relation": "requires",
+      "source": "resource",
       "target": "scope"
+    },
+    {
+      "relation": "requires",
+      "source": "resource/lease",
+      "target": "scope"
+    },
+    {
+      "relation": "requires",
+      "source": "runtime",
+      "target": "artifact"
     },
     {
       "relation": "requires",
@@ -3364,17 +1702,12 @@
     {
       "relation": "requires",
       "source": "runtime",
-      "target": "observability"
+      "target": "governance/release"
     },
     {
       "relation": "requires",
       "source": "runtime",
       "target": "platform"
-    },
-    {
-      "relation": "requires",
-      "source": "runtime",
-      "target": "reliability"
     },
     {
       "relation": "requires",
@@ -3394,6 +1727,102 @@
   ],
   "top_hotspots": [
     {
+      "branches": 142,
+      "classes": 3,
+      "exception_handlers": 10,
+      "functions": 21,
+      "imports": 11,
+      "max_function_lines": 830,
+      "module": "noetrium_platform.composition.research_graph",
+      "path": "noetrium_platform/composition/research_graph.py",
+      "physical_lines": 1223,
+      "score": 4052
+    },
+    {
+      "branches": 203,
+      "classes": 6,
+      "exception_handlers": 2,
+      "functions": 37,
+      "imports": 20,
+      "max_function_lines": 177,
+      "module": "noetrium_platform.composition.research_os_execution",
+      "path": "noetrium_platform/composition/research_os_execution.py",
+      "physical_lines": 2055,
+      "score": 4013
+    },
+    {
+      "branches": 189,
+      "classes": 1,
+      "exception_handlers": 0,
+      "functions": 64,
+      "imports": 9,
+      "max_function_lines": 117,
+      "module": "noetrium_platform.research.execution.graph.providers.sqlite",
+      "path": "noetrium_platform/research/execution/graph/providers/sqlite.py",
+      "physical_lines": 2330,
+      "score": 4003
+    },
+    {
+      "branches": 150,
+      "classes": 31,
+      "exception_handlers": 5,
+      "functions": 124,
+      "imports": 10,
+      "max_function_lines": 116,
+      "module": "noetrium_platform.product.research_os",
+      "path": "noetrium_platform/product/research_os.py",
+      "physical_lines": 2306,
+      "score": 3718
+    },
+    {
+      "branches": 133,
+      "classes": 12,
+      "exception_handlers": 9,
+      "functions": 23,
+      "imports": 15,
+      "max_function_lines": 159,
+      "module": "noetrium_platform.composition.research_os_lowering",
+      "path": "noetrium_platform/composition/research_os_lowering.py",
+      "physical_lines": 1128,
+      "score": 2545
+    },
+    {
+      "branches": 69,
+      "classes": 3,
+      "exception_handlers": 0,
+      "functions": 55,
+      "imports": 8,
+      "max_function_lines": 503,
+      "module": "noetrium_platform.research.experimentation.lifecycle.run.runtime.program",
+      "path": "noetrium_platform/research/experimentation/lifecycle/run/runtime/program.py",
+      "physical_lines": 1033,
+      "score": 2515
+    },
+    {
+      "branches": 120,
+      "classes": 1,
+      "exception_handlers": 30,
+      "functions": 48,
+      "imports": 13,
+      "max_function_lines": 151,
+      "module": "noetrium_platform.foundation.kernel.concurrency.runtime.task_group",
+      "path": "noetrium_platform/foundation/kernel/concurrency/runtime/task_group.py",
+      "physical_lines": 997,
+      "score": 2498
+    },
+    {
+      "branches": 97,
+      "classes": 8,
+      "exception_handlers": 0,
+      "functions": 16,
+      "imports": 7,
+      "max_function_lines": 399,
+      "module": "noetrium_platform.composition.research_os_migration",
+      "path": "noetrium_platform/composition/research_os_migration.py",
+      "physical_lines": 833,
+      "score": 2328
+    },
+    {
       "branches": 156,
       "classes": 4,
       "exception_handlers": 1,
@@ -3402,32 +1831,56 @@
       "max_function_lines": 115,
       "module": "noetrium_platform.research.experimentation.workbench.runtime.engine",
       "path": "noetrium_platform/research/experimentation/workbench/runtime/engine.py",
-      "physical_lines": 899,
-      "score": 2329
+      "physical_lines": 897,
+      "score": 2327
     },
     {
-      "branches": 83,
-      "classes": 5,
-      "exception_handlers": 14,
-      "functions": 66,
-      "imports": 58,
-      "max_function_lines": 70,
-      "module": "noetrium_platform.platform",
-      "path": "noetrium_platform/platform.py",
-      "physical_lines": 1191,
-      "score": 2209
+      "branches": 121,
+      "classes": 31,
+      "exception_handlers": 1,
+      "functions": 50,
+      "imports": 10,
+      "max_function_lines": 113,
+      "module": "noetrium_platform.research.execution.workflow.api.method_machine",
+      "path": "noetrium_platform/research/execution/workflow/api/method_machine.py",
+      "physical_lines": 1124,
+      "score": 2258
     },
     {
-      "branches": 96,
-      "classes": 1,
-      "exception_handlers": 26,
-      "functions": 46,
+      "branches": 97,
+      "classes": 11,
+      "exception_handlers": 2,
+      "functions": 33,
       "imports": 13,
-      "max_function_lines": 131,
-      "module": "noetrium_platform.foundation.kernel.concurrency.runtime.task_group",
-      "path": "noetrium_platform/foundation/kernel/concurrency/runtime/task_group.py",
-      "physical_lines": 857,
-      "score": 2086
+      "max_function_lines": 167,
+      "module": "noetrium_platform.research.execution.machines.model_invocation_program",
+      "path": "noetrium_platform/research/execution/machines/model_invocation_program.py",
+      "physical_lines": 1035,
+      "score": 2104
+    },
+    {
+      "branches": 114,
+      "classes": 3,
+      "exception_handlers": 8,
+      "functions": 39,
+      "imports": 11,
+      "max_function_lines": 95,
+      "module": "noetrium_platform.research.execution.workflow.runtime.method_machine",
+      "path": "noetrium_platform/research/execution/workflow/runtime/method_machine.py",
+      "physical_lines": 986,
+      "score": 2101
+    },
+    {
+      "branches": 58,
+      "classes": 1,
+      "exception_handlers": 0,
+      "functions": 23,
+      "imports": 10,
+      "max_function_lines": 410,
+      "module": "noetrium_platform.research.execution.machines.environment_program",
+      "path": "noetrium_platform/research/execution/machines/environment_program.py",
+      "physical_lines": 786,
+      "score": 2000
     },
     {
       "branches": 115,
@@ -3454,190 +1907,70 @@
       "score": 1940
     },
     {
-      "branches": 98,
-      "classes": 2,
-      "exception_handlers": 16,
-      "functions": 28,
-      "imports": 21,
-      "max_function_lines": 93,
-      "module": "noetrium_platform.capabilities.model.qualification.providers.qualification_index_worker",
-      "path": "noetrium_platform/capabilities/model/qualification/providers/qualification_index_worker.py",
-      "physical_lines": 805,
-      "score": 1898
-    },
-    {
-      "branches": 100,
-      "classes": 3,
-      "exception_handlers": 8,
-      "functions": 34,
-      "imports": 11,
-      "max_function_lines": 95,
-      "module": "noetrium_platform.research.execution.workflow.runtime.method_machine",
-      "path": "noetrium_platform/research/execution/workflow/runtime/method_machine.py",
-      "physical_lines": 852,
-      "score": 1855
-    },
-    {
-      "branches": 89,
+      "branches": 88,
       "classes": 1,
-      "exception_handlers": 17,
+      "exception_handlers": 14,
       "functions": 35,
-      "imports": 8,
+      "imports": 9,
       "max_function_lines": 77,
       "module": "noetrium_platform.capabilities.model.catalog.revision.providers.sqlite_revision_authority",
       "path": "noetrium_platform/capabilities/model/catalog/revision/providers/sqlite_revision_authority.py",
-      "physical_lines": 876,
-      "score": 1836
+      "physical_lines": 877,
+      "score": 1802
     },
     {
-      "branches": 81,
-      "classes": 1,
-      "exception_handlers": 15,
-      "functions": 41,
-      "imports": 8,
-      "max_function_lines": 80,
-      "module": "noetrium_platform.capabilities.participant.providers.sqlite_revision_authority",
-      "path": "noetrium_platform/capabilities/participant/providers/sqlite_revision_authority.py",
-      "physical_lines": 862,
-      "score": 1744
-    },
-    {
-      "branches": 79,
-      "classes": 3,
-      "exception_handlers": 7,
-      "functions": 42,
-      "imports": 17,
-      "max_function_lines": 73,
-      "module": "noetrium_platform.infrastructure.resources.compute.runtime.scheduler",
-      "path": "noetrium_platform/infrastructure/resources/compute/runtime/scheduler.py",
-      "physical_lines": 891,
-      "score": 1690
-    },
-    {
-      "branches": 96,
-      "classes": 29,
-      "exception_handlers": 1,
-      "functions": 43,
-      "imports": 10,
-      "max_function_lines": 51,
-      "module": "noetrium_platform.research.execution.workflow.api.method_machine",
-      "path": "noetrium_platform/research/execution/workflow/api/method_machine.py",
-      "physical_lines": 851,
-      "score": 1661
-    },
-    {
-      "branches": 95,
-      "classes": 8,
-      "exception_handlers": 2,
-      "functions": 37,
-      "imports": 12,
-      "max_function_lines": 63,
-      "module": "noetrium_platform.research.experimentation.study.runtime.matrix",
-      "path": "noetrium_platform/research/experimentation/study/runtime/matrix.py",
-      "physical_lines": 812,
-      "score": 1654
-    },
-    {
-      "branches": 89,
-      "classes": 1,
-      "exception_handlers": 8,
-      "functions": 24,
-      "imports": 9,
-      "max_function_lines": 129,
-      "module": "noetrium_platform.research.experimentation.run.control.providers.directory_ledger",
-      "path": "noetrium_platform/research/experimentation/run/control/providers/directory_ledger.py",
-      "physical_lines": 566,
-      "score": 1543
+      "branches": 110,
+      "classes": 5,
+      "exception_handlers": 0,
+      "functions": 23,
+      "imports": 11,
+      "max_function_lines": 86,
+      "module": "noetrium_platform.research.experimentation.lifecycle.run.runtime.trial",
+      "path": "noetrium_platform/research/experimentation/lifecycle/run/runtime/trial.py",
+      "physical_lines": 816,
+      "score": 1801
     },
     {
       "branches": 80,
-      "classes": 30,
-      "exception_handlers": 0,
-      "functions": 30,
+      "classes": 1,
+      "exception_handlers": 12,
+      "functions": 41,
       "imports": 9,
-      "max_function_lines": 86,
-      "module": "noetrium_platform.research.experimentation.experiment.api.contracts",
-      "path": "noetrium_platform/research/experimentation/experiment/api/contracts.py",
-      "physical_lines": 768,
-      "score": 1507
+      "max_function_lines": 80,
+      "module": "noetrium_platform.capabilities.participant.providers.sqlite_revision_authority",
+      "path": "noetrium_platform/capabilities/participant/providers/sqlite_revision_authority.py",
+      "physical_lines": 863,
+      "score": 1710
     },
     {
-      "branches": 72,
+      "branches": 90,
       "classes": 2,
-      "exception_handlers": 15,
-      "functions": 14,
-      "imports": 14,
-      "max_function_lines": 122,
-      "module": "noetrium_platform.capabilities.model.serving.endpoint.providers.openai_compatible",
-      "path": "noetrium_platform/capabilities/model/serving/endpoint/providers/openai_compatible.py",
-      "physical_lines": 434,
-      "score": 1346
+      "exception_handlers": 14,
+      "functions": 28,
+      "imports": 20,
+      "max_function_lines": 82,
+      "module": "noetrium_platform.composition.model_qualification.qualification_index_worker",
+      "path": "noetrium_platform/composition/model_qualification/qualification_index_worker.py",
+      "physical_lines": 721,
+      "score": 1705
     },
     {
-      "branches": 52,
-      "classes": 16,
+      "branches": 78,
+      "classes": 3,
       "exception_handlers": 7,
-      "functions": 47,
-      "imports": 7,
-      "max_function_lines": 118,
-      "module": "noetrium_platform.foundation.portfolio.api.contracts",
-      "path": "noetrium_platform/foundation/portfolio/api/contracts.py",
-      "physical_lines": 688,
-      "score": 1331
-    },
-    {
-      "branches": 70,
-      "classes": 1,
-      "exception_handlers": 9,
-      "functions": 15,
-      "imports": 12,
-      "max_function_lines": 86,
-      "module": "noetrium_platform.infrastructure.resources.providers.sqlite_endpoint",
-      "path": "noetrium_platform/infrastructure/resources/providers/sqlite_endpoint.py",
-      "physical_lines": 564,
-      "score": 1322
-    },
-    {
-      "branches": 82,
-      "classes": 1,
-      "exception_handlers": 1,
-      "functions": 15,
-      "imports": 7,
-      "max_function_lines": 145,
-      "module": "noetrium_platform.capabilities.environment.minecraft.runtime.state",
-      "path": "noetrium_platform/capabilities/environment/minecraft/runtime/state.py",
-      "physical_lines": 423,
-      "score": 1300
-    },
-    {
-      "branches": 55,
-      "classes": 4,
-      "exception_handlers": 2,
-      "functions": 6,
-      "imports": 6,
-      "max_function_lines": 215,
-      "module": "noetrium_platform.capabilities.environment.runtime.runtime.state_machine_checkpoint",
-      "path": "noetrium_platform/capabilities/environment/runtime/runtime/state_machine_checkpoint.py",
-      "physical_lines": 478,
-      "score": 1286
-    },
-    {
-      "branches": 71,
-      "classes": 31,
-      "exception_handlers": 0,
-      "functions": 56,
-      "imports": 7,
-      "max_function_lines": 30,
-      "module": "noetrium_platform.capabilities.model.api.capability",
-      "path": "noetrium_platform/capabilities/model/api/capability.py",
-      "physical_lines": 632,
-      "score": 1221
+      "functions": 42,
+      "imports": 16,
+      "max_function_lines": 77,
+      "module": "noetrium_platform.infrastructure.resources.compute.runtime.scheduler",
+      "path": "noetrium_platform/infrastructure/resources/compute/runtime/scheduler.py",
+      "physical_lines": 907,
+      "score": 1703
     }
   ],
   "top_optimization_risks": [
     {
       "exception_handlers": 0,
-      "import_fan_in": 376,
+      "import_fan_in": 460,
       "import_fan_out": 27,
       "io_sites": 0,
       "lock_sites": 0,
@@ -3648,32 +1981,32 @@
         "HIGH_FAN_IN",
         "HIGH_FAN_OUT"
       ],
-      "risk_score": 1585,
+      "risk_score": 1921,
       "self_mutation_sites": 0,
       "serialization_sites": 0
     },
     {
-      "exception_handlers": 6,
-      "import_fan_in": 196,
-      "import_fan_out": 6,
-      "io_sites": 1,
-      "lock_sites": 0,
-      "long_functions": 0,
-      "module": "noetrium_platform.foundation.kernel.kernel.leaf_contract",
-      "path": "noetrium_platform/foundation/kernel/kernel/leaf_contract.py",
-      "reason_codes": [
-        "HIGH_FAN_IN",
-        "FAILURE_BRANCH_CONCENTRATION"
-      ],
-      "risk_score": 868,
-      "self_mutation_sites": 2,
-      "serialization_sites": 0
-    },
-    {
-      "exception_handlers": 17,
+      "exception_handlers": 0,
       "import_fan_in": 1,
       "import_fan_out": 3,
-      "io_sites": 48,
+      "io_sites": 73,
+      "lock_sites": 0,
+      "long_functions": 15,
+      "module": "noetrium_platform.research.execution.graph.providers.sqlite",
+      "path": "noetrium_platform/research/execution/graph/providers/sqlite.py",
+      "reason_codes": [
+        "IO_CONCENTRATION",
+        "LONG_FUNCTION"
+      ],
+      "risk_score": 915,
+      "self_mutation_sites": 2,
+      "serialization_sites": 2
+    },
+    {
+      "exception_handlers": 14,
+      "import_fan_in": 1,
+      "import_fan_out": 4,
+      "io_sites": 40,
       "lock_sites": 0,
       "long_functions": 5,
       "module": "noetrium_platform.capabilities.model.catalog.revision.providers.sqlite_revision_authority",
@@ -3683,52 +2016,50 @@
         "FAILURE_BRANCH_CONCENTRATION",
         "LONG_FUNCTION"
       ],
-      "risk_score": 638,
+      "risk_score": 553,
       "self_mutation_sites": 1,
       "serialization_sites": 0
     },
     {
-      "exception_handlers": 9,
-      "import_fan_in": 1,
-      "import_fan_out": 6,
-      "io_sites": 50,
+      "exception_handlers": 0,
+      "import_fan_in": 123,
+      "import_fan_out": 17,
+      "io_sites": 0,
       "lock_sites": 0,
-      "long_functions": 3,
-      "module": "noetrium_platform.infrastructure.resources.providers.sqlite_endpoint",
-      "path": "noetrium_platform/infrastructure/resources/providers/sqlite_endpoint.py",
+      "long_functions": 0,
+      "module": "noetrium_platform.research.execution.api",
+      "path": "noetrium_platform/research/execution/api/__init__.py",
       "reason_codes": [
-        "IO_CONCENTRATION",
-        "FAILURE_BRANCH_CONCENTRATION",
-        "LONG_FUNCTION"
+        "HIGH_FAN_IN",
+        "HIGH_FAN_OUT"
       ],
-      "risk_score": 564,
-      "self_mutation_sites": 2,
+      "risk_score": 543,
+      "self_mutation_sites": 0,
       "serialization_sites": 0
     },
     {
-      "exception_handlers": 14,
-      "import_fan_in": 2,
-      "import_fan_out": 48,
-      "io_sites": 1,
+      "exception_handlers": 30,
+      "import_fan_in": 4,
+      "import_fan_out": 8,
+      "io_sites": 0,
       "lock_sites": 0,
-      "long_functions": 3,
-      "module": "noetrium_platform.platform",
-      "path": "noetrium_platform/platform.py",
+      "long_functions": 7,
+      "module": "noetrium_platform.foundation.kernel.concurrency.runtime.task_group",
+      "path": "noetrium_platform/foundation/kernel/concurrency/runtime/task_group.py",
       "reason_codes": [
-        "HIGH_FAN_OUT",
         "STATE_MUTATION_CONCENTRATION",
         "FAILURE_BRANCH_CONCENTRATION",
         "LONG_FUNCTION"
       ],
-      "risk_score": 522,
-      "self_mutation_sites": 38,
+      "risk_score": 485,
+      "self_mutation_sites": 13,
       "serialization_sites": 0
     },
     {
       "exception_handlers": 7,
       "import_fan_in": 1,
-      "import_fan_out": 9,
-      "io_sites": 27,
+      "import_fan_out": 8,
+      "io_sites": 22,
       "lock_sites": 4,
       "long_functions": 3,
       "module": "noetrium_platform.infrastructure.resources.compute.runtime.scheduler",
@@ -3740,15 +2071,15 @@
         "FAILURE_BRANCH_CONCENTRATION",
         "LONG_FUNCTION"
       ],
-      "risk_score": 514,
+      "risk_score": 471,
       "self_mutation_sites": 19,
       "serialization_sites": 2
     },
     {
-      "exception_handlers": 15,
+      "exception_handlers": 12,
       "import_fan_in": 1,
-      "import_fan_out": 3,
-      "io_sites": 41,
+      "import_fan_out": 4,
+      "io_sites": 33,
       "lock_sites": 0,
       "long_functions": 2,
       "module": "noetrium_platform.capabilities.participant.providers.sqlite_revision_authority",
@@ -3758,26 +2089,61 @@
         "FAILURE_BRANCH_CONCENTRATION",
         "LONG_FUNCTION"
       ],
-      "risk_score": 506,
+      "risk_score": 421,
       "self_mutation_sites": 1,
       "serialization_sites": 0
     },
     {
-      "exception_handlers": 26,
-      "import_fan_in": 4,
-      "import_fan_out": 8,
+      "exception_handlers": 2,
+      "import_fan_in": 2,
+      "import_fan_out": 16,
+      "io_sites": 2,
+      "lock_sites": 0,
+      "long_functions": 13,
+      "module": "noetrium_platform.composition.research_os_execution",
+      "path": "noetrium_platform/composition/research_os_execution.py",
+      "reason_codes": [
+        "HIGH_FAN_OUT",
+        "STATE_MUTATION_CONCENTRATION",
+        "LONG_FUNCTION"
+      ],
+      "risk_score": 408,
+      "self_mutation_sites": 12,
+      "serialization_sites": 0
+    },
+    {
+      "exception_handlers": 0,
+      "import_fan_in": 97,
+      "import_fan_out": 4,
       "io_sites": 0,
       "lock_sites": 0,
-      "long_functions": 6,
-      "module": "noetrium_platform.foundation.kernel.concurrency.runtime.task_group",
-      "path": "noetrium_platform/foundation/kernel/concurrency/runtime/task_group.py",
+      "long_functions": 0,
+      "module": "noetrium_platform.substrate.api",
+      "path": "noetrium_platform/substrate/api.py",
       "reason_codes": [
-        "STATE_MUTATION_CONCENTRATION",
+        "HIGH_FAN_IN"
+      ],
+      "risk_score": 400,
+      "self_mutation_sites": 0,
+      "serialization_sites": 0
+    },
+    {
+      "exception_handlers": 8,
+      "import_fan_in": 61,
+      "import_fan_out": 1,
+      "io_sites": 7,
+      "lock_sites": 0,
+      "long_functions": 1,
+      "module": "noetrium_platform.foundation.kernel.kernel.durability.durable_file",
+      "path": "noetrium_platform/foundation/kernel/kernel/durability/durable_file.py",
+      "reason_codes": [
+        "HIGH_FAN_IN",
+        "IO_CONCENTRATION",
         "FAILURE_BRANCH_CONCENTRATION",
         "LONG_FUNCTION"
       ],
-      "risk_score": 433,
-      "self_mutation_sites": 13,
+      "risk_score": 387,
+      "self_mutation_sites": 0,
       "serialization_sites": 0
     },
     {
@@ -3787,30 +2153,32 @@
       "io_sites": 0,
       "lock_sites": 1,
       "long_functions": 2,
-      "module": "noetrium_platform.research.execution.admission.runtime.authority",
-      "path": "noetrium_platform/research/execution/admission/runtime/authority.py",
+      "module": "noetrium_platform.research.execution.policy.runtime.authority",
+      "path": "noetrium_platform/research/execution/policy/runtime/authority.py",
       "reason_codes": [
         "STATE_MUTATION_CONCENTRATION",
         "LONG_FUNCTION"
       ],
-      "risk_score": 365,
-      "self_mutation_sites": 60,
+      "risk_score": 385,
+      "self_mutation_sites": 64,
       "serialization_sites": 0
     },
     {
-      "exception_handlers": 0,
-      "import_fan_in": 82,
-      "import_fan_out": 3,
-      "io_sites": 0,
+      "exception_handlers": 9,
+      "import_fan_in": 1,
+      "import_fan_out": 6,
+      "io_sites": 27,
       "lock_sites": 0,
-      "long_functions": 0,
-      "module": "noetrium_platform.foundation.scope.api",
-      "path": "noetrium_platform/foundation/scope/api/__init__.py",
+      "long_functions": 3,
+      "module": "noetrium_platform.infrastructure.resources.providers.sqlite_endpoint",
+      "path": "noetrium_platform/infrastructure/resources/providers/sqlite_endpoint.py",
       "reason_codes": [
-        "HIGH_FAN_IN"
+        "IO_CONCENTRATION",
+        "FAILURE_BRANCH_CONCENTRATION",
+        "LONG_FUNCTION"
       ],
-      "risk_score": 337,
-      "self_mutation_sites": 0,
+      "risk_score": 380,
+      "self_mutation_sites": 2,
       "serialization_sites": 0
     },
     {
@@ -3832,20 +2200,55 @@
       "serialization_sites": 0
     },
     {
-      "exception_handlers": 3,
-      "import_fan_in": 59,
-      "import_fan_out": 1,
-      "io_sites": 5,
+      "exception_handlers": 0,
+      "import_fan_in": 75,
+      "import_fan_out": 7,
+      "io_sites": 0,
       "lock_sites": 0,
-      "long_functions": 1,
-      "module": "noetrium_platform.foundation.kernel.kernel.durability.durable_file",
-      "path": "noetrium_platform/foundation/kernel/kernel/durability/durable_file.py",
+      "long_functions": 0,
+      "module": "noetrium_platform.foundation.governance.api",
+      "path": "noetrium_platform/foundation/governance/api/__init__.py",
       "reason_codes": [
-        "HIGH_FAN_IN",
+        "HIGH_FAN_IN"
+      ],
+      "risk_score": 321,
+      "self_mutation_sites": 0,
+      "serialization_sites": 0
+    },
+    {
+      "exception_handlers": 11,
+      "import_fan_in": 2,
+      "import_fan_out": 5,
+      "io_sites": 0,
+      "lock_sites": 0,
+      "long_functions": 3,
+      "module": "noetrium_platform.capabilities.environment.providers.jsonl_process",
+      "path": "noetrium_platform/capabilities/environment/providers/jsonl_process.py",
+      "reason_codes": [
+        "STATE_MUTATION_CONCENTRATION",
+        "FAILURE_BRANCH_CONCENTRATION",
         "LONG_FUNCTION"
       ],
-      "risk_score": 323,
-      "self_mutation_sites": 0,
+      "risk_score": 309,
+      "self_mutation_sites": 26,
+      "serialization_sites": 2
+    },
+    {
+      "exception_handlers": 10,
+      "import_fan_in": 2,
+      "import_fan_out": 6,
+      "io_sites": 2,
+      "lock_sites": 1,
+      "long_functions": 5,
+      "module": "noetrium_platform.composition.research_graph",
+      "path": "noetrium_platform/composition/research_graph.py",
+      "reason_codes": [
+        "STATE_MUTATION_CONCENTRATION",
+        "FAILURE_BRANCH_CONCENTRATION",
+        "LONG_FUNCTION"
+      ],
+      "risk_score": 309,
+      "self_mutation_sites": 15,
       "serialization_sites": 0
     },
     {
@@ -3868,23 +2271,6 @@
       "serialization_sites": 4
     },
     {
-      "exception_handlers": 16,
-      "import_fan_in": 0,
-      "import_fan_out": 3,
-      "io_sites": 1,
-      "lock_sites": 2,
-      "long_functions": 4,
-      "module": "noetrium_platform.capabilities.model.qualification.providers.qualification_index_worker",
-      "path": "noetrium_platform/capabilities/model/qualification/providers/qualification_index_worker.py",
-      "reason_codes": [
-        "FAILURE_BRANCH_CONCENTRATION",
-        "LONG_FUNCTION"
-      ],
-      "risk_score": 297,
-      "self_mutation_sites": 4,
-      "serialization_sites": 7
-    },
-    {
       "exception_handlers": 8,
       "import_fan_in": 1,
       "import_fan_out": 11,
@@ -3904,90 +2290,37 @@
       "serialization_sites": 0
     },
     {
-      "exception_handlers": 11,
-      "import_fan_in": 2,
-      "import_fan_out": 6,
-      "io_sites": 1,
-      "lock_sites": 0,
+      "exception_handlers": 12,
+      "import_fan_in": 1,
+      "import_fan_out": 8,
+      "io_sites": 2,
+      "lock_sites": 2,
       "long_functions": 2,
-      "module": "noetrium_platform.capabilities.environment.minecraft.providers.jsonl_transport",
-      "path": "noetrium_platform/capabilities/environment/minecraft/providers/jsonl_transport.py",
+      "module": "noetrium_platform.capabilities.environment.minecraft.composition.server_service",
+      "path": "noetrium_platform/capabilities/environment/minecraft/composition/server_service.py",
       "reason_codes": [
         "STATE_MUTATION_CONCENTRATION",
         "FAILURE_BRANCH_CONCENTRATION",
         "LONG_FUNCTION"
       ],
-      "risk_score": 295,
-      "self_mutation_sites": 25,
-      "serialization_sites": 2
+      "risk_score": 289,
+      "self_mutation_sites": 17,
+      "serialization_sites": 0
     },
     {
-      "exception_handlers": 6,
-      "import_fan_in": 1,
+      "exception_handlers": 0,
+      "import_fan_in": 69,
       "import_fan_out": 2,
-      "io_sites": 21,
-      "lock_sites": 1,
-      "long_functions": 0,
-      "module": "noetrium_platform.foundation.portfolio.runtime.catalog",
-      "path": "noetrium_platform/foundation/portfolio/runtime/catalog.py",
-      "reason_codes": [
-        "IO_CONCENTRATION",
-        "STATE_MUTATION_CONCENTRATION",
-        "FAILURE_BRANCH_CONCENTRATION"
-      ],
-      "risk_score": 293,
-      "self_mutation_sites": 11,
-      "serialization_sites": 0
-    },
-    {
-      "exception_handlers": 5,
-      "import_fan_in": 1,
-      "import_fan_out": 3,
-      "io_sites": 26,
-      "lock_sites": 0,
-      "long_functions": 0,
-      "module": "noetrium_platform.evidence.data.state.runtime.sqlite_backend",
-      "path": "noetrium_platform/evidence/data/state/runtime/sqlite_backend.py",
-      "reason_codes": [
-        "IO_CONCENTRATION",
-        "FAILURE_BRANCH_CONCENTRATION"
-      ],
-      "risk_score": 291,
-      "self_mutation_sites": 6,
-      "serialization_sites": 0
-    },
-    {
-      "exception_handlers": 6,
-      "import_fan_in": 1,
-      "import_fan_out": 4,
-      "io_sites": 27,
-      "lock_sites": 0,
-      "long_functions": 0,
-      "module": "noetrium_platform.infrastructure.resources.providers.sqlite_lease",
-      "path": "noetrium_platform/infrastructure/resources/providers/sqlite_lease.py",
-      "reason_codes": [
-        "IO_CONCENTRATION",
-        "FAILURE_BRANCH_CONCENTRATION"
-      ],
-      "risk_score": 290,
-      "self_mutation_sites": 2,
-      "serialization_sites": 0
-    },
-    {
-      "exception_handlers": 1,
-      "import_fan_in": 1,
-      "import_fan_out": 3,
       "io_sites": 0,
       "lock_sites": 0,
-      "long_functions": 2,
-      "module": "noetrium_platform.foundation.governance.algorithm.runtime.python_analyzer",
-      "path": "noetrium_platform/foundation/governance/algorithm/runtime/python_analyzer.py",
+      "long_functions": 0,
+      "module": "noetrium_platform.foundation.kernel.concurrency.api",
+      "path": "noetrium_platform/foundation/kernel/concurrency/api/__init__.py",
       "reason_codes": [
-        "STATE_MUTATION_CONCENTRATION",
-        "LONG_FUNCTION"
+        "HIGH_FAN_IN"
       ],
-      "risk_score": 281,
-      "self_mutation_sites": 44,
+      "risk_score": 282,
+      "self_mutation_sites": 0,
       "serialization_sites": 0
     }
   ]
