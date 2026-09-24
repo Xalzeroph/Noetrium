@@ -124,12 +124,13 @@ def test_failed_node_can_enter_durable_retry_wait_and_reclaim(tmp_path) -> None:
         failure_message="first attempt",
     )
 
-    waiting = store.schedule_retry(
+    retry_snapshot = store.retry_failed_subgraph(
         "execution-3",
         "a",
+        descendant_node_ids=(),
         retry_not_before_ns=50,
     )
-    assert waiting.state is ResearchGraphLiveNodeState.RETRY_WAIT
+    assert retry_snapshot.node("a").state is ResearchGraphLiveNodeState.RETRY_WAIT
 
     ready = store.mark_ready("execution-3", "a", now_ns=50)
     assert ready.state is ResearchGraphLiveNodeState.READY
