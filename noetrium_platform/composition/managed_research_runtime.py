@@ -92,6 +92,7 @@ class ManagedResearchRuntime:
     _closing: bool = False
     _controllers_quiesced: bool = False
     _workloads_quiesced: bool = False
+    _auto_model_leases_closed: bool = False
     _auto_models_removed: bool = False
     _models_stopped: bool = False
     _resources_cleaned: bool = False
@@ -212,10 +213,28 @@ class ManagedResearchRuntime:
                 raise self._close_stage_error("workload quiescence", exc)
             self._workloads_quiesced = True
 
+        # Exact in-process replica-pool owners must converge first.  Their lease
+        # objects own the live heartbeat generations as well as the model ->
+        # endpoint/compute teardown order.  Generic desired-state retirement is
+        # only the recovery path for auto-managed generations not represented
+        # by a surviving in-process lease.
+        if not self._auto_model_leases_closed:
+            try:
+                if self.model_replica_pool is not None:
+                    self.model_replica_pool.close_all()
+            except BaseException as exc:
+                raise self._close_stage_error(
+                    "auto-managed replica lease retirement",
+                    exc,
+                )
+            self._auto_model_leases_closed = True
+
         # Automatically placed replicas own ephemeral resource claims for this
         # runtime lifetime.  Their desired specs must not survive past the
         # lease/heartbeat owner generation: a later process must place them
-        # again and obtain fresh endpoint/compute fencing.
+        # again and obtain fresh endpoint/compute fencing.  This catches
+        # generations recovered from a prior crash that have no live lease
+        # object in this process.
         if not self._auto_models_removed:
             try:
                 self.management.models.fleet.remove_selected(
