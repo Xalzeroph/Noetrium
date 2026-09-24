@@ -733,3 +733,115 @@ def test_branch_session_surfaces_endpoint_lease_guard_failure() -> None:
         session.observe(object())
     binding.close()
     assert not allocations.active()
+
+
+def test_branch_runtime_stop_failure_keeps_endpoint_fenced_until_retry() -> None:
+    leases = InMemoryResourceLeaseRegistry()
+    allocations = InMemoryEndpointAllocator(
+        ownership=leases,
+        leases=leases,
+        probe=AlwaysAvailableProbe(),
+        candidates=FixedCandidatePorts(),
+    )
+    events: list[str] = []
+    servers: list[object] = []
+
+    class FlakyStopServer(RecordingServer):
+        def __init__(self, events: list[str]) -> None:
+            super().__init__(events)
+            self.fail_stop = True
+
+        def stop(self) -> None:
+            self.events.append("server.stop")
+            if self.fail_stop:
+                raise RuntimeError("simulated server stop failure")
+
+    def compose_environment(spec: MinecraftEnvironmentSpec) -> MinecraftEnvironmentAssembly:
+        return MinecraftEnvironmentAssembly(
+            MinecraftEnvironmentImplementation(spec=spec, bridge_factory=lambda _: object()),
+            RecordingEnvironmentRuntime(events),
+        )
+
+    class ServerFactory:
+        def create(self, spec: MinecraftServerSpec, *, environment_generation: str):
+            server = FlakyStopServer(events)
+            servers.append(server)
+            return server
+
+    factory = MinecraftBranchRuntimeFactory(
+        endpoint_allocations=allocations,
+        lease_guard_factory=NoopGuardFactory(),
+        environment_factory=type("EnvironmentFactory", (), {"compose": staticmethod(compose_environment)})(),
+        server_factory=ServerFactory(),
+    )
+    binding = factory.open(_request())
+    binding.open_session(services=object())
+
+    with pytest.raises(Exception, match="branch runtime close failed"):
+        binding.close()
+    assert allocations.active(), "endpoint must stay fenced while server stop is unproven"
+
+    server = servers[0]
+    assert isinstance(server, FlakyStopServer)
+    server.fail_stop = False
+    binding.close()
+
+    assert not allocations.active()
+    assert events.count("server.stop") == 2
+    assert events.count("session.close") == 1
+
+
+def test_branch_runtime_guard_close_failure_keeps_endpoint_fenced_until_retry() -> None:
+    leases = InMemoryResourceLeaseRegistry()
+    allocations = InMemoryEndpointAllocator(
+        ownership=leases,
+        leases=leases,
+        probe=AlwaysAvailableProbe(),
+        candidates=FixedCandidatePorts(),
+    )
+    events: list[str] = []
+
+    class FlakyGuard(NoopGuard):
+        def __init__(self) -> None:
+            self.close_calls = 0
+
+        def close(self) -> None:
+            self.close_calls += 1
+            if self.close_calls == 1:
+                raise RuntimeError("simulated heartbeat shutdown failure")
+
+    guard = FlakyGuard()
+
+    class GuardFactory:
+        def create(self, allocation_rows):
+            assert allocation_rows
+            return guard
+
+    def compose_environment(spec: MinecraftEnvironmentSpec) -> MinecraftEnvironmentAssembly:
+        return MinecraftEnvironmentAssembly(
+            MinecraftEnvironmentImplementation(spec=spec, bridge_factory=lambda _: object()),
+            RecordingEnvironmentRuntime(events),
+        )
+
+    class ServerFactory:
+        def create(self, spec: MinecraftServerSpec, *, environment_generation: str):
+            return RecordingServer(events)
+
+    factory = MinecraftBranchRuntimeFactory(
+        endpoint_allocations=allocations,
+        lease_guard_factory=GuardFactory(),
+        environment_factory=type("EnvironmentFactory", (), {"compose": staticmethod(compose_environment)})(),
+        server_factory=ServerFactory(),
+    )
+    binding = factory.open(_request())
+    binding.open_session(services=object())
+
+    with pytest.raises(Exception, match="branch runtime close failed"):
+        binding.close()
+    assert allocations.active(), "endpoint must stay fenced until heartbeat shutdown converges"
+
+    binding.close()
+
+    assert not allocations.active()
+    assert guard.close_calls == 2
+    assert events.count("server.stop") == 1
