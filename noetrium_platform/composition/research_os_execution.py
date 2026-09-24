@@ -272,22 +272,28 @@ class ResearchOSExecutionUnsupported(RuntimeError):
     pass
 
 
-def _execution_selection_node_ids(
+def _dependency_closed_selection_node_ids(
     compilation: CompiledResearchOSGraph,
-    target: ResearchExecutionTarget,
+    seed_node_ids: tuple[str, ...],
 ) -> tuple[str, ...]:
     if type(compilation) is not CompiledResearchOSGraph:
         raise TypeError("research execution selection requires compiled graph")
-    if type(target) is not ResearchExecutionTarget:
-        raise TypeError("research execution selection requires typed target")
-    if target.node is None:
-        return tuple(node.graph_node_id for node in compilation.nodes)
-    matches = tuple(node for node in compilation.nodes if node.ref == target.node)
-    if len(matches) != 1:
-        raise ResearchOSExecutionUnsupported(
-            "node-scoped RUN target does not identify exactly one ResearchGraph node"
+    if type(seed_node_ids) is not tuple or not seed_node_ids or any(
+        type(node_id) is not str or not node_id.strip()
+        for node_id in seed_node_ids
+    ):
+        raise TypeError(
+            "research execution selection seeds must be a non-empty text tuple"
         )
+    seeds = tuple(sorted(seed_node_ids))
+    if len(seeds) != len(set(seeds)):
+        raise ValueError("research execution selection seeds must be unique")
     by_id = {node.node_id: node for node in compilation.plan.nodes}
+    unknown = tuple(sorted(set(seeds) - set(by_id)))
+    if unknown:
+        raise ResearchOSExecutionUnsupported(
+            f"research execution selection references unknown nodes: {unknown}"
+        )
     selected: set[str] = set()
 
     def include(node_id: str) -> None:
@@ -297,8 +303,28 @@ def _execution_selection_node_ids(
         for dependency in by_id[node_id].depends_on_node_ids:
             include(dependency)
 
-    include(matches[0].graph_node_id)
+    for node_id in seeds:
+        include(node_id)
     return tuple(sorted(selected))
+
+
+def _execution_selection_node_ids(
+    compilation: CompiledResearchOSGraph,
+    target: ResearchExecutionTarget,
+) -> tuple[str, ...]:
+    if type(target) is not ResearchExecutionTarget:
+        raise TypeError("research execution selection requires typed target")
+    if target.node is None:
+        return tuple(node.graph_node_id for node in compilation.nodes)
+    matches = tuple(node for node in compilation.nodes if node.ref == target.node)
+    if len(matches) != 1:
+        raise ResearchOSExecutionUnsupported(
+            "node-scoped RUN target does not identify exactly one ResearchGraph node"
+        )
+    return _dependency_closed_selection_node_ids(
+        compilation,
+        (matches[0].graph_node_id,),
+    )
 
 
 def prepare_research_os_execution(
@@ -309,6 +335,7 @@ def prepare_research_os_execution(
     *,
     experiment_closures: ResearchOSExperimentClosurePort | None = None,
     artifact_lineage: ArtifactLineageRelationPort | None = None,
+    selection_seed_node_ids: tuple[str, ...] | None = None,
 ) -> PreparedResearchOSExecution:
     """Close the complete execution dependency set before any durable cut exists."""
 
@@ -329,7 +356,17 @@ def prepare_research_os_execution(
         target.revision,
         portfolio,
     )
-    selected_node_ids = _execution_selection_node_ids(compilation, target)
+    if selection_seed_node_ids is None:
+        selected_node_ids = _execution_selection_node_ids(compilation, target)
+    else:
+        if target.node is not None:
+            raise ValueError(
+                "explicit research execution selection seeds require a whole-graph target"
+            )
+        selected_node_ids = _dependency_closed_selection_node_ids(
+            compilation,
+            selection_seed_node_ids,
+        )
     lowering = compile_research_os_lowering(
         compilation,
         experiment_closures=experiment_closures,
@@ -1560,11 +1597,21 @@ class StrictResearchOSControl(
             descendant_node_ids=descendants,
             retry_not_before_ns=time.time_ns(),
         )
+        retry_seed_node_ids = (root.graph_node_id, *descendants)
         if control.phase is ResearchGraphControlPhase.PAUSED:
-            control = self._store.resume(
-                cut.cut_id,
-                expected_generation=control.generation,
-                now_ns=time.time_ns(),
+            snapshot = self._store.snapshot(cut.cut_id)
+            return self._durable_control_receipt(
+                request,
+                compilation,
+                cut,
+                active,
+                snapshot,
+                control,
+                state="retry_staged",
+                extra={
+                    "retry_root_node_id": root.graph_node_id,
+                    "retry_descendant_node_ids": descendants,
+                },
             )
         execution_target = ResearchExecutionTarget(
             request.target.execution_id,
@@ -1577,6 +1624,7 @@ class StrictResearchOSControl(
             self._values,
             experiment_closures=self._experiment_closures,
             artifact_lineage=self._artifact_lineage,
+            selection_seed_node_ids=retry_seed_node_ids,
         )
         if prepared.compilation != compilation or prepared.cut != cut:
             raise ValueError("Research OS retry preflight identity drifted")
