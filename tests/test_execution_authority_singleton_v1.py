@@ -15,6 +15,10 @@ _CANONICAL_DEFINITIONS = {
 _FORBIDDEN_CLASS_NAMES = {
     "UniversalExperimentKernel",
 }
+_FORBIDDEN_FUNCTION_NAMES = {
+    "build_experiment_runtime",
+    "build_experiment_runtime_components",
+}
 
 _ALLOWED_CALLERS = {
     "UniversalMethodMachine": {
@@ -43,6 +47,7 @@ def test_core_execution_authorities_have_one_definition_and_one_call_path() -> N
     root = Path(__file__).resolve().parents[1]
     definitions = {name: [] for name in _CANONICAL_DEFINITIONS}
     forbidden_definitions = {name: [] for name in _FORBIDDEN_CLASS_NAMES}
+    forbidden_functions = {name: [] for name in _FORBIDDEN_FUNCTION_NAMES}
     callers = {name: [] for name in _ALLOWED_CALLERS}
 
     for path in sorted((root / "noetrium_platform").rglob("*.py")):
@@ -53,6 +58,11 @@ def test_core_execution_authorities_have_one_definition_and_one_call_path() -> N
                 definitions[node.name].append(relative)
             if isinstance(node, ast.ClassDef) and node.name in forbidden_definitions:
                 forbidden_definitions[node.name].append(relative)
+            if (
+                isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef))
+                and node.name in forbidden_functions
+            ):
+                forbidden_functions[node.name].append(relative)
             if isinstance(node, ast.Call):
                 name = _called_name(node)
                 if name in callers:
@@ -63,6 +73,7 @@ def test_core_execution_authorities_have_one_definition_and_one_call_path() -> N
         for name, path in _CANONICAL_DEFINITIONS.items()
     }
     assert all(not paths for paths in forbidden_definitions.values()), forbidden_definitions
+    assert all(not paths for paths in forbidden_functions.values()), forbidden_functions
     assert {
         name: set(paths)
         for name, paths in callers.items()
