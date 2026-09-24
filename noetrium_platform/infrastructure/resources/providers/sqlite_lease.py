@@ -134,7 +134,13 @@ class SQLiteResourceLeaseRegistry(ResourceOwnershipPort, ResourceLeasePort):
                     now_epoch_s=now_epoch_s,
                 )
 
-    def release(self, lease_id: str, *, now: float | None = None) -> ResourceLease:
+    def release(
+        self,
+        lease_id: str,
+        *,
+        fencing_token: int,
+        now: float | None = None,
+    ) -> ResourceLease:
         now_epoch_s = time() if now is None else float(now)
         with self._connection() as conn:
             with immediate_sqlite_transaction(
@@ -143,7 +149,10 @@ class SQLiteResourceLeaseRegistry(ResourceOwnershipPort, ResourceLeasePort):
                 label="resource lease release",
             ):
                 return release_resource_lease(
-                    conn, lease_id, now_epoch_s=now_epoch_s
+                    conn,
+                    lease_id,
+                    fencing_token=fencing_token,
+                    now_epoch_s=now_epoch_s,
                 )
 
     def get(self, lease_id: str, *, now: float | None = None) -> ResourceLease:
