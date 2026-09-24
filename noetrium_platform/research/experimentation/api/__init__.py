@@ -576,3 +576,33 @@ __all__ = tuple(__all__) + (
     "TensorContentRef",
     "TensorContentStorePort",
 )
+
+# Adjacent execution-layer contracts surfaced to the Product Research OS.
+from noetrium_platform.research.execution.api import (
+    ArtifactBlobRef,
+    EmbodiedSimulatorBackendPort,
+    SemanticProjectionSnapshot,
+    SemanticSimilarityQuery,
+    SemanticSimilarityQueryPort,
+    SimulatorObservation,
+    SimulatorStep,
+    SoftwareActionKind,
+    SoftwareActionTimeoutError,
+    SoftwareWorldPort,
+)
+__all__ = tuple(__all__) + (
+    "ArtifactBlobRef",
+    "EmbodiedSimulatorBackendPort",
+    "SemanticProjectionSnapshot",
+    "SemanticSimilarityQuery",
+    "SemanticSimilarityQueryPort",
+    "SimulatorObservation",
+    "SimulatorStep",
+    "SoftwareActionKind",
+    "SoftwareActionTimeoutError",
+    "SoftwareWorldPort",
+)
+from noetrium_platform.research.experimentation.workbench.api import (
+    candidate_program_capability_payload,
+)
+__all__ = tuple(__all__) + ("candidate_program_capability_payload",)
