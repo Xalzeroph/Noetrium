@@ -16,6 +16,7 @@ from noetrium_platform.capabilities.participant.core.api import (
 from noetrium_platform.composition.research_binding_authority import (
     ResearchBindingAuthority,
     ResearchBindingAuthorityError,
+    ResearchProjectManifestRegistry,
 )
 from noetrium_platform.foundation.governance.architecture.api import (
     BindingDiagnostic,
@@ -339,3 +340,31 @@ def test_research_binding_authority_preserves_blocking_owner_diagnostics() -> No
         "model.unavailable",
     )
     assert len(error.error_digest) == 64
+
+
+
+def test_project_manifest_registry_resolves_exact_study_coverage() -> None:
+    registry = ResearchProjectManifestRegistry((_manifest(),))
+    resolved = registry.resolve(_definition())
+    assert resolved == _manifest()
+    assert len(registry.identity_digest) == 64
+
+
+def test_project_manifest_registry_rejects_ambiguous_project_study_versions() -> None:
+    first = _manifest()
+    second = ProjectManifest(
+        ProjectSpec(
+            ProjectIdentity("demo-project", "2"),
+            "demo-program",
+            "Demo Project",
+        ),
+        first.template_revision,
+        first.provenance,
+        first.capability_requirements,
+        first.provider_bindings,
+        first.method_requirements,
+        first.configuration_refs,
+        first.study_ids,
+    )
+    with pytest.raises(ValueError, match="ambiguous Study coverage"):
+        ResearchProjectManifestRegistry((first, second))
