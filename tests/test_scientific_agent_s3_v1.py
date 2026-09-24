@@ -1,5 +1,6 @@
 from research.reproductions.agent_s3 import (
     AGENT_S3_FIDELITY,
+    AGENT_S3_METHOD_PROGRAM,
     AgentS3GeneratorTurn,
     AgentS3ReflectionTurn,
     project_agent_s3_context,
@@ -94,3 +95,38 @@ def test_agent_s3_projection_does_not_mutate_host_history() -> None:
     assert reflection[0].screenshot_ref == "reflection-image-0"
     assert view.generator_turns[0].screenshot_ref is None
     assert view.reflection_turns[0].screenshot_ref is None
+
+from research.reproductions.agent_s3.definition import REPRODUCTION
+from research.reproductions.research_os import (
+    ReproductionExecutionRequirementKind,
+    compile_reproduction_research_program,
+    is_research_os_executable,
+    resolve_execution_requirements,
+)
+
+
+
+def test_agent_s3_method_program_keeps_method_policy_downstream() -> None:
+    program = AGENT_S3_METHOD_PROGRAM
+
+    assert program.configuration["hierarchy_enabled"] is False
+    assert program.configuration["default_reflection_enabled"] is True
+    assert program.configuration["runtime_tool_creation"] is True
+    assert program.configuration["code_agent_budget"] == 20
+    assert program.configuration["paper_default_step_limit"] == 0.0
+    assert program.required_capabilities == ("environment.act",)
+    assert program.graph.node("reflection").agent_id == "agent-s3.reflection"
+    assert program.graph.node("worker").agent_id == "agent-s3.worker"
+    assert program.graph.node("code_agent").agent_id == "agent-s3.code-agent"
+
+
+def test_agent_s3_enters_current_research_os_with_only_benchmark_split_open() -> None:
+    assert is_research_os_executable(REPRODUCTION)
+    requirements = resolve_execution_requirements(REPRODUCTION)
+
+    assert tuple(row.parameter for row in requirements) == ("split_id",)
+    assert requirements[0].kind is ReproductionExecutionRequirementKind.BENCHMARK_SPLIT
+
+    research_program = compile_reproduction_research_program(REPRODUCTION)
+    assert research_program.program_id == "agent_s3"
+    assert tuple(node.node_id for node in research_program.nodes) == ("reproduction",)
