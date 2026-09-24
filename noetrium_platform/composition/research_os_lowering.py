@@ -35,6 +35,7 @@ from noetrium_platform.product.research_os import (
     ResearchDefinition,
     ResearchDefinitionKind,
     ResearchImplementation,
+    ResearchMethodProgramImplementation,
     ResearchNodeKind,
 )
 
@@ -120,6 +121,33 @@ class ResolvedResearchImplementation:
             raise TypeError("resolved research implementation value must be callable")
 
 
+@dataclass(frozen=True, slots=True)
+class ResolvedResearchMethodProgramImplementation:
+    """Resolved immutable MethodProgram symbol owned by one METHOD definition."""
+
+    definition_id: str
+    declared: ResearchMethodProgramImplementation
+    program: MethodProgram
+
+    def __post_init__(self) -> None:
+        if type(self.definition_id) is not str or not self.definition_id.strip():
+            raise ValueError(
+                "resolved MethodProgram implementation definition_id is required"
+            )
+        if type(self.declared) is not ResearchMethodProgramImplementation:
+            raise TypeError(
+                "resolved MethodProgram implementation requires typed declaration"
+            )
+        if type(self.program) is not MethodProgram:
+            raise TypeError(
+                "resolved MethodProgram implementation requires exact MethodProgram"
+            )
+        if self.program.program_digest != self.declared.program_digest:
+            raise ValueError(
+                "resolved MethodProgram digest drifted from immutable declaration"
+            )
+
+
 @runtime_checkable
 class ResearchImplementationResolverPort(Protocol):
     def resolve(
@@ -179,6 +207,47 @@ class ImportResearchImplementationResolver:
             declared,
             value,
         )
+
+
+def resolve_method_program_implementation(
+    definition: ResearchDefinition,
+) -> ResolvedResearchMethodProgramImplementation:
+    """Resolve one frozen module-level MethodProgram and prove exact IR identity."""
+
+    if type(definition) is not ResearchDefinition:
+        raise TypeError("MethodProgram resolution requires ResearchDefinition")
+    if definition.kind is not ResearchDefinitionKind.METHOD:
+        raise ValueError("MethodProgram resolution requires METHOD definition")
+    declared = definition.implementation
+    if type(declared) is not ResearchMethodProgramImplementation:
+        raise TypeError(
+            "MethodProgram resolution requires ResearchMethodProgramImplementation"
+        )
+    try:
+        value: object = importlib.import_module(declared.module)
+        for part in declared.qualname.split("."):
+            value = getattr(value, part)
+    except (ImportError, AttributeError) as exc:
+        raise ResearchImplementationResolutionError(
+            "research MethodProgram can no longer be imported from frozen "
+            f"coordinates: {declared.module}:{declared.qualname}"
+        ) from exc
+    if type(value) is not MethodProgram:
+        raise ResearchImplementationResolutionError(
+            "frozen research MethodProgram coordinates no longer resolve to "
+            f"MethodProgram: {declared.module}:{declared.qualname}"
+        )
+    if value.program_digest != declared.program_digest:
+        raise ResearchImplementationResolutionError(
+            "research MethodProgram IR drifted from immutable revision: "
+            f"{declared.module}:{declared.qualname}; "
+            f"declared={declared.program_digest} observed={value.program_digest}"
+        )
+    return ResolvedResearchMethodProgramImplementation(
+        definition.definition_id,
+        declared,
+        value,
+    )
 
 
 def _plain_callable_accepts_payload(
@@ -436,7 +505,10 @@ class LoweredResearchOSGraphNode:
 
     source: CompiledResearchOSGraphNode
     target: ResearchOSLoweringTarget
-    implementations: tuple[ResolvedResearchImplementation, ...] = ()
+    implementations: tuple[
+        ResolvedResearchImplementation | ResolvedResearchMethodProgramImplementation,
+        ...,
+    ] = ()
     platform_requirements: tuple[ResearchDefinition, ...] = ()
     method_programs: tuple[LoweredResearchMethodProgram, ...] = ()
     machine_programs: tuple[LoweredResearchMachineProgram, ...] = ()
@@ -449,7 +521,11 @@ class LoweredResearchOSGraphNode:
         if not isinstance(self.target, ResearchOSLoweringTarget):
             raise TypeError("lowered Research OS target must be typed")
         if type(self.implementations) is not tuple or any(
-            type(row) is not ResolvedResearchImplementation
+            type(row)
+            not in {
+                ResolvedResearchImplementation,
+                ResolvedResearchMethodProgramImplementation,
+            }
             for row in self.implementations
         ):
             raise TypeError("lowered implementations must be a typed tuple")
@@ -692,13 +768,32 @@ class ResearchOSLoweringCompiler:
         if type(node) is not CompiledResearchOSGraphNode:
             raise TypeError("Research OS lowering requires CompiledResearchOSGraphNode")
         target = _NODE_TARGETS[node.node.kind]
-        implementations: list[ResolvedResearchImplementation] = []
+        implementations: list[
+            ResolvedResearchImplementation | ResolvedResearchMethodProgramImplementation
+        ] = []
         requirements: list[ResearchDefinition] = []
         method_programs: list[LoweredResearchMethodProgram] = []
         machine_programs: list[LoweredResearchMachineProgram] = []
         for definition in node.definitions:
             if definition.implementation is None:
                 requirements.append(definition)
+                continue
+            if type(definition.implementation) is ResearchMethodProgramImplementation:
+                resolved_method = resolve_method_program_implementation(definition)
+                implementations.append(resolved_method)
+                if target is ResearchOSLoweringTarget.EXPERIMENTATION:
+                    continue
+                if target is not ResearchOSLoweringTarget.METHOD_MACHINE:
+                    raise ResearchImplementationResolutionError(
+                        "MethodProgram implementation may only execute through "
+                        f"METHOD/Experimentation targets: node={node.graph_node_id}"
+                    )
+                method_programs.append(
+                    LoweredResearchMethodProgram(
+                        definition.definition_id,
+                        resolved_method.program,
+                    )
+                )
                 continue
             resolved = self._resolver.resolve(definition)
             implementations.append(resolved)
