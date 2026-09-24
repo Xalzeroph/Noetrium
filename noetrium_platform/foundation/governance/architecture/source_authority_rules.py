@@ -15,6 +15,18 @@ DEFAULT_SOURCE_AUTHORITY_RULES: tuple[_AuthorityRule, ...] = (
         exact_call("os.replace"),
     ),
     SourceAuthorityRule(
+        "filesystem.interprocess_flock",
+        "fcntl.flock",
+        ("noetrium_platform.foundation.kernel.kernel.durability.file_lock",),
+        exact_call("fcntl.flock"),
+    ),
+    SourceAuthorityRule(
+        "filesystem.interprocess_windows_lock",
+        "msvcrt.locking",
+        ("noetrium_platform.foundation.kernel.kernel.durability.file_lock",),
+        exact_call("msvcrt.locking"),
+    ),
+    SourceAuthorityRule(
         "process.async_command_spawn",
         "asyncio.create_subprocess_exec",
         ("noetrium_platform.infrastructure.lifecycle.process.supervision.runtime.command_runner",),
