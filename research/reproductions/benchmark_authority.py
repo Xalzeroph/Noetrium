@@ -16,6 +16,7 @@ from typing import get_type_hints
 from noetrium_platform.foundation.kernel.kernel import canonical_digest
 from noetrium_platform.foundation.kernel.kernel.durability import sha256_file
 from noetrium_platform.research.experimentation.lifecycle.api import (
+    BenchmarkResolutionRegistry,
     BenchmarkSourceResolution,
 )
 
@@ -287,6 +288,7 @@ class RepositoryBenchmarkAuthority:
         self,
         bindings: tuple[RepositoryBenchmarkBinding, ...],
         failures: tuple[RepositoryBenchmarkDiscoveryFailure, ...] = (),
+        materialized: BenchmarkResolutionRegistry | None = None,
     ) -> None:
         if type(bindings) is not tuple or any(
             type(row) is not RepositoryBenchmarkBinding for row in bindings
@@ -301,6 +303,11 @@ class RepositoryBenchmarkAuthority:
             raise TypeError(
                 "repository benchmark authority failures must be typed tuple"
             )
+        if materialized is not None and type(materialized) is not BenchmarkResolutionRegistry:
+            raise TypeError(
+                "repository benchmark authority materialized registry must be "
+                "BenchmarkResolutionRegistry"
+            )
         self._bindings = tuple(
             sorted(
                 bindings,
@@ -313,10 +320,16 @@ class RepositoryBenchmarkAuthority:
         self._failures = tuple(
             sorted(failures, key=lambda row: row.failure_digest)
         )
+        self._materialized = (
+            BenchmarkResolutionRegistry()
+            if materialized is None
+            else materialized
+        )
         self._authority_digest = canonical_digest(
             {
-                "schema": "noetrium.repository-benchmark-authority.v1",
+                "schema": "noetrium.repository-benchmark-authority.v2",
                 "bindings": tuple(row.binding_digest for row in self._bindings),
+                "materialized_registry_identity": self._materialized.identity_digest,
                 "discovery_failures": tuple(
                     row.failure_digest for row in self._failures
                 ),
@@ -324,9 +337,12 @@ class RepositoryBenchmarkAuthority:
         )
 
     @classmethod
-    def discover(cls) -> "RepositoryBenchmarkAuthority":
+    def discover(
+        cls,
+        materialized: BenchmarkResolutionRegistry | None = None,
+    ) -> "RepositoryBenchmarkAuthority":
         bindings, failures = discover_repository_benchmark_bindings()
-        return cls(bindings, failures)
+        return cls(bindings, failures, materialized)
 
     @property
     def authority_digest(self) -> str:
@@ -342,23 +358,46 @@ class RepositoryBenchmarkAuthority:
 
     @property
     def benchmark_ids(self) -> tuple[str, ...]:
-        return tuple(sorted({row.benchmark_id for row in self._bindings}))
+        return tuple(sorted(
+            {row.benchmark_id for row in self._bindings}
+            | set(self._materialized.benchmark_ids)
+        ))
 
-    def _binding(self, benchmark_id: str) -> RepositoryBenchmarkBinding:
-        matches = tuple(
+    def _resolution(
+        self,
+        benchmark_id: str,
+    ) -> tuple[BenchmarkSourceResolution, tuple[str, ...]]:
+        source_rows = tuple(
             row for row in self._bindings if row.benchmark_id == benchmark_id
         )
-        if not matches:
-            raise ReproductionResearchOSCompileError(
-                f"benchmark {benchmark_id!r} has no exact source-contained "
-                "repository authority; immutable data/materialization is required"
+        materialized_rows = self._materialized.registrations_for(benchmark_id)
+        candidates: dict[str, tuple[BenchmarkSourceResolution, list[str]]] = {}
+
+        for row in source_rows:
+            entry = candidates.setdefault(
+                row.resolution.resolution_digest,
+                (row.resolution, []),
             )
-        if len(matches) != 1:
-            raise ReproductionResearchOSCompileError(
-                f"benchmark {benchmark_id!r} has ambiguous repository authorities: "
-                f"{tuple((row.module, row.qualname) for row in matches)}"
+            entry[1].append(row.binding_digest)
+        for row in materialized_rows:
+            entry = candidates.setdefault(
+                row.resolution.resolution_digest,
+                (row.resolution, []),
             )
-        return matches[0]
+            entry[1].append(row.registration_digest)
+
+        if not candidates:
+            raise ReproductionResearchOSCompileError(
+                f"benchmark {benchmark_id!r} has no exact repository or "
+                "materialized authority"
+            )
+        if len(candidates) != 1:
+            raise ReproductionResearchOSCompileError(
+                f"benchmark {benchmark_id!r} has ambiguous exact cuts: "
+                f"{tuple(sorted(candidates))}"
+            )
+        resolution, proofs = next(iter(candidates.values()))
+        return resolution, tuple(sorted(set(proofs)))
 
     def resolve(
         self,
@@ -401,8 +440,8 @@ class RepositoryBenchmarkAuthority:
 
         selections: list[ReproductionBenchmarkSelection] = []
         for benchmark_id in benchmark_ids:
-            binding = self._binding(benchmark_id)
-            task_set = binding.resolution.task_set
+            resolution, authority_proofs = self._resolution(benchmark_id)
+            task_set = resolution.task_set
             if split_aware:
                 if len(task_set.splits) != 1:
                     raise ReproductionResearchOSCompileError(
@@ -419,8 +458,8 @@ class RepositoryBenchmarkAuthority:
                 {
                     "schema": "noetrium.repository-benchmark-selection-proof.v1",
                     "authority_digest": self._authority_digest,
-                    "binding_digest": binding.binding_digest,
-                    "resolution_digest": binding.resolution.resolution_digest,
+                    "authority_proof_digests": authority_proofs,
+                    "resolution_digest": resolution.resolution_digest,
                     "benchmark_cut_digest": task_set.cut_digest,
                     "benchmark_split_ids": split_ids,
                     "reproduction_definition_digest": definition.definition_digest,
@@ -439,19 +478,29 @@ class RepositoryBenchmarkAuthority:
         )
 
     def audit_document(self) -> dict[str, object]:
-        counts: dict[str, int] = {}
+        counts: dict[str, set[str]] = {}
         for row in self._bindings:
-            counts[row.benchmark_id] = counts.get(row.benchmark_id, 0) + 1
+            counts.setdefault(row.benchmark_id, set()).add(
+                row.resolution.resolution_digest
+            )
+        for row in self._materialized.registrations:
+            counts.setdefault(row.benchmark_id, set()).add(
+                row.resolution.resolution_digest
+            )
         return {
             "schema": "noetrium.repository-benchmark-authority-audit.v1",
             "authority_digest": self._authority_digest,
             "binding_count": len(self._bindings),
+            "materialized_registration_count": len(
+                self._materialized.registrations
+            ),
+            "materialized_registry_identity": self._materialized.identity_digest,
             "benchmark_ids": self.benchmark_ids,
             "ambiguous_benchmark_ids": tuple(
                 sorted(
                     benchmark_id
-                    for benchmark_id, count in counts.items()
-                    if count != 1
+                    for benchmark_id, resolution_digests in counts.items()
+                    if len(resolution_digests) != 1
                 )
             ),
             "discovery_failure_count": len(self._failures),
