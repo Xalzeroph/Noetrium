@@ -2,7 +2,7 @@
   "schema": "noetrium.reproduction.projection.v10",
   "authority": "generated_from_typed_definition_and_source",
   "package": "tree_search_language_model_agents",
-  "package_digest": "e4f8c11f59f096ac25d09eef944ed674203366c8747ff8842685db542607d515",
+  "package_digest": "e4a9d28ceb1194010c0471f5d006424612b550f2fcf0d5fcf72adfcbd4ebfd8b",
   "definition_digest": "438c62dd357573beeeac528734499cd9ee6d018d7689e3f2d7ed8ccf94387660",
   "source_registry_digest": "0c66afa3c244c45e64cde70188b1023106137f8be0ce30f1899186e1ff153f35",
   "lifecycle": "protocol_bound",
@@ -91,7 +91,7 @@
       "kind": "support",
       "path": "research/reproductions/tree_search_language_model_agents/branch.py",
       "declaration_digest": "936839eed9dd5ff520e1cd94f4a71c1afec6713aa9a8c3e168169ad3be24d0c0",
-      "content_sha256": "824942a9825ceb8b0c189f4d384cf605566dd62bdd57a9f0ed7a1d8e70dd07e7"
+      "content_sha256": "5e8e25187e123778b0403d7fbd2ff66918c1a393c709ba1f0696a229d90dc771"
     }
   ],
   "primary_executable": "research/reproductions/tree_search_language_model_agents/program.py",

@@ -2,7 +2,7 @@
   "schema": "noetrium.reproduction.projection.v10",
   "authority": "generated_from_typed_definition_and_source",
   "package": "lats_webshop",
-  "package_digest": "c8fb30de3577baa6b5703c4ac84063cfbbdfffef76b799d9cfaa75e68cc10f25",
+  "package_digest": "3fce7c4df5e4303dd464094d080422d9a6e61233dbd12d386f96d3ea95c2a482",
   "definition_digest": "404faa0212523d5ab11e9a57c0479ab0ca187d904630c80d7db37f83f5d760ef",
   "source_registry_digest": "c61cf5118ecb4fb8570883fd539c09106e2fb2499028b48e830237203981d344",
   "lifecycle": "protocol_bound",
@@ -90,7 +90,7 @@
       "kind": "support",
       "path": "research/reproductions/lats_webshop/branch.py",
       "declaration_digest": "f15dfa0d7b6d4712d4f1c7c2a5d594dec21d44fb4224fa7e9bd70bd435b18e4e",
-      "content_sha256": "9f2de272237ce5ad77ab3099c98c007128dd15c9f6d6b3373aee30cc6cfad66c"
+      "content_sha256": "570e71367e437469af8a6ad9ee60ff81e2f9d64584b5ef056aefc42282b1f1e4"
     },
     {
       "kind": "support",

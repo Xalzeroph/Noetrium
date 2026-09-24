@@ -1427,7 +1427,7 @@
       "reproductions": [
         {
           "package": "lats_webshop",
-          "package_digest": "c8fb30de3577baa6b5703c4ac84063cfbbdfffef76b799d9cfaa75e68cc10f25",
+          "package_digest": "3fce7c4df5e4303dd464094d080422d9a6e61233dbd12d386f96d3ea95c2a482",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "webshop"
@@ -1459,7 +1459,7 @@
             {
               "kind": "support",
               "path": "research/reproductions/lats_webshop/branch.py",
-              "content_sha256": "9f2de272237ce5ad77ab3099c98c007128dd15c9f6d6b3373aee30cc6cfad66c"
+              "content_sha256": "570e71367e437469af8a6ad9ee60ff81e2f9d64584b5ef056aefc42282b1f1e4"
             },
             {
               "kind": "support",
@@ -2791,7 +2791,7 @@
       "reproductions": [
         {
           "package": "qlass_alfworld",
-          "package_digest": "417c047f0fd4d6a5240cd3e7c675a9cdef7abfa972853f21afa8558b1e3b659e",
+          "package_digest": "8283e636cd2ad7dc11d7ec348d5cc279f40bebd177f0e43063ad80eff97c6751",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "alfworld",
@@ -2830,7 +2830,7 @@
             {
               "kind": "support",
               "path": "research/reproductions/qlass_alfworld/branch.py",
-              "content_sha256": "f8c837a11cb03e183282a2946e3ea42fb44f359a6776faaa4b65dc5f6822a14d"
+              "content_sha256": "b37aea7a563e4f48e55f1c97cc980e52757972150be17b0e3644ea557487c1c0"
             }
           ],
           "blockers": [
@@ -3896,5 +3896,5 @@
       ]
     }
   ],
-  "projection_digest": "f9f0a5d7f6aaee8d91f7e4011f3d888992e5cb28201f482e6dc525c9eafff26c"
+  "projection_digest": "5c99b9937ef1fd2f9dc996ed72963e26647802df2f4561a3e091fb6cbf607390"
 }

@@ -2,7 +2,7 @@
   "schema": "noetrium.reproduction.projection.v10",
   "authority": "generated_from_typed_definition_and_source",
   "package": "exact_vwa",
-  "package_digest": "85279335a38126218b41eecc84b19a30c48055f287fe24a49746454ece876f73",
+  "package_digest": "dea0c971040955b72bf96ef9f07476cf9fd246cedfaaa605ba664a6467f209b0",
   "definition_digest": "d368ab60e481a14d2fbcffbe82133ebf04ae33f249a0dbdf4023b2a6fc508174",
   "source_registry_digest": "b93999f0360494ac406ad8ced88c7229b3dcf0d13127db266739961ddbd1bfdd",
   "lifecycle": "protocol_bound",
@@ -95,7 +95,7 @@
       "kind": "support",
       "path": "research/reproductions/exact_vwa/branch.py",
       "declaration_digest": "01dfc1fbacc5f9aca4693921ab2815066685fbdd46a7014c31557dffa0ab0421",
-      "content_sha256": "04f3ec7979eea06842e8fa559a3ca413c6827da888a5e8513f05d3e6cc34a102"
+      "content_sha256": "0229d80684f0111e453a8a0c7ed75a509448ef26a6bc471104a46803e104e47a"
     }
   ],
   "primary_executable": "research/reproductions/exact_vwa/program.py",
