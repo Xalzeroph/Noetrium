@@ -9,7 +9,7 @@ from noetrium_platform.capabilities.participant.core.api import ParticipantRunti
 from noetrium_platform.research.experimentation.lifecycle.checkpoint.providers.directory_store import DirectoryRunCheckpointStore
 from noetrium_platform.research.execution.decision.cycle_identity import DecisionCycleIdentity
 from noetrium_platform.research.experimentation.lifecycle.api import RunIdentity
-from noetrium_platform.research.experimentation.lifecycle.experiment.runtime import ExperimentRuntime
+from tests_support import ExperimentRuntimeForTest as ExperimentRuntime
 from noetrium_platform.research.experimentation.lifecycle.api import ExperimentParticipantTopology
 from noetrium_platform.research.execution.workflow.api import ExecutionTrialProtocolKind, TrialCycleExecution
 from noetrium_platform.research.experimentation.lifecycle.api import ExperimentParticipantSpec, ExperimentSpec
