@@ -110,7 +110,11 @@ def test_resource_lease_authorities_reject_non_finite_ttl_and_clock() -> None:
                     ttl_seconds=10.0, now=value,
                 )
             with pytest.raises(ValueError, match="observation time must be finite"):
-                sqlite.release(granted.lease_id, now=value)
+                sqlite.release(
+                    granted.lease_id,
+                    fencing_token=granted.fencing_token,
+                    now=value,
+                )
             with pytest.raises(ValueError, match="observation time must be finite"):
                 sqlite.reconcile_expired(now=value)
 
