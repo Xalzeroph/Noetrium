@@ -36,7 +36,6 @@ from noetrium_platform.foundation.portfolio.runtime import (
 from noetrium_platform.infrastructure.resources.compute.api import ComputeInventoryPort, ComputeSchedulerPort, GpuRuntimeObserverPort, HostRuntimeObserverPort
 from noetrium_platform.infrastructure.resources.allocation.api import (
     EndpointAllocationPort,
-    EndpointCandidatePortSourcePort,
 )
 from noetrium_platform.infrastructure.resources.allocation.providers import (
     LocalEndpointCandidateSource,
@@ -93,7 +92,6 @@ class PlatformMetaAuthorities:
     resource_ownership: ResourceOwnershipPort
     resource_leases: ResourceLeasePort
     endpoint_allocations: EndpointAllocationPort
-    endpoint_candidates: EndpointCandidatePortSourcePort
     compute_inventory: ComputeInventoryPort
     compute_scheduler: ComputeSchedulerPort
 
@@ -145,7 +143,6 @@ def build_in_memory_platform_meta(
         resource_ownership=resources,
         resource_leases=resources,
         endpoint_allocations=endpoint_allocations,
-        endpoint_candidates=endpoint_candidates,
         compute_inventory=compute_inventory,
         compute_scheduler=InMemoryComputeScheduler(
             compute_inventory, ownership=resources, leases=resources,

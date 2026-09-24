@@ -18,6 +18,7 @@ from noetrium_platform.infrastructure.resources.allocation.runtime import (
     InMemoryEndpointAllocator,
 )
 from noetrium_platform.infrastructure.resources.allocation.providers import (
+    LocalEndpointCandidateSource,
     SocketEndpointProbe,
 )
 from noetrium_platform.infrastructure.resources.allocation.providers import (
@@ -237,3 +238,22 @@ def test_automatic_endpoint_request_identity_ignores_transient_candidate_set() -
     left = _request("stable-request", (25001, 25002))
     right = _request("stable-request", (26001, 26002, 26003))
     assert left.digest() == right.digest()
+
+
+def test_automatic_endpoint_allocation_is_resource_owned() -> None:
+    leases = InMemoryResourceLeaseRegistry()
+    allocator = InMemoryEndpointAllocator(
+        ownership=leases,
+        leases=leases,
+        probe=SocketEndpointProbe(),
+        candidates=LocalEndpointCandidateSource(),
+    )
+    allocation = allocator.allocate_auto(
+        allocation_id="auto-resource-endpoint",
+        holder_scope=ScopeIdentity(ScopeKind.BRANCH, "auto-resource-endpoint"),
+        purpose="automatic endpoint authority test",
+        candidate_count=8,
+    )
+    assert allocation.endpoint.host == "127.0.0.1"
+    assert 1 <= allocation.endpoint.port <= 65535
+    assert len(leases.active_for(allocation.endpoint.resource)) == 1

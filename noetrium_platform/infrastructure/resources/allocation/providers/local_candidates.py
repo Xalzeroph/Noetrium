@@ -11,18 +11,19 @@ def _discover_local_candidate_ports(
     count: int = 32,
     protocol: EndpointProtocol = EndpointProtocol.TCP,
 ) -> tuple[int, ...]:
-    """Ask the local kernel for free endpoint candidates.
+    """Ask the kernel for currently free endpoint candidates.
 
-    Returned ports are non-authoritative hints. The allocation authority
-    re-probes and atomically fences the selected endpoint.
+    Candidate discovery is not ownership. EndpointAllocationPort re-probes and
+    atomically fences one candidate before any service may bind it.
     """
 
     if not host.strip():
         raise ValueError("local endpoint candidate host is required")
     if type(count) is not int or count <= 0:
         raise ValueError("local endpoint candidate count must be positive")
-    if type(protocol) is not EndpointProtocol:
-        raise TypeError("endpoint candidate protocol must be EndpointProtocol")
+    if not isinstance(protocol, EndpointProtocol):
+        raise TypeError("local endpoint candidate protocol must be EndpointProtocol")
+
     family = socket.AF_INET6 if ":" in host else socket.AF_INET
     socket_type = (
         socket.SOCK_STREAM
@@ -49,6 +50,8 @@ def _discover_local_candidate_ports(
 
 
 class LocalEndpointCandidateSource:
+    """Local-kernel candidate source owned by Resource allocation."""
+
     def candidate_ports(
         self,
         *,
