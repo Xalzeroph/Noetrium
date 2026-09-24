@@ -11,6 +11,7 @@ from noetrium_platform.foundation.api import (
     ArtifactAcquisitionRequest,
     MaterializedTreeInspectionPort,
 )
+from noetrium_platform.foundation.kernel.kernel.durability import sha256_file
 from noetrium_platform.foundation.kernel.kernel.durability.durable_file import atomic_replace_bytes
 from noetrium_platform.foundation.kernel.kernel.durability.file_lock import InterprocessFileLock
 from noetrium_platform.infrastructure.lifecycle.toolchain.api import (
@@ -27,7 +28,7 @@ from .adoptium_metadata import (
     validate_official_download_url,
 )
 from .java_receipt import encode_java_runtime_receipt, load_java_runtime_receipt
-from .java_verifier import JavaRuntimeVerifierPort, sha256_file
+from .java_verifier import JavaRuntimeVerifierPort
 
 _PROVIDER_ID = "eclipse-adoptium.temurin.v4"
 
