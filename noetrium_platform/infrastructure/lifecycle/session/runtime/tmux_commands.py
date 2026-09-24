@@ -46,7 +46,7 @@ class TmuxCommandCodec:
             "-p",
             "-t",
             f"={session_name}:0.0",
-            r"#{session_name}\t#{pane_pid}\t#{pane_dead}\t#{pane_start_command}\t#{pane_current_path}",
+            r"#{session_name}\t#{session_id}\t#{pane_pid}\t#{pane_dead}\t#{pane_start_command}\t#{pane_current_path}",
         )
 
     def create_argv(self, spec: PersistentSessionSpec) -> tuple[str, ...]:
@@ -60,8 +60,10 @@ class TmuxCommandCodec:
             self.pane_command(spec),
         )
 
-    def terminate_argv(self, session_name: str) -> tuple[str, ...]:
-        return self.argv("kill-session", "-t", f"={session_name}")
+    def terminate_argv(self, session_generation: str) -> tuple[str, ...]:
+        if not session_generation.strip():
+            raise ValueError("tmux session generation is required")
+        return self.argv("kill-session", "-t", session_generation)
 
     def attach_argv(self, session_name: str) -> tuple[str, ...]:
         return self.argv("attach-session", "-t", f"={session_name}")
