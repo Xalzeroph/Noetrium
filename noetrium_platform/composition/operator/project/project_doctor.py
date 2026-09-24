@@ -2,11 +2,15 @@ from __future__ import annotations
 
 import re
 from pathlib import Path
-import subprocess
 import tomllib
 
 from noetrium_platform.foundation.governance.architecture.repository_boundary.api import (
     RepositoryBoundaryAuditor,
+)
+from noetrium_platform.infrastructure.lifecycle.process.api import (
+    LocalCommandRunnerPort,
+    LocalCommandStartError,
+    LocalCommandTimeoutError,
 )
 from noetrium_platform.product.operator.api import (
     ProjectDoctorCheck,
@@ -92,6 +96,8 @@ def _compile_readiness(
     root: Path,
     package: str,
     project_id: str,
+    *,
+    command_runner: LocalCommandRunnerPort,
 ) -> tuple[bool, str]:
     if not _PACKAGE.fullmatch(package):
         return False, "invalid project package identity"
@@ -102,17 +108,13 @@ def _compile_readiness(
         project_src=root / "src",
     )
     try:
-        completed = subprocess.run(
+        completed = command_runner.run(
             command,
             cwd=root,
-            env=isolated_environment(),
-            text=True,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-            check=False,
-            timeout=_PROBE_TIMEOUT_S,
+            environment=isolated_environment(),
+            timeout_seconds=_PROBE_TIMEOUT_S,
         )
-    except (OSError, subprocess.TimeoutExpired):
+    except (LocalCommandStartError, LocalCommandTimeoutError):
         return False, "project compile probe could not complete"
     if completed.returncode != 0 or completed.stdout.strip() != "ready":
         return False, "project compile public contract probe failed closed"
@@ -123,6 +125,7 @@ def doctor_project(
     project_root: Path,
     *,
     boundary_auditor: RepositoryBoundaryAuditor,
+    command_runner: LocalCommandRunnerPort,
 ) -> ProjectDoctorReport:
     root = project_root.expanduser().absolute()
     checks: list[ProjectDoctorCheck] = []
@@ -261,6 +264,7 @@ def doctor_project(
             root,
             package,
             project_id,
+            command_runner=command_runner,
         )
     else:
         compile_ready, compile_detail = False, "unified project files are incomplete"
