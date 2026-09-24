@@ -2,7 +2,7 @@
   "schema": "noetrium.reproduction.projection.v10",
   "authority": "generated_from_typed_definition_and_source",
   "package": "agentsquare",
-  "package_digest": "850d10f014fb7697466efae239625d530187b5fcccfe8893df675643d742ea5c",
+  "package_digest": "58535e7e484e38014395260302789ec9e61a6b53e70e34a702dc35a62b4b17bb",
   "definition_digest": "46c6a3eb2e9766ebece78a50993e51e4aa6ab2f4436694766edab5f793e3bbb4",
   "source_registry_digest": "7b145319e1ac2f8a0a7f4f82a53ec059ffbca8e90126ab15ca7742977508805d",
   "lifecycle": "protocol_bound",
@@ -98,7 +98,7 @@
       "kind": "fidelity",
       "path": "research/reproductions/agentsquare/fidelity.py",
       "declaration_digest": "4b5efe06eb4dbd9002c199e9b8d57ca0dcab84e3f4fd174d42232c51885c538e",
-      "content_sha256": "a7aa51f3fabaa68ce71205fad4ba245b564c3ad9369874316acecaf4448769ef"
+      "content_sha256": "0f778f071b8792a38c18f41e491e85a02fd9a3cd3929e2f4fa44d676578a6ee4"
     },
     {
       "kind": "research_program",

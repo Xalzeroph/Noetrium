@@ -2282,7 +2282,7 @@
       "reproductions": [
         {
           "package": "adacm2_memory",
-          "package_digest": "04bc2231b03327ef26525b1db1c11d1bcf2ea79b2e0f9c38e0e74febaedf21b9",
+          "package_digest": "70c8c708ba71d36c59ae1c91a6c2338bb4134206cdedabd730ccc2fb35ef8507",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "lvu"
@@ -2313,7 +2313,7 @@
             {
               "kind": "research_program",
               "path": "research/reproductions/adacm2_memory/memory.py",
-              "content_sha256": "91f6c0616a210b43090954a0c1495d81273952562605a9272f39b89c05903d08"
+              "content_sha256": "d8c11b6bb89f6383205cb81ec600cb2b633f662c509b977852ac6c0401cd1dc5"
             },
             {
               "kind": "study",
@@ -2408,7 +2408,7 @@
       "reproductions": [
         {
           "package": "aflow",
-          "package_digest": "3c578b6b6fc92ff37ca93ff3243f29b668aa4ce8efa6060dd1711addc1463f9a",
+          "package_digest": "3e7f34273da92f00aa53b5c5c85370be328492b109bd17cffe38912abba728dc",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "humaneval"
@@ -2447,17 +2447,17 @@
             {
               "kind": "fidelity",
               "path": "research/reproductions/aflow/fidelity.py",
-              "content_sha256": "1a664388d42446867c4e97c57925e12bd246a23620152e144466ff00f568d842"
+              "content_sha256": "7b8e5bec5804cbc0ddd5978527a23f4121bd02c26e868eee670add688561d75f"
             },
             {
               "kind": "research_program",
               "path": "research/reproductions/aflow/program.py",
-              "content_sha256": "4d0f9f05af68160d7ffaa924f0605291d1500450a5985743e91ac4eca36d5a48"
+              "content_sha256": "9afff6d20d3efe68a23b7f2b5a9ec14aa661a4ea03b088f4eea3c0d255168a85"
             },
             {
               "kind": "study",
               "path": "research/reproductions/aflow/study.py",
-              "content_sha256": "6096fa3529a4c7c614c3512ea11071e838a8643732b24895d22d3f431e219d99"
+              "content_sha256": "24d1c3cd79585236e51ea520bc9ca5896ed1d9cd41aecc0bd766bbfc89fccfc9"
             }
           ],
           "blockers": [
@@ -2489,7 +2489,7 @@
       "reproductions": [
         {
           "package": "agentless_swebench",
-          "package_digest": "7e8d71ad27a28b22e5f3999edc0ae8947a31a8ee13dd4a86d2965d7742d09178",
+          "package_digest": "9968ffaf4fd29af323a2392c5a521698a1104d53c3ae7021a36e6efe6ca0a574",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "swe-bench"
@@ -2521,7 +2521,7 @@
             {
               "kind": "method_program",
               "path": "research/reproductions/agentless_swebench/program.py",
-              "content_sha256": "26e5e790a42254ab700f1f4569ab491ea53eae0b8705858988e297ef0eebca4f"
+              "content_sha256": "2e5f33c0671954d52f07cab799c059cc158d2646e7eda3c57c373af2f577955d"
             },
             {
               "kind": "study",
@@ -2552,7 +2552,7 @@
       "reproductions": [
         {
           "package": "agentsquare",
-          "package_digest": "850d10f014fb7697466efae239625d530187b5fcccfe8893df675643d742ea5c",
+          "package_digest": "58535e7e484e38014395260302789ec9e61a6b53e70e34a702dc35a62b4b17bb",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "agentboard-pddl",
@@ -2584,7 +2584,7 @@
             {
               "kind": "fidelity",
               "path": "research/reproductions/agentsquare/fidelity.py",
-              "content_sha256": "a7aa51f3fabaa68ce71205fad4ba245b564c3ad9369874316acecaf4448769ef"
+              "content_sha256": "0f778f071b8792a38c18f41e491e85a02fd9a3cd3929e2f4fa44d676578a6ee4"
             },
             {
               "kind": "research_program",
@@ -3896,5 +3896,5 @@
       ]
     }
   ],
-  "projection_digest": "49775e7b578d03d631840f1b71c0f85c4eedb0d4c52a1b95d9700b7d8099f592"
+  "projection_digest": "7cdfda092da64b9a433afd22eedf60d2a31572f14ea25d9218a4035b32dad3c8"
 }
