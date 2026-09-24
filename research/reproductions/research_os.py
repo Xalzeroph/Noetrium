@@ -164,6 +164,7 @@ class ReproductionExecutionRequest:
     package: str
     study_factory: str
     benchmark: BenchmarkTaskSet
+    benchmark_split_ids: tuple[str, ...]
 
     def __post_init__(self) -> None:
         if type(self.package) is not str or not self.package.strip():
@@ -174,6 +175,35 @@ class ReproductionExecutionRequest:
             raise TypeError(
                 "reproduction execution request benchmark must be BenchmarkTaskSet"
             )
+        if type(self.benchmark_split_ids) is not tuple:
+            raise TypeError(
+                "reproduction execution request benchmark_split_ids must be tuple"
+            )
+        if (
+            tuple(sorted(self.benchmark_split_ids)) != self.benchmark_split_ids
+            or len(self.benchmark_split_ids) != len(set(self.benchmark_split_ids))
+            or any(
+                type(split_id) is not str
+                or not split_id.strip()
+                or split_id != split_id.strip()
+                for split_id in self.benchmark_split_ids
+            )
+        ):
+            raise ValueError(
+                "reproduction execution request benchmark_split_ids must be "
+                "unique canonical text in sorted order"
+            )
+        declared_split_ids = {row.split_id for row in self.benchmark.splits}
+        unknown_split_ids = tuple(
+            split_id
+            for split_id in self.benchmark_split_ids
+            if split_id not in declared_split_ids
+        )
+        if unknown_split_ids:
+            raise ValueError(
+                "reproduction execution request selected unknown benchmark splits: "
+                f"{unknown_split_ids}"
+            )
 
     @property
     def request_digest(self) -> str:
@@ -183,6 +213,7 @@ class ReproductionExecutionRequest:
             "benchmark_id": self.benchmark.benchmark_id,
             "benchmark_revision_id": self.benchmark.revision_id,
             "benchmark_cut_digest": self.benchmark.cut_digest,
+            "benchmark_split_ids": self.benchmark_split_ids,
         })
 
 
@@ -810,14 +841,15 @@ def expand_reproduction_benchmark_lanes(
     *,
     study_factory: str,
     benchmark: BenchmarkTaskSet,
+    benchmark_split_ids: tuple[str, ...],
     values: Mapping[str, object],
     resolution_proof_digests: tuple[str, ...] = (),
 ) -> tuple[ReproductionExecutionBinding, ...]:
-    """Expand one immutable benchmark cut into exact Research OS execution lanes.
+    """Expand one immutable benchmark cut into explicitly selected execution lanes.
 
-    Benchmark split identity is platform-owned.  A split-aware Study gets one
-    lane per split declared by the bound BenchmarkTaskSet; no default split is
-    invented.  A Study without an external split axis gets exactly one cut lane.
+    Split selection is scientific execution authority, not a convenience default.
+    Split-aware Studies therefore require an exact caller-selected split set.
+    Non-split Studies require the empty split set and get exactly one cut lane.
     """
 
     if type(definition) is not ReproductionDefinition:
@@ -857,14 +889,51 @@ def expand_reproduction_benchmark_lanes(
         or method_split_axis
     )
 
+    if type(benchmark_split_ids) is not tuple:
+        raise TypeError("benchmark split selection must be tuple")
+    if (
+        tuple(sorted(benchmark_split_ids)) != benchmark_split_ids
+        or len(benchmark_split_ids) != len(set(benchmark_split_ids))
+        or any(
+            type(split_id) is not str
+            or not split_id.strip()
+            or split_id != split_id.strip()
+            for split_id in benchmark_split_ids
+        )
+    ):
+        raise ReproductionResearchOSCompileError(
+            f"{definition.package} benchmark split selection must be unique "
+            "canonical text in sorted order"
+        )
+
     if split_aware:
         if not benchmark.splits:
             raise ReproductionResearchOSCompileError(
                 f"{definition.package} split-aware Study cannot bind benchmark "
                 f"{benchmark.benchmark_id!r} without declared TaskSetSplit entries"
             )
-        split_ids = tuple(row.split_id for row in benchmark.splits)
+        if not benchmark_split_ids:
+            raise ReproductionResearchOSCompileError(
+                f"{definition.package} split-aware Study requires explicit "
+                "benchmark_split_ids"
+            )
+        declared_split_ids = {row.split_id for row in benchmark.splits}
+        unknown_split_ids = tuple(
+            split_id
+            for split_id in benchmark_split_ids
+            if split_id not in declared_split_ids
+        )
+        if unknown_split_ids:
+            raise ReproductionResearchOSCompileError(
+                f"{definition.package} selected unknown benchmark splits: "
+                f"{unknown_split_ids}"
+            )
+        split_ids: tuple[str | None, ...] = benchmark_split_ids
     else:
+        if benchmark_split_ids:
+            raise ReproductionResearchOSCompileError(
+                f"{definition.package} Study lane has no external benchmark split axis"
+            )
         split_ids = (None,)
 
     bindings: list[ReproductionExecutionBinding] = []
@@ -1064,6 +1133,7 @@ def expand_resolved_reproduction_benchmark_lanes(
     *,
     study_factory: str,
     benchmark: BenchmarkTaskSet,
+    benchmark_split_ids: tuple[str, ...],
     capability_resolver: ReproductionCapabilityRequirementResolverPort | None = None,
 ) -> tuple[ReproductionExecutionBinding, ...]:
     """One-call closure + benchmark expansion for an executable paper Study."""
@@ -1079,6 +1149,7 @@ def expand_resolved_reproduction_benchmark_lanes(
                 definition,
                 study_factory=study_factory,
                 benchmark=benchmark,
+                benchmark_split_ids=benchmark_split_ids,
                 values=resolution.values,
                 resolution_proof_digests=resolution.proof_digests,
             )
@@ -1876,6 +1947,7 @@ def compile_resolved_reproduction_portfolio(
                 definition,
                 study_factory=request.study_factory,
                 benchmark=request.benchmark,
+                benchmark_split_ids=request.benchmark_split_ids,
                 capability_resolver=capability_resolver,
             )
         )
