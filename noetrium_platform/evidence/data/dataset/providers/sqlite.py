@@ -15,6 +15,7 @@ from noetrium_platform.evidence.data.dataset.api import (
 )
 from noetrium_platform.evidence.data._canonical import DataCanonicalDecodingError, canonical_digest, strict_json_loads
 from noetrium_platform.foundation.kernel.kernel.durability.sqlite import (
+    begin_immediate_sqlite_transaction,
     open_durable_sqlite_reader,
     open_durable_sqlite_writer,
     rollback_sqlite_writer,
@@ -160,7 +161,7 @@ class SQLiteDatasetRegistry:
     def register(self, dataset: DatasetVersion) -> DatasetVersion:
         encoded = self._encode(dataset)
         with closing(self._connect_writer()) as db:
-            db.execute("BEGIN IMMEDIATE")
+            begin_immediate_sqlite_transaction(db, timeout_seconds=self.timeout_seconds)
             try:
                 row = db.execute(
                     f"SELECT {self._select_columns()} FROM datasets WHERE dataset_key=?",
