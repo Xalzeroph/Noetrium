@@ -15,7 +15,7 @@ from research.reproductions.contracts import (
 
 REPRODUCTION = ReproductionDefinition(
     package='multiagent_debate',
-    lifecycle=ReproductionLifecycle('catalogued'),
+    lifecycle=ReproductionLifecycle('protocol_bound'),
     identity=ReproductionIdentity(
         method_id='multiagent-debate',
         title='Improving Factuality and Reasoning in Language Models through Multiagent Debate',
@@ -27,7 +27,7 @@ REPRODUCTION = ReproductionDefinition(
         domains=('multi-agent', 'reasoning'),
         families=('multi_agent', 'debate', 'reasoning'),
         priority=1,
-        benchmark_ids=(),
+        benchmark_ids=('gsm8k',),
         platform_pressure=('execution/workflow', 'participant/agent', 'model/request', 'experimentation/study', 'observability/telemetry'),
         method_owned=('debate round protocol', 'peer-response injection policy', 'answer aggregation semantics'),
         platform_owned=('participant topology', 'message identity and transport', 'model invocation', 'round evidence', 'evaluation'),
@@ -36,6 +36,14 @@ REPRODUCTION = ReproductionDefinition(
         ReproductionAssetRef(
             kind=ReproductionAssetKind('fidelity'),
             path='research/reproductions/multiagent_debate/fidelity.py',
+        ),
+        ReproductionAssetRef(
+            kind=ReproductionAssetKind('method_program'),
+            path='research/reproductions/multiagent_debate/program.py',
+        ),
+        ReproductionAssetRef(
+            kind=ReproductionAssetKind('study'),
+            path='research/reproductions/multiagent_debate/study.py',
         ),
     ),
     reported_results=(
