@@ -9,6 +9,7 @@ current top-level ResearchProgram/ResearchPortfolio model.
 from __future__ import annotations
 
 from dataclasses import dataclass
+from enum import StrEnum
 import importlib
 import inspect
 from pathlib import Path, PurePosixPath
@@ -35,6 +36,65 @@ from .contracts import (
 
 class ReproductionResearchOSCompileError(RuntimeError):
     pass
+
+
+class ReproductionExecutionRequirementKind(StrEnum):
+    """Typed input required to close one reproduction execution."""
+
+    BENCHMARK_SPLIT = "benchmark_split"
+    CAPABILITY_ID = "capability_id"
+    CAPABILITY_CLOSURE = "capability_closure"
+    PAPER_OPTION = "paper_option"
+
+
+@dataclass(frozen=True, slots=True)
+class ReproductionExecutionRequirement:
+    """One exact closure-time input; values are supplied by execution composition."""
+
+    package: str
+    parameter: str
+    kind: ReproductionExecutionRequirementKind
+    consumers: tuple[str, ...]
+    requirement_digest: str
+
+    def __post_init__(self) -> None:
+        if type(self.package) is not str or not self.package.strip():
+            raise ValueError("reproduction execution requirement package is required")
+        if type(self.parameter) is not str or not self.parameter.strip():
+            raise ValueError("reproduction execution requirement parameter is required")
+        if not isinstance(self.kind, ReproductionExecutionRequirementKind):
+            raise TypeError("reproduction execution requirement kind must be typed")
+        if type(self.consumers) is not tuple or not self.consumers:
+            raise ValueError("reproduction execution requirement needs consumers")
+        consumers = tuple(sorted(self.consumers))
+        if (
+            consumers != self.consumers
+            or len(consumers) != len(set(consumers))
+            or any(type(row) is not str or not row.strip() for row in consumers)
+        ):
+            raise ValueError(
+                "reproduction execution requirement consumers must be unique canonical text"
+            )
+        if (
+            type(self.requirement_digest) is not str
+            or len(self.requirement_digest) != 64
+            or any(ch not in "0123456789abcdef" for ch in self.requirement_digest)
+        ):
+            raise ValueError(
+                "reproduction execution requirement digest must be lowercase SHA-256"
+            )
+
+
+_EXECUTION_REQUIREMENT_KIND_BY_PARAMETER = {
+    "split_id": ReproductionExecutionRequirementKind.BENCHMARK_SPLIT,
+    "benchmark_split_id": ReproductionExecutionRequirementKind.BENCHMARK_SPLIT,
+    "search_capability_id": ReproductionExecutionRequirementKind.CAPABILITY_ID,
+    "expert_capability_ids": ReproductionExecutionRequirementKind.CAPABILITY_CLOSURE,
+    "tool_capability_ids": ReproductionExecutionRequirementKind.CAPABILITY_CLOSURE,
+    "capability_ids": ReproductionExecutionRequirementKind.CAPABILITY_CLOSURE,
+    "interpretation": ReproductionExecutionRequirementKind.PAPER_OPTION,
+    "sampling_frame_number": ReproductionExecutionRequirementKind.PAPER_OPTION,
+}
 
 
 @dataclass(frozen=True, slots=True)
@@ -274,6 +334,62 @@ def resolve_study_factory_bindings(
     return tuple(sorted(bindings, key=lambda row: (row.qualname, row.binding_digest)))
 
 
+def resolve_execution_requirements(
+    definition: ReproductionDefinition,
+) -> tuple[ReproductionExecutionRequirement, ...]:
+    """Compile all unresolved Study/Method inputs into a typed closure contract."""
+
+    if type(definition) is not ReproductionDefinition:
+        raise TypeError("reproduction execution requirements require definition")
+
+    consumers: dict[str, set[str]] = {}
+    for study in resolve_study_factory_bindings(definition):
+        for parameter in study.unresolved_parameters:
+            consumers.setdefault(parameter, set()).add(
+                f"study:{study.qualname}"
+            )
+
+    method_assets = tuple(
+        row
+        for row in definition.assets
+        if row.kind is ReproductionAssetKind.METHOD_PROGRAM
+    )
+    if method_assets:
+        method = resolve_method_program_binding(definition)
+        if not method.exact:
+            assert method.factory is not None
+            for parameter in method.factory.unresolved_parameters:
+                consumers.setdefault(parameter, set()).add(
+                    f"method:{method.qualname}"
+                )
+
+    rows: list[ReproductionExecutionRequirement] = []
+    for parameter in sorted(consumers):
+        kind = _EXECUTION_REQUIREMENT_KIND_BY_PARAMETER.get(parameter)
+        if kind is None:
+            raise ReproductionResearchOSCompileError(
+                f"{definition.package} has untyped execution parameter: {parameter}"
+            )
+        owned_consumers = tuple(sorted(consumers[parameter]))
+        rows.append(
+            ReproductionExecutionRequirement(
+                definition.package,
+                parameter,
+                kind,
+                owned_consumers,
+                canonical_digest(
+                    {
+                        "package": definition.package,
+                        "parameter": parameter,
+                        "kind": kind.value,
+                        "consumers": owned_consumers,
+                    }
+                ),
+            )
+        )
+    return tuple(rows)
+
+
 def resolve_method_program_binding(
     definition: ReproductionDefinition,
 ) -> ReproductionMethodProgramBinding:
@@ -484,6 +600,7 @@ def compile_reproduction_research_program(
         raise TypeError("reproduction Research OS compilation requires definition")
     study = _asset(definition, ReproductionAssetKind.STUDY)
     study_factories = resolve_study_factory_bindings(definition)
+    execution_requirements = resolve_execution_requirements(definition)
     machine_dependencies = resolve_research_program_bindings(definition)
     machine_dependency_documents = tuple(
         _machine_dependency_document(row)
@@ -581,10 +698,18 @@ def compile_reproduction_research_program(
                     "qualname": binding.qualname,
                     "benchmark_parameter": binding.benchmark_parameter,
                     "required_parameters": binding.required_parameters,
-                    "unresolved_parameters": binding.unresolved_parameters,
                     "binding_digest": binding.binding_digest,
                 }
                 for binding in study_factories
+            ),
+            "execution_requirements": tuple(
+                {
+                    "parameter": requirement.parameter,
+                    "kind": requirement.kind.value,
+                    "consumers": requirement.consumers,
+                    "requirement_digest": requirement.requirement_digest,
+                }
+                for requirement in execution_requirements
             ),
         },
     )
@@ -623,6 +748,10 @@ def compile_reproduction_research_program(
             "study_asset": study.path,
             "benchmark_ids": definition.catalog.benchmark_ids,
             "research_program_dependencies": machine_dependency_documents,
+            "execution_requirement_digests": tuple(
+                requirement.requirement_digest
+                for requirement in execution_requirements
+            ),
         },
     )
     return builder.freeze()
@@ -737,6 +866,8 @@ def compile_reproduction_portfolio(
 
 
 __all__ = [
+    "ReproductionExecutionRequirement",
+    "ReproductionExecutionRequirementKind",
     "ReproductionMachineProgramBinding",
     "ReproductionMethodProgramBinding",
     "ReproductionStudyFactoryBinding",
@@ -747,6 +878,7 @@ __all__ = [
     "discover_reproduction_definitions",
     "executable_reproduction_definitions",
     "is_research_os_executable",
+    "resolve_execution_requirements",
     "resolve_method_program_binding",
     "resolve_study_factory_bindings",
     "resolve_research_program_bindings",
