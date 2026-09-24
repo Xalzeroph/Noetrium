@@ -2,14 +2,14 @@
   "counts": {
     "parse_errors": 0,
     "python_files": 3690,
-    "python_import_edges": 7167,
-    "symbols": 5004,
+    "python_import_edges": 7168,
+    "symbols": 5005,
     "tracked_files": 4326,
     "typescript_javascript_files": 11
   },
   "language_symbol_counts": {
     "javascript": 1,
-    "python": 4998,
+    "python": 4999,
     "typescript": 5
   },
   "parse_errors": [],
@@ -39281,6 +39281,12 @@
     {
       "source_module": "tests.test_segmented_event_hot_path_v173",
       "source_role": "tests",
+      "target_module": "noetrium_platform.infrastructure.reliability.forensics.providers.linux_directory_watch",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "tests.test_segmented_event_hot_path_v173",
+      "source_role": "tests",
       "target_module": "noetrium_platform.infrastructure.reliability.forensics.providers.segmented_hashlog",
       "target_role": "core_platform"
     },
@@ -43079,7 +43085,7 @@
       "target_role": "research_reproductions"
     },
     {
-      "count": 2799,
+      "count": 2800,
       "source_role": "tests",
       "target_role": "core_platform"
     },
@@ -43154,11 +43160,11 @@
     "reference_orchestration": 14,
     "research_reproductions": 448,
     "sdk": 5,
-    "tests": 1042,
+    "tests": 1043,
     "tooling": 39
   },
   "schema": "noetrium-repository-code-architecture-index.v1",
-  "source_git_sha": "c48a71cfd0d0e099cd757f1ccd5c1107d4d0c3f2",
+  "source_git_sha": "ecd57a30b4614de98ced504d9ddc492003875f31",
   "symbols": [
     {
       "bases": [],
@@ -98139,7 +98145,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 270,
+      "line": 298,
       "methods": [
         "__init__",
         "changed",
@@ -146848,10 +146854,13 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 16,
+      "line": 22,
       "methods": [
         "test_steady_state_append_does_not_enumerate_all_segments",
         "test_external_segment_directory_change_still_fails_closed",
+        "test_linux_watch_wrapper_keeps_token_when_unregister_fails",
+        "test_linux_last_watch_unregister_is_retryable_after_kernel_failure",
+        "test_linux_hub_close_keeps_fd_and_state_retryable_on_close_failure",
         "test_linux_many_directory_signals_do_not_fall_back_to_stat",
         "test_linux_watch_registration_failure_is_fail_closed",
         "test_linux_same_directory_tokens_keep_independent_pending_latches",
@@ -146869,6 +146878,23 @@
       "name": "SegmentedEventHotPathV173Tests",
       "path": "tests/test_segmented_event_hot_path_v173.py",
       "qualname": "tests.test_segmented_event_hot_path_v173.SegmentedEventHotPathV173Tests",
+      "role": "tests"
+    },
+    {
+      "bases": [],
+      "decorators": [],
+      "fields": [],
+      "kind": "class",
+      "language": "python",
+      "line": 52,
+      "methods": [
+        "__init__",
+        "unregister"
+      ],
+      "module": "tests.test_segmented_event_hot_path_v173",
+      "name": "FailingHub",
+      "path": "tests/test_segmented_event_hot_path_v173.py",
+      "qualname": "tests.test_segmented_event_hot_path_v173.SegmentedEventHotPathV173Tests.FailingHub",
       "role": "tests"
     },
     {

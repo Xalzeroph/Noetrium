@@ -75763,7 +75763,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 270,
+      "line": 298,
       "methods": [
         "__init__",
         "changed",
@@ -144160,7 +144160,7 @@
   "parse_errors": [],
   "registry_sha256": "d3fc1bab831f1b7379e5a36048a61c00fe173429df958270d36a16f3f00171c0",
   "schema": "noetrium-code-architecture-index.v1",
-  "source_git_sha": "c48a71cfd0d0e099cd757f1ccd5c1107d4d0c3f2",
+  "source_git_sha": "ecd57a30b4614de98ced504d9ddc492003875f31",
   "system_import_edges": [
     {
       "count": 85,
