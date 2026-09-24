@@ -74,6 +74,20 @@ class EnvironmentInstance:
     backend: str
     runtime_reference: str
     scope: ScopeIdentity
+    profile_id: str
+    profile_revision: str
+
+    def __post_init__(self) -> None:
+        if not self.profile_id.strip():
+            raise ValueError("environment instance profile_id must be non-empty")
+        revision = self.profile_revision
+        if (
+            len(revision) != 64
+            or any(ch not in "0123456789abcdef" for ch in revision)
+        ):
+            raise ValueError(
+                "environment instance profile_revision must be lowercase sha256"
+            )
 
 
 @dataclass(frozen=True, slots=True)
