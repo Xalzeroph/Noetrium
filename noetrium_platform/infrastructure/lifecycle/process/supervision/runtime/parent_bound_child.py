@@ -19,6 +19,7 @@ from noetrium_platform.foundation.kernel.kernel.retry import blocking_wait
 
 
 _child_group: int | None = None
+_owner_dead = False
 
 
 def _linux_parent_death_signal() -> None:
@@ -52,8 +53,67 @@ def _force_child(_signum: int, _frame) -> None:
 
 
 def _owner_died(_signum: int | None = None, _frame=None) -> None:
+    global _owner_dead
+    _owner_dead = True
+    # Keep the guardian itself alive as the physical ownership anchor until the
+    # complete target process group has converged.
     _force_child(signal.SIGKILL, None)
-    os._exit(125)
+
+
+def _linux_root_exited_without_reap(pid: int) -> bool:
+    info = os.waitid(
+        os.P_PID,
+        pid,
+        os.WEXITED | os.WNOHANG | os.WNOWAIT,
+    )
+    return info is not None and int(info.si_pid) == pid
+
+
+def _linux_group_has_live_descendants(group_id: int, root_pid: int) -> bool:
+    """Observe non-zombie group members while root still anchors its PGID."""
+
+    try:
+        entries = os.listdir("/proc")
+    except OSError:
+        # Linux without observable procfs cannot prove process-tree convergence.
+        return True
+    for name in entries:
+        if not name.isdigit():
+            continue
+        pid = int(name)
+        if pid == root_pid:
+            continue
+        try:
+            with open(
+                os.path.join("/proc", name, "stat"),
+                "r",
+                encoding="utf-8",
+            ) as handle:
+                stat = handle.read()
+        except (FileNotFoundError, ProcessLookupError):
+            continue
+        except OSError:
+            # A same-UID descendant should be observable. Unknown process facts
+            # cannot prove the group has converged.
+            return True
+        close = stat.rfind(")")
+        if close < 0:
+            return True
+        fields = stat[close + 2 :].split()
+        if len(fields) < 3:
+            return True
+        state = fields[0]
+        try:
+            process_group = int(fields[2])
+        except ValueError:
+            return True
+        if process_group == group_id and state != "Z":
+            return True
+    return False
+
+
+def _exit_code(code: int) -> int:
+    return int(code) if code >= 0 else 128 + abs(int(code))
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -90,10 +150,27 @@ def main(argv: list[str] | None = None) -> int:
         _owner_died()
 
     while True:
-        code = child.poll()
-        if code is not None:
-            return int(code) if code >= 0 else 128 + abs(int(code))
-        if os.getppid() != ns.parent_pid:
+        if sys.platform.startswith("linux"):
+            # WNOWAIT deliberately leaves an exited root unreaped. Its PID/PGID
+            # remains reserved while descendants are still live, so delayed TERM
+            # or SIGUSR1 escalation cannot target a later group that reused the
+            # same numeric identifier.
+            if _linux_root_exited_without_reap(int(child.pid)):
+                if not _linux_group_has_live_descendants(
+                    int(child.pid),
+                    int(child.pid),
+                ):
+                    code = int(child.wait())
+                    return 125 if _owner_dead else _exit_code(code)
+        else:
+            # Linux is the production-qualified path. Other POSIX hosts retain
+            # direct-child behavior until they gain an equivalent generation-
+            # preserving process-group observation primitive.
+            code = child.poll()
+            if code is not None:
+                return 125 if _owner_dead else _exit_code(int(code))
+
+        if os.getppid() != ns.parent_pid and not _owner_dead:
             _owner_died()
         blocking_wait(0.05)
 
