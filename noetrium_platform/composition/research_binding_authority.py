@@ -33,6 +33,7 @@ from noetrium_platform.research.experimentation.api import (
     ResearchRequirementResolution,
     ResearchStudyDefinition,
     compile_research_plan,
+    research_manifest_requirement_keys,
     resolve_research_requirements,
 )
 
@@ -52,6 +53,10 @@ class ResearchProjectManifestRequirement:
     study_definition_digest: str
     binding_requirement_digest: str
     trial_provider_requirement_id: str
+    capability_requirement_ids: tuple[str, ...]
+    method_requirement_keys: tuple[tuple[str, str], ...]
+    configuration_ref_ids: tuple[str, ...]
+    manifest_keys_digest: str
     participant_requirement_digests: tuple[str, ...]
     model_role_requirement_digests: tuple[str, ...]
     requirement_digest: str
@@ -66,6 +71,7 @@ class ResearchProjectManifestRequirement:
                 "ProjectManifest requirement requires ResearchStudyDefinition"
             )
         binding = definition.binding_requirements
+        manifest_keys = research_manifest_requirement_keys(definition)
         payload = {
             "project_id": definition.project_id,
             "experiment_id": definition.experiment_id,
@@ -75,6 +81,12 @@ class ResearchProjectManifestRequirement:
             "trial_provider_requirement_id": (
                 binding.trial_provider_requirement_id
             ),
+            "capability_requirement_ids": (
+                manifest_keys.capability_requirement_ids
+            ),
+            "method_requirement_keys": manifest_keys.method_requirement_keys,
+            "configuration_ref_ids": manifest_keys.configuration_ref_ids,
+            "manifest_keys_digest": manifest_keys.keys_digest,
             "participant_requirement_digests": tuple(
                 row.requirement_digest for row in binding.participants
             ),
@@ -109,6 +121,7 @@ class ResearchProjectManifestRequirement:
         for field_name, value in (
             ("study_definition_digest", self.study_definition_digest),
             ("binding_requirement_digest", self.binding_requirement_digest),
+            ("manifest_keys_digest", self.manifest_keys_digest),
             ("requirement_digest", self.requirement_digest),
         ):
             if (
@@ -120,6 +133,46 @@ class ResearchProjectManifestRequirement:
                     f"ProjectManifest requirement {field_name} "
                     "must be lowercase SHA-256"
                 )
+        if type(self.capability_requirement_ids) is not tuple:
+            raise TypeError(
+                "ProjectManifest requirement capability_requirement_ids must be tuple"
+            )
+        if len(self.capability_requirement_ids) != len(
+            set(self.capability_requirement_ids)
+        ):
+            raise ValueError(
+                "ProjectManifest requirement capability_requirement_ids must be unique"
+            )
+        if type(self.method_requirement_keys) is not tuple:
+            raise TypeError(
+                "ProjectManifest requirement method_requirement_keys must be tuple"
+            )
+        if len(self.method_requirement_keys) != len(
+            set(self.method_requirement_keys)
+        ):
+            raise ValueError(
+                "ProjectManifest requirement method_requirement_keys must be unique"
+            )
+        if type(self.configuration_ref_ids) is not tuple:
+            raise TypeError(
+                "ProjectManifest requirement configuration_ref_ids must be tuple"
+            )
+        if len(self.configuration_ref_ids) != len(
+            set(self.configuration_ref_ids)
+        ):
+            raise ValueError(
+                "ProjectManifest requirement configuration_ref_ids must be unique"
+            )
+        selected = canonical_digest(
+            {
+                "capability_requirement_ids": self.capability_requirement_ids,
+                "method_requirement_keys": self.method_requirement_keys,
+                "configuration_ref_ids": self.configuration_ref_ids,
+            }
+        )
+        if selected != self.manifest_keys_digest:
+            raise ValueError("ProjectManifest requirement key digest drifted")
+
         for field_name, values in (
             (
                 "participant_requirement_digests",
@@ -158,6 +211,10 @@ class ResearchProjectManifestRequirement:
                 "trial_provider_requirement_id": (
                     self.trial_provider_requirement_id
                 ),
+                "capability_requirement_ids": self.capability_requirement_ids,
+                "method_requirement_keys": self.method_requirement_keys,
+                "configuration_ref_ids": self.configuration_ref_ids,
+                "manifest_keys_digest": self.manifest_keys_digest,
                 "participant_requirement_digests": (
                     self.participant_requirement_digests
                 ),
