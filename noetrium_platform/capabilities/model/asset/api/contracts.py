@@ -5,7 +5,13 @@ from enum import StrEnum
 from pathlib import Path
 
 from noetrium_platform.substrate.api import ScopeIdentity
-from noetrium_platform.foundation.kernel.kernel import canonical_digest
+from noetrium_platform.foundation.kernel.kernel import (
+    DurableCarrierReferenceClosure,
+    canonical_digest,
+    durable_carrier_closure_complete,
+    durable_carrier_gc_eligible,
+    validate_durable_carrier_closures,
+)
 
 
 class ModelAssetClosureAuthority(StrEnum):
@@ -44,7 +50,7 @@ class ModelAssetReferenceClosure:
 class ModelAssetGcAssessment:
     model_id: str
     asset_digest: str
-    closures: tuple[ModelAssetReferenceClosure, ...] = ()
+    closures: tuple[DurableCarrierReferenceClosure, ...] = ()
     proof_digest: str = field(init=False)
 
     def __post_init__(self) -> None:
@@ -56,13 +62,7 @@ class ModelAssetGcAssessment:
             or any(ch not in "0123456789abcdef" for ch in self.asset_digest)
         ):
             raise ValueError("model asset GC asset_digest must be lowercase sha256")
-        if type(self.closures) is not tuple or any(
-            type(value) is not ModelAssetReferenceClosure for value in self.closures
-        ):
-            raise TypeError("model asset GC closures must be typed tuple")
-        authorities = tuple(value.authority for value in self.closures)
-        if authorities != tuple(sorted(set(authorities), key=lambda value: value.value)):
-            raise ValueError("model asset GC closures must have unique canonical authority order")
+        validate_durable_carrier_closures(self.closures)
         object.__setattr__(
             self,
             "proof_digest",
@@ -85,15 +85,11 @@ class ModelAssetGcAssessment:
 
     @property
     def closure_complete(self) -> bool:
-        return tuple(value.authority for value in self.closures) == tuple(
-            sorted(ModelAssetClosureAuthority, key=lambda value: value.value)
-        )
+        return durable_carrier_closure_complete(self.closures)
 
     @property
     def eligible(self) -> bool:
-        return self.closure_complete and all(
-            not value.retained_reference_ids for value in self.closures
-        )
+        return durable_carrier_gc_eligible(self.closures)
 
 
 class ModelAssetMode(StrEnum):
