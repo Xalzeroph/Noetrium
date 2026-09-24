@@ -16,6 +16,7 @@ from noetrium_platform.foundation.kernel.kernel import (
     JsonValue,
     MachineKind,
     canonical_digest,
+    thaw_json,
 )
 from noetrium_platform.research.execution.machines.api import (
     ProgramNodeRequest,
@@ -35,6 +36,7 @@ from noetrium_platform.product.research_os import (
     ResearchDefinition,
     ResearchDefinitionKind,
     ResearchImplementation,
+    ResearchMethodProgramBindingKind,
     ResearchMethodProgramImplementation,
     ResearchNodeKind,
 )
@@ -232,9 +234,29 @@ def resolve_method_program_implementation(
             "research MethodProgram can no longer be imported from frozen "
             f"coordinates: {declared.module}:{declared.qualname}"
         ) from exc
+    if declared.binding_kind is ResearchMethodProgramBindingKind.FACTORY:
+        if not callable(value):
+            raise ResearchImplementationResolutionError(
+                "frozen research MethodProgram factory no longer resolves to callable: "
+                f"{declared.module}:{declared.qualname}"
+            )
+        try:
+            value = value(
+                *(thaw_json(row) for row in declared.factory_args),
+                **dict(thaw_json(declared.factory_kwargs)),
+            )
+        except Exception as exc:
+            raise ResearchImplementationResolutionError(
+                "frozen research MethodProgram factory failed to reconstruct IR: "
+                f"{declared.module}:{declared.qualname}"
+            ) from exc
+    elif declared.binding_kind is not ResearchMethodProgramBindingKind.SYMBOL:
+        raise ResearchImplementationResolutionError(
+            "research MethodProgram binding kind is unsupported"
+        )
     if type(value) is not MethodProgram:
         raise ResearchImplementationResolutionError(
-            "frozen research MethodProgram coordinates no longer resolve to "
+            "frozen research MethodProgram binding no longer resolves to "
             f"MethodProgram: {declared.module}:{declared.qualname}"
         )
     if value.program_digest != declared.program_digest:
