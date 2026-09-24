@@ -1,71 +1,185 @@
-# Noetrium environment container profiles
+# Noetrium environment profile registry
 
-Noetrium owns reusable execution-environment prerequisites, not scientific environments.
+Noetrium owns reusable execution prerequisites, not paper or benchmark environments.
 
-The immutable base image is built from a formally qualified Noetrium wheel and its release evidence. Environment profiles consume that base image and add only generic operating-system/runtime dependencies required by one canonical environment category.
+The deployment model is:
 
-## Boundary
+```text
+L0 host substrate
+   Docker / Compose / NVIDIA runtime / filesystem / network
+        |
+L1 evidence-bound Noetrium base
+   exact qualified wheel + release evidence
+        |
+L2 environment capability profile
+   web / minecraft / gui / embodied / software / text-like categories
+        |
+L3 immutable workload assets
+   content-addressed datasets / VM bases / world bases / repository objects
+        |
+L4 per-execution writable overlay
+   workspace / tmp / runtime state / browser profile / world state / secrets
+        |
+L5 immutable research evidence
+   artifacts / trajectories / metrics / checkpoints / Machine Journal receipts
+```
 
-Upstream owns:
+The central rule is:
 
-- the evidence-bound Noetrium base image;
-- generic Java/Node/Mineflayer prerequisites for the Minecraft provider;
-- generic EGL/OpenGL/OSMesa/headless-display prerequisites for embodied providers;
-- generic headless desktop tooling for GUI providers;
-- generic Chromium runtime for Web providers;
-- generic compiler/build/terminal prerequisites for Software providers;
-- environment-profile readiness diagnostics.
+> Share immutable content. Isolate every mutable execution state.
 
-Downstream research owns benchmark packages/data, task/world/site/repository cuts, paper methods/prompts, model checkpoints/training data, and scientific experiment manifests/seeds/metrics/success predicates/claims.
+## Registry authority
 
-`deploy/environments/catalog.json` is the deployment-profile authority. A profile must not name or embed a downstream benchmark implementation.
+`deploy/environments/catalog.json` is the environment-profile registry authority.
+
+The registry is dynamic. The build control plane does not contain a hard-coded set of profile names. Adding a new category or a new revision requires only a registry row plus that profile's own image recipe, Compose overlay when needed, and doctor hook.
+
+Each row has two different identities:
+
+- `category_id`: the stable capability family used by research requirements, such as `web` or `minecraft`;
+- `profile_id`: one concrete deployable profile revision line.
+
+A profile revision digest is derived from the immutable profile definition. Administrative lifecycle fields are excluded from that digest, so moving a revision from active to draining or retired does not change the software environment identity.
+
+This allows revisions to coexist:
+
+```text
+category: minecraft
+  minecraft-r1  retired   revision=A...
+  minecraft-r2  draining  revision=B...
+  minecraft-r3  active    revision=C...  <- default for new executions
+```
+
+Existing executions remain pinned to the exact `profile_id + profile_revision` recorded by `EnvironmentInstance`.
+
+## Lifecycle
+
+Profiles have exactly three lifecycle states:
+
+- `active`: eligible for new bindings;
+- `draining`: no default new binding; already pinned executions may finish or resume;
+- `retired`: historical/recovery-only; explicit `--allow-retired` is required to materialize it.
+
+Retirement is the logical delete operation. A retired registry row is retained so historical experiments keep a reproducible environment identity.
+
+Physical cache/image deletion is a separate operation. A revision is GC-eligible only when there is no active or resumable execution referencing it and no retained evidence depends on it.
+
+## Sharing and isolation
+
+Safe sharing is limited to immutable or content-addressed objects:
+
+- Noetrium base image layers;
+- environment profile image layers;
+- model and tokenizer blobs;
+- immutable benchmark assets;
+- VM/world/base snapshots;
+- repository object caches;
+- content-addressed dependency caches.
+
+Per-execution writable state is never shared:
+
+- workspace;
+- `/tmp`;
+- runtime/world/application state;
+- browser profiles and cookies;
+- secrets and environment-local credentials;
+- process namespace;
+- network namespace;
+- ports;
+- mutable databases.
+
+Compose runtime state therefore uses an instance-scoped root. `PLATFORM_ENVIRONMENT_INSTANCE_ROOT` identifies environment-owned writable state and `PLATFORM_RUNTIME_STATE_ROOT` identifies platform runtime state for that execution instance.
+
+A reusable warm instance can return to a pool only after its overlay is destroyed or a provider produces an explicit cleanliness proof. A dirty or uncertain instance must be destroyed, never opportunistically reused.
+
+## Profile-local doctors
+
+The base entrypoint does not contain a switch statement for known environment types.
+
+Each image profile installs its own executable doctor hook at:
+
+```text
+/usr/local/lib/noetrium/environment-doctor.d/<category>
+```
+
+The generic entrypoint performs the base Noetrium qualification first and then executes the profile hook. This removes a central edit point: a new environment category does not require changing `container-entrypoint.sh`.
 
 ## Host contract
 
-The deployment host requires Docker (including Compose) and access to its Docker daemon. Host Python is deliberately **not** part of the deployment contract. Release qualification, provenance verification, and environment-image orchestration execute in the disposable control-plane image defined by `deploy/bootstrap/Dockerfile`.
+The host contract remains Docker + Docker Compose and access to the Docker daemon. GPU nodes additionally need the NVIDIA container runtime required by their provider.
 
-The canonical host entrypoint is therefore:
+Host Python is not part of the deployment contract. Qualification and image orchestration run in the disposable bootstrap image:
 
-    ./deploy/build-environments.sh list
-    ./deploy/build-environments.sh show minecraft
-    ./deploy/build-environments.sh validate
-    ./deploy/build-environments.sh build --profiles minecraft embodied gui web software text_world
+```bash
+./deploy/build-environments.sh list
+./deploy/build-environments.sh show minecraft
+./deploy/build-environments.sh validate
+./deploy/build-environments.sh build
+```
 
-`NOETRIUM_BOOTSTRAP_IMAGE` may select the local control-plane image tag. `NOETRIUM_DOCKER_CLI_IMAGE` may select an organization-approved Docker CLI source or registry mirror without changing platform source. `NOETRIUM_BUILD_WORK_ROOT` selects the writable build/runtime evidence root. Registry policy belongs to deployment configuration; benchmark or paper identity never belongs here.
+With no `--profiles`, build selects exactly one active default revision for every registered category.
 
-Runtime parent images follow the same rule. The canonical identities remain `python:3.12-slim-bookworm` and `eclipse-temurin:21-jre-jammy`, while deployment may select alternate registry sources with `--python-runtime-image` and `--java-runtime-image`. The build receipt records both canonical and actual source identities, including Docker image metadata when materialized. No registry mirror is hard-coded into the platform.
+Explicit historical recovery is possible:
 
-The bootstrap resolves the daemon endpoint from `DOCKER_HOST` or the active Docker context rather than assuming a rootful `/var/run/docker.sock`. Unix-socket endpoints, including rootless Docker sockets, are mounted at their existing absolute path; non-TLS TCP endpoints are forwarded without a host socket mount. TLS/SSH daemon transports remain explicit deployment integrations because the bootstrap must not silently copy host credentials into its control-plane container.
+```bash
+./deploy/build-environments.sh build --profiles minecraft-r1 --allow-retired
+```
 
-The bootstrap mounts the checkout read-only and preserves its absolute host path inside the control-plane container. This is required because the control plane talks to the host Docker daemon: daemon-side build contexts and Compose bind mounts must resolve the same paths. Only the dedicated build/runtime root is writable.
+The bootstrap preserves the checkout read-only and gives write access only to its dedicated build/runtime root.
 
-## Base image
+## Image identity and provenance
 
-The base image is distribution-bound and must not be rebuilt directly from the mutable checkout. The canonical Docker-only entrypoint above performs the qualification path in the control-plane container:
+The immutable base is built from a formally qualified Noetrium wheel and release evidence, not directly from a mutable checkout.
 
+```text
 release source
-→ qualified wheel + distribution evidence
-→ exact container context
-→ evidence-bound base image
-→ provenance verification
-→ reusable environment images
-→ profile doctors
+  -> qualified wheel + distribution evidence
+  -> exact container context
+  -> evidence-bound base image
+  -> provenance verification
+  -> environment profile image
+  -> profile doctor
+  -> build receipt
+```
 
-`scripts/build_environment_images.py` remains the Python implementation behind that control-plane boundary. It is not a host-Python contract.
+Build receipts include source SHA, wheel SHA-256, distribution-evidence SHA-256, profile id, category, profile lifecycle, profile revision digest and concrete image identity.
 
-`deploy/compose.yaml` consumes an already-qualified `PLATFORM_IMAGE`; it does not build the base image from checkout source.
+An exact cached base is re-verified before reuse. Profile images are tagged by both source and profile revision, so changing the profile definition cannot silently reuse an older image.
 
-## Environment profiles
+Registry mirrors are deployment configuration. Canonical runtime identities remain separately recorded from the actual source registry image.
 
-| Profile | Adds | Does not add |
+## Current categories
+
+The current registry ships the following active categories, but this set is not encoded in builder logic:
+
+| Category | Shared capability layer | Downstream-owned examples |
 | --- | --- | --- |
-| `minecraft` | Java 21, Node 22, lockfile-pinned Mineflayer bridge runtime | Minecraft server/world/task/benchmark |
-| `embodied` | EGL, OpenGL, OSMesa, headless X runtime | benchmark simulators, task packages, robot-specific assets |
-| `gui` | Xvfb, Openbox, xdotool, screenshot tooling | benchmark VM images, applications, task manifests |
-| `web` | Chromium and chromedriver | benchmark websites, application state, task manifests |
-| `software` | compiler/build/SSH workspace prerequisites | benchmark images, target repositories, task patches |
-| `text_world` | base image only | benchmark runtimes and task corpora |
+| `text_world` | qualified Python/Noetrium base | corpora, benchmark runtimes, task semantics |
+| `web` | Chromium + driver | sites, site state, benchmark tasks |
+| `minecraft` | Java, Node, Mineflayer provider prerequisites | server/world/task/benchmark assets |
+| `gui` | Xvfb, Openbox, xdotool, screenshot stack | VM images, applications, task state |
+| `embodied` | EGL/OpenGL/OSMesa/headless display | simulator benchmarks, robot tasks, scenes |
+| `software` | compiler/build/SSH tools | repositories, patches, benchmark images |
 
-The build command creates the evidence-bound base image only when the exact source-SHA image is missing (or `--rebuild` is requested). On a cache hit it re-verifies the embedded wheel and installed wheel RECORD, then reuses the image. Each missing environment image is built independently and every requested profile is doctor-checked. Build scratch state is isolated from the reusable runtime-state root, so repeated deployments do not wipe environment state. `text_world` maps directly to the verified base image and does not create a redundant image.
+A downstream paper must never force a paper-specific layer into this registry. Papers bind reusable categories and materialize their own immutable assets and private execution overlay.
 
-Environment profiles are reusable deployment capabilities. A downstream research repository may inherit or compose them, but Noetrium must never grow a benchmark layer or paper/reproduction layer beneath them.
+## Adding a profile
+
+To add a profile without changing central platform code:
+
+1. add a registry row with `profile_id`, `category_id`, lifecycle and isolation policy;
+2. add a Dockerfile that extends `PLATFORM_BASE_IMAGE` unless the profile is `base-only`;
+3. add a profile-local doctor hook;
+4. add a Compose overlay if the profile needs one;
+5. run `./deploy/build-environments.sh validate`;
+6. build and doctor the new revision.
+
+The registry gate rejects downstream benchmark/paper content in platform-owned images.
+
+## Safe upgrade and retirement
+
+Never overwrite a revision in place.
+
+Create a new profile revision, make it the active default, move the prior revision to draining, and only later mark it retired after no new work can bind it. Existing `EnvironmentInstance` records keep their exact deployment revision.
+
+This gives Noetrium Git-like environment evolution: new executions move forward while old executions remain recoverable and attributable.
