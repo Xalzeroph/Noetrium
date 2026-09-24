@@ -100,6 +100,140 @@ class ResearchOSExperimentTrialProviderBinding:
             object.__setattr__(self, "binding_digest", expected)
 
 
+@dataclass(frozen=True, slots=True)
+class ResearchOSExperimentTrialProviderRegistration:
+    """One owner-system Trial provider registration with exact scientific identity."""
+
+    provider_identity: str
+    provider: TrialProviderPort
+    provider_identity_digest: str
+    verifier: TaskVerifierPort | None = None
+    verifier_identity_digest: str | None = None
+    registration_digest: str = ""
+
+    def __post_init__(self) -> None:
+        binding = ResearchOSExperimentTrialProviderBinding(
+            self.provider_identity,
+            self.provider,
+            self.provider_identity_digest,
+            self.verifier,
+            self.verifier_identity_digest,
+        )
+        expected = canonical_digest(
+            {
+                "provider_binding_digest": binding.binding_digest,
+                "protocol_identity_digest": self.provider.protocol_identity.digest(),
+            }
+        )
+        if self.registration_digest:
+            require_sha256(
+                self.registration_digest,
+                "Experiment Trial provider registration digest",
+            )
+            if self.registration_digest != expected:
+                raise ValueError(
+                    "Experiment Trial provider registration digest drifted"
+                )
+        else:
+            object.__setattr__(self, "registration_digest", expected)
+
+
+class ResearchOSExperimentTrialProviderRegistry:
+    """Exact Trial provider registry keyed by Research-selected provider identity."""
+
+    def __init__(
+        self,
+        registrations: tuple[
+            ResearchOSExperimentTrialProviderRegistration, ...
+        ],
+    ) -> None:
+        if type(registrations) is not tuple or not registrations:
+            raise TypeError(
+                "Experiment Trial provider registry requires non-empty typed tuple"
+            )
+        if any(
+            type(row) is not ResearchOSExperimentTrialProviderRegistration
+            for row in registrations
+        ):
+            raise TypeError(
+                "Experiment Trial provider registry registrations must be typed"
+            )
+        ordered = tuple(
+            sorted(
+                registrations,
+                key=lambda row: (
+                    row.provider_identity,
+                    row.provider.protocol_identity.digest(),
+                    row.registration_digest,
+                ),
+            )
+        )
+        keys = tuple(
+            (
+                row.provider_identity,
+                row.provider.protocol_identity.digest(),
+            )
+            for row in ordered
+        )
+        if len(keys) != len(set(keys)):
+            raise ValueError(
+                "Experiment Trial provider registry contains duplicate "
+                "provider/protocol authority"
+            )
+        self._registrations = ordered
+        self._identity_digest = canonical_digest(
+            {
+                "schema": "noetrium.experiment-trial-provider-registry.v1",
+                "registrations": tuple(
+                    row.registration_digest for row in ordered
+                ),
+            }
+        )
+
+    @property
+    def identity_digest(self) -> str:
+        return self._identity_digest
+
+    def resolve(
+        self,
+        closure: ResearchOSExperimentClosure,
+    ) -> ResearchOSExperimentTrialProviderBinding:
+        if type(closure) is not ResearchOSExperimentClosure:
+            raise TypeError(
+                "Experiment Trial provider registry requires "
+                "ResearchOSExperimentClosure"
+            )
+        provider_ids = {
+            row.provider_id
+            for row in closure.research_plan.experiment_plan.bindings
+        }
+        if len(provider_ids) != 1:
+            raise ValueError(
+                "Experiment closure must select exactly one Trial provider identity"
+            )
+        provider_identity = next(iter(provider_ids))
+        protocol_digest = closure.research_plan.trial_protocol_identity.digest()
+        matches = tuple(
+            row
+            for row in self._registrations
+            if row.provider_identity == provider_identity
+            and row.provider.protocol_identity.digest() == protocol_digest
+        )
+        if len(matches) != 1:
+            raise LookupError(
+                "no unique Trial provider registration for "
+                f"provider={provider_identity!r} protocol={protocol_digest}"
+            )
+        row = matches[0]
+        return ResearchOSExperimentTrialProviderBinding(
+            row.provider_identity,
+            row.provider,
+            row.provider_identity_digest,
+            row.verifier,
+            row.verifier_identity_digest,
+        )
+
+
 @runtime_checkable
 class ResearchOSExperimentTrialProviderResolverPort(Protocol):
     """Resolve Trial/provider authority owned by the concrete execution system."""
@@ -324,6 +458,8 @@ class ResearchOSExperimentTrialStudyExecutionResolver(
 
 __all__ = [
     "ResearchOSExperimentTrialProviderBinding",
+    "ResearchOSExperimentTrialProviderRegistry",
+    "ResearchOSExperimentTrialProviderRegistration",
     "ResearchOSExperimentTrialProviderResolverPort",
     "ResearchOSExperimentTrialStudyExecutionResolver",
 ]
