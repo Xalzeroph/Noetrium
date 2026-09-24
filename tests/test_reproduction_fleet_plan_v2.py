@@ -49,3 +49,18 @@ def test_fleet_plan_keeps_parameterized_method_factories_explicit() -> None:
         blocker.startswith("method_factory_requires_binding:")
         for blocker in toolformer["blockers"]
     )
+
+
+
+def test_all_protocol_bound_reproductions_have_exact_execution_bindings() -> None:
+    plan = build_plan()
+    unresolved = tuple(
+        (
+            row["package"],
+            tuple(row["unresolved_study_parameters"]),
+            tuple(row["blockers"]),
+        )
+        for row in plan["lanes"]
+        if row["unresolved_study_parameters"] or row["blockers"]
+    )
+    assert unresolved == ()
