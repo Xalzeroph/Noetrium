@@ -5,7 +5,7 @@ from dataclasses import dataclass
 import math
 from typing import Protocol, runtime_checkable
 
-from noetrium_platform.composition.environment_capabilities import (
+from noetrium.api import (
     environment_action_capability_payload,
 )
 from noetrium_platform.capabilities.participant.method.api import (
