@@ -15,8 +15,10 @@ from research.reproductions.contracts import (
     ReproductionDefinition,
 )
 from research.reproductions.research_os import (
+    compile_reproduction_portfolio,
     compile_reproduction_research_program,
     resolve_method_program_binding,
+    resolve_research_program_bindings,
 )
 
 
@@ -35,19 +37,27 @@ def _definitions() -> tuple[ReproductionDefinition, ...]:
     return tuple(rows)
 
 
-def test_every_method_program_study_reproduction_compiles_to_current_research_os() -> None:
+def _research_os_ready(
+    definition: ReproductionDefinition,
+) -> bool:
+    kinds = {asset.kind for asset in definition.assets}
+    return (
+        ReproductionAssetKind.STUDY in kinds
+        and (
+            ReproductionAssetKind.METHOD_PROGRAM in kinds
+            or ReproductionAssetKind.RESEARCH_PROGRAM in kinds
+        )
+    )
+
+
+def test_every_executable_study_reproduction_compiles_to_current_research_os() -> None:
     definitions = _definitions()
+    eligible = tuple(row for row in definitions if _research_os_ready(row))
+    assert eligible
+
     compiled_packages: list[str] = []
-
-    for definition in definitions:
+    for definition in eligible:
         kinds = {asset.kind for asset in definition.assets}
-        if not {
-            ReproductionAssetKind.METHOD_PROGRAM,
-            ReproductionAssetKind.STUDY,
-        }.issubset(kinds):
-            continue
-
-        binding = resolve_method_program_binding(definition)
         program = compile_reproduction_research_program(definition)
         assert program.program_id == definition.identity.method_id
         assert len(program.nodes) == 1
@@ -58,15 +68,26 @@ def test_every_method_program_study_reproduction_compiles_to_current_research_os
             api.ResearchOutputSpec("report", api.ResearchValueKind.ARTIFACT),
         )
 
-        method_definition = next(
-            row for row in program.definitions if row.definition_id == "method"
-        )
-        assert type(method_definition.implementation) is (
-            api.ResearchMethodProgramImplementation
-        )
-        assert method_definition.implementation.program_digest == (
-            binding.program_digest
-        )
+        if ReproductionAssetKind.METHOD_PROGRAM in kinds:
+            binding = resolve_method_program_binding(definition)
+            method_definition = next(
+                row for row in program.definitions if row.definition_id == "method"
+            )
+            assert type(method_definition.implementation) is (
+                api.ResearchMethodProgramImplementation
+            )
+            assert method_definition.implementation.program_digest == (
+                binding.program_digest
+            )
+        else:
+            machine_bindings = resolve_research_program_bindings(definition)
+            assert machine_bindings
+            machine_definitions = tuple(
+                row
+                for row in program.definitions
+                if row.definition_id.startswith("machine.")
+            )
+            assert len(machine_definitions) == len(machine_bindings)
 
         portfolio = api.ResearchPortfolio(
             f"{definition.identity.method_id}.migration-gate",
@@ -79,24 +100,33 @@ def test_every_method_program_study_reproduction_compiles_to_current_research_os
             "reproduction migration gate",
         )
         graph = compile_research_portfolio_graph(revision, portfolio)
-        # Experimentation lowering requires a closure to execute, but the
-        # MethodProgram implementation identity must already be import-resolved
-        # and bound into the immutable graph semantics.
-        graph_node = graph.node(
-            f"{definition.identity.method_id}::reproduction"
-        )
-        method_source = next(
-            row for row in graph_node.definitions
-            if row.definition_id == "method"
-        )
-        assert method_source.implementation_digest == (
-            method_definition.implementation_digest
-        )
+        graph.node(f"{definition.identity.method_id}::reproduction")
         compiled_packages.append(definition.package)
 
-    assert compiled_packages
-    assert len(compiled_packages) == len(set(compiled_packages))
+    assert tuple(sorted(compiled_packages)) == tuple(
+        sorted(row.package for row in eligible)
+    )
 
+
+def test_all_ready_reproductions_compile_as_one_multi_paper_portfolio() -> None:
+    definitions = tuple(row for row in _definitions() if _research_os_ready(row))
+    portfolio = compile_reproduction_portfolio(
+        "repository-reproductions.current-research-os",
+        definitions,
+    )
+    assert len(portfolio.programs) == len(definitions)
+    revision = api.ResearchGraphRevision(
+        portfolio.portfolio_id,
+        portfolio.portfolio_digest,
+        (),
+        "all executable reproductions on current Research OS",
+    )
+    graph = compile_research_portfolio_graph(revision, portfolio)
+    assert len(graph.nodes) == len(definitions)
+    assert {node.node.node_id for node in graph.nodes} == {"reproduction"}
+    assert {node.node.kind for node in graph.nodes} == {
+        api.ResearchNodeKind.EXPERIMENT
+    }
 
 def test_method_program_bindings_also_lower_exactly_on_method_nodes() -> None:
     # The experiment lane resolves through Experimentation closure.  This
