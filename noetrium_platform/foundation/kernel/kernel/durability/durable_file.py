@@ -36,7 +36,7 @@ def _windows_file_operation(operation):
     )
 
 
-def _flush_file_descriptor(fd: int) -> None:
+def flush_file_descriptor(fd: int) -> None:
     if os.name != "nt":
         os.fsync(fd)
         return
@@ -55,7 +55,7 @@ def _flush_file(path: Path) -> None:
     def flush() -> None:
         with path.open("r+b") as handle:
             handle.flush()
-            _flush_file_descriptor(handle.fileno())
+            flush_file_descriptor(handle.fileno())
 
     _windows_file_operation(flush)
 
@@ -141,7 +141,7 @@ def atomic_replace_bytes(path: Path, payload: bytes) -> None:
         with tmp.open("xb") as handle:
             handle.write(payload)
             handle.flush()
-            _flush_file_descriptor(handle.fileno())
+            flush_file_descriptor(handle.fileno())
         _windows_file_operation(lambda: os.replace(tmp, path))
         published = True
         fsync_directory(parent)
@@ -215,4 +215,5 @@ __all__ = [
     "durable_replace_directory",
     "durable_unlink",
     "fsync_directory",
+    "flush_file_descriptor",
 ]
