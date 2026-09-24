@@ -9,9 +9,13 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 
 from noetrium_platform.composition.research_binding_authority import (
+    ResearchProjectManifestRegistry,
     ResearchProjectManifestRequirement,
 )
 from noetrium_platform.foundation.kernel.kernel import canonical_digest
+from noetrium_platform.research.experimentation.api import (
+    resolve_research_requirements,
+)
 
 from .fleet import ReproductionFleetMaterialization
 from .research_os import (
@@ -163,6 +167,155 @@ def compile_repository_fleet_prerequisites() -> ReproductionFleetPrerequisiteMan
                 )
             )
     return ReproductionFleetPrerequisiteManifest(tuple(rows))
+
+
+@dataclass(frozen=True, slots=True)
+class ReproductionFleetCapabilityRequirement:
+    """One ProjectManifest-derived Capability authority requirement."""
+
+    package: str
+    program_id: str
+    study_id: str
+    project_manifest_digest: str
+    requirement_key: str
+    requirement_digest: str
+
+    def __post_init__(self) -> None:
+        for field_name in (
+            "package",
+            "program_id",
+            "study_id",
+            "requirement_key",
+        ):
+            _text(
+                getattr(self, field_name),
+                f"fleet capability requirement {field_name}",
+            )
+        _sha(
+            self.project_manifest_digest,
+            "fleet capability requirement ProjectManifest digest",
+        )
+        _sha(
+            self.requirement_digest,
+            "fleet capability requirement digest",
+        )
+
+
+@dataclass(frozen=True, slots=True)
+class ReproductionFleetCapabilityRequirementManifest:
+    """Capability-owner worklist compiled only after ProjectManifest authority."""
+
+    materialization_digest: str
+    project_manifest_registry_digest: str
+    requirements: tuple[ReproductionFleetCapabilityRequirement, ...]
+    manifest_digest: str = field(init=False)
+
+    def __post_init__(self) -> None:
+        _sha(
+            self.materialization_digest,
+            "fleet capability manifest materialization_digest",
+        )
+        _sha(
+            self.project_manifest_registry_digest,
+            "fleet capability manifest ProjectManifest registry digest",
+        )
+        if type(self.requirements) is not tuple or any(
+            type(row) is not ReproductionFleetCapabilityRequirement
+            for row in self.requirements
+        ):
+            raise TypeError(
+                "fleet capability requirement manifest requires typed tuple"
+            )
+        ordered = tuple(
+            sorted(
+                self.requirements,
+                key=lambda row: (
+                    row.project_manifest_digest,
+                    row.requirement_key,
+                    row.requirement_digest,
+                    row.program_id,
+                ),
+            )
+        )
+        keys = tuple(
+            (
+                row.project_manifest_digest,
+                row.requirement_key,
+                row.requirement_digest,
+            )
+            for row in ordered
+        )
+        if len(keys) != len(set(keys)):
+            raise ValueError(
+                "fleet capability requirements must be unique per manifest"
+            )
+        object.__setattr__(self, "requirements", ordered)
+        object.__setattr__(
+            self,
+            "manifest_digest",
+            canonical_digest(
+                {
+                    "schema": "noetrium.reproduction-fleet-capability-requirements.v1",
+                    "materialization_digest": self.materialization_digest,
+                    "project_manifest_registry_digest": (
+                        self.project_manifest_registry_digest
+                    ),
+                    "requirements": tuple(
+                        {
+                            "package": row.package,
+                            "program_id": row.program_id,
+                            "study_id": row.study_id,
+                            "project_manifest_digest": (
+                                row.project_manifest_digest
+                            ),
+                            "requirement_key": row.requirement_key,
+                            "requirement_digest": row.requirement_digest,
+                        }
+                        for row in ordered
+                    ),
+                }
+            ),
+        )
+
+
+def compile_materialized_fleet_capability_requirements(
+    fleet: ReproductionFleetMaterialization,
+    manifests: ResearchProjectManifestRegistry,
+) -> ReproductionFleetCapabilityRequirementManifest:
+    """Compile Capability-owner requirements from exact ProjectManifest truth."""
+
+    if type(fleet) is not ReproductionFleetMaterialization:
+        raise TypeError(
+            "fleet capability requirement compilation requires materialized fleet"
+        )
+    if type(manifests) is not ResearchProjectManifestRegistry:
+        raise TypeError(
+            "fleet capability requirement compilation requires "
+            "ResearchProjectManifestRegistry"
+        )
+
+    rows: list[ReproductionFleetCapabilityRequirement] = []
+    for lane in fleet.lanes:
+        study = lane.study
+        manifest = manifests.resolve(study)
+        resolution = resolve_research_requirements(study, manifest)
+        for requirement in resolution.capability_requirements:
+            rows.append(
+                ReproductionFleetCapabilityRequirement(
+                    package=lane.definition.package,
+                    program_id=lane.program.program_id,
+                    study_id=study.study_id,
+                    project_manifest_digest=manifest.semantic_digest,
+                    requirement_key=requirement.requirement_id,
+                    requirement_digest=canonical_digest(requirement),
+                )
+            )
+
+    return ReproductionFleetCapabilityRequirementManifest(
+        fleet.materialization_digest,
+        manifests.identity_digest,
+        tuple(rows),
+    )
 
 
 @dataclass(frozen=True, slots=True)
@@ -373,10 +526,13 @@ def compile_materialized_fleet_owner_requirements(
 
 
 __all__ = [
+    "ReproductionFleetCapabilityRequirement",
+    "ReproductionFleetCapabilityRequirementManifest",
     "ReproductionFleetOwnerRequirement",
     "ReproductionFleetOwnerRequirementManifest",
     "ReproductionFleetPrerequisiteManifest",
     "ReproductionFleetPrerequisiteRequirement",
+    "compile_materialized_fleet_capability_requirements",
     "compile_materialized_fleet_owner_requirements",
     "compile_repository_fleet_prerequisites",
 ]
