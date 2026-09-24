@@ -285,6 +285,23 @@ class ResearchGraphAttemptRecord:
 
 
 @dataclass(frozen=True, slots=True)
+class ResearchGraphLeaseRenewal:
+    node_id: str
+    attempt_id: str
+    owner_id: str
+    lease_expires_at_ns: int
+
+    def __post_init__(self) -> None:
+        _text(self.node_id, "research graph lease renewal node_id")
+        _text(self.attempt_id, "research graph lease renewal attempt_id")
+        _text(self.owner_id, "research graph lease renewal owner_id")
+        if type(self.lease_expires_at_ns) is not int or self.lease_expires_at_ns < 0:
+            raise ValueError(
+                "research graph lease renewal expiry must be a non-negative integer"
+            )
+
+
+@dataclass(frozen=True, slots=True)
 class ResearchGraphExecutionSnapshot:
     execution_id: str
     graph_id: str
@@ -517,16 +534,13 @@ class ResearchGraphExecutionStorePort(Protocol):
         now_ns: int,
     ) -> ResearchGraphNodeExecutionRecord: ...
 
-    def renew_lease(
+    def renew_leases(
         self,
         execution_id: str,
-        node_id: str,
+        renewals: tuple[ResearchGraphLeaseRenewal, ...],
         *,
-        attempt_id: str,
-        owner_id: str,
         now_ns: int,
-        lease_expires_at_ns: int,
-    ) -> ResearchGraphNodeExecutionRecord: ...
+    ) -> tuple[ResearchGraphNodeExecutionRecord, ...]: ...
 
     def mark_succeeded(
         self,
@@ -791,6 +805,7 @@ __all__ = [
     "ResearchGraphExecutionNotFound",
     "ResearchGraphExecutionSnapshot",
     "ResearchGraphExecutionStorePort",
+    "ResearchGraphLeaseRenewal",
     "ResearchGraphLiveNodeState",
     "ResearchGraphNodeControlPhase",
     "ResearchGraphNodeControlRecord",
