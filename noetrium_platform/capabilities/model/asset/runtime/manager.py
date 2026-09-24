@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from pathlib import Path
 import json
+from threading import RLock
 
 from noetrium_platform.substrate.api import ScopeIdentity
 
@@ -37,43 +38,75 @@ class ModelAssetManager:
         self._source_backends = {backend.backend_id: backend for backend in source_backends}
         if len(self._source_backends) != len(source_backends):
             raise ValueError("duplicate model source backend")
+        self._lock = RLock()
 
     def fetch_model(self, model_id: str, scope: ScopeIdentity, spec: ModelSourceSpec, *, family: str = "", notes: str = "", tags: tuple[str, ...] = ()) -> ManagedModelAsset:
-        try:
-            self.model(model_id)
-        except FileNotFoundError:
-            pass
-        else:
-            raise FileExistsError(f"model is already registered: {model_id}")
-        try:
-            backend = self._source_backends[spec.backend]
-        except KeyError as exc:
-            raise KeyError(f"unknown model source backend: {spec.backend}") from exc
-        receipt = backend.acquire(model_id, spec)
-        return self._asset_registry.put(
-            ManagedModelAsset(
-                model_id, scope, receipt.path, ModelAssetMode.FETCHED, family, notes,
-                ModelAssetOrigin(receipt.backend, receipt.source, receipt.revision),
-                self._normalize_tags(tags),
-                receipt.storage_pool,
+        with self._lock:
+            self._asset_registry.ensure_not_retired(model_id)
+            try:
+                self.model(model_id)
+            except FileNotFoundError:
+                pass
+            else:
+                raise FileExistsError(
+                    f"model is already registered: {model_id}"
+                )
+            try:
+                backend = self._source_backends[spec.backend]
+            except KeyError as exc:
+                raise KeyError(
+                    f"unknown model source backend: {spec.backend}"
+                ) from exc
+            receipt = backend.acquire(model_id, spec)
+            return self._asset_registry.put(
+                ManagedModelAsset(
+                    model_id,
+                    scope,
+                    receipt.path,
+                    ModelAssetMode.FETCHED,
+                    family,
+                    notes,
+                    ModelAssetOrigin(
+                        receipt.backend,
+                        receipt.source,
+                        receipt.revision,
+                    ),
+                    self._normalize_tags(tags),
+                    receipt.storage_pool,
+                )
             )
-        )
 
     def register_model(
         self, model_id: str, scope: ScopeIdentity, source: Path, *, mode: str = "reference", family: str = "",
         notes: str = "", tags: tuple[str, ...] = (), storage_pool: str = "default"
     ) -> ManagedModelAsset:
-        asset_mode = ModelAssetMode(mode)
-        resolved_source = source.expanduser().resolve()
-        path = self._storage.materialize(model_id, resolved_source, asset_mode, pool_id=storage_pool)
-        return self._asset_registry.put(
-            ManagedModelAsset(
-                model_id, scope, path, asset_mode, family, notes,
-                ModelAssetOrigin("local-path", str(resolved_source)),
-                self._normalize_tags(tags),
-                None if asset_mode is ModelAssetMode.REFERENCE else storage_pool,
+        with self._lock:
+            self._asset_registry.ensure_not_retired(model_id)
+            asset_mode = ModelAssetMode(mode)
+            resolved_source = source.expanduser().resolve()
+            path = self._storage.materialize(
+                model_id,
+                resolved_source,
+                asset_mode,
+                pool_id=storage_pool,
             )
-        )
+            return self._asset_registry.put(
+                ManagedModelAsset(
+                    model_id,
+                    scope,
+                    path,
+                    asset_mode,
+                    family,
+                    notes,
+                    ModelAssetOrigin("local-path", str(resolved_source)),
+                    self._normalize_tags(tags),
+                    (
+                        None
+                        if asset_mode is ModelAssetMode.REFERENCE
+                        else storage_pool
+                    ),
+                )
+            )
 
     def model(self, model_id: str) -> ManagedModelAsset:
         return self._asset_registry.get(model_id)
@@ -162,13 +195,42 @@ class ModelAssetManager:
         return tuple(sorted({str(tag).strip() for tag in tags if str(tag).strip()}))
 
     def unregister_model(self, model_id: str, *, delete_managed_files: bool = False) -> bool:
-        if self._references.references(model_id):
-            raise RuntimeError(f"model is still referenced by a deployment: {model_id}")
-        asset = self.model(model_id)
-        removed = self._asset_registry.remove(model_id)
-        if removed and delete_managed_files:
-            self._storage.remove(asset)
-        return removed
+        if type(delete_managed_files) is not bool:
+            raise TypeError("delete_managed_files must be bool")
+        with self._lock:
+            references = self._references.references(model_id)
+            if references:
+                raise RuntimeError(
+                    f"model is still referenced by a deployment: {model_id}"
+                )
+
+            retirement = self._asset_registry.retirement(model_id)
+            if retirement is None:
+                asset = self.model(model_id)
+                asset = self._asset_registry.begin_retirement(
+                    asset,
+                    delete_managed_files=delete_managed_files,
+                )
+                durable_delete = delete_managed_files
+            else:
+                asset, durable_delete = retirement
+                if asset is None:
+                    return True
+
+            # Reference truth belongs to deployment authority, not this registry.
+            # Recheck after publishing retirement before destructive bytes are
+            # touched. Any forbidden concurrent reference leaves a recoverable
+            # retired asset rather than deleting bytes under a consumer.
+            references = self._references.references(model_id)
+            if references:
+                raise RuntimeError(
+                    "model gained a deployment reference during retirement: "
+                    f"{model_id}"
+                )
+
+            if durable_delete:
+                self._storage.remove(asset)
+            return self._asset_registry.finish_retirement(asset)
 
 
 __all__ = ["ModelAssetManager"]
