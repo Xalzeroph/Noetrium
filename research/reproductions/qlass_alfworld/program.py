@@ -6,18 +6,18 @@ from noetrium.api import (
     environment_branch_action_spec,
     environment_replay_action_payload,
 )
-from noetrium_platform.capabilities.participant.method.api import (
+from noetrium.api import (
     MethodIdentity,
     MethodProgramIdentity,
 )
-from noetrium_platform.foundation.kernel.kernel import (
+from noetrium.api import (
     EffectClass,
     JsonObject,
     JsonValue,
     canonical_digest,
     freeze_json,
 )
-from noetrium_platform.research.execution.workflow.api import (
+from noetrium.api import (
     MethodExecutionClass,
     MethodNodeRequest,
     MethodNodeResult,
