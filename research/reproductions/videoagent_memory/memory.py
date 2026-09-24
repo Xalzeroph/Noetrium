@@ -4,18 +4,12 @@ from collections.abc import Mapping, Sequence
 from dataclasses import dataclass, field
 from typing import Protocol, runtime_checkable
 
-from noetrium_platform.evidence.artifact.content.api import ArtifactBlobRef
-from noetrium_platform.foundation.kernel.kernel import (
+from noetrium.api import (
+    ArtifactBlobRef,
     JsonObject,
     JsonValue,
     MachineJournalPort,
     MachineSnapshotStorePort,
-    canonical_digest,
-    freeze_json,
-    require_sha256,
-    thaw_json,
-)
-from noetrium_platform.research.execution.machines.api import (
     MemoryConcern,
     MemoryProgramBuilder,
     ProgramNodeRequest,
@@ -23,6 +17,10 @@ from noetrium_platform.research.execution.machines.api import (
     ResearchHostOperation,
     ResearchProgram,
     ResearchProgramHost,
+    canonical_digest,
+    freeze_json,
+    require_sha256,
+    thaw_json,
 )
 
 from .fidelity import VIDEOAGENT_REFERENCE_FIDELITY
