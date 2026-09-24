@@ -13,12 +13,14 @@ def sglang_deployment(
     model_id: str,
     python_environment_id: str,
     cwd: Path,
+    port: int,
     host: str = "127.0.0.1",
-    port: int = 30000,
     tensor_parallel: int = 1,
     gpu_devices: tuple[str, ...] = (),
     extra_args: tuple[str, ...] = (),
 ) -> ModelDeploymentSpec:
+    if type(port) is not int or not 1 <= port <= 65535:
+        raise ValueError("SGLang deployment port must be Resource-assigned")
     return ModelDeploymentSpec(
         deployment_id=deployment_id,
         scope=scope,
@@ -54,12 +56,14 @@ def vllm_deployment(
     model_id: str,
     python_environment_id: str,
     cwd: Path,
+    port: int,
     host: str = "127.0.0.1",
-    port: int = 8000,
     tensor_parallel: int = 1,
     gpu_devices: tuple[str, ...] = (),
     extra_args: tuple[str, ...] = (),
 ) -> ModelDeploymentSpec:
+    if type(port) is not int or not 1 <= port <= 65535:
+        raise ValueError("vLLM deployment port must be Resource-assigned")
     return ModelDeploymentSpec(
         deployment_id=deployment_id,
         scope=scope,
