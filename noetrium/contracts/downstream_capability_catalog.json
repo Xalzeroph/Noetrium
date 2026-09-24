@@ -1,6 +1,6 @@
 {
   "ambiguous_symbol_sources": {},
-  "catalog_digest": "8ffcb03e39d3f3a1189dac7fea7d51f15b3bfb2498de9d200c26596194d31fdc",
+  "catalog_digest": "7b31a364f167f4f49bee43596fdbdd533742ed90233c015c1050f57c8b3a7c59",
   "direct_symbol_sources": {
     "ActionKind": "noetrium_platform.product.api",
     "ActionRequest": "noetrium_platform.product.api",
@@ -33,12 +33,19 @@
     "EmbodimentKind": "noetrium_platform.product.api",
     "EmbodimentSpec": "noetrium_platform.product.api",
     "EnvironmentConcern": "noetrium_platform.product.api",
+    "EnvironmentForkReceipt": "noetrium_platform.product.api",
     "EnvironmentProgramBuilder": "noetrium_platform.product.api",
+    "EnvironmentReplayError": "noetrium_platform.product.api",
+    "EnvironmentReplayReceipt": "noetrium_platform.product.api",
     "EnvironmentSession": "noetrium_platform.product.api",
+    "EnvironmentSessionOpener": "noetrium_platform.product.api",
     "EpisodeSpec": "noetrium_platform.product.api",
     "EvaluationConcern": "noetrium_platform.product.api",
     "EvaluationProgramBuilder": "noetrium_platform.product.api",
     "ExecutionContext": "noetrium_platform.product.api",
+    "ExecutionForkReceipt": "noetrium_platform.product.api",
+    "ExecutionSourceCut": "noetrium_platform.product.api",
+    "ExecutionStateAnchor": "noetrium_platform.product.api",
     "ExperimentConcern": "noetrium_platform.product.api",
     "ExperimentProgramBuilder": "noetrium_platform.product.api",
     "ExperimentTrialProtocolIdentity": "noetrium_platform.product.api",
@@ -123,15 +130,20 @@
     "Study": "noetrium_platform.product.api",
     "StudyModel": "noetrium_platform.product.api",
     "StudyParticipant": "noetrium_platform.product.api",
+    "TensorContentRef": "noetrium_platform.product.api",
+    "TensorContentStorePort": "noetrium_platform.product.api",
     "TrialBudget": "noetrium_platform.product.api",
+    "bind_execution_fork": "noetrium_platform.product.api",
     "environment_action_capability_payload": "noetrium_platform.product.api",
     "environment_branch_action_spec": "noetrium_platform.product.api",
     "environment_fork_action_payload": "noetrium_platform.product.api",
     "environment_query_capability_payload": "noetrium_platform.product.api",
     "environment_replay_action_payload": "noetrium_platform.product.api",
     "environment_reset_capability_payload": "noetrium_platform.product.api",
+    "fork_environment_session": "noetrium_platform.product.api",
     "materialize_capability_selection_view": "noetrium_platform.product.api",
-    "program_execution_capability_payload": "noetrium_platform.product.api"
+    "program_execution_capability_payload": "noetrium_platform.product.api",
+    "replay_environment_prefix": "noetrium_platform.product.api"
   },
   "entrypoint": "noetrium.api",
   "generator": "scripts/generate_downstream_contracts.py",
@@ -230,10 +242,22 @@
     "EnvironmentConcern": [
       "research_os"
     ],
+    "EnvironmentForkReceipt": [
+      "research_os"
+    ],
     "EnvironmentProgramBuilder": [
       "research_os"
     ],
+    "EnvironmentReplayError": [
+      "research_os"
+    ],
+    "EnvironmentReplayReceipt": [
+      "research_os"
+    ],
     "EnvironmentSession": [
+      "research_os"
+    ],
+    "EnvironmentSessionOpener": [
       "research_os"
     ],
     "EpisodeSpec": [
@@ -246,6 +270,15 @@
       "research_os"
     ],
     "ExecutionContext": [
+      "research_os"
+    ],
+    "ExecutionForkReceipt": [
+      "research_os"
+    ],
+    "ExecutionSourceCut": [
+      "research_os"
+    ],
+    "ExecutionStateAnchor": [
       "research_os"
     ],
     "ExperimentConcern": [
@@ -500,7 +533,16 @@
     "StudyParticipant": [
       "research_os"
     ],
+    "TensorContentRef": [
+      "research_os"
+    ],
+    "TensorContentStorePort": [
+      "research_os"
+    ],
     "TrialBudget": [
+      "research_os"
+    ],
+    "bind_execution_fork": [
       "research_os"
     ],
     "environment_action_capability_payload": [
@@ -521,10 +563,16 @@
     "environment_reset_capability_payload": [
       "research_os"
     ],
+    "fork_environment_session": [
+      "research_os"
+    ],
     "materialize_capability_selection_view": [
       "research_os"
     ],
     "program_execution_capability_payload": [
+      "research_os"
+    ],
+    "replay_environment_prefix": [
       "research_os"
     ]
   },
@@ -1162,6 +1210,13 @@
             "EmbodiedEventKind",
             "EmbodimentKind",
             "EmbodimentSpec",
+            "EnvironmentForkReceipt",
+            "EnvironmentReplayError",
+            "EnvironmentReplayReceipt",
+            "EnvironmentSessionOpener",
+            "ExecutionForkReceipt",
+            "ExecutionSourceCut",
+            "ExecutionStateAnchor",
             "EnvironmentConcern",
             "EnvironmentProgramBuilder",
             "EnvironmentSession",
@@ -1224,7 +1279,12 @@
             "Study",
             "StudyModel",
             "StudyParticipant",
+            "TensorContentRef",
+            "TensorContentStorePort",
             "TrialBudget",
+            "bind_execution_fork",
+            "fork_environment_session",
+            "replay_environment_prefix",
             "environment_action_capability_payload",
             "environment_branch_action_spec",
             "environment_fork_action_payload",
@@ -1240,7 +1300,7 @@
       "canonical_authority": null,
       "downstream_surface": "public",
       "facade_module": "noetrium.contracts.systems.research_os",
-      "interface_digest": "9ff723b65211ce923db6fb7c486578081b20c2795c03dc54990e659bb6ddfc49",
+      "interface_digest": "f1e3b2abfede6d7aec3847ad0252e250e05f479e291485fa0709e1ddf32da191",
       "must_not_own": "domain authority, scientific execution truth, provider state or duplicated evidence",
       "node_kind": "product_surface",
       "owns": "single downstream research authoring, revision, graph-control and live-intervention product surface",

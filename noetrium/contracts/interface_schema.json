@@ -1,6 +1,6 @@
 {
   "generator": "scripts/generate_interface_schemas.py",
-  "interface_digest": "221cbad0a5cb31d7b20bce88e9316beb179913874a5f6c05cb44d660de538ccf",
+  "interface_digest": "e34708e7250d8063a7bc870b19c54a7e34d1ae8b2cf84858f27b83c18ed3dae4",
   "interface_schema": {
     "description": "Generated signatures, annotations, class members, decorators, docs and re-export provenance for every public API symbol.",
     "schema_id": "noetrium.interface-schema",
@@ -704,6 +704,69 @@
             {
               "doc": null,
               "kind": "reexport",
+              "name": "EnvironmentForkReceipt",
+              "origin_module": "..research_authoring",
+              "origin_name": "EnvironmentForkReceipt",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "reexport",
+              "name": "EnvironmentReplayError",
+              "origin_module": "..research_authoring",
+              "origin_name": "EnvironmentReplayError",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "reexport",
+              "name": "EnvironmentReplayReceipt",
+              "origin_module": "..research_authoring",
+              "origin_name": "EnvironmentReplayReceipt",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "reexport",
+              "name": "EnvironmentSessionOpener",
+              "origin_module": "..research_authoring",
+              "origin_name": "EnvironmentSessionOpener",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "reexport",
+              "name": "ExecutionForkReceipt",
+              "origin_module": "..research_authoring",
+              "origin_name": "ExecutionForkReceipt",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "reexport",
+              "name": "ExecutionSourceCut",
+              "origin_module": "..research_authoring",
+              "origin_name": "ExecutionSourceCut",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "reexport",
+              "name": "ExecutionStateAnchor",
+              "origin_module": "..research_authoring",
+              "origin_name": "ExecutionStateAnchor",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "reexport",
               "name": "EnvironmentConcern",
               "origin_module": "..research_authoring",
               "origin_name": "EnvironmentConcern",
@@ -1262,9 +1325,54 @@
             {
               "doc": null,
               "kind": "reexport",
+              "name": "TensorContentRef",
+              "origin_module": "..research_authoring",
+              "origin_name": "TensorContentRef",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "reexport",
+              "name": "TensorContentStorePort",
+              "origin_module": "..research_authoring",
+              "origin_name": "TensorContentStorePort",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "reexport",
               "name": "TrialBudget",
               "origin_module": "..research_authoring",
               "origin_name": "TrialBudget",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "reexport",
+              "name": "bind_execution_fork",
+              "origin_module": "..research_authoring",
+              "origin_name": "bind_execution_fork",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "reexport",
+              "name": "fork_environment_session",
+              "origin_module": "..research_authoring",
+              "origin_name": "fork_environment_session",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "reexport",
+              "name": "replay_environment_prefix",
+              "origin_module": "..research_authoring",
+              "origin_name": "replay_environment_prefix",
               "schema_id": "noetrium.interface-schema",
               "schema_version": "1"
             },
@@ -1401,6 +1509,13 @@
             "EmbodiedEventKind",
             "EmbodimentKind",
             "EmbodimentSpec",
+            "EnvironmentForkReceipt",
+            "EnvironmentReplayError",
+            "EnvironmentReplayReceipt",
+            "EnvironmentSessionOpener",
+            "ExecutionForkReceipt",
+            "ExecutionSourceCut",
+            "ExecutionStateAnchor",
             "EnvironmentConcern",
             "EnvironmentProgramBuilder",
             "EnvironmentSession",
@@ -1463,7 +1578,12 @@
             "Study",
             "StudyModel",
             "StudyParticipant",
+            "TensorContentRef",
+            "TensorContentStorePort",
             "TrialBudget",
+            "bind_execution_fork",
+            "fork_environment_session",
+            "replay_environment_prefix",
             "environment_action_capability_payload",
             "environment_branch_action_spec",
             "environment_fork_action_payload",
