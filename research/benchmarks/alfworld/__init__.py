@@ -14,7 +14,11 @@ from .authority import (
     ALFWORLD_TEXTWORLD_REPOSITORY,
     ALFWORLD_TEXT_RUNTIME_AUTHORITY_DIGEST,
 )
-from .materializer import AlfworldMaterialization, materialize_alfworld_paper_eval
+from .materializer import (
+    AlfworldMaterialization,
+    materialize_alfworld_paper_eval,
+    register_alfworld_materialization,
+)
 from .cut import (
     ALFWORLD_BENCHMARK_ID,
     ALFWORLD_PAPER_EVAL_DATASET_PATH,
@@ -52,6 +56,7 @@ __all__ = [
     "ALFWORLD_TEXT_RUNTIME_AUTHORITY_DIGEST",
     "AlfworldMaterialization",
     "materialize_alfworld_paper_eval",
+    "register_alfworld_materialization",
     "ALFWORLD_BENCHMARK_ID",
     "ALFWORLD_PAPER_EVAL_DATASET_PATH",
     "ALFWORLD_PAPER_EVAL_EXPECTED_TASK_COUNT",
