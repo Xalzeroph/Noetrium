@@ -29,6 +29,7 @@ export interface RunBinding {
   kernel_abi_version: string;
   machine_implementation_digest: string;
   program_digest: string;
+  program_lock_digest: string;
   capability_provider_versions: readonly (readonly [string, string])[];  schema_versions: readonly string[];
   environment_version: string;
   policy_version: string;
@@ -100,7 +101,9 @@ export async function bindingIdentity(binding: Omit<RunBinding, "binding_digest"
   return sha256Hex({
     kernel_abi_version: binding.kernel_abi_version,
     machine_implementation_digest: binding.machine_implementation_digest,
-    program_digest: binding.program_digest,    capability_provider_versions: binding.capability_provider_versions,
+    program_digest: binding.program_digest,
+    program_lock_digest: binding.program_lock_digest,
+    capability_provider_versions: binding.capability_provider_versions,
     schema_versions: binding.schema_versions,
     environment_version: binding.environment_version,
     policy_version: binding.policy_version,
