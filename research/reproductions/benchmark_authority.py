@@ -16,8 +16,10 @@ from typing import get_type_hints
 from noetrium_platform.foundation.kernel.kernel import canonical_digest
 from noetrium_platform.foundation.kernel.kernel.durability import sha256_file
 from noetrium_platform.research.experimentation.lifecycle.api import (
-    BenchmarkResolutionRegistry,
     BenchmarkSourceResolution,
+)
+from noetrium_platform.research.experimentation.lifecycle.study.api import (
+    BenchmarkResolutionRegistry,
 )
 
 from .contracts import ReproductionDefinition
