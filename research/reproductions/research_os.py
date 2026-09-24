@@ -8,14 +8,20 @@ current top-level ResearchProgram/ResearchPortfolio model.
 
 from __future__ import annotations
 
-from dataclasses import dataclass
-from enum import StrEnum
+from collections.abc import Mapping
+from dataclasses import dataclass, field
+from enum import Enum, StrEnum
 import importlib
 import inspect
 from pathlib import Path, PurePosixPath
+from typing import get_type_hints
 
 from noetrium import api
-from noetrium_platform.foundation.kernel.kernel import canonical_digest
+from noetrium_platform.foundation.kernel.kernel import (
+    JsonValue,
+    canonical_digest,
+    freeze_json,
+)
 from noetrium_platform.research.execution.machines.api import (
     ResearchProgram as MachineResearchProgram,
 )
@@ -95,6 +101,71 @@ _EXECUTION_REQUIREMENT_KIND_BY_PARAMETER = {
     "interpretation": ReproductionExecutionRequirementKind.PAPER_OPTION,
     "sampling_frame_number": ReproductionExecutionRequirementKind.PAPER_OPTION,
 }
+
+
+@dataclass(frozen=True, slots=True)
+class ReproductionExecutionBinding:
+    """Exact values selecting one executable reproduction lane."""
+
+    package: str
+    binding_id: str
+    study_factory: str
+    benchmark_id: str
+    values: Mapping[str, JsonValue]
+    requirement_digests: tuple[str, ...]
+    binding_digest: str = field(init=False)
+
+    def __post_init__(self) -> None:
+        for field_name, value in (
+            ("package", self.package),
+            ("binding_id", self.binding_id),
+            ("study_factory", self.study_factory),
+            ("benchmark_id", self.benchmark_id),
+        ):
+            if type(value) is not str or not value.strip() or value != value.strip():
+                raise ValueError(
+                    f"reproduction execution binding {field_name} must be canonical text"
+                )
+        if not isinstance(self.values, Mapping):
+            raise TypeError("reproduction execution binding values must be a mapping")
+        frozen_values = freeze_json(
+            {
+                key: self.values[key]
+                for key in sorted(self.values)
+            }
+        )
+        if not isinstance(frozen_values, Mapping):
+            raise TypeError("reproduction execution binding values must freeze to object")
+        if type(self.requirement_digests) is not tuple:
+            raise TypeError(
+                "reproduction execution binding requirement_digests must be tuple"
+            )
+        digests = tuple(sorted(self.requirement_digests))
+        if len(digests) != len(set(digests)) or any(
+            type(value) is not str
+            or len(value) != 64
+            or any(ch not in "0123456789abcdef" for ch in value)
+            for value in digests
+        ):
+            raise ValueError(
+                "reproduction execution binding requirement digests must be unique SHA-256"
+            )
+        object.__setattr__(self, "values", frozen_values)
+        object.__setattr__(self, "requirement_digests", digests)
+        object.__setattr__(
+            self,
+            "binding_digest",
+            canonical_digest(
+                {
+                    "package": self.package,
+                    "binding_id": self.binding_id,
+                    "study_factory": self.study_factory,
+                    "benchmark_id": self.benchmark_id,
+                    "values": frozen_values,
+                    "requirement_digests": digests,
+                }
+            ),
+        )
 
 
 @dataclass(frozen=True, slots=True)
@@ -388,6 +459,248 @@ def resolve_execution_requirements(
             )
         )
     return tuple(rows)
+
+
+def _requirements_for_study(
+    definition: ReproductionDefinition,
+    study_factory: str,
+) -> tuple[ReproductionExecutionRequirement, ...]:
+    studies = resolve_study_factory_bindings(definition)
+    if study_factory not in {row.qualname for row in studies}:
+        raise ReproductionResearchOSCompileError(
+            f"{definition.package} has no Study factory {study_factory!r}"
+        )
+    study_consumer = f"study:{study_factory}"
+    return tuple(
+        requirement
+        for requirement in resolve_execution_requirements(definition)
+        if study_consumer in requirement.consumers
+        or any(
+            consumer.startswith("method:")
+            for consumer in requirement.consumers
+        )
+    )
+
+
+def _validate_requirement_value(
+    requirement: ReproductionExecutionRequirement,
+    value: JsonValue,
+) -> None:
+    if requirement.kind in {
+        ReproductionExecutionRequirementKind.BENCHMARK_SPLIT,
+        ReproductionExecutionRequirementKind.CAPABILITY_ID,
+    }:
+        if type(value) is not str or not value.strip():
+            raise ValueError(
+                f"{requirement.package} execution parameter "
+                f"{requirement.parameter} must be non-empty text"
+            )
+        return
+    if requirement.kind is ReproductionExecutionRequirementKind.CAPABILITY_CLOSURE:
+        if type(value) is not tuple or not value:
+            raise ValueError(
+                f"{requirement.package} capability closure "
+                f"{requirement.parameter} must be a non-empty sequence"
+            )
+        if (
+            any(type(row) is not str or not row.strip() for row in value)
+            or len(value) != len(set(value))
+        ):
+            raise ValueError(
+                f"{requirement.package} capability closure "
+                f"{requirement.parameter} must contain unique canonical text"
+            )
+        return
+    if requirement.kind is ReproductionExecutionRequirementKind.PAPER_OPTION:
+        if isinstance(value, Mapping) or type(value) is tuple or value is None:
+            raise ValueError(
+                f"{requirement.package} paper option {requirement.parameter} "
+                "must be a finite JSON scalar"
+            )
+        return
+    raise TypeError("unsupported reproduction execution requirement kind")
+
+
+def bind_reproduction_execution(
+    definition: ReproductionDefinition,
+    *,
+    binding_id: str,
+    study_factory: str,
+    benchmark_id: str,
+    values: Mapping[str, object],
+) -> ReproductionExecutionBinding:
+    """Bind exactly one Study lane; missing/extra values fail closed."""
+
+    if type(definition) is not ReproductionDefinition:
+        raise TypeError("reproduction execution binding requires definition")
+    if benchmark_id not in definition.catalog.benchmark_ids:
+        raise ReproductionResearchOSCompileError(
+            f"{definition.package} benchmark {benchmark_id!r} is outside paper catalog"
+        )
+    if not isinstance(values, Mapping):
+        raise TypeError("reproduction execution values must be a mapping")
+    frozen = freeze_json({key: values[key] for key in sorted(values)})
+    if not isinstance(frozen, Mapping):
+        raise TypeError("reproduction execution values must freeze to object")
+
+    requirements = _requirements_for_study(definition, study_factory)
+    expected = tuple(row.parameter for row in requirements)
+    actual = tuple(sorted(frozen))
+    if actual != expected:
+        raise ReproductionResearchOSCompileError(
+            f"{definition.package} execution binding value set drifted: "
+            f"expected={expected}, actual={actual}"
+        )
+    for requirement in requirements:
+        _validate_requirement_value(
+            requirement,
+            frozen[requirement.parameter],
+        )
+
+    method_assets = tuple(
+        row
+        for row in definition.assets
+        if row.kind is ReproductionAssetKind.METHOD_PROGRAM
+    )
+    if method_assets:
+        method = resolve_method_program_binding(definition)
+        if method.factory is not None:
+            module = importlib.import_module(method.module)
+            factory = getattr(module, method.qualname)
+            signature = inspect.signature(factory)
+            bound = signature.bind_partial(
+                *method.factory.args,
+                **dict(method.factory.kwargs),
+            )
+            for parameter, value in frozen.items():
+                if parameter not in signature.parameters:
+                    continue
+                if parameter in bound.arguments:
+                    if canonical_digest(bound.arguments[parameter]) != canonical_digest(value):
+                        raise ReproductionResearchOSCompileError(
+                            f"{definition.package} Study/Method binding disagrees for "
+                            f"{parameter}"
+                        )
+
+    return ReproductionExecutionBinding(
+        definition.package,
+        binding_id,
+        study_factory,
+        benchmark_id,
+        frozen,
+        tuple(row.requirement_digest for row in requirements),
+    )
+
+
+def _coerce_study_value(annotation: object, value: JsonValue) -> object:
+    if (
+        inspect.isclass(annotation)
+        and issubclass(annotation, Enum)
+        and type(value) in {str, int}
+    ):
+        return annotation(value)
+    return value
+
+
+def materialize_reproduction_study(
+    definition: ReproductionDefinition,
+    binding: ReproductionExecutionBinding,
+    benchmark: BenchmarkTaskSet,
+) -> ResearchStudyDefinition:
+    """Materialize the exact Study selected by one execution binding."""
+
+    if type(definition) is not ReproductionDefinition:
+        raise TypeError("reproduction Study materialization requires definition")
+    if type(binding) is not ReproductionExecutionBinding:
+        raise TypeError("reproduction Study materialization requires binding")
+    if binding.package != definition.package:
+        raise ValueError("reproduction Study binding package drifted")
+    if not isinstance(benchmark, BenchmarkTaskSet):
+        raise TypeError("reproduction Study materialization requires BenchmarkTaskSet")
+    if benchmark.benchmark_id != binding.benchmark_id:
+        raise ValueError(
+            "reproduction Study benchmark identity drifted from execution binding"
+        )
+
+    study = next(
+        (
+            row
+            for row in resolve_study_factory_bindings(definition)
+            if row.qualname == binding.study_factory
+        ),
+        None,
+    )
+    if study is None:
+        raise ReproductionResearchOSCompileError(
+            f"{definition.package} Study binding no longer resolves"
+        )
+    module = importlib.import_module(study.module)
+    factory = getattr(module, study.qualname)
+    hints = get_type_hints(factory)
+    kwargs: dict[str, object] = {
+        study.benchmark_parameter: benchmark,
+    }
+    for requirement in _requirements_for_study(definition, study.qualname):
+        if f"study:{study.qualname}" not in requirement.consumers:
+            continue
+        kwargs[requirement.parameter] = _coerce_study_value(
+            hints.get(requirement.parameter, inspect.Signature.empty),
+            binding.values[requirement.parameter],
+        )
+    try:
+        materialized = factory(**kwargs)
+    except Exception as exc:
+        raise ReproductionResearchOSCompileError(
+            f"{definition.package} bound Study factory failed to materialize: "
+            f"{study.qualname}"
+        ) from exc
+    if type(materialized) is not ResearchStudyDefinition:
+        raise ReproductionResearchOSCompileError(
+            f"{definition.package} bound Study factory returned wrong type"
+        )
+    return materialized
+
+
+def materialize_reproduction_method_program(
+    definition: ReproductionDefinition,
+    binding: ReproductionExecutionBinding,
+) -> api.ResearchMethodProgramImplementation | None:
+    """Resolve the exact MethodProgram identity for one bound execution lane."""
+
+    method_assets = tuple(
+        row
+        for row in definition.assets
+        if row.kind is ReproductionAssetKind.METHOD_PROGRAM
+    )
+    if not method_assets:
+        return None
+    method = resolve_method_program_binding(definition)
+    if method.binding_kind == "symbol":
+        return api.ResearchMethodProgramImplementation.from_symbol(
+            "method",
+            module=method.module,
+            qualname=method.qualname,
+        )
+    assert method.factory is not None
+    merged_kwargs = dict(method.factory.kwargs)
+    for requirement in _requirements_for_study(
+        definition,
+        binding.study_factory,
+    ):
+        if any(
+            consumer == f"method:{method.qualname}"
+            for consumer in requirement.consumers
+        ):
+            merged_kwargs[requirement.parameter] = binding.values[
+                requirement.parameter
+            ]
+    return api.ResearchMethodProgramImplementation.from_factory(
+        "method",
+        module=method.module,
+        qualname=method.qualname,
+        args=method.factory.args,
+        kwargs=merged_kwargs,
+    )
 
 
 def resolve_method_program_binding(
@@ -866,18 +1179,22 @@ def compile_reproduction_portfolio(
 
 
 __all__ = [
+    "ReproductionExecutionBinding",
     "ReproductionExecutionRequirement",
     "ReproductionExecutionRequirementKind",
     "ReproductionMachineProgramBinding",
     "ReproductionMethodProgramBinding",
     "ReproductionStudyFactoryBinding",
     "ReproductionResearchOSCompileError",
+    "bind_reproduction_execution",
     "compile_reproduction_portfolio",
     "compile_reproduction_research_program",
     "compile_repository_reproduction_portfolio",
     "discover_reproduction_definitions",
     "executable_reproduction_definitions",
     "is_research_os_executable",
+    "materialize_reproduction_method_program",
+    "materialize_reproduction_study",
     "resolve_execution_requirements",
     "resolve_method_program_binding",
     "resolve_study_factory_bindings",
