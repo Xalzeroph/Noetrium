@@ -30,6 +30,7 @@ class ExactServiceSupervisor:
     ) -> None:
         observation = ServiceObservationCoordinator(store, adapter, start_journal)
         transitions = ServiceStateTransitionWriter(store)
+        self._store = store
         self._observation = observation
         self._start = ServiceStartCoordinator(store, adapter, start_journal)
         self._stop = ServiceStopCoordinator(observation, adapter, transitions)
@@ -45,10 +46,16 @@ class ExactServiceSupervisor:
         return self._observation.unresolved_start(contract)
 
     def start_exact(self, contract: ServiceLaunchContract) -> ServiceStartReport:
-        return self._start.start_exact(contract)
+        with self._store.mutation():
+            return self._start.start_exact(contract)
 
-    def stop_exact(self, contract: ServiceLaunchContract) -> ServiceSupervisorState:
-        return self._stop.stop_exact(contract)
+    def stop_exact(
+        self,
+        contract: ServiceLaunchContract,
+        expected_process: ServiceProcessIdentity,
+    ) -> ServiceSupervisorState:
+        with self._store.mutation():
+            return self._stop.stop_exact(contract, expected_process)
 
     def prepare_unexpected_exit(
         self,
@@ -62,7 +69,8 @@ class ExactServiceSupervisor:
         contract: ServiceLaunchContract,
         report: ServiceCrashReport,
     ) -> ServiceSupervisorState:
-        return self._crash.commit_clean_exit(contract, report)
+        with self._store.mutation():
+            return self._crash.commit_clean_exit(contract, report)
 
     def commit_handoff_transition(
         self,
@@ -74,14 +82,15 @@ class ExactServiceSupervisor:
         stderr_capture_ref: str,
         failure_id: str | None = None,
     ) -> ServiceSupervisorState:
-        return self._crash.commit_handoff_transition(
-            contract,
-            process=process,
-            exit_class=exit_class,
-            stdout_capture_ref=stdout_capture_ref,
-            stderr_capture_ref=stderr_capture_ref,
-            failure_id=failure_id,
-        )
+        with self._store.mutation():
+            return self._crash.commit_handoff_transition(
+                contract,
+                process=process,
+                exit_class=exit_class,
+                stdout_capture_ref=stdout_capture_ref,
+                stderr_capture_ref=stderr_capture_ref,
+                failure_id=failure_id,
+            )
 
 
 __all__ = ["ExactServiceSupervisor"]
