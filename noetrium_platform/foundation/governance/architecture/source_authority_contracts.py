@@ -25,6 +25,7 @@ class SourceAuthorityRule:
     primitive: str
     allowed_modules: tuple[str, ...]
     matches: AuthorityMatcher
+    protect_reference: bool = False
 
 
 __all__ = ["AuthorityMatcher", "SourceAuthorityRule", "SourceAuthorityViolation"]
