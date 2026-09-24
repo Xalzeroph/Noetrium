@@ -120,6 +120,21 @@ class SourceAuthorityV123Tests(unittest.TestCase):
             self.assertEqual(findings[0].authority, "storage.sqlite_connection")
             self.assertEqual(findings[0].module, "components.reference.rogue")
 
+    def test_platform_research_runtime_cannot_bypass_concurrency_authority(self):
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            target = root / "research" / "runtime"
+            target.mkdir(parents=True)
+            (target / "rogue.py").write_text(
+                "from concurrent.futures import ThreadPoolExecutor\n\n"
+                "def build():\n    return ThreadPoolExecutor(max_workers=2)\n",
+                encoding="utf-8",
+            )
+            findings = audit_source_authorities(root)
+            self.assertEqual(len(findings), 1)
+            self.assertEqual(findings[0].authority, "concurrency.thread_pool")
+            self.assertEqual(findings[0].module, "research.runtime.rogue")
+
     def test_public_noetrium_package_cannot_bypass_kernel_authority(self):
         with tempfile.TemporaryDirectory() as td:
             root = Path(td)
