@@ -93,6 +93,11 @@
         ],
         "parameters": [
           {
+            "name": "node_linux_x64_sha256",
+            "environment_variable": "NODE_LINUX_X64_SHA256",
+            "default": "88fd1ce767091fd8d4a99fdb2356e98c819f93f3b1f8663853a2dee9b438068a"
+          },
+          {
             "name": "node_version",
             "environment_variable": "NODE_VERSION",
             "default": "22.22.2"
