@@ -36,28 +36,27 @@ class _RenewingAllocations:
             lease_expires_at_epoch_s=100.0,
         )
 
-    def renew(self, allocation_id: str, *, ttl_seconds: float | None = None) -> EndpointAllocation:
-        return self.renew_many((allocation_id,), ttl_seconds=ttl_seconds)[0]
+    def renew(self, allocation: EndpointAllocation, *, ttl_seconds: float | None = None) -> EndpointAllocation:
+        return self.renew_many((allocation,), ttl_seconds=ttl_seconds)[0]
 
-    def renew_many(self, allocation_ids: tuple[str, ...], *, ttl_seconds: float | None = None) -> tuple[EndpointAllocation, ...]:
+    def renew_many(self, allocations: tuple[EndpointAllocation, ...], *, ttl_seconds: float | None = None) -> tuple[EndpointAllocation, ...]:
         self.calls += 1
         self.renewed.set()
         if self.fail:
             raise RuntimeError("renew failed")
         return tuple(
             replace(
-                self.value,
-                allocation_id=allocation_id,
-                lease_expires_at_epoch_s=(self.value.lease_expires_at_epoch_s or 0) + 1,
+                allocation,
+                lease_expires_at_epoch_s=(allocation.lease_expires_at_epoch_s or 0) + 1,
             )
-            for allocation_id in allocation_ids
+            for allocation in allocations
         )
 
     def allocate(self, request):  # pragma: no cover - not used
         return self.value
 
-    def release(self, allocation_id: str):  # pragma: no cover - not used
-        return replace(self.value, state=EndpointAllocationState.RELEASED)
+    def release(self, allocation: EndpointAllocation):  # pragma: no cover - not used
+        return replace(allocation, state=EndpointAllocationState.RELEASED)
 
     def get(self, allocation_id: str):  # pragma: no cover - not used
         return self.value
@@ -84,7 +83,7 @@ def test_endpoint_lease_heartbeat_renews_until_closed() -> None:
     group = runtime.open_task_group("heartbeat-test")
     guard = EndpointLeaseHeartbeatGuard(
         allocations=allocations,
-        allocation_ids=("a",),
+        allocation_rows=(allocations.value,),
         task_group=group,
         heartbeat_scheduler=runtime.heartbeats,
         lane_id="endpoint-lease-writer",
@@ -109,7 +108,7 @@ def test_endpoint_lease_heartbeat_failure_is_fail_closed() -> None:
     group = runtime.open_task_group("heartbeat-failure-test")
     guard = EndpointLeaseHeartbeatGuard(
         allocations=allocations,
-        allocation_ids=("a",),
+        allocation_rows=(allocations.value,),
         task_group=group,
         heartbeat_scheduler=runtime.heartbeats,
         lane_id="endpoint-lease-writer-failure",
@@ -120,7 +119,9 @@ def test_endpoint_lease_heartbeat_failure_is_fail_closed() -> None:
     assert allocations.renewed.wait(timeout=1)
     with pytest.raises(EndpointLeaseHeartbeatError, match="renew failed"):
         guard.assert_healthy()
-    with pytest.raises(EndpointLeaseHeartbeatError, match="renew failed"):
-        guard.close()
+    guard.close()
+    heartbeat = runtime.topology_snapshot().heartbeats[0]
+    assert heartbeat.active is False
+    assert heartbeat.failure_type is not None
     with pytest.raises(ExceptionGroup):
         runtime.close()
