@@ -371,6 +371,7 @@ class DockerContainerLeaseAuthority:
         ):
             released_lease = self.leases.release(
                 lease.lease_id,
+                fencing_token=lease.fencing_token,
                 now=now_epoch_s,
             )
             if released_lease.state is not LeaseState.RELEASED:
