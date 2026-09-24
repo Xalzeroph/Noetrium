@@ -1,7 +1,8 @@
 from __future__ import annotations
 
+from noetrium_platform.foundation.kernel.kernel.durability import sha256_bytes
+
 from dataclasses import dataclass
-import hashlib
 import json
 import math
 
@@ -52,4 +53,4 @@ class PromptSpec:
             "max_output_tokens": self.max_output_tokens,
             "text": self.compile(),
         }
-        return hashlib.sha256(json.dumps(payload, sort_keys=True, ensure_ascii=False).encode()).hexdigest()
+        return sha256_bytes(json.dumps(payload, sort_keys=True, ensure_ascii=False).encode())
