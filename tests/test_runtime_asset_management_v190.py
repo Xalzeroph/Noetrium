@@ -3,6 +3,8 @@ from __future__ import annotations
 from pathlib import Path
 from tempfile import TemporaryDirectory
 import unittest
+
+import pytest
 from unittest.mock import patch
 
 from noetrium_platform.foundation.scope.api import PLATFORM_SCOPE
@@ -877,3 +879,63 @@ def test_model_remove_and_restart_require_physical_stop_convergence() -> None:
             models.deployment_catalog.deployment("d").desired_state
             is ModelDesiredState.STOPPED
         )
+
+
+def test_stale_model_generation_cannot_stop_or_remove_replacement_process() -> None:
+    with TemporaryDirectory() as td:
+        root = Path(td)
+        directories = build_local_directory_authorities(layout(root))
+        environments = build_environments(directories)
+        environments.lifecycle.create(
+            PythonEnvironmentSpec("serve", PLATFORM_SCOPE, backend="fake")
+        )
+        model_dir = root / "model"
+        model_dir.mkdir()
+        factory = FakeFactory()
+        models = build_models(directories, environments, factory)
+        models.assets.register_model("m", PLATFORM_SCOPE, model_dir)
+
+        base = ModelDeploymentSpec(
+            deployment_id="d",
+            service_id="model:d",
+            model_id="m",
+            engine="custom",
+            scope=PLATFORM_SCOPE,
+            executable="{python}",
+            argv=("{python}", "-m", "server", "--port", "8000"),
+            cwd=root,
+            python_environment_id="serve",
+        )
+        models.deployment_catalog.put_deployment(base)
+        models.deployment_runtime.start(
+            models.deployment_runtime.generation("d")
+        )
+        stale_running_generation = models.deployment_runtime.generation("d")
+
+        replacement = ModelDeploymentSpec(
+            deployment_id="d",
+            service_id="model:d",
+            model_id="m",
+            engine="custom",
+            scope=PLATFORM_SCOPE,
+            executable="{python}",
+            argv=("{python}", "-m", "server", "--port", "9000"),
+            cwd=root,
+            python_environment_id="serve",
+            desired_state=ModelDesiredState.RUNNING,
+        )
+        models.deployment_catalog.put_deployment(replacement)
+        reconciled = models.fleet.reconcile()[0]
+        self_running = models.deployment_runtime.status("d")
+        assert reconciled.runtime_state is ModelRuntimeState.RUNNING
+        assert self_running.runtime_state is ModelRuntimeState.RUNNING
+        replacement_generation = models.deployment_runtime.generation("d")
+        assert replacement_generation != stale_running_generation
+
+        with pytest.raises(RuntimeError, match="stale model deployment generation"):
+            models.deployment_runtime.shutdown(stale_running_generation)
+        with pytest.raises(RuntimeError, match="stale model deployment generation"):
+            models.deployment_runtime.remove_deployment(stale_running_generation)
+
+        assert models.deployment_runtime.generation("d") == replacement_generation
+        assert models.deployment_runtime.status("d").runtime_state is ModelRuntimeState.RUNNING
