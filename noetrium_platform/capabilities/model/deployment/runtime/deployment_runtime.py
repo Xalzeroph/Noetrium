@@ -50,7 +50,12 @@ class ModelDeploymentRuntime:
                     "already-running",
                 )
             if observation.process is not None:
-                runtime.stop_exact(applied.contract)
+                stopped = runtime.stop_exact(applied.contract)
+                if not stopped.stopped:
+                    raise RuntimeError(
+                        "existing model process did not stop before deployment replacement: "
+                        f"{deployment_id}"
+                    )
             self._applied_store.clear(deployment_id)
         runtime = self._service_factory.open(
             desired_contract,
@@ -115,7 +120,12 @@ class ModelDeploymentRuntime:
         return self._shutdown_applied(desired, deployment_id)
 
     def restart(self, deployment_id: str) -> ModelDeploymentStatus:
-        self.stop(deployment_id)
+        stopped = self.stop(deployment_id)
+        if stopped.runtime_state is not ModelRuntimeState.STOPPED:
+            raise RuntimeError(
+                "model deployment restart refused because the prior physical "
+                f"generation did not stop: {deployment_id}"
+            )
         return self.start(deployment_id)
 
     def status(self, deployment_id: str) -> ModelDeploymentStatus:
@@ -175,7 +185,12 @@ class ModelDeploymentRuntime:
 
     def remove_deployment(self, deployment_id: str) -> bool:
         if self._applied_store.read(deployment_id) is not None:
-            self.stop(deployment_id)
+            stopped = self.stop(deployment_id)
+            if stopped.runtime_state is not ModelRuntimeState.STOPPED:
+                raise RuntimeError(
+                    "model deployment removal refused because the physical "
+                    f"generation did not stop: {deployment_id}"
+                )
         return self._catalog.remove(deployment_id)
 
 
