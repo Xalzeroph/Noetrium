@@ -33,6 +33,7 @@ from noetrium_platform.composition.research_os_graph import (
 from noetrium_platform.foundation.kernel.kernel import canonical_digest
 from noetrium_platform.research.experimentation.api import (
     ResearchBindingContribution,
+    ResearchManifestRequirementsUnresolved,
     ResearchRequirementResolution,
 )
 from noetrium_platform.research.experimentation.lifecycle.api import (
@@ -580,7 +581,7 @@ def _research_binding_gap(
         )
 
     manifest = ResearchProjectManifestRequirement.from_study(study)
-    if isinstance(exc, ValueError):
+    if isinstance(exc, ResearchManifestRequirementsUnresolved):
         return ReproductionFleetAuthorityGap(
             stage="project_manifest",
             requirement_key=f"{study.project_id}:{study.study_id}",
