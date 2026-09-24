@@ -797,7 +797,7 @@
       "reproductions": [
         {
           "package": "self_consistency_gsm8k",
-          "package_digest": "17bdfea55a4b2cfa77bfc14f322c5768b3af8fc94a960a5a0e73cffb674d92a7",
+          "package_digest": "f516cc08736cda721086b914f9dae16e865496ad9033dc60e34f5d82238cadd6",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "gsm8k"
@@ -845,7 +845,7 @@
             },
             {
               "path": "tests/test_scientific_self_consistency_gsm8k_v1.py",
-              "content_sha256": "42ab85bba5f2e9a65822629c9279edae413acc068b30585e3f56c1a088c1e82d"
+              "content_sha256": "d6cc6e3617bc3696609c5dce02f75b5638e3d8140b5f2365a9a2ca234181a0f8"
             }
           ]
         }
@@ -3896,5 +3896,5 @@
       ]
     }
   ],
-  "projection_digest": "d6f34b580bd3be15da5e51a09967d42c2802779db2ab667c373b19928b0dfaa8"
+  "projection_digest": "0eed316667971e37cc27897e4e3281a3713c2e587d1fba482ff4e92bb6c5d68a"
 }
