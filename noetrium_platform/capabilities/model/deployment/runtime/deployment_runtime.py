@@ -126,7 +126,10 @@ class ModelDeploymentRuntime:
                     "model applied generation changed during physical stop: "
                     f"{desired.deployment_id}"
                 )
-            self._applied_store.clear(desired.deployment_id)
+            self._applied_store.clear(
+                desired.deployment_id,
+                expected_runtime_digest=applied.runtime_digest,
+            )
         return ModelDeploymentStatus(
             desired.deployment_id,
             desired.service_id,
@@ -189,7 +192,10 @@ class ModelDeploymentRuntime:
                         "model applied generation changed during replacement: "
                         f"{spec.deployment_id}"
                     )
-                self._applied_store.clear(spec.deployment_id)
+                self._applied_store.clear(
+                    spec.deployment_id,
+                    expected_runtime_digest=applied.runtime_digest,
+                )
 
             runtime = self._service_factory.open(
                 desired_contract,
