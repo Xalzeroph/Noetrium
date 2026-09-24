@@ -812,7 +812,7 @@ class ExecutionEnvironmentCatalog:
             )
         )
 
-    def profile_references(
+    def _profile_references_local(
         self,
         profile_id: str,
         profile_revision: str,
@@ -857,6 +857,13 @@ class ExecutionEnvironmentCatalog:
             blocking_ids,
         )
 
+    def profile_references(
+        self,
+        profile_id: str,
+        profile_revision: str,
+    ) -> EnvironmentProfileReferenceSummary:
+        return self._profile_references_local(profile_id, profile_revision)
+
     def assess_profile_gc(
         self,
         profile_id: str,
@@ -868,7 +875,7 @@ class ExecutionEnvironmentCatalog:
         return EnvironmentProfileGcAssessment(
             profile_id,
             profile_revision,
-            self.profile_references(profile_id, profile_revision),
+            self._profile_references_local(profile_id, profile_revision),
             (
                 None
                 if resumable_execution_ids is None
@@ -881,7 +888,7 @@ class ExecutionEnvironmentCatalog:
             ),
         )
 
-    def runtime_references(
+    def _runtime_references_local(
         self,
         profile_id: str,
         profile_revision: str,
@@ -929,6 +936,18 @@ class ExecutionEnvironmentCatalog:
             blocking_ids,
         )
 
+    def runtime_references(
+        self,
+        profile_id: str,
+        profile_revision: str,
+        runtime_identity_digest: str,
+    ) -> EnvironmentRuntimeReferenceSummary:
+        return self._runtime_references_local(
+            profile_id,
+            profile_revision,
+            runtime_identity_digest,
+        )
+
     def assess_runtime_gc(
         self,
         profile_id: str,
@@ -942,7 +961,7 @@ class ExecutionEnvironmentCatalog:
             profile_id,
             profile_revision,
             runtime_identity_digest,
-            self.runtime_references(
+            self._runtime_references_local(
                 profile_id,
                 profile_revision,
                 runtime_identity_digest,
