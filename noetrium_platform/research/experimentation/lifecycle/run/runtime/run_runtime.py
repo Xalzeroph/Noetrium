@@ -41,9 +41,9 @@ from noetrium_platform.research.execution.api import (
 from noetrium_platform.research.experimentation.lifecycle.checkpoint.api import (
     RunCheckpointCoordinatorPort,
 )
-from noetrium_platform.research.experimentation.lifecycle.experiment.api import (
+from noetrium_platform.research.experimentation.lifecycle.experiment.api import ExperimentSpec
+from noetrium_platform.research.experimentation.lifecycle.experiment.api.ports import (
     ExperimentComponentBindingPort,
-    ExperimentSpec,
     ExperimentTrialCycleExecutorPort,
 )
 from noetrium_platform.research.experimentation.lifecycle.run.api.identity import RunIdentity
