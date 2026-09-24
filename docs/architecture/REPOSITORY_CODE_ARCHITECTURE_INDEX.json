@@ -2,7 +2,7 @@
   "counts": {
     "parse_errors": 0,
     "python_files": 3655,
-    "python_import_edges": 7032,
+    "python_import_edges": 7031,
     "symbols": 4851,
     "tracked_files": 4284,
     "typescript_javascript_files": 11
@@ -32333,12 +32333,6 @@
     {
       "source_module": "tests.test_reproduction_research_os_coverage_v1",
       "source_role": "tests",
-      "target_module": "research.reproductions.contracts",
-      "target_role": "research_reproductions"
-    },
-    {
-      "source_module": "tests.test_reproduction_research_os_coverage_v1",
-      "source_role": "tests",
       "target_module": "research.reproductions.research_os",
       "target_role": "research_reproductions"
     },
@@ -32459,13 +32453,13 @@
     {
       "source_module": "tests.test_reproduction_top_level_authoring_v1",
       "source_role": "tests",
-      "target_module": "research.reproductions",
-      "target_role": "research_reproductions"
+      "target_module": "noetrium_platform.composition.research_os_graph",
+      "target_role": "core_platform"
     },
     {
       "source_module": "tests.test_reproduction_top_level_authoring_v1",
       "source_role": "tests",
-      "target_module": "research.reproductions.contracts",
+      "target_module": "research.reproductions",
       "target_role": "research_reproductions"
     },
     {
@@ -42269,7 +42263,7 @@
       "target_role": "research_reproductions"
     },
     {
-      "count": 2761,
+      "count": 2762,
       "source_role": "tests",
       "target_role": "core_platform"
     },
@@ -42289,7 +42283,7 @@
       "target_role": "reference_orchestration"
     },
     {
-      "count": 316,
+      "count": 314,
       "source_role": "tests",
       "target_role": "research_reproductions"
     },
@@ -42348,7 +42342,7 @@
     "tooling": 38
   },
   "schema": "noetrium-repository-code-architecture-index.v1",
-  "source_git_sha": "2359b27c0eeef2fdbe86a501c0fee4a7329a93c7",
+  "source_git_sha": "54e276cea47eb8aa500aecc2cdab16639f83a95e",
   "symbols": [
     {
       "bases": [],
