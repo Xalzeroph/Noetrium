@@ -43020,7 +43020,7 @@
     "tooling": 39
   },
   "schema": "noetrium-repository-code-architecture-index.v1",
-  "source_git_sha": "8b9a179242132363a8cffe990401c6a7a5eb5a81",
+  "source_git_sha": "adf6fcb9b33255a9fa2909f6677181c3f518ec3c",
   "symbols": [
     {
       "bases": [],
@@ -68067,6 +68067,7 @@
         "__init__",
         "reconcile",
         "shutdown_cleanup",
+        "recover_abandoned_owner_generation",
         "run"
       ],
       "module": "noetrium_platform.composition.resource_lifecycle",
@@ -136877,7 +136878,7 @@
       "language": "python",
       "line": 312,
       "methods": [
-        "reconcile"
+        "recover_abandoned_owner_generation"
       ],
       "module": "tests.test_managed_research_runtime_v1",
       "name": "StartupResources",
@@ -136937,7 +136938,7 @@
       "language": "python",
       "line": 336,
       "methods": [
-        "reconcile"
+        "recover_abandoned_owner_generation"
       ],
       "module": "tests.test_managed_research_runtime_v1",
       "name": "StartupResources",

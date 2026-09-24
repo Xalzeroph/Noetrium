@@ -42868,6 +42868,7 @@
         "__init__",
         "reconcile",
         "shutdown_cleanup",
+        "recover_abandoned_owner_generation",
         "run"
       ],
       "module": "noetrium_platform.composition.resource_lifecycle",
@@ -143769,7 +143770,7 @@
   "parse_errors": [],
   "registry_sha256": "d3fc1bab831f1b7379e5a36048a61c00fe173429df958270d36a16f3f00171c0",
   "schema": "noetrium-code-architecture-index.v1",
-  "source_git_sha": "8b9a179242132363a8cffe990401c6a7a5eb5a81",
+  "source_git_sha": "adf6fcb9b33255a9fa2909f6677181c3f518ec3c",
   "system_import_edges": [
     {
       "count": 85,
