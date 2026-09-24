@@ -16,6 +16,7 @@ from noetrium_platform.evidence.data.api import (
     ResearchResultReference,
     ResearchSourceDisposition,
     ResearchSourceSnapshot,
+    SemanticProjectionSnapshot,
     source_cut,
 )
 
@@ -245,6 +246,9 @@ __all__ = (
     "ScopeKind",
     "ScopeRegistryPort",
     "ScopedValue",
+    "SemanticSimilarityQueryPort",
+    "SemanticSimilarityQuery",
+    "SemanticProjectionSnapshot",
     "ServiceContractDrift",
     "ServiceEnvironmentPort",
     "ServiceHeartbeat",
