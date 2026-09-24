@@ -21,7 +21,7 @@
 
 <!-- readme-locale:ko -->
 
-<!-- readme-source-sha256:a9bd4d748e873475c1d79c09b05377525fa7c2a703c5cffe85a797db33d64c6a -->
+<!-- readme-source-sha256:f01787f87584f9d54263a9b036a1dae6cdba72a578f3976b0972352eec6376a4 -->
 
 <p align="center">
   <strong>연구 시스템을 구성하고, 귀속 가능한 실행을 수행하고, 증거를 검증하세요.</strong><br>
@@ -253,23 +253,45 @@ python scripts/check_readme_i18n.py
 
 <!-- readme-section:containers -->
 
-## 컨테이너 워크플로
+## 컨테이너 및 환경 워크플로
 
-재사용 가능한 Linux image와 Compose 정의는 `deploy/`에서 관리합니다.
+Noetrium은 실행 환경을 논문별 mutable container가 아니라 revisioned environment fleet으로 관리합니다. Host contract는 Docker + Compose뿐이며 host Python은 필요하지 않습니다.
 
 ```bash
-python scripts/build_environment_images.py validate
-python scripts/build_environment_images.py build --profiles text_world
+./deploy/build-environments.sh validate
+./deploy/build-environments.sh list
+./deploy/build-environments.sh build
 ```
 
-Deployment 계층은 immutable software와 mutable runtime state를 분리하고 host별 path와 secret을 commit된 composition code에 넣지 않습니다.
+환경 registry는 `deploy/environments/catalog.json`입니다. Builder는 환경 이름 집합을 하드코딩하지 않으며, 각 category는 하나의 active default revision을 갖습니다. 이전 revision은 draining / retired 상태로 유지되어 이미 pin된 execution과 historical recovery를 지원합니다.
+
+원칙은 **immutable content는 공유하고 mutable execution state는 전부 격리한다** 입니다.
+
+Noetrium base, environment image layer, content-addressed asset은 논문 간 재사용할 수 있습니다. 반면 workspace, tmp, runtime state, secret, process/network namespace, port, browser/world/application state는 execution별 private overlay입니다. Warm instance는 overlay를 제거했거나 provider가 명시적인 cleanliness proof를 제공한 경우에만 pool로 돌아갈 수 있습니다. 상태가 불확실하면 재사용하지 않고 폐기합니다.
+
+```text
+host substrate
+  -> evidence-bound Noetrium base
+  -> reusable environment capability profile
+  -> immutable content-addressed workload assets
+  -> private per-execution writable overlay
+  -> immutable artifacts / evidence / Machine Journal
+```
+
+Runtime identity는 `profile_id + profile_revision`으로 고정되고 `web`, `minecraft`, `gui`, `embodied`, `software`, `text_world` 같은 stable category와 분리됩니다. 새 revision이 active가 되어도 기존 execution이 조용히 새 image로 이동하지 않습니다.
+
+Retired는 logical delete입니다. 새 binding은 금지하지만 historical identity는 보존합니다. Active/resumable reference가 없고 retained evidence도 해당 revision에 의존하지 않을 때만 physical image/cache를 GC할 수 있습니다.
+
+Profile readiness는 중앙 switch가 아니라 image-local doctor hook으로 검증합니다. 새 환경 category는 registry row, image recipe, 필요한 Compose overlay, doctor hook만 추가하면 되며 중앙 deployment code 수정이 필요 없습니다.
+
+[Environment profile registry](deploy/environments/README.md)
 
 ### 내장 Minecraft Provider
 
-Minecraft는 first-party 재사용 environment Provider입니다. Task suite와 과학적 composition은 downstream에 둡니다.
+Minecraft는 first-party reusable environment capability profile입니다. Java, Node, Mineflayer prerequisites는 공유하고 benchmark world, task suite, paper method, writable world state는 downstream 또는 execution-private로 유지합니다.
 
 ```bash
-python scripts/build_environment_images.py build --profiles minecraft
+./deploy/build-environments.sh build --profiles minecraft
 ```
 
 [Minecraft infrastructure](docs/infrastructure/minecraft/README.md)
