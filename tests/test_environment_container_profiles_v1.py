@@ -7,6 +7,7 @@ from pathlib import Path
 from scripts.build_environment_images import (
     _default_active_profile_ids,
     _image_runtime_identity_digest,
+    _parse_profile_build_input_overrides,
     _profile_build_input_digest,
     _profile_map,
     _profile_revision,
@@ -25,7 +26,7 @@ def _catalog() -> dict:
 
 def test_environment_profile_registry_is_dynamic_and_lifecycle_driven() -> None:
     data = _catalog()
-    assert data["schema"] == "noetrium.environment-profile-registry.v2"
+    assert data["schema"] == "noetrium.environment-profile-registry.v3"
     profiles = data["profiles"]
     assert profiles
     profile_ids = [row["profile_id"] for row in profiles]
@@ -121,52 +122,115 @@ def test_environment_build_receipt_uses_concrete_content_addressed_runtime_ident
     builder = (ROOT / "scripts" / "build_environment_images.py").read_text(
         encoding="utf-8"
     )
-    assert '"schema": "noetrium.environment-image-build.v3"' in builder
+    assert '"schema": "noetrium.environment-image-build.v4"' in builder
     assert '"runtime_identity_digest"' in builder
 
 
 def test_environment_profile_build_input_changes_with_runtime_sources() -> None:
     web = {"profile_id": "web", "category_id": "web"}
+    empty_inputs = {"images": {}, "parameters": {}}
     first = _profile_build_input_digest(
         web,
         profile_revision="a" * 64,
         base_runtime_identity_digest="b" * 64,
-        java_runtime_identity_digest=None,
-        node_version="22.22.2",
+        resolved_build_inputs=empty_inputs,
     )
     changed_base = _profile_build_input_digest(
         web,
         profile_revision="a" * 64,
         base_runtime_identity_digest="c" * 64,
-        java_runtime_identity_digest=None,
-        node_version="22.22.2",
+        resolved_build_inputs=empty_inputs,
     )
     assert first != changed_base
 
     minecraft = {"profile_id": "minecraft", "category_id": "minecraft"}
+    mc_inputs = {
+        "images": {
+            "java_runtime": {
+                "runtime_identity_digest": "a" * 64,
+            }
+        },
+        "parameters": {
+            "node_version": {
+                "value": "22.22.2",
+            }
+        },
+    }
     mc_first = _profile_build_input_digest(
         minecraft,
         profile_revision="d" * 64,
         base_runtime_identity_digest="e" * 64,
-        java_runtime_identity_digest="a" * 64,
-        node_version="22.22.2",
+        resolved_build_inputs=mc_inputs,
     )
+    mc_java_changed_inputs = deepcopy(mc_inputs)
+    mc_java_changed_inputs["images"]["java_runtime"][
+        "runtime_identity_digest"
+    ] = "b" * 64
     mc_java_changed = _profile_build_input_digest(
         minecraft,
         profile_revision="d" * 64,
         base_runtime_identity_digest="e" * 64,
-        java_runtime_identity_digest="b" * 64,
-        node_version="22.22.2",
+        resolved_build_inputs=mc_java_changed_inputs,
     )
+    mc_node_changed_inputs = deepcopy(mc_inputs)
+    mc_node_changed_inputs["parameters"]["node_version"]["value"] = "22.23.0"
     mc_node_changed = _profile_build_input_digest(
         minecraft,
         profile_revision="d" * 64,
         base_runtime_identity_digest="e" * 64,
-        java_runtime_identity_digest="a" * 64,
-        node_version="22.23.0",
+        resolved_build_inputs=mc_node_changed_inputs,
     )
     assert mc_first != mc_java_changed
     assert mc_first != mc_node_changed
+
+
+def test_environment_profile_build_inputs_are_registry_driven() -> None:
+    data = _catalog()
+    minecraft = next(
+        row for row in data["profiles"] if row["profile_id"] == "minecraft"
+    )
+    inputs = minecraft["build_inputs"]
+    assert inputs["images"] == [
+        {
+            "name": "java_runtime",
+            "environment_variable": "JAVA_RUNTIME_IMAGE",
+            "canonical_image": "eclipse-temurin:21-jre-jammy",
+        }
+    ]
+    assert inputs["parameters"] == [
+        {
+            "name": "node_version",
+            "environment_variable": "NODE_VERSION",
+            "default": "22.22.2",
+        }
+    ]
+
+    builder = (ROOT / "scripts" / "build_environment_images.py").read_text(
+        encoding="utf-8"
+    )
+    assert 'row["category_id"] == "minecraft"' not in builder
+    assert "--java-runtime-image" not in builder
+    assert "--node-version" not in builder
+    assert "--build-input" in builder
+    assert "_resolve_profile_build_inputs" in builder
+    assert '"profile_build_inputs"' in builder
+
+
+def test_environment_profile_build_input_override_parser_fails_closed() -> None:
+    assert _parse_profile_build_input_overrides(
+        ("JAVA_RUNTIME_IMAGE=mirror/java@sha256:abc",)
+    ) == {
+        "JAVA_RUNTIME_IMAGE": "mirror/java@sha256:abc",
+    }
+
+    import pytest
+
+    with pytest.raises(ValueError, match="ENVIRONMENT_VARIABLE=value"):
+        _parse_profile_build_input_overrides(("not-an-assignment",))
+    with pytest.raises(ValueError, match="duplicate"):
+        _parse_profile_build_input_overrides(
+            ("NODE_VERSION=22.22.2", "NODE_VERSION=22.23.0")
+        )
 
 
 def test_environment_registry_declares_share_vs_isolate_policy() -> None:
@@ -284,9 +348,12 @@ def test_deployment_runtime_images_are_source_configurable_without_remote_fronte
     assert "FROM ${PYTHON_RUNTIME_IMAGE}" in base
     assert "--python-runtime-image" in builder
     assert "--python-runtime-canonical-image" in builder
-    assert "--java-runtime-image" in builder
-    assert "--java-runtime-canonical-image" in builder
-    assert '"runtime_image_sources"' in builder
+    assert "--build-input" in builder
+    assert "--java-runtime-image" not in builder
+    assert "--java-runtime-canonical-image" not in builder
+    assert "--node-version" not in builder
+    assert '"base_runtime_source"' in builder
+    assert '"profile_build_inputs"' in builder
     assert "PLATFORM_PYTHON_RUNTIME_IDENTITY_DIGEST" in builder
     assert "NOETRIUM_ENVIRONMENT_BUILD_INPUT_DIGEST" in builder
     assert "profile_revision" in builder
