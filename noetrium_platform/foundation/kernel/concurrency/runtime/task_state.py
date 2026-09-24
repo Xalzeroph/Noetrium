@@ -74,6 +74,24 @@ class _TaskStateAuthority:
             self._tasks[task_id] = record
             return record
 
+    def discard_unstarted(self, record: _TaskRecord) -> None:
+        """Forget a submission that never crossed the execution admission boundary."""
+        with self._lock:
+            current = self._tasks.get(record.task_id)
+            if current is not record:
+                raise RuntimeError(
+                    f"task record identity drift while discarding: {record.task_id}"
+                )
+            if (
+                record.state is not TaskState.PENDING
+                or record.raw_handle is not None
+                or record.deadline_handle is not None
+            ):
+                raise RuntimeError(
+                    f"cannot discard accepted/started task: {record.task_id}"
+                )
+            self._tasks.pop(record.task_id)
+
     def reserve_recurring(
         self,
         *,
