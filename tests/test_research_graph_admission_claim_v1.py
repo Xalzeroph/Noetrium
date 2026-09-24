@@ -1,6 +1,9 @@
 from __future__ import annotations
 
 from threading import Event
+from time import sleep
+
+import pytest
 
 from noetrium_platform.composition.research_execution_pool import ResearchExecutionPool
 from noetrium_platform.composition.research_graph import ResearchGraphScheduler
@@ -126,6 +129,69 @@ def test_resource_admission_precedes_claim_and_does_not_starve_lease_renewal(
     assert store.claim_in_flight == [1, 1]
     assert len(store.attempts("execution-admission-before-claim", "a")) == 1
     assert len(store.attempts("execution-admission-before-claim", "b")) == 1
+
+
+class _FailRenewStore(SQLiteResearchGraphExecutionStore):
+    def __init__(self, path) -> None:
+        super().__init__(path)
+        self.renew_attempted = Event()
+
+    def renew_leases(self, *args, **kwargs):
+        self.renew_attempted.set()
+        raise OSError("simulated durable lease renewal failure")
+
+
+class _CancellationAwareExecutor:
+    def __init__(self) -> None:
+        self.started = Event()
+        self.cancelled = Event()
+
+    def execute(self, context, node, *, deadline) -> None:
+        del node, deadline
+        self.started.set()
+        while True:
+            try:
+                context.checkpoint()
+            except BaseException:
+                self.cancelled.set()
+                raise
+            sleep(0.005)
+
+
+def test_durable_lease_heartbeat_failure_cancels_running_workload(
+    tmp_path,
+) -> None:
+    pool = _pool()
+    plan = ResearchGraphPlan(
+        "heartbeat-owner-loss",
+        canonical_digest({"revision": "heartbeat-owner-loss"}),
+        (
+            ResearchGraphNode(
+                "node",
+                canonical_digest({"node": "node"}),
+            ),
+        ),
+    )
+    store = _FailRenewStore(tmp_path / "heartbeat-owner-loss.sqlite3")
+    executor = _CancellationAwareExecutor()
+    scheduler = ResearchGraphScheduler(
+        plan,
+        executor,
+        execution_pool=pool,
+        execution_store=store,
+        execution_id="execution-heartbeat-owner-loss",
+        lease_seconds=0.12,
+    )
+    try:
+        with pytest.raises(BaseException):
+            scheduler.execute()
+    finally:
+        scheduler.close()
+        pool.close()
+
+    assert executor.started.is_set()
+    assert store.renew_attempted.is_set()
+    assert executor.cancelled.is_set()
 
 
 class _FailOnceStartStore(SQLiteResearchGraphExecutionStore):
