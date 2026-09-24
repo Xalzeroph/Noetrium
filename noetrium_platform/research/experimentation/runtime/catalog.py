@@ -5,7 +5,10 @@ import json
 from pathlib import Path
 import sqlite3
 
-from noetrium_platform.foundation.kernel.kernel.durability.sqlite import durable_sqlite_connection
+from noetrium_platform.foundation.kernel.kernel.durability.sqlite import (
+    begin_immediate_sqlite_transaction,
+    durable_sqlite_connection,
+)
 from noetrium_platform.research.experimentation.lifecycle.api import (
     ExperimentModelRoleSpec,
     ExperimentParticipantSpec,
@@ -138,7 +141,7 @@ class SQLiteExperimentationCatalog:
 
     def _insert(self, statement: str, values: tuple[object, ...]) -> None:
         with self._connection() as conn:
-            conn.execute("BEGIN IMMEDIATE")
+            begin_immediate_sqlite_transaction(conn, timeout_seconds=self.timeout_seconds)
             try:
                 conn.execute(statement, values)
                 conn.commit()
