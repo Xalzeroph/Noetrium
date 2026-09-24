@@ -1,15 +1,15 @@
 {
   "counts": {
     "parse_errors": 0,
-    "python_files": 3651,
-    "python_import_edges": 6953,
-    "symbols": 4844,
-    "tracked_files": 4280,
+    "python_files": 3653,
+    "python_import_edges": 6955,
+    "symbols": 4843,
+    "tracked_files": 4282,
     "typescript_javascript_files": 11
   },
   "language_symbol_counts": {
     "javascript": 1,
-    "python": 4838,
+    "python": 4837,
     "typescript": 5
   },
   "parse_errors": [],
@@ -4553,12 +4553,6 @@
     {
       "source_module": "noetrium_platform.composition.operator.project.project_doctor",
       "source_role": "core_platform",
-      "target_module": "noetrium_platform.product.api",
-      "target_role": "core_platform"
-    },
-    {
-      "source_module": "noetrium_platform.composition.operator.project.project_doctor",
-      "source_role": "core_platform",
       "target_module": "noetrium_platform.product.operator.api",
       "target_role": "core_platform"
     },
@@ -4625,12 +4619,6 @@
     {
       "source_module": "noetrium_platform.composition.operator.project.project_scaffold",
       "source_role": "core_platform",
-      "target_module": "noetrium_platform.product.api",
-      "target_role": "core_platform"
-    },
-    {
-      "source_module": "noetrium_platform.composition.operator.project.project_scaffold",
-      "source_role": "core_platform",
       "target_module": "noetrium_platform.product.operator.api",
       "target_role": "core_platform"
     },
@@ -4650,18 +4638,6 @@
       "source_module": "noetrium_platform.composition.operator.project.project_testing",
       "source_role": "core_platform",
       "target_module": "noetrium_platform.product.operator.api",
-      "target_role": "core_platform"
-    },
-    {
-      "source_module": "noetrium_platform.composition.operator.project.research_project_codegen",
-      "source_role": "core_platform",
-      "target_module": "noetrium_platform.foundation.kernel.kernel",
-      "target_role": "core_platform"
-    },
-    {
-      "source_module": "noetrium_platform.composition.operator.project.research_project_codegen",
-      "source_role": "core_platform",
-      "target_module": "noetrium_platform.product.api",
       "target_role": "core_platform"
     },
     {
@@ -13031,12 +13007,6 @@
     {
       "source_module": "noetrium_platform.product.operator.runtime.research_cli",
       "source_role": "core_platform",
-      "target_module": "noetrium_platform.product.api",
-      "target_role": "core_platform"
-    },
-    {
-      "source_module": "noetrium_platform.product.operator.runtime.research_cli",
-      "source_role": "core_platform",
       "target_module": "noetrium_platform.product.operator.api",
       "target_role": "core_platform"
     },
@@ -13062,12 +13032,6 @@
       "source_module": "noetrium_platform.product.reference.research_os",
       "source_role": "core_platform",
       "target_module": "noetrium_platform.product.research_os",
-      "target_role": "core_platform"
-    },
-    {
-      "source_module": "noetrium_platform.product.research_blueprint",
-      "source_role": "core_platform",
-      "target_module": "noetrium_platform.foundation.kernel.kernel",
       "target_role": "core_platform"
     },
     {
@@ -16983,6 +16947,24 @@
       "target_role": "research_reproductions"
     },
     {
+      "source_module": "research.reproductions.agent_q_surrogate.program",
+      "source_role": "research_reproductions",
+      "target_module": "noetrium_platform.capabilities.participant.method.api",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "research.reproductions.agent_q_surrogate.program",
+      "source_role": "research_reproductions",
+      "target_module": "noetrium_platform.foundation.kernel.kernel",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "research.reproductions.agent_q_surrogate.program",
+      "source_role": "research_reproductions",
+      "target_module": "noetrium_platform.research.execution.workflow.api",
+      "target_role": "core_platform"
+    },
+    {
       "source_module": "research.reproductions.agent_q_surrogate.source",
       "source_role": "research_reproductions",
       "target_module": "research.reproductions.provenance",
@@ -18289,6 +18271,24 @@
       "source_role": "research_reproductions",
       "target_module": "research.reproductions.provenance",
       "target_role": "research_reproductions"
+    },
+    {
+      "source_module": "research.reproductions.gats.program",
+      "source_role": "research_reproductions",
+      "target_module": "noetrium_platform.capabilities.participant.method.api",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "research.reproductions.gats.program",
+      "source_role": "research_reproductions",
+      "target_module": "noetrium_platform.foundation.kernel.kernel",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "research.reproductions.gats.program",
+      "source_role": "research_reproductions",
+      "target_module": "noetrium_platform.research.execution.workflow.api",
+      "target_role": "core_platform"
     },
     {
       "source_module": "research.reproductions.gats.source",
@@ -32001,6 +32001,18 @@
       "target_role": "research_reproductions"
     },
     {
+      "source_module": "tests.test_reproduction_research_os_repository_v1",
+      "source_role": "tests",
+      "target_module": "noetrium",
+      "target_role": "public_facade"
+    },
+    {
+      "source_module": "tests.test_reproduction_research_os_repository_v1",
+      "source_role": "tests",
+      "target_module": "research.reproductions.research_os",
+      "target_role": "research_reproductions"
+    },
+    {
       "source_module": "tests.test_research_campaign_v1",
       "source_role": "tests",
       "target_module": "noetrium_platform.foundation.kernel.concurrency.api",
@@ -41735,7 +41747,7 @@
   ],
   "role_import_counts": [
     {
-      "count": 2606,
+      "count": 2600,
       "source_role": "core_platform",
       "target_role": "core_platform"
     },
@@ -41780,7 +41792,7 @@
       "target_role": "public_facade"
     },
     {
-      "count": 618,
+      "count": 624,
       "source_role": "research_reproductions",
       "target_role": "core_platform"
     },
@@ -41800,7 +41812,7 @@
       "target_role": "core_platform"
     },
     {
-      "count": 23,
+      "count": 24,
       "source_role": "tests",
       "target_role": "public_facade"
     },
@@ -41815,7 +41827,7 @@
       "target_role": "reference_orchestration"
     },
     {
-      "count": 310,
+      "count": 311,
       "source_role": "tests",
       "target_role": "research_reproductions"
     },
@@ -41851,18 +41863,18 @@
     }
   ],
   "role_python_module_counts": {
-    "core_platform": 1930,
+    "core_platform": 1929,
     "examples": 6,
     "other": 1,
     "public_facade": 40,
     "reference_components": 22,
     "reference_orchestration": 10,
-    "research_reproductions": 763,
-    "tests": 801,
+    "research_reproductions": 765,
+    "tests": 802,
     "tooling": 78
   },
   "role_symbol_counts": {
-    "core_platform": 3337,
+    "core_platform": 3336,
     "examples": 3,
     "other": 5,
     "public_facade": 4,
@@ -41874,7 +41886,7 @@
     "tooling": 38
   },
   "schema": "noetrium-repository-code-architecture-index.v1",
-  "source_git_sha": "55c2c5da8651b522d211b684bd7735d97801911c",
+  "source_git_sha": "c3ce9a85af7f1902905faa8efc67117d3d651f3b",
   "symbols": [
     {
       "bases": [],
@@ -64267,7 +64279,7 @@
       "fields": [],
       "kind": "protocol",
       "language": "python",
-      "line": 517,
+      "line": 528,
       "methods": [
         "control"
       ],
@@ -64287,7 +64299,7 @@
       "fields": [],
       "kind": "protocol",
       "language": "python",
-      "line": 528,
+      "line": 539,
       "methods": [
         "active_revision_digest",
         "migrate"
@@ -64304,7 +64316,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 542,
+      "line": 553,
       "methods": [
         "__init__",
         "_public_revision",
@@ -64808,7 +64820,7 @@
       ],
       "kind": "enum",
       "language": "python",
-      "line": 53,
+      "line": 55,
       "methods": [],
       "module": "noetrium_platform.composition.research_os_lowering",
       "name": "ResearchOSLoweringTarget",
@@ -64824,7 +64836,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 105,
+      "line": 107,
       "methods": [],
       "module": "noetrium_platform.composition.research_os_lowering",
       "name": "ResearchImplementationResolutionError",
@@ -64844,7 +64856,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 110,
+      "line": 112,
       "methods": [
         "__post_init__"
       ],
@@ -64866,7 +64878,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 125,
+      "line": 127,
       "methods": [
         "__post_init__"
       ],
@@ -64886,7 +64898,7 @@
       "fields": [],
       "kind": "protocol",
       "language": "python",
-      "line": 152,
+      "line": 154,
       "methods": [
         "resolve"
       ],
@@ -64902,7 +64914,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 159,
+      "line": 161,
       "methods": [
         "resolve"
       ],
@@ -64925,7 +64937,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 376,
+      "line": 398,
       "methods": [
         "__post_init__"
       ],
@@ -64946,7 +64958,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 489,
+      "line": 511,
       "methods": [
         "__post_init__"
       ],
@@ -64973,7 +64985,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 503,
+      "line": 525,
       "methods": [
         "__post_init__"
       ],
@@ -64998,7 +65010,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 679,
+      "line": 701,
       "methods": [
         "__post_init__",
         "node"
@@ -65015,7 +65027,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 731,
+      "line": 753,
       "methods": [
         "__init__",
         "compile_node",
@@ -98441,7 +98453,7 @@
       ],
       "kind": "enum",
       "language": "python",
-      "line": 21,
+      "line": 19,
       "methods": [],
       "module": "noetrium_platform.product.operator.api.project_experience",
       "name": "ProjectDoctorDisposition",
@@ -98457,12 +98469,11 @@
       "fields": [
         "project_id: str",
         "version: str",
-        "destination: Path",
-        "blueprint: ResearchProjectBlueprint | None"
+        "destination: Path"
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 27,
+      "line": 25,
       "methods": [
         "__post_init__"
       ],
@@ -98484,12 +98495,11 @@
         "template_revision: str",
         "manifest_path: str",
         "manifest_semantic_digest: str",
-        "research_blueprint_digest: str",
         "generated_files: tuple[str, ...]"
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 50,
+      "line": 39,
       "methods": [],
       "module": "noetrium_platform.product.operator.api.project_experience",
       "name": "ProjectCreateReceipt",
@@ -98504,12 +98514,11 @@
       ],
       "fields": [
         "project_root: str",
-        "research_blueprint_digest: str",
         "regenerated_files: tuple[str, ...]"
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 62,
+      "line": 50,
       "methods": [],
       "module": "noetrium_platform.product.operator.api.project_experience",
       "name": "ProjectSyncReceipt",
@@ -98530,7 +98539,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 69,
+      "line": 56,
       "methods": [
         "__post_init__"
       ],
@@ -98552,7 +98561,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 83,
+      "line": 70,
       "methods": [
         "ready"
       ],
@@ -98573,7 +98582,7 @@
       ],
       "kind": "enum",
       "language": "python",
-      "line": 95,
+      "line": 82,
       "methods": [],
       "module": "noetrium_platform.product.operator.api.project_experience",
       "name": "ProjectTestStage",
@@ -98593,7 +98602,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 101,
+      "line": 88,
       "methods": [
         "passed"
       ],
@@ -98614,7 +98623,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 112,
+      "line": 99,
       "methods": [
         "passed"
       ],
@@ -98632,7 +98641,7 @@
       "fields": [],
       "kind": "protocol",
       "language": "python",
-      "line": 121,
+      "line": 108,
       "methods": [
         "create",
         "sync",
@@ -98651,7 +98660,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 128,
+      "line": 115,
       "methods": [
         "__init__",
         "create",
@@ -98834,49 +98843,6 @@
       "role": "core_platform"
     },
     {
-      "bases": [],
-      "decorators": [
-        "dataclass(frozen=True, slots=True)"
-      ],
-      "fields": [
-        "program_id: str",
-        "definition_id: str"
-      ],
-      "kind": "dataclass",
-      "language": "python",
-      "line": 37,
-      "methods": [
-        "__post_init__"
-      ],
-      "module": "noetrium_platform.product.research_blueprint",
-      "name": "ResearchDefinitionRef",
-      "path": "noetrium_platform/product/research_blueprint.py",
-      "qualname": "noetrium_platform.product.research_blueprint.ResearchDefinitionRef",
-      "role": "core_platform"
-    },
-    {
-      "bases": [],
-      "decorators": [
-        "dataclass(frozen=True, slots=True)"
-      ],
-      "fields": [
-        "portfolio: ResearchPortfolio",
-        "implementation_slots: tuple[ResearchDefinitionRef, ...]",
-        "blueprint_digest: str"
-      ],
-      "kind": "dataclass",
-      "language": "python",
-      "line": 48,
-      "methods": [
-        "__post_init__"
-      ],
-      "module": "noetrium_platform.product.research_blueprint",
-      "name": "ResearchProjectBlueprint",
-      "path": "noetrium_platform/product/research_blueprint.py",
-      "qualname": "noetrium_platform.product.research_blueprint.ResearchProjectBlueprint",
-      "role": "core_platform"
-    },
-    {
       "bases": [
         "StrEnum"
       ],
@@ -98895,7 +98861,7 @@
       ],
       "kind": "enum",
       "language": "python",
-      "line": 44,
+      "line": 45,
       "methods": [],
       "module": "noetrium_platform.product.research_os",
       "name": "ResearchDefinitionKind",
@@ -98928,7 +98894,7 @@
       ],
       "kind": "enum",
       "language": "python",
-      "line": 57,
+      "line": 58,
       "methods": [],
       "module": "noetrium_platform.product.research_os",
       "name": "ResearchNodeKind",
@@ -98951,12 +98917,31 @@
       ],
       "kind": "enum",
       "language": "python",
-      "line": 76,
+      "line": 77,
       "methods": [],
       "module": "noetrium_platform.product.research_os",
       "name": "ResearchValueKind",
       "path": "noetrium_platform/product/research_os.py",
       "qualname": "noetrium_platform.product.research_os.ResearchValueKind",
+      "role": "core_platform"
+    },
+    {
+      "bases": [
+        "StrEnum"
+      ],
+      "decorators": [],
+      "fields": [
+        "SYMBOL",
+        "FACTORY"
+      ],
+      "kind": "enum",
+      "language": "python",
+      "line": 86,
+      "methods": [],
+      "module": "noetrium_platform.product.research_os",
+      "name": "ResearchMethodProgramBindingKind",
+      "path": "noetrium_platform/product/research_os.py",
+      "qualname": "noetrium_platform.product.research_os.ResearchMethodProgramBindingKind",
       "role": "core_platform"
     },
     {
@@ -98969,14 +98954,19 @@
         "module: str",
         "qualname: str",
         "program_digest: str",
+        "binding_kind: ResearchMethodProgramBindingKind",
+        "factory_args: tuple[JsonValue, ...]",
+        "factory_kwargs: JsonValue",
         "implementation_digest: str"
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 86,
+      "line": 92,
       "methods": [
         "__post_init__",
-        "from_symbol"
+        "_import",
+        "from_symbol",
+        "from_factory"
       ],
       "module": "noetrium_platform.product.research_os",
       "name": "ResearchMethodProgramImplementation",
@@ -98998,7 +98988,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 173,
+      "line": 268,
       "methods": [
         "__post_init__",
         "from_callable"
@@ -99023,7 +99013,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 257,
+      "line": 352,
       "methods": [
         "__post_init__",
         "implementation_id",
@@ -99047,7 +99037,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 322,
+      "line": 417,
       "methods": [
         "__post_init__"
       ],
@@ -99069,7 +99059,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 333,
+      "line": 428,
       "methods": [
         "__post_init__"
       ],
@@ -99092,7 +99082,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 346,
+      "line": 441,
       "methods": [
         "__post_init__",
         "after"
@@ -99118,7 +99108,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 395,
+      "line": 490,
       "methods": [
         "__post_init__"
       ],
@@ -99142,7 +99132,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 439,
+      "line": 534,
       "methods": [
         "__post_init__"
       ],
@@ -99163,7 +99153,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 565,
+      "line": 660,
       "methods": [
         "__post_init__"
       ],
@@ -99186,7 +99176,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 575,
+      "line": 670,
       "methods": [
         "__post_init__"
       ],
@@ -99209,7 +99199,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 761,
+      "line": 859,
       "methods": [
         "__post_init__"
       ],
@@ -99225,7 +99215,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 885,
+      "line": 983,
       "methods": [
         "__init__",
         "program",
@@ -99252,7 +99242,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 931,
+      "line": 1029,
       "methods": [
         "__post_init__"
       ],
@@ -99275,7 +99265,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 965,
+      "line": 1063,
       "methods": [
         "__post_init__"
       ],
@@ -99297,7 +99287,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 980,
+      "line": 1078,
       "methods": [
         "__post_init__"
       ],
@@ -99322,7 +99312,7 @@
       ],
       "kind": "enum",
       "language": "python",
-      "line": 991,
+      "line": 1089,
       "methods": [],
       "module": "noetrium_platform.product.research_os",
       "name": "ResearchImpactState",
@@ -99342,7 +99332,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 1001,
+      "line": 1099,
       "methods": [
         "__post_init__"
       ],
@@ -99365,7 +99355,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 1014,
+      "line": 1112,
       "methods": [
         "__post_init__"
       ],
@@ -99388,7 +99378,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 1031,
+      "line": 1129,
       "methods": [
         "__post_init__",
         "portfolio_id",
@@ -99421,7 +99411,7 @@
       ],
       "kind": "enum",
       "language": "python",
-      "line": 1081,
+      "line": 1179,
       "methods": [],
       "module": "noetrium_platform.product.research_os",
       "name": "ResearchControlAction",
@@ -99441,7 +99431,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 1096,
+      "line": 1194,
       "methods": [
         "__post_init__"
       ],
@@ -99465,7 +99455,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 1110,
+      "line": 1208,
       "methods": [
         "__post_init__"
       ],
@@ -99485,7 +99475,7 @@
       "fields": [],
       "kind": "protocol",
       "language": "python",
-      "line": 1133,
+      "line": 1231,
       "methods": [
         "commit",
         "diff",
@@ -99518,7 +99508,7 @@
       "fields": [],
       "kind": "protocol",
       "language": "python",
-      "line": 1182,
+      "line": 1280,
       "methods": [
         "commit",
         "diff",
@@ -99539,7 +99529,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 1219,
+      "line": 1317,
       "methods": [
         "__init__",
         "commit",
@@ -99572,12 +99562,13 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 1351,
+      "line": 1449,
       "methods": [
         "__init__",
         "definition",
         "method",
         "method_program",
+        "method_program_factory",
         "benchmark",
         "metric",
         "dataset",
@@ -105571,7 +105562,8 @@
         "max_blocking_io_in_flight: int | None",
         "max_async_io_in_flight: int | None",
         "max_cpu_in_flight: int | None",
-        "max_serial_in_flight: int | None"
+        "max_serial_in_flight: int | None",
+        "max_waiting: int | None"
       ],
       "kind": "dataclass",
       "language": "python",
@@ -105597,7 +105589,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 95,
+      "line": 99,
       "methods": [
         "__post_init__"
       ],
@@ -105618,7 +105610,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 113,
+      "line": 117,
       "methods": [
         "__post_init__"
       ],
@@ -105642,7 +105634,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 125,
+      "line": 129,
       "methods": [],
       "module": "noetrium_platform.research.execution.policy.api.contracts",
       "name": "GroupAdmissionSnapshot",
@@ -105663,7 +105655,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 134,
+      "line": 138,
       "methods": [],
       "module": "noetrium_platform.research.execution.policy.api.contracts",
       "name": "TenantAdmissionSnapshot",
@@ -105685,7 +105677,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 142,
+      "line": 146,
       "methods": [],
       "module": "noetrium_platform.research.execution.policy.api.contracts",
       "name": "ResourceAdmissionSnapshot",
@@ -105706,7 +105698,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 151,
+      "line": 155,
       "methods": [],
       "module": "noetrium_platform.research.execution.policy.api.contracts",
       "name": "LaneAdmissionSnapshot",
@@ -105721,6 +105713,7 @@
       ],
       "fields": [
         "max_total_in_flight: int",
+        "max_waiting: int",
         "max_in_flight_per_group: int",
         "max_in_flight_per_tenant: int",
         "max_in_flight_per_resource: int",
@@ -105742,7 +105735,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 159,
+      "line": 163,
       "methods": [],
       "module": "noetrium_platform.research.execution.policy.api.contracts",
       "name": "AdmissionTopologySnapshot",
@@ -105851,6 +105844,8 @@
         "_can_ever_admit",
         "_can_admit",
         "_invalidate_selection",
+        "_enqueue_waiter",
+        "_remove_waiter",
         "_selected_waiter",
         "_grant_many",
         "acquire",
@@ -124526,7 +124521,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 28,
+      "line": 29,
       "methods": [],
       "module": "research.reproductions.research_os",
       "name": "ReproductionResearchOSCompileError",
@@ -124550,7 +124545,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 33,
+      "line": 34,
       "methods": [
         "__post_init__"
       ],
@@ -124574,7 +124569,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 58,
+      "line": 59,
       "methods": [
         "__post_init__"
       ],
@@ -128055,6 +128050,7 @@
         "script_consumers: tuple[str, ...]",
         "test_consumers: tuple[str, ...]",
         "direct_runtime_or_provider_consumers: tuple[str, ...]",
+        "intra_authority_concrete_consumers: tuple[str, ...]",
         "concrete_binding_consumers: tuple[str, ...]",
         "concrete_bypass_consumers: tuple[str, ...]",
         "facade_module: str | None",
@@ -128095,7 +128091,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 41,
+      "line": 42,
       "methods": [],
       "module": "scripts.audit_system_integration",
       "name": "LayerIntegrationRow",
@@ -128898,7 +128894,7 @@
         "doctor_ready: bool",
         "generated_tests_passed: bool",
         "public_import_boundary_passed: bool",
-        "research_program_loaded: bool",
+        "research_portfolio_loaded: bool",
         "fresh_process_identity_stable: bool",
         "npe_verified: bool",
         "blocker_codes: tuple[str, ...]",

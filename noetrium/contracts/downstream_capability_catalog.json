@@ -1,21 +1,20 @@
 {
   "ambiguous_symbol_sources": {},
-  "catalog_digest": "bc2634f08dbbb394390695f4dd00b945b2ace6acef8105587f57219a67842092",
+  "catalog_digest": "b506ac2e4c9806099324e9250895fa55b8180d8fc7cd09d7fc9931e9ff5d12a1",
   "direct_symbol_sources": {
-    "RESEARCH_PROJECT_BLUEPRINT_SCHEMA": "noetrium_platform.product.api",
     "ResearchBranch": "noetrium_platform.product.api",
     "ResearchControlAction": "noetrium_platform.product.api",
     "ResearchControlReceipt": "noetrium_platform.product.api",
     "ResearchControlRequest": "noetrium_platform.product.api",
     "ResearchDefinition": "noetrium_platform.product.api",
     "ResearchDefinitionKind": "noetrium_platform.product.api",
-    "ResearchDefinitionRef": "noetrium_platform.product.api",
     "ResearchDependency": "noetrium_platform.product.api",
     "ResearchExecutionTarget": "noetrium_platform.product.api",
     "ResearchGraphRevision": "noetrium_platform.product.api",
     "ResearchImpactState": "noetrium_platform.product.api",
     "ResearchImplementation": "noetrium_platform.product.api",
     "ResearchInputBinding": "noetrium_platform.product.api",
+    "ResearchMethodProgramBindingKind": "noetrium_platform.product.api",
     "ResearchMethodProgramImplementation": "noetrium_platform.product.api",
     "ResearchNode": "noetrium_platform.product.api",
     "ResearchNodeImpact": "noetrium_platform.product.api",
@@ -28,21 +27,14 @@
     "ResearchPortfolioDependency": "noetrium_platform.product.api",
     "ResearchProgram": "noetrium_platform.product.api",
     "ResearchProgramBuilder": "noetrium_platform.product.api",
-    "ResearchProjectBlueprint": "noetrium_platform.product.api",
     "ResearchRevisionDiff": "noetrium_platform.product.api",
     "ResearchTag": "noetrium_platform.product.api",
-    "ResearchValueKind": "noetrium_platform.product.api",
-    "decode_research_project_blueprint": "noetrium_platform.product.api",
-    "encode_research_project_blueprint": "noetrium_platform.product.api",
-    "research_project_blueprint_document": "noetrium_platform.product.api"
+    "ResearchValueKind": "noetrium_platform.product.api"
   },
   "entrypoint": "noetrium.api",
   "generator": "scripts/generate_downstream_contracts.py",
   "schema": "noetrium-downstream-contracts.v5",
   "symbol_index": {
-    "RESEARCH_PROJECT_BLUEPRINT_SCHEMA": [
-      "research_os"
-    ],
     "ResearchBranch": [
       "research_os"
     ],
@@ -61,9 +53,6 @@
     "ResearchDefinitionKind": [
       "research_os"
     ],
-    "ResearchDefinitionRef": [
-      "research_os"
-    ],
     "ResearchDependency": [
       "research_os"
     ],
@@ -80,6 +69,9 @@
       "research_os"
     ],
     "ResearchInputBinding": [
+      "research_os"
+    ],
+    "ResearchMethodProgramBindingKind": [
       "research_os"
     ],
     "ResearchMethodProgramImplementation": [
@@ -118,9 +110,6 @@
     "ResearchProgramBuilder": [
       "research_os"
     ],
-    "ResearchProjectBlueprint": [
-      "research_os"
-    ],
     "ResearchRevisionDiff": [
       "research_os"
     ],
@@ -128,15 +117,6 @@
       "research_os"
     ],
     "ResearchValueKind": [
-      "research_os"
-    ],
-    "decode_research_project_blueprint": [
-      "research_os"
-    ],
-    "encode_research_project_blueprint": [
-      "research_os"
-    ],
-    "research_project_blueprint_document": [
       "research_os"
     ]
   },
@@ -726,6 +706,7 @@
             "ResearchGraphRevision",
             "ResearchImpactState",
             "ResearchImplementation",
+            "ResearchMethodProgramBindingKind",
             "ResearchMethodProgramImplementation",
             "ResearchInputBinding",
             "ResearchNode",
@@ -741,13 +722,7 @@
             "ResearchProgramBuilder",
             "ResearchRevisionDiff",
             "ResearchTag",
-            "ResearchValueKind",
-            "RESEARCH_PROJECT_BLUEPRINT_SCHEMA",
-            "ResearchDefinitionRef",
-            "ResearchProjectBlueprint",
-            "decode_research_project_blueprint",
-            "encode_research_project_blueprint",
-            "research_project_blueprint_document"
+            "ResearchValueKind"
           ]
         }
       ],
@@ -755,7 +730,7 @@
       "canonical_authority": null,
       "downstream_surface": "public",
       "facade_module": "noetrium.contracts.systems.research_os",
-      "interface_digest": "b0d5199398da6bff1227746ef9102e1560624437e029ca38fcbc18db05f535cb",
+      "interface_digest": "ec434289e70bdbaa065803a5faf4e44a5363a51e195f61e36c766267425704f6",
       "must_not_own": "domain authority, scientific execution truth, provider state or duplicated evidence",
       "node_kind": "product_surface",
       "owns": "single downstream research authoring, revision, graph-control and live-intervention product surface",

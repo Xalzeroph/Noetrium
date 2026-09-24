@@ -3,20 +3,19 @@ Static typing projection for the single Noetrium Research OS API.
 """
 
 from noetrium_platform.product.api import (
-    RESEARCH_PROJECT_BLUEPRINT_SCHEMA as RESEARCH_PROJECT_BLUEPRINT_SCHEMA,
     ResearchBranch as ResearchBranch,
     ResearchControlAction as ResearchControlAction,
     ResearchControlReceipt as ResearchControlReceipt,
     ResearchControlRequest as ResearchControlRequest,
     ResearchDefinition as ResearchDefinition,
     ResearchDefinitionKind as ResearchDefinitionKind,
-    ResearchDefinitionRef as ResearchDefinitionRef,
     ResearchDependency as ResearchDependency,
     ResearchExecutionTarget as ResearchExecutionTarget,
     ResearchGraphRevision as ResearchGraphRevision,
     ResearchImpactState as ResearchImpactState,
     ResearchImplementation as ResearchImplementation,
     ResearchInputBinding as ResearchInputBinding,
+    ResearchMethodProgramBindingKind as ResearchMethodProgramBindingKind,
     ResearchMethodProgramImplementation as ResearchMethodProgramImplementation,
     ResearchNode as ResearchNode,
     ResearchNodeImpact as ResearchNodeImpact,
@@ -29,11 +28,7 @@ from noetrium_platform.product.api import (
     ResearchPortfolioDependency as ResearchPortfolioDependency,
     ResearchProgram as ResearchProgram,
     ResearchProgramBuilder as ResearchProgramBuilder,
-    ResearchProjectBlueprint as ResearchProjectBlueprint,
     ResearchRevisionDiff as ResearchRevisionDiff,
     ResearchTag as ResearchTag,
     ResearchValueKind as ResearchValueKind,
-    decode_research_project_blueprint as decode_research_project_blueprint,
-    encode_research_project_blueprint as encode_research_project_blueprint,
-    research_project_blueprint_document as research_project_blueprint_document,
 )

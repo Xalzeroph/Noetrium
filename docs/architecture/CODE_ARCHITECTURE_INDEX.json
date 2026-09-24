@@ -12527,11 +12527,6 @@
     },
     {
       "kind": "references",
-      "source": "noetrium_platform.product.operator.api.project_experience.ProjectCreateRequest",
-      "target": "noetrium_platform.product.research_blueprint.ResearchProjectBlueprint"
-    },
-    {
-      "kind": "references",
       "source": "noetrium_platform.product.operator.api.project_experience.ProjectDoctorCheck",
       "target": "noetrium_platform.product.operator.api.project_experience.ProjectDoctorDisposition"
     },
@@ -12589,11 +12584,6 @@
       "kind": "references",
       "source": "noetrium_platform.product.operator.api.project_experience.ProjectFacade",
       "target": "noetrium_platform.product.operator.api.project_experience.ProjectTestReceipt"
-    },
-    {
-      "kind": "references",
-      "source": "noetrium_platform.product.operator.api.project_experience.ProjectFacade",
-      "target": "noetrium_platform.product.research_blueprint.ResearchProjectBlueprint"
     },
     {
       "kind": "references",
@@ -12662,16 +12652,6 @@
     },
     {
       "kind": "references",
-      "source": "noetrium_platform.product.research_blueprint.ResearchProjectBlueprint",
-      "target": "noetrium_platform.product.research_blueprint.ResearchDefinitionRef"
-    },
-    {
-      "kind": "references",
-      "source": "noetrium_platform.product.research_blueprint.ResearchProjectBlueprint",
-      "target": "noetrium_platform.product.research_os.ResearchPortfolio"
-    },
-    {
-      "kind": "references",
       "source": "noetrium_platform.product.research_os.ResearchControlReceipt",
       "target": "noetrium_platform.product.research_os.ResearchControlAction"
     },
@@ -12724,6 +12704,11 @@
       "kind": "references",
       "source": "noetrium_platform.product.research_os.ResearchInputBinding",
       "target": "noetrium_platform.product.research_os.ResearchValueKind"
+    },
+    {
+      "kind": "references",
+      "source": "noetrium_platform.product.research_os.ResearchMethodProgramImplementation",
+      "target": "noetrium_platform.product.research_os.ResearchMethodProgramBindingKind"
     },
     {
       "kind": "references",
@@ -39926,7 +39911,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 542,
+      "line": 553,
       "methods": [
         "__init__",
         "_public_revision",
@@ -39957,7 +39942,7 @@
       ],
       "fields": [],
       "kind": "protocol",
-      "line": 517,
+      "line": 528,
       "methods": [
         "control"
       ],
@@ -39979,7 +39964,7 @@
       ],
       "fields": [],
       "kind": "protocol",
-      "line": 528,
+      "line": 539,
       "methods": [
         "active_revision_digest",
         "migrate"
@@ -40506,7 +40491,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 159,
+      "line": 161,
       "methods": [
         "resolve"
       ],
@@ -40531,7 +40516,7 @@
         "program"
       ],
       "kind": "dataclass",
-      "line": 376,
+      "line": 398,
       "methods": [
         "__post_init__"
       ],
@@ -40554,7 +40539,7 @@
         "program"
       ],
       "kind": "dataclass",
-      "line": 489,
+      "line": 511,
       "methods": [
         "__post_init__"
       ],
@@ -40583,7 +40568,7 @@
         "target"
       ],
       "kind": "dataclass",
-      "line": 503,
+      "line": 525,
       "methods": [
         "__post_init__"
       ],
@@ -40603,7 +40588,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 105,
+      "line": 107,
       "methods": [],
       "module": "noetrium_platform.composition.research_os_lowering",
       "name": "ResearchImplementationResolutionError",
@@ -40623,7 +40608,7 @@
       ],
       "fields": [],
       "kind": "protocol",
-      "line": 152,
+      "line": 154,
       "methods": [
         "resolve"
       ],
@@ -40641,7 +40626,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 731,
+      "line": 753,
       "methods": [
         "__init__",
         "compile_node",
@@ -40670,7 +40655,7 @@
         "research_revision_digest"
       ],
       "kind": "dataclass",
-      "line": 679,
+      "line": 701,
       "methods": [
         "__post_init__",
         "node"
@@ -40700,7 +40685,7 @@
         "RUN_MACHINE"
       ],
       "kind": "enum",
-      "line": 53,
+      "line": 55,
       "methods": [],
       "module": "noetrium_platform.composition.research_os_lowering",
       "name": "ResearchOSLoweringTarget",
@@ -40722,7 +40707,7 @@
         "implementation"
       ],
       "kind": "dataclass",
-      "line": 110,
+      "line": 112,
       "methods": [
         "__post_init__"
       ],
@@ -40746,7 +40731,7 @@
         "program"
       ],
       "kind": "dataclass",
-      "line": 125,
+      "line": 127,
       "methods": [
         "__post_init__"
       ],
@@ -77419,12 +77404,11 @@
         "manifest_path",
         "manifest_semantic_digest",
         "project_id",
-        "research_blueprint_digest",
         "template_revision",
         "version"
       ],
       "kind": "dataclass",
-      "line": 50,
+      "line": 39,
       "methods": [],
       "module": "noetrium_platform.product.operator.api.project_experience",
       "name": "ProjectCreateReceipt",
@@ -77441,13 +77425,12 @@
         "dataclass(frozen=True, slots=True)"
       ],
       "fields": [
-        "blueprint",
         "destination",
         "project_id",
         "version"
       ],
       "kind": "dataclass",
-      "line": 27,
+      "line": 25,
       "methods": [
         "__post_init__"
       ],
@@ -77472,7 +77455,7 @@
         "summary"
       ],
       "kind": "dataclass",
-      "line": 69,
+      "line": 56,
       "methods": [
         "__post_init__"
       ],
@@ -77495,7 +77478,7 @@
         "PASS"
       ],
       "kind": "enum",
-      "line": 21,
+      "line": 19,
       "methods": [],
       "module": "noetrium_platform.product.operator.api.project_experience",
       "name": "ProjectDoctorDisposition",
@@ -77517,7 +77500,7 @@
         "template_revision"
       ],
       "kind": "dataclass",
-      "line": 83,
+      "line": 70,
       "methods": [
         "ready"
       ],
@@ -77537,7 +77520,7 @@
       "decorators": [],
       "fields": [],
       "kind": "protocol",
-      "line": 121,
+      "line": 108,
       "methods": [
         "create",
         "sync",
@@ -77558,7 +77541,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 128,
+      "line": 115,
       "methods": [
         "__init__",
         "create",
@@ -77582,11 +77565,10 @@
       ],
       "fields": [
         "project_root",
-        "regenerated_files",
-        "research_blueprint_digest"
+        "regenerated_files"
       ],
       "kind": "dataclass",
-      "line": 62,
+      "line": 50,
       "methods": [],
       "module": "noetrium_platform.product.operator.api.project_experience",
       "name": "ProjectSyncReceipt",
@@ -77607,7 +77589,7 @@
         "stages"
       ],
       "kind": "dataclass",
-      "line": 112,
+      "line": 99,
       "methods": [
         "passed"
       ],
@@ -77630,7 +77612,7 @@
         "CONTRACT_TEST"
       ],
       "kind": "enum",
-      "line": 95,
+      "line": 82,
       "methods": [],
       "module": "noetrium_platform.product.operator.api.project_experience",
       "name": "ProjectTestStage",
@@ -77652,7 +77634,7 @@
         "stage"
       ],
       "kind": "dataclass",
-      "line": 101,
+      "line": 88,
       "methods": [
         "passed"
       ],
@@ -77855,60 +77837,13 @@
         "dataclass(frozen=True, slots=True)"
       ],
       "fields": [
-        "definition_id",
-        "program_id"
-      ],
-      "kind": "dataclass",
-      "line": 37,
-      "methods": [
-        "__post_init__"
-      ],
-      "module": "noetrium_platform.product.research_blueprint",
-      "name": "ResearchDefinitionRef",
-      "nesting": [
-        "ResearchDefinitionRef"
-      ],
-      "qualname": "noetrium_platform.product.research_blueprint.ResearchDefinitionRef",
-      "system_key": "research_os",
-      "top_system": "research_os"
-    },
-    {
-      "bases": [],
-      "decorators": [
-        "dataclass(frozen=True, slots=True)"
-      ],
-      "fields": [
-        "blueprint_digest",
-        "implementation_slots",
-        "portfolio"
-      ],
-      "kind": "dataclass",
-      "line": 48,
-      "methods": [
-        "__post_init__"
-      ],
-      "module": "noetrium_platform.product.research_blueprint",
-      "name": "ResearchProjectBlueprint",
-      "nesting": [
-        "ResearchProjectBlueprint"
-      ],
-      "qualname": "noetrium_platform.product.research_blueprint.ResearchProjectBlueprint",
-      "system_key": "research_os",
-      "top_system": "research_os"
-    },
-    {
-      "bases": [],
-      "decorators": [
-        "dataclass(frozen=True, slots=True)"
-      ],
-      "fields": [
         "generation",
         "name",
         "portfolio_id",
         "revision_digest"
       ],
       "kind": "dataclass",
-      "line": 965,
+      "line": 1063,
       "methods": [
         "__post_init__"
       ],
@@ -77940,7 +77875,7 @@
         "RUN"
       ],
       "kind": "enum",
-      "line": 1081,
+      "line": 1179,
       "methods": [],
       "module": "noetrium_platform.product.research_os",
       "name": "ResearchControlAction",
@@ -77964,7 +77899,7 @@
         "target"
       ],
       "kind": "dataclass",
-      "line": 1110,
+      "line": 1208,
       "methods": [
         "__post_init__"
       ],
@@ -77988,7 +77923,7 @@
         "target"
       ],
       "kind": "dataclass",
-      "line": 1096,
+      "line": 1194,
       "methods": [
         "__post_init__"
       ],
@@ -78014,7 +77949,7 @@
         "kind"
       ],
       "kind": "dataclass",
-      "line": 257,
+      "line": 352,
       "methods": [
         "__post_init__",
         "implementation_id",
@@ -78048,7 +77983,7 @@
         "RESOURCE_POLICY"
       ],
       "kind": "enum",
-      "line": 44,
+      "line": 45,
       "methods": [],
       "module": "noetrium_platform.product.research_os",
       "name": "ResearchDefinitionKind",
@@ -78071,7 +78006,7 @@
         "upstream_node_id"
       ],
       "kind": "dataclass",
-      "line": 346,
+      "line": 441,
       "methods": [
         "__post_init__",
         "after"
@@ -78097,7 +78032,7 @@
         "target_digest"
       ],
       "kind": "dataclass",
-      "line": 1031,
+      "line": 1129,
       "methods": [
         "__post_init__",
         "portfolio_id",
@@ -78126,7 +78061,7 @@
         "revision_digest"
       ],
       "kind": "dataclass",
-      "line": 931,
+      "line": 1029,
       "methods": [
         "__post_init__"
       ],
@@ -78153,7 +78088,7 @@
         "UNCHANGED"
       ],
       "kind": "enum",
-      "line": 991,
+      "line": 1089,
       "methods": [],
       "module": "noetrium_platform.product.research_os",
       "name": "ResearchImpactState",
@@ -78177,7 +78112,7 @@
         "source_digest"
       ],
       "kind": "dataclass",
-      "line": 173,
+      "line": 268,
       "methods": [
         "__post_init__",
         "from_callable"
@@ -78202,7 +78137,7 @@
         "output_name"
       ],
       "kind": "dataclass",
-      "line": 333,
+      "line": 428,
       "methods": [
         "__post_init__"
       ],
@@ -78216,11 +78151,35 @@
       "top_system": "research_os"
     },
     {
+      "bases": [
+        "StrEnum"
+      ],
+      "decorators": [],
+      "fields": [
+        "FACTORY",
+        "SYMBOL"
+      ],
+      "kind": "enum",
+      "line": 86,
+      "methods": [],
+      "module": "noetrium_platform.product.research_os",
+      "name": "ResearchMethodProgramBindingKind",
+      "nesting": [
+        "ResearchMethodProgramBindingKind"
+      ],
+      "qualname": "noetrium_platform.product.research_os.ResearchMethodProgramBindingKind",
+      "system_key": "research_os",
+      "top_system": "research_os"
+    },
+    {
       "bases": [],
       "decorators": [
         "dataclass(frozen=True, slots=True)"
       ],
       "fields": [
+        "binding_kind",
+        "factory_args",
+        "factory_kwargs",
         "implementation_digest",
         "implementation_id",
         "module",
@@ -78228,10 +78187,12 @@
         "qualname"
       ],
       "kind": "dataclass",
-      "line": 86,
+      "line": 92,
       "methods": [
         "__post_init__",
-        "from_symbol"
+        "_import",
+        "from_symbol",
+        "from_factory"
       ],
       "module": "noetrium_platform.product.research_os",
       "name": "ResearchMethodProgramImplementation",
@@ -78256,7 +78217,7 @@
         "outputs"
       ],
       "kind": "dataclass",
-      "line": 395,
+      "line": 490,
       "methods": [
         "__post_init__"
       ],
@@ -78280,7 +78241,7 @@
         "state"
       ],
       "kind": "dataclass",
-      "line": 1001,
+      "line": 1099,
       "methods": [
         "__post_init__"
       ],
@@ -78317,7 +78278,7 @@
         "TRIAL"
       ],
       "kind": "enum",
-      "line": 57,
+      "line": 58,
       "methods": [],
       "module": "noetrium_platform.product.research_os",
       "name": "ResearchNodeKind",
@@ -78338,7 +78299,7 @@
         "program_id"
       ],
       "kind": "dataclass",
-      "line": 565,
+      "line": 660,
       "methods": [
         "__post_init__"
       ],
@@ -78360,7 +78321,7 @@
       ],
       "fields": [],
       "kind": "protocol",
-      "line": 1133,
+      "line": 1231,
       "methods": [
         "commit",
         "diff",
@@ -78395,7 +78356,7 @@
       "decorators": [],
       "fields": [],
       "kind": "protocol",
-      "line": 1182,
+      "line": 1280,
       "methods": [
         "commit",
         "diff",
@@ -78423,7 +78384,7 @@
         "name"
       ],
       "kind": "dataclass",
-      "line": 322,
+      "line": 417,
       "methods": [
         "__post_init__"
       ],
@@ -78448,7 +78409,7 @@
         "programs"
       ],
       "kind": "dataclass",
-      "line": 761,
+      "line": 859,
       "methods": [
         "__post_init__"
       ],
@@ -78466,7 +78427,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 885,
+      "line": 983,
       "methods": [
         "__init__",
         "program",
@@ -78494,7 +78455,7 @@
         "upstream"
       ],
       "kind": "dataclass",
-      "line": 575,
+      "line": 670,
       "methods": [
         "__post_init__"
       ],
@@ -78520,7 +78481,7 @@
         "program_id"
       ],
       "kind": "dataclass",
-      "line": 439,
+      "line": 534,
       "methods": [
         "__post_init__"
       ],
@@ -78538,12 +78499,13 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 1351,
+      "line": 1449,
       "methods": [
         "__init__",
         "definition",
         "method",
         "method_program",
+        "method_program_factory",
         "benchmark",
         "metric",
         "dataset",
@@ -78594,7 +78556,7 @@
         "right_revision_digest"
       ],
       "kind": "dataclass",
-      "line": 1014,
+      "line": 1112,
       "methods": [
         "__post_init__"
       ],
@@ -78618,7 +78580,7 @@
         "revision_digest"
       ],
       "kind": "dataclass",
-      "line": 980,
+      "line": 1078,
       "methods": [
         "__post_init__"
       ],
@@ -78645,7 +78607,7 @@
         "SELECTION"
       ],
       "kind": "enum",
-      "line": 76,
+      "line": 77,
       "methods": [],
       "module": "noetrium_platform.product.research_os",
       "name": "ResearchValueKind",
@@ -78661,7 +78623,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 1219,
+      "line": 1317,
       "methods": [
         "__init__",
         "commit",
@@ -85134,7 +85096,8 @@
         "max_in_flight_per_resource",
         "max_in_flight_per_tenant",
         "max_serial_in_flight",
-        "max_total_in_flight"
+        "max_total_in_flight",
+        "max_waiting"
       ],
       "kind": "dataclass",
       "line": 22,
@@ -85161,7 +85124,7 @@
         "tenant_id"
       ],
       "kind": "dataclass",
-      "line": 95,
+      "line": 99,
       "methods": [
         "__post_init__"
       ],
@@ -85184,7 +85147,7 @@
         "priority"
       ],
       "kind": "dataclass",
-      "line": 113,
+      "line": 117,
       "methods": [
         "__post_init__"
       ],
@@ -85254,6 +85217,7 @@
         "max_in_flight_per_tenant",
         "max_queue_wait_seconds",
         "max_total_in_flight",
+        "max_waiting",
         "oldest_wait_seconds",
         "queued_total",
         "rejected_total",
@@ -85263,7 +85227,7 @@
         "waiting"
       ],
       "kind": "dataclass",
-      "line": 159,
+      "line": 163,
       "methods": [],
       "module": "noetrium_platform.research.execution.policy.api.contracts",
       "name": "AdmissionTopologySnapshot",
@@ -85287,7 +85251,7 @@
         "waiting"
       ],
       "kind": "dataclass",
-      "line": 125,
+      "line": 129,
       "methods": [],
       "module": "noetrium_platform.research.execution.policy.api.contracts",
       "name": "GroupAdmissionSnapshot",
@@ -85310,7 +85274,7 @@
         "waiting"
       ],
       "kind": "dataclass",
-      "line": 151,
+      "line": 155,
       "methods": [],
       "module": "noetrium_platform.research.execution.policy.api.contracts",
       "name": "LaneAdmissionSnapshot",
@@ -85334,7 +85298,7 @@
         "waiting"
       ],
       "kind": "dataclass",
-      "line": 142,
+      "line": 146,
       "methods": [],
       "module": "noetrium_platform.research.execution.policy.api.contracts",
       "name": "ResourceAdmissionSnapshot",
@@ -85357,7 +85321,7 @@
         "waiting"
       ],
       "kind": "dataclass",
-      "line": 134,
+      "line": 138,
       "methods": [],
       "module": "noetrium_platform.research.execution.policy.api.contracts",
       "name": "TenantAdmissionSnapshot",
@@ -85409,6 +85373,8 @@
         "_can_ever_admit",
         "_can_admit",
         "_invalidate_selection",
+        "_enqueue_waiter",
+        "_remove_waiter",
         "_selected_waiter",
         "_grant_many",
         "acquire",
@@ -101399,11 +101365,6 @@
     },
     {
       "kind": "constructs",
-      "source": "noetrium_platform.product.research_blueprint.ResearchDefinitionRef",
-      "target": "noetrium_platform.product.research_os.ResearchNodeRef"
-    },
-    {
-      "kind": "constructs",
       "source": "noetrium_platform.product.research_os.ResearchExecutionTarget",
       "target": "noetrium_platform.product.research_os.ResearchNodeRef"
     },
@@ -102369,13 +102330,13 @@
     }
   ],
   "counts": {
-    "association_edges": 3425,
-    "classes": 3336,
-    "constructor_edges": 932,
+    "association_edges": 3422,
+    "classes": 3335,
+    "constructor_edges": 931,
     "inheritance_edges": 149,
-    "module_import_edges": 5060,
+    "module_import_edges": 5051,
     "parse_errors": 0,
-    "python_modules": 1930,
+    "python_modules": 1929,
     "registry_authorities": 20,
     "registry_nodes": 31,
     "top_level_systems": 16
@@ -108478,10 +108439,6 @@
     },
     {
       "source": "noetrium_platform.composition.operator.project.project_doctor",
-      "target": "noetrium_platform.product.api"
-    },
-    {
-      "source": "noetrium_platform.composition.operator.project.project_doctor",
       "target": "noetrium_platform.product.operator.api"
     },
     {
@@ -108526,10 +108483,6 @@
     },
     {
       "source": "noetrium_platform.composition.operator.project.project_scaffold",
-      "target": "noetrium_platform.product.api"
-    },
-    {
-      "source": "noetrium_platform.composition.operator.project.project_scaffold",
       "target": "noetrium_platform.product.operator.api"
     },
     {
@@ -108543,14 +108496,6 @@
     {
       "source": "noetrium_platform.composition.operator.project.project_testing",
       "target": "noetrium_platform.product.operator.api"
-    },
-    {
-      "source": "noetrium_platform.composition.operator.project.research_project_codegen",
-      "target": "noetrium_platform.foundation.kernel.kernel"
-    },
-    {
-      "source": "noetrium_platform.composition.operator.project.research_project_codegen",
-      "target": "noetrium_platform.product.api"
     },
     {
       "source": "noetrium_platform.composition.operator.query",
@@ -119742,10 +119687,6 @@
     },
     {
       "source": "noetrium_platform.product.api",
-      "target": "noetrium_platform.research_blueprint"
-    },
-    {
-      "source": "noetrium_platform.product.api",
       "target": "noetrium_platform.research_os"
     },
     {
@@ -119767,10 +119708,6 @@
     {
       "source": "noetrium_platform.product.operator.api.json_rendering",
       "target": "noetrium_platform.foundation.kernel.kernel"
-    },
-    {
-      "source": "noetrium_platform.product.operator.api.project_experience",
-      "target": "noetrium_platform.product.research_blueprint"
     },
     {
       "source": "noetrium_platform.product.operator.reference",
@@ -119826,10 +119763,6 @@
     },
     {
       "source": "noetrium_platform.product.operator.runtime.research_cli",
-      "target": "noetrium_platform.product.api"
-    },
-    {
-      "source": "noetrium_platform.product.operator.runtime.research_cli",
       "target": "noetrium_platform.product.operator.api"
     },
     {
@@ -119850,14 +119783,6 @@
     },
     {
       "source": "noetrium_platform.product.reference.research_os",
-      "target": "noetrium_platform.product.research_os"
-    },
-    {
-      "source": "noetrium_platform.product.research_blueprint",
-      "target": "noetrium_platform.foundation.kernel.kernel"
-    },
-    {
-      "source": "noetrium_platform.product.research_blueprint",
       "target": "noetrium_platform.product.research_os"
     },
     {
@@ -128453,7 +128378,6 @@
         "noetrium_platform.composition.operator.project.research_project_codegen",
         "noetrium_platform.foundation.governance.architecture.repository_boundary.api",
         "noetrium_platform.foundation.portfolio.api",
-        "noetrium_platform.product.api",
         "noetrium_platform.product.operator.api"
       ],
       "module": "noetrium_platform.composition.operator.project.project_doctor",
@@ -128495,7 +128419,6 @@
         "noetrium_platform.composition.operator.project.research_project_codegen",
         "noetrium_platform.foundation.kernel.kernel.durability",
         "noetrium_platform.foundation.portfolio.api",
-        "noetrium_platform.product.api",
         "noetrium_platform.product.operator.api"
       ],
       "module": "noetrium_platform.composition.operator.project.project_scaffold",
@@ -128523,10 +128446,7 @@
       "top_system": "research_os"
     },
     {
-      "imports": [
-        "noetrium_platform.foundation.kernel.kernel",
-        "noetrium_platform.product.api"
-      ],
+      "imports": [],
       "module": "noetrium_platform.composition.operator.project.research_project_codegen",
       "path": "noetrium_platform/composition/operator/project/research_project_codegen.py",
       "system_key": "research_os",
@@ -140195,7 +140115,6 @@
     },
     {
       "imports": [
-        "noetrium_platform.research_blueprint",
         "noetrium_platform.research_os"
       ],
       "module": "noetrium_platform.product.api",
@@ -140247,9 +140166,7 @@
       "top_system": "research_os"
     },
     {
-      "imports": [
-        "noetrium_platform.product.research_blueprint"
-      ],
+      "imports": [],
       "module": "noetrium_platform.product.operator.api.project_experience",
       "path": "noetrium_platform/product/operator/api/project_experience.py",
       "system_key": "operator",
@@ -140324,7 +140241,6 @@
     {
       "imports": [
         "noetrium_platform.foundation.kernel.kernel.errors",
-        "noetrium_platform.product.api",
         "noetrium_platform.product.operator.api",
         "noetrium_platform.product.operator.api.json_rendering",
         "noetrium_platform.product.operator.api.project_experience"
@@ -140350,16 +140266,6 @@
       ],
       "module": "noetrium_platform.product.reference.research_os",
       "path": "noetrium_platform/product/reference/research_os.py",
-      "system_key": "research_os",
-      "top_system": "research_os"
-    },
-    {
-      "imports": [
-        "noetrium_platform.foundation.kernel.kernel",
-        "noetrium_platform.product.research_os"
-      ],
-      "module": "noetrium_platform.product.research_blueprint",
-      "path": "noetrium_platform/product/research_blueprint.py",
       "system_key": "research_os",
       "top_system": "research_os"
     },
@@ -143563,7 +143469,7 @@
   "parse_errors": [],
   "registry_sha256": "d3fc1bab831f1b7379e5a36048a61c00fe173429df958270d36a16f3f00171c0",
   "schema": "noetrium-code-architecture-index.v1",
-  "source_git_sha": "55c2c5da8651b522d211b684bd7735d97801911c",
+  "source_git_sha": "c3ce9a85af7f1902905faa8efc67117d3d651f3b",
   "system_import_edges": [
     {
       "count": 90,
@@ -143746,7 +143652,7 @@
       "target": "participant"
     },
     {
-      "count": 120,
+      "count": 118,
       "source": "research_os",
       "target": "platform"
     },
@@ -143761,7 +143667,7 @@
       "target": "reliability"
     },
     {
-      "count": 316,
+      "count": 310,
       "source": "research_os",
       "target": "research_os"
     },
