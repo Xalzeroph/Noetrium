@@ -58,29 +58,43 @@ class ModelAssetRegistry:
     def _retirement_payload(
         asset_digest: str,
         delete_managed_files: bool,
+        gc_proof_digest: str | None,
     ) -> bytes:
         return json.dumps(
             {
                 "asset_digest": asset_digest,
                 "delete_managed_files": delete_managed_files,
+                "gc_proof_digest": gc_proof_digest,
             },
             sort_keys=True,
             separators=(",", ":"),
         ).encode("utf-8")
 
     @staticmethod
-    def _decode_retirement(raw: bytes) -> tuple[str, bool]:
+    def _decode_retirement(raw: bytes) -> tuple[str, bool, str | None]:
         value = json.loads(raw.decode("utf-8"))
+        proof = value.get("gc_proof_digest") if isinstance(value, dict) else None
         if (
             not isinstance(value, dict)
-            or set(value) != {"asset_digest", "delete_managed_files"}
+            or set(value)
+            != {"asset_digest", "delete_managed_files", "gc_proof_digest"}
             or type(value.get("asset_digest")) is not str
             or len(value["asset_digest"]) != 64
             or any(ch not in "0123456789abcdef" for ch in value["asset_digest"])
             or type(value.get("delete_managed_files")) is not bool
+            or (
+                proof is not None
+                and (
+                    type(proof) is not str
+                    or len(proof) != 64
+                    or any(ch not in "0123456789abcdef" for ch in proof)
+                )
+            )
+            or (value["delete_managed_files"] and proof is None)
+            or (not value["delete_managed_files"] and proof is not None)
         ):
             raise RuntimeError("invalid model asset retirement document")
-        return value["asset_digest"], value["delete_managed_files"]
+        return value["asset_digest"], value["delete_managed_files"], proof
 
 
     def ensure_not_retired(self, model_id: str) -> None:
@@ -132,6 +146,7 @@ class ModelAssetRegistry:
         expected: ManagedModelAsset,
         *,
         delete_managed_files: bool,
+        gc_proof_digest: str | None = None,
     ) -> ManagedModelAsset:
         """Fence one exact registered asset and retain metadata for recovery."""
 
@@ -143,6 +158,22 @@ class ModelAssetRegistry:
             raise TypeError(
                 "model asset retirement deletion policy must be bool"
             )
+        if delete_managed_files:
+            if (
+                type(gc_proof_digest) is not str
+                or len(gc_proof_digest) != 64
+                or any(
+                    ch not in "0123456789abcdef"
+                    for ch in gc_proof_digest
+                )
+            ):
+                raise ValueError(
+                    "model asset retirement GC proof must be lowercase sha256"
+                )
+        elif gc_proof_digest is not None:
+            raise ValueError(
+                "non-destructive model retirement cannot bind a GC proof"
+            )
         self._validate_id(expected.model_id)
         with self._lock(expected.model_id):
             path = self._path(expected.model_id)
@@ -150,12 +181,15 @@ class ModelAssetRegistry:
             expected_digest = self._digest(expected)
 
             if retired.exists():
-                retired_digest, durable_delete = self._decode_retirement(
-                    retired.read_bytes()
-                )
+                (
+                    retired_digest,
+                    durable_delete,
+                    durable_gc_proof,
+                ) = self._decode_retirement(retired.read_bytes())
                 if (
                     retired_digest != expected_digest
                     or durable_delete != delete_managed_files
+                    or durable_gc_proof != gc_proof_digest
                 ):
                     raise RuntimeError(
                         "model asset retirement generation/policy drifted: "
@@ -182,6 +216,7 @@ class ModelAssetRegistry:
                 self._retirement_payload(
                     expected_digest,
                     delete_managed_files,
+                    gc_proof_digest,
                 ),
             )
             return current
@@ -189,26 +224,28 @@ class ModelAssetRegistry:
     def retirement(
         self,
         model_id: str,
-    ) -> tuple[ManagedModelAsset | None, bool] | None:
-        """Read durable policy and retained metadata for retirement recovery."""
+    ) -> tuple[ManagedModelAsset | None, bool, str | None] | None:
+        """Read durable policy, GC proof and retained metadata for recovery."""
 
         self._validate_id(model_id)
         with self._lock(model_id):
             retired = self._retired_path(model_id)
             if not retired.exists():
                 return None
-            retired_digest, delete_managed_files = self._decode_retirement(
-                retired.read_bytes()
-            )
+            (
+                retired_digest,
+                delete_managed_files,
+                gc_proof_digest,
+            ) = self._decode_retirement(retired.read_bytes())
             path = self._path(model_id)
             if not path.exists():
-                return None, delete_managed_files
+                return None, delete_managed_files, gc_proof_digest
             current = self._read(model_id)
             if retired_digest != self._digest(current):
                 raise RuntimeError(
                     f"model asset retirement metadata drifted: {model_id}"
                 )
-            return current, delete_managed_files
+            return current, delete_managed_files, gc_proof_digest
 
     def finish_retirement(
         self,
@@ -229,9 +266,11 @@ class ModelAssetRegistry:
                     "model asset retirement was not prepared: "
                     f"{expected.model_id}"
                 )
-            retired_digest, _delete_managed_files = self._decode_retirement(
-                retired.read_bytes()
-            )
+            (
+                retired_digest,
+                _delete_managed_files,
+                _gc_proof_digest,
+            ) = self._decode_retirement(retired.read_bytes())
             if retired_digest != expected_digest:
                 raise RuntimeError(
                     "model asset retirement generation drifted: "
