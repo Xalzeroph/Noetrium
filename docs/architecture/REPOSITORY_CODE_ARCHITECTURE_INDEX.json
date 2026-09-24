@@ -2,14 +2,14 @@
   "counts": {
     "parse_errors": 0,
     "python_files": 3654,
-    "python_import_edges": 7023,
-    "symbols": 4850,
+    "python_import_edges": 7025,
+    "symbols": 4851,
     "tracked_files": 4283,
     "typescript_javascript_files": 11
   },
   "language_symbol_counts": {
     "javascript": 1,
-    "python": 4844,
+    "python": 4845,
     "typescript": 5
   },
   "parse_errors": [],
@@ -32411,7 +32411,19 @@
     {
       "source_module": "tests.test_reproduction_research_os_repository_v1",
       "source_role": "tests",
+      "target_module": "research.reproductions.adacm2_memory.definition",
+      "target_role": "research_reproductions"
+    },
+    {
+      "source_module": "tests.test_reproduction_research_os_repository_v1",
+      "source_role": "tests",
       "target_module": "research.reproductions.research_os",
+      "target_role": "research_reproductions"
+    },
+    {
+      "source_module": "tests.test_reproduction_research_os_repository_v1",
+      "source_role": "tests",
+      "target_module": "research.reproductions.toolformer.definition",
       "target_role": "research_reproductions"
     },
     {
@@ -42235,7 +42247,7 @@
       "target_role": "reference_orchestration"
     },
     {
-      "count": 311,
+      "count": 313,
       "source_role": "tests",
       "target_role": "research_reproductions"
     },
@@ -42288,13 +42300,13 @@
     "public_facade": 4,
     "reference_components": 64,
     "reference_orchestration": 14,
-    "research_reproductions": 410,
+    "research_reproductions": 411,
     "sdk": 5,
     "tests": 970,
     "tooling": 38
   },
   "schema": "noetrium-repository-code-architecture-index.v1",
-  "source_git_sha": "2ea173b2f73912d85675a5b124ed1ed60d59c617",
+  "source_git_sha": "59c1f79626687f0547b2864f4dfba97d8f1db0c3",
   "symbols": [
     {
       "bases": [],
@@ -124977,7 +124989,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 37,
+      "line": 43,
       "methods": [],
       "module": "research.reproductions.research_os",
       "name": "ReproductionResearchOSCompileError",
@@ -124998,7 +125010,7 @@
       ],
       "kind": "enum",
       "language": "python",
-      "line": 41,
+      "line": 47,
       "methods": [],
       "module": "research.reproductions.research_os",
       "name": "ReproductionExecutionRequirementKind",
@@ -125020,7 +125032,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 51,
+      "line": 57,
       "methods": [
         "__post_init__"
       ],
@@ -125028,6 +125040,32 @@
       "name": "ReproductionExecutionRequirement",
       "path": "research/reproductions/research_os.py",
       "qualname": "research.reproductions.research_os.ReproductionExecutionRequirement",
+      "role": "research_reproductions"
+    },
+    {
+      "bases": [],
+      "decorators": [
+        "dataclass(frozen=True, slots=True)"
+      ],
+      "fields": [
+        "package: str",
+        "binding_id: str",
+        "study_factory: str",
+        "benchmark_id: str",
+        "values: Mapping[str, JsonValue]",
+        "requirement_digests: tuple[str, ...]",
+        "binding_digest: str"
+      ],
+      "kind": "dataclass",
+      "language": "python",
+      "line": 107,
+      "methods": [
+        "__post_init__"
+      ],
+      "module": "research.reproductions.research_os",
+      "name": "ReproductionExecutionBinding",
+      "path": "research/reproductions/research_os.py",
+      "qualname": "research.reproductions.research_os.ReproductionExecutionBinding",
       "role": "research_reproductions"
     },
     {
@@ -125046,7 +125084,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 101,
+      "line": 172,
       "methods": [
         "__post_init__"
       ],
@@ -125073,7 +125111,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 126,
+      "line": 197,
       "methods": [
         "__post_init__",
         "unresolved_parameters",
@@ -125101,7 +125139,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 165,
+      "line": 236,
       "methods": [
         "__post_init__",
         "exact",
