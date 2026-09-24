@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from noetrium_platform.evidence.artifact.catalog.api import (
     ArtifactKind,
+    ArtifactNotFound,
     ArtifactRecord,
     ArtifactRegistryPort,
     ArtifactRetention,
@@ -161,11 +162,16 @@ class ResearchOSImmutableValueAuthority:
         if (
             current.artifact_id != expected.artifact_id
             or current.retention is not expected.retention
-            or current.pinned is not expected.pinned
-            or current.reason_refs != expected.reason_refs
         ):
             raise ValueError(
-                "Research OS immutable value effective retention/pinning drifted"
+                "Research OS immutable value effective retention identity drifted"
+            )
+        if (
+            subject.subject_digest in current.reason_refs
+            and not current.pinned
+        ):
+            raise ValueError(
+                "Research OS immutable value has an unpinned live execution reason"
             )
         return current
 
@@ -269,6 +275,70 @@ class ResearchOSImmutableValueAuthority:
         payload = self._blobs.get(blob_ref)
         value = strict_json_loads(payload)
         return freeze_json(value)
+
+    def release_execution(
+        self,
+        subject: ResearchOSValueSubject,
+    ) -> str:
+        """Release only this execution subject's retention reason.
+
+        Content, catalog identity and lineage remain immutable historical truth.
+        Physical blob GC is a separate proof-backed operation.
+        """
+
+        if type(subject) is not ResearchOSValueSubject:
+            raise TypeError("Research OS execution release subject must be typed")
+        artifact_id = self._artifact_id(subject)
+        try:
+            record = self._registry.get(artifact_id)
+        except ArtifactNotFound:
+            return canonical_digest(
+                {
+                    "schema": "research-os.value-execution-release.v1",
+                    "subject_digest": subject.subject_digest,
+                    "artifact_id": artifact_id,
+                    "disposition": "absent",
+                }
+            )
+        self._validate_record(subject, record)
+        try:
+            current = self._retention.get(artifact_id)
+        except ArtifactRetentionNotFound as exc:
+            raise ValueError(
+                "Research OS immutable value lost retention authority"
+            ) from exc
+        if current.retention is not ArtifactRetention.RUN:
+            raise ValueError(
+                "Research OS immutable value execution release requires RUN retention"
+            )
+        before_generation = current.generation
+        if subject.subject_digest in current.reason_refs:
+            remaining = tuple(
+                ref
+                for ref in current.reason_refs
+                if ref != subject.subject_digest
+            )
+            current = self._retention.compare_and_set(
+                artifact_id,
+                expected_generation=current.generation,
+                retention=current.retention,
+                pinned=bool(remaining),
+                reason_refs=remaining,
+            )
+        return canonical_digest(
+            {
+                "schema": "research-os.value-execution-release.v1",
+                "subject_digest": subject.subject_digest,
+                "artifact_id": artifact_id,
+                "content_digest": record.digest,
+                "retention": current.retention.value,
+                "before_generation": before_generation,
+                "after_generation": current.generation,
+                "pinned": current.pinned,
+                "reason_refs": current.reason_refs,
+                "disposition": "released",
+            }
+        )
 
     def reuse(
         self,
