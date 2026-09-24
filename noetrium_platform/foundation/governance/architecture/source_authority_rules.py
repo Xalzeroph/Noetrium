@@ -6,6 +6,46 @@ from .source_authority_matchers import exact_call, suffix_call
 
 DEFAULT_SOURCE_AUTHORITY_RULES: tuple[_AuthorityRule, ...] = (
     SourceAuthorityRule(
+        "storage.sqlite_connection",
+        "sqlite3.connect",
+        ("noetrium_platform.foundation.kernel.kernel.durability.sqlite",),
+        exact_call("sqlite3.connect"),
+    ),
+    SourceAuthorityRule(
+        "concurrency.thread_pool",
+        "concurrent.futures.ThreadPoolExecutor",
+        ("noetrium_platform.foundation.kernel.concurrency.providers.executors",),
+        exact_call("concurrent.futures.ThreadPoolExecutor"),
+    ),
+    SourceAuthorityRule(
+        "concurrency.process_pool",
+        "concurrent.futures.ProcessPoolExecutor",
+        ("noetrium_platform.foundation.kernel.concurrency.providers.executors",),
+        exact_call("concurrent.futures.ProcessPoolExecutor"),
+    ),
+    SourceAuthorityRule(
+        "concurrency.thread",
+        "threading.Thread",
+        (
+            "noetrium_platform.foundation.kernel.concurrency.providers.async_io",
+            "noetrium_platform.foundation.kernel.concurrency.providers.serial_lane",
+            "noetrium_platform.foundation.kernel.concurrency.providers.timer",
+        ),
+        exact_call("threading.Thread"),
+    ),
+    SourceAuthorityRule(
+        "concurrency.asyncio_task",
+        "asyncio.create_task",
+        ("noetrium_platform.foundation.kernel.concurrency.providers.async_io",),
+        exact_call("asyncio.create_task"),
+    ),
+    SourceAuthorityRule(
+        "concurrency.event_loop_task",
+        "_loop.create_task",
+        ("noetrium_platform.foundation.kernel.concurrency.providers.async_io",),
+        suffix_call("_loop.create_task"),
+    ),
+    SourceAuthorityRule(
         "filesystem.atomic_replace",
         "os.replace",
         ("noetrium_platform.foundation.kernel.kernel.durability.durable_file",),
