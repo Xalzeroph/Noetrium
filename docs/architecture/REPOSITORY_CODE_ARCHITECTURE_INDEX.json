@@ -3,13 +3,13 @@
     "parse_errors": 0,
     "python_files": 3685,
     "python_import_edges": 7144,
-    "symbols": 4958,
+    "symbols": 4966,
     "tracked_files": 4321,
     "typescript_javascript_files": 11
   },
   "language_symbol_counts": {
     "javascript": 1,
-    "python": 4952,
+    "python": 4960,
     "typescript": 5
   },
   "parse_errors": [],
@@ -43016,11 +43016,11 @@
     "reference_orchestration": 14,
     "research_reproductions": 448,
     "sdk": 5,
-    "tests": 1004,
+    "tests": 1012,
     "tooling": 39
   },
   "schema": "noetrium-repository-code-architecture-index.v1",
-  "source_git_sha": "e3c34b8b0b05053edb7a9466b82df4aab777faae",
+  "source_git_sha": "606cc950db214625e9979c2875edbc3f33fa33e6",
   "symbols": [
     {
       "bases": [],
@@ -53349,7 +53349,8 @@
         "reconcile",
         "start_all",
         "stop_all",
-        "shutdown_all"
+        "shutdown_all",
+        "remove_selected"
       ],
       "module": "noetrium_platform.capabilities.model.deployment.api.ports",
       "name": "ModelFleetRuntimePort",
@@ -53365,7 +53366,7 @@
       "fields": [],
       "kind": "protocol",
       "language": "python",
-      "line": 43,
+      "line": 44,
       "methods": [
         "logs",
         "tail_logs"
@@ -53384,7 +53385,7 @@
       "fields": [],
       "kind": "protocol",
       "language": "python",
-      "line": 47,
+      "line": 48,
       "methods": [
         "read",
         "write"
@@ -53403,7 +53404,7 @@
       "fields": [],
       "kind": "protocol",
       "language": "python",
-      "line": 51,
+      "line": 52,
       "methods": [
         "wait"
       ],
@@ -53421,7 +53422,7 @@
       "fields": [],
       "kind": "protocol",
       "language": "python",
-      "line": 54,
+      "line": 55,
       "methods": [
         "run",
         "snapshot"
@@ -53440,7 +53441,7 @@
       "fields": [],
       "kind": "protocol",
       "language": "python",
-      "line": 58,
+      "line": 59,
       "methods": [
         "environment_usage",
         "gpu_allocations",
@@ -53746,7 +53747,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 15,
+      "line": 16,
       "methods": [
         "__init__",
         "status_all",
@@ -53754,6 +53755,7 @@
         "start_all",
         "stop_all",
         "shutdown_all",
+        "remove_selected",
         "_management_failure_status",
         "_run_fleet_action"
       ],
@@ -64698,7 +64700,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 47,
+      "line": 50,
       "methods": [
         "__init__",
         "wait"
@@ -64730,6 +64732,7 @@
         "_closing: bool",
         "_controllers_quiesced: bool",
         "_workloads_quiesced: bool",
+        "_auto_models_removed: bool",
         "_models_stopped: bool",
         "_resources_cleaned: bool",
         "_observability_closed: bool",
@@ -64740,7 +64743,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 56,
+      "line": 71,
       "methods": [
         "start_background_controllers",
         "quiesce_background_controllers",
@@ -131542,7 +131545,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 25,
+      "line": 43,
       "methods": [],
       "module": "scripts.verify_container_image",
       "name": "CommandReceipt",
@@ -131579,7 +131582,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 34,
+      "line": 52,
       "methods": [],
       "module": "scripts.verify_container_image",
       "name": "ContainerVerificationReceipt",
@@ -136629,7 +136632,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 10,
+      "line": 13,
       "methods": [
         "__init__",
         "task_id",
@@ -136652,7 +136655,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 39,
+      "line": 42,
       "methods": [
         "__init__",
         "submit",
@@ -136670,7 +136673,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 52,
+      "line": 55,
       "methods": [
         "__init__",
         "quiesce_workloads",
@@ -136689,7 +136692,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 72,
+      "line": 75,
       "methods": [
         "__init__",
         "run"
@@ -136706,9 +136709,10 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 84,
+      "line": 87,
       "methods": [
         "__init__",
+        "remove_selected",
         "shutdown_all"
       ],
       "module": "tests.test_managed_research_runtime_v1",
@@ -136728,7 +136732,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 94,
+      "line": 106,
       "methods": [],
       "module": "tests.test_managed_research_runtime_v1",
       "name": "Models",
@@ -136746,7 +136750,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 100,
+      "line": 112,
       "methods": [],
       "module": "tests.test_managed_research_runtime_v1",
       "name": "Management",
@@ -136760,7 +136764,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 104,
+      "line": 116,
       "methods": [
         "__init__",
         "close"
@@ -136779,7 +136783,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 112,
+      "line": 124,
       "methods": [
         "__init__",
         "shutdown_cleanup"
@@ -136796,7 +136800,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 122,
+      "line": 134,
       "methods": [
         "__init__",
         "__exit__"
@@ -136813,7 +136817,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 130,
+      "line": 142,
       "methods": [
         "execution"
       ],
@@ -136821,6 +136825,126 @@
       "name": "RecoveryExecution",
       "path": "tests/test_managed_research_runtime_v1.py",
       "qualname": "tests.test_managed_research_runtime_v1.RecoveryExecution",
+      "role": "tests"
+    },
+    {
+      "bases": [],
+      "decorators": [],
+      "fields": [],
+      "kind": "class",
+      "language": "python",
+      "line": 307,
+      "methods": [
+        "remove_selected"
+      ],
+      "module": "tests.test_managed_research_runtime_v1",
+      "name": "StartupFleet",
+      "path": "tests/test_managed_research_runtime_v1.py",
+      "qualname": "tests.test_managed_research_runtime_v1.StartupFleet",
+      "role": "tests"
+    },
+    {
+      "bases": [],
+      "decorators": [],
+      "fields": [],
+      "kind": "class",
+      "language": "python",
+      "line": 312,
+      "methods": [
+        "reconcile"
+      ],
+      "module": "tests.test_managed_research_runtime_v1",
+      "name": "StartupResources",
+      "path": "tests/test_managed_research_runtime_v1.py",
+      "qualname": "tests.test_managed_research_runtime_v1.StartupResources",
+      "role": "tests"
+    },
+    {
+      "bases": [],
+      "decorators": [],
+      "fields": [],
+      "kind": "class",
+      "language": "python",
+      "line": 316,
+      "methods": [],
+      "module": "tests.test_managed_research_runtime_v1",
+      "name": "StartupModels",
+      "path": "tests/test_managed_research_runtime_v1.py",
+      "qualname": "tests.test_managed_research_runtime_v1.StartupModels",
+      "role": "tests"
+    },
+    {
+      "bases": [],
+      "decorators": [],
+      "fields": [],
+      "kind": "class",
+      "language": "python",
+      "line": 319,
+      "methods": [],
+      "module": "tests.test_managed_research_runtime_v1",
+      "name": "StartupManagement",
+      "path": "tests/test_managed_research_runtime_v1.py",
+      "qualname": "tests.test_managed_research_runtime_v1.StartupManagement",
+      "role": "tests"
+    },
+    {
+      "bases": [],
+      "decorators": [],
+      "fields": [],
+      "kind": "class",
+      "language": "python",
+      "line": 330,
+      "methods": [
+        "remove_selected"
+      ],
+      "module": "tests.test_managed_research_runtime_v1",
+      "name": "StartupFleet",
+      "path": "tests/test_managed_research_runtime_v1.py",
+      "qualname": "tests.test_managed_research_runtime_v1.StartupFleet",
+      "role": "tests"
+    },
+    {
+      "bases": [],
+      "decorators": [],
+      "fields": [],
+      "kind": "class",
+      "language": "python",
+      "line": 336,
+      "methods": [
+        "reconcile"
+      ],
+      "module": "tests.test_managed_research_runtime_v1",
+      "name": "StartupResources",
+      "path": "tests/test_managed_research_runtime_v1.py",
+      "qualname": "tests.test_managed_research_runtime_v1.StartupResources",
+      "role": "tests"
+    },
+    {
+      "bases": [],
+      "decorators": [],
+      "fields": [],
+      "kind": "class",
+      "language": "python",
+      "line": 341,
+      "methods": [],
+      "module": "tests.test_managed_research_runtime_v1",
+      "name": "StartupModels",
+      "path": "tests/test_managed_research_runtime_v1.py",
+      "qualname": "tests.test_managed_research_runtime_v1.StartupModels",
+      "role": "tests"
+    },
+    {
+      "bases": [],
+      "decorators": [],
+      "fields": [],
+      "kind": "class",
+      "language": "python",
+      "line": 344,
+      "methods": [],
+      "module": "tests.test_managed_research_runtime_v1",
+      "name": "StartupManagement",
+      "path": "tests/test_managed_research_runtime_v1.py",
+      "qualname": "tests.test_managed_research_runtime_v1.StartupManagement",
       "role": "tests"
     },
     {

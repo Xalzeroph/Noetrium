@@ -1713,6 +1713,11 @@
     {
       "kind": "references",
       "source": "noetrium_platform.capabilities.model.deployment.api.ports.ModelFleetRuntimePort",
+      "target": "noetrium_platform.capabilities.model.deployment.api.contracts.ModelDeploymentSelector"
+    },
+    {
+      "kind": "references",
+      "source": "noetrium_platform.capabilities.model.deployment.api.ports.ModelFleetRuntimePort",
       "target": "noetrium_platform.capabilities.model.deployment.api.contracts.ModelDeploymentStatus"
     },
     {
@@ -26727,7 +26732,7 @@
       "decorators": [],
       "fields": [],
       "kind": "protocol",
-      "line": 47,
+      "line": 48,
       "methods": [
         "read",
         "write"
@@ -26748,7 +26753,7 @@
       "decorators": [],
       "fields": [],
       "kind": "protocol",
-      "line": 51,
+      "line": 52,
       "methods": [
         "wait"
       ],
@@ -26796,7 +26801,7 @@
       "decorators": [],
       "fields": [],
       "kind": "protocol",
-      "line": 43,
+      "line": 44,
       "methods": [
         "logs",
         "tail_logs"
@@ -26848,7 +26853,8 @@
         "reconcile",
         "start_all",
         "stop_all",
-        "shutdown_all"
+        "shutdown_all",
+        "remove_selected"
       ],
       "module": "noetrium_platform.capabilities.model.deployment.api.ports",
       "name": "ModelFleetRuntimePort",
@@ -26866,7 +26872,7 @@
       "decorators": [],
       "fields": [],
       "kind": "protocol",
-      "line": 54,
+      "line": 55,
       "methods": [
         "run",
         "snapshot"
@@ -26887,7 +26893,7 @@
       "decorators": [],
       "fields": [],
       "kind": "protocol",
-      "line": 58,
+      "line": 59,
       "methods": [
         "environment_usage",
         "gpu_allocations",
@@ -27242,7 +27248,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 15,
+      "line": 16,
       "methods": [
         "__init__",
         "status_all",
@@ -27250,6 +27256,7 @@
         "start_all",
         "stop_all",
         "shutdown_all",
+        "remove_selected",
         "_management_failure_status",
         "_run_fleet_action"
       ],
@@ -39201,6 +39208,7 @@
         "dataclass(slots=True)"
       ],
       "fields": [
+        "_auto_models_removed",
         "_closed",
         "_closing",
         "_controllers_quiesced",
@@ -39225,7 +39233,7 @@
         "services"
       ],
       "kind": "dataclass",
-      "line": 56,
+      "line": 71,
       "methods": [
         "start_background_controllers",
         "quiesce_background_controllers",
@@ -39249,7 +39257,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 47,
+      "line": 50,
       "methods": [
         "__init__",
         "wait"
@@ -102973,7 +102981,7 @@
     }
   ],
   "counts": {
-    "association_edges": 3441,
+    "association_edges": 3442,
     "classes": 3353,
     "constructor_edges": 913,
     "inheritance_edges": 146,
@@ -143718,7 +143726,7 @@
   "parse_errors": [],
   "registry_sha256": "d3fc1bab831f1b7379e5a36048a61c00fe173429df958270d36a16f3f00171c0",
   "schema": "noetrium-code-architecture-index.v1",
-  "source_git_sha": "e3c34b8b0b05053edb7a9466b82df4aab777faae",
+  "source_git_sha": "606cc950db214625e9979c2875edbc3f33fa33e6",
   "system_import_edges": [
     {
       "count": 85,
