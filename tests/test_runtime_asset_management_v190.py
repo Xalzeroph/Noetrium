@@ -1364,7 +1364,7 @@ def test_model_asset_retirement_retries_managed_delete_with_durable_original_pol
             )
 
 
-def test_model_asset_retirement_preserves_keep_files_policy_across_finish_failure() -> None:
+def test_model_asset_logical_retirement_can_later_gc_only_with_closure_proof() -> None:
     with TemporaryDirectory() as td:
         root = Path(td)
         directories = build_local_directory_authorities(layout(root))
@@ -1399,15 +1399,25 @@ def test_model_asset_retirement_preserves_keep_files_policy_across_finish_failur
             )
 
         assert asset.path.exists()
+        with pytest.raises(RuntimeError, match="typed model asset GC assessment"):
+            models.assets.unregister_model(
+                "retire-keep",
+                delete_managed_files=True,
+            )
+        assert calls == 1
+        assert asset.path.exists()
 
-        # The retry asks to delete, but durable policy from the first mutation
-        # is authoritative and the managed bytes must remain.
+        # Logical retirement retains exact managed-path metadata while fencing
+        # new work. A later physical GC must bind a fresh complete closure proof
+        # to that same asset digest before bytes can be removed.
+        gc = _closed_model_gc(models, "retire-keep")
         assert models.assets.unregister_model(
             "retire-keep",
             delete_managed_files=True,
+            gc=gc,
         )
         assert calls == 2
-        assert asset.path.exists()
+        assert not asset.path.exists()
         with pytest.raises(RuntimeError, match="retired and cannot be reused"):
             models.assets.register_model(
                 "retire-keep",
@@ -1415,7 +1425,6 @@ def test_model_asset_retirement_preserves_keep_files_policy_across_finish_failur
                 source,
                 mode="reference",
             )
-
 
 
 def test_stale_same_config_generation_cannot_stop_restarted_process() -> None:
