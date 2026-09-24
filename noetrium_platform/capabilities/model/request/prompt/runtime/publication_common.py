@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import hashlib
-import os
 from pathlib import Path
 
 from noetrium_platform.foundation.kernel.kernel.durability.file_lock import (
@@ -12,16 +11,6 @@ from noetrium_platform.foundation.kernel.kernel.durability.file_lock import (
 
 def sha256_bytes(raw: bytes) -> str:
     return hashlib.sha256(raw).hexdigest()
-
-
-def fsync_dir(path: Path) -> None:
-    if not hasattr(os, "O_DIRECTORY"):
-        return
-    fd = os.open(path, os.O_RDONLY | os.O_DIRECTORY)
-    try:
-        os.fsync(fd)
-    finally:
-        os.close(fd)
 
 
 class PromptPublicationError(RuntimeError):
