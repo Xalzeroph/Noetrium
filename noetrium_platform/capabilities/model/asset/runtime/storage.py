@@ -5,6 +5,9 @@ import shutil
 from typing import Mapping
 
 from noetrium_platform.substrate.api import DirectoryLayoutPort, ManagedDirectoryKind
+from noetrium_platform.foundation.kernel.kernel.durability.durable_file import (
+    fsync_directory,
+)
 from noetrium_platform.capabilities.model.asset.api import ManagedModelAsset, ModelAssetMode, ModelStoragePoolStatus
 
 
@@ -58,20 +61,55 @@ class LocalModelAssetStorage:
         return destination
 
     def remove(self, asset: ManagedModelAsset) -> bool:
+        if type(asset) is not ManagedModelAsset:
+            raise TypeError("model storage removal requires ManagedModelAsset")
         if asset.mode is ModelAssetMode.REFERENCE:
             return False
-        path = asset.path
+        if asset.storage_pool is None:
+            raise RuntimeError(
+                f"managed model asset lost storage pool identity: {asset.model_id}"
+            )
+
+        expected = self.target(
+            asset.model_id,
+            pool_id=asset.storage_pool,
+        ).absolute()
+        path = asset.path.absolute()
+        if path != expected:
+            raise RuntimeError(
+                "managed model asset path escaped canonical storage target: "
+                f"{asset.model_id}"
+            )
+
         if asset.mode is ModelAssetMode.SYMLINK:
-            if not path.is_symlink():
-                return False
-            path.unlink()
-            return True
+            if path.is_symlink():
+                path.unlink()
+                fsync_directory(path.parent)
+                return True
+            if path.exists():
+                raise RuntimeError(
+                    "managed model symlink changed physical type: "
+                    f"{asset.model_id}"
+                )
+            return False
+
+        if path.is_symlink():
+            raise RuntimeError(
+                "managed model asset changed into a symlink: "
+                f"{asset.model_id}"
+            )
         if not path.exists():
             return False
         if path.is_dir():
             shutil.rmtree(path)
-        else:
+        elif path.is_file():
             path.unlink()
+        else:
+            raise RuntimeError(
+                "managed model asset has unsupported physical type: "
+                f"{asset.model_id}"
+            )
+        fsync_directory(path.parent)
         return True
 
     def _pool(self, pool_id: str) -> Path:
