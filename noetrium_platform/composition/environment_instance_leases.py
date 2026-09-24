@@ -204,7 +204,7 @@ class EnvironmentInstanceLeaseAuthority:
         handle = self._acquire_lease(acquisition)
         old_resource = _instance_resource(old_instance.instance_id)
         for lease in self.leases.active_for(old_resource):
-            self.leases.release(lease.lease_id)
+            self.leases.release(lease.lease_id, fencing_token=lease.fencing_token)
         return handle
 
     def renew(
@@ -257,7 +257,7 @@ class EnvironmentInstanceLeaseAuthority:
         for row in rows:
             self.catalog.unbind(row.role, row.scope)
         try:
-            self.leases.release(handle.lease.lease_id)
+            self.leases.release(handle.lease.lease_id, fencing_token=handle.lease.fencing_token)
         except BaseException:
             self.catalog.mark_instance_dirty(handle.instance.instance_id)
             raise
@@ -295,7 +295,7 @@ class EnvironmentInstanceLeaseAuthority:
             resource_kind=ResourceKind.EXECUTION_ENVIRONMENT,
             now=now_epoch_s,
         ):
-            self.leases.release(lease.lease_id, now=now_epoch_s)
+            self.leases.release(lease.lease_id, fencing_token=lease.fencing_token, now=now_epoch_s)
             released.append(lease.lease_id)
 
         dirtied: list[str] = []
