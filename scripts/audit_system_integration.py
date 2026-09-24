@@ -31,6 +31,7 @@ class SystemIntegrationRow:
     script_consumers: tuple[str, ...]
     test_consumers: tuple[str, ...]
     direct_runtime_or_provider_consumers: tuple[str, ...]
+    intra_authority_concrete_consumers: tuple[str, ...]
     concrete_binding_consumers: tuple[str, ...]
     concrete_bypass_consumers: tuple[str, ...]
     facade_module: str | None
@@ -299,6 +300,7 @@ def build_report() -> dict:
     inbound: dict[str, dict[str, set[str]]] = defaultdict(lambda: defaultdict(set))
     composition_inbound: dict[str, set[str]] = defaultdict(set)
     direct_concrete: dict[str, set[str]] = defaultdict(set)
+    intra_authority_concrete: dict[str, set[str]] = defaultdict(set)
     concrete_bindings: dict[str, set[str]] = defaultdict(set)
     concrete_bypasses: dict[str, set[str]] = defaultdict(set)
     topology_inbound: dict[str, dict[str, set[str]]] = defaultdict(
@@ -306,6 +308,15 @@ def build_report() -> dict:
     )
     topology_direct_concrete: dict[str, set[str]] = defaultdict(set)
     dynamic_environment_consumers: set[str] = set()
+    canonical_authority_by_key = {
+        str(key): (
+            str(spec.get("canonical_authority"))
+            if isinstance(spec.get("canonical_authority"), str)
+            and str(spec.get("canonical_authority")).strip()
+            else None
+        )
+        for key, spec in catalog.items()
+    }
 
     for scan_root in (
         ROOT / "noetrium_platform",
@@ -338,7 +349,20 @@ def build_report() -> dict:
                     ):
                         direct_concrete[target_owner].add(module)
                         source_parts = module.split(".")
-                        if "composition" in source_parts:
+                        source_authority = (
+                            None
+                            if source_owner is None
+                            else canonical_authority_by_key.get(source_owner)
+                        )
+                        target_authority = canonical_authority_by_key.get(
+                            target_owner
+                        )
+                        if (
+                            source_authority is not None
+                            and source_authority == target_authority
+                        ):
+                            intra_authority_concrete[target_owner].add(module)
+                        elif "composition" in source_parts:
                             concrete_bindings[target_owner].add(module)
                         else:
                             concrete_bypasses[target_owner].add(module)
@@ -398,6 +422,7 @@ def build_report() -> dict:
         scripts = tuple(sorted(inbound[key]["script"]))
         tests = tuple(sorted(inbound[key]["test"]))
         concrete = tuple(sorted(direct_concrete[key]))
+        intra_authority = tuple(sorted(intra_authority_concrete[key]))
         bindings = tuple(sorted(concrete_bindings[key]))
         bypasses = tuple(sorted(concrete_bypasses[key]))
         facade = downstream_by_key.get(key, {}).get("facade_module")
@@ -439,6 +464,7 @@ def build_report() -> dict:
             script_consumers=scripts,
             test_consumers=tests,
             direct_runtime_or_provider_consumers=concrete,
+            intra_authority_concrete_consumers=intra_authority,
             concrete_binding_consumers=bindings,
             concrete_bypass_consumers=bypasses,
             facade_module=str(facade) if facade else None,
@@ -540,6 +566,9 @@ def build_report() -> dict:
         "direct_concrete_dependency_system_count": sum(
             bool(row.direct_runtime_or_provider_consumers) for row in rows
         ),
+        "intra_authority_concrete_system_count": sum(
+            bool(row.intra_authority_concrete_consumers) for row in rows
+        ),
         "concrete_binding_system_count": sum(
             bool(row.concrete_binding_consumers) for row in rows
         ),
@@ -580,8 +609,9 @@ def render_markdown(report: dict) -> str:
         f"- Registered systems: {report['system_count']}",
         f"- Disconnected/non-production-consumed: {report['disconnected_system_count']}",
         f"- Cross-system direct runtime/provider pressure: {report['direct_concrete_dependency_system_count']}",
+        f"- Intra-authority concrete reuse: {report['intra_authority_concrete_system_count']}",
         f"- Explicit composition bindings: {report['concrete_binding_system_count']}",
-        f"- Non-composition concrete bypasses: {report['concrete_bypass_system_count']}",
+        f"- Cross-authority non-composition bypasses: {report['concrete_bypass_system_count']}",
         f"- Registered components: {report['component_count']}",
         f"- Registered internal facets: {report['internal_facet_count']}",
         f"- Layer nodes needing wiring attention: {report['layer_disconnected_count']}",
@@ -686,6 +716,7 @@ def main(argv: list[str] | None = None) -> int:
             for row in report["systems"]
             if row["direct_runtime_or_provider_consumers"]
         },
+        "intra_authority_concrete_system_count": report["intra_authority_concrete_system_count"],
         "concrete_binding_system_count": report["concrete_binding_system_count"],
         "concrete_bypass_system_count": report["concrete_bypass_system_count"],
         "concrete_bypass_systems": {
