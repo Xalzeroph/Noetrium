@@ -182,6 +182,31 @@ class SQLiteEndpointAllocationStore(AtomicEndpointReservationPort):
             and str(row[4]) == owner.ownership.value
         )
 
+    @staticmethod
+    def _require_generation(
+        current: EndpointAllocation,
+        expected: EndpointAllocation,
+    ) -> None:
+        if type(expected) is not EndpointAllocation:
+            raise TypeError("endpoint lease operation requires EndpointAllocation")
+        identity = (
+            "allocation_id",
+            "endpoint",
+            "lease_id",
+            "holder_scope",
+            "purpose",
+            "request_digest",
+            "lease_holder_generation",
+            "lease_fencing_token",
+        )
+        if any(
+            getattr(current, field_name) != getattr(expected, field_name)
+            for field_name in identity
+        ):
+            raise ResourceLeaseConflict(
+                f"stale endpoint allocation generation: {expected.allocation_id}"
+            )
+
     def _reconcile_one(
         self, conn: sqlite3.Connection, allocation_id: str, now_epoch_s: float
     ) -> EndpointAllocation | None:
@@ -410,52 +435,62 @@ class SQLiteEndpointAllocationStore(AtomicEndpointReservationPort):
 
     def renew(
         self,
-        allocation_id: str,
+        allocation: EndpointAllocation,
         *,
         ttl_seconds: float,
         now: float | None = None,
     ) -> EndpointAllocation:
+        if type(allocation) is not EndpointAllocation:
+            raise TypeError("endpoint renewal requires EndpointAllocation")
         if not math.isfinite(float(ttl_seconds)) or ttl_seconds <= 0:
             raise ValueError("endpoint lease ttl_seconds must be finite and > 0")
         now_epoch_s = time() if now is None else float(now)
         if not math.isfinite(now_epoch_s):
             raise ValueError("endpoint observation time must be finite")
         with self._transaction() as conn:
-            current = self._reconcile_one(conn, allocation_id, now_epoch_s)
+            current = self._reconcile_one(
+                conn,
+                allocation.allocation_id,
+                now_epoch_s,
+            )
             if current is None:
-
-                raise KeyError(allocation_id)
+                raise KeyError(allocation.allocation_id)
+            self._require_generation(current, allocation)
             if not current.state.is_live:
-
-                raise RuntimeError(f"endpoint allocation is not active: {allocation_id}")
-            try:
-                renewed_lease = renew_resource_lease(
-                    conn,
-                    current.lease_id,
-                    fencing_token=current.lease_fencing_token,
-                    ttl_seconds=ttl_seconds,
-                    now_epoch_s=now_epoch_s,
+                raise RuntimeError(
+                    f"endpoint allocation is not active: {allocation.allocation_id}"
                 )
-                expires_at = renewed_lease.expires_at_epoch_s
-                conn.execute(
-                    "UPDATE endpoint_allocations SET lease_expires_at_epoch_s=? WHERE allocation_id=?",
-                    (expires_at, allocation_id),
-                )
-
-                return replace(current, lease_expires_at_epoch_s=expires_at)
-            except BaseException:
-
-                raise
+            renewed_lease = renew_resource_lease(
+                conn,
+                current.lease_id,
+                fencing_token=allocation.lease_fencing_token,
+                ttl_seconds=ttl_seconds,
+                now_epoch_s=now_epoch_s,
+            )
+            expires_at = renewed_lease.expires_at_epoch_s
+            conn.execute(
+                "UPDATE endpoint_allocations SET lease_expires_at_epoch_s=? "
+                "WHERE allocation_id=? AND lease_fencing_token=?",
+                (
+                    expires_at,
+                    allocation.allocation_id,
+                    allocation.lease_fencing_token,
+                ),
+            )
+            return replace(current, lease_expires_at_epoch_s=expires_at)
 
     def renew_many(
         self,
-        allocation_ids: tuple[str, ...],
+        allocations: tuple[EndpointAllocation, ...],
         *,
         ttl_seconds: float,
         now: float | None = None,
     ) -> tuple[EndpointAllocation, ...]:
-        if not allocation_ids:
+        if not allocations:
             return ()
+        if any(type(row) is not EndpointAllocation for row in allocations):
+            raise TypeError("endpoint renewal requires typed allocation generations")
+        allocation_ids = tuple(row.allocation_id for row in allocations)
         if len(set(allocation_ids)) != len(allocation_ids):
             raise ValueError("endpoint allocation ids must be unique")
         if not math.isfinite(float(ttl_seconds)) or ttl_seconds <= 0:
@@ -463,55 +498,91 @@ class SQLiteEndpointAllocationStore(AtomicEndpointReservationPort):
         now_epoch_s = time() if now is None else float(now)
         expires_at = now_epoch_s + ttl_seconds
         with self._transaction() as conn:
-            try:
-                current_rows: list[EndpointAllocation] = []
-                for allocation_id in allocation_ids:
-                    current = self._reconcile_one(conn, allocation_id, now_epoch_s)
-                    if current is None:
-                        raise KeyError(allocation_id)
-                    if not current.state.is_live:
-                        raise RuntimeError(f"endpoint allocation is not active: {allocation_id}")
-                    current_rows.append(current)
-                renewed_leases = [
-                    renew_resource_lease(
-                        conn,
-                        row.lease_id,
-                        fencing_token=row.lease_fencing_token,
-                        ttl_seconds=ttl_seconds,
-                        now_epoch_s=now_epoch_s,
-                    )
-                    for row in current_rows
-                ]
-                if any(row.expires_at_epoch_s != expires_at for row in renewed_leases):
-                    raise RuntimeError("endpoint lease renewal produced inconsistent expiry")
-                conn.executemany(
-                    "UPDATE endpoint_allocations SET lease_expires_at_epoch_s=? WHERE allocation_id=?",
-                    [(expires_at, row.allocation_id) for row in current_rows],
+            current_rows: list[EndpointAllocation] = []
+            for expected in allocations:
+                current = self._reconcile_one(
+                    conn,
+                    expected.allocation_id,
+                    now_epoch_s,
                 )
+                if current is None:
+                    raise KeyError(expected.allocation_id)
+                self._require_generation(current, expected)
+                if not current.state.is_live:
+                    raise RuntimeError(
+                        f"endpoint allocation is not active: {expected.allocation_id}"
+                    )
+                current_rows.append(current)
+            renewed_leases = [
+                renew_resource_lease(
+                    conn,
+                    row.lease_id,
+                    fencing_token=expected.lease_fencing_token,
+                    ttl_seconds=ttl_seconds,
+                    now_epoch_s=now_epoch_s,
+                )
+                for row, expected in zip(current_rows, allocations, strict=True)
+            ]
+            if any(row.expires_at_epoch_s != expires_at for row in renewed_leases):
+                raise RuntimeError("endpoint lease renewal produced inconsistent expiry")
+            conn.executemany(
+                "UPDATE endpoint_allocations SET lease_expires_at_epoch_s=? "
+                "WHERE allocation_id=? AND lease_fencing_token=?",
+                [
+                    (
+                        expires_at,
+                        expected.allocation_id,
+                        expected.lease_fencing_token,
+                    )
+                    for expected in allocations
+                ],
+            )
+            return tuple(
+                replace(row, lease_expires_at_epoch_s=expires_at)
+                for row in current_rows
+            )
 
-                return tuple(replace(row, lease_expires_at_epoch_s=expires_at) for row in current_rows)
-            except BaseException:
-
-                raise
-
-    def release(self, allocation_id: str) -> EndpointAllocation:
+    def release(self, allocation: EndpointAllocation) -> EndpointAllocation:
+        if type(allocation) is not EndpointAllocation:
+            raise TypeError("endpoint release requires EndpointAllocation")
         now_epoch_s = time()
         with self._transaction() as conn:
-            current = self._reconcile_one(conn, allocation_id, now_epoch_s)
+            current = self._reconcile_one(
+                conn,
+                allocation.allocation_id,
+                now_epoch_s,
+            )
             if current is None:
-
-                raise KeyError(allocation_id)
+                raise KeyError(allocation.allocation_id)
+            self._require_generation(current, allocation)
             if current.state is EndpointAllocationState.RELEASED:
-
                 return current
+            lease = conn.execute(
+                "SELECT fencing_token FROM resource_leases WHERE lease_id=?",
+                (current.lease_id,),
+            ).fetchone()
+            if lease is None or int(lease[0]) != allocation.lease_fencing_token:
+                raise ResourceLeaseConflict(
+                    f"stale endpoint allocation generation: {allocation.allocation_id}"
+                )
             release_resource_lease(
-                conn, current.lease_id, now_epoch_s=now_epoch_s
+                conn,
+                current.lease_id,
+                now_epoch_s=now_epoch_s,
             )
-            conn.execute(
-                "UPDATE endpoint_allocations SET state='released' WHERE allocation_id=?",
-                (allocation_id,),
+            updated = conn.execute(
+                "UPDATE endpoint_allocations SET state='released' "
+                "WHERE allocation_id=? AND state IN ('reserved','bound') "
+                "AND lease_fencing_token=?",
+                (
+                    allocation.allocation_id,
+                    allocation.lease_fencing_token,
+                ),
             )
-
+            if updated.rowcount != 1:
+                raise ResourceLeaseConflict(
+                    f"endpoint release lost authority: {allocation.allocation_id}"
+                )
             return replace(current, state=EndpointAllocationState.RELEASED)
 
     def get(self, allocation_id: str) -> EndpointAllocation | None:
