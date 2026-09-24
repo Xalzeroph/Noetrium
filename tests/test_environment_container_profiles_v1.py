@@ -151,9 +151,15 @@ def test_environment_profile_build_input_changes_with_runtime_sources() -> None:
             }
         },
         "parameters": {
+            "node_linux_x64_sha256": {
+                "value": (
+                    "88fd1ce767091fd8d4a99fdb2356e98c"
+                    "819f93f3b1f8663853a2dee9b438068a"
+                ),
+            },
             "node_version": {
                 "value": "22.22.2",
-            }
+            },
         },
     }
     mc_first = _profile_build_input_digest(
@@ -180,8 +186,19 @@ def test_environment_profile_build_input_changes_with_runtime_sources() -> None:
         base_runtime_identity_digest="e" * 64,
         resolved_build_inputs=mc_node_changed_inputs,
     )
+    mc_node_hash_changed_inputs = deepcopy(mc_inputs)
+    mc_node_hash_changed_inputs["parameters"]["node_linux_x64_sha256"][
+        "value"
+    ] = "f" * 64
+    mc_node_hash_changed = _profile_build_input_digest(
+        minecraft,
+        profile_revision="d" * 64,
+        base_runtime_identity_digest="e" * 64,
+        resolved_build_inputs=mc_node_hash_changed_inputs,
+    )
     assert mc_first != mc_java_changed
     assert mc_first != mc_node_changed
+    assert mc_first != mc_node_hash_changed
 
 
 def test_environment_profile_build_inputs_are_registry_driven() -> None:
@@ -199,10 +216,18 @@ def test_environment_profile_build_inputs_are_registry_driven() -> None:
     ]
     assert inputs["parameters"] == [
         {
+            "name": "node_linux_x64_sha256",
+            "environment_variable": "NODE_LINUX_X64_SHA256",
+            "default": (
+                "88fd1ce767091fd8d4a99fdb2356e98c"
+                "819f93f3b1f8663853a2dee9b438068a"
+            ),
+        },
+        {
             "name": "node_version",
             "environment_variable": "NODE_VERSION",
             "default": "22.22.2",
-        }
+        },
     ]
 
     builder = (ROOT / "scripts" / "build_environment_images.py").read_text(
@@ -214,6 +239,12 @@ def test_environment_profile_build_inputs_are_registry_driven() -> None:
     assert "--build-input" in builder
     assert "_resolve_profile_build_inputs" in builder
     assert '"profile_build_inputs"' in builder
+    minecraft_dockerfile = (
+        ROOT / "deploy" / "environments" / "minecraft" / "Dockerfile"
+    ).read_text(encoding="utf-8")
+    assert "NODE_LINUX_X64_SHA256" in minecraft_dockerfile
+    assert "SHASUMS256.txt" not in minecraft_dockerfile
+    assert "sha256sum -c -" in minecraft_dockerfile
 
 
 def test_environment_profile_build_input_override_parser_fails_closed() -> None:
