@@ -2,7 +2,7 @@
   "schema": "noetrium.reproduction.projection.v10",
   "authority": "generated_from_typed_definition_and_source",
   "package": "storm_wiki",
-  "package_digest": "de9bb39e66bda9794d49473902f40613ac1b74478f2c2651382e347b6f83a157",
+  "package_digest": "36c1cfb6273586572ae8c19756bfc69563e3b1a45d809b680b89947bd83f52c4",
   "definition_digest": "6984850bbaaa1139acee2db5aee2b4bfbeb80ccd94ddd7f49c298c04d45bc06d",
   "source_registry_digest": "a81615aa99cc6d96340bca8447ebe87504c9bdb0bcc0f961f51286299458a9b0",
   "lifecycle": "protocol_bound",
@@ -108,7 +108,7 @@
       "kind": "support",
       "path": "research/reproductions/storm_wiki/pipeline.py",
       "declaration_digest": "f40fb7c1b9f90211b6f540a520c1f188d25dc986573732374cc9f7c1c69eba08",
-      "content_sha256": "3d23e1054031546d150982f5b8062ade8fb76d7e885c88ce16b0bc5d82916646"
+      "content_sha256": "225662fbe33f945370fe5faea2816e664d9dad90d5f7514943fe1d6dd279f30f"
     }
   ],
   "primary_executable": "research/reproductions/storm_wiki/program.py",

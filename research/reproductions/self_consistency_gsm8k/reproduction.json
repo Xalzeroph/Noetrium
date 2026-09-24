@@ -2,7 +2,7 @@
   "schema": "noetrium.reproduction.projection.v10",
   "authority": "generated_from_typed_definition_and_source",
   "package": "self_consistency_gsm8k",
-  "package_digest": "574b5d27a6ce6c36ce5c1ebd9b49209d22ad9c5d991b48a7c9edf7e141fe1ef9",
+  "package_digest": "17bdfea55a4b2cfa77bfc14f322c5768b3af8fc94a960a5a0e73cffb674d92a7",
   "definition_digest": "9eed35b1b81187543f3b15179b22f4154694fa7e5c06a4a6d0853bd335e6e9a6",
   "source_registry_digest": "72ea8a4a07d5b07a444cd7d422268751cc97e457ce8b1d3bf424098892c6205f",
   "lifecycle": "protocol_bound",
@@ -80,7 +80,7 @@
       "kind": "method_program",
       "path": "research/reproductions/self_consistency_gsm8k/program.py",
       "declaration_digest": "8a0e0c3a859b215fb5d93cb3d5325d7145a18e1851f027e74f2c78c4db032ced",
-      "content_sha256": "eada7006eef22e512a3899e7e88c99166bc2c5c3e3b8f892f9f52f805299a11a"
+      "content_sha256": "e9b4e334bb0a4335d0ceaf06c15ae06aae4490f05e14857b03de4a7fd50e24d7"
     },
     {
       "kind": "study",

@@ -156,7 +156,7 @@
       "reproductions": [
         {
           "package": "saycan",
-          "package_digest": "0bec631254dea5377850f280cb12301655f9978d3206bc9b3013a01e0c310877",
+          "package_digest": "ad2e11de7c4e85ce2b167247e1e77a5dab67df43037a8aa173d110f9b93168b1",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "saycan-101"
@@ -193,7 +193,7 @@
             {
               "kind": "method_program",
               "path": "research/reproductions/saycan/program.py",
-              "content_sha256": "a53c111a8915e5352528070c699badb7c5980b0cf00538df29e2ad3db085aa89"
+              "content_sha256": "017e95e1a4d920529d4648e987c8d18982a87e4a2250820f2beeff3967fb7c79"
             },
             {
               "kind": "study",
@@ -727,7 +727,7 @@
       "reproductions": [
         {
           "package": "reflexion_alfworld",
-          "package_digest": "82d990ac3a0ff357d361802337e1b0a6689c11be3c1e841005c8fa84fb4ee9ce",
+          "package_digest": "443a0e0acb3ea117fa0629af70845495ba90d6c7f735b7255bce41adc8df9847",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "alfworld"
@@ -749,7 +749,7 @@
             {
               "kind": "method_program",
               "path": "research/reproductions/reflexion_alfworld/program.py",
-              "content_sha256": "1fb0c47b59bd33c8c4e1acaf537999ef787b8ff50a60caf86cb7f2ce25094cfb"
+              "content_sha256": "eba6422ee80a5ec97f6213f87fb19f5a2db7790b792c0118089b194272a9f4a6"
             },
             {
               "kind": "semantics",
@@ -797,7 +797,7 @@
       "reproductions": [
         {
           "package": "self_consistency_gsm8k",
-          "package_digest": "574b5d27a6ce6c36ce5c1ebd9b49209d22ad9c5d991b48a7c9edf7e141fe1ef9",
+          "package_digest": "17bdfea55a4b2cfa77bfc14f322c5768b3af8fc94a960a5a0e73cffb674d92a7",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "gsm8k"
@@ -823,7 +823,7 @@
             {
               "kind": "method_program",
               "path": "research/reproductions/self_consistency_gsm8k/program.py",
-              "content_sha256": "eada7006eef22e512a3899e7e88c99166bc2c5c3e3b8f892f9f52f805299a11a"
+              "content_sha256": "e9b4e334bb0a4335d0ceaf06c15ae06aae4490f05e14857b03de4a7fd50e24d7"
             },
             {
               "kind": "study",
@@ -856,7 +856,7 @@
       "reproductions": [
         {
           "package": "self_refine",
-          "package_digest": "f0e97e6182e9b95cfd242332507c88f2f746bcdbc19c0ad89ff1c14d6003ec23",
+          "package_digest": "1374d96768005230f6515ebc23924036d4678913b7279f5474711862bef2a767",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "commongen"
@@ -878,7 +878,7 @@
             {
               "kind": "method_program",
               "path": "research/reproductions/self_refine/program.py",
-              "content_sha256": "8ec0e0c286b9abc5373df6091ab925aa6605323a7025881367dc867f225a4428"
+              "content_sha256": "3ce36bfed3eeb87af19bc668878c56efb331174062205ad85bc40658b72e41ce"
             },
             {
               "kind": "study",
@@ -920,7 +920,7 @@
       "reproductions": [
         {
           "package": "steve1_minecraft",
-          "package_digest": "35a3fd6b8374d81246e2366498eda90156f62e1242ed700e4d1ab8143825635e",
+          "package_digest": "8bd2f2eb8ce240eb089afbdcdf16b6e8d2dd60e97a0d706563e8f41900a7dbf2",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "steve1-paper-prompts"
@@ -957,7 +957,7 @@
             {
               "kind": "method_program",
               "path": "research/reproductions/steve1_minecraft/program.py",
-              "content_sha256": "b75f52179edc51868e5aac91b02a4e195a21e1c12491a31c0769136fede37cd4"
+              "content_sha256": "371c782a027a9c19a85ce3d101bc43783c80b56f86f6436f919d7a1d0e06979d"
             },
             {
               "kind": "study",
@@ -1723,7 +1723,7 @@
       "reproductions": [
         {
           "package": "seeclick",
-          "package_digest": "bd39c10acfea0322a4e4ea7a93f27a166ab9be5322eca43d68ff45ca7098e282",
+          "package_digest": "7ebd89170530acc8a5d1574be680042a07a3062969428d411e20a33fac779ca0",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "screenspot"
@@ -1754,7 +1754,7 @@
             {
               "kind": "study",
               "path": "research/reproductions/seeclick/study.py",
-              "content_sha256": "bd029f23cd240e09e3ce9d300146e937cef3c9b6d87dbfb4b5b0dc1e06f19d58"
+              "content_sha256": "b34ee48e3a0fcd1b4aabb2c3665b8db29a3781bf64f2b28040f150cb70be04d6"
             },
             {
               "kind": "support",
@@ -1785,7 +1785,7 @@
       "reproductions": [
         {
           "package": "storm_wiki",
-          "package_digest": "de9bb39e66bda9794d49473902f40613ac1b74478f2c2651382e347b6f83a157",
+          "package_digest": "36c1cfb6273586572ae8c19756bfc69563e3b1a45d809b680b89947bd83f52c4",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "freshwiki"
@@ -1827,7 +1827,7 @@
             {
               "kind": "support",
               "path": "research/reproductions/storm_wiki/pipeline.py",
-              "content_sha256": "3d23e1054031546d150982f5b8062ade8fb76d7e885c88ce16b0bc5d82916646"
+              "content_sha256": "225662fbe33f945370fe5faea2816e664d9dad90d5f7514943fe1d6dd279f30f"
             }
           ],
           "blockers": [
@@ -2862,7 +2862,7 @@
       "reproductions": [
         {
           "package": "rewind_memory",
-          "package_digest": "35b9535f2ac003181080c7c20fd622f5edfc51909cadd20f5d39a911258f5a35",
+          "package_digest": "662bded303b42c796291f9e68132fce304ac13ca1af01a2fbccca1f682ac3580",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "moviechat-1k"
@@ -2893,7 +2893,7 @@
             {
               "kind": "research_program",
               "path": "research/reproductions/rewind_memory/memory.py",
-              "content_sha256": "09d72c4c5dbb15e78aef748f0040f3227521f0a643b4f59cc549f7f64ff58db5"
+              "content_sha256": "32ecb1fdacc4c4c007eebad3af92b6251318a66269182e8095fa1aadc165c74a"
             },
             {
               "kind": "study",
@@ -3619,7 +3619,7 @@
       "reproductions": [
         {
           "package": "roboagent_cvpr2026",
-          "package_digest": "fb3ec136b32c0e9dc7a11c103a066f2d749d855ed4fc02a77e108ca6f2149894",
+          "package_digest": "c93079a0c456a71d8d2c11c14327cdd3d684fd207f62a5efea844fd388605034",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "alfworld",
@@ -3652,7 +3652,7 @@
             {
               "kind": "method_program",
               "path": "research/reproductions/roboagent_cvpr2026/program.py",
-              "content_sha256": "9deb71b7b1d16e075a60acbf8f08a03f7fc419aa385c550c435438eb272a339a"
+              "content_sha256": "4a81b1d04bdf96fb78e59b43487ddfd22cd893b1ded1aa724ce21fac8c7bada1"
             },
             {
               "kind": "study",
@@ -3896,5 +3896,5 @@
       ]
     }
   ],
-  "projection_digest": "fc69a71b69340800f837780565841d2b01470191f58e92a3768f42b3c1dc58ea"
+  "projection_digest": "3dcb4df50694027852281b81fb6407134b33a2125100cd04d1b7671d5b8fde16"
 }

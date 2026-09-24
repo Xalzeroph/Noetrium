@@ -2,7 +2,7 @@
   "schema": "noetrium.reproduction.projection.v10",
   "authority": "generated_from_typed_definition_and_source",
   "package": "rewind_memory",
-  "package_digest": "35b9535f2ac003181080c7c20fd622f5edfc51909cadd20f5d39a911258f5a35",
+  "package_digest": "662bded303b42c796291f9e68132fce304ac13ca1af01a2fbccca1f682ac3580",
   "definition_digest": "2505e0ddfe3973e23ea352c3d354a1e4d37a6fcdf1b6b0b6caa9a947814ef8f5",
   "source_registry_digest": "fdb866db6a3c5cbcf051cd40e55caf5bb510d3af332ad4d5f61455c3af25568c",
   "lifecycle": "protocol_bound",
@@ -89,7 +89,7 @@
       "kind": "research_program",
       "path": "research/reproductions/rewind_memory/memory.py",
       "declaration_digest": "f0ab32b07b3593c7abc1ed87d6807b23c9d04ba27f527b6967e6d025340ab9ac",
-      "content_sha256": "09d72c4c5dbb15e78aef748f0040f3227521f0a643b4f59cc549f7f64ff58db5"
+      "content_sha256": "32ecb1fdacc4c4c007eebad3af92b6251318a66269182e8095fa1aadc165c74a"
     },
     {
       "kind": "study",
