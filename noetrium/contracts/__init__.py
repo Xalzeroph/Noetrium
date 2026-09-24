@@ -13,9 +13,6 @@ _SOURCES = tuple((_name, globals()[f'_source_{_index}']) for _index, _name in en
 _owners: dict[str, str] = {}
 _exports: list[str] = []
 
-def _qualified(owner: str, name: str) -> str:
-    return owner.replace('-', '_') + '__' + name
-
 for _owner_name, _module in _SOURCES:
     for _name in _module.__all__:
         _value = getattr(_module, _name)
@@ -35,14 +32,6 @@ for _owner_name, _module in _SOURCES:
                 globals()[_name] = _value
                 _owners[_name] = 'json'
                 continue
-        _old_alias = _qualified(_previous_owner, _name)
-        _new_alias = _qualified(_owner_name, _name)
-        if _old_alias not in globals():
-            globals()[_old_alias] = _current
-            _exports.append(_old_alias)
-        globals()[_new_alias] = _value
-        if _new_alias not in _exports:
-            _exports.append(_new_alias)
         raise RuntimeError(
             f'top-level contract symbol collision requires explicit canonical source: {_name}: '
             f'{_previous_owner} vs {_owner_name}'

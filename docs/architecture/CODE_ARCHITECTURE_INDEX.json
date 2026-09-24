@@ -73186,7 +73186,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 38,
+      "line": 37,
       "methods": [
         "__init__",
         "mode",
@@ -102073,9 +102073,9 @@
     "classes": 3328,
     "constructor_edges": 928,
     "inheritance_edges": 149,
-    "module_import_edges": 5050,
+    "module_import_edges": 5048,
     "parse_errors": 0,
-    "python_modules": 1929,
+    "python_modules": 1928,
     "registry_authorities": 20,
     "registry_nodes": 31,
     "top_level_systems": 16
@@ -113370,23 +113370,19 @@
     },
     {
       "source": "noetrium_platform.foundation.governance.architecture.gating.quality.degradation_config_scan",
-      "target": "noetrium_platform.foundation.governance.architecture.gating.quality.degradation_contracts"
+      "target": "noetrium_platform.foundation.governance.architecture.gating.quality.api.contracts"
     },
     {
       "source": "noetrium_platform.foundation.governance.architecture.gating.quality.degradation_config_scan",
       "target": "noetrium_platform.foundation.governance.architecture.gating.quality.degradation_paths"
     },
     {
-      "source": "noetrium_platform.foundation.governance.architecture.gating.quality.degradation_contracts",
-      "target": "noetrium_platform.foundation.governance.architecture.gating.quality.api.contracts"
-    },
-    {
       "source": "noetrium_platform.foundation.governance.architecture.gating.quality.degradation_python_scan",
       "target": "noetrium_platform.foundation.governance.api"
     },
     {
       "source": "noetrium_platform.foundation.governance.architecture.gating.quality.degradation_python_scan",
-      "target": "noetrium_platform.foundation.governance.architecture.gating.quality.degradation_contracts"
+      "target": "noetrium_platform.foundation.governance.architecture.gating.quality.api.contracts"
     },
     {
       "source": "noetrium_platform.foundation.governance.architecture.gating.quality.degradation_python_scan",
@@ -113398,11 +113394,11 @@
     },
     {
       "source": "noetrium_platform.foundation.governance.architecture.gating.quality.no_degradation",
-      "target": "noetrium_platform.foundation.governance.architecture.gating.quality.degradation_config_scan"
+      "target": "noetrium_platform.foundation.governance.architecture.gating.quality.api.contracts"
     },
     {
       "source": "noetrium_platform.foundation.governance.architecture.gating.quality.no_degradation",
-      "target": "noetrium_platform.foundation.governance.architecture.gating.quality.degradation_contracts"
+      "target": "noetrium_platform.foundation.governance.architecture.gating.quality.degradation_config_scan"
     },
     {
       "source": "noetrium_platform.foundation.governance.architecture.gating.quality.no_degradation",
@@ -118459,10 +118455,6 @@
     {
       "source": "noetrium_platform.infrastructure.reliability.forensics.providers",
       "target": "noetrium_platform.infrastructure.reliability.forensics.segmented_hashlog"
-    },
-    {
-      "source": "noetrium_platform.infrastructure.reliability.forensics.providers.directory_change_signal",
-      "target": "noetrium_platform.infrastructure.reliability.forensics.providers.hashchain_core"
     },
     {
       "source": "noetrium_platform.infrastructure.reliability.forensics.providers.directory_change_signal",
@@ -133277,20 +133269,11 @@
     {
       "imports": [
         "noetrium_platform.foundation.governance.api",
-        "noetrium_platform.foundation.governance.architecture.gating.quality.degradation_contracts",
+        "noetrium_platform.foundation.governance.architecture.gating.quality.api.contracts",
         "noetrium_platform.foundation.governance.architecture.gating.quality.degradation_paths"
       ],
       "module": "noetrium_platform.foundation.governance.architecture.gating.quality.degradation_config_scan",
       "path": "noetrium_platform/foundation/governance/architecture/gating/quality/degradation_config_scan.py",
-      "system_key": "governance",
-      "top_system": "governance"
-    },
-    {
-      "imports": [
-        "noetrium_platform.foundation.governance.architecture.gating.quality.api.contracts"
-      ],
-      "module": "noetrium_platform.foundation.governance.architecture.gating.quality.degradation_contracts",
-      "path": "noetrium_platform/foundation/governance/architecture/gating/quality/degradation_contracts.py",
       "system_key": "governance",
       "top_system": "governance"
     },
@@ -133304,7 +133287,7 @@
     {
       "imports": [
         "noetrium_platform.foundation.governance.api",
-        "noetrium_platform.foundation.governance.architecture.gating.quality.degradation_contracts",
+        "noetrium_platform.foundation.governance.architecture.gating.quality.api.contracts",
         "noetrium_platform.foundation.governance.architecture.gating.quality.degradation_paths"
       ],
       "module": "noetrium_platform.foundation.governance.architecture.gating.quality.degradation_python_scan",
@@ -133315,8 +133298,8 @@
     {
       "imports": [
         "noetrium_platform.foundation.governance.api",
+        "noetrium_platform.foundation.governance.architecture.gating.quality.api.contracts",
         "noetrium_platform.foundation.governance.architecture.gating.quality.degradation_config_scan",
-        "noetrium_platform.foundation.governance.architecture.gating.quality.degradation_contracts",
         "noetrium_platform.foundation.governance.architecture.gating.quality.degradation_python_scan"
       ],
       "module": "noetrium_platform.foundation.governance.architecture.gating.quality.no_degradation",
@@ -138701,7 +138684,6 @@
     },
     {
       "imports": [
-        "noetrium_platform.infrastructure.reliability.forensics.providers.hashchain_core",
         "noetrium_platform.infrastructure.reliability.forensics.providers.linux_directory_watch"
       ],
       "module": "noetrium_platform.infrastructure.reliability.forensics.providers.directory_change_signal",
@@ -143204,7 +143186,7 @@
   "parse_errors": [],
   "registry_sha256": "d3fc1bab831f1b7379e5a36048a61c00fe173429df958270d36a16f3f00171c0",
   "schema": "noetrium-code-architecture-index.v1",
-  "source_git_sha": "0326744b38343dde8dd465306026a8fdff0dedc6",
+  "source_git_sha": "ba970a4e2ee823cd5f4e6530fb206db705af4366",
   "system_import_edges": [
     {
       "count": 90,
@@ -143267,7 +143249,7 @@
       "target": "platform"
     },
     {
-      "count": 454,
+      "count": 453,
       "source": "governance",
       "target": "governance"
     },
@@ -143337,7 +143319,7 @@
       "target": "platform"
     },
     {
-      "count": 228,
+      "count": 227,
       "source": "reliability",
       "target": "reliability"
     },

@@ -2,7 +2,7 @@
   "counts": {
     "parse_errors": 0,
     "python_files": 3631,
-    "python_import_edges": 6874,
+    "python_import_edges": 6873,
     "symbols": 4826,
     "tracked_files": 4260,
     "typescript_javascript_files": 11
@@ -11904,12 +11904,6 @@
       "source_module": "noetrium_platform.infrastructure.reliability.forensics.composition.store",
       "source_role": "core_platform",
       "target_module": "noetrium_platform.infrastructure.reliability.forensics.runtime.write_lanes",
-      "target_role": "core_platform"
-    },
-    {
-      "source_module": "noetrium_platform.infrastructure.reliability.forensics.providers.directory_change_signal",
-      "source_role": "core_platform",
-      "target_module": "noetrium_platform.infrastructure.reliability.forensics.providers.hashchain_core",
       "target_role": "core_platform"
     },
     {
@@ -41261,7 +41255,7 @@
   ],
   "role_import_counts": [
     {
-      "count": 2598,
+      "count": 2597,
       "source_role": "core_platform",
       "target_role": "core_platform"
     },
@@ -41377,7 +41371,7 @@
     }
   ],
   "role_python_module_counts": {
-    "core_platform": 1929,
+    "core_platform": 1928,
     "examples": 6,
     "other": 1,
     "public_facade": 40,
@@ -41385,7 +41379,7 @@
     "reference_orchestration": 10,
     "research_reproductions": 760,
     "tests": 786,
-    "tooling": 77
+    "tooling": 78
   },
   "role_symbol_counts": {
     "core_platform": 3329,
@@ -41400,7 +41394,7 @@
     "tooling": 38
   },
   "schema": "noetrium-repository-code-architecture-index.v1",
-  "source_git_sha": "0326744b38343dde8dd465306026a8fdff0dedc6",
+  "source_git_sha": "ba970a4e2ee823cd5f4e6530fb206db705af4366",
   "symbols": [
     {
       "bases": [],
@@ -94172,7 +94166,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 38,
+      "line": 37,
       "methods": [
         "__init__",
         "mode",
@@ -127454,7 +127448,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 48,
+      "line": 43,
       "methods": [],
       "module": "scripts.generate_downstream_contracts",
       "name": "ApiModuleSurface",
@@ -127483,7 +127477,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 55,
+      "line": 50,
       "methods": [],
       "module": "scripts.generate_downstream_contracts",
       "name": "SystemSurface",
@@ -141545,6 +141539,7 @@
         "test_linux_fork_child_uses_independent_inotify_instance",
         "test_windows_fresh_directory_creation_signal_has_zero_misses",
         "test_windows_change_signal_detects_repeated_create_delete_rename",
+        "test_directory_change_signal_requires_exact_kernel_authority",
         "test_external_directory_mutation_during_active_append_fails_closed",
         "test_owned_segment_creation_does_not_mask_extra_directory_entry",
         "test_owned_segment_creation_boundedly_waits_for_delayed_notification",
