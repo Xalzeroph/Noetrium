@@ -81,8 +81,9 @@ class JournalInspectionService(JournalInspectionPort):
             raise ValueError("inspection machine_id does not match identity")
         transitions = self.journal.commits(machine_id)
         pending = () if self.outbox is None else tuple(
-            envelope.command_id for envelope in self.outbox.pending()
-            if envelope.machine_id == machine_id
+            envelope.command.command_id
+            for envelope in self.outbox.pending()
+            if envelope.source_machine_id == machine_id
         )
         children = tuple(
             child for commit in transitions for child in commit.child_links
