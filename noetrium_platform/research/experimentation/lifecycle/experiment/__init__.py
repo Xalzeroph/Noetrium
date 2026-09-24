@@ -1,9 +1,7 @@
 """Experiment subsystem public contract surface."""
 
 from .api import (
-    ExperimentComponentBindingPort,
     ExperimentParticipantSpec,
-    ExperimentTrialCycleExecutorPort,
     ExperimentSpec,
     ExperimentTaskSpec,
     ExperimentWorkloadFailure,
@@ -15,9 +13,7 @@ from .api import (
 )
 
 __all__ = [
-    "ExperimentComponentBindingPort",
     "ExperimentParticipantSpec",
-    "ExperimentTrialCycleExecutorPort",
     "ExperimentSpec",
     "ExperimentTaskSpec",
     "ExperimentWorkloadFailure",
