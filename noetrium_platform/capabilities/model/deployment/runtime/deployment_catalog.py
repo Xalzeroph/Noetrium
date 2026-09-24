@@ -9,7 +9,7 @@ from noetrium_platform.capabilities.model.deployment.api import (
 )
 from noetrium_platform.substrate.api import PythonEnvironmentLookupPort
 
-from noetrium_platform.capabilities.model.asset.api import ModelAssetLookupPort
+from noetrium_platform.capabilities.model.asset.api import ModelAssetDeploymentAdmissionPort
 from .deployment_registry import ModelDeploymentRegistry
 
 
@@ -18,7 +18,7 @@ class ModelDeploymentCatalog:
 
     def __init__(
         self,
-        asset_registry: ModelAssetLookupPort,
+        asset_registry: ModelAssetDeploymentAdmissionPort,
         deployment_registry: ModelDeploymentRegistry,
         python_environments: PythonEnvironmentLookupPort,
     ) -> None:
@@ -27,11 +27,19 @@ class ModelDeploymentCatalog:
         self._python_environments = python_environments
 
     def put_deployment(self, spec: ModelDeploymentSpec) -> ModelDeploymentSpec:
-        self._asset_registry.get(spec.model_id)
         if spec.python_environment_id is not None:
             self._python_environments.get(spec.python_environment_id)
-        normalized = replace(spec, tags=tuple(sorted({tag.strip() for tag in spec.tags if tag.strip()})))
-        return self._deployment_registry.put(normalized)
+        normalized = replace(
+            spec,
+            tags=tuple(sorted({tag.strip() for tag in spec.tags if tag.strip()})),
+        )
+        # Hold the model asset's cross-process retirement fence until the
+        # desired deployment is durably published. This closes the window in
+        # which asset validation could succeed, retirement could publish, GC
+        # could see no deployment yet, and the stale deployment could commit
+        # after physical bytes were removed.
+        with self._asset_registry.deployment_admission(spec.model_id):
+            return self._deployment_registry.put(normalized)
 
     def deployment(self, deployment_id: str) -> ModelDeploymentSpec:
         return self._deployment_registry.get(deployment_id)
