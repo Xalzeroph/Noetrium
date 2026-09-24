@@ -533,7 +533,7 @@
       "reproductions": [
         {
           "package": "hugginggpt",
-          "package_digest": "ca9a8ba37481d063cad362725a846b5259f6bbc98b7361468a1c7a218efb1f7b",
+          "package_digest": "1d91c9598b1cff676ff28ace622a227f1129e4798494aadbca130f90edf15f95",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "hugginggpt-paper-tasks"
@@ -996,7 +996,7 @@
       "reproductions": [
         {
           "package": "toolformer",
-          "package_digest": "0c7dca2e80907e6415c60ce0f2030ec6a05fae1c958ec2ece349ab7df4abd585",
+          "package_digest": "4f7ae83d9f0acbfbf01597e0b34fb889ca3cf7998b4ef5984cb93162f5170c23",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "toolformer-eval"
@@ -1581,7 +1581,7 @@
       "reproductions": [
         {
           "package": "metagpt_software_company",
-          "package_digest": "99a6cfea31d5c6f9b5289bc0de32e419e16babd884b2583981fc2d5ded7a9f12",
+          "package_digest": "8f6707081da233236be591f9a3ffa62ec4babec92ed2a32fa2611cf2c26e9a70",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "humaneval"
@@ -1785,7 +1785,7 @@
       "reproductions": [
         {
           "package": "storm_wiki",
-          "package_digest": "c3ae23c4235f46341777940c4594c1b9d43737c439c8c1dd20a850ecf283be17",
+          "package_digest": "37895f2ad4151afea6679e495d46a2f9cc45434f6fba1a5c9dcf05783f13d754",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "freshwiki"
@@ -1927,7 +1927,7 @@
       "reproductions": [
         {
           "package": "toolllm_toolbench",
-          "package_digest": "b84bccd6643c88a9852b6aea29cfad8b362cf82fb0a5124561d4c44c7dfcaf71",
+          "package_digest": "488d3abaace61fdfb2aab954d490a3c60b7b4f32a48273db3c65e49d230ff6de",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "toolbench"
@@ -3896,5 +3896,5 @@
       ]
     }
   ],
-  "projection_digest": "5d6faf8e4b2da911dc69ab5c9c425b69bf2dc7564db134fe740cb5989474a14e"
+  "projection_digest": "7deaad0b53914406b686e947445c51cdf212e2ef43b0ae69c40e8cb8fac56ca9"
 }
