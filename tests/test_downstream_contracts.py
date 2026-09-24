@@ -150,7 +150,40 @@ def test_generator_readme_drift_fails_closed(tmp_path, monkeypatch) -> None:
     monkeypatch.setattr(module, "render_markdown", lambda _root, _surfaces: b"")
     monkeypatch.setattr(module, "render_root_contract_init", lambda _root: "")
     monkeypatch.setattr(module, "render_unified_api_stub", lambda _root, _surfaces: ("", 0))
-    monkeypatch.setattr(module, "_CONVENIENCE_FACADES", {})
     monkeypatch.setattr(module, "_readme_paths", lambda _root: (readme,))
     monkeypatch.setattr(module, "_write_or_check", lambda *_args, **_kwargs: True)
     assert module.generate(tmp_path, check=True) == 1
+
+
+def test_generator_rejects_system_facade_symbol_collision() -> None:
+    script = ROOT / "scripts/generate_downstream_contracts.py"
+    spec = importlib.util.spec_from_file_location(
+        "_noetrium_generate_contracts_collision_test",
+        script,
+    )
+    assert spec is not None and spec.loader is not None
+    module = importlib.util.module_from_spec(spec)
+    sys.modules[spec.name] = module
+    spec.loader.exec_module(module)
+    surface = module.SystemSurface(
+        system_key="fixture",
+        package_prefix="fixture",
+        authority=None,
+        canonical_authority=None,
+        node_kind="facet",
+        owns="fixture",
+        must_not_own="none",
+        requires=(),
+        provides=(),
+        downstream_surface="public",
+        api_modules=(
+            module.ApiModuleSurface("fixture.api.left", "left.py", ("Value",)),
+            module.ApiModuleSurface("fixture.api.right", "right.py", ("Value",)),
+        ),
+        facade_module="noetrium.contracts.systems.fixture",
+    )
+    with pytest.raises(
+        RuntimeError,
+        match="symbol collision requires one canonical API owner",
+    ):
+        module.render_facade(surface)
