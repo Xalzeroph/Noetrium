@@ -167,3 +167,22 @@ _ENVIRONMENT_AUTHORING_EXPORTS = (
     "SensorSpec",
 )
 __all__ += _ENVIRONMENT_AUTHORING_EXPORTS
+
+from .fork import (
+    EnvironmentForkReceipt,
+    EnvironmentSessionOpener,
+    fork_environment_session,
+)
+from .replay import (
+    EnvironmentReplayError,
+    EnvironmentReplayReceipt,
+    replay_environment_prefix,
+)
+__all__ = tuple(__all__) + (
+    "EnvironmentForkReceipt",
+    "EnvironmentSessionOpener",
+    "fork_environment_session",
+    "EnvironmentReplayError",
+    "EnvironmentReplayReceipt",
+    "replay_environment_prefix",
+)
