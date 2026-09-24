@@ -412,3 +412,30 @@ def test_environment_bootstrap_orphan_reaper_fails_closed_on_unknown_docker_stat
             "docker ps -aq --no-trunc", ""
         )
         assert "|| true" not in block
+
+
+def test_environment_bootstrap_signal_cleanup_uses_exact_ids_and_surfaces_failure() -> None:
+    bootstrap = (ROOT / "deploy" / "build-environments.sh").read_text(
+        encoding="utf-8"
+    )
+
+    child_cleanup = bootstrap.split(
+        "cleanup_owned_bootstrap_children() {", 1
+    )[1].split("cleanup_owned_bootstrap_container() {", 1)[0]
+    owner_cleanup = bootstrap.split(
+        "cleanup_owned_bootstrap_container() {", 1
+    )[1].split("bootstrap_cleanup() {", 1)[0]
+    trap_cleanup = bootstrap.split(
+        "bootstrap_cleanup() {", 1
+    )[1].split("run_bootstrap_container() {", 1)[0]
+
+    for block in (child_cleanup, owner_cleanup):
+        assert "docker ps -aq --no-trunc" in block
+        assert "remove_bootstrap_container_exact" in block
+        assert "|| true" not in block
+
+    assert 'docker rm -f "$BOOTSTRAP_CONTAINER_NAME"' not in trap_cleanup
+    assert "cleanup_owned_bootstrap_container || cleanup_failed=1" in trap_cleanup
+    assert "cleanup_owned_bootstrap_children || cleanup_failed=1" in trap_cleanup
+    assert "Bootstrap cleanup did not prove physical convergence." in trap_cleanup
+    assert '[ "$status" -ne 0 ] || status=1' in trap_cleanup
