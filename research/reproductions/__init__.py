@@ -30,6 +30,7 @@ def execution_request(
     benchmark: object,
     *,
     benchmark_split_ids: tuple[str, ...],
+    benchmark_resolution_proof_digest: str,
 ) -> object:
     """Declare one exact scientific execution lane without platform wiring.
 
@@ -44,6 +45,7 @@ def execution_request(
         study_factory,
         benchmark,
         benchmark_split_ids,
+        benchmark_resolution_proof_digest,
     )
 
 
