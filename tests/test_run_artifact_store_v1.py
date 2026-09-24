@@ -84,9 +84,17 @@ def test_directory_run_artifact_store_publishes_atomic_json(tmp_path: Path) -> N
 def test_directory_run_artifact_store_rejects_escape_and_reserved_authority_path(tmp_path: Path) -> None:
     store = _store(tmp_path / "run")
     with pytest.raises(ValueError):
-        store.path("../outside.json", kind=RunArtifactKind.RESULT)
+        store.publish_text(
+            "../outside.json",
+            "forbidden",
+            kind=RunArtifactKind.RESULT,
+        )
     with pytest.raises(ValueError, match="reserved authority path"):
-        store.path(".run-artifact-finalized/forged.json", kind=RunArtifactKind.EVIDENCE)
+        store.publish_text(
+            ".run-artifact-finalized/forged.json",
+            "forbidden",
+            kind=RunArtifactKind.EVIDENCE,
+        )
 
 
 def test_directory_run_artifact_store_publishes_text_atomically(tmp_path: Path) -> None:
