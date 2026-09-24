@@ -24,7 +24,7 @@ from noetrium_platform.research.experimentation.workload.api import (
     WorkloadMethodReceipt,
     WorkloadTaskResult,
 )
-from noetrium_platform.research.experimentation.lifecycle.run.runtime.trial import (
+from noetrium_platform.research.experimentation.lifecycle.study.providers.trial import (
     StandardWorkloadMeasurementProjection,
     WorkloadTrialProvider,
 )
