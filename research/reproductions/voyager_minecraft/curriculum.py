@@ -3,7 +3,7 @@ from __future__ import annotations
 from collections.abc import Mapping, Sequence
 import re
 
-from noetrium_platform.foundation.kernel.kernel import JsonObject, JsonValue, canonical_digest, freeze_json
+from noetrium.api import JsonObject, JsonValue, canonical_digest, freeze_json
 
 
 VOYAGER_CURRICULUM_OBSERVATION_ORDER = (
