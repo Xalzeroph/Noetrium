@@ -3,6 +3,8 @@ from __future__ import annotations
 from contextlib import contextmanager
 from pathlib import Path
 import sqlite3
+
+from noetrium_platform.foundation.kernel.kernel.durability.sqlite import open_durable_sqlite_writer
 from typing import Iterator
 
 from noetrium_platform.foundation.kernel.kernel import (
@@ -353,11 +355,11 @@ class SQLiteModelRevisionAuthority:
 
     def _connect(self) -> sqlite3.Connection:
         try:
-            connection = sqlite3.connect(self._path, timeout=30.0, isolation_level=None)
+            connection = open_durable_sqlite_writer(
+                self._path,
+                timeout_seconds=30.0,
+            )
             connection.row_factory = sqlite3.Row
-            connection.execute("PRAGMA foreign_keys=ON")
-            connection.execute("PRAGMA synchronous=FULL")
-            connection.execute("PRAGMA journal_mode=WAL")
             return connection
         except sqlite3.DatabaseError as exc:
             raise ModelRevisionIntegrityError("model revision database cannot be opened") from exc
