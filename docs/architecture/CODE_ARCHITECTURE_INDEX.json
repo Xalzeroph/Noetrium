@@ -21758,7 +21758,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 14,
+      "line": 16,
       "methods": [
         "__init__"
       ],
@@ -44384,7 +44384,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 76,
+      "line": 78,
       "methods": [
         "__init__",
         "acquire",
@@ -44429,7 +44429,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 25,
+      "line": 24,
       "methods": [
         "__init__",
         "_connect_writer",
@@ -44634,7 +44634,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 24,
+      "line": 23,
       "methods": [
         "__init__",
         "_connect_writer",
@@ -45080,7 +45080,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 27,
+      "line": 26,
       "methods": [
         "__init__",
         "_connect_writer",
@@ -45372,7 +45372,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 31,
+      "line": 30,
       "methods": [
         "__init__",
         "_connect_writer",
@@ -47069,7 +47069,7 @@
         "valid_bytes"
       ],
       "kind": "dataclass",
-      "line": 13,
+      "line": 15,
       "methods": [],
       "module": "noetrium_platform.evidence.observability.capture.providers.segment_recovery",
       "name": "RecoveredRawSegment",
@@ -47085,7 +47085,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 20,
+      "line": 22,
       "methods": [
         "__init__",
         "sequence",
@@ -47114,7 +47114,7 @@
         "sequence"
       ],
       "kind": "dataclass",
-      "line": 14,
+      "line": 16,
       "methods": [],
       "module": "noetrium_platform.evidence.observability.capture.providers.segment_writer",
       "name": "SegmentWriterState",
@@ -47802,7 +47802,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 27,
+      "line": 29,
       "methods": [],
       "module": "noetrium_platform.evidence.observability.logging.storage.runtime.jsonl",
       "name": "JsonlLogCorruptionError",
@@ -47822,7 +47822,7 @@
         "_SEGMENT_MARKER"
       ],
       "kind": "class",
-      "line": 31,
+      "line": 33,
       "methods": [
         "logical_path",
         "__init__",
@@ -55042,7 +55042,7 @@
         "zip_path"
       ],
       "kind": "dataclass",
-      "line": 63,
+      "line": 65,
       "methods": [],
       "module": "noetrium_platform.foundation.governance.release.runtime.packager",
       "name": "ReleasePackage",
@@ -55060,7 +55060,7 @@
         "NORMALIZED_DT"
       ],
       "kind": "class",
-      "line": 71,
+      "line": 73,
       "methods": [
         "__init__",
         "_zip_info",
@@ -55085,7 +55085,7 @@
         "compression_level"
       ],
       "kind": "dataclass",
-      "line": 54,
+      "line": 56,
       "methods": [
         "__post_init__"
       ],
@@ -55103,7 +55103,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 18,
+      "line": 20,
       "methods": [
         "__init__",
         "write",
@@ -64235,7 +64235,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 7,
+      "line": 9,
       "methods": [
         "__init__",
         "open",
@@ -67373,7 +67373,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 72,
+      "line": 74,
       "methods": [
         "__init__",
         "_operation_transition_lock",
@@ -67405,7 +67405,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 52,
+      "line": 54,
       "methods": [
         "__init__",
         "__enter__",
@@ -67427,7 +67427,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 33,
+      "line": 35,
       "methods": [
         "__init__",
         "__enter__",
@@ -73509,7 +73509,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 10,
+      "line": 12,
       "methods": [
         "__init__",
         "append"
@@ -74138,7 +74138,7 @@
         "row_hash"
       ],
       "kind": "dataclass",
-      "line": 9,
+      "line": 11,
       "methods": [],
       "module": "noetrium_platform.infrastructure.reliability.forensics.providers.segmented_writer",
       "name": "SegmentedAppendReceipt",
@@ -74154,7 +74154,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 17,
+      "line": 19,
       "methods": [
         "__init__",
         "path",
@@ -102383,7 +102383,7 @@
     "classes": 3336,
     "constructor_edges": 932,
     "inheritance_edges": 149,
-    "module_import_edges": 5084,
+    "module_import_edges": 5093,
     "parse_errors": 0,
     "python_modules": 1927,
     "registry_authorities": 20,
@@ -103957,6 +103957,10 @@
     {
       "source": "noetrium_platform.capabilities.environment.minecraft.providers.server_files",
       "target": "noetrium_platform.foundation.kernel.kernel"
+    },
+    {
+      "source": "noetrium_platform.capabilities.environment.minecraft.providers.server_files",
+      "target": "noetrium_platform.foundation.kernel.kernel.durability"
     },
     {
       "source": "noetrium_platform.capabilities.environment.minecraft.providers.world_copy",
@@ -111283,6 +111287,10 @@
       "target": "noetrium_platform.evidence.artifact.content.providers._tar_plan"
     },
     {
+      "source": "noetrium_platform.evidence.artifact.content.providers._tar_extract",
+      "target": "noetrium_platform.foundation.kernel.kernel.durability"
+    },
+    {
       "source": "noetrium_platform.evidence.artifact.content.providers._tar_plan",
       "target": "noetrium_platform.evidence.artifact.content.api.materialization"
     },
@@ -111309,6 +111317,10 @@
     {
       "source": "noetrium_platform.evidence.artifact.content.providers.download",
       "target": "noetrium_platform.evidence.artifact.content.providers._publication"
+    },
+    {
+      "source": "noetrium_platform.evidence.artifact.content.providers.download",
+      "target": "noetrium_platform.foundation.kernel.kernel.durability"
     },
     {
       "source": "noetrium_platform.evidence.artifact.content.providers.filesystem_storage",
@@ -112047,6 +112059,10 @@
       "target": "noetrium_platform.evidence.observability.capture.providers.segment_codec"
     },
     {
+      "source": "noetrium_platform.evidence.observability.capture.providers.segment_recovery",
+      "target": "noetrium_platform.foundation.kernel.kernel.durability"
+    },
+    {
       "source": "noetrium_platform.evidence.observability.capture.providers.segment_writer",
       "target": "noetrium_platform.evidence.observability.capture.api.contracts"
     },
@@ -112397,6 +112413,10 @@
     {
       "source": "noetrium_platform.evidence.observability.logging.storage.runtime.jsonl",
       "target": "noetrium_platform.evidence.observability.logging.storage.runtime.codec"
+    },
+    {
+      "source": "noetrium_platform.evidence.observability.logging.storage.runtime.jsonl",
+      "target": "noetrium_platform.foundation.kernel.kernel.durability"
     },
     {
       "source": "noetrium_platform.evidence.observability.logging.storage.runtime.jsonl",
@@ -114756,6 +114776,10 @@
     },
     {
       "source": "noetrium_platform.foundation.governance.release.runtime.packager",
+      "target": "noetrium_platform.foundation.kernel.kernel.durability"
+    },
+    {
+      "source": "noetrium_platform.foundation.governance.release.runtime.packager",
       "target": "noetrium_platform.foundation.kernel.kernel.durability.durable_file"
     },
     {
@@ -116241,6 +116265,10 @@
     {
       "source": "noetrium_platform.infrastructure.lifecycle.process.capture",
       "target": "noetrium_platform.infrastructure.lifecycle.process.segmented"
+    },
+    {
+      "source": "noetrium_platform.infrastructure.lifecycle.process.capture.fd",
+      "target": "noetrium_platform.foundation.kernel.kernel.durability"
     },
     {
       "source": "noetrium_platform.infrastructure.lifecycle.process.capture.segmented",
@@ -118932,6 +118960,10 @@
     },
     {
       "source": "noetrium_platform.infrastructure.reliability.forensics.providers.hashlog_writer",
+      "target": "noetrium_platform.foundation.kernel.kernel.durability"
+    },
+    {
+      "source": "noetrium_platform.infrastructure.reliability.forensics.providers.hashlog_writer",
       "target": "noetrium_platform.infrastructure.reliability.forensics.providers.hashchain_core"
     },
     {
@@ -119197,6 +119229,10 @@
     {
       "source": "noetrium_platform.infrastructure.reliability.forensics.providers.segmented_state",
       "target": "noetrium_platform.infrastructure.reliability.forensics.providers.hashchain_core"
+    },
+    {
+      "source": "noetrium_platform.infrastructure.reliability.forensics.providers.segmented_writer",
+      "target": "noetrium_platform.foundation.kernel.kernel.durability"
     },
     {
       "source": "noetrium_platform.infrastructure.reliability.forensics.providers.segmented_writer",
@@ -124293,7 +124329,8 @@
     {
       "imports": [
         "noetrium_platform.capabilities.environment.minecraft.api",
-        "noetrium_platform.foundation.kernel.kernel"
+        "noetrium_platform.foundation.kernel.kernel",
+        "noetrium_platform.foundation.kernel.kernel.durability"
       ],
       "module": "noetrium_platform.capabilities.environment.minecraft.providers.server_files",
       "path": "noetrium_platform/capabilities/environment/minecraft/providers/server_files.py",
@@ -130546,7 +130583,8 @@
     {
       "imports": [
         "noetrium_platform.evidence.artifact.content.api.materialization",
-        "noetrium_platform.evidence.artifact.content.providers._tar_plan"
+        "noetrium_platform.evidence.artifact.content.providers._tar_plan",
+        "noetrium_platform.foundation.kernel.kernel.durability"
       ],
       "module": "noetrium_platform.evidence.artifact.content.providers._tar_extract",
       "path": "noetrium_platform/evidence/artifact/content/providers/_tar_extract.py",
@@ -130577,7 +130615,8 @@
       "imports": [
         "noetrium_platform.evidence.artifact.catalog.api",
         "noetrium_platform.evidence.artifact.content.api.acquisition",
-        "noetrium_platform.evidence.artifact.content.providers._publication"
+        "noetrium_platform.evidence.artifact.content.providers._publication",
+        "noetrium_platform.foundation.kernel.kernel.durability"
       ],
       "module": "noetrium_platform.evidence.artifact.content.providers.download",
       "path": "noetrium_platform/evidence/artifact/content/providers/download.py",
@@ -131605,7 +131644,8 @@
     {
       "imports": [
         "noetrium_platform.evidence.observability.capture.api.contracts",
-        "noetrium_platform.evidence.observability.capture.providers.segment_codec"
+        "noetrium_platform.evidence.observability.capture.providers.segment_codec",
+        "noetrium_platform.foundation.kernel.kernel.durability"
       ],
       "module": "noetrium_platform.evidence.observability.capture.providers.segment_recovery",
       "path": "noetrium_platform/evidence/observability/capture/providers/segment_recovery.py",
@@ -132069,6 +132109,7 @@
         "noetrium_platform.evidence.observability.logging.record.api",
         "noetrium_platform.evidence.observability.logging.storage.api",
         "noetrium_platform.evidence.observability.logging.storage.runtime.codec",
+        "noetrium_platform.foundation.kernel.kernel.durability",
         "noetrium_platform.foundation.kernel.kernel.durability.durable_file",
         "noetrium_platform.foundation.kernel.kernel.durability.file_lock",
         "noetrium_platform.foundation.kernel.kernel.logical_path"
@@ -134824,6 +134865,7 @@
         "noetrium_platform.foundation.governance.release.runtime.evidence",
         "noetrium_platform.foundation.governance.release.runtime.manifest",
         "noetrium_platform.foundation.kernel.kernel",
+        "noetrium_platform.foundation.kernel.kernel.durability",
         "noetrium_platform.foundation.kernel.kernel.durability.durable_file"
       ],
       "module": "noetrium_platform.foundation.governance.release.runtime.packager",
@@ -136633,7 +136675,9 @@
       "top_system": "runtime"
     },
     {
-      "imports": [],
+      "imports": [
+        "noetrium_platform.foundation.kernel.kernel.durability"
+      ],
       "module": "noetrium_platform.infrastructure.lifecycle.process.capture.fd",
       "path": "noetrium_platform/infrastructure/lifecycle/process/capture/fd.py",
       "system_key": "runtime",
@@ -139226,6 +139270,7 @@
     },
     {
       "imports": [
+        "noetrium_platform.foundation.kernel.kernel.durability",
         "noetrium_platform.infrastructure.reliability.forensics.providers.hashchain_core",
         "noetrium_platform.infrastructure.reliability.forensics.providers.hashlog_state"
       ],
@@ -139482,6 +139527,7 @@
     },
     {
       "imports": [
+        "noetrium_platform.foundation.kernel.kernel.durability",
         "noetrium_platform.infrastructure.reliability.forensics.providers.hashchain_core",
         "noetrium_platform.infrastructure.reliability.forensics.providers.segmented_state"
       ],
@@ -143670,7 +143716,7 @@
   "parse_errors": [],
   "registry_sha256": "d3fc1bab831f1b7379e5a36048a61c00fe173429df958270d36a16f3f00171c0",
   "schema": "noetrium-code-architecture-index.v1",
-  "source_git_sha": "e27f67404daceed0d2ca7c97904c1da4d8975f95",
+  "source_git_sha": "8615906169bd01a741b0c92520a92ec09d4ff7b1",
   "system_import_edges": [
     {
       "count": 85,
@@ -143683,7 +143729,7 @@
       "target": "governance"
     },
     {
-      "count": 19,
+      "count": 21,
       "source": "artifact",
       "target": "platform"
     },
@@ -143708,7 +143754,7 @@
       "target": "environment"
     },
     {
-      "count": 64,
+      "count": 65,
       "source": "environment",
       "target": "platform"
     },
@@ -143743,7 +143789,7 @@
       "target": "governance"
     },
     {
-      "count": 37,
+      "count": 38,
       "source": "governance",
       "target": "platform"
     },
@@ -143773,7 +143819,7 @@
       "target": "observability"
     },
     {
-      "count": 45,
+      "count": 47,
       "source": "observability",
       "target": "platform"
     },
@@ -143803,7 +143849,7 @@
       "target": "portfolio"
     },
     {
-      "count": 48,
+      "count": 50,
       "source": "reliability",
       "target": "platform"
     },
@@ -143913,7 +143959,7 @@
       "target": "artifact"
     },
     {
-      "count": 69,
+      "count": 70,
       "source": "runtime",
       "target": "platform"
     },

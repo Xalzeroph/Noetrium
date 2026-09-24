@@ -1,10 +1,10 @@
 {
   "counts": {
     "parse_errors": 0,
-    "python_files": 3657,
-    "python_import_edges": 7038,
+    "python_files": 3661,
+    "python_import_edges": 7064,
     "symbols": 4851,
-    "tracked_files": 4286,
+    "tracked_files": 4290,
     "typescript_javascript_files": 11
   },
   "language_symbol_counts": {
@@ -690,6 +690,12 @@
       "source_module": "noetrium_platform.capabilities.environment.minecraft.providers.server_files",
       "source_role": "core_platform",
       "target_module": "noetrium_platform.foundation.kernel.kernel",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "noetrium_platform.capabilities.environment.minecraft.providers.server_files",
+      "source_role": "core_platform",
+      "target_module": "noetrium_platform.foundation.kernel.kernel.durability",
       "target_role": "core_platform"
     },
     {
@@ -7593,6 +7599,12 @@
       "target_role": "core_platform"
     },
     {
+      "source_module": "noetrium_platform.evidence.artifact.content.providers._tar_extract",
+      "source_role": "core_platform",
+      "target_module": "noetrium_platform.foundation.kernel.kernel.durability",
+      "target_role": "core_platform"
+    },
+    {
       "source_module": "noetrium_platform.evidence.artifact.content.providers.blob_store",
       "source_role": "core_platform",
       "target_module": "noetrium_platform.evidence.artifact.content.api",
@@ -7620,6 +7632,12 @@
       "source_module": "noetrium_platform.evidence.artifact.content.providers.download",
       "source_role": "core_platform",
       "target_module": "noetrium_platform.evidence.artifact.content.api.acquisition",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "noetrium_platform.evidence.artifact.content.providers.download",
+      "source_role": "core_platform",
+      "target_module": "noetrium_platform.foundation.kernel.kernel.durability",
       "target_role": "core_platform"
     },
     {
@@ -8223,6 +8241,12 @@
       "target_role": "core_platform"
     },
     {
+      "source_module": "noetrium_platform.evidence.observability.capture.providers.segment_recovery",
+      "source_role": "core_platform",
+      "target_module": "noetrium_platform.foundation.kernel.kernel.durability",
+      "target_role": "core_platform"
+    },
+    {
       "source_module": "noetrium_platform.evidence.observability.capture.providers.segment_writer",
       "source_role": "core_platform",
       "target_module": "noetrium_platform.foundation.kernel.kernel.durability",
@@ -8586,6 +8610,12 @@
       "source_module": "noetrium_platform.evidence.observability.logging.storage.runtime.jsonl",
       "source_role": "core_platform",
       "target_module": "noetrium_platform.evidence.observability.logging.storage.api",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "noetrium_platform.evidence.observability.logging.storage.runtime.jsonl",
+      "source_role": "core_platform",
+      "target_module": "noetrium_platform.foundation.kernel.kernel.durability",
       "target_role": "core_platform"
     },
     {
@@ -9689,6 +9719,12 @@
     {
       "source_module": "noetrium_platform.foundation.governance.release.runtime.packager",
       "source_role": "core_platform",
+      "target_module": "noetrium_platform.foundation.kernel.kernel.durability",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "noetrium_platform.foundation.governance.release.runtime.packager",
+      "source_role": "core_platform",
       "target_module": "noetrium_platform.foundation.kernel.kernel.durability.durable_file",
       "target_role": "core_platform"
     },
@@ -10326,6 +10362,12 @@
       "source_module": "noetrium_platform.infrastructure.lifecycle.process.capture",
       "source_role": "core_platform",
       "target_module": "noetrium_platform.infrastructure.lifecycle.process.api",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "noetrium_platform.infrastructure.lifecycle.process.capture.fd",
+      "source_role": "core_platform",
+      "target_module": "noetrium_platform.foundation.kernel.kernel.durability",
       "target_role": "core_platform"
     },
     {
@@ -12161,6 +12203,12 @@
     {
       "source_module": "noetrium_platform.infrastructure.reliability.forensics.providers.hashlog_writer",
       "source_role": "core_platform",
+      "target_module": "noetrium_platform.foundation.kernel.kernel.durability",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "noetrium_platform.infrastructure.reliability.forensics.providers.hashlog_writer",
+      "source_role": "core_platform",
       "target_module": "noetrium_platform.infrastructure.reliability.forensics.providers.hashchain_core",
       "target_role": "core_platform"
     },
@@ -12522,6 +12570,12 @@
       "source_module": "noetrium_platform.infrastructure.reliability.forensics.providers.segmented_state",
       "source_role": "core_platform",
       "target_module": "noetrium_platform.infrastructure.reliability.forensics.providers.hashchain_core",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "noetrium_platform.infrastructure.reliability.forensics.providers.segmented_writer",
+      "source_role": "core_platform",
+      "target_module": "noetrium_platform.foundation.kernel.kernel.durability",
       "target_role": "core_platform"
     },
     {
@@ -17205,9 +17259,45 @@
       "target_role": "research_reproductions"
     },
     {
+      "source_module": "research.reproductions.agent_s3.program",
+      "source_role": "research_reproductions",
+      "target_module": "noetrium_platform.capabilities.participant.method.api",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "research.reproductions.agent_s3.program",
+      "source_role": "research_reproductions",
+      "target_module": "noetrium_platform.foundation.kernel.kernel",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "research.reproductions.agent_s3.program",
+      "source_role": "research_reproductions",
+      "target_module": "noetrium_platform.research.execution.workflow.api",
+      "target_role": "core_platform"
+    },
+    {
       "source_module": "research.reproductions.agent_s3.source",
       "source_role": "research_reproductions",
       "target_module": "research.reproductions.provenance",
+      "target_role": "research_reproductions"
+    },
+    {
+      "source_module": "research.reproductions.agent_s3.study",
+      "source_role": "research_reproductions",
+      "target_module": "noetrium_platform.foundation.kernel.kernel",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "research.reproductions.agent_s3.study",
+      "source_role": "research_reproductions",
+      "target_module": "noetrium_platform.research.experimentation.lifecycle.api",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "research.reproductions.agent_s3.study",
+      "source_role": "research_reproductions",
+      "target_module": "research.benchmarks.osworld",
       "target_role": "research_reproductions"
     },
     {
@@ -18993,9 +19083,45 @@
       "target_role": "research_reproductions"
     },
     {
+      "source_module": "research.reproductions.live_swe_agent.program",
+      "source_role": "research_reproductions",
+      "target_module": "noetrium_platform.capabilities.participant.method.api",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "research.reproductions.live_swe_agent.program",
+      "source_role": "research_reproductions",
+      "target_module": "noetrium_platform.foundation.kernel.kernel",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "research.reproductions.live_swe_agent.program",
+      "source_role": "research_reproductions",
+      "target_module": "noetrium_platform.research.execution.workflow.api",
+      "target_role": "core_platform"
+    },
+    {
       "source_module": "research.reproductions.live_swe_agent.source",
       "source_role": "research_reproductions",
       "target_module": "research.reproductions.provenance",
+      "target_role": "research_reproductions"
+    },
+    {
+      "source_module": "research.reproductions.live_swe_agent.study",
+      "source_role": "research_reproductions",
+      "target_module": "noetrium_platform.foundation.kernel.kernel",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "research.reproductions.live_swe_agent.study",
+      "source_role": "research_reproductions",
+      "target_module": "noetrium_platform.research.experimentation.lifecycle.api",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "research.reproductions.live_swe_agent.study",
+      "source_role": "research_reproductions",
+      "target_module": "research.benchmarks.swe_bench",
       "target_role": "research_reproductions"
     },
     {
@@ -35331,6 +35457,18 @@
       "target_role": "research_reproductions"
     },
     {
+      "source_module": "tests.test_scientific_agent_s3_v1",
+      "source_role": "tests",
+      "target_module": "research.reproductions.agent_s3.definition",
+      "target_role": "research_reproductions"
+    },
+    {
+      "source_module": "tests.test_scientific_agent_s3_v1",
+      "source_role": "tests",
+      "target_module": "research.reproductions.research_os",
+      "target_role": "research_reproductions"
+    },
+    {
       "source_module": "tests.test_scientific_agent_turn_fact_chain_v1",
       "source_role": "tests",
       "target_module": "noetrium_platform.capabilities.participant.agent.runtime",
@@ -37607,7 +37745,19 @@
     {
       "source_module": "tests.test_scientific_self_evolution_fidelity_v1",
       "source_role": "tests",
+      "target_module": "research.reproductions.live_swe_agent.definition",
+      "target_role": "research_reproductions"
+    },
+    {
+      "source_module": "tests.test_scientific_self_evolution_fidelity_v1",
+      "source_role": "tests",
       "target_module": "research.reproductions.memevolve",
+      "target_role": "research_reproductions"
+    },
+    {
+      "source_module": "tests.test_scientific_self_evolution_fidelity_v1",
+      "source_role": "tests",
+      "target_module": "research.reproductions.research_os",
       "target_role": "research_reproductions"
     },
     {
@@ -39618,6 +39768,12 @@
       "source_module": "tests.test_sqlite_atomic_state_v101",
       "source_role": "tests",
       "target_module": "noetrium_platform.foundation.scope.api",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "tests.test_sqlite_durability_authority_v1",
+      "source_role": "tests",
+      "target_module": "noetrium_platform.foundation.governance.architecture",
       "target_role": "core_platform"
     },
     {
@@ -42245,7 +42401,7 @@
   ],
   "role_import_counts": [
     {
-      "count": 2634,
+      "count": 2643,
       "source_role": "core_platform",
       "target_role": "core_platform"
     },
@@ -42290,7 +42446,7 @@
       "target_role": "public_facade"
     },
     {
-      "count": 648,
+      "count": 658,
       "source_role": "research_reproductions",
       "target_role": "core_platform"
     },
@@ -42300,12 +42456,12 @@
       "target_role": "public_facade"
     },
     {
-      "count": 334,
+      "count": 336,
       "source_role": "research_reproductions",
       "target_role": "research_reproductions"
     },
     {
-      "count": 2763,
+      "count": 2764,
       "source_role": "tests",
       "target_role": "core_platform"
     },
@@ -42325,7 +42481,7 @@
       "target_role": "reference_orchestration"
     },
     {
-      "count": 316,
+      "count": 320,
       "source_role": "tests",
       "target_role": "research_reproductions"
     },
@@ -42367,7 +42523,7 @@
     "public_facade": 40,
     "reference_components": 22,
     "reference_orchestration": 10,
-    "research_reproductions": 768,
+    "research_reproductions": 772,
     "tests": 805,
     "tooling": 78
   },
@@ -42384,7 +42540,7 @@
     "tooling": 38
   },
   "schema": "noetrium-repository-code-architecture-index.v1",
-  "source_git_sha": "e27f67404daceed0d2ca7c97904c1da4d8975f95",
+  "source_git_sha": "8615906169bd01a741b0c92520a92ec09d4ff7b1",
   "symbols": [
     {
       "bases": [],
@@ -48147,7 +48303,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 14,
+      "line": 16,
       "methods": [
         "__init__"
       ],
@@ -68825,7 +68981,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 76,
+      "line": 78,
       "methods": [
         "__init__",
         "acquire",
@@ -68864,7 +69020,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 25,
+      "line": 24,
       "methods": [
         "__init__",
         "_connect_writer",
@@ -69051,7 +69207,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 24,
+      "line": 23,
       "methods": [
         "__init__",
         "_connect_writer",
@@ -69457,7 +69613,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 27,
+      "line": 26,
       "methods": [
         "__init__",
         "_connect_writer",
@@ -69723,7 +69879,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 31,
+      "line": 30,
       "methods": [
         "__init__",
         "_connect_writer",
@@ -71266,7 +71422,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 13,
+      "line": 15,
       "methods": [],
       "module": "noetrium_platform.evidence.observability.capture.providers.segment_recovery",
       "name": "RecoveredRawSegment",
@@ -71286,7 +71442,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 14,
+      "line": 16,
       "methods": [],
       "module": "noetrium_platform.evidence.observability.capture.providers.segment_writer",
       "name": "SegmentWriterState",
@@ -71300,7 +71456,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 20,
+      "line": 22,
       "methods": [
         "__init__",
         "sequence",
@@ -71933,7 +72089,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 27,
+      "line": 29,
       "methods": [],
       "module": "noetrium_platform.evidence.observability.logging.storage.runtime.jsonl",
       "name": "JsonlLogCorruptionError",
@@ -71951,7 +72107,7 @@
       ],
       "kind": "class",
       "language": "python",
-      "line": 31,
+      "line": 33,
       "methods": [
         "logical_path",
         "__init__",
@@ -78523,7 +78679,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 18,
+      "line": 20,
       "methods": [
         "__init__",
         "write",
@@ -78548,7 +78704,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 54,
+      "line": 56,
       "methods": [
         "__post_init__"
       ],
@@ -78572,7 +78728,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 63,
+      "line": 65,
       "methods": [],
       "module": "noetrium_platform.foundation.governance.release.runtime.packager",
       "name": "ReleasePackage",
@@ -78586,7 +78742,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 71,
+      "line": 73,
       "methods": [
         "__init__",
         "_zip_info",
@@ -86924,7 +87080,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 7,
+      "line": 9,
       "methods": [
         "__init__",
         "open",
@@ -89794,7 +89950,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 33,
+      "line": 35,
       "methods": [
         "__init__",
         "__enter__",
@@ -89814,7 +89970,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 52,
+      "line": 54,
       "methods": [
         "__init__",
         "__enter__",
@@ -89834,7 +89990,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 72,
+      "line": 74,
       "methods": [
         "__init__",
         "_operation_transition_lock",
@@ -95379,7 +95535,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 10,
+      "line": 12,
       "methods": [
         "__init__",
         "append"
@@ -95956,7 +96112,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 9,
+      "line": 11,
       "methods": [],
       "module": "noetrium_platform.infrastructure.reliability.forensics.providers.segmented_writer",
       "name": "SegmentedAppendReceipt",
@@ -95970,7 +96126,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 17,
+      "line": 19,
       "methods": [
         "__init__",
         "path",
