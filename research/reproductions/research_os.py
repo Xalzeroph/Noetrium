@@ -1538,6 +1538,7 @@ def _validated_execution_binding(
         benchmark_id=binding.benchmark_id,
         benchmark_split_id=binding.benchmark_split_id,
         values=binding.values,
+        resolution_proof_digests=binding.resolution_proof_digests,
     )
     if validated.binding_digest != binding.binding_digest:
         raise ValueError("reproduction execution binding identity drifted")
