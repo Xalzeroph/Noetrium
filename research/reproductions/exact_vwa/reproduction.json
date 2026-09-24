@@ -2,8 +2,8 @@
   "schema": "noetrium.reproduction.projection.v7",
   "authority": "generated_from_typed_definition_and_source",
   "package": "exact_vwa",
-  "package_digest": "7436a90d5d200d9806b7fd1bbb2ae7a84b14c02933550f8851acb7fba1d7e587",
-  "definition_digest": "5b1fdac55a0685134cfce64391ba548e13096dcdcb3f3035b22efead2c8414c9",
+  "package_digest": "93ff0dd44de2f2fcd08941e2aef62f63e32ac5042a92bbdbaea3f722b8816820",
+  "definition_digest": "b891f0047260284471d08e1e901a1906e0f389079b70d1447a2b321a033982c4",
   "source_registry_digest": "b93999f0360494ac406ad8ced88c7229b3dcf0d13127db266739961ddbd1bfdd",
   "lifecycle": "protocol_bound",
   "identity": {
@@ -80,6 +80,12 @@
       "content_sha256": "720ed066de1d661093865a279f079a27181590a0af9a5530cd4bd0cf64144d77"
     },
     {
+      "kind": "method_program",
+      "path": "research/reproductions/exact_vwa/program.py",
+      "declaration_digest": "10f230739802ccc7d61e0de03b11087f64f13287a3c1a155ce8b1249ea20fe48",
+      "content_sha256": "d0aeb6beb809cc505955fb2ad0fe45bd3f32f838502891a1548efde9b05d71f8"
+    },
+    {
       "kind": "study",
       "path": "research/reproductions/exact_vwa/study.py",
       "declaration_digest": "edafb18475de48eef7e51e7daf752b404e9306bd69bb05d2107cefe5d3d7bbdd",
@@ -92,7 +98,7 @@
       "content_sha256": "04f3ec7979eea06842e8fa559a3ca413c6827da888a5e8513f05d3e6cc34a102"
     }
   ],
-  "primary_executable": null,
+  "primary_executable": "research/reproductions/exact_vwa/program.py",
   "reported_results": [],
   "reference_baselines": [],
   "deltas": [

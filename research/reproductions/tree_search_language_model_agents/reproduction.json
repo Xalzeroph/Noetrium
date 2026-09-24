@@ -2,8 +2,8 @@
   "schema": "noetrium.reproduction.projection.v7",
   "authority": "generated_from_typed_definition_and_source",
   "package": "tree_search_language_model_agents",
-  "package_digest": "4e2bcea77875cedb3271581ca7e0f9cc28c340198c3adc4a8b78cccf257ad257",
-  "definition_digest": "ed062bf0492b6798aa01a282c9c84e49a1846d752980777aaa78af1930c6df40",
+  "package_digest": "05662e6337e27823c48055d8daaa3c784839c75d240692eb623c801c66343624",
+  "definition_digest": "3cd695526a3b1087434c4c166c154d0f631c7a6b62763c69015675a1bb1c1d9e",
   "source_registry_digest": "0c66afa3c244c45e64cde70188b1023106137f8be0ce30f1899186e1ff153f35",
   "lifecycle": "protocol_bound",
   "identity": {
@@ -76,6 +76,12 @@
       "content_sha256": "00d155348863c868865753f0df42f48fa9ef72fa38666bfcd0f70d138b49e567"
     },
     {
+      "kind": "method_program",
+      "path": "research/reproductions/tree_search_language_model_agents/program.py",
+      "declaration_digest": "e06654b3064d2fac6b5d04839a6eb284398b08f24fe5cdb5ade2a24e04458e75",
+      "content_sha256": "35e84b8a11df45cff1a822c0fbd256e5c1b6194a2dabc872897d6510bdacec5b"
+    },
+    {
       "kind": "study",
       "path": "research/reproductions/tree_search_language_model_agents/study.py",
       "declaration_digest": "ff91abe8f502af7c34bd43ab99e9c986b4d729144d1ef93f82fec65b9da5d243",
@@ -88,7 +94,7 @@
       "content_sha256": "824942a9825ceb8b0c189f4d384cf605566dd62bdd57a9f0ed7a1d8e70dd07e7"
     }
   ],
-  "primary_executable": null,
+  "primary_executable": "research/reproductions/tree_search_language_model_agents/program.py",
   "reported_results": [],
   "reference_baselines": [
     {
