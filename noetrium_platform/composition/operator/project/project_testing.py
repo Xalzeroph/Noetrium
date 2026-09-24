@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 from pathlib import Path
-import subprocess
 import sys
 import tempfile
 
@@ -9,6 +8,11 @@ from noetrium_platform.product.operator.api import (
     ProjectTestReceipt,
     ProjectTestStage,
     ProjectTestStageReceipt,
+)
+from noetrium_platform.infrastructure.lifecycle.process.api import (
+    LocalCommandRunnerPort,
+    LocalCommandStartError,
+    LocalCommandTimeoutError,
 )
 from noetrium_platform.composition.operator.project.project_subprocess import (
     isolated_environment,
@@ -24,16 +28,20 @@ def _run_stage(
     *,
     cwd: Path,
     environment: dict[str, str],
+    command_runner: LocalCommandRunnerPort,
 ) -> ProjectTestStageReceipt:
     try:
-        completed = subprocess.run(
-            command, cwd=cwd, env=environment, check=False,
-            timeout=_TIMEOUT_SECONDS, text=True,
-            stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+        completed = command_runner.run(
+            command,
+            cwd=cwd,
+            environment=environment,
+            timeout_seconds=_TIMEOUT_SECONDS,
         )
         exit_code = completed.returncode
-    except subprocess.TimeoutExpired:
+    except LocalCommandTimeoutError:
         exit_code = 124
+    except LocalCommandStartError:
+        exit_code = 127
     return ProjectTestStageReceipt(stage, command, exit_code)
 
 
@@ -52,7 +60,11 @@ def _build_install_command(root: Path, install_root: Path) -> tuple[str, ...]:
     )
 
 
-def test_project(project_root: Path) -> ProjectTestReceipt:
+def test_project(
+    project_root: Path,
+    *,
+    command_runner: LocalCommandRunnerPort,
+) -> ProjectTestReceipt:
     root = project_root.expanduser().absolute()
     if not (root / "pyproject.toml").is_file():
         raise ValueError("project test requires generated pyproject.toml")
@@ -70,6 +82,7 @@ def test_project(project_root: Path) -> ProjectTestReceipt:
             build_command,
             cwd=root,
             environment=environment,
+            command_runner=command_runner,
         )
         if not build.passed:
             return ProjectTestReceipt(str(root), (build,))
@@ -83,6 +96,7 @@ def test_project(project_root: Path) -> ProjectTestReceipt:
             contract_command,
             cwd=root,
             environment=environment,
+            command_runner=command_runner,
         )
         return ProjectTestReceipt(str(root), (build, contract))
 
