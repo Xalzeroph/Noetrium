@@ -28,8 +28,14 @@ def execution_request(
     package: str,
     study_factory: str,
     benchmark: object,
+    *,
+    benchmark_split_ids: tuple[str, ...],
 ) -> object:
-    """Declare one scientific execution lane without authoring platform bindings."""
+    """Declare one exact scientific execution lane without platform wiring.
+
+    Split selection is explicit scientific authority. Passing an empty tuple is
+    valid only for Studies that have no external benchmark split axis.
+    """
 
     from .research_os import ReproductionExecutionRequest
 
@@ -37,6 +43,7 @@ def execution_request(
         package,
         study_factory,
         benchmark,
+        benchmark_split_ids,
     )
 
 
