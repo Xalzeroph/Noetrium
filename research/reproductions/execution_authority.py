@@ -48,8 +48,10 @@ from .authority_requirements import (
 )
 from .fleet import (
     ReproductionBenchmarkResolverPort,
+    ReproductionFleetAuthorityAudit,
     ReproductionFleetExecutionAuthorities,
     ReproductionFleetMaterialization,
+    audit_materialized_reproduction_fleet_authorities,
     materialize_repository_execution_fleet,
 )
 from .research_os import (
@@ -164,6 +166,47 @@ class ReproductionFleetOwnerAuthorities:
                 "aggregation_registry_digest": aggregation.identity_digest,
                 "reconciliation_registry_digest": self.reconciliation.identity_digest,
             }
+        )
+
+
+class ReproductionFleetAuthorityMaterializationError(RuntimeError):
+    """Exact owner registries did not close every materialized fleet lane."""
+
+    def __init__(
+        self,
+        audit: ReproductionFleetAuthorityAudit,
+        *,
+        prerequisite_manifest_digest: str,
+        owner_requirement_manifest_digest: str,
+    ) -> None:
+        if type(audit) is not ReproductionFleetAuthorityAudit:
+            raise TypeError(
+                "fleet authority materialization error requires typed audit"
+            )
+        require_sha256(
+            prerequisite_manifest_digest,
+            "fleet authority materialization prerequisite manifest",
+        )
+        require_sha256(
+            owner_requirement_manifest_digest,
+            "fleet authority materialization owner requirement manifest",
+        )
+        self.audit = audit
+        self.prerequisite_manifest_digest = prerequisite_manifest_digest
+        self.owner_requirement_manifest_digest = owner_requirement_manifest_digest
+        self.error_digest = canonical_digest(
+            {
+                "schema": "noetrium.reproduction-fleet-authority-materialization-error.v1",
+                "prerequisite_manifest_digest": prerequisite_manifest_digest,
+                "owner_requirement_manifest_digest": owner_requirement_manifest_digest,
+                "audit_digest": audit.audit_digest,
+                "blocker_count": audit.blocker_count,
+                "gap_count": audit.gap_count,
+            }
+        )
+        super().__init__(
+            "fleet owner authority materialization is incomplete: "
+            f"blockers={audit.blocker_count}, gaps={audit.gap_count}"
         )
 
 
@@ -318,6 +361,23 @@ def materialize_repository_fleet_execution_authorities(
             benchmarks=benchmark_authority,
         )
     )
+    audit = audit_materialized_reproduction_fleet_authorities(
+        fleet,
+        research_bindings=execution_authorities.research_bindings,
+        experiment_runtime_components=(
+            execution_authorities.experiment_runtime_components
+        ),
+        authority_manifest_digest=(
+            execution_authorities.authority_manifest_digest
+        ),
+    )
+    if audit.blocker_count or audit.gap_count:
+        raise ReproductionFleetAuthorityMaterializationError(
+            audit,
+            prerequisite_manifest_digest=prerequisites.manifest_digest,
+            owner_requirement_manifest_digest=owner_requirements.manifest_digest,
+        )
+
     return MaterializedReproductionFleetExecutionAuthorities(
         prerequisites,
         prerequisite_authorities,
@@ -630,6 +690,7 @@ def compose_repository_fleet_execution_authorities_from_registries(
 __all__ = [
     "MaterializedReproductionFleetExecutionAuthorities",
     "ReproductionFleetAuthorityManifest",
+    "ReproductionFleetAuthorityMaterializationError",
     "ReproductionFleetAuthorityMaterializerPort",
     "ReproductionFleetOwnerAuthorities",
     "ReproductionFleetPrerequisiteAuthorities",
