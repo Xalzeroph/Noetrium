@@ -702,6 +702,10 @@ class DirectoryRunArtifactStore(RunArtifactStorePort):
                             gc,
                             _RunArtifactRetirementPhase.QUARANTINED,
                         )
+                        self._require_gc_identity(
+                            gc,
+                            self._tree_identity(quarantine),
+                        )
                         phase = _RunArtifactRetirementPhase.QUARANTINED
                     else:
                         raise RuntimeError(
