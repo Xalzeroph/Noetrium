@@ -11,7 +11,7 @@ def _lane(plan: dict, package: str) -> dict:
 
 def test_fleet_plan_separates_materialization_from_true_execution_readiness() -> None:
     plan = build_plan()
-    assert plan["schema"] == "noetrium.reproduction-fleet-plan.v8"
+    assert plan["schema"] == "noetrium.reproduction-fleet-plan.v9"
     assert plan["compile_failure_count"] == 0
     assert plan["research_os_compiled_count"] == plan["executable_reproduction_count"]
     assert plan["graph_node_count"] == plan["executable_reproduction_count"]
@@ -54,6 +54,38 @@ def test_fleet_plan_separates_materialization_from_true_execution_readiness() ->
             assert row["benchmark_authority_state"] == "closed"
             assert row["reproduction_closure_state"] == "closed"
             assert row["benchmark_blockers"] == ()
+            assert row["materialized_study_count"] >= 1
+            assert (
+                len(row["study_authority_requirements"])
+                == row["materialized_study_count"]
+            )
+            assert (
+                len(row["study_authority_requirement_digests"])
+                == row["materialized_study_count"]
+            )
+            for requirement in row["study_authority_requirements"]:
+                assert requirement["package"] == row["package"]
+                for key in (
+                    "study_definition_digest",
+                    "binding_requirement_digest",
+                    "trial_protocol_identity_digest",
+                    "authority_requirement_digest",
+                ):
+                    digest = requirement[key]
+                    assert len(digest) == 64
+                    assert all(ch in "0123456789abcdef" for ch in digest)
+                assert requirement["trial_provider_requirement_id"]
+                assert requirement["aggregation_requirement_id"]
+                for participant in requirement["participant_requirements"]:
+                    assert len(participant) == 5
+                    assert len(participant[-1]) == 64
+                for model_role in requirement["model_role_requirements"]:
+                    assert len(model_role) == 7
+                    assert len(model_role[-1]) == 64
+        else:
+            assert row["materialized_study_count"] == 0
+            assert row["study_authority_requirements"] == ()
+            assert row["study_authority_requirement_digests"] == ()
 
 
 def test_fleet_plan_uses_repository_benchmark_authority_instead_of_split_heuristics() -> None:
@@ -66,6 +98,8 @@ def test_fleet_plan_uses_repository_benchmark_authority_instead_of_split_heurist
     assert vima["reproduction_closure_state"] == "closed"
     assert vima["state"] == "execution_authority_required"
     assert vima["materialization_ready"] is True
+    assert vima["materialized_study_count"] >= 1
+    assert vima["study_authority_requirements"]
 
     react = _lane(plan, "react_alfworld")
     assert react["benchmark_split_axis_consumers"] == ()
