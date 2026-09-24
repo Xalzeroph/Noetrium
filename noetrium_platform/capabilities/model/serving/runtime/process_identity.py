@@ -2,8 +2,9 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-
 from noetrium_platform.foundation.kernel.kernel.durability import sha256_bytes
+
+
 @dataclass(frozen=True, slots=True)
 class ProcessIdentity:
     pid: int
