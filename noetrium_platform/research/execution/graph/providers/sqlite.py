@@ -1451,33 +1451,72 @@ class SQLiteResearchGraphExecutionStore:
         *,
         now_ns: int,
     ) -> ResearchGraphNodeExecutionRecord:
-        now_ns = self._require_now(now_ns)
-        with self._transaction() as conn:
-            current = self._node_tx(conn, execution_id, node_id)
-            if current.state is ResearchGraphLiveNodeState.READY:
-                return current
-            allowed = current.state is ResearchGraphLiveNodeState.PENDING
-            if current.state is ResearchGraphLiveNodeState.RETRY_WAIT:
-                allowed = (
-                    current.retry_not_before_ns is not None
-                    and current.retry_not_before_ns <= now_ns
-                )
-            if not allowed:
-                raise ResearchGraphExecutionConflict(
-                    f"cannot mark node ready from state {current.state.value}"
-                )
-            conn.execute(
-                "UPDATE research_graph_nodes SET state=?,retry_not_before_ns=NULL "
-                "WHERE execution_id=? AND node_id=?",
-                (
-                    ResearchGraphLiveNodeState.READY.value,
-                    execution_id,
-                    node_id,
-                ),
-            )
-            self._bump_generation(conn, execution_id)
-            return self._node_tx(conn, execution_id, node_id)
+        return self.mark_ready_many(
+            execution_id,
+            (node_id,),
+            now_ns=now_ns,
+        )[0]
 
+    def mark_ready_many(
+        self,
+        execution_id: str,
+        node_ids: tuple[str, ...],
+        *,
+        now_ns: int,
+    ) -> tuple[ResearchGraphNodeExecutionRecord, ...]:
+        now_ns = self._require_now(now_ns)
+        if type(node_ids) is not tuple or not node_ids:
+            raise TypeError(
+                "research graph ready batch must be a non-empty node-id tuple"
+            )
+        if any(
+            type(node_id) is not str or not node_id.strip()
+            for node_id in node_ids
+        ):
+            raise ValueError(
+                "research graph ready batch node ids must be non-empty text"
+            )
+        ordered = tuple(sorted(node_ids))
+        if len(ordered) != len(set(ordered)):
+            raise ValueError("research graph ready batch node ids must be unique")
+
+        with self._transaction() as conn:
+            self._execution_tx(conn, execution_id)
+            changed: list[str] = []
+            for node_id in ordered:
+                current = self._node_tx(conn, execution_id, node_id)
+                if current.state is ResearchGraphLiveNodeState.READY:
+                    continue
+                allowed = current.state is ResearchGraphLiveNodeState.PENDING
+                if current.state is ResearchGraphLiveNodeState.RETRY_WAIT:
+                    allowed = (
+                        current.retry_not_before_ns is not None
+                        and current.retry_not_before_ns <= now_ns
+                    )
+                if not allowed:
+                    raise ResearchGraphExecutionConflict(
+                        "cannot mark graph node ready from "
+                        f"{current.state.value}: {node_id}"
+                    )
+                changed.append(node_id)
+
+            for node_id in changed:
+                conn.execute(
+                    "UPDATE research_graph_nodes "
+                    "SET state=?,retry_not_before_ns=NULL "
+                    "WHERE execution_id=? AND node_id=?",
+                    (
+                        ResearchGraphLiveNodeState.READY.value,
+                        execution_id,
+                        node_id,
+                    ),
+                )
+            if changed:
+                self._bump_generation(conn, execution_id)
+            return tuple(
+                self._node_tx(conn, execution_id, node_id)
+                for node_id in ordered
+            )
     def claim(
         self,
         execution_id: str,
@@ -1810,42 +1849,101 @@ class SQLiteResearchGraphExecutionStore:
         *,
         blocked_by_node_ids: tuple[str, ...],
     ) -> ResearchGraphNodeExecutionRecord:
-        if type(blocked_by_node_ids) is not tuple or not blocked_by_node_ids:
-            raise ValueError("blocked graph node requires blocker ids")
-        blockers = tuple(sorted(blocked_by_node_ids))
-        if any(type(value) is not str or not value.strip() for value in blockers):
-            raise ValueError("research graph blocker ids must be non-empty")
-        if len(blockers) != len(set(blockers)):
-            raise ValueError("research graph blocker ids must be unique")
-        with self._transaction() as conn:
-            current = self._node_tx(conn, execution_id, node_id)
-            if current.state is ResearchGraphLiveNodeState.BLOCKED:
-                if current.blocked_by_node_ids != blockers:
-                    raise ResearchGraphExecutionConflict(
-                        "blocked graph node already has different blockers"
-                    )
-                return current
-            if current.state not in {
-                ResearchGraphLiveNodeState.PENDING,
-                ResearchGraphLiveNodeState.READY,
-                ResearchGraphLiveNodeState.RETRY_WAIT,
-            }:
-                raise ResearchGraphExecutionConflict(
-                    f"cannot block graph node from {current.state.value}"
-                )
-            conn.execute(
-                "UPDATE research_graph_nodes SET state=?,retry_not_before_ns=NULL,"
-                "blockers_json=? WHERE execution_id=? AND node_id=?",
-                (
-                    ResearchGraphLiveNodeState.BLOCKED.value,
-                    json.dumps(blockers, separators=(",", ":")),
-                    execution_id,
-                    node_id,
-                ),
-            )
-            self._bump_generation(conn, execution_id)
-            return self._node_tx(conn, execution_id, node_id)
+        return self.mark_blocked_many(
+            execution_id,
+            ((node_id, blocked_by_node_ids),),
+        )[0]
 
+    def mark_blocked_many(
+        self,
+        execution_id: str,
+        transitions: tuple[tuple[str, tuple[str, ...]], ...],
+    ) -> tuple[ResearchGraphNodeExecutionRecord, ...]:
+        if type(transitions) is not tuple or not transitions:
+            raise TypeError(
+                "research graph blocked batch must be a non-empty tuple"
+            )
+        normalized: list[tuple[str, tuple[str, ...]]] = []
+        for row in transitions:
+            if type(row) is not tuple or len(row) != 2:
+                raise TypeError(
+                    "research graph blocked batch rows must be "
+                    "(node_id, blocker_ids) tuples"
+                )
+            node_id, blocked_by_node_ids = row
+            if type(node_id) is not str or not node_id.strip():
+                raise ValueError(
+                    "research graph blocked batch node ids must be non-empty"
+                )
+            if (
+                type(blocked_by_node_ids) is not tuple
+                or not blocked_by_node_ids
+            ):
+                raise ValueError(
+                    "blocked graph node requires blocker ids"
+                )
+            blockers = tuple(sorted(blocked_by_node_ids))
+            if any(
+                type(value) is not str or not value.strip()
+                for value in blockers
+            ):
+                raise ValueError(
+                    "research graph blocker ids must be non-empty"
+                )
+            if len(blockers) != len(set(blockers)):
+                raise ValueError(
+                    "research graph blocker ids must be unique"
+                )
+            normalized.append((node_id.strip(), blockers))
+
+        ordered = tuple(sorted(normalized, key=lambda row: row[0]))
+        node_ids = tuple(row[0] for row in ordered)
+        if len(node_ids) != len(set(node_ids)):
+            raise ValueError(
+                "research graph blocked batch node ids must be unique"
+            )
+
+        with self._transaction() as conn:
+            self._execution_tx(conn, execution_id)
+            changed: list[tuple[str, tuple[str, ...]]] = []
+            for node_id, blockers in ordered:
+                current = self._node_tx(conn, execution_id, node_id)
+                if current.state is ResearchGraphLiveNodeState.BLOCKED:
+                    if current.blocked_by_node_ids != blockers:
+                        raise ResearchGraphExecutionConflict(
+                            "blocked graph node already has different blockers: "
+                            f"{node_id}"
+                        )
+                    continue
+                if current.state not in {
+                    ResearchGraphLiveNodeState.PENDING,
+                    ResearchGraphLiveNodeState.READY,
+                    ResearchGraphLiveNodeState.RETRY_WAIT,
+                }:
+                    raise ResearchGraphExecutionConflict(
+                        "cannot block graph node from "
+                        f"{current.state.value}: {node_id}"
+                    )
+                changed.append((node_id, blockers))
+
+            for node_id, blockers in changed:
+                conn.execute(
+                    "UPDATE research_graph_nodes "
+                    "SET state=?,retry_not_before_ns=NULL,blockers_json=? "
+                    "WHERE execution_id=? AND node_id=?",
+                    (
+                        ResearchGraphLiveNodeState.BLOCKED.value,
+                        json.dumps(blockers, separators=(",", ":")),
+                        execution_id,
+                        node_id,
+                    ),
+                )
+            if changed:
+                self._bump_generation(conn, execution_id)
+            return tuple(
+                self._node_tx(conn, execution_id, node_id)
+                for node_id in node_ids
+            )
     def recover_expired(
         self,
         execution_id: str,
