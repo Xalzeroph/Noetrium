@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from research.reproductions.contracts import ReproductionLifecycle
 from research.reproductions.research_os import (
     compile_reproduction_research_program,
     discover_reproduction_definitions,
@@ -41,3 +42,22 @@ def test_non_executable_declarations_are_not_silently_promoted() -> None:
     for row in definitions:
         if not is_research_os_executable(row):
             assert row.package not in executable_packages
+
+
+
+def test_every_execution_bearing_lifecycle_is_current_research_os_executable() -> None:
+    execution_bearing = {
+        ReproductionLifecycle.PROTOCOL_BOUND,
+        ReproductionLifecycle.RUNNABLE,
+        ReproductionLifecycle.PILOT,
+        ReproductionLifecycle.MATCHED_REPRODUCTION,
+    }
+    stale = tuple(
+        sorted(
+            row.package
+            for row in discover_reproduction_definitions()
+            if row.lifecycle in execution_bearing
+            and not is_research_os_executable(row)
+        )
+    )
+    assert stale == ()
