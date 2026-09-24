@@ -126,6 +126,45 @@ def build_structured_concurrency_runtime(
     return _build_kernel_concurrency_runtime(**kwargs)
 
 
+def _validate_admission_provider_alignment(
+    concurrency: ConcurrencyBudget,
+    admission: AdmissionBudget,
+) -> None:
+    """Reject admission capacities that can overbook their physical provider."""
+
+    limits = (
+        (
+            "blocking_io",
+            int(admission.max_blocking_io_in_flight),
+            int(concurrency.max_blocking_io_in_flight),
+        ),
+        (
+            "async_io",
+            int(admission.max_async_io_in_flight),
+            int(concurrency.max_async_io_in_flight),
+        ),
+        (
+            "cpu",
+            int(admission.max_cpu_in_flight),
+            int(concurrency.max_cpu_in_flight),
+        ),
+    )
+    violations = tuple(
+        (lane, admitted, provider)
+        for lane, admitted, provider in limits
+        if admitted > provider
+    )
+    if violations:
+        detail = ", ".join(
+            f"{lane}: admission={admitted} provider={provider}"
+            for lane, admitted, provider in violations
+        )
+        raise ValueError(
+            "execution admission cannot exceed provider in-flight capacity: "
+            + detail
+        )
+
+
 def build_execution_concurrency_runtime(
     *,
     concurrency_budget: ConcurrencyBudget | None = None,
@@ -136,6 +175,10 @@ def build_execution_concurrency_runtime(
 ) -> ExecutionConcurrencyAuthorities:
     resolved_concurrency = concurrency_budget or ConcurrencyBudget()
     resolved_admission = admission_budget or _default_admission_budget(resolved_concurrency)
+    _validate_admission_provider_alignment(
+        resolved_concurrency,
+        resolved_admission,
+    )
     scheduling = build_admission_scheduling_policy(
         priority_aging_seconds=priority_aging_seconds,
     )
