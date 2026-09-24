@@ -5,6 +5,7 @@ from pathlib import Path
 from typing import Protocol
 
 from noetrium_platform.foundation.governance.api import ScopeIdentity
+from noetrium_platform.foundation.kernel.kernel import DurableCarrierReferenceClosure
 
 from .contracts import (
     DirectoryCleanupCandidate,
@@ -16,7 +17,6 @@ from .contracts import (
     ManagedDirectoryKind,
     WorkspaceAllocation,
     WorkspaceGcAssessment,
-    WorkspaceReferenceClosure,
 )
 
 
@@ -44,7 +44,7 @@ class WorkspaceManagementPort(Protocol):
         *,
         scope: ScopeIdentity,
         category: str = "default",
-        closures: tuple[WorkspaceReferenceClosure, ...] = (),
+        closures: tuple[DurableCarrierReferenceClosure, ...] = (),
     ) -> WorkspaceGcAssessment: ...
     def remove_workspace(
         self,
