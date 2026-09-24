@@ -3,10 +3,10 @@ from __future__ import annotations
 from noetrium import api
 
 from research.reproductions import build_research
-from research.reproductions.contracts import ReproductionLifecycle
 from research.reproductions.research_os import (
     discover_reproduction_definitions,
     executable_reproduction_definitions,
+    is_research_os_executable,
 )
 
 
@@ -24,19 +24,13 @@ def test_repository_reproductions_use_same_top_level_authoring_contract_as_proje
     )
 
 
-def test_every_protocol_bound_reproduction_is_reachable_from_top_level_portfolio() -> None:
-    definitions = discover_reproduction_definitions()
-    protocol_bound = tuple(
-        definition
-        for definition in definitions
-        if definition.lifecycle is ReproductionLifecycle.PROTOCOL_BOUND
-    )
+def test_every_executable_reproduction_is_reachable_from_top_level_portfolio() -> None:
+    executable = executable_reproduction_definitions()
     portfolio = build_research()
 
-    assert len(protocol_bound) == 91
-    assert len(portfolio.programs) == len(protocol_bound)
+    assert len(portfolio.programs) == len(executable)
     assert {program.program_id for program in portfolio.programs} == {
-        definition.package for definition in protocol_bound
+        definition.package for definition in executable
     }
 
 
@@ -45,5 +39,5 @@ def test_non_executable_catalog_entries_are_never_silently_promoted() -> None:
     portfolio_ids = {program.program_id for program in build_research().programs}
 
     for definition in definitions:
-        if definition.lifecycle is not ReproductionLifecycle.PROTOCOL_BOUND:
+        if not is_research_os_executable(definition):
             assert definition.package not in portfolio_ids
