@@ -5,7 +5,7 @@ from pathlib import Path
 from noetrium_platform.foundation.governance.api import RepositorySourceIndexPort
 
 from .degradation_config_scan import scan_config_degradation
-from .degradation_contracts import (
+from .api.contracts import (
     BANNED_RUNTIME_IDENTIFIERS,
     DegradationFinding,
     FORBIDDEN_ENABLED_CONFIG_KEYS,
