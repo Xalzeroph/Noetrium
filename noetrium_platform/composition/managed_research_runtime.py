@@ -37,6 +37,7 @@ from .model_management import (
     build_local_management_plane,
 )
 from .research_execution_pool import ResearchExecutionPool
+from .resource_lifecycle import ManagedResourceReconciler
 
 
 class _EventStop:
@@ -64,16 +65,17 @@ class ManagedResearchRuntime:
     services: ManagedResearchServices
     _orchestration_group: object
     _stop: Event
+    resources: ManagedResourceReconciler
     model_replica_pool: LocalModelReplicaPoolRuntime | None = None
     _model_controller: TaskHandlePort | None = None
-    _docker_controller: TaskHandlePort | None = None
+    _resource_controller: TaskHandlePort | None = None
     _closed: bool = False
 
     def start_background_controllers(
         self,
         *,
         model_reconcile_interval_seconds: float = 10.0,
-        docker_reconcile_interval_seconds: float = 30.0,
+        resource_reconcile_interval_seconds: float = 30.0,
     ) -> None:
         if self._closed:
             raise RuntimeError("managed research runtime is closed")
@@ -92,9 +94,9 @@ class ManagedResearchRuntime:
             model_reconcile_interval_seconds,
             "model",
         )
-        docker_interval = _interval(
-            docker_reconcile_interval_seconds,
-            "Docker",
+        resource_interval = _interval(
+            resource_reconcile_interval_seconds,
+            "resource",
         )
         stop = _EventStop(self._stop)
         if self._model_controller is None or self._model_controller.done():
@@ -107,14 +109,14 @@ class ManagedResearchRuntime:
                 interval_seconds=model_interval,
                 stop=stop,
             )
-        if self._docker_controller is None or self._docker_controller.done():
-            self._docker_controller = self._orchestration_group.submit(
+        if self._resource_controller is None or self._resource_controller.done():
+            self._resource_controller = self._orchestration_group.submit(
                 ExecutionSpec(
-                    task_id="managed-docker-container-reconciler",
+                    task_id="managed-resource-reconciler",
                     lane_kind=ExecutionLaneKind.BLOCKING_IO,
                 ),
-                self.management.docker_containers.run_reconciler,
-                interval_seconds=docker_interval,
+                self.resources.run,
+                interval_seconds=resource_interval,
                 stop=stop,
             )
 
@@ -122,7 +124,7 @@ class ManagedResearchRuntime:
         if self._closed:
             raise RuntimeError("managed research runtime is closed")
         self._orchestration_group.assert_healthy()
-        for controller in (self._model_controller, self._docker_controller):
+        for controller in (self._model_controller, self._resource_controller):
             if controller is not None and controller.done():
                 controller.result()
 
@@ -132,7 +134,7 @@ class ManagedResearchRuntime:
         self._closed = True
         self._stop.set()
         errors: list[BaseException] = []
-        for controller in (self._model_controller, self._docker_controller):
+        for controller in (self._model_controller, self._resource_controller):
             if controller is not None:
                 try:
                     controller.result(timeout=30.0)
@@ -183,7 +185,7 @@ def build_local_managed_research_runtime(
     model_io_admission_budget: AdmissionBudget | None = None,
     start_background_controllers: bool = True,
     model_reconcile_interval_seconds: float = 10.0,
-    docker_reconcile_interval_seconds: float = 30.0,
+    resource_reconcile_interval_seconds: float = 30.0,
 ) -> ManagedResearchRuntime:
     pool = ResearchExecutionPool(
         orchestration_concurrency_budget=orchestration_concurrency_budget,
@@ -208,9 +210,16 @@ def build_local_managed_research_runtime(
                 model_storage_pools=model_storage_pools,
                 task_group=group,
             )
-            # Startup reconciliation is synchronous so stale managed containers
-            # are handled before any new research workload is admitted.
-            management.docker_containers.reconcile()
+            # Startup reconciliation is synchronous and fail-closed. No new
+            # workload is admitted until physical and logical ephemeral
+            # resources agree after a process/daemon/host restart.
+            resources = ManagedResourceReconciler(
+                containers=management.docker_containers,
+                environments=management.platform_meta.environment_instance_leases,
+                endpoints=management.platform_meta.endpoint_allocations,
+                compute=management.platform_meta.compute_scheduler,
+            )
+            resources.reconcile()
             model_replica_pool = bind_local_model_replica_pool(management, pool)
         except BaseException:
             pool.close_orchestration_group(group, cancel_pending=True)
@@ -242,12 +251,13 @@ def build_local_managed_research_runtime(
             services=services,
             _orchestration_group=group,
             _stop=Event(),
+            resources=resources,
             model_replica_pool=model_replica_pool,
         )
         if start_background_controllers:
             runtime.start_background_controllers(
                 model_reconcile_interval_seconds=model_reconcile_interval_seconds,
-                docker_reconcile_interval_seconds=docker_reconcile_interval_seconds,
+                resource_reconcile_interval_seconds=resource_reconcile_interval_seconds,
             )
         return runtime
     except BaseException:

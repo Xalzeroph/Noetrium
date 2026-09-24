@@ -92,6 +92,10 @@ class Observability:
         self.closed = True
 
 
+class ResourceController(Controller):
+    pass
+
+
 class RecoveryExecution:
     def execution(self, owner_id, manifest_digest, *, ttl_seconds):
         raise AssertionError("fake recovery execution is not invoked in lifecycle tests")
@@ -101,6 +105,7 @@ def runtime():
     pool = Pool()
     group = Group()
     controller = Controller()
+    resource_controller = ResourceController()
     observability = Observability()
     managed = ManagedResearchRuntime(
         execution_pool=pool,
@@ -110,16 +115,24 @@ def runtime():
         services=object(),
         _orchestration_group=group,
         _stop=Event(),
+        resources=resource_controller,
     )
-    return managed, pool, group, controller
+    return managed, pool, group, controller, resource_controller
 
 
 def test_managed_runtime_owns_background_controller_lifecycle() -> None:
-    managed, pool, group, controller = runtime()
+    managed, pool, group, controller, resource_controller = runtime()
     managed.start_background_controllers(model_reconcile_interval_seconds=0.01)
     assert controller.started.wait(1.0)
-    managed.start_background_controllers(model_reconcile_interval_seconds=0.01)
-    assert group.submissions == ["managed-model-desired-state-controller"]
+    assert resource_controller.started.wait(1.0)
+    managed.start_background_controllers(
+        model_reconcile_interval_seconds=0.01,
+        resource_reconcile_interval_seconds=0.01,
+    )
+    assert group.submissions == [
+        "managed-model-desired-state-controller",
+        "managed-resource-reconciler",
+    ]
 
     time.sleep(0.03)
     managed.assert_healthy()
@@ -130,10 +143,11 @@ def test_managed_runtime_owns_background_controller_lifecycle() -> None:
     assert group.closed is True
     assert managed.observability.closed is True
     assert controller.cycles >= 1
+    assert resource_controller.cycles >= 1
 
 
 def test_managed_runtime_close_is_idempotent() -> None:
-    managed, pool, _group, _controller = runtime()
+    managed, pool, _group, _controller, _resource_controller = runtime()
     managed.start_background_controllers(model_reconcile_interval_seconds=0.01)
     managed.close()
     managed.close()
@@ -141,7 +155,7 @@ def test_managed_runtime_close_is_idempotent() -> None:
 
 
 def test_managed_runtime_rejects_controller_restart_after_close() -> None:
-    managed, _pool, _group, _controller = runtime()
+    managed, _pool, _group, _controller, _resource_controller = runtime()
     managed.close()
     try:
         managed.start_background_controllers()
