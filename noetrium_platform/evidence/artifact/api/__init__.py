@@ -19,6 +19,8 @@ from noetrium_platform.evidence.artifact.content.api import (
     ArtifactHttpResponse,
     MaterializedTreeInspectionPort,
     MultimodalPart,
+    TensorContentRef,
+    TensorContentStorePort,
 )
 from noetrium_platform.evidence.artifact.reference.api import (
     ArtifactReference,
@@ -44,5 +46,7 @@ __all__ = [
     "ArtifactRegistryPort",
     "ArtifactRetention",
     "MaterializedTreeInspectionPort",
+    "TensorContentRef",
+    "TensorContentStorePort",
     "MultimodalPart",
 ]
