@@ -96,7 +96,7 @@ def test_environment_compose_overlays_have_profile_doctors() -> None:
             continue
         text = (ROOT / compose_path).read_text(encoding="utf-8")
         assert "environment-doctor" in text
-        assert row["profile_id"] in text
+        assert row["category_id"] in text
 
 
 def test_environment_writable_state_is_instance_scoped() -> None:
