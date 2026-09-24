@@ -16,6 +16,7 @@ from noetrium_platform.capabilities.participant.core.api import (
 from noetrium_platform.composition.research_binding_authority import (
     ResearchBindingAuthority,
     ResearchBindingAuthorityError,
+    ResearchBindingRequirementMissing,
     ResearchBindingResolutionContext,
     ResearchCapabilityBindingRegistration,
     ResearchCapabilityBindingRegistry,
@@ -460,15 +461,26 @@ def test_binding_registries_close_study_without_custom_resolver_logic() -> None:
 def test_fleet_gap_classifies_missing_manifest_by_canonical_requirement() -> None:
     definition = _definition()
     requirement = ResearchProjectManifestRequirement.from_study(definition)
-    gap = _research_binding_gap(
-        definition,
-        LookupError("manifest unavailable"),
+    unrelated = ProjectManifest(
+        ProjectSpec(
+            ProjectIdentity("other-project", "1"),
+            "demo-program",
+            "Other Project",
+        ),
+        "template-1",
+        ProjectToolProvenance("noetrium", "1", "6" * 64),
+        study_ids=("other-study",),
     )
+    registry = ResearchProjectManifestRegistry((unrelated,))
+    with pytest.raises(ResearchBindingRequirementMissing) as captured:
+        registry.resolve(definition)
+
+    gap = _research_binding_gap(definition, captured.value)
 
     assert gap.stage == "project_manifest"
     assert gap.requirement_key == "demo-project:demo-study"
     assert gap.requirement_digest == requirement.requirement_digest
-    assert gap.error_type == "LookupError"
+    assert gap.error_type == "ResearchBindingRequirementMissing"
     assert len(gap.gap_digest) == 64
 
 
