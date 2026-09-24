@@ -36,6 +36,7 @@ pub struct RunBinding {
     pub kernel_abi_version: String,
     pub machine_implementation_digest: String,
     pub program_digest: String,
+    pub program_lock_digest: String,
     pub capability_provider_versions: Vec<(String, String)>,
     pub schema_versions: Vec<String>,
     pub environment_version: String,
