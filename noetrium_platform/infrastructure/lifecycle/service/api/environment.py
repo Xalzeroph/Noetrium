@@ -1,11 +1,11 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-import hashlib
 import json
 from typing import Mapping
 
 
+from noetrium_platform.foundation.kernel.kernel.durability import sha256_bytes
 def service_environment_digest(
     variables: Mapping[str, str] | tuple[tuple[str, str], ...],
 ) -> str:
@@ -17,7 +17,7 @@ def service_environment_digest(
         ensure_ascii=False,
         separators=(",", ":"),
     ).encode("utf-8")
-    return hashlib.sha256(raw).hexdigest()
+    return sha256_bytes(raw)
 
 
 @dataclass(frozen=True, slots=True)
