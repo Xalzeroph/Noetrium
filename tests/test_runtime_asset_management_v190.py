@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from pathlib import Path
 from tempfile import TemporaryDirectory
+from threading import Event, Thread
 import unittest
 
 import pytest
@@ -1139,6 +1140,168 @@ def test_model_deployment_retirement_purges_obsolete_process_tombstones() -> Non
         ) == ()
 
 
+
+
+def test_model_asset_lifecycle_fence_orders_deployment_before_retirement() -> None:
+    with TemporaryDirectory() as td:
+        root = Path(td)
+        directories = build_local_directory_authorities(layout(root))
+        environments = build_environments(directories)
+        environments.lifecycle.create(
+            PythonEnvironmentSpec("serve", PLATFORM_SCOPE, backend="fake")
+        )
+        models = build_models(directories, environments, FakeFactory())
+        source = root / "model-race-deployment-first"
+        source.mkdir()
+        (source / "weights.bin").write_bytes(b"weights")
+        asset = models.assets.register_model(
+            "race-deployment-first",
+            PLATFORM_SCOPE,
+            source,
+            mode="copy",
+        )
+        gc = _closed_model_gc(models, asset.model_id)
+        spec = ModelDeploymentSpec(
+            deployment_id="race-deployment-first",
+            service_id="model:race-deployment-first",
+            model_id=asset.model_id,
+            engine="custom",
+            scope=PLATFORM_SCOPE,
+            executable="{python}",
+            argv=("{python}", "-m", "server"),
+            cwd=root,
+            python_environment_id="serve",
+        )
+
+        desired = models.deployment_catalog._deployment_registry
+        real_put = desired.put
+        deployment_inside_fence = Event()
+        release_deployment = Event()
+
+        def blocked_put(value):
+            deployment_inside_fence.set()
+            assert release_deployment.wait(5.0)
+            return real_put(value)
+
+        desired.put = blocked_put
+        deployment_errors: list[BaseException] = []
+        gc_errors: list[BaseException] = []
+
+        def publish_deployment() -> None:
+            try:
+                models.deployment_catalog.put_deployment(spec)
+            except BaseException as exc:
+                deployment_errors.append(exc)
+
+        def retire_asset() -> None:
+            try:
+                models.assets.unregister_model(
+                    asset.model_id,
+                    delete_managed_files=True,
+                    gc=gc,
+                )
+            except BaseException as exc:
+                gc_errors.append(exc)
+
+        deployment_thread = Thread(target=publish_deployment)
+        deployment_thread.start()
+        assert deployment_inside_fence.wait(5.0)
+
+        gc_thread = Thread(target=retire_asset)
+        gc_thread.start()
+        release_deployment.set()
+        deployment_thread.join(5.0)
+        gc_thread.join(5.0)
+        assert not deployment_thread.is_alive()
+        assert not gc_thread.is_alive()
+
+        assert deployment_errors == []
+        assert len(gc_errors) == 1
+        assert "still referenced by a deployment" in str(gc_errors[0])
+        assert models.deployment_catalog.deployment(spec.deployment_id) == spec
+        assert models.assets.model(asset.model_id) == asset
+        assert asset.path.exists()
+
+
+def test_model_asset_lifecycle_fence_orders_retirement_before_deployment() -> None:
+    with TemporaryDirectory() as td:
+        root = Path(td)
+        directories = build_local_directory_authorities(layout(root))
+        environments = build_environments(directories)
+        environments.lifecycle.create(
+            PythonEnvironmentSpec("serve", PLATFORM_SCOPE, backend="fake")
+        )
+        models = build_models(directories, environments, FakeFactory())
+        source = root / "model-race-retirement-first"
+        source.mkdir()
+        (source / "weights.bin").write_bytes(b"weights")
+        asset = models.assets.register_model(
+            "race-retirement-first",
+            PLATFORM_SCOPE,
+            source,
+            mode="copy",
+        )
+        gc = _closed_model_gc(models, asset.model_id)
+        spec = ModelDeploymentSpec(
+            deployment_id="race-retirement-first",
+            service_id="model:race-retirement-first",
+            model_id=asset.model_id,
+            engine="custom",
+            scope=PLATFORM_SCOPE,
+            executable="{python}",
+            argv=("{python}", "-m", "server"),
+            cwd=root,
+            python_environment_id="serve",
+        )
+
+        storage = models.assets._storage
+        real_remove = storage.remove
+        gc_inside_fence = Event()
+        release_gc = Event()
+
+        def blocked_remove(value):
+            gc_inside_fence.set()
+            assert release_gc.wait(5.0)
+            return real_remove(value)
+
+        storage.remove = blocked_remove
+        gc_errors: list[BaseException] = []
+        deployment_errors: list[BaseException] = []
+
+        def retire_asset() -> None:
+            try:
+                models.assets.unregister_model(
+                    asset.model_id,
+                    delete_managed_files=True,
+                    gc=gc,
+                )
+            except BaseException as exc:
+                gc_errors.append(exc)
+
+        def publish_deployment() -> None:
+            try:
+                models.deployment_catalog.put_deployment(spec)
+            except BaseException as exc:
+                deployment_errors.append(exc)
+
+        gc_thread = Thread(target=retire_asset)
+        gc_thread.start()
+        assert gc_inside_fence.wait(5.0)
+
+        deployment_thread = Thread(target=publish_deployment)
+        deployment_thread.start()
+        release_gc.set()
+        gc_thread.join(5.0)
+        deployment_thread.join(5.0)
+        assert not gc_thread.is_alive()
+        assert not deployment_thread.is_alive()
+
+        assert gc_errors == []
+        assert len(deployment_errors) == 1
+        assert "retiring or retired" in str(deployment_errors[0])
+        assert not asset.path.exists()
+        with pytest.raises(FileNotFoundError):
+            models.deployment_catalog.deployment(spec.deployment_id)
 
 def test_model_asset_physical_gc_requires_complete_external_closure() -> None:
     with TemporaryDirectory() as td:
