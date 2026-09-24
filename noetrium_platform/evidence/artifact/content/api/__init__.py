@@ -2,6 +2,7 @@
 
 from .blob import (
     ArtifactBlobFencePort,
+    ArtifactBlobGcAssessment,
     ArtifactBlobGeneration,
     ArtifactBlobLifecyclePort,
     ArtifactBlobLifecycleState,
@@ -46,6 +47,7 @@ from .materialization import (
 __all__ = [
     "MultimodalPart",
     "ArtifactBlobFencePort",
+    "ArtifactBlobGcAssessment",
     "ArtifactBlobGeneration",
     "ArtifactBlobLifecyclePort",
     "ArtifactBlobLifecycleState",
