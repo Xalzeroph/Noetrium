@@ -645,3 +645,40 @@ class DurableResourceAuthoritiesTests(TestCase):
                 second.environments.binding("runner", scope).instance_id,
                 "env-1",
             )
+
+
+def test_resource_lease_reconcile_can_be_scoped_to_one_resource_kind(tmp_path) -> None:
+    from noetrium_platform.infrastructure.resources.lease.api import (
+        ResourceIdentity,
+        ResourceKind,
+        ResourceLease,
+        ResourceOwner,
+    )
+    from noetrium_platform.foundation.scope.api import PLATFORM_SCOPE
+    from noetrium_platform.infrastructure.resources.providers import (
+        SQLiteResourceLeaseRegistry,
+    )
+
+    registry = SQLiteResourceLeaseRegistry(tmp_path / "lease-kind.sqlite")
+    endpoint = ResourceIdentity(ResourceKind.NETWORK_ENDPOINT, "endpoint-a")
+    container = ResourceIdentity(ResourceKind.CONTAINER, "container-a")
+    for resource in (endpoint, container):
+        registry.register_owner(ResourceOwner(resource, PLATFORM_SCOPE))
+        registry.acquire(
+            ResourceLease(
+                f"lease:{resource.resource_id}",
+                resource,
+                PLATFORM_SCOPE,
+                "kind-scoped-reconcile",
+            ),
+            ttl_seconds=1.0,
+            now=10.0,
+        )
+
+    expired = registry.reconcile_expired(
+        now=12.0,
+        resource_kind=ResourceKind.CONTAINER,
+    )
+    assert [row.resource.kind for row in expired] == [ResourceKind.CONTAINER]
+    assert registry.get("lease:container-a", now=12.0).state.value == "expired"
+    assert registry.get("lease:endpoint-a", now=10.5).state.value == "active"

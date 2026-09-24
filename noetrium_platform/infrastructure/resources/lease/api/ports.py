@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import Protocol
 
-from .contracts import ResourceIdentity, ResourceLease, ResourceOwner
+from .contracts import ResourceIdentity, ResourceKind, ResourceLease, ResourceOwner
 
 
 class ResourceOwnershipPort(Protocol):
@@ -35,7 +35,12 @@ class ResourceLeasePort(Protocol):
     def history_for(
         self, resource: ResourceIdentity, *, now: float | None = None
     ) -> tuple[ResourceLease, ...]: ...
-    def reconcile_expired(self, *, now: float | None = None) -> tuple[ResourceLease, ...]: ...
+    def reconcile_expired(
+        self,
+        *,
+        now: float | None = None,
+        resource_kind: ResourceKind | None = None,
+    ) -> tuple[ResourceLease, ...]: ...
 
 
 __all__ = ["ResourceLeasePort", "ResourceOwnershipPort"]

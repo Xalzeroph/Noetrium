@@ -9,6 +9,7 @@ from time import time
 from noetrium_platform.infrastructure.resources.lease.api import (
     LeaseState,
     ResourceIdentity,
+    ResourceKind,
     ResourceLease,
     ResourceLeaseConflict,
     ResourceLeaseExpired,
@@ -216,12 +217,35 @@ class InMemoryResourceLeaseRegistry:
             )
             return tuple(sorted(rows, key=lambda row: (row.fencing_token, row.lease_id)))
 
-    def reconcile_expired(self, *, now: float | None = None) -> tuple[ResourceLease, ...]:
+    def reconcile_expired(
+        self,
+        *,
+        now: float | None = None,
+        resource_kind: ResourceKind | None = None,
+    ) -> tuple[ResourceLease, ...]:
         now_epoch_s = time() if now is None else float(now)
         if not math.isfinite(now_epoch_s):
             raise ValueError("lease observation time must be finite")
+        if resource_kind is not None and type(resource_kind) is not ResourceKind:
+            raise TypeError("resource_kind must be ResourceKind when provided")
         expired: list[ResourceLease] = []
         with self._lock:
+            if resource_kind is not None:
+                for lease_id, current in tuple(self._leases.items()):
+                    if (
+                        current.resource.kind is not resource_kind
+                        or current.state is not LeaseState.ACTIVE
+                        or current.expires_at_epoch_s is None
+                        or current.expires_at_epoch_s > now_epoch_s
+                    ):
+                        continue
+                    value = self._expire_lease_if_needed(lease_id, now_epoch_s)
+                    if value is not None and value.state is LeaseState.EXPIRED:
+                        expired.append(value)
+                return tuple(
+                    sorted(expired, key=lambda row: row.lease_id)
+                )
+
             while self._expiry_heap and self._expiry_heap[0][0] <= now_epoch_s:
                 expires_at, fencing, lease_id = heapq.heappop(self._expiry_heap)
                 current = self._leases.get(lease_id)

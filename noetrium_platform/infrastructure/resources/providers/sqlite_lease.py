@@ -6,6 +6,7 @@ from time import time
 
 from noetrium_platform.infrastructure.resources.lease.api import (
     ResourceIdentity,
+    ResourceKind,
     ResourceLease,
     ResourceOwner,
     ResourceLeasePort,
@@ -207,10 +208,17 @@ class SQLiteResourceLeaseRegistry(ResourceOwnershipPort, ResourceLeasePort):
                 ).fetchall()
         return tuple(decode_resource_lease(row) for row in rows)
 
-    def reconcile_expired(self, *, now: float | None = None) -> tuple[ResourceLease, ...]:
+    def reconcile_expired(
+        self,
+        *,
+        now: float | None = None,
+        resource_kind: ResourceKind | None = None,
+    ) -> tuple[ResourceLease, ...]:
         now_epoch_s = time() if now is None else float(now)
         if not math.isfinite(now_epoch_s):
             raise ValueError("lease observation time must be finite")
+        if resource_kind is not None and type(resource_kind) is not ResourceKind:
+            raise TypeError("resource_kind must be ResourceKind when provided")
         with self._connection() as conn:
             with immediate_sqlite_transaction(
                 conn,
@@ -218,7 +226,9 @@ class SQLiteResourceLeaseRegistry(ResourceOwnershipPort, ResourceLeasePort):
                 label="resource lease reconciliation",
             ):
                 return reconcile_expired_resource_leases(
-                    conn, now_epoch_s=now_epoch_s
+                    conn,
+                    now_epoch_s=now_epoch_s,
+                    resource_kind=resource_kind,
                 )
 
 
