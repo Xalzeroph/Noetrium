@@ -14,10 +14,15 @@ import inspect
 from pathlib import Path, PurePosixPath
 
 from noetrium import api
+from noetrium_platform.foundation.kernel.kernel import canonical_digest
 from noetrium_platform.research.execution.machines.api import (
     ResearchProgram as MachineResearchProgram,
 )
 from noetrium_platform.research.execution.workflow.api import MethodProgram
+from noetrium_platform.research.experimentation.lifecycle.api import (
+    BenchmarkTaskSet,
+    ResearchStudyDefinition,
+)
 
 from .contracts import (
     ReproductionAssetKind,
@@ -55,6 +60,45 @@ class ReproductionMachineProgramBinding:
             raise ValueError("reproduction machine binding kind is required")
         if len(self.program_digest) != 64:
             raise ValueError("reproduction machine program digest must be SHA-256 text")
+
+
+@dataclass(frozen=True, slots=True)
+class ReproductionStudyFactoryBinding:
+    """Package-local typed Study factory consumed by ExperimentClosure compilation."""
+
+    package: str
+    asset: ReproductionAssetRef
+    module: str
+    qualname: str
+    benchmark_parameter: str
+    parameter_names: tuple[str, ...]
+    required_parameters: tuple[str, ...]
+    binding_digest: str
+
+    def __post_init__(self) -> None:
+        if not self.package or not self.module or not self.qualname:
+            raise ValueError("reproduction Study factory identity is incomplete")
+        if self.asset.kind is not ReproductionAssetKind.STUDY:
+            raise ValueError("reproduction Study factory asset kind drifted")
+        if self.benchmark_parameter not in self.parameter_names:
+            raise ValueError("reproduction Study factory lost benchmark parameter")
+        if tuple(sorted(set(self.parameter_names))) != tuple(sorted(self.parameter_names)):
+            raise ValueError("reproduction Study factory parameters must be unique")
+        if any(name not in self.parameter_names for name in self.required_parameters):
+            raise ValueError("reproduction Study factory required parameters drifted")
+        if len(self.binding_digest) != 64:
+            raise ValueError("reproduction Study factory digest must be SHA-256 text")
+
+    @property
+    def unresolved_parameters(self) -> tuple[str, ...]:
+        return tuple(
+            name for name in self.required_parameters
+            if name != self.benchmark_parameter
+        )
+
+    @property
+    def exact_after_benchmark(self) -> bool:
+        return not self.unresolved_parameters
 
 
 @dataclass(frozen=True, slots=True)
@@ -134,6 +178,100 @@ def _module_from_asset(
             f"{definition.package} asset is not package-local Python: {asset.path}"
         )
     return ".".join(path.with_suffix("").parts)
+
+
+def _annotation_text(annotation: object) -> str:
+    if annotation is inspect.Signature.empty:
+        return ""
+    if type(annotation) is str:
+        return annotation
+    return getattr(annotation, "__name__", str(annotation))
+
+
+def resolve_study_factory_bindings(
+    definition: ReproductionDefinition,
+) -> tuple[ReproductionStudyFactoryBinding, ...]:
+    """Resolve every explicit package-local Study factory without guessing."""
+
+    if type(definition) is not ReproductionDefinition:
+        raise TypeError("reproduction Study binding requires definition")
+    asset = _asset(definition, ReproductionAssetKind.STUDY)
+    module_name = _module_from_asset(definition, asset)
+    try:
+        module = importlib.import_module(module_name)
+    except ImportError as exc:
+        raise ReproductionResearchOSCompileError(
+            f"{definition.package} Study module cannot be imported: {module_name}"
+        ) from exc
+    exported = getattr(module, "__all__", ())
+    if type(exported) not in {list, tuple} or any(
+        type(name) is not str or not name for name in exported
+    ):
+        raise ReproductionResearchOSCompileError(
+            f"{definition.package} Study module __all__ must be explicit"
+        )
+
+    bindings: list[ReproductionStudyFactoryBinding] = []
+    for name in exported:
+        value = getattr(module, name, None)
+        if not inspect.isfunction(value) or value.__module__ != module_name:
+            continue
+        try:
+            signature = inspect.signature(value)
+        except (TypeError, ValueError):
+            continue
+        if _annotation_text(signature.return_annotation) != "ResearchStudyDefinition":
+            continue
+        parameters = tuple(signature.parameters.values())
+        benchmark_parameters = tuple(
+            parameter.name
+            for parameter in parameters
+            if "BenchmarkTaskSet" in _annotation_text(parameter.annotation)
+        )
+        if len(benchmark_parameters) != 1:
+            raise ReproductionResearchOSCompileError(
+                f"{definition.package} Study factory {name} must declare exactly one "
+                f"BenchmarkTaskSet parameter; found={benchmark_parameters}"
+            )
+        parameter_names = tuple(parameter.name for parameter in parameters)
+        required_parameters = tuple(
+            parameter.name
+            for parameter in parameters
+            if parameter.default is inspect.Parameter.empty
+            and parameter.kind not in {
+                inspect.Parameter.VAR_POSITIONAL,
+                inspect.Parameter.VAR_KEYWORD,
+            }
+        )
+        binding_digest = canonical_digest(
+            {
+                "package": definition.package,
+                "asset_path": asset.path,
+                "module": module_name,
+                "qualname": name,
+                "benchmark_parameter": benchmark_parameters[0],
+                "parameter_names": parameter_names,
+                "required_parameters": required_parameters,
+            }
+        )
+        bindings.append(
+            ReproductionStudyFactoryBinding(
+                definition.package,
+                asset,
+                module_name,
+                name,
+                benchmark_parameters[0],
+                parameter_names,
+                required_parameters,
+                binding_digest,
+            )
+        )
+    if not bindings:
+        raise ReproductionResearchOSCompileError(
+            f"{definition.package} must export at least one package-local "
+            "ResearchStudyDefinition factory"
+        )
+    return tuple(sorted(bindings, key=lambda row: (row.qualname, row.binding_digest)))
 
 
 def resolve_method_program_binding(
@@ -345,6 +483,7 @@ def compile_reproduction_research_program(
     if type(definition) is not ReproductionDefinition:
         raise TypeError("reproduction Research OS compilation requires definition")
     study = _asset(definition, ReproductionAssetKind.STUDY)
+    study_factories = resolve_study_factory_bindings(definition)
     machine_dependencies = resolve_research_program_bindings(definition)
     machine_dependency_documents = tuple(
         _machine_dependency_document(row)
@@ -436,6 +575,17 @@ def compile_reproduction_research_program(
             "reproduction_method_id": definition.identity.method_id,
             "reproduction_definition_digest": definition.definition_digest,
             "asset_path": study.path,
+            "study_factories": tuple(
+                {
+                    "module": binding.module,
+                    "qualname": binding.qualname,
+                    "benchmark_parameter": binding.benchmark_parameter,
+                    "required_parameters": binding.required_parameters,
+                    "unresolved_parameters": binding.unresolved_parameters,
+                    "binding_digest": binding.binding_digest,
+                }
+                for binding in study_factories
+            ),
         },
     )
 
@@ -589,6 +739,7 @@ def compile_reproduction_portfolio(
 __all__ = [
     "ReproductionMachineProgramBinding",
     "ReproductionMethodProgramBinding",
+    "ReproductionStudyFactoryBinding",
     "ReproductionResearchOSCompileError",
     "compile_reproduction_portfolio",
     "compile_reproduction_research_program",
@@ -597,5 +748,6 @@ __all__ = [
     "executable_reproduction_definitions",
     "is_research_os_executable",
     "resolve_method_program_binding",
+    "resolve_study_factory_bindings",
     "resolve_research_program_bindings",
 ]
