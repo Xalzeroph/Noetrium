@@ -11,6 +11,7 @@ import pytest
 from noetrium_platform.research.experimentation.lifecycle.api import (
     RunCheckpointConflict,
     RunCheckpointIntegrityError,
+    RunCheckpointRecoveryRequired,
     WorkloadCheckpointBundle,
     WorkloadCheckpointComponentRef,
     WorkloadCheckpointPayload,
@@ -261,6 +262,17 @@ def test_workload_checkpoint_publish_intent_recovers_manifest_crash(
     assert store._content._blob_path(
         owned_payload.ref.payload_sha256
     ).exists()
+
+    pending = DirectoryWorkloadCheckpointStore(root)
+    with pytest.raises(RunCheckpointRecoveryRequired) as raised:
+        pending.load(owned_manifest.checkpoint_id)
+    recovery = raised.value
+    assert recovery.checkpoint_id == owned_manifest.checkpoint_id
+    assert recovery.namespace == "workload"
+    assert recovery.manifest_sha256 == pending._intents.load(
+        owned_manifest.checkpoint_id
+    ).manifest_sha256
+    assert recovery.blob_sha256s == (owned_payload.ref.payload_sha256,)
 
     other_bytes = b"conflict"
     other_ref = WorkloadCheckpointComponentRef(
