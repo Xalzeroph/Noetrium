@@ -70,6 +70,7 @@ def test_repository_fleet_authority_composition_has_one_research_binding_authori
         experiment_reconciliation=_ExperimentReconciliation(),
         reproduction_capabilities=reproduction_capabilities,
         benchmarks=benchmarks,
+        authority_manifest_digest="b" * 64,
     )
 
     assert type(bundle) is ReproductionFleetExecutionAuthorities
@@ -79,4 +80,5 @@ def test_repository_fleet_authority_composition_has_one_research_binding_authori
         type(bundle.experiment_runtime_components)
         is ResearchOSExperimentRuntimeComponents
     )
+    assert bundle.authority_manifest_digest == "b" * 64
     assert bundle.capability_resolver is reproduction_capabilities
