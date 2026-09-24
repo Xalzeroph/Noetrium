@@ -995,3 +995,111 @@ def test_model_remove_retries_after_physical_stop_without_retargeting_generation
 
         with pytest.raises(RuntimeError, match="retired and cannot be reused"):
             models.deployment_catalog.put_deployment(spec)
+
+
+def test_model_asset_retirement_retries_managed_delete_with_durable_original_policy() -> None:
+    with TemporaryDirectory() as td:
+        root = Path(td)
+        directories = build_local_directory_authorities(layout(root))
+        environments = build_environments(directories)
+        models = build_models(directories, environments, FakeFactory())
+        source = root / "source-delete-retry"
+        source.mkdir()
+        (source / "weights.bin").write_bytes(b"weights")
+        asset = models.assets.register_model(
+            "retire-delete",
+            PLATFORM_SCOPE,
+            source,
+            mode="copy",
+        )
+
+        storage = models.assets._storage
+        real_remove = storage.remove
+        calls = 0
+
+        def fail_once(value):
+            nonlocal calls
+            calls += 1
+            if calls == 1:
+                raise OSError("simulated managed model delete interruption")
+            return real_remove(value)
+
+        storage.remove = fail_once
+        with pytest.raises(OSError, match="delete interruption"):
+            models.assets.unregister_model(
+                "retire-delete",
+                delete_managed_files=True,
+            )
+
+        assert asset.path.exists()
+        with pytest.raises(RuntimeError, match="retiring or retired"):
+            models.assets.model("retire-delete")
+
+        # Recovery follows the durable first intent, not this caller's false.
+        assert models.assets.unregister_model(
+            "retire-delete",
+            delete_managed_files=False,
+        )
+        assert calls == 2
+        assert not asset.path.exists()
+        assert models.assets.unregister_model("retire-delete")
+        with pytest.raises(RuntimeError, match="retired and cannot be reused"):
+            models.assets.register_model(
+                "retire-delete",
+                PLATFORM_SCOPE,
+                source,
+                mode="reference",
+            )
+
+
+def test_model_asset_retirement_preserves_keep_files_policy_across_finish_failure() -> None:
+    with TemporaryDirectory() as td:
+        root = Path(td)
+        directories = build_local_directory_authorities(layout(root))
+        environments = build_environments(directories)
+        models = build_models(directories, environments, FakeFactory())
+        source = root / "source-keep-retry"
+        source.mkdir()
+        (source / "weights.bin").write_bytes(b"weights")
+        asset = models.assets.register_model(
+            "retire-keep",
+            PLATFORM_SCOPE,
+            source,
+            mode="copy",
+        )
+
+        registry = models.assets._asset_registry
+        real_finish = registry.finish_retirement
+        calls = 0
+
+        def fail_once(value):
+            nonlocal calls
+            calls += 1
+            if calls == 1:
+                raise OSError("simulated registry retirement finish failure")
+            return real_finish(value)
+
+        registry.finish_retirement = fail_once
+        with pytest.raises(OSError, match="finish failure"):
+            models.assets.unregister_model(
+                "retire-keep",
+                delete_managed_files=False,
+            )
+
+        assert asset.path.exists()
+
+        # The retry asks to delete, but durable policy from the first mutation
+        # is authoritative and the managed bytes must remain.
+        assert models.assets.unregister_model(
+            "retire-keep",
+            delete_managed_files=True,
+        )
+        assert calls == 2
+        assert asset.path.exists()
+        with pytest.raises(RuntimeError, match="retired and cannot be reused"):
+            models.assets.register_model(
+                "retire-keep",
+                PLATFORM_SCOPE,
+                source,
+                mode="reference",
+            )
