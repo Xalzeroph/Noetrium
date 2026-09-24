@@ -10,7 +10,7 @@ from noetrium_platform.evidence.artifact.lineage.relation.api import (
     ArtifactLineageEdge,
     ArtifactLineageRelationPort,
 )
-from noetrium_platform.foundation.kernel.concurrency.api import Deadline
+from noetrium_platform.foundation.kernel.concurrency.api import Deadline, TaskContextPort
 from noetrium_platform.foundation.kernel.kernel import (
     ExecutionContext,
     JsonObject,
@@ -137,6 +137,7 @@ class ResearchOSNodeRuntimePort(Protocol):
     def execute(
         self,
         context: ExecutionContext,
+        task_context: TaskContextPort,
         node: CompiledResearchOSGraphNode,
         lowering: LoweredResearchOSGraphNode,
         inputs: JsonObject,
@@ -477,13 +478,11 @@ class PreparedResearchOSNodeExecutor:
 
     def execute(
         self,
-        context: ExecutionContext,
+        task_context: TaskContextPort,
         node: CompiledResearchOSGraphNode,
         *,
         deadline: Deadline | None,
     ) -> None:
-        if not isinstance(context, ExecutionContext):
-            raise TypeError("research node execution context must be ExecutionContext")
         if type(node) is not CompiledResearchOSGraphNode:
             raise TypeError("research node executor requires compiled graph node")
         admission = self._prepared.admission(node.graph_node_id)
@@ -493,6 +492,19 @@ class PreparedResearchOSNodeExecutor:
         if admission.lowering_digest != lowering.lowering_digest:
             raise ValueError("research node execution lowering admission drifted")
 
+        task_context.checkpoint()
+        scientific_context = ExecutionContext(
+            run_id=self._prepared.cut.cut_id,
+            trace_id=canonical_digest(
+                {
+                    "execution_cut_id": self._prepared.cut.cut_id,
+                    "graph_digest": self._prepared.compilation.plan.graph_digest,
+                }
+            ),
+            span_id=node.graph_node_id,
+            task_id=task_context.task_id,
+            component_id=node.graph_node_id,
+        )
         input_references = lookup_research_os_node_input_references(
             self._prepared.cut.cut_id,
             self._prepared.compilation,
@@ -504,13 +516,15 @@ class PreparedResearchOSNodeExecutor:
             for input_name, reference in input_references.items()
         }
         result = self._runtime.execute(
-            context,
+            scientific_context,
+            task_context,
             node,
             lowering,
             inputs,
             execution_cut_id=self._prepared.cut.cut_id,
             deadline=deadline,
         )
+        task_context.checkpoint()
         self.publish_recovered_result(
             node,
             result,
