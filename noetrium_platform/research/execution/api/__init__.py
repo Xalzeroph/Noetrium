@@ -587,3 +587,29 @@ __all__ = tuple(__all__) + (
     "fork_environment_session",
     "replay_environment_prefix",
 )
+
+# Adjacent capability-layer contracts intentionally surfaced to experimentation.
+from noetrium_platform.capabilities.api import (
+    ArtifactBlobRef,
+    EmbodiedSimulatorBackendPort,
+    SemanticProjectionSnapshot,
+    SemanticSimilarityQuery,
+    SemanticSimilarityQueryPort,
+    SimulatorObservation,
+    SimulatorStep,
+    SoftwareActionKind,
+    SoftwareActionTimeoutError,
+    SoftwareWorldPort,
+)
+__all__ = tuple(__all__) + (
+    "ArtifactBlobRef",
+    "EmbodiedSimulatorBackendPort",
+    "SemanticProjectionSnapshot",
+    "SemanticSimilarityQuery",
+    "SemanticSimilarityQueryPort",
+    "SimulatorObservation",
+    "SimulatorStep",
+    "SoftwareActionKind",
+    "SoftwareActionTimeoutError",
+    "SoftwareWorldPort",
+)
