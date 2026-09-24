@@ -21,7 +21,6 @@ _ALLOWED_CALLERS = {
         "noetrium_platform/composition/research_os_runtime.py",
     },
     "ResearchGraphScheduler": {
-        "noetrium_platform/composition/research_campaign.py",
         "noetrium_platform/composition/research_os_graph.py",
     },
     "MethodRunResult": {
