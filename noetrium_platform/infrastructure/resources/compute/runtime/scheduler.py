@@ -19,7 +19,10 @@ from noetrium_platform.infrastructure.resources.lease.api import (
     ResourceIdentity, ResourceKind, ResourceLease, ResourceLeasePort, ResourceOwner,
     ResourceOwnership, ResourceOwnershipPort,
 )
-from noetrium_platform.foundation.kernel.kernel.durability.sqlite import durable_sqlite_connection
+from noetrium_platform.foundation.kernel.kernel.durability.sqlite import (
+    begin_immediate_sqlite_transaction,
+    durable_sqlite_connection,
+)
 from noetrium_platform.infrastructure.resources.providers.sqlite_resource import ensure_resource_schema
 from noetrium_platform.infrastructure.resources.providers.sqlite_lease_ops import (
     acquire_resource_lease, ensure_resource_owner, reconcile_expired_resource_leases,
@@ -518,7 +521,7 @@ class SQLiteComputeScheduler:
         self._host_runtime_observer = host_runtime_observer
         self.timeout_seconds = float(timeout_seconds)
         with self._connection() as conn:
-            conn.execute("BEGIN IMMEDIATE")
+            begin_immediate_sqlite_transaction(conn, timeout_seconds=self.timeout_seconds)
             ensure_resource_schema(conn)
             self._ensure_schema(conn)
             conn.commit()
@@ -734,7 +737,7 @@ class SQLiteComputeScheduler:
         runtime_snapshot = _observe_gpu_runtime(self._gpu_runtime_observer)
         host_runtime_snapshot = _observe_host_runtime(self._host_runtime_observer)
         with self._connection() as conn:
-            conn.execute("BEGIN IMMEDIATE")
+            begin_immediate_sqlite_transaction(conn, timeout_seconds=self.timeout_seconds)
             try:
                 self._cleanup_expired(conn, now_epoch_s)
                 self._ensure_identity(conn, allocation_id, request_digest, scope)
@@ -803,7 +806,7 @@ class SQLiteComputeScheduler:
             raise ValueError("compute renewal requires unique allocation ids")
         now_epoch_s = _lease_now(now)
         with self._connection() as conn:
-            conn.execute("BEGIN IMMEDIATE")
+            begin_immediate_sqlite_transaction(conn, timeout_seconds=self.timeout_seconds)
             try:
                 self._cleanup_expired(conn, now_epoch_s)
                 current: list[ComputeAllocation] = []
@@ -838,7 +841,7 @@ class SQLiteComputeScheduler:
     ) -> tuple[ComputeAllocation, ...]:
         now_epoch_s = _lease_now(now)
         with self._connection() as conn:
-            conn.execute("BEGIN IMMEDIATE")
+            begin_immediate_sqlite_transaction(conn, timeout_seconds=self.timeout_seconds)
             try:
                 expired = self._cleanup_expired(conn, now_epoch_s)
                 conn.commit()
@@ -850,7 +853,7 @@ class SQLiteComputeScheduler:
     def release(self, allocation_id: str) -> None:
         now_epoch_s = time()
         with self._connection() as conn:
-            conn.execute("BEGIN IMMEDIATE")
+            begin_immediate_sqlite_transaction(conn, timeout_seconds=self.timeout_seconds)
             try:
                 row = conn.execute(
                     "SELECT lease_id FROM compute_allocations WHERE allocation_id=?",
