@@ -4,6 +4,7 @@ from pathlib import Path
 
 import pytest
 
+from noetrium_platform.composition.reliability_resources import RecoveryLeaseAdapter
 from noetrium_platform.foundation.scope.api import PLATFORM_SCOPE
 from noetrium_platform.infrastructure.resources.lease.api import (
     LeaseState,
@@ -19,6 +20,9 @@ from noetrium_platform.infrastructure.resources.lease.runtime import (
 )
 from noetrium_platform.infrastructure.resources.providers import (
     SQLiteResourceLeaseRegistry,
+)
+from noetrium_platform.infrastructure.reliability.recovery.api.lease import (
+    RecoveryLeaseBusy,
 )
 
 
@@ -199,3 +203,67 @@ def test_wall_clock_backward_jump_does_not_block_exact_release(
     )
 
     assert released.state is LeaseState.RELEASED
+
+
+@pytest.mark.parametrize("kind", ("memory", "sqlite"))
+def test_recovery_authority_ignores_wall_clock_jumps(
+    tmp_path: Path,
+    kind: str,
+) -> None:
+    clock = ManualLeaseClock(
+        elapsed_seconds=100.0,
+        wall_epoch_seconds=60_000.0,
+    )
+    registry = _registry(kind, tmp_path, clock)
+    recovery = RecoveryLeaseAdapter(registry, registry)
+
+    acquired = recovery.acquire(
+        "runtime-owner",
+        "manifest-a",
+        ttl_seconds=10.0,
+    )
+
+    clock.jump_wall(5_000_000.0)
+    assert recovery.assert_owned("runtime-owner", "manifest-a") == acquired
+
+    clock.jump_wall(-10_000_000.0)
+    clock.advance(9.0, wall_seconds=0.0)
+    assert recovery.assert_owned("runtime-owner", "manifest-a").owner_id == (
+        "runtime-owner"
+    )
+
+    clock.advance(2.0, wall_seconds=0.0)
+    with pytest.raises(RecoveryLeaseBusy, match="not held"):
+        recovery.assert_owned("runtime-owner", "manifest-a")
+
+
+@pytest.mark.parametrize("kind", ("memory", "sqlite"))
+def test_recovery_authority_reboot_fences_old_generation(
+    tmp_path: Path,
+    kind: str,
+) -> None:
+    clock = ManualLeaseClock(
+        elapsed_seconds=100.0,
+        wall_epoch_seconds=70_000.0,
+        boot_seed="boot-a",
+    )
+    registry = _registry(kind, tmp_path, clock)
+    recovery = RecoveryLeaseAdapter(registry, registry)
+
+    recovery.acquire(
+        "runtime-owner-a",
+        "manifest-a",
+        ttl_seconds=3_600.0,
+    )
+    clock.reboot(boot_seed="boot-b", elapsed_seconds=1.0)
+
+    with pytest.raises(RecoveryLeaseBusy, match="not held"):
+        recovery.assert_owned("runtime-owner-a", "manifest-a")
+
+    replacement = recovery.acquire(
+        "runtime-owner-b",
+        "manifest-b",
+        ttl_seconds=30.0,
+    )
+    assert replacement.owner_id == "runtime-owner-b"
+    assert replacement.manifest_digest == "manifest-b"
