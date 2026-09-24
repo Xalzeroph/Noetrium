@@ -161,8 +161,8 @@ class MinecraftExperimentHost:
 
 
 class _MissingEndpointLeaseGuardFactory:
-    def create(self, allocation_ids: tuple[str, ...]):
-        del allocation_ids
+    def create(self, allocations):
+        del allocations
         raise RuntimeError("Minecraft experiment host requires an injected endpoint lease guard factory")
 
 class LocalMinecraftExperimentHostFactory:
