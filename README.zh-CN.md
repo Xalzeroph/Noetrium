@@ -21,7 +21,7 @@
 
 <!-- readme-locale:zh-CN -->
 
-<!-- readme-source-sha256:1f432b22c69651657449ab8a823c51758cc8a8a8c5a4a5e0da04796eff0e3217 -->
+<!-- readme-source-sha256:24c8d32126332e24f0b8b6e6302432fdedfd8a5126fd7a40592dd97d59410d30 -->
 
 <p align="center">
   <strong>组合研究系统。运行可归因执行。验证证据。</strong><br>

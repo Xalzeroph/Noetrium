@@ -21,7 +21,7 @@
 
 <!-- readme-locale:en -->
 
-<!-- readme-source-sha256:1f432b22c69651657449ab8a823c51758cc8a8a8c5a4a5e0da04796eff0e3217 -->
+<!-- readme-source-sha256:24c8d32126332e24f0b8b6e6302432fdedfd8a5126fd7a40592dd97d59410d30 -->
 
 <p align="center">
   <strong>Research infrastructure for attributable, recoverable, evidence-preserving AI-agent experiments.</strong><br>

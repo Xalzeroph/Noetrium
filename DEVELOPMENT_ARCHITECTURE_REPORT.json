@@ -3,7 +3,7 @@
   "architecture_complexity": {
     "authorities": 20,
     "contract_declarations": 185,
-    "import_edges": 5269,
+    "import_edges": 5278,
     "subsystems": 15,
     "top_level_systems": 16
   },
@@ -23,7 +23,7 @@
     "effective_limits": {
       "authorities": 31,
       "contract_declarations": 185,
-      "import_edges": 5269,
+      "import_edges": 5278,
       "subsystems": 15,
       "top_level_systems": 16
     },
@@ -627,7 +627,7 @@
       "seam_id": "completed"
     }
   ],
-  "import_edges": 5269,
+  "import_edges": 5278,
   "import_violations": [],
   "layer_violations": [],
   "operation_graph": [
@@ -873,7 +873,7 @@
     }
   ],
   "package_cycles": [],
-  "report_sha256": "ac573c666ed9558ffa7ea09e72322a3d0a811e81210cbccf87a598e5b5612a6a",
+  "report_sha256": "29c48cc48469e4276f2d6aacbc45e5a09a941a36cc56fda46330e808eee4d84f",
   "source_authority_violations": [
     {
       "allowed_modules": [
@@ -887,7 +887,7 @@
       "primitive": "time.sleep"
     }
   ],
-  "source_digest": "869c52bd075f8079c9c597fe54c31601858de85ea7615dafcc537ad72a5b5b79",
+  "source_digest": "0275784b6c35c4d27bcb4f93fc110f5ab20449c194bea0e9a6f7a6a7b5ea3717",
   "source_invariant_violations": [],
   "source_root": ".",
   "subsystem_graph": [
@@ -1825,8 +1825,8 @@
       "max_function_lines": 77,
       "module": "noetrium_platform.infrastructure.resources.compute.runtime.scheduler",
       "path": "noetrium_platform/infrastructure/resources/compute/runtime/scheduler.py",
-      "physical_lines": 960,
-      "score": 1780
+      "physical_lines": 963,
+      "score": 1783
     },
     {
       "branches": 80,

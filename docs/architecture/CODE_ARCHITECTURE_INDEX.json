@@ -4662,6 +4662,16 @@
     },
     {
       "kind": "references",
+      "source": "noetrium_platform.composition.managed_research_runtime.ManagedResearchRuntime",
+      "target": "noetrium_platform.composition.resource_lifecycle.ManagedResourceReconciler"
+    },
+    {
+      "kind": "references",
+      "source": "noetrium_platform.composition.managed_research_runtime.ManagedResearchRuntime",
+      "target": "noetrium_platform.foundation.kernel.kernel.durability.file_lock.InterprocessFileLock"
+    },
+    {
+      "kind": "references",
       "source": "noetrium_platform.composition.minecraft_agent.participant_runtime.MinecraftParticipantRuntimeAdapter",
       "target": "noetrium_platform.capabilities.environment.minecraft.api.ports.MinecraftSessionServices"
     },
@@ -5739,6 +5749,26 @@
       "kind": "references",
       "source": "noetrium_platform.composition.research_os_values.ResearchOSValueSubject",
       "target": "noetrium_platform.product.research_os.ResearchValueKind"
+    },
+    {
+      "kind": "references",
+      "source": "noetrium_platform.composition.resource_lifecycle.ManagedResourceReconciler",
+      "target": "noetrium_platform.composition.environment_instance_leases.EnvironmentInstanceLeaseAuthority"
+    },
+    {
+      "kind": "references",
+      "source": "noetrium_platform.composition.resource_lifecycle.ManagedResourceReconciler",
+      "target": "noetrium_platform.composition.resource_lifecycle.ManagedResourceReconciliation"
+    },
+    {
+      "kind": "references",
+      "source": "noetrium_platform.composition.resource_lifecycle.ManagedResourceReconciler",
+      "target": "noetrium_platform.composition.resource_lifecycle.ResourceReconcileStopPort"
+    },
+    {
+      "kind": "references",
+      "source": "noetrium_platform.composition.resource_lifecycle.ManagedResourceReconciliation",
+      "target": "noetrium_platform.composition.environment_instance_leases.EnvironmentInstanceReconciliation"
     },
     {
       "kind": "references",
@@ -20121,7 +20151,7 @@
         "verified"
       ],
       "kind": "dataclass",
-      "line": 547,
+      "line": 596,
       "methods": [
         "from_event"
       ],
@@ -20173,7 +20203,7 @@
         "version"
       ],
       "kind": "dataclass",
-      "line": 153,
+      "line": 163,
       "methods": [
         "__post_init__"
       ],
@@ -20201,7 +20231,7 @@
         "session_id"
       ],
       "kind": "dataclass",
-      "line": 485,
+      "line": 519,
       "methods": [
         "__post_init__",
         "endpoint_allocation_id",
@@ -20230,7 +20260,7 @@
         "timestamp_ms"
       ],
       "kind": "dataclass",
-      "line": 609,
+      "line": 658,
       "methods": [
         "from_mapping",
         "as_observation"
@@ -20258,7 +20288,7 @@
         "stdout_queue_capacity"
       ],
       "kind": "dataclass",
-      "line": 170,
+      "line": 180,
       "methods": [
         "__post_init__"
       ],
@@ -20282,7 +20312,7 @@
         "response"
       ],
       "kind": "dataclass",
-      "line": 371,
+      "line": 405,
       "methods": [
         "__post_init__"
       ],
@@ -20307,7 +20337,8 @@
       "kind": "dataclass",
       "line": 139,
       "methods": [
-        "__post_init__"
+        "__post_init__",
+        "bound_port"
       ],
       "module": "noetrium_platform.capabilities.environment.minecraft.api.contracts",
       "name": "MinecraftEndpointSpec",
@@ -20335,7 +20366,7 @@
         "schema_version"
       ],
       "kind": "dataclass",
-      "line": 197,
+      "line": 207,
       "methods": [
         "__post_init__",
         "scientific_identity_digest",
@@ -20364,7 +20395,7 @@
         "timestamp_ms"
       ],
       "kind": "dataclass",
-      "line": 527,
+      "line": 576,
       "methods": [
         "__post_init__"
       ],
@@ -20414,9 +20445,10 @@
         "port"
       ],
       "kind": "dataclass",
-      "line": 356,
+      "line": 378,
       "methods": [
-        "__post_init__"
+        "__post_init__",
+        "bound_port"
       ],
       "module": "noetrium_platform.capabilities.environment.minecraft.api.contracts",
       "name": "MinecraftRconEndpoint",
@@ -20439,7 +20471,7 @@
         "properties_path"
       ],
       "kind": "dataclass",
-      "line": 342,
+      "line": 364,
       "methods": [
         "__post_init__"
       ],
@@ -20472,9 +20504,10 @@
         "xmx"
       ],
       "kind": "dataclass",
-      "line": 272,
+      "line": 282,
       "methods": [
         "__post_init__",
+        "bound_port",
         "command"
       ],
       "module": "noetrium_platform.capabilities.environment.minecraft.api.contracts",
@@ -20498,7 +20531,7 @@
         "runtime_version"
       ],
       "kind": "dataclass",
-      "line": 255,
+      "line": 265,
       "methods": [
         "__post_init__"
       ],
@@ -20525,7 +20558,7 @@
         "workdir"
       ],
       "kind": "dataclass",
-      "line": 461,
+      "line": 495,
       "methods": [
         "__post_init__"
       ],
@@ -20554,7 +20587,7 @@
         "snapshot_ref"
       ],
       "kind": "dataclass",
-      "line": 419,
+      "line": 453,
       "methods": [
         "__post_init__",
         "digest"
@@ -20581,7 +20614,7 @@
         "source_workdir"
       ],
       "kind": "dataclass",
-      "line": 386,
+      "line": 420,
       "methods": [
         "__post_init__",
         "digest"
@@ -22246,7 +22279,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 14,
+      "line": 13,
       "methods": [
         "__init__"
       ],
@@ -26675,7 +26708,7 @@
       "decorators": [],
       "fields": [],
       "kind": "protocol",
-      "line": 45,
+      "line": 47,
       "methods": [
         "read",
         "write"
@@ -26696,7 +26729,7 @@
       "decorators": [],
       "fields": [],
       "kind": "protocol",
-      "line": 49,
+      "line": 51,
       "methods": [
         "wait"
       ],
@@ -26744,7 +26777,7 @@
       "decorators": [],
       "fields": [],
       "kind": "protocol",
-      "line": 41,
+      "line": 43,
       "methods": [
         "logs",
         "tail_logs"
@@ -26769,6 +26802,7 @@
       "methods": [
         "start",
         "stop",
+        "shutdown",
         "restart",
         "status",
         "remove_deployment"
@@ -26789,12 +26823,13 @@
       "decorators": [],
       "fields": [],
       "kind": "protocol",
-      "line": 35,
+      "line": 36,
       "methods": [
         "status_all",
         "reconcile",
         "start_all",
-        "stop_all"
+        "stop_all",
+        "shutdown_all"
       ],
       "module": "noetrium_platform.capabilities.model.deployment.api.ports",
       "name": "ModelFleetRuntimePort",
@@ -26812,7 +26847,7 @@
       "decorators": [],
       "fields": [],
       "kind": "protocol",
-      "line": 52,
+      "line": 54,
       "methods": [
         "run",
         "snapshot"
@@ -26833,7 +26868,7 @@
       "decorators": [],
       "fields": [],
       "kind": "protocol",
-      "line": 56,
+      "line": 58,
       "methods": [
         "environment_usage",
         "gpu_allocations",
@@ -27167,7 +27202,9 @@
       "methods": [
         "__init__",
         "start",
+        "_shutdown_applied",
         "stop",
+        "shutdown",
         "restart",
         "status",
         "remove_deployment"
@@ -27193,6 +27230,7 @@
         "reconcile",
         "start_all",
         "stop_all",
+        "shutdown_all",
         "_management_failure_status",
         "_run_fleet_action"
       ],
@@ -38789,6 +38827,7 @@
         "renew",
         "renew_many",
         "release",
+        "shutdown_cleanup",
         "reconcile"
       ],
       "module": "noetrium_platform.composition.environment_instance_leases",
@@ -38832,7 +38871,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 340,
+      "line": 378,
       "methods": [],
       "module": "noetrium_platform.composition.environment_instance_leases",
       "name": "EnvironmentInstanceLeaseHeartbeatError",
@@ -38848,7 +38887,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 439,
+      "line": 477,
       "methods": [
         "__init__",
         "policy",
@@ -38868,7 +38907,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 344,
+      "line": 382,
       "methods": [
         "__init__",
         "handles",
@@ -39142,21 +39181,24 @@
       ],
       "fields": [
         "_closed",
-        "_docker_controller",
         "_model_controller",
         "_orchestration_group",
+        "_resource_controller",
+        "_runtime_lock",
         "_stop",
         "execution_pool",
         "management",
         "model_replica_pool",
         "observability",
         "recovery_execution",
+        "resources",
         "services"
       ],
       "kind": "dataclass",
-      "line": 51,
+      "line": 56,
       "methods": [
         "start_background_controllers",
+        "quiesce_background_controllers",
         "assert_healthy",
         "close",
         "__enter__",
@@ -39176,7 +39218,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 42,
+      "line": 47,
       "methods": [
         "__init__",
         "wait"
@@ -40615,6 +40657,7 @@
       "line": 49,
       "methods": [
         "__init__",
+        "_require_workloads_open",
         "model_admission",
         "open_orchestration_group",
         "open_experiment_group",
@@ -40626,6 +40669,7 @@
         "close_orchestration_group",
         "close_experiment_group",
         "close_model_io_group",
+        "quiesce_workloads",
         "orchestration_admission_snapshot",
         "experiment_admission_snapshot",
         "model_io_admission_snapshot",
@@ -41810,6 +41854,7 @@
       "fields": [
         "_artifact_lineage",
         "_experiment_closures",
+        "_owns_execution_pool",
         "_runtime",
         "_values",
         "execution_pool",
@@ -42643,6 +42688,73 @@
         "ResearchOSValueSubject"
       ],
       "qualname": "noetrium_platform.composition.research_os_values.ResearchOSValueSubject",
+      "system_key": "research_os",
+      "top_system": "research_os"
+    },
+    {
+      "bases": [],
+      "decorators": [],
+      "fields": [],
+      "kind": "class",
+      "line": 52,
+      "methods": [
+        "__init__",
+        "reconcile",
+        "shutdown_cleanup",
+        "run"
+      ],
+      "module": "noetrium_platform.composition.resource_lifecycle",
+      "name": "ManagedResourceReconciler",
+      "nesting": [
+        "ManagedResourceReconciler"
+      ],
+      "qualname": "noetrium_platform.composition.resource_lifecycle.ManagedResourceReconciler",
+      "system_key": "research_os",
+      "top_system": "research_os"
+    },
+    {
+      "bases": [],
+      "decorators": [
+        "dataclass(frozen=True, slots=True)"
+      ],
+      "fields": [
+        "compute",
+        "containers",
+        "endpoints",
+        "environments",
+        "observed_at_epoch_s"
+      ],
+      "kind": "dataclass",
+      "line": 33,
+      "methods": [
+        "changed"
+      ],
+      "module": "noetrium_platform.composition.resource_lifecycle",
+      "name": "ManagedResourceReconciliation",
+      "nesting": [
+        "ManagedResourceReconciliation"
+      ],
+      "qualname": "noetrium_platform.composition.resource_lifecycle.ManagedResourceReconciliation",
+      "system_key": "research_os",
+      "top_system": "research_os"
+    },
+    {
+      "bases": [
+        "Protocol"
+      ],
+      "decorators": [],
+      "fields": [],
+      "kind": "protocol",
+      "line": 28,
+      "methods": [
+        "wait"
+      ],
+      "module": "noetrium_platform.composition.resource_lifecycle",
+      "name": "ResourceReconcileStopPort",
+      "nesting": [
+        "ResourceReconcileStopPort"
+      ],
+      "qualname": "noetrium_platform.composition.resource_lifecycle.ResourceReconcileStopPort",
       "system_key": "research_os",
       "top_system": "research_os"
     },
@@ -76569,6 +76681,7 @@
         "release",
         "get",
         "active",
+        "reconcile",
         "reconcile_orphans"
       ],
       "module": "noetrium_platform.infrastructure.resources.allocation.api.ports",
@@ -76587,7 +76700,7 @@
       "decorators": [],
       "fields": [],
       "kind": "protocol",
-      "line": 79,
+      "line": 82,
       "methods": [
         "allocate",
         "allocate_auto",
@@ -76597,7 +76710,8 @@
         "renew_many",
         "release",
         "get",
-        "active"
+        "active",
+        "reconcile"
       ],
       "module": "noetrium_platform.infrastructure.resources.allocation.api.ports",
       "name": "EndpointAllocationPort",
@@ -76635,7 +76749,7 @@
       "decorators": [],
       "fields": [],
       "kind": "protocol",
-      "line": 75,
+      "line": 78,
       "methods": [
         "create"
       ],
@@ -76655,7 +76769,7 @@
       "decorators": [],
       "fields": [],
       "kind": "protocol",
-      "line": 69,
+      "line": 72,
       "methods": [
         "start",
         "assert_healthy",
@@ -76733,7 +76847,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 84,
+      "line": 85,
       "methods": [
         "__init__",
         "allocate_auto",
@@ -76745,7 +76859,8 @@
         "renew_many",
         "release",
         "get",
-        "active"
+        "active",
+        "reconcile"
       ],
       "module": "noetrium_platform.infrastructure.resources.allocation.runtime.endpoint_allocator",
       "name": "AtomicEndpointAllocator",
@@ -76763,7 +76878,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 32,
+      "line": 33,
       "methods": [],
       "module": "noetrium_platform.infrastructure.resources.allocation.runtime.endpoint_allocator",
       "name": "EndpointAllocationConflict",
@@ -76781,7 +76896,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 36,
+      "line": 37,
       "methods": [
         "__init__"
       ],
@@ -76801,7 +76916,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 237,
+      "line": 245,
       "methods": [
         "__init__",
         "_reconcile_allocation_locked",
@@ -76814,7 +76929,8 @@
         "renew_many",
         "release",
         "get",
-        "active"
+        "active",
+        "reconcile"
       ],
       "module": "noetrium_platform.infrastructure.resources.allocation.runtime.endpoint_allocator",
       "name": "InMemoryEndpointAllocator",
@@ -77650,7 +77766,7 @@
         "SCHEMA_VERSION"
       ],
       "kind": "class",
-      "line": 557,
+      "line": 560,
       "methods": [
         "__init__",
         "_connection",
@@ -78001,7 +78117,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 49,
+      "line": 51,
       "methods": [
         "__init__",
         "_resource",
@@ -78016,6 +78132,7 @@
         "renew_many",
         "release",
         "reconcile",
+        "shutdown_cleanup",
         "run_reconciler"
       ],
       "module": "noetrium_platform.infrastructure.resources.container.runtime.lease_authority",
@@ -78034,7 +78151,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 45,
+      "line": 47,
       "methods": [],
       "module": "noetrium_platform.infrastructure.resources.container.runtime.lease_authority",
       "name": "DockerContainerLeaseConflict",
@@ -78052,7 +78169,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 346,
+      "line": 392,
       "methods": [],
       "module": "noetrium_platform.infrastructure.resources.container.runtime.lease_authority",
       "name": "DockerContainerLeaseHeartbeatError",
@@ -78070,7 +78187,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 448,
+      "line": 494,
       "methods": [
         "__init__",
         "policy",
@@ -78092,7 +78209,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 350,
+      "line": 396,
       "methods": [
         "__init__",
         "handles",
@@ -78515,7 +78632,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 8,
+      "line": 30,
       "methods": [
         "__init__",
         "layout",
@@ -78776,6 +78893,7 @@
         "release",
         "get",
         "active_for",
+        "active_leases",
         "history_for",
         "reconcile_expired"
       ],
@@ -78829,6 +78947,7 @@
         "release",
         "get",
         "active_for",
+        "active_leases",
         "history_for",
         "reconcile_expired"
       ],
@@ -78900,6 +79019,7 @@
         "release",
         "get",
         "active_for",
+        "active_leases",
         "history_for",
         "reconcile_expired"
       ],
@@ -99480,6 +99600,16 @@
     },
     {
       "kind": "constructs",
+      "source": "noetrium_platform.composition.resource_lifecycle.ManagedResourceReconciler",
+      "target": "noetrium_platform.composition.environment_instance_leases.EnvironmentInstanceReconciliation"
+    },
+    {
+      "kind": "constructs",
+      "source": "noetrium_platform.composition.resource_lifecycle.ManagedResourceReconciler",
+      "target": "noetrium_platform.composition.resource_lifecycle.ManagedResourceReconciliation"
+    },
+    {
+      "kind": "constructs",
       "source": "noetrium_platform.composition.resource_probes.LocalCommandResourceProbe",
       "target": "noetrium_platform.infrastructure.resources.compute.api.probe.CommandProbeError"
     },
@@ -102690,13 +102820,13 @@
     }
   ],
   "counts": {
-    "association_edges": 3432,
-    "classes": 3346,
-    "constructor_edges": 909,
+    "association_edges": 3438,
+    "classes": 3349,
+    "constructor_edges": 911,
     "inheritance_edges": 145,
-    "module_import_edges": 4987,
+    "module_import_edges": 4996,
     "parse_errors": 0,
-    "python_modules": 1908,
+    "python_modules": 1909,
     "registry_authorities": 20,
     "registry_nodes": 31,
     "top_level_systems": 16
@@ -108091,6 +108221,10 @@
     },
     {
       "source": "noetrium_platform.composition.managed_research_runtime",
+      "target": "noetrium_platform.capabilities.model.deployment.api"
+    },
+    {
+      "source": "noetrium_platform.composition.managed_research_runtime",
       "target": "noetrium_platform.capabilities.model.deployment.composition"
     },
     {
@@ -108115,7 +108249,15 @@
     },
     {
       "source": "noetrium_platform.composition.managed_research_runtime",
+      "target": "noetrium_platform.composition.resource_lifecycle"
+    },
+    {
+      "source": "noetrium_platform.composition.managed_research_runtime",
       "target": "noetrium_platform.foundation.kernel.concurrency.api"
+    },
+    {
+      "source": "noetrium_platform.composition.managed_research_runtime",
+      "target": "noetrium_platform.foundation.kernel.kernel.durability.file_lock"
     },
     {
       "source": "noetrium_platform.composition.managed_research_runtime",
@@ -109948,6 +110090,26 @@
     {
       "source": "noetrium_platform.composition.research_os_values",
       "target": "noetrium_platform.product.research_os"
+    },
+    {
+      "source": "noetrium_platform.composition.resource_lifecycle",
+      "target": "noetrium_platform.composition.environment_instance_leases"
+    },
+    {
+      "source": "noetrium_platform.composition.resource_lifecycle",
+      "target": "noetrium_platform.infrastructure.resources.allocation.api"
+    },
+    {
+      "source": "noetrium_platform.composition.resource_lifecycle",
+      "target": "noetrium_platform.infrastructure.resources.compute.api"
+    },
+    {
+      "source": "noetrium_platform.composition.resource_lifecycle",
+      "target": "noetrium_platform.infrastructure.resources.container.api"
+    },
+    {
+      "source": "noetrium_platform.composition.resource_lifecycle",
+      "target": "noetrium_platform.infrastructure.resources.container.runtime"
     },
     {
       "source": "noetrium_platform.composition.resource_probes",
@@ -120107,6 +120269,10 @@
     },
     {
       "source": "noetrium_platform.infrastructure.resources.container.runtime.lease_authority",
+      "target": "noetrium_platform.infrastructure.resources.container.api.contracts"
+    },
+    {
+      "source": "noetrium_platform.infrastructure.resources.container.runtime.lease_authority",
       "target": "noetrium_platform.infrastructure.resources.lease.api"
     },
     {
@@ -127969,13 +128135,16 @@
     },
     {
       "imports": [
+        "noetrium_platform.capabilities.model.deployment.api",
         "noetrium_platform.capabilities.model.deployment.composition",
         "noetrium_platform.composition.managed_observability",
         "noetrium_platform.composition.managed_research_services",
         "noetrium_platform.composition.model_management",
         "noetrium_platform.composition.reliability_resources",
         "noetrium_platform.composition.research_execution_pool",
+        "noetrium_platform.composition.resource_lifecycle",
         "noetrium_platform.foundation.kernel.concurrency.api",
+        "noetrium_platform.foundation.kernel.kernel.durability.file_lock",
         "noetrium_platform.infrastructure.reliability.recovery.api",
         "noetrium_platform.infrastructure.reliability.recovery.execution.composition",
         "noetrium_platform.infrastructure.resources.directory.api",
@@ -129245,6 +129414,19 @@
       ],
       "module": "noetrium_platform.composition.research_os_values",
       "path": "noetrium_platform/composition/research_os_values.py",
+      "system_key": "research_os",
+      "top_system": "research_os"
+    },
+    {
+      "imports": [
+        "noetrium_platform.composition.environment_instance_leases",
+        "noetrium_platform.infrastructure.resources.allocation.api",
+        "noetrium_platform.infrastructure.resources.compute.api",
+        "noetrium_platform.infrastructure.resources.container.api",
+        "noetrium_platform.infrastructure.resources.container.runtime"
+      ],
+      "module": "noetrium_platform.composition.resource_lifecycle",
+      "path": "noetrium_platform/composition/resource_lifecycle.py",
       "system_key": "research_os",
       "top_system": "research_os"
     },
@@ -140022,6 +140204,7 @@
         "noetrium_platform.foundation.kernel.concurrency.api",
         "noetrium_platform.foundation.kernel.kernel",
         "noetrium_platform.infrastructure.resources.container.api",
+        "noetrium_platform.infrastructure.resources.container.api.contracts",
         "noetrium_platform.infrastructure.resources.lease.api"
       ],
       "module": "noetrium_platform.infrastructure.resources.container.runtime.lease_authority",
@@ -143334,7 +143517,7 @@
   "parse_errors": [],
   "registry_sha256": "d3fc1bab831f1b7379e5a36048a61c00fe173429df958270d36a16f3f00171c0",
   "schema": "noetrium-code-architecture-index.v1",
-  "source_git_sha": "0c838ae0511b6108f212cc550ba50e23253df29f",
+  "source_git_sha": "cec40a6e1d4a92b193b4061fed625e4d7a7b20b7",
   "system_import_edges": [
     {
       "count": 85,
@@ -143502,7 +143685,7 @@
       "target": "governance"
     },
     {
-      "count": 41,
+      "count": 42,
       "source": "research_os",
       "target": "model"
     },
@@ -143517,7 +143700,7 @@
       "target": "participant"
     },
     {
-      "count": 118,
+      "count": 119,
       "source": "research_os",
       "target": "platform"
     },
@@ -143532,12 +143715,12 @@
       "target": "reliability"
     },
     {
-      "count": 320,
+      "count": 322,
       "source": "research_os",
       "target": "research_os"
     },
     {
-      "count": 31,
+      "count": 35,
       "source": "research_os",
       "target": "resource"
     },
@@ -143562,7 +143745,7 @@
       "target": "platform"
     },
     {
-      "count": 101,
+      "count": 102,
       "source": "resource",
       "target": "resource"
     },
