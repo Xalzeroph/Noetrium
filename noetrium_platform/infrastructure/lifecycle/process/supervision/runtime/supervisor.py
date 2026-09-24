@@ -38,24 +38,29 @@ class _PosixGroupOwnedProcess:
     def wait(self, timeout: float | None = None) -> int:
         return int(self._delegate.wait(timeout=timeout))
 
-    def _signal_group(self, sig: signal.Signals) -> None:
+    def _signal_guardian(self, sig: signal.Signals) -> None:
         if self._delegate.poll() is not None:
             return
         try:
             if os.getpgid(self.pid) != self.pid:
                 raise RuntimeError(
-                    "interactive process-group identity drifted; refusing signal"
+                    "interactive guardian process-group identity drifted; refusing signal"
                 )
-            os.killpg(self.pid, sig)
+            os.kill(self.pid, sig)
         except ProcessLookupError:
             if self._delegate.poll() is None:
                 raise
 
     def terminate(self) -> None:
-        self._signal_group(signal.SIGTERM)
+        # Guardian forwards TERM to the target group but stays alive until the
+        # target really exits, so supervisor escalation cannot lose authority.
+        self._signal_guardian(signal.SIGTERM)
 
     def kill(self) -> None:
-        self._signal_group(signal.SIGKILL)
+        # SIGUSR1 is guardian-private force cleanup: it SIGKILLs the target
+        # process group while preserving the guardian until wait/poll observes
+        # target convergence.
+        self._signal_guardian(signal.SIGUSR1)
 
 
 class _WindowsJobOwnedProcess:
