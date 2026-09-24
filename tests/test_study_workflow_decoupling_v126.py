@@ -7,7 +7,7 @@ from noetrium_platform.composition.workflows.context_action import (
 from noetrium_platform.research.execution.workflow.api import (
     ExecutionTrialProtocolPort,
 )
-from noetrium_platform.research.experimentation.lifecycle.experiment.runtime import ExperimentRuntime
+from tests_support import ExperimentRuntimeForTest as ExperimentRuntime
 
 
 class StudyWorkflowDecouplingV126Tests(unittest.TestCase):
