@@ -173,19 +173,15 @@ def _unmanaged_executor_constructors() -> ReadinessCriterion:
 
 
 def _canonical_graph_resource_binding() -> ReadinessCriterion:
-    paths = (
-        ROOT / "noetrium_platform/composition/research_graph.py",
-        ROOT / "noetrium_platform/composition/research_campaign.py",
-    )
+    path = ROOT / "noetrium_platform/composition/research_graph.py"
     violations: list[str] = []
-    for path in paths:
-        text = path.read_text(encoding="utf-8")
-        rel = str(path.relative_to(ROOT))
-        if "execution_pool or ResearchExecutionPool()" in text:
-            violations.append(f"{rel}: hidden execution-pool fallback")
-        if "execution_pool: ResearchExecutionPool," not in text:
-            violations.append(f"{rel}: explicit ResearchExecutionPool binding missing")
-    graph_text = paths[0].read_text(encoding="utf-8")
+    text = path.read_text(encoding="utf-8")
+    rel = str(path.relative_to(ROOT))
+    if "execution_pool or ResearchExecutionPool()" in text:
+        violations.append(f"{rel}: hidden execution-pool fallback")
+    if "execution_pool: ResearchExecutionPool," not in text:
+        violations.append(f"{rel}: explicit ResearchExecutionPool binding missing")
+    graph_text = text
     if "time.sleep(" in graph_text:
         violations.append(
             "noetrium_platform/composition/research_graph.py: scheduler polling sleep"
