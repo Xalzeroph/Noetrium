@@ -209,3 +209,48 @@ def test_managed_resource_shutdown_stops_at_first_unproven_dependency_stage() ->
     assert environment.called is False
     assert endpoints.called is False
     assert compute.called is False
+
+
+
+def test_abandoned_owner_takeover_reclaims_prestart_resources_without_ttl_wait() -> None:
+    events: list[str] = []
+
+    class Containers:
+        def shutdown_cleanup(self, *, now=None):
+            events.append("containers")
+            return DockerContainerReconciliation((), ("container-prestart",))
+
+    class Environments:
+        def shutdown_cleanup(self, *, now=None):
+            events.append("environments")
+            return EnvironmentInstanceReconciliation((), ())
+
+    class Endpoints(EndpointShutdownAuthority):
+        def reconcile(self, *, now=None):
+            events.append("endpoint-reconcile")
+            return ()
+
+    class Compute(ComputeShutdownAuthority):
+        pass
+
+    endpoints = Endpoints(events)
+    compute = Compute(events)
+    reconciler = ManagedResourceReconciler(
+        containers=Containers(),
+        environments=Environments(),
+        endpoints=endpoints,
+        compute=compute,
+    )
+
+    report = reconciler.recover_abandoned_owner_generation(now=1000.0)
+
+    assert report.containers.released_lease_ids == ("container-prestart",)
+    assert endpoints.active() == ()
+    assert compute.allocations() == ()
+    assert events == [
+        "containers",
+        "environments",
+        "endpoint-reconcile",
+        "endpoint-release:endpoint-live",
+        "compute-recover-release:compute-live",
+    ]
