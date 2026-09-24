@@ -293,6 +293,7 @@ class MachineExecutor:
                 before_state_digest=canonical_digest(state.state),
                 input_digest=command.payload_digest,
                 program_digest=self.program.program_digest,
+                program_lock_digest=self.program.program_lock.lock_digest,
                 machine_kind=self.identity.kind.value,
                 machine_version=self.identity.implementation_version,
                 state_delta_ref=canonical_digest(proposal.state_delta),
