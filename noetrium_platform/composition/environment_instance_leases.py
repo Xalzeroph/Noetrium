@@ -347,14 +347,22 @@ class EnvironmentInstanceLeaseAuthority:
                 for row in rows:
                     self.catalog.unbind(row.role, row.scope)
                 for lease in active:
-                    self.leases.release(lease.lease_id, now=now_epoch_s)
+                    self.leases.release(
+                        lease.lease_id,
+                        fencing_token=lease.fencing_token,
+                        now=now_epoch_s,
+                    )
                     released.append(lease.lease_id)
                 self.catalog.mark_instance_dirty(instance.instance_id)
                 dirtied.append(instance.instance_id)
                 continue
 
             for lease in active:
-                self.leases.release(lease.lease_id, now=now_epoch_s)
+                self.leases.release(
+                    lease.lease_id,
+                    fencing_token=lease.fencing_token,
+                    now=now_epoch_s,
+                )
                 released.append(lease.lease_id)
 
         return EnvironmentInstanceReconciliation(
