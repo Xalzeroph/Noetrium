@@ -57627,6 +57627,7 @@
         "_cancel_deadline_handle",
         "_raw_completed_monotonic",
         "reserve_task",
+        "discard_unstarted",
         "reserve_recurring",
         "bind_raw",
         "bind_task_deadline",
@@ -143207,7 +143208,7 @@
   "parse_errors": [],
   "registry_sha256": "d3fc1bab831f1b7379e5a36048a61c00fe173429df958270d36a16f3f00171c0",
   "schema": "noetrium-code-architecture-index.v1",
-  "source_git_sha": "077beb15b0dce7c01d53dc3252bdf9446568033c",
+  "source_git_sha": "f9faf50829b98cd01913868784d1512c29f4bab1",
   "system_import_edges": [
     {
       "count": 90,
