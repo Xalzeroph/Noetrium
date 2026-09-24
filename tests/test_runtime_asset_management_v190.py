@@ -139,7 +139,9 @@ class FakeRuntime:
     def verify_ready_exact(self, contract):
         raise NotImplementedError
 
-    def stop_exact(self, contract):
+    def stop_exact(self, contract, expected_process):
+        if self.process is not None and self.process != expected_process:
+            raise RuntimeError("test runtime process generation drifted")
         if not self.stop_succeeds:
             return ServiceStopOutcome(contract.digest(), False)
         self.live = False
