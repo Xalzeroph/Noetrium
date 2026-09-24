@@ -63,7 +63,6 @@ class JsonlProcessTransport(_JsonlProcessTransport):
             spec=JsonlProcessSpec(
                 command=spec.command,
                 cwd=spec.cwd,
-                stderr_log_path=spec.stderr_log_path,
                 stdout_queue_capacity=spec.stdout_queue_capacity,
             ),
             operating_system=operating_system,
