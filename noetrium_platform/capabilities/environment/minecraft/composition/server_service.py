@@ -352,7 +352,7 @@ def compose_minecraft_server_service_runtime(
 
     tcp_readiness = MinecraftTcpReadinessProbe(
         host=spec.host,
-        port=spec.port,
+        port=spec.bound_port,
         task_group=task_group,
     )
     readiness: ServiceReadinessProbePort = tcp_readiness
@@ -440,7 +440,7 @@ class MinecraftServerServiceController:
         return result
 
     def start(self) -> ServiceStartOutcome:
-        self._event("MC_SERVER_START", level="INFO", attributes={"host": self.spec.host, "port": self.spec.port})
+        self._event("MC_SERVER_START", level="INFO", attributes={"host": self.spec.host, "port": self.spec.bound_port})
         try:
             result = self.service_runtime.start_exact(self.contract)
         except Exception as exc:
