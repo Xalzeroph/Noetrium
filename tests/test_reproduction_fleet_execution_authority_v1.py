@@ -15,6 +15,8 @@ from scripts.run_reproduction_fleet import _load_execution_authorities
 
 
 class _BenchmarkResolver:
+    authority_digest = "b" * 64
+
     def resolve(self, definition, study_factory):
         del definition, study_factory
         raise AssertionError("not exercised by authority contract test")
