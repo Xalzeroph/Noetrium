@@ -42876,7 +42876,7 @@
     "tooling": 38
   },
   "schema": "noetrium-repository-code-architecture-index.v1",
-  "source_git_sha": "2f84ee62dc7f3b0950e2e7d00a04626304b59ee5",
+  "source_git_sha": "5d297b8c3dc9418ed14f1e7de5a8a9c982bd7d9e",
   "symbols": [
     {
       "bases": [],
@@ -71795,7 +71795,6 @@
       "methods": [
         "__init__",
         "sequence",
-        "_write_all",
         "previous",
         "append",
         "close"
@@ -87457,7 +87456,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 9,
+      "line": 8,
       "methods": [
         "__init__",
         "open",
@@ -96489,7 +96488,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 11,
+      "line": 21,
       "methods": [],
       "module": "noetrium_platform.infrastructure.reliability.forensics.providers.segmented_writer",
       "name": "SegmentedAppendReceipt",
@@ -96503,7 +96502,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 19,
+      "line": 26,
       "methods": [
         "__init__",
         "path",
