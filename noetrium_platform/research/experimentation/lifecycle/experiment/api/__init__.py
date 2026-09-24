@@ -8,7 +8,6 @@ from .contracts import (
     MetricPredicate, MetricDefinition, MetricValue, MetricReport,
     ObservationSinkPort, ExperimentDoctorPort, UnitOutcome, UnitOutcomeState,
 )
-from .ports import ExperimentComponentBindingPort, ExperimentTrialCycleExecutorPort
 from .topology import ExperimentParticipantTopology
 from .trial_protocol import (
     ExperimentTrialProtocolIdentity,
@@ -23,7 +22,6 @@ from .failure import (
 from .tasks import ExperimentTaskSpec, validate_task_graph
 
 __all__ = [
-    "ExperimentComponentBindingPort",
     "AnalysisPlan",
     "DoctorFinding",
     "ExperimentDefinition",
@@ -48,7 +46,6 @@ __all__ = [
     "MetricValue",
     "MetricReport",
     "ExperimentParticipantTopology",
-    "ExperimentTrialCycleExecutorPort",
     "ExperimentTaskSpec",
     "ExperimentWorkloadFailure",
     "ExperimentSpec",
