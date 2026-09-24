@@ -411,12 +411,23 @@ def materialize_repository_execution_fleet(
 
 def _fleet_execution_id(
     fleet: ReproductionFleetMaterialization,
+    authority_manifest_digest: str,
     execution_id: str | None,
 ) -> str:
     if type(fleet) is not ReproductionFleetMaterialization:
         raise TypeError("fleet execution requires ReproductionFleetMaterialization")
+    _require_sha256(
+        authority_manifest_digest,
+        "fleet execution authority_manifest_digest",
+    )
     resolved = (
-        "repository-reproductions." + fleet.materialization_digest[:24]
+        "repository-reproductions."
+        + canonical_digest(
+            {
+                "materialization_digest": fleet.materialization_digest,
+                "authority_manifest_digest": authority_manifest_digest,
+            }
+        )[:24]
         if execution_id is None
         else execution_id
     )
@@ -429,10 +440,25 @@ def _fleet_execution_id(
     return resolved
 
 
-def _fleet_revision_message(fleet: ReproductionFleetMaterialization) -> str:
+def _fleet_revision_message(
+    fleet: ReproductionFleetMaterialization,
+    authority_manifest_digest: str,
+) -> str:
     if type(fleet) is not ReproductionFleetMaterialization:
         raise TypeError("fleet revision requires ReproductionFleetMaterialization")
-    return "repository reproduction fleet " + fleet.materialization_digest
+    _require_sha256(
+        authority_manifest_digest,
+        "fleet revision authority_manifest_digest",
+    )
+    return (
+        "repository reproduction fleet "
+        + canonical_digest(
+            {
+                "materialization_digest": fleet.materialization_digest,
+                "authority_manifest_digest": authority_manifest_digest,
+            }
+        )
+    )
 
 
 @dataclass(frozen=True, slots=True)
@@ -946,6 +972,7 @@ class ReproductionFleetPreflightResult:
     """Exact whole-graph admission proof without creating an execution cut."""
 
     materialization: ReproductionFleetMaterialization
+    authority_manifest_digest: str
     execution_id: str
     revision_digest: str
     selected_node_ids: tuple[str, ...]
@@ -956,6 +983,10 @@ class ReproductionFleetPreflightResult:
     def __post_init__(self) -> None:
         if type(self.materialization) is not ReproductionFleetMaterialization:
             raise TypeError("fleet preflight requires materialization")
+        _require_sha256(
+            self.authority_manifest_digest,
+            "fleet preflight authority_manifest_digest",
+        )
         if type(self.execution_id) is not str or not self.execution_id.strip():
             raise ValueError("fleet preflight execution_id is required")
         _require_sha256(self.revision_digest, "fleet preflight revision")
@@ -978,6 +1009,7 @@ class ReproductionFleetPreflightResult:
             canonical_digest(
                 {
                     "materialization_digest": self.materialization.materialization_digest,
+                    "authority_manifest_digest": self.authority_manifest_digest,
                     "execution_id": self.execution_id,
                     "revision_digest": self.revision_digest,
                     "selected_node_ids": self.selected_node_ids,
@@ -994,6 +1026,7 @@ def preflight_materialized_reproduction_fleet(
     state_root: Path,
     research_bindings: ResearchBindingAuthorityPort,
     experiment_runtime_components: ResearchOSExperimentRuntimeComponents,
+    authority_manifest_digest: str,
     execution_id: str | None = None,
 ) -> ReproductionFleetPreflightResult:
     """Resolve the exact fleet and run canonical whole-graph admission only."""
@@ -1004,12 +1037,16 @@ def preflight_materialized_reproduction_fleet(
         raise TypeError("fleet preflight requires research binding resolver")
     if type(experiment_runtime_components) is not ResearchOSExperimentRuntimeComponents:
         raise TypeError("fleet preflight requires typed Experiment runtime components")
-    resolved_execution_id = _fleet_execution_id(fleet, execution_id)
+    resolved_execution_id = _fleet_execution_id(
+        fleet,
+        authority_manifest_digest,
+        execution_id,
+    )
     revision = api.ResearchGraphRevision(
         fleet.portfolio.portfolio_id,
         fleet.portfolio.portfolio_digest,
         (),
-        _fleet_revision_message(fleet),
+        _fleet_revision_message(fleet, authority_manifest_digest),
     )
     target = api.ResearchExecutionTarget(resolved_execution_id, revision)
     closures = ReproductionFleetExperimentClosureProvider(
@@ -1025,6 +1062,7 @@ def preflight_materialized_reproduction_fleet(
         prepared = composition.prepare(target, fleet.portfolio)
         return ReproductionFleetPreflightResult(
             fleet,
+            authority_manifest_digest,
             resolved_execution_id,
             revision.revision_digest,
             prepared.selected_node_ids,
@@ -1041,6 +1079,7 @@ def execute_materialized_reproduction_fleet(
     state_root: Path,
     research_bindings: ResearchBindingAuthorityPort,
     experiment_runtime_components: ResearchOSExperimentRuntimeComponents,
+    authority_manifest_digest: str,
     execution_id: str | None = None,
 ):
     """Commit and RUN one fully materialized fleet through canonical Research OS.
@@ -1061,7 +1100,11 @@ def execute_materialized_reproduction_fleet(
         raise TypeError("fleet execution requires research binding resolver")
     if type(experiment_runtime_components) is not ResearchOSExperimentRuntimeComponents:
         raise TypeError("fleet execution requires typed Experiment runtime components")
-    execution_id = _fleet_execution_id(fleet, execution_id)
+    execution_id = _fleet_execution_id(
+        fleet,
+        authority_manifest_digest,
+        execution_id,
+    )
 
     closures = ReproductionFleetExperimentClosureProvider(
         fleet,
@@ -1075,7 +1118,7 @@ def execute_materialized_reproduction_fleet(
     try:
         revision = composition.research_os.commit(
             fleet.portfolio,
-            message=_fleet_revision_message(fleet),
+            message=_fleet_revision_message(fleet, authority_manifest_digest),
         )
         target = api.ResearchExecutionTarget(execution_id, revision)
         return composition.research_os.run(target)
@@ -1192,6 +1235,7 @@ def preflight_repository_execution_fleet(
         state_root=state_root,
         research_bindings=authorities.research_bindings,
         experiment_runtime_components=authorities.experiment_runtime_components,
+        authority_manifest_digest=authorities.authority_manifest_digest,
         execution_id=execution_id,
     )
 
@@ -1222,6 +1266,7 @@ def run_repository_execution_fleet(
         state_root=state_root,
         research_bindings=authorities.research_bindings,
         experiment_runtime_components=authorities.experiment_runtime_components,
+        authority_manifest_digest=authorities.authority_manifest_digest,
         execution_id=execution_id,
     )
     return ReproductionFleetExecutionResult(
