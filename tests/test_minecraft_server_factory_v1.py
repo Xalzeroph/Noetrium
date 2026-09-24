@@ -97,7 +97,7 @@ def test_server_factory_requires_explicit_eula_policy(tmp_path: Path) -> None:
 
 
 def test_server_factory_sanitizes_rcon_secret_provider_failure(tmp_path: Path) -> None:
-    spec = replace(_spec(tmp_path), rcon_endpoint=MinecraftRconEndpoint())
+    spec = replace(_spec(tmp_path), rcon_endpoint=MinecraftRconEndpoint(port=25575))
     config = replace(
         _config(tmp_path, accept_eula=True),
         rcon_password_provider=lambda: (_ for _ in ()).throw(RuntimeError("secret-value")),
