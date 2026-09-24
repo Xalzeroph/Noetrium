@@ -1899,37 +1899,6 @@ class SQLiteResearchGraphExecutionStore:
             self._bump_generation(conn, execution_id)
             return self._snapshot_tx(conn, execution_id)
 
-    def schedule_retry(
-        self,
-        execution_id: str,
-        node_id: str,
-        *,
-        retry_not_before_ns: int,
-    ) -> ResearchGraphNodeExecutionRecord:
-        retry_not_before_ns = self._require_timestamp_ns(
-            retry_not_before_ns,
-            "research graph retry_not_before_ns",
-        )
-        with self._transaction() as conn:
-            current = self._node_tx(conn, execution_id, node_id)
-            if current.state is not ResearchGraphLiveNodeState.FAILED:
-                raise ResearchGraphExecutionConflict(
-                    "only definitively failed graph nodes can be scheduled for retry"
-                )
-            conn.execute(
-                "UPDATE research_graph_nodes SET state=?,retry_not_before_ns=?,"
-                "failure_type=NULL,failure_message=NULL "
-                "WHERE execution_id=? AND node_id=?",
-                (
-                    ResearchGraphLiveNodeState.RETRY_WAIT.value,
-                    retry_not_before_ns,
-                    execution_id,
-                    node_id,
-                ),
-            )
-            self._bump_generation(conn, execution_id)
-            return self._node_tx(conn, execution_id, node_id)
-
     def resolve_reconciliation(
         self,
         execution_id: str,
