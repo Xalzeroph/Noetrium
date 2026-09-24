@@ -1415,6 +1415,18 @@ class SQLiteResearchGraphExecutionStore:
                 raise ResearchGraphExecutionConflict(
                     f"node is not claimable from {current.state.value}"
                 )
+            graph_control = self._control_tx(conn, execution_id)
+            if graph_control.phase is not ResearchGraphControlPhase.ACTIVE:
+                raise ResearchGraphExecutionConflict(
+                    "research graph claim requires active graph control; "
+                    f"actual={graph_control.phase.value}"
+                )
+            node_control = self._node_control_tx(conn, execution_id, node_id)
+            if node_control.phase is not ResearchGraphNodeControlPhase.ACTIVE:
+                raise ResearchGraphExecutionConflict(
+                    "research graph claim requires active node control; "
+                    f"{node_id}={node_control.phase.value}"
+                )
             attempt_number = current.attempt_number + 1
             attempt_id = (
                 f"{execution_id}:{node_id}:{attempt_number}:{uuid4().hex}"
