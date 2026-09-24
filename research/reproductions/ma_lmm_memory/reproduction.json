@@ -1,8 +1,8 @@
 {
-  "schema": "noetrium.reproduction.projection.v7",
+  "schema": "noetrium.reproduction.projection.v8",
   "authority": "generated_from_typed_definition_and_source",
   "package": "ma_lmm_memory",
-  "package_digest": "cc3aaee549cce09feb9bd9a6ced27629baa636b96364a9734c5243bd4f99e44c",
+  "package_digest": "f347f88a8d2ac08afb5558411562c746cf4f24307ad48e6a6d23351ec27297ee",
   "definition_digest": "f7fccd8528c77d41c4a07f5983a6d27a26aefc2026bad491a6c468cc824c9b3e",
   "source_registry_digest": "5f3d368fdee5eea455e920c9272f4c9bd9feddccd71af306baeaab1137bdff7e",
   "lifecycle": "protocol_bound",
@@ -197,5 +197,12 @@
       "path": "tests/test_scientific_ma_lmm_memory_v1.py",
       "content_sha256": "909083f97394d2aab8297a8ed41504d4d3dd54ffdf0300fb9c8af7cc3f1a904f"
     }
-  ]
+  ],
+  "research_os": {
+    "surface": "noetrium.api",
+    "execution_state": "execution_ready",
+    "program_id": "ma_lmm_memory",
+    "program_digest": "41140ec744986d38e9a6e998b6c7e4352f5889acea9d669ed2643f963224f1e3",
+    "execution_requirements": []
+  }
 }

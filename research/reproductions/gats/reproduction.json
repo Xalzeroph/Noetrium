@@ -1,8 +1,8 @@
 {
-  "schema": "noetrium.reproduction.projection.v7",
+  "schema": "noetrium.reproduction.projection.v8",
   "authority": "generated_from_typed_definition_and_source",
   "package": "gats",
-  "package_digest": "5877f71c203e0027e10e2397b3805247d5fa04f4e431300a931193ebbd78f227",
+  "package_digest": "439920017f2139e3a44f885af6de0a5f268196aa4ebf5cf85a90603cda0cee35",
   "definition_digest": "50329df88dd157ef0aa6ded83f175e2ce332658fd62d6579b68c4615a199beea",
   "source_registry_digest": "bd01696f94f58340e853c4ec16a61206335c13e3ef45730b14418c4646b37a67",
   "lifecycle": "protocol_bound",
@@ -161,5 +161,12 @@
       "path": "tests/test_scientific_gats_stress_v1.py",
       "content_sha256": "41e754044c560bee8ef39a3be7dc1378a820d88f33898a1582b96dedb9375b98"
     }
-  ]
+  ],
+  "research_os": {
+    "surface": "noetrium.api",
+    "execution_state": "execution_ready",
+    "program_id": "gats",
+    "program_digest": "43d1362a434dd035086812c7454c237a455bf812d8b048e94c16e578cf67c79a",
+    "execution_requirements": []
+  }
 }

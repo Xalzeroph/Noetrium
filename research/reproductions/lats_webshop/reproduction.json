@@ -1,8 +1,8 @@
 {
-  "schema": "noetrium.reproduction.projection.v7",
+  "schema": "noetrium.reproduction.projection.v8",
   "authority": "generated_from_typed_definition_and_source",
   "package": "lats_webshop",
-  "package_digest": "ce5d4d27aa1872337a5d0ed67c44d6475b2ea81ba377e5fbc01cd345335890a6",
+  "package_digest": "52ffe8b46629ad7a777799e2a63a41fe1a6424cbbbb52956a811595eaa8af890",
   "definition_digest": "404faa0212523d5ab11e9a57c0479ab0ca187d904630c80d7db37f83f5d760ef",
   "source_registry_digest": "c61cf5118ecb4fb8570883fd539c09106e2fb2499028b48e830237203981d344",
   "lifecycle": "protocol_bound",
@@ -158,5 +158,12 @@
       "path": "tests/test_scientific_parallel_lineage_wave1_v1.py",
       "content_sha256": "3c869099f90c10f1cb72424126db54cbf21eddb613b5ff1084b7312ed7c4ad17"
     }
-  ]
+  ],
+  "research_os": {
+    "surface": "noetrium.api",
+    "execution_state": "execution_ready",
+    "program_id": "lats_webshop",
+    "program_digest": "203a7d05f3054d168c58d20c8afe6686d96f39dba729574af8c4f7ae5d66cca2",
+    "execution_requirements": []
+  }
 }

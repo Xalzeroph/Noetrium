@@ -1,8 +1,8 @@
 {
-  "schema": "noetrium.reproduction.projection.v7",
+  "schema": "noetrium.reproduction.projection.v8",
   "authority": "generated_from_typed_definition_and_source",
   "package": "generative_agents_memory",
-  "package_digest": "9ab7a638b3e17ec68e5006f7f2b385f35aa573b9fe800612d3fc2e7a95b7dfb7",
+  "package_digest": "67b11057e09d0973ea96820f51f63819d5352f5004b60688cadabad4e9978eea",
   "definition_digest": "8d2830be9592a39bb8ff8cf36ed5515e8368e706e450ac4521230e47facf6e61",
   "source_registry_digest": "4eee9b9597e3af590b88c8a406bb7366ac2bc8cea07e32f8ca278990086caf7e",
   "lifecycle": "protocol_bound",
@@ -136,5 +136,12 @@
       "path": "tests/test_scientific_generative_agents_retrieval_v1.py",
       "content_sha256": "5ac32d32a9c79a7773ff3c27f55ebafee663d331e6b8811f7cb2ca44316b22b6"
     }
-  ]
+  ],
+  "research_os": {
+    "surface": "noetrium.api",
+    "execution_state": "execution_ready",
+    "program_id": "generative_agents_memory",
+    "program_digest": "fa678ee040ee291772fc45702d6b68e7a5b4023ff9575138c58d7b9dd274997f",
+    "execution_requirements": []
+  }
 }

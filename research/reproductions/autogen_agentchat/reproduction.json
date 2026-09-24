@@ -1,8 +1,8 @@
 {
-  "schema": "noetrium.reproduction.projection.v7",
+  "schema": "noetrium.reproduction.projection.v8",
   "authority": "generated_from_typed_definition_and_source",
   "package": "autogen_agentchat",
-  "package_digest": "d3d7f2232d7307579341e62b980c07c493e337ba70a640584244c225ce3dd0b8",
+  "package_digest": "c10028171a2abaeef858b96ad286bbeb3478bc0a403f537384f124d95b42b4f6",
   "definition_digest": "cc6c1df578b908f00a037c121b1029b6407f3bb0a9c891a68c8049924a54d746",
   "source_registry_digest": "8668e81cb1f973ed2b3d05971c15f5e4455cd2ee8b8e2932f40c208aa8875912",
   "lifecycle": "protocol_bound",
@@ -103,5 +103,21 @@
       "path": "tests/test_scientific_autogen_groupchat_method_program_v1.py",
       "content_sha256": "8ec33d8f814b694c3db9ae3ff6e09fc4435a41dd9b417b394416413072cd6dd1"
     }
-  ]
+  ],
+  "research_os": {
+    "surface": "noetrium.api",
+    "execution_state": "closure_binding_required",
+    "program_id": "autogen_agentchat",
+    "program_digest": "02dbdb47a2fa2fc98ef87afe855bb3b51787fed538a7520a955cc43bac8f2517",
+    "execution_requirements": [
+      {
+        "parameter": "split_id",
+        "kind": "benchmark_split",
+        "consumers": [
+          "study:build_autogen_multiagentbench_study"
+        ],
+        "requirement_digest": "397247db7d411d9e4555e4f70978a53da9cb435f7badb0a99ea2e490f726916d"
+      }
+    ]
+  }
 }

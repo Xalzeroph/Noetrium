@@ -1,8 +1,8 @@
 {
-  "schema": "noetrium.reproduction.projection.v7",
+  "schema": "noetrium.reproduction.projection.v8",
   "authority": "generated_from_typed_definition_and_source",
   "package": "providellm_memory",
-  "package_digest": "957675d6c3d6840647e17135694a2b8a962aa7e5070db3671dedf3c89e1eca5a",
+  "package_digest": "9c1af08df36e135980247b910b937f48f726de4a5fd6b45711691ee53ea76632",
   "definition_digest": "a996e7348737dcf563b34e86f150b0cae75235c6c3da5dbf2dd98f14987854f0",
   "source_registry_digest": "9e2a5d1186f95a8f45699ceebf02fe6c91c0af32ce912a7e1d4f40d4192a3979",
   "lifecycle": "protocol_bound",
@@ -237,5 +237,12 @@
       "path": "tests/test_scientific_providellm_memory_v1.py",
       "content_sha256": "356442bfd2e2710922970a21d861b65f316b3408aad67c1d8814c1d47b3ea083"
     }
-  ]
+  ],
+  "research_os": {
+    "surface": "noetrium.api",
+    "execution_state": "execution_ready",
+    "program_id": "providellm_memory",
+    "program_digest": "2a3e2265f561db1e9db0af56629cd5c812389b7422b827b8c6dbb8632a263124",
+    "execution_requirements": []
+  }
 }

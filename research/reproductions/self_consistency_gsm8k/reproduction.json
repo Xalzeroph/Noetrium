@@ -1,8 +1,8 @@
 {
-  "schema": "noetrium.reproduction.projection.v7",
+  "schema": "noetrium.reproduction.projection.v8",
   "authority": "generated_from_typed_definition_and_source",
   "package": "self_consistency_gsm8k",
-  "package_digest": "41538092071ee56f288a70192c5719fa0c0bda6662af9148c14af3e579e3a4bd",
+  "package_digest": "8f1abfc64e6cd17321d6fb194ac1a12cf8c4188610835ec091d20865add65938",
   "definition_digest": "9eed35b1b81187543f3b15179b22f4154694fa7e5c06a4a6d0853bd335e6e9a6",
   "source_registry_digest": "72ea8a4a07d5b07a444cd7d422268751cc97e457ce8b1d3bf424098892c6205f",
   "lifecycle": "protocol_bound",
@@ -153,5 +153,12 @@
       "path": "tests/test_scientific_self_consistency_gsm8k_v1.py",
       "content_sha256": "42ab85bba5f2e9a65822629c9279edae413acc068b30585e3f56c1a088c1e82d"
     }
-  ]
+  ],
+  "research_os": {
+    "surface": "noetrium.api",
+    "execution_state": "execution_ready",
+    "program_id": "self_consistency_gsm8k",
+    "program_digest": "7d0c19734b87a0dd8e64809db280a29a52523160fb3fd81ce7fade3ca77eea6e",
+    "execution_requirements": []
+  }
 }

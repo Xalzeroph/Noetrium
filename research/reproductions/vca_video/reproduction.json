@@ -1,8 +1,8 @@
 {
-  "schema": "noetrium.reproduction.projection.v7",
+  "schema": "noetrium.reproduction.projection.v8",
   "authority": "generated_from_typed_definition_and_source",
   "package": "vca_video",
-  "package_digest": "a7c72b661cf15d95177252578473c366ff3200c8841410f5f2b1bde8e4dbc1ca",
+  "package_digest": "d4a78abc82dff79f3d4e8456b9a3258985c30e8262f943e22eeea20b4c45b7a9",
   "definition_digest": "475825bad1ef41fa8e9bc3bec73c0374d2425e0cd6019f7b44b79ffa9d2dd184",
   "source_registry_digest": "993b22ccf2d2e42518ffca18ac76bb9e7465b2b1dfd22cf2c63ca2867c6a8a4b",
   "lifecycle": "protocol_bound",
@@ -190,5 +190,21 @@
       "path": "tests/test_scientific_vca_video_v1.py",
       "content_sha256": "75ebe70579608f9fdeb1f03e7a1a6942a7da2ae8c762ce09d8df91b4ed5f8a30"
     }
-  ]
+  ],
+  "research_os": {
+    "surface": "noetrium.api",
+    "execution_state": "closure_binding_required",
+    "program_id": "vca_video",
+    "program_digest": "02a4c15c081050572c5db1d3c3ab724ff16e81f71981c1d27234368c034cba44",
+    "execution_requirements": [
+      {
+        "parameter": "sampling_frame_number",
+        "kind": "paper_option",
+        "consumers": [
+          "study:build_vca_egoschema_public_study"
+        ],
+        "requirement_digest": "ddc05f3df29e09b12bd35f9e4a6877fcdbbbe2298373b493437dcd6443c303d3"
+      }
+    ]
+  }
 }

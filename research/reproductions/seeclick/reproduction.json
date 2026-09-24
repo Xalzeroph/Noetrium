@@ -1,8 +1,8 @@
 {
-  "schema": "noetrium.reproduction.projection.v7",
+  "schema": "noetrium.reproduction.projection.v8",
   "authority": "generated_from_typed_definition_and_source",
   "package": "seeclick",
-  "package_digest": "8aaddd18811d3174db4d256ca49b4ae21334728870bb16cbc6585ddd9e3ee8fd",
+  "package_digest": "376d7f18cbba0064cc9cefd8c9e9f3723ae30e9bb6c5aee7126a9f2b8927163d",
   "definition_digest": "a7dc27f765e0cd9d6f6ef4fb784124a06d339ec5aaf3c43a239cdda32ae071a1",
   "source_registry_digest": "703701aa516e21be3cdc470ed08bd842843e88a39dbdeba1a063fc280cf96439",
   "lifecycle": "protocol_bound",
@@ -198,5 +198,21 @@
       "path": "tests/test_scientific_seeclick_v1.py",
       "content_sha256": "477f50a4671a8a20b7def5121c5095510989fbf35aa178ae2e0f70e1f89edcc3"
     }
-  ]
+  ],
+  "research_os": {
+    "surface": "noetrium.api",
+    "execution_state": "closure_binding_required",
+    "program_id": "seeclick",
+    "program_digest": "f965d59088823e8925bab83fe1ef09a970221de0dfdbc58eff671a150772c641",
+    "execution_requirements": [
+      {
+        "parameter": "split_id",
+        "kind": "benchmark_split",
+        "consumers": [
+          "study:build_seeclick_screenspot_study"
+        ],
+        "requirement_digest": "e8ed0b2de0ace4418704e703f5aeeec8c183aa83c079e4fe323fef483fe39b0c"
+      }
+    ]
+  }
 }

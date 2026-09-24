@@ -1,8 +1,8 @@
 {
-  "schema": "noetrium.reproduction.projection.v7",
+  "schema": "noetrium.reproduction.projection.v8",
   "authority": "generated_from_typed_definition_and_source",
   "package": "adas_meta_agent_search",
-  "package_digest": "87d331e663defa4f01f744caac490d0e8a84316c874027d4ccb294b98866de3d",
+  "package_digest": "a9521f3aa32a166ff8ab9475d76699c4ace6bb56f2ed24c7fc4ae4d3e0a2a271",
   "definition_digest": "914a44cfe1ea062d50779b6fa128f01c541b813e976801cda570819c57fcd17e",
   "source_registry_digest": "0c0b03477d5254347c34f420f4354bb8acbacc56f34dd4a40275e1d128b71eef",
   "lifecycle": "protocol_bound",
@@ -138,5 +138,12 @@
       "path": "tests/test_scientific_self_evolution_fidelity_v1.py",
       "content_sha256": "ab474c96fc6500a6773bc02f871e319935502532e44b07ebbe0d96cd20611940"
     }
-  ]
+  ],
+  "research_os": {
+    "surface": "noetrium.api",
+    "execution_state": "execution_ready",
+    "program_id": "adas_meta_agent_search",
+    "program_digest": "cf35b036a70e74c0a60f5b73568b2af0e7c5ec63943d475cf08499b51b90540b",
+    "execution_requirements": []
+  }
 }

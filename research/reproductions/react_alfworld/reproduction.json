@@ -1,8 +1,8 @@
 {
-  "schema": "noetrium.reproduction.projection.v7",
+  "schema": "noetrium.reproduction.projection.v8",
   "authority": "generated_from_typed_definition_and_source",
   "package": "react_alfworld",
-  "package_digest": "008c751f16558ca56ff5532b204ad90242743863233019ffe569b5866c43b2a6",
+  "package_digest": "db7255a1bf1e81f9c1738273a9730ca9cfde17954f2791afe5291c6c8c39d828",
   "definition_digest": "f537f245a873bcfe3715b4e13fb0f4c7639b65a271d182bbb91b8860da727147",
   "source_registry_digest": "b362f56e91e03c46aecc86932f05c8a6dd1eed18062a14b73ce3d15e8d5c5bde",
   "lifecycle": "protocol_bound",
@@ -366,5 +366,12 @@
       "path": "tests/test_scientific_react_alfworld_protocol_v1.py",
       "content_sha256": "841786650b37e1806f9353fdbf156dd09b22122f87df8bb6ae572cc75708df6a"
     }
-  ]
+  ],
+  "research_os": {
+    "surface": "noetrium.api",
+    "execution_state": "execution_ready",
+    "program_id": "react_alfworld",
+    "program_digest": "af725426a190ed100ed007d9421fed39b0af03a7288818e60f81fcbf432beaed",
+    "execution_requirements": []
+  }
 }

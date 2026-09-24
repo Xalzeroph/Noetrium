@@ -1,8 +1,8 @@
 {
-  "schema": "noetrium.reproduction.projection.v7",
+  "schema": "noetrium.reproduction.projection.v8",
   "authority": "generated_from_typed_definition_and_source",
   "package": "rewind_memory",
-  "package_digest": "180fdfd7bdbbb5849b8ea5b9754cc916dc026b136be4f091d84fb71039851c66",
+  "package_digest": "7daaab21f3ae81fbd6465765000351907c87cb0bc602d0e829865e408379d66d",
   "definition_digest": "2505e0ddfe3973e23ea352c3d354a1e4d37a6fcdf1b6b0b6caa9a947814ef8f5",
   "source_registry_digest": "fdb866db6a3c5cbcf051cd40e55caf5bb510d3af332ad4d5f61455c3af25568c",
   "lifecycle": "protocol_bound",
@@ -168,5 +168,12 @@
       "path": "tests/test_scientific_rewind_memory_v1.py",
       "content_sha256": "377140d0390c992c3e175e903f9f265b1fbff1748ca08cf07abe2dc8435041de"
     }
-  ]
+  ],
+  "research_os": {
+    "surface": "noetrium.api",
+    "execution_state": "execution_ready",
+    "program_id": "rewind_memory",
+    "program_digest": "e8bd11f4a35558e876d7055f24db3b2ad2c788323c229c99dc68ebce6537aa34",
+    "execution_requirements": []
+  }
 }

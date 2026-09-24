@@ -1,8 +1,8 @@
 {
-  "schema": "noetrium.reproduction.projection.v7",
+  "schema": "noetrium.reproduction.projection.v8",
   "authority": "generated_from_typed_definition_and_source",
   "package": "dars_acl2025",
-  "package_digest": "864eeb90832440289385914b680c05674c3a434c7694aae55c9768fc177c934c",
+  "package_digest": "a9fa95dfeb5c9266998692585572f2ee8fef0fbe1a7be00d749d45e6838ebed4",
   "definition_digest": "d0a94f94937cec33b1fe901761dbdc26659072b93f0bbe830b8485bf7c4051c9",
   "source_registry_digest": "68e407725311866f47fa6f35bd6f15d8e5c52f9ee16764044386796ad5cd5ef3",
   "lifecycle": "protocol_bound",
@@ -138,5 +138,21 @@
       "path": "tests/test_scientific_recent_2025_2026_wave_v1.py",
       "content_sha256": "11a5279b71d1113921dcaf67f385ea09612451fe35e356b9efbb782921b4b5a7"
     }
-  ]
+  ],
+  "research_os": {
+    "surface": "noetrium.api",
+    "execution_state": "closure_binding_required",
+    "program_id": "dars_acl2025",
+    "program_digest": "acb3e7f6d8162936e800451b1708f0a76d7acf5e1c9890b8cf2cc2a76ed0957b",
+    "execution_requirements": [
+      {
+        "parameter": "split_id",
+        "kind": "benchmark_split",
+        "consumers": [
+          "study:build_dars_study"
+        ],
+        "requirement_digest": "e5b6f2df7580d13427958ff2232eacff3baf19ee3d2c550abc4767560e9be8da"
+      }
+    ]
+  }
 }

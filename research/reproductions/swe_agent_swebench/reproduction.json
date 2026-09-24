@@ -1,8 +1,8 @@
 {
-  "schema": "noetrium.reproduction.projection.v7",
+  "schema": "noetrium.reproduction.projection.v8",
   "authority": "generated_from_typed_definition_and_source",
   "package": "swe_agent_swebench",
-  "package_digest": "43818ce0b5530090e32108414a8fd7bc706b61409f1917e93138ec6e74a906cd",
+  "package_digest": "fce879d0bb653e4f0248ef02662e695ef04b23a7c1b76dda2b2e8792ce88809a",
   "definition_digest": "a9381873b0de38b4299667de23e06251da7abd0ae6c0d9c8cf364756402632f8",
   "source_registry_digest": "00d44a186c1cdf9c7c0a7a546005f4f887b308f8096c14115aa63208447f17d3",
   "lifecycle": "protocol_bound",
@@ -134,5 +134,21 @@
       "path": "tests/test_scientific_swe_agent_swebench_fidelity_v1.py",
       "content_sha256": "82150b65e2b6e40f7137d2186425c9bfc80b04c05c292aea55b469b9aac42a5c"
     }
-  ]
+  ],
+  "research_os": {
+    "surface": "noetrium.api",
+    "execution_state": "closure_binding_required",
+    "program_id": "swe_agent_swebench",
+    "program_digest": "f58ccd499e108cc035edfef603381e786cb0efbf9b27085bbd5193fd486018e2",
+    "execution_requirements": [
+      {
+        "parameter": "split_id",
+        "kind": "benchmark_split",
+        "consumers": [
+          "study:build_swe_agent_swebench_study"
+        ],
+        "requirement_digest": "832f85893506060ce940cf6da7303443260ed9d8966cf301eaff529868449dbe"
+      }
+    ]
+  }
 }

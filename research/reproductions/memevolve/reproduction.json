@@ -1,8 +1,8 @@
 {
-  "schema": "noetrium.reproduction.projection.v7",
+  "schema": "noetrium.reproduction.projection.v8",
   "authority": "generated_from_typed_definition_and_source",
   "package": "memevolve",
-  "package_digest": "f3bc2dfaac95680e380de329e263cf5b3423d4a38148780cf74dc0024ee5f606",
+  "package_digest": "83bedbb6c0a5bbd2cf88da9c4e220622842d95825ec43b662c0157fde4e566b7",
   "definition_digest": "18ff4148fe9352f85c5b77af58f4602a496c7a7d6e7aab7838a8968151fe7e9c",
   "source_registry_digest": "a92e273188a3b65a11542aa445022569964e21f942fb4412164a0c5f6a9ec7d7",
   "lifecycle": "catalogued",
@@ -81,5 +81,12 @@
       "path": "tests/test_scientific_self_evolution_fidelity_v1.py",
       "content_sha256": "ab474c96fc6500a6773bc02f871e319935502532e44b07ebbe0d96cd20611940"
     }
-  ]
+  ],
+  "research_os": {
+    "surface": "noetrium.api",
+    "execution_state": "not_executable",
+    "program_id": null,
+    "program_digest": null,
+    "execution_requirements": []
+  }
 }

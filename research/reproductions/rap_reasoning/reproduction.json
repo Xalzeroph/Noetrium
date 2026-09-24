@@ -1,8 +1,8 @@
 {
-  "schema": "noetrium.reproduction.projection.v7",
+  "schema": "noetrium.reproduction.projection.v8",
   "authority": "generated_from_typed_definition_and_source",
   "package": "rap_reasoning",
-  "package_digest": "96b6906912eae02f247c353bedf2a2f9a5d5969e6bc71d5cd3a8ced22fe68975",
+  "package_digest": "ef50bead8aa98c25139c2b9e0cc1f081594a090f2018aaa3a8b3c8d396c39c04",
   "definition_digest": "3de23b790a18d3bd15b16ce34f0a87cb7e95fa74b9b4c06fde9cfa49bba55e61",
   "source_registry_digest": "ced15295ec849f883db78704fb7a1e4351e59bd9ff1229c652b243f23abfdff2",
   "lifecycle": "protocol_bound",
@@ -137,5 +137,12 @@
       "path": "tests/test_scientific_rap_reproduction_v1.py",
       "content_sha256": "521174c2b202e1c3382af7d3962ff49b700b92d7c1676f0686d6543539e408b9"
     }
-  ]
+  ],
+  "research_os": {
+    "surface": "noetrium.api",
+    "execution_state": "execution_ready",
+    "program_id": "rap_reasoning",
+    "program_digest": "792acb6fdd56a3d9b2cc13f30036f3815644aa5cbf3605de31250e54713e4871",
+    "execution_requirements": []
+  }
 }

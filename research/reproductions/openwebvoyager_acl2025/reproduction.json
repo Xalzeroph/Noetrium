@@ -1,8 +1,8 @@
 {
-  "schema": "noetrium.reproduction.projection.v7",
+  "schema": "noetrium.reproduction.projection.v8",
   "authority": "generated_from_typed_definition_and_source",
   "package": "openwebvoyager_acl2025",
-  "package_digest": "9513ade660208b2d80a8c731668c8ec887ca50ea04037e9470d5bb38ee3f2df9",
+  "package_digest": "1cf8b155901a16174180a9599639d6c83d79bcc6d8b81e00419105c78d7cfe63",
   "definition_digest": "6f19edd6d128abbbd1dfc05ecfda969e79fcb9ab91e0ae1f8db6a4ccb0371a8c",
   "source_registry_digest": "2786a755ecfaf94cc7a57d6cbb3293d435778d7369320d104cb57d3f0c44c4f4",
   "lifecycle": "protocol_bound",
@@ -144,5 +144,21 @@
       "path": "tests/test_scientific_recent_2025_2026_wave_v1.py",
       "content_sha256": "11a5279b71d1113921dcaf67f385ea09612451fe35e356b9efbb782921b4b5a7"
     }
-  ]
+  ],
+  "research_os": {
+    "surface": "noetrium.api",
+    "execution_state": "closure_binding_required",
+    "program_id": "openwebvoyager_acl2025",
+    "program_digest": "3b53567d9d67311487e474e568733cc8c004402b04a8879488e26985b461018a",
+    "execution_requirements": [
+      {
+        "parameter": "split_id",
+        "kind": "benchmark_split",
+        "consumers": [
+          "study:build_openwebvoyager_study"
+        ],
+        "requirement_digest": "8df22c12d38473d08f9921d076e389b1cd9adf80518771d3c33227834ad106fe"
+      }
+    ]
+  }
 }

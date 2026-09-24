@@ -1,8 +1,8 @@
 {
-  "schema": "noetrium.reproduction.projection.v7",
+  "schema": "noetrium.reproduction.projection.v8",
   "authority": "generated_from_typed_definition_and_source",
   "package": "deps_minecraft",
-  "package_digest": "7618e472b7851902ca9963285b869027ed0e204bbd5a3ff08892fc7c643c0c30",
+  "package_digest": "9d4236c9388de29fe21864a142f7f9c658d03dfb35786a5f96c40df992757d9e",
   "definition_digest": "dfd76e1e43edd424426db654c8291f1984f6b6f4f4368f6906645298dc042218",
   "source_registry_digest": "b34ac82a645a66821c20029f19473c146715222483bfaf316120b963fd884a90",
   "lifecycle": "protocol_bound",
@@ -182,5 +182,12 @@
       "path": "tests/test_scientific_deps_minecraft_v1.py",
       "content_sha256": "a80e526c681c3942dc3f8d2483357cbc1d385b0d2b9676f2848639c99affd41e"
     }
-  ]
+  ],
+  "research_os": {
+    "surface": "noetrium.api",
+    "execution_state": "execution_ready",
+    "program_id": "deps_minecraft",
+    "program_digest": "707506f34646907dcc6f451e18e3319fce90cf817f39152b0705a87b7ce1c1f9",
+    "execution_requirements": []
+  }
 }

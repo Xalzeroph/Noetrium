@@ -1,8 +1,8 @@
 {
-  "schema": "noetrium.reproduction.projection.v7",
+  "schema": "noetrium.reproduction.projection.v8",
   "authority": "generated_from_typed_definition_and_source",
   "package": "adacm2_memory",
-  "package_digest": "425271c36cb9ccd4625f0cda42becb5f01ece92c3acf05cfcaae5a417d23d006",
+  "package_digest": "4d614f341301874715be6688d0b0118a54c1d4a55cf2e060ffbc33da1a729745",
   "definition_digest": "6a69a2d164b86b3534e4982d84e8ef08626548335af759a36096b8135e4d3ccb",
   "source_registry_digest": "d46d92fc46eb723b8905ef27d3104b049b7b560c6b2946d3ad5e25a04645996a",
   "lifecycle": "protocol_bound",
@@ -166,5 +166,21 @@
       "path": "tests/test_scientific_adacm2_memory_v1.py",
       "content_sha256": "4b220581d65fea4c342b18f1e961a0346e633ca0485af4f5b3055b1abf27d162"
     }
-  ]
+  ],
+  "research_os": {
+    "surface": "noetrium.api",
+    "execution_state": "closure_binding_required",
+    "program_id": "adacm2_memory",
+    "program_digest": "98b658cfd1cf36d0932d3f3cb1df1f2bd1a86587e86b4c0adceda306f292c791",
+    "execution_requirements": [
+      {
+        "parameter": "interpretation",
+        "kind": "paper_option",
+        "consumers": [
+          "study:build_adacm2_lvu_study"
+        ],
+        "requirement_digest": "aef7cdc5d12a5cc76a2c671c7261b57114898023cd2eeb26f6c572de06700080"
+      }
+    ]
+  }
 }

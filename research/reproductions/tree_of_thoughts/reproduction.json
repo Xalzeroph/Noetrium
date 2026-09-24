@@ -1,8 +1,8 @@
 {
-  "schema": "noetrium.reproduction.projection.v7",
+  "schema": "noetrium.reproduction.projection.v8",
   "authority": "generated_from_typed_definition_and_source",
   "package": "tree_of_thoughts",
-  "package_digest": "e4c79f2e502dc84ad82213532ec72fc8f2d782e96e1ddf77bcb6beefba53007d",
+  "package_digest": "512ac3d75aae3cd4de411761b20fe0c80c7c6a7f4474d642d58c704416c557cc",
   "definition_digest": "60394018797f7754c216d1c11b1526b0b2a2ce75a4a954dc80dfa3082f5edbc1",
   "source_registry_digest": "f9293be77907acc25ce02bd3835acf300ca060aec59d9e4b22dd2d6803a08876",
   "lifecycle": "protocol_bound",
@@ -136,5 +136,12 @@
       "path": "tests/test_scientific_tree_of_thoughts_method_program_v1.py",
       "content_sha256": "4fe1f6a22d6d34458f14a7355ee069c0ce8395b9627a7d2918c045d87242c8a1"
     }
-  ]
+  ],
+  "research_os": {
+    "surface": "noetrium.api",
+    "execution_state": "execution_ready",
+    "program_id": "tree_of_thoughts",
+    "program_digest": "ddf1eadaa7460952fa6140b845ee739fb26a5c463450549897e0ada242a124c1",
+    "execution_requirements": []
+  }
 }

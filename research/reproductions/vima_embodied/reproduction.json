@@ -1,8 +1,8 @@
 {
-  "schema": "noetrium.reproduction.projection.v7",
+  "schema": "noetrium.reproduction.projection.v8",
   "authority": "generated_from_typed_definition_and_source",
   "package": "vima_embodied",
-  "package_digest": "1334fffa68805fd22f08a9e17cc14f0e06152c93d2dad663be9babfa19b194d2",
+  "package_digest": "a9e8e2b2ba7ba85d56af0dd910e1e608615b4e53de850b276dddd70f44c6dbcd",
   "definition_digest": "ab6c0f217b76235521106482bd1e85e19f3ca8b77921e08fde38740ba431ed4d",
   "source_registry_digest": "bf35b8c87b325e6a50b501d4e2671f6c130a246df6340370de02382c8a31c33b",
   "lifecycle": "protocol_bound",
@@ -216,5 +216,12 @@
       "path": "tests/test_scientific_vima_environment_adapter_v1.py",
       "content_sha256": "ab038d230f07d992152d1f93efcde9afcc9576eba9bf3fd2a378efe52f23ba5f"
     }
-  ]
+  ],
+  "research_os": {
+    "surface": "noetrium.api",
+    "execution_state": "execution_ready",
+    "program_id": "vima_embodied",
+    "program_digest": "ba0a1e7c09d29e8c46795c35b7d975cc662724766867fe103680f517cb291393",
+    "execution_requirements": []
+  }
 }

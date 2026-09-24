@@ -1,8 +1,8 @@
 {
-  "schema": "noetrium.reproduction.projection.v7",
+  "schema": "noetrium.reproduction.projection.v8",
   "authority": "generated_from_typed_definition_and_source",
   "package": "tree_search_language_model_agents",
-  "package_digest": "a9db0222f8bb1a84accf8b6184d3199f861840e23349a3bb1dd9e5ffad1baef9",
+  "package_digest": "213e7fba13eb6ccaabeb45a0660496d5a830c8c5a3bdcb613fbbf1fdb3383cf6",
   "definition_digest": "438c62dd357573beeeac528734499cd9ee6d018d7689e3f2d7ed8ccf94387660",
   "source_registry_digest": "0c66afa3c244c45e64cde70188b1023106137f8be0ce30f1899186e1ff153f35",
   "lifecycle": "protocol_bound",
@@ -121,5 +121,12 @@
       "path": "tests/test_scientific_tree_search_language_model_agents_v1.py",
       "content_sha256": "853a93725b7a4f2f4fa79c060620e5e1fc7b1788629a11a846142edb3b16f84d"
     }
-  ]
+  ],
+  "research_os": {
+    "surface": "noetrium.api",
+    "execution_state": "execution_ready",
+    "program_id": "tree_search_language_model_agents",
+    "program_digest": "c128710d2dddc1fe3dd5ecfe8695e37ca7282952d5873374cc88b49fb03f2fc3",
+    "execution_requirements": []
+  }
 }

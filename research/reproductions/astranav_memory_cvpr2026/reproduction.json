@@ -1,8 +1,8 @@
 {
-  "schema": "noetrium.reproduction.projection.v7",
+  "schema": "noetrium.reproduction.projection.v8",
   "authority": "generated_from_typed_definition_and_source",
   "package": "astranav_memory_cvpr2026",
-  "package_digest": "03dcaaf5b9a391a64393a615fd5dd3fb28cd2b46578873ce6b2c28fad27e047d",
+  "package_digest": "f3fa219f8e214090db04e336829d4e850b9d10f7f22985ca50c1d2592d0cd3c7",
   "definition_digest": "481b9e05da672245ec2a806d72b1a13530b67ed5ea12a05e2855a28bf8225b4f",
   "source_registry_digest": "304c7c3d5dc3e52eeb337cb48eef06780d286e226a126bd447de218cc3d11aae",
   "lifecycle": "protocol_bound",
@@ -160,5 +160,21 @@
       "path": "tests/test_scientific_frontier_2026_wave_02.py",
       "content_sha256": "24b94183020cd24bd2b462fe8dc339d108dd405ec2a878c89bbfc4163f912a32"
     }
-  ]
+  ],
+  "research_os": {
+    "surface": "noetrium.api",
+    "execution_state": "closure_binding_required",
+    "program_id": "astranav_memory_cvpr2026",
+    "program_digest": "967a0e97dbc9ef20b43ed266ef7729b7d9b3331ad01dbff01165a01dc3ac18d3",
+    "execution_requirements": [
+      {
+        "parameter": "benchmark_split_id",
+        "kind": "benchmark_split",
+        "consumers": [
+          "study:build_study"
+        ],
+        "requirement_digest": "7bff16af30e92698c5e6ca1df6fa4d9419d6ca671758ce967842e5d52e120b66"
+      }
+    ]
+  }
 }

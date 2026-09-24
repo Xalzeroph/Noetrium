@@ -1,8 +1,8 @@
 {
-  "schema": "noetrium.reproduction.projection.v7",
+  "schema": "noetrium.reproduction.projection.v8",
   "authority": "generated_from_typed_definition_and_source",
   "package": "toolformer",
-  "package_digest": "e253ce3dc0e57b209165ebae845f451334ea66f5eff9676212ac9de0ac9c7c4d",
+  "package_digest": "86c2d81535004e77de0c6b478ca927e1911d40ff55057a67c1aed4f59cc61dfa",
   "definition_digest": "1e0d762a99b9c4f4941b6b6c61534071f20ca4efd34eee3045ef6942383cc8d5",
   "source_registry_digest": "0aa5c4ef466c87b4808d296ec9f3b44ddcff08ee64566c34ac93be4e38815682",
   "lifecycle": "protocol_bound",
@@ -163,5 +163,29 @@
       "path": "tests/test_scientific_toolformer_v1.py",
       "content_sha256": "203a068e6ad2678d3598004c418153d2446d52d3e811250fd46914b4d29ac286"
     }
-  ]
+  ],
+  "research_os": {
+    "surface": "noetrium.api",
+    "execution_state": "closure_binding_required",
+    "program_id": "toolformer",
+    "program_digest": "d08665a6d978e42c6f77562c14aa5e8d3c8312fa8a9e7c72444b701a8f5006d9",
+    "execution_requirements": [
+      {
+        "parameter": "split_id",
+        "kind": "benchmark_split",
+        "consumers": [
+          "study:build_toolformer_study"
+        ],
+        "requirement_digest": "339d0210c555269a7fdf0f20a31ac9e04706e8a4c8cd2c1ef235fda95c6afe33"
+      },
+      {
+        "parameter": "tool_capability_ids",
+        "kind": "capability_closure",
+        "consumers": [
+          "study:build_toolformer_study"
+        ],
+        "requirement_digest": "4e66301f9a974f65aca8c5355a083c3887f0ab956a6b4f5972cc7bf1ef68b157"
+      }
+    ]
+  }
 }

@@ -1,8 +1,8 @@
 {
-  "schema": "noetrium.reproduction.projection.v7",
+  "schema": "noetrium.reproduction.projection.v8",
   "authority": "generated_from_typed_definition_and_source",
   "package": "embodied_videoagent_iccv2025",
-  "package_digest": "5c390c6a828887faecfe4671c9a0e725b50f617c20f90b97b3968eae2f24a726",
+  "package_digest": "69895ac8300383f63af062c704fd6a97dbd298d77dc19008680427603e2c8a44",
   "definition_digest": "acac825e01b68f68aa50634cb0146cc694556b4af078498edfdb26d9976c9604",
   "source_registry_digest": "02d0e0637b0b444d9c44e4be5e0d96c4e51df06bfe95c4adec1184fc215fecb6",
   "lifecycle": "protocol_bound",
@@ -149,5 +149,21 @@
       "path": "tests/test_scientific_recent_2025_2026_wave_v1.py",
       "content_sha256": "11a5279b71d1113921dcaf67f385ea09612451fe35e356b9efbb782921b4b5a7"
     }
-  ]
+  ],
+  "research_os": {
+    "surface": "noetrium.api",
+    "execution_state": "closure_binding_required",
+    "program_id": "embodied_videoagent_iccv2025",
+    "program_digest": "78a572f53c6bac7c9b216beea3a028fc32f27c98d8ae0ec2e60970a6366a8e5b",
+    "execution_requirements": [
+      {
+        "parameter": "split_id",
+        "kind": "benchmark_split",
+        "consumers": [
+          "study:build_embodied_videoagent_study"
+        ],
+        "requirement_digest": "a1f3e44e45285ccd453500fd8952248531e1f4f2666f6469fdae5ff54b19c77c"
+      }
+    ]
+  }
 }

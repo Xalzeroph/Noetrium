@@ -1,8 +1,8 @@
 {
-  "schema": "noetrium.reproduction.projection.v7",
+  "schema": "noetrium.reproduction.projection.v8",
   "authority": "generated_from_typed_definition_and_source",
   "package": "videollamb_memory",
-  "package_digest": "909930cc1c82159bbde3ba3497451738352d1c35ee0ff72808110da9eae9185e",
+  "package_digest": "f09763509ccf947a654b60731c0a4971456cd7e743453e849672e317815d73b7",
   "definition_digest": "42a30c2635f4d6f36393e0c3a88bb81b6d814281cc4bfc4f78d4b752084dc7f0",
   "source_registry_digest": "c17becefb55b8781ad39e27af3679464881cd5acc66fa8fc09bb257204f8f639",
   "lifecycle": "protocol_bound",
@@ -179,5 +179,12 @@
       "path": "tests/test_scientific_videollamb_memory_v1.py",
       "content_sha256": "af01b794ba17f4e3096176b923d3ca1661e1b6bad08b94d1f6f80594bf600b21"
     }
-  ]
+  ],
+  "research_os": {
+    "surface": "noetrium.api",
+    "execution_state": "execution_ready",
+    "program_id": "videollamb_memory",
+    "program_digest": "80f2b5ca3c89cd57a916b766f5b9775d1e9e2c769772f12c74dfdbd7a22a3fd4",
+    "execution_requirements": []
+  }
 }

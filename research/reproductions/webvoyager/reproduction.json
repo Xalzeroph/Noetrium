@@ -1,8 +1,8 @@
 {
-  "schema": "noetrium.reproduction.projection.v7",
+  "schema": "noetrium.reproduction.projection.v8",
   "authority": "generated_from_typed_definition_and_source",
   "package": "webvoyager",
-  "package_digest": "d6dea8ee640ba65b0989b52acfd7051e587b5bdff75ee811a5fdfe8b115beff3",
+  "package_digest": "0d606f4853874fcfa2d40db08c11b2098854faa20a9edb67234bd1e91b69a3ba",
   "definition_digest": "8faf5256fad577ed3ce5247d5d6664d2748d9b28844d800e0c6657ba70de3571",
   "source_registry_digest": "78d2607d22aec417ef867017d647e9acd612808ace7a6def9e43e987308f4b5f",
   "lifecycle": "protocol_bound",
@@ -123,5 +123,12 @@
       "path": "tests/test_scientific_webvoyager_method_program_v1.py",
       "content_sha256": "9e0481e1e8b3f9c5789ad2a8e5d84bfe40c0a807d6304c4577df4124e4d4eeb8"
     }
-  ]
+  ],
+  "research_os": {
+    "surface": "noetrium.api",
+    "execution_state": "execution_ready",
+    "program_id": "webvoyager",
+    "program_digest": "6af022cad8657774f755301888528e141ab92f6a25bdf81401ab890b1aae0ac9",
+    "execution_requirements": []
+  }
 }

@@ -1,8 +1,8 @@
 {
-  "schema": "noetrium.reproduction.projection.v7",
+  "schema": "noetrium.reproduction.projection.v8",
   "authority": "generated_from_typed_definition_and_source",
   "package": "code_as_policies",
-  "package_digest": "36de43c51eb12e8849809bc7d1753a3ea44f9cecd21ace909e1f316b03ae1ba8",
+  "package_digest": "34cc41b2427f3cf2a9d2492e25d25614079261ab4ce755d42587a50c5846d9dd",
   "definition_digest": "5530735edb89956345e7651c7c7e7328f4ae400791789f5a58f1ec30833ec13c",
   "source_registry_digest": "e1872de17b63bc7ff35434899df6e865b802ced52f48f4b8b3757d34b8c9f15d",
   "lifecycle": "protocol_bound",
@@ -261,5 +261,12 @@
       "path": "tests/test_scientific_code_as_policies_v1.py",
       "content_sha256": "e896c9da3a8b8454e64c795ba50cd27c02cf33a7bcbe4a5a05e7344f026de3a0"
     }
-  ]
+  ],
+  "research_os": {
+    "surface": "noetrium.api",
+    "execution_state": "execution_ready",
+    "program_id": "code_as_policies",
+    "program_digest": "dd15e10086514286a6eaecd8048c802a0cfeb99fb25033397eb54744c64e1c1d",
+    "execution_requirements": []
+  }
 }

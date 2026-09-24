@@ -1,8 +1,8 @@
 {
-  "schema": "noetrium.reproduction.projection.v7",
+  "schema": "noetrium.reproduction.projection.v8",
   "authority": "generated_from_typed_definition_and_source",
   "package": "videoagent_memory",
-  "package_digest": "d185491f5b48b0c2b98e9465b34610667a621b9a3a99d8932712b700df4467e7",
+  "package_digest": "03dbcb092bf6a0085bf0a75cd0636cf0abf82403ad5161eb39b326aef89a6bbb",
   "definition_digest": "b6a07d721d7dd58c2212cbab3afce909293e26aeebaaafddd8228fe68fdf8381",
   "source_registry_digest": "2c4ad0c7f51054bfd49d84df431ced1c43641a42cd98243c8343899ebc7ce56e",
   "lifecycle": "protocol_bound",
@@ -215,5 +215,12 @@
       "path": "tests/test_scientific_videoagent_memory_v1.py",
       "content_sha256": "776b6f6664331b182e2a08d2269b5dfb508b1589d8a56a785dc4dc8775c4e44d"
     }
-  ]
+  ],
+  "research_os": {
+    "surface": "noetrium.api",
+    "execution_state": "execution_ready",
+    "program_id": "videoagent_memory",
+    "program_digest": "3290f872b44e13a9fed33eb9647b13309d9ae63f6e12a3d31db9d56b8c48994e",
+    "execution_requirements": []
+  }
 }

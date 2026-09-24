@@ -1,8 +1,8 @@
 {
-  "schema": "noetrium.reproduction.projection.v7",
+  "schema": "noetrium.reproduction.projection.v8",
   "authority": "generated_from_typed_definition_and_source",
   "package": "multiagent_debate",
-  "package_digest": "0d34d2ef709ecb3c46bd930cfe59c7b1f10d11b4311aed2ee079eb6d8f577f3b",
+  "package_digest": "7392080d9923e8ddd47f92c5178f00b2dbeeb0a20a3e63b481c28b153e201550",
   "definition_digest": "f05625781b4885773ad968bc60e810db57344c999a1c489020068a68373c5977",
   "source_registry_digest": "a444ca49adcadedba1e4bd45f955f057c6810af68c62d3b7782fe033e2d6882a",
   "lifecycle": "catalogued",
@@ -80,5 +80,12 @@
       "path": "tests/test_scientific_multiagent_debate_fidelity_v1.py",
       "content_sha256": "b1a2b7960abfe5f68bf70e714974e27e4db5400083925384ed62d91c2c0bc4e8"
     }
-  ]
+  ],
+  "research_os": {
+    "surface": "noetrium.api",
+    "execution_state": "not_executable",
+    "program_id": null,
+    "program_digest": null,
+    "execution_requirements": []
+  }
 }

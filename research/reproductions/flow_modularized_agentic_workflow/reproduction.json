@@ -1,8 +1,8 @@
 {
-  "schema": "noetrium.reproduction.projection.v7",
+  "schema": "noetrium.reproduction.projection.v8",
   "authority": "generated_from_typed_definition_and_source",
   "package": "flow_modularized_agentic_workflow",
-  "package_digest": "a341a88422a3f20bc4f23ca0f14730b13811d5b6b295c5b0ce60a2c9e40d2503",
+  "package_digest": "211fd65d8ac9448044e2b95414df1276c8cc5aec83c7bd58f1ae7857a07266da",
   "definition_digest": "c0df097174fd40ce218adc9f396a11ad78c05b08fd6b8b3219e047b249be0bee",
   "source_registry_digest": "871ee9bf57337e607fa5a5ed65434e3cc122df43f3db5d6cca12cb61261175b4",
   "lifecycle": "protocol_bound",
@@ -216,5 +216,12 @@
       "path": "tests/test_scientific_flow_modularized_workflow_v1.py",
       "content_sha256": "efba54abce739074e84675a6bcba9b768b4b5836c32ac1124dea7e715e756d64"
     }
-  ]
+  ],
+  "research_os": {
+    "surface": "noetrium.api",
+    "execution_state": "execution_ready",
+    "program_id": "flow_modularized_agentic_workflow",
+    "program_digest": "728dc6f6cb3a948a2cf3cfecde8a52ae24f483e820d171927724a47470b9172a",
+    "execution_requirements": []
+  }
 }

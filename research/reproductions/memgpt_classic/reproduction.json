@@ -1,8 +1,8 @@
 {
-  "schema": "noetrium.reproduction.projection.v7",
+  "schema": "noetrium.reproduction.projection.v8",
   "authority": "generated_from_typed_definition_and_source",
   "package": "memgpt_classic",
-  "package_digest": "a423faf144515384c5b4eed34aff807418834449114e3c9debe8c15dc37adf9d",
+  "package_digest": "7ce6661044295a56b13416045d050614fd815f2acd5068df26893f38b4d00286",
   "definition_digest": "2f942be8c2fe1f5d37cda1e7f2e0f91b7fa18f3e7d4393d96a5cf4967e31a6ed",
   "source_registry_digest": "a344ec7fde772c9140ac33832d9b9438b417ea0804035281115501feecff9998",
   "lifecycle": "protocol_bound",
@@ -120,5 +120,21 @@
       "path": "tests/test_scientific_memgpt_memoryarena_protocol_v1.py",
       "content_sha256": "c14feda37b64a75d4b1380c3947930cb9f45fb8cc32e560c72ad4bb660d46e87"
     }
-  ]
+  ],
+  "research_os": {
+    "surface": "noetrium.api",
+    "execution_state": "closure_binding_required",
+    "program_id": "memgpt_classic",
+    "program_digest": "7a1f2fcdedbdc861c9a3d7e0300e9cbd31e5bc0047a74477647ba281c9e27733",
+    "execution_requirements": [
+      {
+        "parameter": "split_id",
+        "kind": "benchmark_split",
+        "consumers": [
+          "study:build_memgpt_memoryarena_study"
+        ],
+        "requirement_digest": "d43281b4ba1c71e5ca10056cac2ee1f8ae7c59e80e0d2c25fef6e56bc24d99cc"
+      }
+    ]
+  }
 }

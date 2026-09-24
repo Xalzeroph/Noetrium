@@ -1,8 +1,8 @@
 {
-  "schema": "noetrium.reproduction.projection.v7",
+  "schema": "noetrium.reproduction.projection.v8",
   "authority": "generated_from_typed_definition_and_source",
   "package": "videoarm_cvpr2026",
-  "package_digest": "cfdc4004ef7507f1d2826db111685260031bb56df7a1300722123780d84483f0",
+  "package_digest": "ccd07835451ce506d4a972a7d1860542800756bf4dacac0fb2e0a0bca427ccd7",
   "definition_digest": "16d76a6bf1558096961fdef74089e3c536dd3d43fc991582c6b0c7d603c7d01a",
   "source_registry_digest": "dd8526fc8b15cc760274353f8a4c7bb10778f7149004af924220d6a2edcdd77e",
   "lifecycle": "protocol_bound",
@@ -154,5 +154,21 @@
       "path": "tests/test_scientific_recent_2025_2026_wave_v1.py",
       "content_sha256": "11a5279b71d1113921dcaf67f385ea09612451fe35e356b9efbb782921b4b5a7"
     }
-  ]
+  ],
+  "research_os": {
+    "surface": "noetrium.api",
+    "execution_state": "closure_binding_required",
+    "program_id": "videoarm_cvpr2026",
+    "program_digest": "6ee28efeea06365d33f2051a241ceb44621d4a3a3e053eb39c4b03367f3e333f",
+    "execution_requirements": [
+      {
+        "parameter": "split_id",
+        "kind": "benchmark_split",
+        "consumers": [
+          "study:build_videoarm_study"
+        ],
+        "requirement_digest": "4f2b37a07ec74863ea8c32d4e73dd3a58634af93bde3d806565f4f58f1a012dc"
+      }
+    ]
+  }
 }

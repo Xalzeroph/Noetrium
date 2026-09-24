@@ -1,8 +1,8 @@
 {
-  "schema": "noetrium.reproduction.projection.v7",
+  "schema": "noetrium.reproduction.projection.v8",
   "authority": "generated_from_typed_definition_and_source",
   "package": "ui_tars_desktop_v001",
-  "package_digest": "3d6b33e2f3916815837773120f79fcb206326f75908c7177b92b0341a68b2a17",
+  "package_digest": "591c093be297a6e58ab9f20f974c3e94f782f346477e2e6f598c56a9a5b15dd2",
   "definition_digest": "b727da12acd74c46bfc6227a712a2b0ec9e1315c89e10ebf370bbbf9aa7aee77",
   "source_registry_digest": "c7505a81ddcc5278a50aea896538f01d33110fb19d48872fa2f45a553c1a3768",
   "lifecycle": "protocol_bound",
@@ -108,5 +108,21 @@
       "path": "tests/test_scientific_ui_tars_method_program_v1.py",
       "content_sha256": "598b7260d6a1d5daedf7e50459061756db632a5481a9f38416765096e76fb197"
     }
-  ]
+  ],
+  "research_os": {
+    "surface": "noetrium.api",
+    "execution_state": "closure_binding_required",
+    "program_id": "ui_tars_desktop_v001",
+    "program_digest": "5a9b6a5d62f2d9c12bc21419c2f3447fb7d15c6b624b0d2c6c3a80e85eeb3260",
+    "execution_requirements": [
+      {
+        "parameter": "split_id",
+        "kind": "benchmark_split",
+        "consumers": [
+          "study:build_ui_tars_osworld_study"
+        ],
+        "requirement_digest": "d54ddf1c60d749d4fa3a554e43b487b7f757f18267e204ee07364726211232c0"
+      }
+    ]
+  }
 }

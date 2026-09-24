@@ -1,8 +1,8 @@
 {
-  "schema": "noetrium.reproduction.projection.v7",
+  "schema": "noetrium.reproduction.projection.v8",
   "authority": "generated_from_typed_definition_and_source",
   "package": "chain_of_thought_gsm8k",
-  "package_digest": "b182bb00ff9bd17cf0277ab5b22ce91504344918110e51b0bb39aa8cee2322f6",
+  "package_digest": "845b5ed230d57077f80e3e592451c9480ceb18983be3ba94ed13ab4d00004d52",
   "definition_digest": "2687a49ab37d0ea47afc94894e7a46afc600f2d4e5f2ca6f6c91cdc0c09ce399",
   "source_registry_digest": "fc74cb2f69f422446062876d3fb62441e1e3d08543aa287d805a02c23927870d",
   "lifecycle": "protocol_bound",
@@ -143,5 +143,12 @@
       "path": "tests/test_scientific_gsm8k_cut_v1.py",
       "content_sha256": "2eb8c88dd0cfa686ed3b0ad005f034dd3f26d557b322394c57f611847335297c"
     }
-  ]
+  ],
+  "research_os": {
+    "surface": "noetrium.api",
+    "execution_state": "execution_ready",
+    "program_id": "chain_of_thought_gsm8k",
+    "program_digest": "5558d77b82cb846d396e41d006c431b10f88a375a405bdcfb7337a87220c4808",
+    "execution_requirements": []
+  }
 }

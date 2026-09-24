@@ -1,8 +1,8 @@
 {
-  "schema": "noetrium.reproduction.projection.v7",
+  "schema": "noetrium.reproduction.projection.v8",
   "authority": "generated_from_typed_definition_and_source",
   "package": "cogagent",
-  "package_digest": "29158587fa39f2c02f793ad743da737411fc91194cbc87c09097ca7d75a6f054",
+  "package_digest": "0bb41e47fb8ca20f2fdbfb9882ad7e5589e3ef578b988093e5d7a54b63847015",
   "definition_digest": "c8962c16f82b0a2b81c8ad00588563fa8b7aeb8bef391899f6bf7893867b5a00",
   "source_registry_digest": "98cd238a80201177669fbbf1b36bc4033d8d0220869f0f27a93b8ff6efb05cb3",
   "lifecycle": "protocol_bound",
@@ -167,5 +167,21 @@
       "path": "tests/test_scientific_cogagent_v1.py",
       "content_sha256": "8f2385b239f1ef56ef5633aa54e5917ed4e63ee228aa33ae524ce655d7a443c4"
     }
-  ]
+  ],
+  "research_os": {
+    "surface": "noetrium.api",
+    "execution_state": "closure_binding_required",
+    "program_id": "cogagent",
+    "program_digest": "20e233c2467d4aff5362be94c53a4d6c2186d435512d203f476248e88ec16a62",
+    "execution_requirements": [
+      {
+        "parameter": "split_id",
+        "kind": "benchmark_split",
+        "consumers": [
+          "study:build_cogagent_mind2web_study"
+        ],
+        "requirement_digest": "d959ccb97983a970f7a54fefddc672e235fc4024aae3b88ace9ebe97a9b95c7f"
+      }
+    ]
+  }
 }

@@ -1,8 +1,8 @@
 {
-  "schema": "noetrium.reproduction.projection.v7",
+  "schema": "noetrium.reproduction.projection.v8",
   "authority": "generated_from_typed_definition_and_source",
   "package": "reflexion_alfworld",
-  "package_digest": "adef71487ca3486815e2d45ad2217ef4c32d1c9b637a350596cc11076ccae99c",
+  "package_digest": "dce3ebc820befabb7ca0a5ba0a8fd8fafb4b1f6934ea9452498d34ba572abeec",
   "definition_digest": "ca97cfa0e2748d1a84ca6b3838480956a5d000d003ac6fb4dfd80cd643bff54a",
   "source_registry_digest": "1ba271f6cca205054b041cb9ec92d5169ccecee597816374a82a9a19a1b0c81e",
   "lifecycle": "protocol_bound",
@@ -161,5 +161,12 @@
       "path": "tests/test_scientific_reflexion_method_program_v1.py",
       "content_sha256": "e632745dc937d79b0b140b502dc45d6cb0393073b6369fbb2ed65ee2945acc47"
     }
-  ]
+  ],
+  "research_os": {
+    "surface": "noetrium.api",
+    "execution_state": "execution_ready",
+    "program_id": "reflexion_alfworld",
+    "program_digest": "0ae6a8f4653099d5cf6c639e10171f9a57cd6d49cef0fd1cb18c0b3f43892c44",
+    "execution_requirements": []
+  }
 }

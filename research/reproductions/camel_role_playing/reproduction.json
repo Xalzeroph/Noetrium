@@ -1,8 +1,8 @@
 {
-  "schema": "noetrium.reproduction.projection.v7",
+  "schema": "noetrium.reproduction.projection.v8",
   "authority": "generated_from_typed_definition_and_source",
   "package": "camel_role_playing",
-  "package_digest": "459305f698e9396459095d9b952dd0389ca0e69d7cfcc2c3b42e02d8ad06a565",
+  "package_digest": "dc184501b628d7f1ef3c166a74491f91fe0d67f36496567ae08c80757be97318",
   "definition_digest": "fce235dd82ef0a923481fb22c65aa4cfe1c680a4fcf2cd9f9e69e2eb1464ec37",
   "source_registry_digest": "75df2f5db5dfa002ca6fa39a6e7e1d816a138c100af3b04dd7f85c03a55f1a46",
   "lifecycle": "protocol_bound",
@@ -173,5 +173,12 @@
       "path": "tests/test_scientific_camel_role_playing_fidelity_v1.py",
       "content_sha256": "19a4949154af4c66e18576f66b3b6b5a52071d8f6627a6999d0438684c2f1b56"
     }
-  ]
+  ],
+  "research_os": {
+    "surface": "noetrium.api",
+    "execution_state": "execution_ready",
+    "program_id": "camel_role_playing",
+    "program_digest": "d68a209ebe0853f895daeb2d8a1b62e183f4790da60e5409fcf99441601fb278",
+    "execution_requirements": []
+  }
 }
