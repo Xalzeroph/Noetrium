@@ -16,6 +16,7 @@ from noetrium_platform.composition.research_os_migration import (
 from noetrium_platform.foundation.kernel.kernel import canonical_digest
 from noetrium_platform.product import research_os as api
 from noetrium_platform.research.execution.graph.api import (
+    ResearchGraphCutSwitchFence,
     ResearchGraphControlPhase,
     ResearchGraphExecutionSnapshot,
     ResearchGraphLiveNodeState,
@@ -27,6 +28,27 @@ from noetrium_platform.research.execution.graph.api import (
 from noetrium_platform.research.execution.graph.providers import (
     SQLiteResearchGraphExecutionStore,
 )
+
+
+def _cut_switch_fence(
+    store: SQLiteResearchGraphExecutionStore,
+    logical_execution_id: str,
+    source_cut_id: str,
+) -> ResearchGraphCutSwitchFence:
+    active = store.active_cut(logical_execution_id)
+    assert active is not None
+    assert active.cut_id == source_cut_id
+    snapshot = store.snapshot(source_cut_id)
+    return ResearchGraphCutSwitchFence(
+        source_cut_id,
+        active.generation,
+        snapshot.generation,
+        store.control_state(source_cut_id),
+        tuple(
+            store.node_control_state(source_cut_id, node.node_id)
+            for node in snapshot.nodes
+        ),
+    )
 
 
 def _method_v1(payload=None):
@@ -363,6 +385,11 @@ def test_migration_cas_rejects_stale_source_cut(tmp_path) -> None:
         "logical-execution",
         other_cut.cut_id,
         expected_cut_id=activation.cut.cut_id,
+        source_fence=_cut_switch_fence(
+            store,
+            "logical-execution",
+            activation.cut.cut_id,
+        ),
     )
 
     stable = {
@@ -401,12 +428,13 @@ class _RacingExecutionStore(SQLiteResearchGraphExecutionStore):
         expected_cut_id: str | None = None,
         source_fence=None,
     ):
-        if not self._raced:
+        if source_fence is not None and not self._raced:
             self._raced = True
             super().move_active_cut(
                 logical_execution_id,
                 self._competing_cut_id,
                 expected_cut_id=expected_cut_id,
+                source_fence=source_fence,
             )
         return super().move_active_cut(
             logical_execution_id,
@@ -677,6 +705,11 @@ def test_migration_retry_reconciles_staged_pause_with_current_source_control(tmp
         "logical-execution",
         source_cut_id,
         expected_cut_id=competing_cut.cut_id,
+        source_fence=_cut_switch_fence(
+            store,
+            "logical-execution",
+            competing_cut.cut_id,
+        ),
     )
     source_node_control = store.node_control_state(
         source_cut_id,
@@ -835,11 +868,18 @@ class _ABAExecutionStore(SQLiteResearchGraphExecutionStore):
                 logical_execution_id,
                 self._competing_cut_id,
                 expected_cut_id=expected_cut_id,
+                source_fence=source_fence,
+            )
+            competing_fence = _cut_switch_fence(
+                self,
+                logical_execution_id,
+                self._competing_cut_id,
             )
             super().move_active_cut(
                 logical_execution_id,
                 source_fence.source_execution_id,
                 expected_cut_id=self._competing_cut_id,
+                source_fence=competing_fence,
             )
         return super().move_active_cut(
             logical_execution_id,
