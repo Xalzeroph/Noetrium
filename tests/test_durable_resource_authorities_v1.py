@@ -239,28 +239,47 @@ class DurableResourceAuthoritiesTests(TestCase):
             destroyed = meta.environments.destroy_instance("env-reuse")
             self.assertIs(destroyed.state, EnvironmentInstanceState.DESTROYED)
 
-            local = meta.environments.assess_profile_gc(
+            unproven = meta.environments.assess_profile_gc(
                 "web-default",
                 revision,
             )
+            self.assertFalse(unproven.external_reference_closure_complete)
+            self.assertFalse(unproven.eligible)
+
+            local = meta.environments.assess_profile_gc(
+                "web-default",
+                revision,
+                resumable_execution_ids=(),
+                retained_evidence_ids=(),
+            )
+            self.assertTrue(local.external_reference_closure_complete)
             self.assertTrue(local.eligible)
             resumable = meta.environments.assess_profile_gc(
                 "web-default",
                 revision,
                 resumable_execution_ids=("run-1",),
+                retained_evidence_ids=(),
             )
             self.assertFalse(resumable.eligible)
             evidence = meta.environments.assess_profile_gc(
                 "web-default",
                 revision,
+                resumable_execution_ids=(),
                 retained_evidence_ids=("evidence-1",),
             )
             self.assertFalse(evidence.eligible)
 
             restored = build_durable_platform_meta(root)
+            restored_unproven = restored.environments.assess_profile_gc(
+                "web-default",
+                revision,
+            )
+            self.assertFalse(restored_unproven.eligible)
             restored_gc = restored.environments.assess_profile_gc(
                 "web-default",
                 revision,
+                resumable_execution_ids=(),
+                retained_evidence_ids=(),
             )
             self.assertTrue(restored_gc.eligible)
 
