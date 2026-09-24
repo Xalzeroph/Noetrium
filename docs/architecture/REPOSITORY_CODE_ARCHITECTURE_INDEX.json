@@ -4,7 +4,7 @@
     "python_files": 3666,
     "python_import_edges": 7090,
     "symbols": 4851,
-    "tracked_files": 4295,
+    "tracked_files": 4296,
     "typescript_javascript_files": 11
   },
   "language_symbol_counts": {
@@ -42696,7 +42696,7 @@
     "tooling": 38
   },
   "schema": "noetrium-repository-code-architecture-index.v1",
-  "source_git_sha": "ff9d4923be0b6237b532bc7153a4a1940f9a7968",
+  "source_git_sha": "48e8c40ee58f7d13f75cf9e394f77feb0cfdedcc",
   "symbols": [
     {
       "bases": [],
