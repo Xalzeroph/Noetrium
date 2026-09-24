@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Protocol
+from typing import ContextManager, Protocol
 
 from noetrium_platform.substrate.api import ScopeIdentity
 from noetrium_platform.foundation.kernel.kernel import DurableCarrierReferenceClosure
@@ -29,6 +29,15 @@ class ModelAssetReferencePort(Protocol):
 
     def references(self, model_id: str) -> tuple[str, ...]: ...
     def active_references(self, model_id: str) -> tuple[str, ...]: ...
+
+
+class ModelAssetDeploymentAdmissionPort(Protocol):
+    """Cross-process fence for deployment admission against asset retirement."""
+
+    def deployment_admission(
+        self,
+        model_id: str,
+    ) -> ContextManager[ManagedModelAsset]: ...
 
 
 class ModelAssetLookupPort(Protocol):
@@ -63,4 +72,11 @@ class ModelAssetManagementPort(ModelAssetLookupPort, Protocol):
     ) -> bool: ...
 
 
-__all__ = ["ModelAssetLookupPort", "ModelAssetManagementPort", "ModelAssetStoragePort", "ModelAssetUsagePort", "ModelSourceBackend"]
+__all__ = [
+    "ModelAssetDeploymentAdmissionPort",
+    "ModelAssetLookupPort",
+    "ModelAssetManagementPort",
+    "ModelAssetStoragePort",
+    "ModelAssetUsagePort",
+    "ModelSourceBackend",
+]
