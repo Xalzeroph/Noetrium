@@ -171,6 +171,60 @@ def durable_create_binary_file(
                 )
 
 
+def durable_publish_immutable_bytes(
+    path: Path,
+    payload: bytes,
+    *,
+    staging_dir: Path | None = None,
+) -> None:
+    """Durably publish immutable bytes without exposing a partial target.
+
+    Publication is staged in a unique file, fsynced, then linked into the
+    canonical pathname with no-replace semantics. A crash before the link can
+    leave only a non-canonical staging file; a crash after the link leaves a
+    complete canonical inode. Callers may retry and verify an existing target
+    after FileExistsError.
+    """
+    if type(payload) is not bytes:
+        raise TypeError("immutable durable payload must be bytes")
+    parent = path.parent
+    parent.mkdir(parents=True, exist_ok=True)
+    staging = parent if staging_dir is None else Path(staging_dir)
+    staging.mkdir(parents=True, exist_ok=True)
+    tmp = staging / f"{path.name}.immutable.{os.getpid()}.{uuid4().hex}"
+    primary: BaseException | None = None
+    try:
+        with tmp.open("xb") as handle:
+            handle.write(payload)
+            handle.flush()
+            flush_file_descriptor(handle.fileno())
+        fsync_directory(staging)
+        _windows_file_operation(lambda: os.link(tmp, path))
+        fsync_directory(parent)
+    except FileExistsError as exc:
+        primary = exc
+        raise
+    except BaseException as exc:
+        primary = exc
+        if isinstance(exc, (KeyboardInterrupt, SystemExit)):
+            raise
+        raise DurableFileWriteError(
+            f"durable immutable publication failed for {path}"
+        ) from exc
+    finally:
+        try:
+            if tmp.exists():
+                _windows_file_operation(lambda: tmp.unlink(missing_ok=True))
+                fsync_directory(staging)
+        except BaseException as cleanup_exc:
+            if primary is None:
+                raise
+            primary.add_note(
+                "immutable publication staging cleanup failed: "
+                f"{type(cleanup_exc).__name__}"
+            )
+
+
 def durable_truncate_file(path: Path, size: int) -> None:
     """Truncate an existing file and persist the new durable byte boundary."""
     if type(size) is not int or size < 0:
@@ -279,6 +333,7 @@ __all__ = [
     "DurableFileWriteError",
     "atomic_replace_bytes",
     "durable_create_binary_file",
+    "durable_publish_immutable_bytes",
     "durable_truncate_file",
     "durable_replace_file",
     "durable_replace_directory",
