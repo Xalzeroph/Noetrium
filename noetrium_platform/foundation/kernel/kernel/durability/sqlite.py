@@ -156,6 +156,15 @@ def immediate_sqlite_transaction(
         raise
 
 
+def abort_sqlite_writer(
+    db: sqlite3.Connection,
+) -> None:
+    """Abort an active SQLite transaction when no primary failure exists."""
+    if not db.in_transaction:
+        return
+    db.rollback()
+
+
 def rollback_sqlite_writer(
     db: sqlite3.Connection,
     primary: BaseException,
@@ -177,6 +186,7 @@ def rollback_sqlite_writer(
 
 
 __all__ = [
+    "abort_sqlite_writer",
     "begin_immediate_sqlite_transaction",
     "is_sqlite_lock_contention",
     "immediate_sqlite_transaction",
