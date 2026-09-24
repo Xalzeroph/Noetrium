@@ -2,10 +2,10 @@
   "schema": "noetrium.reproduction.projection.v8",
   "authority": "generated_from_typed_definition_and_source",
   "package": "live_swe_agent",
-  "package_digest": "4b6c8392d9604bd5debc67378fec87c52e00a0d0861a3c1273801825f1add78f",
-  "definition_digest": "b5362342cc27c8357f2a48527f66912921d3e3796fe1e2cd1d032ada19bacac5",
+  "package_digest": "d03c99c99bd2500a1ae297d9f6883abf4621f4f7cd91d061e821762444a802e6",
+  "definition_digest": "9be3174ead00018a3ab7ab3633b28d826507a31a61dbd8a7792c473c1f26513c",
   "source_registry_digest": "df603fd2b849ff9e4be7849fe10487911f2bb7dd449b0c8822be92c5e7b40e5c",
-  "lifecycle": "catalogued",
+  "lifecycle": "protocol_bound",
   "identity": {
     "method_id": "live-swe-agent",
     "title": "Live-SWE-agent: Can Software Engineering Agents Self-Evolve on the Fly?",
@@ -69,9 +69,21 @@
       "path": "research/reproductions/live_swe_agent/fidelity.py",
       "declaration_digest": "91ec116d7d852e49613bc5951520f092cc1a52052e021882cb000f6d9659790e",
       "content_sha256": "c8e90d4604c96a55c83295a43029651160a29ff78a75d51f9522c6ad357947ee"
+    },
+    {
+      "kind": "method_program",
+      "path": "research/reproductions/live_swe_agent/program.py",
+      "declaration_digest": "79f2d83a15df4540299423718590a36aec0dcd4ca621707814a2e3921ddd0468",
+      "content_sha256": "763c08ea8944548acf370b4c596dedda381382bb5a1b89aad01094361e2d47f2"
+    },
+    {
+      "kind": "study",
+      "path": "research/reproductions/live_swe_agent/study.py",
+      "declaration_digest": "475f10f088749054af76698d1a2588a342453985ebe7c0a48cce628940cb7c8e",
+      "content_sha256": "99f93267c38cbd4d8b48569f60c90743553746829482d7c4a3e5747cbba406e3"
     }
   ],
-  "primary_executable": null,
+  "primary_executable": "research/reproductions/live_swe_agent/program.py",
   "reported_results": [],
   "reference_baselines": [],
   "deltas": [],
@@ -80,14 +92,23 @@
   "scientific_tests": [
     {
       "path": "tests/test_scientific_self_evolution_fidelity_v1.py",
-      "content_sha256": "ab474c96fc6500a6773bc02f871e319935502532e44b07ebbe0d96cd20611940"
+      "content_sha256": "40a5173e32cdbf3c0f2ff2de278e56a7c54f640195cde02db0a6c92abc20f7ec"
     }
   ],
   "research_os": {
     "surface": "noetrium.api",
-    "execution_state": "not_executable",
-    "program_id": null,
-    "program_digest": null,
-    "execution_requirements": []
+    "execution_state": "closure_binding_required",
+    "program_id": "live_swe_agent",
+    "program_digest": "483f17cfdd244086f57e54a9ec1fd78dbc278e198bfd2d80346a77835f4efabb",
+    "execution_requirements": [
+      {
+        "parameter": "split_id",
+        "kind": "benchmark_split",
+        "consumers": [
+          "study:build_live_swe_agent_study"
+        ],
+        "requirement_digest": "b4b167486968c7c5bff7590b444d8a300f6bef2aad3551b6af561f87127324a9"
+      }
+    ]
   }
 }

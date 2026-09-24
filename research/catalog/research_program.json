@@ -1436,7 +1436,7 @@
       "reproduction_packages": [
         {
           "package": "agent_s3",
-          "lifecycle": "catalogued"
+          "lifecycle": "protocol_bound"
         }
       ],
       "priority": 1,
@@ -3241,7 +3241,7 @@
       "reproduction_packages": [
         {
           "package": "live_swe_agent",
-          "lifecycle": "catalogued"
+          "lifecycle": "protocol_bound"
         }
       ],
       "priority": 1,

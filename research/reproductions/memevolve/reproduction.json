@@ -2,7 +2,7 @@
   "schema": "noetrium.reproduction.projection.v8",
   "authority": "generated_from_typed_definition_and_source",
   "package": "memevolve",
-  "package_digest": "83bedbb6c0a5bbd2cf88da9c4e220622842d95825ec43b662c0157fde4e566b7",
+  "package_digest": "e5702e3d1034e067428d2110259db246668e45fe05e9f51d64a423d639a9067f",
   "definition_digest": "18ff4148fe9352f85c5b77af58f4602a496c7a7d6e7aab7838a8968151fe7e9c",
   "source_registry_digest": "a92e273188a3b65a11542aa445022569964e21f942fb4412164a0c5f6a9ec7d7",
   "lifecycle": "catalogued",
@@ -79,7 +79,7 @@
   "scientific_tests": [
     {
       "path": "tests/test_scientific_self_evolution_fidelity_v1.py",
-      "content_sha256": "ab474c96fc6500a6773bc02f871e319935502532e44b07ebbe0d96cd20611940"
+      "content_sha256": "40a5173e32cdbf3c0f2ff2de278e56a7c54f640195cde02db0a6c92abc20f7ec"
     }
   ],
   "research_os": {

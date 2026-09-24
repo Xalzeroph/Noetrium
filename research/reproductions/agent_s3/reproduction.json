@@ -2,10 +2,10 @@
   "schema": "noetrium.reproduction.projection.v8",
   "authority": "generated_from_typed_definition_and_source",
   "package": "agent_s3",
-  "package_digest": "22f729c288678f72017ae1f1408dbcea0379628f2e120a911b65530641d484dd",
-  "definition_digest": "920325e52e19b8d5f4affa809f830326bfb010f49b9c78f590baf1dfcc28e215",
+  "package_digest": "87aaf0a8beff4669e97173fd9d04e41d62d20c5395468b7c637c3ece39ad50cb",
+  "definition_digest": "571e956debc7d55aba3299a6eef84c393f939187368bbb799bd269b9ce0ee48d",
   "source_registry_digest": "c13f9d1d0cdabb811ceddbaa18dcef0668ca95280ab0012b6a463d39844c7a34",
-  "lifecycle": "catalogued",
+  "lifecycle": "protocol_bound",
   "identity": {
     "method_id": "agent-s3",
     "title": "The Unreasonable Effectiveness of Scaling Agents for Computer Use",
@@ -75,13 +75,25 @@
       "content_sha256": "7cb3fa694c61d4c5dbfd03a02945a28d06417a64fd5f45ba17e7a28dc87a971e"
     },
     {
+      "kind": "method_program",
+      "path": "research/reproductions/agent_s3/program.py",
+      "declaration_digest": "76103720ee9c746c9ebf883195e79a167e2188d77ca1002262d8e62fb8d3976c",
+      "content_sha256": "c9dfed64df32df15855832ebe4fb46d1219e1950c10c67b8f5e0a7495b668296"
+    },
+    {
+      "kind": "study",
+      "path": "research/reproductions/agent_s3/study.py",
+      "declaration_digest": "93bb02007cf71676806203dedf31364771f495a133a17ea6925d7b996e24aad3",
+      "content_sha256": "40b24ecd2f382bcdc421a7ffa26f31aeeb88a1a8433090eaf40a489e52832c2f"
+    },
+    {
       "kind": "support",
       "path": "research/reproductions/agent_s3/context.py",
       "declaration_digest": "d3824d6ead68ae369d09897f4e263ffdc5c54ab44803a5aba0768cf56ae681c0",
       "content_sha256": "eba30886c792231bc51f6ed2e163a55116dfca360b14c5bec339bdfa09692025"
     }
   ],
-  "primary_executable": null,
+  "primary_executable": "research/reproductions/agent_s3/program.py",
   "reported_results": [],
   "reference_baselines": [],
   "deltas": [],
@@ -90,14 +102,23 @@
   "scientific_tests": [
     {
       "path": "tests/test_scientific_agent_s3_v1.py",
-      "content_sha256": "4c658e85f066f7bd8542c26577eb1e200781900f9a0fd82d29f45fb26ff4f5ae"
+      "content_sha256": "b0656e2e79ee899a0e1afb640a5d019d5454043e04d6064fb17f6ca4d75bc4f0"
     }
   ],
   "research_os": {
     "surface": "noetrium.api",
-    "execution_state": "not_executable",
-    "program_id": null,
-    "program_digest": null,
-    "execution_requirements": []
+    "execution_state": "closure_binding_required",
+    "program_id": "agent_s3",
+    "program_digest": "d9b41a7a8bb31326d0436b425301b13ca230e3b64e14226d694d57b74824ced9",
+    "execution_requirements": [
+      {
+        "parameter": "split_id",
+        "kind": "benchmark_split",
+        "consumers": [
+          "study:build_agent_s3_osworld_study"
+        ],
+        "requirement_digest": "c953b9ba717a6e66111604fe3af16da06ac2665741ef4e4ce63b327299be17ab"
+      }
+    ]
   }
 }

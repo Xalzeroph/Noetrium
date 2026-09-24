@@ -2,7 +2,7 @@
   "schema": "noetrium.reproduction.projection.v8",
   "authority": "generated_from_typed_definition_and_source",
   "package": "multiagent_debate",
-  "package_digest": "2a161110a41a027602e193466ac2f73b5feec92a7aa0edf7a23b91b7f846b537",
+  "package_digest": "262a25eb4abc48d68806c2509630d3688ad2174f61e572fe3cabdbaa79686814",
   "definition_digest": "3646b03d0929cb39dee125528cbdcd03a7c4848104073744a950f77e9862b8d7",
   "source_registry_digest": "a444ca49adcadedba1e4bd45f955f057c6810af68c62d3b7782fe033e2d6882a",
   "lifecycle": "protocol_bound",
@@ -92,7 +92,7 @@
   "scientific_tests": [
     {
       "path": "tests/test_scientific_multiagent_debate_fidelity_v1.py",
-      "content_sha256": "b1a2b7960abfe5f68bf70e714974e27e4db5400083925384ed62d91c2c0bc4e8"
+      "content_sha256": "ae917370eef786dba485ceaae9f88f6213a54ebb8407410ee367df6d43673d5c"
     }
   ],
   "research_os": {
