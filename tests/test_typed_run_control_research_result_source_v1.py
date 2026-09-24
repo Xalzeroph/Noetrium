@@ -85,6 +85,7 @@ def _receipt(
             _sha(f"commit:{run_id}"),
             _sha(f"state:{run_id}"),
             _sha("program"),
+            _sha("program-lock"),
         ),
         latest_checkpoint_id=None,
         checkpoint_manifest_digest=None,
