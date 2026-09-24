@@ -3,7 +3,11 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 from noetrium_platform.capabilities.model.deployment.api import ModelDeploymentSpec
-from noetrium_platform.substrate.api import ServiceLaunchContract
+from noetrium_platform.foundation.kernel.kernel import canonical_digest
+from noetrium_platform.substrate.api import (
+    ServiceLaunchContract,
+    ServiceProcessIdentity,
+)
 
 
 @dataclass(frozen=True, slots=True)
@@ -18,6 +22,18 @@ class AppliedModelDeployment:
     spec: ModelDeploymentSpec
     contract: ServiceLaunchContract
     environment: tuple[tuple[str, str], ...]
+    process: ServiceProcessIdentity
+
+    @property
+    def runtime_digest(self) -> str:
+        """Exact applied physical lifetime: frozen contract + OS process identity."""
+
+        return canonical_digest(
+            {
+                "contract_digest": self.contract.digest(),
+                "process": self.process,
+            }
+        )
 
 
 __all__ = ["AppliedModelDeployment"]
