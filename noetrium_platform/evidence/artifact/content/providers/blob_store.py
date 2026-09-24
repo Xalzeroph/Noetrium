@@ -9,6 +9,7 @@ from typing import Iterator
 
 from noetrium_platform.evidence.artifact.content.api import (
     ArtifactBlobFencePort,
+    ArtifactBlobGcAssessment,
     ArtifactBlobGeneration,
     ArtifactBlobLifecyclePort,
     ArtifactBlobLifecycleState,
@@ -16,7 +17,10 @@ from noetrium_platform.evidence.artifact.content.api import (
     ArtifactBlobStoreError,
     ArtifactBlobStorePort,
 )
-from noetrium_platform.foundation.kernel.kernel import require_sha256
+from noetrium_platform.foundation.kernel.kernel import (
+    DurableCarrierReferenceClosure,
+    require_sha256,
+)
 from noetrium_platform.foundation.kernel.kernel.durability import (
     InterprocessFileLock,
     durable_publish_immutable_bytes,
@@ -114,15 +118,24 @@ class _DirectoryArtifactBlobFence(ArtifactBlobFencePort):
             )
         return self._store._read_ref_payload_unlocked(self.ref)
 
+    def assess_gc(
+        self,
+        *,
+        closures: tuple[DurableCarrierReferenceClosure, ...] = (),
+    ) -> ArtifactBlobGcAssessment:
+        return self._store._assess_gc_under_lock(
+            self.ref,
+            closures=closures,
+        )
+
     def purge(
         self,
         *,
-        gc_proof_digest: str,
+        gc: ArtifactBlobGcAssessment,
     ) -> ArtifactBlobGeneration:
         result = self._store._purge_under_lock(
             self.ref,
-            expected_generation=self.generation.generation,
-            gc_proof_digest=gc_proof_digest,
+            gc=gc,
         )
         self.generation = result
         return result
@@ -490,13 +503,52 @@ class DirectoryArtifactBlobStore(
             with InterprocessFileLock(self._lock_path(digest)):
                 return self._generation_under_lock(ref)
 
+    def _assess_gc_under_lock(
+        self,
+        ref: ArtifactBlobRef,
+        *,
+        closures: tuple[DurableCarrierReferenceClosure, ...] = (),
+    ) -> ArtifactBlobGcAssessment:
+        generation = self._generation_under_lock(ref)
+        return ArtifactBlobGcAssessment(
+            content_sha256=ref.content_sha256,
+            size_bytes=ref.size_bytes,
+            generation=generation.generation,
+            closures=closures,
+        )
+
+    @staticmethod
+    def _require_gc(
+        ref: ArtifactBlobRef,
+        gc: ArtifactBlobGcAssessment,
+    ) -> ArtifactBlobGcAssessment:
+        if type(gc) is not ArtifactBlobGcAssessment:
+            raise RuntimeError(
+                "artifact blob physical GC requires a typed GC assessment"
+            )
+        if (
+            gc.content_sha256 != ref.content_sha256
+            or gc.size_bytes != ref.size_bytes
+        ):
+            raise RuntimeError(
+                "artifact blob GC assessment does not bind the exact content identity"
+            )
+        if not gc.eligible:
+            raise RuntimeError(
+                "artifact blob physical GC requires complete execution, evidence, "
+                "and recovery closure with zero retained references"
+            )
+        return gc
+
     def _purge_under_lock(
         self,
         ref: ArtifactBlobRef,
         *,
-        expected_generation: int,
-        gc_proof_digest: str,
+        gc: ArtifactBlobGcAssessment,
     ) -> ArtifactBlobGeneration:
+        gc = self._require_gc(ref, gc)
+        expected_generation = gc.generation
+        gc_proof_digest = gc.proof_digest
         if (
             isinstance(expected_generation, bool)
             or not isinstance(expected_generation, int)
@@ -565,12 +617,28 @@ class DirectoryArtifactBlobStore(
         self._write_lifecycle_unlocked(current)
         return current.generation_view()
 
+    def assess_gc(
+        self,
+        ref: ArtifactBlobRef,
+        *,
+        closures: tuple[DurableCarrierReferenceClosure, ...] = (),
+    ) -> ArtifactBlobGcAssessment:
+        if type(ref) is not ArtifactBlobRef:
+            raise TypeError("artifact blob ref must be ArtifactBlobRef")
+        digest = ref.content_sha256
+        local_lock = self._local_locks[self._shard_index(digest)]
+        with local_lock:
+            with InterprocessFileLock(self._lock_path(digest)):
+                return self._assess_gc_under_lock(
+                    ref,
+                    closures=closures,
+                )
+
     def purge(
         self,
         ref: ArtifactBlobRef,
         *,
-        expected_generation: int,
-        gc_proof_digest: str,
+        gc: ArtifactBlobGcAssessment,
     ) -> ArtifactBlobGeneration:
         if type(ref) is not ArtifactBlobRef:
             raise TypeError("artifact blob ref must be ArtifactBlobRef")
@@ -578,11 +646,7 @@ class DirectoryArtifactBlobStore(
         local_lock = self._local_locks[self._shard_index(digest)]
         with local_lock:
             with InterprocessFileLock(self._lock_path(digest)):
-                return self._purge_under_lock(
-                    ref,
-                    expected_generation=expected_generation,
-                    gc_proof_digest=gc_proof_digest,
-                )
+                return self._purge_under_lock(ref, gc=gc)
 
 
 __all__ = ["DirectoryArtifactBlobStore"]
