@@ -8,6 +8,9 @@ from noetrium import api
 from noetrium_platform.composition.research_os_experiment_artifacts import (
     DirectoryResearchOSExperimentArtifactStoreFactory,
 )
+from noetrium_platform.composition.research_os_experiment_runtime_binding import (
+    ResearchOSExperimentAggregationRegistry,
+)
 from noetrium_platform.composition.research_os_experiment import (
     ResearchOSExperimentArtifactStoreBinding,
     ResearchOSExperimentClosure,
@@ -771,3 +774,47 @@ def test_experiment_artifact_edge_feeds_evaluation_through_authority_resolution(
         assert snapshot.node("paper::evaluate").state.value == "succeeded"
     finally:
         pool.close()
+
+
+
+def test_canonical_aggregation_registry_resolves_study_requirement() -> None:
+    compilation = _compiled_graph()
+    node = compilation.node("paper::main")
+    definition = _study_definition()
+    resolution, binding = _resolution_and_binding(definition)
+    closure = compile_research_os_experiment_closure(
+        graph_id=compilation.plan.graph_id,
+        graph_digest=compilation.plan.graph_digest,
+        research_revision_digest=compilation.plan.research_revision_digest,
+        node=node,
+        definition=definition,
+        resolution=resolution,
+        binding=binding,
+    )
+
+    resolved = ResearchOSExperimentAggregationRegistry.canonical().resolve(closure)
+    assert resolved.requirement_id == definition.aggregation_requirement_id
+    assert isinstance(resolved.aggregation, BasicStudyMetricAggregator)
+    assert len(resolved.identity_digest) == 64
+
+
+def test_canonical_aggregation_registry_never_falls_back_for_custom_requirement() -> None:
+    compilation = _compiled_graph()
+    node = compilation.node("paper::main")
+    definition = replace(
+        _study_definition(),
+        aggregation_requirement_id="study.aggregate.paper-custom.v1",
+    )
+    resolution, binding = _resolution_and_binding(definition)
+    closure = compile_research_os_experiment_closure(
+        graph_id=compilation.plan.graph_id,
+        graph_digest=compilation.plan.graph_digest,
+        research_revision_digest=compilation.plan.research_revision_digest,
+        node=node,
+        definition=definition,
+        resolution=resolution,
+        binding=binding,
+    )
+
+    with pytest.raises(LookupError, match="paper-custom"):
+        ResearchOSExperimentAggregationRegistry.canonical().resolve(closure)
