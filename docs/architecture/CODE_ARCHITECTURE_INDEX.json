@@ -4562,6 +4562,26 @@
     },
     {
       "kind": "references",
+      "source": "noetrium_platform.composition.operator.project.project_research_os_loader.LoadedProjectResearchOS",
+      "target": "noetrium_platform.composition.research_execution_pool.ResearchExecutionPool"
+    },
+    {
+      "kind": "references",
+      "source": "noetrium_platform.composition.operator.project.project_research_os_loader.LoadedProjectResearchOS",
+      "target": "noetrium_platform.product.research_os.ResearchGraphRevision"
+    },
+    {
+      "kind": "references",
+      "source": "noetrium_platform.composition.operator.project.project_research_os_loader.LoadedProjectResearchOS",
+      "target": "noetrium_platform.product.research_os.ResearchOS"
+    },
+    {
+      "kind": "references",
+      "source": "noetrium_platform.composition.operator.project.project_research_os_loader.LoadedProjectResearchOS",
+      "target": "noetrium_platform.product.research_os.ResearchPortfolio"
+    },
+    {
+      "kind": "references",
       "source": "noetrium_platform.composition.operator.run_control_application.RunControlResearchApplication",
       "target": "noetrium_platform.composition.operator.run_control_application.RunControlResearchBinding"
     },
@@ -39071,6 +39091,34 @@
         "InstalledPlatformIdentity"
       ],
       "qualname": "noetrium_platform.composition.operator.project.project_platform_identity.InstalledPlatformIdentity",
+      "system_key": "research_os",
+      "top_system": "research_os"
+    },
+    {
+      "bases": [],
+      "decorators": [
+        "dataclass(slots=True)"
+      ],
+      "fields": [
+        "execution_pool",
+        "manifest",
+        "portfolio",
+        "project_root",
+        "research_os",
+        "revision"
+      ],
+      "kind": "dataclass",
+      "line": 56,
+      "methods": [
+        "default_execution_id",
+        "close"
+      ],
+      "module": "noetrium_platform.composition.operator.project.project_research_os_loader",
+      "name": "LoadedProjectResearchOS",
+      "nesting": [
+        "LoadedProjectResearchOS"
+      ],
+      "qualname": "noetrium_platform.composition.operator.project.project_research_os_loader.LoadedProjectResearchOS",
       "system_key": "research_os",
       "top_system": "research_os"
     },
@@ -102353,13 +102401,13 @@
     }
   ],
   "counts": {
-    "association_edges": 3422,
-    "classes": 3336,
+    "association_edges": 3426,
+    "classes": 3337,
     "constructor_edges": 932,
     "inheritance_edges": 149,
-    "module_import_edges": 5075,
+    "module_import_edges": 5091,
     "parse_errors": 0,
-    "python_modules": 1928,
+    "python_modules": 1929,
     "registry_authorities": 20,
     "registry_nodes": 31,
     "top_level_systems": 16
@@ -108503,6 +108551,70 @@
     {
       "source": "noetrium_platform.composition.operator.project.project_experience",
       "target": "noetrium_platform.product.operator.api"
+    },
+    {
+      "source": "noetrium_platform.composition.operator.project.project_research_os_loader",
+      "target": "noetrium_platform.composition.operator.project.project_layout"
+    },
+    {
+      "source": "noetrium_platform.composition.operator.project.project_research_os_loader",
+      "target": "noetrium_platform.composition.research_execution_pool"
+    },
+    {
+      "source": "noetrium_platform.composition.operator.project.project_research_os_loader",
+      "target": "noetrium_platform.composition.research_os"
+    },
+    {
+      "source": "noetrium_platform.composition.operator.project.project_research_os_loader",
+      "target": "noetrium_platform.composition.research_os_execution"
+    },
+    {
+      "source": "noetrium_platform.composition.operator.project.project_research_os_loader",
+      "target": "noetrium_platform.composition.research_os_runtime"
+    },
+    {
+      "source": "noetrium_platform.composition.operator.project.project_research_os_loader",
+      "target": "noetrium_platform.composition.research_os_value_authorities"
+    },
+    {
+      "source": "noetrium_platform.composition.operator.project.project_research_os_loader",
+      "target": "noetrium_platform.composition.research_os_values"
+    },
+    {
+      "source": "noetrium_platform.composition.operator.project.project_research_os_loader",
+      "target": "noetrium_platform.evidence.artifact.catalog.providers"
+    },
+    {
+      "source": "noetrium_platform.composition.operator.project.project_research_os_loader",
+      "target": "noetrium_platform.evidence.artifact.content.providers"
+    },
+    {
+      "source": "noetrium_platform.composition.operator.project.project_research_os_loader",
+      "target": "noetrium_platform.evidence.artifact.lineage.relation.providers"
+    },
+    {
+      "source": "noetrium_platform.composition.operator.project.project_research_os_loader",
+      "target": "noetrium_platform.evidence.artifact.retention.providers"
+    },
+    {
+      "source": "noetrium_platform.composition.operator.project.project_research_os_loader",
+      "target": "noetrium_platform.foundation.portfolio.project.api"
+    },
+    {
+      "source": "noetrium_platform.composition.operator.project.project_research_os_loader",
+      "target": "noetrium_platform.foundation.portfolio.runtime"
+    },
+    {
+      "source": "noetrium_platform.composition.operator.project.project_research_os_loader",
+      "target": "noetrium_platform.product.operator.api"
+    },
+    {
+      "source": "noetrium_platform.composition.operator.project.project_research_os_loader",
+      "target": "noetrium_platform.product.research_os"
+    },
+    {
+      "source": "noetrium_platform.composition.operator.project.project_research_os_loader",
+      "target": "noetrium_platform.research.execution.graph.providers"
     },
     {
       "source": "noetrium_platform.composition.operator.project.project_scaffold",
@@ -128539,6 +128651,30 @@
     {
       "imports": [
         "noetrium_platform.composition.operator.project.project_layout",
+        "noetrium_platform.composition.research_execution_pool",
+        "noetrium_platform.composition.research_os",
+        "noetrium_platform.composition.research_os_execution",
+        "noetrium_platform.composition.research_os_runtime",
+        "noetrium_platform.composition.research_os_value_authorities",
+        "noetrium_platform.composition.research_os_values",
+        "noetrium_platform.evidence.artifact.catalog.providers",
+        "noetrium_platform.evidence.artifact.content.providers",
+        "noetrium_platform.evidence.artifact.lineage.relation.providers",
+        "noetrium_platform.evidence.artifact.retention.providers",
+        "noetrium_platform.foundation.portfolio.project.api",
+        "noetrium_platform.foundation.portfolio.runtime",
+        "noetrium_platform.product.operator.api",
+        "noetrium_platform.product.research_os",
+        "noetrium_platform.research.execution.graph.providers"
+      ],
+      "module": "noetrium_platform.composition.operator.project.project_research_os_loader",
+      "path": "noetrium_platform/composition/operator/project/project_research_os_loader.py",
+      "system_key": "research_os",
+      "top_system": "research_os"
+    },
+    {
+      "imports": [
+        "noetrium_platform.composition.operator.project.project_layout",
         "noetrium_platform.composition.operator.project.project_platform_identity",
         "noetrium_platform.composition.operator.project.research_project_codegen",
         "noetrium_platform.foundation.kernel.kernel.durability",
@@ -143607,7 +143743,7 @@
   "parse_errors": [],
   "registry_sha256": "d3fc1bab831f1b7379e5a36048a61c00fe173429df958270d36a16f3f00171c0",
   "schema": "noetrium-code-architecture-index.v1",
-  "source_git_sha": "8662bf812de48b2334160426fc5a4d003b6095f7",
+  "source_git_sha": "6e868310915ce30068aaf110fcf3b4f2fee43fb8",
   "system_import_edges": [
     {
       "count": 85,
@@ -143750,7 +143886,7 @@
       "target": "reliability"
     },
     {
-      "count": 11,
+      "count": 15,
       "source": "research_os",
       "target": "artifact"
     },
@@ -143765,7 +143901,7 @@
       "target": "environment"
     },
     {
-      "count": 78,
+      "count": 79,
       "source": "research_os",
       "target": "execution"
     },
@@ -143800,7 +143936,7 @@
       "target": "platform"
     },
     {
-      "count": 7,
+      "count": 9,
       "source": "research_os",
       "target": "portfolio"
     },
@@ -143810,7 +143946,7 @@
       "target": "reliability"
     },
     {
-      "count": 310,
+      "count": 319,
       "source": "research_os",
       "target": "research_os"
     },
