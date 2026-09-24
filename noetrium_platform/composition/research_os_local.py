@@ -18,6 +18,9 @@ from noetrium_platform.composition.research_os_execution import (
     StrictResearchOSControl,
     prepare_research_os_execution,
 )
+from noetrium_platform.composition.research_os_checkpoint_store import (
+    DirectoryResearchOSGraphCheckpointStore,
+)
 from noetrium_platform.composition.research_os_experiment import (
     ResearchOSExperimentClosurePort,
 )
@@ -172,6 +175,9 @@ def compose_local_research_os(
         root / "artifact-retention.sqlite3"
     )
     lineage = SQLiteArtifactLineageStore(root / "artifact-lineage.sqlite3")
+    checkpoints = DirectoryResearchOSGraphCheckpointStore(
+        root / "graph-checkpoints"
+    )
     values = ResearchOSValueRouter(
         (ResearchOSImmutableValueAuthority(blobs, registry, retention),)
     )
@@ -209,6 +215,7 @@ def compose_local_research_os(
             values,
             experiment_closures=experiment_closures,
             artifact_lineage=lineage,
+            checkpoints=checkpoints,
         )
         research_os = bind_portfolio_research_os(
             revisions,
