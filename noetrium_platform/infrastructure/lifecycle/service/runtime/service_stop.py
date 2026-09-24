@@ -1,6 +1,10 @@
 from __future__ import annotations
 
-from noetrium_platform.infrastructure.lifecycle.service.api import ServiceLaunchContract
+from noetrium_platform.infrastructure.lifecycle.service.api import (
+    ServiceContractDrift,
+    ServiceLaunchContract,
+    ServiceProcessIdentity,
+)
 from .contracts import ServiceExitClass, ServicePhase
 from .service_observation import ServiceObservationCoordinator
 from .service_state_contracts import ServiceSupervisorState
@@ -22,10 +26,25 @@ class ServiceStopCoordinator:
         self._adapter = adapter
         self._transitions = transitions
 
-    def stop_exact(self, contract: ServiceLaunchContract) -> ServiceSupervisorState:
+    def stop_exact(
+        self,
+        contract: ServiceLaunchContract,
+        expected_process: ServiceProcessIdentity,
+    ) -> ServiceSupervisorState:
+        if type(expected_process) is not ServiceProcessIdentity:
+            raise TypeError(
+                "service stop requires exact ServiceProcessIdentity"
+            )
         state = self._observation.observe_state(contract)
         if state is None:
             raise RuntimeError("service supervisor state is missing")
+        if (
+            state.process is not None
+            and state.process != expected_process
+        ):
+            raise ServiceContractDrift(
+                "service process generation changed before stop"
+            )
         decision = decide_service_stop_resume(state)
         if decision.blocked:
             raise ServiceStopRecoveryRequired(state, decision)
