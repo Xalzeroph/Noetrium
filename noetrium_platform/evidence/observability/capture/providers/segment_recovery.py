@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from noetrium_platform.foundation.kernel.kernel.durability import flush_file_descriptor
+
 from dataclasses import dataclass
 import hashlib
 import os
@@ -134,7 +136,7 @@ def scan_raw_segment(
         with target.open("r+b") as handle:
             handle.truncate(valid_bytes)
             handle.flush()
-            os.fsync(handle.fileno())
+            flush_file_descriptor(handle.fileno())
     return RecoveredRawSegment(sequence, idempotency, valid_bytes, discarded_tail_bytes)
 
 
