@@ -49,7 +49,6 @@ def register(groups) -> None:
     refs.add_argument("model_id")
     remove = sub.add_parser("remove")
     remove.add_argument("model_id")
-    remove.add_argument("--delete-files", action="store_true")
 
 
 def dispatch(args, context: ManagementCommandContext):
@@ -101,7 +100,10 @@ def dispatch(args, context: ManagementCommandContext):
     if args.action == "refs":
         return assets.model_usage(args.model_id)
     if args.action == "remove":
-        return {"removed": assets.unregister_model(args.model_id, delete_managed_files=args.delete_files)}
+        # Operator removal is logical retirement only. Physical managed-byte GC
+        # requires proof-backed execution/evidence/recovery closure and is not
+        # exposed as a naked maintenance flag.
+        return {"removed": assets.unregister_model(args.model_id)}
     raise ValueError(f"unsupported model management action: {args.action}")
 
 
