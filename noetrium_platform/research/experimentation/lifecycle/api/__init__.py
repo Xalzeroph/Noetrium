@@ -125,7 +125,6 @@ from noetrium_platform.research.experimentation.lifecycle.experiment.api import 
 
 from noetrium_platform.research.experimentation.lifecycle.run.api import (
     RunIdentity,
-    RunIdentityProvider,
     RunCleanupFailure,
     RunCleanupReport,
     RunClosed,
@@ -365,7 +364,6 @@ __all__ = [
     "RunEvidenceValidity",
     "RunExecutionOutcome",
     "RunIdentity",
-    "RunIdentityProvider",
     "RunLaunchManifest",
     "RunOutcomeProjection",
     "RunParticipantPayload",
