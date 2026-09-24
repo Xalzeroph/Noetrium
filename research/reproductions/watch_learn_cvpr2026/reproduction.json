@@ -2,7 +2,7 @@
   "schema": "noetrium.reproduction.projection.v10",
   "authority": "generated_from_typed_definition_and_source",
   "package": "watch_learn_cvpr2026",
-  "package_digest": "4e7c3675f702df0624504d9c0613864854b4f3b00629e3de58d29e90b77ebf57",
+  "package_digest": "c831617daee7983349e0a727b72ae0f4522fce5d541ce2be63e95cf21e4ab5d2",
   "definition_digest": "81ae65ddce2774738456d379be9109762b1d9b75df7365efccfbbe271f332b22",
   "source_registry_digest": "9377a15bf9b58f568842cac30b7cb6e1418ed33e0be6323790688bf0eebdb8e8",
   "lifecycle": "protocol_bound",
@@ -90,7 +90,7 @@
       "kind": "study",
       "path": "research/reproductions/watch_learn_cvpr2026/study.py",
       "declaration_digest": "a02c8b8e80449c8759bcf1f8aa7441d51febee4ee1e40548e5cde4bb90c03553",
-      "content_sha256": "2ac3c9cc2bf02462f7edd4181e7098da0a46d88e9732b363a990a4adb8b087d4"
+      "content_sha256": "354159b331857d83d80613f1c94db3fc685bb3ff72c56962df7a2be284025cda"
     }
   ],
   "primary_executable": "research/reproductions/watch_learn_cvpr2026/program.py",

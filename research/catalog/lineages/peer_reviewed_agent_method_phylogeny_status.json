@@ -727,7 +727,7 @@
       "reproductions": [
         {
           "package": "reflexion_alfworld",
-          "package_digest": "e8a234befa22e9b45cd1274f7cc952eb309f8a7bb971ee653cb69a085dc18b1e",
+          "package_digest": "82d990ac3a0ff357d361802337e1b0a6689c11be3c1e841005c8fa84fb4ee9ce",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "alfworld"
@@ -759,7 +759,7 @@
             {
               "kind": "study",
               "path": "research/reproductions/reflexion_alfworld/study.py",
-              "content_sha256": "e2c3ff03f65b2c01a97224490d73b9a371987478bbfc92c4d2445dd0f62bfaa2"
+              "content_sha256": "37984a310c6217c408d0b9d5ea36ddae642574540109d3efe360c90f6b0fe59f"
             },
             {
               "kind": "support",
@@ -920,7 +920,7 @@
       "reproductions": [
         {
           "package": "steve1_minecraft",
-          "package_digest": "48f67429d7a928982502618f729773a40e50ca06fd5b2b8375d92e3a6179ae9d",
+          "package_digest": "35a3fd6b8374d81246e2366498eda90156f62e1242ed700e4d1ab8143825635e",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "steve1-paper-prompts"
@@ -947,7 +947,7 @@
             {
               "kind": "benchmark",
               "path": "research/reproductions/steve1_minecraft/benchmark.py",
-              "content_sha256": "80dfa78dc3db36bac01ca8b48c68c4fc0fe0cfe755c50e1760b782dbd0ee4f29"
+              "content_sha256": "e27c474921528d8eb07085ed80182961cd26af87435c2ca73116d3de4f49ba9f"
             },
             {
               "kind": "fidelity",
@@ -1645,7 +1645,7 @@
       "reproductions": [
         {
           "package": "moviechat_memory",
-          "package_digest": "2f9c38544620b4f389888bce3ca0b52c6a7ba6888ce301bda104c3ed281dbcf7",
+          "package_digest": "72188565007e5daf8d9dd19630eb87369dd97fcdae4e400bb74586373148f4f7",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "moviechat-1k"
@@ -1678,7 +1678,7 @@
             {
               "kind": "benchmark",
               "path": "research/reproductions/moviechat_memory/benchmark.py",
-              "content_sha256": "8871976fa2807a810bcc3a5c9ab2644df85ca275e7882abb87f666e2da8ab565"
+              "content_sha256": "8edf4942648a4a6f46a47298c6670bcd554c4813ca486fea92517b34eb38308a"
             },
             {
               "kind": "fidelity",
@@ -2489,7 +2489,7 @@
       "reproductions": [
         {
           "package": "agentless_swebench",
-          "package_digest": "ba453b5bb16894db5ba63b87e05514e2fe62b9ba9b11281f2a9f0d3757d2ddfc",
+          "package_digest": "7e8d71ad27a28b22e5f3999edc0ae8947a31a8ee13dd4a86d2965d7742d09178",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "swe-bench"
@@ -2526,7 +2526,7 @@
             {
               "kind": "study",
               "path": "research/reproductions/agentless_swebench/study.py",
-              "content_sha256": "68c90e14046fd5da9735a000d8bd6381039cae4051a370af78246a069aa74a2c"
+              "content_sha256": "564ce6e133f91d0bdb105768f2e8b707ae4b4ba35a0d72a1269161571012bf32"
             }
           ],
           "blockers": [
@@ -3555,7 +3555,7 @@
       "reproductions": [
         {
           "package": "optimusvla_cvpr2026",
-          "package_digest": "1378e0236cdbf32fa9929f0f6c493016780c05e166b65632c89375ac807e234e",
+          "package_digest": "425eef8852527613b8b4047aeeea50390fcab1bed16029b23eef58503c98a280",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "calvin",
@@ -3594,7 +3594,7 @@
             {
               "kind": "study",
               "path": "research/reproductions/optimusvla_cvpr2026/study.py",
-              "content_sha256": "d6a9534c3c5b314262db1278672a0281692af27fc80c080f0423971d68a86842"
+              "content_sha256": "54d72d3fdcc14e17d72b6595d051e1611e4d7ce52a5c1d733d5b072d9c034af7"
             }
           ],
           "blockers": [
@@ -3682,7 +3682,7 @@
       "reproductions": [
         {
           "package": "ui_agile_cvprf2026",
-          "package_digest": "52b5303619fadc1e07ab1a890e17ee7aa8bfdd811e552683759388be87857604",
+          "package_digest": "ce8bf1a7fe26e92ea62fd7ed73d12f93c6c0f0db84a03c34f3f488c61c7b06d2",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "androidcontrol",
@@ -3721,7 +3721,7 @@
             {
               "kind": "study",
               "path": "research/reproductions/ui_agile_cvprf2026/study.py",
-              "content_sha256": "d6a9534c3c5b314262db1278672a0281692af27fc80c080f0423971d68a86842"
+              "content_sha256": "54d72d3fdcc14e17d72b6595d051e1611e4d7ce52a5c1d733d5b072d9c034af7"
             }
           ],
           "blockers": [
@@ -3896,5 +3896,5 @@
       ]
     }
   ],
-  "projection_digest": "85f6ba0f08e124f40ea9217f4667fba205fbfab31d761e500194bf8a2c69a4bb"
+  "projection_digest": "209bf4b696884b3ceefaefb029ef83a3cd7201fb9a59e9a399ed3c0e876f3201"
 }

@@ -145,7 +145,7 @@
       "reproductions": [
         {
           "package": "reflexion_alfworld",
-          "package_digest": "e8a234befa22e9b45cd1274f7cc952eb309f8a7bb971ee653cb69a085dc18b1e",
+          "package_digest": "82d990ac3a0ff357d361802337e1b0a6689c11be3c1e841005c8fa84fb4ee9ce",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "alfworld"
@@ -177,7 +177,7 @@
             {
               "kind": "study",
               "path": "research/reproductions/reflexion_alfworld/study.py",
-              "content_sha256": "e2c3ff03f65b2c01a97224490d73b9a371987478bbfc92c4d2445dd0f62bfaa2"
+              "content_sha256": "37984a310c6217c408d0b9d5ea36ddae642574540109d3efe360c90f6b0fe59f"
             },
             {
               "kind": "support",
@@ -478,5 +478,5 @@
       ]
     }
   ],
-  "projection_digest": "688f97b5e5e35a0e85aaa3d4379671ba4e9f5b61ab4507d03efdf66035751e25"
+  "projection_digest": "d651133bfe447324cc19b50b7ca74064f7e52a42710107a6edef7249f8aed720"
 }
