@@ -567,3 +567,11 @@ __all__ = tuple(__all__) + (
     "ExecutionStateAnchor",
     "bind_execution_fork",
 )
+from noetrium_platform.capabilities.api import (
+    TensorContentRef,
+    TensorContentStorePort,
+)
+__all__ = tuple(__all__) + (
+    "TensorContentRef",
+    "TensorContentStorePort",
+)
