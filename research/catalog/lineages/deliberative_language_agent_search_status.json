@@ -275,7 +275,7 @@
       "reproductions": [
         {
           "package": "rap_reasoning",
-          "package_digest": "c87fe93ea0265f4976a2103ba92020f4c346c921feabd371013c44d3073f8ecf",
+          "package_digest": "7d8d6e74691ed14087e1b082b59612c08a3967496870bc8ad99a7d679f4faea8",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "blocksworld"
@@ -302,7 +302,7 @@
             {
               "kind": "study",
               "path": "research/reproductions/rap_reasoning/study.py",
-              "content_sha256": "e4c760f49f7bccdd5baaa3761de451591b75b0d6d26c094782d9461b6d3ea8ef"
+              "content_sha256": "4e5d758ec2db82652cb646e02780e279671cb72cd86f5eea89b363dcde4326dd"
             },
             {
               "kind": "support",
@@ -335,7 +335,7 @@
       "reproductions": [
         {
           "package": "lats_webshop",
-          "package_digest": "4f7c9d06a7591dc4e3f385e3b610f6b6c1b0e4c270951d7fd30d281f6ce65a80",
+          "package_digest": "7c6a37226649898546dac015d6aa6b50c995945ab2c37bd65d6be2ca8ad77cae",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "webshop"
@@ -362,7 +362,7 @@
             {
               "kind": "study",
               "path": "research/reproductions/lats_webshop/study.py",
-              "content_sha256": "524704ea467d7e6124aa82325eb4ba3a8704fb77416c39eb6519d9ae84d7d5ad"
+              "content_sha256": "79bfc65fafba5df00e807821cb79355b351a1edeb0918c0c8d5a233a98830f5a"
             },
             {
               "kind": "support",
@@ -478,5 +478,5 @@
       ]
     }
   ],
-  "projection_digest": "214ca2753e1b42cbe2c7937de0da8580d5041d361c3f061d49e6564ec9dd8765"
+  "projection_digest": "5daf06c76d0445a2c36f8085e2ac7265b32cba2bb91a45dbd56e96980f9ee689"
 }

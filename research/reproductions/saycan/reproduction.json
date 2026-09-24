@@ -2,7 +2,7 @@
   "schema": "noetrium.reproduction.projection.v9",
   "authority": "generated_from_typed_definition_and_source",
   "package": "saycan",
-  "package_digest": "d5f57fa89b13663aff2aae001c02be50dd59454ed699119864667d05c79ddb55",
+  "package_digest": "9d44029f733b57350501201d14b10c12aa466ae8d35a1ff60de642b1606a8a2c",
   "definition_digest": "71dd04b1dc76f1794093ba5e23730308c091ad738dcc6d559210d69307e401a7",
   "source_registry_digest": "358acfb9456c29c701634acb64fbce6b2a866522c9060ca11b081e7effdeec4f",
   "lifecycle": "protocol_bound",
@@ -87,7 +87,7 @@
       "kind": "benchmark",
       "path": "research/reproductions/saycan/benchmark.py",
       "declaration_digest": "385c5092478b610a77618df585e02ed719bdca0a077529157f6c2c5a859bda1c",
-      "content_sha256": "0186bdc3628d346792dfe2b0841950d7fe5ea889f0dcd4b081329b63f6038c89"
+      "content_sha256": "6a9347caf7945f4b7226b829218bc2f910e1a05fdb6113a36ce3a126c68230f5"
     },
     {
       "kind": "fidelity",
