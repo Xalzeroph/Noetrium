@@ -297,3 +297,53 @@ def test_managed_docker_live_current_generation_cannot_be_double_started() -> No
         _reserve(authority)
 
     assert len(runtime.rows) == 1
+
+
+
+def test_managed_docker_release_refuses_reused_foreign_container_name() -> None:
+    resources = InMemoryResourceLeaseRegistry()
+    runtime = FakeDockerRuntime()
+    authority = _authority(resources, runtime)
+    handle = _reserve(authority)
+
+    foreign_labels = dict(handle.labels)
+    foreign_labels[LABEL_OWNER_GENERATION] = "f" * 64
+    foreign = DockerContainerObservation(
+        "foreign-container",
+        handle.container_name,
+        handle.image,
+        True,
+        foreign_labels,
+    )
+    runtime.rows[foreign.container_id] = foreign
+
+    with pytest.raises(RuntimeError, match="label drift"):
+        authority.release(handle)
+
+    assert runtime.inspect(foreign.container_id) == foreign
+    current = resources.get(handle.lease.lease_id)
+    assert current.state is LeaseState.ACTIVE
+    assert current.fencing_token == handle.lease.fencing_token
+
+
+def test_new_docker_owner_generation_cannot_close_old_generation_handle() -> None:
+    resources = InMemoryResourceLeaseRegistry()
+    runtime = FakeDockerRuntime()
+    old_authority = _authority(
+        resources,
+        runtime,
+        owner_generation_id="2" * 64,
+    )
+    old_handle = _reserve(old_authority)
+    old_container = runtime.start(old_handle)
+
+    new_authority = _authority(
+        resources,
+        runtime,
+        owner_generation_id="3" * 64,
+    )
+    with pytest.raises(RuntimeError, match="stale owner generation"):
+        new_authority.release(old_handle)
+
+    assert runtime.inspect(old_container.container_id) == old_container
+    assert resources.get(old_handle.lease.lease_id).state is LeaseState.ACTIVE
