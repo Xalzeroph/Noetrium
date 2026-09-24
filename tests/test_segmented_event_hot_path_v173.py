@@ -164,6 +164,23 @@ class SegmentedEventHotPathV173Tests(unittest.TestCase):
             signal.close()
 
 
+    def test_directory_change_signal_requires_exact_kernel_authority(self) -> None:
+        with TemporaryDirectory() as td:
+            root = Path(td) / "events"
+            root.mkdir()
+            with patch(
+                "noetrium_platform.infrastructure.reliability.forensics.providers.directory_change_signal.open_linux_directory_watch",
+                return_value=None,
+            ), patch(
+                "noetrium_platform.infrastructure.reliability.forensics.providers.directory_change_signal._open_windows_directory_watch",
+                return_value=None,
+            ):
+                with self.assertRaisesRegex(
+                    RuntimeError,
+                    "requires Linux inotify or Windows change notifications",
+                ):
+                    DirectoryChangeSignal(root)
+
     def test_external_directory_mutation_during_active_append_fails_closed(self) -> None:
         with TemporaryDirectory() as td:
             root = Path(td) / "events"
