@@ -1,6 +1,6 @@
 {
   "generator": "scripts/generate_interface_schemas.py",
-  "interface_digest": "46c04b02d457b907e9ac27fb4eba0a9a870b313cce163742dbf4ef405ba5bd82",
+  "interface_digest": "5f58f32eb22211d5c9c818fd4dfe437228cf770822f5c9c417938570d48c4453",
   "interface_schema": {
     "description": "Generated signatures, annotations, class members, decorators, docs and re-export provenance for every public API symbol.",
     "schema_id": "noetrium.interface-schema",
@@ -412,6 +412,60 @@
               "origin_name": "ResearchValueKind",
               "schema_id": "noetrium.interface-schema",
               "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "reexport",
+              "name": "RESEARCH_PROJECT_BLUEPRINT_SCHEMA",
+              "origin_module": "..research_blueprint",
+              "origin_name": "RESEARCH_PROJECT_BLUEPRINT_SCHEMA",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "reexport",
+              "name": "ResearchDefinitionRef",
+              "origin_module": "..research_blueprint",
+              "origin_name": "ResearchDefinitionRef",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "reexport",
+              "name": "ResearchProjectBlueprint",
+              "origin_module": "..research_blueprint",
+              "origin_name": "ResearchProjectBlueprint",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "reexport",
+              "name": "decode_research_project_blueprint",
+              "origin_module": "..research_blueprint",
+              "origin_name": "decode_research_project_blueprint",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "reexport",
+              "name": "encode_research_project_blueprint",
+              "origin_module": "..research_blueprint",
+              "origin_name": "encode_research_project_blueprint",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "reexport",
+              "name": "research_project_blueprint_document",
+              "origin_module": "..research_blueprint",
+              "origin_name": "research_project_blueprint_document",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
             }
           ],
           "symbols": [
@@ -441,7 +495,13 @@
             "ResearchProgramBuilder",
             "ResearchRevisionDiff",
             "ResearchTag",
-            "ResearchValueKind"
+            "ResearchValueKind",
+            "RESEARCH_PROJECT_BLUEPRINT_SCHEMA",
+            "ResearchDefinitionRef",
+            "ResearchProjectBlueprint",
+            "decode_research_project_blueprint",
+            "encode_research_project_blueprint",
+            "research_project_blueprint_document"
           ]
         }
       ],

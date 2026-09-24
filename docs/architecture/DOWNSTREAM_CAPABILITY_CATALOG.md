@@ -19,7 +19,7 @@ Example:
 
 - Registered systems: 31
 - Public API modules: 1
-- Public symbols: 27
+- Public symbols: 33
 - Registry digest: 31c2f26c4e934ccbbedf934a7302bfeb1e84861690f74b58e58aa61411a41de9
 
 ## Capability domains
@@ -39,7 +39,7 @@ Example:
 | platform | 1 | 0 | 0 |
 | portfolio | 1 | 0 | 0 |
 | reliability | 3 | 0 | 0 |
-| research_os | 1 | 1 | 27 |
+| research_os | 1 | 1 | 33 |
 | resource | 2 | 0 | 0 |
 | runtime | 1 | 0 | 0 |
 | scope | 1 | 0 | 0 |
@@ -399,7 +399,7 @@ Example:
 
 #### API modules
 
-- noetrium_platform.product.api ?w^~)?t ResearchBranch, ResearchControlAction, ResearchControlReceipt, ResearchControlRequest, ResearchDefinition, ResearchDefinitionKind, ResearchDependency, ResearchExecutionTarget, ResearchGraphRevision, ResearchImpactState, ResearchImplementation, ResearchMethodProgramImplementation, ResearchInputBinding, ResearchNode, ResearchNodeImpact, ResearchNodeKind, ResearchPortfolioDependency, ResearchPortfolioBuilder, ResearchNodeRef, ResearchOS, ResearchOutputSpec, ResearchPortfolio, ResearchProgram, ResearchProgramBuilder, ResearchRevisionDiff, ResearchTag, ResearchValueKind
+- noetrium_platform.product.api ?w^~)?t ResearchBranch, ResearchControlAction, ResearchControlReceipt, ResearchControlRequest, ResearchDefinition, ResearchDefinitionKind, ResearchDependency, ResearchExecutionTarget, ResearchGraphRevision, ResearchImpactState, ResearchImplementation, ResearchMethodProgramImplementation, ResearchInputBinding, ResearchNode, ResearchNodeImpact, ResearchNodeKind, ResearchPortfolioDependency, ResearchPortfolioBuilder, ResearchNodeRef, ResearchOS, ResearchOutputSpec, ResearchPortfolio, ResearchProgram, ResearchProgramBuilder, ResearchRevisionDiff, ResearchTag, ResearchValueKind, RESEARCH_PROJECT_BLUEPRINT_SCHEMA, ResearchDefinitionRef, ResearchProjectBlueprint, decode_research_project_blueprint, encode_research_project_blueprint, research_project_blueprint_document
 
 ### resource
 
