@@ -10,7 +10,6 @@ from noetrium_platform.foundation.kernel.kernel import (
     canonical_digest,
 )
 from noetrium_platform.foundation.kernel.kernel.durability import (
-    ChecksummedDocumentError,
     InterprocessFileLock,
     atomic_replace_bytes,
     durable_publish_immutable_bytes,
@@ -18,13 +17,9 @@ from noetrium_platform.foundation.kernel.kernel.durability import (
     fsync_directory,
     sha256_file,
 )
-from noetrium_platform.foundation.kernel.kernel.durability.checksummed_document import (
-    decode_checksummed_document,
-    encode_checksummed_document,
-)
-
 from .codec import RunCheckpointManifestCodec
 from .workload_codec import WorkloadCheckpointManifestCodec
+from .retirement import CheckpointRetirementStore
 from .publication_intent import (
     CheckpointPublicationIntent,
     CheckpointPublicationIntentConflict,
@@ -45,18 +40,6 @@ from ..api.contracts import (
 )
 
 
-_RETIREMENT_SCHEMA = "noetrium.checkpoint-retirement.v1"
-_RETIREMENT_FIELDS = {
-    "namespace",
-    "checkpoint_id",
-    "persistence_state",
-    "state_digest",
-    "blob_sha256s",
-    "gc_proof_digest",
-    "purged",
-}
-
-
 class DirectoryRunCheckpointStore(RunCheckpointStore):
     """Crash-durable content-addressed persistence for generic participant checkpoints."""
 
@@ -69,13 +52,11 @@ class DirectoryRunCheckpointStore(RunCheckpointStore):
         self.blob_staging = self.root / "blob_staging"
         self.manifests = self.root / "manifests"
         self.manifest_locks = self.root / "manifest_locks"
-        self.retired = self.root / "retired"
         self.blobs.mkdir(parents=True, exist_ok=True)
         self.blob_locks.mkdir(parents=True, exist_ok=True)
         self.blob_staging.mkdir(parents=True, exist_ok=True)
         self.manifests.mkdir(parents=True, exist_ok=True)
         self.manifest_locks.mkdir(parents=True, exist_ok=True)
-        self.retired.mkdir(parents=True, exist_ok=True)
         self.codec = RunCheckpointManifestCodec()
         self._workload_codec = WorkloadCheckpointManifestCodec()
         self._intents = DirectoryCheckpointPublicationIntentStore(
@@ -85,6 +66,10 @@ class DirectoryRunCheckpointStore(RunCheckpointStore):
         self._workload_intents = DirectoryCheckpointPublicationIntentStore(
             self.root,
             namespace="workload",
+        )
+        self._retirements = CheckpointRetirementStore(
+            self.root,
+            namespace=CheckpointNamespace.RUN,
         )
 
     @staticmethod
@@ -136,8 +121,7 @@ class DirectoryRunCheckpointStore(RunCheckpointStore):
         return self.manifest_locks / f"{safe}.lock"
 
     def _retirement_path(self, checkpoint_id: str) -> Path:
-        safe = hashlib.sha256(checkpoint_id.encode("utf-8")).hexdigest()
-        return self.retired / f"{safe}.json"
+        return self._retirements._path(checkpoint_id)
 
     def _publication_intent(
         self,
@@ -269,90 +253,6 @@ class DirectoryRunCheckpointStore(RunCheckpointStore):
         raise FileNotFoundError(
             f"checkpoint persistence state not found: {checkpoint_id}"
         )
-
-    @staticmethod
-    def _retirement_document(
-        gc: CheckpointGcAssessment,
-        *,
-        purged: bool,
-    ) -> dict[str, object]:
-        return {
-            "namespace": gc.namespace.value,
-            "checkpoint_id": gc.checkpoint_id,
-            "persistence_state": gc.persistence_state.value,
-            "state_digest": gc.state_digest,
-            "blob_sha256s": list(gc.blob_sha256s),
-            "gc_proof_digest": gc.proof_digest,
-            "purged": purged,
-        }
-
-    def _write_retirement(
-        self,
-        gc: CheckpointGcAssessment,
-        *,
-        purged: bool,
-    ) -> None:
-        atomic_replace_bytes(
-            self._retirement_path(gc.checkpoint_id),
-            encode_checksummed_document(
-                _RETIREMENT_SCHEMA,
-                self._retirement_document(gc, purged=purged),
-            ),
-        )
-
-    def _read_retirement(
-        self,
-        checkpoint_id: str,
-    ) -> dict[str, object] | None:
-        path = self._retirement_path(checkpoint_id)
-        if not path.exists():
-            return None
-        try:
-            payload = decode_checksummed_document(
-                path.read_bytes(),
-                expected_schema=_RETIREMENT_SCHEMA,
-            ).payload
-        except (OSError, ChecksummedDocumentError) as exc:
-            raise RunCheckpointIntegrityError(
-                "checkpoint retirement document is corrupt"
-            ) from exc
-        if set(payload) != _RETIREMENT_FIELDS:
-            raise RunCheckpointIntegrityError(
-                "checkpoint retirement document fields drifted"
-            )
-        try:
-            if payload["namespace"] != CheckpointNamespace.RUN.value:
-                raise ValueError("checkpoint retirement namespace drifted")
-            if payload["checkpoint_id"] != checkpoint_id:
-                raise ValueError("checkpoint retirement identity drifted")
-            CheckpointPersistenceState(str(payload["persistence_state"]))
-            for label in ("state_digest", "gc_proof_digest"):
-                value = payload[label]
-                if (
-                    type(value) is not str
-                    or len(value) != 64
-                    or any(ch not in "0123456789abcdef" for ch in value)
-                ):
-                    raise ValueError(f"invalid retirement {label}")
-            blobs = payload["blob_sha256s"]
-            if (
-                not isinstance(blobs, list)
-                or any(
-                    type(value) is not str
-                    or len(value) != 64
-                    or any(ch not in "0123456789abcdef" for ch in value)
-                    for value in blobs
-                )
-                or tuple(blobs) != tuple(sorted(set(blobs)))
-            ):
-                raise ValueError("invalid retirement blob_sha256s")
-            if type(payload["purged"]) is not bool:
-                raise TypeError("retirement purged must be bool")
-        except (TypeError, ValueError) as exc:
-            raise RunCheckpointIntegrityError(
-                "checkpoint retirement document payload is invalid"
-            ) from exc
-        return payload
 
     @staticmethod
     def _manifest_filename(checkpoint_id: str) -> str:
@@ -492,7 +392,7 @@ class DirectoryRunCheckpointStore(RunCheckpointStore):
         with InterprocessFileLock(
             self._manifest_lock_path(manifest.checkpoint_id)
         ):
-            if self._read_retirement(manifest.checkpoint_id) is not None:
+            if self._retirements.load(manifest.checkpoint_id) is not None:
                 raise RunCheckpointConflict(
                     "checkpoint identity is retired and cannot be reused: "
                     f"{manifest.checkpoint_id}"
@@ -598,17 +498,15 @@ class DirectoryRunCheckpointStore(RunCheckpointStore):
         with InterprocessFileLock(
             self._manifest_lock_path(checkpoint_id)
         ):
-            retirement = self._read_retirement(checkpoint_id)
+            retirement = self._retirements.load(checkpoint_id)
             if retirement is None:
                 persistence_state, state_digest, blobs = (
                     self._current_gc_state_unlocked(checkpoint_id)
                 )
             else:
-                persistence_state = CheckpointPersistenceState(
-                    str(retirement["persistence_state"])
-                )
-                state_digest = str(retirement["state_digest"])
-                blobs = tuple(str(value) for value in retirement["blob_sha256s"])
+                persistence_state = retirement.persistence_state
+                state_digest = retirement.state_digest
+                blobs = retirement.blob_sha256s
             return CheckpointGcAssessment(
                 namespace=CheckpointNamespace.RUN,
                 checkpoint_id=checkpoint_id,
@@ -653,7 +551,7 @@ class DirectoryRunCheckpointStore(RunCheckpointStore):
         with InterprocessFileLock(
             self._manifest_lock_path(checkpoint_id)
         ):
-            retirement = self._read_retirement(checkpoint_id)
+            retirement = self._retirements.load(checkpoint_id)
             if retirement is None:
                 persistence_state, state_digest, blobs = (
                     self._current_gc_state_unlocked(checkpoint_id)
@@ -666,28 +564,18 @@ class DirectoryRunCheckpointStore(RunCheckpointStore):
                     raise RuntimeError(
                         "checkpoint GC assessment is stale for current durable state"
                     )
-                self._write_retirement(gc, purged=False)
-                retirement = self._read_retirement(checkpoint_id)
+                self._retirements.publish(gc, purged=False)
+                retirement = self._retirements.load(checkpoint_id)
                 if retirement is None:
                     raise RunCheckpointIntegrityError(
                         "checkpoint retirement publication disappeared"
                     )
             else:
-                if (
-                    str(retirement["persistence_state"])
-                    != gc.persistence_state.value
-                    or str(retirement["state_digest"]) != gc.state_digest
-                    or tuple(str(v) for v in retirement["blob_sha256s"])
-                    != gc.blob_sha256s
-                ):
+                if not retirement.binds(gc):
                     raise RuntimeError(
-                        "checkpoint retirement generation changed across retry"
+                        "checkpoint retirement generation or GC proof changed across retry"
                     )
-                if str(retirement["gc_proof_digest"]) != gc.proof_digest:
-                    raise RuntimeError(
-                        "checkpoint GC proof changed across retirement retry"
-                    )
-                if bool(retirement["purged"]):
+                if retirement.purged:
                     return True
 
                 # A crash may have published retirement before removing the live
@@ -729,7 +617,7 @@ class DirectoryRunCheckpointStore(RunCheckpointStore):
                     if blob_path.exists():
                         durable_unlink(blob_path)
 
-            self._write_retirement(gc, purged=True)
+            self._retirements.publish(gc, purged=True)
             return True
 
 
