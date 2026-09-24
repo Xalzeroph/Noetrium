@@ -27,6 +27,7 @@ _ALLOWED_CALLERS = {
     "MethodRunResult": {
         "noetrium_platform/research/execution/workflow/runtime/method_machine.py",
     },
+    "build_experiment_runtime": set(),
 }
 
 
