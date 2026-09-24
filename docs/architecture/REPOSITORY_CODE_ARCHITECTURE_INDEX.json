@@ -1,15 +1,15 @@
 {
   "counts": {
     "parse_errors": 0,
-    "python_files": 3690,
-    "python_import_edges": 7168,
-    "symbols": 5005,
-    "tracked_files": 4326,
+    "python_files": 3693,
+    "python_import_edges": 7179,
+    "symbols": 5014,
+    "tracked_files": 4329,
     "typescript_javascript_files": 11
   },
   "language_symbol_counts": {
     "javascript": 1,
-    "python": 4999,
+    "python": 5008,
     "typescript": 5
   },
   "parse_errors": [],
@@ -13265,6 +13265,12 @@
     {
       "source_module": "noetrium_platform.infrastructure.resources.compute.runtime.scheduler",
       "source_role": "core_platform",
+      "target_module": "noetrium_platform.infrastructure.resources.lease.runtime.clock",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "noetrium_platform.infrastructure.resources.compute.runtime.scheduler",
+      "source_role": "core_platform",
       "target_module": "noetrium_platform.infrastructure.resources.providers.sqlite_lease_ops",
       "target_role": "core_platform"
     },
@@ -13419,6 +13425,12 @@
       "target_role": "core_platform"
     },
     {
+      "source_module": "noetrium_platform.infrastructure.resources.lease.runtime.clock",
+      "source_role": "core_platform",
+      "target_module": "noetrium_platform.infrastructure.resources.lease.api.clock",
+      "target_role": "core_platform"
+    },
+    {
       "source_module": "noetrium_platform.infrastructure.resources.lease.runtime.registry",
       "source_role": "core_platform",
       "target_module": "noetrium_platform.infrastructure.resources.lease.api",
@@ -13451,6 +13463,12 @@
     {
       "source_module": "noetrium_platform.infrastructure.resources.providers.sqlite_endpoint",
       "source_role": "core_platform",
+      "target_module": "noetrium_platform.infrastructure.resources.lease.runtime.clock",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "noetrium_platform.infrastructure.resources.providers.sqlite_endpoint",
+      "source_role": "core_platform",
       "target_module": "noetrium_platform.infrastructure.resources.providers.sqlite_lease_ops",
       "target_role": "core_platform"
     },
@@ -13475,6 +13493,12 @@
     {
       "source_module": "noetrium_platform.infrastructure.resources.providers.sqlite_lease",
       "source_role": "core_platform",
+      "target_module": "noetrium_platform.infrastructure.resources.lease.runtime.clock",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "noetrium_platform.infrastructure.resources.providers.sqlite_lease",
+      "source_role": "core_platform",
       "target_module": "noetrium_platform.infrastructure.resources.providers.sqlite_lease_ops",
       "target_role": "core_platform"
     },
@@ -13492,6 +13516,12 @@
     },
     {
       "source_module": "noetrium_platform.infrastructure.resources.providers.sqlite_lease_ops",
+      "source_role": "core_platform",
+      "target_module": "noetrium_platform.infrastructure.resources.lease.api",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "noetrium_platform.infrastructure.resources.providers.sqlite_resource",
       "source_role": "core_platform",
       "target_module": "noetrium_platform.infrastructure.resources.lease.api",
       "target_role": "core_platform"
@@ -34803,6 +34833,42 @@
       "target_role": "core_platform"
     },
     {
+      "source_module": "tests.test_resource_lease_clock_authority_v1",
+      "source_role": "tests",
+      "target_module": "noetrium_platform.composition.reliability_resources",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "tests.test_resource_lease_clock_authority_v1",
+      "source_role": "tests",
+      "target_module": "noetrium_platform.foundation.scope.api",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "tests.test_resource_lease_clock_authority_v1",
+      "source_role": "tests",
+      "target_module": "noetrium_platform.infrastructure.reliability.recovery.api.lease",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "tests.test_resource_lease_clock_authority_v1",
+      "source_role": "tests",
+      "target_module": "noetrium_platform.infrastructure.resources.lease.api",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "tests.test_resource_lease_clock_authority_v1",
+      "source_role": "tests",
+      "target_module": "noetrium_platform.infrastructure.resources.lease.runtime",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "tests.test_resource_lease_clock_authority_v1",
+      "source_role": "tests",
+      "target_module": "noetrium_platform.infrastructure.resources.providers",
+      "target_role": "core_platform"
+    },
+    {
       "source_module": "tests.test_resource_port_authority_gate_v1",
       "source_role": "tests",
       "target_module": "noetrium_platform.capabilities.environment.minecraft.api",
@@ -43025,7 +43091,7 @@
   ],
   "role_import_counts": [
     {
-      "count": 2596,
+      "count": 2601,
       "source_role": "core_platform",
       "target_role": "core_platform"
     },
@@ -43085,7 +43151,7 @@
       "target_role": "research_reproductions"
     },
     {
-      "count": 2800,
+      "count": 2806,
       "source_role": "tests",
       "target_role": "core_platform"
     },
@@ -43141,18 +43207,18 @@
     }
   ],
   "role_python_module_counts": {
-    "core_platform": 1912,
+    "core_platform": 1914,
     "examples": 6,
     "other": 7,
     "public_facade": 40,
     "reference_components": 22,
     "reference_orchestration": 10,
     "research_reproductions": 780,
-    "tests": 834,
+    "tests": 835,
     "tooling": 79
   },
   "role_symbol_counts": {
-    "core_platform": 3362,
+    "core_platform": 3370,
     "examples": 3,
     "other": 23,
     "public_facade": 4,
@@ -43160,11 +43226,11 @@
     "reference_orchestration": 14,
     "research_reproductions": 448,
     "sdk": 5,
-    "tests": 1043,
+    "tests": 1044,
     "tooling": 39
   },
   "schema": "noetrium-repository-code-architecture-index.v1",
-  "source_git_sha": "ecd57a30b4614de98ced504d9ddc492003875f31",
+  "source_git_sha": "55496986c11d3cb95f7f665eaaec123310967bca",
   "symbols": [
     {
       "bases": [],
@@ -64646,7 +64712,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 411,
+      "line": 407,
       "methods": [],
       "module": "noetrium_platform.composition.environment_instance_leases",
       "name": "EnvironmentInstanceLeaseHeartbeatError",
@@ -64660,7 +64726,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 415,
+      "line": 411,
       "methods": [
         "__init__",
         "handles",
@@ -64681,7 +64747,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 520,
+      "line": 516,
       "methods": [
         "__init__",
         "policy",
@@ -65827,7 +65893,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 59,
+      "line": 58,
       "methods": [
         "__init__",
         "_validate_time",
@@ -98978,6 +99044,7 @@
         "__enter__",
         "renew",
         "assert_owned",
+        "close",
         "__exit__"
       ],
       "module": "noetrium_platform.infrastructure.reliability.recovery.execution.runtime.file_lock",
@@ -98992,7 +99059,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 71,
+      "line": 76,
       "methods": [
         "__init__",
         "execution"
@@ -100248,7 +100315,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 102,
+      "line": 106,
       "methods": [],
       "module": "noetrium_platform.infrastructure.resources.compute.runtime.scheduler",
       "name": "_HostUsage",
@@ -100268,7 +100335,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 129,
+      "line": 133,
       "methods": [],
       "module": "noetrium_platform.infrastructure.resources.compute.runtime.scheduler",
       "name": "_GpuRuntimeIndex",
@@ -100284,7 +100351,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 158,
+      "line": 162,
       "methods": [
         "__init__"
       ],
@@ -100300,7 +100367,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 366,
+      "line": 370,
       "methods": [
         "__init__",
         "_usage",
@@ -100328,10 +100395,11 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 691,
+      "line": 692,
       "methods": [
         "__init__",
         "_connection",
+        "_authority_now",
         "_ensure_schema",
         "_gpu_json",
         "_decode_row",
@@ -100665,7 +100733,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 498,
+      "line": 497,
       "methods": [],
       "module": "noetrium_platform.infrastructure.resources.container.runtime.lease_authority",
       "name": "DockerContainerLeaseHeartbeatError",
@@ -100681,7 +100749,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 502,
+      "line": 501,
       "methods": [
         "__init__",
         "handles",
@@ -100704,7 +100772,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 610,
+      "line": 609,
       "methods": [
         "__init__",
         "policy",
@@ -101131,6 +101199,49 @@
       "role": "core_platform"
     },
     {
+      "bases": [],
+      "decorators": [
+        "dataclass(frozen=True, slots=True)"
+      ],
+      "fields": [
+        "host_identity_digest: str",
+        "boot_identity_digest: str",
+        "elapsed_seconds: float",
+        "wall_epoch_seconds: float"
+      ],
+      "kind": "dataclass",
+      "language": "python",
+      "line": 9,
+      "methods": [
+        "__post_init__"
+      ],
+      "module": "noetrium_platform.infrastructure.resources.lease.api.clock",
+      "name": "LeaseClockReading",
+      "path": "noetrium_platform/infrastructure/resources/lease/api/clock.py",
+      "qualname": "noetrium_platform.infrastructure.resources.lease.api.clock.LeaseClockReading",
+      "role": "core_platform"
+    },
+    {
+      "bases": [
+        "Protocol"
+      ],
+      "decorators": [
+        "runtime_checkable"
+      ],
+      "fields": [],
+      "kind": "protocol",
+      "language": "python",
+      "line": 49,
+      "methods": [
+        "read"
+      ],
+      "module": "noetrium_platform.infrastructure.resources.lease.api.clock",
+      "name": "LeaseClockPort",
+      "path": "noetrium_platform/infrastructure/resources/lease/api/clock.py",
+      "qualname": "noetrium_platform.infrastructure.resources.lease.api.clock.LeaseClockPort",
+      "role": "core_platform"
+    },
+    {
       "bases": [
         "StrEnum"
       ],
@@ -101320,6 +101431,22 @@
     },
     {
       "bases": [
+        "ResourceLeaseConflict"
+      ],
+      "decorators": [],
+      "fields": [],
+      "kind": "class",
+      "language": "python",
+      "line": 16,
+      "methods": [],
+      "module": "noetrium_platform.infrastructure.resources.lease.api.errors",
+      "name": "ResourceLeaseClockConflict",
+      "path": "noetrium_platform/infrastructure/resources/lease/api/errors.py",
+      "qualname": "noetrium_platform.infrastructure.resources.lease.api.errors.ResourceLeaseClockConflict",
+      "role": "core_platform"
+    },
+    {
+      "bases": [
         "Protocol"
       ],
       "decorators": [],
@@ -101364,14 +101491,104 @@
       "role": "core_platform"
     },
     {
+      "bases": [
+        "RuntimeError"
+      ],
+      "decorators": [],
+      "fields": [],
+      "kind": "class",
+      "language": "python",
+      "line": 17,
+      "methods": [],
+      "module": "noetrium_platform.infrastructure.resources.lease.runtime.clock",
+      "name": "LeaseClockUnavailable",
+      "path": "noetrium_platform/infrastructure/resources/lease/runtime/clock.py",
+      "qualname": "noetrium_platform.infrastructure.resources.lease.runtime.clock.LeaseClockUnavailable",
+      "role": "core_platform"
+    },
+    {
+      "bases": [
+        "ctypes.Structure"
+      ],
+      "decorators": [],
+      "fields": [],
+      "kind": "class",
+      "language": "python",
+      "line": 70,
+      "methods": [],
+      "module": "noetrium_platform.infrastructure.resources.lease.runtime.clock",
+      "name": "_Guid",
+      "path": "noetrium_platform/infrastructure/resources/lease/runtime/clock.py",
+      "qualname": "noetrium_platform.infrastructure.resources.lease.runtime.clock._Guid",
+      "role": "core_platform"
+    },
+    {
+      "bases": [
+        "ctypes.Structure"
+      ],
+      "decorators": [],
+      "fields": [],
+      "kind": "class",
+      "language": "python",
+      "line": 79,
+      "methods": [],
+      "module": "noetrium_platform.infrastructure.resources.lease.runtime.clock",
+      "name": "_SystemBootEnvironmentInformation",
+      "path": "noetrium_platform/infrastructure/resources/lease/runtime/clock.py",
+      "qualname": "noetrium_platform.infrastructure.resources.lease.runtime.clock._SystemBootEnvironmentInformation",
+      "role": "core_platform"
+    },
+    {
+      "bases": [
+        "LeaseClockPort"
+      ],
+      "decorators": [],
+      "fields": [],
+      "kind": "class",
+      "language": "python",
+      "line": 144,
+      "methods": [
+        "read"
+      ],
+      "module": "noetrium_platform.infrastructure.resources.lease.runtime.clock",
+      "name": "LocalLeaseClock",
+      "path": "noetrium_platform/infrastructure/resources/lease/runtime/clock.py",
+      "qualname": "noetrium_platform.infrastructure.resources.lease.runtime.clock.LocalLeaseClock",
+      "role": "core_platform"
+    },
+    {
+      "bases": [
+        "LeaseClockPort"
+      ],
+      "decorators": [],
+      "fields": [],
+      "kind": "class",
+      "language": "python",
+      "line": 157,
+      "methods": [
+        "__init__",
+        "read",
+        "advance",
+        "jump_wall",
+        "reboot",
+        "move_host"
+      ],
+      "module": "noetrium_platform.infrastructure.resources.lease.runtime.clock",
+      "name": "ManualLeaseClock",
+      "path": "noetrium_platform/infrastructure/resources/lease/runtime/clock.py",
+      "qualname": "noetrium_platform.infrastructure.resources.lease.runtime.clock.ManualLeaseClock",
+      "role": "core_platform"
+    },
+    {
       "bases": [],
       "decorators": [],
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 21,
+      "line": 25,
       "methods": [
         "__init__",
+        "_authority_now",
         "register_owner",
         "owner",
         "remove_owner",
@@ -101401,10 +101618,11 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 48,
+      "line": 52,
       "methods": [
         "__init__",
         "_connection",
+        "_authority_now",
         "_transaction",
         "_ensure_schema",
         "_decode",
@@ -101439,10 +101657,11 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 37,
+      "line": 41,
       "methods": [
         "__init__",
         "_connection",
+        "_authority_now",
         "register_owner",
         "owner",
         "remove_owner",
@@ -141585,6 +141804,7 @@
       "methods": [
         "test_long_held_execution_lock_blocks_second_writer_even_if_document_ttl_is_short",
         "test_execution_guard_releases_document_and_kernel_lock_together",
+        "test_release_failure_keeps_kernel_fence_until_retry_converges",
         "test_execution_fence_accepts_non_file_lease_state_port"
       ],
       "module": "tests.test_recovery_execution_lock_v163",
@@ -141600,6 +141820,27 @@
       "kind": "class",
       "language": "python",
       "line": 36,
+      "methods": [
+        "__init__",
+        "read",
+        "acquire",
+        "renew",
+        "assert_owned",
+        "release"
+      ],
+      "module": "tests.test_recovery_execution_lock_v163",
+      "name": "FailOnceLeaseState",
+      "path": "tests/test_recovery_execution_lock_v163.py",
+      "qualname": "tests.test_recovery_execution_lock_v163.RecoveryExecutionLockV163Tests.FailOnceLeaseState",
+      "role": "tests"
+    },
+    {
+      "bases": [],
+      "decorators": [],
+      "fields": [],
+      "kind": "class",
+      "language": "python",
+      "line": 94,
       "methods": [
         "__init__",
         "read",
