@@ -65,6 +65,8 @@ class ResearchExecutionPool:
         *,
         orchestration_concurrency_budget: ConcurrencyBudget | None = None,
         orchestration_admission_budget: AdmissionBudget | None = None,
+        control_concurrency_budget: ConcurrencyBudget | None = None,
+        control_admission_budget: AdmissionBudget | None = None,
         experiment_concurrency_budget: ConcurrencyBudget | None = None,
         experiment_admission_budget: AdmissionBudget | None = None,
         model_io_concurrency_budget: ConcurrencyBudget | None = None,
@@ -72,13 +74,24 @@ class ResearchExecutionPool:
         priority_aging_seconds: float = 1.0,
         exclusive_owner_generation: bool = False,
     ) -> None:
-        self._orchestration = build_execution_concurrency_runtime(
-            concurrency_budget=orchestration_concurrency_budget,
-            admission_budget=orchestration_admission_budget,
+        self._control = build_execution_concurrency_runtime(
+            concurrency_budget=control_concurrency_budget,
+            admission_budget=control_admission_budget,
             priority_aging_seconds=priority_aging_seconds,
-            blocking_io_thread_name_prefix="research-orchestration-io",
-            timer_name="research-orchestration-timer",
+            blocking_io_thread_name_prefix="research-control-io",
+            timer_name="research-control-timer",
         )
+        try:
+            self._orchestration = build_execution_concurrency_runtime(
+                concurrency_budget=orchestration_concurrency_budget,
+                admission_budget=orchestration_admission_budget,
+                priority_aging_seconds=priority_aging_seconds,
+                blocking_io_thread_name_prefix="research-orchestration-io",
+                timer_name="research-orchestration-timer",
+            )
+        except BaseException:
+            self._control.close()
+            raise
         try:
             self._experiments = build_execution_concurrency_runtime(
                 concurrency_budget=experiment_concurrency_budget,
@@ -101,6 +114,7 @@ class ResearchExecutionPool:
                 raise
         except BaseException:
             self._orchestration.close()
+            self._control.close()
             raise
         if type(exclusive_owner_generation) is not bool:
             raise TypeError("exclusive_owner_generation must be boolean")
@@ -165,6 +179,41 @@ class ResearchExecutionPool:
             failure_policy=failure_policy,
         )
 
+    @property
+    def control_heartbeats(self):
+        """Maintenance heartbeat scheduler isolated from workload admission."""
+        if self._closed:
+            raise RuntimeError("research execution pool is closed")
+        if self._closing:
+            raise RuntimeError("research execution pool is closing")
+        return self._control.heartbeats
+
+    def open_control_group(
+        self,
+        group_id: str,
+        *,
+        tenant_id: str | None = None,
+        resource_id: str | None = None,
+        priority: ExecutionPriority = ExecutionPriority.CRITICAL,
+        admission_mode: AdmissionMode = AdmissionMode.BLOCK,
+        deadline: Deadline | None = None,
+        failure_policy: TaskFailurePolicy = TaskFailurePolicy.FAIL_FAST,
+    ) -> TaskGroupPort:
+        """Open control-plane work that must not be starved by workload capacity."""
+        if self._closed:
+            raise RuntimeError("research execution pool is closed")
+        if self._closing:
+            raise RuntimeError("research execution pool is closing")
+        return self._control.open_task_group(
+            group_id,
+            tenant_id=tenant_id,
+            resource_id=resource_id,
+            priority=priority,
+            admission_mode=admission_mode,
+            deadline=deadline,
+            failure_policy=failure_policy,
+        )
+
     def open_experiment_group(
         self,
         group_id: str,
@@ -198,7 +247,7 @@ class ResearchExecutionPool:
         self._require_workloads_open()
 
         if self._compute_lease_group is None:
-            self._compute_lease_group = self._experiments.open_task_group(
+            self._compute_lease_group = self._control.open_task_group(
                 f"research-compute-leases:{uuid4().hex}",
                 resource_id="compute-lease-heartbeats",
                 priority=ExecutionPriority.CRITICAL,
@@ -208,7 +257,7 @@ class ResearchExecutionPool:
         return ComputeLeaseHeartbeatFactory(
             scheduler=scheduler,
             task_group=self._compute_lease_group,
-            heartbeat_scheduler=self._experiments.heartbeats,
+            heartbeat_scheduler=self._control.heartbeats,
             lane_id="research-compute-lease-renewal",
             lane_capacity=lane_capacity,
             policy=policy,
@@ -225,7 +274,7 @@ class ResearchExecutionPool:
         self._require_workloads_open()
 
         if self._endpoint_lease_group is None:
-            self._endpoint_lease_group = self._experiments.open_task_group(
+            self._endpoint_lease_group = self._control.open_task_group(
                 f"research-endpoint-leases:{uuid4().hex}",
                 resource_id="endpoint-lease-heartbeats",
                 priority=ExecutionPriority.CRITICAL,
@@ -235,7 +284,7 @@ class ResearchExecutionPool:
         return EndpointLeaseHeartbeatFactory(
             allocations=allocations,
             task_group=self._endpoint_lease_group,
-            heartbeat_scheduler=self._experiments.heartbeats,
+            heartbeat_scheduler=self._control.heartbeats,
             lane_id="research-endpoint-lease-renewal",
             lane_capacity=lane_capacity,
             policy=policy,
@@ -252,7 +301,7 @@ class ResearchExecutionPool:
         self._require_workloads_open()
 
         if self._environment_lease_group is None:
-            self._environment_lease_group = self._experiments.open_task_group(
+            self._environment_lease_group = self._control.open_task_group(
                 f"research-environment-leases:{uuid4().hex}",
                 resource_id="environment-instance-lease-heartbeats",
                 priority=ExecutionPriority.CRITICAL,
@@ -262,7 +311,7 @@ class ResearchExecutionPool:
         return EnvironmentInstanceLeaseHeartbeatFactory(
             authority=authority,
             task_group=self._environment_lease_group,
-            heartbeat_scheduler=self._experiments.heartbeats,
+            heartbeat_scheduler=self._control.heartbeats,
             lane_id="research-environment-instance-lease-renewal",
             lane_capacity=lane_capacity,
             policy=policy,
@@ -279,7 +328,7 @@ class ResearchExecutionPool:
         self._require_workloads_open()
 
         if self._container_lease_group is None:
-            self._container_lease_group = self._experiments.open_task_group(
+            self._container_lease_group = self._control.open_task_group(
                 f"research-container-leases:{uuid4().hex}",
                 resource_id="docker-container-lease-heartbeats",
                 priority=ExecutionPriority.CRITICAL,
@@ -289,7 +338,7 @@ class ResearchExecutionPool:
         return DockerContainerLeaseHeartbeatFactory(
             authority=authority,
             task_group=self._container_lease_group,
-            heartbeat_scheduler=self._experiments.heartbeats,
+            heartbeat_scheduler=self._control.heartbeats,
             lane_id="research-docker-container-lease-renewal",
             lane_capacity=lane_capacity,
             policy=policy,
@@ -323,6 +372,19 @@ class ResearchExecutionPool:
         deadline: Deadline | None = None,
     ) -> None:
         self._orchestration.close_task_group(
+            group,
+            cancel_pending=cancel_pending,
+            deadline=deadline,
+        )
+
+    def close_control_group(
+        self,
+        group: TaskGroupPort,
+        *,
+        cancel_pending: bool = False,
+        deadline: Deadline | None = None,
+    ) -> None:
+        self._control.close_task_group(
             group,
             cancel_pending=cancel_pending,
             deadline=deadline,
@@ -383,12 +445,13 @@ class ResearchExecutionPool:
         *,
         deadline: Deadline | None = None,
     ) -> None:
-        """Seal and physically join experiment/model-I/O work, keeping orchestration alive.
+        """Seal and physically join experiment/model-I/O work, keeping control alive.
 
         Experiments are closed first because they may synchronously wait on
-        model-I/O. Resource lease heartbeats live in the experiment domain, so
-        a successful return proves no workload can still renew or consume
-        endpoint/compute/environment/container leases.
+        model-I/O. Resource and durable-ownership heartbeats live in the
+        independent control domain and intentionally survive workload quiescence;
+        each physical owner stops its own guard only after dependent work has
+        converged and the physical effect is safe to release.
         """
 
         if self._closed or self._workloads_quiesced:
@@ -419,6 +482,9 @@ class ResearchExecutionPool:
     def orchestration_admission_snapshot(self):
         return self._orchestration.admission_snapshot()
 
+    def control_admission_snapshot(self):
+        return self._control.admission_snapshot()
+
     def experiment_admission_snapshot(self):
         return self._experiments.admission_snapshot()
 
@@ -433,7 +499,14 @@ class ResearchExecutionPool:
         # attempts remain retryable.
         self._closing = True
         errors: list[BaseException] = []
-        for runtime in (self._orchestration, self._experiments, self._model_io):
+        # Control-plane ownership is closed last so lease/fencing maintenance
+        # remains alive while workload/orchestration providers physically join.
+        for runtime in (
+            self._experiments,
+            self._model_io,
+            self._orchestration,
+            self._control,
+        ):
             error = self._close_domain_for_physical_convergence(
                 runtime,
                 deadline=deadline,
