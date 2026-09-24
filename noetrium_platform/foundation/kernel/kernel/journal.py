@@ -544,18 +544,16 @@ class DirectoryMachineJournal(MachineJournalPort):
     def get(self, commit_id: str) -> MachineCommit | None:
         if type(commit_id) is not str or not commit_id.strip():
             raise ValueError("commit_id is required")
+
+        # A cache hit is never durable authority. Include previously observed
+        # machines so disappearance/replacement is detected, then refresh every
+        # candidate through the exact journal file identity before returning.
         with self._cache_lock:
-            for cached in self._cache.values():
-                value = cached.history.by_commit_id.get(commit_id)
-                if value is not None:
-                    return value
-        for machine_id in self._machine_ids():
-            with self._cache_lock:
-                cached = self._cache.get(machine_id)
-                if cached is not None:
-                    value = cached.history.by_commit_id.get(commit_id)
-                    if value is not None:
-                        return value
+            cached_machine_ids = tuple(self._cache)
+        machine_ids = tuple(
+            sorted(set(cached_machine_ids).union(self._machine_ids()))
+        )
+        for machine_id in machine_ids:
             self._history(machine_id)
             with self._cache_lock:
                 value = self._cache[machine_id].history.by_commit_id.get(
