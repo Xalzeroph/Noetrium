@@ -38,6 +38,10 @@ REPRODUCTION = ReproductionDefinition(
             path='research/reproductions/lits_math500/fidelity.py',
         ),
         ReproductionAssetRef(
+            kind=ReproductionAssetKind('method_program'),
+            path='research/reproductions/lits_math500/program.py',
+        ),
+        ReproductionAssetRef(
             kind=ReproductionAssetKind('study'),
             path='research/reproductions/lits_math500/study.py',
         ),
