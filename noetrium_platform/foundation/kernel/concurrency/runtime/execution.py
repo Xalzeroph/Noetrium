@@ -12,6 +12,7 @@ from noetrium_platform.foundation.kernel.concurrency.api import (
     TaskCancelled,
 )
 from noetrium_platform.foundation.kernel.concurrency.api.ports import (
+    AtomicBatchExecutorProviderPort,
     CancellationTokenPort,
     ExecutionPermitPort,
     ExecutorProviderPort,
@@ -33,7 +34,7 @@ class UnifiedExecutionAuthority:
     def __init__(
         self,
         *,
-        blocking_io: ExecutorProviderPort,
+        blocking_io: AtomicBatchExecutorProviderPort,
         async_io: ExecutorProviderPort,
         cpu: ExecutorProviderPort,
         lane_resolver: Callable[[str, str, int | None], SerialExecutionLaneProviderPort],
