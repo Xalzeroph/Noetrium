@@ -71,6 +71,7 @@ class SQLiteArtifactRegistry:
             );
             CREATE INDEX IF NOT EXISTS idx_artifacts_scope ON artifacts(scope_kind,scope_id,artifact_id);
             CREATE INDEX IF NOT EXISTS idx_artifacts_kind ON artifacts(kind,artifact_id);
+            CREATE INDEX IF NOT EXISTS idx_artifacts_digest ON artifacts(digest,artifact_id);
             CREATE INDEX IF NOT EXISTS idx_artifacts_producer ON artifacts(producer_component_id,artifact_id);
             """
         )
@@ -225,6 +226,9 @@ class SQLiteArtifactRegistry:
         if query.producer_component_id is not None:
             clauses.append("producer_component_id=?")
             args.append(query.producer_component_id)
+        if query.digest is not None:
+            clauses.append("digest=?")
+            args.append(query.digest)
         where = " WHERE " + " AND ".join(clauses) if clauses else ""
         args.append(query.limit)
         with closing(self._connect_reader()) as db:
