@@ -1,7 +1,9 @@
 from __future__ import annotations
 
+import ast
 from pathlib import Path
 
+from .source_index import source_tree
 from .source_scan import SourceInvariantViolation, imports, is_transient_source_path, violation
 
 
@@ -44,11 +46,27 @@ def audit_observability_logging_leaf_invariants(root: Path) -> list[SourceInvari
         for path in sorted(scan_root.rglob("*.py")):
             if is_transient_source_path(path):
                 continue
-            for module, line in imports(path):
-                if (
-                    (module == "logging" or module.startswith("logging."))
-                    and not path.is_relative_to(logging_root)
+            tree = source_tree(path)
+            stdlib_logging_lines: set[int] = set()
+            for node in ast.walk(tree):
+                if isinstance(node, ast.Import):
+                    if any(
+                        alias.name == "logging" or alias.name.startswith("logging.")
+                        for alias in node.names
+                    ):
+                        stdlib_logging_lines.add(node.lineno)
+                elif (
+                    isinstance(node, ast.ImportFrom)
+                    and node.level == 0
+                    and node.module is not None
+                    and (
+                        node.module == "logging"
+                        or node.module.startswith("logging.")
+                    )
                 ):
+                    stdlib_logging_lines.add(node.lineno)
+            for module, line in imports(path):
+                if line in stdlib_logging_lines and not path.is_relative_to(logging_root):
                     rows.append(violation(
                         root,
                         path,
