@@ -11,6 +11,10 @@ from noetrium_platform.composition.research_os_experiment_artifacts import (
 from noetrium_platform.composition.research_os_experiment_runtime_binding import (
     ResearchOSExperimentAggregationRegistry,
 )
+from noetrium_platform.composition.research_os_experiment_trial_execution import (
+    ResearchOSExperimentTrialProviderBinding,
+    ResearchOSExperimentTrialStudyExecutionResolver,
+)
 from noetrium_platform.composition.research_os_experiment import (
     ResearchOSExperimentArtifactStoreBinding,
     ResearchOSExperimentClosure,
@@ -68,6 +72,7 @@ from noetrium_platform.research.experimentation.lifecycle.api import (
     ExperimentTrialProtocolIdentity,
     MeasurementDefinition,
     MeasurementProtocol,
+    MeasurementValue,
     MeasurementValueKind,
     ReplayLevel,
     ResearchRevision,
@@ -76,6 +81,7 @@ from noetrium_platform.research.experimentation.lifecycle.api import (
     TaskDefinition,
     StudyMetricObservation,
     TrialBudget,
+    TrialExecutionReceipt,
 )
 from noetrium_platform.research.experimentation.lifecycle.study.algorithms import (
     BasicStudyMetricAggregator,
@@ -818,3 +824,130 @@ def test_canonical_aggregation_registry_never_falls_back_for_custom_requirement(
 
     with pytest.raises(LookupError, match="paper-custom"):
         ResearchOSExperimentAggregationRegistry.canonical().resolve(closure)
+
+
+
+class _TrialProviderResolver:
+    def __init__(self, protocol_identity) -> None:
+        self.provider = _TrialProvider(protocol_identity)
+        self.last_request = None
+
+    def resolve(self, closure):
+        del closure
+        self.provider.owner = self
+        return ResearchOSExperimentTrialProviderBinding(
+            self.provider,
+            canonical_digest({"provider": "test.trial-provider.v1"}),
+        )
+
+
+class _TrialProvider:
+    def __init__(self, protocol_identity) -> None:
+        self.protocol_identity = protocol_identity
+        self.owner = None
+
+    def run_trial(self, request):
+        self.owner.last_request = request
+        definition = request.measurement_protocol.definition("score")
+        measurement = request
+        record = __import__(
+            "noetrium_platform.research.experimentation.lifecycle.api",
+            fromlist=["MeasurementRecord"],
+        ).MeasurementRecord(
+            project_id=request.project_id,
+            study_id=request.assignment.study_id,
+            run_id=request.run_id,
+            assignment_digest=request.assignment.assignment_digest,
+            variant_id=request.assignment.variant_id,
+            producer_id="test.trial-provider",
+            producer_revision_digest=canonical_digest(
+                {"provider": "test.trial-provider.v1"}
+            ),
+            measurement_id="score",
+            schema_id=definition.schema_id,
+            measurement_semantic_digest=definition.semantic_contract_digest,
+            measurement_protocol_semantic_digest=(
+                request.measurement_protocol.semantic_digest
+            ),
+            value=MeasurementValue(
+                MeasurementValueKind.SCALAR,
+                scalar=1.0,
+            ),
+            logical_time="trial:test",
+            intervention=request.intervention,
+            revision=request.revision,
+        )
+        return TrialExecutionReceipt(
+            request.request_digest,
+            request.assignment.assignment_digest,
+            (record,),
+        )
+
+
+def test_trial_provider_bridge_uses_execution_cut_as_trial_run_identity() -> None:
+    compilation = _compiled_graph()
+    node = compilation.node("paper::main")
+    definition = _study_definition()
+    resolution, binding = _resolution_and_binding(definition)
+    closure = compile_research_os_experiment_closure(
+        graph_id=compilation.plan.graph_id,
+        graph_digest=compilation.plan.graph_digest,
+        research_revision_digest=compilation.plan.research_revision_digest,
+        node=node,
+        definition=definition,
+        resolution=resolution,
+        binding=binding,
+    )
+    providers = _TrialProviderResolver(
+        closure.research_plan.trial_protocol_identity
+    )
+    study_binding = ResearchOSExperimentTrialStudyExecutionResolver(
+        providers
+    ).resolve(closure)
+    assignment = closure.research_plan.experiment_plan.assignments[0]
+    variant_binding = closure.research_plan.experiment_plan.binding_for(
+        assignment.variant_id
+    )
+    execution_cut_id = "9" * 64
+
+    observation = study_binding.adapter.execute_bound_variant(
+        assignment,
+        variant_binding,
+        closure.research_plan.experiment_plan.plan_digest,
+        execution_id=execution_cut_id,
+    )
+
+    assert providers.last_request is not None
+    assert providers.last_request.run_id == execution_cut_id
+    assert providers.last_request.research_plan_digest == (
+        closure.research_plan.research_plan_digest
+    )
+    assert providers.last_request.task == closure.research_plan.task_for(
+        assignment.task_id
+    )
+    assert observation.assignment == assignment
+    assert observation.metrics == (("score", 1.0),)
+
+
+def test_trial_provider_bridge_rejects_protocol_drift_before_execution() -> None:
+    compilation = _compiled_graph()
+    node = compilation.node("paper::main")
+    definition = _study_definition()
+    resolution, binding = _resolution_and_binding(definition)
+    closure = compile_research_os_experiment_closure(
+        graph_id=compilation.plan.graph_id,
+        graph_digest=compilation.plan.graph_digest,
+        research_revision_digest=compilation.plan.research_revision_digest,
+        node=node,
+        definition=definition,
+        resolution=resolution,
+        binding=binding,
+    )
+    providers = _TrialProviderResolver(
+        ExperimentTrialProtocolIdentity("trial.other", "8" * 64)
+    )
+
+    with pytest.raises(ValueError, match="protocol identity"):
+        ResearchOSExperimentTrialStudyExecutionResolver(
+            providers
+        ).resolve(closure)
