@@ -8,12 +8,17 @@ from __future__ import annotations
 
 from noetrium_platform.composition.research_binding_authority import (
     ResearchBindingAuthority,
+    ResearchCapabilityBindingRegistry,
     ResearchCapabilityBindingResolverPort,
+    ResearchModelRoleBindingRegistry,
     ResearchModelRoleBindingResolverPort,
+    ResearchParticipantBindingRegistry,
     ResearchParticipantBindingResolverPort,
+    ResearchProjectManifestRegistry,
     ResearchProjectManifestResolverPort,
 )
 from noetrium_platform.composition.research_os_experiment_trial_execution import (
+    ResearchOSExperimentTrialProviderRegistry,
     ResearchOSExperimentTrialProviderResolverPort,
     ResearchOSExperimentTrialStudyExecutionResolver,
 )
@@ -99,4 +104,62 @@ def compose_repository_fleet_execution_authorities(
     )
 
 
-__all__ = ["compose_repository_fleet_execution_authorities"]
+
+def compose_repository_fleet_execution_authorities_from_registries(
+    *,
+    manifests: ResearchProjectManifestRegistry,
+    research_capabilities: ResearchCapabilityBindingRegistry,
+    participants: ResearchParticipantBindingRegistry,
+    models: ResearchModelRoleBindingRegistry,
+    trial_providers: ResearchOSExperimentTrialProviderRegistry,
+    experiment_reconciliation: ResearchOSExperimentReconciliationResolverPort,
+    experiment_aggregation: ResearchOSExperimentAggregationResolverPort | None = None,
+    reproduction_capabilities: (
+        ReproductionCapabilityRequirementResolverPort | None
+    ) = None,
+    benchmarks: ReproductionBenchmarkResolverPort | None = None,
+) -> ReproductionFleetExecutionAuthorities:
+    """Compose the fleet from immutable proof-backed authority registries.
+
+    Owner systems materialize and register their exact facts once. This helper
+    contains no provider selection heuristics and delegates to the canonical
+    resolver composition above.
+    """
+
+    for field_name, value, expected in (
+        ("manifests", manifests, ResearchProjectManifestRegistry),
+        (
+            "research_capabilities",
+            research_capabilities,
+            ResearchCapabilityBindingRegistry,
+        ),
+        ("participants", participants, ResearchParticipantBindingRegistry),
+        ("models", models, ResearchModelRoleBindingRegistry),
+        (
+            "trial_providers",
+            trial_providers,
+            ResearchOSExperimentTrialProviderRegistry,
+        ),
+    ):
+        if type(value) is not expected:
+            raise TypeError(
+                f"registry fleet authority {field_name} must be {expected.__name__}"
+            )
+
+    return compose_repository_fleet_execution_authorities(
+        manifests=manifests,
+        research_capabilities=research_capabilities,
+        participants=participants,
+        models=models,
+        experiment_reconciliation=experiment_reconciliation,
+        experiment_trial_providers=trial_providers,
+        experiment_aggregation=experiment_aggregation,
+        reproduction_capabilities=reproduction_capabilities,
+        benchmarks=benchmarks,
+    )
+
+
+__all__ = [
+    "compose_repository_fleet_execution_authorities",
+    "compose_repository_fleet_execution_authorities_from_registries",
+]
