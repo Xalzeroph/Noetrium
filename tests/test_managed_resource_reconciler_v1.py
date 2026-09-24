@@ -2,6 +2,8 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
+import pytest
+
 from noetrium_platform.composition.resource_lifecycle import ManagedResourceReconciler
 from noetrium_platform.infrastructure.resources.container.api import (
     DockerContainerReconciliation,
@@ -84,3 +86,55 @@ def test_managed_resource_reconciler_runs_one_final_cycle_before_stop() -> None:
 
     assert report.observed_at_epoch_s > 0
     assert events == ["containers", "environments", "endpoints", "compute"]
+
+
+@dataclass(frozen=True)
+class Allocation:
+    allocation_id: str
+
+
+class ShutdownAuthority:
+    def __init__(self, result):
+        self.result = result
+
+    def reconcile(self, *, now=None):
+        return self.result
+
+    def shutdown_cleanup(self, *, now=None):
+        return self.result
+
+
+class EndpointShutdownAuthority:
+    def reconcile(self, *, now=None):
+        return ()
+
+    def active(self):
+        return (Allocation("endpoint-live"),)
+
+
+class ComputeShutdownAuthority:
+    def reconcile_expired(self, *, now=None):
+        return ()
+
+    def allocations(self, *, scope=None):
+        return (Allocation("compute-live"),)
+
+
+def test_managed_resource_shutdown_fails_closed_on_live_endpoint_and_compute() -> None:
+    reconciler = ManagedResourceReconciler(
+        containers=ShutdownAuthority(
+            DockerContainerReconciliation((), ()),
+        ),
+        environments=ShutdownAuthority(
+            EnvironmentInstanceReconciliation((), ()),
+        ),
+        endpoints=EndpointShutdownAuthority(),
+        compute=ComputeShutdownAuthority(),
+    )
+
+    with pytest.raises(ExceptionGroup) as captured:
+        reconciler.shutdown_cleanup(now=1000.0)
+
+    messages = tuple(str(exc) for exc in captured.value.exceptions)
+    assert any("live endpoint allocations remain" in message for message in messages)
+    assert any("live compute allocations remain" in message for message in messages)
