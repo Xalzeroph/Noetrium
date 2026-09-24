@@ -122,6 +122,36 @@ class SourceAuthorityV123Tests(unittest.TestCase):
             self.assertEqual(findings[0].authority, "concurrency.thread")
 
 
+    def test_raw_fd_open_outside_durability_is_rejected(self):
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            target = root / "noetrium_platform" / "rogue_storage"
+            target.mkdir(parents=True)
+            (root / "noetrium_platform" / "__init__.py").write_text("", encoding="utf-8")
+            (target / "x.py").write_text(
+                "import os\n\ndef open_raw(path):\n"
+                "    return os.open(path, os.O_CREAT | os.O_APPEND | os.O_WRONLY, 0o644)\n",
+                encoding="utf-8",
+            )
+            findings = audit_source_authorities(root)
+            self.assertEqual(len(findings), 1)
+            self.assertEqual(findings[0].authority, "filesystem.raw_fd_open")
+
+    def test_raw_fd_write_outside_durability_is_rejected(self):
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            target = root / "noetrium_platform" / "rogue_storage"
+            target.mkdir(parents=True)
+            (root / "noetrium_platform" / "__init__.py").write_text("", encoding="utf-8")
+            (target / "x.py").write_text(
+                "import os\n\ndef write_raw(fd, payload):\n"
+                "    return os.write(fd, payload)\n",
+                encoding="utf-8",
+            )
+            findings = audit_source_authorities(root)
+            self.assertEqual(len(findings), 1)
+            self.assertEqual(findings[0].authority, "filesystem.raw_fd_write")
+
     def test_write_mode_path_open_outside_durability_is_rejected(self):
         with tempfile.TemporaryDirectory() as td:
             root = Path(td)

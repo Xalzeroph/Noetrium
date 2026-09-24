@@ -52,6 +52,22 @@ DEFAULT_SOURCE_AUTHORITY_RULES: tuple[SourceAuthorityRule, ...] = (
         exact_call("os.replace"),
     ),
     SourceAuthorityRule(
+        "filesystem.raw_fd_open",
+        "os.open",
+        (
+            "noetrium_platform.foundation.kernel.kernel.durability.durable_append",
+            "noetrium_platform.foundation.kernel.kernel.durability.durable_file",
+            "noetrium_platform.foundation.kernel.kernel.durability.file_lock",
+        ),
+        exact_call("os.open"),
+    ),
+    SourceAuthorityRule(
+        "filesystem.raw_fd_write",
+        "os.write",
+        ("noetrium_platform.foundation.kernel.kernel.durability.durable_append",),
+        exact_call("os.write"),
+    ),
+    SourceAuthorityRule(
         "filesystem.direct_text_write",
         "Path.write_text",
         ("noetrium_platform.foundation.kernel.kernel.durability.durable_file",),
