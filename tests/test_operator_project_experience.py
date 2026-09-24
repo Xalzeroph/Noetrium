@@ -31,8 +31,36 @@ from noetrium_platform.composition.operator.project.project_platform_identity im
     InstalledPlatformIdentity,
 )
 from noetrium_platform.product.operator.runtime.research_cli import build_research_parser
+from noetrium_platform.infrastructure.lifecycle.process.api import (
+    LocalCommandResult,
+    LocalCommandTimeoutError,
+)
 
 _FIXED_PLATFORM = InstalledPlatformIdentity("0.1.0", "a" * 64)
+
+
+class _TestCommandRunner:
+    def run(self, argv, *, cwd=None, environment=None, timeout_seconds=None):
+        completed = subprocess.run(
+            argv,
+            cwd=cwd,
+            env=None if environment is None else dict(environment),
+            timeout=timeout_seconds,
+            text=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            check=False,
+        )
+        return LocalCommandResult(tuple(argv), completed.returncode, completed.stdout, completed.stderr)
+
+
+class _TimeoutCommandRunner:
+    def run(self, argv, *, cwd=None, environment=None, timeout_seconds=None):
+        del argv, cwd, environment, timeout_seconds
+        raise LocalCommandTimeoutError("project-test", "timeout")
+
+
+_COMMAND_RUNNER = _TestCommandRunner()
 
 
 def _bind_fixed_platform(monkeypatch: pytest.MonkeyPatch) -> None:
@@ -165,7 +193,9 @@ def test_project_doctor_validates_one_compile_surface_and_public_boundary(
     project_scaffold.create_project(ProjectCreateRequest("demo-project", "0.1.0", root))
 
     report = project_doctor.doctor_project(
-        root, boundary_auditor=audit_downstream_project_imports
+        root,
+        boundary_auditor=audit_downstream_project_imports,
+        command_runner=_COMMAND_RUNNER,
     )
     checks = _checks(report)
     assert report.template_revision == PROJECT_TEMPLATE_REVISION
@@ -216,7 +246,7 @@ def test_project_test_runs_generated_contracts(
     _bind_fixed_platform(monkeypatch)
     root = tmp_path / "demo-project"
     project_scaffold.create_project(ProjectCreateRequest("demo-project", "0.1.0", root))
-    receipt = project_testing.test_project(root)
+    receipt = project_testing.test_project(root, command_runner=_COMMAND_RUNNER)
     assert receipt.passed
     assert tuple(stage.stage for stage in receipt.stages) == (
         ProjectTestStage.BUILD_INSTALL,
@@ -235,12 +265,10 @@ def test_project_test_timeout_is_fail_closed(
         encoding="utf-8",
     )
 
-    def timeout(*args, **kwargs):
-        del args, kwargs
-        raise subprocess.TimeoutExpired(("python", "-m", "unittest"), 120)
-
-    monkeypatch.setattr(project_testing.subprocess, "run", timeout)
-    receipt = project_testing.test_project(root)
+    receipt = project_testing.test_project(
+        root,
+        command_runner=_TimeoutCommandRunner(),
+    )
     assert len(receipt.stages) == 1
     assert receipt.stages[0].stage is ProjectTestStage.BUILD_INSTALL
     assert receipt.stages[0].exit_code == 124
