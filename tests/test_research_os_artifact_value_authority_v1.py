@@ -3,7 +3,7 @@ from __future__ import annotations
 import pytest
 
 from noetrium_platform.composition.research_os_value_authorities import (
-    ResearchOSArtifactValueAuthority,
+    ResearchOSImmutableValueAuthority,
 )
 from noetrium_platform.composition.research_os_values import ResearchOSValueSubject
 from noetrium_platform.evidence.artifact.catalog.api import (
@@ -35,7 +35,7 @@ def _subject(seed: str = "one") -> ResearchOSValueSubject:
 def test_artifact_value_authority_is_durable_and_content_addressed(tmp_path) -> None:
     blobs = DirectoryArtifactBlobStore(tmp_path / "blobs")
     registry = SQLiteArtifactRegistry(tmp_path / "artifacts.sqlite3")
-    first = ResearchOSArtifactValueAuthority(
+    first = ResearchOSImmutableValueAuthority(
         blobs,
         registry,
         SQLiteArtifactRetentionStore(tmp_path / "retention.sqlite3"),
@@ -61,7 +61,7 @@ def test_artifact_value_authority_is_durable_and_content_addressed(tmp_path) -> 
     assert retention.pinned
     assert retention.reason_refs == (subject.subject_digest,)
 
-    reopened = ResearchOSArtifactValueAuthority(
+    reopened = ResearchOSImmutableValueAuthority(
         DirectoryArtifactBlobStore(tmp_path / "blobs"),
         SQLiteArtifactRegistry(tmp_path / "artifacts.sqlite3"),
         SQLiteArtifactRetentionStore(tmp_path / "retention.sqlite3"),
@@ -73,7 +73,7 @@ def test_artifact_value_authority_is_durable_and_content_addressed(tmp_path) -> 
 
 
 def test_same_subject_cannot_be_rebound_to_different_artifact_content(tmp_path) -> None:
-    authority = ResearchOSArtifactValueAuthority(
+    authority = ResearchOSImmutableValueAuthority(
         DirectoryArtifactBlobStore(tmp_path / "blobs"),
         SQLiteArtifactRegistry(tmp_path / "artifacts.sqlite3"),
         SQLiteArtifactRetentionStore(tmp_path / "retention.sqlite3"),
@@ -88,7 +88,7 @@ def test_same_subject_cannot_be_rebound_to_different_artifact_content(tmp_path) 
 def test_catalog_tampering_or_scope_drift_fails_closed(tmp_path) -> None:
     blobs = DirectoryArtifactBlobStore(tmp_path / "blobs")
     registry = SQLiteArtifactRegistry(tmp_path / "artifacts.sqlite3")
-    authority = ResearchOSArtifactValueAuthority(
+    authority = ResearchOSImmutableValueAuthority(
         blobs,
         registry,
         SQLiteArtifactRetentionStore(tmp_path / "retention.sqlite3"),
@@ -110,7 +110,7 @@ def test_catalog_tampering_or_scope_drift_fails_closed(tmp_path) -> None:
 
 
 def test_artifact_value_authority_rebinds_same_content_across_execution_cuts(tmp_path) -> None:
-    authority = ResearchOSArtifactValueAuthority(
+    authority = ResearchOSImmutableValueAuthority(
         DirectoryArtifactBlobStore(tmp_path / "blobs"),
         SQLiteArtifactRegistry(tmp_path / "artifacts.sqlite3"),
         SQLiteArtifactRetentionStore(tmp_path / "retention.sqlite3"),
