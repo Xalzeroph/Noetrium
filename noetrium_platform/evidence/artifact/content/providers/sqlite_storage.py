@@ -4,10 +4,10 @@ from contextlib import closing
 from pathlib import Path
 import sqlite3
 
-from noetrium_platform.evidence.artifact._sqlite_connection import (
-    connect_artifact_reader,
-    connect_artifact_writer,
-    rollback_artifact_writer,
+from noetrium_platform.foundation.kernel.kernel.durability.sqlite import (
+    open_durable_sqlite_reader,
+    open_durable_sqlite_writer,
+    rollback_sqlite_writer,
 )
 from noetrium_platform.evidence.artifact._sqlite_types import require_text
 from noetrium_platform.evidence.artifact.content.api import (
@@ -44,10 +44,10 @@ class SQLiteArtifactStorageBindingStore:
             self._ensure_schema(db)
 
     def _connect_writer(self) -> sqlite3.Connection:
-        return connect_artifact_writer(self.path, timeout_seconds=self.timeout_seconds)
+        return open_durable_sqlite_writer(self.path, timeout_seconds=self.timeout_seconds)
 
     def _connect_reader(self) -> sqlite3.Connection:
-        return connect_artifact_reader(self.path, timeout_seconds=self.timeout_seconds)
+        return open_durable_sqlite_reader(self.path, timeout_seconds=self.timeout_seconds)
 
     @classmethod
     def _ensure_schema(cls, db: sqlite3.Connection) -> None:
@@ -205,7 +205,7 @@ class SQLiteArtifactStorageBindingStore:
                     self._verify_binding(proposed)
                     db.execute("COMMIT")
             except BaseException as primary:
-                rollback_artifact_writer(db, primary)
+                rollback_sqlite_writer(db, primary, label="artifact")
                 raise
         return self.resolve(artifact_id)
 
@@ -301,7 +301,7 @@ class SQLiteArtifactStorageBindingStore:
                 self._verify_binding(updated)
                 db.execute("COMMIT")
             except BaseException as primary:
-                rollback_artifact_writer(db, primary)
+                rollback_sqlite_writer(db, primary, label="artifact")
                 raise
         return self.resolve(artifact_id)
 
