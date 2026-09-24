@@ -36,6 +36,7 @@ from noetrium_platform.product.research_os import (
     ResearchDefinition,
     ResearchDefinitionKind,
     ResearchImplementation,
+    ResearchMachineProgramImplementation,
     ResearchMethodProgramBindingKind,
     ResearchMethodProgramImplementation,
     ResearchNodeKind,
@@ -272,6 +273,113 @@ def resolve_method_program_implementation(
     )
 
 
+@dataclass(frozen=True, slots=True)
+class ResolvedResearchMachineProgramImplementation:
+    """Resolved immutable native ResearchProgram and exact operation set."""
+
+    definition_id: str
+    declared: ResearchMachineProgramImplementation
+    program: MachineResearchProgram
+    operations: tuple[ResearchHostOperation, ...]
+
+    def __post_init__(self) -> None:
+        if type(self.definition_id) is not str or not self.definition_id.strip():
+            raise ValueError(
+                "resolved ResearchProgram implementation definition_id is required"
+            )
+        if type(self.declared) is not ResearchMachineProgramImplementation:
+            raise TypeError(
+                "resolved ResearchProgram implementation requires typed declaration"
+            )
+        if type(self.program) is not MachineResearchProgram:
+            raise TypeError(
+                "resolved ResearchProgram implementation requires exact ResearchProgram"
+            )
+        if type(self.operations) is not tuple or any(
+            type(row) is not ResearchHostOperation for row in self.operations
+        ):
+            raise TypeError(
+                "resolved ResearchProgram operations must be ResearchHostOperation tuple"
+            )
+        if self.program.program_digest != self.declared.program_digest:
+            raise ValueError(
+                "resolved ResearchProgram digest drifted from immutable declaration"
+            )
+        if self.program.kind.value != self.declared.machine_kind:
+            raise ValueError(
+                "resolved ResearchProgram machine kind drifted from declaration"
+            )
+        identities = tuple(
+            sorted(
+                (row.operation, row.implementation_digest)
+                for row in self.operations
+            )
+        )
+        if identities != self.declared.operation_identities:
+            raise ValueError(
+                "resolved ResearchProgram operation identity set drifted"
+            )
+        if canonical_digest(identities) != self.declared.operations_digest:
+            raise ValueError(
+                "resolved ResearchProgram operation digest drifted"
+            )
+
+
+def resolve_machine_program_implementation(
+    definition: ResearchDefinition,
+) -> ResolvedResearchMachineProgramImplementation:
+    """Resolve native ResearchProgram + operation set and prove exact identity."""
+
+    if type(definition) is not ResearchDefinition:
+        raise TypeError("ResearchProgram resolution requires ResearchDefinition")
+    declared = definition.implementation
+    if type(declared) is not ResearchMachineProgramImplementation:
+        raise TypeError(
+            "ResearchProgram resolution requires ResearchMachineProgramImplementation"
+        )
+    try:
+        program: object = importlib.import_module(declared.program_module)
+        for part in declared.program_qualname.split("."):
+            program = getattr(program, part)
+        operation_factory: object = importlib.import_module(
+            declared.operations_module
+        )
+        for part in declared.operations_qualname.split("."):
+            operation_factory = getattr(operation_factory, part)
+    except (ImportError, AttributeError) as exc:
+        raise ResearchImplementationResolutionError(
+            "native ResearchProgram binding can no longer be imported"
+        ) from exc
+    if type(program) is not MachineResearchProgram:
+        raise ResearchImplementationResolutionError(
+            "native ResearchProgram binding no longer resolves to ResearchProgram"
+        )
+    if not callable(operation_factory):
+        raise ResearchImplementationResolutionError(
+            "native ResearchProgram operation binding is not callable"
+        )
+    try:
+        operations = operation_factory()
+    except Exception as exc:
+        raise ResearchImplementationResolutionError(
+            "native ResearchProgram operation factory failed to materialize"
+        ) from exc
+    if type(operations) is not tuple or any(
+        type(row) is not ResearchHostOperation for row in operations
+    ):
+        raise ResearchImplementationResolutionError(
+            "native ResearchProgram operation factory must return exact "
+            "ResearchHostOperation tuple"
+        )
+    resolved = ResolvedResearchMachineProgramImplementation(
+        definition.definition_id,
+        declared,
+        program,
+        operations,
+    )
+    return resolved
+
+
 def _plain_callable_accepts_payload(
     implementation: Callable[..., object],
 ) -> bool:
@@ -396,12 +504,12 @@ def compile_callable_method_definition(
 
 @dataclass(frozen=True, slots=True)
 class LoweredResearchMachineProgram:
-    """One paper callable lowered to the shared non-Method ResearchProgram ABI."""
+    """One native programmable ResearchProgram plus its exact operation set."""
 
     definition_id: str
     machine_kind: MachineKind
     program: MachineResearchProgram
-    operation: ResearchHostOperation
+    operations: tuple[ResearchHostOperation, ...]
 
     def __post_init__(self) -> None:
         if type(self.definition_id) is not str or not self.definition_id.strip():
@@ -414,8 +522,35 @@ class LoweredResearchMachineProgram:
             raise TypeError("lowered machine program must be ResearchProgram")
         if self.program.kind is not self.machine_kind:
             raise ValueError("lowered machine program kind drifted")
-        if type(self.operation) is not ResearchHostOperation:
-            raise TypeError("lowered machine operation must be ResearchHostOperation")
+        if type(self.operations) is not tuple or any(
+            type(row) is not ResearchHostOperation for row in self.operations
+        ):
+            raise TypeError(
+                "lowered machine operations must be ResearchHostOperation tuple"
+            )
+        names = tuple(row.operation for row in self.operations)
+        if len(names) != len(set(names)):
+            raise ValueError("lowered machine operation names must be unique")
+        required = {
+            node.operation
+            for node in self.program.nodes
+            if not node.operation.startswith("core.")
+        }
+        if set(names) != required:
+            raise ValueError(
+                "lowered machine operation closure must exactly match program"
+            )
+
+    @property
+    def operations_digest(self) -> str:
+        return canonical_digest(
+            tuple(
+                sorted(
+                    (row.operation, row.implementation_digest)
+                    for row in self.operations
+                )
+            )
+        )
 
 
 def compile_callable_machine_definition(
@@ -503,7 +638,7 @@ def compile_callable_machine_definition(
         definition.definition_id,
         machine_kind,
         program,
-        operation,
+        (operation,),
     )
 
 
@@ -528,7 +663,9 @@ class LoweredResearchOSGraphNode:
     source: CompiledResearchOSGraphNode
     target: ResearchOSLoweringTarget
     implementations: tuple[
-        ResolvedResearchImplementation | ResolvedResearchMethodProgramImplementation,
+        ResolvedResearchImplementation
+        | ResolvedResearchMethodProgramImplementation
+        | ResolvedResearchMachineProgramImplementation,
         ...,
     ] = ()
     platform_requirements: tuple[ResearchDefinition, ...] = ()
@@ -547,6 +684,7 @@ class LoweredResearchOSGraphNode:
             not in {
                 ResolvedResearchImplementation,
                 ResolvedResearchMethodProgramImplementation,
+                ResolvedResearchMachineProgramImplementation,
             }
             for row in self.implementations
         ):
@@ -683,7 +821,7 @@ class LoweredResearchOSGraphNode:
                             row.definition_id,
                             row.machine_kind.value,
                             row.program.program_digest,
-                            row.operation.implementation_digest,
+                            row.operations_digest,
                         )
                         for row in ordered_machine_programs
                     ),
@@ -791,7 +929,9 @@ class ResearchOSLoweringCompiler:
             raise TypeError("Research OS lowering requires CompiledResearchOSGraphNode")
         target = _NODE_TARGETS[node.node.kind]
         implementations: list[
-            ResolvedResearchImplementation | ResolvedResearchMethodProgramImplementation
+            ResolvedResearchImplementation
+            | ResolvedResearchMethodProgramImplementation
+            | ResolvedResearchMachineProgramImplementation
         ] = []
         requirements: list[ResearchDefinition] = []
         method_programs: list[LoweredResearchMethodProgram] = []
@@ -799,6 +939,23 @@ class ResearchOSLoweringCompiler:
         for definition in node.definitions:
             if definition.implementation is None:
                 requirements.append(definition)
+                continue
+            if type(definition.implementation) is ResearchMachineProgramImplementation:
+                if target is ResearchOSLoweringTarget.EXPERIMENTATION:
+                    raise ResearchImplementationResolutionError(
+                        "native ResearchProgram implementation cannot execute through "
+                        f"Experimentation target: node={node.graph_node_id}"
+                    )
+                resolved_machine = resolve_machine_program_implementation(definition)
+                implementations.append(resolved_machine)
+                machine_programs.append(
+                    LoweredResearchMachineProgram(
+                        definition.definition_id,
+                        resolved_machine.program.kind,
+                        resolved_machine.program,
+                        resolved_machine.operations,
+                    )
+                )
                 continue
             if type(definition.implementation) is ResearchMethodProgramImplementation:
                 resolved_method = resolve_method_program_implementation(definition)
@@ -963,7 +1120,9 @@ __all__ = [
     "ResearchOSLoweringPlan",
     "ResearchOSLoweringTarget",
     "ResolvedResearchImplementation",
+    "ResolvedResearchMachineProgramImplementation",
     "compile_callable_machine_definition",
     "compile_callable_method_definition",
     "compile_research_os_lowering",
+    "resolve_machine_program_implementation",
 ]
