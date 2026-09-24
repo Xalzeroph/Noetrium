@@ -14,7 +14,7 @@ from enum import StrEnum
 import re
 from typing import Mapping
 
-from noetrium_platform.foundation.kernel.kernel import JsonObject, canonical_digest, freeze_json
+from noetrium_platform.foundation.kernel.kernel import JsonObject, JsonValue, canonical_digest, freeze_json
 _TOKEN = re.compile(r"[a-z][a-z0-9_.-]*")
 _SHA256 = re.compile(r"[0-9a-f]{64}")
 
@@ -70,6 +70,81 @@ class ReproductionAssetKind(StrEnum):
     RESEARCH_PROGRAM = "research_program"
     SEMANTICS = "semantics"
     SUPPORT = "support"
+
+@dataclass(frozen=True, slots=True)
+class ReproductionMethodProgramFactoryBinding:
+    """Explicit package-local MethodProgram factory identity.
+
+    ``unresolved_parameters`` is not a fallback. It records parameters whose
+    values belong to benchmark/Experimentation binding rather than the paper
+    declaration. Such bindings may enter Research OS as protocol-bound metadata
+    but cannot lower directly to UMM until an exact ExperimentClosure supplies
+    those values.
+    """
+
+    qualname: str
+    args: tuple[JsonValue, ...] = ()
+    kwargs: JsonObject = field(default_factory=dict)
+    unresolved_parameters: tuple[str, ...] = ()
+    binding_digest: str = field(init=False)
+
+    def __post_init__(self) -> None:
+        qualname = _text(
+            self.qualname,
+            "reproduction MethodProgram factory qualname",
+        )
+        if "<locals>" in qualname or "<lambda>" in qualname:
+            raise ValueError(
+                "reproduction MethodProgram factory must be module-resolvable"
+            )
+        if type(self.args) is not tuple:
+            raise TypeError(
+                "reproduction MethodProgram factory args must be a tuple"
+            )
+        frozen_args = freeze_json(self.args)
+        if type(frozen_args) is not tuple:
+            raise TypeError(
+                "reproduction MethodProgram factory args must freeze to tuple"
+            )
+        frozen_kwargs = freeze_json(self.kwargs)
+        if not isinstance(frozen_kwargs, Mapping):
+            raise TypeError(
+                "reproduction MethodProgram factory kwargs must be a JSON object"
+            )
+        unresolved = tuple(
+            sorted(
+                _strings(
+                    self.unresolved_parameters,
+                    "reproduction MethodProgram factory unresolved_parameters",
+                )
+            )
+        )
+        overlap = set(unresolved) & set(frozen_kwargs)
+        if overlap:
+            raise ValueError(
+                "reproduction MethodProgram factory parameters cannot be both "
+                f"bound and unresolved: {tuple(sorted(overlap))}"
+            )
+        object.__setattr__(self, "qualname", qualname)
+        object.__setattr__(self, "args", frozen_args)
+        object.__setattr__(self, "kwargs", frozen_kwargs)
+        object.__setattr__(self, "unresolved_parameters", unresolved)
+        object.__setattr__(
+            self,
+            "binding_digest",
+            canonical_digest(
+                {
+                    "qualname": qualname,
+                    "args": frozen_args,
+                    "kwargs": frozen_kwargs,
+                    "unresolved_parameters": unresolved,
+                }
+            ),
+        )
+
+    @property
+    def exact(self) -> bool:
+        return not self.unresolved_parameters
 
 
 class ReproductionDeltaKind(StrEnum):
@@ -546,6 +621,7 @@ class ReproductionDefinition:
     catalog: ReproductionCatalog
     assets: tuple[ReproductionAssetRef, ...]
     primary_executable: str | None = None
+    method_program_factory: ReproductionMethodProgramFactoryBinding | None = None
     reported_results: tuple[ReportedResult, ...] = ()
     reference_baselines: tuple[ReferenceBaseline, ...] = ()
     deltas: tuple[ReproductionDelta, ...] = ()
@@ -600,6 +676,19 @@ class ReproductionDefinition:
             "primary_executable",
             primary_executable,
         )
+        method_program_factory = self.method_program_factory
+        if method_program_factory is not None:
+            if type(method_program_factory) is not ReproductionMethodProgramFactoryBinding:
+                raise TypeError(
+                    "reproduction method_program_factory must be typed"
+                )
+            if len(executable_assets) != 1 or executable_assets[0].kind is not (
+                ReproductionAssetKind.METHOD_PROGRAM
+            ):
+                raise ValueError(
+                    "reproduction MethodProgram factory binding requires exactly "
+                    "one MethodProgram executable asset"
+                )
         for name, value, row_type, key in (
             ("reported_results", self.reported_results, ReportedResult, lambda row: row.claim_id),
             ("reference_baselines", self.reference_baselines, ReferenceBaseline, lambda row: row.baseline_id),
@@ -694,6 +783,11 @@ class ReproductionDefinition:
                     "catalog": self.catalog.catalog_digest,
                     "assets": tuple(row.declaration_digest for row in assets),
                     "primary_executable": primary_executable,
+                    "method_program_factory": (
+                        None
+                        if method_program_factory is None
+                        else method_program_factory.binding_digest
+                    ),
                     "reported_results": tuple(row.claim_digest for row in self.reported_results),
                     "reference_baselines": tuple(
                         row.baseline_digest for row in self.reference_baselines
@@ -723,6 +817,7 @@ __all__ = [
     "ReproductionEvidenceRef",
     "ReproductionMatchCriterion",
     "ReproductionMatchCriterionStatus",
+    "ReproductionMethodProgramFactoryBinding",
     "REPRODUCTION_MATCH_REQUIRED_CRITERIA",
     "ReproductionIdentity",
     "ReproductionLifecycle",
