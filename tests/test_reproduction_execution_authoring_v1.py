@@ -42,24 +42,25 @@ def _benchmark() -> BenchmarkTaskSet:
     )
 
 
-def test_top_level_execution_request_expands_platform_owned_benchmark_axis() -> None:
+def test_top_level_execution_request_preserves_exact_benchmark_split_selection() -> None:
     benchmark = _benchmark()
     request = execution_request(
         "adaptagent_acl2025",
         "build_adaptagent_study",
         benchmark,
+        benchmark_split_ids=("test",),
     )
 
     portfolio = build_execution_research((request,))
 
     assert isinstance(portfolio, api.ResearchPortfolio)
     assert portfolio.portfolio_id == "repository-reproductions.execution-research"
-    assert len(portfolio.programs) == 2
+    assert len(portfolio.programs) == 1
     assert all(
         program.program_id.startswith("adaptagent_acl2025.")
         for program in portfolio.programs
     )
-    assert len({program.program_id for program in portfolio.programs}) == 2
+    assert len({program.program_id for program in portfolio.programs}) == 1
 
     revision = api.ResearchGraphRevision(
         portfolio.portfolio_id,
@@ -68,5 +69,5 @@ def test_top_level_execution_request_expands_platform_owned_benchmark_axis() -> 
         "top-level execution request",
     )
     graph = compile_research_portfolio_graph(revision, portfolio)
-    assert len(graph.nodes) == 2
+    assert len(graph.nodes) == 1
     assert graph.plan.research_revision_digest == revision.revision_digest
