@@ -530,6 +530,7 @@ class ManagementTests(unittest.TestCase):
             model_id="m",
             python_environment_id="e",
             cwd=root,
+            port=30001,
             tensor_parallel=4,
         )
         v = vllm_deployment(
@@ -538,6 +539,7 @@ class ManagementTests(unittest.TestCase):
             model_id="m",
             python_environment_id="e",
             cwd=root,
+            port=8001,
             tensor_parallel=4,
         )
         self.assertEqual(s.engine, "sglang")
