@@ -92,6 +92,7 @@ class _Runtime:
     def execute(
         self,
         context,
+        task_context,
         node,
         lowering,
         inputs,
@@ -100,7 +101,7 @@ class _Runtime:
         deadline,
     ):
         del lowering, execution_cut_id, deadline
-        context.checkpoint()
+        task_context.checkpoint()
         self.executed.append(node.graph_node_id)
         if node.graph_node_id == "paper-a::source":
             assert inputs == {}
