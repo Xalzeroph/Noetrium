@@ -40,6 +40,7 @@ class ResearchRunRecord:
     run_id: str
     head_commit_id: str
     program_digest: str
+    program_lock_digest: str
     binding_digest: str
     result_digest: str
     status: str
@@ -48,6 +49,10 @@ class ResearchRunRecord:
         _text(self.run_id, "research run_id")
         _digest(self.head_commit_id, "research head_commit_id")
         _digest(self.program_digest, "research program_digest")
+        _digest(
+            self.program_lock_digest,
+            "research program_lock_digest",
+        )
         _digest(self.binding_digest, "research binding_digest")
         _digest(self.result_digest, "research result_digest")
         _text(self.status, "research run status")
@@ -57,6 +62,7 @@ class ResearchRunRecord:
             "run_id": self.run_id,
             "head_commit_id": self.head_commit_id,
             "program_digest": self.program_digest,
+            "program_lock_digest": self.program_lock_digest,
             "binding_digest": self.binding_digest,
             "result_digest": self.result_digest,
             "status": self.status,
@@ -248,6 +254,7 @@ def record_run_cut(
         run_id=cut.machine_id,
         head_commit_id=cut.commit_id,
         program_digest=cut.program_digest,
+        program_lock_digest=cut.program_lock_digest,
         binding_digest=binding_digest,
         result_digest=_digest(result_digest, "research result_digest"),
         status=status,
@@ -309,12 +316,24 @@ def _row(value: object, label: str) -> dict[str, object]:
 
 def _decode_run(value: object) -> ResearchRunRecord:
     row = _row(value, "research run")
-    if set(row) != {"run_id", "head_commit_id", "program_digest", "binding_digest", "result_digest", "status"}:
+    if set(row) != {
+        "run_id",
+        "head_commit_id",
+        "program_digest",
+        "program_lock_digest",
+        "binding_digest",
+        "result_digest",
+        "status",
+    }:
         raise ValueError("research run fields are not exact")
     return ResearchRunRecord(
         run_id=_text(row["run_id"], "run_id"),
         head_commit_id=_digest(row["head_commit_id"], "head_commit_id"),
         program_digest=_digest(row["program_digest"], "program_digest"),
+        program_lock_digest=_digest(
+            row["program_lock_digest"],
+            "program_lock_digest",
+        ),
         binding_digest=_digest(row["binding_digest"], "binding_digest"),
         result_digest=_digest(row["result_digest"], "result_digest"),
         status=_text(row["status"], "status"),
