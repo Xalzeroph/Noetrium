@@ -517,6 +517,7 @@ class TrialMeasurementProjectionPort(Protocol):
     ) -> tuple[MeasurementRecord, ...]: ...
 
 
+@runtime_checkable
 class TrialProviderPort(Protocol):
     protocol_identity: ExperimentTrialProtocolIdentity
 
