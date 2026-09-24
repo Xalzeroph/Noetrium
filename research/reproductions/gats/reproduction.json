@@ -2,8 +2,8 @@
   "schema": "noetrium.reproduction.projection.v7",
   "authority": "generated_from_typed_definition_and_source",
   "package": "gats",
-  "package_digest": "9393d256bb91c9b4728bc1407361eb16b695abc4e7582b9bb1a6a2cc126d8f38",
-  "definition_digest": "128e9f6423d7c25a605583d14e086d9a00847d2cfc8b06973b44ab40d6755052",
+  "package_digest": "d8e4dbdf78146e67e03e280ab61f215baf44b42eae6837c190572634e0635674",
+  "definition_digest": "046dbc182828093e9da7d52fd9d01ea6e1b02dd6f08da1d27006a590f2a44338",
   "source_registry_digest": "bd01696f94f58340e853c4ec16a61206335c13e3ef45730b14418c4646b37a67",
   "lifecycle": "protocol_bound",
   "identity": {
@@ -76,13 +76,19 @@
       "content_sha256": "b784f6295136f9e6130e1b6bdd67bcab254e9b9595eeac7bf318986a2bf7c6bd"
     },
     {
+      "kind": "method_program",
+      "path": "research/reproductions/gats/program.py",
+      "declaration_digest": "dc1a3f0395fc8869c96bed076e23980f4a837049266fab9baba83a013e617d2c",
+      "content_sha256": "7e847fc0d93299396e910c22e8d5b22c81d3d4d6efca8b06cd7b5ebf93c6645b"
+    },
+    {
       "kind": "study",
       "path": "research/reproductions/gats/study.py",
       "declaration_digest": "f5b4a6f1d00fe4e967bb6ef4920c13f8b98b0832f0a844fb21085684571ff553",
       "content_sha256": "29d9f131ca51de45f88c9a747b857fa5cd1bd4bfabd35e51d886c175a970bf44"
     }
   ],
-  "primary_executable": null,
+  "primary_executable": "research/reproductions/gats/program.py",
   "reported_results": [
     {
       "claim_id": "paper_stress_gats_b20_success",
