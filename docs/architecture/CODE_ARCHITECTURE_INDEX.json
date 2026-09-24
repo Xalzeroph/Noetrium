@@ -1392,6 +1392,11 @@
     },
     {
       "kind": "references",
+      "source": "noetrium_platform.capabilities.model.asset.runtime.registry.ModelAssetRegistry",
+      "target": "noetrium_platform.foundation.kernel.kernel.durability.file_lock.InterprocessFileLock"
+    },
+    {
+      "kind": "references",
       "source": "noetrium_platform.capabilities.model.assignment.api.ports.ModelAssignmentPort",
       "target": "noetrium_platform.capabilities.model.assignment.api.contracts.ModelAssignment"
     },
@@ -25633,7 +25638,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 26,
+      "line": 27,
       "methods": [
         "__init__",
         "fetch_model",
@@ -25662,13 +25667,23 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 12,
+      "line": 19,
       "methods": [
         "__init__",
+        "_path",
+        "_retired_path",
+        "_lock",
+        "_digest",
+        "_retirement_payload",
+        "_decode_retirement",
+        "ensure_not_retired",
         "put",
         "get",
+        "_read",
         "all",
-        "remove",
+        "begin_retirement",
+        "retirement",
+        "finish_retirement",
         "_validate_id"
       ],
       "module": "noetrium_platform.capabilities.model.asset.runtime.registry",
@@ -25685,7 +25700,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 11,
+      "line": 14,
       "methods": [
         "__init__",
         "pools",
@@ -67038,12 +67053,18 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 16,
+      "line": 24,
       "methods": [
         "__init__",
+        "_path",
+        "_retired_path",
+        "ensure_not_retired",
+        "is_retired",
         "put",
         "get",
+        "_read",
         "all",
+        "retire",
         "remove",
         "_validate_id"
       ],
@@ -77644,6 +77665,7 @@
         "renew_many",
         "reconcile_expired",
         "release",
+        "recover_release",
         "allocations"
       ],
       "module": "noetrium_platform.infrastructure.resources.compute.api.ports",
@@ -78102,6 +78124,7 @@
         "renew_many",
         "reconcile_expired",
         "release",
+        "recover_release",
         "allocations"
       ],
       "module": "noetrium_platform.infrastructure.resources.compute.runtime.scheduler",
@@ -78120,7 +78143,7 @@
         "SCHEMA_VERSION"
       ],
       "kind": "class",
-      "line": 648,
+      "line": 691,
       "methods": [
         "__init__",
         "_connection",
@@ -78130,6 +78153,7 @@
         "_active_rows",
         "_capacity_rows",
         "_active_row",
+        "_capacity_row",
         "_cleanup_expired",
         "_usage",
         "_placements",
@@ -78139,6 +78163,7 @@
         "renew_many",
         "reconcile_expired",
         "release",
+        "recover_release",
         "allocations"
       ],
       "module": "noetrium_platform.infrastructure.resources.compute.runtime.scheduler",
@@ -78482,7 +78507,9 @@
         "_name",
         "_runtime_digest_valid",
         "_require_handle_authority",
+        "_matches_exact_generation",
         "_validate_observation",
+        "_exact_physical_candidates",
         "reserve",
         "docker_run_prefix",
         "confirm_running",
@@ -78527,7 +78554,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 457,
+      "line": 498,
       "methods": [],
       "module": "noetrium_platform.infrastructure.resources.container.runtime.lease_authority",
       "name": "DockerContainerLeaseHeartbeatError",
@@ -78545,7 +78572,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 569,
+      "line": 610,
       "methods": [
         "__init__",
         "policy",
@@ -78567,7 +78594,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 461,
+      "line": 502,
       "methods": [
         "__init__",
         "handles",
@@ -79011,16 +79038,22 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 26,
+      "line": 37,
       "methods": [
         "__init__",
+        "_root",
         "_path",
+        "_identity_digest",
+        "_lock_path",
+        "_retired_path",
+        "_payload",
         "allocate_workspace",
         "list_workspaces",
         "_metadata_paths",
         "_decode_metadata",
         "remove_workspace",
-        "_validate_name"
+        "_validate_name",
+        "_validate_optional_text"
       ],
       "module": "noetrium_platform.infrastructure.resources.directory.runtime.workspaces",
       "name": "LocalWorkspaceManager",
@@ -82359,7 +82392,7 @@
       ],
       "fields": [],
       "kind": "protocol",
-      "line": 867,
+      "line": 877,
       "methods": [
         "active_cut",
         "active_execution_snapshot",
@@ -82472,7 +82505,8 @@
       "kind": "protocol",
       "line": 705,
       "methods": [
-        "abandon_claim"
+        "abandon_claim",
+        "recover_expired_attempt"
       ],
       "module": "noetrium_platform.research.execution.graph.api.state",
       "name": "ResearchGraphClaimRecoveryPort",
@@ -82541,7 +82575,7 @@
       ],
       "fields": [],
       "kind": "protocol",
-      "line": 720,
+      "line": 730,
       "methods": [
         "control_state",
         "request_drain",
@@ -82808,7 +82842,7 @@
       ],
       "fields": [],
       "kind": "protocol",
-      "line": 790,
+      "line": 800,
       "methods": [
         "node_control_state",
         "node_control_snapshot",
@@ -83020,6 +83054,7 @@
         "_require_unexpired_lease",
         "mark_running",
         "abandon_claim",
+        "recover_expired_attempt",
         "renew_leases",
         "mark_succeeded",
         "mark_failed",
@@ -99044,6 +99079,11 @@
     },
     {
       "kind": "constructs",
+      "source": "noetrium_platform.capabilities.model.asset.runtime.registry.ModelAssetRegistry",
+      "target": "noetrium_platform.foundation.kernel.kernel.durability.file_lock.InterprocessFileLock"
+    },
+    {
+      "kind": "constructs",
       "source": "noetrium_platform.capabilities.model.catalog.revision.api.update.ModelUpdatePlan",
       "target": "noetrium_platform.capabilities.model.catalog.revision.api.contracts.ModelUpdateProposal"
     },
@@ -102474,6 +102514,11 @@
     },
     {
       "kind": "constructs",
+      "source": "noetrium_platform.infrastructure.resources.directory.runtime.workspaces.LocalWorkspaceManager",
+      "target": "noetrium_platform.foundation.kernel.kernel.durability.file_lock.InterprocessFileLock"
+    },
+    {
+      "kind": "constructs",
       "source": "noetrium_platform.infrastructure.resources.resolution.resolver.HierarchicalResourceResolver",
       "target": "noetrium_platform.infrastructure.resources.resolution.contracts.ResolvedValue"
     },
@@ -103274,11 +103319,11 @@
     }
   ],
   "counts": {
-    "association_edges": 3451,
+    "association_edges": 3452,
     "classes": 3361,
-    "constructor_edges": 920,
+    "constructor_edges": 922,
     "inheritance_edges": 146,
-    "module_import_edges": 5015,
+    "module_import_edges": 5019,
     "parse_errors": 0,
     "python_modules": 1912,
     "registry_authorities": 20,
@@ -105456,11 +105501,19 @@
     },
     {
       "source": "noetrium_platform.capabilities.model.asset.runtime.registry",
+      "target": "noetrium_platform.foundation.kernel.kernel.durability.file_lock"
+    },
+    {
+      "source": "noetrium_platform.capabilities.model.asset.runtime.registry",
       "target": "noetrium_platform.substrate.api"
     },
     {
       "source": "noetrium_platform.capabilities.model.asset.runtime.storage",
       "target": "noetrium_platform.capabilities.model.asset.api"
+    },
+    {
+      "source": "noetrium_platform.capabilities.model.asset.runtime.storage",
+      "target": "noetrium_platform.foundation.kernel.kernel.durability.durable_file"
     },
     {
       "source": "noetrium_platform.capabilities.model.asset.runtime.storage",
@@ -120892,11 +120945,19 @@
     },
     {
       "source": "noetrium_platform.infrastructure.resources.directory.runtime.workspaces",
+      "target": "noetrium_platform.foundation.kernel.kernel"
+    },
+    {
+      "source": "noetrium_platform.infrastructure.resources.directory.runtime.workspaces",
       "target": "noetrium_platform.foundation.kernel.kernel.durability.checksummed_document"
     },
     {
       "source": "noetrium_platform.infrastructure.resources.directory.runtime.workspaces",
       "target": "noetrium_platform.foundation.kernel.kernel.durability.durable_file"
+    },
+    {
+      "source": "noetrium_platform.infrastructure.resources.directory.runtime.workspaces",
+      "target": "noetrium_platform.foundation.kernel.kernel.durability.file_lock"
     },
     {
       "source": "noetrium_platform.infrastructure.resources.directory.runtime.workspaces",
@@ -125502,6 +125563,7 @@
         "noetrium_platform.capabilities.model.asset.api",
         "noetrium_platform.capabilities.model.asset.runtime.codec",
         "noetrium_platform.foundation.kernel.kernel.durability.durable_file",
+        "noetrium_platform.foundation.kernel.kernel.durability.file_lock",
         "noetrium_platform.substrate.api"
       ],
       "module": "noetrium_platform.capabilities.model.asset.runtime.registry",
@@ -125512,6 +125574,7 @@
     {
       "imports": [
         "noetrium_platform.capabilities.model.asset.api",
+        "noetrium_platform.foundation.kernel.kernel.durability.durable_file",
         "noetrium_platform.substrate.api"
       ],
       "module": "noetrium_platform.capabilities.model.asset.runtime.storage",
@@ -140890,8 +140953,10 @@
     {
       "imports": [
         "noetrium_platform.foundation.governance.api",
+        "noetrium_platform.foundation.kernel.kernel",
         "noetrium_platform.foundation.kernel.kernel.durability.checksummed_document",
         "noetrium_platform.foundation.kernel.kernel.durability.durable_file",
+        "noetrium_platform.foundation.kernel.kernel.durability.file_lock",
         "noetrium_platform.infrastructure.resources.directory.api"
       ],
       "module": "noetrium_platform.infrastructure.resources.directory.runtime.workspaces",
@@ -144095,7 +144160,7 @@
   "parse_errors": [],
   "registry_sha256": "d3fc1bab831f1b7379e5a36048a61c00fe173429df958270d36a16f3f00171c0",
   "schema": "noetrium-code-architecture-index.v1",
-  "source_git_sha": "898b73be8d6cffa9507225a63e1f7ea7d8f1b940",
+  "source_git_sha": "c48a71cfd0d0e099cd757f1ccd5c1107d4d0c3f2",
   "system_import_edges": [
     {
       "count": 85,
@@ -144178,7 +144243,7 @@
       "target": "model"
     },
     {
-      "count": 102,
+      "count": 104,
       "source": "model",
       "target": "platform"
     },
@@ -144318,7 +144383,7 @@
       "target": "governance"
     },
     {
-      "count": 14,
+      "count": 16,
       "source": "resource",
       "target": "platform"
     },

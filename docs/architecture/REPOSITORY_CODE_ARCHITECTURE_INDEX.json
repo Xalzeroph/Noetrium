@@ -2,7 +2,7 @@
   "counts": {
     "parse_errors": 0,
     "python_files": 3690,
-    "python_import_edges": 7161,
+    "python_import_edges": 7167,
     "symbols": 5004,
     "tracked_files": 4326,
     "typescript_javascript_files": 11
@@ -1157,6 +1157,12 @@
     {
       "source_module": "noetrium_platform.capabilities.model.asset.runtime.registry",
       "source_role": "core_platform",
+      "target_module": "noetrium_platform.foundation.kernel.kernel.durability.file_lock",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "noetrium_platform.capabilities.model.asset.runtime.registry",
+      "source_role": "core_platform",
       "target_module": "noetrium_platform.substrate.api",
       "target_role": "core_platform"
     },
@@ -1164,6 +1170,12 @@
       "source_module": "noetrium_platform.capabilities.model.asset.runtime.storage",
       "source_role": "core_platform",
       "target_module": "noetrium_platform.capabilities.model.asset.api",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "noetrium_platform.capabilities.model.asset.runtime.storage",
+      "source_role": "core_platform",
+      "target_module": "noetrium_platform.foundation.kernel.kernel.durability.durable_file",
       "target_role": "core_platform"
     },
     {
@@ -13367,6 +13379,12 @@
     {
       "source_module": "noetrium_platform.infrastructure.resources.directory.runtime.workspaces",
       "source_role": "core_platform",
+      "target_module": "noetrium_platform.foundation.kernel.kernel",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "noetrium_platform.infrastructure.resources.directory.runtime.workspaces",
+      "source_role": "core_platform",
       "target_module": "noetrium_platform.foundation.kernel.kernel.durability.checksummed_document",
       "target_role": "core_platform"
     },
@@ -13374,6 +13392,12 @@
       "source_module": "noetrium_platform.infrastructure.resources.directory.runtime.workspaces",
       "source_role": "core_platform",
       "target_module": "noetrium_platform.foundation.kernel.kernel.durability.durable_file",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "noetrium_platform.infrastructure.resources.directory.runtime.workspaces",
+      "source_role": "core_platform",
+      "target_module": "noetrium_platform.foundation.kernel.kernel.durability.file_lock",
       "target_role": "core_platform"
     },
     {
@@ -24815,6 +24839,12 @@
     {
       "source_module": "tests.test_compute_physical_convergence_v1",
       "source_role": "tests",
+      "target_module": "noetrium_platform.infrastructure.resources.lease.api",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "tests.test_compute_physical_convergence_v1",
+      "source_role": "tests",
       "target_module": "tests.resource_compute_support",
       "target_role": "tests"
     },
@@ -25806,6 +25836,12 @@
       "source_module": "tests.test_durable_resource_directory_v1",
       "source_role": "tests",
       "target_module": "noetrium_platform.infrastructure.resources.directory.runtime",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "tests.test_durable_resource_directory_v1",
+      "source_role": "tests",
+      "target_module": "noetrium_platform.infrastructure.resources.directory.runtime.workspaces",
       "target_role": "core_platform"
     },
     {
@@ -42983,7 +43019,7 @@
   ],
   "role_import_counts": [
     {
-      "count": 2592,
+      "count": 2596,
       "source_role": "core_platform",
       "target_role": "core_platform"
     },
@@ -43043,7 +43079,7 @@
       "target_role": "research_reproductions"
     },
     {
-      "count": 2797,
+      "count": 2799,
       "source_role": "tests",
       "target_role": "core_platform"
     },
@@ -43122,7 +43158,7 @@
     "tooling": 39
   },
   "schema": "noetrium-repository-code-architecture-index.v1",
-  "source_git_sha": "898b73be8d6cffa9507225a63e1f7ea7d8f1b940",
+  "source_git_sha": "c48a71cfd0d0e099cd757f1ccd5c1107d4d0c3f2",
   "symbols": [
     {
       "bases": [],
@@ -52325,7 +52361,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 26,
+      "line": 27,
       "methods": [
         "__init__",
         "fetch_model",
@@ -52352,13 +52388,23 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 12,
+      "line": 19,
       "methods": [
         "__init__",
+        "_path",
+        "_retired_path",
+        "_lock",
+        "_digest",
+        "_retirement_payload",
+        "_decode_retirement",
+        "ensure_not_retired",
         "put",
         "get",
+        "_read",
         "all",
-        "remove",
+        "begin_retirement",
+        "retirement",
+        "finish_retirement",
         "_validate_id"
       ],
       "module": "noetrium_platform.capabilities.model.asset.runtime.registry",
@@ -52373,7 +52419,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 11,
+      "line": 14,
       "methods": [
         "__init__",
         "pools",
@@ -90127,12 +90173,18 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 16,
+      "line": 24,
       "methods": [
         "__init__",
+        "_path",
+        "_retired_path",
+        "ensure_not_retired",
+        "is_retired",
         "put",
         "get",
+        "_read",
         "all",
+        "retire",
         "remove",
         "_validate_id"
       ],
@@ -99798,6 +99850,7 @@
         "renew_many",
         "reconcile_expired",
         "release",
+        "recover_release",
         "allocations"
       ],
       "module": "noetrium_platform.infrastructure.resources.compute.api.ports",
@@ -100254,6 +100307,7 @@
         "renew_many",
         "reconcile_expired",
         "release",
+        "recover_release",
         "allocations"
       ],
       "module": "noetrium_platform.infrastructure.resources.compute.runtime.scheduler",
@@ -100268,7 +100322,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 648,
+      "line": 691,
       "methods": [
         "__init__",
         "_connection",
@@ -100278,6 +100332,7 @@
         "_active_rows",
         "_capacity_rows",
         "_active_row",
+        "_capacity_row",
         "_cleanup_expired",
         "_usage",
         "_placements",
@@ -100287,6 +100342,7 @@
         "renew_many",
         "reconcile_expired",
         "release",
+        "recover_release",
         "allocations"
       ],
       "module": "noetrium_platform.infrastructure.resources.compute.runtime.scheduler",
@@ -100576,7 +100632,9 @@
         "_name",
         "_runtime_digest_valid",
         "_require_handle_authority",
+        "_matches_exact_generation",
         "_validate_observation",
+        "_exact_physical_candidates",
         "reserve",
         "docker_run_prefix",
         "confirm_running",
@@ -100601,7 +100659,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 457,
+      "line": 498,
       "methods": [],
       "module": "noetrium_platform.infrastructure.resources.container.runtime.lease_authority",
       "name": "DockerContainerLeaseHeartbeatError",
@@ -100617,7 +100675,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 461,
+      "line": 502,
       "methods": [
         "__init__",
         "handles",
@@ -100640,7 +100698,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 569,
+      "line": 610,
       "methods": [
         "__init__",
         "policy",
@@ -101043,16 +101101,22 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 26,
+      "line": 37,
       "methods": [
         "__init__",
+        "_root",
         "_path",
+        "_identity_digest",
+        "_lock_path",
+        "_retired_path",
+        "_payload",
         "allocate_workspace",
         "list_workspaces",
         "_metadata_paths",
         "_decode_metadata",
         "remove_workspace",
-        "_validate_name"
+        "_validate_name",
+        "_validate_optional_text"
       ],
       "module": "noetrium_platform.infrastructure.resources.directory.runtime.workspaces",
       "name": "LocalWorkspaceManager",
@@ -104577,7 +104641,8 @@
       "language": "python",
       "line": 705,
       "methods": [
-        "abandon_claim"
+        "abandon_claim",
+        "recover_expired_attempt"
       ],
       "module": "noetrium_platform.research.execution.graph.api.state",
       "name": "ResearchGraphClaimRecoveryPort",
@@ -104595,7 +104660,7 @@
       "fields": [],
       "kind": "protocol",
       "language": "python",
-      "line": 720,
+      "line": 730,
       "methods": [
         "control_state",
         "request_drain",
@@ -104622,7 +104687,7 @@
       "fields": [],
       "kind": "protocol",
       "language": "python",
-      "line": 790,
+      "line": 800,
       "methods": [
         "node_control_state",
         "node_control_snapshot",
@@ -104650,7 +104715,7 @@
       "fields": [],
       "kind": "protocol",
       "language": "python",
-      "line": 867,
+      "line": 877,
       "methods": [
         "active_cut",
         "active_execution_snapshot",
@@ -104726,6 +104791,7 @@
         "_require_unexpired_lease",
         "mark_running",
         "abandon_claim",
+        "recover_expired_attempt",
         "renew_leases",
         "mark_succeeded",
         "mark_failed",
@@ -134358,7 +134424,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 23,
+      "line": 25,
       "methods": [
         "__init__",
         "snapshot"
@@ -137571,7 +137637,8 @@
         "__init__",
         "reconcile_expired",
         "allocations",
-        "release"
+        "release",
+        "recover_release"
       ],
       "module": "tests.test_managed_resource_reconciler_v1",
       "name": "ComputeShutdownAuthority",
@@ -137587,7 +137654,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 171,
+      "line": 174,
       "methods": [
         "shutdown_cleanup"
       ],
@@ -137603,7 +137670,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 176,
+      "line": 179,
       "methods": [
         "__init__",
         "shutdown_cleanup",
