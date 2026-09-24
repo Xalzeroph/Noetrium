@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from noetrium_platform.research.execution.workflow.api import AgentMethodSpec, AgentPhaseSpec
+from noetrium.api import AgentMethodSpec, AgentPhaseSpec
 
 METHOD_ID = "mem_gallery_acl2026"
 PAPER_URI = "https://aclanthology.org/2026.acl-long.1892/"
