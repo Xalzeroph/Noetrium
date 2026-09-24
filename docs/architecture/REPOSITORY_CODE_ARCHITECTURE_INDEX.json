@@ -1,10 +1,10 @@
 {
   "counts": {
     "parse_errors": 0,
-    "python_files": 3666,
-    "python_import_edges": 7094,
+    "python_files": 3667,
+    "python_import_edges": 7098,
     "symbols": 4852,
-    "tracked_files": 4296,
+    "tracked_files": 4297,
     "typescript_javascript_files": 11
   },
   "language_symbol_counts": {
@@ -32613,6 +32613,30 @@
       "target_role": "core_platform"
     },
     {
+      "source_module": "tests.test_reproduction_benchmark_lane_expansion_v1",
+      "source_role": "tests",
+      "target_module": "noetrium_platform.foundation.kernel.kernel",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "tests.test_reproduction_benchmark_lane_expansion_v1",
+      "source_role": "tests",
+      "target_module": "noetrium_platform.research.experimentation.lifecycle.api",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "tests.test_reproduction_benchmark_lane_expansion_v1",
+      "source_role": "tests",
+      "target_module": "research.reproductions.adaptagent_acl2025.definition",
+      "target_role": "research_reproductions"
+    },
+    {
+      "source_module": "tests.test_reproduction_benchmark_lane_expansion_v1",
+      "source_role": "tests",
+      "target_module": "research.reproductions.research_os",
+      "target_role": "research_reproductions"
+    },
+    {
       "source_module": "tests.test_reproduction_fleet_plan_v2",
       "source_role": "tests",
       "target_module": "scripts.run_reproduction_fleet",
@@ -42641,7 +42665,7 @@
       "target_role": "research_reproductions"
     },
     {
-      "count": 2771,
+      "count": 2773,
       "source_role": "tests",
       "target_role": "core_platform"
     },
@@ -42661,7 +42685,7 @@
       "target_role": "reference_orchestration"
     },
     {
-      "count": 325,
+      "count": 327,
       "source_role": "tests",
       "target_role": "research_reproductions"
     },
@@ -42704,7 +42728,7 @@
     "reference_components": 22,
     "reference_orchestration": 10,
     "research_reproductions": 774,
-    "tests": 808,
+    "tests": 809,
     "tooling": 78
   },
   "role_symbol_counts": {
@@ -42720,7 +42744,7 @@
     "tooling": 38
   },
   "schema": "noetrium-repository-code-architecture-index.v1",
-  "source_git_sha": "e26dac3adca038f045c9469d51aef5c7334bd9de",
+  "source_git_sha": "bbe2c170220519fc58f5603f5e37dabc70b2f793",
   "symbols": [
     {
       "bases": [],
