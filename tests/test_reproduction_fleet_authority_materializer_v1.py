@@ -262,6 +262,12 @@ def test_two_stage_materializer_is_the_single_zero_glue_authority_pipeline(
     assert result.execution_authorities.authority_manifest_digest
     assert len(result.execution_authorities.authority_manifest_digest) == 64
     assert len(result.materialization_digest) == 64
+    assert result.materialization_digest not in {
+        result.prerequisites.manifest_digest,
+        result.fleet.materialization_digest,
+        result.owner_requirements.manifest_digest,
+        result.execution_authorities.authority_manifest_digest,
+    }
     assert {row.stage for row in result.owner_requirements.requirements} == {
         "project_manifest",
         "participant",
