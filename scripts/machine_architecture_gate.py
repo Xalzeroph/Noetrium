@@ -480,11 +480,11 @@ def _check_sdk_surfaces() -> tuple[str, ...]:
     required = {
         ROOT / "sdk/typescript/package.json": ("@noetrium/machine-sdk", "src/index.ts"),
         ROOT / "sdk/typescript/src/index.ts": (
-            "ProgramLock", "MachineCommand", "RunBinding", "canonicalJson", "sha256Hex",
+            "ProgramLock", "program_lock_digest", "MachineCommand", "RunBinding", "canonicalJson", "sha256Hex",
         ),
         ROOT / "sdk/rust/Cargo.toml": ("noetrium-machine-sdk", "serde"),
         ROOT / "sdk/rust/src/lib.rs": (
-            "ProgramLock", "MachineCommand", "RunBinding", "canonical_json", "sha256_hex",
+            "ProgramLock", "program_lock_digest", "MachineCommand", "RunBinding", "canonical_json", "sha256_hex",
         ),
     }
     missing: list[str] = []
