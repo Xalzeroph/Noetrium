@@ -26,7 +26,8 @@ from ._publication import (
 HttpOpener = ArtifactHttpOpener
 
 
-def _default_opener(request: Request, timeout_s: float) -> ArtifactHttpResponse:
+def open_artifact_http(request: Request, timeout_s: float) -> ArtifactHttpResponse:
+    """Canonical stdlib HTTP opener for Artifact-owned network acquisition."""
     return urlopen(request, timeout=timeout_s)  # type: ignore[return-value]
 
 
@@ -78,7 +79,7 @@ class HttpArtifactAcquirer(ArtifactAcquisitionPort):
     def __init__(self, *, opener: HttpOpener | None = None, user_agent: str = "noetrium-artifact/1") -> None:
         if not user_agent.strip():
             raise ValueError("artifact user agent must be non-empty")
-        self._opener = opener or _default_opener
+        self._opener = opener or open_artifact_http
         self._user_agent = user_agent
 
     def acquire(self, request: ArtifactAcquisitionRequest) -> ArtifactAcquisitionResult:
@@ -235,4 +236,9 @@ class HttpArtifactAcquirer(ArtifactAcquisitionPort):
         )
 
 
-__all__ = ["ArtifactHttpResponse", "HttpArtifactAcquirer", "HttpOpener"]
+__all__ = [
+    "ArtifactHttpResponse",
+    "HttpArtifactAcquirer",
+    "HttpOpener",
+    "open_artifact_http",
+]
