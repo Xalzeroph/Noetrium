@@ -60,6 +60,7 @@ class LoadedProjectResearchOS:
     manifest: ProjectManifest
     portfolio: ResearchPortfolio
     revision: ResearchGraphRevision
+    active_revision: ResearchGraphRevision | None
     research_os: ResearchOS
     execution_pool: ResearchExecutionPool
 
@@ -198,6 +199,7 @@ def load_project_research_os(
 
     execution_id = manifest.project.identity.project_id
     active = graph.active_cut(execution_id)
+    active_revision = None
     if active is None:
         revision = research_os.commit(
             portfolio,
@@ -208,13 +210,13 @@ def load_project_research_os(
             portfolio.portfolio_id,
             active.research_revision_digest,
         )
-        parent = _public_revision(stored)
-        if parent.portfolio_digest == portfolio.portfolio_digest:
-            revision = parent
+        active_revision = _public_revision(stored)
+        if active_revision.portfolio_digest == portfolio.portfolio_digest:
+            revision = active_revision
         else:
             revision = research_os.commit(
                 portfolio,
-                parents=(parent,),
+                parents=(active_revision,),
                 message=_REVISION_MESSAGE_UPDATE,
             )
 
@@ -223,6 +225,7 @@ def load_project_research_os(
         manifest,
         portfolio,
         revision,
+        active_revision,
         research_os,
         pool,
     )
