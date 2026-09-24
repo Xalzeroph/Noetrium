@@ -6,7 +6,6 @@ from contextlib import contextmanager
 
 from dataclasses import replace
 from pathlib import Path
-from time import time
 
 from noetrium_platform.infrastructure.resources.allocation.api import (
     AtomicEndpointReservationPort,
@@ -19,6 +18,7 @@ from noetrium_platform.infrastructure.resources.allocation.api import (
     NetworkEndpoint,
 )
 from noetrium_platform.infrastructure.resources.lease.api import (
+    LeaseClockPort,
     LeaseState,
     ResourceKind,
     ResourceLease,
@@ -39,8 +39,12 @@ from noetrium_platform.infrastructure.resources.providers.sqlite_lease_ops impor
     renew_resource_lease,
 )
 from noetrium_platform.infrastructure.resources.providers.sqlite_resource import (
+    authoritative_lease_now,
     ensure_resource_schema,
     expire_lease,
+)
+from noetrium_platform.infrastructure.resources.lease.runtime.clock import (
+    LocalLeaseClock,
 )
 from noetrium_platform.foundation.governance.api import ScopeIdentity, ScopeKind
 
@@ -61,12 +65,19 @@ class SQLiteEndpointAllocationStore(AtomicEndpointReservationPort):
         "binding_evidence_ref,bound_at_epoch_s"
     )
 
-    def __init__(self, path: str | Path, *, timeout_seconds: float = 30.0) -> None:
+    def __init__(
+        self,
+        path: str | Path,
+        *,
+        timeout_seconds: float = 30.0,
+        clock: LeaseClockPort | None = None,
+    ) -> None:
         self.path = Path(path)
         self.path.parent.mkdir(parents=True, exist_ok=True)
         if not math.isfinite(float(timeout_seconds)) or timeout_seconds <= 0:
             raise ValueError("SQLite endpoint timeout_seconds must be finite and positive")
         self.timeout_seconds = float(timeout_seconds)
+        self._clock = LocalLeaseClock() if clock is None else clock
         with self._transaction() as conn:
             try:
                 ensure_resource_schema(conn)
@@ -78,6 +89,20 @@ class SQLiteEndpointAllocationStore(AtomicEndpointReservationPort):
 
     def _connection(self):
         return durable_sqlite_connection(self.path, timeout_seconds=self.timeout_seconds)
+
+    def _authority_now(
+        self,
+        conn: sqlite3.Connection,
+        explicit_now: float | None,
+    ) -> float:
+        if explicit_now is not None:
+            value = float(explicit_now)
+            if not math.isfinite(value) or value <= 0:
+                raise ValueError(
+                    "endpoint observation time must be finite and positive"
+                )
+            return value
+        return authoritative_lease_now(conn, self._clock.read())
 
     @contextmanager
     def _transaction(self):
@@ -271,10 +296,8 @@ class SQLiteEndpointAllocationStore(AtomicEndpointReservationPort):
             raise ValueError("endpoint reservation lease/allocation identity mismatch")
         if lease.resource.kind is not ResourceKind.NETWORK_ENDPOINT:
             raise ValueError("endpoint reservation requires a network-endpoint resource")
-        now_epoch_s = time() if now is None else float(now)
-        if not math.isfinite(now_epoch_s):
-            raise ValueError("endpoint observation time must be finite")
         with self._transaction() as conn:
+            now_epoch_s = self._authority_now(conn, now)
             try:
                 existing = self._reconcile_one(
                     conn, allocation.allocation_id, now_epoch_s
@@ -362,10 +385,8 @@ class SQLiteEndpointAllocationStore(AtomicEndpointReservationPort):
     def confirm_bound(
         self, proof: EndpointBindingProof, *, now: float | None = None
     ) -> EndpointAllocation:
-        now_epoch_s = time() if now is None else float(now)
-        if not math.isfinite(now_epoch_s):
-            raise ValueError("endpoint observation time must be finite")
         with self._transaction() as conn:
+            now_epoch_s = self._authority_now(conn, now)
             try:
                 current = self._reconcile_one(conn, proof.allocation_id, now_epoch_s)
                 if current is None:
@@ -434,10 +455,8 @@ class SQLiteEndpointAllocationStore(AtomicEndpointReservationPort):
             character not in "0123456789abcdef" for character in expected_previous_binding_proof_digest
         ):
             raise ValueError("expected previous endpoint binding proof digest must be canonical SHA-256")
-        now_epoch_s = time() if now is None else float(now)
-        if not math.isfinite(now_epoch_s):
-            raise ValueError("endpoint observation time must be finite")
         with self._transaction() as conn:
+            now_epoch_s = self._authority_now(conn, now)
             try:
                 current = self._reconcile_one(conn, proof.allocation_id, now_epoch_s)
                 if current is None:
@@ -482,10 +501,8 @@ class SQLiteEndpointAllocationStore(AtomicEndpointReservationPort):
             raise TypeError("endpoint renewal requires EndpointAllocation")
         if not math.isfinite(float(ttl_seconds)) or ttl_seconds <= 0:
             raise ValueError("endpoint lease ttl_seconds must be finite and > 0")
-        now_epoch_s = time() if now is None else float(now)
-        if not math.isfinite(now_epoch_s):
-            raise ValueError("endpoint observation time must be finite")
         with self._transaction() as conn:
+            now_epoch_s = self._authority_now(conn, now)
             current = self._reconcile_one(
                 conn,
                 allocation.allocation_id,
@@ -533,9 +550,9 @@ class SQLiteEndpointAllocationStore(AtomicEndpointReservationPort):
             raise ValueError("endpoint allocation ids must be unique")
         if not math.isfinite(float(ttl_seconds)) or ttl_seconds <= 0:
             raise ValueError("endpoint lease ttl_seconds must be finite and > 0")
-        now_epoch_s = time() if now is None else float(now)
-        expires_at = now_epoch_s + ttl_seconds
         with self._transaction() as conn:
+            now_epoch_s = self._authority_now(conn, now)
+            expires_at = now_epoch_s + ttl_seconds
             current_rows: list[EndpointAllocation] = []
             for expected in allocations:
                 current = self._reconcile_one(
@@ -583,8 +600,8 @@ class SQLiteEndpointAllocationStore(AtomicEndpointReservationPort):
     def release(self, allocation: EndpointAllocation) -> EndpointAllocation:
         if type(allocation) is not EndpointAllocation:
             raise TypeError("endpoint release requires EndpointAllocation")
-        now_epoch_s = time()
         with self._transaction() as conn:
+            now_epoch_s = self._authority_now(conn, None)
             current = self._reconcile_one(
                 conn,
                 allocation.allocation_id,
@@ -628,11 +645,12 @@ class SQLiteEndpointAllocationStore(AtomicEndpointReservationPort):
     def get(self, allocation_id: str) -> EndpointAllocation | None:
         # Point reads are strongly reconciled against the authoritative lease.
         # This is still O(1): both allocation_id and lease_id are indexed keys.
-        now_epoch_s = time()
         with self._transaction() as conn:
             try:
+                now_epoch_s = self._authority_now(conn, None)
                 current = self._reconcile_one(conn, allocation_id, now_epoch_s)
-
+                if current is not None and current.state.is_live:
+                    expire_lease(conn, current.lease_id, now_epoch_s)
                 return current
             except BaseException:
 
@@ -656,10 +674,8 @@ class SQLiteEndpointAllocationStore(AtomicEndpointReservationPort):
         OS probe the only authority that may retire it.
         """
 
-        now_epoch_s = time() if now is None else float(now)
-        if not math.isfinite(now_epoch_s):
-            raise ValueError("endpoint observation time must be finite")
         with self._transaction() as conn:
+            now_epoch_s = self._authority_now(conn, now)
             reconcile_expired_resource_leases(
                 conn,
                 now_epoch_s=now_epoch_s,
@@ -694,10 +710,8 @@ class SQLiteEndpointAllocationStore(AtomicEndpointReservationPort):
     ) -> EndpointAllocation:
         if type(allocation) is not EndpointAllocation:
             raise TypeError("endpoint orphan retirement requires EndpointAllocation")
-        now_epoch_s = time() if now is None else float(now)
-        if not math.isfinite(now_epoch_s):
-            raise ValueError("endpoint observation time must be finite")
         with self._transaction() as conn:
+            now_epoch_s = self._authority_now(conn, now)
             current = self._reconcile_one(
                 conn, allocation.allocation_id, now_epoch_s
             )
