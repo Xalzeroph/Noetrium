@@ -12,6 +12,7 @@ from .durable_file import (
     DurableFileWriteError,
     atomic_replace_bytes,
     durable_replace_file,
+    durable_replace_directory,
     durable_unlink,
     fsync_directory,
 )
@@ -46,6 +47,7 @@ __all__ = [
     "DurableFileWriteError",
     "atomic_replace_bytes",
     "durable_replace_file",
+    "durable_replace_directory",
     "durable_unlink",
     "fsync_directory",
     "InterprocessFileLock",
