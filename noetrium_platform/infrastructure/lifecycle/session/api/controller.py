@@ -8,6 +8,7 @@ import re
 from typing import Protocol
 
 from noetrium_platform.foundation.api import is_absolute_target_path
+from noetrium_platform.foundation.kernel.kernel.durability import sha256_file
 
 from .contracts import PersistentSessionSpec, process_environment_digest
 
@@ -16,14 +17,6 @@ class PersistentSessionLaunchManifestPort(Protocol):
     """Minimal read-only identity needed to bind an outer controller session."""
 
     def digest(self) -> str: ...
-
-
-def _sha256_file(path: Path) -> str:
-    digest = hashlib.sha256()
-    with path.open("rb") as handle:
-        for chunk in iter(lambda: handle.read(1024 * 1024), b""):
-            digest.update(chunk)
-    return digest.hexdigest()
 
 
 @dataclass(frozen=True, slots=True)
@@ -48,7 +41,7 @@ class RuntimeControllerCommand:
         if not digest:
             if not launcher.is_file():
                 raise FileNotFoundError(f"runtime controller launcher missing: {launcher}")
-            digest = _sha256_file(launcher)
+            digest, _launcher_size = sha256_file(launcher)
             object.__setattr__(self, "launcher_binary_sha256", digest)
         if len(digest) != 64 or any(character not in "0123456789abcdef" for character in digest.lower()):
             raise ValueError("runtime controller launcher identity must be SHA-256")
