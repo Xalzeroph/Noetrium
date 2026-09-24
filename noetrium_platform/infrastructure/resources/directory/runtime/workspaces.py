@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import shutil
+from enum import StrEnum
 from pathlib import Path
 
 from noetrium_platform.foundation.kernel.kernel import canonical_digest
@@ -39,7 +40,14 @@ _WORKSPACE_RETIREMENT_FIELDS = {
     "workspace_identity_digest",
     "workspace_metadata_digest",
     "gc_proof_digest",
+    "phase",
 }
+
+
+class _WorkspaceRetirementPhase(StrEnum):
+    RETIRED = "retired"
+    QUARANTINED = "quarantined"
+    PURGED = "purged"
 
 
 class LocalWorkspaceManager:
@@ -105,6 +113,18 @@ class LocalWorkspaceManager:
             self._root
             / ".retired"
             / f"{self._identity_digest(scope, category, workspace_id)}.sha256"
+        )
+
+    def _quarantine_path(
+        self,
+        scope: ScopeIdentity,
+        category: str,
+        workspace_id: str,
+    ) -> Path:
+        return (
+            self._root
+            / ".retired-workspaces"
+            / self._identity_digest(scope, category, workspace_id)
         )
 
     @staticmethod
@@ -352,22 +372,144 @@ class LocalWorkspaceManager:
             raise WorkspaceMetadataError(
                 WorkspaceMetadataFailureCode.DOCUMENT_INTEGRITY
             ) from exc
-        if set(payload) != _WORKSPACE_RETIREMENT_FIELDS or any(
+        if set(payload) != _WORKSPACE_RETIREMENT_FIELDS:
+            raise WorkspaceMetadataError(
+                WorkspaceMetadataFailureCode.PAYLOAD_SHAPE
+            )
+        digest_fields = (
+            "workspace_identity_digest",
+            "workspace_metadata_digest",
+            "gc_proof_digest",
+        )
+        if any(
             type(payload.get(field_name)) is not str
             or len(str(payload.get(field_name))) != 64
             or any(
                 ch not in "0123456789abcdef"
                 for ch in str(payload.get(field_name))
             )
-            for field_name in _WORKSPACE_RETIREMENT_FIELDS
+            for field_name in digest_fields
         ):
             raise WorkspaceMetadataError(
                 WorkspaceMetadataFailureCode.PAYLOAD_SHAPE
             )
+        try:
+            phase = _WorkspaceRetirementPhase(str(payload["phase"]))
+        except (KeyError, ValueError) as exc:
+            raise WorkspaceMetadataError(
+                WorkspaceMetadataFailureCode.PAYLOAD_SHAPE
+            ) from exc
         return {
-            field_name: str(payload[field_name])
-            for field_name in _WORKSPACE_RETIREMENT_FIELDS
+            "workspace_identity_digest": str(
+                payload["workspace_identity_digest"]
+            ),
+            "workspace_metadata_digest": str(
+                payload["workspace_metadata_digest"]
+            ),
+            "gc_proof_digest": str(payload["gc_proof_digest"]),
+            "phase": phase.value,
         }
+
+    @staticmethod
+    def _retirement_payload(
+        *,
+        workspace_identity_digest: str,
+        workspace_metadata_digest: str,
+        gc_proof_digest: str,
+        phase: _WorkspaceRetirementPhase,
+    ) -> dict[str, str]:
+        return {
+            "workspace_identity_digest": workspace_identity_digest,
+            "workspace_metadata_digest": workspace_metadata_digest,
+            "gc_proof_digest": gc_proof_digest,
+            "phase": phase.value,
+        }
+
+    @staticmethod
+    def _publish_retirement(
+        path: Path,
+        *,
+        workspace_identity_digest: str,
+        workspace_metadata_digest: str,
+        gc_proof_digest: str,
+        phase: _WorkspaceRetirementPhase,
+    ) -> None:
+        atomic_replace_bytes(
+            path,
+            encode_checksummed_document(
+                _WORKSPACE_RETIREMENT_SCHEMA,
+                LocalWorkspaceManager._retirement_payload(
+                    workspace_identity_digest=workspace_identity_digest,
+                    workspace_metadata_digest=workspace_metadata_digest,
+                    gc_proof_digest=gc_proof_digest,
+                    phase=phase,
+                ),
+            ),
+        )
+
+    def _validate_live_workspace_for_retirement(
+        self,
+        path: Path,
+        *,
+        workspace_id: str,
+        scope: ScopeIdentity,
+        category: str,
+        expected_metadata_digest: str | None = None,
+    ) -> WorkspaceAllocation:
+        if path.is_symlink() or not path.is_dir():
+            raise RuntimeError(
+                f"workspace path is not an owned directory: {path}"
+            )
+        metadata = path / ".workspace.json"
+        if not metadata.is_file():
+            raise RuntimeError(
+                "workspace retirement requires authoritative metadata: "
+                f"{workspace_id}"
+            )
+        current = self._decode_metadata(self._root, metadata)
+        if (
+            current.workspace_id != workspace_id
+            or current.scope != scope
+            or current.category != category
+        ):
+            raise RuntimeError(
+                "workspace retirement identity drifted from authoritative metadata"
+            )
+        digest = self._metadata_digest(current)
+        if (
+            expected_metadata_digest is not None
+            and digest != expected_metadata_digest
+        ):
+            raise RuntimeError(
+                "workspace retirement metadata changed after durable retirement"
+            )
+        return current
+
+    @staticmethod
+    def _move_to_quarantine(path: Path, quarantine: Path) -> None:
+        quarantine.parent.mkdir(parents=True, exist_ok=True)
+        fsync_directory(quarantine.parent.parent)
+        if quarantine.exists():
+            raise RuntimeError(
+                f"workspace quarantine identity already exists: {quarantine}"
+            )
+        try:
+            path.rename(quarantine)
+        except OSError:
+            # Rename may have committed before the caller observed an I/O error.
+            if path.exists() or not quarantine.exists():
+                raise
+        fsync_directory(path.parent)
+        fsync_directory(quarantine.parent)
+
+    @staticmethod
+    def _purge_quarantine(quarantine: Path) -> None:
+        if quarantine.is_symlink() or not quarantine.is_dir():
+            raise RuntimeError(
+                f"workspace quarantine is not an owned directory: {quarantine}"
+            )
+        shutil.rmtree(quarantine)
+        fsync_directory(quarantine.parent)
 
     def remove_workspace(
         self,
@@ -402,66 +544,113 @@ class LocalWorkspaceManager:
 
         path = self._path(scope, category, workspace_id)
         retired = self._retired_path(scope, category, workspace_id)
+        quarantine = self._quarantine_path(scope, category, workspace_id)
 
         with InterprocessFileLock(
             self._lock_path(scope, category, workspace_id)
         ):
-            if retired.exists():
-                retirement = self._decode_retirement(retired)
-                if retirement["workspace_identity_digest"] != expected_identity:
+            if not retired.exists():
+                if not path.exists():
+                    return False
+                if quarantine.exists():
                     raise RuntimeError(
-                        "workspace retirement identity does not match derived identity"
+                        "workspace quarantine exists without durable retirement proof"
                     )
-                if retirement["gc_proof_digest"] != gc.proof_digest:
+                current = self._validate_live_workspace_for_retirement(
+                    path,
+                    workspace_id=workspace_id,
+                    scope=scope,
+                    category=category,
+                )
+                metadata_digest = self._metadata_digest(current)
+                self._publish_retirement(
+                    retired,
+                    workspace_identity_digest=expected_identity,
+                    workspace_metadata_digest=metadata_digest,
+                    gc_proof_digest=gc.proof_digest,
+                    phase=_WorkspaceRetirementPhase.RETIRED,
+                )
+            retirement = self._decode_retirement(retired)
+            if retirement["workspace_identity_digest"] != expected_identity:
+                raise RuntimeError(
+                    "workspace retirement identity does not match derived identity"
+                )
+            if retirement["gc_proof_digest"] != gc.proof_digest:
+                raise RuntimeError(
+                    "workspace retirement GC proof changed across retry"
+                )
+
+            phase = _WorkspaceRetirementPhase(retirement["phase"])
+            metadata_digest = retirement["workspace_metadata_digest"]
+
+            if phase is _WorkspaceRetirementPhase.PURGED:
+                if quarantine.exists():
                     raise RuntimeError(
-                        "workspace retirement GC proof changed across retry"
+                        "purged workspace quarantine reappeared"
                     )
                 if path.exists():
-                    if path.is_symlink() or not path.is_dir():
-                        raise RuntimeError(
-                            f"retired workspace path is not a directory: {path}"
-                        )
-                    shutil.rmtree(path)
-                    fsync_directory(path.parent)
+                    raise RuntimeError(
+                        "purged workspace live path reappeared as unowned residue"
+                    )
                 return True
 
-            if not path.exists():
-                return False
-            if path.is_symlink() or not path.is_dir():
-                raise RuntimeError(
-                    f"workspace path is not an owned directory: {path}"
-                )
+            if phase is _WorkspaceRetirementPhase.RETIRED:
+                if path.exists() and quarantine.exists():
+                    raise RuntimeError(
+                        "workspace retirement split truth: live and quarantine both exist"
+                    )
+                if quarantine.exists():
+                    # Rename committed before the phase publication became
+                    # durable. The quarantine identity is terminal and exact.
+                    self._publish_retirement(
+                        retired,
+                        workspace_identity_digest=expected_identity,
+                        workspace_metadata_digest=metadata_digest,
+                        gc_proof_digest=gc.proof_digest,
+                        phase=_WorkspaceRetirementPhase.QUARANTINED,
+                    )
+                    phase = _WorkspaceRetirementPhase.QUARANTINED
+                elif path.exists():
+                    self._validate_live_workspace_for_retirement(
+                        path,
+                        workspace_id=workspace_id,
+                        scope=scope,
+                        category=category,
+                        expected_metadata_digest=metadata_digest,
+                    )
+                    self._move_to_quarantine(path, quarantine)
+                    self._publish_retirement(
+                        retired,
+                        workspace_identity_digest=expected_identity,
+                        workspace_metadata_digest=metadata_digest,
+                        gc_proof_digest=gc.proof_digest,
+                        phase=_WorkspaceRetirementPhase.QUARANTINED,
+                    )
+                    phase = _WorkspaceRetirementPhase.QUARANTINED
+                else:
+                    raise RuntimeError(
+                        "retired workspace lost both live and quarantine carriers"
+                    )
 
-            metadata = path / ".workspace.json"
-            if not metadata.is_file():
-                raise RuntimeError(
-                    "workspace removal requires authoritative metadata: "
-                    f"{workspace_id}"
+            if phase is _WorkspaceRetirementPhase.QUARANTINED:
+                if path.exists():
+                    raise RuntimeError(
+                        "quarantined workspace live path reappeared as unowned residue"
+                    )
+                if quarantine.exists():
+                    self._purge_quarantine(quarantine)
+                self._publish_retirement(
+                    retired,
+                    workspace_identity_digest=expected_identity,
+                    workspace_metadata_digest=metadata_digest,
+                    gc_proof_digest=gc.proof_digest,
+                    phase=_WorkspaceRetirementPhase.PURGED,
                 )
-            current = self._decode_metadata(self._root, metadata)
-            if (
-                current.workspace_id != workspace_id
-                or current.scope != scope
-                or current.category != category
-            ):
-                raise RuntimeError(
-                    "workspace removal identity drifted from authoritative metadata"
-                )
-            retirement_payload = {
-                "workspace_identity_digest": expected_identity,
-                "workspace_metadata_digest": self._metadata_digest(current),
-                "gc_proof_digest": gc.proof_digest,
-            }
-            atomic_replace_bytes(
-                retired,
-                encode_checksummed_document(
-                    _WORKSPACE_RETIREMENT_SCHEMA,
-                    retirement_payload,
-                ),
+                return True
+
+            raise RuntimeError(
+                f"unsupported workspace retirement phase: {phase.value}"
             )
-            shutil.rmtree(path)
-            fsync_directory(path.parent)
-            return True
 
     @staticmethod
     def _validate_name(value: str, label: str) -> None:
