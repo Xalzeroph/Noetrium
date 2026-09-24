@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from contextlib import AbstractContextManager
 from typing import Protocol
 
 from .service_state_contracts import ServiceSupervisorState
@@ -19,6 +20,10 @@ class ServiceStateStorePort(Protocol):
     def read(self) -> ServiceSupervisorState: ...
 
     def reference(self) -> str: ...
+
+    def mutation(self) -> AbstractContextManager[object]:
+        """Acquire the exact service-state mutation fence."""
+        ...
 
 
 __all__ = ["ServiceStateStorePort"]
