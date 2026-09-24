@@ -241,18 +241,34 @@ class DirectoryRunCheckpointStore(RunCheckpointStore):
                 self._clear_intent(intent, manifest_committed=True)
                 return current
 
-            # Publish durable ownership before any content blob. A crash after
-            # this point leaves a typed pending publication, never an anonymous
-            # orphan payload that age-based cleanup could misclassify.
-            self._publish_intent(intent)
-            for item in participant_payloads:
-                self._write_blob(
-                    item.checkpoint.opaque_payload,
-                    item.checkpoint.ref.payload_sha256,
+            # Keep every referenced CAS generation fenced until the manifest
+            # commit and intent clear converge. GC uses the same per-digest
+            # locks, so it can never miss a publication in the gap between
+            # blob creation and manifest visibility.
+            digests = tuple(
+                sorted(
+                    {
+                        item.checkpoint.ref.payload_sha256
+                        for item in participant_payloads
+                    }
                 )
-            atomic_replace_bytes(path, encoded)
-            self._clear_intent(intent, manifest_committed=True)
-            return manifest
+            )
+            with ExitStack() as blob_locks:
+                for digest in digests:
+                    blob_locks.enter_context(
+                        InterprocessFileLock(self._blob_lock_path(digest))
+                    )
+                # Publish durable ownership before any content blob. A crash
+                # after this point leaves a typed pending publication.
+                self._publish_intent(intent)
+                for item in participant_payloads:
+                    self._write_blob_under_lock(
+                        item.checkpoint.opaque_payload,
+                        item.checkpoint.ref.payload_sha256,
+                    )
+                atomic_replace_bytes(path, encoded)
+                self._clear_intent(intent, manifest_committed=True)
+                return manifest
 
     def load(self, checkpoint_id: str) -> RunCheckpointBundle:
         path = self._manifest_path(checkpoint_id)
