@@ -1,4 +1,7 @@
 from .api import (
+    CheckpointGcAssessment,
+    CheckpointNamespace,
+    CheckpointPersistenceState,
     RunCheckpointBundle,
     RunCheckpointManifest,
     RunCheckpointStore,
@@ -15,6 +18,9 @@ from .api import (
 )
 
 __all__ = [
+    "CheckpointGcAssessment",
+    "CheckpointNamespace",
+    "CheckpointPersistenceState",
     "RunCheckpointBundle",
     "RunCheckpointManifest",
     "RunCheckpointStore",
