@@ -13,6 +13,9 @@ import importlib
 from pathlib import PurePosixPath
 
 from noetrium import api
+from noetrium_platform.research.execution.machines.api import (
+    ResearchProgram as MachineResearchProgram,
+)
 from noetrium_platform.research.execution.workflow.api import MethodProgram
 
 from .contracts import (
@@ -24,6 +27,31 @@ from .contracts import (
 
 class ReproductionResearchOSCompileError(RuntimeError):
     pass
+
+
+@dataclass(frozen=True, slots=True)
+class ReproductionMachineProgramBinding:
+    """Exact immutable Research Machine program declared by a reproduction asset."""
+
+    package: str
+    asset: ReproductionAssetRef
+    module: str
+    qualname: str
+    program_id: str
+    machine_kind: str
+    program_digest: str
+
+    def __post_init__(self) -> None:
+        if not self.package:
+            raise ValueError("reproduction machine binding package is required")
+        if self.asset.kind is not ReproductionAssetKind.RESEARCH_PROGRAM:
+            raise ValueError("reproduction machine binding asset kind drifted")
+        if not self.module or not self.qualname or not self.program_id:
+            raise ValueError("reproduction machine binding identity is incomplete")
+        if not self.machine_kind:
+            raise ValueError("reproduction machine binding kind is required")
+        if len(self.program_digest) != 64:
+            raise ValueError("reproduction machine program digest must be SHA-256 text")
 
 
 @dataclass(frozen=True, slots=True)
@@ -121,6 +149,94 @@ def resolve_method_program_binding(
     )
 
 
+def resolve_research_program_bindings(
+    definition: ReproductionDefinition,
+) -> tuple[ReproductionMachineProgramBinding, ...]:
+    """Resolve every declared ResearchProgram asset into exact Machine IR identity."""
+
+    if type(definition) is not ReproductionDefinition:
+        raise TypeError("reproduction Research OS compilation requires definition")
+    assets = tuple(
+        row
+        for row in definition.assets
+        if row.kind is ReproductionAssetKind.RESEARCH_PROGRAM
+    )
+    bindings: list[ReproductionMachineProgramBinding] = []
+    for asset in assets:
+        module_name = _module_from_asset(definition, asset)
+        try:
+            module = importlib.import_module(module_name)
+        except ImportError as exc:
+            raise ReproductionResearchOSCompileError(
+                f"{definition.package} ResearchProgram module cannot be imported: "
+                f"{module_name}"
+            ) from exc
+        exported = getattr(module, "__all__", ())
+        if type(exported) not in {list, tuple}:
+            raise ReproductionResearchOSCompileError(
+                f"{definition.package} ResearchProgram module __all__ must be explicit"
+            )
+        candidates: dict[str, tuple[str, MachineResearchProgram]] = {}
+        for name in exported:
+            if type(name) is not str or not name:
+                raise ReproductionResearchOSCompileError(
+                    f"{definition.package} ResearchProgram module has invalid __all__"
+                )
+            value = getattr(module, name, None)
+            if type(value) is MachineResearchProgram:
+                candidates.setdefault(value.program_digest, (name, value))
+        if not candidates:
+            raise ReproductionResearchOSCompileError(
+                f"{definition.package} must export at least one ResearchProgram from "
+                f"{asset.path}"
+            )
+        for program_digest, (qualname, program) in sorted(candidates.items()):
+            bindings.append(
+                ReproductionMachineProgramBinding(
+                    definition.package,
+                    asset,
+                    module_name,
+                    qualname,
+                    program.program_id,
+                    program.kind.value,
+                    program_digest,
+                )
+            )
+    ordered = tuple(
+        sorted(
+            bindings,
+            key=lambda row: (
+                row.asset.path,
+                row.program_id,
+                row.program_digest,
+                row.qualname,
+            ),
+        )
+    )
+    identities = tuple(
+        (row.module, row.program_id, row.program_digest)
+        for row in ordered
+    )
+    if len(identities) != len(set(identities)):
+        raise ReproductionResearchOSCompileError(
+            f"{definition.package} declares duplicate ResearchProgram identities"
+        )
+    return ordered
+
+
+def _machine_dependency_document(
+    binding: ReproductionMachineProgramBinding,
+) -> dict[str, str]:
+    return {
+        "asset_path": binding.asset.path,
+        "module": binding.module,
+        "qualname": binding.qualname,
+        "program_id": binding.program_id,
+        "machine_kind": binding.machine_kind,
+        "program_digest": binding.program_digest,
+    }
+
+
 def compile_reproduction_research_program(
     definition: ReproductionDefinition,
 ) -> api.ResearchProgram:
@@ -130,6 +246,11 @@ def compile_reproduction_research_program(
         raise TypeError("reproduction Research OS compilation requires definition")
     method = resolve_method_program_binding(definition)
     study = _asset(definition, ReproductionAssetKind.STUDY)
+    machine_dependencies = resolve_research_program_bindings(definition)
+    machine_dependency_documents = tuple(
+        _machine_dependency_document(row)
+        for row in machine_dependencies
+    )
 
     builder = api.ResearchProgramBuilder(definition.identity.method_id)
     builder.method_program(
@@ -141,6 +262,7 @@ def compile_reproduction_research_program(
             "reproduction_definition_digest": definition.definition_digest,
             "asset_path": method.asset.path,
             "program_digest": method.program_digest,
+            "research_program_dependencies": machine_dependency_documents,
         },
     )
     builder.protocol(
@@ -184,6 +306,7 @@ def compile_reproduction_research_program(
             "method_program_digest": method.program_digest,
             "study_asset": study.path,
             "benchmark_ids": definition.catalog.benchmark_ids,
+            "research_program_dependencies": machine_dependency_documents,
         },
     )
     return builder.freeze()
@@ -210,9 +333,11 @@ def compile_reproduction_portfolio(
 
 
 __all__ = [
+    "ReproductionMachineProgramBinding",
     "ReproductionMethodProgramBinding",
     "ReproductionResearchOSCompileError",
     "compile_reproduction_portfolio",
     "compile_reproduction_research_program",
     "resolve_method_program_binding",
+    "resolve_research_program_bindings",
 ]
