@@ -12,6 +12,8 @@ from noetrium_platform.substrate.api import (
     EndpointAllocationPort,
     EndpointLeaseGuardFactoryPort,
     EndpointLeaseGuardPort,
+    PLATFORM_SCOPE,
+    ResourceOwnership,
 )
 from noetrium_platform.foundation.kernel.kernel import canonical_digest
 from noetrium_platform.substrate.api import ServiceReadyObservation
@@ -409,12 +411,29 @@ class MinecraftBranchRuntimeFactory(MinecraftBranchRuntimeFactoryPort):
         self._action_recovery_root = action_recovery_root
 
     def open(self, request: MinecraftBranchRuntimeRequest) -> MinecraftBranchRuntimeBinding:
-        allocation = self._endpoint_allocations.allocate(request.endpoint_allocation)
+        allocation = self._endpoint_allocations.allocate_auto(
+            allocation_id=request.endpoint_allocation_id,
+            holder_scope=request.scope,
+            owner_scope=PLATFORM_SCOPE,
+            ownership=ResourceOwnership.PLATFORM_MANAGED,
+            purpose=f"minecraft-branch:{request.branch.branch_id}:game",
+            host=request.endpoint_host,
+            candidate_count=request.endpoint_candidate_count,
+        )
         rcon_allocation: EndpointAllocation | None = None
         lease_guard: EndpointLeaseGuardPort | None = None
         try:
-            if request.rcon_endpoint_allocation is not None:
-                rcon_allocation = self._endpoint_allocations.allocate(request.rcon_endpoint_allocation)
+            rcon_allocation_id = request.rcon_endpoint_allocation_id
+            if rcon_allocation_id is not None:
+                rcon_allocation = self._endpoint_allocations.allocate_auto(
+                    allocation_id=rcon_allocation_id,
+                    holder_scope=request.scope,
+                    owner_scope=PLATFORM_SCOPE,
+                    ownership=ResourceOwnership.PLATFORM_MANAGED,
+                    purpose=f"minecraft-branch:{request.branch.branch_id}:rcon",
+                    host=request.endpoint_host,
+                    candidate_count=request.endpoint_candidate_count,
+                )
             allocation_ids = tuple(
                 row.allocation_id
                 for row in (allocation, rcon_allocation)

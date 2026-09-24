@@ -8,9 +8,8 @@ import re
 from typing import Any, Mapping, TypeAlias
 
 from noetrium_platform.foundation.kernel.kernel import canonical_digest
-from noetrium_platform.substrate.api import EndpointAllocationRequest
 from noetrium_platform.substrate.api import is_absolute_target_path
-from noetrium_platform.substrate.api import ScopeKind
+from noetrium_platform.substrate.api import ScopeIdentity, ScopeKind
 
 
 MinecraftJsonValue: TypeAlias = (
@@ -484,24 +483,44 @@ class MinecraftWorldBranch:
 
 @dataclass(frozen=True, slots=True)
 class MinecraftBranchRuntimeRequest:
-    """Frozen input for realizing one isolated branch runtime."""
+    """Frozen input for realizing one isolated branch runtime.
+
+    Callers declare branch identity and scope only. Physical host ports are
+    selected, fenced, renewed and released exclusively by Resource authority.
+    """
 
     branch: MinecraftWorldBranch
-    endpoint_allocation: EndpointAllocationRequest
     environment_template: MinecraftEnvironmentSpec
     server_template: MinecraftServerSpec
     session_id: str
-    rcon_endpoint_allocation: EndpointAllocationRequest | None = None
+    scope: ScopeIdentity
+    endpoint_host: str = "127.0.0.1"
+    endpoint_candidate_count: int = 32
 
     def __post_init__(self) -> None:
         if not self.session_id.strip():
             raise ValueError("Minecraft branch runtime session_id is required")
-        if self.endpoint_allocation.holder_scope.kind is not ScopeKind.BRANCH:
-            raise ValueError("Minecraft branch endpoint allocation must be held by a branch scope")
-        if self.rcon_endpoint_allocation is not None and self.rcon_endpoint_allocation.holder_scope.kind is not ScopeKind.BRANCH:
-            raise ValueError("Minecraft branch RCON allocation must be held by a branch scope")
-        if (self.server_template.rcon_endpoint is None) != (self.rcon_endpoint_allocation is None):
-            raise ValueError("Minecraft branch RCON template and allocation must be supplied together")
+        if type(self.scope) is not ScopeIdentity or self.scope.kind is not ScopeKind.BRANCH:
+            raise ValueError("Minecraft branch runtime scope must be a branch scope")
+        if not self.endpoint_host.strip():
+            raise ValueError("Minecraft branch endpoint_host is required")
+        if (
+            type(self.endpoint_candidate_count) is not int
+            or self.endpoint_candidate_count <= 0
+        ):
+            raise ValueError(
+                "Minecraft branch endpoint_candidate_count must be positive"
+            )
+
+    @property
+    def endpoint_allocation_id(self) -> str:
+        return f"minecraft:{self.branch.branch_id}:{self.session_id}:game"
+
+    @property
+    def rcon_endpoint_allocation_id(self) -> str | None:
+        if self.server_template.rcon_endpoint is None:
+            return None
+        return f"minecraft:{self.branch.branch_id}:{self.session_id}:rcon"
 
 
 @dataclass(frozen=True, slots=True)

@@ -22,7 +22,6 @@ from noetrium_platform.capabilities.environment.minecraft.composition import (
 from noetrium_platform.capabilities.environment.minecraft.runtime import MinecraftEnvironmentImplementation
 from noetrium_platform.capabilities.environment.api import DurablePreparedActionSession
 from noetrium_platform.infrastructure.resources.allocation.api import (
-    EndpointAllocationRequest,
     EndpointAllocationState,
     EndpointProbeResult,
     NetworkEndpoint,
@@ -147,6 +146,12 @@ class RecordingServer:
         self.events.append("server.stop")
 
 
+class FixedCandidatePorts:
+    def candidate_ports(self, *, host, count, protocol=None):
+        del host, protocol
+        return tuple(range(25566, 25566 + count))
+
+
 def _request() -> MinecraftBranchRuntimeRequest:
     branch = MinecraftWorldBranch(
         branch_id="candidate-a",
@@ -168,17 +173,10 @@ def _request() -> MinecraftBranchRuntimeRequest:
     )
     return MinecraftBranchRuntimeRequest(
         branch=branch,
-        endpoint_allocation=EndpointAllocationRequest(
-            allocation_id="candidate-a-endpoint",
-            holder_scope=ScopeIdentity(ScopeKind.BRANCH, "candidate-a"),
-            purpose="candidate branch server",
-            host="127.0.0.1",
-            candidate_ports=(25566,),
-            owner_scope=PLATFORM_SCOPE,
-        ),
         environment_template=env,
         server_template=server,
         session_id="candidate-a-session",
+        scope=ScopeIdentity(ScopeKind.BRANCH, "candidate-a"),
     )
 
 
@@ -188,6 +186,7 @@ def test_branch_runtime_binds_branch_endpoint_and_releases_in_reverse_order() ->
         ownership=leases,
         leases=leases,
         probe=AlwaysAvailableProbe(),
+        candidates=FixedCandidatePorts(),
     )
     events: list[str] = []
     created_specs: list[MinecraftServerSpec] = []
@@ -240,6 +239,7 @@ def test_branch_runtime_rebinds_new_server_generation_with_prior_proof_cas() -> 
         ownership=leases,
         leases=leases,
         probe=AlwaysAvailableProbe(),
+        candidates=FixedCandidatePorts(),
     )
 
     class GenerationAwareAllocator:
@@ -320,6 +320,7 @@ def test_branch_runtime_fails_closed_without_authoritative_ready_at() -> None:
         ownership=leases,
         leases=leases,
         probe=AlwaysAvailableProbe(),
+        candidates=FixedCandidatePorts(),
     )
     events: list[str] = []
 
@@ -368,6 +369,7 @@ def test_branch_runtime_rebinds_game_and_rcon_generation_together() -> None:
         ownership=leases,
         leases=leases,
         probe=AlwaysAvailableProbe(),
+        candidates=FixedCandidatePorts(),
     )
 
     class GenerationAwareAllocator:
@@ -413,14 +415,6 @@ def test_branch_runtime_rebinds_game_and_rcon_generation_together() -> None:
             request.server_template,
             rcon_endpoint=MinecraftRconEndpoint(port=25575),
         ),
-        rcon_endpoint_allocation=EndpointAllocationRequest(
-            allocation_id="candidate-a-rcon-generation",
-            holder_scope=ScopeIdentity(ScopeKind.BRANCH, "candidate-a"),
-            purpose="candidate branch rcon generation",
-            host="127.0.0.1",
-            candidate_ports=(25578,),
-            owner_scope=PLATFORM_SCOPE,
-        ),
     )
     factory = MinecraftBranchRuntimeFactory(
         endpoint_allocations=allocations,
@@ -437,8 +431,8 @@ def test_branch_runtime_rebinds_game_and_rcon_generation_together() -> None:
     binding._confirm_bound_endpoints(server.verify_ready())
 
     assert allocations.replaced == [
-        "candidate-a-endpoint",
-        "candidate-a-rcon-generation",
+        "minecraft:candidate-a:candidate-a-session:game",
+        "minecraft:candidate-a:candidate-a-session:rcon",
     ]
     assert binding.allocation.bound_at_epoch_s == 3456.5
     assert binding.rcon_allocation is not None
@@ -453,6 +447,7 @@ def test_branch_runtime_binds_recovery_root_outside_world_and_preserves_prepared
         ownership=leases,
         leases=leases,
         probe=AlwaysAvailableProbe(),
+        candidates=FixedCandidatePorts(),
     )
     events: list[str] = []
     composed_specs: list[MinecraftEnvironmentSpec] = []
@@ -517,6 +512,7 @@ def test_branch_runtime_releases_endpoint_when_server_start_fails() -> None:
         ownership=leases,
         leases=leases,
         probe=AlwaysAvailableProbe(),
+        candidates=FixedCandidatePorts(),
     )
     events: list[str] = []
 
@@ -560,6 +556,7 @@ def test_branch_runtime_allocates_and_rebinds_rcon_endpoint_as_part_of_branch_tr
         ownership=leases,
         leases=leases,
         probe=AlwaysAvailableProbe(),
+        candidates=FixedCandidatePorts(),
     )
     events: list[str] = []
     created_specs: list[MinecraftServerSpec] = []
@@ -585,21 +582,13 @@ def test_branch_runtime_allocates_and_rebinds_rcon_endpoint_as_part_of_branch_tr
     request = replace(
         request,
         server_template=replace(request.server_template, rcon_endpoint=MinecraftRconEndpoint(port=25575)),
-        rcon_endpoint_allocation=EndpointAllocationRequest(
-            allocation_id="candidate-a-rcon",
-            holder_scope=ScopeIdentity(ScopeKind.BRANCH, "candidate-a"),
-            purpose="candidate branch rcon",
-            host="127.0.0.1",
-            candidate_ports=(25576,),
-            owner_scope=PLATFORM_SCOPE,
-        ),
     )
 
     binding = factory.open(request)
     assert binding.rcon_allocation is not None
-    assert binding.rcon_allocation.endpoint.port == 25576
+    assert binding.rcon_allocation.endpoint.port == 25567
     assert created_specs[0].rcon_endpoint is not None
-    assert created_specs[0].rcon_endpoint.port == 25576
+    assert created_specs[0].rcon_endpoint.port == 25567
     binding.open_session(services=object())
     assert binding.allocation.state is EndpointAllocationState.BOUND
     assert binding.rcon_allocation is not None
@@ -616,6 +605,7 @@ def test_branch_runtime_releases_all_endpoints_when_binding_confirmation_fails()
         ownership=leases,
         leases=leases,
         probe=AlwaysAvailableProbe(),
+        candidates=FixedCandidatePorts(),
     )
 
     class FailingSecondConfirmation:
@@ -648,14 +638,6 @@ def test_branch_runtime_releases_all_endpoints_when_binding_confirmation_fails()
     request = replace(
         request,
         server_template=replace(request.server_template, rcon_endpoint=MinecraftRconEndpoint(port=25575)),
-        rcon_endpoint_allocation=EndpointAllocationRequest(
-            allocation_id="candidate-a-rcon-failing",
-            holder_scope=ScopeIdentity(ScopeKind.BRANCH, "candidate-a"),
-            purpose="candidate branch rcon",
-            host="127.0.0.1",
-            candidate_ports=(25577,),
-            owner_scope=PLATFORM_SCOPE,
-        ),
     )
     factory = MinecraftBranchRuntimeFactory(
         endpoint_allocations=allocations,
@@ -673,10 +655,17 @@ def test_branch_runtime_releases_all_endpoints_when_binding_confirmation_fails()
     assert not delegate.active()
 
 
-def test_branch_runtime_rejects_rcon_template_without_rcon_allocation() -> None:
-    request = _request()
-    with pytest.raises(ValueError, match="RCON template and allocation"):
-        replace(request, server_template=replace(request.server_template, rcon_endpoint=MinecraftRconEndpoint()))
+def test_branch_runtime_rcon_template_requests_resource_owned_rcon_port() -> None:
+    request = replace(
+        _request(),
+        server_template=replace(
+            _request().server_template,
+            rcon_endpoint=MinecraftRconEndpoint(),
+        ),
+    )
+    assert request.rcon_endpoint_allocation_id == (
+        "minecraft:candidate-a:candidate-a-session:rcon"
+    )
 
 
 def test_branch_session_surfaces_endpoint_lease_guard_failure() -> None:
@@ -685,6 +674,7 @@ def test_branch_session_surfaces_endpoint_lease_guard_failure() -> None:
         ownership=leases,
         leases=leases,
         probe=AlwaysAvailableProbe(),
+        candidates=FixedCandidatePorts(),
     )
     events: list[str] = []
 
@@ -723,7 +713,7 @@ def test_branch_session_surfaces_endpoint_lease_guard_failure() -> None:
 
     class GuardFactory:
         def create(self, allocation_ids: tuple[str, ...]):
-            assert allocation_ids == ("candidate-a-endpoint",)
+            assert allocation_ids == ("minecraft:candidate-a:candidate-a-session:game",)
             return guard
 
     factory = MinecraftBranchRuntimeFactory(
