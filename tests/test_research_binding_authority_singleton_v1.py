@@ -10,6 +10,7 @@ _CANONICAL = Path(
 _OWNED_NAMES = {
     "ResearchBindingAuthority",
     "ResearchBindingAuthorityError",
+    "ResearchBindingAuthorityPort",
     "ResearchBindingResolutionContext",
     "ResearchCapabilityBindingResolverPort",
     "ResearchModelRoleBindingResolverPort",
