@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from bisect import bisect_left
 from collections.abc import Mapping
 from dataclasses import dataclass, field
 from enum import StrEnum
@@ -605,6 +606,7 @@ class ResearchOSLoweringPlan:
     research_revision_digest: str
     nodes: tuple[LoweredResearchOSGraphNode, ...]
     lowering_digest: str = field(init=False)
+    _node_ids: tuple[str, ...] = field(init=False, repr=False, compare=False)
 
     def __post_init__(self) -> None:
         if type(self.graph_id) is not str or not self.graph_id.strip():
@@ -624,6 +626,7 @@ class ResearchOSLoweringPlan:
         if len(ids) != len(set(ids)):
             raise ValueError("Research OS lowering graph node ids must be unique")
         object.__setattr__(self, "nodes", ordered)
+        object.__setattr__(self, "_node_ids", ids)
         object.__setattr__(
             self,
             "lowering_digest",
@@ -641,10 +644,12 @@ class ResearchOSLoweringPlan:
         )
 
     def node(self, graph_node_id: str) -> LoweredResearchOSGraphNode:
-        for node in self.nodes:
-            if node.source.graph_node_id == graph_node_id:
-                return node
-        raise KeyError(graph_node_id)
+        if type(graph_node_id) is not str or not graph_node_id:
+            raise KeyError(graph_node_id)
+        index = bisect_left(self._node_ids, graph_node_id)
+        if index >= len(self._node_ids) or self._node_ids[index] != graph_node_id:
+            raise KeyError(graph_node_id)
+        return self.nodes[index]
 
 
 class ResearchOSLoweringCompiler:
