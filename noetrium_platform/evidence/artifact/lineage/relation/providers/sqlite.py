@@ -5,10 +5,9 @@ from pathlib import Path
 import sqlite3
 
 from noetrium_platform.foundation.kernel.kernel.durability.sqlite import (
-    begin_immediate_sqlite_transaction,
+    immediate_sqlite_transaction,
     open_durable_sqlite_reader,
     open_durable_sqlite_writer,
-    rollback_sqlite_writer,
 )
 from noetrium_platform.evidence.artifact._sqlite_types import require_text
 from noetrium_platform.evidence.artifact.contracts import ArtifactContentIdentity
@@ -166,26 +165,31 @@ class SQLiteArtifactLineageStore:
         if type(edge) is not ArtifactLineageEdge:
             raise TypeError("edge must be ArtifactLineageEdge")
         with closing(self._connect_writer()) as db:
-            begin_immediate_sqlite_transaction(db, timeout_seconds=self.timeout_seconds)
-            try:
+            with immediate_sqlite_transaction(
+                db,
+                timeout_seconds=self.timeout_seconds,
+                label="artifact lineage",
+            ):
                 columns = ",".join(self._COLUMNS)
                 row = db.execute(
-                    f"SELECT {columns} FROM artifact_lineage_edges WHERE edge_id=?",
+                    f"SELECT {columns} FROM artifact_lineage_edges "
+                    "WHERE edge_id=?",
                     (edge.edge_id,),
                 ).fetchone()
                 if row is not None:
                     current = self._decode(row)
                     if current != edge:
                         raise ArtifactLineageConflict(edge.edge_id)
-                    db.execute("COMMIT")
                     return current
                 if self._would_cycle(db, edge):
                     raise ArtifactLineageCycle(
                         "lineage edge would create a cycle: "
-                        f"{edge.parent.artifact_id} -> {edge.child.artifact_id}"
+                        f"{edge.parent.artifact_id} -> "
+                        f"{edge.child.artifact_id}"
                     )
                 db.execute(
-                    "INSERT INTO artifact_lineage_edges VALUES(?,?,?,?,?,?,?)",
+                    "INSERT INTO artifact_lineage_edges "
+                    "VALUES(?,?,?,?,?,?,?)",
                     (
                         edge.edge_id,
                         edge.parent.artifact_id,
@@ -196,10 +200,6 @@ class SQLiteArtifactLineageStore:
                         self._evidence_text(edge),
                     ),
                 )
-                db.execute("COMMIT")
-            except BaseException as primary:
-                rollback_sqlite_writer(db, primary, label="artifact")
-                raise
         return edge
 
     def _query(
