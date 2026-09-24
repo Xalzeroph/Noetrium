@@ -5,6 +5,7 @@ from pathlib import Path
 import sqlite3
 
 from noetrium_platform.foundation.kernel.kernel.durability.sqlite import (
+    begin_immediate_sqlite_transaction,
     open_durable_sqlite_reader,
     open_durable_sqlite_writer,
     rollback_sqlite_writer,
@@ -165,7 +166,7 @@ class SQLiteArtifactLineageStore:
         if type(edge) is not ArtifactLineageEdge:
             raise TypeError("edge must be ArtifactLineageEdge")
         with closing(self._connect_writer()) as db:
-            db.execute("BEGIN IMMEDIATE")
+            begin_immediate_sqlite_transaction(db, timeout_seconds=self.timeout_seconds)
             try:
                 columns = ",".join(self._COLUMNS)
                 row = db.execute(
