@@ -20,6 +20,7 @@ def make_run(run_id: str) -> ResearchRunRecord:
         run_id=run_id,
         head_commit_id=digest(f"{run_id}:commit"),
         program_digest=digest(f"{run_id}:program"),
+        program_lock_digest=digest(f"{run_id}:program-lock"),
         binding_digest=digest(f"{run_id}:binding"),
         result_digest=digest(f"{run_id}:result"),
         status="completed",
