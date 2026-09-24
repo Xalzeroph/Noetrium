@@ -681,11 +681,19 @@ class ResearchGraphScheduler:
 
                 now_ns = time.time_ns()
                 if not draining:
+                    node_controls = {
+                        row.node_id: row
+                        for row in node_control_store.node_control_snapshot(execution_id)
+                    }
                     for node_id in frontier.ready_node_ids(set(pending)):
                         node = pending[node_id]
-                        node_control = node_control_store.node_control_state(
-                            execution_id, node_id
-                        )
+                        try:
+                            node_control = node_controls[node_id]
+                        except KeyError as exc:
+                            raise ResearchGraphExecutionConflict(
+                                "research graph node control snapshot lost plan node: "
+                                f"{node_id}"
+                            ) from exc
                         if node_control.phase is ResearchGraphNodeControlPhase.CANCELLED:
                             current = store.node_state(execution_id, node_id)
                             if current.state is not ResearchGraphLiveNodeState.CANCELLED:
@@ -819,14 +827,22 @@ class ResearchGraphScheduler:
 
                 if pending and not running and not progressed:
                     local_control_ids = set(pending) | reconciliation_required
-                    observed_local_controls = tuple(
-                        node_control_store.node_control_state(execution_id, node_id)
-                        for node_id in sorted(local_control_ids)
+                    refreshed_controls = {
+                        row.node_id: row
+                        for row in node_control_store.node_control_snapshot(execution_id)
+                    }
+                    missing_local_controls = tuple(
+                        sorted(local_control_ids - set(refreshed_controls))
                     )
+                    if missing_local_controls:
+                        raise ResearchGraphExecutionConflict(
+                            "research graph node control snapshot lost pending nodes: "
+                            f"{missing_local_controls}"
+                        )
                     local_controls = tuple(
-                        row
-                        for row in observed_local_controls
-                        if row.phase in {
+                        refreshed_controls[node_id]
+                        for node_id in sorted(local_control_ids)
+                        if refreshed_controls[node_id].phase in {
                             ResearchGraphNodeControlPhase.PAUSED,
                             ResearchGraphNodeControlPhase.RECOVERY_REQUIRED,
                         }
