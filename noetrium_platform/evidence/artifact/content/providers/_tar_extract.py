@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from noetrium_platform.foundation.kernel.kernel.durability import flush_file_descriptor
+
 import os
 from pathlib import Path
 import shutil
@@ -47,7 +49,7 @@ def extract_tar_plan(
         with source, target.open("xb") as output:
             shutil.copyfileobj(source, output, length=1024 * 1024)
             output.flush()
-            os.fsync(output.fileno())
+            flush_file_descriptor(output.fileno())
         if target.stat().st_size != member.size:
             raise ArchiveMaterializationError(
                 "MEMBER_SIZE_MISMATCH",
