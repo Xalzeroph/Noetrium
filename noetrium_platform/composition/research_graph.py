@@ -555,6 +555,154 @@ class ResearchGraphScheduler:
         )
         return live, pending, results, reconciliation_required, frontier
 
+    def _record_durable_completion(
+        self,
+        *,
+        node_id: str,
+        store: ResearchGraphExecutionStorePort,
+        control_store: ResearchGraphControlStorePort,
+        node_control_store: ResearchGraphNodeControlStorePort,
+        execution_id: str,
+        running: dict[str, tuple[ResearchGraphNode, object]],
+        attempts: _DurableAttemptBook,
+        live: dict[str, ResearchGraphNodeExecutionRecord],
+        pending: dict[str, ResearchGraphNode],
+        results: dict[str, ResearchGraphNodeResult],
+        reconciliation_required: set[str],
+        frontier: ResearchGraphDependencyFrontier,
+    ) -> None:
+        node, handle = running.pop(node_id)
+        attempt = attempts.drop(node_id)
+        attempt_id = None if attempt is None else attempt[0]
+        try:
+            handle.result()
+            if attempt_id is None:
+                raise ResearchGraphExecutionConflict(
+                    "research graph task completed without durable claim"
+                )
+            record = store.mark_succeeded(
+                execution_id,
+                node.node_id,
+                attempt_id=attempt_id,
+                owner_id=self._scheduler_owner_id,
+                now_ns=time.time_ns(),
+            )
+            live[node_id] = record
+            results[node_id] = ResearchGraphNodeResult(
+                node.node_id,
+                node.semantic_digest,
+                ResearchGraphNodeState.SUCCEEDED,
+            )
+            frontier.record_terminal(results[node_id])
+            return
+        except BaseException as exc:
+            handle.cancel()
+            failure = _reportable_failure(exc)
+            description = describe_exception(failure)
+            message = description.safe_message.strip() or type(failure).__name__
+            current = store.node_state(execution_id, node_id)
+            live[node_id] = current
+
+        if attempt_id is None:
+            node_control = node_control_store.node_control_state(
+                execution_id,
+                node_id,
+            )
+            control = control_store.control_state(execution_id)
+            if (
+                current.state in {
+                    ResearchGraphLiveNodeState.PENDING,
+                    ResearchGraphLiveNodeState.READY,
+                }
+                and (
+                    node_control.phase is not ResearchGraphNodeControlPhase.ACTIVE
+                    or control.phase is not ResearchGraphControlPhase.ACTIVE
+                )
+            ):
+                pending[node_id] = node
+                frontier.restore_ready(node_id)
+                return
+            if current.state is ResearchGraphLiveNodeState.CANCELLED:
+                results[node_id] = ResearchGraphNodeResult(
+                    node.node_id,
+                    node.semantic_digest,
+                    ResearchGraphNodeState.CANCELLED,
+                )
+                frontier.record_terminal(results[node_id])
+                return
+            raise ResearchGraphExecutionConflict(
+                "research graph worker failed before acquiring durable claim"
+            ) from failure
+
+        if (
+            current.state is ResearchGraphLiveNodeState.RUNNING
+            and current.attempt_id == attempt_id
+            and current.lease_owner_id == self._scheduler_owner_id
+        ):
+            current = store.mark_failed(
+                execution_id,
+                node.node_id,
+                attempt_id=attempt_id,
+                owner_id=self._scheduler_owner_id,
+                now_ns=time.time_ns(),
+                failure_type=type(failure).__name__,
+                failure_message=message,
+            )
+            live[node_id] = current
+            results[node_id] = ResearchGraphNodeResult(
+                node.node_id,
+                node.semantic_digest,
+                ResearchGraphNodeState.FAILED,
+                failure_type=type(failure).__name__,
+                failure_message=message,
+            )
+            frontier.record_terminal(results[node_id])
+            node_control = node_control_store.node_control_state(
+                execution_id,
+                node_id,
+            )
+            if node_control.phase is ResearchGraphNodeControlPhase.DRAINING:
+                node_control_store.pause_node_if_quiescent(
+                    execution_id,
+                    node_id,
+                    expected_generation=node_control.generation,
+                    now_ns=time.time_ns(),
+                )
+            return
+
+        if current.state is ResearchGraphLiveNodeState.RECONCILE_REQUIRED:
+            reconciliation_required.add(node_id)
+            return
+
+        node_control = node_control_store.node_control_state(
+            execution_id,
+            node_id,
+        )
+        if (
+            current.state is ResearchGraphLiveNodeState.PENDING
+            and node_control.phase is ResearchGraphNodeControlPhase.PAUSED
+        ):
+            pending[node_id] = node
+            frontier.restore_ready(node_id)
+            return
+        if current.state is ResearchGraphLiveNodeState.CANCELLED:
+            results[node_id] = ResearchGraphNodeResult(
+                node.node_id,
+                node.semantic_digest,
+                ResearchGraphNodeState.CANCELLED,
+            )
+            frontier.record_terminal(results[node_id])
+            return
+
+        control = control_store.control_state(execution_id)
+        if control.phase in {
+            ResearchGraphControlPhase.PAUSED,
+            ResearchGraphControlPhase.RECOVERY_REQUIRED,
+            ResearchGraphControlPhase.CANCELLED,
+        }:
+            raise ResearchGraphControlHalt(control)
+        raise failure
+
     def _renew_due_durable_leases(
         self,
         *,
@@ -774,134 +922,20 @@ class ResearchGraphScheduler:
             )
 
         def record_completion(node_id: str) -> None:
-            node, handle = running.pop(node_id)
-            attempt = attempts.drop(node_id)
-            attempt_id = None if attempt is None else attempt[0]
-            try:
-                handle.result()
-                if attempt_id is None:
-                    raise ResearchGraphExecutionConflict(
-                        "research graph task completed without durable claim"
-                    )
-                record = store.mark_succeeded(
-                    execution_id,
-                    node.node_id,
-                    attempt_id=attempt_id,
-                    owner_id=self._scheduler_owner_id,
-                    now_ns=time.time_ns(),
-                )
-                live[node_id] = record
-                results[node_id] = ResearchGraphNodeResult(
-                    node.node_id,
-                    node.semantic_digest,
-                    ResearchGraphNodeState.SUCCEEDED,
-                )
-                frontier.record_terminal(results[node_id])
-            except BaseException as exc:
-                handle.cancel()
-                failure = _reportable_failure(exc)
-                description = describe_exception(failure)
-                message = (
-                    description.safe_message.strip()
-                    or type(failure).__name__
-                )
-                current = store.node_state(execution_id, node_id)
-                live[node_id] = current
-                if attempt_id is None:
-                    node_control = node_control_store.node_control_state(
-                        execution_id,
-                        node_id,
-                    )
-                    control = control_store.control_state(execution_id)
-                    if (
-                        current.state in {
-                            ResearchGraphLiveNodeState.PENDING,
-                            ResearchGraphLiveNodeState.READY,
-                        }
-                        and (
-                            node_control.phase
-                            is not ResearchGraphNodeControlPhase.ACTIVE
-                            or control.phase
-                            is not ResearchGraphControlPhase.ACTIVE
-                        )
-                    ):
-                        pending[node_id] = node
-                        frontier.restore_ready(node_id)
-                        return
-                    if current.state is ResearchGraphLiveNodeState.CANCELLED:
-                        results[node_id] = ResearchGraphNodeResult(
-                            node.node_id,
-                            node.semantic_digest,
-                            ResearchGraphNodeState.CANCELLED,
-                        )
-                        frontier.record_terminal(results[node_id])
-                        return
-                    raise ResearchGraphExecutionConflict(
-                        "research graph worker failed before acquiring durable claim"
-                    ) from failure
-                if (
-                    current.state is ResearchGraphLiveNodeState.RUNNING
-                    and current.attempt_id == attempt_id
-                    and current.lease_owner_id == self._scheduler_owner_id
-                ):
-                    current = store.mark_failed(
-                        execution_id,
-                        node.node_id,
-                        attempt_id=attempt_id,
-                        owner_id=self._scheduler_owner_id,
-                        now_ns=time.time_ns(),
-                        failure_type=type(failure).__name__,
-                        failure_message=message,
-                    )
-                    live[node_id] = current
-                    results[node_id] = ResearchGraphNodeResult(
-                        node.node_id,
-                        node.semantic_digest,
-                        ResearchGraphNodeState.FAILED,
-                        failure_type=type(failure).__name__,
-                        failure_message=message,
-                    )
-                    frontier.record_terminal(results[node_id])
-                    node_control = node_control_store.node_control_state(
-                        execution_id, node_id
-                    )
-                    if node_control.phase is ResearchGraphNodeControlPhase.DRAINING:
-                        node_control_store.pause_node_if_quiescent(
-                            execution_id,
-                            node_id,
-                            expected_generation=node_control.generation,
-                            now_ns=time.time_ns(),
-                        )
-                    return
-                if current.state is ResearchGraphLiveNodeState.RECONCILE_REQUIRED:
-                    reconciliation_required.add(node_id)
-                    return
-                node_control = node_control_store.node_control_state(
-                    execution_id, node_id
-                )
-                if (
-                    current.state is ResearchGraphLiveNodeState.PENDING
-                    and node_control.phase is ResearchGraphNodeControlPhase.PAUSED
-                ):
-                    pending[node_id] = node
-                    frontier.restore_ready(node_id)
-                    return
-                if current.state is ResearchGraphLiveNodeState.CANCELLED:
-                    results[node_id] = ResearchGraphNodeResult(
-                        node.node_id,
-                        node.semantic_digest,
-                        ResearchGraphNodeState.CANCELLED,
-                    )
-                    frontier.record_terminal(results[node_id])
-                    return
-                control = control_store.control_state(execution_id)
-                if control.phase in {
-                    ResearchGraphControlPhase.PAUSED,
-                    ResearchGraphControlPhase.RECOVERY_REQUIRED,
-                    ResearchGraphControlPhase.CANCELLED,
-                }:
-                    raise ResearchGraphControlHalt(control)
-                raise
+            self._record_durable_completion(
+                node_id=node_id,
+                store=store,
+                control_store=control_store,
+                node_control_store=node_control_store,
+                execution_id=execution_id,
+                running=running,
+                attempts=attempts,
+                live=live,
+                pending=pending,
+                results=results,
+                reconciliation_required=reconciliation_required,
+                frontier=frontier,
+            )
 
         try:
             while pending or running:
