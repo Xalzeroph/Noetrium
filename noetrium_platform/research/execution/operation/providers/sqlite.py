@@ -54,37 +54,53 @@ class SQLiteOperationStore:
                 label="operation schema",
             ):
                 db.execute(
-                """CREATE TABLE IF NOT EXISTS operations (
-                operation_id TEXT PRIMARY KEY,
-                command_id TEXT NOT NULL,
-                state TEXT NOT NULL,
-                version INTEGER NOT NULL,
-                created_at REAL NOT NULL,
-                updated_at REAL NOT NULL,
-                parent_operation_id TEXT,
-                effect_id TEXT,
-                effect_request_id TEXT,
-                effect_request_digest TEXT,
-                effect_profile TEXT NOT NULL,
-                effect_certainty TEXT NOT NULL,
-                result_digest TEXT,
-                failure_kind TEXT,
-                failure_code TEXT,
-                failure_message TEXT,
-                failure_retryable INTEGER,
-                failure_reconciliation_required INTEGER,
-                cancellation_requested INTEGER NOT NULL,
-                cancellation_reason TEXT)"""
-            )
+                    """CREATE TABLE IF NOT EXISTS operations (
+                    operation_id TEXT PRIMARY KEY,
+                    command_id TEXT NOT NULL,
+                    state TEXT NOT NULL,
+                    version INTEGER NOT NULL,
+                    created_at REAL NOT NULL,
+                    updated_at REAL NOT NULL,
+                    parent_operation_id TEXT,
+                    effect_id TEXT,
+                    effect_request_id TEXT,
+                    effect_request_digest TEXT,
+                    effect_profile TEXT NOT NULL,
+                    effect_certainty TEXT NOT NULL,
+                    result_digest TEXT,
+                    failure_kind TEXT,
+                    failure_code TEXT,
+                    failure_message TEXT,
+                    failure_retryable INTEGER,
+                    failure_reconciliation_required INTEGER,
+                    cancellation_requested INTEGER NOT NULL,
+                    cancellation_reason TEXT)"""
+                )
                 columns = tuple(
-                    row[1] for row in db.execute("PRAGMA table_info(operations)")
+                    row[1]
+                    for row in db.execute("PRAGMA table_info(operations)")
                 )
                 expected = (
-                "operation_id", "command_id", "state", "version", "created_at", "updated_at",
-                "parent_operation_id", "effect_id", "effect_request_id", "effect_request_digest",
-                "effect_profile", "effect_certainty", "result_digest",
-                "failure_kind", "failure_code", "failure_message", "failure_retryable",
-                "failure_reconciliation_required", "cancellation_requested", "cancellation_reason",
+                    "operation_id",
+                    "command_id",
+                    "state",
+                    "version",
+                    "created_at",
+                    "updated_at",
+                    "parent_operation_id",
+                    "effect_id",
+                    "effect_request_id",
+                    "effect_request_digest",
+                    "effect_profile",
+                    "effect_certainty",
+                    "result_digest",
+                    "failure_kind",
+                    "failure_code",
+                    "failure_message",
+                    "failure_retryable",
+                    "failure_reconciliation_required",
+                    "cancellation_requested",
+                    "cancellation_reason",
                 )
                 if columns != expected:
                     raise OperationCorruption(
@@ -155,7 +171,10 @@ class SQLiteOperationStore:
             ).fetchone()
         return None if row is None else self._from_row(row)
 
-    def create_or_get(self, snapshot: OperationSnapshot) -> tuple[OperationSnapshot, bool]:
+    def create_or_get(
+        self,
+        snapshot: OperationSnapshot,
+    ) -> tuple[OperationSnapshot, bool]:
         if snapshot.state is not OperationState.CREATED or snapshot.version != 0:
             raise ValueError("new durable operation must start at CREATED version 0")
         with closing(self._connect()) as db:
@@ -165,19 +184,22 @@ class SQLiteOperationStore:
                 label="operation create",
             ):
                 row = db.execute(
-                "SELECT * FROM operations WHERE operation_id=?",
-                (snapshot.operation_id.value,),
+                    "SELECT * FROM operations WHERE operation_id=?",
+                    (snapshot.operation_id.value,),
                 ).fetchone()
                 if row is not None:
-                existing = self._from_row(row)
-                if self._immutable_identity(existing) != self._immutable_identity(snapshot):
-                    raise OperationConflict(
-                        f"operation identity reused with different immutable contract: {snapshot.operation_id.value}"
-                    )
-                return existing, False
-                try:
+                    existing = self._from_row(row)
+                    if self._immutable_identity(existing) != self._immutable_identity(
+                        snapshot
+                    ):
+                        raise OperationConflict(
+                            "operation identity reused with different immutable "
+                            f"contract: {snapshot.operation_id.value}"
+                        )
+                    return existing, False
                 db.execute(
-                    "INSERT INTO operations VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
+                    "INSERT INTO operations VALUES "
+                    "(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
                     (
                         snapshot.operation_id.value,
                         snapshot.command_id.value,
@@ -185,8 +207,16 @@ class SQLiteOperationStore:
                         snapshot.version,
                         snapshot.created_at_unix,
                         snapshot.updated_at_unix,
-                        None if snapshot.parent_operation_id is None else snapshot.parent_operation_id.value,
-                        None if snapshot.effect_id is None else snapshot.effect_id.value,
+                        (
+                            None
+                            if snapshot.parent_operation_id is None
+                            else snapshot.parent_operation_id.value
+                        ),
+                        (
+                            None
+                            if snapshot.effect_id is None
+                            else snapshot.effect_id.value
+                        ),
                         snapshot.effect_request_id,
                         snapshot.effect_request_digest,
                         snapshot.effect_profile.value,
@@ -201,8 +231,6 @@ class SQLiteOperationStore:
                         snapshot.cancellation_reason,
                     ),
                 )
-                except BaseException:
-                raise
         return snapshot, True
 
     @staticmethod
