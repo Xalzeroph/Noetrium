@@ -271,6 +271,10 @@ class ExecutionEnvironmentCatalog:
                     "fresh CLEAN environment instance does not accept a reuse proof"
                 )
             return instance
+        if cleanliness is not None and type(cleanliness) is not EnvironmentCleanlinessProof:
+            raise TypeError(
+                "environment release cleanliness must be EnvironmentCleanlinessProof"
+            )
         if cleanliness is None:
             updated = replace(
                 instance,
@@ -398,15 +402,23 @@ class ExecutionEnvironmentCatalog:
         profile_id: str,
         profile_revision: str,
         *,
-        resumable_execution_ids: tuple[str, ...] = (),
-        retained_evidence_ids: tuple[str, ...] = (),
+        resumable_execution_ids: tuple[str, ...] | None = None,
+        retained_evidence_ids: tuple[str, ...] | None = None,
     ) -> EnvironmentProfileGcAssessment:
         return EnvironmentProfileGcAssessment(
             profile_id,
             profile_revision,
             self.profile_references(profile_id, profile_revision),
-            tuple(sorted(set(resumable_execution_ids))),
-            tuple(sorted(set(retained_evidence_ids))),
+            (
+                None
+                if resumable_execution_ids is None
+                else tuple(sorted(set(resumable_execution_ids)))
+            ),
+            (
+                None
+                if retained_evidence_ids is None
+                else tuple(sorted(set(retained_evidence_ids)))
+            ),
         )
 
     @staticmethod
@@ -723,8 +735,8 @@ class SQLiteExecutionEnvironmentCatalog(ExecutionEnvironmentCatalog):
         profile_id: str,
         profile_revision: str,
         *,
-        resumable_execution_ids: tuple[str, ...] = (),
-        retained_evidence_ids: tuple[str, ...] = (),
+        resumable_execution_ids: tuple[str, ...] | None = None,
+        retained_evidence_ids: tuple[str, ...] | None = None,
     ) -> EnvironmentProfileGcAssessment:
         self._load()
         return super().assess_profile_gc(
