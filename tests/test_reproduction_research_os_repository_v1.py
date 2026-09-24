@@ -89,7 +89,6 @@ def test_all_protocol_bound_reproductions_have_only_typed_execution_requirements
         assert len(parameters) == len(kinds) == len(digests)
         assert len(parameters) == len(set(parameters))
         assert all(kind in {
-            "benchmark_split",
             "capability_id",
             "capability_closure",
             "paper_option",
@@ -113,8 +112,8 @@ def test_toolformer_execution_binding_cannot_drift_from_method_capability_closur
         binding_id="paper-eval",
         study_factory="build_toolformer_study",
         benchmark_id="toolformer-eval",
+        benchmark_split_id="paper-eval",
         values={
-            "split_id": "paper-eval",
             "tool_capability_ids": capabilities,
         },
     )
@@ -136,8 +135,8 @@ def test_toolformer_execution_binding_cannot_drift_from_method_capability_closur
             binding_id="drifted",
             study_factory="build_toolformer_study",
             benchmark_id="toolformer-eval",
+            benchmark_split_id="paper-eval",
             values={
-                "split_id": "paper-eval",
                 "tool_capability_ids": ("tool.calculator",),
             },
         )
@@ -195,8 +194,8 @@ def test_bound_reproduction_lanes_compile_as_distinct_product_programs() -> None
         binding_id="paper-eval",
         study_factory="build_toolformer_study",
         benchmark_id="toolformer-eval",
+        benchmark_split_id="paper-eval",
         values={
-            "split_id": "paper-eval",
             "tool_capability_ids": (
                 "tool.question-answering",
                 "tool.wikipedia-search",
