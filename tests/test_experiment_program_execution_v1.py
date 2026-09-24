@@ -76,13 +76,14 @@ def _execute(plan: StudyExecutionPlan, adapter, *, task_group=None):
         adapter,
         BasicStudyMetricAggregator(),
         execution_binding_digest="e" * 64,
+        execution_id="f" * 64,
         task_group=task_group,
     ).execute()
 
 
 class _BoundAdapter:
-    def execute_bound(self, unit, bindings, plan_digest):
-        del bindings, plan_digest
+    def execute_bound(self, unit, bindings, plan_digest, *, execution_id):
+        del bindings, plan_digest, execution_id
         return tuple(
             StudyMetricObservation(
                 assignment,
@@ -91,8 +92,8 @@ class _BoundAdapter:
             for assignment in unit.assignments
         )
 
-    def execute_bound_variant(self, assignment, binding, plan_digest):
-        del binding, plan_digest
+    def execute_bound_variant(self, assignment, binding, plan_digest, *, execution_id):
+        del binding, plan_digest, execution_id
         return StudyMetricObservation(
             assignment,
             (("score", float(assignment.repetition + 1)),),
@@ -138,7 +139,7 @@ def test_parallel_repetition_policy_uses_structured_concurrency_and_deterministi
     lock = Lock()
 
     class ParallelAdapter:
-        def execute_bound(self, unit, bindings, plan_digest):
+        def execute_bound(self, unit, bindings, plan_digest, *, execution_id):
             nonlocal active, max_active
             del bindings
             assert plan_digest == plan.plan_digest
@@ -158,7 +159,7 @@ def test_parallel_repetition_policy_uses_structured_concurrency_and_deterministi
                 with lock:
                     active -= 1
 
-        def execute_bound_variant(self, assignment, binding, plan_digest):
+        def execute_bound_variant(self, assignment, binding, plan_digest, *, execution_id):
             raise AssertionError("serial-variant plan must use repetition execution")
 
     try:
@@ -258,10 +259,10 @@ def test_parallel_assignment_policy_uses_bound_variant_entrypoint() -> None:
     lock = Lock()
 
     class BoundVariantAdapter:
-        def execute_bound(self, unit, bindings, plan_digest):
+        def execute_bound(self, unit, bindings, plan_digest, *, execution_id):
             raise AssertionError("parallel assignments must use bound assignment execution")
 
-        def execute_bound_variant(self, assignment, binding, plan_digest):
+        def execute_bound_variant(self, assignment, binding, plan_digest, *, execution_id):
             nonlocal active, max_active
             assert binding.variant.variant_id == assignment.variant_id
             assert plan_digest == plan.plan_digest
@@ -295,7 +296,7 @@ def test_parallel_assignment_policy_uses_bound_variant_entrypoint() -> None:
 
 def test_experiment_program_rejects_incomplete_bound_provider_before_execution() -> None:
     class IncompleteAdapter:
-        def execute_bound(self, unit, bindings, plan_digest):
+        def execute_bound(self, unit, bindings, plan_digest, *, execution_id):
             return ()
 
     with pytest.raises(TypeError, match="BoundStudyExecutionPort"):
