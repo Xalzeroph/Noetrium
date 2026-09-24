@@ -10,7 +10,7 @@ services:
       NOETRIUM_ENVIRONMENT_PROFILE: base
     volumes:
       - type: bind
-        source: ${PLATFORM_HOST_DATA_ROOT:-./.runtime}/platform-state
+        source: ${PLATFORM_RUNTIME_STATE_ROOT:-./.runtime/platform-state}
         target: /var/lib/noetrium
     healthcheck:
       test: ["CMD", "/usr/local/bin/noetrium-entrypoint", "environment-doctor", "base"]
