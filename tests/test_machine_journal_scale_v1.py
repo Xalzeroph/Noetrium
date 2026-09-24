@@ -42,6 +42,8 @@ def _commit(
         revision=revision,
         proposal_digest=proposal.proposal_digest,
         command_digest=command.payload_digest,
+        program_digest="f" * 64,
+        program_lock_digest="e" * 64,
         state={"revision": revision},
         previous_commit_id=previous_commit_id,
     )
