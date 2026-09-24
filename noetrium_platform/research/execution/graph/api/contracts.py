@@ -4,7 +4,7 @@ from dataclasses import dataclass, field
 from enum import StrEnum
 from typing import Protocol, runtime_checkable
 
-from noetrium_platform.foundation.kernel.concurrency.api import Deadline
+from noetrium_platform.foundation.kernel.concurrency.api import Deadline, TaskContextPort
 from noetrium_platform.foundation.kernel.kernel import canonical_digest, require_sha256
 
 
@@ -233,7 +233,7 @@ class ResearchGraphExecutionReport:
 class ResearchGraphNodeExecutorPort(Protocol):
     def execute(
         self,
-        context: object,
+        context: TaskContextPort,
         node: ResearchGraphNode,
         *,
         deadline: Deadline | None,
