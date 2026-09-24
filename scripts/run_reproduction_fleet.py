@@ -20,6 +20,7 @@ from research.reproductions.research_os import (
     compile_reproduction_portfolio,
     compile_reproduction_research_program,
     discover_reproduction_definitions,
+    resolve_execution_requirements,
     resolve_method_program_binding,
     resolve_research_program_bindings,
     resolve_study_factory_bindings,
@@ -38,7 +39,9 @@ class Lane:
     study_factory_count: int
     exact_study_factory_count: int
     study_factory_digests: tuple[str, ...]
-    unresolved_study_parameters: tuple[str, ...]
+    execution_requirement_parameters: tuple[str, ...]
+    execution_requirement_kinds: tuple[str, ...]
+    execution_requirement_digests: tuple[str, ...]
     method_program_digest: str | None
     research_machine_program_digests: tuple[str, ...]
     state: str
@@ -53,7 +56,9 @@ def _lane(definition) -> Lane:
     method_program_digest = None
     machine_program_digests: tuple[str, ...] = ()
     study_factory_digests: tuple[str, ...] = ()
-    unresolved_study_parameters: tuple[str, ...] = ()
+    execution_requirement_parameters: tuple[str, ...] = ()
+    execution_requirement_kinds: tuple[str, ...] = ()
+    execution_requirement_digests: tuple[str, ...] = ()
     exact_study_factory_count = 0
     study_factory_count = 0
     try:
@@ -67,11 +72,16 @@ def _lane(definition) -> Lane:
         study_factory_digests = tuple(
             binding.binding_digest for binding in factories
         )
-        unresolved_study_parameters = tuple(sorted({
-            parameter
-            for binding in factories
-            for parameter in binding.unresolved_parameters
-        }))
+        requirements = resolve_execution_requirements(definition)
+        execution_requirement_parameters = tuple(
+            row.parameter for row in requirements
+        )
+        execution_requirement_kinds = tuple(
+            row.kind.value for row in requirements
+        )
+        execution_requirement_digests = tuple(
+            row.requirement_digest for row in requirements
+        )
 
         method_assets = tuple(
             row for row in definition.assets
@@ -80,12 +90,6 @@ def _lane(definition) -> Lane:
         if method_assets:
             method = resolve_method_program_binding(definition)
             method_program_digest = method.program_digest
-            if not method.exact:
-                assert method.factory is not None
-                blockers.extend(
-                    "method_factory_requires_binding:" + parameter
-                    for parameter in method.factory.unresolved_parameters
-                )
         machines = resolve_research_program_bindings(definition)
         machine_program_digests = tuple(
             row.program_digest for row in machines
@@ -129,10 +133,20 @@ def _lane(definition) -> Lane:
         study_factory_count=study_factory_count,
         exact_study_factory_count=exact_study_factory_count,
         study_factory_digests=study_factory_digests,
-        unresolved_study_parameters=unresolved_study_parameters,
+        execution_requirement_parameters=execution_requirement_parameters,
+        execution_requirement_kinds=execution_requirement_kinds,
+        execution_requirement_digests=execution_requirement_digests,
         method_program_digest=method_program_digest,
         research_machine_program_digests=machine_program_digests,
-        state="compile_failed" if compile_failure else "research_os_compiled",
+        state=(
+            "compile_failed"
+            if compile_failure
+            else (
+                "closure_binding_required"
+                if execution_requirement_digests
+                else "execution_ready"
+            )
+        ),
         blockers=tuple(sorted(set(blockers))),
     )
 
@@ -147,7 +161,7 @@ def build_plan() -> dict:
         sorted((_lane(row) for row in protocol_bound), key=lambda row: row.package)
     )
     compile_failures = tuple(
-        row.package for row in lanes if row.state != "research_os_compiled"
+        row.package for row in lanes if row.state == "compile_failed"
     )
     if not compile_failures:
         portfolio = compile_reproduction_portfolio(
@@ -170,18 +184,24 @@ def build_plan() -> dict:
         graph_node_count = 0
 
     document = {
-        "schema": "noetrium.reproduction-fleet-plan.v3",
+        "schema": "noetrium.reproduction-fleet-plan.v4",
         "protocol_bound_count": len(lanes),
         "research_os_compiled_count": sum(
-            row.state == "research_os_compiled" for row in lanes
+            row.state != "compile_failed" for row in lanes
+        ),
+        "execution_ready_count": sum(
+            row.state == "execution_ready" for row in lanes
+        ),
+        "closure_binding_required_count": sum(
+            row.state == "closure_binding_required" for row in lanes
         ),
         "compile_failure_count": len(compile_failures),
         "compile_failure_packages": compile_failures,
         "exact_study_binding_count": sum(
             row.exact_study_factory_count > 0 for row in lanes
         ),
-        "parameterized_study_binding_count": sum(
-            bool(row.unresolved_study_parameters) for row in lanes
+        "typed_execution_requirement_count": sum(
+            len(row.execution_requirement_digests) for row in lanes
         ),
         "portfolio_digest": portfolio_digest,
         "graph_digest": graph_digest,
@@ -213,7 +233,9 @@ def main() -> int:
             "research_os_compiled_count",
             "compile_failure_count",
             "exact_study_binding_count",
-            "parameterized_study_binding_count",
+            "execution_ready_count",
+            "closure_binding_required_count",
+            "typed_execution_requirement_count",
             "plan_digest",
         )
     }, sort_keys=True))
