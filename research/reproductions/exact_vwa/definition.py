@@ -34,6 +34,10 @@ REPRODUCTION = ReproductionDefinition(
     ),
     assets=(
         ReproductionAssetRef(
+            kind=ReproductionAssetKind('method_program'),
+            path='research/reproductions/exact_vwa/program.py',
+        ),
+        ReproductionAssetRef(
             kind=ReproductionAssetKind('support'),
             path='research/reproductions/exact_vwa/branch.py',
         ),
@@ -46,6 +50,7 @@ REPRODUCTION = ReproductionDefinition(
             path='research/reproductions/exact_vwa/study.py',
         ),
     ),
+    primary_executable='research/reproductions/exact_vwa/program.py',
     reported_results=(
     ),
     reference_baselines=(
