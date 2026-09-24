@@ -232,6 +232,10 @@ class ExecutorProviderPort(Protocol):
         **kwargs: Any,
     ) -> Any: ...
 
+    def close(self, *, wait: bool = True, cancel_pending: bool = False) -> None: ...
+
+
+class AtomicBatchExecutorProviderPort(ExecutorProviderPort, Protocol):
     def submit_atomic_batch(
         self,
         fns: tuple[Callable[[], T], ...],
@@ -239,8 +243,6 @@ class ExecutorProviderPort(Protocol):
         deadline: Deadline | None = None,
         cancellation: CancellationTokenPort | None = None,
     ) -> tuple[Any, ...]: ...
-
-    def close(self, *, wait: bool = True, cancel_pending: bool = False) -> None: ...
 
 
 class CpuWorkerPoolProviderPort(ExecutorProviderPort, Protocol):
