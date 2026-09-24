@@ -177,9 +177,13 @@ const ACTION_HANDLERS = Object.freeze({
 function connect (options) {
   if (bot) throw new Error('bot already exists')
   const requestId = options.request_id || null
+  const port = Number(options.port)
+  if (!Number.isInteger(port) || port < 1 || port > 65535) {
+    throw new Error('minecraft connect requires a Resource-assigned port')
+  }
   bot = mineflayer.createBot({
     host: options.host || '127.0.0.1',
-    port: Number(options.port || 25565),
+    port,
     username: options.username || 'ResearchBot',
     auth: options.auth || 'offline',
     version: options.version || false,
