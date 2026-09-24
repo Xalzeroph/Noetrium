@@ -1,10 +1,16 @@
 from __future__ import annotations
 
+from contextlib import contextmanager
 from dataclasses import dataclass
+from collections.abc import Iterator
 from pathlib import Path
 
 from noetrium_platform.composition.managed_research_runtime import (
     ManagedResearchRuntime,
+    build_local_managed_research_runtime,
+)
+from noetrium_platform.infrastructure.resources.directory.runtime import (
+    standard_local_directory_layout,
 )
 
 
@@ -45,4 +51,31 @@ class ReproductionFleetExecutionContext:
         return self.runtime.model_replica_pool
 
 
-__all__ = ["ReproductionFleetExecutionContext"]
+@contextmanager
+def open_local_reproduction_fleet_execution_context(
+    state_root: Path,
+    *,
+    start_background_controllers: bool,
+) -> Iterator[ReproductionFleetExecutionContext]:
+    """Open the one local platform runtime used by a fleet process."""
+
+    if type(state_root) is not Path:
+        raise TypeError("fleet execution state_root must be pathlib.Path")
+    platform_root = state_root.expanduser().absolute() / "platform-runtime"
+    runtime = build_local_managed_research_runtime(
+        standard_local_directory_layout(platform_root),
+        start_background_controllers=start_background_controllers,
+    )
+    try:
+        yield ReproductionFleetExecutionContext(
+            state_root=state_root.expanduser().absolute(),
+            runtime=runtime,
+        )
+    finally:
+        runtime.close()
+
+
+__all__ = [
+    "ReproductionFleetExecutionContext",
+    "open_local_reproduction_fleet_execution_context",
+]

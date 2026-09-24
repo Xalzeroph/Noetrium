@@ -30,6 +30,10 @@ from research.reproductions.execution_authority import (
     ReproductionFleetAuthorityMaterializerPort,
     materialize_repository_fleet_execution_authorities,
 )
+from research.reproductions.execution_context import (
+    ReproductionFleetExecutionContext,
+    open_local_reproduction_fleet_execution_context,
+)
 from research.reproductions.fleet import (
     ReproductionFleetExecutionAuthorities,
     ReproductionFleetExecutionResult,
@@ -483,7 +487,10 @@ def build_plan() -> dict:
     return document
 
 
-def _load_execution_authorities(spec: str) -> ReproductionFleetExecutionAuthorities:
+def _load_execution_authorities(
+    spec: str,
+    context: ReproductionFleetExecutionContext,
+) -> ReproductionFleetExecutionAuthorities:
     if type(spec) is not str or not spec.strip() or spec != spec.strip():
         raise ValueError("fleet execution authority spec must be canonical text")
     module_name, separator, qualname = spec.partition(":")
@@ -506,7 +513,7 @@ def _load_execution_authorities(spec: str) -> ReproductionFleetExecutionAuthorit
         value = getattr(value, part)
     if not callable(value):
         raise TypeError("fleet execution authority target must be callable")
-    authorities = value()
+    authorities = value(context)
     if type(authorities) is not ReproductionFleetExecutionAuthorities:
         raise TypeError(
             "fleet execution authority factory must return "
@@ -518,6 +525,7 @@ def _load_execution_authorities(spec: str) -> ReproductionFleetExecutionAuthorit
 
 def _load_authority_materializer(
     spec: str,
+    context: ReproductionFleetExecutionContext,
 ) -> ReproductionFleetAuthorityMaterializerPort:
     if type(spec) is not str or not spec.strip() or spec != spec.strip():
         raise ValueError("fleet authority materializer spec must be canonical text")
@@ -541,7 +549,7 @@ def _load_authority_materializer(
         value = getattr(value, part)
     if not callable(value):
         raise TypeError("fleet authority materializer target must be callable")
-    materializer = value()
+    materializer = value(context)
     if not isinstance(materializer, ReproductionFleetAuthorityMaterializerPort):
         raise TypeError(
             "fleet authority materializer factory must return "
@@ -550,10 +558,14 @@ def _load_authority_materializer(
     return materializer
 
 
-def _execution_source(args, parser):
+def _execution_source(
+    args,
+    parser,
+    context: ReproductionFleetExecutionContext,
+):
     if args.authority_materializer is not None:
         materialized = materialize_repository_fleet_execution_authorities(
-            _load_authority_materializer(args.authority_materializer)
+            _load_authority_materializer(args.authority_materializer, context)
         )
         return (
             materialized.execution_authorities,
@@ -561,7 +573,11 @@ def _execution_source(args, parser):
             materialized.materialization_digest,
         )
     if args.execution_authority is not None:
-        return _load_execution_authorities(args.execution_authority), None, None
+        return (
+            _load_execution_authorities(args.execution_authority, context),
+            None,
+            None,
+        )
     parser.error(
         "execution mode requires --authority-materializer or "
         "--execution-authority"
@@ -666,21 +682,25 @@ def main() -> int:
         return 0
 
     if args.authority_audit:
-        authorities, materialized_fleet, authority_materialization_digest = (
-            _execution_source(args, parser)
-        )
-        result = (
-            audit_repository_execution_authorities(authorities)
-            if materialized_fleet is None
-            else audit_materialized_reproduction_fleet_authorities(
-                materialized_fleet,
-                research_bindings=authorities.research_bindings,
-                experiment_runtime_components=(
-                    authorities.experiment_runtime_components
-                ),
-                authority_manifest_digest=authorities.authority_manifest_digest,
+        with open_local_reproduction_fleet_execution_context(
+            args.state_root,
+            start_background_controllers=False,
+        ) as context:
+            authorities, materialized_fleet, authority_materialization_digest = (
+                _execution_source(args, parser, context)
             )
-        )
+            result = (
+                audit_repository_execution_authorities(authorities)
+                if materialized_fleet is None
+                else audit_materialized_reproduction_fleet_authorities(
+                    materialized_fleet,
+                    research_bindings=authorities.research_bindings,
+                    experiment_runtime_components=(
+                        authorities.experiment_runtime_components
+                    ),
+                    authority_manifest_digest=authorities.authority_manifest_digest,
+                )
+            )
         owner_requirements = compile_materialized_fleet_owner_requirements(
             result.materialization
         )
@@ -754,27 +774,33 @@ def main() -> int:
         return 0 if payload["all_execution_authority_closed"] else 1
 
     if args.preflight:
-        authorities, materialized_fleet, authority_materialization_digest = (
-            _execution_source(args, parser)
-        )
-        result = (
-            preflight_repository_execution_fleet(
-                authorities,
-                state_root=args.state_root,
-                execution_id=args.execution_id,
+        with open_local_reproduction_fleet_execution_context(
+            args.state_root,
+            start_background_controllers=False,
+        ) as context:
+            authorities, materialized_fleet, authority_materialization_digest = (
+                _execution_source(args, parser, context)
             )
-            if materialized_fleet is None
-            else preflight_materialized_reproduction_fleet(
-                materialized_fleet,
-                state_root=args.state_root,
-                research_bindings=authorities.research_bindings,
-                experiment_runtime_components=(
-                    authorities.experiment_runtime_components
-                ),
-                authority_manifest_digest=authorities.authority_manifest_digest,
-                execution_id=args.execution_id,
+            result = (
+                preflight_repository_execution_fleet(
+                    authorities,
+                    state_root=args.state_root,
+                    execution_id=args.execution_id,
+                    execution_pool=context.execution_pool,
+                )
+                if materialized_fleet is None
+                else preflight_materialized_reproduction_fleet(
+                    materialized_fleet,
+                    state_root=args.state_root,
+                    research_bindings=authorities.research_bindings,
+                    experiment_runtime_components=(
+                        authorities.experiment_runtime_components
+                    ),
+                    authority_manifest_digest=authorities.authority_manifest_digest,
+                    execution_id=args.execution_id,
+                    execution_pool=context.execution_pool,
+                )
             )
-        )
         payload = {
             "schema": "noetrium.reproduction-fleet-preflight.v3",
             "authority_manifest_digest": result.authority_manifest_digest,
@@ -798,31 +824,37 @@ def main() -> int:
         return 0
 
     if args.execute:
-        authorities, materialized_fleet, authority_materialization_digest = (
-            _execution_source(args, parser)
-        )
-        if materialized_fleet is None:
-            result = run_repository_execution_fleet(
-                authorities,
-                state_root=args.state_root,
-                execution_id=args.execution_id,
+        with open_local_reproduction_fleet_execution_context(
+            args.state_root,
+            start_background_controllers=True,
+        ) as context:
+            authorities, materialized_fleet, authority_materialization_digest = (
+                _execution_source(args, parser, context)
             )
-        else:
-            receipt = execute_materialized_reproduction_fleet(
-                materialized_fleet,
-                state_root=args.state_root,
-                research_bindings=authorities.research_bindings,
-                experiment_runtime_components=(
-                    authorities.experiment_runtime_components
-                ),
-                authority_manifest_digest=authorities.authority_manifest_digest,
-                execution_id=args.execution_id,
-            )
-            result = ReproductionFleetExecutionResult(
-                materialized_fleet,
-                receipt,
-                authorities.authority_manifest_digest,
-            )
+            if materialized_fleet is None:
+                result = run_repository_execution_fleet(
+                    authorities,
+                    state_root=args.state_root,
+                    execution_id=args.execution_id,
+                    execution_pool=context.execution_pool,
+                )
+            else:
+                receipt = execute_materialized_reproduction_fleet(
+                    materialized_fleet,
+                    state_root=args.state_root,
+                    research_bindings=authorities.research_bindings,
+                    experiment_runtime_components=(
+                        authorities.experiment_runtime_components
+                    ),
+                    authority_manifest_digest=authorities.authority_manifest_digest,
+                    execution_id=args.execution_id,
+                    execution_pool=context.execution_pool,
+                )
+                result = ReproductionFleetExecutionResult(
+                    materialized_fleet,
+                    receipt,
+                    authorities.authority_manifest_digest,
+                )
         payload = {
             "schema": "noetrium.reproduction-fleet-execution.v3",
             "authority_manifest_digest": result.authority_manifest_digest,

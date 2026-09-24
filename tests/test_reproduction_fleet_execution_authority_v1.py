@@ -52,7 +52,7 @@ class _CapabilityResolver:
         raise AssertionError("not exercised by authority contract test")
 
 
-def _authorities() -> ReproductionFleetExecutionAuthorities:
+def _authorities(_context=None) -> ReproductionFleetExecutionAuthorities:
     return ReproductionFleetExecutionAuthorities(
         benchmark_resolver=_BenchmarkResolver(),
         research_bindings=_ResearchBindings(),
@@ -84,7 +84,8 @@ def test_cli_authority_loader_accepts_only_typed_public_factory() -> None:
     module.build = _authorities
     sys.modules[module_name] = module
     try:
-        loaded = _load_execution_authorities(module_name + ":build")
+        context = object()
+        loaded = _load_execution_authorities(module_name + ":build", context)
         assert type(loaded) is ReproductionFleetExecutionAuthorities
     finally:
         sys.modules.pop(module_name, None)
@@ -103,4 +104,23 @@ def test_cli_authority_loader_accepts_only_typed_public_factory() -> None:
 )
 def test_cli_authority_loader_rejects_ambiguous_or_private_specs(spec: str) -> None:
     with pytest.raises((ValueError, ModuleNotFoundError)):
-        _load_execution_authorities(spec)
+        _load_execution_authorities(spec, object())
+
+
+def test_cli_authority_loader_passes_runtime_context_to_factory() -> None:
+    module_name = "_noetrium_test_fleet_context"
+    module = ModuleType(module_name)
+    seen = []
+
+    def build(context):
+        seen.append(context)
+        return _authorities()
+
+    module.build = build
+    sys.modules[module_name] = module
+    context = object()
+    try:
+        _load_execution_authorities(module_name + ":build", context)
+    finally:
+        sys.modules.pop(module_name, None)
+    assert seen == [context]
