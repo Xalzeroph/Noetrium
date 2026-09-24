@@ -7,6 +7,7 @@ from uuid import uuid4
 
 from noetrium_platform.capabilities.model.deployment.api import (
     ModelDeploymentCatalogPort,
+    ModelDeploymentGeneration,
     ModelDeploymentRuntimePort,
     ModelDeploymentSpec,
     ModelDeploymentStatus,
@@ -82,6 +83,7 @@ class ModelReplicaPlacement:
     compute: ComputeAllocation
     endpoint: EndpointAllocation
     deployment: ModelDeploymentSpec
+    generation: ModelDeploymentGeneration
     status: ModelDeploymentStatus
 
     @property
@@ -178,7 +180,7 @@ class ModelReplicaPoolLease:
             if row.deployment_id in self._removed_deployment_ids:
                 continue
             try:
-                self._deployment_runtime.remove_deployment(row.deployment_id)
+                self._deployment_runtime.remove_deployment(row.generation)
             except BaseException as exc:
                 errors.append(exc)
             else:
@@ -411,8 +413,22 @@ class LocalModelReplicaPoolRuntime:
                         evidence_ref=status.detail or f"model-ready:{spec.deployment_id}",
                     )
                 )
+                generation = self._deployment_runtime.generation(spec.deployment_id)
+                if generation.desired_spec_digest != canonical_digest(spec):
+                    raise RuntimeError(
+                        "model replica desired generation drifted before ownership capture: "
+                        f"{spec.deployment_id}"
+                    )
                 placements.append(
-                    ModelReplicaPlacement(index, spec.deployment_id, compute, bound, spec, status)
+                    ModelReplicaPlacement(
+                        index,
+                        spec.deployment_id,
+                        compute,
+                        bound,
+                        spec,
+                        generation,
+                        status,
+                    )
                 )
 
             report = ModelReplicaPoolReport(
@@ -435,7 +451,16 @@ class LocalModelReplicaPoolRuntime:
             deployments_removed = True
             for spec in reversed(specs):
                 try:
-                    self._deployment_runtime.remove_deployment(spec.deployment_id)
+                    generation = self._deployment_runtime.generation(spec.deployment_id)
+                    if generation.desired_spec_digest != canonical_digest(spec):
+                        raise RuntimeError(
+                            "model replica cleanup lost desired generation authority: "
+                            f"{spec.deployment_id}"
+                        )
+                    self._deployment_runtime.remove_deployment(generation)
+                except KeyError:
+                    # Missing desired + applied identity is already converged.
+                    continue
                 except BaseException as exc:
                     deployments_removed = False
                     cleanup_errors.append(exc)
