@@ -14,6 +14,7 @@ from noetrium_platform.capabilities.model.deployment.composition import (
 from noetrium_platform.foundation.scope.api import PLATFORM_SCOPE
 from noetrium_platform.infrastructure.resources.allocation.api import (
     EndpointAllocation,
+    EndpointAllocationRequest,
     EndpointAllocationState,
 )
 from noetrium_platform.infrastructure.resources.compute.api import (
@@ -127,8 +128,20 @@ class Endpoints:
         self.rows = {}
         self.released = []
 
+    def allocate_auto(self, **kwargs):
+        port = 24000 + len(self.rows)
+        request = EndpointAllocationRequest(
+            allocation_id=kwargs["allocation_id"],
+            holder_scope=kwargs["holder_scope"],
+            purpose=kwargs["purpose"],
+            host=kwargs["host"],
+            candidate_ports=(port,),
+            owner_scope=kwargs["owner_scope"],
+            ownership=kwargs["ownership"],
+        )
+        return self.allocate(request)
+
     def allocate(self, request):
-        port = request.candidate_ports[0]
         row = EndpointAllocation(
             request.allocation_id,
             request.candidates()[0],
@@ -191,17 +204,6 @@ class ComputeGuards:
         return guard
 
 
-class CandidatePorts:
-    def __init__(self) -> None:
-        self.next = 24000
-
-    def candidate_ports(self, *, host: str, count: int) -> tuple[int, ...]:
-        del host
-        start = self.next
-        self.next += count
-        return tuple(range(start, start + count))
-
-
 class EndpointGuards:
     def __init__(self):
         self.created = []
@@ -227,7 +229,6 @@ def test_auto_model_replica_pool_exhausts_available_gpu_capacity_without_gpu_or_
         fleet=Fleet(catalog),
         compute_scheduler=scheduler,
         endpoint_allocations=endpoints,
-        endpoint_candidates=CandidatePorts(),
         compute_lease_guards=compute_guards,
         endpoint_lease_guards=endpoint_guards,
     )
@@ -285,7 +286,6 @@ def test_auto_model_replica_pool_does_not_mask_scheduler_failure(tmp_path) -> No
         fleet=Fleet(catalog),
         compute_scheduler=scheduler,
         endpoint_allocations=endpoints,
-        endpoint_candidates=CandidatePorts(),
         compute_lease_guards=ComputeGuards(),
         endpoint_lease_guards=EndpointGuards(),
     )

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import replace
+import socket
 import pytest
 from concurrent.futures import ThreadPoolExecutor
 from threading import Barrier
@@ -10,11 +11,15 @@ from noetrium_platform.infrastructure.resources.allocation.api import (
     EndpointAllocationState,
     EndpointBindingProof,
     EndpointProbeResult,
+    EndpointProtocol,
     NetworkEndpoint,
 )
 from noetrium_platform.infrastructure.resources.allocation.runtime import (
     EndpointAllocationUnavailable,
     InMemoryEndpointAllocator,
+)
+from noetrium_platform.infrastructure.resources.allocation.providers import (
+    LocalEndpointCandidateSource,
 )
 from noetrium_platform.infrastructure.resources.lease.api import ResourceIdentity, ResourceKind
 from noetrium_platform.infrastructure.resources.lease.runtime import InMemoryResourceLeaseRegistry
@@ -33,6 +38,22 @@ class ScriptedProbe:
             endpoint.port not in self.unavailable,
             "scripted-unavailable" if endpoint.port in self.unavailable else "scripted-available",
         )
+
+
+class ScriptedCandidates:
+    def __init__(self, ports: tuple[int, ...]) -> None:
+        self.ports = ports
+
+    def candidate_ports(
+        self,
+        *,
+        host: str,
+        count: int,
+        protocol: EndpointProtocol = EndpointProtocol.TCP,
+    ) -> tuple[int, ...]:
+        assert host == "127.0.0.1"
+        assert protocol is EndpointProtocol.TCP
+        return self.ports[:count]
 
 
 def _request(allocation_id: str, ports: tuple[int, ...]) -> EndpointAllocationRequest:
@@ -75,6 +96,67 @@ def test_endpoint_allocator_releases_logical_lease_and_allows_reallocation() -> 
 
     second = allocator.allocate(_request("branch-b", (25565,)))
     assert second.endpoint == first.endpoint
+
+
+def test_automatic_endpoint_allocation_skips_an_os_bound_port() -> None:
+    blocker = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    blocker.bind(("127.0.0.1", 0))
+    occupied = int(blocker.getsockname()[1])
+    leases = InMemoryResourceLeaseRegistry()
+    allocator = InMemoryEndpointAllocator(
+        ownership=leases,
+        leases=leases,
+        probe=__import__(
+            "noetrium_platform.infrastructure.resources.allocation.providers",
+            fromlist=["SocketEndpointProbe"],
+        ).SocketEndpointProbe(),
+        candidates=LocalEndpointCandidateSource(),
+    )
+    try:
+        allocation = allocator.allocate_auto(
+            allocation_id="auto-os-busy",
+            holder_scope=ScopeIdentity(ScopeKind.BRANCH, "auto-os-busy"),
+            purpose="automatic endpoint test",
+            preferred_ports=(occupied,),
+            candidate_count=8,
+        )
+    finally:
+        blocker.close()
+
+    assert allocation.endpoint.port != occupied
+    assert allocation.state is EndpointAllocationState.RESERVED
+
+
+def test_automatic_endpoint_release_allows_physical_port_reuse() -> None:
+    leases = InMemoryResourceLeaseRegistry()
+    allocator = InMemoryEndpointAllocator(
+        ownership=leases,
+        leases=leases,
+        probe=ScriptedProbe(),
+        candidates=ScriptedCandidates((25566,)),
+    )
+    first = allocator.allocate_auto(
+        allocation_id="auto-a",
+        holder_scope=ScopeIdentity(ScopeKind.BRANCH, "auto-a"),
+        purpose="automatic endpoint test",
+        candidate_count=1,
+    )
+    assert allocator.allocate_auto(
+        allocation_id="auto-a",
+        holder_scope=ScopeIdentity(ScopeKind.BRANCH, "auto-a"),
+        purpose="automatic endpoint test",
+        candidate_count=1,
+    ) == first
+
+    allocator.release(first.allocation_id)
+    second = allocator.allocate_auto(
+        allocation_id="auto-b",
+        holder_scope=ScopeIdentity(ScopeKind.BRANCH, "auto-b"),
+        purpose="automatic endpoint test",
+        candidate_count=1,
+    )
+    assert second.endpoint == first.endpoint
+    assert len(leases.active_for(second.endpoint.resource)) == 1
 
 
 def test_in_memory_endpoint_binding_is_fencing_bound_and_preserves_history() -> None:
