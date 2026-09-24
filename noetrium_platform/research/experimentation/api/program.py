@@ -26,6 +26,7 @@ from noetrium_platform.foundation.kernel.kernel import (
     MachineSnapshotStorePort,
     MachineStatus,
     canonical_digest,
+    require_sha256,
 )
 from noetrium_platform.research.execution.api import (
     ExperimentConcern,
@@ -295,6 +296,7 @@ class ExperimentProgramBinding:
         adapter: BoundStudyExecutionPort,
         aggregation: StudyMetricAggregationPort,
         *,
+        execution_binding_digest: str,
         task_group: TaskGroupPort | None = None,
     ) -> None:
         if not isinstance(compiled, CompiledExperimentProgram):
@@ -303,9 +305,14 @@ class ExperimentProgramBinding:
             raise TypeError("experiment binding requires BoundStudyExecutionPort")
         if not callable(getattr(aggregation, "aggregate", None)):
             raise TypeError("experiment binding requires StudyMetricAggregationPort")
+        require_sha256(
+            execution_binding_digest,
+            "experiment execution_binding_digest",
+        )
         self.compiled = compiled
         self.adapter = adapter
         self.aggregation = aggregation
+        self.execution_binding_digest = execution_binding_digest
         self.task_group = task_group
         self._assignment_by_digest = {
             row.assignment_digest: row for row in compiled.plan.assignments
@@ -398,6 +405,7 @@ class ExperimentProgramBinding:
                 "plan_digest": self.compiled.plan.plan_digest,
                 "batch_plan_digest": self.compiled.batch_plan_digest,
                 "protocol_digest": self.compiled.plan.protocol.protocol_digest,
+                "execution_binding_digest": self.execution_binding_digest,
                 "required_capabilities": self.compiled.program.required_capabilities,
                 "batches": tuple(
                     row.batch_digest for row in self.compiled.batches
@@ -415,6 +423,7 @@ class ExperimentProgramBinding:
                 "plan_digest": self.compiled.plan.plan_digest,
                 "binding_digest": self.compiled.plan.binding_digest,
                 "batch_plan_digest": self.compiled.batch_plan_digest,
+                "execution_binding_digest": self.execution_binding_digest,
             },
             binding=None,
         )
