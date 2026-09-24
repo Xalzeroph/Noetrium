@@ -10,8 +10,8 @@ from time import time
 
 from noetrium_platform.infrastructure.resources.compute.api import (
     ComputeAllocation, ComputeHost, ComputePlacementUnavailable, ComputeRequirement,
-    GpuRuntimeObserverPort, GpuRuntimeSnapshot, GpuSharingMode,
-    HostRuntimeObserverPort, HostRuntimeSnapshot,
+    GpuDeviceStatus, GpuRuntimeObserverPort, GpuRuntimeSnapshot, GpuSharingMode,
+    HostRuntimeObserverPort, HostRuntimeSnapshot, HostRuntimeStatus,
 )
 from noetrium_platform.foundation.kernel.kernel import canonical_digest
 from noetrium_platform.foundation.governance.api import ScopeIdentity, ScopeKind
@@ -98,34 +98,56 @@ def _observe_host_runtime(observer: HostRuntimeObserverPort | None) -> HostRunti
     return snapshot if snapshot.available else None
 
 
-def _host_runtime(snapshot: HostRuntimeSnapshot | None, host_id: str):
+@dataclass(frozen=True, slots=True)
+class _GpuRuntimeIndex:
+    devices_by_id: dict[str, GpuDeviceStatus]
+    process_count_by_uuid: dict[str, int]
+    processes_complete: bool
+
+
+def _gpu_runtime_index(
+    snapshot: GpuRuntimeSnapshot | None,
+) -> _GpuRuntimeIndex | None:
     if snapshot is None:
         return None
-    return next(
-        (item for item in snapshot.hosts if item.host_id == host_id and item.available),
-        None,
+    devices_by_id: dict[str, GpuDeviceStatus] = {}
+    for device in snapshot.devices:
+        devices_by_id[device.uuid] = device
+        devices_by_id[device.index] = device
+    process_count_by_uuid: dict[str, int] = {}
+    for process in snapshot.processes:
+        process_count_by_uuid[process.gpu_uuid] = (
+            process_count_by_uuid.get(process.gpu_uuid, 0) + 1
+        )
+    return _GpuRuntimeIndex(
+        devices_by_id=devices_by_id,
+        process_count_by_uuid=process_count_by_uuid,
+        processes_complete=snapshot.processes_complete,
     )
 
 
-def _runtime_device(snapshot: GpuRuntimeSnapshot | None, gpu_id: str):
+def _host_runtime_index(
+    snapshot: HostRuntimeSnapshot | None,
+) -> dict[str, HostRuntimeStatus] | None:
     if snapshot is None:
         return None
-    return next(
-        (device for device in snapshot.devices if device.uuid == gpu_id or device.index == gpu_id),
-        None,
-    )
+    return {
+        item.host_id: item
+        for item in snapshot.hosts
+        if item.available
+    }
 
 
 def _runtime_rank(
-    gpu, requirement: ComputeRequirement, snapshot: GpuRuntimeSnapshot | None,
+    gpu, requirement: ComputeRequirement, runtime_index: _GpuRuntimeIndex | None,
 ):
-    if snapshot is None:
+    if runtime_index is None:
         # Shared placement depends on live external usage facts.  Falling back
         # to static inventory would treat an unknown busy GPU as spare capacity.
         if requirement.gpu_sharing_mode is GpuSharingMode.PREFER_IDLE_ALLOW_SHARED:
             return None
         return (2, 0, 0, gpu.memory_bytes, gpu.gpu_id)
-    device = _runtime_device(snapshot, gpu.gpu_id)
+    device = runtime_index.devices_by_id.get(gpu.gpu_id)
     if device is None:
         return None
     free_bytes = device.memory_free_mb * 1024 * 1024
@@ -133,8 +155,8 @@ def _runtime_rank(
         return None
     if device.utilization_percent > requirement.max_gpu_utilization_percent:
         return None
-    process_count = sum(1 for process in snapshot.processes if process.gpu_uuid == device.uuid)
-    process_visibility_unknown = not snapshot.processes_complete
+    process_count = runtime_index.process_count_by_uuid.get(device.uuid, 0)
+    process_visibility_unknown = not runtime_index.processes_complete
     if (process_count or process_visibility_unknown) and requirement.gpu_sharing_mode is GpuSharingMode.IDLE_ONLY:
         return None
     return (
@@ -148,7 +170,7 @@ def _runtime_rank(
 
 def _eligible_gpus(
     host: ComputeHost, usage: _HostUsage, requirement: ComputeRequirement,
-    runtime_snapshot: GpuRuntimeSnapshot | None,
+    runtime_index: _GpuRuntimeIndex | None,
 ):
     rows = []
     for gpu in host.gpus:
@@ -156,7 +178,7 @@ def _eligible_gpus(
             continue
         if gpu.memory_bytes < requirement.minimum_gpu_memory_bytes:
             continue
-        rank = _runtime_rank(gpu, requirement, runtime_snapshot)
+        rank = _runtime_rank(gpu, requirement, runtime_index)
         if rank is None:
             continue
         rows.append((rank, gpu))
@@ -166,14 +188,18 @@ def _eligible_gpus(
 
 def _placement_score(
     host: ComputeHost, usage: _HostUsage, requirement: ComputeRequirement,
-    runtime_snapshot: GpuRuntimeSnapshot | None,
-    host_runtime_snapshot: HostRuntimeSnapshot | None,
+    runtime_index: _GpuRuntimeIndex | None,
+    host_runtime_index: dict[str, HostRuntimeStatus] | None,
 ):
     cpu_after = host.cpu_cores - usage.cpu_cores - requirement.cpu_cores
     memory_after = host.memory_bytes - usage.memory_bytes - requirement.memory_bytes
     if cpu_after < 0 or memory_after < 0:
         return None
-    live = _host_runtime(host_runtime_snapshot, host.host_id)
+    live = (
+        None
+        if host_runtime_index is None
+        else host_runtime_index.get(host.host_id)
+    )
     if live is None:
         if requirement.require_host_runtime:
             return None
@@ -196,7 +222,7 @@ def _placement_score(
             1.0, live.available_memory_bytes / max(1, host.memory_bytes)
         )
         runtime_rank = (0, cpu_load_ratio, memory_pressure)
-    eligible = _eligible_gpus(host, usage, requirement, runtime_snapshot)
+    eligible = _eligible_gpus(host, usage, requirement, runtime_index)
     if len(eligible) < requirement.gpu_count:
         return None
     selected_rows = eligible[: requirement.gpu_count]
@@ -231,10 +257,16 @@ def _ordered_placements(
     runtime_snapshot: GpuRuntimeSnapshot | None,
     host_runtime_snapshot: HostRuntimeSnapshot | None,
 ):
+    runtime_index = _gpu_runtime_index(runtime_snapshot)
+    host_runtime_index = _host_runtime_index(host_runtime_snapshot)
     rows = []
     for host in hosts:
         placement = _placement_score(
-            host, usage_for(host.host_id), requirement, runtime_snapshot, host_runtime_snapshot
+            host,
+            usage_for(host.host_id),
+            requirement,
+            runtime_index,
+            host_runtime_index,
         )
         if placement is not None:
             score, gpu_ids = placement
