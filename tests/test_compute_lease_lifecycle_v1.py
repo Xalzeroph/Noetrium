@@ -41,7 +41,7 @@ def test_inmemory_expiry_releases_capacity_and_reacquire_fences_old_holder():
 def test_inmemory_renew_extends_expiry_without_changing_fencing():
     scheduler = in_memory_compute_scheduler(_inventory())
     first = scheduler.allocate("job", _scope(), _req(), ttl_seconds=5, now=100)
-    renewed, = scheduler.renew_many(("job",), ttl_seconds=20, now=102)
+    renewed, = scheduler.renew_many((first,), ttl_seconds=20, now=102)
     assert renewed.lease_fencing_token == first.lease_fencing_token
     assert renewed.lease_expires_at_epoch_s == 122
     assert scheduler.reconcile_expired(now=121) == ()
