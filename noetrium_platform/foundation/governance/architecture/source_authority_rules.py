@@ -8,10 +8,7 @@ DEFAULT_SOURCE_AUTHORITY_RULES: tuple[_AuthorityRule, ...] = (
     SourceAuthorityRule(
         "filesystem.atomic_replace",
         "os.replace",
-        (
-            "noetrium_platform.foundation.kernel.kernel.durability.durable_file",
-            "noetrium_platform.capabilities.model.request.prompt.runtime.atomic_publication",
-        ),
+        ("noetrium_platform.foundation.kernel.kernel.durability.durable_file",),
         exact_call("os.replace"),
     ),
     SourceAuthorityRule(
