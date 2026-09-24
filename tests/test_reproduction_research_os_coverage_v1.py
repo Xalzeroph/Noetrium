@@ -1,85 +1,63 @@
 from __future__ import annotations
 
-import importlib
-from pathlib import Path
-
-from research.reproductions.contracts import (
-    ReproductionAssetKind,
-    ReproductionDefinition,
-)
+from research.reproductions.contracts import ReproductionLifecycle
 from research.reproductions.research_os import (
     compile_reproduction_research_program,
+    discover_reproduction_definitions,
+    executable_reproduction_definitions,
 )
 
 
-_EXPECTED_MISSING_EXECUTABLE = (
-    "agent_q_surrogate",
-    "exact_vwa",
-    "gats",
-    "lits_math500",
-    "tree_search_language_model_agents",
-)
-
-_EXPECTED_MISSING_STUDY = (
-    "agent_s3",
-    "ai_scientist_v1",
-    "ai_scientist_v2",
-    "gorilla_apibench",
-    "live_swe_agent",
-    "mars_automated_ai_research",
-    "memevolve",
-    "multiagent_debate",
-    "pi05_openpi",
-)
-
-
-def _definitions() -> tuple[ReproductionDefinition, ...]:
-    root = Path(__file__).resolve().parents[1] / "research" / "reproductions"
-    rows = []
-    for path in sorted(root.glob("*/definition.py")):
-        module = importlib.import_module(
-            f"research.reproductions.{path.parent.name}.definition"
-        )
-        definition = getattr(module, "REPRODUCTION", None)
-        if type(definition) is not ReproductionDefinition:
-            raise TypeError(
-                f"{path.parent.name} has no typed REPRODUCTION definition"
-            )
-        rows.append(definition)
-    return tuple(rows)
-
-
-def test_reproduction_research_os_migration_coverage_is_explicit() -> None:
-    definitions = _definitions()
+def test_reproduction_research_os_migration_coverage_is_authority_derived() -> None:
+    definitions = discover_reproduction_definitions()
     assert len(definitions) == 100
 
-    current: list[str] = []
-    missing_executable: list[str] = []
-    missing_study: list[str] = []
-
-    for definition in definitions:
-        kinds = {asset.kind for asset in definition.assets}
-        has_study = ReproductionAssetKind.STUDY in kinds
-        has_executable = bool(
-            {
-                ReproductionAssetKind.METHOD_PROGRAM,
-                ReproductionAssetKind.RESEARCH_PROGRAM,
-            }
-            & kinds
+    by_lifecycle = {
+        lifecycle: tuple(
+            row for row in definitions if row.lifecycle is lifecycle
         )
-        if not has_study:
-            missing_study.append(definition.package)
-            continue
-        if not has_executable:
-            missing_executable.append(definition.package)
-            continue
-        program = compile_reproduction_research_program(definition)
-        assert program.program_id == definition.identity.method_id
-        current.append(definition.package)
+        for lifecycle in ReproductionLifecycle
+    }
+    assert len(by_lifecycle[ReproductionLifecycle.PROTOCOL_BOUND]) == 91
+    assert len(by_lifecycle[ReproductionLifecycle.CATALOGUED]) == 8
+    assert len(by_lifecycle[ReproductionLifecycle.ARTIFACT_ONLY]) == 1
+    assert sum(len(rows) for rows in by_lifecycle.values()) == 100
 
-    assert len(current) == 86
-    assert tuple(sorted(missing_executable)) == _EXPECTED_MISSING_EXECUTABLE
-    assert tuple(sorted(missing_study)) == _EXPECTED_MISSING_STUDY
-    assert set(current).isdisjoint(missing_executable)
-    assert set(current).isdisjoint(missing_study)
-    assert len(current) + len(missing_executable) + len(missing_study) == 100
+    executable = executable_reproduction_definitions()
+    executable_packages = {row.package for row in executable}
+    protocol_bound = by_lifecycle[ReproductionLifecycle.PROTOCOL_BOUND]
+    missing = tuple(
+        sorted(
+            row.package
+            for row in protocol_bound
+            if row.package not in executable_packages
+        )
+    )
+    assert missing == ()
+
+    compiled = tuple(
+        compile_reproduction_research_program(row)
+        for row in protocol_bound
+    )
+    assert tuple(program.program_id for program in compiled) == tuple(
+        sorted(row.package for row in protocol_bound)
+    )
+    assert len({program.program_id for program in compiled}) == 91
+
+
+def test_non_execution_lifecycles_are_not_silently_promoted() -> None:
+    definitions = discover_reproduction_definitions()
+    protocol_packages = {
+        row.package
+        for row in definitions
+        if row.lifecycle is ReproductionLifecycle.PROTOCOL_BOUND
+    }
+    assert protocol_packages
+
+    for row in definitions:
+        if row.lifecycle in {
+            ReproductionLifecycle.CATALOGUED,
+            ReproductionLifecycle.ARTIFACT_ONLY,
+            ReproductionLifecycle.PAPER_ONLY,
+        }:
+            assert row.package not in protocol_packages
