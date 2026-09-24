@@ -98,8 +98,8 @@ def register_gsm8k_materialization(
     )
 
 
-def materialize_gsm8k_jsonl(
-    path: str | Path,
+def materialize_gsm8k_jsonl_bytes(
+    data: bytes,
     *,
     split_id: str,
     expected_git_blob_sha1: str | None = None,
@@ -108,9 +108,10 @@ def materialize_gsm8k_jsonl(
 ) -> GSM8KMaterialization:
     """Bind exact JSONL bytes to immutable GSM8K task and runtime authorities."""
 
+    if type(data) is not bytes:
+        raise TypeError("GSM8K materializer data must be bytes")
     if split_id not in GSM8K_SPLIT_COUNTS:
         raise ValueError(f"unsupported GSM8K split: {split_id!r}")
-    data = Path(path).read_bytes()
     git_blob_sha1 = _git_blob_sha1(data)
     file_sha256 = hashlib.sha256(data).hexdigest()
     if expected_git_blob_sha1 is not None and git_blob_sha1 != expected_git_blob_sha1:
@@ -174,6 +175,25 @@ def materialize_gsm8k_jsonl(
     )
 
 
+
+def materialize_gsm8k_jsonl(
+    path: str | Path,
+    *,
+    split_id: str,
+    expected_git_blob_sha1: str | None = None,
+    expected_file_sha256: str | None = None,
+    require_full_split_cardinality: bool = True,
+) -> GSM8KMaterialization:
+    """Path adapter over the content-authoritative bytes materializer."""
+
+    return materialize_gsm8k_jsonl_bytes(
+        Path(path).read_bytes(),
+        split_id=split_id,
+        expected_git_blob_sha1=expected_git_blob_sha1,
+        expected_file_sha256=expected_file_sha256,
+        require_full_split_cardinality=require_full_split_cardinality,
+    )
+
 def materialize_archived_gsm8k_test(path: str | Path) -> GSM8KMaterialization:
     return materialize_gsm8k_jsonl(
         path,
@@ -190,5 +210,6 @@ __all__ = [
     "GSM8KMaterializedTask",
     "materialize_archived_gsm8k_test",
     "materialize_gsm8k_jsonl",
+    "materialize_gsm8k_jsonl_bytes",
     "register_gsm8k_materialization",
 ]
