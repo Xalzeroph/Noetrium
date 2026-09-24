@@ -574,14 +574,6 @@ class ResearchGraphExecutionStorePort(Protocol):
         retry_not_before_ns: int,
     ) -> ResearchGraphExecutionSnapshot: ...
 
-    def schedule_retry(
-        self,
-        execution_id: str,
-        node_id: str,
-        *,
-        retry_not_before_ns: int,
-    ) -> ResearchGraphNodeExecutionRecord: ...
-
     def resolve_reconciliation(
         self,
         execution_id: str,
