@@ -1,15 +1,15 @@
 {
   "counts": {
     "parse_errors": 0,
-    "python_files": 3676,
-    "python_import_edges": 7177,
-    "symbols": 4872,
-    "tracked_files": 4306,
+    "python_files": 3677,
+    "python_import_edges": 7181,
+    "symbols": 4878,
+    "tracked_files": 4307,
     "typescript_javascript_files": 11
   },
   "language_symbol_counts": {
     "javascript": 1,
-    "python": 4866,
+    "python": 4872,
     "typescript": 5
   },
   "parse_errors": [],
@@ -9454,6 +9454,12 @@
     },
     {
       "source_module": "noetrium_platform.foundation.governance.api.baseline_authority",
+      "source_role": "core_platform",
+      "target_module": "noetrium_platform.foundation.kernel.kernel.durability",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "noetrium_platform.foundation.governance.api.repository_source",
       "source_role": "core_platform",
       "target_module": "noetrium_platform.foundation.kernel.kernel.durability",
       "target_role": "core_platform"
@@ -22877,6 +22883,12 @@
     {
       "source_module": "scripts.run_reproduction_fleet",
       "source_role": "tooling",
+      "target_module": "research.reproductions.fleet",
+      "target_role": "research_reproductions"
+    },
+    {
+      "source_module": "scripts.run_reproduction_fleet",
+      "source_role": "tooling",
       "target_module": "research.reproductions.research_os",
       "target_role": "research_reproductions"
     },
@@ -33021,6 +33033,18 @@
       "target_role": "research_reproductions"
     },
     {
+      "source_module": "tests.test_reproduction_fleet_execution_authority_v1",
+      "source_role": "tests",
+      "target_module": "research.reproductions.fleet",
+      "target_role": "research_reproductions"
+    },
+    {
+      "source_module": "tests.test_reproduction_fleet_execution_authority_v1",
+      "source_role": "tests",
+      "target_module": "scripts.run_reproduction_fleet",
+      "target_role": "tooling"
+    },
+    {
       "source_module": "tests.test_reproduction_fleet_materialization_v1",
       "source_role": "tests",
       "target_module": "noetrium_platform.foundation.kernel.kernel",
@@ -43079,7 +43103,7 @@
   ],
   "role_import_counts": [
     {
-      "count": 2695,
+      "count": 2696,
       "source_role": "core_platform",
       "target_role": "core_platform"
     },
@@ -43159,7 +43183,7 @@
       "target_role": "reference_orchestration"
     },
     {
-      "count": 334,
+      "count": 335,
       "source_role": "tests",
       "target_role": "research_reproductions"
     },
@@ -43169,7 +43193,7 @@
       "target_role": "tests"
     },
     {
-      "count": 22,
+      "count": 23,
       "source_role": "tests",
       "target_role": "tooling"
     },
@@ -43184,7 +43208,7 @@
       "target_role": "public_facade"
     },
     {
-      "count": 6,
+      "count": 7,
       "source_role": "tooling",
       "target_role": "research_reproductions"
     },
@@ -43202,7 +43226,7 @@
     "reference_components": 22,
     "reference_orchestration": 10,
     "research_reproductions": 775,
-    "tests": 815,
+    "tests": 816,
     "tooling": 78
   },
   "role_symbol_counts": {
@@ -43212,13 +43236,13 @@
     "public_facade": 4,
     "reference_components": 64,
     "reference_orchestration": 14,
-    "research_reproductions": 420,
+    "research_reproductions": 422,
     "sdk": 5,
-    "tests": 977,
+    "tests": 981,
     "tooling": 38
   },
   "schema": "noetrium-repository-code-architecture-index.v1",
-  "source_git_sha": "c81d1372e6bb70b5e18ad59690a3cbeaaedc331e",
+  "source_git_sha": "d3fd2383d0fda9a727639553b850b4978530cc5a",
   "symbols": [
     {
       "bases": [],
@@ -75754,7 +75778,7 @@
       ],
       "kind": "enum",
       "language": "python",
-      "line": 11,
+      "line": 13,
       "methods": [],
       "module": "noetrium_platform.foundation.governance.api.repository_source",
       "name": "RepositorySourceFailureKind",
@@ -75774,7 +75798,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 22,
+      "line": 24,
       "methods": [],
       "module": "noetrium_platform.foundation.governance.api.repository_source",
       "name": "RepositorySourceFailure",
@@ -75790,7 +75814,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 28,
+      "line": 30,
       "methods": [
         "__init__"
       ],
@@ -75813,7 +75837,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 42,
+      "line": 44,
       "methods": [],
       "module": "noetrium_platform.foundation.governance.api.repository_source",
       "name": "RepositorySourceBlob",
@@ -75829,7 +75853,7 @@
       "fields": [],
       "kind": "protocol",
       "language": "python",
-      "line": 51,
+      "line": 53,
       "methods": [
         "documents"
       ],
@@ -75848,7 +75872,7 @@
       "fields": [],
       "kind": "protocol",
       "language": "python",
-      "line": 57,
+      "line": 59,
       "methods": [
         "source_digest",
         "source_authority",
@@ -75872,7 +75896,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 75,
+      "line": 77,
       "methods": [
         "__post_init__",
         "source_digest",
@@ -123795,11 +123819,56 @@
     },
     {
       "bases": [],
+      "decorators": [
+        "dataclass(frozen=True, slots=True)"
+      ],
+      "fields": [
+        "benchmark_resolver: ReproductionBenchmarkResolverPort",
+        "research_bindings: ReproductionResearchBindingResolverPort",
+        "experiment_bindings: ResearchOSExperimentRuntimeBindingPort",
+        "capability_resolver: ReproductionCapabilityRequirementResolverPort | None"
+      ],
+      "kind": "dataclass",
+      "language": "python",
+      "line": 475,
+      "methods": [
+        "__post_init__"
+      ],
+      "module": "research.reproductions.fleet",
+      "name": "ReproductionFleetExecutionAuthorities",
+      "path": "research/reproductions/fleet.py",
+      "qualname": "research.reproductions.fleet.ReproductionFleetExecutionAuthorities",
+      "role": "research_reproductions"
+    },
+    {
+      "bases": [],
+      "decorators": [
+        "dataclass(frozen=True, slots=True)"
+      ],
+      "fields": [
+        "materialization: ReproductionFleetMaterialization",
+        "receipt: api.ResearchControlReceipt",
+        "execution_digest: str"
+      ],
+      "kind": "dataclass",
+      "language": "python",
+      "line": 516,
+      "methods": [
+        "__post_init__"
+      ],
+      "module": "research.reproductions.fleet",
+      "name": "ReproductionFleetExecutionResult",
+      "path": "research/reproductions/fleet.py",
+      "qualname": "research.reproductions.fleet.ReproductionFleetExecutionResult",
+      "role": "research_reproductions"
+    },
+    {
+      "bases": [],
       "decorators": [],
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 474,
+      "line": 582,
       "methods": [
         "__init__",
         "resolve"
@@ -130394,7 +130463,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 34,
+      "line": 39,
       "methods": [],
       "module": "scripts.run_reproduction_fleet",
       "name": "Lane",
@@ -140211,6 +140280,70 @@
       "name": "_SearchResolver",
       "path": "tests/test_reproduction_execution_resolution_v1.py",
       "qualname": "tests.test_reproduction_execution_resolution_v1._SearchResolver",
+      "role": "tests"
+    },
+    {
+      "bases": [],
+      "decorators": [],
+      "fields": [],
+      "kind": "class",
+      "language": "python",
+      "line": 14,
+      "methods": [
+        "resolve"
+      ],
+      "module": "tests.test_reproduction_fleet_execution_authority_v1",
+      "name": "_BenchmarkResolver",
+      "path": "tests/test_reproduction_fleet_execution_authority_v1.py",
+      "qualname": "tests.test_reproduction_fleet_execution_authority_v1._BenchmarkResolver",
+      "role": "tests"
+    },
+    {
+      "bases": [],
+      "decorators": [],
+      "fields": [],
+      "kind": "class",
+      "language": "python",
+      "line": 20,
+      "methods": [
+        "resolve"
+      ],
+      "module": "tests.test_reproduction_fleet_execution_authority_v1",
+      "name": "_ResearchBindings",
+      "path": "tests/test_reproduction_fleet_execution_authority_v1.py",
+      "qualname": "tests.test_reproduction_fleet_execution_authority_v1._ResearchBindings",
+      "role": "tests"
+    },
+    {
+      "bases": [],
+      "decorators": [],
+      "fields": [],
+      "kind": "class",
+      "language": "python",
+      "line": 26,
+      "methods": [
+        "resolve"
+      ],
+      "module": "tests.test_reproduction_fleet_execution_authority_v1",
+      "name": "_ExperimentBindings",
+      "path": "tests/test_reproduction_fleet_execution_authority_v1.py",
+      "qualname": "tests.test_reproduction_fleet_execution_authority_v1._ExperimentBindings",
+      "role": "tests"
+    },
+    {
+      "bases": [],
+      "decorators": [],
+      "fields": [],
+      "kind": "class",
+      "language": "python",
+      "line": 32,
+      "methods": [
+        "resolve"
+      ],
+      "module": "tests.test_reproduction_fleet_execution_authority_v1",
+      "name": "_CapabilityResolver",
+      "path": "tests/test_reproduction_fleet_execution_authority_v1.py",
+      "qualname": "tests.test_reproduction_fleet_execution_authority_v1._CapabilityResolver",
       "role": "tests"
     },
     {

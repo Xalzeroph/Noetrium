@@ -51130,7 +51130,7 @@
         "text"
       ],
       "kind": "dataclass",
-      "line": 42,
+      "line": 44,
       "methods": [],
       "module": "noetrium_platform.foundation.governance.api.repository_source",
       "name": "RepositorySourceBlob",
@@ -51152,7 +51152,7 @@
         "relative_path"
       ],
       "kind": "dataclass",
-      "line": 22,
+      "line": 24,
       "methods": [],
       "module": "noetrium_platform.foundation.governance.api.repository_source",
       "name": "RepositorySourceFailure",
@@ -51179,7 +51179,7 @@
         "UTF8_DECODE"
       ],
       "kind": "enum",
-      "line": 11,
+      "line": 13,
       "methods": [],
       "module": "noetrium_platform.foundation.governance.api.repository_source",
       "name": "RepositorySourceFailureKind",
@@ -51197,7 +51197,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 28,
+      "line": 30,
       "methods": [
         "__init__"
       ],
@@ -51218,7 +51218,7 @@
       "decorators": [],
       "fields": [],
       "kind": "protocol",
-      "line": 57,
+      "line": 59,
       "methods": [
         "source_digest",
         "source_authority",
@@ -51242,7 +51242,7 @@
       "decorators": [],
       "fields": [],
       "kind": "protocol",
-      "line": 51,
+      "line": 53,
       "methods": [
         "documents"
       ],
@@ -51264,7 +51264,7 @@
         "blobs"
       ],
       "kind": "dataclass",
-      "line": 75,
+      "line": 77,
       "methods": [
         "__post_init__",
         "source_digest",
@@ -102554,7 +102554,7 @@
     "classes": 3341,
     "constructor_edges": 933,
     "inheritance_edges": 149,
-    "module_import_edges": 5146,
+    "module_import_edges": 5147,
     "parse_errors": 0,
     "python_modules": 1929,
     "registry_authorities": 20,
@@ -113723,6 +113723,10 @@
     },
     {
       "source": "noetrium_platform.foundation.governance.api.baseline_authority",
+      "target": "noetrium_platform.foundation.kernel.kernel.durability"
+    },
+    {
+      "source": "noetrium_platform.foundation.governance.api.repository_source",
       "target": "noetrium_platform.foundation.kernel.kernel.durability"
     },
     {
@@ -133774,7 +133778,9 @@
       "top_system": "governance"
     },
     {
-      "imports": [],
+      "imports": [
+        "noetrium_platform.foundation.kernel.kernel.durability"
+      ],
       "module": "noetrium_platform.foundation.governance.api.repository_source",
       "path": "noetrium_platform/foundation/governance/api/repository_source.py",
       "system_key": "governance",
@@ -144176,7 +144182,7 @@
   "parse_errors": [],
   "registry_sha256": "d3fc1bab831f1b7379e5a36048a61c00fe173429df958270d36a16f3f00171c0",
   "schema": "noetrium-code-architecture-index.v1",
-  "source_git_sha": "c81d1372e6bb70b5e18ad59690a3cbeaaedc331e",
+  "source_git_sha": "d3fd2383d0fda9a727639553b850b4978530cc5a",
   "system_import_edges": [
     {
       "count": 85,
@@ -144249,7 +144255,7 @@
       "target": "governance"
     },
     {
-      "count": 44,
+      "count": 45,
       "source": "governance",
       "target": "platform"
     },
