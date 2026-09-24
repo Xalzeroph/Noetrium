@@ -283,23 +283,52 @@ class ModelDeploymentRuntime:
         generation: ModelDeploymentGeneration,
     ) -> bool:
         with self._lock:
+            if type(generation) is not ModelDeploymentGeneration:
+                raise TypeError(
+                    "model deployment mutation requires ModelDeploymentGeneration"
+                )
             try:
-                desired, applied = self._require_generation(generation)
+                current, desired, applied = self._snapshot_unlocked(
+                    generation.deployment_id
+                )
             except KeyError:
-                # Ambiguous caller failure after a successful durable removal is
-                # retry-safe only while both desired and applied identities are
-                # absent. A newly recreated deployment would resolve above and
-                # fail the generation CAS instead.
+                # Removal publishes a durable retirement tombstone before the
+                # desired record disappears, so absence is an idempotent terminal
+                # state and the logical id cannot later be recycled.
                 if self._applied_store.read(generation.deployment_id) is None:
                     return True
                 raise
 
-            stopped = self._stop_applied(desired, applied)
-            if stopped.runtime_state is not ModelRuntimeState.STOPPED:
+            if current.desired_spec_digest != generation.desired_spec_digest:
                 raise RuntimeError(
-                    "model deployment removal refused because the physical "
-                    f"generation did not stop: {generation.deployment_id}"
+                    "stale model deployment generation: "
+                    f"{generation.deployment_id}"
                 )
+            if applied is not None:
+                if (
+                    generation.applied_contract_digest is None
+                    or current.applied_contract_digest
+                    != generation.applied_contract_digest
+                ):
+                    raise RuntimeError(
+                        "stale model deployment generation: "
+                        f"{generation.deployment_id}"
+                    )
+                stopped = self._stop_applied(desired, applied)
+                if stopped.runtime_state is not ModelRuntimeState.STOPPED:
+                    raise RuntimeError(
+                        "model deployment removal refused because the physical "
+                        f"generation did not stop: {generation.deployment_id}"
+                    )
+            elif generation.applied_contract_digest is None:
+                # No physical generation existed in the captured snapshot.
+                pass
+            else:
+                # Retry after the exact captured physical generation was already
+                # proven stopped and its applied record was cleared. Desired
+                # identity must still match; terminal retirement prevents later
+                # deployment-id reuse from becoming a false continuation.
+                pass
 
             current_desired = self._catalog.deployment(generation.deployment_id)
             if canonical_digest(current_desired) != generation.desired_spec_digest:
