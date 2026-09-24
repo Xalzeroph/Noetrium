@@ -19,8 +19,11 @@ def is_sqlite_lock_contention(exc: BaseException) -> bool:
     """Return whether SQLite reported transient lock/busy contention."""
     if not isinstance(exc, sqlite3.OperationalError):
         return False
-    message = str(exc).lower()
-    return "locked" in message or "busy" in message
+    code = getattr(exc, "sqlite_errorcode", None)
+    if isinstance(code, bool) or not isinstance(code, int):
+        return False
+    base_code = code & 0xFF
+    return base_code in {sqlite3.SQLITE_BUSY, sqlite3.SQLITE_LOCKED}
 
 
 def _validated_timeout(timeout_seconds: float) -> float:
@@ -131,6 +134,21 @@ def begin_immediate_sqlite_transaction(
 
 
 @contextmanager
+def sqlite_read_snapshot(
+    db: sqlite3.Connection,
+) -> Iterator[sqlite3.Connection]:
+    """Own one explicit read snapshot under the canonical SQLite authority."""
+    if db.in_transaction:
+        raise RuntimeError("SQLite read snapshot requires an idle connection")
+    db.execute("BEGIN")
+    try:
+        yield db
+    finally:
+        if db.in_transaction:
+            db.rollback()
+
+
+@contextmanager
 def immediate_sqlite_transaction(
     db: sqlite3.Connection,
     *,
@@ -195,4 +213,5 @@ __all__ = [
     "open_durable_sqlite_reader",
     "open_durable_sqlite_writer",
     "rollback_sqlite_writer",
+    "sqlite_read_snapshot",
 ]
