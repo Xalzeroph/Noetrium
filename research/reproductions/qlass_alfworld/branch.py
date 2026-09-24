@@ -1,9 +1,10 @@
 from __future__ import annotations
 
-from noetrium_platform.capabilities.environment.api import ActionRequest, EnvironmentSession
-from noetrium_platform.composition.environment_fork import EnvironmentSessionOpener
-from noetrium_platform.composition.environment_replay import (
+from noetrium.api import (
+    ActionRequest,
     EnvironmentReplayReceipt,
+    EnvironmentSession,
+    EnvironmentSessionOpener,
     replay_environment_prefix,
 )
 
