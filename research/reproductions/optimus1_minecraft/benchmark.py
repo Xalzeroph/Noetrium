@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from noetrium_platform.research.experimentation.lifecycle.api import BenchmarkTaskSet
+from noetrium.api import BenchmarkTaskSet
 from research.benchmarks.minecraft_long_horizon_67 import (
     MINECRAFT_LONG_HORIZON_67_ALL_SPLIT,
     MINECRAFT_LONG_HORIZON_67_BENCHMARK_ID,
