@@ -243,6 +243,7 @@ class ExecutionEnvironmentCatalog:
         self,
         profile_id: str,
         profile_revision: str,
+        runtime_identity_digest: str,
         *,
         binding_id: str,
         role: str,
@@ -264,15 +265,19 @@ class ExecutionEnvironmentCatalog:
                     f"environment reusable acquisition {field_name} "
                     "must be canonical non-empty text"
                 )
-        if (
-            type(profile_revision) is not str
-            or len(profile_revision) != 64
-            or any(ch not in "0123456789abcdef" for ch in profile_revision)
+        for field_name, value in (
+            ("profile_revision", profile_revision),
+            ("runtime_identity_digest", runtime_identity_digest),
         ):
-            raise ValueError(
-                "environment reusable acquisition profile_revision "
-                "must be lowercase sha256"
-            )
+            if (
+                type(value) is not str
+                or len(value) != 64
+                or any(ch not in "0123456789abcdef" for ch in value)
+            ):
+                raise ValueError(
+                    f"environment reusable acquisition {field_name} "
+                    "must be lowercase sha256"
+                )
         if type(scope) is not ScopeIdentity:
             raise TypeError(
                 "environment reusable acquisition scope must be ScopeIdentity"
@@ -285,6 +290,7 @@ class ExecutionEnvironmentCatalog:
                     for row in self._instances.values()
                     if row.profile_id == profile_id
                     and row.profile_revision == profile_revision
+                    and row.runtime_identity_digest == runtime_identity_digest
                     and row.state is EnvironmentInstanceState.CLEAN
                 ),
                 key=lambda row: row.instance_id,
@@ -292,7 +298,7 @@ class ExecutionEnvironmentCatalog:
         )
         if not candidates:
             raise EnvironmentCatalogNotFound(
-                ("reusable", profile_id, profile_revision)
+                ("reusable", profile_id, profile_revision, runtime_identity_digest)
             )
 
         candidate = candidates[0]
@@ -367,6 +373,10 @@ class ExecutionEnvironmentCatalog:
             raise EnvironmentCatalogConflict(
                 "environment cleanliness proof profile revision is stale"
             )
+        if cleanliness.runtime_identity_digest != instance.runtime_identity_digest:
+            raise EnvironmentCatalogConflict(
+                "environment cleanliness proof runtime identity is stale"
+            )
         if cleanliness.generation != instance.generation:
             raise EnvironmentCatalogConflict(
                 "environment cleanliness proof generation is stale"
@@ -413,6 +423,7 @@ class ExecutionEnvironmentCatalog:
         self,
         profile_id: str,
         profile_revision: str,
+        runtime_identity_digest: str,
     ) -> tuple[EnvironmentInstance, ...]:
         return tuple(
             sorted(
@@ -421,6 +432,7 @@ class ExecutionEnvironmentCatalog:
                     for row in self._instances.values()
                     if row.profile_id == profile_id
                     and row.profile_revision == profile_revision
+                    and row.runtime_identity_digest == runtime_identity_digest
                     and row.state is EnvironmentInstanceState.CLEAN
                 ),
                 key=lambda row: row.instance_id,
@@ -506,7 +518,7 @@ __all__ = ["EnvironmentCatalogConflict", "EnvironmentCatalogNotFound", "Executio
 class SQLiteExecutionEnvironmentCatalog(ExecutionEnvironmentCatalog):
     """Restart-safe environment hierarchy and binding authority."""
 
-    SCHEMA_VERSION = 3
+    SCHEMA_VERSION = 4
 
     def __init__(
         self, path: str | Path, scopes: ScopeRegistryPort, *,
@@ -590,6 +602,7 @@ class SQLiteExecutionEnvironmentCatalog(ExecutionEnvironmentCatalog):
             "resolved_spec_digest": value.resolved_spec_digest,
             "backend": value.backend,
             "runtime_reference": value.runtime_reference,
+            "runtime_identity_digest": value.runtime_identity_digest,
             "scope": cls._scope(value.scope),
             "profile_id": value.profile_id,
             "profile_revision": value.profile_revision,
@@ -686,6 +699,7 @@ class SQLiteExecutionEnvironmentCatalog(ExecutionEnvironmentCatalog):
                 row["resolved_spec_digest"],
                 row["backend"],
                 row["runtime_reference"],
+                row["runtime_identity_digest"],
                 self._decode_scope(row["scope"]),
                 row["profile_id"],
                 row["profile_revision"],
@@ -757,6 +771,7 @@ class SQLiteExecutionEnvironmentCatalog(ExecutionEnvironmentCatalog):
         self,
         profile_id: str,
         profile_revision: str,
+        runtime_identity_digest: str,
         *,
         binding_id: str,
         role: str,
