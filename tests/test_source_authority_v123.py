@@ -122,5 +122,22 @@ class SourceAuthorityV123Tests(unittest.TestCase):
             self.assertEqual(findings[0].authority, "concurrency.thread")
 
 
+    def test_write_mode_path_open_outside_durability_is_rejected(self):
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            target = root / "noetrium_platform" / "rogue_storage"
+            target.mkdir(parents=True)
+            (root / "noetrium_platform" / "__init__.py").write_text("", encoding="utf-8")
+            (target / "x.py").write_text(
+                "from pathlib import Path\n\n"
+                "def append(path):\n"
+                "    return Path(path).open('ab')\n",
+                encoding="utf-8",
+            )
+            findings = audit_source_authorities(root)
+            self.assertEqual(len(findings), 1)
+            self.assertEqual(findings[0].authority, "filesystem.write_mode_open")
+
+
 if __name__ == "__main__":
     unittest.main()
