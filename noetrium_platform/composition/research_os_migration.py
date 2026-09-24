@@ -519,11 +519,20 @@ def materialize_research_os_execution_migration(
             and row.new_semantic_digest is not None
         )
     )
-    source_node_controls = {
-        node_id: execution_store.node_control_state(
-            plan.source_cut.cut_id,
-            node_id,
+    source_control_snapshot = {
+        row.node_id: row
+        for row in execution_store.node_control_snapshot(plan.source_cut.cut_id)
+    }
+    missing_source_controls = tuple(
+        sorted(set(common_node_ids) - set(source_control_snapshot))
+    )
+    if missing_source_controls:
+        raise ResearchGraphExecutionConflict(
+            "research migration source node control snapshot is incomplete: "
+            f"{missing_source_controls}"
         )
+    source_node_controls = {
+        node_id: source_control_snapshot[node_id]
         for node_id in common_node_ids
     }
     source_fence = ResearchGraphCutSwitchFence(
@@ -620,14 +629,23 @@ def materialize_research_os_execution_migration(
         )
         reused.append(node_id)
 
+    target_control_snapshot = {
+        row.node_id: row
+        for row in execution_store.node_control_snapshot(plan.target_cut.cut_id)
+    }
+    missing_target_controls = tuple(
+        sorted(set(common_node_ids) - set(target_control_snapshot))
+    )
+    if missing_target_controls:
+        raise ResearchGraphExecutionConflict(
+            "research migration target node control snapshot is incomplete: "
+            f"{missing_target_controls}"
+        )
     preserved_paused: list[str] = []
     preserved_cancelled: list[str] = []
     for node_id in common_node_ids:
         source_node_control = source_node_controls[node_id]
-        target_node_control = execution_store.node_control_state(
-            plan.target_cut.cut_id,
-            node_id,
-        )
+        target_node_control = target_control_snapshot[node_id]
         if source_node_control.phase is ResearchGraphNodeControlPhase.ACTIVE:
             if target_node_control.phase is ResearchGraphNodeControlPhase.DRAINING:
                 target_node_control = execution_store.pause_node_if_quiescent(
@@ -701,11 +719,12 @@ def materialize_research_os_execution_migration(
                 f"{node_id}={source_node_control.phase.value}"
             )
 
+    current_source_controls = {
+        row.node_id: row
+        for row in execution_store.node_control_snapshot(plan.source_cut.cut_id)
+    }
     for node_id, observed in source_node_controls.items():
-        current = execution_store.node_control_state(
-            plan.source_cut.cut_id,
-            node_id,
-        )
+        current = current_source_controls.get(node_id)
         if current != observed:
             raise ResearchGraphExecutionConflict(
                 "research migration source node control changed during materialization: "
@@ -742,11 +761,20 @@ def materialize_research_os_execution_migration(
             "research migration target cut contains unexpected node states: "
             f"{unexpected_states}"
         )
-    target_node_controls = {
-        node_id: execution_store.node_control_state(
-            plan.target_cut.cut_id,
-            node_id,
+    current_target_controls = {
+        row.node_id: row
+        for row in execution_store.node_control_snapshot(plan.target_cut.cut_id)
+    }
+    missing_current_target_controls = tuple(
+        sorted(set(common_node_ids) - set(current_target_controls))
+    )
+    if missing_current_target_controls:
+        raise ResearchGraphExecutionConflict(
+            "research migration target control proof snapshot is incomplete: "
+            f"{missing_current_target_controls}"
         )
+    target_node_controls = {
+        node_id: current_target_controls[node_id]
         for node_id in common_node_ids
     }
     control_transfer_digest = canonical_digest(
