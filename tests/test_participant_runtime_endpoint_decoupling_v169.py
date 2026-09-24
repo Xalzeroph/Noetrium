@@ -15,7 +15,7 @@ from noetrium_platform.capabilities.participant.core.api import (
 from noetrium_platform.capabilities.participant.binding.api.contracts import ParticipantBindingResolverPort
 from noetrium_platform.capabilities.participant.core.api import BoundParticipant
 from noetrium_platform.capabilities.participant.core.api import ParticipantRuntimeEndpoint, ParticipantRuntimeHandle
-from noetrium_platform.research.experimentation.lifecycle.experiment.runtime import ExperimentRuntime
+from tests_support import ExperimentRuntimeForTest as ExperimentRuntime
 from noetrium_platform.research.execution.workflow.api import ExecutionTrialProtocolKind, TrialCycleExecution
 from noetrium_platform.research.experimentation.lifecycle.api import ExperimentParticipantSpec, ExperimentSpec
 from tests_support import EmptyWorkflowSurfaceFactory, frozen_runtime_manifest, run_launch_manifest, runtime_identity_for_test
