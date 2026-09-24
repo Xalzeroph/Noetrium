@@ -6,6 +6,7 @@ from pathlib import Path
 
 from scripts.build_environment_images import (
     _default_active_profile_ids,
+    _image_runtime_identity_digest,
     _profile_map,
     _profile_revision,
     _require_profile_build_intent,
