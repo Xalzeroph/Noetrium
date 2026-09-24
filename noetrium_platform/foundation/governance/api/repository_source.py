@@ -7,6 +7,8 @@ from dataclasses import dataclass
 from enum import Enum
 from typing import Iterable, Protocol
 
+from noetrium_platform.foundation.kernel.kernel.durability import sha256_bytes
+
 
 class RepositorySourceFailureKind(str, Enum):
     DIRECTORY_WALK = "directory_walk"
@@ -137,7 +139,7 @@ def repository_source_scope_digest(
         )
     ))
     payload = json.dumps(rows, ensure_ascii=False, sort_keys=True, separators=(",", ":")).encode("utf-8")
-    return hashlib.sha256(payload).hexdigest()
+    return sha256_bytes(payload)
 
 
 def repository_source_scope_text_digest(
@@ -177,10 +179,10 @@ def repository_source_scope_text_digest(
         canonical_text = blob.text.replace("\r\n", "\n").replace("\r", "\n")
         rows.append((
             blob.relative_path,
-            hashlib.sha256(canonical_text.encode("utf-8")).hexdigest(),
+            sha256_bytes(canonical_text.encode("utf-8")),
         ))
     payload = json.dumps(tuple(sorted(rows)), ensure_ascii=False, sort_keys=True, separators=(",", ":")).encode("utf-8")
-    return hashlib.sha256(payload).hexdigest()
+    return sha256_bytes(payload)
 
 
 __all__ = [
