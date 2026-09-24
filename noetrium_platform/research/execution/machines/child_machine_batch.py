@@ -261,6 +261,9 @@ class ChildResearchMachineBatchExecution:
                         "status": row.execution.status.value,
                         "cut_digest": row.execution.cut.cut_digest,
                         "program_digest": row.link.child_program_digest,
+                        "program_lock_digest": (
+                            row.link.child_program_lock_digest
+                        ),
                         "snapshot_ref": row.link.child_snapshot_ref,
                         "result_ref": row.link.child_result_ref,
                     }
