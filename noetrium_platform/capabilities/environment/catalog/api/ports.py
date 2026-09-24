@@ -79,6 +79,7 @@ class ExecutionEnvironmentCatalogPort(Protocol):
         self,
         profile_id: str,
         profile_revision: str,
+        runtime_identity_digest: str,
     ) -> tuple[EnvironmentInstance, ...]: ...
     def profile_references(
         self,
