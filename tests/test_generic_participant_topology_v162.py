@@ -1,6 +1,5 @@
 from __future__ import annotations
-from noetrium_platform.composition.experiment_runtime import build_experiment_runtime
-from tests_support import participant, model_role_for_test
+from tests_support import participant, model_role_for_test, build_experiment_runtime_for_test
 
 from dataclasses import replace
 
@@ -99,7 +98,7 @@ def spec():
 
 def runtime(store=None):
     from tests_support import EmptyWorkflowSurfaceFactory
-    return build_experiment_runtime(
+    return build_experiment_runtime_for_test(
         trial_protocol=NoOpTrialProtocol(),
         participant_adapters=(SidecarAdapter(),),
         checkpoint_store=store,
@@ -213,7 +212,7 @@ def _dependency_spec(*participants: ExperimentParticipantSpec) -> ExperimentSpec
 
 def _dependency_runtime() -> ExperimentRuntime:
     from tests_support import EmptyWorkflowSurfaceFactory
-    return build_experiment_runtime(
+    return build_experiment_runtime_for_test(
         trial_protocol=NoOpTrialProtocol(), participant_adapters=(DependencyAdapter(),),
         workflow_surface_factories=(EmptyWorkflowSurfaceFactory(),),
     )
