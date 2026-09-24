@@ -2,14 +2,14 @@ from __future__ import annotations
 
 from collections.abc import Mapping, Sequence
 
-from noetrium_platform.foundation.kernel.kernel import (
+from noetrium.api import (
     JsonObject,
     MachineJournalPort,
     MachineSnapshotStorePort,
     canonical_digest,
     thaw_json,
 )
-from noetrium_platform.research.execution.machines.api import (
+from noetrium.api import (
     MemoryConcern,
     MemoryProgramBuilder,
     ProgramNodeRequest,
