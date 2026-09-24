@@ -240,31 +240,69 @@ def _machine_dependency_document(
 def compile_reproduction_research_program(
     definition: ReproductionDefinition,
 ) -> api.ResearchProgram:
-    """Compile one MethodProgram+Study reproduction to the current Research OS IR."""
+    """Compile one executable+Study reproduction to the current Research OS IR.
+
+    MethodProgram packages bind their exact UMM IR.  Reproductions whose primary
+    executable is another Research Machine bind those exact program identities as
+    platform-resolved executable requirements for the Experimentation closure.
+    Nothing is downgraded to a plain callable.
+    """
 
     if type(definition) is not ReproductionDefinition:
         raise TypeError("reproduction Research OS compilation requires definition")
-    method = resolve_method_program_binding(definition)
     study = _asset(definition, ReproductionAssetKind.STUDY)
     machine_dependencies = resolve_research_program_bindings(definition)
     machine_dependency_documents = tuple(
         _machine_dependency_document(row)
         for row in machine_dependencies
     )
+    method_assets = tuple(
+        row
+        for row in definition.assets
+        if row.kind is ReproductionAssetKind.METHOD_PROGRAM
+    )
+    if len(method_assets) > 1:
+        raise ReproductionResearchOSCompileError(
+            f"{definition.package} declares multiple MethodProgram assets"
+        )
+    if not method_assets and not machine_dependencies:
+        raise ReproductionResearchOSCompileError(
+            f"{definition.package} has a Study but no executable MethodProgram/"
+            "ResearchProgram asset"
+        )
 
     builder = api.ResearchProgramBuilder(definition.identity.method_id)
-    builder.method_program(
-        "method",
-        module=method.module,
-        qualname=method.qualname,
-        config={
-            "reproduction_package": definition.package,
-            "reproduction_definition_digest": definition.definition_digest,
-            "asset_path": method.asset.path,
-            "program_digest": method.program_digest,
-            "research_program_dependencies": machine_dependency_documents,
-        },
-    )
+    executable_definition_ids: list[str] = []
+    if method_assets:
+        method = resolve_method_program_binding(definition)
+        builder.method_program(
+            "method",
+            module=method.module,
+            qualname=method.qualname,
+            config={
+                "reproduction_package": definition.package,
+                "reproduction_definition_digest": definition.definition_digest,
+                "asset_path": method.asset.path,
+                "program_digest": method.program_digest,
+                "research_program_dependencies": machine_dependency_documents,
+            },
+        )
+        executable_definition_ids.append("method")
+        primary_executable_digest = method.program_digest
+    else:
+        for index, binding in enumerate(machine_dependencies):
+            definition_id = f"machine.{index:02d}"
+            builder.definition(
+                definition_id,
+                kind=api.ResearchDefinitionKind.CUSTOM,
+                config={
+                    "authority": "research-machine-program",
+                    **_machine_dependency_document(binding),
+                },
+            )
+            executable_definition_ids.append(definition_id)
+        primary_executable_digest = machine_dependencies[0].program_digest
+
     builder.protocol(
         "study",
         config={
@@ -289,7 +327,7 @@ def compile_reproduction_research_program(
     builder.experiment(
         "reproduction",
         definitions=(
-            "method",
+            *tuple(executable_definition_ids),
             "study",
             *tuple(benchmark_definition_ids),
         ),
@@ -303,14 +341,13 @@ def compile_reproduction_research_program(
             "reproduction_package": definition.package,
             "reproduction_lifecycle": definition.lifecycle.value,
             "reproduction_definition_digest": definition.definition_digest,
-            "method_program_digest": method.program_digest,
+            "primary_executable_digest": primary_executable_digest,
             "study_asset": study.path,
             "benchmark_ids": definition.catalog.benchmark_ids,
             "research_program_dependencies": machine_dependency_documents,
         },
     )
     return builder.freeze()
-
 
 def compile_reproduction_portfolio(
     portfolio_id: str,
