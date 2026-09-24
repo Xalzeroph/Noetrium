@@ -82,7 +82,7 @@ class LinuxProcessSpawner:
             visible_pid = self._procfs.visible_pid(child.pid)
             start_identity = self._procfs.start_identity(visible_pid)
             pgid = os.getpgid(child.pid)
-        except BaseException:
+        except BaseException as primary:
             cleanup = _SpawnCleanupProcess(child)
             policy = ProcessTerminationPolicy(
                 poll_interval_seconds=0.01,
@@ -96,9 +96,26 @@ class LinuxProcessSpawner:
                     deadline=Deadline.after(3.0),
                     policy=policy,
                 ).result(timeout=3.5)
-            except BaseException:
-                cleanup.kill()
-                child.poll()
+            except BaseException as supervisor_cleanup:
+                fallback_errors: list[BaseException] = []
+                try:
+                    cleanup.kill()
+                except BaseException as exc:
+                    fallback_errors.append(exc)
+                try:
+                    child.wait(timeout=policy.kill_timeout_seconds)
+                except BaseException as exc:
+                    fallback_errors.append(exc)
+                if fallback_errors:
+                    raise BaseExceptionGroup(
+                        "service spawn failed and physical cleanup did not converge",
+                        [primary, supervisor_cleanup, *fallback_errors],
+                    ) from primary
+                primary.add_note(
+                    "structured spawn cleanup failed but force-kill/reap fallback "
+                    f"converged: {type(supervisor_cleanup).__name__}: "
+                    f"{supervisor_cleanup}"
+                )
             raise
         self._children.remember(child)
         control_pid = None if visible_pid == child.pid else child.pid
