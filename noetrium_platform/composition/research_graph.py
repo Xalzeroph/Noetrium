@@ -5,6 +5,9 @@ from queue import Empty, Queue
 from uuid import uuid4
 
 from noetrium_platform.composition.research_execution_pool import ResearchExecutionPool
+from noetrium_platform.composition.research_graph_frontier import (
+    ResearchGraphDependencyFrontier,
+)
 from noetrium_platform.foundation.kernel.concurrency.api import (
     Deadline,
     ExecutionLaneKind,
@@ -226,6 +229,11 @@ class ResearchGraphScheduler:
         }
         running: dict[str, tuple[ResearchGraphNode, object]] = {}
         results: dict[str, ResearchGraphNodeResult] = {}
+        frontier = ResearchGraphDependencyFrontier(
+            self._plan,
+            selected_node_ids=self._selected_node_ids,
+            terminal_results=results,
+        )
         completion_queue: Queue[str] = Queue()
 
         def submit(node: ResearchGraphNode):
@@ -260,6 +268,7 @@ class ResearchGraphScheduler:
                     node.semantic_digest,
                     ResearchGraphNodeState.SUCCEEDED,
                 )
+                frontier.record_terminal(results[node_id])
             except BaseException as exc:
                 handle.cancel()
                 failure = _reportable_failure(exc)
@@ -274,45 +283,30 @@ class ResearchGraphScheduler:
                         or type(failure).__name__
                     ),
                 )
+                frontier.record_terminal(results[node_id])
 
         try:
             while pending or running:
                 progressed = False
 
-                for node_id in tuple(sorted(pending)):
+                for node_id, blockers in frontier.blocked_nodes(set(pending)):
                     node = pending[node_id]
-                    blockers = tuple(
-                        dependency
-                        for dependency in node.depends_on_node_ids
-                        if dependency in results
-                        and results[dependency].state
-                        in {
-                            ResearchGraphNodeState.FAILED,
-                            ResearchGraphNodeState.BLOCKED,
-                            ResearchGraphNodeState.CANCELLED,
-                        }
-                    )
-                    if not blockers:
-                        continue
-                    results[node_id] = ResearchGraphNodeResult(
+                    result = ResearchGraphNodeResult(
                         node.node_id,
                         node.semantic_digest,
                         ResearchGraphNodeState.BLOCKED,
                         blocked_by_node_ids=blockers,
                     )
+                    results[node_id] = result
                     del pending[node_id]
+                    frontier.record_terminal(result)
                     progressed = True
 
-                for node_id in tuple(sorted(pending)):
+                for node_id in frontier.ready_node_ids(set(pending)):
                     node = pending[node_id]
-                    if not all(
-                        dependency in results
-                        and results[dependency].state
-                        is ResearchGraphNodeState.SUCCEEDED
-                        for dependency in node.depends_on_node_ids
-                    ):
-                        continue
-                    running[node_id] = (node, submit(node))
+                    handle = submit(node)
+                    frontier.consume_ready(node_id)
+                    running[node_id] = (node, handle)
                     del pending[node_id]
                     progressed = True
 
