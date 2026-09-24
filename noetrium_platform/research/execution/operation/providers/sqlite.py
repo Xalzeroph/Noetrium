@@ -4,10 +4,8 @@ from contextlib import closing
 import sqlite3
 from pathlib import Path
 
-from noetrium_platform.foundation.kernel.kernel.retry import retry_until_deadline
 from noetrium_platform.foundation.kernel.kernel.durability.sqlite import (
-    begin_immediate_sqlite_transaction,
-    is_sqlite_lock_contention,
+    immediate_sqlite_transaction,
     open_durable_sqlite_writer,
 )
 from noetrium_platform.research.execution.operation.command.api import CommandId
@@ -46,15 +44,16 @@ class SQLiteOperationStore:
         )
 
     def _initialize(self) -> None:
-        retry_until_deadline(
-            self._initialize_once,
-            should_retry=is_sqlite_lock_contention,
-            timeout_seconds=30.0,
-        )
+        self._initialize_once()
 
     def _initialize_once(self) -> None:
-        with closing(self._connect()) as db, db:
-            db.execute(
+        with closing(self._connect()) as db:
+            with immediate_sqlite_transaction(
+                db,
+                timeout_seconds=30.0,
+                label="operation schema",
+            ):
+                db.execute(
                 """CREATE TABLE IF NOT EXISTS operations (
                 operation_id TEXT PRIMARY KEY,
                 command_id TEXT NOT NULL,
@@ -77,16 +76,20 @@ class SQLiteOperationStore:
                 cancellation_requested INTEGER NOT NULL,
                 cancellation_reason TEXT)"""
             )
-            columns = tuple(row[1] for row in db.execute("PRAGMA table_info(operations)"))
-            expected = (
+                columns = tuple(
+                    row[1] for row in db.execute("PRAGMA table_info(operations)")
+                )
+                expected = (
                 "operation_id", "command_id", "state", "version", "created_at", "updated_at",
                 "parent_operation_id", "effect_id", "effect_request_id", "effect_request_digest",
                 "effect_profile", "effect_certainty", "result_digest",
                 "failure_kind", "failure_code", "failure_message", "failure_retryable",
                 "failure_reconciliation_required", "cancellation_requested", "cancellation_reason",
-            )
-            if columns != expected:
-                raise OperationCorruption("operation schema does not match current durable contract")
+                )
+                if columns != expected:
+                    raise OperationCorruption(
+                        "operation schema does not match current durable contract"
+                    )
         return
 
     @staticmethod
@@ -155,21 +158,24 @@ class SQLiteOperationStore:
     def create_or_get(self, snapshot: OperationSnapshot) -> tuple[OperationSnapshot, bool]:
         if snapshot.state is not OperationState.CREATED or snapshot.version != 0:
             raise ValueError("new durable operation must start at CREATED version 0")
-        with closing(self._connect()) as db, db:
-            begin_immediate_sqlite_transaction(db, timeout_seconds=30.0)
-            row = db.execute(
+        with closing(self._connect()) as db:
+            with immediate_sqlite_transaction(
+                db,
+                timeout_seconds=30.0,
+                label="operation create",
+            ):
+                row = db.execute(
                 "SELECT * FROM operations WHERE operation_id=?",
                 (snapshot.operation_id.value,),
-            ).fetchone()
-            if row is not None:
-                db.execute("COMMIT")
+                ).fetchone()
+                if row is not None:
                 existing = self._from_row(row)
                 if self._immutable_identity(existing) != self._immutable_identity(snapshot):
                     raise OperationConflict(
                         f"operation identity reused with different immutable contract: {snapshot.operation_id.value}"
                     )
                 return existing, False
-            try:
+                try:
                 db.execute(
                     "INSERT INTO operations VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
                     (
@@ -195,10 +201,7 @@ class SQLiteOperationStore:
                         snapshot.cancellation_reason,
                     ),
                 )
-                db.execute("COMMIT")
-            except BaseException:
-                if db.in_transaction:
-                    db.execute("ROLLBACK")
+                except BaseException:
                 raise
         return snapshot, True
 
