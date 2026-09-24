@@ -8,6 +8,12 @@ Downstream projects import these names through :mod:`noetrium.api`.
 """
 from __future__ import annotations
 
+from noetrium_platform.capabilities.environment.software.api import (
+    SoftwareActionKind,
+    SoftwareActionTimeoutError,
+    SoftwareWorldPort,
+)
+
 from noetrium_platform.evidence.data.projection.api import SemanticProjectionSnapshot
 from noetrium_platform.evidence.data.query.api import (
     SemanticSimilarityQuery,
@@ -257,6 +263,9 @@ __all__ = [
     "SemanticSimilarityQueryPort",
     "SensorModality",
     "SensorSpec",
+    "SoftwareWorldPort",
+    "SoftwareActionTimeoutError",
+    "SoftwareActionKind",
     "StudyParticipant",
     "TensorContentRef",
     "TensorContentStorePort",
