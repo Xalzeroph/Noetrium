@@ -2862,7 +2862,7 @@
       "reproductions": [
         {
           "package": "rewind_memory",
-          "package_digest": "40fd45814ae786a4a5fc45af5b3e06c35c61e3905934c4e247747e17d266a76e",
+          "package_digest": "f896b34ef9f79f63fca725257e8af4eb5b9816dc73a7418f0c1a9ddfb3340503",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "moviechat-1k"
@@ -2898,7 +2898,7 @@
             {
               "kind": "study",
               "path": "research/reproductions/rewind_memory/study.py",
-              "content_sha256": "d9f44178cc9cede1fc6f5e2a01612c6209f4b6a6794f56c0c8a9ac508108269d"
+              "content_sha256": "0bb480fcd193f0f467a907afa7052f0106afa89dc0a23254cabbf8760dc50312"
             },
             {
               "kind": "support",
@@ -3896,5 +3896,5 @@
       ]
     }
   ],
-  "projection_digest": "05bc982182cf83003a56f6768225d4e34dd0b3a6ed8dbc840c8e70586f9a5273"
+  "projection_digest": "56358c40f085d557f150ad185fa8396150b0242cb7d1dc085c212a7f7039e385"
 }
