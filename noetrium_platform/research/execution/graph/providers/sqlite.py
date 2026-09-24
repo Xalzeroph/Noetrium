@@ -631,7 +631,6 @@ class SQLiteResearchGraphExecutionStore:
         node_id: str,
     ) -> ResearchGraphNodeExecutionRecord:
         with self._connection() as conn:
-            self._execution_tx(conn, execution_id)
             return self._node_tx(conn, execution_id, node_id)
 
     def node_states(
@@ -650,7 +649,6 @@ class SQLiteResearchGraphExecutionStore:
         if len(ordered_ids) != len(set(ordered_ids)):
             raise ValueError("research graph node_states ids must be unique")
         with self._connection() as conn:
-            self._execution_tx(conn, execution_id)
             return self._nodes_tx(conn, execution_id, ordered_ids)
 
     def control_state(
@@ -658,7 +656,6 @@ class SQLiteResearchGraphExecutionStore:
         execution_id: str,
     ) -> ResearchGraphControlRecord:
         with self._connection() as conn:
-            self._execution_tx(conn, execution_id)
             return self._control_tx(conn, execution_id)
 
     def node_control_state(
@@ -667,7 +664,6 @@ class SQLiteResearchGraphExecutionStore:
         node_id: str,
     ) -> ResearchGraphNodeControlRecord:
         with self._connection() as conn:
-            self._execution_tx(conn, execution_id)
             self._node_tx(conn, execution_id, node_id)
             return self._node_control_tx(conn, execution_id, node_id)
 
@@ -706,7 +702,6 @@ class SQLiteResearchGraphExecutionStore:
             )
         placeholders = ",".join("?" for _ in ordered_ids)
         with self._connection() as conn:
-            self._execution_tx(conn, execution_id)
             rows = conn.execute(
                 "SELECT execution_id,node_id,phase,generation,updated_at_ns "
                 "FROM research_graph_node_control WHERE execution_id=? "
