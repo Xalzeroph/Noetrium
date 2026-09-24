@@ -8,6 +8,7 @@ from scripts.run_reproduction_fleet import build_plan
 from research.reproductions.research_os import (
     ReproductionResearchOSCompileError,
     bind_reproduction_execution,
+    compile_bound_reproduction_research_program,
     compile_repository_reproduction_portfolio,
     compile_reproduction_research_program,
     discover_reproduction_definitions,
@@ -160,3 +161,60 @@ def test_adacm2_preserves_both_paper_interpretations_as_distinct_execution_lanes
     assert eq6.requirement_digests == eq8.requirement_digests
     assert eq6.values["interpretation"] == "eq6_literal"
     assert eq8.values["interpretation"] == "eq8_consistent"
+
+
+
+def test_bound_reproduction_lanes_compile_as_distinct_product_programs() -> None:
+    from research.reproductions.adacm2_memory.definition import (
+        REPRODUCTION as ADACM2,
+    )
+    from research.reproductions.toolformer.definition import (
+        REPRODUCTION as TOOLFORMER,
+    )
+
+    eq6 = bind_reproduction_execution(
+        ADACM2,
+        binding_id="lvu-eq6",
+        study_factory="build_adacm2_lvu_study",
+        benchmark_id="lvu",
+        values={"interpretation": "eq6_literal"},
+    )
+    eq8 = bind_reproduction_execution(
+        ADACM2,
+        binding_id="lvu-eq8",
+        study_factory="build_adacm2_lvu_study",
+        benchmark_id="lvu",
+        values={"interpretation": "eq8_consistent"},
+    )
+    toolformer = bind_reproduction_execution(
+        TOOLFORMER,
+        binding_id="paper-eval",
+        study_factory="build_toolformer_study",
+        benchmark_id="toolformer-eval",
+        values={
+            "split_id": "paper-eval",
+            "tool_capability_ids": (
+                "tool.question-answering",
+                "tool.wikipedia-search",
+                "tool.calculator",
+                "tool.calendar",
+                "tool.machine-translation",
+            ),
+        },
+    )
+
+    programs = (
+        compile_bound_reproduction_research_program(ADACM2, eq6),
+        compile_bound_reproduction_research_program(ADACM2, eq8),
+        compile_bound_reproduction_research_program(TOOLFORMER, toolformer),
+    )
+    assert tuple(program.program_id for program in programs) == (
+        "adacm2_memory.lvu-eq6",
+        "adacm2_memory.lvu-eq8",
+        "toolformer.paper-eval",
+    )
+    assert len({program.program_digest for program in programs}) == 3
+
+    portfolio = api.ResearchPortfolio("bound-reproduction-lanes", programs)
+    assert len(portfolio.programs) == 3
+    assert len(portfolio.portfolio_digest) == 64
