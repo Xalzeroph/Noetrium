@@ -45,6 +45,18 @@ def audit_observability_logging_leaf_invariants(root: Path) -> list[SourceInvari
             if is_transient_source_path(path):
                 continue
             for module, line in imports(path):
+                if (
+                    (module == "logging" or module.startswith("logging."))
+                    and not path.is_relative_to(logging_root)
+                ):
+                    rows.append(violation(
+                        root,
+                        path,
+                        "logging_stdlib_bypass",
+                        line,
+                        "platform modules must use Observability/Logging typed ports "
+                        "instead of the Python stdlib logging implementation",
+                    ))
                 if any(module == prefix or module.startswith(prefix + ".") for prefix in legacy_import_prefixes):
                     rows.append(violation(
                         root,
