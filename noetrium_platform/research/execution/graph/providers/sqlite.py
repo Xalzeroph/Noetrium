@@ -1508,15 +1508,18 @@ class SQLiteResearchGraphExecutionStore:
                     )
                 changed.append(node_id)
 
-            for node_id in changed:
-                conn.execute(
+            if changed:
+                conn.executemany(
                     "UPDATE research_graph_nodes "
                     "SET state=?,retry_not_before_ns=NULL "
                     "WHERE execution_id=? AND node_id=?",
                     (
-                        ResearchGraphLiveNodeState.READY.value,
-                        execution_id,
-                        node_id,
+                        (
+                            ResearchGraphLiveNodeState.READY.value,
+                            execution_id,
+                            node_id,
+                        )
+                        for node_id in changed
                     ),
                 )
             if changed:
@@ -1935,16 +1938,19 @@ class SQLiteResearchGraphExecutionStore:
                     )
                 changed.append((node_id, blockers))
 
-            for node_id, blockers in changed:
-                conn.execute(
+            if changed:
+                conn.executemany(
                     "UPDATE research_graph_nodes "
                     "SET state=?,retry_not_before_ns=NULL,blockers_json=? "
                     "WHERE execution_id=? AND node_id=?",
                     (
-                        ResearchGraphLiveNodeState.BLOCKED.value,
-                        json.dumps(blockers, separators=(",", ":")),
-                        execution_id,
-                        node_id,
+                        (
+                            ResearchGraphLiveNodeState.BLOCKED.value,
+                            json.dumps(blockers, separators=(",", ":")),
+                            execution_id,
+                            node_id,
+                        )
+                        for node_id, blockers in changed
                     ),
                 )
             if changed:
