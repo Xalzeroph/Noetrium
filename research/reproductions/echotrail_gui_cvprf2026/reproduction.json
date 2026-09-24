@@ -2,7 +2,7 @@
   "schema": "noetrium.reproduction.projection.v10",
   "authority": "generated_from_typed_definition_and_source",
   "package": "echotrail_gui_cvprf2026",
-  "package_digest": "431ea27d24476b271f7e7a478243d8edc1050e42bed0e122ab85b133b650698f",
+  "package_digest": "4880c88af0194eeb459724e9d65b3efb68353baaaa55e461387d44ccbc8fd25f",
   "definition_digest": "a416b11ff97033d65e18fcf6dca7379a84003038f816bf609c572e989cf77086",
   "source_registry_digest": "f56a51b136c7de6c02f262d8367ce2fb13744bd3104f62e22dd9a2e05e14c6ce",
   "lifecycle": "protocol_bound",
@@ -82,13 +82,13 @@
       "kind": "method_program",
       "path": "research/reproductions/echotrail_gui_cvprf2026/program.py",
       "declaration_digest": "b7a759b4b613f85805ab6775a408b2d16fa091fa2d5b1388bab9bebce1b7e3f5",
-      "content_sha256": "76b87591b648ade0f51c7e33b58d631f5809033efe7f79555eebbe3e3e64e996"
+      "content_sha256": "ac59d9febe9b7ced1116c726256fd4b897ec68e2192a1eb68a9c4aa1ea9b5621"
     },
     {
       "kind": "study",
       "path": "research/reproductions/echotrail_gui_cvprf2026/study.py",
       "declaration_digest": "26bc46849903516528bc6c8eeabcabd535bf4fdc93cc61708c065f464831fd7c",
-      "content_sha256": "d2232e58f81328c67a25376c73e96a2720ce6be2beae6f4278e7eedf1df64ad2"
+      "content_sha256": "ee12dd89e191fe40731cc7f846b3ba78d345adc019a9e8bd1d305ba0a5d4c2ae"
     }
   ],
   "primary_executable": "research/reproductions/echotrail_gui_cvprf2026/program.py",

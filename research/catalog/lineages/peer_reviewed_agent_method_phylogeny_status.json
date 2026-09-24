@@ -394,7 +394,7 @@
       "reproductions": [
         {
           "package": "deps_minecraft",
-          "package_digest": "8583cad7c7d9814d3b84daac400e84fbefbcab3b431276e683b4241f0932c7ff",
+          "package_digest": "c204e34f1c821f7481bd5d9ccc4a7e77dcd400db96c74bbb1a274bc9692de460",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "deps-minecraft-70"
@@ -437,7 +437,7 @@
             {
               "kind": "method_program",
               "path": "research/reproductions/deps_minecraft/program.py",
-              "content_sha256": "05af635a722076ae32f689f96d45b0aeab58bb899e50ded81887da9178f0bb87"
+              "content_sha256": "348ead907c064ed879074865916dc26c3861f3e683e48b5dfaff8c7f632269b7"
             },
             {
               "kind": "study",
@@ -3184,7 +3184,7 @@
       "reproductions": [
         {
           "package": "dejavu_cvpr2026",
-          "package_digest": "d071a27d9fb05af2d76dd066eb9bd7c209dc668497f963e3d59b2ec5161578b3",
+          "package_digest": "a6d2315c265f2964f37f89c5717cdfdd25659be8080743cccbb2320703a59564",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "libero"
@@ -3210,7 +3210,7 @@
             {
               "kind": "method_program",
               "path": "research/reproductions/dejavu_cvpr2026/program.py",
-              "content_sha256": "1718a2a838acb94a965b2a1be4898930e5234e5d1c7e07c6f2efa4ad526f6744"
+              "content_sha256": "653eede622be41d771afed63dfabba4acd560da9aa72ad334cbd9ee7c612cb02"
             },
             {
               "kind": "study",
@@ -3896,5 +3896,5 @@
       ]
     }
   ],
-  "projection_digest": "df1e0b0a3930fec08b1d66952193e0c664c7df52eedb6b41edc1dfb17e809185"
+  "projection_digest": "7784beb0a27bbbd9ad40486eb962d51168f6b40675ce92cc6234daca03f86eb1"
 }

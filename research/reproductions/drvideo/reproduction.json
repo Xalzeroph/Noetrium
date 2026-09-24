@@ -2,7 +2,7 @@
   "schema": "noetrium.reproduction.projection.v10",
   "authority": "generated_from_typed_definition_and_source",
   "package": "drvideo",
-  "package_digest": "aa1c1ee62c9b5621a31475e7f8b9b2c13189ad81304603431dc606024ad01901",
+  "package_digest": "015beccd4262cde19e9d0498f8eb74f6a9ce568147975a56f6440e21f7744b15",
   "definition_digest": "44d9e76f1ec1e05d74601acc31536b1076bf4a32724990913f969d334996d904",
   "source_registry_digest": "7fefca6637ec616d0b9bca8e3d69771815436472b8f69bb31f15efe37cd0d68c",
   "lifecycle": "protocol_bound",
@@ -108,13 +108,13 @@
       "kind": "method_program",
       "path": "research/reproductions/drvideo/program.py",
       "declaration_digest": "88f3fbe6f2d7ee1de5f0efad693a6aa9e5868f6290459749e2d1af2e15141901",
-      "content_sha256": "c61a5ae01914f8ba4464a550f44a25592db33e3d06d0f1eac4f9de5e94d9c144"
+      "content_sha256": "58457a815f465295995311bc9292afb759a79aa5a0000397980e783549e5c88d"
     },
     {
       "kind": "study",
       "path": "research/reproductions/drvideo/study.py",
       "declaration_digest": "cd0decac8df47526002be04df2c8565568544a5066eacd3e449a770f6a94fffb",
-      "content_sha256": "60aec0c37a64fa95bc10c406e61789c8a4a456b55bfa0d2dde8d2b6d8547e9bf"
+      "content_sha256": "c01f97cb5809547b4f0c1909284a3b51752262d3595bf92c61644a5425cc0ee0"
     },
     {
       "kind": "support",

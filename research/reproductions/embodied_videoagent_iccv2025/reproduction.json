@@ -2,7 +2,7 @@
   "schema": "noetrium.reproduction.projection.v10",
   "authority": "generated_from_typed_definition_and_source",
   "package": "embodied_videoagent_iccv2025",
-  "package_digest": "5c4819fc15b789b87b4c24054a1ea8a99ffba51188eded433bde88f7a13065eb",
+  "package_digest": "ccd4855d2d2efc34ccf50639ea1017bd9e2349ebaea9860f8aae8c3ca96123ce",
   "definition_digest": "acac825e01b68f68aa50634cb0146cc694556b4af078498edfdb26d9976c9604",
   "source_registry_digest": "02d0e0637b0b444d9c44e4be5e0d96c4e51df06bfe95c4adec1184fc215fecb6",
   "lifecycle": "protocol_bound",
@@ -74,7 +74,7 @@
       "kind": "benchmark",
       "path": "research/reproductions/embodied_videoagent_iccv2025/benchmark.py",
       "declaration_digest": "f24ab51862e1464192f496b048e997e85b011ac470a6e30d365a3f843d250bc3",
-      "content_sha256": "c4700e7cf50cd939b5ed989b43efeee02ddcf68bd690daec267e50bc4ecb48ee"
+      "content_sha256": "116b3d6aa606f5b5b410da75391da64ad790bfb5beed3506a6c4eaa92ea77b8f"
     },
     {
       "kind": "fidelity",
