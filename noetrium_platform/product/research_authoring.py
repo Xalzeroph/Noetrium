@@ -8,8 +8,6 @@ Downstream projects import these names through :mod:`noetrium.api`.
 """
 from __future__ import annotations
 
-from noetrium_platform.evidence.artifact.content.api import ArtifactBlobRef
-from noetrium_platform.evidence.data.projection.api import SemanticProjectionSnapshot
 from noetrium_platform.foundation.kernel.kernel import (
     ChildMachineLink,
     EffectCertainty,
