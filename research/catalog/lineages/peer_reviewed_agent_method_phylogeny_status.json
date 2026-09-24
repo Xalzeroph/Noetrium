@@ -2349,7 +2349,7 @@
       "reproductions": [
         {
           "package": "adas_meta_agent_search",
-          "package_digest": "05d4b1fa35530a3c668d72cf9da7d80d5553e001f84b94f6a81770bfc0816a96",
+          "package_digest": "ffbb797c2bb83601405ce3e33652aa92c5c70bd9cb19ba36b180f418b0e0e4aa",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "mgsm"
@@ -2397,7 +2397,7 @@
             },
             {
               "path": "tests/test_scientific_self_evolution_fidelity_v1.py",
-              "content_sha256": "40a5173e32cdbf3c0f2ff2de278e56a7c54f640195cde02db0a6c92abc20f7ec"
+              "content_sha256": "32223a9beb9457630d11cea4fd914457aa00da6deb0a0eebe884c591bae0fa8a"
             }
           ]
         }
@@ -3896,5 +3896,5 @@
       ]
     }
   ],
-  "projection_digest": "6520bae82370f9f71254ba46f4cbe80da461f7e8cfe6d1bac6728037e1e79e54"
+  "projection_digest": "d6ba9deff55b4ddbd44f465f0d9ac4f086972bfc206afaa74f0f75815a65d228"
 }

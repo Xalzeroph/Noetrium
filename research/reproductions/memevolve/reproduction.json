@@ -2,10 +2,10 @@
   "schema": "noetrium.reproduction.projection.v8",
   "authority": "generated_from_typed_definition_and_source",
   "package": "memevolve",
-  "package_digest": "e5702e3d1034e067428d2110259db246668e45fe05e9f51d64a423d639a9067f",
-  "definition_digest": "18ff4148fe9352f85c5b77af58f4602a496c7a7d6e7aab7838a8968151fe7e9c",
+  "package_digest": "1d990178054f136cee8e81254c16faf1d46d6acc5db19767a544011168006dc2",
+  "definition_digest": "1336421e8f467dea1b177f6c4ccda7e283bae802349d03cb8ba35f3d874e75b9",
   "source_registry_digest": "a92e273188a3b65a11542aa445022569964e21f942fb4412164a0c5f6a9ec7d7",
-  "lifecycle": "catalogued",
+  "lifecycle": "protocol_bound",
   "identity": {
     "method_id": "memevolve",
     "title": "MemEvolve: Meta-Evolution of Agent Memory Systems",
@@ -68,9 +68,21 @@
       "path": "research/reproductions/memevolve/fidelity.py",
       "declaration_digest": "9196ef7bf7079199c8dbfdba8608bbb9e7aac22b4c125a5c7a6f8686c1f5f0bc",
       "content_sha256": "25e10cf1743b8499bda4d3ae75dff78ccddb3261fc401c6dc83cfa5aa538c235"
+    },
+    {
+      "kind": "method_program",
+      "path": "research/reproductions/memevolve/program.py",
+      "declaration_digest": "72b1338481d40bd99d6d6fc58836f84734532fbbdb4c6347a64c3f5d1c0cbf00",
+      "content_sha256": "8bf6847fd04b683e5f1dc81ce3d5e2688de7671208297cafb8c34c3a8c334a83"
+    },
+    {
+      "kind": "study",
+      "path": "research/reproductions/memevolve/study.py",
+      "declaration_digest": "f99efcdf65c4ffd90f215782b5c9c724d3df72f8f3953b1776065234a28dc32e",
+      "content_sha256": "283396896c8cb1676788d565f657646bd1da46b0333ada7d2942396bc99a7abe"
     }
   ],
-  "primary_executable": null,
+  "primary_executable": "research/reproductions/memevolve/program.py",
   "reported_results": [],
   "reference_baselines": [],
   "deltas": [],
@@ -79,14 +91,23 @@
   "scientific_tests": [
     {
       "path": "tests/test_scientific_self_evolution_fidelity_v1.py",
-      "content_sha256": "40a5173e32cdbf3c0f2ff2de278e56a7c54f640195cde02db0a6c92abc20f7ec"
+      "content_sha256": "32223a9beb9457630d11cea4fd914457aa00da6deb0a0eebe884c591bae0fa8a"
     }
   ],
   "research_os": {
     "surface": "noetrium.api",
-    "execution_state": "not_executable",
-    "program_id": null,
-    "program_digest": null,
-    "execution_requirements": []
+    "execution_state": "closure_binding_required",
+    "program_id": "memevolve",
+    "program_digest": "84cc37c5d4744cd97de2fe697904260780350b8d0faff1cd61b065b10c0fe46c",
+    "execution_requirements": [
+      {
+        "parameter": "split_id",
+        "kind": "benchmark_split",
+        "consumers": [
+          "study:build_memevolve_study"
+        ],
+        "requirement_digest": "31ea096147121085916b77e6a404d7d70d1170481ca0f124283ce2d326f37d1e"
+      }
+    ]
   }
 }

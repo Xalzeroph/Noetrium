@@ -2378,7 +2378,7 @@
       "reproduction_packages": [
         {
           "package": "memevolve",
-          "lifecycle": "catalogued"
+          "lifecycle": "protocol_bound"
         }
       ],
       "priority": 1,
