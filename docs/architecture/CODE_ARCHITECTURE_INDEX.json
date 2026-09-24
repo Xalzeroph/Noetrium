@@ -46162,7 +46162,7 @@
         "durability"
       ],
       "kind": "class",
-      "line": 16,
+      "line": 20,
       "methods": [
         "__init__",
         "_digest",
@@ -46170,6 +46170,7 @@
         "_shard_index",
         "_lock_path",
         "_verify_existing",
+        "_cleanup_staging",
         "put",
         "resolve",
         "get",
@@ -103640,7 +103641,7 @@
     "classes": 3370,
     "constructor_edges": 935,
     "inheritance_edges": 149,
-    "module_import_edges": 5021,
+    "module_import_edges": 5020,
     "parse_errors": 0,
     "python_modules": 1907,
     "registry_authorities": 20,
@@ -112690,10 +112691,6 @@
     {
       "source": "noetrium_platform.evidence.artifact.content.providers.blob_store",
       "target": "noetrium_platform.foundation.kernel.kernel.durability"
-    },
-    {
-      "source": "noetrium_platform.evidence.artifact.content.providers.blob_store",
-      "target": "noetrium_platform.foundation.kernel.kernel.durability.durable_file"
     },
     {
       "source": "noetrium_platform.evidence.artifact.content.providers.download",
@@ -131641,8 +131638,7 @@
     {
       "imports": [
         "noetrium_platform.evidence.artifact.content.api",
-        "noetrium_platform.foundation.kernel.kernel.durability",
-        "noetrium_platform.foundation.kernel.kernel.durability.durable_file"
+        "noetrium_platform.foundation.kernel.kernel.durability"
       ],
       "module": "noetrium_platform.evidence.artifact.content.providers.blob_store",
       "path": "noetrium_platform/evidence/artifact/content/providers/blob_store.py",
@@ -144462,7 +144458,7 @@
   "parse_errors": [],
   "registry_sha256": "276e2729e0b700e814e98f8460d87e0ebee66c4620226fe2d880fe55cc970aec",
   "schema": "noetrium-code-architecture-index.v1",
-  "source_git_sha": "c585c4e3e219b2c1c41d9570a2565913b5d9e6d0",
+  "source_git_sha": "85732d5f6326989a8863ec0739913ba302497de4",
   "system_import_edges": [
     {
       "count": 85,
@@ -144475,7 +144471,7 @@
       "target": "governance"
     },
     {
-      "count": 22,
+      "count": 21,
       "source": "artifact",
       "target": "platform"
     },

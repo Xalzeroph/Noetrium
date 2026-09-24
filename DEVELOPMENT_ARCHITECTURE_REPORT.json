@@ -3,7 +3,7 @@
   "architecture_complexity": {
     "authorities": 20,
     "contract_declarations": 184,
-    "import_edges": 5298,
+    "import_edges": 5297,
     "subsystems": 15,
     "top_level_systems": 16
   },
@@ -23,7 +23,7 @@
     "effective_limits": {
       "authorities": 31,
       "contract_declarations": 184,
-      "import_edges": 5298,
+      "import_edges": 5297,
       "subsystems": 15,
       "top_level_systems": 16
     },
@@ -627,7 +627,7 @@
       "seam_id": "completed"
     }
   ],
-  "import_edges": 5298,
+  "import_edges": 5297,
   "import_violations": [],
   "layer_violations": [],
   "operation_graph": [
@@ -873,9 +873,9 @@
     }
   ],
   "package_cycles": [],
-  "report_sha256": "4fa80b33cfaff2eac7569198bc250792083bb3be8ff335b8684dd7f450363e0b",
+  "report_sha256": "09c76ffc4cdb07600cf14ab045cd9bd6826995b3c19f1dbf09ce3750535549db",
   "source_authority_violations": [],
-  "source_digest": "56e023d5249e0b1acf152ccebc8cc19e4d93bfbaa2aef89df1d86947322492a4",
+  "source_digest": "c649fad387a8cac9ece0ce958f4891f4d4e21dec171786ce1deb086716e77512",
   "source_invariant_violations": [
     {
       "detail": "noetrium_platform.product.research_authoring -> noetrium_platform.capabilities.environment.software.api; required facade=noetrium_platform.research.experimentation.api",
@@ -1977,7 +1977,7 @@
     },
     {
       "exception_handlers": 11,
-      "import_fan_in": 63,
+      "import_fan_in": 62,
       "import_fan_out": 1,
       "io_sites": 8,
       "lock_sites": 0,
@@ -1990,7 +1990,7 @@
         "FAILURE_BRANCH_CONCENTRATION",
         "LONG_FUNCTION"
       ],
-      "risk_score": 447,
+      "risk_score": 443,
       "self_mutation_sites": 0,
       "serialization_sites": 0
     },

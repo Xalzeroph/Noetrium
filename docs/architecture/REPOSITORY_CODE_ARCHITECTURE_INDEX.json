@@ -2,7 +2,7 @@
   "counts": {
     "parse_errors": 0,
     "python_files": 3684,
-    "python_import_edges": 7088,
+    "python_import_edges": 7087,
     "symbols": 5024,
     "tracked_files": 4320,
     "typescript_javascript_files": 11
@@ -7770,12 +7770,6 @@
       "source_module": "noetrium_platform.evidence.artifact.content.providers.blob_store",
       "source_role": "core_platform",
       "target_module": "noetrium_platform.foundation.kernel.kernel.durability",
-      "target_role": "core_platform"
-    },
-    {
-      "source_module": "noetrium_platform.evidence.artifact.content.providers.blob_store",
-      "source_role": "core_platform",
-      "target_module": "noetrium_platform.foundation.kernel.kernel.durability.durable_file",
       "target_role": "core_platform"
     },
     {
@@ -42545,7 +42539,7 @@
   ],
   "role_import_counts": [
     {
-      "count": 2599,
+      "count": 2598,
       "source_role": "core_platform",
       "target_role": "core_platform"
     },
@@ -42684,7 +42678,7 @@
     "tooling": 39
   },
   "schema": "noetrium-repository-code-architecture-index.v1",
-  "source_git_sha": "c585c4e3e219b2c1c41d9570a2565913b5d9e6d0",
+  "source_git_sha": "85732d5f6326989a8863ec0739913ba302497de4",
   "symbols": [
     {
       "bases": [],
@@ -70615,7 +70609,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 16,
+      "line": 20,
       "methods": [
         "__init__",
         "_digest",
@@ -70623,6 +70617,7 @@
         "_shard_index",
         "_lock_path",
         "_verify_existing",
+        "_cleanup_staging",
         "put",
         "resolve",
         "get",
