@@ -185,7 +185,7 @@ class DockerContainerLeaseAuthority:
             # A stopped container cannot remain the owner of an active
             # generation. End it now so the next reserve advances fencing.
             self.runtime.remove(observed.container_id, force=True)
-            self.leases.release(lease.lease_id)
+            self.leases.release(lease.lease_id, fencing_token=lease.fencing_token)
             return self.reserve(
                 allocation_id=allocation_id,
                 holder_scope=holder_scope,
@@ -255,7 +255,7 @@ class DockerContainerLeaseAuthority:
             raise DockerContainerLeaseConflict(
                 "managed Docker container survived release"
             )
-        return self.leases.release(handle.lease.lease_id)
+        return self.leases.release(handle.lease.lease_id, fencing_token=handle.lease.fencing_token)
 
     def reconcile(
         self,
@@ -328,7 +328,7 @@ class DockerContainerLeaseAuthority:
                 and lease is not None
                 and lease.state is LeaseState.ACTIVE
             ):
-                released_lease = self.leases.release(lease.lease_id, now=now_epoch_s)
+                released_lease = self.leases.release(lease.lease_id, fencing_token=lease.fencing_token, now=now_epoch_s)
                 if released_lease.state is not LeaseState.RELEASED:
                     raise DockerContainerLeaseConflict(
                         "managed Docker reconcile failed to release lease"
