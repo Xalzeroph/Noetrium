@@ -6,7 +6,7 @@ from dataclasses import dataclass
 from noetrium.api import (
     environment_action_capability_payload,
 )
-from noetrium_platform.foundation.kernel.kernel import JsonInput
+from noetrium.api import JsonInput
 
 from .fidelity import WEBVOYAGER_FIDELITY
 
