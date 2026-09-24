@@ -1,10 +1,10 @@
 {
   "counts": {
     "parse_errors": 0,
-    "python_files": 3673,
-    "python_import_edges": 7104,
+    "python_files": 3672,
+    "python_import_edges": 7106,
     "symbols": 4932,
-    "tracked_files": 4309,
+    "tracked_files": 4308,
     "typescript_javascript_files": 11
   },
   "language_symbol_counts": {
@@ -414,30 +414,6 @@
       "source_module": "noetrium_platform.capabilities.environment.catalog.runtime.catalog",
       "source_role": "core_platform",
       "target_module": "noetrium_platform.substrate.api",
-      "target_role": "core_platform"
-    },
-    {
-      "source_module": "noetrium_platform.capabilities.environment.catalog.runtime.lease_authority",
-      "source_role": "core_platform",
-      "target_module": "noetrium_platform.capabilities.environment.catalog.api",
-      "target_role": "core_platform"
-    },
-    {
-      "source_module": "noetrium_platform.capabilities.environment.catalog.runtime.lease_authority",
-      "source_role": "core_platform",
-      "target_module": "noetrium_platform.foundation.governance.api",
-      "target_role": "core_platform"
-    },
-    {
-      "source_module": "noetrium_platform.capabilities.environment.catalog.runtime.lease_authority",
-      "source_role": "core_platform",
-      "target_module": "noetrium_platform.infrastructure.resources.lease.api",
-      "target_role": "core_platform"
-    },
-    {
-      "source_module": "noetrium_platform.capabilities.environment.catalog.runtime.lease_heartbeat",
-      "source_role": "core_platform",
-      "target_module": "noetrium_platform.foundation.kernel.concurrency.api",
       "target_role": "core_platform"
     },
     {
@@ -3519,6 +3495,30 @@
       "target_role": "core_platform"
     },
     {
+      "source_module": "noetrium_platform.composition.environment_instance_leases",
+      "source_role": "core_platform",
+      "target_module": "noetrium_platform.capabilities.environment.catalog.api",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "noetrium_platform.composition.environment_instance_leases",
+      "source_role": "core_platform",
+      "target_module": "noetrium_platform.foundation.governance.api",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "noetrium_platform.composition.environment_instance_leases",
+      "source_role": "core_platform",
+      "target_module": "noetrium_platform.foundation.kernel.concurrency.api",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "noetrium_platform.composition.environment_instance_leases",
+      "source_role": "core_platform",
+      "target_module": "noetrium_platform.infrastructure.resources.lease.api",
+      "target_role": "core_platform"
+    },
+    {
       "source_module": "noetrium_platform.composition.environment_machine",
       "source_role": "core_platform",
       "target_module": "noetrium_platform.capabilities.environment.api",
@@ -4919,6 +4919,12 @@
     {
       "source_module": "noetrium_platform.composition.platform_meta",
       "source_role": "core_platform",
+      "target_module": "noetrium_platform.composition.environment_instance_leases",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "noetrium_platform.composition.platform_meta",
+      "source_role": "core_platform",
       "target_module": "noetrium_platform.evidence.artifact.catalog.api",
       "target_role": "core_platform"
     },
@@ -5447,12 +5453,6 @@
     {
       "source_module": "noetrium_platform.composition.research_execution_pool",
       "source_role": "core_platform",
-      "target_module": "noetrium_platform.capabilities.environment.catalog.runtime",
-      "target_role": "core_platform"
-    },
-    {
-      "source_module": "noetrium_platform.composition.research_execution_pool",
-      "source_role": "core_platform",
       "target_module": "noetrium_platform.capabilities.model.serving.api",
       "target_role": "core_platform"
     },
@@ -5460,6 +5460,12 @@
       "source_module": "noetrium_platform.composition.research_execution_pool",
       "source_role": "core_platform",
       "target_module": "noetrium_platform.capabilities.model.serving.runtime",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "noetrium_platform.composition.research_execution_pool",
+      "source_role": "core_platform",
+      "target_module": "noetrium_platform.composition.environment_instance_leases",
       "target_role": "core_platform"
     },
     {
@@ -25985,6 +25991,12 @@
     {
       "source_module": "tests.test_environment_instance_lease_recovery_v1",
       "source_role": "tests",
+      "target_module": "noetrium_platform.composition.environment_instance_leases",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "tests.test_environment_instance_lease_recovery_v1",
+      "source_role": "tests",
       "target_module": "noetrium_platform.foundation.scope.api",
       "target_role": "core_platform"
     },
@@ -42641,7 +42653,7 @@
   ],
   "role_import_counts": [
     {
-      "count": 2589,
+      "count": 2590,
       "source_role": "core_platform",
       "target_role": "core_platform"
     },
@@ -42701,7 +42713,7 @@
       "target_role": "research_reproductions"
     },
     {
-      "count": 2776,
+      "count": 2777,
       "source_role": "tests",
       "target_role": "core_platform"
     },
@@ -42757,7 +42769,7 @@
     }
   ],
   "role_python_module_counts": {
-    "core_platform": 1908,
+    "core_platform": 1907,
     "examples": 6,
     "other": 6,
     "public_facade": 40,
@@ -42780,7 +42792,7 @@
     "tooling": 39
   },
   "schema": "noetrium-repository-code-architecture-index.v1",
-  "source_git_sha": "e73721a7bf215ed8a088b9195c3d5b2dfdedded0",
+  "source_git_sha": "752edbd76c6391619e660c3f85d5b9880db440d3",
   "symbols": [
     {
       "bases": [],
@@ -46133,149 +46145,6 @@
       "name": "SQLiteExecutionEnvironmentCatalog",
       "path": "noetrium_platform/capabilities/environment/catalog/runtime/catalog.py",
       "qualname": "noetrium_platform.capabilities.environment.catalog.runtime.catalog.SQLiteExecutionEnvironmentCatalog",
-      "role": "core_platform"
-    },
-    {
-      "bases": [],
-      "decorators": [
-        "dataclass(frozen=True, slots=True)"
-      ],
-      "fields": [
-        "ttl_seconds: float",
-        "renewal_interval_seconds: float"
-      ],
-      "kind": "dataclass",
-      "language": "python",
-      "line": 29,
-      "methods": [
-        "__post_init__"
-      ],
-      "module": "noetrium_platform.capabilities.environment.catalog.runtime.lease_authority",
-      "name": "EnvironmentInstanceLeasePolicy",
-      "path": "noetrium_platform/capabilities/environment/catalog/runtime/lease_authority.py",
-      "qualname": "noetrium_platform.capabilities.environment.catalog.runtime.lease_authority.EnvironmentInstanceLeasePolicy",
-      "role": "core_platform"
-    },
-    {
-      "bases": [],
-      "decorators": [
-        "dataclass(frozen=True, slots=True)"
-      ],
-      "fields": [
-        "acquisition: EnvironmentInstanceAcquisition",
-        "lease: ResourceLease"
-      ],
-      "kind": "dataclass",
-      "language": "python",
-      "line": 53,
-      "methods": [
-        "__post_init__",
-        "instance",
-        "binding"
-      ],
-      "module": "noetrium_platform.capabilities.environment.catalog.runtime.lease_authority",
-      "name": "EnvironmentInstanceLeaseHandle",
-      "path": "noetrium_platform/capabilities/environment/catalog/runtime/lease_authority.py",
-      "qualname": "noetrium_platform.capabilities.environment.catalog.runtime.lease_authority.EnvironmentInstanceLeaseHandle",
-      "role": "core_platform"
-    },
-    {
-      "bases": [],
-      "decorators": [
-        "dataclass(frozen=True, slots=True)"
-      ],
-      "fields": [
-        "dirtied_instance_ids: tuple[str, ...]",
-        "released_orphan_lease_ids: tuple[str, ...]"
-      ],
-      "kind": "dataclass",
-      "language": "python",
-      "line": 75,
-      "methods": [],
-      "module": "noetrium_platform.capabilities.environment.catalog.runtime.lease_authority",
-      "name": "EnvironmentInstanceReconciliation",
-      "path": "noetrium_platform/capabilities/environment/catalog/runtime/lease_authority.py",
-      "qualname": "noetrium_platform.capabilities.environment.catalog.runtime.lease_authority.EnvironmentInstanceReconciliation",
-      "role": "core_platform"
-    },
-    {
-      "bases": [],
-      "decorators": [],
-      "fields": [],
-      "kind": "class",
-      "language": "python",
-      "line": 88,
-      "methods": [
-        "__init__",
-        "_binding_rows",
-        "_instance",
-        "_acquire_lease",
-        "acquire_reusable_instance",
-        "recover_reusable_instance",
-        "renew",
-        "renew_many",
-        "release",
-        "reconcile"
-      ],
-      "module": "noetrium_platform.capabilities.environment.catalog.runtime.lease_authority",
-      "name": "EnvironmentInstanceLeaseAuthority",
-      "path": "noetrium_platform/capabilities/environment/catalog/runtime/lease_authority.py",
-      "qualname": "noetrium_platform.capabilities.environment.catalog.runtime.lease_authority.EnvironmentInstanceLeaseAuthority",
-      "role": "core_platform"
-    },
-    {
-      "bases": [
-        "RuntimeError"
-      ],
-      "decorators": [],
-      "fields": [],
-      "kind": "class",
-      "language": "python",
-      "line": 21,
-      "methods": [],
-      "module": "noetrium_platform.capabilities.environment.catalog.runtime.lease_heartbeat",
-      "name": "EnvironmentInstanceLeaseHeartbeatError",
-      "path": "noetrium_platform/capabilities/environment/catalog/runtime/lease_heartbeat.py",
-      "qualname": "noetrium_platform.capabilities.environment.catalog.runtime.lease_heartbeat.EnvironmentInstanceLeaseHeartbeatError",
-      "role": "core_platform"
-    },
-    {
-      "bases": [],
-      "decorators": [],
-      "fields": [],
-      "kind": "class",
-      "language": "python",
-      "line": 25,
-      "methods": [
-        "__init__",
-        "handles",
-        "start",
-        "_renew_once",
-        "assert_healthy",
-        "close"
-      ],
-      "module": "noetrium_platform.capabilities.environment.catalog.runtime.lease_heartbeat",
-      "name": "EnvironmentInstanceLeaseHeartbeatGuard",
-      "path": "noetrium_platform/capabilities/environment/catalog/runtime/lease_heartbeat.py",
-      "qualname": "noetrium_platform.capabilities.environment.catalog.runtime.lease_heartbeat.EnvironmentInstanceLeaseHeartbeatGuard",
-      "role": "core_platform"
-    },
-    {
-      "bases": [],
-      "decorators": [],
-      "fields": [],
-      "kind": "class",
-      "language": "python",
-      "line": 120,
-      "methods": [
-        "__init__",
-        "policy",
-        "create"
-      ],
-      "module": "noetrium_platform.capabilities.environment.catalog.runtime.lease_heartbeat",
-      "name": "EnvironmentInstanceLeaseHeartbeatFactory",
-      "path": "noetrium_platform/capabilities/environment/catalog/runtime/lease_heartbeat.py",
-      "qualname": "noetrium_platform.capabilities.environment.catalog.runtime.lease_heartbeat.EnvironmentInstanceLeaseHeartbeatFactory",
       "role": "core_platform"
     },
     {
@@ -64256,6 +64125,149 @@
         "dataclass(frozen=True, slots=True)"
       ],
       "fields": [
+        "ttl_seconds: float",
+        "renewal_interval_seconds: float"
+      ],
+      "kind": "dataclass",
+      "language": "python",
+      "line": 29,
+      "methods": [
+        "__post_init__"
+      ],
+      "module": "noetrium_platform.composition.environment_instance_leases",
+      "name": "EnvironmentInstanceLeasePolicy",
+      "path": "noetrium_platform/composition/environment_instance_leases.py",
+      "qualname": "noetrium_platform.composition.environment_instance_leases.EnvironmentInstanceLeasePolicy",
+      "role": "core_platform"
+    },
+    {
+      "bases": [],
+      "decorators": [
+        "dataclass(frozen=True, slots=True)"
+      ],
+      "fields": [
+        "acquisition: EnvironmentInstanceAcquisition",
+        "lease: ResourceLease"
+      ],
+      "kind": "dataclass",
+      "language": "python",
+      "line": 53,
+      "methods": [
+        "__post_init__",
+        "instance",
+        "binding"
+      ],
+      "module": "noetrium_platform.composition.environment_instance_leases",
+      "name": "EnvironmentInstanceLeaseHandle",
+      "path": "noetrium_platform/composition/environment_instance_leases.py",
+      "qualname": "noetrium_platform.composition.environment_instance_leases.EnvironmentInstanceLeaseHandle",
+      "role": "core_platform"
+    },
+    {
+      "bases": [],
+      "decorators": [
+        "dataclass(frozen=True, slots=True)"
+      ],
+      "fields": [
+        "dirtied_instance_ids: tuple[str, ...]",
+        "released_orphan_lease_ids: tuple[str, ...]"
+      ],
+      "kind": "dataclass",
+      "language": "python",
+      "line": 75,
+      "methods": [],
+      "module": "noetrium_platform.composition.environment_instance_leases",
+      "name": "EnvironmentInstanceReconciliation",
+      "path": "noetrium_platform/composition/environment_instance_leases.py",
+      "qualname": "noetrium_platform.composition.environment_instance_leases.EnvironmentInstanceReconciliation",
+      "role": "core_platform"
+    },
+    {
+      "bases": [],
+      "decorators": [],
+      "fields": [],
+      "kind": "class",
+      "language": "python",
+      "line": 88,
+      "methods": [
+        "__init__",
+        "_binding_rows",
+        "_instance",
+        "_acquire_lease",
+        "acquire_reusable_instance",
+        "recover_reusable_instance",
+        "renew",
+        "renew_many",
+        "release",
+        "reconcile"
+      ],
+      "module": "noetrium_platform.composition.environment_instance_leases",
+      "name": "EnvironmentInstanceLeaseAuthority",
+      "path": "noetrium_platform/composition/environment_instance_leases.py",
+      "qualname": "noetrium_platform.composition.environment_instance_leases.EnvironmentInstanceLeaseAuthority",
+      "role": "core_platform"
+    },
+    {
+      "bases": [
+        "RuntimeError"
+      ],
+      "decorators": [],
+      "fields": [],
+      "kind": "class",
+      "language": "python",
+      "line": 337,
+      "methods": [],
+      "module": "noetrium_platform.composition.environment_instance_leases",
+      "name": "EnvironmentInstanceLeaseHeartbeatError",
+      "path": "noetrium_platform/composition/environment_instance_leases.py",
+      "qualname": "noetrium_platform.composition.environment_instance_leases.EnvironmentInstanceLeaseHeartbeatError",
+      "role": "core_platform"
+    },
+    {
+      "bases": [],
+      "decorators": [],
+      "fields": [],
+      "kind": "class",
+      "language": "python",
+      "line": 341,
+      "methods": [
+        "__init__",
+        "handles",
+        "start",
+        "_renew_once",
+        "assert_healthy",
+        "close"
+      ],
+      "module": "noetrium_platform.composition.environment_instance_leases",
+      "name": "EnvironmentInstanceLeaseHeartbeatGuard",
+      "path": "noetrium_platform/composition/environment_instance_leases.py",
+      "qualname": "noetrium_platform.composition.environment_instance_leases.EnvironmentInstanceLeaseHeartbeatGuard",
+      "role": "core_platform"
+    },
+    {
+      "bases": [],
+      "decorators": [],
+      "fields": [],
+      "kind": "class",
+      "language": "python",
+      "line": 436,
+      "methods": [
+        "__init__",
+        "policy",
+        "create"
+      ],
+      "module": "noetrium_platform.composition.environment_instance_leases",
+      "name": "EnvironmentInstanceLeaseHeartbeatFactory",
+      "path": "noetrium_platform/composition/environment_instance_leases.py",
+      "qualname": "noetrium_platform.composition.environment_instance_leases.EnvironmentInstanceLeaseHeartbeatFactory",
+      "role": "core_platform"
+    },
+    {
+      "bases": [],
+      "decorators": [
+        "dataclass(frozen=True, slots=True)"
+      ],
+      "fields": [
         "implementation: StateMachineEnvironmentImplementation",
         "runtime: StateMachineEnvironmentRuntime"
       ],
@@ -65149,7 +65161,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 70,
+      "line": 72,
       "methods": [],
       "module": "noetrium_platform.composition.platform_meta",
       "name": "PlatformMetaAuthorities",
