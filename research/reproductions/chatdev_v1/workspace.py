@@ -3,15 +3,16 @@ from __future__ import annotations
 from collections.abc import Mapping
 import re
 
-from noetrium_platform.capabilities.environment.api import (
+from noetrium.api import (
     ActionRequest,
     ActionResult,
 )
-from noetrium_platform.capabilities.environment.software.api import (
+from noetrium.api import (
     SoftwareActionKind,
+    SoftwareActionTimeoutError,
     SoftwareWorldPort,
 )
-from noetrium_platform.foundation.kernel.kernel import (
+from noetrium.api import (
     ExecutionContext,
     JsonObject,
     JsonValue,
@@ -19,10 +20,6 @@ from noetrium_platform.foundation.kernel.kernel import (
     require_sha256,
     thaw_json,
 )
-from noetrium_platform.infrastructure.lifecycle.process.api import (
-    LocalCommandTimeoutError,
-)
-
 from .environment import (
     ChatDevV1EnvironmentApplication,
     ChatDevV1EnvironmentApplyRequest,
