@@ -6,12 +6,16 @@ from pathlib import Path
 from threading import Event
 from typing import Mapping
 
+from noetrium_platform.capabilities.model.deployment.api import ModelRuntimeState
 from noetrium_platform.capabilities.model.deployment.composition import LocalModelReplicaPoolRuntime
 from noetrium_platform.foundation.kernel.concurrency.api import (
     ConcurrencyBudget,
     ExecutionLaneKind,
     ExecutionSpec,
     TaskHandlePort,
+)
+from noetrium_platform.foundation.kernel.kernel.durability.file_lock import (
+    InterprocessFileLock,
 )
 from noetrium_platform.research.execution.policy.api import AdmissionBudget
 from noetrium_platform.research.execution.policy.api import ExecutionPriority
@@ -66,6 +70,7 @@ class ManagedResearchRuntime:
     _orchestration_group: object
     _stop: Event
     resources: ManagedResourceReconciler
+    _runtime_lock: InterprocessFileLock
     model_replica_pool: LocalModelReplicaPoolRuntime | None = None
     _model_controller: TaskHandlePort | None = None
     _resource_controller: TaskHandlePort | None = None
@@ -151,10 +156,36 @@ class ManagedResearchRuntime:
         if self._closed:
             return
         errors: list[BaseException] = []
+
         try:
             self.quiesce_background_controllers()
         except BaseException as exc:
             errors.append(exc)
+
+        try:
+            statuses = self.management.models.fleet.shutdown_all()
+            failed = tuple(
+                row
+                for row in statuses
+                if row.runtime_state
+                not in {ModelRuntimeState.STOPPED, ModelRuntimeState.MISSING}
+            )
+            if failed:
+                raise RuntimeError(
+                    "model processes survived runtime shutdown: "
+                    + ",".join(
+                        f"{row.deployment_id}:{row.runtime_state.value}"
+                        for row in failed
+                    )
+                )
+        except BaseException as exc:
+            errors.append(exc)
+
+        try:
+            self.resources.shutdown_cleanup()
+        except BaseException as exc:
+            errors.append(exc)
+
         self._closed = True
         try:
             self.observability.close()
@@ -171,12 +202,16 @@ class ManagedResearchRuntime:
             self.execution_pool.close()
         except BaseException as exc:
             errors.append(exc)
+        try:
+            self._runtime_lock.__exit__(None, None, None)
+        except BaseException as exc:
+            errors.append(exc)
+
         if errors:
-            first = errors[0]
-            raise RuntimeError(
-                f"managed research runtime close failed: "
-                f"{type(first).__name__}: {first}"
-            ) from first
+            raise ExceptionGroup(
+                "managed research runtime close failed",
+                errors,
+            )
 
     def __enter__(self) -> "ManagedResearchRuntime":
         return self
@@ -203,15 +238,21 @@ def build_local_managed_research_runtime(
     model_reconcile_interval_seconds: float = 10.0,
     resource_reconcile_interval_seconds: float = 30.0,
 ) -> ManagedResearchRuntime:
-    pool = ResearchExecutionPool(
+    runtime_lock = InterprocessFileLock(
+        layout.locks / "managed-research-runtime.lock",
+        blocking=False,
+    )
+    runtime_lock.__enter__()
+    pool: ResearchExecutionPool | None = None
+    try:
+        pool = ResearchExecutionPool(
         orchestration_concurrency_budget=orchestration_concurrency_budget,
         orchestration_admission_budget=orchestration_admission_budget,
         experiment_concurrency_budget=experiment_concurrency_budget,
         experiment_admission_budget=experiment_admission_budget,
-        model_io_concurrency_budget=model_io_concurrency_budget,
-        model_io_admission_budget=model_io_admission_budget,
-    )
-    try:
+            model_io_concurrency_budget=model_io_concurrency_budget,
+            model_io_admission_budget=model_io_admission_budget,
+        )
         group = pool.open_orchestration_group(
             "managed-research-runtime",
             resource_id="platform-runtime-controller",
@@ -268,6 +309,7 @@ def build_local_managed_research_runtime(
             _orchestration_group=group,
             _stop=Event(),
             resources=resources,
+            _runtime_lock=runtime_lock,
             model_replica_pool=model_replica_pool,
         )
         if start_background_controllers:
@@ -277,7 +319,9 @@ def build_local_managed_research_runtime(
             )
         return runtime
     except BaseException:
-        pool.close()
+        if pool is not None:
+            pool.close()
+        runtime_lock.__exit__(None, None, None)
         raise
 
 
