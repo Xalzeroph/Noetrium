@@ -196,7 +196,8 @@ class DirectoryRunCheckpointStore(RunCheckpointStore):
     ) -> str:
         return canonical_digest(
             {
-                "schema": "noetrium.run-checkpoint-persistence-state.v1",
+                "schema": "noetrium.checkpoint-persistence-state.v1",
+                "namespace": CheckpointNamespace.RUN.value,
                 "checkpoint_id": checkpoint_id,
                 "persistence_state": persistence_state.value,
                 "manifest_sha256": manifest_sha256,
@@ -361,7 +362,8 @@ class DirectoryRunCheckpointStore(RunCheckpointStore):
         self,
         digest: str,
         *,
-        excluding_run_checkpoint_id: str,
+        excluding_run_checkpoint_id: str | None = None,
+        excluding_workload_checkpoint_id: str | None = None,
     ) -> bool:
         for path in sorted(self.manifests.glob("*.json")):
             manifest = self.codec.decode(path.read_bytes())
@@ -369,7 +371,10 @@ class DirectoryRunCheckpointStore(RunCheckpointStore):
                 raise RunCheckpointIntegrityError(
                     "run checkpoint manifest filename identity mismatch"
                 )
-            if manifest.checkpoint_id == excluding_run_checkpoint_id:
+            if (
+                excluding_run_checkpoint_id is not None
+                and manifest.checkpoint_id == excluding_run_checkpoint_id
+            ):
                 continue
             if any(
                 ref.checkpoint.payload_sha256 == digest
@@ -384,6 +389,11 @@ class DirectoryRunCheckpointStore(RunCheckpointStore):
                 raise RunCheckpointIntegrityError(
                     "workload checkpoint manifest filename identity mismatch"
                 )
+            if (
+                excluding_workload_checkpoint_id is not None
+                and manifest.checkpoint_id == excluding_workload_checkpoint_id
+            ):
+                continue
             if any(
                 ref.payload_sha256 == digest
                 for ref in manifest.component_refs
@@ -399,13 +409,20 @@ class DirectoryRunCheckpointStore(RunCheckpointStore):
             ) from exc
 
         if any(
-            intent.checkpoint_id != excluding_run_checkpoint_id
+            (
+                excluding_run_checkpoint_id is None
+                or intent.checkpoint_id != excluding_run_checkpoint_id
+            )
             and digest in intent.blob_sha256s
             for intent in run_intents
         ):
             return True
         return any(
-            digest in intent.blob_sha256s
+            (
+                excluding_workload_checkpoint_id is None
+                or intent.checkpoint_id != excluding_workload_checkpoint_id
+            )
+            and digest in intent.blob_sha256s
             for intent in workload_intents
         )
 
