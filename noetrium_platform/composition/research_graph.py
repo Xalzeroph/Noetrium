@@ -597,6 +597,7 @@ class ResearchGraphScheduler:
             return
         except BaseException as exc:
             handle.cancel()
+            original_failure = exc
             failure = _reportable_failure(exc)
             description = describe_exception(failure)
             message = description.safe_message.strip() or type(failure).__name__
@@ -701,7 +702,7 @@ class ResearchGraphScheduler:
             ResearchGraphControlPhase.CANCELLED,
         }:
             raise ResearchGraphControlHalt(control)
-        raise failure
+        raise original_failure
 
     def _renew_due_durable_leases(
         self,
