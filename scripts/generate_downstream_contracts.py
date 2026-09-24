@@ -39,11 +39,6 @@ _RETIRED_CONVENIENCE_FACADES = (
     "server",
     "session",
 )
-_CONVENIENCE_FACADES: dict[str, tuple[tuple[str, bool], ...]] = {}
-_CONVENIENCE_CANONICAL_OWNERS: dict[str, dict[str, str]] = {}
-_CONVENIENCE_EXTRA_PLANES: dict[str, tuple[tuple[str, str], ...]] = {}
-_CONVENIENCE_EXCLUDED_NAMES = frozenset({"CONTRACT", "contract"})
-
 @dataclass(frozen=True)
 class ApiModuleSurface:
     module: str
@@ -399,28 +394,26 @@ def build_surfaces(root: Path) -> tuple[SystemSurface, ...]:
     return tuple(rows)
 
 
-def _aliased_symbols(surface: SystemSurface) -> list[tuple[str, str, str]]:
-    """Return (module, source_name, facade_name), preserving collisions."""
+def _facade_symbols(surface: SystemSurface) -> list[tuple[str, str, str]]:
+    """Return exact facade exports; symbol collisions are architecture errors."""
     result: list[tuple[str, str, str]] = []
-    used: set[str] = set()
+    used: dict[str, str] = {}
     for api in surface.api_modules:
-        module_slug = _SAFE.sub("_", api.module.rsplit(".", 1)[-1])
         for name in api.symbols:
-            facade_name = name
-            if facade_name in used:
-                facade_name = f"{module_slug}__{name}"
-                serial = 2
-                while facade_name in used:
-                    facade_name = f"{module_slug}{serial}__{name}"
-                    serial += 1
-            used.add(facade_name)
-            result.append((api.module, name, facade_name))
+            previous = used.get(name)
+            if previous is not None and previous != api.module:
+                raise RuntimeError(
+                    "system facade symbol collision requires one canonical API owner: "
+                    f"{surface.system_key}.{name}: {previous} vs {api.module}"
+                )
+            used[name] = api.module
+            result.append((api.module, name, name))
     return result
 
 
 def render_facade(surface: SystemSurface) -> str:
     imports: dict[str, list[tuple[str, str]]] = {}
-    for module, source_name, facade_name in _aliased_symbols(surface):
+    for module, source_name, facade_name in _facade_symbols(surface):
         imports.setdefault(module, []).append((source_name, facade_name))
     lines = [
         f'""" {_MARKER}.',
@@ -440,118 +433,11 @@ def render_facade(surface: SystemSurface) -> str:
             suffix = "" if source_name == facade_name else f" as {facade_name}"
             lines.append(f"    {source_name}{suffix},")
         lines.extend((")", ""))
-    names = [facade_name for _, _, facade_name in _aliased_symbols(surface)]
+    names = [facade_name for _, _, facade_name in _facade_symbols(surface)]
     lines.append(f"SYSTEM_KEY = {surface.system_key!r}")
     lines.append(f"PACKAGE_PREFIX = {surface.package_prefix!r}")
     lines.append(f"__all__ = {tuple(names)!r}")
     lines.append("")
-    return "\n".join(lines)
-
-
-def _convenience_surface_keys(
-    surfaces: tuple[SystemSurface, ...],
-    specs: tuple[tuple[str, bool], ...],
-) -> tuple[str, ...]:
-    keys: list[str] = []
-    available = {surface.system_key for surface in surfaces}
-    for root, subtree in specs:
-        if root not in available:
-            raise ValueError(f"convenience facade references unknown system root: {root}")
-        for surface in surfaces:
-            key = surface.system_key
-            if key == root or (subtree and key.startswith(root + "/")):
-                if key not in keys:
-                    keys.append(key)
-    return tuple(keys)
-
-
-def render_convenience_facade(
-    name: str,
-    surfaces: tuple[SystemSurface, ...],
-) -> str:
-    specs = _CONVENIENCE_FACADES[name]
-    keys = _convenience_surface_keys(surfaces, specs)
-    surface_index = {surface.system_key: surface for surface in surfaces}
-    canonical = _CONVENIENCE_CANONICAL_OWNERS.get(name, {})
-    for symbol, owner in canonical.items():
-        if owner not in keys:
-            raise ValueError(
-                f"convenience canonical owner is outside facade roots: {name}.{symbol} -> {owner}"
-            )
-    lines = [
-        f'""" {_MARKER}.',
-        f"Convenience facade: {name}",
-        "Sources are selected from canonical registry-owned public surfaces; symbol lists are never hand-maintained.",
-        '"""',
-        "from __future__ import annotations",
-        "",
-    ]
-    source_rows: list[tuple[str, str]] = []
-    for index, key in enumerate(keys):
-        module = surface_index[key].facade_module
-        alias = f"_surface_{index}"
-        lines.append(f"from {module.rsplit('.', 1)[0]} import {module.rsplit('.', 1)[1]} as {alias}")
-        source_rows.append((key, alias))
-    for index, (key, plane) in enumerate(_CONVENIENCE_EXTRA_PLANES.get(name, ())):
-        if key not in surface_index:
-            raise ValueError(f"convenience extra references unknown system root: {key}")
-        package = surface_index[key].package_prefix
-        alias = f"_extra_{index}"
-        lines.append(f"from {package} import {plane} as {alias}")
-        source_rows.append((f"{key}/{plane}", alias))
-    lines.extend([
-        "",
-        f"_SOURCES = {tuple(source_rows)!r}",
-        f"_CANONICAL_OWNERS = {canonical!r}",
-        f"_EXCLUDED = frozenset({tuple(sorted(_CONVENIENCE_EXCLUDED_NAMES))!r})",
-        "_owners: dict[str, str] = {}",
-        "_exports: list[str] = []",
-        "",
-        "def _qualified(system_key: str, name: str) -> str:",
-        "    return system_key.replace('/', '__').replace('-', '_') + '__' + name",
-        "",
-        "for _system_key, _module_name in _SOURCES:",
-        "    _module = globals()[_module_name]",
-        "    for _name in _module.__all__:",
-        "        if '__' in _name or _name in _EXCLUDED:",
-        "            continue",
-        "        _value = getattr(_module, _name)",
-        "        if _name not in _owners:",
-        "            globals()[_name] = _value",
-        "            _owners[_name] = _system_key",
-        "            _exports.append(_name)",
-        "            continue",
-        "        _owner = _owners[_name]",
-        "        _current = globals()[_name]",
-        "        if _current is _value:",
-        "            continue",
-        "        _owner_alias = _qualified(_owner, _name)",
-        "        _new_alias = _qualified(_system_key, _name)",
-        "        if _owner_alias not in globals():",
-        "            globals()[_owner_alias] = _current",
-        "            _exports.append(_owner_alias)",
-        "        globals()[_new_alias] = _value",
-        "        if _new_alias not in _exports:",
-        "            _exports.append(_new_alias)",
-        "        _canonical = _CANONICAL_OWNERS.get(_name)",
-        "        if _canonical is None:",
-        "            raise RuntimeError(",
-        "                f'convenience facade symbol collision requires canonical owner: {_name}: '",
-        "                f'{_owner} vs {_system_key}'",
-        "            )",
-        "        if _canonical == _system_key:",
-        "            globals()[_name] = _value",
-        "            _owners[_name] = _system_key",
-        "        elif _canonical != _owner:",
-        "            raise RuntimeError(",
-        "                f'invalid canonical owner for {_name}: {_canonical}; observed {_owner}, {_system_key}'",
-        "            )",
-        "",
-        "__all__ = tuple(_exports)",
-        "",
-        "del _exports, _owners",
-        "",
-    ])
     return "\n".join(lines)
 
 
@@ -667,7 +553,7 @@ def render_unified_api_stub(
 
 def render_root_contract_init(root: Path) -> str:
     json_symbols = _public_symbols(root / "noetrium/contracts/json.py")
-    sources = ("json", "discovery", *_CONVENIENCE_FACADES.keys())
+    sources = ("json", "discovery")
     lines = [
         f'""" {_MARKER}.',
         "Internal generated contract aggregate. Downstream projects use noetrium.api.",
@@ -685,9 +571,6 @@ def render_root_contract_init(root: Path) -> str:
         "_SOURCES = tuple((_name, globals()[f'_source_{_index}']) for _index, _name in enumerate(_SOURCE_NAMES))",
         "_owners: dict[str, str] = {}",
         "_exports: list[str] = []",
-        "",
-        "def _qualified(owner: str, name: str) -> str:",
-        "    return owner.replace('-', '_') + '__' + name",
         "",
         "for _owner_name, _module in _SOURCES:",
         "    for _name in _module.__all__:",
@@ -708,14 +591,6 @@ def render_root_contract_init(root: Path) -> str:
         "                globals()[_name] = _value",
         "                _owners[_name] = 'json'",
         "                continue",
-        "        _old_alias = _qualified(_previous_owner, _name)",
-        "        _new_alias = _qualified(_owner_name, _name)",
-        "        if _old_alias not in globals():",
-        "            globals()[_old_alias] = _current",
-        "            _exports.append(_old_alias)",
-        "        globals()[_new_alias] = _value",
-        "        if _new_alias not in _exports:",
-        "            _exports.append(_new_alias)",
         "        raise RuntimeError(",
         "            f'top-level contract symbol collision requires explicit canonical source: {_name}: '",
         "            f'{_previous_owner} vs {_owner_name}'",
@@ -977,10 +852,6 @@ def generate(root: Path, *, check: bool = False) -> int:
             continue
         slug = surface.facade_module.rsplit(".", 1)[-1]
         expected[facade_root / f"{slug}.py"] = render_facade(surface).encode("utf-8")
-    for facade_name in _CONVENIENCE_FACADES:
-        expected[root / "noetrium/contracts" / f"{facade_name}.py"] = (
-            render_convenience_facade(facade_name, surfaces).encode("utf-8")
-        )
     ok = True
     readme_block = render_readme_interface_block(surfaces)
     readme_updates: dict[Path, str] = {}
