@@ -443,7 +443,7 @@ class InMemoryComputeScheduler:
 
     def _reconcile_expired_locked(
         self,
-        now_epoch_s: float,
+        now_epoch_s: float | None,
         runtime_snapshot: GpuRuntimeSnapshot | None,
     ) -> tuple[ComputeAllocation, ...]:
         del runtime_snapshot
@@ -483,7 +483,7 @@ class InMemoryComputeScheduler:
             requirement,
         )
         with self._lock:
-            self._reconcile_expired_locked(time(), runtime_snapshot)
+            self._reconcile_expired_locked(None, runtime_snapshot)
             return tuple(
                 host for _score, host, _gpu_ids
                 in self._placements_locked(
@@ -503,7 +503,7 @@ class InMemoryComputeScheduler:
         ttl_seconds: float | None = None,
         now: float | None = None,
     ) -> ComputeAllocation:
-        now_epoch_s = _lease_now(now)
+        now_epoch_s = None if now is None else _lease_now(now)
         request_digest = _allocation_request_digest(scope, placement_scope, requirement)
         runtime_snapshot = _observe_gpu_runtime(self._gpu_runtime_observer)
         host_runtime_snapshot = _observe_host_runtime(self._host_runtime_observer)
@@ -591,7 +591,7 @@ class InMemoryComputeScheduler:
         allocation_ids = tuple(row.allocation_id for row in allocations)
         if len(set(allocation_ids)) != len(allocation_ids):
             raise ValueError("compute renewal requires unique allocation ids")
-        now_epoch_s = _lease_now(now)
+        now_epoch_s = None if now is None else _lease_now(now)
         runtime_snapshot = _observe_gpu_runtime(self._gpu_runtime_observer)
         with self._lock:
             self._reconcile_expired_locked(now_epoch_s, runtime_snapshot)
@@ -622,7 +622,7 @@ class InMemoryComputeScheduler:
         *,
         now: float | None = None,
     ) -> tuple[ComputeAllocation, ...]:
-        now_epoch_s = _lease_now(now)
+        now_epoch_s = None if now is None else _lease_now(now)
         runtime_snapshot = _observe_gpu_runtime(self._gpu_runtime_observer)
         with self._lock:
             pending = self._reconcile_expired_locked(now_epoch_s, runtime_snapshot)
@@ -647,7 +647,6 @@ class InMemoryComputeScheduler:
 
         if type(allocation) is not ComputeAllocation:
             raise TypeError("compute recovery release requires ComputeAllocation")
-        now_epoch_s = time()
         with self._lock:
             row = self._allocations.get(allocation.allocation_id)
             if row is None:
@@ -655,7 +654,6 @@ class InMemoryComputeScheduler:
             _require_compute_generation(row, allocation)
             lease = self._leases.get(
                 f"compute:{allocation.allocation_id}",
-                now=now_epoch_s,
             )
             if lease.fencing_token != allocation.lease_fencing_token:
                 raise ResourceLeaseConflict(
@@ -665,7 +663,6 @@ class InMemoryComputeScheduler:
                 self._leases.release(
                     f"compute:{allocation.allocation_id}",
                     fencing_token=allocation.lease_fencing_token,
-                    now=now_epoch_s,
                 )
             elif lease.state not in {LeaseState.EXPIRED, LeaseState.RELEASED}:
                 raise ResourceLeaseConflict(
@@ -681,7 +678,7 @@ class InMemoryComputeScheduler:
     ) -> tuple[ComputeAllocation, ...]:
         runtime_snapshot = _observe_gpu_runtime(self._gpu_runtime_observer)
         with self._lock:
-            self._reconcile_expired_locked(time(), runtime_snapshot)
+            self._reconcile_expired_locked(None, runtime_snapshot)
             return tuple(sorted(
                 (row for row in self._allocations.values() if scope is None or row.scope == scope),
                 key=lambda row: row.allocation_id,
