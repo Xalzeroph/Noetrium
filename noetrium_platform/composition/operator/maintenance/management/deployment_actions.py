@@ -30,11 +30,14 @@ def dispatch_deployment_action(
             deployment_selector(args), ModelDesiredState(args.state)
         )
     if action == "start":
-        return True, runtime.start(args.deployment_id)
+        generation = runtime.generation(args.deployment_id)
+        return True, runtime.start(generation)
     if action == "stop":
-        return True, runtime.stop(args.deployment_id)
+        generation = runtime.generation(args.deployment_id)
+        return True, runtime.stop(generation)
     if action == "restart":
-        return True, runtime.restart(args.deployment_id)
+        generation = runtime.generation(args.deployment_id)
+        return True, runtime.restart(generation)
     if action == "set-gpus":
         return True, catalog.set_gpu_devices(args.deployment_id, tuple(args.gpu_devices))
     if action == "set-env":
@@ -42,7 +45,8 @@ def dispatch_deployment_action(
     if action == "status":
         return True, runtime.status(args.deployment_id)
     if action == "remove":
-        return True, {"removed": runtime.remove_deployment(args.deployment_id)}
+        generation = runtime.generation(args.deployment_id)
+        return True, {"removed": runtime.remove_deployment(generation)}
     if action == "status-all":
         return True, fleet.status_all()
     if action == "reconcile":
