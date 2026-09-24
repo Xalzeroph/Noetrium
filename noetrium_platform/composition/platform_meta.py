@@ -56,7 +56,10 @@ from noetrium_platform.infrastructure.resources.compute.runtime import (
     SQLiteComputeScheduler,
 )
 from noetrium_platform.infrastructure.resources.lease.api import ResourceLeasePort, ResourceOwnershipPort
-from noetrium_platform.infrastructure.resources.lease.runtime import InMemoryResourceLeaseRegistry
+from noetrium_platform.infrastructure.resources.lease.runtime import (
+    InMemoryResourceLeaseRegistry,
+    LocalLeaseClock,
+)
 from noetrium_platform.capabilities.environment.catalog.api import ExecutionEnvironmentCatalogPort
 from noetrium_platform.capabilities.environment.catalog.runtime import (
     ExecutionEnvironmentCatalog,
@@ -104,7 +107,8 @@ def build_in_memory_platform_meta(
     scopes = InMemoryScopeRegistry()
     systems = build_default_system_registry()
     evolution = RegistryDrivenEvolutionController(systems)
-    resources = InMemoryResourceLeaseRegistry()
+    lease_clock = LocalLeaseClock()
+    resources = InMemoryResourceLeaseRegistry(clock=lease_clock)
     compute_inventory = InMemoryComputeInventory()
     endpoint_candidates = LocalEndpointCandidateSource()
     endpoint_allocations = InMemoryEndpointAllocator(
@@ -177,7 +181,8 @@ def build_durable_platform_meta(
     )
     evolution = RegistryDrivenEvolutionController(systems, store=evolution_store)
     experimentation = SQLiteExperimentationCatalog(root / "platform-experimentation.sqlite", scopes)
-    resources = SQLiteResourceLeaseRegistry(database)
+    lease_clock = LocalLeaseClock()
+    resources = SQLiteResourceLeaseRegistry(database, clock=lease_clock)
     environments = SQLiteExecutionEnvironmentCatalog(
         root / "platform-environments.sqlite",
         scopes,
@@ -189,13 +194,19 @@ def build_durable_platform_meta(
     )
     endpoint_candidates = LocalEndpointCandidateSource()
     endpoint_allocations = AtomicEndpointAllocator(
-        reservations=SQLiteEndpointAllocationStore(database),
+        reservations=SQLiteEndpointAllocationStore(
+            database,
+            clock=lease_clock,
+        ),
         probe=SocketEndpointProbe(),
         candidates=endpoint_candidates,
     )
     compute_inventory = SQLiteComputeInventory(database)
     compute_scheduler = SQLiteComputeScheduler(
-        database, compute_inventory, gpu_runtime_observer=gpu_runtime_observer,
+        database,
+        compute_inventory,
+        clock=lease_clock,
+        gpu_runtime_observer=gpu_runtime_observer,
         host_runtime_observer=host_runtime_observer,
     )
     artifacts = cast(
