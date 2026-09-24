@@ -46,6 +46,7 @@ class _FailOnceRuntime:
     def execute(
         self,
         context,
+        task_context,
         node,
         lowering,
         inputs,
@@ -54,7 +55,7 @@ class _FailOnceRuntime:
         deadline,
     ):
         del lowering, inputs, execution_cut_id, deadline
-        context.checkpoint()
+        task_context.checkpoint()
         self.calls.append(node.graph_node_id)
         if node.graph_node_id == "paper::root" and self._root_failures == 0:
             self._root_failures += 1
