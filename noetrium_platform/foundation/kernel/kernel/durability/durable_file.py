@@ -178,6 +178,27 @@ def durable_replace_file(source: Path, target: Path) -> None:
         ) from exc
 
 
+def durable_replace_directory(source: Path, target: Path) -> None:
+    """Durably publish a fully materialized directory through one atomic rename.
+
+    Callers own the directory contents and schema. Platform durability owns the
+    publication mechanism: flush the source directory metadata, atomically
+    replace the target entry, then flush the parent directory.
+    """
+
+    target.parent.mkdir(parents=True, exist_ok=True)
+    fsync_directory(source)
+    try:
+        _windows_file_operation(lambda: os.replace(source, target))
+        fsync_directory(target.parent)
+    except BaseException as exc:
+        if isinstance(exc, (KeyboardInterrupt, SystemExit)):
+            raise
+        raise DurableFileWriteError(
+            f"durable directory replacement failed: {source} -> {target}"
+        ) from exc
+
+
 def durable_unlink(path: Path) -> None:
     """Remove *path* and persist the directory-entry deletion."""
 
@@ -191,6 +212,7 @@ __all__ = [
     "DurableFileWriteError",
     "atomic_replace_bytes",
     "durable_replace_file",
+    "durable_replace_directory",
     "durable_unlink",
     "fsync_directory",
 ]
