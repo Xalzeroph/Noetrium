@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from noetrium_platform.foundation.kernel.kernel.durability import flush_file_descriptor
+
 import hashlib
 import os
 from pathlib import Path
@@ -148,7 +150,7 @@ class HttpArtifactAcquirer(ArtifactAcquisitionPort):
                 finally:
                     _close_response(response, primary=response_failure)
                 output.flush()
-                os.fsync(output.fileno())
+                flush_file_descriptor(output.fileno())
 
             sha256 = sha256_hasher.hexdigest()
             sha1 = sha1_hasher.hexdigest()
