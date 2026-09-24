@@ -1,11 +1,11 @@
 from __future__ import annotations
 
-from contextlib import contextmanager
 import json
 from pathlib import Path
 import sqlite3
 from typing import TypeVar
 
+from noetrium_platform.foundation.kernel.kernel.durability.sqlite import durable_sqlite_connection
 from noetrium_platform.foundation.kernel.kernel import canonical_digest
 from noetrium_platform.capabilities.environment.catalog.api import (
     EnvironmentAssignment,
@@ -184,16 +184,11 @@ class SQLiteExecutionEnvironmentCatalog(ExecutionEnvironmentCatalog):
             )
         self._load()
 
-    @contextmanager
     def _connection(self):
-        conn = sqlite3.connect(self.path, timeout=self.timeout_seconds, isolation_level=None)
-        try:
-            conn.execute(f"PRAGMA busy_timeout={max(1, int(self.timeout_seconds * 1000))}")
-            conn.execute("PRAGMA journal_mode=WAL")
-            conn.execute("PRAGMA synchronous=FULL")
-            yield conn
-        finally:
-            conn.close()
+        return durable_sqlite_connection(
+            self.path,
+            timeout_seconds=self.timeout_seconds,
+        )
 
     @staticmethod
     def _scope(value: ScopeIdentity) -> dict[str, str]:
