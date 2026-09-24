@@ -40003,7 +40003,7 @@
         "target"
       ],
       "kind": "dataclass",
-      "line": 151,
+      "line": 152,
       "methods": [
         "__post_init__",
         "admission"
@@ -40022,7 +40022,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 435,
+      "line": 436,
       "methods": [
         "__init__",
         "execute",
@@ -40045,7 +40045,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 272,
+      "line": 273,
       "methods": [],
       "module": "noetrium_platform.composition.research_os_execution",
       "name": "ResearchOSExecutionUnsupported",
@@ -40069,7 +40069,7 @@
         "semantic_digest"
       ],
       "kind": "dataclass",
-      "line": 85,
+      "line": 86,
       "methods": [
         "__post_init__"
       ],
@@ -40091,7 +40091,7 @@
       ],
       "fields": [],
       "kind": "protocol",
-      "line": 128,
+      "line": 129,
       "methods": [
         "admit",
         "execute"
@@ -40113,7 +40113,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 613,
+      "line": 614,
       "methods": [
         "__init__",
         "active_revision_digest",
@@ -79660,7 +79660,7 @@
       ],
       "fields": [],
       "kind": "protocol",
-      "line": 756,
+      "line": 763,
       "methods": [
         "active_cut",
         "move_active_cut"
@@ -79794,7 +79794,7 @@
       ],
       "fields": [],
       "kind": "protocol",
-      "line": 615,
+      "line": 622,
       "methods": [
         "control_state",
         "request_drain",
@@ -79932,6 +79932,7 @@
         "resolve_reconciliation",
         "mark_reused",
         "reuse_record",
+        "attempt_state",
         "attempts"
       ],
       "module": "noetrium_platform.research.execution.graph.api.state",
@@ -80032,7 +80033,7 @@
       ],
       "fields": [],
       "kind": "protocol",
-      "line": 685,
+      "line": 692,
       "methods": [
         "node_control_state",
         "node_control_snapshot",
@@ -80223,6 +80224,7 @@
         "resolve_reconciliation",
         "mark_reused",
         "reuse_record",
+        "attempt_state",
         "attempts"
       ],
       "module": "noetrium_platform.research.execution.graph.providers.sqlite",
@@ -143175,7 +143177,7 @@
   "parse_errors": [],
   "registry_sha256": "d3fc1bab831f1b7379e5a36048a61c00fe173429df958270d36a16f3f00171c0",
   "schema": "noetrium-code-architecture-index.v1",
-  "source_git_sha": "5c0c8b59a08eb718b3444be01d7050bbd0ca21f2",
+  "source_git_sha": "c43c71a0d458a51485999f30a981a08bd7082e08",
   "system_import_edges": [
     {
       "count": 90,
