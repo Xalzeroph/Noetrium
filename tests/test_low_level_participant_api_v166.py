@@ -1,7 +1,6 @@
 from __future__ import annotations
 
-from noetrium_platform.composition.experiment_runtime import build_experiment_runtime
-from tests_support import FakeParticipantResolver, runtime_identity_for_test, model_role_for_test
+from tests_support import FakeParticipantResolver, runtime_identity_for_test, model_role_for_test, build_experiment_runtime_for_test
 
 from noetrium_platform.composition.participants.generic import generic_participant_adapter
 from noetrium_platform.capabilities.participant.core.api import ParticipantImplementationIdentity
@@ -66,7 +65,7 @@ def _runtime(store=None):
     participants = FakeParticipantResolver()
     participants.register("robot", "arm-vendor-sdk", ExternalRobot)
     from tests_support import EmptyWorkflowSurfaceFactory
-    return build_experiment_runtime(
+    return build_experiment_runtime_for_test(
         participant_adapters=tuple(generic_participant_adapter(kind, participants) for kind in participants.kinds()),
         trial_protocol=NoOpTrialProtocol(),
         checkpoint_store=store,
