@@ -21,7 +21,9 @@ from noetrium_platform.foundation.kernel.kernel import (
     MachineIdentity,
     MachineKind,
     MachineLeaseBusy,
+    MachineLeaseClockConflict,
     MachineLeaseLost,
+    ManualLeaseClock,
     MachineProgramRef,
     MachineExecutor,
     MachineSnapshot,
@@ -83,7 +85,7 @@ def _authority_race_child(directory: str, owner: str, start, results) -> None:
     start.wait()
     try:
         lease = DirectoryMachineAuthority(Path(directory)).acquire(
-            "race-machine", owner, ttl_seconds=30.0, now=100.0
+            "race-machine", owner, ttl_seconds=30.0
         )
     except MachineLeaseBusy:
         results.put("busy")
@@ -117,14 +119,20 @@ def test_directory_authority_cross_process_acquire_has_one_winner(tmp_path) -> N
 
 def test_directory_authority_old_epoch_is_fenced(tmp_path) -> None:
     authority_path = tmp_path / "authority"
-    first = DirectoryMachineAuthority(authority_path)
-    old = first.acquire("fenced-machine", "owner-a", ttl_seconds=1, now=0.0)
-    successor = DirectoryMachineAuthority(authority_path).acquire(
-        "fenced-machine", "owner-b", ttl_seconds=30, now=2.0
+    clock = ManualLeaseClock(
+        elapsed_seconds=1.0,
+        wall_epoch_seconds=1_000.0,
     )
+    first = DirectoryMachineAuthority(authority_path, clock=clock)
+    old = first.acquire("fenced-machine", "owner-a", ttl_seconds=1)
+    clock.advance(2.0)
+    successor = DirectoryMachineAuthority(
+        authority_path,
+        clock=clock,
+    ).acquire("fenced-machine", "owner-b", ttl_seconds=30)
     assert successor.epoch == old.epoch + 1
     with pytest.raises(MachineLeaseLost):
-        first.assert_held(old, now=2.0)
+        first.assert_held(old)
     with pytest.raises(MachineLeaseLost):
         first.release(old)
 
@@ -132,21 +140,88 @@ def test_directory_authority_old_epoch_is_fenced(tmp_path) -> None:
 @pytest.mark.parametrize("payload", [b"{", b"{}"])
 def test_directory_authority_rejects_corrupt_lease_document(tmp_path, payload) -> None:
     authority = DirectoryMachineAuthority(tmp_path / "authority")
-    lease = authority.acquire("corrupt-machine", "owner-a", now=10.0)
+    lease = authority.acquire("corrupt-machine", "owner-a")
     authority._path(lease.machine_id).write_bytes(payload)
     with pytest.raises(MachineAuthorityError):
-        DirectoryMachineAuthority(authority.directory).assert_held(lease, now=10.5)
+        DirectoryMachineAuthority(authority.directory).assert_held(lease)
 
 
 def test_directory_authority_rejects_tampered_digest_and_noncanonical_json(tmp_path) -> None:
     authority = DirectoryMachineAuthority(tmp_path / "authority")
-    lease = authority.acquire("tampered-machine", "owner-a", now=10.0)
+    lease = authority.acquire("tampered-machine", "owner-a")
     path = authority._path(lease.machine_id)
     raw = json.loads(path.read_text(encoding="utf-8"))
     raw["lease_digest"] = "0" * 64
     path.write_text(json.dumps(raw), encoding="utf-8")
     with pytest.raises(MachineAuthorityError, match="digest mismatch|canonical"):
-        DirectoryMachineAuthority(authority.directory).assert_held(lease, now=10.5)
+        DirectoryMachineAuthority(authority.directory).assert_held(lease)
+
+def test_machine_authority_ignores_wall_clock_jumps() -> None:
+    clock = ManualLeaseClock(
+        elapsed_seconds=5.0,
+        wall_epoch_seconds=10_000.0,
+    )
+    authority = InMemoryMachineAuthority(clock=clock)
+    lease = authority.acquire("wall-stable", "owner-a", ttl_seconds=10.0)
+
+    clock.jump_wall(1_000_000.0)
+    assert authority.assert_held(lease) == lease
+    with pytest.raises(MachineLeaseBusy):
+        authority.acquire("wall-stable", "owner-b", ttl_seconds=10.0)
+
+    clock.jump_wall(-2_000_000.0)
+    assert authority.assert_held(lease) == lease
+    clock.advance(11.0, wall_seconds=0.0)
+    successor = authority.acquire(
+        "wall-stable",
+        "owner-b",
+        ttl_seconds=10.0,
+    )
+    assert successor.epoch == lease.epoch + 1
+
+
+def test_directory_machine_authority_reboot_fences_old_boot(tmp_path) -> None:
+    clock = ManualLeaseClock(
+        elapsed_seconds=20.0,
+        wall_epoch_seconds=20_000.0,
+    )
+    path = tmp_path / "authority-reboot"
+    first = DirectoryMachineAuthority(path, clock=clock)
+    old = first.acquire("rebooted", "owner-a", ttl_seconds=3600.0)
+
+    clock.reboot(boot_seed="boot-2", elapsed_seconds=1.0)
+    reopened = DirectoryMachineAuthority(path, clock=clock)
+    with pytest.raises(MachineLeaseLost):
+        reopened.assert_held(old)
+    with pytest.raises(MachineLeaseLost):
+        reopened.release(old)
+
+    successor = reopened.acquire("rebooted", "owner-b", ttl_seconds=30.0)
+    assert successor.epoch == old.epoch + 1
+    assert successor.boot_identity_digest != old.boot_identity_digest
+
+
+def test_directory_machine_authority_fails_closed_on_host_drift(tmp_path) -> None:
+    clock = ManualLeaseClock(
+        elapsed_seconds=20.0,
+        wall_epoch_seconds=20_000.0,
+    )
+    path = tmp_path / "authority-host"
+    authority = DirectoryMachineAuthority(path, clock=clock)
+    authority.acquire("host-bound", "owner-a", ttl_seconds=30.0)
+
+    clock.move_host(host_seed="host-2")
+    with pytest.raises(
+        MachineLeaseClockConflict,
+        match="different host clock domain",
+    ):
+        DirectoryMachineAuthority(path, clock=clock).acquire(
+            "host-bound",
+            "owner-b",
+            ttl_seconds=30.0,
+        )
+
+
 class _Provider:
     def __init__(self, proof: EffectReconciliationProof):
         self.proof = proof
