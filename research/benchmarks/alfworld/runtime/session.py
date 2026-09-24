@@ -381,12 +381,16 @@ class AlfworldTextSession:
         self._transport = transport
 
     def _invalidate_worker(self) -> None:
-        transport, self._transport = self._transport, None
-        if transport is not None:
-            try:
-                transport.close()
-            except BaseException:
-                pass
+        transport = self._transport
+        if transport is None:
+            return
+        try:
+            transport.close()
+        except BaseException:
+            # Retain the exact physical owner handle. A later retry must keep
+            # converging this generation instead of starting a second worker.
+            raise
+        self._transport = None
 
     def _recover_worker(self) -> None:
         self._invalidate_worker()
@@ -407,8 +411,14 @@ class AlfworldTextSession:
                 replayed = self._roundtrip("step", {"action": payload["text"]})
                 if replayed != record.get("worker"):
                     raise RuntimeError(f"ALFWorld replay drift at committed action {index}")
-        except BaseException:
-            self._invalidate_worker()
+        except BaseException as primary:
+            try:
+                self._invalidate_worker()
+            except BaseException as cleanup:
+                raise BaseExceptionGroup(
+                    "ALFWorld worker recovery failed and physical cleanup did not converge",
+                    [primary, cleanup],
+                ) from primary
             raise
 
     @staticmethod
@@ -580,8 +590,14 @@ class AlfworldTextSession:
                 next_state["records"] = [*self._records(), record]
                 self._persist_state(next_state)
                 self._state = next_state
-            except BaseException:
-                self._invalidate_worker()
+            except BaseException as primary:
+                try:
+                    self._invalidate_worker()
+                except BaseException as cleanup:
+                    raise BaseExceptionGroup(
+                        "ALFWorld action failed and worker cleanup did not converge",
+                        [primary, cleanup],
+                    ) from primary
                 raise
             key = hashlib.sha256(request.action_id.encode("utf-8")).hexdigest()
             durable_unlink(self._prepared_root / f"{key}.json")
@@ -675,17 +691,39 @@ class AlfworldTextSession:
 
     def close(self) -> None:
         with self._lock:
-            transport, self._transport = self._transport, None
+            transport = self._transport
             if transport is None:
                 return
+
+            graceful_error: BaseException | None = None
             try:
                 request_id = self._next_request_id("close")
                 transport.send("close", {}, request_id=request_id)
-                message = transport.read(timeout_s=min(5.0, self.runtime.command_timeout_s))
+                message = transport.read(
+                    timeout_s=min(5.0, self.runtime.command_timeout_s)
+                )
                 if message.kind != "closed":
-                    raise RuntimeError("ALFWorld worker did not acknowledge close")
-            finally:
+                    raise RuntimeError(
+                        "ALFWorld worker did not acknowledge close"
+                    )
+            except BaseException as exc:
+                graceful_error = exc
+
+            try:
                 transport.close()
+            except BaseException as cleanup:
+                # Do not clear the owner handle until physical convergence is
+                # proven. Managed transport close is staged and retryable.
+                if graceful_error is not None:
+                    raise BaseExceptionGroup(
+                        "ALFWorld graceful close failed and physical cleanup did not converge",
+                        [graceful_error, cleanup],
+                    ) from graceful_error
+                raise
+
+            self._transport = None
+            if graceful_error is not None:
+                raise graceful_error
 
 
 def build_alfworld_text_session(
