@@ -4,6 +4,7 @@ import argparse
 from dataclasses import asdict, dataclass
 import hashlib
 import json
+import os
 from pathlib import Path
 import re
 import subprocess
@@ -19,6 +20,23 @@ _DISTRIBUTION_LABEL = (
     "org.opencontainers.image.noetrium.distribution-evidence.sha256"
 )
 _PYTHON_RUNTIME_LABEL = "org.opencontainers.image.noetrium.python-runtime.sha256"
+
+_QUALIFICATION_CHILD_LABEL = "io.noetrium.bootstrap-child=qualification-v1"
+_QUALIFICATION_OWNER_ENV = (
+    ("NOETRIUM_BOOTSTRAP_OWNER_PID", "io.noetrium.bootstrap-owner-pid"),
+    ("NOETRIUM_BOOTSTRAP_OWNER_BOOT", "io.noetrium.bootstrap-owner-boot"),
+    ("NOETRIUM_BOOTSTRAP_OWNER_START", "io.noetrium.bootstrap-owner-start"),
+)
+
+
+def _qualification_run_options() -> list[str]:
+    options = ["--rm", "--init", "--restart", "no", "--label", _QUALIFICATION_CHILD_LABEL]
+    for env_name, label_name in _QUALIFICATION_OWNER_ENV:
+        value = os.environ.get(env_name, "").strip()
+        if value:
+            options.extend(("--label", f"{label_name}={value}"))
+    return options
+
 
 
 @dataclass(frozen=True, slots=True)
@@ -283,10 +301,13 @@ def verify_container_image(
     if principal in {"0", "root"}:
         raise RuntimeError("container image must not declare root runtime user")
 
-    doctor_receipt, _ = _run(["docker", "run", "--rm", "--network=none", image, "doctor"])
+    doctor_receipt, _ = _run([
+        "docker", "run", *_qualification_run_options(),
+        "--network=none", image, "doctor",
+    ])
     receipts.append(doctor_receipt)
     smoke_receipt, smoke_stdout = _run([
-        "docker", "run", "--rm", "--network=none", image,
+        "docker", "run", *_qualification_run_options(), "--network=none", image,
         "shell", "/bin/sh", "-lc", _product_smoke_script(wheel_sha256),
     ])
     receipts.append(smoke_receipt)

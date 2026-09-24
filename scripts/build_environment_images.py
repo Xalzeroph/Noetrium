@@ -44,6 +44,23 @@ PROFILE_BUILD_INPUT_LABEL = "org.opencontainers.image.noetrium.environment.build
 PYTHON_RUNTIME_IDENTITY_LABEL = "org.opencontainers.image.noetrium.python-runtime.sha256"
 PYTHON_RUNTIME_CANONICAL_IMAGE = "python:3.12-slim-bookworm"
 
+_QUALIFICATION_CHILD_LABEL = "io.noetrium.bootstrap-child=qualification-v1"
+_QUALIFICATION_OWNER_ENV = (
+    ("NOETRIUM_BOOTSTRAP_OWNER_PID", "io.noetrium.bootstrap-owner-pid"),
+    ("NOETRIUM_BOOTSTRAP_OWNER_BOOT", "io.noetrium.bootstrap-owner-boot"),
+    ("NOETRIUM_BOOTSTRAP_OWNER_START", "io.noetrium.bootstrap-owner-start"),
+)
+
+
+def _qualification_label_args() -> tuple[str, ...]:
+    args: list[str] = ["--label", _QUALIFICATION_CHILD_LABEL]
+    for env_name, label_name in _QUALIFICATION_OWNER_ENV:
+        value = os.environ.get(env_name, "").strip()
+        if value:
+            args.extend(("--label", f"{label_name}={value}"))
+    return tuple(args)
+
+
 
 def _run(
     argv: Iterable[str],
@@ -895,6 +912,10 @@ def build_environment_images(
                     "docker",
                     "run",
                     "--rm",
+                    "--init",
+                    "--restart",
+                    "no",
+                    *_qualification_label_args(),
                     base_tag,
                     "environment-doctor",
                     row["category_id"],
@@ -982,6 +1003,7 @@ def build_environment_images(
                 compose,
                 "run",
                 "--rm",
+                *_qualification_label_args(),
                 "platform-runtime",
                 "environment-doctor",
                 row["category_id"],

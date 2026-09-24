@@ -7,6 +7,11 @@ DOCKER_CLI_IMAGE="${NOETRIUM_DOCKER_CLI_IMAGE:-docker:27-cli}"
 WORK_ROOT="${NOETRIUM_BUILD_WORK_ROOT:-$ROOT/.noetrium/environment-images}"
 BOOTSTRAP_MANAGED_LABEL="io.noetrium.bootstrap-managed"
 BOOTSTRAP_MANAGED_VALUE="control-v1"
+BOOTSTRAP_CHILD_LABEL="io.noetrium.bootstrap-child"
+BOOTSTRAP_CHILD_VALUE="qualification-v1"
+OWNER_PID_LABEL="io.noetrium.bootstrap-owner-pid"
+OWNER_BOOT_LABEL="io.noetrium.bootstrap-owner-boot"
+OWNER_START_LABEL="io.noetrium.bootstrap-owner-start"
 BOOT_ID="$(cat /proc/sys/kernel/random/boot_id 2>/dev/null || printf 'unknown')"
 OWNER_START="$(awk '{print $22}' "/proc/$$/stat" 2>/dev/null || printf 'unknown')"
 BOOTSTRAP_CONTAINER_NAME="noetrium-bootstrap-$(printf '%s' "$BOOT_ID" | tr -cd '[:alnum:]' | cut -c1-12)-$$"
@@ -44,9 +49,47 @@ reconcile_bootstrap_containers() {
   done
 }
 
+
+reconcile_bootstrap_children() {
+  ids="$(docker ps -aq --filter "label=$BOOTSTRAP_CHILD_LABEL=$BOOTSTRAP_CHILD_VALUE" 2>/dev/null || true)"
+  [ -n "$ids" ] || return 0
+  for id in $ids; do
+    metadata="$(docker inspect --format '{{index .Config.Labels "io.noetrium.bootstrap-owner-pid"}}|{{index .Config.Labels "io.noetrium.bootstrap-owner-boot"}}|{{index .Config.Labels "io.noetrium.bootstrap-owner-start"}}|{{.State.Running}}' "$id" 2>/dev/null || true)"
+    [ -n "$metadata" ] || {
+      docker rm -f "$id" >/dev/null 2>&1 || true
+      continue
+    }
+    old_ifs="$IFS"
+    IFS='|'
+    set -- $metadata
+    IFS="$old_ifs"
+    owner_pid="${1:-}"
+    owner_boot="${2:-}"
+    owner_start="${3:-}"
+    running="${4:-false}"
+    if [ "$running" = "true" ] && bootstrap_owner_alive "$owner_pid" "$owner_boot" "$owner_start"; then
+      continue
+    fi
+    docker rm -f "$id" >/dev/null 2>&1 || true
+  done
+}
+
+cleanup_owned_bootstrap_children() {
+  ids="$(docker ps -aq \
+    --filter "label=$BOOTSTRAP_CHILD_LABEL=$BOOTSTRAP_CHILD_VALUE" \
+    --filter "label=$OWNER_PID_LABEL=$" \
+    --filter "label=$OWNER_BOOT_LABEL=$BOOT_ID" \
+    --filter "label=$OWNER_START_LABEL=$OWNER_START" 2>/dev/null || true)"
+  [ -n "$ids" ] || return 0
+  for id in $ids; do
+    docker rm -f "$id" >/dev/null 2>&1 || true
+  done
+}
+
 bootstrap_cleanup() {
   status=$?
   trap - EXIT HUP INT TERM
+  cleanup_owned_bootstrap_children
   if [ "$BOOTSTRAP_ACTIVE" = "1" ]; then
     docker rm -f "$BOOTSTRAP_CONTAINER_NAME" >/dev/null 2>&1 || true
     BOOTSTRAP_ACTIVE=0
@@ -84,6 +127,7 @@ docker info >/dev/null 2>&1 || {
 # Reap only Noetrium bootstrap containers whose exact host owner generation is
 # gone. Live concurrent launchers are preserved. This closes the SIGKILL/SSH
 # disconnect orphan case that Docker --rm alone cannot prove away.
+reconcile_bootstrap_children
 reconcile_bootstrap_containers
 
 # Resolve the daemon endpoint from DOCKER_HOST first and otherwise from the
@@ -170,7 +214,7 @@ fi
 # dedicated build/runtime root is writable. Git's safe-directory exception is
 # scoped to this exact read-only checkout; it is needed because the disposable
 # container's uid can differ from the checkout owner on CI or rootless hosts.
-COMMON_ARGS="$DAEMON_ARGS $GIT_METADATA_ARGS -v $ROOT:$ROOT:ro -w $ROOT -e PYTHONDONTWRITEBYTECODE=1 -e GIT_CONFIG_COUNT=1 -e GIT_CONFIG_KEY_0=safe.directory -e GIT_CONFIG_VALUE_0=$ROOT"
+COMMON_ARGS="$DAEMON_ARGS $GIT_METADATA_ARGS -v $ROOT:$ROOT:ro -w $ROOT -e PYTHONDONTWRITEBYTECODE=1 -e NOETRIUM_BOOTSTRAP_OWNER_PID=$ -e NOETRIUM_BOOTSTRAP_OWNER_BOOT=$BOOT_ID -e NOETRIUM_BOOTSTRAP_OWNER_START=$OWNER_START -e GIT_CONFIG_COUNT=1 -e GIT_CONFIG_KEY_0=safe.directory -e GIT_CONFIG_VALUE_0=$ROOT"
 
 if [ "${1:-}" = "control" ]; then
   shift
