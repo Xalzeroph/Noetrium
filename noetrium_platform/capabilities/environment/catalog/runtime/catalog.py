@@ -22,6 +22,7 @@ from noetrium_platform.capabilities.environment.catalog.api import (
     EnvironmentOverlay,
     EnvironmentProfileGcAssessment,
     EnvironmentProfileLifecycle,
+    EnvironmentProfileMaterialization,
     EnvironmentProfileReferenceSummary,
     EnvironmentProfileRevision,
     EnvironmentRuntimeGcAssessment,
@@ -66,6 +67,9 @@ class ExecutionEnvironmentCatalog:
         self._profile_revisions: dict[
             tuple[str, str], EnvironmentProfileRevision
         ] = {}
+        self._profile_materializations: dict[
+            str, EnvironmentProfileMaterialization
+        ] = {}
         self._templates: dict[str, EnvironmentTemplate] = {}
         self._specs: dict[str, EnvironmentSpec] = {}
         self._overlays: dict[str, EnvironmentOverlay] = {}
@@ -108,6 +112,54 @@ class ExecutionEnvironmentCatalog:
             raise EnvironmentCatalogNotFound(
                 ("profile-revision", profile_id, profile_revision)
             ) from exc
+
+    def register_profile_materialization(
+        self,
+        materialization: EnvironmentProfileMaterialization,
+    ) -> None:
+        if type(materialization) is not EnvironmentProfileMaterialization:
+            raise TypeError(
+                "environment materialization registration requires "
+                "EnvironmentProfileMaterialization"
+            )
+        self.profile_revision(
+            materialization.profile_id,
+            materialization.profile_revision,
+        )
+        self._put(
+            self._profile_materializations,
+            materialization.materialization_digest,
+            materialization,
+        )
+
+    def profile_materialization(
+        self,
+        materialization_digest: str,
+    ) -> EnvironmentProfileMaterialization:
+        try:
+            return self._profile_materializations[materialization_digest]
+        except KeyError as exc:
+            raise EnvironmentCatalogNotFound(
+                ("profile-materialization", materialization_digest)
+            ) from exc
+
+    def profile_materializations(
+        self,
+        profile_id: str,
+        profile_revision: str,
+    ) -> tuple[EnvironmentProfileMaterialization, ...]:
+        self.profile_revision(profile_id, profile_revision)
+        return tuple(
+            sorted(
+                (
+                    row
+                    for row in self._profile_materializations.values()
+                    if row.profile_id == profile_id
+                    and row.profile_revision == profile_revision
+                ),
+                key=lambda row: row.materialization_digest,
+            )
+        )
 
     def transition_profile_revision(
         self,
@@ -169,6 +221,7 @@ class ExecutionEnvironmentCatalog:
         profile_id: str,
         profile_revision: str,
         runtime_identity_digest: str,
+        materialization_digest: str,
         *,
         role: str,
         scope: ScopeIdentity,
@@ -190,6 +243,7 @@ class ExecutionEnvironmentCatalog:
             pinned.profile_id != profile_id
             or pinned.profile_revision != profile_revision
             or pinned.runtime_identity_digest != runtime_identity_digest
+            or pinned.materialization_digest != materialization_digest
         ):
             raise EnvironmentCatalogConflict(
                 "environment recovery request does not match the durable binding pin"
@@ -199,6 +253,31 @@ class ExecutionEnvironmentCatalog:
                 "environment recovery binding does not reference an in-use instance"
             )
         return binding, pinned
+
+    def _validate_instance_materialization(
+        self,
+        instance: EnvironmentInstance,
+    ) -> EnvironmentProfileMaterialization:
+        materialization = self.profile_materialization(
+            instance.materialization_digest
+        )
+        expected = (
+            materialization.profile_id,
+            materialization.profile_revision,
+            materialization.runtime_identity_digest,
+            materialization.runtime_reference,
+        )
+        actual = (
+            instance.profile_id,
+            instance.profile_revision,
+            instance.runtime_identity_digest,
+            instance.runtime_reference,
+        )
+        if actual != expected:
+            raise EnvironmentCatalogConflict(
+                "environment instance drifted from verified materialization"
+            )
+        return materialization
 
     @staticmethod
     def _validate_fresh_instance(instance: EnvironmentInstance) -> None:
@@ -292,6 +371,7 @@ class ExecutionEnvironmentCatalog:
             instance.profile_id,
             instance.profile_revision,
         )
+        self._validate_instance_materialization(instance)
         self._validate_fresh_instance(instance)
         self._put(self._instances, instance.instance_id, instance)
 
@@ -306,6 +386,7 @@ class ExecutionEnvironmentCatalog:
             instance.profile_id,
             instance.profile_revision,
             instance.runtime_identity_digest,
+            instance.materialization_digest,
             role=role,
             scope=scope,
         )
@@ -317,6 +398,7 @@ class ExecutionEnvironmentCatalog:
             raise EnvironmentCatalogConflict(
                 "recovery instance must be a distinct replacement instance"
             )
+        self._validate_instance_materialization(instance)
         self._validate_fresh_instance(instance)
         self._put(self._instances, instance.instance_id, instance)
 
@@ -407,6 +489,7 @@ class ExecutionEnvironmentCatalog:
         profile_id: str,
         profile_revision: str,
         runtime_identity_digest: str,
+        materialization_digest: str,
         *,
         binding_id: str,
         role: str,
@@ -431,6 +514,7 @@ class ExecutionEnvironmentCatalog:
         for field_name, value in (
             ("profile_revision", profile_revision),
             ("runtime_identity_digest", runtime_identity_digest),
+            ("materialization_digest", materialization_digest),
         ):
             if (
                 type(value) is not str
@@ -455,6 +539,7 @@ class ExecutionEnvironmentCatalog:
                     if row.profile_id == profile_id
                     and row.profile_revision == profile_revision
                     and row.runtime_identity_digest == runtime_identity_digest
+                    and row.materialization_digest == materialization_digest
                     and row.state is EnvironmentInstanceState.CLEAN
                 ),
                 key=lambda row: row.instance_id,
@@ -462,7 +547,13 @@ class ExecutionEnvironmentCatalog:
         )
         if not candidates:
             raise EnvironmentCatalogNotFound(
-                ("reusable", profile_id, profile_revision, runtime_identity_digest)
+                (
+                    "reusable",
+                    profile_id,
+                    profile_revision,
+                    runtime_identity_digest,
+                    materialization_digest,
+                )
             )
 
         candidate = candidates[0]
@@ -481,6 +572,7 @@ class ExecutionEnvironmentCatalog:
         profile_id: str,
         profile_revision: str,
         runtime_identity_digest: str,
+        materialization_digest: str,
         *,
         role: str,
         scope: ScopeIdentity,
@@ -491,6 +583,7 @@ class ExecutionEnvironmentCatalog:
             profile_id,
             profile_revision,
             runtime_identity_digest,
+            materialization_digest,
             role=role,
             scope=scope,
         )
@@ -513,6 +606,7 @@ class ExecutionEnvironmentCatalog:
                     and row.profile_id == profile_id
                     and row.profile_revision == profile_revision
                     and row.runtime_identity_digest == runtime_identity_digest
+                    and row.materialization_digest == materialization_digest
                     and row.state is EnvironmentInstanceState.CLEAN
                 ),
                 key=lambda row: row.instance_id,
@@ -520,7 +614,13 @@ class ExecutionEnvironmentCatalog:
         )
         if not candidates:
             raise EnvironmentCatalogNotFound(
-                ("recovery-replacement", profile_id, profile_revision, runtime_identity_digest)
+                (
+                    "recovery-replacement",
+                    profile_id,
+                    profile_revision,
+                    runtime_identity_digest,
+                    materialization_digest,
+                )
             )
         replacement = candidates[0]
         if replacement.scope != scope:
@@ -620,6 +720,10 @@ class ExecutionEnvironmentCatalog:
             raise EnvironmentCatalogConflict(
                 "environment cleanliness proof runtime identity is stale"
             )
+        if cleanliness.materialization_digest != instance.materialization_digest:
+            raise EnvironmentCatalogConflict(
+                "environment cleanliness proof materialization identity is stale"
+            )
         if cleanliness.generation != instance.generation:
             raise EnvironmentCatalogConflict(
                 "environment cleanliness proof generation is stale"
@@ -667,6 +771,7 @@ class ExecutionEnvironmentCatalog:
         profile_id: str,
         profile_revision: str,
         runtime_identity_digest: str,
+        materialization_digest: str,
     ) -> tuple[EnvironmentInstance, ...]:
         return tuple(
             sorted(
@@ -676,6 +781,7 @@ class ExecutionEnvironmentCatalog:
                     if row.profile_id == profile_id
                     and row.profile_revision == profile_revision
                     and row.runtime_identity_digest == runtime_identity_digest
+                    and row.materialization_digest == materialization_digest
                     and row.state is EnvironmentInstanceState.CLEAN
                 ),
                 key=lambda row: row.instance_id,
@@ -839,7 +945,7 @@ __all__ = ["EnvironmentCatalogConflict", "EnvironmentCatalogNotFound", "Executio
 class SQLiteExecutionEnvironmentCatalog(ExecutionEnvironmentCatalog):
     """Restart-safe environment hierarchy and binding authority."""
 
-    SCHEMA_VERSION = 5
+    SCHEMA_VERSION = 6
 
     def __init__(
         self, path: str | Path, scopes: ScopeRegistryPort, *,
@@ -897,6 +1003,21 @@ class SQLiteExecutionEnvironmentCatalog(ExecutionEnvironmentCatalog):
         }
 
     @classmethod
+    def _profile_materialization(
+        cls,
+        value: EnvironmentProfileMaterialization,
+    ) -> dict[str, object]:
+        return {
+            "profile_id": value.profile_id,
+            "profile_revision": value.profile_revision,
+            "build_input_digest": value.build_input_digest,
+            "runtime_identity_digest": value.runtime_identity_digest,
+            "deployment_receipt_digest": value.deployment_receipt_digest,
+            "runtime_reference": value.runtime_reference,
+            "materialization_digest": value.materialization_digest,
+        }
+
+    @classmethod
     def _template(cls, value: EnvironmentTemplate) -> dict[str, object]:
         return {
             "template_id": value.template_id, "kind": value.kind.value,
@@ -936,6 +1057,7 @@ class SQLiteExecutionEnvironmentCatalog(ExecutionEnvironmentCatalog):
             "backend": value.backend,
             "runtime_reference": value.runtime_reference,
             "runtime_identity_digest": value.runtime_identity_digest,
+            "materialization_digest": value.materialization_digest,
             "scope": cls._scope(value.scope),
             "profile_id": value.profile_id,
             "profile_revision": value.profile_revision,
@@ -956,6 +1078,10 @@ class SQLiteExecutionEnvironmentCatalog(ExecutionEnvironmentCatalog):
             "profile_revisions": [
                 self._profile_revision(row)
                 for row in self._profile_revisions.values()
+            ],
+            "profile_materializations": [
+                self._profile_materialization(row)
+                for row in self._profile_materializations.values()
             ],
             "templates": [self._template(row) for row in self._templates.values()],
             "specs": [self._spec(row) for row in self._specs.values()],
@@ -1012,6 +1138,17 @@ class SQLiteExecutionEnvironmentCatalog(ExecutionEnvironmentCatalog):
             )
             for row in value.get("profile_revisions", [])
         }
+        self._profile_materializations = {
+            row["materialization_digest"]: EnvironmentProfileMaterialization(
+                row["profile_id"],
+                row["profile_revision"],
+                row["build_input_digest"],
+                row["runtime_identity_digest"],
+                row["deployment_receipt_digest"],
+                row["runtime_reference"],
+            )
+            for row in value.get("profile_materializations", [])
+        }
         self._templates = {
             row["template_id"]: EnvironmentTemplate(
                 row["template_id"], ExecutionEnvironmentKind(row["kind"]),
@@ -1046,6 +1183,7 @@ class SQLiteExecutionEnvironmentCatalog(ExecutionEnvironmentCatalog):
                 row["backend"],
                 row["runtime_reference"],
                 row["runtime_identity_digest"],
+                row["materialization_digest"],
                 self._decode_scope(row["scope"]),
                 row["profile_id"],
                 row["profile_revision"],
@@ -1093,6 +1231,29 @@ class SQLiteExecutionEnvironmentCatalog(ExecutionEnvironmentCatalog):
     ) -> EnvironmentProfileRevision:
         self._load()
         return super().profile_revision(profile_id, profile_revision)
+
+    def register_profile_materialization(
+        self,
+        materialization: EnvironmentProfileMaterialization,
+    ) -> None:
+        self._load()
+        super().register_profile_materialization(materialization)
+        self._persist()
+
+    def profile_materialization(
+        self,
+        materialization_digest: str,
+    ) -> EnvironmentProfileMaterialization:
+        self._load()
+        return super().profile_materialization(materialization_digest)
+
+    def profile_materializations(
+        self,
+        profile_id: str,
+        profile_revision: str,
+    ) -> tuple[EnvironmentProfileMaterialization, ...]:
+        self._load()
+        return super().profile_materializations(profile_id, profile_revision)
 
     def transition_profile_revision(
         self,
@@ -1164,6 +1325,7 @@ class SQLiteExecutionEnvironmentCatalog(ExecutionEnvironmentCatalog):
         profile_id: str,
         profile_revision: str,
         runtime_identity_digest: str,
+        materialization_digest: str,
         *,
         binding_id: str,
         role: str,
@@ -1176,6 +1338,7 @@ class SQLiteExecutionEnvironmentCatalog(ExecutionEnvironmentCatalog):
                 profile_id,
                 profile_revision,
                 runtime_identity_digest,
+                materialization_digest,
                 binding_id=binding_id,
                 role=role,
                 scope=scope,
@@ -1197,6 +1360,7 @@ class SQLiteExecutionEnvironmentCatalog(ExecutionEnvironmentCatalog):
         profile_id: str,
         profile_revision: str,
         runtime_identity_digest: str,
+        materialization_digest: str,
         *,
         role: str,
         scope: ScopeIdentity,
@@ -1208,6 +1372,7 @@ class SQLiteExecutionEnvironmentCatalog(ExecutionEnvironmentCatalog):
                 profile_id,
                 profile_revision,
                 runtime_identity_digest,
+                materialization_digest,
                 role=role,
                 scope=scope,
             )
@@ -1264,12 +1429,14 @@ class SQLiteExecutionEnvironmentCatalog(ExecutionEnvironmentCatalog):
         profile_id: str,
         profile_revision: str,
         runtime_identity_digest: str,
+        materialization_digest: str,
     ) -> tuple[EnvironmentInstance, ...]:
         self._load()
         return super().reusable_instances(
             profile_id,
             profile_revision,
             runtime_identity_digest,
+            materialization_digest,
         )
 
     def profile_references(
