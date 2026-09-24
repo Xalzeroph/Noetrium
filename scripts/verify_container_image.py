@@ -18,6 +18,7 @@ _WHEEL_LABEL = "org.opencontainers.image.noetrium.wheel.sha256"
 _DISTRIBUTION_LABEL = (
     "org.opencontainers.image.noetrium.distribution-evidence.sha256"
 )
+_PYTHON_RUNTIME_LABEL = "org.opencontainers.image.noetrium.python-runtime.sha256"
 
 
 @dataclass(frozen=True, slots=True)
@@ -40,6 +41,7 @@ class ContainerVerificationReceipt:
     source_sha: str
     wheel_sha256: str
     distribution_evidence_sha256: str
+    python_runtime_identity_digest: str
     repo_digests: tuple[str, ...]
     container_user: str
     effective_uid: int
@@ -224,16 +226,24 @@ def verify_container_image(
     expected_source_sha: str,
     expected_wheel_sha256: str,
     expected_distribution_evidence_sha256: str,
+    expected_python_runtime_identity_digest: str,
 ) -> ContainerVerificationReceipt:
     source_sha = expected_source_sha.strip().lower()
     wheel_sha256 = expected_wheel_sha256.strip().lower()
     distribution_sha256 = expected_distribution_evidence_sha256.strip().lower()
+    python_runtime_identity_digest = (
+        expected_python_runtime_identity_digest.strip().lower()
+    )
     if not _SHA40_RE.fullmatch(source_sha):
         raise ValueError("expected source SHA must be a lowercase 40-character Git SHA")
     if not _SHA256_RE.fullmatch(wheel_sha256):
         raise ValueError("expected wheel SHA256 must be lowercase hexadecimal")
     if not _SHA256_RE.fullmatch(distribution_sha256):
         raise ValueError("expected distribution evidence SHA256 must be lowercase hexadecimal")
+    if not _SHA256_RE.fullmatch(python_runtime_identity_digest):
+        raise ValueError(
+            "expected Python runtime identity digest must be lowercase hexadecimal"
+        )
     if not image.strip():
         raise ValueError("container image must not be blank")
 
@@ -256,6 +266,10 @@ def verify_container_image(
         raise RuntimeError("container wheel digest label does not match expected artifact")
     if labels.get(_DISTRIBUTION_LABEL) != distribution_sha256:
         raise RuntimeError("container distribution evidence label does not match expected receipt")
+    if labels.get(_PYTHON_RUNTIME_LABEL) != python_runtime_identity_digest:
+        raise RuntimeError(
+            "container Python runtime identity label does not match expected source"
+        )
     image_id = metadata.get("Id")
     if not isinstance(image_id, str) or not image_id.startswith("sha256:"):
         raise RuntimeError("container image ID is missing or invalid")
@@ -302,7 +316,7 @@ def verify_container_image(
         raise RuntimeError("container installed wheel RECORD was not verified")
 
     return ContainerVerificationReceipt(
-        schema="noetrium.container-verification.v3",
+        schema="noetrium.container-verification.v4",
         qualification_scope="research-os-smoke-only",
         npe_verified=False,
         research_os_smoke_actions=tuple(_ACTIONS),
@@ -311,6 +325,7 @@ def verify_container_image(
         source_sha=source_sha,
         wheel_sha256=wheel_sha256,
         distribution_evidence_sha256=distribution_sha256,
+        python_runtime_identity_digest=python_runtime_identity_digest,
         repo_digests=tuple(repo_digests),
         container_user=container_user.strip(),
         effective_uid=effective_uid,
@@ -330,6 +345,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--expected-source-sha", required=True)
     parser.add_argument("--expected-wheel-sha256", required=True)
     parser.add_argument("--expected-distribution-evidence-sha256", required=True)
+    parser.add_argument("--expected-python-runtime-identity-digest", required=True)
     parser.add_argument("--output", type=Path)
     args = parser.parse_args(argv)
     try:
@@ -338,6 +354,9 @@ def main(argv: list[str] | None = None) -> int:
             expected_source_sha=args.expected_source_sha,
             expected_wheel_sha256=args.expected_wheel_sha256,
             expected_distribution_evidence_sha256=args.expected_distribution_evidence_sha256,
+            expected_python_runtime_identity_digest=(
+                args.expected_python_runtime_identity_digest
+            ),
         )
     except Exception as exc:
         print(f"CONTAINER_VERIFY_FAIL {type(exc).__qualname__}: {exc}", file=sys.stderr)
