@@ -46,7 +46,11 @@ class _HostObserver:
                     effective_cpu_cores=8.0,
                     cpu_load_1m=0.0,
                     available_memory_bytes=32 * 1024**3,
+                    cpu_pressure_some_avg10_percent=0.0,
+                    memory_pressure_some_avg10_percent=0.0,
+                    io_pressure_some_avg10_percent=0.0,
                     available_pids=1024,
+                    available_fds=4096,
                 ),
             ),
         )
@@ -98,6 +102,20 @@ def test_storage_byte_exhaustion_rejects_new_workload() -> None:
 def test_storage_inode_exhaustion_rejects_even_with_free_bytes() -> None:
     gate = _gate(_StorageObserver(SharedStoragePressureStatus(True, 4096, 3)))
     with pytest.raises(AdmissionRejected, match="storage-inode-headroom"):
+        gate.acquire(
+            "work",
+            ExecutionLaneKind.BLOCKING_IO,
+            deadline=None,
+            cancellation=None,
+        )
+
+
+def test_unknown_inode_capacity_fails_closed_when_inode_headroom_is_required() -> None:
+    gate = _gate(_StorageObserver(SharedStoragePressureStatus(True, 4096, None)))
+    with pytest.raises(
+        AdmissionRejected,
+        match="storage-inode-runtime-unavailable",
+    ):
         gate.acquire(
             "work",
             ExecutionLaneKind.BLOCKING_IO,
