@@ -9,7 +9,7 @@ from noetrium_platform.foundation.kernel.kernel.durability.sqlite import (
     durable_sqlite_connection,
     immediate_sqlite_transaction,
 )
-from noetrium_platform.infrastructure.resources.compute.api import ComputeCluster, ComputeDeviceHealth, ComputeGPU, ComputeHost, ComputeHostSchedulingState
+from noetrium_platform.infrastructure.resources.compute.api import ComputeCluster, ComputeDeviceHealth, ComputeGPU, ComputeHost, ComputeHostSchedulingState, ComputeInventoryConflict
 from noetrium_platform.foundation.governance.api import ScopeIdentity, ScopeKind
 
 
@@ -31,6 +31,22 @@ class InMemoryComputeInventory:
             if current is not None and current != host:
                 raise ValueError(f"host identity already registered: {host.host_id}")
             self._hosts[host.host_id] = host
+
+    def replace_host(self, expected: ComputeHost, replacement: ComputeHost) -> ComputeHost:
+        if type(expected) is not ComputeHost or type(replacement) is not ComputeHost:
+            raise TypeError("compute host replacement requires typed hosts")
+        if expected.host_id != replacement.host_id or expected.scope != replacement.scope:
+            raise ValueError("compute host replacement cannot change host identity or scope")
+        with self._lock:
+            current = self._hosts.get(expected.host_id)
+            if current is None:
+                raise KeyError(expected.host_id)
+            if current != expected:
+                raise ComputeInventoryConflict(
+                    f"stale compute host inventory generation: {expected.host_id}"
+                )
+            self._hosts[expected.host_id] = replacement
+            return replacement
 
     def host(self, host_id: str) -> ComputeHost:
         with self._lock:
