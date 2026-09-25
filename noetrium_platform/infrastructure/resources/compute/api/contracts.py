@@ -9,6 +9,17 @@ from noetrium_platform.foundation.governance.api import ScopeIdentity
 from noetrium_platform.foundation.kernel.kernel import canonical_digest
 
 
+def _canonical_text_values(values: tuple[str, ...], field_name: str) -> tuple[str, ...]:
+    if type(values) is not tuple:
+        raise TypeError(f"{field_name} must be tuple")
+    if any(type(value) is not str or not value.strip() or value != value.strip() for value in values):
+        raise ValueError(f"{field_name} entries must be canonical text")
+    canonical = tuple(sorted(values))
+    if len(canonical) != len(set(canonical)):
+        raise ValueError(f"{field_name} entries must be unique")
+    return canonical
+
+
 def _canonical_labels(labels: tuple[tuple[str, str], ...], field_name: str) -> tuple[tuple[str, str], ...]:
     if type(labels) is not tuple:
         raise TypeError(f"{field_name} must be tuple")
@@ -182,6 +193,8 @@ class ComputeRequirement:
     required_gpu_labels: tuple[tuple[str, str], ...] = ()
     forbidden_host_labels: tuple[tuple[str, str], ...] = ()
     preferred_host_labels: tuple[tuple[str, str], ...] = ()
+    allowed_host_ids: tuple[str, ...] = ()
+    forbidden_host_ids: tuple[str, ...] = ()
     placement_preference: ComputePlacementPreference = ComputePlacementPreference.PACK
     gpu_colocation_label: str | None = None
     max_runtime_observation_age_seconds: float | None = None
@@ -240,6 +253,10 @@ class ComputeRequirement:
         object.__setattr__(self, "required_gpu_labels", _canonical_labels(self.required_gpu_labels, "compute required GPU labels"))
         object.__setattr__(self, "forbidden_host_labels", _canonical_labels(self.forbidden_host_labels, "compute forbidden host labels"))
         object.__setattr__(self, "preferred_host_labels", _canonical_labels(self.preferred_host_labels, "compute preferred host labels"))
+        object.__setattr__(self, "allowed_host_ids", _canonical_text_values(self.allowed_host_ids, "compute allowed host ids"))
+        object.__setattr__(self, "forbidden_host_ids", _canonical_text_values(self.forbidden_host_ids, "compute forbidden host ids"))
+        if set(self.allowed_host_ids) & set(self.forbidden_host_ids):
+            raise ValueError("compute allowed/forbidden host ids must be disjoint")
 
 
 _SHA256 = re.compile(r"[0-9a-f]{64}")
