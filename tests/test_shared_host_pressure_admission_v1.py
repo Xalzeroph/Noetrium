@@ -8,6 +8,7 @@ import pytest
 from noetrium_platform.composition.shared_host_pressure import (
     ResourceCompetitionAdmissionGate,
     ResourceCompetitionClass,
+    ResourceCompetitionDemand,
     ResourceCompetitionPolicy,
 )
 from noetrium_platform.foundation.kernel.concurrency.api import (
@@ -340,6 +341,94 @@ def test_default_competition_decision_admits_soft_contention() -> None:
     assert decision.admitted
     assert decision.reason is None
     assert decision.competition_class is None
+
+
+def test_permit_batch_is_checked_against_declared_physical_memory_demand() -> None:
+    observer = _MutableHostObserver(_status(memory_bytes=2 * 1024**3))
+    gate = _gate(observer, mode=AdmissionMode.REJECT)
+    gate.set_group_demand(
+        "g",
+        ResourceCompetitionDemand(
+            memory_bytes_per_permit=512 * 1024**2,
+        ),
+    )
+
+    leases = gate.acquire_many(
+        "g",
+        ExecutionLaneKind.CPU,
+        permit_count=2,
+        deadline=None,
+        cancellation=None,
+    )
+    for lease in leases:
+        lease.release()
+
+    with pytest.raises(AdmissionRejected, match="memory-headroom"):
+        gate.acquire_many(
+            "g",
+            ExecutionLaneKind.CPU,
+            permit_count=3,
+            deadline=None,
+            cancellation=None,
+        )
+
+
+def test_declared_pid_and_fd_demand_scale_with_atomic_batch_size() -> None:
+    observer = _MutableHostObserver(
+        _status(
+            available_pids=20,
+            available_fds=80,
+        )
+    )
+    gate = _gate(observer, mode=AdmissionMode.REJECT)
+    gate.set_group_demand(
+        "g",
+        ResourceCompetitionDemand(
+            pids_per_permit=2,
+            fds_per_permit=8,
+        ),
+    )
+
+    # PID reserve is global to every lane: 16 + (2 * 2) == 20.
+    leases = gate.acquire_many(
+        "g",
+        ExecutionLaneKind.CPU,
+        permit_count=2,
+        deadline=None,
+        cancellation=None,
+    )
+    for lease in leases:
+        lease.release()
+    with pytest.raises(AdmissionRejected, match="pid-headroom"):
+        gate.acquire_many(
+            "g",
+            ExecutionLaneKind.CPU,
+            permit_count=3,
+            deadline=None,
+            cancellation=None,
+        )
+
+    observer.status = _status(
+        available_pids=256,
+        available_fds=80,
+    )
+    io = gate.acquire_many(
+        "g",
+        ExecutionLaneKind.ASYNC_IO,
+        permit_count=2,
+        deadline=None,
+        cancellation=None,
+    )
+    for lease in io:
+        lease.release()
+    with pytest.raises(AdmissionRejected, match="fd-headroom"):
+        gate.acquire_many(
+            "g",
+            ExecutionLaneKind.ASYNC_IO,
+            permit_count=3,
+            deadline=None,
+            cancellation=None,
+        )
 
 
 def test_pid_headroom_blocks_expansion_before_cgroup_exhaustion() -> None:
