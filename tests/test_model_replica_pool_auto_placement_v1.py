@@ -230,6 +230,9 @@ class Scheduler:
         self.released.append(allocation.allocation_id)
         self.rows.pop(allocation.allocation_id, None)
 
+    def recover_release(self, allocation):
+        self.release(allocation)
+
 
 class Endpoints:
     def __init__(self):
@@ -305,6 +308,10 @@ class Endpoints:
         released = replace(current, state=EndpointAllocationState.RELEASED)
         self.rows[allocation.allocation_id] = released
         return released
+
+    def recover_release(self, allocation, *, now=None):
+        del now
+        return self.release(allocation)
 
 
 class Guard:
@@ -1150,6 +1157,63 @@ def test_failed_creation_retains_cleanup_generation_until_retry(
     assert len(endpoints.released) == 1
     assert compute_guards.created[0].closed is True
     assert endpoint_guards.created[0].closed is True
+
+
+def test_model_replica_pool_close_uses_recovery_retirement_after_exact_stop(
+    tmp_path,
+) -> None:
+    class RecoveryOnlyScheduler(Scheduler):
+        def release(self, allocation):
+            raise AssertionError("live compute release must not be used after model stop")
+
+        def recover_release(self, allocation):
+            Scheduler.release(self, allocation)
+
+    class RecoveryOnlyEndpoints(Endpoints):
+        def release(self, allocation):
+            raise AssertionError("live endpoint release must not be used after model stop")
+
+        def recover_release(self, allocation, *, now=None):
+            del now
+            return Endpoints.release(self, allocation)
+
+    catalog = Catalog()
+    runtime = Runtime(catalog)
+    scheduler = RecoveryOnlyScheduler()
+    endpoints = RecoveryOnlyEndpoints()
+    pool = LocalModelReplicaPoolRuntime(
+        deployment_catalog=catalog,
+        deployment_runtime=runtime,
+        fleet=Fleet(catalog),
+        compute_scheduler=scheduler,
+        endpoint_allocations=endpoints,
+        compute_lease_guards=ComputeGuards(),
+        endpoint_lease_guards=EndpointGuards(),
+    )
+    lease = pool.ensure(
+        ModelReplicaPoolRequest(
+            pool_id="recovery-retirement",
+            scope=PLATFORM_SCOPE,
+            model_id="qwen3-8b",
+            engine="vllm",
+            python_environment_id="vllm",
+            cwd=Path(tmp_path),
+            compute=ComputeRequirement(
+                cpu_cores=2,
+                memory_bytes=1024,
+                gpu_count=1,
+                minimum_gpu_memory_bytes=40 * 1024**3,
+            ),
+            replica_count=1,
+        )
+    )
+
+    lease.close()
+
+    assert len(runtime.removed) == 1
+    assert len(scheduler.released) == 1
+    assert len(endpoints.released) == 1
+    assert pool.active_lease_count == 0
 
 
 def test_model_replica_pool_cleanup_is_retryable_and_never_releases_resources_under_live_service(
