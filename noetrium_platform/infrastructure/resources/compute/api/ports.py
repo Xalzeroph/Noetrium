@@ -4,7 +4,7 @@ from typing import Protocol
 
 from noetrium_platform.foundation.governance.api import ScopeIdentity
 
-from .contracts import ComputeAllocation, ComputeCluster, ComputeHost, ComputeLeasePolicy, ComputeRequirement
+from .contracts import ComputeAllocation, ComputeBindingProof, ComputeCluster, ComputeHost, ComputeLeasePolicy, ComputeRequirement
 
 
 class ComputeInventoryPort(Protocol):
@@ -53,6 +53,16 @@ class ComputeSchedulerPort(ComputeCandidatePort, Protocol):
     def renew_many(
         self, allocations: tuple[ComputeAllocation, ...], *, ttl_seconds: float, now: float | None = None
     ) -> tuple[ComputeAllocation, ...]: ...
+    def confirm_bound(
+        self,
+        proof: ComputeBindingProof,
+    ) -> ComputeAllocation: ...
+    def replace_bound(
+        self,
+        proof: ComputeBindingProof,
+        *,
+        previous_binding_proof_digest: str,
+    ) -> ComputeAllocation: ...
     def reconcile_expired(
         self, *, now: float | None = None
     ) -> tuple[ComputeAllocation, ...]: ...
