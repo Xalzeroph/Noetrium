@@ -63137,7 +63137,7 @@
       ],
       "fields": [],
       "kind": "protocol",
-      "line": 57,
+      "line": 59,
       "methods": [
         "read"
       ],
@@ -63182,7 +63182,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 61,
+      "line": 63,
       "methods": [],
       "module": "noetrium_platform.foundation.kernel.kernel.lease_clock",
       "name": "LeaseClockUnavailable",
@@ -63200,7 +63200,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 188,
+      "line": 190,
       "methods": [
         "read"
       ],
@@ -63220,7 +63220,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 201,
+      "line": 203,
       "methods": [
         "__init__",
         "read",
@@ -63245,7 +63245,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 114,
+      "line": 116,
       "methods": [],
       "module": "noetrium_platform.foundation.kernel.kernel.lease_clock",
       "name": "_Guid",
@@ -63263,7 +63263,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 123,
+      "line": 125,
       "methods": [],
       "module": "noetrium_platform.foundation.kernel.kernel.lease_clock",
       "name": "_SystemBootEnvironmentInformation",
@@ -65435,7 +65435,7 @@
         "parent"
       ],
       "kind": "dataclass",
-      "line": 58,
+      "line": 62,
       "methods": [
         "__post_init__"
       ],
@@ -80955,7 +80955,7 @@
         "state"
       ],
       "kind": "dataclass",
-      "line": 66,
+      "line": 70,
       "methods": [
         "__post_init__",
         "expired_at"
@@ -146741,7 +146741,7 @@
   "parse_errors": [],
   "registry_sha256": "276e2729e0b700e814e98f8460d87e0ebee66c4620226fe2d880fe55cc970aec",
   "schema": "noetrium-code-architecture-index.v1",
-  "source_git_sha": "29466f78b8c3ffb5ae87f9ed4b8968bafdd54938",
+  "source_git_sha": "7a8e2370c36bb52dcf8db19d35cca34ce893107e",
   "system_import_edges": [
     {
       "count": 85,
