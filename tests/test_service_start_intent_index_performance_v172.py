@@ -8,6 +8,7 @@ import unittest
 from unittest.mock import patch
 
 from noetrium_platform.foundation.kernel.kernel.durability.durable_file import atomic_replace_bytes
+from noetrium_platform.infrastructure.lifecycle.service.api import ServiceProcessIdentity
 from noetrium_platform.infrastructure.lifecycle.service.runtime.start_intent_contracts import ServiceStartIntent, ServiceStartIntentPhase
 from noetrium_platform.infrastructure.lifecycle.service.runtime.start_intent_store import DirectoryServiceStartIntentStore
 
@@ -28,6 +29,27 @@ def intent(*, phase: ServiceStartIntentPhase = ServiceStartIntentPhase.PREPARED)
 
 
 class ServiceStartIntentIndexPerformanceV172Tests(unittest.TestCase):
+    def test_process_ownership_anchor_round_trips_exactly(self) -> None:
+        with TemporaryDirectory() as td:
+            store = DirectoryServiceStartIntentStore(Path(td))
+            process = ServiceProcessIdentity(
+                501,
+                "target-start",
+                501,
+                501,
+                anchor_pid=499,
+                anchor_start_identity="anchor-start",
+            )
+            row = replace(
+                intent(),
+                phase=ServiceStartIntentPhase.PROCESS_CONFIRMED,
+                process=process,
+            )
+            decoded = store.codec.decode(store.codec.encode(row))
+            self.assertEqual(decoded, row)
+            self.assertEqual(decoded.process, process)
+            self.assertEqual(decoded.process.anchor_pid, 499)
+
     def test_active_lookup_never_scans_completed_history(self) -> None:
         with TemporaryDirectory() as td:
             store = DirectoryServiceStartIntentStore(Path(td))
