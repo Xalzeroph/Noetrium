@@ -21,6 +21,8 @@ from noetrium_platform.foundation.kernel.kernel.durability import (
     FilesystemCarrierGeneration,
     FilesystemCarrierKind,
     capture_filesystem_carrier_generation,
+    purge_directory_contents,
+    remove_empty_directory_carrier,
 )
 from noetrium_platform.infrastructure.resources.directory.api import (
     DirectoryLayoutPort,
@@ -39,7 +41,7 @@ from noetrium_platform.foundation.governance.api import (
 
 _WORKSPACE_SCHEMA = "resource.workspace-allocation.v2"
 _WORKSPACE_FIELDS = {"workspace_id", "scope", "category", "owner", "note"}
-_WORKSPACE_RETIREMENT_SCHEMA = "resource.workspace-retirement.v4"
+_WORKSPACE_RETIREMENT_SCHEMA = "resource.workspace-retirement.v5"
 _WORKSPACE_RETIREMENT_FIELDS = {
     "workspace_identity_digest",
     "workspace_metadata_digest",
@@ -53,6 +55,7 @@ class _WorkspaceRetirementPhase(StrEnum):
     RETIRED = "retired"
     QUARANTINED = "quarantined"
     PURGING = "purging"
+    EMPTY = "empty"
     PURGED = "purged"
 
 
@@ -593,21 +596,15 @@ class LocalWorkspaceManager:
         fsync_directory(quarantine.parent)
 
     @staticmethod
-    def _purge_quarantine(
+    def _purge_quarantine_contents(
         quarantine: Path,
         *,
         expected_generation: FilesystemCarrierGeneration,
-    ) -> None:
-        generation = LocalWorkspaceManager._directory_generation(
+    ) -> FilesystemCarrierGeneration:
+        return purge_directory_contents(
             quarantine,
-            label="workspace quarantine",
+            expected_generation=expected_generation,
         )
-        if not expected_generation.same_object(generation):
-            raise RuntimeError(
-                "workspace quarantine filesystem object changed during purge"
-            )
-        shutil.rmtree(quarantine)
-        fsync_directory(quarantine.parent)
 
     def remove_workspace(
         self,
@@ -808,8 +805,32 @@ class LocalWorkspaceManager:
                     raise RuntimeError(
                         "purging workspace live path reappeared as unowned residue"
                     )
+                if not quarantine.exists():
+                    raise RuntimeError(
+                        "workspace quarantine root disappeared before empty-root commit"
+                    )
+                empty_generation = self._purge_quarantine_contents(
+                    quarantine,
+                    expected_generation=carrier_generation,
+                )
+                self._publish_retirement(
+                    retired,
+                    workspace_identity_digest=expected_identity,
+                    workspace_metadata_digest=metadata_digest,
+                    gc_proof_digest=gc.proof_digest,
+                    carrier_generation=empty_generation,
+                    phase=_WorkspaceRetirementPhase.EMPTY,
+                )
+                carrier_generation = empty_generation
+                phase = _WorkspaceRetirementPhase.EMPTY
+
+            if phase is _WorkspaceRetirementPhase.EMPTY:
+                if path.exists():
+                    raise RuntimeError(
+                        "empty retired workspace live path reappeared"
+                    )
                 if quarantine.exists():
-                    self._purge_quarantine(
+                    remove_empty_directory_carrier(
                         quarantine,
                         expected_generation=carrier_generation,
                     )
