@@ -29,6 +29,26 @@ from noetrium_platform.research.execution.policy.api import (
 )
 
 
+def configure_opportunistic_cpu_worker() -> None:
+    """Make one CPU worker yield under host contention without capping idle use."""
+
+    if os.name != "posix":
+        return
+    try:
+        current = os.getpriority(os.PRIO_PROCESS, 0)
+        if current < 5:
+            os.setpriority(os.PRIO_PROCESS, 0, 5)
+    except (AttributeError, OSError):
+        pass
+    oom_path = Path("/proc/self/oom_score_adj")
+    try:
+        current_oom = int(oom_path.read_text("utf-8").strip())
+        if current_oom < 500:
+            oom_path.write_text("500", encoding="utf-8")
+    except (OSError, ValueError):
+        pass
+
+
 @dataclass(frozen=True, slots=True)
 class SharedStoragePressureStatus:
     available: bool
@@ -381,6 +401,7 @@ class SharedHostPressureAdmissionGate(ExecutionAdmissionPort):
 
 __all__ = [
     "LocalSharedStoragePressureObserver",
+    "configure_opportunistic_cpu_worker",
     "SharedHostPressureAdmissionGate",
     "SharedHostPressurePolicy",
     "SharedStoragePressureObserverPort",
