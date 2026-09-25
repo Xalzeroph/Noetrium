@@ -516,8 +516,12 @@ class CanonicalResearchOSNodeRuntime(ResearchOSNodeRuntimePort):
                 "research-os-experiment:"
                 f"{closure.research_plan.experiment.experiment_id}"
             ),
-            resource_demand=ResourceCompetitionDemand(
-                storage_path=self._state_root,
+            resource_demand=(
+                ResourceCompetitionDemand(
+                    storage_path=self._state_root,
+                )
+                if self._execution_pool.resource_competition_enabled
+                else None
             ),
             deadline=deadline,
         )
