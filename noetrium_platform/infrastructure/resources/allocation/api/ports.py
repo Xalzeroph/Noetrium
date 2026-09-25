@@ -105,6 +105,19 @@ class EndpointAllocationPort(Protocol):
     def release(self, allocation: EndpointAllocation) -> EndpointAllocation:
         """Exact live-binder retirement after its upper generation converged."""
         ...
+    def recover_release(
+        self,
+        allocation: EndpointAllocation,
+        *,
+        now: float | None = None,
+    ) -> EndpointAllocation:
+        """Retire an exact endpoint generation after upper recovery converged.
+
+        Unlike orphan reconciliation, this operation does not interpret current
+        socket occupancy as ownership evidence. The caller must already have
+        proved that the exact Noetrium binder generation stopped.
+        """
+        ...
     def get(self, allocation_id: str) -> EndpointAllocation: ...
     def active(self) -> tuple[EndpointAllocation, ...]: ...
     def reconcile(
