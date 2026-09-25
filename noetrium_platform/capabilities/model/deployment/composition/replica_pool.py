@@ -526,15 +526,21 @@ class LocalModelReplicaPoolRuntime:
                 )
             self._closed = True
 
-    def _target_count(self, request: ModelReplicaPoolRequest) -> int:
+    def _target_count(self, request: ModelReplicaPoolRequest) -> int | None:
         if request.replica_count is not None:
             return request.replica_count
         compute = request.effective_compute
-        hosts = self._compute_scheduler.candidates(compute, scope=request.scope)
-        count = sum(len(host.gpus) // compute.gpu_count for host in hosts)
-        if count <= 0:
-            raise RuntimeError("no automatic model replica capacity is currently available")
-        return count
+        if not self._compute_scheduler.candidates(
+            compute,
+            scope=request.scope,
+        ):
+            raise RuntimeError(
+                "no automatic model replica capacity is currently available"
+            )
+        # Automatic mode is work-conserving: do not infer capacity from GPU
+        # cardinality because shareable GPUs may host multiple independently
+        # fenced replicas. The scheduler is the physical-capacity authority.
+        return None
 
     @staticmethod
     def _deployment(
@@ -617,7 +623,8 @@ class LocalModelReplicaPoolRuntime:
         compute_guard = None
         endpoint_guard = None
         try:
-            for index in range(target_count):
+            index = 0
+            while target_count is None or index < target_count:
                 allocation_id = (
                     f"model-pool:{request.pool_id}:{placement_generation_id}:"
                     f"{index}:compute"
@@ -631,7 +638,7 @@ class LocalModelReplicaPoolRuntime:
                         ttl_seconds=self._compute_lease_guards.policy.ttl_seconds,
                     )
                 except ComputePlacementUnavailable:
-                    if request.replica_count is None and compute_rows:
+                    if target_count is None and compute_rows:
                         break
                     raise
                 compute_rows.append(compute)
@@ -656,6 +663,7 @@ class LocalModelReplicaPoolRuntime:
                     compute=compute,
                 )
                 specs.append(self._catalog.put_deployment(spec))
+                index += 1
 
             if not specs:
                 raise RuntimeError("automatic model replica pool produced no deployment")
