@@ -351,6 +351,7 @@ class TrialVerifierOrchestrator:
             assignment_digest=request.assignment.assignment_digest,
             measurements=verifier_receipt.measurements,
             measurement_outcome=verifier_receipt.measurement_outcome,
+            verifier_artifact_cut=verifier_request.artifact_cut,
             evidence_refs=evidence_refs,
             verifier_receipt=verifier_receipt,
         )
