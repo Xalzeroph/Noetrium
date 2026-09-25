@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import argparse
 from pathlib import Path
 from tempfile import TemporaryDirectory
 from threading import Event, Thread
@@ -8,6 +9,9 @@ import unittest
 import pytest
 from unittest.mock import patch
 
+from noetrium_platform.composition.operator.maintenance.management import (
+    directories as directory_management,
+)
 from noetrium_platform.foundation.scope.api import PLATFORM_SCOPE
 from noetrium_platform.foundation.kernel.kernel import (
     DurableCarrierClosureAuthority,
@@ -69,6 +73,41 @@ def layout(root: Path) -> DirectoryLayout:
         locks=root / "locks",
         workspaces=root / "workspaces",
     )
+
+
+@pytest.mark.parametrize(
+    "argv",
+    (
+        ("dirs", "entries", "cache", "--limit", "-1"),
+        ("dirs", "clean", "cache", "--older-than-seconds", "-1"),
+        ("dirs", "clean", "cache", "--older-than-seconds", "nan"),
+        ("dirs", "clean", "cache", "--older-than-seconds", "inf"),
+        ("dirs", "clean", "cache", "--older-than-seconds", "-inf"),
+    ),
+)
+def test_directory_management_cli_rejects_unsafe_numeric_bounds(
+    argv: tuple[str, ...],
+) -> None:
+    parser = argparse.ArgumentParser()
+    groups = parser.add_subparsers(dest="group", required=True)
+    directory_management.register(groups)
+
+    with pytest.raises(SystemExit):
+        parser.parse_args(argv)
+
+
+@pytest.mark.parametrize("limit", (-1, True, 1.5))
+def test_directory_inspector_rejects_invalid_limits(
+    tmp_path: Path,
+    limit: object,
+) -> None:
+    manager = build_local_directory_authorities(layout(tmp_path))
+
+    with pytest.raises(ValueError, match="non-negative integer"):
+        manager.inspection.entries(
+            ManagedDirectoryKind.CACHE,
+            limit=limit,  # type: ignore[arg-type]
+        )
 
 
 class FakeEnvBackend:
