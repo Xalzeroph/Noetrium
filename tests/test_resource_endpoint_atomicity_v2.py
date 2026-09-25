@@ -83,15 +83,17 @@ class _AvailableProbe:
 class _MutableProbe:
     def __init__(self) -> None:
         self.available = True
+        self.unavailable_ports: set[int] = set()
         self.raise_error = False
 
     def probe(self, endpoint: NetworkEndpoint) -> EndpointProbeResult:
         if self.raise_error:
             raise OSError("simulated endpoint observation failure")
+        available = self.available and endpoint.port not in self.unavailable_ports
         return EndpointProbeResult(
             endpoint,
-            self.available,
-            "available" if self.available else "listener-still-present",
+            available,
+            "available" if available else "listener-still-present",
         )
 
 
@@ -164,7 +166,7 @@ def test_expiry_quarantines_endpoint_until_os_listener_converges(
     assert expiry is not None
 
     clock.advance(1.0)
-    probe.available = False
+    probe.unavailable_ports.add(first.endpoint.port)
     with pytest.raises(
         EndpointPhysicalConvergencePending,
         match="physical convergence is not proven",
@@ -175,18 +177,22 @@ def test_expiry_quarantines_endpoint_until_os_listener_converges(
     assert current.state.is_live
     assert allocator.active() == (current,)
 
-    with pytest.raises(EndpointPhysicalConvergencePending):
-        allocator.allocate(_request("replacement"))
+    # The stale generation quarantines only its own endpoint. It must not
+    # freeze unrelated endpoint capacity needed by another model/environment.
+    with pytest.raises(EndpointAllocationUnavailable, match="generation-quarantined"):
+        allocator.allocate(_request("same-port", port=first.endpoint.port))
+    replacement = allocator.allocate(_request("replacement", port=25566))
+    assert replacement.endpoint.port == 25566
 
-    probe.available = True
+    probe.unavailable_ports.clear()
     retired = allocator.reconcile()
     assert len(retired) == 1
     assert retired[0].allocation_id == first.allocation_id
     assert retired[0].state is EndpointAllocationState.RELEASED
 
-    replacement = allocator.allocate(_request("replacement"))
-    assert replacement.endpoint == first.endpoint
-    assert replacement.lease_fencing_token > first.lease_fencing_token
+    reused = allocator.allocate(_request("reused", port=first.endpoint.port))
+    assert reused.endpoint == first.endpoint
+    assert reused.lease_fencing_token > first.lease_fencing_token
 
 
 @pytest.mark.parametrize("durable", (False, True))
