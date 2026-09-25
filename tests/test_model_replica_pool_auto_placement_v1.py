@@ -495,6 +495,165 @@ def test_model_pool_rebinds_compute_and_endpoint_after_runtime_recovery(
     assert endpoints.released == [row.endpoint.allocation_id]
 
 
+def test_model_pool_binding_retries_torn_status_generation_observation(
+    tmp_path,
+) -> None:
+    class RacingRuntime(Runtime):
+        def __init__(self, catalog):
+            super().__init__(catalog)
+            self.epoch = 1
+            self.flip_on_status = True
+
+        def status(self, deployment_id):
+            status = super().status(deployment_id)
+            if self.flip_on_status:
+                self.flip_on_status = False
+                self.epoch = 2
+            return status
+
+        def generation(self, deployment_id):
+            spec = self.catalog.rows[deployment_id]
+            return ModelDeploymentGeneration(
+                deployment_id,
+                canonical_digest(spec),
+                canonical_digest(
+                    {
+                        "fake-applied": deployment_id,
+                        "epoch": self.epoch,
+                    }
+                ),
+            )
+
+    catalog = Catalog()
+    runtime = RacingRuntime(catalog)
+    scheduler = Scheduler()
+    endpoints = Endpoints()
+    pool = LocalModelReplicaPoolRuntime(
+        deployment_catalog=catalog,
+        deployment_runtime=runtime,
+        fleet=Fleet(catalog),
+        compute_scheduler=scheduler,
+        endpoint_allocations=endpoints,
+        compute_lease_guards=ComputeGuards(),
+        endpoint_lease_guards=EndpointGuards(),
+    )
+
+    lease = pool.ensure(
+        ModelReplicaPoolRequest(
+            pool_id="torn-observation",
+            scope=PLATFORM_SCOPE,
+            model_id="qwen3-8b",
+            engine="vllm",
+            python_environment_id="vllm",
+            cwd=Path(tmp_path),
+            compute=ComputeRequirement(
+                cpu_cores=2,
+                memory_bytes=1024,
+                gpu_count=1,
+                minimum_gpu_memory_bytes=40 * 1024**3,
+            ),
+            replica_count=1,
+        )
+    )
+
+    row = lease.report.placements[0]
+    current = runtime.generation(row.deployment_id)
+    assert current.applied_runtime_digest is not None
+    assert (
+        scheduler.rows[row.compute.allocation_id]
+        .binding_binder_identity_digest
+        == current.applied_runtime_digest
+    )
+    assert (
+        endpoints.rows[row.endpoint.allocation_id]
+        .binding_binder_identity_digest
+        == current.applied_runtime_digest
+    )
+    lease.close()
+
+
+def test_model_pool_rebinds_if_runtime_restarts_between_compute_and_endpoint_binding(
+    tmp_path,
+) -> None:
+    class RestartingRuntime(Runtime):
+        def __init__(self, catalog):
+            super().__init__(catalog)
+            self.epoch = 1
+
+        def generation(self, deployment_id):
+            spec = self.catalog.rows[deployment_id]
+            return ModelDeploymentGeneration(
+                deployment_id,
+                canonical_digest(spec),
+                canonical_digest(
+                    {
+                        "fake-applied": deployment_id,
+                        "epoch": self.epoch,
+                    }
+                ),
+            )
+
+    class RestartDuringEndpointBind(Endpoints):
+        def __init__(self, runtime):
+            super().__init__()
+            self.runtime = runtime
+            self.restarted = False
+
+        def confirm_bound(self, proof):
+            if not self.restarted:
+                self.restarted = True
+                self.runtime.epoch = 2
+            return super().confirm_bound(proof)
+
+    catalog = Catalog()
+    runtime = RestartingRuntime(catalog)
+    scheduler = Scheduler()
+    endpoints = RestartDuringEndpointBind(runtime)
+    pool = LocalModelReplicaPoolRuntime(
+        deployment_catalog=catalog,
+        deployment_runtime=runtime,
+        fleet=Fleet(catalog),
+        compute_scheduler=scheduler,
+        endpoint_allocations=endpoints,
+        compute_lease_guards=ComputeGuards(),
+        endpoint_lease_guards=EndpointGuards(),
+    )
+
+    lease = pool.ensure(
+        ModelReplicaPoolRequest(
+            pool_id="mid-bind-restart",
+            scope=PLATFORM_SCOPE,
+            model_id="qwen3-8b",
+            engine="vllm",
+            python_environment_id="vllm",
+            cwd=Path(tmp_path),
+            compute=ComputeRequirement(
+                cpu_cores=2,
+                memory_bytes=1024,
+                gpu_count=1,
+                minimum_gpu_memory_bytes=40 * 1024**3,
+            ),
+            replica_count=1,
+        )
+    )
+
+    row = lease.report.placements[0]
+    current = runtime.generation(row.deployment_id)
+    assert current.applied_runtime_digest is not None
+    assert runtime.epoch == 2
+    assert (
+        scheduler.rows[row.compute.allocation_id]
+        .binding_binder_identity_digest
+        == current.applied_runtime_digest
+    )
+    assert (
+        endpoints.rows[row.endpoint.allocation_id]
+        .binding_binder_identity_digest
+        == current.applied_runtime_digest
+    )
+    lease.close()
+
+
 def test_model_endpoint_binding_requires_applied_runtime_generation(
     tmp_path,
 ) -> None:
