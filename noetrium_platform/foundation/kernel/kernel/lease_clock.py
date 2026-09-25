@@ -242,9 +242,11 @@ class ManualLeaseClock(LeaseClockPort):
         *,
         wall_seconds: float | None = None,
     ) -> None:
+        if type(seconds) not in (int, float):
+            raise TypeError("manual lease advance seconds must be int or float")
         seconds = float(seconds)
-        if seconds < 0:
-            raise ValueError("manual lease elapsed time cannot move backwards")
+        if not math.isfinite(seconds) or seconds < 0:
+            raise ValueError("manual lease elapsed advance must be finite and non-negative")
         self._elapsed += seconds
         self._wall += (
             seconds if wall_seconds is None else float(wall_seconds)
