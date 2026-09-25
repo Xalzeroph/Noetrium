@@ -13,6 +13,7 @@ from noetrium_platform.research.experimentation.identity import OptionalIdentity
 from noetrium_platform.research.experimentation.lifecycle.api import (
     MeasurementDefinition,
     MeasurementProtocol,
+    MeasurementSetOutcome,
     MeasurementValue,
     MeasurementValueKind,
     StudyAssignment,
@@ -195,8 +196,12 @@ def test_separate_verifier_requires_isolation_evidence() -> None:
     task = _task(TaskVerifierIsolation.SEPARATE)
     assert task.package is not None
     request = _handoff(task, _artifact(task.package.artifacts[0], "answer"))
+    unscored = MeasurementSetOutcome.unscored(
+        request.measurement_protocol,
+        reason_code="grader_failed",
+    )
     with pytest.raises(ValueError, match="isolation evidence"):
-        TaskVerifierReceipt(request, ())
+        TaskVerifierReceipt(request, (), unscored)
 
     evidence = ArtifactReference(
         "ref-isolation",
@@ -207,6 +212,7 @@ def test_separate_verifier_requires_isolation_evidence() -> None:
     receipt = TaskVerifierReceipt(
         request,
         (),
+        unscored,
         (evidence,),
     )
     assert receipt.request == request
@@ -216,7 +222,14 @@ def test_shared_verifier_does_not_invent_isolation_evidence_requirement() -> Non
     task = _task(TaskVerifierIsolation.SHARED)
     assert task.package is not None
     request = _handoff(task, _artifact(task.package.artifacts[0], "answer"))
-    receipt = TaskVerifierReceipt(request, ())
+    receipt = TaskVerifierReceipt(
+        request,
+        (),
+        MeasurementSetOutcome.unscored(
+            request.measurement_protocol,
+            reason_code="refusal",
+        ),
+    )
     assert receipt.evidence_refs == ()
 
 
@@ -226,6 +239,10 @@ def test_trial_runtime_fails_closed_when_declared_verifier_receipt_is_missing() 
         request.request_digest,
         request.assignment.assignment_digest,
         (),
+        MeasurementSetOutcome.unscored(
+            request.measurement_protocol,
+            reason_code="verifier_missing",
+        ),
     )
     plan = SimpleNamespace(measurement_protocol=request.measurement_protocol)
     with pytest.raises(ValueError, match="declares verifier"):
@@ -288,9 +305,14 @@ def test_core_orchestrates_verifier_after_artifact_only_execution_stage() -> Non
                 "artifact-isolation-proof",
                 1,
             )
+            measurements = (measurement,)
             return TaskVerifierReceipt(
                 verifier_request,
-                (measurement,),
+                measurements,
+                MeasurementSetOutcome.complete(
+                    verifier_request.measurement_protocol,
+                    measurements,
+                ),
                 (isolation,),
             )
 
@@ -303,6 +325,9 @@ def test_core_orchestrates_verifier_after_artifact_only_execution_stage() -> Non
     assert verifier.seen is not None
     assert final.verifier_receipt is not None
     assert final.measurements == final.verifier_receipt.measurements
+    assert final.verifier_artifact_cut == final.verifier_receipt.request.artifact_cut
+    assert final.verifier_artifact_cut is not None
+    assert final.verifier_artifact_cut.cut_digest
     assert final.evidence_refs == (
         execution_evidence,
         final.verifier_receipt.evidence_refs[0],
@@ -315,6 +340,10 @@ def test_declared_verifier_cannot_be_bypassed_with_provider_final_receipt() -> N
         request.request_digest,
         request.assignment.assignment_digest,
         (),
+        MeasurementSetOutcome.unscored(
+            request.measurement_protocol,
+            reason_code="not_verified",
+        ),
     )
     with pytest.raises(ValueError, match="execution-stage receipt"):
         TrialVerifierOrchestrator().finalize(request, provider_final)
