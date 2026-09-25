@@ -41,7 +41,7 @@ def _lock(program) -> ProgramLock:
 def _session(journal: InMemoryMachineJournal) -> ResearchMachineSession:
     program = compile_paired_evaluation_program()
     machine = MachineExecutor(
-        identity=MachineIdentity("evaluation:test", MachineKind.EVALUATION, "1", "g1"),
+        identity=MachineIdentity("evaluation:test", MachineKind.EVALUATION, "2", "g1"),
         program=program.machine_program_ref(_lock(program)),
         journal=journal,
         family=programmable_machine_family(MachineKind.EVALUATION),
