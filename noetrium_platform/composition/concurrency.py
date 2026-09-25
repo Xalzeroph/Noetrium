@@ -30,6 +30,7 @@ from noetrium_platform.infrastructure.resources.compute.api import HostRuntimeOb
 
 from .shared_host_pressure import (
     ResourceCompetitionAdmissionGate,
+    ResourceCompetitionDemand,
     ResourceCompetitionPolicy,
     SharedNetworkPressureObserverPort,
     SharedStoragePressureObserverPort,
@@ -46,6 +47,7 @@ class ExecutionConcurrencyAuthorities:
 
     concurrency: StructuredConcurrencyRuntimePort
     admission: ExecutionAdmissionPort
+    resource_competition: ResourceCompetitionAdmissionGate | None = None
 
     @property
     def heartbeats(self) -> HeartbeatSchedulerPort:
@@ -61,20 +63,35 @@ class ExecutionConcurrencyAuthorities:
         resource_id: str | None = None,
         priority: ExecutionPriority = ExecutionPriority.NORMAL,
         admission_mode: AdmissionMode = AdmissionMode.BLOCK,
+        resource_demand: ResourceCompetitionDemand | None = None,
     ) -> TaskGroupPort:
         # Register policy identity before exposing the task group. If platform
         # ownership fails, this composition attempt fails closed and the process
         # scope is expected to be discarded rather than silently reusing IDs.
+        if resource_demand is not None and self.resource_competition is None:
+            raise ValueError(
+                "resource_demand requires a configured resource competition observer"
+            )
         self.admission.register_group(
             group_id,
             identity=AdmissionIdentity(tenant_id=tenant_id, resource_id=resource_id),
             intent=AdmissionIntent(priority=priority, mode=admission_mode),
         )
-        return self.concurrency.open_task_group(
+        try:
+            if resource_demand is not None:
+                assert self.resource_competition is not None
+                self.resource_competition.set_group_demand(
+                    group_id,
+                    resource_demand,
+                )
+            return self.concurrency.open_task_group(
             group_id,
             deadline=deadline,
             failure_policy=failure_policy,
-        )
+            )
+        except BaseException:
+            self.admission.unregister_group(group_id)
+            raise
 
     def close_task_group(
         self,
@@ -218,14 +235,16 @@ def build_execution_concurrency_runtime(
             "resource competition policy requires a host runtime observer"
         )
     admission: ExecutionAdmissionPort = base_admission
+    competition_gate: ResourceCompetitionAdmissionGate | None = None
     if host_runtime_observer is not None:
-        admission = ResourceCompetitionAdmissionGate(
+        competition_gate = ResourceCompetitionAdmissionGate(
             base_admission,
             host_runtime_observer,
             storage_observer=storage_pressure_observer,
             network_observer=network_pressure_observer,
             policy=resource_competition_policy or ResourceCompetitionPolicy(),
         )
+        admission = competition_gate
     concurrency = build_structured_concurrency_runtime(
         budget=resolved_concurrency,
         blocking_io_thread_name_prefix=blocking_io_thread_name_prefix,
@@ -233,7 +252,11 @@ def build_execution_concurrency_runtime(
         permits=admission,
         cpu_provider=cpu_provider,
     )
-    return ExecutionConcurrencyAuthorities(concurrency=concurrency, admission=admission)
+    return ExecutionConcurrencyAuthorities(
+        concurrency=concurrency,
+        admission=admission,
+        resource_competition=competition_gate,
+    )
 
 
 __all__ = [
