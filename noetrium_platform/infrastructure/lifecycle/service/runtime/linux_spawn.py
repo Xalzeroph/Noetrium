@@ -293,17 +293,23 @@ class LinuxProcessSpawner:
             raise
 
         self._children.remember(child)
+        anchor_control_pid = (
+            None
+            if anchor_visible_pid == child.pid
+            else int(child.pid)
+        )
         process = ServiceProcessIdentity(
             visible_pid,
             start_identity,
             pgid,
             control_pid,
-            anchor_pid=int(child.pid),
+            anchor_pid=anchor_visible_pid,
             anchor_start_identity=anchor_start_identity,
+            anchor_control_pid=anchor_control_pid,
         )
         launch_payload = (
             f"{contract.digest()}:{visible_pid}:{control_pid}:{start_identity}:{pgid}:"
-            f"{child.pid}:{anchor_start_identity}"
+            f"{anchor_visible_pid}:{anchor_control_pid}:{anchor_start_identity}"
         )
         evidence = "proc-start:" + hashlib.sha256(
             launch_payload.encode()
