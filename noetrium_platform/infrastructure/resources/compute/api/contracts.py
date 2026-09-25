@@ -155,6 +155,11 @@ class GpuSharingMode(StrEnum):
     PREFER_IDLE_ALLOW_SHARED = "prefer-idle-allow-shared"
 
 
+class ComputePlacementPreference(StrEnum):
+    PACK = "pack"
+    SPREAD = "spread"
+
+
 @dataclass(frozen=True, slots=True)
 class ComputeRequirement:
     cpu_cores: int = 1
@@ -173,6 +178,7 @@ class ComputeRequirement:
     required_gpu_labels: tuple[tuple[str, str], ...] = ()
     forbidden_host_labels: tuple[tuple[str, str], ...] = ()
     preferred_host_labels: tuple[tuple[str, str], ...] = ()
+    placement_preference: ComputePlacementPreference = ComputePlacementPreference.PACK
 
     def __post_init__(self) -> None:
         if (
@@ -209,6 +215,8 @@ class ComputeRequirement:
             raise TypeError("compute require_host_runtime must be bool")
         if not isinstance(self.gpu_sharing_mode, GpuSharingMode):
             raise TypeError("compute gpu_sharing_mode must be GpuSharingMode")
+        if type(self.placement_preference) is not ComputePlacementPreference:
+            raise TypeError("compute placement_preference must be ComputePlacementPreference")
         object.__setattr__(self, "required_labels", _canonical_labels(self.required_labels, "compute required host labels"))
         object.__setattr__(self, "required_gpu_labels", _canonical_labels(self.required_gpu_labels, "compute required GPU labels"))
         object.__setattr__(self, "forbidden_host_labels", _canonical_labels(self.forbidden_host_labels, "compute forbidden host labels"))
@@ -358,4 +366,4 @@ class ComputeAllocation:
         )
 
 
-__all__ = ["ComputeAllocation", "ComputeDeviceHealth", "ComputeBindingProof", "ComputeCluster", "ComputeGPU", "ComputeHost", "ComputeHostSchedulingState", "ComputePlacementUnavailable", "ComputeRequirement", "ComputeLeasePolicy", "DEFAULT_COMPUTE_LEASE_POLICY", "GpuSharingMode"]
+__all__ = ["ComputeAllocation", "ComputeDeviceHealth", "ComputeBindingProof", "ComputeCluster", "ComputeGPU", "ComputeHost", "ComputeHostSchedulingState", "ComputePlacementPreference", "ComputePlacementUnavailable", "ComputeRequirement", "ComputeLeasePolicy", "DEFAULT_COMPUTE_LEASE_POLICY", "GpuSharingMode"]
