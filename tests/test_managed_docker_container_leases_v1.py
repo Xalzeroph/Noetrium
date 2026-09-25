@@ -547,10 +547,15 @@ class _UnavailableDockerRuntime(FakeDockerRuntime):
 
 def test_managed_docker_daemon_restart_during_reconcile_preserves_lease_authority() -> None:
     resources = InMemoryResourceLeaseRegistry()
-    runtime = _UnavailableDockerRuntime()
+    runtime = FakeDockerRuntime()
     authority = _authority(resources, runtime)
     handle = _reserve(authority)
     observed = runtime.start(handle)
+    authority.runtime = _UnavailableDockerRuntime(
+        runtime.authority_id,
+        rows=runtime.rows,
+        events=runtime.events,
+    )
 
     with pytest.raises(RuntimeError, match="daemon restarted"):
         authority.reconcile()
