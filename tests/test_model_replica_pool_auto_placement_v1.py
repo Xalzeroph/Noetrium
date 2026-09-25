@@ -14,6 +14,12 @@ from noetrium_platform.capabilities.model.deployment.composition import (
 )
 from noetrium_platform.foundation.scope.api import PLATFORM_SCOPE
 from noetrium_platform.foundation.kernel.kernel import canonical_digest
+from noetrium_platform.foundation.kernel.kernel.identity import ImmutableModelIdentity
+from noetrium_platform.capabilities.model.stack.api import (
+    ModelArtifactClosure,
+    ModelStackSpec,
+    RuntimeBuildIdentity,
+)
 from noetrium_platform.infrastructure.resources.allocation.api import (
     EndpointAllocation,
     EndpointAllocationRequest,
@@ -27,6 +33,47 @@ from noetrium_platform.infrastructure.resources.compute.api import (
     ComputePlacementUnavailable,
     ComputeRequirement,
 )
+
+
+def _vllm_stack(
+    *,
+    engine_args: tuple[str, ...] = (),
+    tensor_parallel: int = 1,
+    data_parallel: int = 1,
+    pipeline_parallel: int = 1,
+) -> ModelStackSpec:
+    return ModelStackSpec(
+        ImmutableModelIdentity(
+            "qwen",
+            "qwen3-8b",
+            "revision",
+            "vllm",
+            "test",
+            "bfloat16",
+            None,
+            32768,
+        ),
+        ModelArtifactClosure("weights", "tokenizer", "config"),
+        RuntimeBuildIdentity(
+            "container",
+            "engine",
+            "lock",
+            "cuda",
+            "nccl",
+            "torch",
+            "kernels",
+        ),
+        tensor_parallel,
+        data_parallel,
+        1,
+        pipeline_parallel,
+        None,
+        None,
+        None,
+        None,
+        "fcfs",
+        engine_args,
+    )
 
 
 class Catalog:
@@ -282,6 +329,107 @@ def test_auto_model_replica_pool_exhausts_available_gpu_capacity_without_gpu_or_
     assert len(endpoints.released) == 2
     assert compute_guards.created[0].closed
     assert endpoint_guards.created[0].closed
+
+
+def test_auto_model_replica_pool_launches_frozen_vllm_engine_args(
+    tmp_path,
+) -> None:
+    catalog = Catalog()
+    runtime = Runtime(catalog)
+    scheduler = Scheduler()
+    pool = LocalModelReplicaPoolRuntime(
+        deployment_catalog=catalog,
+        deployment_runtime=runtime,
+        fleet=Fleet(catalog),
+        compute_scheduler=scheduler,
+        endpoint_allocations=Endpoints(),
+        compute_lease_guards=ComputeGuards(),
+        endpoint_lease_guards=EndpointGuards(),
+    )
+    stack = _vllm_stack(
+        engine_args=(
+            "--gpu-memory-utilization",
+            "0.97",
+            "--max-num-seqs",
+            "64",
+            "--enable-prefix-caching",
+        )
+    )
+    lease = pool.ensure(
+        ModelReplicaPoolRequest(
+            pool_id="qwen-frozen",
+            scope=PLATFORM_SCOPE,
+            model_id="qwen3-8b",
+            engine="vllm",
+            python_environment_id="vllm",
+            cwd=Path(tmp_path),
+            compute=ComputeRequirement(
+                cpu_cores=2,
+                memory_bytes=1024,
+                gpu_count=1,
+                minimum_gpu_memory_bytes=40 * 1024**3,
+            ),
+            model_stack=stack,
+            replica_count=1,
+        )
+    )
+    argv = lease.report.placements[0].deployment.argv
+    assert argv[argv.index("--gpu-memory-utilization") + 1] == "0.97"
+    assert argv[argv.index("--max-num-seqs") + 1] == "64"
+    assert "--enable-prefix-caching" in argv
+    assert f"model-stack:{stack.digest()}" in lease.report.placements[0].deployment.tags
+    lease.close()
+
+
+def test_frozen_vllm_stack_rejects_ad_hoc_runtime_drift(tmp_path) -> None:
+    stack = _vllm_stack(engine_args=("--max-num-seqs", "64"))
+    try:
+        ModelReplicaPoolRequest(
+            pool_id="qwen-drift",
+            scope=PLATFORM_SCOPE,
+            model_id="qwen3-8b",
+            engine="vllm",
+            python_environment_id="vllm",
+            cwd=Path(tmp_path),
+            compute=ComputeRequirement(
+                cpu_cores=2,
+                memory_bytes=1024,
+                gpu_count=1,
+                minimum_gpu_memory_bytes=40 * 1024**3,
+            ),
+            model_stack=stack,
+            extra_args=("--max-num-seqs", "128"),
+        )
+    except ValueError as exc:
+        assert "extra_args are forbidden" in str(exc)
+    else:
+        raise AssertionError("frozen vLLM stack accepted ad-hoc engine argument drift")
+
+
+def test_auto_vllm_pool_rejects_internal_dp_without_owned_rpc_endpoint(
+    tmp_path,
+) -> None:
+    stack = _vllm_stack(data_parallel=2)
+    try:
+        ModelReplicaPoolRequest(
+            pool_id="qwen-dp",
+            scope=PLATFORM_SCOPE,
+            model_id="qwen3-8b",
+            engine="vllm",
+            python_environment_id="vllm",
+            cwd=Path(tmp_path),
+            compute=ComputeRequirement(
+                cpu_cores=2,
+                memory_bytes=1024,
+                gpu_count=2,
+                minimum_gpu_memory_bytes=40 * 1024**3,
+            ),
+            model_stack=stack,
+        )
+    except ValueError as exc:
+        assert "auxiliary RPC endpoint" in str(exc)
+    else:
+        raise AssertionError("vLLM internal DP was admitted without RPC endpoint authority")
 
 
 def test_auto_model_replica_pool_does_not_mask_scheduler_failure(tmp_path) -> None:
