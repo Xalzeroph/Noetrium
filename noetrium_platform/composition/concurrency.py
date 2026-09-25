@@ -22,6 +22,9 @@ from noetrium_platform.foundation.kernel.concurrency.api import (
     TaskGroupPort,
     StructuredConcurrencyRuntimePort,
 )
+from noetrium_platform.foundation.kernel.concurrency.api.ports import (
+    CpuWorkerPoolProviderPort,
+)
 from noetrium_platform.foundation.kernel.concurrency.composition import build_concurrency_runtime as _build_kernel_concurrency_runtime
 from noetrium_platform.infrastructure.resources.compute.api import HostRuntimeObserverPort
 
@@ -122,6 +125,7 @@ def build_structured_concurrency_runtime(
     timer_name: str = "platform-timer",
     permits=None,
     cpu_worker_initializer=None,
+    cpu_provider: CpuWorkerPoolProviderPort | None = None,
 ) -> StructuredConcurrencyRuntimePort:
     """Application-composition boundary for the Kernel concurrency implementation."""
 
@@ -134,6 +138,8 @@ def build_structured_concurrency_runtime(
         kwargs["permits"] = permits
     if cpu_worker_initializer is not None:
         kwargs["cpu_worker_initializer"] = cpu_worker_initializer
+    if cpu_provider is not None:
+        kwargs["cpu_provider"] = cpu_provider
     return _build_kernel_concurrency_runtime(**kwargs)
 
 
@@ -187,6 +193,7 @@ def build_execution_concurrency_runtime(
     resource_competition_policy: ResourceCompetitionPolicy | None = None,
     blocking_io_thread_name_prefix: str = "platform-blocking-io",
     timer_name: str = "platform-timer",
+    cpu_provider: CpuWorkerPoolProviderPort | None = None,
 ) -> ExecutionConcurrencyAuthorities:
     resolved_concurrency = concurrency_budget or ConcurrencyBudget()
     resolved_admission = admission_budget or _default_admission_budget(resolved_concurrency)
@@ -219,6 +226,7 @@ def build_execution_concurrency_runtime(
         blocking_io_thread_name_prefix=blocking_io_thread_name_prefix,
         timer_name=timer_name,
         permits=admission,
+        cpu_provider=cpu_provider,
     )
     return ExecutionConcurrencyAuthorities(concurrency=concurrency, admission=admission)
 
