@@ -40,6 +40,7 @@ class HostRuntimeStatus:
     memory_pressure_some_avg10_percent: float | None = None
     io_pressure_some_avg10_percent: float | None = None
     available_pids: int | None = None
+    available_fds: int | None = None
     detail: str = ""
 
     def __post_init__(self) -> None:
@@ -68,6 +69,10 @@ class HostRuntimeStatus:
             type(self.available_pids) is not int or self.available_pids < 0
         ):
             raise ValueError("host runtime available_pids must be non-negative or None")
+        if self.available_fds is not None and (
+            type(self.available_fds) is not int or self.available_fds < 0
+        ):
+            raise ValueError("host runtime available_fds must be non-negative or None")
 
 
 @dataclass(frozen=True, slots=True)
