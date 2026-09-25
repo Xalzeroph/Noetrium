@@ -54,6 +54,56 @@ class ModelOSV11Tests(unittest.TestCase):
         with self.assertRaises(ValueError):
             QualifiedDeploymentManifest("dep",stack,cert,DeploymentPlacement(("g0","g1")),"other")
 
+    def test_vllm_qualified_concurrency_cannot_exceed_frozen_queue_cap(self):
+        identity=ImmutableModelIdentity(
+            "q","model","rev","vllm","test","bfloat16",None,262144
+        )
+        stack=ModelStackSpec(
+            identity,*stack_parts(),1,1,1,1,None,None,None,None,"fcfs",
+            ("--max-num-queued-reqs","64"),
+        )
+        host_identity=hashlib.sha256(b"vllm-host").hexdigest()
+        too_wide=QualificationCertificate(
+            stack.digest(),"ev",("planner",),
+            ResourceEnvelope(70<<30,100<<30,65,.5,.03,500),
+            host_identity,
+        )
+        with self.assertRaisesRegex(ValueError,"max-num-queued-reqs"):
+            QualifiedDeploymentManifest(
+                "vllm",stack,too_wide,DeploymentPlacement(("g0",)),host_identity
+            )
+
+        exact=QualificationCertificate(
+            stack.digest(),"ev",("planner",),
+            ResourceEnvelope(70<<30,100<<30,64,.5,.03,500),
+            host_identity,
+        )
+        deployment=QualifiedDeploymentManifest(
+            "vllm",stack,exact,DeploymentPlacement(("g0",)),host_identity
+        )
+        self.assertEqual(
+            deployment.certificate.resource_envelope.max_qualified_concurrency,
+            64,
+        )
+
+    def test_vllm_internal_dp_is_rejected_without_auxiliary_endpoint_authority(self):
+        identity=ImmutableModelIdentity(
+            "q","model","rev","vllm","test","bfloat16",None,262144
+        )
+        stack=ModelStackSpec(
+            identity,*stack_parts(),1,2,1,1,None,None,None,None,"fcfs",()
+        )
+        host_identity=hashlib.sha256(b"vllm-host").hexdigest()
+        cert=QualificationCertificate(
+            stack.digest(),"ev",("planner",),
+            ResourceEnvelope(70<<30,100<<30,8,.5,.03,500),
+            host_identity,
+        )
+        with self.assertRaisesRegex(ValueError,"auxiliary RPC endpoint"):
+            QualifiedDeploymentManifest(
+                "vllm",stack,cert,DeploymentPlacement(("g0",)),host_identity
+            )
+
     def test_admission_backpressures_without_quality_change(self):
         c=ModelAdmissionController(1); first=c.acquire()
         with self.assertRaises(ModelAdmissionTimeout): c.acquire(timeout_seconds=.01)
