@@ -117,6 +117,32 @@ def test_unknown_link_capacity_fails_closed_for_new_io() -> None:
         )
 
 
+def test_default_policy_does_not_yield_or_fail_closed_on_soft_link_telemetry() -> None:
+    base = build_execution_admission(
+        budget=AdmissionBudget(max_total_in_flight=8),
+        scheduling=build_admission_scheduling_policy(priority_aging_seconds=0.01),
+    )
+    gate = SharedHostPressureAdmissionGate(
+        base,
+        _HealthyHost(),
+        network_observer=_Network(None),
+        policy=SharedHostPressurePolicy(),
+    )
+    gate.register_group(
+        "aggressive",
+        identity=AdmissionIdentity(),
+        intent=AdmissionIntent(mode=AdmissionMode.REJECT),
+    )
+
+    lease = gate.acquire(
+        "aggressive",
+        ExecutionLaneKind.ASYNC_IO,
+        deadline=None,
+        cancellation=None,
+    )
+    lease.release()
+
+
 def _netdev(rx_bytes: int, tx_bytes: int) -> str:
     return (
         "Inter-|   Receive                                                |  Transmit\n"
