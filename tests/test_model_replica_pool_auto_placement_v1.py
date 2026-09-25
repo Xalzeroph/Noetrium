@@ -203,6 +203,27 @@ class Scheduler:
         self.rows[proof.allocation_id] = bound
         return bound
 
+    def replace_bound(
+        self,
+        proof,
+        *,
+        previous_binding_proof_digest,
+    ):
+        current = self.rows[proof.allocation_id]
+        if current.binding_proof_digest != previous_binding_proof_digest:
+            raise RuntimeError("stale compute binding replacement")
+        if current.binding_binder_identity_digest == proof.binder_identity_digest:
+            raise RuntimeError("compute replacement requires new binder")
+        rebound = replace(
+            current,
+            binding_proof_digest=proof.digest(),
+            binding_binder_identity_digest=proof.binder_identity_digest,
+            binding_evidence_ref=proof.evidence_ref,
+            bound_at_epoch_s=proof.observed_at_epoch_s,
+        )
+        self.rows[proof.allocation_id] = rebound
+        return rebound
+
     def release(self, allocation):
         self.released.append(allocation.allocation_id)
         self.rows.pop(allocation.allocation_id, None)
@@ -252,6 +273,27 @@ class Endpoints:
         )
         self.rows[proof.allocation_id] = bound
         return bound
+
+    def replace_bound(
+        self,
+        proof,
+        *,
+        expected_previous_binding_proof_digest,
+    ):
+        current = self.rows[proof.allocation_id]
+        if current.binding_proof_digest != expected_previous_binding_proof_digest:
+            raise RuntimeError("stale endpoint binding replacement")
+        if current.binding_binder_identity_digest == proof.binder_identity_digest:
+            raise RuntimeError("endpoint replacement requires new binder")
+        rebound = replace(
+            current,
+            binding_proof_digest=proof.digest(),
+            binding_binder_identity_digest=proof.binder_identity_digest,
+            binding_evidence_ref=proof.evidence_ref,
+            bound_at_epoch_s=proof.observed_at_epoch_s,
+        )
+        self.rows[proof.allocation_id] = rebound
+        return rebound
 
     def release(self, allocation):
         self.released.append(allocation.allocation_id)
@@ -370,6 +412,85 @@ def test_auto_model_replica_pool_exhausts_available_gpu_capacity_without_gpu_or_
     assert len(endpoints.released) == 2
     assert compute_guards.created[0].closed
     assert endpoint_guards.created[0].closed
+
+
+def test_model_pool_rebinds_compute_and_endpoint_after_runtime_recovery(
+    tmp_path,
+) -> None:
+    class RecoveringRuntime(Runtime):
+        def __init__(self, catalog):
+            super().__init__(catalog)
+            self.epoch = 1
+
+        def generation(self, deployment_id):
+            spec = self.catalog.rows[deployment_id]
+            return ModelDeploymentGeneration(
+                deployment_id,
+                canonical_digest(spec),
+                canonical_digest(
+                    {
+                        "fake-applied": deployment_id,
+                        "epoch": self.epoch,
+                    }
+                ),
+            )
+
+    catalog = Catalog()
+    runtime = RecoveringRuntime(catalog)
+    scheduler = Scheduler()
+    endpoints = Endpoints()
+    pool = LocalModelReplicaPoolRuntime(
+        deployment_catalog=catalog,
+        deployment_runtime=runtime,
+        fleet=Fleet(catalog),
+        compute_scheduler=scheduler,
+        endpoint_allocations=endpoints,
+        compute_lease_guards=ComputeGuards(),
+        endpoint_lease_guards=EndpointGuards(),
+    )
+
+    lease = pool.ensure(
+        ModelReplicaPoolRequest(
+            pool_id="recovered-qwen",
+            scope=PLATFORM_SCOPE,
+            model_id="qwen3-8b",
+            engine="vllm",
+            python_environment_id="vllm",
+            cwd=Path(tmp_path),
+            compute=ComputeRequirement(
+                cpu_cores=2,
+                memory_bytes=1024,
+                gpu_count=1,
+                minimum_gpu_memory_bytes=40 * 1024**3,
+            ),
+            replica_count=1,
+        )
+    )
+    row = lease.report.placements[0]
+    original = row.generation.applied_runtime_digest
+    assert original is not None
+
+    runtime.epoch = 2
+    current = runtime.generation(row.deployment_id)
+    assert current.applied_runtime_digest != original
+
+    lease.assert_healthy()
+
+    compute = scheduler.rows[row.compute.allocation_id]
+    endpoint = endpoints.rows[row.endpoint.allocation_id]
+    assert (
+        compute.binding_binder_identity_digest
+        == current.applied_runtime_digest
+    )
+    assert (
+        endpoint.binding_binder_identity_digest
+        == current.applied_runtime_digest
+    )
+
+    lease.close()
+    assert runtime.removed == [row.deployment_id]
+    assert scheduler.released == [row.compute.allocation_id]
+    assert endpoints.released == [row.endpoint.allocation_id]
 
 
 def test_model_endpoint_binding_requires_applied_runtime_generation(
