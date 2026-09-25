@@ -52,6 +52,17 @@ def _lease_expiry(ttl_seconds: float | None, now_epoch_s: float) -> float | None
     return now_epoch_s + value
 
 
+def _host_matches_requirement_labels(host: ComputeHost, requirement: ComputeRequirement) -> bool:
+    labels = dict(host.labels)
+    required = dict(requirement.required_labels)
+    forbidden = dict(requirement.forbidden_host_labels)
+    if any(labels.get(key) != value for key, value in required.items()):
+        return False
+    if any(labels.get(key) == value for key, value in forbidden.items()):
+        return False
+    return True
+
+
 def _allocation_matches(
     allocation: ComputeAllocation, host: ComputeHost, scope: ScopeIdentity,
     placement_scope: ScopeIdentity | None, requirement: ComputeRequirement,
@@ -63,8 +74,7 @@ def _allocation_matches(
         return False
     if len(allocation.gpu_ids) != requirement.gpu_count:
         return False
-    labels = dict(host.labels)
-    if any(labels.get(key) != value for key, value in requirement.required_labels):
+    if not _host_matches_requirement_labels(host, requirement):
         return False
     gpu_map = {gpu.gpu_id: gpu for gpu in host.gpus}
     return all(
@@ -663,15 +673,11 @@ class InMemoryComputeScheduler:
         hosts: tuple[ComputeHost, ...],
         requirement: ComputeRequirement,
     ) -> tuple[ComputeHost, ...]:
-        required_labels = dict(requirement.required_labels)
         return tuple(
             host
             for host in hosts
             if host.accepts_new_allocations
-            and not any(
-                dict(host.labels).get(key) != value
-                for key, value in required_labels.items()
-            )
+            and _host_matches_requirement_labels(host, requirement)
         )
 
     def _placements_locked(
@@ -1473,7 +1479,6 @@ class SQLiteComputeScheduler:
                     quarantined_gpus=quarantined_gpus,
                 )
                 if not placements:
-                    required_labels = dict(requirement.required_labels)
                     placement_identity = (
                         scope if placement_scope is None else placement_scope
                     )
@@ -1482,11 +1487,8 @@ class SQLiteComputeScheduler:
                         for host in self._inventory.list_hosts(
                             scope=placement_identity
                         )
-                        if host.enabled
-                        and not any(
-                            dict(host.labels).get(key) != value
-                            for key, value in required_labels.items()
-                        )
+                        if host.accepts_new_allocations
+                        and _host_matches_requirement_labels(host, requirement)
                     }
                     blocking_pending = tuple(
                         row
