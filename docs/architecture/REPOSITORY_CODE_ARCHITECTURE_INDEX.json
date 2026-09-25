@@ -42420,7 +42420,7 @@
     "tooling": 39
   },
   "schema": "noetrium-repository-code-architecture-index.v1",
-  "source_git_sha": "1f40d46e35d1bf366afe6f4aa3cebd60ce880740",
+  "source_git_sha": "ae4a2ba4068061b87b509fcea39e01b7045ead28",
   "symbols": [
     {
       "bases": [],
@@ -65750,6 +65750,7 @@
       "methods": [
         "__init__",
         "_require_workloads_open",
+        "resource_competition_enabled",
         "workload_cpu_workers",
         "owner_generation_id",
         "can_recover_abandoned_owner_generations",
