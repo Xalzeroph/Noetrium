@@ -1159,6 +1159,84 @@ def test_failed_creation_retains_cleanup_generation_until_retry(
     assert endpoint_guards.created[0].closed is True
 
 
+def test_failed_creation_uses_recovery_retirement_after_exact_stop(
+    tmp_path,
+) -> None:
+    class RejectingFleet(Fleet):
+        def reconcile(self):
+            rows = super().reconcile()
+            return tuple(
+                replace(
+                    row,
+                    runtime_state=ModelRuntimeState.ERROR,
+                    detail="simulated startup failure",
+                )
+                for row in rows
+            )
+
+    class RecoveryOnlyScheduler(Scheduler):
+        def release(self, allocation):
+            raise AssertionError(
+                "failed-creation cleanup must not use live compute release"
+            )
+
+        def recover_release(self, allocation):
+            Scheduler.release(self, allocation)
+
+    class RecoveryOnlyEndpoints(Endpoints):
+        def release(self, allocation):
+            raise AssertionError(
+                "failed-creation cleanup must not use live endpoint release"
+            )
+
+        def recover_release(self, allocation, *, now=None):
+            del now
+            return Endpoints.release(self, allocation)
+
+    catalog = Catalog()
+    runtime = Runtime(catalog)
+    scheduler = RecoveryOnlyScheduler()
+    endpoints = RecoveryOnlyEndpoints()
+    compute_guards = ComputeGuards()
+    endpoint_guards = EndpointGuards()
+    pool = LocalModelReplicaPoolRuntime(
+        deployment_catalog=catalog,
+        deployment_runtime=runtime,
+        fleet=RejectingFleet(catalog),
+        compute_scheduler=scheduler,
+        endpoint_allocations=endpoints,
+        compute_lease_guards=compute_guards,
+        endpoint_lease_guards=endpoint_guards,
+    )
+
+    with pytest.raises(RuntimeError, match="automatic model replica failed"):
+        pool.ensure(
+            ModelReplicaPoolRequest(
+                pool_id="failed-creation-recovery-retirement",
+                scope=PLATFORM_SCOPE,
+                model_id="qwen3-8b",
+                engine="vllm",
+                python_environment_id="vllm",
+                cwd=Path(tmp_path),
+                compute=ComputeRequirement(
+                    cpu_cores=2,
+                    memory_bytes=1024,
+                    gpu_count=1,
+                    minimum_gpu_memory_bytes=40 * 1024**3,
+                ),
+                replica_count=1,
+            )
+        )
+
+    assert pool.pending_cleanup_count == 0
+    assert pool.active_lease_count == 0
+    assert len(runtime.removed) == 1
+    assert len(scheduler.released) == 1
+    assert len(endpoints.released) == 1
+    assert compute_guards.created[0].closed is True
+    assert endpoint_guards.created[0].closed is True
+
+
 def test_model_replica_pool_close_uses_recovery_retirement_after_exact_stop(
     tmp_path,
 ) -> None:
