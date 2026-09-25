@@ -3,7 +3,10 @@ from __future__ import annotations
 from dataclasses import dataclass
 from enum import StrEnum
 from pathlib import Path
+import shutil
 import stat as stat_module
+
+from .durable_file import fsync_directory
 
 
 class FilesystemCarrierKind(StrEnum):
@@ -107,8 +110,140 @@ def capture_filesystem_carrier_generation(
     )
 
 
+def rename_directory_carrier(
+    source: Path,
+    destination: Path,
+    *,
+    expected_generation: FilesystemCarrierGeneration,
+) -> FilesystemCarrierGeneration:
+    """Rename one exact directory object and durably publish the new name."""
+
+    if (
+        type(expected_generation) is not FilesystemCarrierGeneration
+        or expected_generation.kind is not FilesystemCarrierKind.DIRECTORY
+    ):
+        raise TypeError(
+            "directory rename requires a typed directory carrier generation"
+        )
+    current = capture_filesystem_carrier_generation(
+        source,
+        expected_kind=FilesystemCarrierKind.DIRECTORY,
+    )
+    if not expected_generation.same_generation(current):
+        raise RuntimeError(
+            "directory carrier generation changed before rename"
+        )
+    destination.parent.mkdir(parents=True, exist_ok=True)
+    if destination.exists() or destination.is_symlink():
+        raise RuntimeError(
+            f"directory carrier destination already exists: {destination}"
+        )
+    try:
+        source.rename(destination)
+    except OSError:
+        # rename(2) may have committed before an I/O error reached the caller.
+        if source.exists() or not destination.exists():
+            raise
+    moved = capture_filesystem_carrier_generation(
+        destination,
+        expected_kind=FilesystemCarrierKind.DIRECTORY,
+    )
+    if not expected_generation.same_object(moved):
+        raise RuntimeError(
+            "directory carrier object changed across rename"
+        )
+    fsync_directory(source.parent)
+    if destination.parent != source.parent:
+        fsync_directory(destination.parent)
+    return moved
+
+
+def purge_directory_contents(
+    root: Path,
+    *,
+    expected_generation: FilesystemCarrierGeneration,
+) -> FilesystemCarrierGeneration:
+    """Remove descendants while deliberately preserving the owned root inode.
+
+    Keeping the root directory present makes recursive deletion crash-retryable:
+    a same-path replacement cannot occupy the name until the original root has
+    been reduced to an empty, separately committed generation.
+    """
+
+    if (
+        type(expected_generation) is not FilesystemCarrierGeneration
+        or expected_generation.kind is not FilesystemCarrierKind.DIRECTORY
+    ):
+        raise TypeError(
+            "directory purge requires a typed directory carrier generation"
+        )
+    current = capture_filesystem_carrier_generation(
+        root,
+        expected_kind=FilesystemCarrierKind.DIRECTORY,
+    )
+    if not expected_generation.same_object(current):
+        raise RuntimeError(
+            "directory carrier object changed during recursive purge"
+        )
+    for child in tuple(root.iterdir()):
+        if child.is_symlink() or not child.is_dir():
+            child.unlink()
+        else:
+            shutil.rmtree(child)
+    fsync_directory(root)
+    emptied = capture_filesystem_carrier_generation(
+        root,
+        expected_kind=FilesystemCarrierKind.DIRECTORY,
+    )
+    if not expected_generation.same_object(emptied):
+        raise RuntimeError(
+            "directory carrier object changed while clearing descendants"
+        )
+    if any(root.iterdir()):
+        raise RuntimeError(
+            "directory carrier is not empty after descendant purge"
+        )
+    return emptied
+
+
+def remove_empty_directory_carrier(
+    root: Path,
+    *,
+    expected_generation: FilesystemCarrierGeneration,
+) -> bool:
+    """Remove one exact empty directory generation with durable parent sync."""
+
+    if (
+        type(expected_generation) is not FilesystemCarrierGeneration
+        or expected_generation.kind is not FilesystemCarrierKind.DIRECTORY
+    ):
+        raise TypeError(
+            "empty directory removal requires a typed directory carrier generation"
+        )
+    if not root.exists():
+        return False
+    current = capture_filesystem_carrier_generation(
+        root,
+        expected_kind=FilesystemCarrierKind.DIRECTORY,
+    )
+    if not expected_generation.same_generation(current):
+        raise RuntimeError(
+            "empty directory carrier generation changed before removal"
+        )
+    if any(root.iterdir()):
+        raise RuntimeError(
+            "empty directory carrier gained descendants before removal"
+        )
+    root.rmdir()
+    fsync_directory(root.parent)
+    return True
+
+
 __all__ = [
     "FilesystemCarrierGeneration",
     "FilesystemCarrierKind",
     "capture_filesystem_carrier_generation",
+    "purge_directory_contents",
+    "remove_empty_directory_carrier",
+    "rename_directory_carrier",
 ]
