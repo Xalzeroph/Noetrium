@@ -4,8 +4,9 @@ from dataclasses import dataclass
 import math
 import os
 from pathlib import Path
+from threading import Lock
 import time
-from typing import Protocol
+from typing import Callable, Protocol
 
 from noetrium_platform.foundation.kernel.concurrency.api import (
     CancellationTokenPort,
@@ -47,6 +48,157 @@ def configure_opportunistic_cpu_worker() -> None:
             oom_path.write_text("500", encoding="utf-8")
     except (OSError, ValueError):
         pass
+
+
+@dataclass(frozen=True, slots=True)
+class SharedNetworkPressureStatus:
+    available: bool
+    max_utilization_percent: float | None = None
+    detail: str = ""
+
+    def __post_init__(self) -> None:
+        if type(self.available) is not bool:
+            raise TypeError("shared network availability must be boolean")
+        if self.max_utilization_percent is not None and (
+            isinstance(self.max_utilization_percent, bool)
+            or not isinstance(self.max_utilization_percent, (int, float))
+            or not math.isfinite(float(self.max_utilization_percent))
+            or not 0.0 <= float(self.max_utilization_percent) <= 100.0
+        ):
+            raise ValueError(
+                "shared network utilization must be a finite percentage or None"
+            )
+
+
+class SharedNetworkPressureObserverPort(Protocol):
+    def snapshot(self) -> SharedNetworkPressureStatus: ...
+
+
+class LocalSharedNetworkPressureObserver:
+    """Best-effort host/network-namespace link saturation observer."""
+
+    def __init__(
+        self,
+        *,
+        proc_net_dev: Path = Path("/proc/net/dev"),
+        sys_class_net: Path = Path("/sys/class/net"),
+        clock: Callable[[], float] = time.monotonic,
+        minimum_sample_seconds: float = 0.05,
+    ) -> None:
+        if (
+            isinstance(minimum_sample_seconds, bool)
+            or not isinstance(minimum_sample_seconds, (int, float))
+            or not math.isfinite(float(minimum_sample_seconds))
+            or minimum_sample_seconds <= 0
+        ):
+            raise ValueError("network pressure sample interval must be finite and positive")
+        self._proc_net_dev = proc_net_dev
+        self._sys_class_net = sys_class_net
+        self._clock = clock
+        self._minimum_sample_seconds = float(minimum_sample_seconds)
+        self._previous_at: float | None = None
+        self._previous: dict[str, tuple[int, int, int]] = {}
+        self._last = SharedNetworkPressureStatus(
+            True,
+            max_utilization_percent=None,
+            detail="network-pressure-warming",
+        )
+        self._lock = Lock()
+
+    def _read(self) -> dict[str, tuple[int, int, int]]:
+        text = self._proc_net_dev.read_text("utf-8", errors="replace")
+        rows: dict[str, tuple[int, int, int]] = {}
+        for line in text.splitlines():
+            if ":" not in line:
+                continue
+            name, raw = line.split(":", 1)
+            interface = name.strip()
+            if not interface or interface == "lo":
+                continue
+            fields = raw.split()
+            if len(fields) < 16:
+                continue
+            try:
+                rx_bytes = int(fields[0])
+                tx_bytes = int(fields[8])
+                speed_mbps = int(
+                    (self._sys_class_net / interface / "speed")
+                    .read_text("utf-8", errors="replace")
+                    .strip()
+                )
+            except (OSError, ValueError):
+                continue
+            if rx_bytes < 0 or tx_bytes < 0 or speed_mbps <= 0:
+                continue
+            rows[interface] = (rx_bytes, tx_bytes, speed_mbps)
+        return rows
+
+    def snapshot(self) -> SharedNetworkPressureStatus:
+        try:
+            now = float(self._clock())
+            if not math.isfinite(now):
+                raise ValueError("network pressure clock is not finite")
+            current = self._read()
+        except (OSError, ValueError) as exc:
+            return SharedNetworkPressureStatus(
+                False,
+                detail=f"{type(exc).__name__}:{exc}",
+            )
+
+        with self._lock:
+            if not current:
+                self._previous_at = now
+                self._previous = {}
+                self._last = SharedNetworkPressureStatus(
+                    True,
+                    max_utilization_percent=None,
+                    detail="network-link-speed-unavailable",
+                )
+                return self._last
+
+            if self._previous_at is None:
+                self._previous_at = now
+                self._previous = current
+                return self._last
+
+            elapsed = now - self._previous_at
+            if elapsed < self._minimum_sample_seconds:
+                return self._last
+
+            percentages: list[float] = []
+            for interface, (rx_bytes, tx_bytes, speed_mbps) in current.items():
+                previous = self._previous.get(interface)
+                if previous is None:
+                    continue
+                previous_rx, previous_tx, _previous_speed = previous
+                capacity_bytes_per_second = speed_mbps * 1_000_000 / 8.0
+                if capacity_bytes_per_second <= 0:
+                    continue
+                rx_rate = max(0, rx_bytes - previous_rx) / elapsed
+                tx_rate = max(0, tx_bytes - previous_tx) / elapsed
+                percentages.append(
+                    min(
+                        100.0,
+                        100.0
+                        * max(rx_rate, tx_rate)
+                        / capacity_bytes_per_second,
+                    )
+                )
+
+            self._previous_at = now
+            self._previous = current
+            self._last = SharedNetworkPressureStatus(
+                True,
+                max_utilization_percent=(
+                    None if not percentages else max(percentages)
+                ),
+                detail=(
+                    "network-pressure-warming"
+                    if not percentages
+                    else ""
+                ),
+            )
+            return self._last
 
 
 @dataclass(frozen=True, slots=True)
@@ -149,6 +301,7 @@ class SharedHostPressurePolicy:
     max_cpu_pressure_some_avg10_percent: float = 95.0
     max_memory_pressure_some_avg10_percent: float = 10.0
     max_io_pressure_some_avg10_percent: float = 50.0
+    max_network_utilization_percent: float = 95.0
     poll_interval_seconds: float = 0.05
     fail_closed_when_runtime_unavailable: bool = True
 
@@ -167,6 +320,7 @@ class SharedHostPressurePolicy:
             ("max_cpu_pressure_some_avg10_percent", self.max_cpu_pressure_some_avg10_percent),
             ("max_memory_pressure_some_avg10_percent", self.max_memory_pressure_some_avg10_percent),
             ("max_io_pressure_some_avg10_percent", self.max_io_pressure_some_avg10_percent),
+            ("max_network_utilization_percent", self.max_network_utilization_percent),
         ):
             if (
                 isinstance(value, bool)
@@ -195,11 +349,13 @@ class SharedHostPressureAdmissionGate(ExecutionAdmissionPort):
         observer: HostRuntimeObserverPort,
         *,
         storage_observer: SharedStoragePressureObserverPort | None = None,
+        network_observer: SharedNetworkPressureObserverPort | None = None,
         policy: SharedHostPressurePolicy = SharedHostPressurePolicy(),
     ) -> None:
         self._delegate = delegate
         self._observer = observer
         self._storage_observer = storage_observer
+        self._network_observer = network_observer
         self._policy = policy
         self._intents: dict[str, AdmissionIntent] = {}
 
@@ -234,6 +390,15 @@ class SharedHostPressureAdmissionGate(ExecutionAdmissionPort):
             status = self._storage_observer.snapshot()
         except Exception:
             return SharedStoragePressureStatus(False, detail="storage-observer-failed")
+        return status
+
+    def _network_status(self) -> SharedNetworkPressureStatus | None:
+        if self._network_observer is None:
+            return None
+        try:
+            status = self._network_observer.snapshot()
+        except Exception:
+            return SharedNetworkPressureStatus(False, detail="network-observer-failed")
         return status
 
     def _pressure_reason(
@@ -297,6 +462,17 @@ class SharedHostPressureAdmissionGate(ExecutionAdmissionPort):
                 return "cpu-pressure"
 
         if lane_kind in {ExecutionLaneKind.BLOCKING_IO, ExecutionLaneKind.ASYNC_IO}:
+            network = self._network_status()
+            if self._network_observer is not None:
+                if network is None or not network.available:
+                    if self._policy.fail_closed_when_runtime_unavailable:
+                        return "network-runtime-unavailable"
+                elif (
+                    network.max_utilization_percent is not None
+                    and network.max_utilization_percent
+                    > self._policy.max_network_utilization_percent
+                ):
+                    return "network-pressure"
             if (
                 status.available_fds is not None
                 and status.available_fds < self._policy.min_available_fds + permit_count
@@ -408,10 +584,13 @@ class SharedHostPressureAdmissionGate(ExecutionAdmissionPort):
 
 
 __all__ = [
+    "LocalSharedNetworkPressureObserver",
     "LocalSharedStoragePressureObserver",
     "configure_opportunistic_cpu_worker",
     "SharedHostPressureAdmissionGate",
     "SharedHostPressurePolicy",
+    "SharedNetworkPressureObserverPort",
+    "SharedNetworkPressureStatus",
     "SharedStoragePressureObserverPort",
     "SharedStoragePressureStatus",
 ]
