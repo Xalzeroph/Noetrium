@@ -67,6 +67,7 @@ jobs:
             tests/test_model_auto_recovery_v1.py \
             tests/test_resource_endpoint_atomicity_v2.py \
             tests/test_linux_process_signal_generation_v1.py \
+            tests/test_linux_prepared_start_visibility_v1.py \
             tests/test_service_prepared_start_recovery_v146.py \
             tests/test_process_supervision_async_v2.py \
             tests/test_runtime_asset_management_v190.py::test_applied_clear_tombstone_survives_delete_commit_caller_error \
