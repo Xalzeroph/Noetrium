@@ -75,6 +75,21 @@ class LinuxProcessSpawner:
         self._process_supervisor = process_supervisor
 
     @staticmethod
+    def _send_child_environment(
+        fd: int,
+        environment: dict[str, str],
+    ) -> None:
+        payload = guardian_runtime.encode_child_environment(environment)
+        view = memoryview(payload)
+        while view:
+            written = os.write(fd, view)
+            if written <= 0:
+                raise OSError(
+                    "service guardian child-environment pipe made no progress"
+                )
+            view = view[written:]
+
+    @staticmethod
     def _read_guarded_child_pid(
         guardian: subprocess.Popen[bytes],
         read_fd: int,
@@ -191,17 +206,10 @@ class LinuxProcessSpawner:
 
         try:
             try:
-                payload = guardian_runtime.encode_child_environment(
-                    child_environment
+                self._send_child_environment(
+                    env_write_fd,
+                    child_environment,
                 )
-                view = memoryview(payload)
-                while view:
-                    written = os.write(env_write_fd, view)
-                    if written <= 0:
-                        raise OSError(
-                            "service guardian child-environment pipe made no progress"
-                        )
-                    view = view[written:]
             finally:
                 os.close(env_write_fd)
 
