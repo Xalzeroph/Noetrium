@@ -41,13 +41,20 @@ class ComputeGPU:
     model: str = ""
     labels: tuple[tuple[str, str], ...] = ()
     health: ComputeDeviceHealth = ComputeDeviceHealth.HEALTHY
+    reserved_memory_bytes: int = 0
 
     def __post_init__(self) -> None:
         if not self.gpu_id.strip() or self.memory_bytes < 1:
             raise ValueError("GPU identity/memory must be valid")
         if type(self.health) is not ComputeDeviceHealth:
             raise TypeError("GPU health must be ComputeDeviceHealth")
+        if type(self.reserved_memory_bytes) is not int or not 0 <= self.reserved_memory_bytes < self.memory_bytes:
+            raise ValueError("GPU reserved_memory_bytes must be an integer below device memory")
         object.__setattr__(self, "labels", _canonical_labels(self.labels, "GPU labels"))
+
+    @property
+    def schedulable_memory_bytes(self) -> int:
+        return self.memory_bytes - self.reserved_memory_bytes
 
 
 class ComputeHostSchedulingState(StrEnum):
