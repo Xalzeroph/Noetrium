@@ -290,6 +290,8 @@ class ManualLeaseClock(LeaseClockPort):
         self._elapsed = elapsed
 
     def move_host(self, *, host_seed: str) -> None:
+        if type(host_seed) is not str:
+            raise TypeError("manual lease host move host_seed must be str")
         if not host_seed.strip() or host_seed == self._host_seed:
             raise ValueError(
                 "manual lease host move requires a new host identity"
