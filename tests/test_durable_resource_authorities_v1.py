@@ -22,6 +22,7 @@ from noetrium_platform.capabilities.environment.catalog.api import (
     EnvironmentInstance,
     EnvironmentInstanceState,
     EnvironmentProfileLifecycle,
+    EnvironmentProfileMaterialization,
     EnvironmentProfileRevision,
     EnvironmentSpec,
     ExecutionEnvironmentKind,
@@ -36,7 +37,10 @@ from noetrium_platform.infrastructure.resources.lease.api import (
     ResourceOwnership,
 )
 from noetrium_platform.infrastructure.resources.providers import SQLiteResourceLeaseRegistry
-from noetrium_platform.infrastructure.resources.lease.runtime import ResourceLeaseConflict
+from noetrium_platform.infrastructure.resources.lease.runtime import (
+    ManualLeaseClock,
+    ResourceLeaseConflict,
+)
 from noetrium_platform.foundation.scope.api import PLATFORM_SCOPE, ScopeIdentity, ScopeKind
 from noetrium_platform.foundation.scope.providers import SQLiteScopeRegistry
 from noetrium_platform.foundation.portfolio.api import (
@@ -91,14 +95,15 @@ class DurableResourceAuthoritiesTests(TestCase):
             resource = ResourceIdentity(ResourceKind.COMPUTE, "host-1")
             scopes = SQLiteScopeRegistry(database)
             scopes.register(workspace, PLATFORM_SCOPE)
-            owners = SQLiteResourceLeaseRegistry(database)
+            clock = ManualLeaseClock(elapsed_seconds=1.0, wall_epoch_seconds=100.0)
+            owners = SQLiteResourceLeaseRegistry(database, clock=clock)
             owner = ResourceOwner(resource, PLATFORM_SCOPE, ResourceOwnership.PLATFORM_MANAGED)
             owners.register_owner(owner)
             lease = ResourceLease("lease-1", resource, workspace, "test allocation")
             granted = owners.acquire(lease)
 
             restored_scopes = SQLiteScopeRegistry(database)
-            restored_owners = SQLiteResourceLeaseRegistry(database)
+            restored_owners = SQLiteResourceLeaseRegistry(database, clock=clock)
             self.assertEqual(restored_scopes.ancestry(workspace), (workspace, PLATFORM_SCOPE))
             self.assertEqual(restored_owners.get("lease-1"), granted)
             with self.assertRaises(ResourceLeaseConflict):
@@ -110,8 +115,9 @@ class DurableResourceAuthoritiesTests(TestCase):
             workspace = ScopeIdentity(ScopeKind.WORKSPACE, "workspace")
             scopes = SQLiteScopeRegistry(database)
             scopes.register(workspace, PLATFORM_SCOPE)
-            leases = SQLiteResourceLeaseRegistry(database)
-            store = SQLiteEndpointAllocationStore(database)
+            clock = ManualLeaseClock(elapsed_seconds=1.0, wall_epoch_seconds=100.0)
+            leases = SQLiteResourceLeaseRegistry(database, clock=clock)
+            store = SQLiteEndpointAllocationStore(database, clock=clock)
             allocator = AtomicEndpointAllocator(
                 reservations=store,
                 probe=_AvailableProbe(),
@@ -125,7 +131,7 @@ class DurableResourceAuthoritiesTests(TestCase):
             )
             allocation = allocator.allocate(request)
             restored = AtomicEndpointAllocator(
-                reservations=SQLiteEndpointAllocationStore(database),
+                reservations=SQLiteEndpointAllocationStore(database, clock=clock),
                 probe=_AvailableProbe(),
             )
             self.assertEqual(restored.allocate(request), allocation)
@@ -696,7 +702,11 @@ def test_resource_lease_reconcile_can_be_scoped_to_one_resource_kind(tmp_path) -
         SQLiteResourceLeaseRegistry,
     )
 
-    registry = SQLiteResourceLeaseRegistry(tmp_path / "lease-kind.sqlite")
+    clock = ManualLeaseClock(elapsed_seconds=1.0, wall_epoch_seconds=100.0)
+    registry = SQLiteResourceLeaseRegistry(
+        tmp_path / "lease-kind.sqlite",
+        clock=clock,
+    )
     endpoint = ResourceIdentity(ResourceKind.NETWORK_ENDPOINT, "endpoint-a")
     container = ResourceIdentity(ResourceKind.CONTAINER, "container-a")
     for resource in (endpoint, container):
@@ -709,13 +719,12 @@ def test_resource_lease_reconcile_can_be_scoped_to_one_resource_kind(tmp_path) -
                 "kind-scoped-reconcile",
             ),
             ttl_seconds=1.0,
-            now=10.0,
         )
 
+    clock.advance(2.0)
     expired = registry.reconcile_expired(
-        now=12.0,
         resource_kind=ResourceKind.CONTAINER,
     )
     assert [row.resource.kind for row in expired] == [ResourceKind.CONTAINER]
-    assert registry.get("lease:container-a", now=12.0).state.value == "expired"
+    assert registry.get("lease:container-a").state.value == "expired"
     assert registry.get("lease:endpoint-a", now=10.5).state.value == "active"
