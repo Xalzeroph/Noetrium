@@ -4,6 +4,7 @@ from .contracts import (
     ManagedPythonEnvironment,
     PythonEnvironmentCloneResult,
     PythonEnvironmentOwnership,
+    PythonEnvironmentRetired,
     PythonEnvironmentSpec,
     PythonEnvironmentState,
 )
@@ -29,6 +30,7 @@ __all__ = [
     "PythonEnvironmentLifecyclePort",
     "PythonEnvironmentLookupPort",
     "PythonEnvironmentOwnership",
+    "PythonEnvironmentRetired",
     "PythonEnvironmentSpec",
     "PythonEnvironmentState",
     "PythonPackageManagementPort",
