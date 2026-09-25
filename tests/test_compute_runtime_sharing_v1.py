@@ -157,6 +157,26 @@ def test_fractional_vram_uses_larger_live_total_when_inventory_is_stale() -> Non
         )
 
 
+def test_scheduler_rejects_unresolved_shared_gpu_memory_demand() -> None:
+    requirement = ComputeRequirement(
+        cpu_cores=1,
+        memory_bytes=1,
+        gpu_count=1,
+        gpu_sharing_mode=GpuSharingMode.PREFER_IDLE_ALLOW_SHARED,
+    )
+    scheduler = in_memory_compute_scheduler(
+        _inventory(),
+        gpu_runtime_observer=_Observer(_snapshot()),
+    )
+
+    try:
+        scheduler.allocate("unresolved-shared", _scope(), requirement)
+    except ValueError as exc:
+        assert "shared GPU scheduling requires" in str(exc)
+    else:
+        raise AssertionError("scheduler admitted shared GPU work with no VRAM demand")
+
+
 def test_shared_gpu_mode_accepts_fraction_as_its_memory_reservation() -> None:
     requirement = ComputeRequirement(
         cpu_cores=1,
