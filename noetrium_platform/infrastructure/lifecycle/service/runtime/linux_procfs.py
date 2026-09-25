@@ -13,6 +13,7 @@ class LinuxProcessFacts:
     cwd: str
     environment: dict[str, str]
     process_group_id: int
+    parent_pid: int
 
 
 class LinuxProcfsReader:
@@ -118,14 +119,19 @@ class LinuxProcfsReader:
         except PermissionError:
             return True
 
-    def _start_identity_from_directory(self, process_directory: Path) -> str:
+    @staticmethod
+    def _stat_fields_from_directory(process_directory: Path) -> list[str]:
         stat = (process_directory / "stat").read_text(encoding="utf-8")
         close = stat.rfind(")")
         if close < 0:
             raise RuntimeError("invalid /proc stat format")
         fields = stat[close + 2 :].split()
         if len(fields) <= 19:
-            raise RuntimeError("/proc stat missing starttime")
+            raise RuntimeError("/proc stat missing required fields")
+        return fields
+
+    def _start_identity_from_directory(self, process_directory: Path) -> str:
+        fields = self._stat_fields_from_directory(process_directory)
         start_ticks = fields[19]
         boot_id_path = self.root / "sys/kernel/random/boot_id"
         boot_id = boot_id_path.read_text(encoding="utf-8").strip() if boot_id_path.exists() else "unknown-boot"
@@ -167,6 +173,7 @@ class LinuxProcfsReader:
             cwd=str((process_directory / "cwd").resolve()),
             environment=self._environment_from_directory(process_directory),
             process_group_id=os.getpgid(pid if control_pid is None else control_pid),
+            parent_pid=int(self._stat_fields_from_directory(process_directory)[1]),
         )
 
 
