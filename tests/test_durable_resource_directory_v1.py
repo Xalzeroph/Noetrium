@@ -245,17 +245,17 @@ def test_workspace_remove_retries_after_retirement_publication(
     )
     (allocation.path / "payload").write_text("state", encoding="utf-8")
 
-    real_rmtree = workspace_runtime.shutil.rmtree
+    real_purge = workspace_runtime.purge_directory_contents
     calls = 0
 
-    def fail_once(path):
+    def fail_once(path, *, expected_generation):
         nonlocal calls
         calls += 1
         if calls == 1:
             raise OSError("simulated recursive delete interruption")
-        return real_rmtree(path)
+        return real_purge(path, expected_generation=expected_generation)
 
-    monkeypatch.setattr(workspace_runtime.shutil, "rmtree", fail_once)
+    monkeypatch.setattr(workspace_runtime, "purge_directory_contents", fail_once)
     gc = _closed_workspace_gc(
         authorities,
         "run-retry",
@@ -397,12 +397,13 @@ def test_workspace_remove_retry_rejects_changed_gc_proof(
         scope=scope,
         category="study",
     )
-    real_rmtree = workspace_runtime.shutil.rmtree
+    real_purge = workspace_runtime.purge_directory_contents
 
-    def fail_delete(_path):
+    def fail_delete(_path, *, expected_generation):
+        del expected_generation
         raise OSError("simulated interruption after durable retirement")
 
-    monkeypatch.setattr(workspace_runtime.shutil, "rmtree", fail_delete)
+    monkeypatch.setattr(workspace_runtime, "purge_directory_contents", fail_delete)
     original = _closed_workspace_gc(
         authorities,
         "run-proof-retry",
@@ -439,7 +440,7 @@ def test_workspace_remove_retry_rejects_changed_gc_proof(
             ),
         ),
     )
-    monkeypatch.setattr(workspace_runtime.shutil, "rmtree", real_rmtree)
+    monkeypatch.setattr(workspace_runtime, "purge_directory_contents", real_purge)
     with pytest.raises(RuntimeError, match="GC proof changed across retry"):
         authorities.workspaces.remove_workspace(
             "run-proof-retry",
@@ -649,7 +650,9 @@ def test_workspace_gc_recovers_purge_committed_before_terminal_publication(
 
     assert not allocation.path.exists()
     quarantine_root = tmp_path / "workspaces" / ".retired-workspaces"
-    assert not tuple(quarantine_root.glob("*"))
+    (empty_quarantine,) = tuple(quarantine_root.glob("*"))
+    assert empty_quarantine.is_dir()
+    assert tuple(empty_quarantine.iterdir()) == ()
 
     monkeypatch.setattr(
         workspace_runtime,
@@ -688,19 +691,21 @@ def test_workspace_gc_retries_partial_recursive_delete(
         category="study",
     )
 
-    real_rmtree = workspace_runtime.shutil.rmtree
+    import noetrium_platform.foundation.kernel.kernel.durability.filesystem_generation as fs_generation
+
+    real_rmtree = fs_generation.shutil.rmtree
     calls = 0
 
     def partial_then_fail(path: Path) -> None:
         nonlocal calls
         calls += 1
         if calls == 1:
-            (path / "nested" / "payload.bin").unlink()
+            (path / "payload.bin").unlink()
             raise OSError("partial workspace recursive delete interruption")
         real_rmtree(path)
 
     monkeypatch.setattr(
-        workspace_runtime.shutil,
+        fs_generation.shutil,
         "rmtree",
         partial_then_fail,
     )
@@ -718,7 +723,7 @@ def test_workspace_gc_retries_partial_recursive_delete(
     assert not (quarantine / "nested" / "payload.bin").exists()
 
     monkeypatch.setattr(
-        workspace_runtime.shutil,
+        fs_generation.shutil,
         "rmtree",
         real_rmtree,
     )
@@ -752,14 +757,15 @@ def test_workspace_gc_purging_rejects_same_tree_replacement(
         category="study",
     )
 
-    real_rmtree = workspace_runtime.shutil.rmtree
+    real_purge = workspace_runtime.purge_directory_contents
 
-    def fail_before_delete(_path: Path) -> None:
+    def fail_before_delete(_path: Path, *, expected_generation) -> None:
+        del expected_generation
         raise OSError("crash after durable workspace purging intent")
 
     monkeypatch.setattr(
-        workspace_runtime.shutil,
-        "rmtree",
+        workspace_runtime,
+        "purge_directory_contents",
         fail_before_delete,
     )
     with pytest.raises(OSError, match="workspace purging intent"):
@@ -779,9 +785,9 @@ def test_workspace_gc_purging_rejects_same_tree_replacement(
     workspace_runtime.shutil.copytree(original, quarantine)
 
     monkeypatch.setattr(
-        workspace_runtime.shutil,
-        "rmtree",
-        real_rmtree,
+        workspace_runtime,
+        "purge_directory_contents",
+        real_purge,
     )
     with pytest.raises(
         RuntimeError,
@@ -819,12 +825,13 @@ def test_workspace_gc_rejects_live_path_reappearance_after_quarantine(
         category="study",
     )
 
-    real_rmtree = workspace_runtime.shutil.rmtree
+    real_purge = workspace_runtime.purge_directory_contents
 
-    def fail_purge(_path):
+    def fail_purge(_path, *, expected_generation):
+        del expected_generation
         raise OSError("simulated quarantine purge interruption")
 
-    monkeypatch.setattr(workspace_runtime.shutil, "rmtree", fail_purge)
+    monkeypatch.setattr(workspace_runtime, "purge_directory_contents", fail_purge)
     with pytest.raises(OSError, match="purge interruption"):
         authorities.workspaces.remove_workspace(
             "run-reappeared",
@@ -841,7 +848,7 @@ def test_workspace_gc_rejects_live_path_reappearance_after_quarantine(
     allocation.path.mkdir(parents=True)
     residue = allocation.path / "replacement-residue"
     residue.write_text("new-lifetime", encoding="utf-8")
-    monkeypatch.setattr(workspace_runtime.shutil, "rmtree", real_rmtree)
+    monkeypatch.setattr(workspace_runtime, "purge_directory_contents", real_purge)
 
     with pytest.raises(RuntimeError, match="live path reappeared"):
         authorities.workspaces.remove_workspace(
