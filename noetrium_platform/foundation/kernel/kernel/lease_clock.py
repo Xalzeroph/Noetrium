@@ -275,12 +275,19 @@ class ManualLeaseClock(LeaseClockPort):
         boot_seed: str,
         elapsed_seconds: float = 0.0,
     ) -> None:
+        if type(boot_seed) is not str:
+            raise TypeError("manual lease reboot boot_seed must be str")
         if not boot_seed.strip() or boot_seed == self._boot_seed:
             raise ValueError(
                 "manual lease reboot requires a new boot identity"
             )
+        if type(elapsed_seconds) not in (int, float):
+            raise TypeError("manual lease reboot elapsed_seconds must be int or float")
+        elapsed = float(elapsed_seconds)
+        if not math.isfinite(elapsed) or elapsed < 0:
+            raise ValueError("manual lease reboot elapsed time must be finite and non-negative")
         self._boot_seed = boot_seed
-        self._elapsed = float(elapsed_seconds)
+        self._elapsed = elapsed
 
     def move_host(self, *, host_seed: str) -> None:
         if not host_seed.strip() or host_seed == self._host_seed:
