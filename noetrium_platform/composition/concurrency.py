@@ -30,7 +30,6 @@ from .shared_host_pressure import (
     SharedHostPressurePolicy,
     SharedNetworkPressureObserverPort,
     SharedStoragePressureObserverPort,
-    configure_opportunistic_cpu_worker,
 )
 
 
@@ -220,11 +219,6 @@ def build_execution_concurrency_runtime(
         blocking_io_thread_name_prefix=blocking_io_thread_name_prefix,
         timer_name=timer_name,
         permits=admission,
-        cpu_worker_initializer=(
-            configure_opportunistic_cpu_worker
-            if host_runtime_observer is not None
-            else None
-        ),
     )
     return ExecutionConcurrencyAuthorities(concurrency=concurrency, admission=admission)
 
