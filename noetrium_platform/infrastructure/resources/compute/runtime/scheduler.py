@@ -893,6 +893,126 @@ class InMemoryComputeScheduler:
                         [primary, *rollback_errors],
                     )
 
+            if batch.placement_strategy is ComputeBatchPlacementStrategy.STRICT_SPREAD:
+                existing: dict[str, ComputeAllocation] = {
+                    request.allocation_id: row
+                    for request in batch.requests
+                    if (row := self._allocations.get(request.allocation_id)) is not None
+                }
+                used_hosts = {row.host_id for row in existing.values()}
+                if len(used_hosts) != len(existing):
+                    raise ComputeBatchPlacementUnavailable(batch)
+
+                fixed: dict[str, ComputeAllocation] = {}
+                for request in batch.requests:
+                    row = existing.get(request.allocation_id)
+                    if row is None:
+                        continue
+                    requirement = _requirement_on_host(
+                        request.requirement,
+                        row.host_id,
+                        preference=ComputePlacementPreference.SPREAD,
+                    )
+                    if requirement is None:
+                        raise ComputeBatchPlacementUnavailable(batch)
+                    fixed[request.allocation_id] = self.allocate(
+                        request.allocation_id,
+                        request.scope,
+                        requirement,
+                        placement_scope=request.placement_scope,
+                        ttl_seconds=ttl_seconds,
+                        now=now,
+                    )
+
+                pending_requests = tuple(
+                    request
+                    for request in batch.requests
+                    if request.allocation_id not in fixed
+                )
+
+                def place_spread(
+                    remaining,
+                    placed: dict[str, ComputeAllocation],
+                    occupied: frozenset[str],
+                ) -> dict[str, ComputeAllocation] | None:
+                    if not remaining:
+                        return placed
+
+                    ranked: list[tuple[int, str, object, tuple[ComputeHost, ...]]] = []
+                    for request in remaining:
+                        forbidden_ids = tuple(
+                            sorted(set(request.requirement.forbidden_host_ids) | set(occupied))
+                        )
+                        requirement = replace(
+                            request.requirement,
+                            forbidden_host_ids=forbidden_ids,
+                            placement_preference=ComputePlacementPreference.SPREAD,
+                        )
+                        scope = (
+                            request.scope
+                            if request.placement_scope is None
+                            else request.placement_scope
+                        )
+                        candidates = self.candidates(requirement, scope=scope)
+                        ranked.append(
+                            (len(candidates), request.allocation_id, request, candidates)
+                        )
+                    ranked.sort(key=lambda row: (row[0], row[1]))
+                    count, _allocation_id, request, candidates = ranked[0]
+                    if count == 0:
+                        return None
+
+                    next_remaining = tuple(
+                        row for row in remaining
+                        if row.allocation_id != request.allocation_id
+                    )
+                    for host in candidates:
+                        requirement = _requirement_on_host(
+                            request.requirement,
+                            host.host_id,
+                            preference=ComputePlacementPreference.SPREAD,
+                        )
+                        if requirement is None:
+                            continue
+                        allocation: ComputeAllocation | None = None
+                        try:
+                            allocation = self.allocate(
+                                request.allocation_id,
+                                request.scope,
+                                requirement,
+                                placement_scope=request.placement_scope,
+                                ttl_seconds=ttl_seconds,
+                                now=now,
+                            )
+                            result = place_spread(
+                                next_remaining,
+                                {**placed, request.allocation_id: allocation},
+                                occupied | frozenset((host.host_id,)),
+                            )
+                            if result is not None:
+                                return result
+                        except (
+                            ComputePlacementUnavailable,
+                            ComputePhysicalConvergencePending,
+                            ComputeBatchPlacementUnavailable,
+                        ):
+                            pass
+                        if (
+                            allocation is not None
+                            and allocation.allocation_id not in preexisting
+                        ):
+                            self.release(allocation)
+                    return None
+
+                spread = place_spread(
+                    pending_requests,
+                    dict(fixed),
+                    frozenset(used_hosts),
+                )
+                if spread is None:
+                    raise ComputeBatchPlacementUnavailable(batch)
+                return tuple(spread[request.allocation_id] for request in batch.requests)
+
             if batch.placement_strategy is not ComputeBatchPlacementStrategy.STRICT_PACK:
                 acquired: list[ComputeAllocation] = []
                 try:
@@ -1844,6 +1964,160 @@ class SQLiteComputeScheduler:
                     now_epoch_s,
                     runtime_snapshot,
                 )
+                if batch.placement_strategy is ComputeBatchPlacementStrategy.STRICT_SPREAD:
+                    fixed: dict[str, ComputeAllocation] = {}
+                    used_hosts: set[str] = set()
+                    for request in batch.requests:
+                        row = self._active_row(
+                            conn,
+                            request.allocation_id,
+                            now_epoch_s,
+                        )
+                        if row is None:
+                            continue
+                        if row.host_id in used_hosts:
+                            raise ComputeBatchPlacementUnavailable(batch)
+                        requirement = _requirement_on_host(
+                            request.requirement,
+                            row.host_id,
+                            preference=ComputePlacementPreference.SPREAD,
+                        )
+                        if requirement is None:
+                            raise ComputeBatchPlacementUnavailable(batch)
+                        fixed[request.allocation_id] = self._allocate_one_in_transaction(
+                            conn,
+                            allocation_id=request.allocation_id,
+                            scope=request.scope,
+                            requirement=requirement,
+                            placement_scope=request.placement_scope,
+                            ttl_seconds=ttl_seconds,
+                            now_epoch_s=now_epoch_s,
+                            runtime_snapshot=runtime_snapshot,
+                            host_runtime_snapshot=host_runtime_snapshot,
+                            pending=pending,
+                        )
+                        used_hosts.add(row.host_id)
+
+                    pending_requests = tuple(
+                        request
+                        for request in batch.requests
+                        if request.allocation_id not in fixed
+                    )
+                    savepoint_counter = 0
+
+                    def place_spread(
+                        remaining,
+                        placed: dict[str, ComputeAllocation],
+                        occupied: frozenset[str],
+                    ) -> dict[str, ComputeAllocation] | None:
+                        nonlocal savepoint_counter
+                        if not remaining:
+                            return placed
+
+                        rows = self._capacity_rows(conn)
+                        quarantined_gpus = frozenset(
+                            (row.host_id, gpu_id)
+                            for row in pending
+                            for gpu_id in row.gpu_ids
+                        )
+                        ranked = []
+                        for request in remaining:
+                            forbidden_ids = tuple(
+                                sorted(
+                                    set(request.requirement.forbidden_host_ids)
+                                    | set(occupied)
+                                )
+                            )
+                            requirement = replace(
+                                request.requirement,
+                                forbidden_host_ids=forbidden_ids,
+                                placement_preference=ComputePlacementPreference.SPREAD,
+                            )
+                            placement_scope = (
+                                request.scope
+                                if request.placement_scope is None
+                                else request.placement_scope
+                            )
+                            candidates = self._placements(
+                                rows,
+                                requirement,
+                                placement_scope,
+                                runtime_snapshot,
+                                host_runtime_snapshot,
+                                quarantined_gpus=quarantined_gpus,
+                            )
+                            ranked.append(
+                                (
+                                    len(candidates),
+                                    request.allocation_id,
+                                    request,
+                                    candidates,
+                                )
+                            )
+                        ranked.sort(key=lambda row: (row[0], row[1]))
+                        count, _allocation_id, request, candidates = ranked[0]
+                        if count == 0:
+                            return None
+
+                        next_remaining = tuple(
+                            row for row in remaining
+                            if row.allocation_id != request.allocation_id
+                        )
+                        for _score, host, _gpu_ids in candidates:
+                            requirement = _requirement_on_host(
+                                request.requirement,
+                                host.host_id,
+                                preference=ComputePlacementPreference.SPREAD,
+                            )
+                            if requirement is None:
+                                continue
+                            savepoint_counter += 1
+                            savepoint = f"compute_batch_spread_{savepoint_counter}"
+                            conn.execute(f"SAVEPOINT {savepoint}")
+                            try:
+                                allocation = self._allocate_one_in_transaction(
+                                    conn,
+                                    allocation_id=request.allocation_id,
+                                    scope=request.scope,
+                                    requirement=requirement,
+                                    placement_scope=request.placement_scope,
+                                    ttl_seconds=ttl_seconds,
+                                    now_epoch_s=now_epoch_s,
+                                    runtime_snapshot=runtime_snapshot,
+                                    host_runtime_snapshot=host_runtime_snapshot,
+                                    pending=pending,
+                                )
+                                result = place_spread(
+                                    next_remaining,
+                                    {**placed, request.allocation_id: allocation},
+                                    occupied | frozenset((host.host_id,)),
+                                )
+                                if result is not None:
+                                    conn.execute(f"RELEASE SAVEPOINT {savepoint}")
+                                    return result
+                            except (
+                                ComputePlacementUnavailable,
+                                ComputePhysicalConvergencePending,
+                                ComputeBatchPlacementUnavailable,
+                            ):
+                                pass
+                            conn.execute(f"ROLLBACK TO SAVEPOINT {savepoint}")
+                            conn.execute(f"RELEASE SAVEPOINT {savepoint}")
+                        return None
+
+                    spread = place_spread(
+                        pending_requests,
+                        dict(fixed),
+                        frozenset(used_hosts),
+                    )
+                    if spread is None:
+                        raise ComputeBatchPlacementUnavailable(batch)
+                    conn.commit()
+                    return tuple(
+                        spread[request.allocation_id]
+                        for request in batch.requests
+                    )
+
                 if batch.placement_strategy is not ComputeBatchPlacementStrategy.STRICT_PACK:
                     allocations = tuple(
                         self._allocate_one_in_transaction(
