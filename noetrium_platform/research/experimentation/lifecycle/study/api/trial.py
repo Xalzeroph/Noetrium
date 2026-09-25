@@ -372,6 +372,11 @@ class TaskVerifierReceipt:
                     "measurement_outcome_digest": (
                         self.measurement_outcome.outcome_digest
                     ),
+                    "verifier_artifact_cut_digest": (
+                        None
+                        if self.verifier_artifact_cut is None
+                        else self.verifier_artifact_cut.cut_digest
+                    ),
                     "measurements": tuple(
                         row.record_digest for row in self.measurements
                     ),
@@ -544,6 +549,7 @@ class TrialExecutionReceipt:
     assignment_digest: str
     measurements: tuple[MeasurementRecord, ...]
     measurement_outcome: MeasurementSetOutcome
+    verifier_artifact_cut: TaskVerifierArtifactCut | None = None
     evidence_refs: tuple[ArtifactReference, ...] = ()
     verifier_receipt: TaskVerifierReceipt | None = None
     receipt_digest: str = field(init=False)
@@ -566,6 +572,19 @@ class TrialExecutionReceipt:
             != self.measurement_outcome.record_digests
         ):
             raise ValueError("trial receipt measurement outcome record cut drifted")
+        if self.verifier_artifact_cut is not None:
+            if type(self.verifier_artifact_cut) is not TaskVerifierArtifactCut:
+                raise TypeError(
+                    "trial receipt verifier_artifact_cut must be "
+                    "TaskVerifierArtifactCut or None"
+                )
+            if (
+                self.verifier_artifact_cut.source_trial_request_digest
+                != self.request_digest
+            ):
+                raise ValueError(
+                    "trial receipt verifier artifact cut does not bind trial request"
+                )
         if type(self.evidence_refs) is not tuple or any(
             type(row) is not ArtifactReference for row in self.evidence_refs
         ):
@@ -584,6 +603,17 @@ class TrialExecutionReceipt:
                 != self.request_digest
             ):
                 raise ValueError("trial receipt verifier does not bind the trial request")
+            if self.verifier_artifact_cut is None:
+                raise ValueError(
+                    "trial receipt with verifier must preserve verifier artifact cut"
+                )
+            if (
+                self.verifier_receipt.request.artifact_cut
+                != self.verifier_artifact_cut
+            ):
+                raise ValueError(
+                    "trial receipt verifier artifact cut drifted from verifier request"
+                )
             if self.verifier_receipt.measurements != self.measurements:
                 raise ValueError(
                     "trial receipt measurements must equal verifier measurements"
