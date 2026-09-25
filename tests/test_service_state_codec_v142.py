@@ -22,7 +22,14 @@ class ServiceStateCodecV142Tests(unittest.TestCase):
         return replace(
             ServiceSupervisorState.initial("model.planner", "a" * 64),
             attempt=3,
-            process=ServiceProcessIdentity(42, "pid:42:start:7", 42),
+            process=ServiceProcessIdentity(
+                42,
+                "pid:42:start:7",
+                42,
+                42,
+                anchor_pid=40,
+                anchor_start_identity="pid:40:start:3",
+            ),
             last_exit_class=ServiceExitClass.SOFTWARE,
         )
 
