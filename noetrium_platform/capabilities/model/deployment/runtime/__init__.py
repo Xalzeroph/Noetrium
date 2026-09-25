@@ -1,3 +1,4 @@
+from .auto_recovery import DurableModelAutoRecoveryAuthority, ModelAutoRecoveryPolicy, ModelAutoRecoveryState
 from .applied_store import AppliedModelDeploymentStore
 from .controller import ModelDesiredStateController
 from .controller_state import FileModelControllerStateStore
@@ -11,7 +12,7 @@ from .resources import ModelResourceView
 from .templates import sglang_deployment, vllm_deployment
 
 __all__ = [
-    "AppliedModelDeploymentStore", "FileModelControllerStateStore", "ModelDesiredStateController",
+    "AppliedModelDeploymentStore", "DurableModelAutoRecoveryAuthority", "ModelAutoRecoveryPolicy", "ModelAutoRecoveryState", "FileModelControllerStateStore", "ModelDesiredStateController",
     "ModelDeploymentCatalog", "ModelDeploymentLogReader", "ModelDeploymentRegistry", "ModelDeploymentRuntime",
     "ModelFleetRuntime", "ModelLaunchMaterializer", "ModelResourceView", "sglang_deployment", "vllm_deployment",
 ]
