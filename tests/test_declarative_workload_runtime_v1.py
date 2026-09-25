@@ -30,7 +30,9 @@ from noetrium_platform.research.execution.workflow.runtime import UniversalMetho
 from noetrium_platform.research.experimentation.lifecycle.api import ExperimentTaskSpec
 from noetrium_platform.research.experimentation.workload.api import WorkloadEvaluation
 from noetrium_platform.research.experimentation.workload.composition import (
+    DeclarativeExecutionResultAdapter,
     DeclarativeWorkloadMethodCompiler,
+    MethodResultProjection,
     MethodRuntimeBindings,
     TaskFieldProjection,
     compose_method_runtime_bindings,
@@ -274,3 +276,37 @@ def test_declarative_compiler_rejects_two_initial_state_authorities(
                 fields=(("task_id", "task_id"),),
             ),
         )
+
+
+def test_declarative_result_adapter_exports_only_declared_method_result_paths() -> None:
+    program = _program()
+    runtime = MethodRuntimeBindings(
+        runtime_binder=standard_method_runtime_binder(),
+    )
+    compiler = DeclarativeWorkloadMethodCompiler(
+        program=program,
+        runtime=runtime,
+        input_projection=TaskFieldProjection(
+            fields=(("task_id", "task_id"), ("objective", "objective")),
+        ),
+    )
+    invocation = compiler.compile(
+        ExperimentTaskSpec("task-export", "qa", "question"),
+        ExecutionContext("run-export", "trace", "root"),
+    )
+    result = UniversalMethodMachine().run(
+        invocation.program,
+        runtime=invocation.runtime,
+        input_value=invocation.input_value,
+    )
+    adapter = DeclarativeExecutionResultAdapter(
+        export_projection=MethodResultProjection(
+            fields=(("answer", "value.objective"),),
+        )
+    )
+    evaluation = adapter.evaluate(
+        ExperimentTaskSpec("task-export", "qa", "question"),
+        result,
+    )
+    assert evaluation.success
+    assert evaluation.exports == {"answer": "question"}

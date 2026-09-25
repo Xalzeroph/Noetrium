@@ -89,6 +89,7 @@ class WorkloadMethodBinding:
             completion_receipt=evaluation.completion_receipt,
             failure_scope=evaluation.failure_scope,
             diagnostics=diagnostics,
+            exports=evaluation.exports,
         )
 
 

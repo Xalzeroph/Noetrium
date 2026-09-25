@@ -7,6 +7,7 @@ Trial runtime cannot recover the immutable task payload.
 from __future__ import annotations
 
 from dataclasses import dataclass
+import json
 from pathlib import Path
 from typing import Mapping
 
@@ -34,8 +35,17 @@ from noetrium_platform.evidence.artifact.reference.api import (
 from noetrium_platform.evidence.artifact.reference.providers import (
     SQLiteArtifactReferenceStore,
 )
-from noetrium_platform.foundation.governance.api import ScopeIdentity
-from noetrium_platform.foundation.kernel.kernel import canonical_digest
+from noetrium_platform.foundation.governance.api import ScopeIdentity, ScopeKind
+from noetrium_platform.foundation.kernel.kernel import (
+    canonical_digest,
+    freeze_json,
+    thaw_json,
+)
+from noetrium_platform.research.experimentation.lifecycle.study.api import (
+    TaskArtifactSpec,
+    TaskVerifierArtifact,
+    TrialExecutionRequest,
+)
 
 
 @dataclass(frozen=True, slots=True)
@@ -185,6 +195,81 @@ class ResearchExecutionContentAuthorities:
         return payload
 
 
+@dataclass(frozen=True, slots=True)
+class ResearchExecutionVerifierArtifactPublisher:
+    """Artifact-authority-backed verifier handoff publisher."""
+
+    content: ResearchExecutionContentAuthorities
+
+    def __post_init__(self) -> None:
+        if type(self.content) is not ResearchExecutionContentAuthorities:
+            raise TypeError(
+                "verifier artifact publisher requires "
+                "ResearchExecutionContentAuthorities"
+            )
+
+    @property
+    def identity_digest(self) -> str:
+        return canonical_digest(
+            {
+                "publisher": "research-execution-verifier-artifact.v1",
+                "content_authority": self.content.identity_digest,
+            }
+        )
+
+    def publish(
+        self,
+        *,
+        request: TrialExecutionRequest,
+        declaration: TaskArtifactSpec,
+        payload: object,
+    ) -> TaskVerifierArtifact:
+        if type(request) is not TrialExecutionRequest:
+            raise TypeError(
+                "verifier artifact publish requires TrialExecutionRequest"
+            )
+        if type(declaration) is not TaskArtifactSpec:
+            raise TypeError(
+                "verifier artifact publish requires TaskArtifactSpec"
+            )
+        frozen = freeze_json(payload)
+        encoded = json.dumps(
+            thaw_json(frozen),
+            ensure_ascii=False,
+            sort_keys=True,
+            separators=(",", ":"),
+            allow_nan=False,
+        ).encode("utf-8")
+        scope = ScopeIdentity(ScopeKind.RUN, request.run_id)
+        reference = self.content.publish(
+            reference_id=(
+                "verifier:"
+                f"{request.assignment.assignment_digest}:"
+                f"{declaration.artifact_id}"
+            ),
+            scope=scope,
+            payload=encoded,
+            media_type="application/json",
+            kind=ArtifactKind.SCIENTIFIC,
+            retention=ArtifactRetention.RUN,
+            producer_component_id=(
+                "noetrium.verifier-stage-workload-provider"
+            ),
+            metadata={
+                "task_id": (
+                    ""
+                    if request.assignment.task_id is None
+                    else request.assignment.task_id
+                ),
+                "artifact_id": declaration.artifact_id,
+                "assignment_digest": (
+                    request.assignment.assignment_digest
+                ),
+            },
+        )
+        return TaskVerifierArtifact(declaration, reference)
+
+
 def compose_research_execution_content(
     root: str | Path,
 ) -> ResearchExecutionContentAuthorities:
@@ -200,5 +285,6 @@ def compose_research_execution_content(
 
 __all__ = [
     "ResearchExecutionContentAuthorities",
+    "ResearchExecutionVerifierArtifactPublisher",
     "compose_research_execution_content",
 ]

@@ -19,6 +19,8 @@ from noetrium_platform.research.execution.api import (
     MethodChildMachinePort,
     MethodObservationPort,
     MethodProgram,
+    MethodRunResult,
+    MethodRunStatus,
     MethodRuntimeContext,
     MethodRuntimePort,
     MethodSchemaPort,
@@ -33,7 +35,7 @@ from noetrium_platform.research.execution.api import (
 )
 from noetrium_platform.research.experimentation.lifecycle.api import ExperimentTaskSpec
 
-from ..api import WorkloadMethodInvocation
+from ..api import WorkloadEvaluation, WorkloadMethodInvocation
 
 
 def _safe_task_key(task: ExperimentTaskSpec) -> str:
@@ -103,6 +105,167 @@ class TaskFieldProjection:
         if not isinstance(frozen, Mapping):
             raise TypeError("task projection must freeze to a JSON object")
         return frozen
+
+
+@dataclass(frozen=True, slots=True)
+class MethodResultProjection:
+    """Project an explicit JSON subset out of one MethodRunResult."""
+
+    fields: tuple[tuple[str, str], ...] = ()
+    constants: JsonObject = field(default_factory=dict)
+
+    def __post_init__(self) -> None:
+        if type(self.fields) is not tuple:
+            raise TypeError("method result projection fields must be a tuple")
+        names: list[str] = []
+        for item in self.fields:
+            if (
+                type(item) is not tuple
+                or len(item) != 2
+                or any(type(value) is not str or not value.strip() for value in item)
+            ):
+                raise TypeError(
+                    "method result projection fields must be "
+                    "(output, path) text pairs"
+                )
+            if item[1].split(".", 1)[0] not in {
+                "value",
+                "state",
+                "diagnostics",
+            }:
+                raise ValueError(
+                    "method result projection path must start with "
+                    "value, state or diagnostics"
+                )
+            names.append(item[0])
+        if len(names) != len(set(names)):
+            raise ValueError(
+                "method result projection output fields must be unique"
+            )
+        if not isinstance(self.constants, Mapping):
+            raise TypeError(
+                "method result projection constants must be a mapping"
+            )
+        overlap = set(names) & set(self.constants)
+        if overlap:
+            raise ValueError(
+                "method result projection constants overlap projected fields: "
+                f"{sorted(overlap)}"
+            )
+        object.__setattr__(self, "constants", freeze_json(self.constants))
+
+    @property
+    def digest(self) -> str:
+        return canonical_digest(
+            {
+                "projection": "method-result-fields.v1",
+                "fields": self.fields,
+                "constants": self.constants,
+            }
+        )
+
+    @staticmethod
+    def _resolve(result: MethodRunResult, path: str) -> JsonValue:
+        root_name, *parts = path.split(".")
+        value: object = getattr(result, root_name)
+        for part in parts:
+            if not isinstance(value, Mapping) or part not in value:
+                raise KeyError(
+                    f"method result projection path is missing: {path}"
+                )
+            value = value[part]
+        frozen = freeze_json(value)
+        return frozen
+
+    def project(self, result: MethodRunResult) -> JsonObject:
+        if not isinstance(result, MethodRunResult):
+            raise TypeError(
+                "method result projection requires MethodRunResult"
+            )
+        value: dict[str, JsonValue] = dict(self.constants)
+        for output_name, path in self.fields:
+            value[output_name] = self._resolve(result, path)
+        frozen = freeze_json(value)
+        if not isinstance(frozen, Mapping):
+            raise TypeError(
+                "method result projection must freeze to a JSON object"
+            )
+        return frozen
+
+
+@dataclass(frozen=True, slots=True)
+class DeclarativeExecutionResultAdapter:
+    """Map Method execution status plus an explicit export projection.
+
+    This adapter does not decide benchmark correctness. It is appropriate for
+    execution-stage providers and for workloads whose success is exactly Method
+    completion. Benchmark correctness with an external verifier remains owned by
+    that verifier.
+    """
+
+    export_projection: MethodResultProjection = field(
+        default_factory=MethodResultProjection
+    )
+    success_utility: float = 1.0
+
+    def __post_init__(self) -> None:
+        if not isinstance(self.export_projection, MethodResultProjection):
+            raise TypeError(
+                "declarative result adapter requires MethodResultProjection"
+            )
+        if isinstance(self.success_utility, bool) or not isinstance(
+            self.success_utility, (int, float)
+        ):
+            raise TypeError(
+                "declarative result adapter success_utility must be numeric"
+            )
+
+    @property
+    def digest(self) -> str:
+        return canonical_digest(
+            {
+                "adapter": "declarative-execution-result.v1",
+                "export_projection_digest": self.export_projection.digest,
+                "success_utility": float(self.success_utility),
+            }
+        )
+
+    def evaluate(
+        self,
+        task: ExperimentTaskSpec,
+        result: MethodRunResult,
+    ) -> WorkloadEvaluation:
+        if not isinstance(task, ExperimentTaskSpec):
+            raise TypeError(
+                "declarative result adapter requires ExperimentTaskSpec"
+            )
+        if not isinstance(result, MethodRunResult):
+            raise TypeError(
+                "declarative result adapter requires MethodRunResult"
+            )
+        succeeded = result.status is MethodRunStatus.SUCCEEDED
+        return WorkloadEvaluation(
+            success=succeeded,
+            utility=float(self.success_utility) if succeeded else 0.0,
+            failure_reason=(
+                ""
+                if succeeded
+                else (
+                    result.failure
+                    or result.failure_code
+                    or result.status.value
+                )
+            ),
+            diagnostics={
+                "method_run_digest": result.run_digest,
+                "method_status": result.status.value,
+            },
+            exports=(
+                self.export_projection.project(result)
+                if succeeded
+                else {}
+            ),
+        )
 
 
 @dataclass(frozen=True, slots=True)
@@ -356,7 +519,9 @@ class DeclarativeWorkloadMethodCompiler:
 
 
 __all__ = [
+    "DeclarativeExecutionResultAdapter",
     "DeclarativeWorkloadMethodCompiler",
+    "MethodResultProjection",
     "compose_method_runtime_bindings",
     "MethodRuntimeBindings",
     "TaskFieldProjection",

@@ -2,6 +2,9 @@ from __future__ import annotations
 
 import pytest
 
+from noetrium_platform.foundation.governance.api import PLATFORM_SCOPE
+from noetrium_platform.foundation.kernel.kernel import canonical_digest
+from noetrium_platform.research.execution.api import ArtifactReference
 from noetrium_platform.research.experimentation.lifecycle.api import (
     ExperimentTaskSpec,
     ExperimentTrialProtocolIdentity,
@@ -13,6 +16,7 @@ from noetrium_platform.research.experimentation.lifecycle.api import (
     MeasurementValueKind,
     StudyAssignment,
     StudyVariantSpec,
+    TaskArtifactSpec,
     TaskDefinition,
     TaskPackageSpec,
     TaskVerifierIsolation,
@@ -26,6 +30,7 @@ from noetrium_platform.research.experimentation.workload.api import (
 )
 from noetrium_platform.research.experimentation.lifecycle.study.providers.trial import (
     StandardWorkloadMeasurementProjection,
+    VerifierStageWorkloadTrialProvider,
     WorkloadTrialProvider,
 )
 from noetrium_platform.research.experimentation.workload.api import (
@@ -89,6 +94,7 @@ def _task_definition(*, verifier: bool = False) -> TaskDefinition:
             instruction_digest="1" * 64,
             verifier_requirement_id="verifier.task",
             verifier_isolation=TaskVerifierIsolation.SHARED,
+            artifacts=(TaskArtifactSpec("answer", "answer.json"),),
         )
     return TaskDefinition(
         "task-1",
@@ -245,3 +251,80 @@ def test_static_task_projection_fails_closed_on_unknown_task() -> None:
     request = _request(protocol)
     with pytest.raises(KeyError, match="no unique task"):
         projection.task(request.assignment.task_id)
+
+
+class _VerifierArtifactPublisher:
+    identity_digest = canonical_digest({"publisher": "test"})
+
+    def publish(self, *, request, declaration, payload):
+        from noetrium_platform.research.experimentation.lifecycle.api import (
+            TaskVerifierArtifact,
+        )
+
+        return TaskVerifierArtifact(
+            declaration,
+            ArtifactReference(
+                "ref-" + declaration.artifact_id,
+                PLATFORM_SCOPE,
+                "artifact-" + declaration.artifact_id,
+                1,
+            ),
+        )
+
+
+def test_verifier_stage_workload_exports_only_declared_artifacts() -> None:
+    protocol = _protocol(_success_definition())
+    result = WorkloadTaskResult(
+        task_id="task-1",
+        family="family",
+        success=True,
+        utility=1.0,
+        steps=1,
+        duration_s=0.1,
+        lineage_id="task-1",
+        exports={"answer": {"text": "42"}},
+    )
+    provider = VerifierStageWorkloadTrialProvider(
+        protocol_identity=ExperimentTrialProtocolIdentity(
+            "trial.workload", "7" * 64
+        ),
+        workload=_Workload(result),
+        task_projection=StaticExperimentTaskProjection(
+            (ExperimentTaskSpec("task-1", "family", "solve"),)
+        ),
+        artifact_publisher=_VerifierArtifactPublisher(),
+    )
+    stage = provider.run_trial(_request(protocol, verifier=True))
+    assert stage.measurements == ()
+    assert tuple(
+        row.declaration.artifact_id for row in stage.verifier_artifacts
+    ) == ("answer",)
+    assert stage.evidence_refs == (
+        stage.verifier_artifacts[0].reference,
+    )
+
+
+def test_verifier_stage_workload_rejects_undeclared_exports() -> None:
+    protocol = _protocol(_success_definition())
+    result = WorkloadTaskResult(
+        task_id="task-1",
+        family="family",
+        success=True,
+        utility=1.0,
+        steps=1,
+        duration_s=0.1,
+        lineage_id="task-1",
+        exports={"answer": {"text": "42"}, "secret": "leak"},
+    )
+    provider = VerifierStageWorkloadTrialProvider(
+        protocol_identity=ExperimentTrialProtocolIdentity(
+            "trial.workload", "7" * 64
+        ),
+        workload=_Workload(result),
+        task_projection=StaticExperimentTaskProjection(
+            (ExperimentTaskSpec("task-1", "family", "solve"),)
+        ),
+        artifact_publisher=_VerifierArtifactPublisher(),
+    )
+    with pytest.raises(ValueError, match="undeclared"):
+        provider.run_trial(_request(protocol, verifier=True))

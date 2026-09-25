@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from typing import Protocol, runtime_checkable
+
 from noetrium_platform.foundation.kernel.kernel import (
     ExecutionContext,
     canonical_digest,
@@ -10,6 +12,8 @@ from noetrium_platform.research.experimentation.lifecycle.study.api import (
     MeasurementRecord,
     MeasurementValue,
     MeasurementValueKind,
+    TaskArtifactSpec,
+    TaskVerifierArtifact,
     TaskVerifierPort,
     TaskVerifierReceipt,
     TaskVerifierRequest,
@@ -202,6 +206,166 @@ class WorkloadTrialProvider:
         )
 
 
+@runtime_checkable
+class TrialVerifierArtifactPublisherPort(Protocol):
+    """Publish one explicitly declared workload export across verifier isolation."""
+
+    @property
+    def identity_digest(self) -> str: ...
+
+    def publish(
+        self,
+        *,
+        request: TrialExecutionRequest,
+        declaration: TaskArtifactSpec,
+        payload: object,
+    ) -> TaskVerifierArtifact: ...
+
+
+class VerifierStageWorkloadTrialProvider:
+    """Execute one Workload task and export only task-declared verifier artifacts."""
+
+    def __init__(
+        self,
+        *,
+        protocol_identity: object,
+        workload: WorkloadTaskExecutionPort,
+        task_projection: TrialTaskProjectionPort,
+        artifact_publisher: TrialVerifierArtifactPublisherPort,
+    ) -> None:
+        digest = getattr(protocol_identity, "digest", None)
+        if not callable(digest):
+            raise TypeError(
+                "verifier-stage workload provider requires protocol identity"
+            )
+        protocol_digest = digest()
+        if type(protocol_digest) is not str or len(protocol_digest) != 64:
+            raise TypeError(
+                "verifier-stage workload protocol identity digest is invalid"
+            )
+        if not callable(getattr(workload, "execute_one", None)):
+            raise TypeError(
+                "verifier-stage workload provider requires WorkloadTaskExecutionPort"
+            )
+        if not isinstance(task_projection, TrialTaskProjectionPort):
+            raise TypeError(
+                "verifier-stage workload provider requires TrialTaskProjectionPort"
+            )
+        if not isinstance(
+            artifact_publisher,
+            TrialVerifierArtifactPublisherPort,
+        ):
+            raise TypeError(
+                "verifier-stage workload provider requires "
+                "TrialVerifierArtifactPublisherPort"
+            )
+        if type(artifact_publisher.identity_digest) is not str or len(
+            artifact_publisher.identity_digest
+        ) != 64:
+            raise TypeError(
+                "verifier artifact publisher identity digest is invalid"
+            )
+        self.protocol_identity = protocol_identity
+        self._workload = workload
+        self._task_projection = task_projection
+        self._artifact_publisher = artifact_publisher
+        self.identity_digest = canonical_digest(
+            {
+                "provider": "verifier-stage-workload-trial-provider.v1",
+                "protocol_identity": protocol_digest,
+                "task_projection": task_projection.identity_digest,
+                "artifact_publisher": artifact_publisher.identity_digest,
+            }
+        )
+
+    def run_trial(
+        self,
+        request: TrialExecutionRequest,
+    ) -> TrialExecutionStageReceipt:
+        if not isinstance(request, TrialExecutionRequest):
+            raise TypeError(
+                "verifier-stage workload provider requires TrialExecutionRequest"
+            )
+        if request.protocol_identity != self.protocol_identity:
+            raise ValueError("trial request protocol identity drift")
+        task_definition = request.task
+        package = None if task_definition is None else task_definition.package
+        if (
+            task_definition is None
+            or package is None
+            or package.verifier_requirement_id is None
+        ):
+            raise ValueError(
+                "verifier-stage workload provider requires task-declared verifier"
+            )
+        task_id = request.assignment.task_id
+        if task_id is None or task_id != task_definition.task_id:
+            raise ValueError(
+                "verifier-stage workload provider requires exact task assignment"
+            )
+        task = self._task_projection.task(task_id)
+        if getattr(task, "task_id", None) != task_id:
+            raise ValueError("projected workload task identity drift")
+        context = ExecutionContext(
+            run_id=request.run_id,
+            trace_id=request.request_digest,
+            span_id=f"trial:{request.assignment.assignment_digest[:16]}",
+            study_id=request.assignment.study_id,
+            condition_id=request.assignment.variant_id,
+            task_id=task_id,
+            operation_id=request.request_digest,
+            component_id="verifier-stage-workload-trial-provider",
+        )
+        result = self._workload.execute_one(task, context)
+        if not isinstance(result, WorkloadTaskResult):
+            raise TypeError(
+                "verifier-stage workload provider requires WorkloadTaskResult"
+            )
+        if result.task_id != task_id:
+            raise ValueError("workload result task identity drift")
+        if not result.success:
+            raise RuntimeError(
+                "workload execution failed before verifier handoff: "
+                f"{result.failure_reason or 'unknown execution failure'}"
+            )
+
+        declared = {row.artifact_id: row for row in package.artifacts}
+        exported = dict(result.exports)
+        undeclared = tuple(sorted(set(exported) - set(declared)))
+        if undeclared:
+            raise ValueError(
+                "workload attempted to export undeclared verifier artifacts: "
+                f"{undeclared}"
+            )
+        missing = tuple(
+            row.artifact_id
+            for row in package.artifacts
+            if row.required and row.artifact_id not in exported
+        )
+        if missing:
+            raise ValueError(
+                "workload is missing required verifier exports: "
+                f"{missing}"
+            )
+        verifier_artifacts = tuple(
+            self._artifact_publisher.publish(
+                request=request,
+                declaration=declaration,
+                payload=exported[declaration.artifact_id],
+            )
+            for declaration in package.artifacts
+            if declaration.artifact_id in exported
+        )
+        references = tuple(row.reference for row in verifier_artifacts)
+        return TrialExecutionStageReceipt(
+            request_digest=request.request_digest,
+            assignment_digest=request.assignment.assignment_digest,
+            measurements=(),
+            verifier_artifacts=verifier_artifacts,
+            evidence_refs=references,
+        )
+
+
 def _require_measurements(
     plan: CompiledResearchPlan,
     request: TrialExecutionRequest,
@@ -342,6 +506,8 @@ class TrialVerifierOrchestrator:
 
 __all__ = [
     "StandardWorkloadMeasurementProjection",
+    "TrialVerifierArtifactPublisherPort",
     "TrialVerifierOrchestrator",
+    "VerifierStageWorkloadTrialProvider",
     "WorkloadTrialProvider",
 ]

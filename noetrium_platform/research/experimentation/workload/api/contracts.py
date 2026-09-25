@@ -72,6 +72,7 @@ class WorkloadEvaluation:
     completion_receipt: WorkloadCompletionReceipt | None = None
     failure_scope: str = FailureScope.TASK.value
     diagnostics: Mapping[str, JsonValue] = field(default_factory=dict)
+    exports: Mapping[str, JsonValue] = field(default_factory=dict)
     def __post_init__(self) -> None:
         if type(self.success) is not bool:
             raise TypeError("workload evaluation success must be bool")
@@ -87,6 +88,7 @@ class WorkloadEvaluation:
         if self.completion_receipt is not None and not isinstance(self.completion_receipt, WorkloadCompletionReceipt):
             raise TypeError("workload completion_receipt must be WorkloadCompletionReceipt")
         object.__setattr__(self, "diagnostics", _freeze_mapping(self.diagnostics, field_name="workload evaluation diagnostics"))
+        object.__setattr__(self, "exports", _freeze_mapping(self.exports, field_name="workload evaluation exports"))
 
 
 @dataclass(frozen=True, slots=True)
@@ -122,6 +124,7 @@ class WorkloadTaskResult:
     blocked: bool = False
     failure_scope: str = FailureScope.TASK.value
     diagnostics: Mapping[str, JsonValue] = field(default_factory=dict)
+    exports: Mapping[str, JsonValue] = field(default_factory=dict)
     def __post_init__(self) -> None:
         if any(type(v) is not str or not v.strip() for v in (self.task_id, self.family, self.lineage_id, self.failure_scope)):
             raise ValueError("workload task result identity/scope fields are required")
@@ -145,6 +148,7 @@ class WorkloadTaskResult:
         if self.completion_receipt is not None and not isinstance(self.completion_receipt, WorkloadCompletionReceipt):
             raise TypeError("workload completion_receipt must be WorkloadCompletionReceipt")
         object.__setattr__(self, "diagnostics", _freeze_mapping(self.diagnostics, field_name="workload diagnostics"))
+        object.__setattr__(self, "exports", _freeze_mapping(self.exports, field_name="workload exports"))
 
 
 @dataclass(frozen=True, slots=True)
