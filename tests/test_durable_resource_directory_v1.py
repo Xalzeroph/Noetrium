@@ -702,3 +702,30 @@ def test_workspace_gc_rejects_split_live_and_quarantine_truth(
             gc=gc,
         )
     assert (allocation.path / "foreign").read_text("utf-8") == "do-not-delete"
+
+@pytest.mark.parametrize(
+    "invalid_age",
+    (-1.0, float("nan"), float("inf"), float("-inf"), True),
+)
+def test_directory_cleanup_rejects_invalid_age_threshold(
+    tmp_path: Path,
+    invalid_age: float,
+) -> None:
+    authorities = build_local_directory_authorities(_layout(tmp_path))
+    candidate = authorities.layout.root(ManagedDirectoryKind.CACHE) / "keep.bin"
+    candidate.write_bytes(b"keep")
+
+    with pytest.raises(ValueError, match="finite non-negative"):
+        authorities.cleanup.clean_plan(
+            ManagedDirectoryKind.CACHE,
+            older_than_seconds=invalid_age,
+        )
+    assert candidate.read_bytes() == b"keep"
+
+    with pytest.raises(ValueError, match="finite non-negative"):
+        authorities.cleanup.clean(
+            ManagedDirectoryKind.CACHE,
+            older_than_seconds=invalid_age,
+        )
+    assert candidate.read_bytes() == b"keep"
+
