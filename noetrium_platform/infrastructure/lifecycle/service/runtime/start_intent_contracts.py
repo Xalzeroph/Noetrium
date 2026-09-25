@@ -12,6 +12,14 @@ class ServiceStartIntentPhase(StrEnum):
     PROCESS_CONFIRMED = "process_confirmed"
     STATE_COMMITTED = "state_committed"
     COMPLETE = "complete"
+    ABORTED = "aborted"
+
+    @property
+    def terminal(self) -> bool:
+        return self in {
+            ServiceStartIntentPhase.COMPLETE,
+            ServiceStartIntentPhase.ABORTED,
+        }
 
 
 @dataclass(frozen=True, slots=True)
