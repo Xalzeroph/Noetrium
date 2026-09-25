@@ -39,11 +39,17 @@ from .measurement import (
     MeasurementValueKind,
 )
 from .trial import (
-    TaskVerifierArtifact, TaskVerifierPort, TaskVerifierReceipt,
+    TaskVerifierArtifact, TaskVerifierArtifactCut, TaskVerifierPort, TaskVerifierReceipt,
     TaskVerifierRequest, TrialExecutionReceipt, TrialExecutionRequest,
     TrialExecutionStageReceipt, TrialMatrixExecutionReport,
     TrialMeasurementProjectionPort, TrialMeasurementsUnscored,
     TrialProviderPort, TrialTaskProjectionPort,
+)
+from .regrade import (
+    TaskVerifierArtifactBinding,
+    TaskVerifierRegradeDefinition,
+    TaskVerifierRegradeNotReady,
+    TaskVerifierRegradeProof,
 )
 from .research_read import StudyResearchReadPort, StudyResearchReadSnapshot
 from .ports import (
@@ -67,6 +73,11 @@ __all__ = [
     "StudyModel",
     "StudyParticipant",
     "TaskVerifierArtifact",
+    "TaskVerifierArtifactCut",
+    "TaskVerifierArtifactBinding",
+    "TaskVerifierRegradeDefinition",
+    "TaskVerifierRegradeNotReady",
+    "TaskVerifierRegradeProof",
     "TaskVerifierPort",
     "TaskVerifierReceipt",
     "TaskVerifierRequest",
