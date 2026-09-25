@@ -6,6 +6,9 @@ from time import monotonic
 
 from noetrium_platform.foundation.kernel.kernel.retry import blocking_wait
 from noetrium_platform.infrastructure.lifecycle.process.api import ProcessSupervisorPort
+from noetrium_platform.infrastructure.lifecycle.process.supervision.runtime import (
+    parent_bound_child as guardian_runtime,
+)
 from noetrium_platform.infrastructure.lifecycle.service.api import ServiceLaunchContract, ServiceProcessIdentity
 
 from .capture_paths import ServiceCapturePaths
@@ -95,6 +98,112 @@ class LinuxProcessBackend:
             launch_marker=(LINUX_PREPARED_START_ENV, token.token),
         )
 
+    def _guarded_prepared_candidate(
+        self,
+        *,
+        visible_pid: int,
+        contract: ServiceLaunchContract,
+        environment: MaterializedServiceEnvironment,
+        token,
+    ) -> tuple[ServiceProcessIdentity | None, tuple[str, ...], str | None]:
+        """Prove one marker-bearing target and its persistent guardian."""
+
+        try:
+            target_control_pid = self._procfs.control_pid(visible_pid)
+            target = self._verifier.identity(target_control_pid)
+            if (
+                target.process_group_id is None
+                or target.process_group_id != target.execution_pid
+            ):
+                return None, (), None
+            target_facts = self._procfs.facts(
+                target.pid,
+                control_pid=target.control_pid,
+            )
+        except (FileNotFoundError, ProcessLookupError):
+            return None, (), None
+        except (PermissionError, OSError, RuntimeError) as exc:
+            return None, (), (
+                f"target identity unavailable for marker pid={visible_pid}: "
+                f"{type(exc).__name__}:{exc}"
+            )
+
+        anchor_visible_pid = int(target_facts.parent_pid)
+        if anchor_visible_pid <= 0:
+            return None, (), (
+                f"marker target has no valid guardian parent: pid={visible_pid}"
+            )
+        try:
+            if self._procfs.effective_uid(anchor_visible_pid) != os.geteuid():
+                return None, (), (
+                    "marker target guardian belongs to a different effective uid: "
+                    f"target={visible_pid} guardian={anchor_visible_pid}"
+                )
+            anchor_environment = self._procfs.environment(anchor_visible_pid)
+            if anchor_environment.get(LINUX_PREPARED_START_ENV) != token.token:
+                return None, (), (
+                    "marker target parent does not carry the same prepared-start "
+                    f"token: target={visible_pid} guardian={anchor_visible_pid}"
+                )
+            anchor_control_pid = self._procfs.control_pid(anchor_visible_pid)
+            anchor_facts = self._procfs.facts(
+                anchor_visible_pid,
+                control_pid=anchor_control_pid,
+            )
+        except (FileNotFoundError, ProcessLookupError):
+            return None, (), (
+                "prepared-start guardian disappeared while proving ownership: "
+                f"target={visible_pid} guardian={anchor_visible_pid}"
+            )
+        except (PermissionError, OSError, RuntimeError) as exc:
+            return None, (), (
+                "prepared-start guardian facts are not fully observable: "
+                f"target={visible_pid} guardian={anchor_visible_pid} "
+                f"{type(exc).__name__}:{exc}"
+            )
+
+        guardian_path = str(Path(guardian_runtime.__file__).resolve())
+        argv = anchor_facts.argv
+        try:
+            separator = argv.index("--")
+        except ValueError:
+            separator = -1
+        guardian_exact = (
+            guardian_path in argv
+            and "--survive-parent-exit" in argv
+            and separator >= 0
+            and tuple(argv[separator + 1 :]) == contract.argv
+            and anchor_facts.process_group_id == anchor_control_pid
+        )
+        if not guardian_exact:
+            return None, (), (
+                "prepared-start parent is not the exact persistent service guardian: "
+                f"target={visible_pid} guardian={anchor_visible_pid}"
+            )
+
+        try:
+            guarded = self._verifier.guarded_identity(
+                target_control_pid,
+                anchor_control_pid,
+            )
+        except (FileNotFoundError, ProcessLookupError, PermissionError, OSError, RuntimeError) as exc:
+            return None, (), (
+                "prepared-start guarded identity could not be reconstructed: "
+                f"target={visible_pid} guardian={anchor_visible_pid} "
+                f"{type(exc).__name__}:{exc}"
+            )
+        reconciled = self._verifier.reconcile(
+            guarded,
+            contract,
+            environment,
+        )
+        if reconciled.status is not ProcessReconcileStatus.EXACT:
+            return None, tuple(reconciled.evidence_refs), (
+                reconciled.reason
+                or "prepared-start guarded target differs from frozen contract"
+            )
+        return guarded, tuple(reconciled.evidence_refs), None
+
     def _observe_prepared_start_once(
         self,
         contract: ServiceLaunchContract,
@@ -104,6 +213,7 @@ class LinuxProcessBackend:
         marker_processes: list[int] = []
         exact_roots: list[ServiceProcessIdentity] = []
         uncertain_same_uid: list[int] = []
+        ownership_errors: list[str] = []
         evidence: list[str] = []
         controller_uid = os.geteuid()
 
@@ -113,9 +223,8 @@ class LinuxProcessBackend:
             except (FileNotFoundError, ProcessLookupError):
                 continue
             except (PermissionError, OSError, RuntimeError):
-                # Linux ownership policy permits the controller to inspect its
-                # own UID. Hidden other-UID entries are irrelevant to this
-                # prepared-start token.
+                # Hidden other-UID entries are irrelevant. Same-UID uncertainty
+                # is recorded below once marker visibility is known.
                 continue
             if process_uid != controller_uid:
                 continue
@@ -129,27 +238,17 @@ class LinuxProcessBackend:
             if observed_environment.get(LINUX_PREPARED_START_ENV) != token.token:
                 continue
             marker_processes.append(visible_pid)
-            try:
-                control_pid = self._procfs.control_pid(visible_pid)
-                process = self._verifier.identity(control_pid)
-            except (FileNotFoundError, ProcessLookupError):
-                continue
-            except (PermissionError, OSError, RuntimeError):
-                uncertain_same_uid.append(visible_pid)
-                continue
-            if (
-                process.process_group_id is None
-                or process.process_group_id != process.execution_pid
-            ):
-                continue
-            reconciled = self._verifier.reconcile(
-                process,
-                contract,
-                environment,
+            candidate, refs, error = self._guarded_prepared_candidate(
+                visible_pid=visible_pid,
+                contract=contract,
+                environment=environment,
+                token=token,
             )
-            evidence.extend(reconciled.evidence_refs)
-            if reconciled.status is ProcessReconcileStatus.EXACT:
-                exact_roots.append(process)
+            evidence.extend(refs)
+            if candidate is not None:
+                exact_roots.append(candidate)
+            elif error is not None:
+                ownership_errors.append(error)
 
         if uncertain_same_uid:
             return PreparedServiceStartReconcileResult(
@@ -175,14 +274,25 @@ class LinuxProcessBackend:
                 PreparedServiceStartStatus.UNKNOWN,
                 None,
                 tuple(evidence),
-                "multiple exact Linux process roots carry one prepared-start token",
+                (
+                    "multiple exact guarded Linux service roots carry one "
+                    "prepared-start token"
+                ),
             )
         if marker_processes:
+            detail = (
+                "; ".join(ownership_errors[:8])
+                if ownership_errors
+                else "no exact guarded service root"
+            )
             return PreparedServiceStartReconcileResult(
                 PreparedServiceStartStatus.DRIFT,
                 None,
                 tuple(evidence),
-                "prepared Linux start has marker-bearing processes but no exact session leader",
+                (
+                    "prepared Linux start has marker-bearing processes but no "
+                    f"recoverable fork-tree ownership anchor: {detail}"
+                ),
             )
         return None
 
