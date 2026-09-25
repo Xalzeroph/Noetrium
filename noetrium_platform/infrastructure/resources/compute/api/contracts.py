@@ -135,16 +135,6 @@ class ComputeRequirement:
             raise TypeError("compute require_host_runtime must be bool")
         if not isinstance(self.gpu_sharing_mode, GpuSharingMode):
             raise TypeError("compute gpu_sharing_mode must be GpuSharingMode")
-        if (
-            self.gpu_count > 0
-            and self.gpu_sharing_mode is GpuSharingMode.PREFER_IDLE_ALLOW_SHARED
-            and self.required_gpu_free_memory_bytes <= 0
-            and self.required_gpu_memory_fraction is None
-        ):
-            raise ValueError(
-                "shared GPU scheduling requires a positive free-memory reservation "
-                "or required_gpu_memory_fraction"
-            )
 
 
 @dataclass(frozen=True, slots=True)
