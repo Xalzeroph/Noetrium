@@ -57,6 +57,10 @@ class ResourceOwner:
     scope: ScopeIdentity
     ownership: ResourceOwnership = ResourceOwnership.PLATFORM_MANAGED
 
+    def __post_init__(self) -> None:
+        if type(self.resource) is not ResourceIdentity:
+            raise TypeError("resource owner resource must be ResourceIdentity")
+
 
 @dataclass(frozen=True, slots=True)
 class ResourceLease:
