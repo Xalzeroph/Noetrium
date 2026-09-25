@@ -8,6 +8,7 @@ from noetrium_platform.foundation.kernel.kernel import (
 )
 from noetrium_platform.research.experimentation.lifecycle.study.api import (
     MeasurementRecord,
+    MeasurementSetOutcome,
     MeasurementValue,
     MeasurementValueKind,
     TaskVerifierPort,
@@ -199,6 +200,10 @@ class WorkloadTrialProvider:
             request_digest=request.request_digest,
             assignment_digest=request.assignment.assignment_digest,
             measurements=measurements,
+            measurement_outcome=MeasurementSetOutcome.complete(
+                request.measurement_protocol,
+                measurements,
+            ),
         )
 
 
@@ -238,6 +243,8 @@ def _require_measurements(
         raise ValueError(
             "trial receipt cannot attach verifier evidence when task declares none"
         )
+
+    receipt.require_complete_measurements(plan.measurement_protocol)
 
     expected_ids = {row.measurement_id for row in plan.measurement_protocol.definitions}
     actual_ids = tuple(row.measurement_id for row in receipt.measurements)
@@ -293,6 +300,10 @@ class TrialVerifierOrchestrator:
         )
         if not verifier_required:
             if type(provider_receipt) is TrialExecutionReceipt:
+                provider_receipt.measurement_outcome.validate(
+                    request.measurement_protocol,
+                    provider_receipt.measurements,
+                )
                 return provider_receipt
             if provider_receipt.verifier_artifacts:
                 raise ValueError(
@@ -302,6 +313,10 @@ class TrialVerifierOrchestrator:
                 request_digest=provider_receipt.request_digest,
                 assignment_digest=provider_receipt.assignment_digest,
                 measurements=provider_receipt.measurements,
+                measurement_outcome=MeasurementSetOutcome.complete(
+                    request.measurement_protocol,
+                    provider_receipt.measurements,
+                ),
                 evidence_refs=provider_receipt.evidence_refs,
             )
 
@@ -335,6 +350,7 @@ class TrialVerifierOrchestrator:
             request_digest=request.request_digest,
             assignment_digest=request.assignment.assignment_digest,
             measurements=verifier_receipt.measurements,
+            measurement_outcome=verifier_receipt.measurement_outcome,
             evidence_refs=evidence_refs,
             verifier_receipt=verifier_receipt,
         )
