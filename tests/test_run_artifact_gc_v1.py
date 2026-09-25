@@ -211,7 +211,7 @@ def test_run_artifact_gc_recovers_recursive_delete_before_terminal_publication(
     def fail_third(path: Path, payload: bytes) -> None:
         nonlocal calls
         calls += 1
-        if calls == 3:
+        if calls == 4:
             raise OSError("crash after run-artifact physical purge")
         real_publish(path, payload)
 
@@ -256,6 +256,53 @@ def test_run_artifact_gc_retries_partial_recursive_delete(
     monkeypatch.setattr(artifacts_runtime.shutil, "rmtree", real_rmtree)
     assert store.purge(gc=gc)
     assert not quarantine.exists()
+
+
+def test_run_artifact_gc_purging_rejects_same_tree_replacement(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    store = _populated(tmp_path)
+    gc = store.assess_gc(closures=_closed())
+    real_rmtree = artifacts_runtime.shutil.rmtree
+
+    def fail_before_delete(_path: Path) -> None:
+        raise OSError("crash after durable purging intent")
+
+    monkeypatch.setattr(
+        artifacts_runtime.shutil,
+        "rmtree",
+        fail_before_delete,
+    )
+    with pytest.raises(OSError, match="durable purging intent"):
+        store.purge(gc=gc)
+
+    quarantine = store._quarantine_path()
+    assert quarantine.is_dir()
+    original = quarantine.with_name(
+        f"{quarantine.name}.original-generation"
+    )
+    quarantine.rename(original)
+    artifacts_runtime.shutil.copytree(original, quarantine)
+
+    monkeypatch.setattr(
+        artifacts_runtime.shutil,
+        "rmtree",
+        real_rmtree,
+    )
+    with pytest.raises(
+        RuntimeError,
+        match="root generation changed during physical purge",
+    ):
+        store.purge(gc=gc)
+
+    assert quarantine.is_dir()
+    assert original.is_dir()
+    assert (
+        quarantine / "evidence" / "events.jsonl"
+    ).read_bytes() == (
+        original / "evidence" / "events.jsonl"
+    ).read_bytes()
 
 
 def test_run_artifact_gc_retry_rejects_changed_closure_proof(
