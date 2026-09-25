@@ -9,6 +9,25 @@ from noetrium_platform.foundation.governance.api import ScopeIdentity
 from noetrium_platform.foundation.kernel.kernel import canonical_digest
 
 
+def _canonical_labels(labels: tuple[tuple[str, str], ...], field_name: str) -> tuple[tuple[str, str], ...]:
+    if type(labels) is not tuple:
+        raise TypeError(f"{field_name} must be tuple")
+    normalized: list[tuple[str, str]] = []
+    for row in labels:
+        if type(row) is not tuple or len(row) != 2:
+            raise TypeError(f"{field_name} entries must be (key, value) tuples")
+        key, value = row
+        if type(key) is not str or type(value) is not str:
+            raise TypeError(f"{field_name} keys and values must be str")
+        if not key.strip() or key != key.strip() or value != value.strip():
+            raise ValueError(f"{field_name} entries must be canonical text")
+        normalized.append((key, value))
+    normalized.sort()
+    if len({key for key, _value in normalized}) != len(normalized):
+        raise ValueError(f"{field_name} keys must be unique")
+    return tuple(normalized)
+
+
 @dataclass(frozen=True, slots=True)
 class ComputeGPU:
     gpu_id: str
@@ -19,6 +38,7 @@ class ComputeGPU:
     def __post_init__(self) -> None:
         if not self.gpu_id.strip() or self.memory_bytes < 1:
             raise ValueError("GPU identity/memory must be valid")
+        object.__setattr__(self, "labels", _canonical_labels(self.labels, "GPU labels"))
 
 
 @dataclass(frozen=True, slots=True)
@@ -36,6 +56,7 @@ class ComputeHost:
             raise ValueError("host identity/capacity must be valid")
         if len({gpu.gpu_id for gpu in self.gpus}) != len(self.gpus):
             raise ValueError("GPU identities must be unique within a host")
+        object.__setattr__(self, "labels", _canonical_labels(self.labels, "host labels"))
 
 
 @dataclass(frozen=True, slots=True)
@@ -48,6 +69,9 @@ class ComputeCluster:
     def __post_init__(self) -> None:
         if not self.cluster_id.strip():
             raise ValueError("cluster_id must be non-empty")
+        if len(set(self.host_ids)) != len(self.host_ids):
+            raise ValueError("cluster host_ids must be unique")
+        object.__setattr__(self, "labels", _canonical_labels(self.labels, "cluster labels"))
 
 
 
