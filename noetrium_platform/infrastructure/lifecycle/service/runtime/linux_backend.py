@@ -311,6 +311,7 @@ class LinuxProcessBackend:
         # one bounded local monotonic observation window. Only complete absence
         # throughout this window proves NOT_STARTED.
         deadline = monotonic() + self._PREPARED_START_SETTLEMENT_SECONDS
+        transient_uncertainty: PreparedServiceStartReconcileResult | None = None
         while True:
             observed = self._observe_prepared_start_once(
                 contract,
@@ -318,9 +319,25 @@ class LinuxProcessBackend:
                 token,
             )
             if observed is not None:
-                return observed
+                if (
+                    observed.status is PreparedServiceStartStatus.UNKNOWN
+                    and observed.reason is not None
+                    and observed.reason.startswith(
+                        "same-UID Linux process facts are not fully observable"
+                    )
+                ):
+                    # /proc enumeration races with unrelated same-UID process
+                    # exit/exec. Do not permanently block recovery on one
+                    # instantaneous unreadable row; retry for the bounded
+                    # settlement window. If it stays unreadable, preserve the
+                    # fail-closed UNKNOWN result rather than claiming NOT_STARTED.
+                    transient_uncertainty = observed
+                else:
+                    return observed
             remaining = deadline - monotonic()
             if remaining <= 0:
+                if transient_uncertainty is not None:
+                    return transient_uncertainty
                 return PreparedServiceStartReconcileResult(
                     PreparedServiceStartStatus.NOT_STARTED,
                     None,
