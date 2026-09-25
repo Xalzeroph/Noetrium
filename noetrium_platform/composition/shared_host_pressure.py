@@ -513,7 +513,10 @@ class ResourceCompetitionAdmissionGate(ExecutionAdmissionPort):
         if status.available_pids is None:
             if (
                 self._policy.fail_closed_when_runtime_unavailable
-                and self._policy.min_available_pids > 0
+                and (
+                    self._policy.min_available_pids > 0
+                    or demand.pids_per_permit * permit_count > 0
+                )
             ):
                 return "pid-runtime-unavailable"
         elif status.available_pids < (
@@ -564,7 +567,10 @@ class ResourceCompetitionAdmissionGate(ExecutionAdmissionPort):
                     if storage.free_inodes is None:
                         if (
                             self._policy.fail_closed_when_runtime_unavailable
-                            and self._policy.min_storage_free_inodes > 0
+                            and (
+                                self._policy.min_storage_free_inodes > 0
+                                or demand.storage_inodes_per_permit * permit_count > 0
+                            )
                         ):
                             return "storage-inode-runtime-unavailable"
                     elif storage.free_inodes < (
@@ -592,7 +598,10 @@ class ResourceCompetitionAdmissionGate(ExecutionAdmissionPort):
             if status.available_fds is None:
                 if (
                     self._policy.fail_closed_when_runtime_unavailable
-                    and self._policy.min_available_fds > 0
+                    and (
+                        self._policy.min_available_fds > 0
+                        or demand.fds_per_permit * permit_count > 0
+                    )
                 ):
                     return "fd-runtime-unavailable"
             elif status.available_fds < (
