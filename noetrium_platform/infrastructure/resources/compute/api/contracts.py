@@ -94,7 +94,7 @@ class ComputeRequirement:
     max_gpu_utilization_percent: int = 100
     cpu_headroom_cores: int = 0
     memory_headroom_bytes: int = 0
-    max_cpu_load_ratio: float = 1.0
+    max_cpu_load_ratio: float | None = None
     require_host_runtime: bool = False
     gpu_sharing_mode: GpuSharingMode = GpuSharingMode.IDLE_ONLY
     required_labels: tuple[tuple[str, str], ...] = ()
@@ -112,12 +112,15 @@ class ComputeRequirement:
             raise ValueError("compute requirements must be non-negative and include CPU/memory")
         if not 0 <= self.max_gpu_utilization_percent <= 100:
             raise ValueError("compute GPU utilization ceiling must be between 0 and 100")
-        if (
+        if self.max_cpu_load_ratio is not None and (
             isinstance(self.max_cpu_load_ratio, bool)
             or not isinstance(self.max_cpu_load_ratio, (int, float))
+            or not math.isfinite(float(self.max_cpu_load_ratio))
             or self.max_cpu_load_ratio <= 0
         ):
-            raise ValueError("compute CPU load ratio ceiling must be positive")
+            raise ValueError(
+                "compute CPU load ratio ceiling must be finite/positive or None"
+            )
         if type(self.require_host_runtime) is not bool:
             raise TypeError("compute require_host_runtime must be bool")
         if not isinstance(self.gpu_sharing_mode, GpuSharingMode):
