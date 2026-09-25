@@ -247,10 +247,16 @@ class ManualLeaseClock(LeaseClockPort):
         seconds = float(seconds)
         if not math.isfinite(seconds) or seconds < 0:
             raise ValueError("manual lease elapsed advance must be finite and non-negative")
+        if wall_seconds is not None and type(wall_seconds) not in (int, float):
+            raise TypeError("manual lease wall advance must be int or float")
+        wall_delta = seconds if wall_seconds is None else float(wall_seconds)
+        if not math.isfinite(wall_delta):
+            raise ValueError("manual lease wall advance must be finite")
+        next_wall = self._wall + wall_delta
+        if not math.isfinite(next_wall) or next_wall <= 0:
+            raise ValueError("manual lease wall time must remain finite and positive")
         self._elapsed += seconds
-        self._wall += (
-            seconds if wall_seconds is None else float(wall_seconds)
-        )
+        self._wall = next_wall
 
     def jump_wall(self, seconds: float) -> None:
         self._wall += float(seconds)
