@@ -23,6 +23,7 @@ class ServiceStartCoordinator:
         journal: ServiceStartJournal,
     ) -> None:
         self._store = store
+        self._adapter = adapter
         self._journal = journal
         transitions = ServiceStateTransitionWriter(store)
         self._transitions = transitions
