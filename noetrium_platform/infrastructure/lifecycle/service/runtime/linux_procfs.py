@@ -70,6 +70,25 @@ class LinuxProcfsReader:
                 values.append(int(candidate.name))
         return tuple(sorted(values))
 
+    def effective_uid(self, visible_pid: int) -> int:
+        """Return the effective UID for one procfs-visible process."""
+
+        process_directory = self._process_directory(visible_pid)
+        status = (process_directory / "status").read_text(
+            encoding="utf-8",
+            errors="replace",
+        )
+        for line in status.splitlines():
+            if not line.startswith("Uid:"):
+                continue
+            identities = line.split()[1:]
+            if len(identities) < 2:
+                break
+            return int(identities[1])
+        raise RuntimeError(
+            f"/proc status missing effective UID: {visible_pid}"
+        )
+
     def control_pid(self, visible_pid: int) -> int:
         """Resolve the PID understood by the current PID namespace.
 
