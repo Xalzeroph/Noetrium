@@ -32,6 +32,7 @@ from .shared_host_pressure import (
     ResourceCompetitionAdmissionGate,
     ResourceCompetitionDemand,
     ResourceCompetitionPolicy,
+    ResourceCompetitionReservationLedger,
     SharedNetworkPressureObserverPort,
     SharedStoragePressureObserverPort,
 )
@@ -213,6 +214,7 @@ def build_execution_concurrency_runtime(
     storage_pressure_observer: SharedStoragePressureObserverPort | None = None,
     network_pressure_observer: SharedNetworkPressureObserverPort | None = None,
     resource_competition_policy: ResourceCompetitionPolicy | None = None,
+    resource_competition_reservations: ResourceCompetitionReservationLedger | None = None,
     blocking_io_thread_name_prefix: str = "platform-blocking-io",
     timer_name: str = "platform-timer",
     cpu_provider: CpuWorkerPoolProviderPort | None = None,
@@ -243,6 +245,7 @@ def build_execution_concurrency_runtime(
             storage_observer=storage_pressure_observer,
             network_observer=network_pressure_observer,
             policy=resource_competition_policy or ResourceCompetitionPolicy(),
+            reservations=resource_competition_reservations,
         )
         admission = competition_gate
     concurrency = build_structured_concurrency_runtime(
