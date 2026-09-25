@@ -407,8 +407,18 @@ class ModelReplicaPoolLease:
                 self._converge_running_generation(row)
 
     def close(self) -> None:
+        callback = None
         with self._lifecycle_lock:
+            was_closed = self._closed
             self._close_locked()
+            if not was_closed and self._closed:
+                callback = self._on_closed
+        # Never acquire the owning pool lock while holding the lease lock.
+        # close_all() takes the inverse order (pool -> lease), so invoking the
+        # registry callback under the lease lock would permit an ABBA deadlock
+        # with an external concurrent lease.close().
+        if callback is not None:
+            callback(self)
 
     def _close_locked(self) -> None:
         if self._closed:
@@ -486,9 +496,6 @@ class ModelReplicaPoolLease:
         )
         if not self._closed:
             raise RuntimeError("model replica pool cleanup did not converge")
-        if self._on_closed is not None:
-            self._on_closed(self)
-
     def __enter__(self) -> "ModelReplicaPoolLease":
         return self
 
