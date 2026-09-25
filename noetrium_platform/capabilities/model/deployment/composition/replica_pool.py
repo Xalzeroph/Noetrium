@@ -44,6 +44,131 @@ from noetrium_platform.substrate.api import (
 from noetrium_platform.substrate.api import ResourceOwnership
 
 
+_BINDING_CONVERGENCE_ATTEMPTS = 4
+
+
+def _converge_running_replica_bindings(
+    *,
+    deployment_runtime: ModelDeploymentRuntimePort,
+    compute_scheduler: ComputeSchedulerPort,
+    endpoint_allocations: EndpointAllocationPort,
+    deployment_id: str,
+    expected_desired_spec_digest: str,
+    compute: ComputeAllocation,
+    endpoint: EndpointAllocation,
+) -> tuple[
+    ComputeAllocation,
+    EndpointAllocation,
+    ModelDeploymentGeneration,
+    ModelDeploymentStatus,
+]:
+    """Converge resource proofs onto one stable running runtime generation.
+
+    Model status and generation are separate authority reads. A process can restart
+    between them, so a RUNNING observation must never be attached to a different
+    applied generation. We use an optimistic stable-read window around status,
+    CAS-rebind both physical-resource proofs, then verify the runtime generation
+    once more after both authorities committed. Continuous churn fails closed.
+    """
+
+    current_compute = compute
+    current_endpoint = endpoint
+    for _attempt in range(_BINDING_CONVERGENCE_ATTEMPTS):
+        before = deployment_runtime.generation(deployment_id)
+        if before.desired_spec_digest != expected_desired_spec_digest:
+            raise RuntimeError(
+                "model replica desired generation drifted before physical binding: "
+                f"{deployment_id}"
+            )
+        status = deployment_runtime.status(deployment_id)
+        after = deployment_runtime.generation(deployment_id)
+        if after.desired_spec_digest != expected_desired_spec_digest:
+            raise RuntimeError(
+                "model replica desired generation drifted during physical binding: "
+                f"{deployment_id}"
+            )
+        if before != after:
+            continue
+        if status.runtime_state is not ModelRuntimeState.RUNNING:
+            raise RuntimeError(
+                f"model replica is not running: {deployment_id}: "
+                f"{status.runtime_state.value}:{status.detail}"
+            )
+        applied = after.applied_runtime_digest
+        if applied is None:
+            raise RuntimeError(
+                "running model replica has no applied runtime generation: "
+                f"{deployment_id}"
+            )
+
+        observed_at = time()
+        base_evidence = status.detail or f"model-ready:{deployment_id}"
+        evidence_ref = f"{base_evidence};runtime-generation:{applied}"
+
+        if current_compute.binding_binder_identity_digest != applied:
+            compute_proof = ComputeBindingProof(
+                allocation_id=current_compute.allocation_id,
+                host_id=current_compute.host_id,
+                gpu_ids=current_compute.gpu_ids,
+                lease_fencing_token=current_compute.lease_fencing_token,
+                binder_identity_digest=applied,
+                observed_at_epoch_s=observed_at,
+                evidence_ref=evidence_ref,
+            )
+            if current_compute.binding_proof_digest is None:
+                current_compute = compute_scheduler.confirm_bound(compute_proof)
+            else:
+                current_compute = compute_scheduler.replace_bound(
+                    compute_proof,
+                    previous_binding_proof_digest=(
+                        current_compute.binding_proof_digest
+                    ),
+                )
+
+        if current_endpoint.binding_binder_identity_digest != applied:
+            endpoint_proof = EndpointBindingProof(
+                allocation_id=current_endpoint.allocation_id,
+                endpoint=current_endpoint.endpoint,
+                lease_fencing_token=current_endpoint.lease_fencing_token,
+                binder_identity_digest=applied,
+                observed_at_epoch_s=observed_at,
+                evidence_ref=evidence_ref,
+            )
+            if current_endpoint.binding_proof_digest is None:
+                current_endpoint = endpoint_allocations.confirm_bound(
+                    endpoint_proof
+                )
+            else:
+                current_endpoint = endpoint_allocations.replace_bound(
+                    endpoint_proof,
+                    expected_previous_binding_proof_digest=(
+                        current_endpoint.binding_proof_digest
+                    ),
+                )
+
+        final = deployment_runtime.generation(deployment_id)
+        if final.desired_spec_digest != expected_desired_spec_digest:
+            raise RuntimeError(
+                "model replica desired generation drifted after physical binding: "
+                f"{deployment_id}"
+            )
+        if final == after:
+            if (
+                current_compute.binding_binder_identity_digest != applied
+                or current_endpoint.binding_binder_identity_digest != applied
+            ):
+                raise RuntimeError(
+                    "model replica physical resource bindings did not converge: "
+                    f"{deployment_id}"
+                )
+            return current_compute, current_endpoint, after, status
+
+    raise RuntimeError(
+        "model replica runtime generation did not stabilize during physical binding: "
+        f"{deployment_id}"
+    )
+
+
 @dataclass(frozen=True, slots=True)
 class ModelReplicaPoolRequest:
     """High-level desired model fleet without concrete GPU or port identity."""
@@ -226,88 +351,23 @@ class ModelReplicaPoolLease:
         self._on_closed = on_closed
         self._lifecycle_lock = RLock()
 
-    def _current_generation(
+    def _converge_running_generation(
         self,
         row: ModelReplicaPlacement,
-    ) -> ModelDeploymentGeneration:
-        generation = self._deployment_runtime.generation(row.deployment_id)
-        if generation.desired_spec_digest != row.generation.desired_spec_digest:
-            raise RuntimeError(
-                "model replica desired generation drifted: "
-                f"{row.deployment_id}"
-            )
-        return generation
-
-    def _rebind_running_generation(
-        self,
-        row: ModelReplicaPlacement,
-        generation: ModelDeploymentGeneration,
-        status: ModelDeploymentStatus,
     ) -> None:
-        applied = generation.applied_runtime_digest
-        if applied is None:
-            raise RuntimeError(
-                "running model replica has no applied runtime generation: "
-                f"{row.deployment_id}"
-            )
-        observed_at = time()
-        evidence_ref = (
-            status.detail or f"model-recovered:{row.deployment_id}"
-        )
-
         compute = self._current_compute[row.compute.allocation_id]
-        if compute.binding_binder_identity_digest != applied:
-            proof = ComputeBindingProof(
-                allocation_id=compute.allocation_id,
-                host_id=compute.host_id,
-                gpu_ids=compute.gpu_ids,
-                lease_fencing_token=compute.lease_fencing_token,
-                binder_identity_digest=applied,
-                observed_at_epoch_s=observed_at,
-                evidence_ref=evidence_ref,
-            )
-            if compute.binding_proof_digest is None:
-                compute = self._compute_scheduler.confirm_bound(proof)
-            else:
-                compute = self._compute_scheduler.replace_bound(
-                    proof,
-                    previous_binding_proof_digest=compute.binding_proof_digest,
-                )
-            self._current_compute[compute.allocation_id] = compute
-
         endpoint = self._current_endpoints[row.endpoint.allocation_id]
-        if endpoint.binding_binder_identity_digest != applied:
-            proof = EndpointBindingProof(
-                allocation_id=endpoint.allocation_id,
-                endpoint=endpoint.endpoint,
-                lease_fencing_token=endpoint.lease_fencing_token,
-                binder_identity_digest=applied,
-                observed_at_epoch_s=observed_at,
-                evidence_ref=evidence_ref,
-            )
-            if endpoint.binding_proof_digest is None:
-                endpoint = self._endpoint_allocations.confirm_bound(proof)
-            else:
-                endpoint = self._endpoint_allocations.replace_bound(
-                    proof,
-                    expected_previous_binding_proof_digest=(
-                        endpoint.binding_proof_digest
-                    ),
-                )
-            self._current_endpoints[endpoint.allocation_id] = endpoint
-
-        if (
-            self._current_compute[row.compute.allocation_id]
-            .binding_binder_identity_digest
-            != applied
-            or self._current_endpoints[row.endpoint.allocation_id]
-            .binding_binder_identity_digest
-            != applied
-        ):
-            raise RuntimeError(
-                "model replica physical resource bindings did not converge: "
-                f"{row.deployment_id}"
-            )
+        compute, endpoint, generation, _status = _converge_running_replica_bindings(
+            deployment_runtime=self._deployment_runtime,
+            compute_scheduler=self._compute_scheduler,
+            endpoint_allocations=self._endpoint_allocations,
+            deployment_id=row.deployment_id,
+            expected_desired_spec_digest=row.generation.desired_spec_digest,
+            compute=compute,
+            endpoint=endpoint,
+        )
+        self._current_compute[compute.allocation_id] = compute
+        self._current_endpoints[endpoint.allocation_id] = endpoint
         self._current_generations[row.deployment_id] = generation
 
     def assert_healthy(self) -> None:
@@ -317,23 +377,7 @@ class ModelReplicaPoolLease:
             self._compute_guard.assert_healthy()
             self._endpoint_guard.assert_healthy()
             for row in self.report.placements:
-                status = self._deployment_runtime.status(row.deployment_id)
-                if status.runtime_state is not ModelRuntimeState.RUNNING:
-                    raise RuntimeError(
-                        f"model replica is not running: {row.deployment_id}: "
-                        f"{status.runtime_state.value}:{status.detail}"
-                    )
-                generation = self._current_generation(row)
-                if (
-                    generation.applied_runtime_digest
-                    != self._current_generations[row.deployment_id]
-                    .applied_runtime_digest
-                ):
-                    self._rebind_running_generation(
-                        row,
-                        generation,
-                        status,
-                    )
+                self._converge_running_generation(row)
 
     def close(self) -> None:
         with self._lifecycle_lock:
@@ -810,40 +854,15 @@ class LocalModelReplicaPoolRuntime:
                         f"automatic model replica failed: {spec.deployment_id}: "
                         f"{status.runtime_state.value}:{status.detail}"
                     )
-                generation = self._deployment_runtime.generation(spec.deployment_id)
-                if generation.desired_spec_digest != canonical_digest(spec):
-                    raise RuntimeError(
-                        "model replica desired generation drifted before ownership capture: "
-                        f"{spec.deployment_id}"
-                    )
-                if generation.applied_runtime_digest is None:
-                    raise RuntimeError(
-                        "model replica has no applied runtime generation before "
-                        f"endpoint ownership capture: {spec.deployment_id}"
-                    )
-                observed_at = time()
-                evidence_ref = (
-                    status.detail or f"model-ready:{spec.deployment_id}"
-                )
-                bound_compute = self._compute_scheduler.confirm_bound(
-                    ComputeBindingProof(
-                        allocation_id=compute.allocation_id,
-                        host_id=compute.host_id,
-                        gpu_ids=compute.gpu_ids,
-                        lease_fencing_token=compute.lease_fencing_token,
-                        binder_identity_digest=generation.applied_runtime_digest,
-                        observed_at_epoch_s=observed_at,
-                        evidence_ref=evidence_ref,
-                    )
-                )
-                bound = self._endpoint_allocations.confirm_bound(
-                    EndpointBindingProof(
-                        allocation_id=endpoint.allocation_id,
-                        endpoint=endpoint.endpoint,
-                        lease_fencing_token=endpoint.lease_fencing_token,
-                        binder_identity_digest=generation.applied_runtime_digest,
-                        observed_at_epoch_s=observed_at,
-                        evidence_ref=evidence_ref,
+                bound_compute, bound, generation, status = (
+                    _converge_running_replica_bindings(
+                        deployment_runtime=self._deployment_runtime,
+                        compute_scheduler=self._compute_scheduler,
+                        endpoint_allocations=self._endpoint_allocations,
+                        deployment_id=spec.deployment_id,
+                        expected_desired_spec_digest=canonical_digest(spec),
+                        compute=compute,
+                        endpoint=endpoint,
                     )
                 )
                 placements.append(
