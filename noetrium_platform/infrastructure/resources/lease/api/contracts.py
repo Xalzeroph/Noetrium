@@ -84,6 +84,8 @@ class ResourceLease:
             raise TypeError("lease_id and purpose must be str")
         if not self.lease_id.strip() or not self.purpose.strip():
             raise ValueError("lease identity and purpose must be non-empty")
+        if type(self.resource) is not ResourceIdentity:
+            raise TypeError("lease resource must be ResourceIdentity")
         if self.holder_generation < 1:
             raise ValueError("lease holder generation must be >= 1")
         if self.fencing_token < 1:
