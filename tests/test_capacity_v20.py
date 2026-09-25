@@ -32,6 +32,15 @@ def stack():
     ident=ImmutableModelIdentity("planner","org/model","rev","sglang","0.5.13","bfloat16",None,262144,"tokrev")
     return ModelStackSpec(ident,*stack_parts(),2,1,1,1,None,None,None,None,"fcfs",())
 
+def vllm_stack(*, tensor_parallel=1, data_parallel=1, pipeline_parallel=1):
+    ident=ImmutableModelIdentity(
+        "planner","org/model","rev","vllm","test","bfloat16",None,262144,"tokrev"
+    )
+    return ModelStackSpec(
+        ident,*stack_parts(),tensor_parallel,data_parallel,1,pipeline_parallel,
+        None,None,None,None,"fcfs",("--gpu-memory-utilization","0.8")
+    )
+
 def cert(h,st):
     env=ResourceEnvelope(60*G,100*G,12,.5,.05,80)
     return QualificationCertificate(st.digest(),hashlib.sha256(b"evidence").hexdigest(),("planner",),env,h.identity_digest())
@@ -85,6 +94,21 @@ class CapacityV20Tests(unittest.TestCase):
         h=host(free0=61*G,free1=61*G); st=stack(); c=cert(h,st)
         with self.assertRaises(PlacementCapacityError): ExactCapacityPlanner().plan(h,st,c,DeploymentRequirements("d",8000,"/srv/models",gpu_memory_headroom_bytes=2*G))
         self.assertEqual(st.tensor_parallel,2); self.assertEqual(st.identity.dtype,"bfloat16")
+
+    def test_vllm_pipeline_parallel_reserves_full_gpu_world_size(self):
+        h=host(); st=vllm_stack(tensor_parallel=1,pipeline_parallel=2)
+        plan=ExactCapacityPlanner().plan(
+            h,st,cert(h,st),DeploymentRequirements("vllm-pp",8000,"/srv/models")
+        )
+        self.assertEqual(len(plan.gpu_uuids),2)
+        self.assertEqual(len(set(plan.gpu_uuids)),2)
+
+    def test_vllm_internal_data_parallel_fails_until_rpc_endpoint_is_owned(self):
+        h=host(); st=vllm_stack(data_parallel=2)
+        with self.assertRaisesRegex(PlacementCapacityError,"auxiliary RPC endpoint"):
+            ExactCapacityPlanner().plan(
+                h,st,cert(h,st),DeploymentRequirements("vllm-dp",8000,"/srv/models")
+            )
 
     def test_port_conflict_fails_explicitly(self):
         h=host(port=(8000,)); st=stack()
