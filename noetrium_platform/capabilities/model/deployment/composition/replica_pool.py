@@ -688,22 +688,27 @@ class LocalModelReplicaPoolRuntime:
                         f"automatic model replica failed: {spec.deployment_id}: "
                         f"{status.runtime_state.value}:{status.detail}"
                     )
-                bound = self._endpoint_allocations.confirm_bound(
-                    EndpointBindingProof(
-                        allocation_id=endpoint.allocation_id,
-                        endpoint=endpoint.endpoint,
-                        lease_fencing_token=endpoint.lease_fencing_token,
-                        binder_identity_digest=canonical_digest(spec),
-                        observed_at_epoch_s=time(),
-                        evidence_ref=status.detail or f"model-ready:{spec.deployment_id}",
-                    )
-                )
                 generation = self._deployment_runtime.generation(spec.deployment_id)
                 if generation.desired_spec_digest != canonical_digest(spec):
                     raise RuntimeError(
                         "model replica desired generation drifted before ownership capture: "
                         f"{spec.deployment_id}"
                     )
+                if generation.applied_runtime_digest is None:
+                    raise RuntimeError(
+                        "model replica has no applied runtime generation before "
+                        f"endpoint ownership capture: {spec.deployment_id}"
+                    )
+                bound = self._endpoint_allocations.confirm_bound(
+                    EndpointBindingProof(
+                        allocation_id=endpoint.allocation_id,
+                        endpoint=endpoint.endpoint,
+                        lease_fencing_token=endpoint.lease_fencing_token,
+                        binder_identity_digest=generation.applied_runtime_digest,
+                        observed_at_epoch_s=time(),
+                        evidence_ref=status.detail or f"model-ready:{spec.deployment_id}",
+                    )
+                )
                 placements.append(
                     ModelReplicaPlacement(
                         index,
