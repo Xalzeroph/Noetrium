@@ -31,7 +31,10 @@ from noetrium_platform.infrastructure.resources.lease.api import (
     ResourceLease,
     ResourceOwner,
 )
-from noetrium_platform.infrastructure.resources.lease.runtime import InMemoryResourceLeaseRegistry
+from noetrium_platform.infrastructure.resources.lease.runtime import (
+    InMemoryResourceLeaseRegistry,
+    ManualLeaseClock,
+)
 from noetrium_platform.infrastructure.resources.providers import (
     SQLiteEndpointAllocationStore,
     SQLiteResourceLeaseRegistry,
@@ -95,7 +98,13 @@ def test_resource_lease_authorities_reject_non_finite_ttl_and_clock() -> None:
 
     with TemporaryDirectory() as directory:
         database = Path(directory) / "resource.sqlite"
-        sqlite = SQLiteResourceLeaseRegistry(database)
+        sqlite = SQLiteResourceLeaseRegistry(
+            database,
+            clock=ManualLeaseClock(
+                elapsed_seconds=1.0,
+                wall_epoch_seconds=100.0,
+            ),
+        )
         sqlite.register_owner(ResourceOwner(resource, PLATFORM_SCOPE))
         for value in (float("nan"), float("inf")):
             with pytest.raises(ValueError, match="finite and > 0"):
@@ -148,7 +157,13 @@ def test_endpoint_authorities_reject_non_finite_runtime_budgets() -> None:
             )
     with TemporaryDirectory() as directory:
         path = Path(directory) / "endpoint.sqlite"
-        store = SQLiteEndpointAllocationStore(path)
+        store = SQLiteEndpointAllocationStore(
+            path,
+            clock=ManualLeaseClock(
+                elapsed_seconds=1.0,
+                wall_epoch_seconds=100.0,
+            ),
+        )
         request = EndpointAllocationRequest(
             "allocation-a", PLATFORM_SCOPE, "finite endpoint", "127.0.0.1", (25565,)
         )
