@@ -353,10 +353,15 @@ def test_claim_commit_survives_lost_write_acknowledgement(
     assert blocked.reason == "auto-recovery-attempt-inflight"
 
 
-class _SuccessRuntime(_FailingRuntime):
+class _SuccessRuntime:
     def __init__(self, generation: ModelDeploymentGeneration) -> None:
-        super().__init__(generation)
+        self._generation = generation
+        self.start_calls = 0
         self.live = False
+
+    def generation(self, deployment_id: str) -> ModelDeploymentGeneration:
+        assert deployment_id == self._generation.deployment_id
+        return self._generation
 
     def status(self, deployment_id: str) -> ModelDeploymentStatus:
         return ModelDeploymentStatus(
@@ -375,6 +380,15 @@ class _SuccessRuntime(_FailingRuntime):
         self.start_calls += 1
         self.live = True
         return self.status(generation.deployment_id)
+
+    def stop(self, generation):
+        raise AssertionError("not used")
+
+    def shutdown(self, generation):
+        raise AssertionError("not used")
+
+    def remove_deployment(self, generation):
+        raise AssertionError("not used")
 
 
 def test_started_effect_without_success_receipt_converges_without_duplicate_restart(
