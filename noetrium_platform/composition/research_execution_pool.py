@@ -240,6 +240,21 @@ class ResearchExecutionPool:
             raise RuntimeError("research execution pool workloads are quiescing")
 
     @property
+    def resource_competition_enabled(self) -> bool:
+        """Whether all workload domains are bound to physical competition facts."""
+
+        states = (
+            self._orchestration.resource_competition is not None,
+            self._experiments.resource_competition is not None,
+            self._model_io.resource_competition is not None,
+        )
+        if len(set(states)) != 1:
+            raise RuntimeError(
+                "research execution pool resource competition wiring is split"
+            )
+        return states[0]
+
+    @property
     def workload_cpu_workers(self) -> int:
         """Physical CPU workers shared by all workload execution domains."""
 
