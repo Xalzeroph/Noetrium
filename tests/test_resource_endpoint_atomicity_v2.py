@@ -424,7 +424,7 @@ def test_concurrent_schema_bootstrap_is_idempotent() -> None:
             ).fetchone() == ("4",)
             assert conn.execute(
                 "SELECT value FROM resource_meta WHERE key='schema_version'"
-            ).fetchone() == ("4",)
+            ).fetchone() == (str(SQLiteResourceLeaseRegistry.SCHEMA_VERSION),)
 
 
 def _binding_proof(allocation, *, evidence_ref: str = "runtime-listener-evidence:1") -> EndpointBindingProof:
