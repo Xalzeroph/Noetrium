@@ -873,7 +873,7 @@
     }
   ],
   "package_cycles": [],
-  "report_sha256": "3814cbbd8ce16bf6dd56fd65bbbedd7aaddef0876c45c7371a21b13b791c6a81",
+  "report_sha256": "3a6671d856e32e436d4051b8409efd1644e6f62ee43f538e007f03f6cfe2ca7a",
   "source_authority_violations": [
     {
       "allowed_modules": [
@@ -881,7 +881,7 @@
       ],
       "authority": "kernel.blocking_wait",
       "detail": "time.sleep is a protected mutation primitive; authority belongs to noetrium_platform.foundation.kernel.kernel.retry",
-      "line": 625,
+      "line": 696,
       "module": "noetrium_platform.composition.shared_host_pressure",
       "path": "noetrium_platform/composition/shared_host_pressure.py",
       "primitive": "time.sleep"
@@ -909,7 +909,7 @@
       "primitive": "os.write"
     }
   ],
-  "source_digest": "e7e37ba125623a8188f6fffa4c99489931a34844197df9977a411b35c0fb39d1",
+  "source_digest": "b8060604844fc1ee9f0ed3b22725d954616b7cdc2ee92a361762279af16f9437",
   "source_invariant_violations": [
     {
       "detail": "direct concurrency implementation import noetrium_platform.foundation.kernel.concurrency.api.ports; depend on noetrium_platform.foundation.kernel.concurrency.api and obtain task groups from composition",
@@ -1828,6 +1828,18 @@
       "score": 2101
     },
     {
+      "branches": 118,
+      "classes": 11,
+      "exception_handlers": 8,
+      "functions": 30,
+      "imports": 12,
+      "max_function_lines": 139,
+      "module": "noetrium_platform.composition.shared_host_pressure",
+      "path": "noetrium_platform/composition/shared_host_pressure.py",
+      "physical_lines": 827,
+      "score": 2065
+    },
+    {
       "branches": 88,
       "classes": 2,
       "exception_handlers": 12,
@@ -1852,6 +1864,18 @@
       "score": 2000
     },
     {
+      "branches": 95,
+      "classes": 6,
+      "exception_handlers": 18,
+      "functions": 23,
+      "imports": 17,
+      "max_function_lines": 163,
+      "module": "noetrium_platform.capabilities.model.deployment.composition.replica_pool",
+      "path": "noetrium_platform/capabilities/model/deployment/composition/replica_pool.py",
+      "physical_lines": 774,
+      "score": 1991
+    },
+    {
       "branches": 115,
       "classes": 9,
       "exception_handlers": 4,
@@ -1862,30 +1886,6 @@
       "path": "noetrium_platform/foundation/governance/architecture/budget.py",
       "physical_lines": 887,
       "score": 1978
-    },
-    {
-      "branches": 124,
-      "classes": 36,
-      "exception_handlers": 1,
-      "functions": 62,
-      "imports": 6,
-      "max_function_lines": 46,
-      "module": "noetrium_platform.research.experimentation.workbench.api.contracts",
-      "path": "noetrium_platform/research/experimentation/workbench/api/contracts.py",
-      "physical_lines": 920,
-      "score": 1940
-    },
-    {
-      "branches": 114,
-      "classes": 10,
-      "exception_handlers": 8,
-      "functions": 28,
-      "imports": 12,
-      "max_function_lines": 112,
-      "module": "noetrium_platform.composition.shared_host_pressure",
-      "path": "noetrium_platform/composition/shared_host_pressure.py",
-      "physical_lines": 755,
-      "score": 1907
     }
   ],
   "top_optimization_risks": [
@@ -1922,6 +1922,25 @@
       "risk_score": 1063,
       "self_mutation_sites": 2,
       "serialization_sites": 2
+    },
+    {
+      "exception_handlers": 18,
+      "import_fan_in": 1,
+      "import_fan_out": 9,
+      "io_sites": 0,
+      "lock_sites": 7,
+      "long_functions": 5,
+      "module": "noetrium_platform.capabilities.model.deployment.composition.replica_pool",
+      "path": "noetrium_platform/capabilities/model/deployment/composition/replica_pool.py",
+      "reason_codes": [
+        "LOCK_CONTENTION_RISK",
+        "STATE_MUTATION_CONCENTRATION",
+        "FAILURE_BRANCH_CONCENTRATION",
+        "LONG_FUNCTION"
+      ],
+      "risk_score": 619,
+      "self_mutation_sites": 52,
+      "serialization_sites": 0
     },
     {
       "exception_handlers": 12,
@@ -1995,25 +2014,6 @@
       ],
       "risk_score": 474,
       "self_mutation_sites": 20,
-      "serialization_sites": 0
-    },
-    {
-      "exception_handlers": 15,
-      "import_fan_in": 1,
-      "import_fan_out": 9,
-      "io_sites": 0,
-      "lock_sites": 6,
-      "long_functions": 4,
-      "module": "noetrium_platform.capabilities.model.deployment.composition.replica_pool",
-      "path": "noetrium_platform/capabilities/model/deployment/composition/replica_pool.py",
-      "reason_codes": [
-        "LOCK_CONTENTION_RISK",
-        "STATE_MUTATION_CONCENTRATION",
-        "FAILURE_BRANCH_CONCENTRATION",
-        "LONG_FUNCTION"
-      ],
-      "risk_score": 458,
-      "self_mutation_sites": 31,
       "serialization_sites": 0
     },
     {

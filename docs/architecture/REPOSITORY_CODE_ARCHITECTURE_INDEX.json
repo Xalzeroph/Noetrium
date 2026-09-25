@@ -3,13 +3,13 @@
     "parse_errors": 0,
     "python_files": 3709,
     "python_import_edges": 7036,
-    "symbols": 5085,
+    "symbols": 5090,
     "tracked_files": 4346,
     "typescript_javascript_files": 11
   },
   "language_symbol_counts": {
     "javascript": 1,
-    "python": 5079,
+    "python": 5084,
     "typescript": 5
   },
   "parse_errors": [],
@@ -42360,7 +42360,7 @@
     "tooling": 80
   },
   "role_symbol_counts": {
-    "core_platform": 3412,
+    "core_platform": 3414,
     "examples": 3,
     "other": 23,
     "public_facade": 4,
@@ -42368,11 +42368,11 @@
     "reference_orchestration": 14,
     "research_reproductions": 444,
     "sdk": 5,
-    "tests": 1077,
+    "tests": 1080,
     "tooling": 39
   },
   "schema": "noetrium-repository-code-architecture-index.v1",
-  "source_git_sha": "1599e8fd10c258e0975e3b82111af272da1c8055",
+  "source_git_sha": "849a75273831b313afdbd469441eecd389cead78",
   "symbols": [
     {
       "bases": [],
@@ -53023,7 +53023,27 @@
       "line": 313,
       "methods": [
         "__init__",
+        "closed",
+        "close"
+      ],
+      "module": "noetrium_platform.capabilities.model.deployment.composition.replica_pool",
+      "name": "_PendingModelReplicaCleanup",
+      "path": "noetrium_platform/capabilities/model/deployment/composition/replica_pool.py",
+      "qualname": "noetrium_platform.capabilities.model.deployment.composition.replica_pool._PendingModelReplicaCleanup",
+      "role": "core_platform"
+    },
+    {
+      "bases": [],
+      "decorators": [],
+      "fields": [],
+      "kind": "class",
+      "language": "python",
+      "line": 443,
+      "methods": [
+        "__init__",
         "active_lease_count",
+        "pending_cleanup_count",
+        "_retry_pending_cleanups_locked",
         "_lease_closed",
         "close_all",
         "_target_count",
@@ -63879,11 +63899,12 @@
       ],
       "fields": [
         "concurrency: StructuredConcurrencyRuntimePort",
-        "admission: ExecutionAdmissionPort"
+        "admission: ExecutionAdmissionPort",
+        "resource_competition: ResourceCompetitionAdmissionGate | None"
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 40,
+      "line": 41,
       "methods": [
         "heartbeats",
         "open_task_group",
@@ -65675,10 +65696,11 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 83,
+      "line": 84,
       "methods": [
         "__init__",
         "_require_workloads_open",
+        "workload_cpu_workers",
         "owner_generation_id",
         "can_recover_abandoned_owner_generations",
         "model_admission",
@@ -68618,6 +68640,30 @@
       "role": "core_platform"
     },
     {
+      "bases": [],
+      "decorators": [
+        "dataclass(frozen=True, slots=True)"
+      ],
+      "fields": [
+        "memory_bytes_per_permit: int",
+        "pids_per_permit: int",
+        "fds_per_permit: int",
+        "storage_bytes_per_permit: int",
+        "storage_inodes_per_permit: int"
+      ],
+      "kind": "dataclass",
+      "language": "python",
+      "line": 266,
+      "methods": [
+        "__post_init__"
+      ],
+      "module": "noetrium_platform.composition.shared_host_pressure",
+      "name": "ResourceCompetitionDemand",
+      "path": "noetrium_platform/composition/shared_host_pressure.py",
+      "qualname": "noetrium_platform.composition.shared_host_pressure.ResourceCompetitionDemand",
+      "role": "core_platform"
+    },
+    {
       "bases": [
         "StrEnum"
       ],
@@ -68628,7 +68674,7 @@
       ],
       "kind": "enum",
       "language": "python",
-      "line": 265,
+      "line": 290,
       "methods": [],
       "module": "noetrium_platform.composition.shared_host_pressure",
       "name": "ResourceCompetitionClass",
@@ -68648,7 +68694,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 271,
+      "line": 296,
       "methods": [
         "__post_init__"
       ],
@@ -68678,7 +68724,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 320,
+      "line": 345,
       "methods": [
         "__post_init__"
       ],
@@ -68696,10 +68742,11 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 381,
+      "line": 406,
       "methods": [
         "__init__",
         "register_group",
+        "set_group_demand",
         "unregister_group",
         "_status",
         "_storage_status",
@@ -99644,6 +99691,7 @@
         "renew",
         "renew_many",
         "release",
+        "recover_release",
         "get",
         "active",
         "reconcile"
@@ -99758,6 +99806,7 @@
         "renew",
         "renew_many",
         "release",
+        "recover_release",
         "get",
         "active",
         "reconcile"
@@ -99776,7 +99825,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 410,
+      "line": 440,
       "methods": [
         "__init__",
         "_reconcile_allocation_locked",
@@ -99791,6 +99840,7 @@
         "renew",
         "renew_many",
         "release",
+        "recover_release",
         "get",
         "active",
         "reconcile"
@@ -100735,7 +100785,8 @@
       ],
       "fields": [
         "removed_container_ids: tuple[str, ...]",
-        "released_lease_ids: tuple[str, ...]"
+        "released_lease_ids: tuple[str, ...]",
+        "quarantined_container_ids: tuple[str, ...]"
       ],
       "kind": "dataclass",
       "language": "python",
@@ -100962,7 +101013,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 497,
+      "line": 515,
       "methods": [],
       "module": "noetrium_platform.infrastructure.resources.container.runtime.lease_authority",
       "name": "DockerContainerLeaseHeartbeatError",
@@ -100978,7 +101029,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 501,
+      "line": 519,
       "methods": [
         "__init__",
         "handles",
@@ -101001,7 +101052,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 609,
+      "line": 627,
       "methods": [
         "__init__",
         "policy",
@@ -137729,7 +137780,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 415,
+      "line": 456,
       "methods": [
         "__init__"
       ],
@@ -137745,7 +137796,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 422,
+      "line": 463,
       "methods": [
         "__init__",
         "run"
@@ -137764,7 +137815,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 502,
+      "line": 543,
       "methods": [
         "list_managed"
       ],
@@ -138241,7 +138292,8 @@
         "__init__",
         "reconcile",
         "active",
-        "release"
+        "release",
+        "recover_release"
       ],
       "module": "tests.test_managed_resource_reconciler_v1",
       "name": "EndpointShutdownAuthority",
@@ -138255,7 +138307,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 126,
+      "line": 132,
       "methods": [
         "__init__",
         "reconcile_expired",
@@ -138277,7 +138329,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 175,
+      "line": 180,
       "methods": [
         "shutdown_cleanup"
       ],
@@ -138293,7 +138345,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 180,
+      "line": 185,
       "methods": [
         "__init__",
         "shutdown_cleanup",
@@ -138311,7 +138363,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 218,
+      "line": 223,
       "methods": [
         "shutdown_cleanup"
       ],
@@ -138327,7 +138379,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 223,
+      "line": 228,
       "methods": [
         "shutdown_cleanup"
       ],
@@ -138345,7 +138397,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 228,
+      "line": 233,
       "methods": [
         "reconcile"
       ],
@@ -138363,7 +138415,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 233,
+      "line": 238,
       "methods": [],
       "module": "tests.test_managed_resource_reconciler_v1",
       "name": "Compute",
@@ -140415,13 +140467,31 @@
     },
     {
       "bases": [
+        "Runtime"
+      ],
+      "decorators": [],
+      "fields": [],
+      "kind": "class",
+      "language": "python",
+      "line": 349,
+      "methods": [
+        "generation"
+      ],
+      "module": "tests.test_model_replica_pool_auto_placement_v1",
+      "name": "NoAppliedRuntime",
+      "path": "tests/test_model_replica_pool_auto_placement_v1.py",
+      "qualname": "tests.test_model_replica_pool_auto_placement_v1.NoAppliedRuntime",
+      "role": "tests"
+    },
+    {
+      "bases": [
         "Scheduler"
       ],
       "decorators": [],
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 486,
+      "line": 547,
       "methods": [
         "allocate"
       ],
@@ -140439,7 +140509,44 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 532,
+      "line": 593,
+      "methods": [
+        "__init__",
+        "remove_deployment"
+      ],
+      "module": "tests.test_model_replica_pool_auto_placement_v1",
+      "name": "FailOnceCleanupRuntime",
+      "path": "tests/test_model_replica_pool_auto_placement_v1.py",
+      "qualname": "tests.test_model_replica_pool_auto_placement_v1.FailOnceCleanupRuntime",
+      "role": "tests"
+    },
+    {
+      "bases": [
+        "Fleet"
+      ],
+      "decorators": [],
+      "fields": [],
+      "kind": "class",
+      "language": "python",
+      "line": 604,
+      "methods": [
+        "reconcile"
+      ],
+      "module": "tests.test_model_replica_pool_auto_placement_v1",
+      "name": "RejectingFleet",
+      "path": "tests/test_model_replica_pool_auto_placement_v1.py",
+      "qualname": "tests.test_model_replica_pool_auto_placement_v1.RejectingFleet",
+      "role": "tests"
+    },
+    {
+      "bases": [
+        "Runtime"
+      ],
+      "decorators": [],
+      "fields": [],
+      "kind": "class",
+      "language": "python",
+      "line": 677,
       "methods": [
         "__init__",
         "remove_deployment"
@@ -140458,7 +140565,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 646,
+      "line": 791,
       "methods": [
         "__init__",
         "remove_deployment"
@@ -141382,7 +141489,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 1501,
+      "line": 1557,
       "methods": [
         "__init__",
         "result"
@@ -141399,7 +141506,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 1513,
+      "line": 1569,
       "methods": [
         "_task_failure",
         "_bounded_wait_timeout",
@@ -144430,7 +144537,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 524,
+      "line": 569,
       "methods": [
         "renew_many"
       ],
@@ -144446,7 +144553,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 598,
+      "line": 643,
       "methods": [
         "probe"
       ],
@@ -149212,7 +149319,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 35,
+      "line": 36,
       "methods": [
         "__init__",
         "snapshot"

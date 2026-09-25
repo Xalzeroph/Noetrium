@@ -1797,6 +1797,11 @@
     },
     {
       "kind": "references",
+      "source": "noetrium_platform.capabilities.model.deployment.composition.replica_pool.LocalModelReplicaPoolRuntime",
+      "target": "noetrium_platform.capabilities.model.deployment.composition.replica_pool._PendingModelReplicaCleanup"
+    },
+    {
+      "kind": "references",
       "source": "noetrium_platform.capabilities.model.deployment.composition.replica_pool.ModelReplicaPoolLease",
       "target": "noetrium_platform.capabilities.model.deployment.composition.replica_pool.ModelReplicaPoolReport"
     },
@@ -4612,6 +4617,16 @@
     },
     {
       "kind": "references",
+      "source": "noetrium_platform.composition.concurrency.ExecutionConcurrencyAuthorities",
+      "target": "noetrium_platform.composition.shared_host_pressure.ResourceCompetitionAdmissionGate"
+    },
+    {
+      "kind": "references",
+      "source": "noetrium_platform.composition.concurrency.ExecutionConcurrencyAuthorities",
+      "target": "noetrium_platform.composition.shared_host_pressure.ResourceCompetitionDemand"
+    },
+    {
+      "kind": "references",
       "source": "noetrium_platform.composition.environment_instance_leases.EnvironmentInstanceLeaseAuthority",
       "target": "noetrium_platform.composition.environment_instance_leases.EnvironmentInstanceLeaseHandle"
     },
@@ -4929,6 +4944,11 @@
       "kind": "references",
       "source": "noetrium_platform.composition.research_execution_pool.ResearchExecutionPool",
       "target": "noetrium_platform.composition.environment_instance_leases.EnvironmentInstanceLeasePolicy"
+    },
+    {
+      "kind": "references",
+      "source": "noetrium_platform.composition.research_execution_pool.ResearchExecutionPool",
+      "target": "noetrium_platform.composition.shared_host_pressure.ResourceCompetitionDemand"
     },
     {
       "kind": "references",
@@ -6219,6 +6239,11 @@
       "kind": "references",
       "source": "noetrium_platform.composition.shared_host_pressure.ResourceCompetitionAdmissionGate",
       "target": "noetrium_platform.composition.shared_host_pressure.ResourceCompetitionDecision"
+    },
+    {
+      "kind": "references",
+      "source": "noetrium_platform.composition.shared_host_pressure.ResourceCompetitionAdmissionGate",
+      "target": "noetrium_platform.composition.shared_host_pressure.ResourceCompetitionDemand"
     },
     {
       "kind": "references",
@@ -27413,10 +27438,12 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 313,
+      "line": 443,
       "methods": [
         "__init__",
         "active_lease_count",
+        "pending_cleanup_count",
+        "_retry_pending_cleanups_locked",
         "_lease_closed",
         "close_all",
         "_target_count",
@@ -27541,6 +27568,26 @@
         "ModelReplicaPoolRequest"
       ],
       "qualname": "noetrium_platform.capabilities.model.deployment.composition.replica_pool.ModelReplicaPoolRequest",
+      "system_key": "model",
+      "top_system": "model"
+    },
+    {
+      "bases": [],
+      "decorators": [],
+      "fields": [],
+      "kind": "class",
+      "line": 313,
+      "methods": [
+        "__init__",
+        "closed",
+        "close"
+      ],
+      "module": "noetrium_platform.capabilities.model.deployment.composition.replica_pool",
+      "name": "_PendingModelReplicaCleanup",
+      "nesting": [
+        "_PendingModelReplicaCleanup"
+      ],
+      "qualname": "noetrium_platform.capabilities.model.deployment.composition.replica_pool._PendingModelReplicaCleanup",
       "system_key": "model",
       "top_system": "model"
     },
@@ -39373,10 +39420,11 @@
       ],
       "fields": [
         "admission",
-        "concurrency"
+        "concurrency",
+        "resource_competition"
       ],
       "kind": "dataclass",
-      "line": 40,
+      "line": 41,
       "methods": [
         "heartbeats",
         "open_task_group",
@@ -41355,10 +41403,11 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 83,
+      "line": 84,
       "methods": [
         "__init__",
         "_require_workloads_open",
+        "workload_cpu_workers",
         "owner_generation_id",
         "can_recover_abandoned_owner_generations",
         "model_admission",
@@ -44495,10 +44544,11 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 381,
+      "line": 406,
       "methods": [
         "__init__",
         "register_group",
+        "set_group_demand",
         "unregister_group",
         "_status",
         "_storage_status",
@@ -44533,7 +44583,7 @@
         "SOFT_CONTENTION"
       ],
       "kind": "enum",
-      "line": 265,
+      "line": 290,
       "methods": [],
       "module": "noetrium_platform.composition.shared_host_pressure",
       "name": "ResourceCompetitionClass",
@@ -44555,7 +44605,7 @@
         "reason"
       ],
       "kind": "dataclass",
-      "line": 271,
+      "line": 296,
       "methods": [
         "__post_init__"
       ],
@@ -44565,6 +44615,32 @@
         "ResourceCompetitionDecision"
       ],
       "qualname": "noetrium_platform.composition.shared_host_pressure.ResourceCompetitionDecision",
+      "system_key": "research_os",
+      "top_system": "research_os"
+    },
+    {
+      "bases": [],
+      "decorators": [
+        "dataclass(frozen=True, slots=True)"
+      ],
+      "fields": [
+        "fds_per_permit",
+        "memory_bytes_per_permit",
+        "pids_per_permit",
+        "storage_bytes_per_permit",
+        "storage_inodes_per_permit"
+      ],
+      "kind": "dataclass",
+      "line": 266,
+      "methods": [
+        "__post_init__"
+      ],
+      "module": "noetrium_platform.composition.shared_host_pressure",
+      "name": "ResourceCompetitionDemand",
+      "nesting": [
+        "ResourceCompetitionDemand"
+      ],
+      "qualname": "noetrium_platform.composition.shared_host_pressure.ResourceCompetitionDemand",
       "system_key": "research_os",
       "top_system": "research_os"
     },
@@ -44587,7 +44663,7 @@
         "poll_interval_seconds"
       ],
       "kind": "dataclass",
-      "line": 320,
+      "line": 345,
       "methods": [
         "__post_init__"
       ],
@@ -78518,6 +78594,7 @@
         "renew",
         "renew_many",
         "release",
+        "recover_release",
         "get",
         "active",
         "reconcile"
@@ -78668,6 +78745,7 @@
         "renew",
         "renew_many",
         "release",
+        "recover_release",
         "get",
         "active",
         "reconcile"
@@ -78746,7 +78824,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 410,
+      "line": 440,
       "methods": [
         "__init__",
         "_reconcile_allocation_locked",
@@ -78761,6 +78839,7 @@
         "renew",
         "renew_many",
         "release",
+        "recover_release",
         "get",
         "active",
         "reconcile"
@@ -79764,6 +79843,7 @@
         "dataclass(frozen=True, slots=True)"
       ],
       "fields": [
+        "quarantined_container_ids",
         "released_lease_ids",
         "removed_container_ids"
       ],
@@ -80044,7 +80124,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 497,
+      "line": 515,
       "methods": [],
       "module": "noetrium_platform.infrastructure.resources.container.runtime.lease_authority",
       "name": "DockerContainerLeaseHeartbeatError",
@@ -80062,7 +80142,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 609,
+      "line": 627,
       "methods": [
         "__init__",
         "policy",
@@ -80084,7 +80164,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 501,
+      "line": 519,
       "methods": [
         "__init__",
         "handles",
@@ -100860,6 +100940,11 @@
     },
     {
       "kind": "constructs",
+      "source": "noetrium_platform.capabilities.model.deployment.composition.replica_pool.LocalModelReplicaPoolRuntime",
+      "target": "noetrium_platform.capabilities.model.deployment.composition.replica_pool._PendingModelReplicaCleanup"
+    },
+    {
+      "kind": "constructs",
       "source": "noetrium_platform.capabilities.model.deployment.runtime.applied_store.AppliedModelDeploymentStore",
       "target": "noetrium_platform.foundation.kernel.kernel.durability.file_lock.InterprocessFileLock"
     },
@@ -101902,6 +101987,11 @@
       "kind": "constructs",
       "source": "noetrium_platform.composition.shared_host_pressure.ResourceCompetitionAdmissionGate",
       "target": "noetrium_platform.composition.shared_host_pressure.ResourceCompetitionDecision"
+    },
+    {
+      "kind": "constructs",
+      "source": "noetrium_platform.composition.shared_host_pressure.ResourceCompetitionAdmissionGate",
+      "target": "noetrium_platform.composition.shared_host_pressure.ResourceCompetitionDemand"
     },
     {
       "kind": "constructs",
@@ -105225,9 +105315,9 @@
     }
   ],
   "counts": {
-    "association_edges": 3515,
-    "classes": 3411,
-    "constructor_edges": 962,
+    "association_edges": 3520,
+    "classes": 3413,
+    "constructor_edges": 964,
     "inheritance_edges": 151,
     "module_import_edges": 5081,
     "parse_errors": 0,
@@ -146446,7 +146536,7 @@
   "parse_errors": [],
   "registry_sha256": "276e2729e0b700e814e98f8460d87e0ebee66c4620226fe2d880fe55cc970aec",
   "schema": "noetrium-code-architecture-index.v1",
-  "source_git_sha": "1599e8fd10c258e0975e3b82111af272da1c8055",
+  "source_git_sha": "849a75273831b313afdbd469441eecd389cead78",
   "system_import_edges": [
     {
       "count": 85,
