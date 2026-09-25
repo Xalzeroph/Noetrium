@@ -10,7 +10,10 @@ from noetrium_platform.infrastructure.resources.compute.runtime import (
     InMemoryComputeInventory,
     SQLiteComputeScheduler,
 )
-from tests.resource_compute_support import in_memory_compute_scheduler
+from tests.resource_compute_support import (
+    idle_gpu_runtime_observer,
+    in_memory_compute_scheduler,
+)
 
 
 def _scope() -> ScopeIdentity:
@@ -43,7 +46,13 @@ def test_gpu_work_uses_smallest_sufficient_device() -> None:
             ComputeGPU("gpu-small", 48, "L40S"),
         ),
     ))
-    scheduler = in_memory_compute_scheduler(inventory)
+    scheduler = in_memory_compute_scheduler(
+        inventory,
+        gpu_runtime_observer=idle_gpu_runtime_observer(
+            "gpu-large",
+            "gpu-small",
+        ),
+    )
     allocation = scheduler.allocate(
         "gpu-fit",
         scope,
@@ -77,7 +86,14 @@ def test_sqlite_scheduler_uses_same_gpu_best_fit_policy(tmp_path) -> None:
             ComputeGPU("gpu-small", 48, "L40S"),
         ),
     ))
-    scheduler = SQLiteComputeScheduler(tmp_path / "compute.sqlite3", inventory)
+    scheduler = SQLiteComputeScheduler(
+        tmp_path / "compute.sqlite3",
+        inventory,
+        gpu_runtime_observer=idle_gpu_runtime_observer(
+            "gpu-large",
+            "gpu-small",
+        ),
+    )
     allocation = scheduler.allocate(
         "gpu-fit",
         scope,
