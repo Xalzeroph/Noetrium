@@ -231,6 +231,39 @@ def test_crash_after_claim_consumes_budget_and_eventually_opens_circuit(
     assert terminal.state.circuit_open
 
 
+def test_restart_budget_is_finite_even_when_failures_span_many_windows(
+    tmp_path: Path,
+) -> None:
+    clock = _Clock(10.0)
+    digest = "4" * 64
+    failure = "5" * 64
+    authority = _authority(tmp_path, clock, max_attempts=2)
+
+    first = _fail_claim(authority, "deployment", digest, failure)
+    assert first.attempts_since_reset == 1
+
+    # Let the rolling diagnostic/rate window expire completely. This must not
+    # mint a fresh lifetime restart budget.
+    clock.value = 1000.0
+    second_claim = authority.claim_attempt("deployment", digest)
+    assert second_claim.allow
+    assert second_claim.claim_id is not None
+    second = authority.record_failure(
+        "deployment",
+        digest,
+        second_claim.claim_id,
+        failure,
+    )
+    assert second.attempts_since_reset == 2
+    assert second.circuit_open
+
+    clock.value = 100000.0
+    reopened = _authority(tmp_path, clock, max_attempts=2)
+    blocked = reopened.claim_attempt("deployment", digest)
+    assert not blocked.allow
+    assert blocked.reason == "auto-recovery-circuit-open"
+
+
 def test_manual_reset_refuses_to_race_active_auto_recovery(
     tmp_path: Path,
 ) -> None:
