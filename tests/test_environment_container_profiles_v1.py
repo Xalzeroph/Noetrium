@@ -481,10 +481,7 @@ def test_minecraft_doctor_is_single_body_and_pipefail_safe() -> None:
     assert doctor.count("minecraft_bridge_root=") == 1
     assert doctor.count("MC_BRIDGE_DIR=\"$bridge\" node - <<'JS'") == 1
     assert "java -version 2>&1 | head" not in doctor
-    assert "${java_version%%$'\\n'*}" in doctor
-
-
-def test_bootstrap_child_reaper_distinguishes_boot_and_process_start_generations(
+    assert "${java_version%%$'def test_bootstrap_child_reaper_distinguishes_boot_and_process_start_generations(
     tmp_path: Path,
 ) -> None:
     bootstrap = (ROOT / "deploy" / "build-environments.sh").read_text(
