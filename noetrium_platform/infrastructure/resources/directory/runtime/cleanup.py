@@ -29,23 +29,66 @@ class LocalDirectoryCleaner:
         values: list[DirectoryCleanupCandidate] = []
         for path in sorted(root.iterdir()):
             try:
-                modified_at = path.stat().st_mtime
+                identity = path.stat(follow_symlinks=False)
             except FileNotFoundError:
                 continue
+            modified_at = identity.st_mtime
             if cutoff is not None and modified_at > cutoff:
                 continue
             stats = self._inspector.entry_stats(path)
-            values.append(DirectoryCleanupCandidate(path, modified_at, stats.files, stats.directories, stats.bytes))
+            try:
+                after = path.stat(follow_symlinks=False)
+            except FileNotFoundError:
+                continue
+            if (
+                identity.st_dev,
+                identity.st_ino,
+                identity.st_ctime_ns,
+                identity.st_mtime_ns,
+            ) != (
+                after.st_dev,
+                after.st_ino,
+                after.st_ctime_ns,
+                after.st_mtime_ns,
+            ):
+                continue
+            values.append(
+                DirectoryCleanupCandidate(
+                    path,
+                    modified_at,
+                    stats.files,
+                    stats.directories,
+                    stats.bytes,
+                    identity.st_dev,
+                    identity.st_ino,
+                    identity.st_ctime_ns,
+                )
+            )
         return tuple(values)
 
     def clean(self, kind: ManagedDirectoryKind, *, older_than_seconds: float | None = None) -> tuple[Path, ...]:
         removed: list[Path] = []
         for candidate in self.clean_plan(kind, older_than_seconds=older_than_seconds):
             path = candidate.path
-            if path.is_dir():
+            try:
+                current = path.stat(follow_symlinks=False)
+            except FileNotFoundError:
+                continue
+            if (
+                current.st_dev != candidate.device
+                or current.st_ino != candidate.inode
+                or current.st_ctime_ns != candidate.change_time_ns
+                or current.st_mtime != candidate.modified_at
+            ):
+                continue
+            if path.is_symlink():
+                path.unlink()
+            elif path.is_dir():
                 shutil.rmtree(path)
             elif path.exists():
                 path.unlink()
+            else:
+                continue
             removed.append(path)
         return tuple(removed)
 
