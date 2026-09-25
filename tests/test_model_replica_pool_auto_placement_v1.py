@@ -654,6 +654,91 @@ def test_model_pool_rebinds_if_runtime_restarts_between_compute_and_endpoint_bin
     lease.close()
 
 
+def test_model_pool_generation_churn_fails_closed_without_releasing_resources(
+    tmp_path,
+) -> None:
+    class ChurningRuntime(Runtime):
+        def __init__(self, catalog):
+            super().__init__(catalog)
+            self.epoch = 1
+            self.churning = False
+
+        def status(self, deployment_id):
+            status = super().status(deployment_id)
+            if self.churning:
+                self.epoch += 1
+            return status
+
+        def generation(self, deployment_id):
+            spec = self.catalog.rows[deployment_id]
+            return ModelDeploymentGeneration(
+                deployment_id,
+                canonical_digest(spec),
+                canonical_digest(
+                    {
+                        "fake-applied": deployment_id,
+                        "epoch": self.epoch,
+                    }
+                ),
+            )
+
+    catalog = Catalog()
+    runtime = ChurningRuntime(catalog)
+    scheduler = Scheduler()
+    endpoints = Endpoints()
+    compute_guards = ComputeGuards()
+    endpoint_guards = EndpointGuards()
+    pool = LocalModelReplicaPoolRuntime(
+        deployment_catalog=catalog,
+        deployment_runtime=runtime,
+        fleet=Fleet(catalog),
+        compute_scheduler=scheduler,
+        endpoint_allocations=endpoints,
+        compute_lease_guards=compute_guards,
+        endpoint_lease_guards=endpoint_guards,
+    )
+
+    lease = pool.ensure(
+        ModelReplicaPoolRequest(
+            pool_id="generation-churn",
+            scope=PLATFORM_SCOPE,
+            model_id="qwen3-8b",
+            engine="vllm",
+            python_environment_id="vllm",
+            cwd=Path(tmp_path),
+            compute=ComputeRequirement(
+                cpu_cores=2,
+                memory_bytes=1024,
+                gpu_count=1,
+                minimum_gpu_memory_bytes=40 * 1024**3,
+            ),
+            replica_count=1,
+        )
+    )
+    row = lease.report.placements[0]
+    original_compute = scheduler.rows[row.compute.allocation_id]
+    original_endpoint = endpoints.rows[row.endpoint.allocation_id]
+
+    runtime.churning = True
+    with pytest.raises(RuntimeError, match="did not stabilize"):
+        lease.assert_healthy()
+
+    assert pool.active_lease_count == 1
+    assert scheduler.released == []
+    assert endpoints.released == []
+    assert scheduler.rows[row.compute.allocation_id] == original_compute
+    assert endpoints.rows[row.endpoint.allocation_id] == original_endpoint
+    assert compute_guards.created[0].closed is False
+    assert endpoint_guards.created[0].closed is False
+
+    runtime.churning = False
+    lease.close()
+    assert scheduler.released == [row.compute.allocation_id]
+    assert endpoints.released == [row.endpoint.allocation_id]
+    assert compute_guards.created[0].closed is True
+    assert endpoint_guards.created[0].closed is True
+
+
 def test_model_endpoint_binding_requires_applied_runtime_generation(
     tmp_path,
 ) -> None:
