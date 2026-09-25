@@ -60,6 +60,8 @@ class ResourceOwner:
     def __post_init__(self) -> None:
         if type(self.resource) is not ResourceIdentity:
             raise TypeError("resource owner resource must be ResourceIdentity")
+        if type(self.scope) is not ScopeIdentity:
+            raise TypeError("resource owner scope must be ScopeIdentity")
         if type(self.ownership) is not ResourceOwnership:
             raise TypeError("resource owner ownership must be ResourceOwnership")
 
