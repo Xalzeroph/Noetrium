@@ -47,9 +47,10 @@ def _cpu_worker_priority() -> tuple[int, int]:
 
 @pytest.mark.skipif(
     os.name != "posix" or not Path("/proc/self/oom_score_adj").is_file(),
-    reason="Linux/POSIX cooperative worker priority proof",
+    reason="Linux/POSIX worker priority inheritance proof",
 )
-def test_shared_host_cpu_worker_yields_without_capping_idle_capacity() -> None:
+def test_shared_host_cpu_worker_inherits_controller_priority() -> None:
+    controller_priority = _cpu_worker_priority()
     runtime = build_execution_concurrency_runtime(
         concurrency_budget=ConcurrencyBudget(
             max_blocking_io_workers=2,
@@ -73,9 +74,8 @@ def test_shared_host_cpu_worker_yields_without_capping_idle_capacity() -> None:
             ),
             _cpu_worker_priority,
         )
-        nice, oom_score_adj = handle.result(timeout=15.0)
-        assert nice >= 5
-        assert oom_score_adj >= 500
+        worker_priority = handle.result(timeout=15.0)
+        assert worker_priority == controller_priority
     finally:
         runtime.close_task_group(group, cancel_pending=True)
         runtime.close()
