@@ -481,23 +481,6 @@ class ResourceCompetitionAdmissionGate(ExecutionAdmissionPort):
         ):
             return "memory-pressure"
 
-        storage = self._storage_status()
-        if self._storage_observer is not None:
-            if storage is None or not storage.available:
-                if self._policy.fail_closed_when_runtime_unavailable:
-                    return "storage-runtime-unavailable"
-            else:
-                if storage.free_bytes < self._policy.min_storage_free_bytes:
-                    return "storage-byte-headroom"
-                if storage.free_inodes is None:
-                    if (
-                        self._policy.fail_closed_when_runtime_unavailable
-                        and self._policy.min_storage_free_inodes > 0
-                    ):
-                        return "storage-inode-runtime-unavailable"
-                elif storage.free_inodes < self._policy.min_storage_free_inodes:
-                    return "storage-inode-headroom"
-
         if lane_kind is ExecutionLaneKind.CPU:
             if status.effective_cpu_cores <= 0:
                 return "cpu-capacity"
@@ -514,6 +497,22 @@ class ResourceCompetitionAdmissionGate(ExecutionAdmissionPort):
                 return "cpu-pressure"
 
         if lane_kind in {ExecutionLaneKind.BLOCKING_IO, ExecutionLaneKind.ASYNC_IO}:
+            storage = self._storage_status()
+            if self._storage_observer is not None:
+                if storage is None or not storage.available:
+                    if self._policy.fail_closed_when_runtime_unavailable:
+                        return "storage-runtime-unavailable"
+                else:
+                    if storage.free_bytes < self._policy.min_storage_free_bytes:
+                        return "storage-byte-headroom"
+                    if storage.free_inodes is None:
+                        if (
+                            self._policy.fail_closed_when_runtime_unavailable
+                            and self._policy.min_storage_free_inodes > 0
+                        ):
+                            return "storage-inode-runtime-unavailable"
+                    elif storage.free_inodes < self._policy.min_storage_free_inodes:
+                        return "storage-inode-headroom"
             if (
                 self._network_observer is not None
                 and self._policy.max_network_utilization_percent < 100.0
