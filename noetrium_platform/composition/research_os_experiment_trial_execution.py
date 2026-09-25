@@ -333,8 +333,11 @@ class _TrialBoundStudyExecution(BoundStudyExecutionPort):
         if receipt.assignment_digest != request.assignment.assignment_digest:
             raise ValueError("Trial receipt assignment identity drifted")
 
+        measurements = receipt.require_complete_measurements(
+            request.measurement_protocol
+        )
         values: dict[str, float] = {}
-        for record in receipt.measurements:
+        for record in measurements:
             record.validate_against(request.measurement_protocol)
             if record.measurement_id not in self._metric_names:
                 continue
@@ -445,7 +448,7 @@ class ResearchOSExperimentTrialStudyExecutionResolver(
         adapter = _TrialBoundStudyExecution(closure, binding)
         identity = canonical_digest(
             {
-                "schema": "noetrium.trial-bound-study-execution.v1",
+                "schema": "noetrium.trial-bound-study-execution.v2",
                 "closure_digest": closure.closure_digest,
                 "trial_provider_binding_digest": binding.binding_digest,
             }
