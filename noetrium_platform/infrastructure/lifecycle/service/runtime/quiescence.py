@@ -5,6 +5,7 @@ from dataclasses import dataclass
 from typing import Protocol
 
 from .contracts import ServicePhase
+from .process_contracts import ServiceProcessDrift
 from .service_state_contracts import ServiceSupervisorState
 from .start_intent_contracts import ServiceStartIntent
 
@@ -59,14 +60,38 @@ class ExactServiceQuiescenceProbe:
 
         refs.append(f"service-state:{state.phase.value}:{state.contract_digest}")
         if state.process is not None:
-            reconciled = self.runtime.reconcile_exact(self.contract)
-            refs.extend(reconciled.evidence_refs)
-            if reconciled.process is not None:
-                refs.append(f"service-process:{reconciled.process.pid}:{reconciled.process.start_identity}")
+            process = state.process
+            refs.append(
+                "service-owned-process:"
+                f"{process.pid}:{process.start_identity}:"
+                f"anchor={process.anchor_pid}:{process.anchor_start_identity}"
+            )
+            try:
+                reconciled = self.runtime.reconcile_exact(self.contract)
+            except ServiceProcessDrift as exc:
+                refs.append(f"service-process-drift:{type(exc).__name__}")
                 return ServiceQuiescenceObservation(
                     self.contract.service_id,
                     False,
-                    "exact service process is still live",
+                    (
+                        "persisted service fork-tree ownership drift prevents "
+                        "release retirement"
+                    ),
+                    tuple(refs),
+                )
+            refs.extend(reconciled.evidence_refs)
+            if reconciled.process is not None:
+                refs.append(
+                    "service-process:"
+                    f"{reconciled.process.pid}:"
+                    f"{reconciled.process.start_identity}:"
+                    f"anchor={reconciled.process.anchor_pid}:"
+                    f"{reconciled.process.anchor_start_identity}"
+                )
+                return ServiceQuiescenceObservation(
+                    self.contract.service_id,
+                    False,
+                    "exact service process or owned fork tree is still live",
                     tuple(refs),
                 )
         if state.phase not in self._SAFE_PHASES:
