@@ -5,6 +5,10 @@ import os
 from pathlib import Path
 import platform
 import re
+try:
+    import resource
+except ImportError:  # pragma: no cover - non-POSIX import surface
+    resource = None
 
 from noetrium_platform.infrastructure.resources.compute.api import (
     HostRuntimeSnapshot,
@@ -74,6 +78,19 @@ class LocalHostRuntimeObserver:
         return max(0, limit - current)
 
     @staticmethod
+    def _available_fds() -> int | None:
+        if resource is None:
+            return None
+        try:
+            soft, _hard = resource.getrlimit(resource.RLIMIT_NOFILE)
+            if soft == resource.RLIM_INFINITY or int(soft) < 0:
+                return None
+            in_use = sum(1 for _entry in Path("/proc/self/fd").iterdir())
+        except (OSError, ValueError):
+            return None
+        return max(0, int(soft) - in_use)
+
+    @staticmethod
     def _effective_cpu_cores() -> float | None:
         try:
             affinity_count = len(os.sched_getaffinity(0))
@@ -135,6 +152,7 @@ class LocalHostRuntimeObserver:
                     Path("/proc/pressure/io")
                 ),
                 available_pids=self._available_pids(),
+                available_fds=self._available_fds(),
             ),),
         )
 
