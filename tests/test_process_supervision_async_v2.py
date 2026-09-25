@@ -490,9 +490,11 @@ def test_interactive_supervisor_term_to_kill_reaps_descendant_tree(tmp_path) -> 
         ),
     )
     pid_file = Path(tmp_path) / "interactive-tree.pids"
+    grandchild_ready = Path(tmp_path) / "interactive-tree.grandchild-ready"
     grandchild_code = (
-        "import signal,time; "
+        "import pathlib,signal,time; "
         "signal.signal(signal.SIGTERM, signal.SIG_IGN); "
+        f"pathlib.Path({str(grandchild_ready)!r}).write_text('ready'); "
         "time.sleep(30)"
     )
     target_code = (
@@ -657,6 +659,10 @@ def test_interactive_guardian_survives_root_exit_until_descendant_kill(tmp_path)
             time.sleep(0.01)
         assert pid_file.exists()
         target_pid, grandchild_pid = map(int, pid_file.read_text().split(","))
+        deadline = time.monotonic() + 3.0
+        while not grandchild_ready.exists() and time.monotonic() < deadline:
+            time.sleep(0.01)
+        assert grandchild_ready.exists()
 
         receipt = supervisor.terminate(
             "interactive-root-exit-tree",
