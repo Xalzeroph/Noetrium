@@ -38,6 +38,8 @@ def dispatch_deployment_action(
     if action == "restart":
         generation = runtime.generation(args.deployment_id)
         return True, runtime.restart(generation)
+    if action == "reset-auto-recovery":
+        return True, {"reset": fleet.reset_auto_recovery(args.deployment_id)}
     if action == "set-gpus":
         return True, catalog.set_gpu_devices(args.deployment_id, tuple(args.gpu_devices))
     if action == "set-env":
