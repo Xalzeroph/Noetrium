@@ -15,6 +15,8 @@ from noetrium_platform.research.experimentation.identity import OptionalIdentity
 from noetrium_platform.research.experimentation.lifecycle.api import (
     BenchmarkTaskSet,
     MeasurementRecord,
+    MeasurementSetDisposition,
+    MeasurementSetOutcome,
     MeasurementValue,
     MeasurementValueKind,
     StudyResearchReadSnapshot,
@@ -53,6 +55,14 @@ def _snapshot(task_count: int = 2048, trial_count: int = 512) -> StudyResearchRe
             SHA(f"request-{trial}"),
             SHA(f"assignment-{trial}"),
             measurements[trial * 4:(trial + 1) * 4],
+            MeasurementSetOutcome(
+                SHA("measurement-protocol"),
+                MeasurementSetDisposition.COMPLETE,
+                tuple(
+                    row.record_digest
+                    for row in measurements[trial * 4:(trial + 1) * 4]
+                ),
+            ),
         )
         for trial in range(trial_count)
     )
