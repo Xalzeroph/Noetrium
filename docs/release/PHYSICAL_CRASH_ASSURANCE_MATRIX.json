@@ -311,7 +311,7 @@
       },
       "L2": {
         "kind": "local_integration",
-        "nodeid": "tests/test_managed_docker_container_leases_v1.py::test_managed_docker_restart_before_ttl_reaps_old_controller_generation"
+        "nodeid": "tests/test_managed_docker_container_leases_v1.py::test_managed_docker_restart_quarantines_old_generation_until_exclusive_recovery"
       },
       "L3": {
         "kind": "server_integration",
