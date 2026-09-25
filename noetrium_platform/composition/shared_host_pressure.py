@@ -188,6 +188,7 @@ class SharedStoragePressureStatus:
     free_bytes: int = 0
     free_inodes: int | None = None
     detail: str = ""
+    capacity_id: str | None = None
 
     def __post_init__(self) -> None:
         if type(self.available) is not bool:
@@ -198,10 +199,19 @@ class SharedStoragePressureStatus:
             type(self.free_inodes) is not int or self.free_inodes < 0
         ):
             raise ValueError("shared storage free_inodes must be non-negative or None")
+        if self.capacity_id is not None and (
+            type(self.capacity_id) is not str or not self.capacity_id.strip()
+        ):
+            raise ValueError(
+                "shared storage capacity_id must be non-empty text or None"
+            )
 
 
 class SharedStoragePressureObserverPort(Protocol):
-    def snapshot(self) -> SharedStoragePressureStatus: ...
+    def snapshot(
+        self,
+        path: Path | None = None,
+    ) -> SharedStoragePressureStatus: ...
 
 
 class LocalSharedStoragePressureObserver:
@@ -223,42 +233,76 @@ class LocalSharedStoragePressureObserver:
                 return None
             current = parent
 
-    def snapshot(self) -> SharedStoragePressureStatus:
-        by_device: dict[int, tuple[int, int | None]] = {}
+    @staticmethod
+    def _capacity(
+        requested: Path,
+    ) -> SharedStoragePressureStatus:
+        path = LocalSharedStoragePressureObserver._existing_capacity_path(
+            requested
+        )
+        if path is None:
+            return SharedStoragePressureStatus(
+                False,
+                detail=f"managed-storage-path-unresolvable:{requested}",
+            )
         try:
-            for requested in self._paths:
-                path = self._existing_capacity_path(requested)
-                if path is None:
-                    return SharedStoragePressureStatus(
-                        False,
-                        detail=f"managed-storage-path-unresolvable:{requested}",
-                    )
-                device = int(path.stat().st_dev)
-                if device in by_device:
-                    continue
-                stat = os.statvfs(path)
-                free_bytes = max(0, int(stat.f_bavail) * int(stat.f_frsize))
-                free_inodes = (
-                    None
-                    if int(stat.f_files) <= 0
-                    else max(0, int(stat.f_favail))
-                )
-                by_device[device] = (free_bytes, free_inodes)
+            device = int(path.stat().st_dev)
+            stat = os.statvfs(path)
         except OSError as exc:
             return SharedStoragePressureStatus(
                 False,
                 detail=f"{type(exc).__name__}:{exc}",
             )
-        if not by_device:
-            return SharedStoragePressureStatus(False, detail="no-managed-filesystem")
-        free_bytes = min(row[0] for row in by_device.values())
-        inode_values = tuple(
-            row[1] for row in by_device.values() if row[1] is not None
+        free_bytes = max(0, int(stat.f_bavail) * int(stat.f_frsize))
+        free_inodes = (
+            None
+            if int(stat.f_files) <= 0
+            else max(0, int(stat.f_favail))
         )
         return SharedStoragePressureStatus(
             True,
             free_bytes=free_bytes,
-            free_inodes=None if not inode_values else min(inode_values),
+            free_inodes=free_inodes,
+            capacity_id=f"dev:{device}",
+        )
+
+    def snapshot(
+        self,
+        path: Path | None = None,
+    ) -> SharedStoragePressureStatus:
+        if path is not None:
+            if not isinstance(path, Path):
+                raise TypeError("shared storage pressure path must be Path")
+            return self._capacity(path)
+
+        by_device: dict[str, SharedStoragePressureStatus] = {}
+        for requested in self._paths:
+            status = self._capacity(requested)
+            if not status.available:
+                return status
+            assert status.capacity_id is not None
+            by_device.setdefault(status.capacity_id, status)
+
+        if not by_device:
+            return SharedStoragePressureStatus(
+                False,
+                detail="no-managed-filesystem",
+            )
+        rows = tuple(by_device.values())
+        inode_values = tuple(
+            row.free_inodes
+            for row in rows
+            if row.free_inodes is not None
+        )
+        return SharedStoragePressureStatus(
+            True,
+            free_bytes=min(row.free_bytes for row in rows),
+            free_inodes=(
+                None if not inode_values else min(inode_values)
+            ),
+            capacity_id=(
+                rows[0].capacity_id if len(rows) == 1 else None
+            ),
         )
 
 
@@ -271,6 +315,7 @@ class ResourceCompetitionDemand:
     fds_per_permit: int = 0
     storage_bytes_per_permit: int = 0
     storage_inodes_per_permit: int = 0
+    storage_path: Path | None = None
 
     def __post_init__(self) -> None:
         for name in (
@@ -285,6 +330,16 @@ class ResourceCompetitionDemand:
                 raise ValueError(
                     f"resource competition demand {name} must be a non-negative integer"
                 )
+        if self.storage_path is not None:
+            if not isinstance(self.storage_path, Path):
+                raise TypeError(
+                    "resource competition demand storage_path must be Path or None"
+                )
+            object.__setattr__(
+                self,
+                "storage_path",
+                self.storage_path.absolute(),
+            )
 
 
 class ResourceCompetitionClass(StrEnum):
