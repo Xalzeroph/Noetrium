@@ -25,7 +25,10 @@ from noetrium_platform.infrastructure.resources.allocation.providers import (
     LocalEndpointCandidateSource,
 )
 from noetrium_platform.infrastructure.resources.lease.api import ResourceIdentity, ResourceKind
-from noetrium_platform.infrastructure.resources.lease.runtime import InMemoryResourceLeaseRegistry
+from noetrium_platform.infrastructure.resources.lease.runtime import (
+    InMemoryResourceLeaseRegistry,
+    ManualLeaseClock,
+)
 from noetrium_platform.foundation.scope.api import PLATFORM_SCOPE, ScopeIdentity, ScopeKind
 
 
@@ -259,21 +262,18 @@ def test_endpoint_allocator_does_not_hold_state_lock_during_probe() -> None:
     assert {row.endpoint.port for row in results} == {25565, 25566}
 
 def test_expired_in_memory_endpoint_lease_cannot_be_confirmed_bound() -> None:
-    class StaleLeaseRegistry(InMemoryResourceLeaseRegistry):
-        stale = False
-
-        def get(self, lease_id: str):
-            lease = super().get(lease_id)
-            if self.stale:
-                return replace(lease, expires_at_epoch_s=1.0, acquired_at_epoch_s=0.5)
-            return lease
-
-    leases = StaleLeaseRegistry()
+    clock = ManualLeaseClock(elapsed_seconds=1.0, wall_epoch_seconds=100.0)
+    leases = InMemoryResourceLeaseRegistry(clock=clock)
     allocator = InMemoryEndpointAllocator(
         ownership=leases, leases=leases, probe=ScriptedProbe()
     )
     reserved = allocator.allocate(_request("branch-expired", (25567,)))
-    leases.stale = True
+    lease = leases.get(reserved.lease_id)
+    assert lease.expires_at_epoch_s is not None
+    clock.advance(lease.expires_at_epoch_s - 100.0 + 1.0)
+    released = allocator.reconcile()
+    assert tuple(row.allocation_id for row in released) == (reserved.allocation_id,)
+
     proof = EndpointBindingProof(
         reserved.allocation_id, reserved.endpoint, reserved.lease_fencing_token,
         "d" * 64, 1234.0, "expired-listener-evidence",
@@ -282,7 +282,6 @@ def test_expired_in_memory_endpoint_lease_cannot_be_confirmed_bound() -> None:
         allocator.confirm_bound(proof)
     assert allocator.get(reserved.allocation_id).state is EndpointAllocationState.RELEASED
     assert allocator.active() == ()
-
 
 def test_in_memory_endpoint_reconciles_underlying_fencing_drift() -> None:
     class DriftedLeaseRegistry(InMemoryResourceLeaseRegistry):
@@ -300,6 +299,8 @@ def test_in_memory_endpoint_reconciles_underlying_fencing_drift() -> None:
     )
     reserved = allocator.allocate(_request("branch-fencing-drift", (25568,)))
     leases.drifted = True
+    released = allocator.reconcile()
+    assert tuple(row.allocation_id for row in released) == (reserved.allocation_id,)
     assert allocator.get(reserved.allocation_id).state is EndpointAllocationState.RELEASED
     assert allocator.active() == ()
 
@@ -330,7 +331,8 @@ def test_automatic_endpoint_allocation_is_resource_owned() -> None:
 
 
 def test_endpoint_reconcile_releases_expired_allocation() -> None:
-    leases = InMemoryResourceLeaseRegistry()
+    clock = ManualLeaseClock(elapsed_seconds=1.0, wall_epoch_seconds=100.0)
+    leases = InMemoryResourceLeaseRegistry(clock=clock)
     allocator = InMemoryEndpointAllocator(
         ownership=leases,
         leases=leases,
@@ -339,8 +341,9 @@ def test_endpoint_reconcile_releases_expired_allocation() -> None:
     allocation = allocator.allocate(_request("branch-expiring-reconcile", (25579,)))
     lease = leases.get(allocation.lease_id)
     assert lease.expires_at_epoch_s is not None
+    clock.advance(lease.expires_at_epoch_s - 100.0 + 1.0)
 
-    released = allocator.reconcile(now=lease.expires_at_epoch_s + 1.0)
+    released = allocator.reconcile()
 
     assert tuple(row.allocation_id for row in released) == (
         "branch-expiring-reconcile",
