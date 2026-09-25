@@ -140,6 +140,76 @@ def test_expired_gpu_lease_does_not_release_capacity_while_process_survives(
 
 
 @pytest.mark.parametrize("durable", [False, True])
+def test_recovery_release_refuses_live_orphan_gpu_process(
+    tmp_path,
+    durable: bool,
+) -> None:
+    observer = MutableGpuObserver()
+    scheduler = (
+        SQLiteComputeScheduler(
+            tmp_path / "compute-recovery-gpu.sqlite",
+            _inventory(),
+            gpu_runtime_observer=observer,
+        )
+        if durable
+        else in_memory_compute_scheduler(
+            _inventory(),
+            gpu_runtime_observer=observer,
+        )
+    )
+    allocation = scheduler.allocate(
+        "gpu-job",
+        _scope(),
+        _requirement(),
+        ttl_seconds=30.0,
+        now=100.0,
+    )
+
+    observer.busy = True
+    with pytest.raises(
+        ComputePhysicalConvergencePending,
+        match="physical convergence pending",
+    ):
+        scheduler.recover_release(allocation)
+    assert scheduler.allocations() == (allocation,)
+
+    observer.busy = False
+    scheduler.recover_release(allocation)
+    assert scheduler.allocations() == ()
+
+
+@pytest.mark.parametrize("durable", [False, True])
+def test_recovery_release_fails_closed_when_gpu_visibility_is_unknown(
+    tmp_path,
+    durable: bool,
+) -> None:
+    observer = MutableGpuObserver()
+    scheduler = (
+        SQLiteComputeScheduler(
+            tmp_path / "compute-recovery-unknown.sqlite",
+            _inventory(),
+            gpu_runtime_observer=observer,
+        )
+        if durable
+        else in_memory_compute_scheduler(
+            _inventory(),
+            gpu_runtime_observer=observer,
+        )
+    )
+    allocation = scheduler.allocate(
+        "gpu-job",
+        _scope(),
+        _requirement(),
+        ttl_seconds=30.0,
+        now=100.0,
+    )
+    observer.complete = False
+    with pytest.raises(ComputePhysicalConvergencePending):
+        scheduler.recover_release(allocation)
+    assert scheduler.allocations() == (allocation,)
+
+
+@pytest.mark.parametrize("durable", [False, True])
 def test_expired_gpu_lease_fails_closed_when_process_visibility_is_incomplete(
     tmp_path,
     durable: bool,
