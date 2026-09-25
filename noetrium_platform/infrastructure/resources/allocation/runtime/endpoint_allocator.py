@@ -280,6 +280,13 @@ class AtomicEndpointAllocator(EndpointAllocationPort):
         return self._reservations.renew_many(allocations, ttl_seconds=ttl)
 
     def release(self, allocation: EndpointAllocation) -> EndpointAllocation:
+        """Release one exact live binder generation after upper teardown.
+
+        Socket occupancy is not ownership evidence: after the exact Noetrium
+        binder stops, another user may immediately bind the same address. The
+        old logical lease must still retire, while orphan reconciliation remains
+        conservative because it lacks that upper-generation convergence proof.
+        """
         if type(allocation) is not EndpointAllocation:
             raise TypeError("endpoint release requires EndpointAllocation")
         current = self._reservations.get(allocation.allocation_id)
@@ -288,10 +295,6 @@ class AtomicEndpointAllocator(EndpointAllocationPort):
         _require_allocation_generation(current, allocation)
         if current.state is EndpointAllocationState.RELEASED:
             return current
-        if current.state is EndpointAllocationState.BOUND:
-            physical = self._probe.probe(current.endpoint)
-            if not physical.available:
-                raise EndpointPhysicalConvergencePending((current.allocation_id,))
         return self._reservations.release(allocation)
 
     def get(self, allocation_id: str) -> EndpointAllocation:
@@ -617,20 +620,9 @@ class InMemoryEndpointAllocator(EndpointAllocationPort):
             )
 
     def release(self, allocation: EndpointAllocation) -> EndpointAllocation:
+        """Release one exact live binder generation after upper teardown."""
         if type(allocation) is not EndpointAllocation:
             raise TypeError("endpoint release requires EndpointAllocation")
-        with self._lock:
-            current = self._reconcile_allocation_locked(allocation.allocation_id)
-            _require_allocation_generation(current, allocation)
-            if current.state is EndpointAllocationState.RELEASED:
-                return current
-            self._require_lease_authority_locked(current)
-
-        if current.state is EndpointAllocationState.BOUND:
-            physical = self._probe.probe(current.endpoint)
-            if not physical.available:
-                raise EndpointPhysicalConvergencePending((current.allocation_id,))
-
         with self._lock:
             current = self._reconcile_allocation_locked(allocation.allocation_id)
             _require_allocation_generation(current, allocation)
