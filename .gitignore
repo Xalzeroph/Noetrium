@@ -38,3 +38,6 @@ Thumbs.db
 
 # Local generated governance/test scratch
 .local/
+
+# Local Noetrium execution state
+.noetrium/

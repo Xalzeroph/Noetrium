@@ -295,7 +295,9 @@ if [ "${1:-}" = "control" ]; then
     echo "Noetrium control requires a Python entrypoint." >&2
     exit 2
   }
-  mkdir -p "$WORK_ROOT/control"
+  CONTROL_STATE_ROOT="${NOETRIUM_CONTROL_STATE_ROOT:-$WORK_ROOT/control}"
+  mkdir -p "$CONTROL_STATE_ROOT"
+  CONTROL_STATE_ROOT="$(CDPATH= cd -- "$CONTROL_STATE_ROOT" && pwd)"
   CONTROL_ENV_FILE="${NOETRIUM_CONTROL_ENV_FILE:-}"
   if [ -z "$CONTROL_ENV_FILE" ] && [ -f "$ROOT/deploy/.env" ]; then
     CONTROL_ENV_FILE="$ROOT/deploy/.env"
@@ -309,14 +311,16 @@ if [ "${1:-}" = "control" ]; then
     run_bootstrap_container --entrypoint python3 $COMMON_ARGS \
       --env-file "$CONTROL_ENV_FILE" \
       -v "$WORK_ROOT:$WORK_ROOT" \
-      -e NOETRIUM_CONTROL_STATE_ROOT="$WORK_ROOT/control" \
+      -v "$CONTROL_STATE_ROOT:$CONTROL_STATE_ROOT" \
+      -e NOETRIUM_CONTROL_STATE_ROOT="$CONTROL_STATE_ROOT" \
       "$BOOTSTRAP_IMAGE" "$@"
     exit $?
   fi
   # shellcheck disable=SC2086
   run_bootstrap_container --entrypoint python3 $COMMON_ARGS \
     -v "$WORK_ROOT:$WORK_ROOT" \
-    -e NOETRIUM_CONTROL_STATE_ROOT="$WORK_ROOT/control" \
+    -v "$CONTROL_STATE_ROOT:$CONTROL_STATE_ROOT" \
+    -e NOETRIUM_CONTROL_STATE_ROOT="$CONTROL_STATE_ROOT" \
     "$BOOTSTRAP_IMAGE" "$@"
   exit $?
 fi
