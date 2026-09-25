@@ -41,9 +41,9 @@ class StructuredConcurrencyRuntime:
     _blocking_io: ExecutorProviderPort
     _async_io: ExecutorProviderPort
     _cpu: CpuWorkerPoolProviderPort
-    _owns_cpu_provider: bool = True
     _timers: TimerSchedulerProviderPort
     _serial_lane_factory: SerialExecutionLaneFactoryProviderPort
+    _owns_cpu_provider: bool = True
     _groups: dict[str, StructuredTaskGroup] = field(default_factory=dict)
     _serial_lanes: dict[str, _OwnedLane] = field(default_factory=dict)
     _lock: Lock = field(default_factory=Lock)
