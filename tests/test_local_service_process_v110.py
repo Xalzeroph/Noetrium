@@ -111,7 +111,7 @@ class LocalServiceProcessV110Tests(unittest.TestCase):
                 if "HOME" not in environment.as_dict():
                     self.assertNotIn(b"HOME=",actual_env)
             finally:
-                stopped=supervisor.stop_exact(c)
+                stopped=supervisor.stop_exact(c, process)
                 self.assertEqual(stopped.phase,ServicePhase.EXITED)
 
     @unittest.skipUnless(sys.platform.startswith("linux"), "Linux process backend requires /proc and POSIX process groups")
@@ -195,7 +195,7 @@ class LocalServiceProcessV110Tests(unittest.TestCase):
                     actual_env,
                 )
             finally:
-                stopped = second.stop_exact(launch)
+                stopped = second.stop_exact(launch, report.state.process)
                 self.assertEqual(stopped.phase, ServicePhase.EXITED)
 
     @unittest.skipUnless(
@@ -276,7 +276,7 @@ class LocalServiceProcessV110Tests(unittest.TestCase):
                 int(detached_ready.read_text()),
             )
             anchor_pid = process.anchor_pid
-            stopped = supervisor.stop_exact(launch)
+            stopped = supervisor.stop_exact(launch, process)
             self.assertEqual(stopped.phase, ServicePhase.EXITED)
 
             deadline = time.monotonic() + 3.0
@@ -363,6 +363,10 @@ class LocalServiceProcessV110Tests(unittest.TestCase):
                 linux_spawn.subprocess,
                 "Popen",
                 return_value=child,
+            ), patch.object(
+                LinuxProcessSpawner,
+                "_send_child_environment",
+                return_value=None,
             ), patch.object(
                 LinuxProcessSpawner,
                 "_read_guarded_child_pid",
