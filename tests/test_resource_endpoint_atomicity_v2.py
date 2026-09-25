@@ -23,6 +23,7 @@ from noetrium_platform.foundation.kernel.concurrency.api import ConcurrencyBudge
 from noetrium_platform.foundation.kernel.concurrency.composition import build_concurrency_runtime
 from noetrium_platform.infrastructure.resources.allocation.runtime import (
     AtomicEndpointAllocator,
+    EndpointAllocationUnavailable,
     EndpointLeaseHeartbeatError,
     EndpointLeaseHeartbeatFactory,
     EndpointPhysicalConvergencePending,
