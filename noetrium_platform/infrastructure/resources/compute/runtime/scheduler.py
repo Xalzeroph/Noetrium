@@ -417,9 +417,13 @@ def _eligible_gpus(
     usage: _HostUsage,
     requirement: ComputeRequirement,
     runtime_index: _GpuRuntimeIndex | None,
+    *,
+    quarantined_gpu_ids: frozenset[str] = frozenset(),
 ):
     rows = []
     for gpu in host.gpus:
+        if gpu.gpu_id in quarantined_gpu_ids:
+            continue
         allocation_count = usage.gpu_allocation_counts.get(gpu.gpu_id, 0)
         exclusive_count = usage.gpu_exclusive_counts.get(gpu.gpu_id, 0)
         if requirement.gpu_sharing_mode is GpuSharingMode.IDLE_ONLY:
@@ -448,6 +452,8 @@ def _placement_score(
     host: ComputeHost, usage: _HostUsage, requirement: ComputeRequirement,
     runtime_index: _GpuRuntimeIndex | None,
     host_runtime_index: dict[str, HostRuntimeStatus] | None,
+    *,
+    quarantined_gpu_ids: frozenset[str] = frozenset(),
 ):
     cpu_after = host.cpu_cores - usage.cpu_cores - requirement.cpu_cores
     memory_after = host.memory_bytes - usage.memory_bytes - requirement.memory_bytes
@@ -495,7 +501,13 @@ def _placement_score(
             1.0, live.available_memory_bytes / max(1, host.memory_bytes)
         )
         runtime_rank = (0, cpu_load_ratio, memory_pressure)
-    eligible = _eligible_gpus(host, usage, requirement, runtime_index)
+    eligible = _eligible_gpus(
+        host,
+        usage,
+        requirement,
+        runtime_index,
+        quarantined_gpu_ids=quarantined_gpu_ids,
+    )
     if len(eligible) < requirement.gpu_count:
         return None
     selected_rows = eligible[: requirement.gpu_count]
@@ -529,6 +541,8 @@ def _ordered_placements(
     hosts: tuple[ComputeHost, ...], usage_for, requirement: ComputeRequirement,
     runtime_snapshot: GpuRuntimeSnapshot | None,
     host_runtime_snapshot: HostRuntimeSnapshot | None,
+    *,
+    quarantined_gpu_ids: frozenset[str] = frozenset(),
 ):
     if (
         requirement.gpu_count > 0
@@ -550,6 +564,7 @@ def _ordered_placements(
             requirement,
             runtime_index,
             host_runtime_index,
+            quarantined_gpu_ids=quarantined_gpu_ids,
         )
         if placement is not None:
             score, gpu_ids = placement
@@ -660,6 +675,7 @@ class InMemoryComputeScheduler:
         *,
         runtime_snapshot: GpuRuntimeSnapshot | None,
         host_runtime_snapshot: HostRuntimeSnapshot | None,
+        quarantined_gpu_ids: frozenset[str] = frozenset(),
     ):
         return _ordered_placements(
             hosts,
@@ -667,6 +683,7 @@ class InMemoryComputeScheduler:
             requirement,
             runtime_snapshot,
             host_runtime_snapshot,
+            quarantined_gpu_ids=quarantined_gpu_ids,
         )
 
     def _release_usage_locked(self, row: ComputeAllocation) -> None:
@@ -723,7 +740,12 @@ class InMemoryComputeScheduler:
             requirement,
         )
         with self._lock:
-            self._reconcile_expired_locked(None, runtime_snapshot)
+            pending = self._reconcile_expired_locked(None, runtime_snapshot)
+            quarantined_gpu_ids = frozenset(
+                gpu_id
+                for row in pending
+                for gpu_id in row.gpu_ids
+            )
             return tuple(
                 host for _score, host, _gpu_ids
                 in self._placements_locked(
@@ -731,6 +753,7 @@ class InMemoryComputeScheduler:
                     requirement,
                     runtime_snapshot=runtime_snapshot,
                     host_runtime_snapshot=host_runtime_snapshot,
+                    quarantined_gpu_ids=quarantined_gpu_ids,
                 )
             )
     def allocate(
@@ -775,11 +798,17 @@ class InMemoryComputeScheduler:
                 ):
                     return existing
                 raise ComputePhysicalConvergencePending((existing,))
+            quarantined_gpu_ids = frozenset(
+                gpu_id
+                for row in pending
+                for gpu_id in row.gpu_ids
+            )
             placements = self._placements_locked(
                 hosts,
                 requirement,
                 runtime_snapshot=runtime_snapshot,
                 host_runtime_snapshot=host_runtime_snapshot,
+                quarantined_gpu_ids=quarantined_gpu_ids,
             )
             if not placements:
                 eligible_host_ids = {host.host_id for host in hosts}
@@ -789,7 +818,16 @@ class InMemoryComputeScheduler:
                     if row.gpu_ids and row.host_id in eligible_host_ids
                 )
                 if requirement.gpu_count and blocking_pending:
-                    raise ComputePhysicalConvergencePending(blocking_pending)
+                    without_quarantine = self._placements_locked(
+                        hosts,
+                        requirement,
+                        runtime_snapshot=runtime_snapshot,
+                        host_runtime_snapshot=host_runtime_snapshot,
+                    )
+                    if without_quarantine:
+                        raise ComputePhysicalConvergencePending(
+                            blocking_pending
+                        )
                 raise ComputePlacementUnavailable(requirement)
             _score, host, gpu_ids = placements[0]
             resource = _allocation_resource(allocation_id)
@@ -1294,6 +1332,8 @@ class SQLiteComputeScheduler:
         scope: ScopeIdentity | None,
         runtime_snapshot: GpuRuntimeSnapshot | None,
         host_runtime_snapshot: HostRuntimeSnapshot | None,
+        *,
+        quarantined_gpu_ids: frozenset[str] = frozenset(),
     ):
         required_labels = dict(requirement.required_labels)
         hosts = tuple(
@@ -1310,6 +1350,7 @@ class SQLiteComputeScheduler:
             requirement,
             runtime_snapshot,
             host_runtime_snapshot,
+            quarantined_gpu_ids=quarantined_gpu_ids,
         )
 
     def candidates(
@@ -1321,7 +1362,31 @@ class SQLiteComputeScheduler:
         runtime_snapshot = _observe_gpu_runtime(self._gpu_runtime_observer)
         host_runtime_snapshot = _observe_host_runtime(self._host_runtime_observer)
         with self._connection() as conn:
-            rows = self._capacity_rows(conn)
+            begin_immediate_sqlite_transaction(
+                conn,
+                timeout_seconds=self.timeout_seconds,
+            )
+            try:
+                now_epoch_s = self._authority_now(conn, None)
+                _converged, pending = self._cleanup_expired(
+                    conn,
+                    now_epoch_s,
+                    runtime_snapshot,
+                )
+                rows = self._capacity_rows(conn)
+                conn.commit()
+            except BaseException as primary:
+                rollback_sqlite_writer(
+                    conn,
+                    primary,
+                    label="compute candidates",
+                )
+                raise
+        quarantined_gpu_ids = frozenset(
+            gpu_id
+            for row in pending
+            for gpu_id in row.gpu_ids
+        )
         return tuple(
             host for _score, host, _gpu_ids
             in self._placements(
@@ -1330,6 +1395,7 @@ class SQLiteComputeScheduler:
                 scope,
                 runtime_snapshot,
                 host_runtime_snapshot,
+                quarantined_gpu_ids=quarantined_gpu_ids,
             )
         )
 
@@ -1387,12 +1453,18 @@ class SQLiteComputeScheduler:
                     conn.commit()
                     raise ComputePhysicalConvergencePending((quarantined,))
                 rows = self._capacity_rows(conn)
+                quarantined_gpu_ids = frozenset(
+                    gpu_id
+                    for row in pending
+                    for gpu_id in row.gpu_ids
+                )
                 placements = self._placements(
                     rows,
                     requirement,
                     scope if placement_scope is None else placement_scope,
                     runtime_snapshot,
                     host_runtime_snapshot,
+                    quarantined_gpu_ids=quarantined_gpu_ids,
                 )
                 if not placements:
                     required_labels = dict(requirement.required_labels)
@@ -1416,10 +1488,18 @@ class SQLiteComputeScheduler:
                         if row.gpu_ids and row.host_id in eligible_host_ids
                     )
                     if requirement.gpu_count and blocking_pending:
-                        conn.rollback()
-                        raise ComputePhysicalConvergencePending(
-                            blocking_pending
+                        without_quarantine = self._placements(
+                            rows,
+                            requirement,
+                            placement_identity,
+                            runtime_snapshot,
+                            host_runtime_snapshot,
                         )
+                        if without_quarantine:
+                            conn.rollback()
+                            raise ComputePhysicalConvergencePending(
+                                blocking_pending
+                            )
                     raise ComputePlacementUnavailable(requirement)
                 _score, host, gpu_ids = placements[0]
                 resource = _allocation_resource(allocation_id)
