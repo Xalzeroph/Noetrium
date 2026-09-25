@@ -547,7 +547,7 @@ def test_live_io_permits_reserve_fd_demand_across_competing_groups() -> None:
     observer = _MutableHostObserver(
         _status(
             available_pids=256,
-            available_fds=80,
+            available_fds=112,
         )
     )
     gate = _gate(observer, mode=AdmissionMode.REJECT)
