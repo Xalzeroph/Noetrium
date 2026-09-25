@@ -873,7 +873,7 @@
     }
   ],
   "package_cycles": [],
-  "report_sha256": "58e8eb910165034ec0e2fcef10b6b2dfb0e635fc0ac8f3ce126bef7dae7a040a",
+  "report_sha256": "10638c2f93788d5da11ec02b5d54804cd57ba8f52fd1b6f0b12f7162c1ff9b1a",
   "source_authority_violations": [
     {
       "allowed_modules": [
@@ -909,7 +909,7 @@
       "primitive": "os.write"
     }
   ],
-  "source_digest": "2638506bfc94ae83d464c094b7fcf48cd8ba3399293328c2fd2a95fa7a5dbbe0",
+  "source_digest": "f8f5a48883903510a56ab922e921a76bd9a45297dedd982478d4ae07cb4c78da",
   "source_invariant_violations": [
     {
       "detail": "direct concurrency implementation import noetrium_platform.foundation.kernel.concurrency.api.ports; depend on noetrium_platform.foundation.kernel.concurrency.api and obtain task groups from composition",
@@ -1816,16 +1816,16 @@
       "score": 2258
     },
     {
-      "branches": 103,
+      "branches": 106,
       "classes": 6,
       "exception_handlers": 18,
-      "functions": 25,
+      "functions": 26,
       "imports": 17,
-      "max_function_lines": 180,
+      "max_function_lines": 155,
       "module": "noetrium_platform.capabilities.model.deployment.composition.replica_pool",
       "path": "noetrium_platform/capabilities/model/deployment/composition/replica_pool.py",
-      "physical_lines": 911,
-      "score": 2226
+      "physical_lines": 942,
+      "score": 2231
     },
     {
       "branches": 97,

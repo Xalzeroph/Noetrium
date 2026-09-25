@@ -3,13 +3,13 @@
     "parse_errors": 0,
     "python_files": 3709,
     "python_import_edges": 7044,
-    "symbols": 5099,
+    "symbols": 5103,
     "tracked_files": 4346,
     "typescript_javascript_files": 11
   },
   "language_symbol_counts": {
     "javascript": 1,
-    "python": 5093,
+    "python": 5097,
     "typescript": 5
   },
   "parse_errors": [],
@@ -42416,11 +42416,11 @@
     "reference_orchestration": 14,
     "research_reproductions": 444,
     "sdk": 5,
-    "tests": 1086,
+    "tests": 1090,
     "tooling": 39
   },
   "schema": "noetrium-repository-code-architecture-index.v1",
-  "source_git_sha": "d3935f69f98c7e238b36f64a42b4d921a92df188",
+  "source_git_sha": "0d12a95c842ca0eb8e60611afea7ab8986119848",
   "symbols": [
     {
       "bases": [],
@@ -52981,7 +52981,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 48,
+      "line": 173,
       "methods": [
         "__post_init__",
         "effective_compute"
@@ -53008,7 +53008,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 133,
+      "line": 258,
       "methods": [
         "placement_digest"
       ],
@@ -53031,7 +53031,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 148,
+      "line": 273,
       "methods": [
         "__post_init__"
       ],
@@ -53047,11 +53047,11 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 183,
+      "line": 308,
       "methods": [
         "__init__",
         "_current_generation",
-        "_rebind_running_generation",
+        "_converge_running_generation",
         "assert_healthy",
         "close",
         "_close_locked",
@@ -53070,7 +53070,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 427,
+      "line": 483,
       "methods": [
         "__init__",
         "closed",
@@ -53088,7 +53088,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 557,
+      "line": 613,
       "methods": [
         "__init__",
         "active_lease_count",
@@ -140641,6 +140641,84 @@
       "language": "python",
       "line": 501,
       "methods": [
+        "__init__",
+        "status",
+        "generation"
+      ],
+      "module": "tests.test_model_replica_pool_auto_placement_v1",
+      "name": "RacingRuntime",
+      "path": "tests/test_model_replica_pool_auto_placement_v1.py",
+      "qualname": "tests.test_model_replica_pool_auto_placement_v1.RacingRuntime",
+      "role": "tests"
+    },
+    {
+      "bases": [
+        "Runtime"
+      ],
+      "decorators": [],
+      "fields": [],
+      "kind": "class",
+      "language": "python",
+      "line": 578,
+      "methods": [
+        "__init__",
+        "generation"
+      ],
+      "module": "tests.test_model_replica_pool_auto_placement_v1",
+      "name": "RestartingRuntime",
+      "path": "tests/test_model_replica_pool_auto_placement_v1.py",
+      "qualname": "tests.test_model_replica_pool_auto_placement_v1.RestartingRuntime",
+      "role": "tests"
+    },
+    {
+      "bases": [
+        "Endpoints"
+      ],
+      "decorators": [],
+      "fields": [],
+      "kind": "class",
+      "language": "python",
+      "line": 596,
+      "methods": [
+        "__init__",
+        "confirm_bound"
+      ],
+      "module": "tests.test_model_replica_pool_auto_placement_v1",
+      "name": "RestartDuringEndpointBind",
+      "path": "tests/test_model_replica_pool_auto_placement_v1.py",
+      "qualname": "tests.test_model_replica_pool_auto_placement_v1.RestartDuringEndpointBind",
+      "role": "tests"
+    },
+    {
+      "bases": [
+        "Runtime"
+      ],
+      "decorators": [],
+      "fields": [],
+      "kind": "class",
+      "language": "python",
+      "line": 660,
+      "methods": [
+        "__init__",
+        "status",
+        "generation"
+      ],
+      "module": "tests.test_model_replica_pool_auto_placement_v1",
+      "name": "ChurningRuntime",
+      "path": "tests/test_model_replica_pool_auto_placement_v1.py",
+      "qualname": "tests.test_model_replica_pool_auto_placement_v1.ChurningRuntime",
+      "role": "tests"
+    },
+    {
+      "bases": [
+        "Runtime"
+      ],
+      "decorators": [],
+      "fields": [],
+      "kind": "class",
+      "language": "python",
+      "line": 745,
+      "methods": [
         "generation"
       ],
       "module": "tests.test_model_replica_pool_auto_placement_v1",
@@ -140657,7 +140735,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 552,
+      "line": 796,
       "methods": [
         "__init__",
         "allocate"
@@ -140676,7 +140754,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 784,
+      "line": 1028,
       "methods": [
         "allocate"
       ],
@@ -140694,7 +140772,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 830,
+      "line": 1074,
       "methods": [
         "__init__",
         "remove_deployment"
@@ -140713,7 +140791,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 841,
+      "line": 1085,
       "methods": [
         "reconcile"
       ],
@@ -140731,7 +140809,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 914,
+      "line": 1158,
       "methods": [
         "__init__",
         "remove_deployment"
@@ -140750,7 +140828,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 1028,
+      "line": 1272,
       "methods": [
         "__init__",
         "remove_deployment"

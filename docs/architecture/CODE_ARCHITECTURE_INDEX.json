@@ -27468,7 +27468,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 557,
+      "line": 613,
       "methods": [
         "__init__",
         "active_lease_count",
@@ -27505,7 +27505,7 @@
         "status"
       ],
       "kind": "dataclass",
-      "line": 133,
+      "line": 258,
       "methods": [
         "placement_digest"
       ],
@@ -27523,11 +27523,11 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 183,
+      "line": 308,
       "methods": [
         "__init__",
         "_current_generation",
-        "_rebind_running_generation",
+        "_converge_running_generation",
         "assert_healthy",
         "close",
         "_close_locked",
@@ -27555,7 +27555,7 @@
         "request_digest"
       ],
       "kind": "dataclass",
-      "line": 148,
+      "line": 273,
       "methods": [
         "__post_init__"
       ],
@@ -27589,7 +27589,7 @@
         "tags"
       ],
       "kind": "dataclass",
-      "line": 48,
+      "line": 173,
       "methods": [
         "__post_init__",
         "effective_compute"
@@ -27608,7 +27608,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 427,
+      "line": 483,
       "methods": [
         "__init__",
         "closed",
@@ -146708,7 +146708,7 @@
   "parse_errors": [],
   "registry_sha256": "276e2729e0b700e814e98f8460d87e0ebee66c4620226fe2d880fe55cc970aec",
   "schema": "noetrium-code-architecture-index.v1",
-  "source_git_sha": "d3935f69f98c7e238b36f64a42b4d921a92df188",
+  "source_git_sha": "0d12a95c842ca0eb8e60611afea7ab8986119848",
   "system_import_edges": [
     {
       "count": 85,
