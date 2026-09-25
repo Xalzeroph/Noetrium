@@ -678,11 +678,60 @@ class ManagementTests(unittest.TestCase):
             cwd=root,
             port=8001,
             tensor_parallel=4,
+            gpu_devices=("GPU-0", "GPU-1", "GPU-2", "GPU-3"),
+            extra_args=(
+                "--gpu-memory-utilization",
+                "0.97",
+                "--max-num-seqs",
+                "64",
+            ),
         )
         self.assertEqual(s.engine, "sglang")
         self.assertEqual(v.engine, "vllm")
         self.assertIn("--tp-size", s.argv)
         self.assertIn("--tensor-parallel-size", v.argv)
+        self.assertEqual(
+            v.argv[v.argv.index("--gpu-memory-utilization") + 1],
+            "0.97",
+        )
+        self.assertEqual(v.argv[v.argv.index("--max-num-seqs") + 1], "64")
+        self.assertEqual(
+            v.gpu_devices,
+            ("GPU-0", "GPU-1", "GPU-2", "GPU-3"),
+        )
+
+        dp = vllm_deployment(
+            deployment_id="vl-dp",
+            scope=PLATFORM_SCOPE,
+            model_id="m",
+            python_environment_id="e",
+            cwd=root,
+            port=8002,
+            tensor_parallel=2,
+            data_parallel=2,
+            data_parallel_rpc_port=18002,
+            gpu_devices=("GPU-0", "GPU-1", "GPU-2", "GPU-3"),
+        )
+        self.assertEqual(
+            dp.argv[dp.argv.index("--data-parallel-size") + 1],
+            "2",
+        )
+        self.assertEqual(
+            dp.argv[dp.argv.index("--data-parallel-rpc-port") + 1],
+            "18002",
+        )
+        with self.assertRaisesRegex(ValueError, "platform-owned"):
+            vllm_deployment(
+                deployment_id="vl-escape",
+                scope=PLATFORM_SCOPE,
+                model_id="m",
+                python_environment_id="e",
+                cwd=root,
+                port=8003,
+                tensor_parallel=1,
+                gpu_devices=("GPU-0",),
+                extra_args=("--device-ids=7",),
+            )
 
 
     def test_gpu_advisory_and_resource_changes_are_desired_only(self):
