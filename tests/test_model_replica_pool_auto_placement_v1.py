@@ -1294,6 +1294,140 @@ def test_model_replica_pool_close_uses_recovery_retirement_after_exact_stop(
     assert pool.active_lease_count == 0
 
 
+def test_model_replica_pool_close_is_idempotent_after_prior_exact_retirement(
+    tmp_path,
+) -> None:
+    class IdempotentRetirementRuntime(Runtime):
+        def remove_deployment(self, generation):
+            if generation.deployment_id not in self.catalog.rows:
+                return True
+            return super().remove_deployment(generation)
+
+    catalog = Catalog()
+    runtime = IdempotentRetirementRuntime(catalog)
+    scheduler = Scheduler()
+    endpoints = Endpoints()
+    pool = LocalModelReplicaPoolRuntime(
+        deployment_catalog=catalog,
+        deployment_runtime=runtime,
+        fleet=Fleet(catalog),
+        compute_scheduler=scheduler,
+        endpoint_allocations=endpoints,
+        compute_lease_guards=ComputeGuards(),
+        endpoint_lease_guards=EndpointGuards(),
+    )
+    lease = pool.ensure(
+        ModelReplicaPoolRequest(
+            pool_id="prior-exact-retirement",
+            scope=PLATFORM_SCOPE,
+            model_id="qwen3-8b",
+            engine="vllm",
+            python_environment_id="vllm",
+            cwd=Path(tmp_path),
+            compute=ComputeRequirement(
+                cpu_cores=2,
+                memory_bytes=1024,
+                gpu_count=1,
+                minimum_gpu_memory_bytes=40 * 1024**3,
+            ),
+            replica_count=1,
+        )
+    )
+    placement = lease.report.placements[0]
+
+    assert runtime.remove_deployment(placement.generation) is True
+    assert placement.deployment_id not in catalog.rows
+
+    lease.close()
+
+    assert len(scheduler.released) == 1
+    assert len(endpoints.released) == 1
+    assert pool.active_lease_count == 0
+
+
+def test_failed_creation_does_not_treat_missing_desired_as_physical_convergence(
+    tmp_path,
+) -> None:
+    class DesiredLossRuntime(Runtime):
+        def __init__(self, catalog):
+            super().__init__(catalog)
+            self.applied_uncertain = True
+
+        def remove_deployment(self, generation):
+            if generation.deployment_id not in self.catalog.rows:
+                if self.applied_uncertain:
+                    raise RuntimeError("applied generation still physically uncertain")
+                self.removed.append(generation.deployment_id)
+                return True
+            return super().remove_deployment(generation)
+
+    class LosingDesiredFleet(Fleet):
+        def reconcile(self):
+            rows = super().reconcile()
+            self.catalog.rows.clear()
+            return tuple(
+                replace(
+                    row,
+                    runtime_state=ModelRuntimeState.ERROR,
+                    detail="desired state disappeared during startup",
+                )
+                for row in rows
+            )
+
+    catalog = Catalog()
+    runtime = DesiredLossRuntime(catalog)
+    scheduler = Scheduler()
+    endpoints = Endpoints()
+    compute_guards = ComputeGuards()
+    endpoint_guards = EndpointGuards()
+    pool = LocalModelReplicaPoolRuntime(
+        deployment_catalog=catalog,
+        deployment_runtime=runtime,
+        fleet=LosingDesiredFleet(catalog),
+        compute_scheduler=scheduler,
+        endpoint_allocations=endpoints,
+        compute_lease_guards=compute_guards,
+        endpoint_lease_guards=endpoint_guards,
+    )
+
+    with pytest.raises(
+        ExceptionGroup,
+        match="creation failed with pending cleanup",
+    ) as raised:
+        pool.ensure(
+            ModelReplicaPoolRequest(
+                pool_id="desired-loss-does-not-prove-stop",
+                scope=PLATFORM_SCOPE,
+                model_id="qwen3-8b",
+                engine="vllm",
+                python_environment_id="vllm",
+                cwd=Path(tmp_path),
+                compute=ComputeRequirement(
+                    cpu_cores=2,
+                    memory_bytes=1024,
+                    gpu_count=1,
+                    minimum_gpu_memory_bytes=40 * 1024**3,
+                ),
+                replica_count=1,
+            )
+        )
+    assert "applied generation still physically uncertain" in str(raised.value)
+    assert pool.pending_cleanup_count == 1
+    assert scheduler.released == []
+    assert endpoints.released == []
+    assert compute_guards.created[0].closed is False
+    assert endpoint_guards.created[0].closed is False
+
+    runtime.applied_uncertain = False
+    pool.close_all()
+
+    assert pool.pending_cleanup_count == 0
+    assert len(scheduler.released) == 1
+    assert len(endpoints.released) == 1
+    assert compute_guards.created[0].closed is True
+    assert endpoint_guards.created[0].closed is True
+
+
 def test_model_replica_pool_cleanup_is_retryable_and_never_releases_resources_under_live_service(
     tmp_path,
 ) -> None:
