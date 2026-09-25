@@ -142,13 +142,17 @@ class ManagedResourceReconciler:
             ) from exc
 
         try:
-            reconciled_endpoints = self._endpoints.reconcile(now=lease_now)
-            released_endpoints: list[EndpointAllocation] = list(
-                reconciled_endpoints
-            )
+            # Upper model/container owners have already converged. At this
+            # recovery boundary current socket occupancy is not endpoint
+            # ownership evidence: a foreign process may have re-bound the port
+            # immediately after our exact binder stopped.
+            released_endpoints: list[EndpointAllocation] = []
             for allocation in self._endpoints.active():
                 released_endpoints.append(
-                    self._endpoints.release(allocation)
+                    self._endpoints.recover_release(
+                        allocation,
+                        now=lease_now,
+                    )
                 )
             if self._endpoints.active():
                 raise RuntimeError(
