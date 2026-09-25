@@ -23,6 +23,7 @@ from noetrium_platform.infrastructure.resources.compute.api import (
     ComputeLeasePolicy,
     ComputeSchedulerPort,
     DEFAULT_COMPUTE_LEASE_POLICY,
+    HostRuntimeObserverPort,
 )
 from noetrium_platform.infrastructure.resources.compute.runtime import ComputeLeaseHeartbeatFactory
 from noetrium_platform.infrastructure.resources.allocation.api import (
@@ -44,6 +45,7 @@ from noetrium_platform.research.execution.policy.api import AdmissionBudget, Adm
 from noetrium_platform.research.execution.policy.api import ExecutionPriority
 
 from .concurrency import build_execution_concurrency_runtime
+from .shared_host_pressure import SharedHostPressurePolicy
 
 
 class ResearchExecutionPool:
@@ -72,6 +74,8 @@ class ResearchExecutionPool:
         model_io_concurrency_budget: ConcurrencyBudget | None = None,
         model_io_admission_budget: AdmissionBudget | None = None,
         priority_aging_seconds: float = 1.0,
+        host_runtime_observer: HostRuntimeObserverPort | None = None,
+        shared_host_pressure_policy: SharedHostPressurePolicy | None = None,
         exclusive_owner_generation: bool = False,
     ) -> None:
         self._control = build_execution_concurrency_runtime(
@@ -86,6 +90,8 @@ class ResearchExecutionPool:
                 concurrency_budget=orchestration_concurrency_budget,
                 admission_budget=orchestration_admission_budget,
                 priority_aging_seconds=priority_aging_seconds,
+                host_runtime_observer=host_runtime_observer,
+                shared_host_pressure_policy=shared_host_pressure_policy,
                 blocking_io_thread_name_prefix="research-orchestration-io",
                 timer_name="research-orchestration-timer",
             )
@@ -97,6 +103,8 @@ class ResearchExecutionPool:
                 concurrency_budget=experiment_concurrency_budget,
                 admission_budget=experiment_admission_budget,
                 priority_aging_seconds=priority_aging_seconds,
+                host_runtime_observer=host_runtime_observer,
+                shared_host_pressure_policy=shared_host_pressure_policy,
                 blocking_io_thread_name_prefix="research-experiment-io",
                 timer_name="research-experiment-timer",
             )
@@ -105,6 +113,8 @@ class ResearchExecutionPool:
                     concurrency_budget=model_io_concurrency_budget,
                     admission_budget=model_io_admission_budget,
                     priority_aging_seconds=priority_aging_seconds,
+                    host_runtime_observer=host_runtime_observer,
+                    shared_host_pressure_policy=shared_host_pressure_policy,
                     blocking_io_thread_name_prefix="research-model-io",
                     timer_name="research-model-timer",
                 )
