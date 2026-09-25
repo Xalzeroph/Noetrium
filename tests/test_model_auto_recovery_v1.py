@@ -3,6 +3,8 @@ from __future__ import annotations
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
+import pytest
+
 from noetrium_platform.capabilities.model.deployment.api import (
     ModelDeploymentGeneration,
     ModelDeploymentSpec,
@@ -284,6 +286,188 @@ def test_manual_reset_refuses_to_race_active_auto_recovery(
     reset = authority.reset("deployment", digest)
     assert reset.manual_reset_count == 1
     assert reset.active_claim_id is None
+
+
+def test_corrupt_recovery_state_blocks_restart_effect(
+    tmp_path: Path,
+) -> None:
+    clock = _Clock(40.0)
+    digest = "6" * 64
+    authority = _authority(tmp_path, clock, max_attempts=3)
+    claim = authority.claim_attempt("deployment", digest)
+    assert claim.allow
+    path = authority._path("deployment", digest)
+    path.write_bytes(b"{corrupt")
+
+    generation = ModelDeploymentGeneration("deployment", digest, None)
+    runtime = _FailingRuntime(generation)
+    spec = ModelDeploymentSpec(
+        deployment_id="deployment",
+        scope=PLATFORM_SCOPE,
+        service_id="service",
+        model_id="model",
+        engine="test",
+        executable="/bin/false",
+        argv=("/bin/false",),
+        cwd=tmp_path,
+        desired_state=ModelDesiredState.RUNNING,
+    )
+    fleet = ModelFleetRuntime(_Catalog(spec), runtime, authority)
+    status = fleet.reconcile()[0]
+    assert runtime.start_calls == 0
+    assert status.runtime_state is ModelRuntimeState.ERROR
+
+
+def test_claim_commit_survives_lost_write_acknowledgement(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    import noetrium_platform.capabilities.model.deployment.runtime.auto_recovery as recovery_module
+
+    clock = _Clock(50.0)
+    digest = "7" * 64
+    authority = _authority(tmp_path, clock, max_attempts=2)
+    target = authority._path("deployment", digest)
+    real_atomic = recovery_module.atomic_replace_bytes
+    injected = False
+
+    def commit_then_fail(path, data):
+        nonlocal injected
+        real_atomic(path, data)
+        if path == target and not injected:
+            injected = True
+            raise OSError("simulated lost recovery-state write acknowledgement")
+
+    monkeypatch.setattr(recovery_module, "atomic_replace_bytes", commit_then_fail)
+    with pytest.raises(OSError, match="lost recovery-state"):
+        authority.claim_attempt("deployment", digest)
+
+    monkeypatch.setattr(recovery_module, "atomic_replace_bytes", real_atomic)
+    reopened = _authority(tmp_path, clock, max_attempts=2)
+    state = reopened.state("deployment", digest)
+    assert state.total_attempts == 1
+    assert state.attempts_since_reset == 1
+    assert state.active_claim_id is not None
+    blocked = reopened.claim_attempt("deployment", digest)
+    assert not blocked.allow
+    assert blocked.reason == "auto-recovery-attempt-inflight"
+
+
+class _SuccessRuntime(_FailingRuntime):
+    def __init__(self, generation: ModelDeploymentGeneration) -> None:
+        super().__init__(generation)
+        self.live = False
+
+    def status(self, deployment_id: str) -> ModelDeploymentStatus:
+        return ModelDeploymentStatus(
+            deployment_id,
+            "service",
+            ModelDesiredState.RUNNING,
+            (
+                ModelRuntimeState.RUNNING
+                if self.live
+                else ModelRuntimeState.STOPPED
+            ),
+        )
+
+    def start(self, generation: ModelDeploymentGeneration) -> ModelDeploymentStatus:
+        assert generation == self._generation
+        self.start_calls += 1
+        self.live = True
+        return self.status(generation.deployment_id)
+
+
+def test_started_effect_without_success_receipt_converges_without_duplicate_restart(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    import noetrium_platform.capabilities.model.deployment.runtime.auto_recovery as recovery_module
+
+    clock = _Clock(60.0)
+    digest = "8" * 64
+    authority = _authority(tmp_path, clock, max_attempts=3)
+    generation = ModelDeploymentGeneration("deployment", digest, None)
+    runtime = _SuccessRuntime(generation)
+    spec = ModelDeploymentSpec(
+        deployment_id="deployment",
+        scope=PLATFORM_SCOPE,
+        service_id="service",
+        model_id="model",
+        engine="test",
+        executable="/bin/true",
+        argv=("/bin/true",),
+        cwd=tmp_path,
+        desired_state=ModelDesiredState.RUNNING,
+    )
+    fleet = ModelFleetRuntime(_Catalog(spec), runtime, authority)
+
+    real_atomic = recovery_module.atomic_replace_bytes
+    writes = 0
+
+    def fail_success_publication(path, data):
+        nonlocal writes
+        if path == authority._path("deployment", digest):
+            writes += 1
+            if writes == 2:
+                raise OSError("simulated success receipt publication failure")
+        return real_atomic(path, data)
+
+    monkeypatch.setattr(
+        recovery_module,
+        "atomic_replace_bytes",
+        fail_success_publication,
+    )
+    first = fleet.reconcile()[0]
+    assert runtime.start_calls == 1
+    assert runtime.live
+    assert first.runtime_state is ModelRuntimeState.ERROR
+
+    monkeypatch.setattr(recovery_module, "atomic_replace_bytes", real_atomic)
+    second = fleet.reconcile()[0]
+    assert second.runtime_state is ModelRuntimeState.RUNNING
+    assert runtime.start_calls == 1
+    state = authority.state("deployment", digest)
+    assert state.active_claim_id is None
+    assert state.running_since_epoch_s == clock.value
+
+
+def test_recovery_claims_are_exact_desired_generation_fenced(
+    tmp_path: Path,
+) -> None:
+    clock = _Clock(70.0)
+    first_digest = "9" * 64
+    second_digest = "a" * 64
+    failure = "b" * 64
+    authority = _authority(tmp_path, clock, max_attempts=1)
+
+    first_claim = authority.claim_attempt("deployment", first_digest)
+    assert first_claim.allow
+    assert first_claim.claim_id is not None
+    old = authority.record_failure(
+        "deployment",
+        first_digest,
+        first_claim.claim_id,
+        failure,
+    )
+    assert old.circuit_open
+
+    new_claim = authority.claim_attempt("deployment", second_digest)
+    assert new_claim.allow
+    assert new_claim.claim_id is not None
+
+    with pytest.raises(RuntimeError, match="stale or no longer authoritative"):
+        authority.record_attempt_success(
+            "deployment",
+            second_digest,
+            first_claim.claim_id,
+        )
+
+    old_state = authority.state("deployment", first_digest)
+    new_state = authority.state("deployment", second_digest)
+    assert old_state.circuit_open
+    assert old_state.attempts_since_reset == 1
+    assert not new_state.circuit_open
+    assert new_state.active_claim_id == new_claim.claim_id
 
 
 class _Catalog:
