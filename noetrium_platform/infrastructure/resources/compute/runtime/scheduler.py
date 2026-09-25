@@ -9,7 +9,7 @@ from threading import RLock
 from time import time
 
 from noetrium_platform.infrastructure.resources.compute.api import (
-    ComputeAllocation, ComputeBindingProof, ComputeDeviceHealth, ComputeHost, ComputePlacementUnavailable, ComputeRequirement,
+    ComputeAllocation, ComputeBindingProof, ComputeDeviceHealth, ComputeHost, ComputePlacementPreference, ComputePlacementUnavailable, ComputeRequirement,
     GpuDeviceStatus, GpuRuntimeObserverPort, GpuRuntimeSnapshot, GpuSharingMode,
     HostRuntimeObserverPort, HostRuntimeSnapshot, HostRuntimeStatus,
 )
@@ -473,6 +473,15 @@ def _host_preference_penalty(host: ComputeHost, requirement: ComputeRequirement)
     )
 
 
+def _placement_density_rank(host: ComputeHost, usage: _HostUsage, requirement: ComputeRequirement) -> float:
+    occupied = (
+        usage.cpu_cores / max(1, host.schedulable_cpu_cores)
+        + usage.memory_bytes / max(1, host.schedulable_memory_bytes)
+        + sum(usage.gpu_allocation_counts.values()) / max(1, len(host.gpus))
+    )
+    return -occupied if requirement.placement_preference is ComputePlacementPreference.PACK else occupied
+
+
 def _placement_score(
     host: ComputeHost, usage: _HostUsage, requirement: ComputeRequirement,
     runtime_index: _GpuRuntimeIndex | None,
@@ -541,7 +550,7 @@ def _placement_score(
         accelerator_penalty = 0 if not host.gpus else 1
         accelerator_bytes = sum(gpu.memory_bytes for gpu in host.gpus)
         score = (
-            runtime_rank, _host_preference_penalty(host, requirement), accelerator_penalty, accelerator_bytes,
+            runtime_rank, _host_preference_penalty(host, requirement), _placement_density_rank(host, usage, requirement), accelerator_penalty, accelerator_bytes,
             cpu_after / host.schedulable_cpu_cores + memory_after / host.schedulable_memory_bytes,
             cpu_after, memory_after, host.host_id,
         )
@@ -554,7 +563,7 @@ def _placement_score(
         )
         remaining = eligible[requirement.gpu_count :]
         score = (
-            shared_count, utilization, runtime_rank, _host_preference_penalty(host, requirement), free_excess, gpu_excess, len(remaining),
+            shared_count, utilization, runtime_rank, _host_preference_penalty(host, requirement), _placement_density_rank(host, usage, requirement), free_excess, gpu_excess, len(remaining),
             sum(gpu.schedulable_memory_bytes for _rank, gpu in remaining),
             cpu_after / host.cpu_cores + memory_after / host.memory_bytes,
             cpu_after, memory_after, host.host_id,
