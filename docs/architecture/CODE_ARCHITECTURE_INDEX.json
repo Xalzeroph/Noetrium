@@ -27468,7 +27468,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 613,
+      "line": 646,
       "methods": [
         "__init__",
         "active_lease_count",
@@ -27527,6 +27527,7 @@
       "methods": [
         "__init__",
         "_current_generation",
+        "_retire_current_generation",
         "_converge_running_generation",
         "assert_healthy",
         "close",
@@ -27608,7 +27609,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 483,
+      "line": 507,
       "methods": [
         "__init__",
         "closed",
@@ -39638,7 +39639,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 407,
+      "line": 408,
       "methods": [],
       "module": "noetrium_platform.composition.environment_instance_leases",
       "name": "EnvironmentInstanceLeaseHeartbeatError",
@@ -39654,7 +39655,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 516,
+      "line": 517,
       "methods": [
         "__init__",
         "policy",
@@ -39674,7 +39675,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 411,
+      "line": 412,
       "methods": [
         "__init__",
         "handles",
@@ -79801,7 +79802,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 612,
+      "line": 627,
       "methods": [
         "__init__",
         "_usage",
@@ -79836,7 +79837,7 @@
         "SCHEMA_VERSION"
       ],
       "kind": "class",
-      "line": 1051,
+      "line": 1089,
       "methods": [
         "__init__",
         "_connection",
@@ -80733,10 +80734,10 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 17,
+      "line": 16,
       "methods": [
         "__init__",
-        "_inode_capacity",
+        "_capacity",
         "usage",
         "overview",
         "content_stats",
@@ -80934,7 +80935,7 @@
         "state"
       ],
       "kind": "dataclass",
-      "line": 58,
+      "line": 66,
       "methods": [
         "__post_init__",
         "expired_at"
@@ -80959,8 +80960,10 @@
         "scope"
       ],
       "kind": "dataclass",
-      "line": 51,
-      "methods": [],
+      "line": 55,
+      "methods": [
+        "__post_init__"
+      ],
       "module": "noetrium_platform.infrastructure.resources.lease.api.contracts",
       "name": "ResourceOwner",
       "nesting": [
@@ -146708,7 +146711,7 @@
   "parse_errors": [],
   "registry_sha256": "276e2729e0b700e814e98f8460d87e0ebee66c4620226fe2d880fe55cc970aec",
   "schema": "noetrium-code-architecture-index.v1",
-  "source_git_sha": "0d12a95c842ca0eb8e60611afea7ab8986119848",
+  "source_git_sha": "d6353af6974372ccf625120e3ca995de51d10549",
   "system_import_edges": [
     {
       "count": 85,

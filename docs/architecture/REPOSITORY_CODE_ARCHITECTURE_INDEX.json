@@ -2,14 +2,14 @@
   "counts": {
     "parse_errors": 0,
     "python_files": 3709,
-    "python_import_edges": 7044,
-    "symbols": 5103,
+    "python_import_edges": 7043,
+    "symbols": 5112,
     "tracked_files": 4346,
     "typescript_javascript_files": 11
   },
   "language_symbol_counts": {
     "javascript": 1,
-    "python": 5097,
+    "python": 5106,
     "typescript": 5
   },
   "parse_errors": [],
@@ -32135,12 +32135,6 @@
     {
       "source_module": "tests.test_research_execution_pool_v1",
       "source_role": "tests",
-      "target_module": "noetrium_platform.platform",
-      "target_role": "core_platform"
-    },
-    {
-      "source_module": "tests.test_research_execution_pool_v1",
-      "source_role": "tests",
       "target_module": "noetrium_platform.research.execution.policy.api",
       "target_role": "core_platform"
     },
@@ -42341,7 +42335,7 @@
       "target_role": "research_reproductions"
     },
     {
-      "count": 2877,
+      "count": 2876,
       "source_role": "tests",
       "target_role": "core_platform"
     },
@@ -42416,11 +42410,11 @@
     "reference_orchestration": 14,
     "research_reproductions": 444,
     "sdk": 5,
-    "tests": 1090,
+    "tests": 1099,
     "tooling": 39
   },
   "schema": "noetrium-repository-code-architecture-index.v1",
-  "source_git_sha": "0d12a95c842ca0eb8e60611afea7ab8986119848",
+  "source_git_sha": "d6353af6974372ccf625120e3ca995de51d10549",
   "symbols": [
     {
       "bases": [],
@@ -53051,6 +53045,7 @@
       "methods": [
         "__init__",
         "_current_generation",
+        "_retire_current_generation",
         "_converge_running_generation",
         "assert_healthy",
         "close",
@@ -53070,7 +53065,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 483,
+      "line": 507,
       "methods": [
         "__init__",
         "closed",
@@ -53088,7 +53083,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 613,
+      "line": 646,
       "methods": [
         "__init__",
         "active_lease_count",
@@ -64162,7 +64157,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 407,
+      "line": 408,
       "methods": [],
       "module": "noetrium_platform.composition.environment_instance_leases",
       "name": "EnvironmentInstanceLeaseHeartbeatError",
@@ -64176,7 +64171,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 411,
+      "line": 412,
       "methods": [
         "__init__",
         "handles",
@@ -64197,7 +64192,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 516,
+      "line": 517,
       "methods": [
         "__init__",
         "policy",
@@ -100784,7 +100779,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 612,
+      "line": 627,
       "methods": [
         "__init__",
         "_usage",
@@ -100815,7 +100810,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 1051,
+      "line": 1089,
       "methods": [
         "__init__",
         "_connection",
@@ -101594,10 +101589,10 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 17,
+      "line": 16,
       "methods": [
         "__init__",
-        "_inode_capacity",
+        "_capacity",
         "usage",
         "overview",
         "content_stats",
@@ -101794,8 +101789,10 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 51,
-      "methods": [],
+      "line": 55,
+      "methods": [
+        "__post_init__"
+      ],
       "module": "noetrium_platform.infrastructure.resources.lease.api.contracts",
       "name": "ResourceOwner",
       "path": "noetrium_platform/infrastructure/resources/lease/api/contracts.py",
@@ -101821,7 +101818,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 58,
+      "line": 66,
       "methods": [
         "__post_init__",
         "expired_at"
@@ -135071,6 +135068,22 @@
       "fields": [],
       "kind": "class",
       "language": "python",
+      "line": 180,
+      "methods": [
+        "snapshot"
+      ],
+      "module": "tests.test_compute_physical_convergence_v1",
+      "name": "TwoGpuObserver",
+      "path": "tests/test_compute_physical_convergence_v1.py",
+      "qualname": "tests.test_compute_physical_convergence_v1.TwoGpuObserver",
+      "role": "tests"
+    },
+    {
+      "bases": [],
+      "decorators": [],
+      "fields": [],
+      "kind": "class",
+      "language": "python",
       "line": 15,
       "methods": [
         "__init__",
@@ -135520,7 +135533,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 42,
+      "line": 45,
       "methods": [
         "probe"
       ],
@@ -135536,7 +135549,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 48,
+      "line": 51,
       "methods": [
         "acquire",
         "renew",
@@ -135555,7 +135568,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 55,
+      "line": 58,
       "methods": [
         "__init__",
         "root"
@@ -135730,7 +135743,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 304,
+      "line": 319,
       "methods": [
         "__init__",
         "__getattr__",
@@ -137903,7 +137916,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 32,
+      "line": 33,
       "methods": [
         "__init__",
         "start",
@@ -137924,7 +137937,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 456,
+      "line": 465,
       "methods": [
         "__init__"
       ],
@@ -137940,7 +137953,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 463,
+      "line": 472,
       "methods": [
         "__init__",
         "run"
@@ -137959,7 +137972,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 543,
+      "line": 552,
       "methods": [
         "list_managed"
       ],
@@ -140470,7 +140483,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 82,
+      "line": 83,
       "methods": [
         "__init__",
         "put_deployment"
@@ -140487,7 +140500,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 91,
+      "line": 92,
       "methods": [
         "__init__",
         "status",
@@ -140506,7 +140519,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 124,
+      "line": 125,
       "methods": [
         "__init__",
         "reconcile"
@@ -140523,14 +140536,15 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 142,
+      "line": 143,
       "methods": [
         "__init__",
         "candidates",
         "allocate",
         "confirm_bound",
         "replace_bound",
-        "release"
+        "release",
+        "recover_release"
       ],
       "module": "tests.test_model_replica_pool_auto_placement_v1",
       "name": "Scheduler",
@@ -140544,14 +140558,15 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 234,
+      "line": 238,
       "methods": [
         "__init__",
         "allocate_auto",
         "allocate",
         "confirm_bound",
         "replace_bound",
-        "release"
+        "release",
+        "recover_release"
       ],
       "module": "tests.test_model_replica_pool_auto_placement_v1",
       "name": "Endpoints",
@@ -140565,7 +140580,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 310,
+      "line": 318,
       "methods": [
         "__init__",
         "start",
@@ -140584,7 +140599,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 326,
+      "line": 334,
       "methods": [
         "__init__",
         "create"
@@ -140601,7 +140616,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 338,
+      "line": 346,
       "methods": [
         "__init__",
         "create"
@@ -140620,7 +140635,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 422,
+      "line": 430,
       "methods": [
         "__init__",
         "generation"
@@ -140639,7 +140654,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 501,
+      "line": 509,
       "methods": [
         "__init__",
         "status",
@@ -140659,7 +140674,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 578,
+      "line": 586,
       "methods": [
         "__init__",
         "generation"
@@ -140678,7 +140693,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 596,
+      "line": 604,
       "methods": [
         "__init__",
         "confirm_bound"
@@ -140697,7 +140712,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 660,
+      "line": 668,
       "methods": [
         "__init__",
         "status",
@@ -140717,7 +140732,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 745,
+      "line": 753,
       "methods": [
         "generation"
       ],
@@ -140735,7 +140750,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 796,
+      "line": 804,
       "methods": [
         "__init__",
         "allocate"
@@ -140754,7 +140769,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 1028,
+      "line": 1036,
       "methods": [
         "allocate"
       ],
@@ -140772,7 +140787,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 1074,
+      "line": 1082,
       "methods": [
         "__init__",
         "remove_deployment"
@@ -140791,7 +140806,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 1085,
+      "line": 1093,
       "methods": [
         "reconcile"
       ],
@@ -140803,13 +140818,162 @@
     },
     {
       "bases": [
+        "Fleet"
+      ],
+      "decorators": [],
+      "fields": [],
+      "kind": "class",
+      "language": "python",
+      "line": 1166,
+      "methods": [
+        "reconcile"
+      ],
+      "module": "tests.test_model_replica_pool_auto_placement_v1",
+      "name": "RejectingFleet",
+      "path": "tests/test_model_replica_pool_auto_placement_v1.py",
+      "qualname": "tests.test_model_replica_pool_auto_placement_v1.RejectingFleet",
+      "role": "tests"
+    },
+    {
+      "bases": [
+        "Scheduler"
+      ],
+      "decorators": [],
+      "fields": [],
+      "kind": "class",
+      "language": "python",
+      "line": 1178,
+      "methods": [
+        "release",
+        "recover_release"
+      ],
+      "module": "tests.test_model_replica_pool_auto_placement_v1",
+      "name": "RecoveryOnlyScheduler",
+      "path": "tests/test_model_replica_pool_auto_placement_v1.py",
+      "qualname": "tests.test_model_replica_pool_auto_placement_v1.RecoveryOnlyScheduler",
+      "role": "tests"
+    },
+    {
+      "bases": [
+        "Endpoints"
+      ],
+      "decorators": [],
+      "fields": [],
+      "kind": "class",
+      "language": "python",
+      "line": 1187,
+      "methods": [
+        "release",
+        "recover_release"
+      ],
+      "module": "tests.test_model_replica_pool_auto_placement_v1",
+      "name": "RecoveryOnlyEndpoints",
+      "path": "tests/test_model_replica_pool_auto_placement_v1.py",
+      "qualname": "tests.test_model_replica_pool_auto_placement_v1.RecoveryOnlyEndpoints",
+      "role": "tests"
+    },
+    {
+      "bases": [
+        "Scheduler"
+      ],
+      "decorators": [],
+      "fields": [],
+      "kind": "class",
+      "language": "python",
+      "line": 1244,
+      "methods": [
+        "release",
+        "recover_release"
+      ],
+      "module": "tests.test_model_replica_pool_auto_placement_v1",
+      "name": "RecoveryOnlyScheduler",
+      "path": "tests/test_model_replica_pool_auto_placement_v1.py",
+      "qualname": "tests.test_model_replica_pool_auto_placement_v1.RecoveryOnlyScheduler",
+      "role": "tests"
+    },
+    {
+      "bases": [
+        "Endpoints"
+      ],
+      "decorators": [],
+      "fields": [],
+      "kind": "class",
+      "language": "python",
+      "line": 1251,
+      "methods": [
+        "release",
+        "recover_release"
+      ],
+      "module": "tests.test_model_replica_pool_auto_placement_v1",
+      "name": "RecoveryOnlyEndpoints",
+      "path": "tests/test_model_replica_pool_auto_placement_v1.py",
+      "qualname": "tests.test_model_replica_pool_auto_placement_v1.RecoveryOnlyEndpoints",
+      "role": "tests"
+    },
+    {
+      "bases": [
         "Runtime"
       ],
       "decorators": [],
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 1158,
+      "line": 1301,
+      "methods": [
+        "remove_deployment"
+      ],
+      "module": "tests.test_model_replica_pool_auto_placement_v1",
+      "name": "IdempotentRetirementRuntime",
+      "path": "tests/test_model_replica_pool_auto_placement_v1.py",
+      "qualname": "tests.test_model_replica_pool_auto_placement_v1.IdempotentRetirementRuntime",
+      "role": "tests"
+    },
+    {
+      "bases": [
+        "Runtime"
+      ],
+      "decorators": [],
+      "fields": [],
+      "kind": "class",
+      "language": "python",
+      "line": 1352,
+      "methods": [
+        "__init__",
+        "remove_deployment"
+      ],
+      "module": "tests.test_model_replica_pool_auto_placement_v1",
+      "name": "DesiredLossRuntime",
+      "path": "tests/test_model_replica_pool_auto_placement_v1.py",
+      "qualname": "tests.test_model_replica_pool_auto_placement_v1.DesiredLossRuntime",
+      "role": "tests"
+    },
+    {
+      "bases": [
+        "Fleet"
+      ],
+      "decorators": [],
+      "fields": [],
+      "kind": "class",
+      "language": "python",
+      "line": 1365,
+      "methods": [
+        "reconcile"
+      ],
+      "module": "tests.test_model_replica_pool_auto_placement_v1",
+      "name": "LosingDesiredFleet",
+      "path": "tests/test_model_replica_pool_auto_placement_v1.py",
+      "qualname": "tests.test_model_replica_pool_auto_placement_v1.LosingDesiredFleet",
+      "role": "tests"
+    },
+    {
+      "bases": [
+        "Runtime"
+      ],
+      "decorators": [],
+      "fields": [],
+      "kind": "class",
+      "language": "python",
+      "line": 1435,
       "methods": [
         "__init__",
         "remove_deployment"
@@ -140828,7 +140992,26 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 1272,
+      "line": 1504,
+      "methods": [
+        "__init__",
+        "remove_deployment"
+      ],
+      "module": "tests.test_model_replica_pool_auto_placement_v1",
+      "name": "BlockingRuntime",
+      "path": "tests/test_model_replica_pool_auto_placement_v1.py",
+      "qualname": "tests.test_model_replica_pool_auto_placement_v1.BlockingRuntime",
+      "role": "tests"
+    },
+    {
+      "bases": [
+        "Runtime"
+      ],
+      "decorators": [],
+      "fields": [],
+      "kind": "class",
+      "language": "python",
+      "line": 1646,
       "methods": [
         "__init__",
         "remove_deployment"
@@ -143795,7 +143978,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 34,
+      "line": 33,
       "methods": [
         "snapshot"
       ],
@@ -144679,7 +144862,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 32,
+      "line": 35,
       "methods": [
         "__init__",
         "probe"
@@ -144696,7 +144879,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 118,
+      "line": 121,
       "methods": [
         "__init__",
         "candidate_ports"
@@ -144713,7 +144896,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 152,
+      "line": 155,
       "methods": [
         "__init__",
         "candidate_ports"
@@ -144730,7 +144913,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 240,
+      "line": 243,
       "methods": [
         "probe"
       ],
@@ -144748,25 +144931,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 262,
-      "methods": [
-        "get"
-      ],
-      "module": "tests.test_resource_endpoint_allocation_v1",
-      "name": "StaleLeaseRegistry",
-      "path": "tests/test_resource_endpoint_allocation_v1.py",
-      "qualname": "tests.test_resource_endpoint_allocation_v1.StaleLeaseRegistry",
-      "role": "tests"
-    },
-    {
-      "bases": [
-        "InMemoryResourceLeaseRegistry"
-      ],
-      "decorators": [],
-      "fields": [],
-      "kind": "class",
-      "language": "python",
-      "line": 288,
+      "line": 287,
       "methods": [
         "get"
       ],
