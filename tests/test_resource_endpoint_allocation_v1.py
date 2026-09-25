@@ -114,6 +114,76 @@ def test_existing_endpoint_system_skips_real_os_bound_port_and_uses_kernel_candi
     assert len(leases.active_for(allocation.endpoint.resource)) == 1
 
 
+def test_automatic_endpoint_allocation_retries_fresh_candidates_after_contention() -> None:
+    class RoundCandidates:
+        def __init__(self) -> None:
+            self.calls = 0
+
+        def candidate_ports(self, *, host, count, protocol=None):
+            del host, count, protocol
+            self.calls += 1
+            return (25565,) if self.calls == 1 else (25566,)
+
+    candidates = RoundCandidates()
+    leases = InMemoryResourceLeaseRegistry()
+    probe = ScriptedProbe({25565})
+    allocator = InMemoryEndpointAllocator(
+        ownership=leases,
+        leases=leases,
+        probe=probe,
+        candidates=candidates,
+        auto_candidate_rounds=2,
+    )
+
+    allocation = allocator.allocate_auto(
+        allocation_id="fresh-round",
+        holder_scope=ScopeIdentity(ScopeKind.BRANCH, "fresh-round"),
+        owner_scope=PLATFORM_SCOPE,
+        purpose="retry transient endpoint collision",
+        candidate_count=1,
+    )
+
+    assert allocation.endpoint.port == 25566
+    assert candidates.calls == 2
+    assert probe.seen == [25565, 25566]
+
+
+def test_automatic_endpoint_retry_exhaustion_preserves_round_evidence() -> None:
+    class RoundCandidates:
+        def __init__(self) -> None:
+            self.calls = 0
+
+        def candidate_ports(self, *, host, count, protocol=None):
+            del host, count, protocol
+            self.calls += 1
+            return (25564 + self.calls,)
+
+    candidates = RoundCandidates()
+    leases = InMemoryResourceLeaseRegistry()
+    allocator = InMemoryEndpointAllocator(
+        ownership=leases,
+        leases=leases,
+        probe=ScriptedProbe({25565, 25566}),
+        candidates=candidates,
+        auto_candidate_rounds=2,
+    )
+
+    with pytest.raises(EndpointAllocationUnavailable) as raised:
+        allocator.allocate_auto(
+            allocation_id="retry-exhausted",
+            holder_scope=ScopeIdentity(ScopeKind.BRANCH, "retry-exhausted"),
+            owner_scope=PLATFORM_SCOPE,
+            purpose="prove retry evidence",
+            candidate_count=1,
+        )
+
+    assert candidates.calls == 2
+    assert raised.value.attempts == (
+        "round=1:tcp://127.0.0.1:25565:probe:scripted-unavailable",
+        "round=2:tcp://127.0.0.1:25566:probe:scripted-unavailable",
+    )
+
+
 def test_in_memory_endpoint_binding_is_fencing_bound_and_preserves_history() -> None:
     leases = InMemoryResourceLeaseRegistry()
     allocator = InMemoryEndpointAllocator(
