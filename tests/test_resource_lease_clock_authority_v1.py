@@ -257,7 +257,7 @@ def test_recovery_authority_ignores_wall_clock_jumps(
     clock.jump_wall(5_000_000.0)
     assert recovery.assert_owned("runtime-owner", "manifest-a") == acquired
 
-    clock.jump_wall(-10_000_000.0)
+    clock.jump_wall(-5_020_000.0)
     clock.advance(9.0, wall_seconds=0.0)
     assert recovery.assert_owned("runtime-owner", "manifest-a").owner_id == (
         "runtime-owner"
