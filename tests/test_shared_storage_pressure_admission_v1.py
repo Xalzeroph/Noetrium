@@ -88,12 +88,21 @@ def _gate(storage: _StorageObserver) -> ResourceCompetitionAdmissionGate:
     return gate
 
 
-def test_storage_byte_exhaustion_rejects_new_workload() -> None:
+def test_storage_byte_exhaustion_rejects_new_io_without_throttling_cpu() -> None:
     gate = _gate(_StorageObserver(SharedStoragePressureStatus(True, 512, 100)))
+
+    cpu = gate.acquire(
+        "work",
+        ExecutionLaneKind.CPU,
+        deadline=None,
+        cancellation=None,
+    )
+    cpu.release()
+
     with pytest.raises(AdmissionRejected, match="storage-byte-headroom"):
         gate.acquire(
             "work",
-            ExecutionLaneKind.CPU,
+            ExecutionLaneKind.BLOCKING_IO,
             deadline=None,
             cancellation=None,
         )
