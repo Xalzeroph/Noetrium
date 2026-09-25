@@ -116,7 +116,7 @@ class SQLiteComputeInventory:
             "memory_bytes": host.memory_bytes,
             "gpus": [
                 {"gpu_id": gpu.gpu_id, "memory_bytes": gpu.memory_bytes,
-                 "model": gpu.model, "labels": list(gpu.labels), "health": gpu.health.value}
+                 "model": gpu.model, "labels": list(gpu.labels), "health": gpu.health.value, "reserved_memory_bytes": gpu.reserved_memory_bytes}
                 for gpu in host.gpus
             ],
             "labels": list(host.labels),
@@ -134,6 +134,7 @@ class SQLiteComputeInventory:
                 row["gpu_id"], int(row["memory_bytes"]), row["model"],
                 tuple(tuple(item) for item in row["labels"]),
                 ComputeDeviceHealth(row.get("health", ComputeDeviceHealth.HEALTHY.value)),
+                int(row.get("reserved_memory_bytes", 0)),
             )
             for row in value["gpus"]
         )
