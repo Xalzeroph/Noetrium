@@ -88,6 +88,8 @@ class ResourceLease:
             raise TypeError("lease resource must be ResourceIdentity")
         if type(self.holder_scope) is not ScopeIdentity:
             raise TypeError("lease holder_scope must be ScopeIdentity")
+        if type(self.state) is not LeaseState:
+            raise TypeError("lease state must be LeaseState")
         if self.holder_generation < 1:
             raise ValueError("lease holder generation must be >= 1")
         if self.fencing_token < 1:
