@@ -9,7 +9,7 @@ from threading import RLock
 from time import time
 
 from noetrium_platform.infrastructure.resources.compute.api import (
-    ComputeAllocation, ComputeAllocationBatch, ComputeBatchPlacementStrategy, ComputeBindingProof, ComputeDeviceHealth, ComputeHost, ComputePlacementPreference, ComputePlacementUnavailable, ComputeRequirement,
+    ComputeAllocation, ComputeAllocationBatch, ComputeBatchPlacementStrategy, ComputeBatchPlacementUnavailable, ComputeBindingProof, ComputeDeviceHealth, ComputeHost, ComputePlacementPreference, ComputePlacementUnavailable, ComputeRequirement,
     GpuDeviceStatus, GpuRuntimeObserverPort, GpuRuntimeSnapshot, GpuSharingMode,
     HostRuntimeObserverPort, HostRuntimeSnapshot, HostRuntimeStatus,
 )
@@ -82,6 +82,23 @@ def _batch_requirement(
             placement_preference=ComputePlacementPreference.SPREAD,
         )
     return requirement
+
+
+def _requirement_on_host(
+    requirement: ComputeRequirement,
+    host_id: str,
+    *,
+    preference: ComputePlacementPreference,
+) -> ComputeRequirement | None:
+    if requirement.allowed_host_ids and host_id not in requirement.allowed_host_ids:
+        return None
+    if host_id in requirement.forbidden_host_ids:
+        return None
+    return replace(
+        requirement,
+        allowed_host_ids=(host_id,),
+        placement_preference=preference,
+    )
 
 
 def _allocation_matches(
@@ -860,24 +877,8 @@ class InMemoryComputeScheduler:
             raise TypeError("compute batch allocation requires ComputeAllocationBatch")
         with self._lock:
             preexisting = frozenset(self._allocations)
-            acquired: list[ComputeAllocation] = []
-            try:
-                for request in batch.requests:
-                    acquired.append(
-                        self.allocate(
-                            request.allocation_id,
-                            request.scope,
-                            _batch_requirement(
-                                request.requirement,
-                                batch.placement_strategy,
-                            ),
-                            placement_scope=request.placement_scope,
-                            ttl_seconds=ttl_seconds,
-                            now=now,
-                        )
-                    )
-                return tuple(acquired)
-            except BaseException as primary:
+
+            def rollback(acquired: list[ComputeAllocation], primary: BaseException) -> None:
                 rollback_errors: list[BaseException] = []
                 for allocation in reversed(acquired):
                     if allocation.allocation_id in preexisting:
@@ -891,7 +892,94 @@ class InMemoryComputeScheduler:
                         "compute batch allocation failed and rollback was incomplete",
                         [primary, *rollback_errors],
                     )
-                raise
+
+            if batch.placement_strategy is not ComputeBatchPlacementStrategy.STRICT_PACK:
+                acquired: list[ComputeAllocation] = []
+                try:
+                    for request in batch.requests:
+                        acquired.append(
+                            self.allocate(
+                                request.allocation_id,
+                                request.scope,
+                                _batch_requirement(
+                                    request.requirement,
+                                    batch.placement_strategy,
+                                ),
+                                placement_scope=request.placement_scope,
+                                ttl_seconds=ttl_seconds,
+                                now=now,
+                            )
+                        )
+                    return tuple(acquired)
+                except BaseException as primary:
+                    rollback(acquired, primary)
+                    raise
+
+            existing_hosts = {
+                row.host_id
+                for request in batch.requests
+                if (row := self._allocations.get(request.allocation_id)) is not None
+            }
+            if len(existing_hosts) > 1:
+                raise ComputeBatchPlacementUnavailable(batch)
+
+            if existing_hosts:
+                host_order = tuple(existing_hosts)
+            else:
+                candidate_orders: list[tuple[str, ...]] = []
+                common: set[str] | None = None
+                for request in batch.requests:
+                    requirement = replace(
+                        request.requirement,
+                        placement_preference=ComputePlacementPreference.PACK,
+                    )
+                    scope = (
+                        request.scope
+                        if request.placement_scope is None
+                        else request.placement_scope
+                    )
+                    ids = tuple(
+                        host.host_id
+                        for host in self.candidates(requirement, scope=scope)
+                    )
+                    candidate_orders.append(ids)
+                    common = set(ids) if common is None else common & set(ids)
+                common = set() if common is None else common
+                host_order = tuple(
+                    host_id
+                    for host_id in candidate_orders[0]
+                    if host_id in common
+                )
+            if not host_order:
+                raise ComputeBatchPlacementUnavailable(batch)
+
+            last_error: BaseException | None = None
+            for host_id in host_order:
+                acquired = []
+                try:
+                    for request in batch.requests:
+                        requirement = _requirement_on_host(
+                            request.requirement,
+                            host_id,
+                            preference=ComputePlacementPreference.PACK,
+                        )
+                        if requirement is None:
+                            raise ComputeBatchPlacementUnavailable(batch)
+                        acquired.append(
+                            self.allocate(
+                                request.allocation_id,
+                                request.scope,
+                                requirement,
+                                placement_scope=request.placement_scope,
+                                ttl_seconds=ttl_seconds,
+                                now=now,
+                            )
+                        )
+                    return tuple(acquired)
+                except (ComputePlacementUnavailable, ComputePhysicalConvergencePending, ComputeBatchPlacementUnavailable) as primary:
+                    last_error = primary
+                    rollback(acquired, primary)
+            raise ComputeBatchPlacementUnavailable(batch) from last_error
 
     def allocate(
         self,
@@ -1756,26 +1844,117 @@ class SQLiteComputeScheduler:
                     now_epoch_s,
                     runtime_snapshot,
                 )
-                allocations = tuple(
-                    self._allocate_one_in_transaction(
-                        conn,
-                        allocation_id=request.allocation_id,
-                        scope=request.scope,
-                        requirement=_batch_requirement(
-                            request.requirement,
-                            batch.placement_strategy,
-                        ),
-                        placement_scope=request.placement_scope,
-                        ttl_seconds=ttl_seconds,
-                        now_epoch_s=now_epoch_s,
-                        runtime_snapshot=runtime_snapshot,
-                        host_runtime_snapshot=host_runtime_snapshot,
-                        pending=pending,
+                if batch.placement_strategy is not ComputeBatchPlacementStrategy.STRICT_PACK:
+                    allocations = tuple(
+                        self._allocate_one_in_transaction(
+                            conn,
+                            allocation_id=request.allocation_id,
+                            scope=request.scope,
+                            requirement=_batch_requirement(
+                                request.requirement,
+                                batch.placement_strategy,
+                            ),
+                            placement_scope=request.placement_scope,
+                            ttl_seconds=ttl_seconds,
+                            now_epoch_s=now_epoch_s,
+                            runtime_snapshot=runtime_snapshot,
+                            host_runtime_snapshot=host_runtime_snapshot,
+                            pending=pending,
+                        )
+                        for request in batch.requests
                     )
+                    conn.commit()
+                    return allocations
+
+                existing = tuple(
+                    self._active_row(conn, request.allocation_id, now_epoch_s)
                     for request in batch.requests
                 )
-                conn.commit()
-                return allocations
+                existing_hosts = {
+                    row.host_id for row in existing if row is not None
+                }
+                if len(existing_hosts) > 1:
+                    raise ComputeBatchPlacementUnavailable(batch)
+
+                if existing_hosts:
+                    host_order = tuple(existing_hosts)
+                else:
+                    rows = self._capacity_rows(conn)
+                    quarantined_gpus = frozenset(
+                        (row.host_id, gpu_id)
+                        for row in pending
+                        for gpu_id in row.gpu_ids
+                    )
+                    candidate_orders: list[tuple[str, ...]] = []
+                    common: set[str] | None = None
+                    for request in batch.requests:
+                        requirement = replace(
+                            request.requirement,
+                            placement_preference=ComputePlacementPreference.PACK,
+                        )
+                        placement_scope = (
+                            request.scope
+                            if request.placement_scope is None
+                            else request.placement_scope
+                        )
+                        ids = tuple(
+                            host.host_id
+                            for _score, host, _gpu_ids in self._placements(
+                                rows,
+                                requirement,
+                                placement_scope,
+                                runtime_snapshot,
+                                host_runtime_snapshot,
+                                quarantined_gpus=quarantined_gpus,
+                            )
+                        )
+                        candidate_orders.append(ids)
+                        common = set(ids) if common is None else common & set(ids)
+                    common = set() if common is None else common
+                    host_order = tuple(
+                        host_id
+                        for host_id in candidate_orders[0]
+                        if host_id in common
+                    )
+                if not host_order:
+                    raise ComputeBatchPlacementUnavailable(batch)
+
+                last_error: BaseException | None = None
+                for candidate_index, host_id in enumerate(host_order):
+                    savepoint = f"compute_batch_candidate_{candidate_index}"
+                    conn.execute(f"SAVEPOINT {savepoint}")
+                    try:
+                        allocations_list: list[ComputeAllocation] = []
+                        for request in batch.requests:
+                            requirement = _requirement_on_host(
+                                request.requirement,
+                                host_id,
+                                preference=ComputePlacementPreference.PACK,
+                            )
+                            if requirement is None:
+                                raise ComputeBatchPlacementUnavailable(batch)
+                            allocations_list.append(
+                                self._allocate_one_in_transaction(
+                                    conn,
+                                    allocation_id=request.allocation_id,
+                                    scope=request.scope,
+                                    requirement=requirement,
+                                    placement_scope=request.placement_scope,
+                                    ttl_seconds=ttl_seconds,
+                                    now_epoch_s=now_epoch_s,
+                                    runtime_snapshot=runtime_snapshot,
+                                    host_runtime_snapshot=host_runtime_snapshot,
+                                    pending=pending,
+                                )
+                            )
+                        conn.execute(f"RELEASE SAVEPOINT {savepoint}")
+                        conn.commit()
+                        return tuple(allocations_list)
+                    except (ComputePlacementUnavailable, ComputePhysicalConvergencePending, ComputeBatchPlacementUnavailable) as candidate_error:
+                        last_error = candidate_error
+                        conn.execute(f"ROLLBACK TO SAVEPOINT {savepoint}")
+                        conn.execute(f"RELEASE SAVEPOINT {savepoint}")
+                raise ComputeBatchPlacementUnavailable(batch) from last_error
             except BaseException as primary:
                 rollback_sqlite_writer(
                     conn,
