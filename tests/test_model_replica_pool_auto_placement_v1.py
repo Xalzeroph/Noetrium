@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from dataclasses import replace
 from pathlib import Path
+import threading
 
 import pytest
 
@@ -1495,6 +1496,103 @@ def test_model_replica_pool_cleanup_is_retryable_and_never_releases_resources_un
     assert len(endpoints.released) == 2
     assert compute_guards.created[0].closed is True
     assert endpoint_guards.created[0].closed is True
+
+
+def test_concurrent_lease_close_and_pool_close_all_do_not_deadlock(
+    tmp_path,
+) -> None:
+    class BlockingRuntime(Runtime):
+        def __init__(self, catalog):
+            super().__init__(catalog)
+            self.remove_entered = threading.Event()
+            self.allow_remove = threading.Event()
+
+        def remove_deployment(self, generation):
+            self.remove_entered.set()
+            if not self.allow_remove.wait(timeout=5.0):
+                raise RuntimeError("timed out waiting to release model teardown")
+            return super().remove_deployment(generation)
+
+    catalog = Catalog()
+    runtime = BlockingRuntime(catalog)
+    scheduler = Scheduler()
+    endpoints = Endpoints()
+    pool = LocalModelReplicaPoolRuntime(
+        deployment_catalog=catalog,
+        deployment_runtime=runtime,
+        fleet=Fleet(catalog),
+        compute_scheduler=scheduler,
+        endpoint_allocations=endpoints,
+        compute_lease_guards=ComputeGuards(),
+        endpoint_lease_guards=EndpointGuards(),
+    )
+    lease = pool.ensure(
+        ModelReplicaPoolRequest(
+            pool_id="concurrent-close",
+            scope=PLATFORM_SCOPE,
+            model_id="qwen3-8b",
+            engine="vllm",
+            python_environment_id="vllm",
+            cwd=Path(tmp_path),
+            compute=ComputeRequirement(
+                cpu_cores=2,
+                memory_bytes=1024,
+                gpu_count=1,
+                minimum_gpu_memory_bytes=40 * 1024**3,
+            ),
+            replica_count=1,
+        )
+    )
+
+    original_close = lease.close
+    pool_close_entered_lease = threading.Event()
+    errors: list[BaseException] = []
+
+    def observed_close() -> None:
+        if threading.current_thread().name == "pool-close-all":
+            pool_close_entered_lease.set()
+        original_close()
+
+    lease.close = observed_close
+
+    def close_lease() -> None:
+        try:
+            original_close()
+        except BaseException as exc:
+            errors.append(exc)
+
+    def close_pool() -> None:
+        try:
+            pool.close_all()
+        except BaseException as exc:
+            errors.append(exc)
+
+    lease_thread = threading.Thread(
+        target=close_lease,
+        name="external-lease-close",
+        daemon=True,
+    )
+    pool_thread = threading.Thread(
+        target=close_pool,
+        name="pool-close-all",
+        daemon=True,
+    )
+    lease_thread.start()
+    assert runtime.remove_entered.wait(timeout=2.0)
+
+    pool_thread.start()
+    assert pool_close_entered_lease.wait(timeout=2.0)
+    runtime.allow_remove.set()
+
+    lease_thread.join(timeout=3.0)
+    pool_thread.join(timeout=3.0)
+
+    assert not lease_thread.is_alive(), "external lease close deadlocked"
+    assert not pool_thread.is_alive(), "pool close_all deadlocked"
+    assert errors == []
+    assert pool.active_lease_count == 0
+    assert len(scheduler.released) == 1
+    assert len(endpoints.released) == 1
 
 
 def test_model_replica_pool_runtime_retires_forgotten_active_lease(tmp_path) -> None:
