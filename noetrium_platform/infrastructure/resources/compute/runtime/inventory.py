@@ -9,7 +9,7 @@ from noetrium_platform.foundation.kernel.kernel.durability.sqlite import (
     durable_sqlite_connection,
     immediate_sqlite_transaction,
 )
-from noetrium_platform.infrastructure.resources.compute.api import ComputeCluster, ComputeDeviceHealth, ComputeGPU, ComputeHost
+from noetrium_platform.infrastructure.resources.compute.api import ComputeCluster, ComputeDeviceHealth, ComputeGPU, ComputeHost, ComputeHostSchedulingState
 from noetrium_platform.foundation.governance.api import ScopeIdentity, ScopeKind
 
 
@@ -121,6 +121,7 @@ class SQLiteComputeInventory:
             ],
             "labels": list(host.labels),
             "enabled": host.enabled,
+            "scheduling_state": host.scheduling_state.value,
         }, sort_keys=True, separators=(",", ":"))
 
     @classmethod
@@ -138,6 +139,7 @@ class SQLiteComputeInventory:
             value["host_id"], cls._decode_scope(value["scope"]),
             int(value["cpu_cores"]), int(value["memory_bytes"]), gpus,
             tuple(tuple(item) for item in value["labels"]), bool(value["enabled"]),
+            ComputeHostSchedulingState(value.get("scheduling_state", ComputeHostSchedulingState.ACTIVE.value)),
         )
 
     @classmethod
