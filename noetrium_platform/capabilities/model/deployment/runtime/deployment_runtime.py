@@ -12,6 +12,7 @@ from noetrium_platform.capabilities.model.deployment.api import (
     ModelServiceRuntimeFactoryPort,
 )
 from noetrium_platform.foundation.kernel.kernel import canonical_digest
+from noetrium_platform.infrastructure.lifecycle.python.api import PythonEnvironmentRetired
 from noetrium_platform.substrate.api import ServiceContractDrift
 
 from .applied import AppliedModelDeployment
@@ -301,7 +302,7 @@ class ModelDeploymentRuntime:
                 )
             try:
                 desired_contract, _ = self._materializer.materialize(desired)
-            except (FileNotFoundError, KeyError) as exc:
+            except (FileNotFoundError, KeyError, PythonEnvironmentRetired) as exc:
                 return ModelDeploymentStatus(
                     desired.deployment_id,
                     desired.service_id,
