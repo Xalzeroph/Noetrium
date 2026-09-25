@@ -28,16 +28,25 @@ def _canonical_labels(labels: tuple[tuple[str, str], ...], field_name: str) -> t
     return tuple(normalized)
 
 
+class ComputeDeviceHealth(StrEnum):
+    HEALTHY = "healthy"
+    DEGRADED = "degraded"
+    UNAVAILABLE = "unavailable"
+
+
 @dataclass(frozen=True, slots=True)
 class ComputeGPU:
     gpu_id: str
     memory_bytes: int
     model: str = ""
     labels: tuple[tuple[str, str], ...] = ()
+    health: ComputeDeviceHealth = ComputeDeviceHealth.HEALTHY
 
     def __post_init__(self) -> None:
         if not self.gpu_id.strip() or self.memory_bytes < 1:
             raise ValueError("GPU identity/memory must be valid")
+        if type(self.health) is not ComputeDeviceHealth:
+            raise TypeError("GPU health must be ComputeDeviceHealth")
         object.__setattr__(self, "labels", _canonical_labels(self.labels, "GPU labels"))
 
 
@@ -306,4 +315,4 @@ class ComputeAllocation:
         )
 
 
-__all__ = ["ComputeAllocation", "ComputeBindingProof", "ComputeCluster", "ComputeGPU", "ComputeHost", "ComputePlacementUnavailable", "ComputeRequirement", "ComputeLeasePolicy", "DEFAULT_COMPUTE_LEASE_POLICY", "GpuSharingMode"]
+__all__ = ["ComputeAllocation", "ComputeDeviceHealth", "ComputeBindingProof", "ComputeCluster", "ComputeGPU", "ComputeHost", "ComputePlacementUnavailable", "ComputeRequirement", "ComputeLeasePolicy", "DEFAULT_COMPUTE_LEASE_POLICY", "GpuSharingMode"]
