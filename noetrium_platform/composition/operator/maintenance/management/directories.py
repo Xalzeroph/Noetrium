@@ -1,11 +1,42 @@
 from __future__ import annotations
 
+import argparse
+import math
+
 from noetrium_platform.infrastructure.resources.directory.api import ManagedDirectoryKind
 
 from .context import ManagementCommandContext
 from .scope_args import add_scope_arguments, scope_from_args
 
 GROUP = "dirs"
+
+
+def _non_negative_int(value: str) -> int:
+    try:
+        parsed = int(value)
+    except ValueError as exc:
+        raise argparse.ArgumentTypeError(
+            "value must be a non-negative integer"
+        ) from exc
+    if parsed < 0:
+        raise argparse.ArgumentTypeError(
+            "value must be a non-negative integer"
+        )
+    return parsed
+
+
+def _non_negative_finite_float(value: str) -> float:
+    try:
+        parsed = float(value)
+    except ValueError as exc:
+        raise argparse.ArgumentTypeError(
+            "value must be a finite non-negative number"
+        ) from exc
+    if not math.isfinite(parsed) or parsed < 0:
+        raise argparse.ArgumentTypeError(
+            "value must be a finite non-negative number"
+        )
+    return parsed
 
 
 def register(groups) -> None:
@@ -17,10 +48,13 @@ def register(groups) -> None:
     stats.add_argument("kind", choices=[kind.value for kind in ManagedDirectoryKind])
     entries = sub.add_parser("entries")
     entries.add_argument("kind", choices=[kind.value for kind in ManagedDirectoryKind])
-    entries.add_argument("--limit", type=int, default=20)
+    entries.add_argument("--limit", type=_non_negative_int, default=20)
     clean = sub.add_parser("clean")
     clean.add_argument("kind", choices=[ManagedDirectoryKind.CACHE.value, ManagedDirectoryKind.TEMP.value])
-    clean.add_argument("--older-than-seconds", type=float)
+    clean.add_argument(
+        "--older-than-seconds",
+        type=_non_negative_finite_float,
+    )
     clean.add_argument("--dry-run", action="store_true")
     create = sub.add_parser("workspace-create")
     create.add_argument("workspace_id")
