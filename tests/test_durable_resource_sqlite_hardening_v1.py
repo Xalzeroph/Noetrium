@@ -14,6 +14,7 @@ from noetrium_platform.infrastructure.resources.providers import (
 from noetrium_platform.foundation.kernel.kernel.durability import sqlite as sqlite_connection
 from noetrium_platform.foundation.kernel.kernel.durability.sqlite import durable_sqlite_connection
 from noetrium_platform.infrastructure.resources.providers import sqlite_endpoint, sqlite_lease
+from noetrium_platform.infrastructure.resources.lease.runtime import ManualLeaseClock
 
 
 def test_hardened_sqlite_session_applies_durable_pragmas_and_closes(tmp_path: Path) -> None:
@@ -46,8 +47,17 @@ def test_both_durable_resource_authorities_consume_the_same_connection_primitive
 
     monkeypatch.setattr(sqlite_connection, "retry_until_deadline", observed_retry)
     database = tmp_path / "authorities.sqlite3"
-    SQLiteResourceLeaseRegistry(database, timeout_seconds=0.15)
-    SQLiteEndpointAllocationStore(database, timeout_seconds=0.25)
+    clock = ManualLeaseClock(elapsed_seconds=1.0, wall_epoch_seconds=100.0)
+    SQLiteResourceLeaseRegistry(
+        database,
+        timeout_seconds=0.15,
+        clock=clock,
+    )
+    SQLiteEndpointAllocationStore(
+        database,
+        timeout_seconds=0.25,
+        clock=clock,
+    )
 
     assert observed_timeouts == [0.15, 0.25]
     with sqlite3.connect(database) as conn:
@@ -63,13 +73,18 @@ def test_connection_hardening_does_not_absorb_domain_transaction_authority() -> 
     lease_source = inspect.getsource(sqlite_lease)
     endpoint_source = inspect.getsource(sqlite_endpoint)
 
-    assert "BEGIN IMMEDIATE" not in helper_source
+    # The canonical durability layer owns transaction acquisition and lock
+    # retry mechanics. Resource providers consume that primitive rather than
+    # embedding raw BEGIN IMMEDIATE statements themselves.
+    assert "BEGIN IMMEDIATE" in helper_source
     assert "ensure_resource_schema" not in helper_source
     assert "endpoint_allocations" not in helper_source
     assert "resource_leases" not in helper_source
 
-    assert "BEGIN IMMEDIATE" in lease_source
-    assert "BEGIN IMMEDIATE" in endpoint_source
+    assert "BEGIN IMMEDIATE" not in lease_source
+    assert "BEGIN IMMEDIATE" not in endpoint_source
+    assert "immediate_sqlite_transaction" in lease_source
+    assert "immediate_sqlite_transaction" in endpoint_source
     assert "PRAGMA journal_mode=WAL" not in lease_source
     assert "PRAGMA journal_mode=WAL" not in endpoint_source
     assert "durable_sqlite_connection" in lease_source
