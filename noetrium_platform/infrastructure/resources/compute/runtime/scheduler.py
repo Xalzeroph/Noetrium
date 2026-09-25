@@ -578,14 +578,14 @@ def _placement_score(
         utilization = sum(rank[1] for rank, _gpu in selected_rows)
         free_excess = sum(rank[2] for rank, _gpu in selected_rows)
         gpu_excess = sum(
-            gpu.memory_bytes - requirement.minimum_gpu_memory_bytes for gpu in selected
+            gpu.schedulable_memory_bytes - requirement.minimum_gpu_memory_bytes for gpu in selected
         )
         selected_ids = {gpu.gpu_id for _rank, gpu in selected_rows}
         remaining = tuple(row for row in eligible if row[1].gpu_id not in selected_ids)
         score = (
             shared_count, utilization, runtime_rank, _host_preference_penalty(host, requirement), _placement_density_rank(host, usage, requirement), free_excess, gpu_excess, len(remaining),
             sum(gpu.schedulable_memory_bytes for _rank, gpu in remaining),
-            cpu_after / host.cpu_cores + memory_after / host.memory_bytes,
+            cpu_after / host.schedulable_cpu_cores + memory_after / host.schedulable_memory_bytes,
             cpu_after, memory_after, host.host_id,
         )
     return score, tuple(gpu.gpu_id for gpu in selected)
