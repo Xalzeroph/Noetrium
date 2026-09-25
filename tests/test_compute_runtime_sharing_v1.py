@@ -46,12 +46,19 @@ def _requirement() -> ComputeRequirement:
     )
 
 
-def _snapshot(*, idle_free=70 * 1024, busy_free=48 * 1024, busy_util=35):
+def _snapshot(
+    *,
+    idle_free=70 * 1024,
+    busy_free=48 * 1024,
+    busy_util=35,
+    idle_total=80 * 1024,
+    busy_total=80 * 1024,
+):
     return GpuRuntimeSnapshot(
         True,
         devices=(
-            GpuDeviceStatus("0", "GPU-idle", "A100", 80 * 1024, 10 * 1024, idle_free, 0),
-            GpuDeviceStatus("1", "GPU-busy", "A100", 80 * 1024, 32 * 1024, busy_free, busy_util),
+            GpuDeviceStatus("0", "GPU-idle", "A100", idle_total, 10 * 1024, idle_free, 0),
+            GpuDeviceStatus("1", "GPU-busy", "A100", busy_total, 32 * 1024, busy_free, busy_util),
         ),
         processes=(GpuProcessStatus(1234, "GPU-busy", 30 * 1024, "other-user"),),
     )
@@ -118,6 +125,36 @@ def test_fractional_gpu_memory_requirement_rejects_when_no_gpu_has_enough_free_v
         assert "no compute host" in str(exc)
     else:
         raise AssertionError("fractional VRAM demand was admitted without residual capacity")
+
+
+def test_fractional_vram_uses_larger_live_total_when_inventory_is_stale() -> None:
+    requirement = ComputeRequirement(
+        cpu_cores=2,
+        memory_bytes=4 * 1024**3,
+        gpu_count=1,
+        required_gpu_memory_fraction=0.75,
+        gpu_sharing_mode=GpuSharingMode.PREFER_IDLE_ALLOW_SHARED,
+    )
+    scheduler = in_memory_compute_scheduler(
+        _inventory(),
+        gpu_runtime_observer=_Observer(
+            _snapshot(
+                idle_total=96 * 1024,
+                idle_free=70 * 1024,
+                busy_total=96 * 1024,
+                busy_free=48 * 1024,
+            )
+        ),
+    )
+
+    try:
+        scheduler.allocate("live-total-drift", _scope(), requirement)
+    except RuntimeError as exc:
+        assert "no compute host" in str(exc)
+    else:
+        raise AssertionError(
+            "fractional VRAM demand trusted stale smaller inventory capacity"
+        )
 
 
 def test_shared_gpu_mode_accepts_fraction_as_its_memory_reservation() -> None:
