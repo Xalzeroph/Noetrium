@@ -91,6 +91,7 @@ class ComputeRequirement:
     gpu_count: int = 0
     minimum_gpu_memory_bytes: int = 0
     required_gpu_free_memory_bytes: int = 0
+    required_gpu_memory_fraction: float | None = None
     max_gpu_utilization_percent: int = 100
     cpu_headroom_cores: int = 0
     memory_headroom_bytes: int = 0
@@ -110,6 +111,15 @@ class ComputeRequirement:
             or self.memory_headroom_bytes < 0
         ):
             raise ValueError("compute requirements must be non-negative and include CPU/memory")
+        if self.required_gpu_memory_fraction is not None and (
+            isinstance(self.required_gpu_memory_fraction, bool)
+            or not isinstance(self.required_gpu_memory_fraction, (int, float))
+            or not math.isfinite(float(self.required_gpu_memory_fraction))
+            or not 0.0 < float(self.required_gpu_memory_fraction) <= 1.0
+        ):
+            raise ValueError(
+                "compute required_gpu_memory_fraction must be finite in (0, 1]"
+            )
         if not 0 <= self.max_gpu_utilization_percent <= 100:
             raise ValueError("compute GPU utilization ceiling must be between 0 and 100")
         if self.max_cpu_load_ratio is not None and (
@@ -129,8 +139,12 @@ class ComputeRequirement:
             self.gpu_count > 0
             and self.gpu_sharing_mode is GpuSharingMode.PREFER_IDLE_ALLOW_SHARED
             and self.required_gpu_free_memory_bytes <= 0
+            and self.required_gpu_memory_fraction is None
         ):
-            raise ValueError("shared GPU scheduling requires positive free-memory reservation")
+            raise ValueError(
+                "shared GPU scheduling requires a positive free-memory reservation "
+                "or required_gpu_memory_fraction"
+            )
 
 
 @dataclass(frozen=True, slots=True)
