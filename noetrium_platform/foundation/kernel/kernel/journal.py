@@ -22,8 +22,11 @@ from .durable_closure import (
 )
 from .durability import (
     ChecksummedDocumentError,
+    FilesystemCarrierGeneration,
+    FilesystemCarrierKind,
     InterprocessFileLock,
     atomic_replace_bytes,
+    capture_filesystem_carrier_generation,
     decode_checksummed_document,
     durable_append_bytes,
     durable_unlink,
@@ -220,7 +223,7 @@ def _decode_commit(value: object) -> MachineCommit:
 
 
 
-_MACHINE_JOURNAL_RETIREMENT_SCHEMA = "machine.journal-retirement.v1"
+_MACHINE_JOURNAL_RETIREMENT_SCHEMA = "machine.journal-retirement.v2"
 _MACHINE_JOURNAL_RETIREMENT_FIELDS = {
     "machine_id",
     "terminal_commit_id",
@@ -228,6 +231,7 @@ _MACHINE_JOURNAL_RETIREMENT_FIELDS = {
     "content_sha256",
     "byte_size",
     "gc_proof_digest",
+    "carrier_generation",
     "phase",
 }
 
@@ -554,6 +558,13 @@ class DirectoryMachineJournal(MachineJournalPort, MachineJournalGcPort):
             phase = MachineJournalRetirementPhase(str(payload["phase"]))
             terminal_revision = payload["terminal_revision"]
             byte_size = payload["byte_size"]
+            carrier_generation = FilesystemCarrierGeneration.from_data(
+                payload["carrier_generation"]
+            )
+            if carrier_generation.kind is not FilesystemCarrierKind.REGULAR_FILE:
+                raise ValueError(
+                    "machine journal carrier generation must be a regular file"
+                )
             if (
                 type(terminal_revision) is not int
                 or terminal_revision <= 0
@@ -572,6 +583,7 @@ class DirectoryMachineJournal(MachineJournalPort, MachineJournalGcPort):
             "content_sha256": str(payload["content_sha256"]),
             "byte_size": byte_size,
             "gc_proof_digest": str(payload["gc_proof_digest"]),
+            "carrier_generation": carrier_generation,
             "phase": phase,
         }
 
@@ -579,7 +591,13 @@ class DirectoryMachineJournal(MachineJournalPort, MachineJournalGcPort):
         self,
         gc: MachineJournalGcAssessment,
         phase: MachineJournalRetirementPhase,
+        *,
+        carrier_generation: FilesystemCarrierGeneration,
     ) -> None:
+        if carrier_generation.kind is not FilesystemCarrierKind.REGULAR_FILE:
+            raise TypeError(
+                "machine journal retirement carrier must be a regular file"
+            )
         atomic_replace_bytes(
             self._retirement_path(gc.machine_id),
             encode_checksummed_document(
@@ -591,6 +609,7 @@ class DirectoryMachineJournal(MachineJournalPort, MachineJournalGcPort):
                     "content_sha256": gc.content_sha256,
                     "byte_size": gc.byte_size,
                     "gc_proof_digest": gc.proof_digest,
+                    "carrier_generation": carrier_generation.to_data(),
                     "phase": phase.value,
                 },
             ),
@@ -911,10 +930,28 @@ class DirectoryMachineJournal(MachineJournalPort, MachineJournalGcPort):
     def _validate_quarantine_identity(
         quarantine: Path,
         gc: MachineJournalGcAssessment,
-    ) -> None:
-        if quarantine.is_symlink() or not quarantine.is_file():
+        *,
+        expected_generation: FilesystemCarrierGeneration,
+        same_object_only: bool = False,
+    ) -> FilesystemCarrierGeneration:
+        try:
+            before = capture_filesystem_carrier_generation(
+                quarantine,
+                expected_kind=FilesystemCarrierKind.REGULAR_FILE,
+            )
+        except (OSError, RuntimeError) as exc:
             raise RuntimeError(
                 "machine journal quarantine is not an owned regular file"
+            ) from exc
+        matches = (
+            expected_generation.same_object(before)
+            if same_object_only
+            else expected_generation.same_generation(before)
+        )
+        if not matches:
+            raise RuntimeError(
+                "machine journal quarantine filesystem generation changed "
+                "after retirement"
             )
         try:
             raw = quarantine.read_bytes()
@@ -922,10 +959,24 @@ class DirectoryMachineJournal(MachineJournalPort, MachineJournalGcPort):
             raise MachineIntegrityError(
                 "cannot read quarantined machine journal"
             ) from exc
+        try:
+            after = capture_filesystem_carrier_generation(
+                quarantine,
+                expected_kind=FilesystemCarrierKind.REGULAR_FILE,
+            )
+        except (OSError, RuntimeError) as exc:
+            raise MachineIntegrityError(
+                "machine journal quarantine disappeared during verification"
+            ) from exc
+        if not before.same_generation(after):
+            raise RuntimeError(
+                "machine journal quarantine changed during verification"
+            )
         if len(raw) != gc.byte_size or sha256(raw).hexdigest() != gc.content_sha256:
             raise RuntimeError(
                 "machine journal quarantine identity changed after retirement"
             )
+        return after
 
     @staticmethod
     def _move_journal_to_quarantine(path: Path, quarantine: Path) -> None:
@@ -975,9 +1026,14 @@ class DirectoryMachineJournal(MachineJournalPort, MachineJournalGcPort):
                     )
                 current = self._gc_identity_locked(machine_id)
                 self._require_gc_identity(gc, current)
+                carrier_generation = capture_filesystem_carrier_generation(
+                    path,
+                    expected_kind=FilesystemCarrierKind.REGULAR_FILE,
+                )
                 self._publish_retirement(
                     gc,
                     MachineJournalRetirementPhase.RETIRED,
+                    carrier_generation=carrier_generation,
                 )
                 retirement = self._load_retirement(machine_id)
                 if retirement is None:
@@ -986,6 +1042,14 @@ class DirectoryMachineJournal(MachineJournalPort, MachineJournalGcPort):
                     )
 
             phase = self._require_retirement_matches_gc(retirement, gc)
+            carrier_generation = retirement["carrier_generation"]
+            if not isinstance(
+                carrier_generation,
+                FilesystemCarrierGeneration,
+            ):
+                raise MachineIntegrityError(
+                    "machine journal retirement carrier generation is not typed"
+                )
 
             if phase is MachineJournalRetirementPhase.PURGED:
                 if path.exists() or quarantine.exists():
@@ -1003,23 +1067,46 @@ class DirectoryMachineJournal(MachineJournalPort, MachineJournalGcPort):
                     )
                 if quarantine.exists():
                     # The rename committed but QUARANTINED publication did not.
-                    self._validate_quarantine_identity(quarantine, gc)
+                    quarantine_generation = self._validate_quarantine_identity(
+                        quarantine,
+                        gc,
+                        expected_generation=carrier_generation,
+                        same_object_only=True,
+                    )
                     self._publish_retirement(
                         gc,
                         MachineJournalRetirementPhase.QUARANTINED,
+                        carrier_generation=quarantine_generation,
                     )
+                    carrier_generation = quarantine_generation
                     phase = MachineJournalRetirementPhase.QUARANTINED
                 elif path.exists():
                     self._require_gc_identity(
                         gc,
                         self._gc_identity_locked(machine_id),
                     )
+                    live_generation = capture_filesystem_carrier_generation(
+                        path,
+                        expected_kind=FilesystemCarrierKind.REGULAR_FILE,
+                    )
+                    if not carrier_generation.same_generation(live_generation):
+                        raise RuntimeError(
+                            "machine journal filesystem generation changed "
+                            "after durable retirement"
+                        )
                     self._move_journal_to_quarantine(path, quarantine)
-                    self._validate_quarantine_identity(quarantine, gc)
+                    quarantine_generation = self._validate_quarantine_identity(
+                        quarantine,
+                        gc,
+                        expected_generation=carrier_generation,
+                        same_object_only=True,
+                    )
                     self._publish_retirement(
                         gc,
                         MachineJournalRetirementPhase.QUARANTINED,
+                        carrier_generation=quarantine_generation,
                     )
+                    carrier_generation = quarantine_generation
                     phase = MachineJournalRetirementPhase.QUARANTINED
                 else:
                     raise RuntimeError(
@@ -1032,11 +1119,16 @@ class DirectoryMachineJournal(MachineJournalPort, MachineJournalGcPort):
                         "quarantined machine journal live path reappeared as unowned residue"
                     )
                 if quarantine.exists():
-                    self._validate_quarantine_identity(quarantine, gc)
+                    self._validate_quarantine_identity(
+                        quarantine,
+                        gc,
+                        expected_generation=carrier_generation,
+                    )
                     durable_unlink(quarantine)
                 self._publish_retirement(
                     gc,
                     MachineJournalRetirementPhase.PURGED,
+                    carrier_generation=carrier_generation,
                 )
                 with self._cache_lock:
                     self._cache.pop(machine_id, None)
