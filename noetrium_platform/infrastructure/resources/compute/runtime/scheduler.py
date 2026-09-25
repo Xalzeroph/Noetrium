@@ -635,11 +635,14 @@ class InMemoryComputeScheduler:
     def release(self, allocation: ComputeAllocation) -> None:
         if type(allocation) is not ComputeAllocation:
             raise TypeError("compute release requires ComputeAllocation")
+        runtime_snapshot = _observe_gpu_runtime(self._gpu_runtime_observer)
         with self._lock:
             row = self._allocations.get(allocation.allocation_id)
             if row is None:
                 return
             _require_compute_generation(row, allocation)
+            if not _gpu_allocation_physically_converged(row, runtime_snapshot):
+                raise ComputePhysicalConvergencePending((row,))
             self._leases.release(f"compute:{allocation.allocation_id}", fencing_token=row.lease_fencing_token)
             self._allocations.pop(allocation.allocation_id, None)
             self._release_usage_locked(row)
@@ -1159,6 +1162,11 @@ class SQLiteComputeScheduler:
                     conn.commit()
                     return
                 _require_compute_generation(current, allocation)
+                if not _gpu_allocation_physically_converged(
+                    current,
+                    runtime_snapshot,
+                ):
+                    raise ComputePhysicalConvergencePending((current,))
                 release_resource_lease(
                     conn,
                     f"compute:{allocation.allocation_id}",
