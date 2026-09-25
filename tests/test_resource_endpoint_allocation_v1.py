@@ -77,7 +77,7 @@ def test_endpoint_allocator_releases_logical_lease_and_allows_reallocation() -> 
     )
 
     first = allocator.allocate(_request("branch-a", (25565,)))
-    released = allocator.release(first.allocation_id)
+    released = allocator.release(first)
     assert released.state.value == "released"
     assert not leases.active_for(first.endpoint.resource)
 
@@ -204,7 +204,7 @@ def test_in_memory_endpoint_binding_is_fencing_bound_and_preserves_history() -> 
     bound = allocator.confirm_bound(proof)
     assert bound.state is EndpointAllocationState.BOUND
     assert allocator.confirm_bound(proof) == bound
-    released = allocator.release(bound.allocation_id)
+    released = allocator.release(bound)
     assert released.state is EndpointAllocationState.RELEASED
     assert released.binding_proof_digest == proof.digest()
 
