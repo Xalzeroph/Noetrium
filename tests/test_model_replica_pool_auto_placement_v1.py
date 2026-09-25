@@ -39,6 +39,16 @@ from noetrium_platform.infrastructure.resources.compute.api import (
 )
 
 
+def _exception_leaf_messages(exc: BaseException) -> tuple[str, ...]:
+    if isinstance(exc, BaseExceptionGroup):
+        return tuple(
+            message
+            for child in exc.exceptions
+            for message in _exception_leaf_messages(child)
+        )
+    return (str(exc),)
+
+
 def _vllm_stack(
     *,
     engine_args: tuple[str, ...] = (),
@@ -1138,8 +1148,12 @@ def test_failed_creation_retains_cleanup_generation_until_retry(
         match="creation failed with pending cleanup",
     ) as raised:
         pool.ensure(request)
-    assert "simulated startup failure" in str(raised.value)
-    assert "simulated creation cleanup failure" in str(raised.value)
+    messages = _exception_leaf_messages(raised.value)
+    assert any("simulated startup failure" in message for message in messages)
+    assert any(
+        "simulated creation cleanup failure" in message
+        for message in messages
+    )
     assert pool.pending_cleanup_count == 1
 
     # Failed service convergence must keep both physical resource families
@@ -1687,8 +1701,8 @@ def test_model_replica_pool_runtime_close_all_is_retryable_and_seals_new_ensure(
         pool.close_all()
     except ExceptionGroup as error:
         assert any(
-            "simulated model stop uncertainty" in str(item)
-            for item in error.exceptions
+            "simulated model stop uncertainty" in message
+            for message in _exception_leaf_messages(error)
         )
     else:
         raise AssertionError("uncertain model stop must keep pool cleanup retryable")
