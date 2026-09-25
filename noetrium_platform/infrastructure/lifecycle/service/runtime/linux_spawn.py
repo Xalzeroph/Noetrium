@@ -5,6 +5,8 @@ import os
 from pathlib import Path
 import signal
 import subprocess
+import sys
+import time
 
 from noetrium_platform.foundation.kernel.concurrency.api import Deadline
 from noetrium_platform.infrastructure.lifecycle.process.api import ProcessSupervisorPort, ProcessTerminationPolicy
@@ -35,6 +37,8 @@ class _SpawnCleanupProcess:
 
 class LinuxProcessSpawner:
     """The sole local ``subprocess.Popen`` authority for supervised services."""
+
+    _EXEC_SETTLEMENT_SECONDS = 2.0
 
     def __init__(
         self,
@@ -67,9 +71,16 @@ class LinuxProcessSpawner:
         with captures.stdout_path.open("ab", buffering=0) as stdout, captures.stderr_path.open(
             "ab", buffering=0
         ) as stderr:
+            launcher = Path(__file__).with_name("opportunistic_exec.py")
             child = subprocess.Popen(
-                contract.argv,
-                executable=contract.executable,
+                (
+                    sys.executable,
+                    "-E",
+                    str(launcher),
+                    contract.executable,
+                    *contract.argv,
+                ),
+                executable=sys.executable,
                 cwd=contract.cwd,
                 env=child_environment,
                 stdin=subprocess.DEVNULL,
@@ -82,6 +93,38 @@ class LinuxProcessSpawner:
             visible_pid = self._procfs.visible_pid(child.pid)
             start_identity = self._procfs.start_identity(visible_pid)
             pgid = os.getpgid(child.pid)
+
+            # The trampoline retains PID/session identity across exec, but a
+            # ProcessAlive readiness probe must never observe the transient
+            # launcher as the service generation. Wait for the exact frozen
+            # executable/argv/cwd before publishing process ownership.
+            expected_executable = str(Path(contract.executable).resolve())
+            expected_cwd = str(Path(contract.cwd).resolve())
+            deadline = time.monotonic() + self._EXEC_SETTLEMENT_SECONDS
+            while True:
+                if child.poll() is not None:
+                    raise RuntimeError(
+                        "opportunistic service trampoline exited before target exec"
+                    )
+                try:
+                    facts = self._procfs.facts(
+                        visible_pid,
+                        control_pid=None if visible_pid == child.pid else child.pid,
+                    )
+                except (FileNotFoundError, ProcessLookupError):
+                    facts = None
+                if (
+                    facts is not None
+                    and facts.executable == expected_executable
+                    and facts.argv == contract.argv
+                    and facts.cwd == expected_cwd
+                ):
+                    break
+                if time.monotonic() >= deadline:
+                    raise RuntimeError(
+                        "opportunistic service trampoline did not exec exact target"
+                    )
+                time.sleep(0.005)
         except BaseException as primary:
             cleanup = _SpawnCleanupProcess(child)
             policy = ProcessTerminationPolicy(
