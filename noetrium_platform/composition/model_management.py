@@ -21,6 +21,7 @@ from noetrium_platform.capabilities.model.deployment.composition import LocalMod
 from noetrium_platform.capabilities.model.assignment.runtime import ModelAssignmentManager
 from noetrium_platform.capabilities.model.deployment.runtime import (
     AppliedModelDeploymentStore,
+    DurableModelAutoRecoveryAuthority,
     FileModelControllerStateStore,
     ModelDesiredStateController,
     ModelDeploymentCatalog,
@@ -263,7 +264,8 @@ def build_local_management_plane(
     deployment_runtime = ModelDeploymentRuntime(
         applied_store, deployment_catalog, materializer, service_factory
     )
-    fleet = ModelFleetRuntime(deployment_catalog, deployment_runtime)
+    auto_recovery = DurableModelAutoRecoveryAuthority(directory_layout)
+    fleet = ModelFleetRuntime(deployment_catalog, deployment_runtime, auto_recovery)
     deployment_logs = ModelDeploymentLogReader(
         applied_store, deployment_catalog, materializer, service_factory
     )
