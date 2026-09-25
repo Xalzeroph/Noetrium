@@ -3,8 +3,6 @@
 from .api import (
     Study,
     StudyModel,
-    PostHocEvaluationDefinition,
-    PostHocEvaluationResult,
     StudyConcurrencyPolicy,
     StudyExecutionPolicy,
     MeasurementDefinition,
@@ -31,8 +29,6 @@ from .spec import StudySpec
 __all__ = [
     "Study",
     "StudyModel",
-    "PostHocEvaluationDefinition",
-    "PostHocEvaluationResult",
     "StudyConcurrencyPolicy",
     "StudyExecutionPolicy",
     "MeasurementDefinition",
