@@ -76,6 +76,7 @@ from noetrium_platform.research.experimentation.lifecycle.api import (
     ExperimentTrialProtocolIdentity,
     MeasurementDefinition,
     MeasurementProtocol,
+    MeasurementSetOutcome,
     MeasurementValue,
     MeasurementValueKind,
     ReplayLevel,
@@ -888,10 +889,15 @@ class _TrialProvider:
             intervention=request.intervention,
             revision=request.revision,
         )
+        records = (record,)
         return TrialExecutionReceipt(
             request.request_digest,
             request.assignment.assignment_digest,
-            (record,),
+            records,
+            MeasurementSetOutcome.complete(
+                request.measurement_protocol,
+                records,
+            ),
         )
 
 
