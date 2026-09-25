@@ -9,10 +9,17 @@ from noetrium_platform.foundation.kernel.concurrency.api import (
     ConcurrencyBudget,
     TaskFailurePolicy,
 )
+from noetrium_platform.foundation.kernel.kernel import (
+    InMemoryMachineJournal,
+    MachineStatus,
+)
 from noetrium_platform.foundation.kernel.concurrency.composition import (
     build_concurrency_runtime,
 )
 from noetrium_platform.research.experimentation.lifecycle.api import (
+    ExperimentWorkloadFailure,
+    FailureDisposition,
+    FailureScope,
     StudyExecutionPlan,
     StudyConcurrencyPolicy,
     StudyMetricObservation,
@@ -28,6 +35,7 @@ from noetrium_platform.research.experimentation.lifecycle.study.algorithms impor
 from noetrium_platform.research.experimentation.api.program import (
     ExperimentProgramBinding,
     compile_experiment_program,
+    experiment_report_from_data,
 )
 
 
@@ -301,3 +309,223 @@ def test_experiment_program_rejects_incomplete_bound_provider_before_execution()
 
     with pytest.raises(TypeError, match="BoundStudyExecutionPort"):
         _execute(_plan(), IncompleteAdapter())
+
+
+def _parallel_retry_protocol(
+    *,
+    max_assignment_attempts: int = 3,
+) -> StudyProtocol:
+    return _protocol(
+        repetitions=1,
+        concurrency_policy=replace(
+            StudyConcurrencyPolicy.serial_shared_v1(
+                repetition_timeout_seconds=3600.0
+            ),
+            parallel_assignments=True,
+            max_parallel_assignments=2,
+            max_assignment_attempts=max_assignment_attempts,
+        ),
+    )
+
+
+def _parallel_group():
+    runtime = build_concurrency_runtime(
+        budget=ConcurrencyBudget(
+            max_blocking_io_workers=2,
+            max_cpu_workers=1,
+            default_queue_capacity=4,
+        )
+    )
+    group = runtime.open_task_group(
+        "selective-retry",
+        failure_policy=TaskFailurePolicy.COLLECT_ALL,
+    )
+    return runtime, group
+
+
+def test_partial_batch_success_is_durable_and_retry_runs_only_failed_assignment() -> None:
+    plan = _plan(_parallel_retry_protocol())
+    compiled = compile_experiment_program(plan)
+    runtime, group = _parallel_group()
+    journal = InMemoryMachineJournal()
+    calls: dict[str, int] = {}
+
+    class FlakyAdapter:
+        def execute_bound(self, unit, bindings, plan_digest, *, execution_id):
+            raise AssertionError("parallel assignment plan must use variant execution")
+
+        def execute_bound_variant(
+            self,
+            assignment,
+            binding,
+            plan_digest,
+            *,
+            execution_id,
+        ):
+            del binding, plan_digest, execution_id
+            calls[assignment.variant_id] = calls.get(assignment.variant_id, 0) + 1
+            if assignment.variant_id == "treatment" and calls["treatment"] == 1:
+                raise ExperimentWorkloadFailure(
+                    "environment",
+                    "transient_transport",
+                    "temporary transport failure",
+                    scope=FailureScope.TASK,
+                    disposition=FailureDisposition.RETRYABLE,
+                )
+            return StudyMetricObservation(
+                assignment,
+                (("score", 1.0),),
+            )
+
+    binding = ExperimentProgramBinding(
+        compiled,
+        FlakyAdapter(),
+        BasicStudyMetricAggregator(),
+        execution_binding_digest="e" * 64,
+        execution_id="f" * 64,
+        task_group=group,
+    )
+    try:
+        first = binding.open_session(journal=journal)
+        first.start(
+            compiled.initial_data(),
+            command_id=f"{first.machine_id}:start",
+        )
+        attempt = first.step(command_id=f"{first.machine_id}:attempt:1")
+        assert attempt.accepted_status is MachineStatus.RUNNABLE
+        assert first.data["batch_cursor"] == 0
+        assert len(first.data["observations"]) == 1
+        assert first.data["assignment_attempts"]
+        assert len(first.data["attempt_failures"]) == 1
+
+        # Simulate process loss: discard the session and reopen exclusively from
+        # the authoritative Machine Journal.
+        reopened = binding.open_session(journal=journal)
+        assert len(reopened.data["observations"]) == 1
+        assert reopened.data["batch_cursor"] == 0
+
+        run = reopened.run_until_blocked(
+            command_id_prefix=f"{reopened.machine_id}:resume",
+            max_steps=3,
+        )
+        assert run.status is MachineStatus.COMPLETED
+        report = experiment_report_from_data(compiled, reopened.data)
+    finally:
+        group.close()
+        runtime.close()
+
+    assert calls == {"control": 1, "treatment": 2}
+    assert tuple(
+        row.assignment.variant_id for row in report.observations
+    ) == ("control", "treatment")
+    assert len(report.aggregates) == 2
+
+
+def test_retryable_failure_exhaustion_commits_history_then_fails_machine() -> None:
+    plan = _plan(_parallel_retry_protocol(max_assignment_attempts=2))
+    compiled = compile_experiment_program(plan)
+    runtime, group = _parallel_group()
+    journal = InMemoryMachineJournal()
+    calls: dict[str, int] = {}
+
+    class ExhaustingAdapter:
+        def execute_bound(self, unit, bindings, plan_digest, *, execution_id):
+            raise AssertionError("parallel assignment plan must use variant execution")
+
+        def execute_bound_variant(
+            self,
+            assignment,
+            binding,
+            plan_digest,
+            *,
+            execution_id,
+        ):
+            del binding, plan_digest, execution_id
+            calls[assignment.variant_id] = calls.get(assignment.variant_id, 0) + 1
+            if assignment.variant_id == "treatment":
+                raise ExperimentWorkloadFailure(
+                    "model",
+                    "transient_provider",
+                    "provider unavailable",
+                    scope=FailureScope.TASK,
+                    disposition=FailureDisposition.RETRYABLE,
+                )
+            return StudyMetricObservation(assignment, (("score", 1.0),))
+
+    binding = ExperimentProgramBinding(
+        compiled,
+        ExhaustingAdapter(),
+        BasicStudyMetricAggregator(),
+        execution_binding_digest="e" * 64,
+        execution_id="f" * 64,
+        task_group=group,
+    )
+    try:
+        session = binding.open_session(journal=journal)
+        session.start(compiled.initial_data(), command_id="retry-exhaust:start")
+        first = session.step(command_id="retry-exhaust:1")
+        assert first.accepted_status is MachineStatus.RUNNABLE
+        second = session.step(command_id="retry-exhaust:2")
+        assert second.accepted_status is MachineStatus.FAILED
+        assert len(session.data["observations"]) == 1
+        assert len(session.data["attempt_failures"]) == 2
+        assert session.data["attempt_failures"][-1]["retry_exhausted"] is True
+    finally:
+        group.close()
+        runtime.close()
+
+    assert calls == {"control": 1, "treatment": 2}
+
+
+def test_unknown_failure_is_terminal_but_successful_sibling_remains_durable() -> None:
+    plan = _plan(_parallel_retry_protocol())
+    compiled = compile_experiment_program(plan)
+    runtime, group = _parallel_group()
+    journal = InMemoryMachineJournal()
+    calls: dict[str, int] = {}
+
+    class BrokenAdapter:
+        def execute_bound(self, unit, bindings, plan_digest, *, execution_id):
+            raise AssertionError("parallel assignment plan must use variant execution")
+
+        def execute_bound_variant(
+            self,
+            assignment,
+            binding,
+            plan_digest,
+            *,
+            execution_id,
+        ):
+            del binding, plan_digest, execution_id
+            calls[assignment.variant_id] = calls.get(assignment.variant_id, 0) + 1
+            if assignment.variant_id == "treatment":
+                raise RuntimeError("programming defect")
+            return StudyMetricObservation(assignment, (("score", 1.0),))
+
+    binding = ExperimentProgramBinding(
+        compiled,
+        BrokenAdapter(),
+        BasicStudyMetricAggregator(),
+        execution_binding_digest="e" * 64,
+        execution_id="f" * 64,
+        task_group=group,
+    )
+    try:
+        session = binding.open_session(journal=journal)
+        session.start(compiled.initial_data(), command_id="terminal:start")
+        commit = session.step(command_id="terminal:1")
+        assert commit.accepted_status is MachineStatus.FAILED
+        assert len(session.data["observations"]) == 1
+        assert session.data["attempt_failures"][0]["disposition"] == "terminal"
+        assert session.data["attempt_failures"][0]["retry_exhausted"] is False
+    finally:
+        group.close()
+        runtime.close()
+
+    assert calls == {"control": 1, "treatment": 1}
+
+
+def test_retry_policy_is_part_of_scientific_protocol_identity() -> None:
+    first = _parallel_retry_protocol(max_assignment_attempts=2)
+    second = _parallel_retry_protocol(max_assignment_attempts=3)
+    assert first.protocol_digest != second.protocol_digest
