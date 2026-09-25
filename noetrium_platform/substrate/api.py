@@ -95,6 +95,8 @@ from noetrium_platform.foundation.portfolio.api import (
 
 from noetrium_platform.infrastructure.lifecycle.api import (
     ComputeAllocation,
+    ComputeAllocationBatch,
+    ComputeAllocationRequest,
     ComputeBindingProof,
     ComputeLeaseGuardFactoryPort,
     ComputePlacementUnavailable,
@@ -177,6 +179,8 @@ __all__ = (
     "CompositionIdentity",
     "CompositionSubject",
     "ComputeAllocation",
+    "ComputeAllocationBatch",
+    "ComputeAllocationRequest",
     "ComputeBindingProof",
     "ComputeLeaseGuardFactoryPort",
     "ComputeLeaseGuardPort",
