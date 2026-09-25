@@ -351,6 +351,18 @@ class ModelReplicaPoolLease:
         self._on_closed = on_closed
         self._lifecycle_lock = RLock()
 
+    def _current_generation(
+        self,
+        row: ModelReplicaPlacement,
+    ) -> ModelDeploymentGeneration:
+        generation = self._deployment_runtime.generation(row.deployment_id)
+        if generation.desired_spec_digest != row.generation.desired_spec_digest:
+            raise RuntimeError(
+                "model replica desired generation drifted: "
+                f"{row.deployment_id}"
+            )
+        return generation
+
     def _converge_running_generation(
         self,
         row: ModelReplicaPlacement,
