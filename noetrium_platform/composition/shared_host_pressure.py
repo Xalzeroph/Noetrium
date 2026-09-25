@@ -262,6 +262,31 @@ class LocalSharedStoragePressureObserver:
         )
 
 
+@dataclass(frozen=True, slots=True)
+class ResourceCompetitionDemand:
+    """Physical residual-capacity increment associated with one admitted permit."""
+
+    memory_bytes_per_permit: int = 0
+    pids_per_permit: int = 0
+    fds_per_permit: int = 0
+    storage_bytes_per_permit: int = 0
+    storage_inodes_per_permit: int = 0
+
+    def __post_init__(self) -> None:
+        for name in (
+            "memory_bytes_per_permit",
+            "pids_per_permit",
+            "fds_per_permit",
+            "storage_bytes_per_permit",
+            "storage_inodes_per_permit",
+        ):
+            value = getattr(self, name)
+            if type(value) is not int or value < 0:
+                raise ValueError(
+                    f"resource competition demand {name} must be a non-negative integer"
+                )
+
+
 class ResourceCompetitionClass(StrEnum):
     HARD_SAFETY = "hard-safety"
     SOFT_CONTENTION = "soft-contention"
@@ -396,6 +421,7 @@ class ResourceCompetitionAdmissionGate(ExecutionAdmissionPort):
         self._network_observer = network_observer
         self._policy = policy
         self._intents: dict[str, AdmissionIntent] = {}
+        self._demands: dict[str, ResourceCompetitionDemand] = {}
 
     def register_group(
         self,
@@ -406,10 +432,28 @@ class ResourceCompetitionAdmissionGate(ExecutionAdmissionPort):
     ) -> None:
         self._delegate.register_group(group_id, identity=identity, intent=intent)
         self._intents[group_id] = intent
+        self._demands[group_id] = ResourceCompetitionDemand()
+
+    def set_group_demand(
+        self,
+        group_id: str,
+        demand: ResourceCompetitionDemand,
+    ) -> None:
+        if group_id not in self._intents:
+            raise KeyError(
+                "execution group is not registered with resource competition gate: "
+                f"{group_id}"
+            )
+        if not isinstance(demand, ResourceCompetitionDemand):
+            raise TypeError(
+                "resource competition group demand must be ResourceCompetitionDemand"
+            )
+        self._demands[group_id] = demand
 
     def unregister_group(self, group_id: str) -> None:
         self._delegate.unregister_group(group_id)
         self._intents.pop(group_id, None)
+        self._demands.pop(group_id, None)
 
     def _status(self) -> HostRuntimeStatus | None:
         try:
@@ -450,6 +494,7 @@ class ResourceCompetitionAdmissionGate(ExecutionAdmissionPort):
             raise KeyError(f"execution group is not registered with resource competition gate: {group_id}")
         if intent.priority is ExecutionPriority.CRITICAL:
             return None
+        demand = self._demands.get(group_id, ResourceCompetitionDemand())
 
         status = self._status()
         if status is None:
@@ -459,7 +504,11 @@ class ResourceCompetitionAdmissionGate(ExecutionAdmissionPort):
                 else None
             )
 
-        if status.available_memory_bytes < self._policy.min_available_memory_bytes:
+        required_memory = (
+            self._policy.min_available_memory_bytes
+            + demand.memory_bytes_per_permit * permit_count
+        )
+        if status.available_memory_bytes < required_memory:
             return "memory-headroom"
         if status.available_pids is None:
             if (
@@ -467,7 +516,10 @@ class ResourceCompetitionAdmissionGate(ExecutionAdmissionPort):
                 and self._policy.min_available_pids > 0
             ):
                 return "pid-runtime-unavailable"
-        elif status.available_pids < self._policy.min_available_pids + permit_count:
+        elif status.available_pids < (
+            self._policy.min_available_pids
+            + demand.pids_per_permit * permit_count
+        ):
             return "pid-headroom"
         if status.memory_pressure_some_avg10_percent is None:
             if (
@@ -503,7 +555,11 @@ class ResourceCompetitionAdmissionGate(ExecutionAdmissionPort):
                     if self._policy.fail_closed_when_runtime_unavailable:
                         return "storage-runtime-unavailable"
                 else:
-                    if storage.free_bytes < self._policy.min_storage_free_bytes:
+                    required_storage_bytes = (
+                        self._policy.min_storage_free_bytes
+                        + demand.storage_bytes_per_permit * permit_count
+                    )
+                    if storage.free_bytes < required_storage_bytes:
                         return "storage-byte-headroom"
                     if storage.free_inodes is None:
                         if (
@@ -511,7 +567,10 @@ class ResourceCompetitionAdmissionGate(ExecutionAdmissionPort):
                             and self._policy.min_storage_free_inodes > 0
                         ):
                             return "storage-inode-runtime-unavailable"
-                    elif storage.free_inodes < self._policy.min_storage_free_inodes:
+                    elif storage.free_inodes < (
+                        self._policy.min_storage_free_inodes
+                        + demand.storage_inodes_per_permit * permit_count
+                    ):
                         return "storage-inode-headroom"
             if (
                 self._network_observer is not None
@@ -536,7 +595,10 @@ class ResourceCompetitionAdmissionGate(ExecutionAdmissionPort):
                     and self._policy.min_available_fds > 0
                 ):
                     return "fd-runtime-unavailable"
-            elif status.available_fds < self._policy.min_available_fds + permit_count:
+            elif status.available_fds < (
+                self._policy.min_available_fds
+                + demand.fds_per_permit * permit_count
+            ):
                 return "fd-headroom"
             if status.io_pressure_some_avg10_percent is None:
                 if (
@@ -747,6 +809,7 @@ __all__ = [
     "ResourceCompetitionAdmissionGate",
     "ResourceCompetitionClass",
     "ResourceCompetitionDecision",
+    "ResourceCompetitionDemand",
     "ResourceCompetitionPolicy",
     "SharedNetworkPressureObserverPort",
     "SharedNetworkPressureStatus",
