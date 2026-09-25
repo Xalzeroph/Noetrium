@@ -54,6 +54,128 @@ def _finite(value: object, field_name: str) -> float:
     return number
 
 
+class EvaluationScoreState(StrEnum):
+    """Whether a scorer produced a value for one evaluation epoch."""
+
+    SCORED = "scored"
+    UNSCORED = "unscored"
+
+
+@dataclass(frozen=True, slots=True)
+class EvaluationScore:
+    """One immutable scorer output with auditable provenance.
+
+    A score is never represented by a bare scalar.  UNSCORED preserves the
+    reason/explanation/evidence while keeping absence distinct from numeric zero.
+    """
+
+    score_id: str
+    state: EvaluationScoreState
+    value: JsonValue | None = None
+    reason: str | None = None
+    answer: str | None = None
+    explanation: str | None = None
+    metadata: Mapping[str, JsonValue] = field(default_factory=dict)
+    evidence_refs: tuple[ArtifactReference, ...] = ()
+    score_digest: str = field(init=False)
+
+    def __post_init__(self) -> None:
+        _text(self.score_id, "evaluation score score_id")
+        if not isinstance(self.state, EvaluationScoreState):
+            raise TypeError("evaluation score state must be EvaluationScoreState")
+
+        if self.state is EvaluationScoreState.SCORED:
+            if self.value is None:
+                raise ValueError("scored evaluation score requires value")
+            if self.reason is not None:
+                raise ValueError("scored evaluation score cannot carry abnormal reason")
+            object.__setattr__(self, "value", freeze_json(self.value))
+        else:
+            if self.value is not None:
+                raise ValueError("unscored evaluation score cannot carry value")
+            _text(self.reason, "unscored evaluation score reason")
+
+        for field_name, value in (
+            ("answer", self.answer),
+            ("explanation", self.explanation),
+        ):
+            if value is not None:
+                _text(value, f"evaluation score {field_name}")
+
+        frozen_metadata = freeze_json(self.metadata)
+        if not isinstance(frozen_metadata, Mapping):
+            raise TypeError("evaluation score metadata must be a mapping")
+        object.__setattr__(self, "metadata", frozen_metadata)
+
+        if type(self.evidence_refs) is not tuple or any(
+            type(row) is not ArtifactReference for row in self.evidence_refs
+        ):
+            raise TypeError(
+                "evaluation score evidence_refs must contain ArtifactReference"
+            )
+        if len(self.evidence_refs) != len(set(self.evidence_refs)):
+            raise ValueError("evaluation score evidence_refs must be unique")
+
+        object.__setattr__(
+            self,
+            "score_digest",
+            canonical_digest(
+                {
+                    "score_id": self.score_id,
+                    "state": self.state.value,
+                    "value": self.value,
+                    "reason": self.reason,
+                    "answer": self.answer,
+                    "explanation": self.explanation,
+                    "metadata": frozen_metadata,
+                    "evidence_refs": self.evidence_refs,
+                }
+            ),
+        )
+
+    @classmethod
+    def scored(
+        cls,
+        score_id: str,
+        value: JsonValue,
+        *,
+        answer: str | None = None,
+        explanation: str | None = None,
+        metadata: Mapping[str, JsonValue] | None = None,
+        evidence_refs: tuple[ArtifactReference, ...] = (),
+    ) -> "EvaluationScore":
+        return cls(
+            score_id=score_id,
+            state=EvaluationScoreState.SCORED,
+            value=value,
+            answer=answer,
+            explanation=explanation,
+            metadata={} if metadata is None else metadata,
+            evidence_refs=evidence_refs,
+        )
+
+    @classmethod
+    def unscored(
+        cls,
+        score_id: str,
+        *,
+        reason: str,
+        answer: str | None = None,
+        explanation: str | None = None,
+        metadata: Mapping[str, JsonValue] | None = None,
+        evidence_refs: tuple[ArtifactReference, ...] = (),
+    ) -> "EvaluationScore":
+        return cls(
+            score_id=score_id,
+            state=EvaluationScoreState.UNSCORED,
+            reason=reason,
+            answer=answer,
+            explanation=explanation,
+            metadata={} if metadata is None else metadata,
+            evidence_refs=evidence_refs,
+        )
+
+
 class EvaluationScoreView(StrEnum):
     """Which score cut a metric consumes when repeated epochs are present."""
 
@@ -282,27 +404,50 @@ class EvaluationReductionState(StrEnum):
 class EvaluationReductionResult:
     reducer_digest: str
     state: EvaluationReductionState
-    source_count: int
+    source_score_digests: tuple[str, ...]
+    scored_source_count: int
     value: JsonValue | None = None
     reason: str | None = None
+    metadata: Mapping[str, JsonValue] = field(default_factory=dict)
     result_digest: str = field(init=False)
 
     def __post_init__(self) -> None:
         _sha(self.reducer_digest, "evaluation reduction reducer_digest")
         if not isinstance(self.state, EvaluationReductionState):
             raise TypeError("evaluation reduction state must be EvaluationReductionState")
-        if type(self.source_count) is not int or self.source_count <= 0:
-            raise ValueError("evaluation reduction source_count must be positive")
+        if type(self.source_score_digests) is not tuple or not self.source_score_digests:
+            raise ValueError(
+                "evaluation reduction source_score_digests must be a non-empty tuple"
+            )
+        for digest in self.source_score_digests:
+            _sha(digest, "evaluation reduction source score digest")
+        if len(self.source_score_digests) != len(set(self.source_score_digests)):
+            raise ValueError("evaluation reduction source score digests must be unique")
+        if (
+            type(self.scored_source_count) is not int
+            or self.scored_source_count < 0
+            or self.scored_source_count > len(self.source_score_digests)
+        ):
+            raise ValueError(
+                "evaluation reduction scored_source_count is outside source cut"
+            )
         if self.state is EvaluationReductionState.SCORED:
             if self.value is None:
                 raise ValueError("scored evaluation reduction requires value")
             if self.reason is not None:
                 raise ValueError("scored evaluation reduction cannot carry reason")
+            if self.scored_source_count == 0:
+                raise ValueError("scored evaluation reduction requires scored source")
             object.__setattr__(self, "value", freeze_json(self.value))
         else:
             if self.value is not None:
                 raise ValueError("unscored evaluation reduction cannot carry value")
             _text(self.reason, "unscored evaluation reduction reason")
+
+        frozen_metadata = freeze_json(self.metadata)
+        if not isinstance(frozen_metadata, Mapping):
+            raise TypeError("evaluation reduction metadata must be a mapping")
+        object.__setattr__(self, "metadata", frozen_metadata)
         object.__setattr__(
             self,
             "result_digest",
@@ -310,12 +455,18 @@ class EvaluationReductionResult:
                 {
                     "reducer_digest": self.reducer_digest,
                     "state": self.state.value,
-                    "source_count": self.source_count,
+                    "source_score_digests": self.source_score_digests,
+                    "scored_source_count": self.scored_source_count,
                     "value": self.value,
                     "reason": self.reason,
+                    "metadata": frozen_metadata,
                 }
             ),
         )
+
+    @property
+    def source_count(self) -> int:
+        return len(self.source_score_digests)
 
 
 @dataclass(frozen=True, slots=True)
@@ -478,6 +629,8 @@ class PostHocEvaluationResult:
 
 __all__ = [
     "EvaluationMetricSpec",
+    "EvaluationScore",
+    "EvaluationScoreState",
     "EvaluationReducerKind",
     "EvaluationReducerSpec",
     "EvaluationReductionResult",
