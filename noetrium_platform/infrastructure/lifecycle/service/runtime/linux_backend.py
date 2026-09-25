@@ -104,12 +104,28 @@ class LinuxProcessBackend:
         token = decode_linux_start_handle(handle, contract, environment)
         marker_processes: list[int] = []
         exact_roots: list[ServiceProcessIdentity] = []
+        uncertain_same_uid: list[int] = []
         evidence: list[str] = []
+        controller_uid = os.geteuid()
 
         for visible_pid in self._procfs.process_ids():
             try:
+                process_uid = self._procfs.effective_uid(visible_pid)
+            except (FileNotFoundError, ProcessLookupError):
+                continue
+            except (PermissionError, OSError, RuntimeError):
+                # A procfs entry hidden by host policy cannot be attributed to
+                # this controller. Same-UID entries remain visible under the
+                # supported Linux ownership contract and are handled below.
+                continue
+            if process_uid != controller_uid:
+                continue
+            try:
                 observed_environment = self._procfs.environment(visible_pid)
-            except (FileNotFoundError, PermissionError, ProcessLookupError, OSError):
+            except (FileNotFoundError, ProcessLookupError):
+                continue
+            except (PermissionError, OSError):
+                uncertain_same_uid.append(visible_pid)
                 continue
             if observed_environment.get(LINUX_PREPARED_START_ENV) != token.token:
                 continue
@@ -117,7 +133,10 @@ class LinuxProcessBackend:
             try:
                 control_pid = self._procfs.control_pid(visible_pid)
                 process = self._verifier.identity(control_pid)
-            except (FileNotFoundError, PermissionError, ProcessLookupError, OSError):
+            except (FileNotFoundError, ProcessLookupError):
+                continue
+            except (PermissionError, OSError, RuntimeError):
+                uncertain_same_uid.append(visible_pid)
                 continue
             if (
                 process.process_group_id is None
@@ -131,6 +150,17 @@ class LinuxProcessBackend:
             if reconciled.status is ProcessReconcileStatus.EXACT:
                 exact_roots.append(process)
 
+        if uncertain_same_uid:
+            return PreparedServiceStartReconcileResult(
+                PreparedServiceStartStatus.UNKNOWN,
+                None,
+                tuple(evidence),
+                (
+                    "same-UID Linux process facts are not fully observable during "
+                    "prepared-start reconciliation: "
+                    + ",".join(str(pid) for pid in sorted(set(uncertain_same_uid)))
+                ),
+            )
         if len(exact_roots) == 1:
             return PreparedServiceStartReconcileResult(
                 PreparedServiceStartStatus.PROCESS_CONFIRMED,
