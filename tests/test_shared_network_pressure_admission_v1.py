@@ -39,6 +39,9 @@ class _HealthyHost:
                     effective_cpu_cores=16.0,
                     cpu_load_1m=0.0,
                     available_memory_bytes=32 * 1024**3,
+                    cpu_pressure_some_avg10_percent=0.0,
+                    memory_pressure_some_avg10_percent=0.0,
+                    io_pressure_some_avg10_percent=0.0,
                     available_pids=2048,
                     available_fds=4096,
                 ),
@@ -103,15 +106,15 @@ def test_network_saturation_gates_io_without_blocking_cpu_only_work() -> None:
         )
 
 
-def test_unknown_link_capacity_does_not_invent_network_pressure() -> None:
+def test_unknown_link_capacity_fails_closed_for_new_io() -> None:
     gate = _gate(_Network(None))
-    io = gate.acquire(
-        "work",
-        ExecutionLaneKind.BLOCKING_IO,
-        deadline=None,
-        cancellation=None,
-    )
-    io.release()
+    with pytest.raises(AdmissionRejected, match="network-runtime-unavailable"):
+        gate.acquire(
+            "work",
+            ExecutionLaneKind.BLOCKING_IO,
+            deadline=None,
+            cancellation=None,
+        )
 
 
 def _netdev(rx_bytes: int, tx_bytes: int) -> str:
@@ -143,8 +146,9 @@ def test_local_network_observer_measures_real_counter_delta_against_link_speed(
     )
 
     warm = observer.snapshot()
-    assert warm.available
+    assert not warm.available
     assert warm.max_utilization_percent is None
+    assert warm.detail == "network-pressure-warming"
 
     # 10 MB in one second on a 100 Mbit/s link is 80% utilization.
     proc_net_dev.write_text(_netdev(10_000_000, 0), encoding="utf-8")
