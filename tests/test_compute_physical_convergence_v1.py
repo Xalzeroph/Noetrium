@@ -19,6 +19,10 @@ from noetrium_platform.infrastructure.resources.compute.runtime import (
     SQLiteComputeScheduler,
 )
 from noetrium_platform.infrastructure.resources.lease.api import ResourceLeaseConflict
+from noetrium_platform.infrastructure.resources.lease.runtime import (
+    InMemoryResourceLeaseRegistry,
+    ManualLeaseClock,
+)
 from tests.resource_compute_support import in_memory_compute_scheduler
 
 
@@ -67,6 +71,38 @@ def _inventory() -> InMemoryComputeInventory:
         )
     )
     return inventory
+
+
+def _clock() -> ManualLeaseClock:
+    return ManualLeaseClock(
+        elapsed_seconds=1.0,
+        wall_epoch_seconds=100.0,
+    )
+
+
+def _scheduler(
+    tmp_path,
+    *,
+    durable: bool,
+    inventory: InMemoryComputeInventory,
+    observer=None,
+    filename: str,
+):
+    clock = _clock()
+    if durable:
+        scheduler = SQLiteComputeScheduler(
+            tmp_path / filename,
+            inventory,
+            clock=clock,
+            gpu_runtime_observer=observer,
+        )
+    else:
+        scheduler = in_memory_compute_scheduler(
+            inventory,
+            resource_authority=InMemoryResourceLeaseRegistry(clock=clock),
+            gpu_runtime_observer=observer,
+        )
+    return scheduler, clock
 
 
 def _requirement() -> ComputeRequirement:
