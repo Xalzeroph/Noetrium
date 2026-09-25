@@ -373,6 +373,100 @@ def test_permit_batch_is_checked_against_declared_physical_memory_demand() -> No
         )
 
 
+def test_live_permits_reserve_declared_memory_across_competing_groups() -> None:
+    observer = _MutableHostObserver(_status(memory_bytes=3 * 1024**3))
+    gate = _gate(observer, mode=AdmissionMode.REJECT)
+    for group_id in ("left", "right", "third"):
+        gate.register_group(
+            group_id,
+            identity=AdmissionIdentity(),
+            intent=AdmissionIntent(mode=AdmissionMode.REJECT),
+        )
+        gate.set_group_demand(
+            group_id,
+            ResourceCompetitionDemand(
+                memory_bytes_per_permit=1024**3,
+            ),
+        )
+
+    left = gate.acquire(
+        "left",
+        ExecutionLaneKind.CPU,
+        deadline=None,
+        cancellation=None,
+    )
+    right = gate.acquire(
+        "right",
+        ExecutionLaneKind.CPU,
+        deadline=None,
+        cancellation=None,
+    )
+
+    # The host observer intentionally remains unchanged, modelling the launch
+    # window before newly submitted work is visible in /proc/cgroup facts.
+    with pytest.raises(AdmissionRejected, match="memory-headroom"):
+        gate.acquire(
+            "third",
+            ExecutionLaneKind.CPU,
+            deadline=None,
+            cancellation=None,
+        )
+
+    left.release()
+    third = gate.acquire(
+        "third",
+        ExecutionLaneKind.CPU,
+        deadline=None,
+        cancellation=None,
+    )
+    third.release()
+    right.release()
+
+
+def test_live_io_permits_reserve_fd_demand_across_competing_groups() -> None:
+    observer = _MutableHostObserver(
+        _status(
+            available_pids=256,
+            available_fds=80,
+        )
+    )
+    gate = _gate(observer, mode=AdmissionMode.REJECT)
+    for group_id in ("io-a", "io-b"):
+        gate.register_group(
+            group_id,
+            identity=AdmissionIdentity(),
+            intent=AdmissionIntent(mode=AdmissionMode.REJECT),
+        )
+        gate.set_group_demand(
+            group_id,
+            ResourceCompetitionDemand(
+                fds_per_permit=32,
+            ),
+        )
+
+    first = gate.acquire(
+        "io-a",
+        ExecutionLaneKind.ASYNC_IO,
+        deadline=None,
+        cancellation=None,
+    )
+    with pytest.raises(AdmissionRejected, match="fd-headroom"):
+        gate.acquire(
+            "io-b",
+            ExecutionLaneKind.ASYNC_IO,
+            deadline=None,
+            cancellation=None,
+        )
+    first.release()
+    second = gate.acquire(
+        "io-b",
+        ExecutionLaneKind.ASYNC_IO,
+        deadline=None,
+        cancellation=None,
+    )
+    second.release()
+
+
 def test_declared_pid_and_fd_demand_scale_with_atomic_batch_size() -> None:
     observer = _MutableHostObserver(
         _status(
