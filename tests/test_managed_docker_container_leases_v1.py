@@ -123,9 +123,9 @@ def test_managed_docker_release_removes_physical_container_before_logical_lease(
     assert prefix[:3] == ("docker", "run", "--rm")
     assert "--name" in prefix
     assert "--label" in prefix
-    assert prefix[prefix.index("--cpu-shares") + 1] == "128"
-    assert prefix[prefix.index("--blkio-weight") + 1] == "100"
-    assert prefix[prefix.index("--oom-score-adj") + 1] == "500"
+    assert "--cpu-shares" not in prefix
+    assert "--blkio-weight" not in prefix
+    assert "--oom-score-adj" not in prefix
     runtime.start(handle)
     observed = authority.confirm_running(handle)
     assert observed.name == handle.container_name
