@@ -3,7 +3,7 @@
   "architecture_complexity": {
     "authorities": 20,
     "contract_declarations": 184,
-    "import_edges": 5362,
+    "import_edges": 5364,
     "subsystems": 15,
     "top_level_systems": 16
   },
@@ -23,7 +23,7 @@
     "effective_limits": {
       "authorities": 31,
       "contract_declarations": 184,
-      "import_edges": 5362,
+      "import_edges": 5364,
       "subsystems": 15,
       "top_level_systems": 16
     },
@@ -627,7 +627,7 @@
       "seam_id": "completed"
     }
   ],
-  "import_edges": 5362,
+  "import_edges": 5364,
   "import_violations": [],
   "layer_violations": [],
   "operation_graph": [
@@ -873,7 +873,7 @@
     }
   ],
   "package_cycles": [],
-  "report_sha256": "7ba52d98837658f17a7c46e2ef96942e8de5a744bfd0d47eef6255af7b0f4a31",
+  "report_sha256": "6aa8ef82cd68c83779d4baaa153bf3f3dc077261878ac56678a20c0c0ef8bc41",
   "source_authority_violations": [
     {
       "allowed_modules": [
@@ -909,7 +909,7 @@
       "primitive": "os.write"
     }
   ],
-  "source_digest": "6267daa2568d0f09d7dea5d28fb31f216788dbd29301f7f15c0aa3cd7732e67f",
+  "source_digest": "7f6ef0439cb619605364a1fd2d0e4e15b54f942a9caaf942ed421fe26754f71a",
   "source_invariant_violations": [
     {
       "detail": "direct concurrency implementation import noetrium_platform.foundation.kernel.concurrency.api.ports; depend on noetrium_platform.foundation.kernel.concurrency.api and obtain task groups from composition",
@@ -922,6 +922,18 @@
       "invariant": "sqlite_durability_authority",
       "line": 1499,
       "path": "noetrium_platform/infrastructure/resources/compute/runtime/scheduler.py"
+    },
+    {
+      "detail": "noetrium_platform.capabilities.model.deployment.runtime.deployment_runtime -> noetrium_platform.infrastructure.lifecycle.python.api; required facade=noetrium_platform.substrate.api",
+      "invariant": "bypass_lower_layer_facade",
+      "line": 15,
+      "path": "noetrium_platform/capabilities/model/deployment/runtime/deployment_runtime.py"
+    },
+    {
+      "detail": "noetrium_platform.capabilities.model.deployment.runtime.fleet -> noetrium_platform.infrastructure.lifecycle.python.api; required facade=noetrium_platform.substrate.api",
+      "invariant": "bypass_lower_layer_facade",
+      "line": 16,
+      "path": "noetrium_platform/capabilities/model/deployment/runtime/fleet.py"
     }
   ],
   "source_root": ".",

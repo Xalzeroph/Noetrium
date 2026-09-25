@@ -27924,7 +27924,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 22,
+      "line": 23,
       "methods": [
         "__init__",
         "_generation_value",
@@ -27953,7 +27953,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 20,
+      "line": 21,
       "methods": [
         "__init__",
         "status_all",
@@ -68153,7 +68153,7 @@
         "stdout"
       ],
       "kind": "dataclass",
-      "line": 90,
+      "line": 101,
       "methods": [],
       "module": "noetrium_platform.infrastructure.lifecycle.python.api.contracts",
       "name": "EnvironmentCommandResult",
@@ -68174,7 +68174,7 @@
         "version"
       ],
       "kind": "dataclass",
-      "line": 98,
+      "line": 109,
       "methods": [],
       "module": "noetrium_platform.infrastructure.lifecycle.python.api.contracts",
       "name": "InstalledPythonPackage",
@@ -68203,7 +68203,7 @@
         "tags"
       ],
       "kind": "dataclass",
-      "line": 58,
+      "line": 69,
       "methods": [
         "identity_digest"
       ],
@@ -68228,7 +68228,7 @@
         "source_environment_id"
       ],
       "kind": "dataclass",
-      "line": 104,
+      "line": 115,
       "methods": [],
       "module": "noetrium_platform.infrastructure.lifecycle.python.api.contracts",
       "name": "PythonEnvironmentCloneResult",
@@ -68261,6 +68261,26 @@
       "top_system": "runtime"
     },
     {
+      "bases": [
+        "RuntimeError"
+      ],
+      "decorators": [],
+      "fields": [],
+      "kind": "class",
+      "line": 22,
+      "methods": [
+        "__init__"
+      ],
+      "module": "noetrium_platform.infrastructure.lifecycle.python.api.contracts",
+      "name": "PythonEnvironmentRetired",
+      "nesting": [
+        "PythonEnvironmentRetired"
+      ],
+      "qualname": "noetrium_platform.infrastructure.lifecycle.python.api.contracts.PythonEnvironmentRetired",
+      "system_key": "runtime",
+      "top_system": "runtime"
+    },
+    {
       "bases": [],
       "decorators": [
         "dataclass(frozen=True, slots=True)"
@@ -68275,7 +68295,7 @@
         "tags"
       ],
       "kind": "dataclass",
-      "line": 23,
+      "line": 34,
       "methods": [
         "__post_init__",
         "specification_digest"
@@ -68635,7 +68655,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 24,
+      "line": 25,
       "methods": [
         "__init__",
         "_path",
@@ -105476,10 +105496,10 @@
   ],
   "counts": {
     "association_edges": 3526,
-    "classes": 3416,
+    "classes": 3417,
     "constructor_edges": 969,
     "inheritance_edges": 151,
-    "module_import_edges": 5084,
+    "module_import_edges": 5086,
     "parse_errors": 0,
     "python_modules": 1918,
     "registry_authorities": 20,
@@ -108118,6 +108138,10 @@
     },
     {
       "source": "noetrium_platform.capabilities.model.deployment.runtime.deployment_runtime",
+      "target": "noetrium_platform.infrastructure.lifecycle.python.api"
+    },
+    {
+      "source": "noetrium_platform.capabilities.model.deployment.runtime.deployment_runtime",
       "target": "noetrium_platform.substrate.api"
     },
     {
@@ -108131,6 +108155,10 @@
     {
       "source": "noetrium_platform.capabilities.model.deployment.runtime.fleet",
       "target": "noetrium_platform.foundation.kernel.kernel.errors"
+    },
+    {
+      "source": "noetrium_platform.capabilities.model.deployment.runtime.fleet",
+      "target": "noetrium_platform.infrastructure.lifecycle.python.api"
     },
     {
       "source": "noetrium_platform.capabilities.model.deployment.runtime.launch_materializer",
@@ -128435,6 +128463,7 @@
         "noetrium_platform.capabilities.model.deployment.runtime.applied_store",
         "noetrium_platform.capabilities.model.deployment.runtime.launch_materializer",
         "noetrium_platform.foundation.kernel.kernel",
+        "noetrium_platform.infrastructure.lifecycle.python.api",
         "noetrium_platform.substrate.api"
       ],
       "module": "noetrium_platform.capabilities.model.deployment.runtime.deployment_runtime",
@@ -128446,7 +128475,8 @@
       "imports": [
         "noetrium_platform.capabilities.model.deployment.api",
         "noetrium_platform.capabilities.model.deployment.runtime.auto_recovery",
-        "noetrium_platform.foundation.kernel.kernel.errors"
+        "noetrium_platform.foundation.kernel.kernel.errors",
+        "noetrium_platform.infrastructure.lifecycle.python.api"
       ],
       "module": "noetrium_platform.capabilities.model.deployment.runtime.fleet",
       "path": "noetrium_platform/capabilities/model/deployment/runtime/fleet.py",
@@ -146711,7 +146741,7 @@
   "parse_errors": [],
   "registry_sha256": "276e2729e0b700e814e98f8460d87e0ebee66c4620226fe2d880fe55cc970aec",
   "schema": "noetrium-code-architecture-index.v1",
-  "source_git_sha": "d6353af6974372ccf625120e3ca995de51d10549",
+  "source_git_sha": "0d38bf4f3276976b83e932d5e1bbdbc410588cf6",
   "system_import_edges": [
     {
       "count": 85,
@@ -146797,6 +146827,11 @@
       "count": 114,
       "source": "model",
       "target": "platform"
+    },
+    {
+      "count": 2,
+      "source": "model",
+      "target": "runtime"
     },
     {
       "count": 10,

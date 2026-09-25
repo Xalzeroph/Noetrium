@@ -2,14 +2,14 @@
   "counts": {
     "parse_errors": 0,
     "python_files": 3709,
-    "python_import_edges": 7043,
-    "symbols": 5112,
+    "python_import_edges": 7045,
+    "symbols": 5113,
     "tracked_files": 4346,
     "typescript_javascript_files": 11
   },
   "language_symbol_counts": {
     "javascript": 1,
-    "python": 5106,
+    "python": 5107,
     "typescript": 5
   },
   "parse_errors": [],
@@ -1547,6 +1547,12 @@
     {
       "source_module": "noetrium_platform.capabilities.model.deployment.runtime.deployment_runtime",
       "source_role": "core_platform",
+      "target_module": "noetrium_platform.infrastructure.lifecycle.python.api",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "noetrium_platform.capabilities.model.deployment.runtime.deployment_runtime",
+      "source_role": "core_platform",
       "target_module": "noetrium_platform.substrate.api",
       "target_role": "core_platform"
     },
@@ -1560,6 +1566,12 @@
       "source_module": "noetrium_platform.capabilities.model.deployment.runtime.fleet",
       "source_role": "core_platform",
       "target_module": "noetrium_platform.foundation.kernel.kernel.errors",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "noetrium_platform.capabilities.model.deployment.runtime.fleet",
+      "source_role": "core_platform",
+      "target_module": "noetrium_platform.infrastructure.lifecycle.python.api",
       "target_role": "core_platform"
     },
     {
@@ -42275,7 +42287,7 @@
   ],
   "role_import_counts": [
     {
-      "count": 2635,
+      "count": 2637,
       "source_role": "core_platform",
       "target_role": "core_platform"
     },
@@ -42402,7 +42414,7 @@
     "tooling": 80
   },
   "role_symbol_counts": {
-    "core_platform": 3417,
+    "core_platform": 3418,
     "examples": 3,
     "other": 23,
     "public_facade": 4,
@@ -42414,7 +42426,7 @@
     "tooling": 39
   },
   "schema": "noetrium-repository-code-architecture-index.v1",
-  "source_git_sha": "d6353af6974372ccf625120e3ca995de51d10549",
+  "source_git_sha": "0d38bf4f3276976b83e932d5e1bbdbc410588cf6",
   "symbols": [
     {
       "bases": [],
@@ -53381,7 +53393,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 22,
+      "line": 23,
       "methods": [
         "__init__",
         "_generation_value",
@@ -53408,7 +53420,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 20,
+      "line": 21,
       "methods": [
         "__init__",
         "status_all",
@@ -90134,6 +90146,24 @@
       "role": "core_platform"
     },
     {
+      "bases": [
+        "RuntimeError"
+      ],
+      "decorators": [],
+      "fields": [],
+      "kind": "class",
+      "language": "python",
+      "line": 22,
+      "methods": [
+        "__init__"
+      ],
+      "module": "noetrium_platform.infrastructure.lifecycle.python.api.contracts",
+      "name": "PythonEnvironmentRetired",
+      "path": "noetrium_platform/infrastructure/lifecycle/python/api/contracts.py",
+      "qualname": "noetrium_platform.infrastructure.lifecycle.python.api.contracts.PythonEnvironmentRetired",
+      "role": "core_platform"
+    },
+    {
       "bases": [],
       "decorators": [
         "dataclass(frozen=True, slots=True)"
@@ -90149,7 +90179,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 23,
+      "line": 34,
       "methods": [
         "__post_init__",
         "specification_digest"
@@ -90179,7 +90209,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 58,
+      "line": 69,
       "methods": [
         "identity_digest"
       ],
@@ -90202,7 +90232,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 90,
+      "line": 101,
       "methods": [],
       "module": "noetrium_platform.infrastructure.lifecycle.python.api.contracts",
       "name": "EnvironmentCommandResult",
@@ -90221,7 +90251,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 98,
+      "line": 109,
       "methods": [],
       "module": "noetrium_platform.infrastructure.lifecycle.python.api.contracts",
       "name": "InstalledPythonPackage",
@@ -90242,7 +90272,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 104,
+      "line": 115,
       "methods": [],
       "module": "noetrium_platform.infrastructure.lifecycle.python.api.contracts",
       "name": "PythonEnvironmentCloneResult",
@@ -90549,7 +90579,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 24,
+      "line": 25,
       "methods": [
         "__init__",
         "_path",
@@ -145299,7 +145329,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 622,
+      "line": 626,
       "methods": [
         "__init__",
         "run"
@@ -145316,7 +145346,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 829,
+      "line": 833,
       "methods": [
         "__init__",
         "wait"
