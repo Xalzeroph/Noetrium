@@ -10,9 +10,18 @@ from .fleet import ModelFleetRuntime
 from .launch_materializer import ModelLaunchMaterializer
 from .resources import ModelResourceView
 from .templates import sglang_deployment, vllm_deployment
+from .vllm_resources import (
+    VllmResourceIntent,
+    parse_vllm_resource_intent,
+    reconcile_vllm_compute_requirement,
+    validate_vllm_admission_capacity,
+)
 
 __all__ = [
     "AppliedModelDeploymentStore", "DurableModelAutoRecoveryAuthority", "ModelAutoRecoveryPolicy", "ModelAutoRecoveryState", "FileModelControllerStateStore", "ModelDesiredStateController",
     "ModelDeploymentCatalog", "ModelDeploymentLogReader", "ModelDeploymentRegistry", "ModelDeploymentRuntime",
-    "ModelFleetRuntime", "ModelLaunchMaterializer", "ModelResourceView", "sglang_deployment", "vllm_deployment",
+    "ModelFleetRuntime", "ModelLaunchMaterializer", "ModelResourceView",
+    "VllmResourceIntent", "parse_vllm_resource_intent",
+    "reconcile_vllm_compute_requirement", "validate_vllm_admission_capacity",
+    "sglang_deployment", "vllm_deployment",
 ]
