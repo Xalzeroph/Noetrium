@@ -496,7 +496,13 @@ class InMemoryEndpointAllocator(EndpointAllocationPort):
         request_digest = request.digest()
         existing = self._reconcile_existing_allocation(request.allocation_id)
         if existing is not None:
-            return self._resolve_existing(request, request_digest, existing)
+            if existing.request_digest != request_digest:
+                raise EndpointAllocationConflict(request.allocation_id)
+            if existing.state.is_live:
+                return existing
+            raise EndpointAllocationConflict(
+                f"endpoint allocation was already released: {request.allocation_id}"
+            )
 
         with self._lock:
             quarantined_resources = {
