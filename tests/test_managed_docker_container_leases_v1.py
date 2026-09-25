@@ -26,6 +26,7 @@ from noetrium_platform.infrastructure.resources.lease.api import (
 )
 from noetrium_platform.infrastructure.resources.lease.runtime import (
     InMemoryResourceLeaseRegistry,
+    ManualLeaseClock,
 )
 
 
@@ -195,21 +196,23 @@ def test_managed_docker_release_ignores_reused_name_when_exact_generation_was_re
 
 
 def test_managed_docker_crash_expiry_removes_orphan_on_reconcile() -> None:
-    resources = InMemoryResourceLeaseRegistry()
+    clock = ManualLeaseClock(
+        elapsed_seconds=1.0,
+        wall_epoch_seconds=100.0,
+    )
+    resources = InMemoryResourceLeaseRegistry(clock=clock)
     runtime = FakeDockerRuntime()
     authority = _authority(resources, runtime)
     handle = _reserve(authority)
     observed = runtime.start(handle)
     assert handle.lease.expires_at_epoch_s is not None
 
-    report = authority.reconcile(now=handle.lease.expires_at_epoch_s + 1.0)
+    clock.advance(1.0)
+    report = authority.reconcile()
 
     assert report.removed_container_ids == (observed.container_id,)
     assert runtime.rows == {}
-    assert resources.get(
-        handle.lease.lease_id,
-        now=handle.lease.expires_at_epoch_s + 1.0,
-    ).state is LeaseState.EXPIRED
+    assert resources.get(handle.lease.lease_id).state is LeaseState.EXPIRED
 
 
 def test_managed_docker_restart_quarantines_old_generation_until_exclusive_recovery() -> None:
@@ -246,13 +249,19 @@ def test_managed_docker_restart_quarantines_old_generation_until_exclusive_recov
 
 
 def test_managed_docker_expired_generation_can_be_replaced_with_higher_fence() -> None:
-    resources = InMemoryResourceLeaseRegistry()
+    clock = ManualLeaseClock(
+        elapsed_seconds=1.0,
+        wall_epoch_seconds=100.0,
+    )
+    resources = InMemoryResourceLeaseRegistry(clock=clock)
     runtime = FakeDockerRuntime()
     authority = _authority(resources, runtime)
     first = _reserve(authority)
     old = runtime.start(first)
     assert first.lease.expires_at_epoch_s is not None
-    authority.reconcile(now=first.lease.expires_at_epoch_s + 1.0)
+
+    clock.advance(1.0)
+    authority.reconcile()
     assert runtime.inspect(old.container_id) is None
 
     second = _reserve(authority)
