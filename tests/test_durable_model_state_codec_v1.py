@@ -78,6 +78,8 @@ def _process() -> ServiceProcessIdentity:
         "pid:4321:start:17",
         4321,
         4321,
+        anchor_pid=4300,
+        anchor_start_identity="pid:4300:start:11",
     )
 
 
