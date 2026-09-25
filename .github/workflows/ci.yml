@@ -86,6 +86,9 @@ jobs:
             tests/test_shared_storage_pressure_admission_v1.py \
             tests/test_shared_network_pressure_admission_v1.py \
             tests/test_compute_host_runtime_pressure_v1.py \
+            tests/test_vllm_resource_intent_v1.py \
+            tests/test_model_replica_pool_auto_placement_v1.py \
+            tests/test_capacity_v20.py \
             tests/test_research_graph_scheduler_durable_v1.py \
             tests/test_research_graph_admission_claim_v1.py \
             tests/test_research_graph_state_batch_v1.py \
