@@ -361,7 +361,7 @@ def _required_gpu_memory_bytes(
         0
         if requirement.required_gpu_memory_fraction is None
         else math.ceil(
-            max(gpu.memory_bytes, runtime_total_bytes)
+            min(gpu.schedulable_memory_bytes, runtime_total_bytes)
             * requirement.required_gpu_memory_fraction
         )
     )
@@ -407,7 +407,7 @@ def _runtime_rank(
         1 if process_count or process_visibility_unknown else 0,
         device.utilization_percent,
         free_bytes - required_free_bytes,
-        gpu.memory_bytes - requirement.minimum_gpu_memory_bytes,
+        gpu.schedulable_memory_bytes - requirement.minimum_gpu_memory_bytes,
         gpu.gpu_id,
     )
 
@@ -433,7 +433,7 @@ def _eligible_gpus(
                 continue
         elif exclusive_count:
             continue
-        if gpu.memory_bytes < requirement.minimum_gpu_memory_bytes:
+        if gpu.schedulable_memory_bytes < requirement.minimum_gpu_memory_bytes:
             continue
         rank = _runtime_rank(
             gpu,
@@ -533,7 +533,7 @@ def _placement_score(
         remaining = eligible[requirement.gpu_count :]
         score = (
             shared_count, utilization, runtime_rank, free_excess, gpu_excess, len(remaining),
-            sum(gpu.memory_bytes for _rank, gpu in remaining),
+            sum(gpu.schedulable_memory_bytes for _rank, gpu in remaining),
             cpu_after / host.cpu_cores + memory_after / host.memory_bytes,
             cpu_after, memory_after, host.host_id,
         )
