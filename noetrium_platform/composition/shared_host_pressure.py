@@ -606,9 +606,13 @@ class ResourceCompetitionAdmissionGate(ExecutionAdmissionPort):
         self._reserved_memory_bytes += demand.memory_bytes_per_permit * permit_count
         self._reserved_pids += demand.pids_per_permit * permit_count
         self._reserved_fds += demand.fds_per_permit * permit_count
-        storage_key = self._storage_key(demand, storage_status)
         storage_bytes = demand.storage_bytes_per_permit * permit_count
         storage_inodes = demand.storage_inodes_per_permit * permit_count
+        storage_key = (
+            "*"
+            if storage_bytes <= 0 and storage_inodes <= 0
+            else self._storage_key(demand, storage_status)
+        )
         if storage_bytes:
             self._reserved_storage_bytes[storage_key] = (
                 self._reserved_storage_bytes.get(storage_key, 0)
