@@ -95,11 +95,63 @@ def _gate(
     return gate
 
 
-def test_cpu_residual_capacity_rejects_only_new_work() -> None:
-    observer = _MutableHostObserver(_status(load=8.0))
+def test_cpu_load_does_not_force_yield() -> None:
+    observer = _MutableHostObserver(_status(load=80.0))
     gate = _gate(observer, mode=AdmissionMode.REJECT)
 
-    with pytest.raises(AdmissionRejected, match="cpu-residual-capacity"):
+    lease = gate.acquire(
+        "g",
+        ExecutionLaneKind.CPU,
+        deadline=None,
+        cancellation=None,
+    )
+    lease.release()
+
+
+def test_default_policy_keeps_competing_at_soft_pressure_saturation() -> None:
+    admission = build_execution_admission(
+        budget=AdmissionBudget(max_total_in_flight=8),
+        scheduling=build_admission_scheduling_policy(priority_aging_seconds=0.01),
+    )
+    gate = SharedHostPressureAdmissionGate(
+        admission,
+        _MutableHostObserver(
+            _status(
+                load=80.0,
+                cpu_pressure=100.0,
+                memory_pressure=100.0,
+                io_pressure=100.0,
+            )
+        ),
+        policy=SharedHostPressurePolicy(),
+    )
+    gate.register_group(
+        "aggressive",
+        identity=AdmissionIdentity(),
+        intent=AdmissionIntent(mode=AdmissionMode.REJECT),
+    )
+
+    cpu = gate.acquire(
+        "aggressive",
+        ExecutionLaneKind.CPU,
+        deadline=None,
+        cancellation=None,
+    )
+    cpu.release()
+    io = gate.acquire(
+        "aggressive",
+        ExecutionLaneKind.BLOCKING_IO,
+        deadline=None,
+        cancellation=None,
+    )
+    io.release()
+
+
+def test_hard_memory_headroom_still_blocks_expansion() -> None:
+    observer = _MutableHostObserver(_status(memory_bytes=128 * 1024**2))
+    gate = _gate(observer, mode=AdmissionMode.REJECT)
+
+    with pytest.raises(AdmissionRejected, match="memory-headroom"):
         gate.acquire(
             "g",
             ExecutionLaneKind.CPU,
