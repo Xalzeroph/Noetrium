@@ -68,6 +68,60 @@ def test_scheduler_prefers_lower_external_pressure() -> None:
     assert allocation.host_id == "node-b"
 
 
+def test_default_runtime_policy_keeps_competing_at_full_cpu_load() -> None:
+    scheduler = in_memory_compute_scheduler(
+        _inventory(),
+        host_runtime_observer=_HostObserver(
+            _status("node-a", load=16.0, memory_gib=40),
+            _status("node-b", load=16.0, memory_gib=40),
+        ),
+    )
+    allocation = scheduler.allocate(
+        "aggressive-cpu",
+        _scope(),
+        ComputeRequirement(
+            cpu_cores=8,
+            memory_bytes=1024,
+            require_host_runtime=True,
+        ),
+    )
+    assert allocation.cpu_cores == 8
+
+
+def test_explicit_cpu_load_ceiling_remains_enforceable() -> None:
+    scheduler = in_memory_compute_scheduler(
+        _inventory(),
+        host_runtime_observer=_HostObserver(
+            _status("node-a", load=12.0, memory_gib=40),
+            _status("node-b", load=12.0, memory_gib=40),
+        ),
+    )
+    requirement = ComputeRequirement(
+        cpu_cores=2,
+        memory_bytes=1024,
+        require_host_runtime=True,
+        max_cpu_load_ratio=0.5,
+    )
+    assert scheduler.candidates(requirement, scope=_scope()) == ()
+
+
+def test_explicit_cpu_headroom_remains_enforceable() -> None:
+    scheduler = in_memory_compute_scheduler(
+        _inventory(),
+        host_runtime_observer=_HostObserver(
+            _status("node-a", load=14.0, memory_gib=40),
+            _status("node-b", load=14.0, memory_gib=40),
+        ),
+    )
+    requirement = ComputeRequirement(
+        cpu_cores=1,
+        memory_bytes=1024,
+        require_host_runtime=True,
+        cpu_headroom_cores=2,
+    )
+    assert scheduler.candidates(requirement, scope=_scope()) == ()
+
+
 def test_runtime_memory_headroom_blocks_unsafe_placement() -> None:
     scheduler = in_memory_compute_scheduler(
         _inventory(),
