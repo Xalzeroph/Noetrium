@@ -37,6 +37,8 @@ class LeaseClockReading:
                 or any(ch not in "0123456789abcdef" for ch in value)
             ):
                 raise ValueError(f"lease clock {name} must be lowercase sha256")
+        if type(self.elapsed_seconds) not in (int, float):
+            raise TypeError("lease clock elapsed_seconds must be int or float")
         if (
             not math.isfinite(float(self.elapsed_seconds))
             or self.elapsed_seconds < 0
