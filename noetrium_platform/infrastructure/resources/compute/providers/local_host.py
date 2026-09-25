@@ -5,6 +5,7 @@ import os
 from pathlib import Path
 import platform
 import re
+from time import time
 try:
     import resource
 except ImportError:  # pragma: no cover - non-POSIX import surface
@@ -186,7 +187,7 @@ class LocalHostRuntimeObserver:
         except (AttributeError, OSError):
             load = math.nan
         if cpu is None or memory is None or not math.isfinite(load) or load < 0:
-            return HostRuntimeSnapshot(False, detail="local-host-runtime-facts-unavailable")
+            return HostRuntimeSnapshot(False, detail="local-host-runtime-facts-unavailable", observed_at_epoch_s=time())
         return HostRuntimeSnapshot(
             True,
             hosts=(HostRuntimeStatus(
@@ -207,6 +208,7 @@ class LocalHostRuntimeObserver:
                 available_pids=self._available_pids(),
                 available_fds=self._available_fds(),
             ),),
+            observed_at_epoch_s=time(),
         )
 
 
