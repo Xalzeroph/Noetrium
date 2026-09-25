@@ -26,8 +26,8 @@ from noetrium_platform.foundation.kernel.concurrency.composition import build_co
 from noetrium_platform.infrastructure.resources.compute.api import HostRuntimeObserverPort
 
 from .shared_host_pressure import (
-    SharedHostPressureAdmissionGate,
-    SharedHostPressurePolicy,
+    ResourceCompetitionAdmissionGate,
+    ResourceCompetitionPolicy,
     SharedNetworkPressureObserverPort,
     SharedStoragePressureObserverPort,
 )
@@ -184,7 +184,7 @@ def build_execution_concurrency_runtime(
     host_runtime_observer: HostRuntimeObserverPort | None = None,
     storage_pressure_observer: SharedStoragePressureObserverPort | None = None,
     network_pressure_observer: SharedNetworkPressureObserverPort | None = None,
-    shared_host_pressure_policy: SharedHostPressurePolicy | None = None,
+    resource_competition_policy: ResourceCompetitionPolicy | None = None,
     blocking_io_thread_name_prefix: str = "platform-blocking-io",
     timer_name: str = "platform-timer",
 ) -> ExecutionConcurrencyAuthorities:
@@ -201,18 +201,18 @@ def build_execution_concurrency_runtime(
         budget=resolved_admission,
         scheduling=scheduling,
     )
-    if shared_host_pressure_policy is not None and host_runtime_observer is None:
+    if resource_competition_policy is not None and host_runtime_observer is None:
         raise ValueError(
-            "shared-host pressure policy requires a host runtime observer"
+            "resource competition policy requires a host runtime observer"
         )
     admission: ExecutionAdmissionPort = base_admission
     if host_runtime_observer is not None:
-        admission = SharedHostPressureAdmissionGate(
+        admission = ResourceCompetitionAdmissionGate(
             base_admission,
             host_runtime_observer,
             storage_observer=storage_pressure_observer,
             network_observer=network_pressure_observer,
-            policy=shared_host_pressure_policy or SharedHostPressurePolicy(),
+            policy=resource_competition_policy or ResourceCompetitionPolicy(),
         )
     concurrency = build_structured_concurrency_runtime(
         budget=resolved_concurrency,
