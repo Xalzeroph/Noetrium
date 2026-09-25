@@ -310,6 +310,136 @@ class ModelReplicaPoolLease:
         return False
 
 
+class _PendingModelReplicaCleanup:
+    """Retryable owner for a failed replica-pool construction generation."""
+
+    def __init__(
+        self,
+        *,
+        cleanup_id: str,
+        specs: tuple[ModelDeploymentSpec, ...],
+        compute_rows: tuple[ComputeAllocation, ...],
+        endpoint_rows: tuple[EndpointAllocation, ...],
+        deployment_runtime: ModelDeploymentRuntimePort,
+        compute_scheduler: ComputeSchedulerPort,
+        endpoint_allocations: EndpointAllocationPort,
+        compute_guard,
+        endpoint_guard,
+    ) -> None:
+        self.cleanup_id = cleanup_id
+        self._specs = specs
+        self._compute_rows = compute_rows
+        self._endpoint_rows = endpoint_rows
+        self._deployment_runtime = deployment_runtime
+        self._compute_scheduler = compute_scheduler
+        self._endpoint_allocations = endpoint_allocations
+        self._compute_guard = compute_guard
+        self._endpoint_guard = endpoint_guard
+        self._removed_deployment_ids: set[str] = set()
+        self._endpoint_guard_closed = endpoint_guard is None
+        self._compute_guard_closed = compute_guard is None
+        self._released_endpoint_ids: set[str] = set()
+        self._released_compute_ids: set[str] = set()
+        self._closed = False
+        self._lock = RLock()
+
+    @property
+    def closed(self) -> bool:
+        with self._lock:
+            return self._closed
+
+    def close(self) -> None:
+        with self._lock:
+            if self._closed:
+                return
+            errors: list[BaseException] = []
+
+            for spec in reversed(self._specs):
+                if spec.deployment_id in self._removed_deployment_ids:
+                    continue
+                try:
+                    generation = self._deployment_runtime.generation(
+                        spec.deployment_id
+                    )
+                    if generation.desired_spec_digest != canonical_digest(spec):
+                        raise RuntimeError(
+                            "model replica cleanup lost desired generation authority: "
+                            f"{spec.deployment_id}"
+                        )
+                    self._deployment_runtime.remove_deployment(generation)
+                except KeyError:
+                    # No desired/applied generation remains: physical service
+                    # ownership is already converged for this identity.
+                    self._removed_deployment_ids.add(spec.deployment_id)
+                except BaseException as exc:
+                    errors.append(exc)
+                else:
+                    self._removed_deployment_ids.add(spec.deployment_id)
+
+            deployments_removed = (
+                len(self._removed_deployment_ids) == len(self._specs)
+            )
+            if not deployments_removed:
+                raise ExceptionGroup(
+                    "pending model replica cleanup did not stop all deployments",
+                    errors,
+                )
+
+            if not self._endpoint_guard_closed:
+                try:
+                    self._endpoint_guard.close()
+                except BaseException as exc:
+                    errors.append(exc)
+                else:
+                    self._endpoint_guard_closed = True
+            if not self._compute_guard_closed:
+                try:
+                    self._compute_guard.close()
+                except BaseException as exc:
+                    errors.append(exc)
+                else:
+                    self._compute_guard_closed = True
+
+            if self._endpoint_guard_closed:
+                for endpoint in reversed(self._endpoint_rows):
+                    if endpoint.allocation_id in self._released_endpoint_ids:
+                        continue
+                    try:
+                        self._endpoint_allocations.release(endpoint)
+                    except BaseException as exc:
+                        errors.append(exc)
+                    else:
+                        self._released_endpoint_ids.add(endpoint.allocation_id)
+
+            if self._compute_guard_closed:
+                for compute in reversed(self._compute_rows):
+                    if compute.allocation_id in self._released_compute_ids:
+                        continue
+                    try:
+                        self._compute_scheduler.release(compute)
+                    except BaseException as exc:
+                        errors.append(exc)
+                    else:
+                        self._released_compute_ids.add(compute.allocation_id)
+
+            if errors:
+                raise ExceptionGroup(
+                    "pending model replica cleanup failed",
+                    errors,
+                )
+
+            self._closed = (
+                self._endpoint_guard_closed
+                and self._compute_guard_closed
+                and len(self._released_endpoint_ids) == len(self._endpoint_rows)
+                and len(self._released_compute_ids) == len(self._compute_rows)
+            )
+            if not self._closed:
+                raise RuntimeError(
+                    "pending model replica cleanup did not converge"
+                )
+
+
 class LocalModelReplicaPoolRuntime:
     """Automatically place, expose, start and lease one local model fleet."""
 
@@ -333,6 +463,7 @@ class LocalModelReplicaPoolRuntime:
         self._endpoint_lease_guards = endpoint_lease_guards
         self._lifecycle_lock = RLock()
         self._active_leases: dict[str, ModelReplicaPoolLease] = {}
+        self._pending_cleanups: dict[str, _PendingModelReplicaCleanup] = {}
         self._closing = False
         self._closed = False
 
@@ -340,6 +471,26 @@ class LocalModelReplicaPoolRuntime:
     def active_lease_count(self) -> int:
         with self._lifecycle_lock:
             return len(self._active_leases)
+
+    @property
+    def pending_cleanup_count(self) -> int:
+        with self._lifecycle_lock:
+            return len(self._pending_cleanups)
+
+    def _retry_pending_cleanups_locked(self) -> None:
+        errors: list[BaseException] = []
+        for cleanup_id, cleanup in tuple(self._pending_cleanups.items()):
+            try:
+                cleanup.close()
+            except BaseException as exc:
+                errors.append(exc)
+            else:
+                self._pending_cleanups.pop(cleanup_id, None)
+        if errors:
+            raise ExceptionGroup(
+                "model replica pool pending cleanup failed",
+                errors,
+            )
 
     def _lease_closed(self, lease: ModelReplicaPoolLease) -> None:
         with self._lifecycle_lock:
@@ -359,14 +510,18 @@ class LocalModelReplicaPoolRuntime:
                     lease.close()
                 except BaseException as exc:
                     errors.append(exc)
+            try:
+                self._retry_pending_cleanups_locked()
+            except BaseException as exc:
+                errors.append(exc)
             if errors:
                 raise ExceptionGroup(
                     "model replica pool runtime cleanup failed",
                     errors,
                 )
-            if self._active_leases:
+            if self._active_leases or self._pending_cleanups:
                 raise RuntimeError(
-                    "model replica pool runtime cleanup did not retire all leases"
+                    "model replica pool runtime cleanup did not retire all ownership"
                 )
             self._closed = True
 
@@ -442,6 +597,7 @@ class LocalModelReplicaPoolRuntime:
                 raise RuntimeError("model replica pool runtime is closed")
             if self._closing:
                 raise RuntimeError("model replica pool runtime is closing")
+            self._retry_pending_cleanups_locked()
             return self._ensure_locked(request)
 
     def _ensure_locked(
@@ -582,59 +738,25 @@ class LocalModelReplicaPoolRuntime:
             self._active_leases[report.report_digest] = lease
             return lease
         except BaseException as primary:
-            cleanup_errors: list[BaseException] = []
-            deployments_removed = True
-            for spec in reversed(specs):
-                try:
-                    generation = self._deployment_runtime.generation(spec.deployment_id)
-                    if generation.desired_spec_digest != canonical_digest(spec):
-                        raise RuntimeError(
-                            "model replica cleanup lost desired generation authority: "
-                            f"{spec.deployment_id}"
-                        )
-                    self._deployment_runtime.remove_deployment(generation)
-                except KeyError:
-                    # Missing desired + applied identity is already converged.
-                    continue
-                except BaseException as exc:
-                    deployments_removed = False
-                    cleanup_errors.append(exc)
-
-            endpoint_guard_closed = endpoint_guard is None
-            compute_guard_closed = compute_guard is None
-            if deployments_removed and endpoint_guard is not None:
-                try:
-                    endpoint_guard.close()
-                except BaseException as exc:
-                    cleanup_errors.append(exc)
-                else:
-                    endpoint_guard_closed = True
-            if deployments_removed and compute_guard is not None:
-                try:
-                    compute_guard.close()
-                except BaseException as exc:
-                    cleanup_errors.append(exc)
-                else:
-                    compute_guard_closed = True
-
-            if deployments_removed and endpoint_guard_closed:
-                for endpoint in reversed(endpoint_rows):
-                    try:
-                        self._endpoint_allocations.release(endpoint)
-                    except BaseException as exc:
-                        cleanup_errors.append(exc)
-            if deployments_removed and compute_guard_closed:
-                for compute in reversed(compute_rows):
-                    try:
-                        self._compute_scheduler.release(compute)
-                    except BaseException as exc:
-                        cleanup_errors.append(exc)
-
-            if cleanup_errors:
+            cleanup = _PendingModelReplicaCleanup(
+                cleanup_id=placement_generation_id,
+                specs=tuple(specs),
+                compute_rows=tuple(compute_rows),
+                endpoint_rows=tuple(endpoint_rows),
+                deployment_runtime=self._deployment_runtime,
+                compute_scheduler=self._compute_scheduler,
+                endpoint_allocations=self._endpoint_allocations,
+                compute_guard=compute_guard,
+                endpoint_guard=endpoint_guard,
+            )
+            try:
+                cleanup.close()
+            except BaseException as cleanup_error:
+                self._pending_cleanups[placement_generation_id] = cleanup
                 raise ExceptionGroup(
-                    "model replica pool creation failed with cleanup errors",
-                    [primary, *cleanup_errors],
-                )
+                    "model replica pool creation failed with pending cleanup",
+                    [primary, cleanup_error],
+                ) from primary
             raise
 
 
