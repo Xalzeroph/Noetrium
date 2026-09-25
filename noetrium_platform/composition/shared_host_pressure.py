@@ -55,7 +55,7 @@ class LocalSharedStoragePressureObserver:
     """Observe residual capacity across unique filesystems backing managed roots."""
 
     def __init__(self, paths: tuple[Path, ...]) -> None:
-        if not paths or any(type(path) is not Path for path in paths):
+        if not paths or any(not isinstance(path, Path) for path in paths):
             raise ValueError("shared storage observer requires managed Path roots")
         self._paths = paths
 
