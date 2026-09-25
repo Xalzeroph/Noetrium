@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import shutil
-import stat
 from enum import StrEnum
 from pathlib import Path
 
@@ -17,6 +16,11 @@ from noetrium_platform.foundation.kernel.kernel.durability.durable_file import (
 )
 from noetrium_platform.foundation.kernel.kernel.durability.file_lock import (
     InterprocessFileLock,
+)
+from noetrium_platform.foundation.kernel.kernel.durability import (
+    FilesystemCarrierGeneration,
+    FilesystemCarrierKind,
+    capture_filesystem_carrier_generation,
 )
 from noetrium_platform.infrastructure.resources.directory.api import (
     DirectoryLayoutPort,
@@ -35,14 +39,12 @@ from noetrium_platform.foundation.governance.api import (
 
 _WORKSPACE_SCHEMA = "resource.workspace-allocation.v2"
 _WORKSPACE_FIELDS = {"workspace_id", "scope", "category", "owner", "note"}
-_WORKSPACE_RETIREMENT_SCHEMA = "resource.workspace-retirement.v3"
+_WORKSPACE_RETIREMENT_SCHEMA = "resource.workspace-retirement.v4"
 _WORKSPACE_RETIREMENT_FIELDS = {
     "workspace_identity_digest",
     "workspace_metadata_digest",
     "gc_proof_digest",
-    "carrier_device",
-    "carrier_inode",
-    "carrier_change_time_ns",
+    "carrier_generation",
     "phase",
 }
 
@@ -50,6 +52,7 @@ _WORKSPACE_RETIREMENT_FIELDS = {
 class _WorkspaceRetirementPhase(StrEnum):
     RETIRED = "retired"
     QUARANTINED = "quarantined"
+    PURGING = "purging"
     PURGED = "purged"
 
 
@@ -381,20 +384,16 @@ class LocalWorkspaceManager:
         path: Path,
         *,
         label: str,
-    ) -> tuple[int, int, int]:
+    ) -> FilesystemCarrierGeneration:
         try:
-            identity = path.stat(follow_symlinks=False)
-        except OSError as exc:
+            return capture_filesystem_carrier_generation(
+                path,
+                expected_kind=FilesystemCarrierKind.DIRECTORY,
+            )
+        except (OSError, RuntimeError) as exc:
             raise RuntimeError(
                 f"{label} filesystem generation cannot be read"
             ) from exc
-        if not stat.S_ISDIR(identity.st_mode):
-            raise RuntimeError(f"{label} is not an owned directory: {path}")
-        return (
-            identity.st_dev,
-            identity.st_ino,
-            identity.st_ctime_ns,
-        )
 
     def _decode_retirement(self, path: Path) -> dict[str, object]:
         try:
@@ -427,22 +426,16 @@ class LocalWorkspaceManager:
             raise WorkspaceMetadataError(
                 WorkspaceMetadataFailureCode.PAYLOAD_SHAPE
             )
-        generation_fields = (
-            "carrier_device",
-            "carrier_inode",
-            "carrier_change_time_ns",
-        )
-        if any(
-            type(payload.get(field_name)) is not int
-            or int(payload[field_name]) < 0
-            for field_name in generation_fields
-        ):
-            raise WorkspaceMetadataError(
-                WorkspaceMetadataFailureCode.PAYLOAD_SHAPE
-            )
         try:
+            carrier_generation = FilesystemCarrierGeneration.from_data(
+                payload["carrier_generation"]
+            )
+            if carrier_generation.kind is not FilesystemCarrierKind.DIRECTORY:
+                raise ValueError(
+                    "workspace carrier generation must be a directory"
+                )
             phase = _WorkspaceRetirementPhase(str(payload["phase"]))
-        except (KeyError, ValueError) as exc:
+        except (KeyError, TypeError, ValueError) as exc:
             raise WorkspaceMetadataError(
                 WorkspaceMetadataFailureCode.PAYLOAD_SHAPE
             ) from exc
@@ -454,9 +447,7 @@ class LocalWorkspaceManager:
                 payload["workspace_metadata_digest"]
             ),
             "gc_proof_digest": str(payload["gc_proof_digest"]),
-            "carrier_device": int(payload["carrier_device"]),
-            "carrier_inode": int(payload["carrier_inode"]),
-            "carrier_change_time_ns": int(payload["carrier_change_time_ns"]),
+            "carrier_generation": carrier_generation,
             "phase": phase.value,
         }
 
@@ -466,16 +457,18 @@ class LocalWorkspaceManager:
         workspace_identity_digest: str,
         workspace_metadata_digest: str,
         gc_proof_digest: str,
-        carrier_generation: tuple[int, int, int],
+        carrier_generation: FilesystemCarrierGeneration,
         phase: _WorkspaceRetirementPhase,
     ) -> dict[str, object]:
+        if carrier_generation.kind is not FilesystemCarrierKind.DIRECTORY:
+            raise TypeError(
+                "workspace retirement carrier must be a directory"
+            )
         return {
             "workspace_identity_digest": workspace_identity_digest,
             "workspace_metadata_digest": workspace_metadata_digest,
             "gc_proof_digest": gc_proof_digest,
-            "carrier_device": carrier_generation[0],
-            "carrier_inode": carrier_generation[1],
-            "carrier_change_time_ns": carrier_generation[2],
+            "carrier_generation": carrier_generation.to_data(),
             "phase": phase.value,
         }
 
@@ -486,7 +479,7 @@ class LocalWorkspaceManager:
         workspace_identity_digest: str,
         workspace_metadata_digest: str,
         gc_proof_digest: str,
-        carrier_generation: tuple[int, int, int],
+        carrier_generation: FilesystemCarrierGeneration,
         phase: _WorkspaceRetirementPhase,
     ) -> None:
         atomic_replace_bytes(
@@ -549,22 +542,19 @@ class LocalWorkspaceManager:
         scope: ScopeIdentity,
         category: str,
         expected_metadata_digest: str,
-        expected_device: int,
-        expected_inode: int,
-        expected_change_time_ns: int | None = None,
-    ) -> tuple[int, int, int]:
+        expected_generation: FilesystemCarrierGeneration,
+        same_object_only: bool = False,
+    ) -> FilesystemCarrierGeneration:
         generation = self._directory_generation(
             quarantine,
             label="workspace quarantine",
         )
-        if (
-            generation[0] != expected_device
-            or generation[1] != expected_inode
-            or (
-                expected_change_time_ns is not None
-                and generation[2] != expected_change_time_ns
-            )
-        ):
+        matches = (
+            expected_generation.same_object(generation)
+            if same_object_only
+            else expected_generation.same_generation(generation)
+        )
+        if not matches:
             raise RuntimeError(
                 "workspace quarantine filesystem generation changed across retry"
             )
@@ -606,15 +596,15 @@ class LocalWorkspaceManager:
     def _purge_quarantine(
         quarantine: Path,
         *,
-        expected_generation: tuple[int, int, int],
+        expected_generation: FilesystemCarrierGeneration,
     ) -> None:
         generation = LocalWorkspaceManager._directory_generation(
             quarantine,
             label="workspace quarantine",
         )
-        if generation != expected_generation:
+        if not expected_generation.same_object(generation):
             raise RuntimeError(
-                "workspace quarantine filesystem generation changed before purge"
+                "workspace quarantine filesystem object changed during purge"
             )
         shutil.rmtree(quarantine)
         fsync_directory(quarantine.parent)
@@ -695,11 +685,14 @@ class LocalWorkspaceManager:
 
             phase = _WorkspaceRetirementPhase(str(retirement["phase"]))
             metadata_digest = str(retirement["workspace_metadata_digest"])
-            carrier_generation = (
-                int(retirement["carrier_device"]),
-                int(retirement["carrier_inode"]),
-                int(retirement["carrier_change_time_ns"]),
-            )
+            carrier_generation = retirement["carrier_generation"]
+            if not isinstance(
+                carrier_generation,
+                FilesystemCarrierGeneration,
+            ):
+                raise WorkspaceMetadataError(
+                    WorkspaceMetadataFailureCode.PAYLOAD_SHAPE
+                )
 
             if phase is _WorkspaceRetirementPhase.PURGED:
                 if quarantine.exists():
@@ -718,11 +711,6 @@ class LocalWorkspaceManager:
                         "workspace retirement split truth: live and quarantine both exist"
                     )
                 if quarantine.exists():
-                    # Rename committed before the phase publication became
-                    # durable. Device+inode survive a same-filesystem rename and
-                    # fence a replacement directory at the deterministic
-                    # quarantine path. ctime is intentionally refreshed because
-                    # rename itself may update it.
                     quarantine_generation = (
                         self._validate_quarantine_for_retirement(
                             quarantine,
@@ -730,8 +718,8 @@ class LocalWorkspaceManager:
                             scope=scope,
                             category=category,
                             expected_metadata_digest=metadata_digest,
-                            expected_device=carrier_generation[0],
-                            expected_inode=carrier_generation[1],
+                            expected_generation=carrier_generation,
+                            same_object_only=True,
                         )
                     )
                     self._publish_retirement(
@@ -756,7 +744,7 @@ class LocalWorkspaceManager:
                         path,
                         label="workspace carrier",
                     )
-                    if live_generation != carrier_generation:
+                    if not carrier_generation.same_generation(live_generation):
                         raise RuntimeError(
                             "workspace carrier filesystem generation changed "
                             "after durable retirement"
@@ -769,8 +757,8 @@ class LocalWorkspaceManager:
                             scope=scope,
                             category=category,
                             expected_metadata_digest=metadata_digest,
-                            expected_device=carrier_generation[0],
-                            expected_inode=carrier_generation[1],
+                            expected_generation=carrier_generation,
+                            same_object_only=True,
                         )
                     )
                     self._publish_retirement(
@@ -793,17 +781,34 @@ class LocalWorkspaceManager:
                     raise RuntimeError(
                         "quarantined workspace live path reappeared as unowned residue"
                     )
-                if quarantine.exists():
-                    self._validate_quarantine_for_retirement(
-                        quarantine,
-                        workspace_id=workspace_id,
-                        scope=scope,
-                        category=category,
-                        expected_metadata_digest=metadata_digest,
-                        expected_device=carrier_generation[0],
-                        expected_inode=carrier_generation[1],
-                        expected_change_time_ns=carrier_generation[2],
+                if not quarantine.exists():
+                    raise RuntimeError(
+                        "quarantined workspace disappeared before durable purge intent"
                     )
+                self._validate_quarantine_for_retirement(
+                    quarantine,
+                    workspace_id=workspace_id,
+                    scope=scope,
+                    category=category,
+                    expected_metadata_digest=metadata_digest,
+                    expected_generation=carrier_generation,
+                )
+                self._publish_retirement(
+                    retired,
+                    workspace_identity_digest=expected_identity,
+                    workspace_metadata_digest=metadata_digest,
+                    gc_proof_digest=gc.proof_digest,
+                    carrier_generation=carrier_generation,
+                    phase=_WorkspaceRetirementPhase.PURGING,
+                )
+                phase = _WorkspaceRetirementPhase.PURGING
+
+            if phase is _WorkspaceRetirementPhase.PURGING:
+                if path.exists():
+                    raise RuntimeError(
+                        "purging workspace live path reappeared as unowned residue"
+                    )
+                if quarantine.exists():
                     self._purge_quarantine(
                         quarantine,
                         expected_generation=carrier_generation,
