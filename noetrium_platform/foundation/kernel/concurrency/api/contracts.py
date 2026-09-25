@@ -1,8 +1,10 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from enum import StrEnum
+import math
 import os
+from pathlib import Path
 import time
 
 
@@ -40,6 +42,34 @@ class TaskState(StrEnum):
     CANCELLED = "cancelled"
 
 
+def _default_cpu_worker_count() -> int:
+    """Resolve process-visible CPU parallelism without a fixed worker ceiling."""
+
+    try:
+        affinity = len(os.sched_getaffinity(0))
+    except (AttributeError, OSError):
+        affinity = os.cpu_count() or 1
+    affinity = max(1, int(affinity))
+
+    # Respect cgroup-v2 CPU quota when present. Fractional quotas use ceil so
+    # the process pool can consume the full quota rather than strand capacity.
+    try:
+        fields = Path("/sys/fs/cgroup/cpu.max").read_text(
+            "utf-8", errors="replace"
+        ).strip().split()
+        if len(fields) == 2 and fields[0] != "max":
+            quota = int(fields[0])
+            period = int(fields[1])
+            if quota > 0 and period > 0:
+                affinity = min(
+                    affinity,
+                    max(1, math.ceil(quota / period)),
+                )
+    except (OSError, ValueError):
+        pass
+    return affinity
+
+
 class TaskCancelled(RuntimeError):
     """Raised by a cooperative task after its owning scope is cancelled."""
 
@@ -62,7 +92,7 @@ class ConcurrencyBudget:
 
     max_blocking_io_workers: int = 8
     max_serial_workers: int = 8
-    max_cpu_workers: int = max(1, min(8, os.cpu_count() or 1))
+    max_cpu_workers: int = field(default_factory=_default_cpu_worker_count)
     max_blocking_io_in_flight: int | None = None
     max_async_io_in_flight: int = 64
     max_cpu_in_flight: int | None = None
