@@ -140,16 +140,17 @@ def test_expiry_quarantines_endpoint_until_os_listener_converges(
     durable: bool,
 ) -> None:
     probe = _MutableProbe()
+    clock = _clock()
     if durable:
         allocator = AtomicEndpointAllocator(
             reservations=_sqlite_endpoint_store(
-                tmp_path / "endpoint-quarantine.sqlite"
+                tmp_path / "endpoint-quarantine.sqlite", clock=clock
             ),
             probe=probe,
             lease_ttl_seconds=0.05,
         )
     else:
-        resources = InMemoryResourceLeaseRegistry()
+        resources = InMemoryResourceLeaseRegistry(clock=clock)
         allocator = InMemoryEndpointAllocator(
             ownership=resources,
             leases=resources,
@@ -162,12 +163,13 @@ def test_expiry_quarantines_endpoint_until_os_listener_converges(
     expiry = first.lease_expires_at_epoch_s
     assert expiry is not None
 
+    clock.advance(1.0)
     probe.available = False
     with pytest.raises(
         EndpointPhysicalConvergencePending,
         match="physical convergence is not proven",
     ):
-        allocator.reconcile(now=expiry + 1.0)
+        allocator.reconcile()
 
     current = allocator.get(first.allocation_id)
     assert current.state.is_live
@@ -177,7 +179,7 @@ def test_expiry_quarantines_endpoint_until_os_listener_converges(
         allocator.allocate(_request("replacement"))
 
     probe.available = True
-    retired = allocator.reconcile(now=expiry + 2.0)
+    retired = allocator.reconcile()
     assert len(retired) == 1
     assert retired[0].allocation_id == first.allocation_id
     assert retired[0].state is EndpointAllocationState.RELEASED
@@ -193,16 +195,17 @@ def test_endpoint_orphan_probe_failure_retains_quarantined_generation(
     durable: bool,
 ) -> None:
     probe = _MutableProbe()
+    clock = _clock()
     if durable:
         allocator = AtomicEndpointAllocator(
             reservations=_sqlite_endpoint_store(
-                tmp_path / "endpoint-probe-unknown.sqlite"
+                tmp_path / "endpoint-probe-unknown.sqlite", clock=clock
             ),
             probe=probe,
             lease_ttl_seconds=0.05,
         )
     else:
-        resources = InMemoryResourceLeaseRegistry()
+        resources = InMemoryResourceLeaseRegistry(clock=clock)
         allocator = InMemoryEndpointAllocator(
             ownership=resources,
             leases=resources,
@@ -214,16 +217,17 @@ def test_endpoint_orphan_probe_failure_retains_quarantined_generation(
     first = allocator.confirm_bound(_binding_proof(first))
     expiry = first.lease_expires_at_epoch_s
     assert expiry is not None
+    clock.advance(1.0)
     probe.raise_error = True
 
     with pytest.raises(OSError, match="observation failure"):
-        allocator.reconcile(now=expiry + 1.0)
+        allocator.reconcile()
 
     assert allocator.get(first.allocation_id).state.is_live
     assert tuple(row.allocation_id for row in allocator.active()) == ("unknown",)
 
     probe.raise_error = False
-    assert allocator.reconcile(now=expiry + 2.0)[0].allocation_id == "unknown"
+    assert allocator.reconcile()[0].allocation_id == "unknown"
 
 
 @pytest.mark.parametrize("durable", (False, True))
@@ -263,16 +267,17 @@ def test_expired_unbound_reservation_retires_without_probe_authority(
     durable: bool,
 ) -> None:
     probe = _MutableProbe()
+    clock = _clock()
     if durable:
         allocator = AtomicEndpointAllocator(
             reservations=_sqlite_endpoint_store(
-                tmp_path / "endpoint-unbound-expiry.sqlite"
+                tmp_path / "endpoint-unbound-expiry.sqlite", clock=clock
             ),
             probe=probe,
             lease_ttl_seconds=0.05,
         )
     else:
-        resources = InMemoryResourceLeaseRegistry()
+        resources = InMemoryResourceLeaseRegistry(clock=clock)
         allocator = InMemoryEndpointAllocator(
             ownership=resources,
             leases=resources,
@@ -283,9 +288,10 @@ def test_expired_unbound_reservation_retires_without_probe_authority(
     reserved = allocator.allocate(_request("unbound-expiry"))
     expiry = reserved.lease_expires_at_epoch_s
     assert expiry is not None
+    clock.advance(1.0)
     probe.raise_error = True
 
-    retired = allocator.reconcile(now=expiry + 1.0)
+    retired = allocator.reconcile()
     assert tuple(row.allocation_id for row in retired) == ("unbound-expiry",)
     assert allocator.get("unbound-expiry").state is EndpointAllocationState.RELEASED
 
