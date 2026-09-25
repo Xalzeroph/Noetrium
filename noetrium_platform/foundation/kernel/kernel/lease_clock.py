@@ -211,6 +211,10 @@ class ManualLeaseClock(LeaseClockPort):
         host_seed: str = "host",
         boot_seed: str = "boot-1",
     ) -> None:
+        if type(host_seed) is not str or type(boot_seed) is not str:
+            raise TypeError("manual lease clock seeds must be str")
+        if not host_seed.strip() or not boot_seed.strip():
+            raise ValueError("manual lease clock seeds must be non-empty")
         self._host_seed = host_seed
         self._boot_seed = boot_seed
         self._elapsed = float(elapsed_seconds)
