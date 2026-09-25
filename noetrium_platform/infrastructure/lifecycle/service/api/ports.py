@@ -16,6 +16,28 @@ class ServiceReconcileObservation:
 
 
 @dataclass(frozen=True, slots=True)
+class ServiceQuiescenceOutcome:
+    contract_digest: str
+    quiescent: bool
+    summary: str
+    evidence_refs: tuple[str, ...] = ()
+
+    def __post_init__(self) -> None:
+        if (
+            type(self.contract_digest) is not str
+            or len(self.contract_digest) != 64
+            or any(ch not in "0123456789abcdef" for ch in self.contract_digest)
+        ):
+            raise ValueError(
+                "service quiescence contract digest must be canonical SHA-256"
+            )
+        if type(self.quiescent) is not bool:
+            raise TypeError("service quiescence flag must be bool")
+        if type(self.summary) is not str or not self.summary.strip():
+            raise ValueError("service quiescence summary is required")
+
+
+@dataclass(frozen=True, slots=True)
 class ServiceStartOutcome:
     contract_digest: str
     process: ServiceProcessIdentity
@@ -80,6 +102,14 @@ class ExactServiceRuntimePort(Protocol):
     """Cross-system semantic Service runtime ABI; no supervisor state escapes."""
 
     def reconcile_exact(self, contract: ServiceLaunchContract) -> ServiceReconcileObservation: ...
+    def inspect_quiescence_exact(
+        self,
+        contract: ServiceLaunchContract,
+    ) -> ServiceQuiescenceOutcome: ...
+    def quiesce_exact(
+        self,
+        contract: ServiceLaunchContract,
+    ) -> ServiceQuiescenceOutcome: ...
     def start_exact(self, contract: ServiceLaunchContract) -> ServiceStartOutcome: ...
     def verify_ready_exact(self, contract: ServiceLaunchContract) -> ServiceReadyObservation: ...
     def stop_exact(
@@ -126,6 +156,7 @@ __all__ = [
     "ServiceLaunchPreflightPort",
     "ServiceProcessLivenessPort",
     "ServiceReadinessProbePort",
+    "ServiceQuiescenceOutcome",
     "ServiceReadyObservation",
     "ServiceReconcileObservation",
     "ServiceRuntimeFactoryPort",
