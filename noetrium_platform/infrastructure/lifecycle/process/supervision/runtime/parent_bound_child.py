@@ -36,12 +36,13 @@ def _linux_prctl(option: int, value: int) -> None:
         raise OSError(error_number, f"prctl({option}) failed")
 
 
-def _linux_configure_guardian() -> None:
+def _linux_configure_guardian(*, survive_parent_exit: bool) -> None:
     if not sys.platform.startswith("linux"):
         return
-    # SIGUSR2 is guardian-private and becomes a tree-level SIGKILL rather than
-    # being inherited by the real child.
-    _linux_prctl(_PR_SET_PDEATHSIG, int(signal.SIGUSR2))
+    if not survive_parent_exit:
+        # SIGUSR2 is guardian-private and becomes a tree-level SIGKILL rather
+        # than being inherited by the real child.
+        _linux_prctl(_PR_SET_PDEATHSIG, int(signal.SIGUSR2))
     # This is the critical fork/daemon boundary: orphaned grandchildren are
     # reparented here rather than escaping to PID 1, even after setsid/double-fork.
     _linux_prctl(_PR_SET_CHILD_SUBREAPER, 1)
@@ -212,6 +213,7 @@ def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(add_help=False)
     parser.add_argument("--parent-pid", type=int, required=True)
     parser.add_argument("--child-pid-fd", type=int, default=None)
+    parser.add_argument("--survive-parent-exit", action="store_true")
     parser.add_argument("command", nargs=argparse.REMAINDER)
     ns = parser.parse_args(argv)
     command = list(ns.command)
@@ -226,8 +228,10 @@ def main(argv: list[str] | None = None) -> int:
     signal.signal(signal.SIGUSR1, _request_force)
     signal.signal(signal.SIGUSR2, _owner_died)
 
-    _linux_configure_guardian()
-    if os.getppid() != ns.parent_pid:
+    _linux_configure_guardian(
+        survive_parent_exit=bool(ns.survive_parent_exit),
+    )
+    if not ns.survive_parent_exit and os.getppid() != ns.parent_pid:
         _owner_died()
 
     global _child_group
@@ -247,7 +251,7 @@ def main(argv: list[str] | None = None) -> int:
 
     # Close the tiny race between child creation and publishing its group into
     # the owner-death handler.
-    if os.getppid() != ns.parent_pid:
+    if not ns.survive_parent_exit and os.getppid() != ns.parent_pid:
         _owner_died()
 
     guardian_pid = os.getpid()
@@ -284,7 +288,11 @@ def main(argv: list[str] | None = None) -> int:
             if code is not None:
                 return 125 if _owner_dead else _exit_code(int(code))
 
-        if os.getppid() != ns.parent_pid and not _owner_dead:
+        if (
+            not ns.survive_parent_exit
+            and os.getppid() != ns.parent_pid
+            and not _owner_dead
+        ):
             _owner_died()
         blocking_wait(0.05)
 
