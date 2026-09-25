@@ -3,7 +3,7 @@
   "architecture_complexity": {
     "authorities": 20,
     "contract_declarations": 184,
-    "import_edges": 5325,
+    "import_edges": 5336,
     "subsystems": 15,
     "top_level_systems": 16
   },
@@ -23,7 +23,7 @@
     "effective_limits": {
       "authorities": 31,
       "contract_declarations": 184,
-      "import_edges": 5325,
+      "import_edges": 5336,
       "subsystems": 15,
       "top_level_systems": 16
     },
@@ -627,7 +627,7 @@
       "seam_id": "completed"
     }
   ],
-  "import_edges": 5325,
+  "import_edges": 5336,
   "import_violations": [],
   "layer_violations": [],
   "operation_graph": [
@@ -873,10 +873,73 @@
     }
   ],
   "package_cycles": [],
-  "report_sha256": "9cd8fb0f1f8390366a025e7d8759583137f81894295d9c6765013f7b39e8896e",
-  "source_authority_violations": [],
-  "source_digest": "82f5a9192281806c13562a9e1d6807ec7d9e164f1d005832fac0ada9d77ed441",
-  "source_invariant_violations": [],
+  "report_sha256": "506d84892b4b4c82258066697355c695019b0f4b081190f1c4ea5397129f65a7",
+  "source_authority_violations": [
+    {
+      "allowed_modules": [
+        "noetrium_platform.foundation.kernel.kernel.durability.durable_file"
+      ],
+      "authority": "filesystem.direct_text_write",
+      "detail": "Path.write_text is a protected mutation primitive; authority belongs to noetrium_platform.foundation.kernel.kernel.durability.durable_file",
+      "line": 48,
+      "module": "noetrium_platform.composition.shared_host_pressure",
+      "path": "noetrium_platform/composition/shared_host_pressure.py",
+      "primitive": "Path.write_text"
+    },
+    {
+      "allowed_modules": [
+        "noetrium_platform.foundation.kernel.kernel.retry"
+      ],
+      "authority": "kernel.blocking_wait",
+      "detail": "time.sleep is a protected mutation primitive; authority belongs to noetrium_platform.foundation.kernel.kernel.retry",
+      "line": 532,
+      "module": "noetrium_platform.composition.shared_host_pressure",
+      "path": "noetrium_platform/composition/shared_host_pressure.py",
+      "primitive": "time.sleep"
+    },
+    {
+      "allowed_modules": [
+        "noetrium_platform.foundation.kernel.kernel.retry"
+      ],
+      "authority": "kernel.blocking_wait",
+      "detail": "time.sleep is a protected mutation primitive; authority belongs to noetrium_platform.foundation.kernel.kernel.retry",
+      "line": 127,
+      "module": "noetrium_platform.infrastructure.lifecycle.service.runtime.linux_spawn",
+      "path": "noetrium_platform/infrastructure/lifecycle/service/runtime/linux_spawn.py",
+      "primitive": "time.sleep"
+    },
+    {
+      "allowed_modules": [
+        "noetrium_platform.foundation.kernel.kernel.durability.durable_append"
+      ],
+      "authority": "filesystem.raw_fd_write",
+      "detail": "os.write is a protected mutation primitive; authority belongs to noetrium_platform.foundation.kernel.kernel.durability.durable_append",
+      "line": 50,
+      "module": "noetrium_platform.infrastructure.lifecycle.service.runtime.opportunistic_exec",
+      "path": "noetrium_platform/infrastructure/lifecycle/service/runtime/opportunistic_exec.py",
+      "primitive": "os.write"
+    },
+    {
+      "allowed_modules": [
+        "noetrium_platform.foundation.kernel.kernel.durability.durable_file"
+      ],
+      "authority": "filesystem.direct_text_write",
+      "detail": "Path.write_text is a protected mutation primitive; authority belongs to noetrium_platform.foundation.kernel.kernel.durability.durable_file",
+      "line": 33,
+      "module": "noetrium_platform.infrastructure.lifecycle.service.runtime.opportunistic_exec",
+      "path": "noetrium_platform/infrastructure/lifecycle/service/runtime/opportunistic_exec.py",
+      "primitive": "Path.write_text"
+    }
+  ],
+  "source_digest": "433da353e8f2f6bfe096ebdc8ace3373dc827b21d383bb1281f40c9cff1de586",
+  "source_invariant_violations": [
+    {
+      "detail": "direct SQLite rollback bypasses the canonical Platform durability authority; use abort_sqlite_writer() or rollback_sqlite_writer()",
+      "invariant": "sqlite_durability_authority",
+      "line": 1019,
+      "path": "noetrium_platform/infrastructure/resources/compute/runtime/scheduler.py"
+    }
+  ],
   "source_root": ".",
   "subsystem_graph": [
     {
@@ -1673,16 +1736,28 @@
       "score": 2498
     },
     {
-      "branches": 115,
+      "branches": 112,
       "classes": 5,
       "exception_handlers": 12,
-      "functions": 52,
+      "functions": 51,
       "imports": 16,
-      "max_function_lines": 87,
+      "max_function_lines": 112,
       "module": "noetrium_platform.infrastructure.resources.compute.runtime.scheduler",
       "path": "noetrium_platform/infrastructure/resources/compute/runtime/scheduler.py",
-      "physical_lines": 1263,
-      "score": 2425
+      "physical_lines": 1282,
+      "score": 2470
+    },
+    {
+      "branches": 106,
+      "classes": 9,
+      "exception_handlers": 13,
+      "functions": 59,
+      "imports": 13,
+      "max_function_lines": 141,
+      "module": "noetrium_platform.foundation.kernel.kernel.journal",
+      "path": "noetrium_platform/foundation/kernel/kernel/journal.py",
+      "physical_lines": 1183,
+      "score": 2382
     },
     {
       "branches": 98,
@@ -1745,18 +1820,6 @@
       "score": 2258
     },
     {
-      "branches": 98,
-      "classes": 9,
-      "exception_handlers": 11,
-      "functions": 59,
-      "imports": 13,
-      "max_function_lines": 100,
-      "module": "noetrium_platform.foundation.kernel.kernel.journal",
-      "path": "noetrium_platform/foundation/kernel/kernel/journal.py",
-      "physical_lines": 1091,
-      "score": 2124
-    },
-    {
       "branches": 97,
       "classes": 11,
       "exception_handlers": 2,
@@ -1779,6 +1842,18 @@
       "path": "noetrium_platform/research/execution/workflow/runtime/method_machine.py",
       "physical_lines": 986,
       "score": 2101
+    },
+    {
+      "branches": 88,
+      "classes": 2,
+      "exception_handlers": 12,
+      "functions": 32,
+      "imports": 9,
+      "max_function_lines": 224,
+      "module": "noetrium_platform.research.experimentation.lifecycle.run.runtime.artifacts",
+      "path": "noetrium_platform/research/experimentation/lifecycle/run/runtime/artifacts.py",
+      "physical_lines": 855,
+      "score": 2054
     },
     {
       "branches": 58,
@@ -1817,28 +1892,16 @@
       "score": 1940
     },
     {
-      "branches": 88,
-      "classes": 1,
-      "exception_handlers": 14,
-      "functions": 35,
-      "imports": 9,
-      "max_function_lines": 77,
-      "module": "noetrium_platform.capabilities.model.catalog.revision.providers.sqlite_revision_authority",
-      "path": "noetrium_platform/capabilities/model/catalog/revision/providers/sqlite_revision_authority.py",
-      "physical_lines": 877,
-      "score": 1802
-    },
-    {
-      "branches": 80,
-      "classes": 1,
-      "exception_handlers": 12,
-      "functions": 41,
-      "imports": 9,
-      "max_function_lines": 80,
-      "module": "noetrium_platform.capabilities.participant.providers.sqlite_revision_authority",
-      "path": "noetrium_platform/capabilities/participant/providers/sqlite_revision_authority.py",
-      "physical_lines": 863,
-      "score": 1710
+      "branches": 67,
+      "classes": 2,
+      "exception_handlers": 6,
+      "functions": 26,
+      "imports": 11,
+      "max_function_lines": 241,
+      "module": "noetrium_platform.infrastructure.resources.directory.runtime.workspaces",
+      "path": "noetrium_platform/infrastructure/resources/directory/runtime/workspaces.py",
+      "physical_lines": 870,
+      "score": 1881
     }
   ],
   "top_optimization_risks": [
@@ -1952,7 +2015,7 @@
     },
     {
       "exception_handlers": 11,
-      "import_fan_in": 61,
+      "import_fan_in": 62,
       "import_fan_out": 1,
       "io_sites": 8,
       "lock_sites": 0,
@@ -1965,7 +2028,7 @@
         "FAILURE_BRANCH_CONCENTRATION",
         "LONG_FUNCTION"
       ],
-      "risk_score": 439,
+      "risk_score": 443,
       "self_mutation_sites": 0,
       "serialization_sites": 0
     },
@@ -2129,6 +2192,24 @@
       "serialization_sites": 0
     },
     {
+      "exception_handlers": 13,
+      "import_fan_in": 3,
+      "import_fan_out": 5,
+      "io_sites": 5,
+      "lock_sites": 2,
+      "long_functions": 3,
+      "module": "noetrium_platform.foundation.kernel.kernel.journal",
+      "path": "noetrium_platform/foundation/kernel/kernel/journal.py",
+      "reason_codes": [
+        "STATE_MUTATION_CONCENTRATION",
+        "FAILURE_BRANCH_CONCENTRATION",
+        "LONG_FUNCTION"
+      ],
+      "risk_score": 345,
+      "self_mutation_sites": 18,
+      "serialization_sites": 0
+    },
+    {
       "exception_handlers": 12,
       "import_fan_in": 2,
       "import_fan_out": 9,
@@ -2161,24 +2242,6 @@
       ],
       "risk_score": 341,
       "self_mutation_sites": 0,
-      "serialization_sites": 0
-    },
-    {
-      "exception_handlers": 11,
-      "import_fan_in": 3,
-      "import_fan_out": 5,
-      "io_sites": 5,
-      "lock_sites": 2,
-      "long_functions": 3,
-      "module": "noetrium_platform.foundation.kernel.kernel.journal",
-      "path": "noetrium_platform/foundation/kernel/kernel/journal.py",
-      "reason_codes": [
-        "STATE_MUTATION_CONCENTRATION",
-        "FAILURE_BRANCH_CONCENTRATION",
-        "LONG_FUNCTION"
-      ],
-      "risk_score": 329,
-      "self_mutation_sites": 18,
       "serialization_sites": 0
     },
     {

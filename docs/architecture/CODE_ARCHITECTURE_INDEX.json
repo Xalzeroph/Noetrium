@@ -4907,6 +4907,21 @@
     },
     {
       "kind": "references",
+      "source": "noetrium_platform.composition.research_execution_pool.ResearchExecutionPool",
+      "target": "noetrium_platform.composition.shared_host_pressure.SharedHostPressurePolicy"
+    },
+    {
+      "kind": "references",
+      "source": "noetrium_platform.composition.research_execution_pool.ResearchExecutionPool",
+      "target": "noetrium_platform.composition.shared_host_pressure.SharedNetworkPressureObserverPort"
+    },
+    {
+      "kind": "references",
+      "source": "noetrium_platform.composition.research_execution_pool.ResearchExecutionPool",
+      "target": "noetrium_platform.composition.shared_host_pressure.SharedStoragePressureObserverPort"
+    },
+    {
+      "kind": "references",
       "source": "noetrium_platform.composition.research_graph.ResearchGraphScheduler",
       "target": "noetrium_platform.composition.research_execution_pool.ResearchExecutionPool"
     },
@@ -6159,6 +6174,51 @@
       "kind": "references",
       "source": "noetrium_platform.composition.service_crash_store.DurableCrashHandoffStore",
       "target": "noetrium_platform.composition.service_crash_contracts.DurableCrashHandoff"
+    },
+    {
+      "kind": "references",
+      "source": "noetrium_platform.composition.shared_host_pressure.LocalSharedNetworkPressureObserver",
+      "target": "noetrium_platform.composition.shared_host_pressure.SharedNetworkPressureStatus"
+    },
+    {
+      "kind": "references",
+      "source": "noetrium_platform.composition.shared_host_pressure.LocalSharedStoragePressureObserver",
+      "target": "noetrium_platform.composition.shared_host_pressure.SharedStoragePressureStatus"
+    },
+    {
+      "kind": "references",
+      "source": "noetrium_platform.composition.shared_host_pressure.SharedHostPressureAdmissionGate",
+      "target": "noetrium_platform.composition.shared_host_pressure.SharedHostPressurePolicy"
+    },
+    {
+      "kind": "references",
+      "source": "noetrium_platform.composition.shared_host_pressure.SharedHostPressureAdmissionGate",
+      "target": "noetrium_platform.composition.shared_host_pressure.SharedNetworkPressureObserverPort"
+    },
+    {
+      "kind": "references",
+      "source": "noetrium_platform.composition.shared_host_pressure.SharedHostPressureAdmissionGate",
+      "target": "noetrium_platform.composition.shared_host_pressure.SharedNetworkPressureStatus"
+    },
+    {
+      "kind": "references",
+      "source": "noetrium_platform.composition.shared_host_pressure.SharedHostPressureAdmissionGate",
+      "target": "noetrium_platform.composition.shared_host_pressure.SharedStoragePressureObserverPort"
+    },
+    {
+      "kind": "references",
+      "source": "noetrium_platform.composition.shared_host_pressure.SharedHostPressureAdmissionGate",
+      "target": "noetrium_platform.composition.shared_host_pressure.SharedStoragePressureStatus"
+    },
+    {
+      "kind": "references",
+      "source": "noetrium_platform.composition.shared_host_pressure.SharedNetworkPressureObserverPort",
+      "target": "noetrium_platform.composition.shared_host_pressure.SharedNetworkPressureStatus"
+    },
+    {
+      "kind": "references",
+      "source": "noetrium_platform.composition.shared_host_pressure.SharedStoragePressureObserverPort",
+      "target": "noetrium_platform.composition.shared_host_pressure.SharedStoragePressureStatus"
     },
     {
       "kind": "references",
@@ -9362,6 +9422,11 @@
     },
     {
       "kind": "references",
+      "source": "noetrium_platform.foundation.kernel.kernel.durability.filesystem_generation.FilesystemCarrierGeneration",
+      "target": "noetrium_platform.foundation.kernel.kernel.durability.filesystem_generation.FilesystemCarrierKind"
+    },
+    {
+      "kind": "references",
       "source": "noetrium_platform.foundation.kernel.kernel.durable_closure.DurableCarrierReferenceClosure",
       "target": "noetrium_platform.foundation.kernel.kernel.durable_closure.DurableCarrierClosureAuthority"
     },
@@ -11174,6 +11239,11 @@
       "kind": "references",
       "source": "noetrium_platform.infrastructure.lifecycle.service.api.ports.ExactServiceRuntimePort",
       "target": "noetrium_platform.infrastructure.lifecycle.service.api.contracts.ServiceProcessIdentity"
+    },
+    {
+      "kind": "references",
+      "source": "noetrium_platform.infrastructure.lifecycle.service.api.ports.ExactServiceRuntimePort",
+      "target": "noetrium_platform.infrastructure.lifecycle.service.api.ports.ServiceQuiescenceOutcome"
     },
     {
       "kind": "references",
@@ -39105,7 +39175,7 @@
         "concurrency"
       ],
       "kind": "dataclass",
-      "line": 29,
+      "line": 38,
       "methods": [
         "heartbeats",
         "open_task_group",
@@ -39624,7 +39694,7 @@
         "services"
       ],
       "kind": "dataclass",
-      "line": 71,
+      "line": 77,
       "methods": [
         "start_background_controllers",
         "quiesce_background_controllers",
@@ -39648,7 +39718,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 50,
+      "line": 56,
       "methods": [
         "__init__",
         "wait"
@@ -41084,7 +41154,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 49,
+      "line": 55,
       "methods": [
         "__init__",
         "_require_workloads_open",
@@ -44174,6 +44244,199 @@
         "DurableCrashHandoffStore"
       ],
       "qualname": "noetrium_platform.composition.service_crash_store.DurableCrashHandoffStore",
+      "system_key": "research_os",
+      "top_system": "research_os"
+    },
+    {
+      "bases": [],
+      "decorators": [],
+      "fields": [],
+      "kind": "class",
+      "line": 77,
+      "methods": [
+        "__init__",
+        "_read",
+        "snapshot"
+      ],
+      "module": "noetrium_platform.composition.shared_host_pressure",
+      "name": "LocalSharedNetworkPressureObserver",
+      "nesting": [
+        "LocalSharedNetworkPressureObserver"
+      ],
+      "qualname": "noetrium_platform.composition.shared_host_pressure.LocalSharedNetworkPressureObserver",
+      "system_key": "research_os",
+      "top_system": "research_os"
+    },
+    {
+      "bases": [],
+      "decorators": [],
+      "fields": [],
+      "kind": "class",
+      "line": 226,
+      "methods": [
+        "__init__",
+        "_existing_capacity_path",
+        "snapshot"
+      ],
+      "module": "noetrium_platform.composition.shared_host_pressure",
+      "name": "LocalSharedStoragePressureObserver",
+      "nesting": [
+        "LocalSharedStoragePressureObserver"
+      ],
+      "qualname": "noetrium_platform.composition.shared_host_pressure.LocalSharedStoragePressureObserver",
+      "system_key": "research_os",
+      "top_system": "research_os"
+    },
+    {
+      "bases": [
+        "ExecutionAdmissionPort"
+      ],
+      "decorators": [],
+      "fields": [],
+      "kind": "class",
+      "line": 343,
+      "methods": [
+        "__init__",
+        "register_group",
+        "unregister_group",
+        "_status",
+        "_storage_status",
+        "_network_status",
+        "_pressure_reason",
+        "_cancelled",
+        "_wait_for_pressure_clearance",
+        "acquire",
+        "acquire_many",
+        "snapshot",
+        "close"
+      ],
+      "module": "noetrium_platform.composition.shared_host_pressure",
+      "name": "SharedHostPressureAdmissionGate",
+      "nesting": [
+        "SharedHostPressureAdmissionGate"
+      ],
+      "qualname": "noetrium_platform.composition.shared_host_pressure.SharedHostPressureAdmissionGate",
+      "system_key": "research_os",
+      "top_system": "research_os"
+    },
+    {
+      "bases": [],
+      "decorators": [
+        "dataclass(frozen=True, slots=True)"
+      ],
+      "fields": [
+        "fail_closed_when_runtime_unavailable",
+        "max_cpu_pressure_some_avg10_percent",
+        "max_io_pressure_some_avg10_percent",
+        "max_memory_pressure_some_avg10_percent",
+        "max_network_utilization_percent",
+        "min_available_fds",
+        "min_available_memory_bytes",
+        "min_available_pids",
+        "min_storage_free_bytes",
+        "min_storage_free_inodes",
+        "poll_interval_seconds"
+      ],
+      "kind": "dataclass",
+      "line": 285,
+      "methods": [
+        "__post_init__"
+      ],
+      "module": "noetrium_platform.composition.shared_host_pressure",
+      "name": "SharedHostPressurePolicy",
+      "nesting": [
+        "SharedHostPressurePolicy"
+      ],
+      "qualname": "noetrium_platform.composition.shared_host_pressure.SharedHostPressurePolicy",
+      "system_key": "research_os",
+      "top_system": "research_os"
+    },
+    {
+      "bases": [
+        "Protocol"
+      ],
+      "decorators": [],
+      "fields": [],
+      "kind": "protocol",
+      "line": 73,
+      "methods": [
+        "snapshot"
+      ],
+      "module": "noetrium_platform.composition.shared_host_pressure",
+      "name": "SharedNetworkPressureObserverPort",
+      "nesting": [
+        "SharedNetworkPressureObserverPort"
+      ],
+      "qualname": "noetrium_platform.composition.shared_host_pressure.SharedNetworkPressureObserverPort",
+      "system_key": "research_os",
+      "top_system": "research_os"
+    },
+    {
+      "bases": [],
+      "decorators": [
+        "dataclass(frozen=True, slots=True)"
+      ],
+      "fields": [
+        "available",
+        "detail",
+        "max_utilization_percent"
+      ],
+      "kind": "dataclass",
+      "line": 54,
+      "methods": [
+        "__post_init__"
+      ],
+      "module": "noetrium_platform.composition.shared_host_pressure",
+      "name": "SharedNetworkPressureStatus",
+      "nesting": [
+        "SharedNetworkPressureStatus"
+      ],
+      "qualname": "noetrium_platform.composition.shared_host_pressure.SharedNetworkPressureStatus",
+      "system_key": "research_os",
+      "top_system": "research_os"
+    },
+    {
+      "bases": [
+        "Protocol"
+      ],
+      "decorators": [],
+      "fields": [],
+      "kind": "protocol",
+      "line": 222,
+      "methods": [
+        "snapshot"
+      ],
+      "module": "noetrium_platform.composition.shared_host_pressure",
+      "name": "SharedStoragePressureObserverPort",
+      "nesting": [
+        "SharedStoragePressureObserverPort"
+      ],
+      "qualname": "noetrium_platform.composition.shared_host_pressure.SharedStoragePressureObserverPort",
+      "system_key": "research_os",
+      "top_system": "research_os"
+    },
+    {
+      "bases": [],
+      "decorators": [
+        "dataclass(frozen=True, slots=True)"
+      ],
+      "fields": [
+        "available",
+        "detail",
+        "free_bytes",
+        "free_inodes"
+      ],
+      "kind": "dataclass",
+      "line": 205,
+      "methods": [
+        "__post_init__"
+      ],
+      "module": "noetrium_platform.composition.shared_host_pressure",
+      "name": "SharedStoragePressureStatus",
+      "nesting": [
+        "SharedStoragePressureStatus"
+      ],
+      "qualname": "noetrium_platform.composition.shared_host_pressure.SharedStoragePressureStatus",
       "system_key": "research_os",
       "top_system": "research_os"
     },
@@ -61250,6 +61513,56 @@
       "top_system": "platform"
     },
     {
+      "bases": [],
+      "decorators": [
+        "dataclass(frozen=True, slots=True)"
+      ],
+      "fields": [
+        "change_time_ns",
+        "device",
+        "inode",
+        "kind"
+      ],
+      "kind": "dataclass",
+      "line": 18,
+      "methods": [
+        "__post_init__",
+        "same_object",
+        "same_generation",
+        "to_data",
+        "from_data"
+      ],
+      "module": "noetrium_platform.foundation.kernel.kernel.durability.filesystem_generation",
+      "name": "FilesystemCarrierGeneration",
+      "nesting": [
+        "FilesystemCarrierGeneration"
+      ],
+      "qualname": "noetrium_platform.foundation.kernel.kernel.durability.filesystem_generation.FilesystemCarrierGeneration",
+      "system_key": "platform",
+      "top_system": "platform"
+    },
+    {
+      "bases": [
+        "StrEnum"
+      ],
+      "decorators": [],
+      "fields": [
+        "DIRECTORY",
+        "REGULAR_FILE"
+      ],
+      "kind": "enum",
+      "line": 12,
+      "methods": [],
+      "module": "noetrium_platform.foundation.kernel.kernel.durability.filesystem_generation",
+      "name": "FilesystemCarrierKind",
+      "nesting": [
+        "FilesystemCarrierKind"
+      ],
+      "qualname": "noetrium_platform.foundation.kernel.kernel.durability.filesystem_generation.FilesystemCarrierKind",
+      "system_key": "platform",
+      "top_system": "platform"
+    },
+    {
       "bases": [
         "StrEnum"
       ],
@@ -61956,7 +62269,7 @@
         "durability"
       ],
       "kind": "class",
-      "line": 472,
+      "line": 476,
       "methods": [
         "__init__",
         "_file_key",
@@ -62002,7 +62315,7 @@
         "durability"
       ],
       "kind": "class",
-      "line": 416,
+      "line": 420,
       "methods": [
         "__init__",
         "_history_for",
@@ -62035,7 +62348,7 @@
         "terminal_revision"
       ],
       "kind": "dataclass",
-      "line": 242,
+      "line": 246,
       "methods": [
         "__post_init__",
         "closure_complete",
@@ -62059,7 +62372,7 @@
       ],
       "fields": [],
       "kind": "protocol",
-      "line": 313,
+      "line": 317,
       "methods": [
         "assess_gc",
         "purge"
@@ -62082,7 +62395,7 @@
       ],
       "fields": [],
       "kind": "protocol",
-      "line": 330,
+      "line": 334,
       "methods": [
         "append",
         "latest",
@@ -62107,7 +62420,7 @@
       ],
       "fields": [],
       "kind": "protocol",
-      "line": 409,
+      "line": 413,
       "methods": [
         "append",
         "latest",
@@ -62134,7 +62447,7 @@
         "RETIRED"
       ],
       "kind": "enum",
-      "line": 235,
+      "line": 239,
       "methods": [],
       "module": "noetrium_platform.foundation.kernel.kernel.journal",
       "name": "MachineJournalRetirementPhase",
@@ -62150,7 +62463,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 460,
+      "line": 464,
       "methods": [
         "__init__"
       ],
@@ -62168,7 +62481,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 337,
+      "line": 341,
       "methods": [
         "__init__",
         "clone",
@@ -70407,9 +70720,11 @@
       "decorators": [],
       "fields": [],
       "kind": "protocol",
-      "line": 79,
+      "line": 101,
       "methods": [
         "reconcile_exact",
+        "inspect_quiescence_exact",
+        "quiesce_exact",
         "start_exact",
         "verify_ready_exact",
         "stop_exact"
@@ -70430,7 +70745,7 @@
       "decorators": [],
       "fields": [],
       "kind": "protocol",
-      "line": 53,
+      "line": 75,
       "methods": [
         "digest"
       ],
@@ -70450,7 +70765,7 @@
       "decorators": [],
       "fields": [],
       "kind": "protocol",
-      "line": 69,
+      "line": 91,
       "methods": [
         "validate"
       ],
@@ -70474,7 +70789,7 @@
         "errors"
       ],
       "kind": "dataclass",
-      "line": 59,
+      "line": 81,
       "methods": [
         "ready"
       ],
@@ -70494,7 +70809,7 @@
       "decorators": [],
       "fields": [],
       "kind": "protocol",
-      "line": 92,
+      "line": 122,
       "methods": [
         "alive"
       ],
@@ -70508,13 +70823,38 @@
       "top_system": "runtime"
     },
     {
+      "bases": [],
+      "decorators": [
+        "dataclass(frozen=True, slots=True)"
+      ],
+      "fields": [
+        "contract_digest",
+        "evidence_refs",
+        "quiescent",
+        "summary"
+      ],
+      "kind": "dataclass",
+      "line": 19,
+      "methods": [
+        "__post_init__"
+      ],
+      "module": "noetrium_platform.infrastructure.lifecycle.service.api.ports",
+      "name": "ServiceQuiescenceOutcome",
+      "nesting": [
+        "ServiceQuiescenceOutcome"
+      ],
+      "qualname": "noetrium_platform.infrastructure.lifecycle.service.api.ports.ServiceQuiescenceOutcome",
+      "system_key": "runtime",
+      "top_system": "runtime"
+    },
+    {
       "bases": [
         "Protocol"
       ],
       "decorators": [],
       "fields": [],
       "kind": "protocol",
-      "line": 98,
+      "line": 128,
       "methods": [
         "wait_ready"
       ],
@@ -70540,7 +70880,7 @@
         "ready_evidence_ref"
       ],
       "kind": "dataclass",
-      "line": 40,
+      "line": 62,
       "methods": [
         "__post_init__"
       ],
@@ -70582,7 +70922,7 @@
       "decorators": [],
       "fields": [],
       "kind": "protocol",
-      "line": 109,
+      "line": 139,
       "methods": [
         "open"
       ],
@@ -70608,7 +70948,7 @@
         "ready_evidence_ref"
       ],
       "kind": "dataclass",
-      "line": 19,
+      "line": 41,
       "methods": [
         "__post_init__"
       ],
@@ -70632,7 +70972,7 @@
         "stopped"
       ],
       "kind": "dataclass",
-      "line": 33,
+      "line": 55,
       "methods": [],
       "module": "noetrium_platform.infrastructure.lifecycle.service.api.ports",
       "name": "ServiceStopOutcome",
@@ -71161,7 +71501,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 36,
+      "line": 38,
       "methods": [
         "__init__",
         "start"
@@ -71180,7 +71520,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 20,
+      "line": 22,
       "methods": [
         "__init__",
         "poll",
@@ -71922,7 +72262,7 @@
         "updated_at"
       ],
       "kind": "dataclass",
-      "line": 18,
+      "line": 26,
       "methods": [],
       "module": "noetrium_platform.infrastructure.lifecycle.service.runtime.start_intent_contracts",
       "name": "ServiceStartIntent",
@@ -71939,6 +72279,7 @@
       ],
       "decorators": [],
       "fields": [
+        "ABORTED",
         "COMPLETE",
         "PREPARED",
         "PROCESS_CONFIRMED",
@@ -71946,7 +72287,9 @@
       ],
       "kind": "enum",
       "line": 10,
-      "methods": [],
+      "methods": [
+        "terminal"
+      ],
       "module": "noetrium_platform.infrastructure.lifecycle.service.runtime.start_intent_contracts",
       "name": "ServiceStartIntentPhase",
       "nesting": [
@@ -72099,6 +72442,7 @@
         "record_process",
         "state_committed",
         "complete",
+        "abort",
         "unresolved"
       ],
       "module": "noetrium_platform.infrastructure.lifecycle.service.runtime.start_journal",
@@ -78130,7 +78474,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 326,
+      "line": 331,
       "methods": [
         "__init__",
         "_reconcile_allocation_locked",
@@ -78655,7 +78999,7 @@
       "decorators": [],
       "fields": [],
       "kind": "protocol",
-      "line": 65,
+      "line": 92,
       "methods": [
         "snapshot"
       ],
@@ -78699,7 +79043,7 @@
       "decorators": [],
       "fields": [],
       "kind": "protocol",
-      "line": 62,
+      "line": 89,
       "methods": [
         "snapshot"
       ],
@@ -78723,7 +79067,7 @@
         "hosts"
       ],
       "kind": "dataclass",
-      "line": 52,
+      "line": 79,
       "methods": [
         "__post_init__"
       ],
@@ -78743,11 +79087,16 @@
       ],
       "fields": [
         "available",
+        "available_fds",
         "available_memory_bytes",
+        "available_pids",
         "cpu_load_1m",
+        "cpu_pressure_some_avg10_percent",
         "detail",
         "effective_cpu_cores",
-        "host_id"
+        "host_id",
+        "io_pressure_some_avg10_percent",
+        "memory_pressure_some_avg10_percent"
       ],
       "kind": "dataclass",
       "line": 33,
@@ -78790,11 +79139,14 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 15,
+      "line": 19,
       "methods": [
         "__init__",
         "_integer_file",
         "_meminfo_bytes",
+        "_pressure_some_avg10_percent",
+        "_available_pids",
+        "_available_fds",
         "_effective_cpu_cores",
         "_effective_available_memory",
         "snapshot"
@@ -78972,7 +79324,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 369,
+      "line": 350,
       "methods": [
         "__init__",
         "_usage",
@@ -79004,7 +79356,7 @@
         "SCHEMA_VERSION"
       ],
       "kind": "class",
-      "line": 691,
+      "line": 690,
       "methods": [
         "__init__",
         "_connection",
@@ -79140,7 +79492,7 @@
         "removed_container_ids"
       ],
       "kind": "dataclass",
-      "line": 129,
+      "line": 139,
       "methods": [],
       "module": "noetrium_platform.infrastructure.resources.container.api.contracts",
       "name": "DockerContainerReconciliation",
@@ -79481,13 +79833,16 @@
       ],
       "fields": [
         "bytes",
+        "change_time_ns",
+        "device",
         "directories",
         "files",
+        "inode",
         "modified_at",
         "path"
       ],
       "kind": "dataclass",
-      "line": 178,
+      "line": 182,
       "methods": [],
       "module": "noetrium_platform.infrastructure.resources.directory.api.contracts",
       "name": "DirectoryCleanupCandidate",
@@ -79533,7 +79888,7 @@
         "path"
       ],
       "kind": "dataclass",
-      "line": 170,
+      "line": 174,
       "methods": [],
       "module": "noetrium_platform.infrastructure.resources.directory.api.contracts",
       "name": "DirectoryEntryStats",
@@ -79583,13 +79938,15 @@
       ],
       "fields": [
         "free_bytes",
+        "free_inodes",
         "path",
         "top_level_entries",
         "total_bytes",
+        "total_inodes",
         "used_bytes"
       ],
       "kind": "dataclass",
-      "line": 161,
+      "line": 163,
       "methods": [],
       "module": "noetrium_platform.infrastructure.resources.directory.api.contracts",
       "name": "DirectoryOverview",
@@ -79607,8 +79964,10 @@
       ],
       "fields": [
         "free_bytes",
+        "free_inodes",
         "path",
         "total_bytes",
+        "total_inodes",
         "used_bytes"
       ],
       "kind": "dataclass",
@@ -79866,7 +80225,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 12,
+      "line": 13,
       "methods": [
         "__init__",
         "clean_plan",
@@ -79886,9 +80245,10 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 16,
+      "line": 17,
       "methods": [
         "__init__",
+        "_inode_capacity",
         "usage",
         "overview",
         "content_stats",
@@ -79930,7 +80290,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 52,
+      "line": 62,
       "methods": [
         "__init__",
         "_root",
@@ -79943,15 +80303,18 @@
         "allocate_workspace",
         "list_workspaces",
         "_metadata_paths",
+        "_decode_metadata_payload",
         "_decode_metadata",
         "assess_workspace_gc",
         "_metadata_digest",
+        "_directory_generation",
         "_decode_retirement",
         "_retirement_payload",
         "_publish_retirement",
         "_validate_live_workspace_for_retirement",
+        "_validate_quarantine_for_retirement",
         "_move_to_quarantine",
-        "_purge_quarantine",
+        "_purge_quarantine_contents",
         "remove_workspace",
         "_validate_name",
         "_validate_optional_text"
@@ -79971,12 +80334,14 @@
       ],
       "decorators": [],
       "fields": [
+        "EMPTY",
         "PURGED",
+        "PURGING",
         "QUARANTINED",
         "RETIRED"
       ],
       "kind": "enum",
-      "line": 46,
+      "line": 54,
       "methods": [],
       "module": "noetrium_platform.infrastructure.resources.directory.runtime.workspaces",
       "name": "_WorkspaceRetirementPhase",
@@ -94873,7 +95238,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 57,
+      "line": 61,
       "methods": [
         "__init__",
         "_retirement_path",
@@ -94918,11 +95283,12 @@
       "decorators": [],
       "fields": [
         "PURGED",
+        "PURGING",
         "QUARANTINED",
         "RETIRED"
       ],
       "kind": "enum",
-      "line": 50,
+      "line": 53,
       "methods": [],
       "module": "noetrium_platform.research.experimentation.lifecycle.run.runtime.artifacts",
       "name": "_RunArtifactRetirementPhase",
@@ -101228,6 +101594,31 @@
     },
     {
       "kind": "constructs",
+      "source": "noetrium_platform.composition.shared_host_pressure.LocalSharedNetworkPressureObserver",
+      "target": "noetrium_platform.composition.shared_host_pressure.SharedNetworkPressureStatus"
+    },
+    {
+      "kind": "constructs",
+      "source": "noetrium_platform.composition.shared_host_pressure.LocalSharedStoragePressureObserver",
+      "target": "noetrium_platform.composition.shared_host_pressure.SharedStoragePressureStatus"
+    },
+    {
+      "kind": "constructs",
+      "source": "noetrium_platform.composition.shared_host_pressure.SharedHostPressureAdmissionGate",
+      "target": "noetrium_platform.composition.shared_host_pressure.SharedHostPressurePolicy"
+    },
+    {
+      "kind": "constructs",
+      "source": "noetrium_platform.composition.shared_host_pressure.SharedHostPressureAdmissionGate",
+      "target": "noetrium_platform.composition.shared_host_pressure.SharedNetworkPressureStatus"
+    },
+    {
+      "kind": "constructs",
+      "source": "noetrium_platform.composition.shared_host_pressure.SharedHostPressureAdmissionGate",
+      "target": "noetrium_platform.composition.shared_host_pressure.SharedStoragePressureStatus"
+    },
+    {
+      "kind": "constructs",
       "source": "noetrium_platform.composition.workflows.agent_turn.agent_turn_operations.AgentTurnTrialOperations",
       "target": "noetrium_platform.composition.workflows.agent_turn.capability_effects.CapabilityEffectExecutor"
     },
@@ -102255,6 +102646,11 @@
       "kind": "constructs",
       "source": "noetrium_platform.foundation.kernel.kernel.durability.file_lock.InterprocessFileLock",
       "target": "noetrium_platform.foundation.kernel.kernel.durability.file_lock.InterprocessLockUnavailable"
+    },
+    {
+      "kind": "constructs",
+      "source": "noetrium_platform.foundation.kernel.kernel.durability.filesystem_generation.FilesystemCarrierGeneration",
+      "target": "noetrium_platform.foundation.kernel.kernel.durability.filesystem_generation.FilesystemCarrierKind"
     },
     {
       "kind": "constructs",
@@ -104528,13 +104924,13 @@
     }
   ],
   "counts": {
-    "association_edges": 3493,
-    "classes": 3393,
-    "constructor_edges": 951,
+    "association_edges": 3507,
+    "classes": 3404,
+    "constructor_edges": 957,
     "inheritance_edges": 151,
-    "module_import_edges": 5047,
+    "module_import_edges": 5058,
     "parse_errors": 0,
-    "python_modules": 1912,
+    "python_modules": 1915,
     "registry_authorities": 20,
     "registry_nodes": 31,
     "top_level_systems": 16
@@ -109703,11 +110099,19 @@
     },
     {
       "source": "noetrium_platform.composition.concurrency",
+      "target": "noetrium_platform.composition.shared_host_pressure"
+    },
+    {
+      "source": "noetrium_platform.composition.concurrency",
       "target": "noetrium_platform.foundation.kernel.concurrency.api"
     },
     {
       "source": "noetrium_platform.composition.concurrency",
       "target": "noetrium_platform.foundation.kernel.concurrency.composition"
+    },
+    {
+      "source": "noetrium_platform.composition.concurrency",
+      "target": "noetrium_platform.infrastructure.resources.compute.api"
     },
     {
       "source": "noetrium_platform.composition.concurrency",
@@ -110051,6 +110455,10 @@
     },
     {
       "source": "noetrium_platform.composition.managed_research_runtime",
+      "target": "noetrium_platform.composition.shared_host_pressure"
+    },
+    {
+      "source": "noetrium_platform.composition.managed_research_runtime",
       "target": "noetrium_platform.foundation.kernel.concurrency.api"
     },
     {
@@ -110064,6 +110472,10 @@
     {
       "source": "noetrium_platform.composition.managed_research_runtime",
       "target": "noetrium_platform.infrastructure.reliability.recovery.execution.composition"
+    },
+    {
+      "source": "noetrium_platform.composition.managed_research_runtime",
+      "target": "noetrium_platform.infrastructure.resources.compute.providers"
     },
     {
       "source": "noetrium_platform.composition.managed_research_runtime",
@@ -111419,6 +111831,10 @@
     },
     {
       "source": "noetrium_platform.composition.research_execution_pool",
+      "target": "noetrium_platform.composition.shared_host_pressure"
+    },
+    {
+      "source": "noetrium_platform.composition.research_execution_pool",
       "target": "noetrium_platform.foundation.kernel.concurrency.api"
     },
     {
@@ -112344,6 +112760,18 @@
     {
       "source": "noetrium_platform.composition.service_crash_store",
       "target": "noetrium_platform.infrastructure.reliability.failure.api"
+    },
+    {
+      "source": "noetrium_platform.composition.shared_host_pressure",
+      "target": "noetrium_platform.foundation.kernel.concurrency.api"
+    },
+    {
+      "source": "noetrium_platform.composition.shared_host_pressure",
+      "target": "noetrium_platform.infrastructure.resources.compute.api"
+    },
+    {
+      "source": "noetrium_platform.composition.shared_host_pressure",
+      "target": "noetrium_platform.research.execution.policy.api"
     },
     {
       "source": "noetrium_platform.composition.status_adapters",
@@ -117719,6 +118147,10 @@
     },
     {
       "source": "noetrium_platform.foundation.kernel.kernel.durability",
+      "target": "noetrium_platform.foundation.kernel.kernel.filesystem_generation"
+    },
+    {
+      "source": "noetrium_platform.foundation.kernel.kernel.durability",
       "target": "noetrium_platform.foundation.kernel.kernel.sqlite"
     },
     {
@@ -117748,6 +118180,10 @@
     {
       "source": "noetrium_platform.foundation.kernel.kernel.durability.file_lock",
       "target": "noetrium_platform.foundation.kernel.kernel.logical_path"
+    },
+    {
+      "source": "noetrium_platform.foundation.kernel.kernel.durability.filesystem_generation",
+      "target": "noetrium_platform.foundation.kernel.kernel.durability.durable_file"
     },
     {
       "source": "noetrium_platform.foundation.kernel.kernel.durability.sqlite",
@@ -122268,6 +122704,10 @@
     {
       "source": "noetrium_platform.infrastructure.resources.directory.runtime.workspaces",
       "target": "noetrium_platform.foundation.kernel.kernel"
+    },
+    {
+      "source": "noetrium_platform.infrastructure.resources.directory.runtime.workspaces",
+      "target": "noetrium_platform.foundation.kernel.kernel.durability"
     },
     {
       "source": "noetrium_platform.infrastructure.resources.directory.runtime.workspaces",
@@ -129885,8 +130325,10 @@
     },
     {
       "imports": [
+        "noetrium_platform.composition.shared_host_pressure",
         "noetrium_platform.foundation.kernel.concurrency.api",
         "noetrium_platform.foundation.kernel.concurrency.composition",
+        "noetrium_platform.infrastructure.resources.compute.api",
         "noetrium_platform.research.execution.policy.api",
         "noetrium_platform.research.execution.policy.composition"
       ],
@@ -130108,10 +130550,12 @@
         "noetrium_platform.composition.reliability_resources",
         "noetrium_platform.composition.research_execution_pool",
         "noetrium_platform.composition.resource_lifecycle",
+        "noetrium_platform.composition.shared_host_pressure",
         "noetrium_platform.foundation.kernel.concurrency.api",
         "noetrium_platform.foundation.kernel.kernel.durability.file_lock",
         "noetrium_platform.infrastructure.reliability.recovery.api",
         "noetrium_platform.infrastructure.reliability.recovery.execution.composition",
+        "noetrium_platform.infrastructure.resources.compute.providers",
         "noetrium_platform.infrastructure.resources.directory.api",
         "noetrium_platform.research.execution.policy.api"
       ],
@@ -131122,6 +131566,7 @@
         "noetrium_platform.capabilities.model.serving.runtime",
         "noetrium_platform.composition.concurrency",
         "noetrium_platform.composition.environment_instance_leases",
+        "noetrium_platform.composition.shared_host_pressure",
         "noetrium_platform.foundation.kernel.concurrency.api",
         "noetrium_platform.infrastructure.resources.allocation.api",
         "noetrium_platform.infrastructure.resources.allocation.runtime",
@@ -131669,6 +132114,17 @@
       ],
       "module": "noetrium_platform.composition.service_crash_store",
       "path": "noetrium_platform/composition/service_crash_store.py",
+      "system_key": "research_os",
+      "top_system": "research_os"
+    },
+    {
+      "imports": [
+        "noetrium_platform.foundation.kernel.concurrency.api",
+        "noetrium_platform.infrastructure.resources.compute.api",
+        "noetrium_platform.research.execution.policy.api"
+      ],
+      "module": "noetrium_platform.composition.shared_host_pressure",
+      "path": "noetrium_platform/composition/shared_host_pressure.py",
       "system_key": "research_os",
       "top_system": "research_os"
     },
@@ -137520,6 +137976,7 @@
         "noetrium_platform.foundation.kernel.kernel.durable_append",
         "noetrium_platform.foundation.kernel.kernel.durable_file",
         "noetrium_platform.foundation.kernel.kernel.file_lock",
+        "noetrium_platform.foundation.kernel.kernel.filesystem_generation",
         "noetrium_platform.foundation.kernel.kernel.sqlite",
         "noetrium_platform.foundation.kernel.kernel.stream_digest"
       ],
@@ -137579,6 +138036,15 @@
       ],
       "module": "noetrium_platform.foundation.kernel.kernel.durability.file_lock",
       "path": "noetrium_platform/foundation/kernel/kernel/durability/file_lock.py",
+      "system_key": "platform",
+      "top_system": "platform"
+    },
+    {
+      "imports": [
+        "noetrium_platform.foundation.kernel.kernel.durability.durable_file"
+      ],
+      "module": "noetrium_platform.foundation.kernel.kernel.durability.filesystem_generation",
+      "path": "noetrium_platform/foundation/kernel/kernel/durability/filesystem_generation.py",
       "system_key": "platform",
       "top_system": "platform"
     },
@@ -139918,6 +140384,13 @@
       ],
       "module": "noetrium_platform.infrastructure.lifecycle.service.runtime.linux_start_marker",
       "path": "noetrium_platform/infrastructure/lifecycle/service/runtime/linux_start_marker.py",
+      "system_key": "runtime",
+      "top_system": "runtime"
+    },
+    {
+      "imports": [],
+      "module": "noetrium_platform.infrastructure.lifecycle.service.runtime.opportunistic_exec",
+      "path": "noetrium_platform/infrastructure/lifecycle/service/runtime/opportunistic_exec.py",
       "system_key": "runtime",
       "top_system": "runtime"
     },
@@ -142344,6 +142817,7 @@
       "imports": [
         "noetrium_platform.foundation.governance.api",
         "noetrium_platform.foundation.kernel.kernel",
+        "noetrium_platform.foundation.kernel.kernel.durability",
         "noetrium_platform.foundation.kernel.kernel.durability.checksummed_document",
         "noetrium_platform.foundation.kernel.kernel.durability.durable_file",
         "noetrium_platform.foundation.kernel.kernel.durability.file_lock",
@@ -145533,7 +146007,7 @@
   "parse_errors": [],
   "registry_sha256": "276e2729e0b700e814e98f8460d87e0ebee66c4620226fe2d880fe55cc970aec",
   "schema": "noetrium-code-architecture-index.v1",
-  "source_git_sha": "d62cbe89cb05cce3bbf7989dfeea64b076db868c",
+  "source_git_sha": "b4f5110f7089680ee08259de624e14c04cf603b5",
   "system_import_edges": [
     {
       "count": 85,
@@ -145646,7 +146120,7 @@
       "target": "platform"
     },
     {
-      "count": 188,
+      "count": 190,
       "source": "platform",
       "target": "platform"
     },
@@ -145686,7 +146160,7 @@
       "target": "environment"
     },
     {
-      "count": 66,
+      "count": 67,
       "source": "research_os",
       "target": "execution"
     },
@@ -145716,7 +146190,7 @@
       "target": "participant"
     },
     {
-      "count": 125,
+      "count": 126,
       "source": "research_os",
       "target": "platform"
     },
@@ -145731,12 +146205,12 @@
       "target": "reliability"
     },
     {
-      "count": 324,
+      "count": 327,
       "source": "research_os",
       "target": "research_os"
     },
     {
-      "count": 36,
+      "count": 39,
       "source": "research_os",
       "target": "resource"
     },
@@ -145756,7 +146230,7 @@
       "target": "governance"
     },
     {
-      "count": 20,
+      "count": 21,
       "source": "resource",
       "target": "platform"
     },

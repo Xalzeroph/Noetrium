@@ -1,15 +1,15 @@
 {
   "counts": {
     "parse_errors": 0,
-    "python_files": 3694,
-    "python_import_edges": 6959,
-    "symbols": 5051,
-    "tracked_files": 4331,
+    "python_files": 3703,
+    "python_import_edges": 6999,
+    "symbols": 5070,
+    "tracked_files": 4340,
     "typescript_javascript_files": 11
   },
   "language_symbol_counts": {
     "javascript": 1,
-    "python": 5045,
+    "python": 5064,
     "typescript": 5
   },
   "parse_errors": [],
@@ -3383,6 +3383,12 @@
     {
       "source_module": "noetrium_platform.composition.concurrency",
       "source_role": "core_platform",
+      "target_module": "noetrium_platform.infrastructure.resources.compute.api",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "noetrium_platform.composition.concurrency",
+      "source_role": "core_platform",
       "target_module": "noetrium_platform.research.execution.policy.api",
       "target_role": "core_platform"
     },
@@ -3846,6 +3852,12 @@
       "source_module": "noetrium_platform.composition.managed_research_runtime",
       "source_role": "core_platform",
       "target_module": "noetrium_platform.infrastructure.reliability.recovery.execution.composition",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "noetrium_platform.composition.managed_research_runtime",
+      "source_role": "core_platform",
+      "target_module": "noetrium_platform.infrastructure.resources.compute.providers",
       "target_role": "core_platform"
     },
     {
@@ -6666,6 +6678,24 @@
       "source_module": "noetrium_platform.composition.service_crash_store",
       "source_role": "core_platform",
       "target_module": "noetrium_platform.infrastructure.reliability.failure.api",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "noetrium_platform.composition.shared_host_pressure",
+      "source_role": "core_platform",
+      "target_module": "noetrium_platform.foundation.kernel.concurrency.api",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "noetrium_platform.composition.shared_host_pressure",
+      "source_role": "core_platform",
+      "target_module": "noetrium_platform.infrastructure.resources.compute.api",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "noetrium_platform.composition.shared_host_pressure",
+      "source_role": "core_platform",
+      "target_module": "noetrium_platform.research.execution.policy.api",
       "target_role": "core_platform"
     },
     {
@@ -13464,6 +13494,12 @@
       "source_module": "noetrium_platform.infrastructure.resources.directory.runtime.workspaces",
       "source_role": "core_platform",
       "target_module": "noetrium_platform.foundation.kernel.kernel",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "noetrium_platform.infrastructure.resources.directory.runtime.workspaces",
+      "source_role": "core_platform",
+      "target_module": "noetrium_platform.foundation.kernel.kernel.durability",
       "target_role": "core_platform"
     },
     {
@@ -21755,6 +21791,12 @@
     {
       "source_module": "tests.resource_compute_support",
       "source_role": "tests",
+      "target_module": "noetrium_platform.infrastructure.resources.compute.api",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "tests.resource_compute_support",
+      "source_role": "tests",
       "target_module": "noetrium_platform.infrastructure.resources.compute.composition",
       "target_role": "core_platform"
     },
@@ -23483,6 +23525,12 @@
     {
       "source_module": "tests.test_compute_physical_convergence_v1",
       "source_role": "tests",
+      "target_module": "noetrium_platform.infrastructure.resources.lease.runtime",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "tests.test_compute_physical_convergence_v1",
+      "source_role": "tests",
       "target_module": "tests.resource_compute_support",
       "target_role": "tests"
     },
@@ -23568,6 +23616,12 @@
       "source_module": "tests.test_compute_runtime_sharing_v1",
       "source_role": "tests",
       "target_module": "noetrium_platform.infrastructure.resources.compute.runtime",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "tests.test_compute_runtime_sharing_v1",
+      "source_role": "tests",
+      "target_module": "noetrium_platform.infrastructure.resources.lease.runtime",
       "target_role": "core_platform"
     },
     {
@@ -24468,6 +24522,12 @@
       "source_module": "tests.test_durable_resource_directory_v1",
       "source_role": "tests",
       "target_module": "noetrium_platform.foundation.kernel.kernel.durability.checksummed_document",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "tests.test_durable_resource_directory_v1",
+      "source_role": "tests",
+      "target_module": "noetrium_platform.foundation.kernel.kernel.durability.filesystem_generation",
       "target_role": "core_platform"
     },
     {
@@ -25627,6 +25687,18 @@
       "source_role": "tests",
       "target_module": "tests._concurrency_support",
       "target_role": "tests"
+    },
+    {
+      "source_module": "tests.test_filesystem_carrier_generation_v1",
+      "source_role": "tests",
+      "target_module": "noetrium_platform.foundation.kernel.kernel.durability",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "tests.test_filesystem_carrier_generation_v1",
+      "source_role": "tests",
+      "target_module": "noetrium_platform.foundation.kernel.kernel.durability.filesystem_generation",
+      "target_role": "core_platform"
     },
     {
       "source_module": "tests.test_final_reliability_boundaries",
@@ -29593,6 +29665,12 @@
       "source_role": "tests",
       "target_module": "noetrium_platform.infrastructure.resources.lease.api",
       "target_role": "core_platform"
+    },
+    {
+      "source_module": "tests.test_platform_meta_systems_v200",
+      "source_role": "tests",
+      "target_module": "tests.resource_compute_support",
+      "target_role": "tests"
     },
     {
       "source_module": "tests.test_platform_meta_systems_v201",
@@ -33707,6 +33785,12 @@
     {
       "source_module": "tests.test_runtime_asset_management_v190",
       "source_role": "tests",
+      "target_module": "noetrium_platform.composition.operator.maintenance.management",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "tests.test_runtime_asset_management_v190",
+      "source_role": "tests",
       "target_module": "noetrium_platform.foundation.kernel.kernel",
       "target_role": "core_platform"
     },
@@ -34087,6 +34171,12 @@
       "source_role": "tests",
       "target_module": "noetrium_platform.infrastructure.resources.compute.composition",
       "target_role": "core_platform"
+    },
+    {
+      "source_module": "tests.test_runtime_preflight_public_contract_v1",
+      "source_role": "tests",
+      "target_module": "tests.resource_compute_support",
+      "target_role": "tests"
     },
     {
       "source_module": "tests.test_runtime_program_rules_v1",
@@ -38919,6 +39009,156 @@
       "target_role": "core_platform"
     },
     {
+      "source_module": "tests.test_shared_host_cpu_worker_priority_v1",
+      "source_role": "tests",
+      "target_module": "noetrium_platform.composition.concurrency",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "tests.test_shared_host_cpu_worker_priority_v1",
+      "source_role": "tests",
+      "target_module": "noetrium_platform.foundation.kernel.concurrency.api",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "tests.test_shared_host_cpu_worker_priority_v1",
+      "source_role": "tests",
+      "target_module": "noetrium_platform.infrastructure.resources.compute.api",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "tests.test_shared_host_foreign_reoccupation_v1",
+      "source_role": "tests",
+      "target_module": "noetrium_platform.foundation.scope.api",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "tests.test_shared_host_foreign_reoccupation_v1",
+      "source_role": "tests",
+      "target_module": "noetrium_platform.infrastructure.resources.allocation.api",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "tests.test_shared_host_foreign_reoccupation_v1",
+      "source_role": "tests",
+      "target_module": "noetrium_platform.infrastructure.resources.allocation.runtime",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "tests.test_shared_host_foreign_reoccupation_v1",
+      "source_role": "tests",
+      "target_module": "noetrium_platform.infrastructure.resources.lease.runtime",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "tests.test_shared_host_foreign_reoccupation_v1",
+      "source_role": "tests",
+      "target_module": "noetrium_platform.infrastructure.resources.providers",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "tests.test_shared_host_pressure_admission_v1",
+      "source_role": "tests",
+      "target_module": "noetrium_platform.composition.shared_host_pressure",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "tests.test_shared_host_pressure_admission_v1",
+      "source_role": "tests",
+      "target_module": "noetrium_platform.foundation.kernel.concurrency.api",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "tests.test_shared_host_pressure_admission_v1",
+      "source_role": "tests",
+      "target_module": "noetrium_platform.infrastructure.resources.compute.api",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "tests.test_shared_host_pressure_admission_v1",
+      "source_role": "tests",
+      "target_module": "noetrium_platform.research.execution.policy.api",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "tests.test_shared_host_pressure_admission_v1",
+      "source_role": "tests",
+      "target_module": "noetrium_platform.research.execution.policy.composition",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "tests.test_shared_network_pressure_admission_v1",
+      "source_role": "tests",
+      "target_module": "noetrium_platform.composition.shared_host_pressure",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "tests.test_shared_network_pressure_admission_v1",
+      "source_role": "tests",
+      "target_module": "noetrium_platform.foundation.kernel.concurrency.api",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "tests.test_shared_network_pressure_admission_v1",
+      "source_role": "tests",
+      "target_module": "noetrium_platform.infrastructure.resources.compute.api",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "tests.test_shared_network_pressure_admission_v1",
+      "source_role": "tests",
+      "target_module": "noetrium_platform.research.execution.policy.api",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "tests.test_shared_network_pressure_admission_v1",
+      "source_role": "tests",
+      "target_module": "noetrium_platform.research.execution.policy.composition",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "tests.test_shared_storage_pressure_admission_v1",
+      "source_role": "tests",
+      "target_module": "noetrium_platform.composition.shared_host_pressure",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "tests.test_shared_storage_pressure_admission_v1",
+      "source_role": "tests",
+      "target_module": "noetrium_platform.foundation.kernel.concurrency.api",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "tests.test_shared_storage_pressure_admission_v1",
+      "source_role": "tests",
+      "target_module": "noetrium_platform.infrastructure.resources.compute.api",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "tests.test_shared_storage_pressure_admission_v1",
+      "source_role": "tests",
+      "target_module": "noetrium_platform.infrastructure.resources.directory.api",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "tests.test_shared_storage_pressure_admission_v1",
+      "source_role": "tests",
+      "target_module": "noetrium_platform.infrastructure.resources.directory.runtime",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "tests.test_shared_storage_pressure_admission_v1",
+      "source_role": "tests",
+      "target_module": "noetrium_platform.research.execution.policy.api",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "tests.test_shared_storage_pressure_admission_v1",
+      "source_role": "tests",
+      "target_module": "noetrium_platform.research.execution.policy.composition",
+      "target_role": "core_platform"
+    },
+    {
       "source_module": "tests.test_software_environment_v1",
       "source_role": "tests",
       "target_module": "noetrium_platform.capabilities.environment.api",
@@ -41771,7 +42011,7 @@
   ],
   "role_import_counts": [
     {
-      "count": 2609,
+      "count": 2615,
       "source_role": "core_platform",
       "target_role": "core_platform"
     },
@@ -41831,7 +42071,7 @@
       "target_role": "research_reproductions"
     },
     {
-      "count": 2820,
+      "count": 2852,
       "source_role": "tests",
       "target_role": "core_platform"
     },
@@ -41856,7 +42096,7 @@
       "target_role": "research_reproductions"
     },
     {
-      "count": 87,
+      "count": 89,
       "source_role": "tests",
       "target_role": "tests"
     },
@@ -41887,18 +42127,18 @@
     }
   ],
   "role_python_module_counts": {
-    "core_platform": 1912,
+    "core_platform": 1915,
     "examples": 6,
     "other": 7,
     "public_facade": 40,
     "reference_components": 22,
     "reference_orchestration": 10,
     "research_reproductions": 778,
-    "tests": 839,
+    "tests": 845,
     "tooling": 80
   },
   "role_symbol_counts": {
-    "core_platform": 3394,
+    "core_platform": 3405,
     "examples": 3,
     "other": 23,
     "public_facade": 4,
@@ -41906,11 +42146,11 @@
     "reference_orchestration": 14,
     "research_reproductions": 444,
     "sdk": 5,
-    "tests": 1061,
+    "tests": 1069,
     "tooling": 39
   },
   "schema": "noetrium-repository-code-architecture-index.v1",
-  "source_git_sha": "d62cbe89cb05cce3bbf7989dfeea64b076db868c",
+  "source_git_sha": "b4f5110f7089680ee08259de624e14c04cf603b5",
   "symbols": [
     {
       "bases": [],
@@ -63270,7 +63510,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 29,
+      "line": 38,
       "methods": [
         "heartbeats",
         "open_task_group",
@@ -63717,7 +63957,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 50,
+      "line": 56,
       "methods": [
         "__init__",
         "wait"
@@ -63761,7 +64001,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 71,
+      "line": 77,
       "methods": [
         "start_background_controllers",
         "quiesce_background_controllers",
@@ -65062,7 +65302,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 49,
+      "line": 55,
       "methods": [
         "__init__",
         "_require_workloads_open",
@@ -67885,6 +68125,183 @@
       "name": "DurableCrashHandoffStore",
       "path": "noetrium_platform/composition/service_crash_store.py",
       "qualname": "noetrium_platform.composition.service_crash_store.DurableCrashHandoffStore",
+      "role": "core_platform"
+    },
+    {
+      "bases": [],
+      "decorators": [
+        "dataclass(frozen=True, slots=True)"
+      ],
+      "fields": [
+        "available: bool",
+        "max_utilization_percent: float | None",
+        "detail: str"
+      ],
+      "kind": "dataclass",
+      "language": "python",
+      "line": 54,
+      "methods": [
+        "__post_init__"
+      ],
+      "module": "noetrium_platform.composition.shared_host_pressure",
+      "name": "SharedNetworkPressureStatus",
+      "path": "noetrium_platform/composition/shared_host_pressure.py",
+      "qualname": "noetrium_platform.composition.shared_host_pressure.SharedNetworkPressureStatus",
+      "role": "core_platform"
+    },
+    {
+      "bases": [
+        "Protocol"
+      ],
+      "decorators": [],
+      "fields": [],
+      "kind": "protocol",
+      "language": "python",
+      "line": 73,
+      "methods": [
+        "snapshot"
+      ],
+      "module": "noetrium_platform.composition.shared_host_pressure",
+      "name": "SharedNetworkPressureObserverPort",
+      "path": "noetrium_platform/composition/shared_host_pressure.py",
+      "qualname": "noetrium_platform.composition.shared_host_pressure.SharedNetworkPressureObserverPort",
+      "role": "core_platform"
+    },
+    {
+      "bases": [],
+      "decorators": [],
+      "fields": [],
+      "kind": "class",
+      "language": "python",
+      "line": 77,
+      "methods": [
+        "__init__",
+        "_read",
+        "snapshot"
+      ],
+      "module": "noetrium_platform.composition.shared_host_pressure",
+      "name": "LocalSharedNetworkPressureObserver",
+      "path": "noetrium_platform/composition/shared_host_pressure.py",
+      "qualname": "noetrium_platform.composition.shared_host_pressure.LocalSharedNetworkPressureObserver",
+      "role": "core_platform"
+    },
+    {
+      "bases": [],
+      "decorators": [
+        "dataclass(frozen=True, slots=True)"
+      ],
+      "fields": [
+        "available: bool",
+        "free_bytes: int",
+        "free_inodes: int | None",
+        "detail: str"
+      ],
+      "kind": "dataclass",
+      "language": "python",
+      "line": 205,
+      "methods": [
+        "__post_init__"
+      ],
+      "module": "noetrium_platform.composition.shared_host_pressure",
+      "name": "SharedStoragePressureStatus",
+      "path": "noetrium_platform/composition/shared_host_pressure.py",
+      "qualname": "noetrium_platform.composition.shared_host_pressure.SharedStoragePressureStatus",
+      "role": "core_platform"
+    },
+    {
+      "bases": [
+        "Protocol"
+      ],
+      "decorators": [],
+      "fields": [],
+      "kind": "protocol",
+      "language": "python",
+      "line": 222,
+      "methods": [
+        "snapshot"
+      ],
+      "module": "noetrium_platform.composition.shared_host_pressure",
+      "name": "SharedStoragePressureObserverPort",
+      "path": "noetrium_platform/composition/shared_host_pressure.py",
+      "qualname": "noetrium_platform.composition.shared_host_pressure.SharedStoragePressureObserverPort",
+      "role": "core_platform"
+    },
+    {
+      "bases": [],
+      "decorators": [],
+      "fields": [],
+      "kind": "class",
+      "language": "python",
+      "line": 226,
+      "methods": [
+        "__init__",
+        "_existing_capacity_path",
+        "snapshot"
+      ],
+      "module": "noetrium_platform.composition.shared_host_pressure",
+      "name": "LocalSharedStoragePressureObserver",
+      "path": "noetrium_platform/composition/shared_host_pressure.py",
+      "qualname": "noetrium_platform.composition.shared_host_pressure.LocalSharedStoragePressureObserver",
+      "role": "core_platform"
+    },
+    {
+      "bases": [],
+      "decorators": [
+        "dataclass(frozen=True, slots=True)"
+      ],
+      "fields": [
+        "min_available_memory_bytes: int",
+        "min_available_pids: int",
+        "min_available_fds: int",
+        "min_storage_free_bytes: int",
+        "min_storage_free_inodes: int",
+        "max_cpu_pressure_some_avg10_percent: float",
+        "max_memory_pressure_some_avg10_percent: float",
+        "max_io_pressure_some_avg10_percent: float",
+        "max_network_utilization_percent: float",
+        "poll_interval_seconds: float",
+        "fail_closed_when_runtime_unavailable: bool"
+      ],
+      "kind": "dataclass",
+      "language": "python",
+      "line": 285,
+      "methods": [
+        "__post_init__"
+      ],
+      "module": "noetrium_platform.composition.shared_host_pressure",
+      "name": "SharedHostPressurePolicy",
+      "path": "noetrium_platform/composition/shared_host_pressure.py",
+      "qualname": "noetrium_platform.composition.shared_host_pressure.SharedHostPressurePolicy",
+      "role": "core_platform"
+    },
+    {
+      "bases": [
+        "ExecutionAdmissionPort"
+      ],
+      "decorators": [],
+      "fields": [],
+      "kind": "class",
+      "language": "python",
+      "line": 343,
+      "methods": [
+        "__init__",
+        "register_group",
+        "unregister_group",
+        "_status",
+        "_storage_status",
+        "_network_status",
+        "_pressure_reason",
+        "_cancelled",
+        "_wait_for_pressure_clearance",
+        "acquire",
+        "acquire_many",
+        "snapshot",
+        "close"
+      ],
+      "module": "noetrium_platform.composition.shared_host_pressure",
+      "name": "SharedHostPressureAdmissionGate",
+      "path": "noetrium_platform/composition/shared_host_pressure.py",
+      "qualname": "noetrium_platform.composition.shared_host_pressure.SharedHostPressureAdmissionGate",
       "role": "core_platform"
     },
     {
@@ -83456,6 +83873,52 @@
       ],
       "decorators": [],
       "fields": [
+        "REGULAR_FILE",
+        "DIRECTORY"
+      ],
+      "kind": "enum",
+      "language": "python",
+      "line": 12,
+      "methods": [],
+      "module": "noetrium_platform.foundation.kernel.kernel.durability.filesystem_generation",
+      "name": "FilesystemCarrierKind",
+      "path": "noetrium_platform/foundation/kernel/kernel/durability/filesystem_generation.py",
+      "qualname": "noetrium_platform.foundation.kernel.kernel.durability.filesystem_generation.FilesystemCarrierKind",
+      "role": "core_platform"
+    },
+    {
+      "bases": [],
+      "decorators": [
+        "dataclass(frozen=True, slots=True)"
+      ],
+      "fields": [
+        "kind: FilesystemCarrierKind",
+        "device: int",
+        "inode: int",
+        "change_time_ns: int"
+      ],
+      "kind": "dataclass",
+      "language": "python",
+      "line": 18,
+      "methods": [
+        "__post_init__",
+        "same_object",
+        "same_generation",
+        "to_data",
+        "from_data"
+      ],
+      "module": "noetrium_platform.foundation.kernel.kernel.durability.filesystem_generation",
+      "name": "FilesystemCarrierGeneration",
+      "path": "noetrium_platform/foundation/kernel/kernel/durability/filesystem_generation.py",
+      "qualname": "noetrium_platform.foundation.kernel.kernel.durability.filesystem_generation.FilesystemCarrierGeneration",
+      "role": "core_platform"
+    },
+    {
+      "bases": [
+        "StrEnum"
+      ],
+      "decorators": [],
+      "fields": [
         "AUTHORITATIVE",
         "PROJECTION"
       ],
@@ -84097,7 +84560,7 @@
       ],
       "kind": "enum",
       "language": "python",
-      "line": 235,
+      "line": 239,
       "methods": [],
       "module": "noetrium_platform.foundation.kernel.kernel.journal",
       "name": "MachineJournalRetirementPhase",
@@ -84121,7 +84584,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 242,
+      "line": 246,
       "methods": [
         "__post_init__",
         "closure_complete",
@@ -84143,7 +84606,7 @@
       "fields": [],
       "kind": "protocol",
       "language": "python",
-      "line": 313,
+      "line": 317,
       "methods": [
         "assess_gc",
         "purge"
@@ -84164,7 +84627,7 @@
       "fields": [],
       "kind": "protocol",
       "language": "python",
-      "line": 330,
+      "line": 334,
       "methods": [
         "append",
         "latest",
@@ -84183,7 +84646,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 337,
+      "line": 341,
       "methods": [
         "__init__",
         "clone",
@@ -84207,7 +84670,7 @@
       "fields": [],
       "kind": "protocol",
       "language": "python",
-      "line": 409,
+      "line": 413,
       "methods": [
         "append",
         "latest",
@@ -84228,7 +84691,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 416,
+      "line": 420,
       "methods": [
         "__init__",
         "_history_for",
@@ -84249,7 +84712,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 460,
+      "line": 464,
       "methods": [
         "__init__"
       ],
@@ -84268,7 +84731,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 472,
+      "line": 476,
       "methods": [
         "__init__",
         "_file_key",
@@ -91829,6 +92292,29 @@
       ],
       "fields": [
         "contract_digest: str",
+        "quiescent: bool",
+        "summary: str",
+        "evidence_refs: tuple[str, ...]"
+      ],
+      "kind": "dataclass",
+      "language": "python",
+      "line": 19,
+      "methods": [
+        "__post_init__"
+      ],
+      "module": "noetrium_platform.infrastructure.lifecycle.service.api.ports",
+      "name": "ServiceQuiescenceOutcome",
+      "path": "noetrium_platform/infrastructure/lifecycle/service/api/ports.py",
+      "qualname": "noetrium_platform.infrastructure.lifecycle.service.api.ports.ServiceQuiescenceOutcome",
+      "role": "core_platform"
+    },
+    {
+      "bases": [],
+      "decorators": [
+        "dataclass(frozen=True, slots=True)"
+      ],
+      "fields": [
+        "contract_digest: str",
         "process: ServiceProcessIdentity",
         "ready_evidence_ref: str",
         "ready_at: float",
@@ -91836,7 +92322,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 19,
+      "line": 41,
       "methods": [
         "__post_init__"
       ],
@@ -91858,7 +92344,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 33,
+      "line": 55,
       "methods": [],
       "module": "noetrium_platform.infrastructure.lifecycle.service.api.ports",
       "name": "ServiceStopOutcome",
@@ -91880,7 +92366,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 40,
+      "line": 62,
       "methods": [
         "__post_init__"
       ],
@@ -91898,7 +92384,7 @@
       "fields": [],
       "kind": "protocol",
       "language": "python",
-      "line": 53,
+      "line": 75,
       "methods": [
         "digest"
       ],
@@ -91920,7 +92406,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 59,
+      "line": 81,
       "methods": [
         "ready"
       ],
@@ -91938,7 +92424,7 @@
       "fields": [],
       "kind": "protocol",
       "language": "python",
-      "line": 69,
+      "line": 91,
       "methods": [
         "validate"
       ],
@@ -91956,9 +92442,11 @@
       "fields": [],
       "kind": "protocol",
       "language": "python",
-      "line": 79,
+      "line": 101,
       "methods": [
         "reconcile_exact",
+        "inspect_quiescence_exact",
+        "quiesce_exact",
         "start_exact",
         "verify_ready_exact",
         "stop_exact"
@@ -91977,7 +92465,7 @@
       "fields": [],
       "kind": "protocol",
       "language": "python",
-      "line": 92,
+      "line": 122,
       "methods": [
         "alive"
       ],
@@ -91995,7 +92483,7 @@
       "fields": [],
       "kind": "protocol",
       "language": "python",
-      "line": 98,
+      "line": 128,
       "methods": [
         "wait_ready"
       ],
@@ -92013,7 +92501,7 @@
       "fields": [],
       "kind": "protocol",
       "language": "python",
-      "line": 109,
+      "line": 139,
       "methods": [
         "open"
       ],
@@ -92496,7 +92984,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 20,
+      "line": 22,
       "methods": [
         "__init__",
         "poll",
@@ -92515,7 +93003,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 36,
+      "line": 38,
       "methods": [
         "__init__",
         "start"
@@ -93176,12 +93664,15 @@
         "PREPARED",
         "PROCESS_CONFIRMED",
         "STATE_COMMITTED",
-        "COMPLETE"
+        "COMPLETE",
+        "ABORTED"
       ],
       "kind": "enum",
       "language": "python",
       "line": 10,
-      "methods": [],
+      "methods": [
+        "terminal"
+      ],
       "module": "noetrium_platform.infrastructure.lifecycle.service.runtime.start_intent_contracts",
       "name": "ServiceStartIntentPhase",
       "path": "noetrium_platform/infrastructure/lifecycle/service/runtime/start_intent_contracts.py",
@@ -93206,7 +93697,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 18,
+      "line": 26,
       "methods": [],
       "module": "noetrium_platform.infrastructure.lifecycle.service.runtime.start_intent_contracts",
       "name": "ServiceStartIntent",
@@ -93346,6 +93837,7 @@
         "record_process",
         "state_committed",
         "complete",
+        "abort",
         "unresolved"
       ],
       "module": "noetrium_platform.infrastructure.lifecycle.service.runtime.start_journal",
@@ -98844,7 +99336,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 326,
+      "line": 331,
       "methods": [
         "__init__",
         "_reconcile_allocation_locked",
@@ -99350,6 +99842,11 @@
         "effective_cpu_cores: float",
         "cpu_load_1m: float",
         "available_memory_bytes: int",
+        "cpu_pressure_some_avg10_percent: float | None",
+        "memory_pressure_some_avg10_percent: float | None",
+        "io_pressure_some_avg10_percent: float | None",
+        "available_pids: int | None",
+        "available_fds: int | None",
         "detail: str"
       ],
       "kind": "dataclass",
@@ -99376,7 +99873,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 52,
+      "line": 79,
       "methods": [
         "__post_init__"
       ],
@@ -99394,7 +99891,7 @@
       "fields": [],
       "kind": "protocol",
       "language": "python",
-      "line": 62,
+      "line": 89,
       "methods": [
         "snapshot"
       ],
@@ -99412,7 +99909,7 @@
       "fields": [],
       "kind": "protocol",
       "language": "python",
-      "line": 65,
+      "line": 92,
       "methods": [
         "snapshot"
       ],
@@ -99448,11 +99945,14 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 15,
+      "line": 19,
       "methods": [
         "__init__",
         "_integer_file",
         "_meminfo_bytes",
+        "_pressure_some_avg10_percent",
+        "_available_pids",
+        "_available_fds",
         "_effective_cpu_cores",
         "_effective_available_memory",
         "snapshot"
@@ -99652,7 +100152,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 369,
+      "line": 350,
       "methods": [
         "__init__",
         "_usage",
@@ -99680,7 +100180,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 691,
+      "line": 690,
       "methods": [
         "__init__",
         "_connection",
@@ -99795,7 +100295,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 129,
+      "line": 139,
       "methods": [],
       "module": "noetrium_platform.infrastructure.resources.container.api.contracts",
       "name": "DockerContainerReconciliation",
@@ -100245,7 +100745,9 @@
         "path: Path",
         "total_bytes: int",
         "used_bytes: int",
-        "free_bytes: int"
+        "free_bytes: int",
+        "total_inodes: int | None",
+        "free_inodes: int | None"
       ],
       "kind": "dataclass",
       "language": "python",
@@ -100267,11 +100769,13 @@
         "top_level_entries: int",
         "total_bytes: int",
         "used_bytes: int",
-        "free_bytes: int"
+        "free_bytes: int",
+        "total_inodes: int | None",
+        "free_inodes: int | None"
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 161,
+      "line": 163,
       "methods": [],
       "module": "noetrium_platform.infrastructure.resources.directory.api.contracts",
       "name": "DirectoryOverview",
@@ -100292,7 +100796,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 170,
+      "line": 174,
       "methods": [],
       "module": "noetrium_platform.infrastructure.resources.directory.api.contracts",
       "name": "DirectoryEntryStats",
@@ -100310,11 +100814,14 @@
         "modified_at: float",
         "files: int",
         "directories: int",
-        "bytes: int"
+        "bytes: int",
+        "device: int",
+        "inode: int",
+        "change_time_ns: int"
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 178,
+      "line": 182,
       "methods": [],
       "module": "noetrium_platform.infrastructure.resources.directory.api.contracts",
       "name": "DirectoryCleanupCandidate",
@@ -100430,7 +100937,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 12,
+      "line": 13,
       "methods": [
         "__init__",
         "clean_plan",
@@ -100448,9 +100955,10 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 16,
+      "line": 17,
       "methods": [
         "__init__",
+        "_inode_capacity",
         "usage",
         "overview",
         "content_stats",
@@ -100490,11 +100998,13 @@
       "fields": [
         "RETIRED",
         "QUARANTINED",
+        "PURGING",
+        "EMPTY",
         "PURGED"
       ],
       "kind": "enum",
       "language": "python",
-      "line": 46,
+      "line": 54,
       "methods": [],
       "module": "noetrium_platform.infrastructure.resources.directory.runtime.workspaces",
       "name": "_WorkspaceRetirementPhase",
@@ -100508,7 +101018,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 52,
+      "line": 62,
       "methods": [
         "__init__",
         "_root",
@@ -100521,15 +101031,18 @@
         "allocate_workspace",
         "list_workspaces",
         "_metadata_paths",
+        "_decode_metadata_payload",
         "_decode_metadata",
         "assess_workspace_gc",
         "_metadata_digest",
+        "_directory_generation",
         "_decode_retirement",
         "_retirement_payload",
         "_publish_retirement",
         "_validate_live_workspace_for_retirement",
+        "_validate_quarantine_for_retirement",
         "_move_to_quarantine",
-        "_purge_quarantine",
+        "_purge_quarantine_contents",
         "remove_workspace",
         "_validate_name",
         "_validate_optional_text"
@@ -114222,11 +114735,12 @@
       "fields": [
         "RETIRED",
         "QUARANTINED",
+        "PURGING",
         "PURGED"
       ],
       "kind": "enum",
       "language": "python",
-      "line": 50,
+      "line": 53,
       "methods": [],
       "module": "noetrium_platform.research.experimentation.lifecycle.run.runtime.artifacts",
       "name": "_RunArtifactRetirementPhase",
@@ -114242,7 +114756,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 57,
+      "line": 61,
       "methods": [
         "__init__",
         "_retirement_path",
@@ -131898,6 +132412,23 @@
       "fields": [],
       "kind": "class",
       "language": "python",
+      "line": 18,
+      "methods": [
+        "__init__",
+        "snapshot"
+      ],
+      "module": "tests.resource_compute_support",
+      "name": "IdleGpuRuntimeObserver",
+      "path": "tests/resource_compute_support.py",
+      "qualname": "tests.resource_compute_support.IdleGpuRuntimeObserver",
+      "role": "tests"
+    },
+    {
+      "bases": [],
+      "decorators": [],
+      "fields": [],
+      "kind": "class",
+      "language": "python",
       "line": 42,
       "methods": [
         "__init__",
@@ -133882,7 +134413,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 25,
+      "line": 29,
       "methods": [
         "__init__",
         "snapshot"
@@ -133899,7 +134430,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 14,
+      "line": 15,
       "methods": [
         "__init__",
         "snapshot"
@@ -133916,7 +134447,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 100,
+      "line": 106,
       "methods": [
         "snapshot"
       ],
@@ -133932,7 +134463,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 105,
+      "line": 111,
       "methods": [
         "snapshot"
       ],
@@ -133948,7 +134479,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 121,
+      "line": 148,
       "methods": [
         "snapshot"
       ],
@@ -136294,7 +136825,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 184,
+      "line": 196,
       "methods": [
         "__init__",
         "poll",
@@ -136312,7 +136843,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 201,
+      "line": 213,
       "methods": [
         "visible_pid"
       ],
@@ -136328,7 +136859,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 206,
+      "line": 218,
       "methods": [
         "remember"
       ],
@@ -136344,7 +136875,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 212,
+      "line": 224,
       "methods": [
         "result"
       ],
@@ -136360,7 +136891,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 217,
+      "line": 229,
       "methods": [
         "terminate"
       ],
@@ -136376,7 +136907,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 266,
+      "line": 278,
       "methods": [
         "resolve"
       ],
@@ -136394,7 +136925,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 301,
+      "line": 313,
       "methods": [
         "test_facts_resolves_process_directory_once"
       ],
@@ -136412,7 +136943,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 321,
+      "line": 333,
       "methods": [
         "__init__",
         "_process_directory"
@@ -136714,7 +137245,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 412,
+      "line": 415,
       "methods": [
         "__init__"
       ],
@@ -136730,7 +137261,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 419,
+      "line": 422,
       "methods": [
         "__init__",
         "run"
@@ -136749,7 +137280,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 499,
+      "line": 502,
       "methods": [
         "list_managed"
       ],
@@ -143266,7 +143797,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 42,
+      "line": 73,
       "methods": [
         "__init__",
         "probe"
@@ -143283,7 +143814,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 52,
+      "line": 83,
       "methods": [
         "__init__",
         "probe"
@@ -143300,7 +143831,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 413,
+      "line": 517,
       "methods": [
         "renew_many"
       ],
@@ -143316,7 +143847,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 488,
+      "line": 591,
       "methods": [
         "probe"
       ],
@@ -143457,7 +143988,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 74,
+      "line": 113,
       "methods": [
         "create",
         "python_path",
@@ -143475,7 +144006,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 90,
+      "line": 129,
       "methods": [
         "__init__",
         "run"
@@ -143494,7 +144025,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 106,
+      "line": 145,
       "methods": [],
       "module": "tests.test_runtime_asset_management_v190",
       "name": "RecordingCommandRunner",
@@ -143508,7 +144039,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 110,
+      "line": 149,
       "methods": [
         "__init__",
         "snapshot"
@@ -143525,7 +144056,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 118,
+      "line": 157,
       "methods": [
         "__init__",
         "reconcile_exact",
@@ -143545,7 +144076,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 158,
+      "line": 197,
       "methods": [
         "__init__",
         "open",
@@ -143565,7 +144096,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 222,
+      "line": 261,
       "methods": [
         "test_directory_manager_allocates_and_removes_workspaces",
         "test_python_environment_manager_is_backend_driven",
@@ -143587,6 +144118,7 @@
         "test_tags_and_selectors_support_group_management_without_starting_services",
         "test_desired_state_controller_runs_multiple_cycles_and_persists_status",
         "test_python_environment_export_and_clone_are_management_operations",
+        "test_directory_cleanup_rejects_replaced_entry_from_stale_plan",
         "test_directory_cleanup_plan_is_non_destructive_until_clean_is_requested"
       ],
       "module": "tests.test_runtime_asset_management_v190",
@@ -143601,7 +144133,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 524,
+      "line": 563,
       "methods": [
         "run"
       ],
@@ -143617,7 +144149,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 578,
+      "line": 617,
       "methods": [
         "__init__",
         "run"
@@ -143634,7 +144166,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 736,
+      "line": 775,
       "methods": [
         "__init__",
         "wait"
@@ -148039,6 +148571,122 @@
       "name": "Adapter",
       "path": "tests/test_service_state_codec_v142.py",
       "qualname": "tests.test_service_state_codec_v142.ServiceReadinessReceiptAuthorityV32Tests.Adapter",
+      "role": "tests"
+    },
+    {
+      "bases": [],
+      "decorators": [],
+      "fields": [],
+      "kind": "class",
+      "language": "python",
+      "line": 22,
+      "methods": [
+        "snapshot"
+      ],
+      "module": "tests.test_shared_host_cpu_worker_priority_v1",
+      "name": "_HealthySharedHostObserver",
+      "path": "tests/test_shared_host_cpu_worker_priority_v1.py",
+      "qualname": "tests.test_shared_host_cpu_worker_priority_v1._HealthySharedHostObserver",
+      "role": "tests"
+    },
+    {
+      "bases": [],
+      "decorators": [],
+      "fields": [],
+      "kind": "class",
+      "language": "python",
+      "line": 26,
+      "methods": [
+        "__init__",
+        "probe"
+      ],
+      "module": "tests.test_shared_host_foreign_reoccupation_v1",
+      "name": "_ForeignReoccupationProbe",
+      "path": "tests/test_shared_host_foreign_reoccupation_v1.py",
+      "qualname": "tests.test_shared_host_foreign_reoccupation_v1._ForeignReoccupationProbe",
+      "role": "tests"
+    },
+    {
+      "bases": [],
+      "decorators": [],
+      "fields": [],
+      "kind": "class",
+      "language": "python",
+      "line": 34,
+      "methods": [
+        "__init__",
+        "snapshot"
+      ],
+      "module": "tests.test_shared_host_pressure_admission_v1",
+      "name": "_MutableHostObserver",
+      "path": "tests/test_shared_host_pressure_admission_v1.py",
+      "qualname": "tests.test_shared_host_pressure_admission_v1._MutableHostObserver",
+      "role": "tests"
+    },
+    {
+      "bases": [],
+      "decorators": [],
+      "fields": [],
+      "kind": "class",
+      "language": "python",
+      "line": 31,
+      "methods": [
+        "snapshot"
+      ],
+      "module": "tests.test_shared_network_pressure_admission_v1",
+      "name": "_HealthyHost",
+      "path": "tests/test_shared_network_pressure_admission_v1.py",
+      "qualname": "tests.test_shared_network_pressure_admission_v1._HealthyHost",
+      "role": "tests"
+    },
+    {
+      "bases": [],
+      "decorators": [],
+      "fields": [],
+      "kind": "class",
+      "language": "python",
+      "line": 49,
+      "methods": [
+        "__init__",
+        "snapshot"
+      ],
+      "module": "tests.test_shared_network_pressure_admission_v1",
+      "name": "_Network",
+      "path": "tests/test_shared_network_pressure_admission_v1.py",
+      "qualname": "tests.test_shared_network_pressure_admission_v1._Network",
+      "role": "tests"
+    },
+    {
+      "bases": [],
+      "decorators": [],
+      "fields": [],
+      "kind": "class",
+      "language": "python",
+      "line": 38,
+      "methods": [
+        "snapshot"
+      ],
+      "module": "tests.test_shared_storage_pressure_admission_v1",
+      "name": "_HostObserver",
+      "path": "tests/test_shared_storage_pressure_admission_v1.py",
+      "qualname": "tests.test_shared_storage_pressure_admission_v1._HostObserver",
+      "role": "tests"
+    },
+    {
+      "bases": [],
+      "decorators": [],
+      "fields": [],
+      "kind": "class",
+      "language": "python",
+      "line": 55,
+      "methods": [
+        "__init__",
+        "snapshot"
+      ],
+      "module": "tests.test_shared_storage_pressure_admission_v1",
+      "name": "_StorageObserver",
+      "path": "tests/test_shared_storage_pressure_admission_v1.py",
+      "qualname": "tests.test_shared_storage_pressure_admission_v1._StorageObserver",
       "role": "tests"
     },
     {
