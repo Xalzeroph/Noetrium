@@ -199,10 +199,11 @@ def _linux_force_owned_tree(guardian_pid: int, root_pid: int) -> None:
         if state == "Z":
             continue
         if not _linux_pidfd_kill(pid):
-            raise RuntimeError(
-                "pidfd process-tree cleanup unavailable; refusing racy PID kill "
-                f"for owned descendant pid={pid}"
-            )
+            # Never crash the ownership anchor merely because generation-safe
+            # detached-process signalling is unavailable. Keeping the guardian
+            # alive quarantines the entire tree and prevents upper layers from
+            # falsely declaring physical convergence or releasing resources.
+            return
 
 
 def _exit_code(code: int) -> int:
