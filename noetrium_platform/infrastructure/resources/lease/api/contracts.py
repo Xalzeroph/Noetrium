@@ -80,6 +80,8 @@ class ResourceLease:
     released_at_epoch_s: float | None = None
 
     def __post_init__(self) -> None:
+        if type(self.lease_id) is not str or type(self.purpose) is not str:
+            raise TypeError("lease_id and purpose must be str")
         if not self.lease_id.strip() or not self.purpose.strip():
             raise ValueError("lease identity and purpose must be non-empty")
         if self.holder_generation < 1:
