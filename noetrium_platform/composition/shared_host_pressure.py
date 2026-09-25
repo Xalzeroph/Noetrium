@@ -5,7 +5,7 @@ from enum import StrEnum
 import math
 import os
 from pathlib import Path
-from threading import Lock
+from threading import Lock, RLock
 import time
 from typing import Callable, Protocol
 
@@ -403,6 +403,31 @@ class ResourceCompetitionPolicy:
             raise TypeError("shared-host runtime availability policy must be boolean")
 
 
+class _ResourceCompetitionLease:
+    """Delegate permit plus fail-closed logical resource reservation."""
+
+    def __init__(
+        self,
+        delegate: ExecutionPermitLeasePort,
+        release_reservation: Callable[[], None],
+    ) -> None:
+        self._delegate = delegate
+        self._release_reservation = release_reservation
+        self._released = False
+        self._lock = Lock()
+
+    def release(self) -> None:
+        with self._lock:
+            if self._released:
+                return
+            # Do not drop logical capacity before the underlying permit is
+            # actually released. If delegate release fails, later admission
+            # must continue treating this demand as owned/unknown.
+            self._delegate.release()
+            self._release_reservation()
+            self._released = True
+
+
 class ResourceCompetitionAdmissionGate(ExecutionAdmissionPort):
     """Composition gate that overlays external host pressure on normal admission."""
 
@@ -422,6 +447,12 @@ class ResourceCompetitionAdmissionGate(ExecutionAdmissionPort):
         self._policy = policy
         self._intents: dict[str, AdmissionIntent] = {}
         self._demands: dict[str, ResourceCompetitionDemand] = {}
+        self._reservation_lock = RLock()
+        self._reserved_memory_bytes = 0
+        self._reserved_pids = 0
+        self._reserved_fds = 0
+        self._reserved_storage_bytes = 0
+        self._reserved_storage_inodes = 0
 
     def register_group(
         self,
@@ -454,6 +485,73 @@ class ResourceCompetitionAdmissionGate(ExecutionAdmissionPort):
         self._delegate.unregister_group(group_id)
         self._intents.pop(group_id, None)
         self._demands.pop(group_id, None)
+
+    @staticmethod
+    def _effective_demand(
+        demand: ResourceCompetitionDemand,
+        lane_kind: ExecutionLaneKind,
+    ) -> ResourceCompetitionDemand:
+        if lane_kind in {
+            ExecutionLaneKind.BLOCKING_IO,
+            ExecutionLaneKind.ASYNC_IO,
+        }:
+            return demand
+        return ResourceCompetitionDemand(
+            memory_bytes_per_permit=demand.memory_bytes_per_permit,
+            pids_per_permit=demand.pids_per_permit,
+        )
+
+    def _reserved_demand(self) -> ResourceCompetitionDemand:
+        with self._reservation_lock:
+            return ResourceCompetitionDemand(
+                memory_bytes_per_permit=self._reserved_memory_bytes,
+                pids_per_permit=self._reserved_pids,
+                fds_per_permit=self._reserved_fds,
+                storage_bytes_per_permit=self._reserved_storage_bytes,
+                storage_inodes_per_permit=self._reserved_storage_inodes,
+            )
+
+    def _reserve_demand(
+        self,
+        demand: ResourceCompetitionDemand,
+        *,
+        permit_count: int,
+    ) -> None:
+        self._reserved_memory_bytes += demand.memory_bytes_per_permit * permit_count
+        self._reserved_pids += demand.pids_per_permit * permit_count
+        self._reserved_fds += demand.fds_per_permit * permit_count
+        self._reserved_storage_bytes += demand.storage_bytes_per_permit * permit_count
+        self._reserved_storage_inodes += demand.storage_inodes_per_permit * permit_count
+
+    def _release_one_demand(
+        self,
+        demand: ResourceCompetitionDemand,
+    ) -> None:
+        with self._reservation_lock:
+            next_memory = self._reserved_memory_bytes - demand.memory_bytes_per_permit
+            next_pids = self._reserved_pids - demand.pids_per_permit
+            next_fds = self._reserved_fds - demand.fds_per_permit
+            next_storage_bytes = (
+                self._reserved_storage_bytes - demand.storage_bytes_per_permit
+            )
+            next_storage_inodes = (
+                self._reserved_storage_inodes - demand.storage_inodes_per_permit
+            )
+            if min(
+                next_memory,
+                next_pids,
+                next_fds,
+                next_storage_bytes,
+                next_storage_inodes,
+            ) < 0:
+                raise RuntimeError(
+                    "resource competition reservation accounting underflow"
+                )
+            self._reserved_memory_bytes = next_memory
+            self._reserved_pids = next_pids
+            self._reserved_fds = next_fds
+            self._reserved_storage_bytes = next_storage_bytes
+            self._reserved_storage_inodes = next_storage_inodes
 
     def _status(self) -> HostRuntimeStatus | None:
         try:
@@ -494,7 +592,11 @@ class ResourceCompetitionAdmissionGate(ExecutionAdmissionPort):
             raise KeyError(f"execution group is not registered with resource competition gate: {group_id}")
         if intent.priority is ExecutionPriority.CRITICAL:
             return None
-        demand = self._demands.get(group_id, ResourceCompetitionDemand())
+        demand = self._effective_demand(
+            self._demands.get(group_id, ResourceCompetitionDemand()),
+            lane_kind,
+        )
+        reserved = self._reserved_demand()
 
         status = self._status()
         if status is None:
@@ -506,6 +608,7 @@ class ResourceCompetitionAdmissionGate(ExecutionAdmissionPort):
 
         required_memory = (
             self._policy.min_available_memory_bytes
+            + reserved.memory_bytes_per_permit
             + demand.memory_bytes_per_permit * permit_count
         )
         if status.available_memory_bytes < required_memory:
@@ -521,6 +624,7 @@ class ResourceCompetitionAdmissionGate(ExecutionAdmissionPort):
                 return "pid-runtime-unavailable"
         elif status.available_pids < (
             self._policy.min_available_pids
+            + reserved.pids_per_permit
             + demand.pids_per_permit * permit_count
         ):
             return "pid-headroom"
@@ -560,6 +664,7 @@ class ResourceCompetitionAdmissionGate(ExecutionAdmissionPort):
                 else:
                     required_storage_bytes = (
                         self._policy.min_storage_free_bytes
+                        + reserved.storage_bytes_per_permit
                         + demand.storage_bytes_per_permit * permit_count
                     )
                     if storage.free_bytes < required_storage_bytes:
@@ -575,6 +680,7 @@ class ResourceCompetitionAdmissionGate(ExecutionAdmissionPort):
                             return "storage-inode-runtime-unavailable"
                     elif storage.free_inodes < (
                         self._policy.min_storage_free_inodes
+                        + reserved.storage_inodes_per_permit
                         + demand.storage_inodes_per_permit * permit_count
                     ):
                         return "storage-inode-headroom"
@@ -606,6 +712,7 @@ class ResourceCompetitionAdmissionGate(ExecutionAdmissionPort):
                     return "fd-runtime-unavailable"
             elif status.available_fds < (
                 self._policy.min_available_fds
+                + reserved.fds_per_permit
                 + demand.fds_per_permit * permit_count
             ):
                 return "fd-headroom"
@@ -780,17 +887,35 @@ class ResourceCompetitionAdmissionGate(ExecutionAdmissionPort):
                     "resource competition admission deadline expired after provisional grant"
                 )
 
+            effective_demand = self._effective_demand(
+                self._demands.get(group_id, ResourceCompetitionDemand()),
+                lane_kind,
+            )
             try:
-                decision = self.decision(
-                    group_id,
-                    lane_kind,
-                    permit_count=permit_count,
-                )
+                with self._reservation_lock:
+                    decision = self.decision(
+                        group_id,
+                        lane_kind,
+                        permit_count=permit_count,
+                    )
+                    if decision.admitted:
+                        self._reserve_demand(
+                            effective_demand,
+                            permit_count=permit_count,
+                        )
             except BaseException:
                 self._release_delegate_leases(leases)
                 raise
             if decision.admitted:
-                return leases
+                return tuple(
+                    _ResourceCompetitionLease(
+                        lease,
+                        lambda owned_demand=effective_demand: self._release_one_demand(
+                            owned_demand
+                        ),
+                    )
+                    for lease in leases
+                )
 
             self._release_delegate_leases(leases)
             if intent.mode is AdmissionMode.REJECT:
