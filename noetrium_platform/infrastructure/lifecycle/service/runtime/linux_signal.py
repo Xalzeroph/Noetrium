@@ -9,7 +9,10 @@ from noetrium_platform.infrastructure.lifecycle.process.api import (
     ProcessSupervisorPort,
     ProcessTerminationPolicy,
 )
-from noetrium_platform.infrastructure.lifecycle.service.api import ServiceLaunchContract, ServiceProcessIdentity
+from noetrium_platform.infrastructure.lifecycle.service.api import (
+    ServiceLaunchContract,
+    ServiceProcessIdentity,
+)
 
 from .linux_children import LinuxChildRegistry
 from .linux_procfs import LinuxProcfsReader
@@ -17,12 +20,7 @@ from .process_contracts import ServiceProcessDrift
 
 
 def signal_new_session_process_group(pid: int, sig: signal.Signals) -> bool:
-    """Signal a freshly spawned Linux session leader through the sole killpg authority.
-
-    The service spawner launches children with ``start_new_session=True``.  Cleanup
-    is allowed only while that child is still the leader of the process group whose
-    id equals its pid.  Returning ``False`` means the process already disappeared.
-    """
+    """Signal a freshly spawned Linux session leader through the sole killpg authority."""
 
     try:
         if os.getpgid(pid) != pid:
@@ -37,7 +35,7 @@ def signal_new_session_process_group(pid: int, sig: signal.Signals) -> bool:
 
 @dataclass(slots=True)
 class _ExactLinuxProcess:
-    """Non-blocking process adapter preserving frozen Linux process-group identity."""
+    """Non-blocking adapter preserving target and ownership-anchor generations."""
 
     identity: ServiceProcessIdentity
     procfs: LinuxProcfsReader
@@ -45,13 +43,30 @@ class _ExactLinuxProcess:
 
     @property
     def pid(self) -> int:
-        return int(self.identity.execution_pid)
+        return int(self.identity.ownership_pid)
 
-    def _alive_exact(self) -> bool:
+    def _target_alive_exact(self) -> bool:
         if not self.procfs.alive_pid(self.identity.execution_pid):
             return False
         try:
-            return self.procfs.start_identity(self.identity.pid) == self.identity.start_identity
+            return (
+                self.procfs.start_identity(self.identity.pid)
+                == self.identity.start_identity
+            )
+        except (FileNotFoundError, ProcessLookupError):
+            return False
+
+    def _anchor_alive_exact(self) -> bool:
+        if self.identity.anchor_pid is None:
+            return self._target_alive_exact()
+        assert self.identity.anchor_start_identity is not None
+        if not self.procfs.alive_pid(self.identity.anchor_pid):
+            return False
+        try:
+            return (
+                self.procfs.start_identity(self.identity.anchor_pid)
+                == self.identity.anchor_start_identity
+            )
         except (FileNotFoundError, ProcessLookupError):
             return False
 
@@ -60,37 +75,99 @@ class _ExactLinuxProcess:
             code = self.child.poll()
             if code is not None:
                 return int(code)
-        return None if self._alive_exact() else 0
+        return None if self._anchor_alive_exact() else 0
 
-    def _signal(self, sig: signal.Signals) -> None:
+    def _require_start_identity(self, pid: int, expected: str, label: str) -> None:
+        try:
+            observed = self.procfs.start_identity(pid)
+        except (FileNotFoundError, ProcessLookupError) as exc:
+            raise ProcessLookupError(pid) from exc
+        if observed != expected:
+            raise ServiceProcessDrift(
+                f"{label} start identity drift; refusing to signal reused PID"
+            )
+
+    def _pidfd_signal(
+        self,
+        pid: int,
+        expected_start_identity: str,
+        sig: signal.Signals,
+        *,
+        label: str,
+    ) -> None:
+        pidfd_open = getattr(os, "pidfd_open", None)
+        pidfd_send_signal = getattr(signal, "pidfd_send_signal", None)
+        if pidfd_open is None or pidfd_send_signal is None:
+            raise ServiceProcessDrift(
+                f"{label} pidfd signaling unavailable; refusing racy PID signal"
+            )
+        self._require_start_identity(pid, expected_start_identity, label)
+        try:
+            descriptor = int(pidfd_open(pid, 0))
+        except ProcessLookupError:
+            raise
+        try:
+            # Re-prove after opening. Once the pidfd exists, later numeric PID
+            # reuse cannot retarget the signal.
+            self._require_start_identity(pid, expected_start_identity, label)
+            pidfd_send_signal(descriptor, sig, None, 0)
+        finally:
+            os.close(descriptor)
+
+    def _signal_anchor(self, sig: signal.Signals) -> None:
+        anchor_pid = self.identity.anchor_pid
+        anchor_start = self.identity.anchor_start_identity
+        assert anchor_pid is not None and anchor_start is not None
+        self._require_start_identity(anchor_pid, anchor_start, "ownership anchor")
+        try:
+            observed_pgid = os.getpgid(anchor_pid)
+        except ProcessLookupError:
+            raise
+        if observed_pgid != anchor_pid:
+            raise ServiceProcessDrift(
+                "ownership anchor process-group drift; refusing signal"
+            )
+        self._require_start_identity(anchor_pid, anchor_start, "ownership anchor")
+        # TERM asks the guardian to forward graceful termination to the target
+        # group. Force cleanup is guardian-private SIGUSR1 so the guardian stays
+        # alive long enough to kill/reap setsid and double-fork descendants.
+        delivered = signal.SIGTERM if sig is signal.SIGTERM else signal.SIGUSR1
+        self._pidfd_signal(
+            anchor_pid,
+            anchor_start,
+            delivered,
+            label="ownership anchor",
+        )
+
+    def _signal_target_group(self, sig: signal.Signals) -> None:
         pgid = self.identity.process_group_id
         if pgid is None:
             raise ServiceProcessDrift(
                 "cannot safely signal process without frozen process-group identity"
             )
 
-        def require_exact_start_identity() -> None:
-            try:
-                observed = self.procfs.start_identity(self.identity.pid)
-            except (FileNotFoundError, ProcessLookupError) as exc:
-                raise ProcessLookupError(self.identity.execution_pid) from exc
-            if observed != self.identity.start_identity:
-                raise ServiceProcessDrift(
-                    "process start identity drift; refusing to signal reused PID"
-                )
-
-        # Poll and signal delivery are separate syscalls. Re-prove the
-        # persisted process generation immediately around the PGID check so an
-        # old cleanup cannot target a process/group that reused the same
-        # numeric identifiers after the previous liveness observation.
-        require_exact_start_identity()
+        self._require_start_identity(
+            self.identity.pid,
+            self.identity.start_identity,
+            "process",
+        )
         observed_pgid = os.getpgid(self.identity.execution_pid)
         if observed_pgid != pgid:
             raise ServiceProcessDrift(
                 "process group drift; refusing to signal unrelated process"
             )
-        require_exact_start_identity()
+        self._require_start_identity(
+            self.identity.pid,
+            self.identity.start_identity,
+            "process",
+        )
         os.killpg(pgid, sig)
+
+    def _signal(self, sig: signal.Signals) -> None:
+        if self.identity.anchor_pid is not None:
+            self._signal_anchor(sig)
+            return
+        self._signal_target_group(sig)
 
     def terminate(self) -> None:
         self._signal(signal.SIGTERM)
@@ -100,7 +177,7 @@ class _ExactLinuxProcess:
 
 
 class LinuxProcessSignaler:
-    """Exact Linux process-group signal authority with async exit supervision."""
+    """Exact Linux tree-signal authority with async exit supervision."""
 
     def __init__(
         self,
@@ -112,11 +189,30 @@ class LinuxProcessSignaler:
         self._children = children
         self._process_supervisor = process_supervisor
 
+    def _anchor_alive(self, process: ServiceProcessIdentity) -> bool:
+        if process.anchor_pid is None:
+            return True
+        assert process.anchor_start_identity is not None
+        if not self._procfs.alive_pid(process.anchor_pid):
+            return False
+        try:
+            return (
+                self._procfs.start_identity(process.anchor_pid)
+                == process.anchor_start_identity
+            )
+        except (FileNotFoundError, ProcessLookupError):
+            return False
+
     def alive(self, process: ServiceProcessIdentity) -> bool:
+        if not self._anchor_alive(process):
+            return False
         if not self._procfs.alive_pid(process.execution_pid):
             return False
         try:
-            return self._procfs.start_identity(process.pid) == process.start_identity
+            return (
+                self._procfs.start_identity(process.pid)
+                == process.start_identity
+            )
         except (FileNotFoundError, ProcessLookupError):
             return False
 
@@ -125,24 +221,41 @@ class LinuxProcessSignaler:
         process: ServiceProcessIdentity,
         contract: ServiceLaunchContract,
     ) -> tuple[str, ...]:
-        child = self._children.get(process.execution_pid)
+        owner_pid = process.ownership_pid
+        child = self._children.get(owner_pid)
         exact = _ExactLinuxProcess(process, self._procfs, child)
         if exact.poll() is not None:
-            self._children.forget(process.execution_pid)
+            self._children.forget(owner_pid)
             return (f"proc-already-exited:{process.pid}",)
 
         policy = ProcessTerminationPolicy(
-            poll_interval_seconds=min(0.05, max(0.005, contract.stop_timeout_s / 100.0)),
+            poll_interval_seconds=min(
+                0.05,
+                max(0.005, contract.stop_timeout_s / 100.0),
+            ),
             graceful_timeout_seconds=contract.stop_timeout_s,
-            kill_timeout_seconds=max(1.0, min(5.0, contract.stop_timeout_s)),
+            kill_timeout_seconds=max(
+                1.0,
+                min(5.0, contract.stop_timeout_s),
+            ),
         )
         receipt = self._process_supervisor.terminate(
             f"service:{contract.service_id}:{process.pid}",
             exact,
-            deadline=Deadline.after(policy.graceful_timeout_seconds + policy.kill_timeout_seconds + 1.0),
+            deadline=Deadline.after(
+                policy.graceful_timeout_seconds
+                + policy.kill_timeout_seconds
+                + 1.0
+            ),
             policy=policy,
-        ).result(timeout=policy.graceful_timeout_seconds + policy.kill_timeout_seconds + 2.0)
-        self._children.forget(process.execution_pid)
+        ).result(
+            timeout=(
+                policy.graceful_timeout_seconds
+                + policy.kill_timeout_seconds
+                + 2.0
+            )
+        )
+        self._children.forget(owner_pid)
         prefix = "proc-killed" if receipt.escalated_to_kill else "proc-stopped"
         return (f"{prefix}:{process.pid}",)
 
