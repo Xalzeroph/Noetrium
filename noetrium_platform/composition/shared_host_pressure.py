@@ -262,7 +262,7 @@ class LocalSharedStoragePressureObserver:
 
 
 @dataclass(frozen=True, slots=True)
-class SharedHostPressurePolicy:
+class ResourceCompetitionPolicy:
     """Hard-safety admission policy for shared multi-user hosts.
 
     Noetrium keeps competing when other users arrive. By default, CPU load,
@@ -323,7 +323,7 @@ class SharedHostPressurePolicy:
             raise TypeError("shared-host runtime availability policy must be boolean")
 
 
-class SharedHostPressureAdmissionGate(ExecutionAdmissionPort):
+class ResourceCompetitionAdmissionGate(ExecutionAdmissionPort):
     """Composition gate that overlays external host pressure on normal admission."""
 
     def __init__(
@@ -333,7 +333,7 @@ class SharedHostPressureAdmissionGate(ExecutionAdmissionPort):
         *,
         storage_observer: SharedStoragePressureObserverPort | None = None,
         network_observer: SharedNetworkPressureObserverPort | None = None,
-        policy: SharedHostPressurePolicy = SharedHostPressurePolicy(),
+        policy: ResourceCompetitionPolicy = ResourceCompetitionPolicy(),
     ) -> None:
         self._delegate = delegate
         self._observer = observer
@@ -392,7 +392,7 @@ class SharedHostPressureAdmissionGate(ExecutionAdmissionPort):
     ) -> str | None:
         intent = self._intents.get(group_id)
         if intent is None:
-            raise KeyError(f"execution group is not registered with pressure gate: {group_id}")
+            raise KeyError(f"execution group is not registered with resource competition gate: {group_id}")
         if intent.priority is ExecutionPriority.CRITICAL:
             return None
 
@@ -513,23 +513,23 @@ class SharedHostPressureAdmissionGate(ExecutionAdmissionPort):
     ) -> None:
         intent = self._intents.get(group_id)
         if intent is None:
-            raise KeyError(f"execution group is not registered with pressure gate: {group_id}")
+            raise KeyError(f"execution group is not registered with resource competition gate: {group_id}")
         while True:
             reason = self._pressure_reason(group_id, lane_kind, permit_count)
             if reason is None:
                 return
             if intent.mode is AdmissionMode.REJECT:
                 raise AdmissionRejected(
-                    "shared-host pressure rejected execution admission: "
+                    "resource competition rejected execution admission: "
                     f"group={group_id} lane={lane_kind.value} reason={reason}"
                 )
             if self._cancelled(cancellation):
                 raise TaskCancelled(
-                    cancellation.reason or "shared-host pressure admission cancelled"
+                    cancellation.reason or "resource competition admission cancelled"
                 )
             if deadline is not None and deadline.expired:
                 raise TimeoutError(
-                    "shared-host pressure admission deadline expired: "
+                    "resource competition admission deadline expired: "
                     f"group={group_id} lane={lane_kind.value} reason={reason}"
                 )
             remaining = None if deadline is None else deadline.remaining_seconds
@@ -539,7 +539,7 @@ class SharedHostPressureAdmissionGate(ExecutionAdmissionPort):
                 else min(self._policy.poll_interval_seconds, remaining)
             )
             if sleep_for <= 0:
-                raise TimeoutError("shared-host pressure admission deadline expired")
+                raise TimeoutError("resource competition admission deadline expired")
             time.sleep(sleep_for)
 
     def acquire(
@@ -558,7 +558,7 @@ class SharedHostPressureAdmissionGate(ExecutionAdmissionPort):
             cancellation=cancellation,
         )
         if len(leases) != 1:
-            raise RuntimeError("shared-host pressure gate returned invalid lease cardinality")
+            raise RuntimeError("resource competition gate returned invalid lease cardinality")
         return leases[0]
 
     def acquire_many(
@@ -571,7 +571,7 @@ class SharedHostPressureAdmissionGate(ExecutionAdmissionPort):
         cancellation: CancellationTokenPort | None,
     ) -> tuple[ExecutionPermitLeasePort, ...]:
         if type(permit_count) is not int or permit_count <= 0:
-            raise ValueError("shared-host pressure permit_count must be positive")
+            raise ValueError("resource competition permit_count must be positive")
         self._wait_for_pressure_clearance(
             group_id,
             lane_kind,
@@ -597,8 +597,8 @@ class SharedHostPressureAdmissionGate(ExecutionAdmissionPort):
 __all__ = [
     "LocalSharedNetworkPressureObserver",
     "LocalSharedStoragePressureObserver",
-    "SharedHostPressureAdmissionGate",
-    "SharedHostPressurePolicy",
+    "ResourceCompetitionAdmissionGate",
+    "ResourceCompetitionPolicy",
     "SharedNetworkPressureObserverPort",
     "SharedNetworkPressureStatus",
     "SharedStoragePressureObserverPort",
