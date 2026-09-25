@@ -250,9 +250,9 @@ class ResearchOSExperimentReconciliationRegistry:
             ResearchOSExperimentReconciliationRegistration, ...
         ],
     ) -> None:
-        if type(registrations) is not tuple or not registrations:
+        if type(registrations) is not tuple:
             raise TypeError(
-                "Experiment reconciliation registry requires non-empty typed tuple"
+                "Experiment reconciliation registry requires typed tuple"
             )
         if any(
             type(row) is not ResearchOSExperimentReconciliationRegistration

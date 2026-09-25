@@ -21,7 +21,7 @@
 
 <!-- readme-locale:en -->
 
-<!-- readme-source-sha256:016f6bdbdf3620a35d4855b8d7f92f4ddfbbaf0bf7312d7d63896b83123f0fcf -->
+<!-- readme-source-sha256:8ae7e37540bc540e8ddc011c5ea00d7f1b4082d0f238ab2aa7548c5e36abefaa -->
 
 <p align="center">
   <strong>Research infrastructure for attributable, recoverable, evidence-preserving AI-agent experiments.</strong><br>
@@ -765,21 +765,19 @@ Emit the machine-readable prerequisite manifest:
 ./deploy/noetrium requirements
 ~~~
 
-Formal preflight and execution require a typed authority materializer:
+No materializer configuration is required for the normal path. <code>preflight</code> and <code>run</code> use Noetrium's built-in automatic owner-authority materializer, which derives internal binding IR from the already-frozen programs/studies and inspects owner-system runtime state.
+
+The automatic materializer never invents model, environment, GPU, endpoint, verifier or external-asset proof. A lane whose real owner authority cannot close is retained as a content-addressed <code>BLOCKED</code> lane while unrelated closed lanes continue into the runnable ResearchPortfolio.
+
+An operator may replace the built-in resolver for a specialized deployment:
 
 ~~~bash
 export NOETRIUM_FLEET_AUTHORITY_MATERIALIZER='your.module:factory'
 ~~~
 
-The same setting may be supplied by the control env file. The default is <code>deploy/.env</code>; set <code>NOETRIUM_CONTROL_ENV_FILE</code> to choose another file. Start from <code>deploy/.env.example</code> rather than committing machine-local credentials or paths.
+The same optional override may be supplied by the control env file. The default is <code>deploy/.env</code>; set <code>NOETRIUM_CONTROL_ENV_FILE</code> to choose another file. The factory receives the typed fleet execution context and returns <code>ReproductionFleetAuthorityMaterializerPort</code>.
 
-The factory receives the typed fleet execution context and returns <code>ReproductionFleetAuthorityMaterializerPort</code>.
-
-This is deliberately fail-closed. There is no fallback that guesses a model, environment, GPU, port, Docker container, trial provider or benchmark binding.
-
-The materializer is a composition boundary, not paper semantics. It materializes the owner-authority bindings requested by frozen studies/programs and must not create shadow resource, execution or journal authorities.
-
-If no materializer is configured, <code>./deploy/noetrium run</code> emits the prerequisite manifest and stops.
+The override is a composition boundary, not paper semantics. It must materialize owner-authority truth and must not create shadow resource, execution or journal authorities.
 
 ### 8. Preflight the complete execution closure
 
@@ -787,9 +785,9 @@ If no materializer is configured, <code>./deploy/noetrium run</code> emits the p
 ./deploy/noetrium preflight
 ~~~
 
-Preflight resolves exact authority closure and performs whole-graph admission without creating an execution cut or starting tasks.
+Preflight resolves exact authority closure, filters the authority-closed runnable subgraph, and performs admission without creating an execution cut or starting tasks. Source/materialization blockers and owner-authority gaps are reported per lane and do not abort unrelated lanes.
 
-Treat failure here as a missing authority/binding problem. Do not bypass it with a paper-local runner.
+If no lane currently closes, preflight returns a structured <code>no-runnable-lanes</code> report instead of asking the operator to wire providers manually. Do not bypass blocked lanes with a paper-local runner.
 
 ### 9. Execute
 
@@ -829,6 +827,19 @@ pending
   -> terminal result
   -> downstream unlock or BLOCKED propagation
 ~~~
+
+Repository execution is also lane-fault-isolated before graph admission. Benchmark
+or reproduction-closure failure in one paper does not abort unrelated papers.
+Noetrium independently materializes every exact lane, compiles the closed subset
+into the runnable ResearchPortfolio, and retains content-addressed BLOCKED records
+for the rest. A lane with an externally selected benchmark split must match that
+split exactly; a Study that owns its split internally may materialize its own
+canonical split without inventing an external selection.
+
+Bound reproduction ResearchProgram identities are content-addressed by the exact
+execution-binding digest rather than by embedding free-form binding labels. This
+keeps program IDs valid, deterministic and collision-resistant across arbitrary
+paper-owned binding names.
 
 Durable scheduling adds attempt identities, leases, retry timing, per-node control and reconciliation-required states.
 
@@ -910,23 +921,33 @@ Do not add a second durable history, scheduler, lease registry, checkpoint autho
 Complete canonical paths today:
 
 ~~~text
-project create
+project create (Program-first downstream scaffold)
 project sync
 project doctor
 project test
-provider-neutral project Research OS loading/control
+cardinality-agnostic ResearchPortfolio execution
+generated-project canonical provider binding
 Docker-only environment build/reuse
 repository reproduction fleet planning
-prerequisite emission
-typed authority materialization
-whole-fleet preflight
+automatic internal prerequisite/manifest compilation
+automatic owner-authority materialization
+lane-fault-isolated authority audit
+authority-closed subgraph preflight
 managed fleet execution
 resource lifecycle/reconciliation
 ~~~
 
-Not yet complete: generic generated-project external provider binding through <code>noetrium run --config</code>. That option currently fails closed because the canonical provider resolver has not been wired into the project loader.
+Normal repository execution is zero-glue at the operator boundary:
+<code>./deploy/noetrium run</code>. The platform compiles internal Research OS and
+binding IR, materializes what current owner authorities can prove, executes only
+the closed subgraph, and retains exact BLOCKED diagnostics for unavailable lanes.
+<code>NOETRIUM_FLEET_AUTHORITY_MATERIALIZER</code> is an optional advanced override,
+not a prerequisite.
 
-For real server experiments today, use a canonical composition path that materializes the required owner authorities. In this repository, that path is the Docker reproduction fleet.
+A lane may still be BLOCKED because its exact scientific assets do not exist on the
+machine or in the repository—for example an unavailable paper-era checkpoint,
+benchmark cut, verifier or environment. That is scientific/provenance truth, not
+operator glue, and Noetrium does not silently substitute another asset.
 
 [Environment profile registry](deploy/environments/README.md) ·
 [Server workflow](docs/infrastructure/server/SERVER_FIRST_WORKFLOW.md) ·

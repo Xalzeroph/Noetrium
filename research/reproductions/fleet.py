@@ -53,6 +53,7 @@ from .research_os import (
     ReproductionExecutionRequest,
     ReproductionResearchOSCompileError,
     ReproductionStudyFactoryBinding,
+    bound_reproduction_program_id,
     compile_bound_reproduction_research_program,
     executable_reproduction_definitions,
     expand_resolved_reproduction_benchmark_lanes,
@@ -173,10 +174,14 @@ class ReproductionFleetLane:
             raise ValueError("fleet lane benchmark identity drifted")
         if self.study.benchmark.cut_digest != self.request.benchmark.cut_digest:
             raise ValueError("fleet lane Study benchmark cut drifted")
-        if self.study.benchmark_split_id != self.binding.benchmark_split_id:
+        if (
+            self.binding.benchmark_split_id is not None
+            and self.study.benchmark_split_id != self.binding.benchmark_split_id
+        ):
             raise ValueError("fleet lane Study split identity drifted")
-        expected_program_id = (
-            f"{self.definition.package}.{self.binding.binding_id}"
+        expected_program_id = bound_reproduction_program_id(
+            self.definition,
+            self.binding,
         )
         if self.program.program_id != expected_program_id:
             raise ValueError("fleet lane ResearchProgram identity drifted")
@@ -242,6 +247,175 @@ class ReproductionFleetMaterialization:
         )
 
 
+@dataclass(frozen=True, slots=True)
+class ReproductionFleetMaterializationBlocker:
+    """One independently blocked repository reproduction or execution request."""
+
+    package: str
+    stage: str
+    error_type: str
+    message: str
+    requirement_digest: str
+    blocker_digest: str = field(init=False)
+
+    def __post_init__(self) -> None:
+        for field_name in ("package", "stage", "error_type"):
+            value = getattr(self, field_name)
+            if type(value) is not str or not value.strip() or value != value.strip():
+                raise ValueError(
+                    f"fleet materialization blocker {field_name} must be canonical text"
+                )
+        if type(self.message) is not str:
+            raise TypeError("fleet materialization blocker message must be text")
+        _require_sha256(
+            self.requirement_digest,
+            "fleet materialization blocker requirement_digest",
+        )
+        object.__setattr__(
+            self,
+            "blocker_digest",
+            canonical_digest(
+                {
+                    "package": self.package,
+                    "stage": self.stage,
+                    "error_type": self.error_type,
+                    "message": self.message,
+                    "requirement_digest": self.requirement_digest,
+                }
+            ),
+        )
+
+
+@dataclass(frozen=True, slots=True)
+class PartialReproductionFleetMaterialization:
+    """Runnable repository subgraph plus independently blocked source lanes."""
+
+    materialization: ReproductionFleetMaterialization | None
+    blockers: tuple[ReproductionFleetMaterializationBlocker, ...]
+    discovery_digest: str = field(init=False)
+
+    def __post_init__(self) -> None:
+        if (
+            self.materialization is not None
+            and type(self.materialization) is not ReproductionFleetMaterialization
+        ):
+            raise TypeError(
+                "partial fleet materialization must contain typed materialization"
+            )
+        if type(self.blockers) is not tuple or any(
+            type(row) is not ReproductionFleetMaterializationBlocker
+            for row in self.blockers
+        ):
+            raise TypeError("partial fleet blockers must be typed immutable tuple")
+        ordered = tuple(sorted(self.blockers, key=lambda row: row.blocker_digest))
+        if len({row.blocker_digest for row in ordered}) != len(ordered):
+            raise ValueError("partial fleet blockers must be unique")
+        object.__setattr__(self, "blockers", ordered)
+        object.__setattr__(
+            self,
+            "discovery_digest",
+            canonical_digest(
+                {
+                    "materialization_digest": (
+                        None
+                        if self.materialization is None
+                        else self.materialization.materialization_digest
+                    ),
+                    "blockers": tuple(row.blocker_digest for row in ordered),
+                }
+            ),
+        )
+
+    @property
+    def runnable_lane_count(self) -> int:
+        return (
+            0
+            if self.materialization is None
+            else len(self.materialization.lanes)
+        )
+
+
+def _resolve_definition_execution_requests(
+    definition: ReproductionDefinition,
+    benchmark_resolver: ReproductionBenchmarkResolverPort,
+) -> tuple[ReproductionExecutionRequest, ...]:
+    factories = resolve_study_factory_bindings(definition)
+    split_consumers = set(resolve_benchmark_split_consumers(definition))
+    method_split_axis = any(
+        consumer.startswith("method:")
+        for consumer in split_consumers
+    )
+    requests: list[ReproductionExecutionRequest] = []
+    covered_benchmarks: set[str] = set()
+
+    for factory in factories:
+        selections = benchmark_resolver.resolve(definition, factory)
+        if type(selections) is not tuple or not selections:
+            raise ReproductionResearchOSCompileError(
+                f"{definition.package} Study {factory.qualname} has no "
+                "exact benchmark selection"
+            )
+        if any(
+            type(row) is not ReproductionBenchmarkSelection
+            for row in selections
+        ):
+            raise TypeError(
+                f"{definition.package} benchmark resolver returned "
+                "untyped selection"
+            )
+        selection_digests = tuple(row.selection_digest for row in selections)
+        if len(selection_digests) != len(set(selection_digests)):
+            raise ReproductionResearchOSCompileError(
+                f"{definition.package} Study {factory.qualname} returned "
+                "duplicate benchmark selections"
+            )
+
+        split_aware = (
+            method_split_axis
+            or f"study:{factory.qualname}" in split_consumers
+        )
+        for selection in sorted(
+            selections,
+            key=lambda row: row.selection_digest,
+        ):
+            benchmark_id = selection.benchmark.benchmark_id
+            if benchmark_id not in definition.catalog.benchmark_ids:
+                raise ReproductionResearchOSCompileError(
+                    f"{definition.package} benchmark authority returned "
+                    f"out-of-catalog benchmark {benchmark_id!r}"
+                )
+            if split_aware and not selection.benchmark_split_ids:
+                raise ReproductionResearchOSCompileError(
+                    f"{definition.package} Study {factory.qualname} "
+                    "requires explicit benchmark split selection"
+                )
+            if not split_aware and selection.benchmark_split_ids:
+                raise ReproductionResearchOSCompileError(
+                    f"{definition.package} Study {factory.qualname} has "
+                    "no external benchmark split axis"
+                )
+            requests.append(
+                ReproductionExecutionRequest(
+                    definition.package,
+                    factory.qualname,
+                    selection.benchmark,
+                    selection.benchmark_split_ids,
+                    selection.resolution_proof_digest,
+                )
+            )
+            covered_benchmarks.add(benchmark_id)
+
+    missing = tuple(
+        sorted(set(definition.catalog.benchmark_ids) - covered_benchmarks)
+    )
+    if missing:
+        raise ReproductionResearchOSCompileError(
+            f"{definition.package} benchmark authority did not close "
+            f"catalog benchmarks: {missing}"
+        )
+    return tuple(requests)
+
+
 def resolve_repository_execution_requests(
     benchmark_resolver: ReproductionBenchmarkResolverPort,
 ) -> tuple[ReproductionExecutionRequest, ...]:
@@ -254,79 +428,14 @@ def resolve_repository_execution_requests(
         "fleet benchmark authority_digest",
     )
 
-    requests: list[ReproductionExecutionRequest] = []
-    for definition in executable_reproduction_definitions():
-        factories = resolve_study_factory_bindings(definition)
-        split_consumers = set(resolve_benchmark_split_consumers(definition))
-        method_split_axis = any(
-            consumer.startswith("method:")
-            for consumer in split_consumers
+    requests = tuple(
+        request
+        for definition in executable_reproduction_definitions()
+        for request in _resolve_definition_execution_requests(
+            definition,
+            benchmark_resolver,
         )
-        covered_benchmarks: set[str] = set()
-
-        for factory in factories:
-            selections = benchmark_resolver.resolve(definition, factory)
-            if type(selections) is not tuple or not selections:
-                raise ReproductionResearchOSCompileError(
-                    f"{definition.package} Study {factory.qualname} has no "
-                    "exact benchmark selection"
-                )
-            if any(type(row) is not ReproductionBenchmarkSelection for row in selections):
-                raise TypeError(
-                    f"{definition.package} benchmark resolver returned "
-                    "untyped selection"
-                )
-            selection_digests = tuple(row.selection_digest for row in selections)
-            if len(selection_digests) != len(set(selection_digests)):
-                raise ReproductionResearchOSCompileError(
-                    f"{definition.package} Study {factory.qualname} returned "
-                    "duplicate benchmark selections"
-                )
-
-            split_aware = (
-                method_split_axis
-                or f"study:{factory.qualname}" in split_consumers
-            )
-            for selection in sorted(
-                selections,
-                key=lambda row: row.selection_digest,
-            ):
-                benchmark_id = selection.benchmark.benchmark_id
-                if benchmark_id not in definition.catalog.benchmark_ids:
-                    raise ReproductionResearchOSCompileError(
-                        f"{definition.package} benchmark authority returned "
-                        f"out-of-catalog benchmark {benchmark_id!r}"
-                    )
-                if split_aware and not selection.benchmark_split_ids:
-                    raise ReproductionResearchOSCompileError(
-                        f"{definition.package} Study {factory.qualname} "
-                        "requires explicit benchmark split selection"
-                    )
-                if not split_aware and selection.benchmark_split_ids:
-                    raise ReproductionResearchOSCompileError(
-                        f"{definition.package} Study {factory.qualname} has "
-                        "no external benchmark split axis"
-                    )
-                requests.append(
-                    ReproductionExecutionRequest(
-                        definition.package,
-                        factory.qualname,
-                        selection.benchmark,
-                        selection.benchmark_split_ids,
-                        selection.resolution_proof_digest,
-                    )
-                )
-                covered_benchmarks.add(benchmark_id)
-
-        missing = tuple(
-            sorted(set(definition.catalog.benchmark_ids) - covered_benchmarks)
-        )
-        if missing:
-            raise ReproductionResearchOSCompileError(
-                f"{definition.package} benchmark authority did not close "
-                f"catalog benchmarks: {missing}"
-            )
-
+    )
     ordered = tuple(
         sorted(
             requests,
@@ -347,6 +456,149 @@ def resolve_repository_execution_requests(
             "fleet execution request identities must be unique"
         )
     return ordered
+
+
+def materialize_runnable_repository_execution_fleet(
+    benchmark_resolver: ReproductionBenchmarkResolverPort,
+    *,
+    capability_resolver: ReproductionCapabilityRequirementResolverPort | None = None,
+    portfolio_id: str = "repository-reproductions.runnable-execution",
+) -> PartialReproductionFleetMaterialization:
+    """Materialize every independently closed lane and retain exact blockers.
+
+    This is the zero-glue launch path: missing benchmark/capability authority for
+    one paper cannot prevent unrelated closed papers from entering the Research
+    OS execution portfolio.
+    """
+
+    if not isinstance(benchmark_resolver, ReproductionBenchmarkResolverPort):
+        raise TypeError("partial fleet requires ReproductionBenchmarkResolverPort")
+    if capability_resolver is not None and not isinstance(
+        capability_resolver,
+        ReproductionCapabilityRequirementResolverPort,
+    ):
+        raise TypeError(
+            "partial fleet capability_resolver must satisfy typed resolver port"
+        )
+
+    definitions = {
+        row.package: row
+        for row in executable_reproduction_definitions()
+    }
+    requests: list[ReproductionExecutionRequest] = []
+    lanes: list[ReproductionFleetLane] = []
+    blockers: list[ReproductionFleetMaterializationBlocker] = []
+
+    for package in sorted(definitions):
+        definition = definitions[package]
+        try:
+            definition_requests = _resolve_definition_execution_requests(
+                definition,
+                benchmark_resolver,
+            )
+        except BaseException as exc:
+            blockers.append(
+                ReproductionFleetMaterializationBlocker(
+                    package,
+                    "benchmark",
+                    type(exc).__name__,
+                    str(exc),
+                    canonical_digest(
+                        {
+                            "stage": "benchmark",
+                            "definition_digest": definition.definition_digest,
+                        }
+                    ),
+                )
+            )
+            continue
+
+        for request in definition_requests:
+            try:
+                bindings = expand_resolved_reproduction_benchmark_lanes(
+                    definition,
+                    study_factory=request.study_factory,
+                    benchmark=request.benchmark,
+                    benchmark_split_ids=request.benchmark_split_ids,
+                    benchmark_resolution_proof_digest=(
+                        request.benchmark_resolution_proof_digest
+                    ),
+                    capability_resolver=capability_resolver,
+                )
+                if not bindings:
+                    raise ReproductionResearchOSCompileError(
+                        f"{request.package} execution request produced no lanes"
+                    )
+                materialized_any = False
+                for binding in bindings:
+                    study = materialize_reproduction_study(
+                        definition,
+                        binding,
+                        request.benchmark,
+                    )
+                    program = compile_bound_reproduction_research_program(
+                        definition,
+                        binding,
+                    )
+                    lanes.append(
+                        ReproductionFleetLane(
+                            definition,
+                            request,
+                            binding,
+                            study,
+                            program,
+                        )
+                    )
+                    materialized_any = True
+                if materialized_any:
+                    requests.append(request)
+            except BaseException as exc:
+                blockers.append(
+                    ReproductionFleetMaterializationBlocker(
+                        package,
+                        "reproduction_closure",
+                        type(exc).__name__,
+                        str(exc),
+                        canonical_digest(
+                            {
+                                "stage": "reproduction_closure",
+                                "request_digest": request.request_digest,
+                            }
+                        ),
+                    )
+                )
+
+    ordered_lanes = tuple(
+        sorted(lanes, key=lambda row: row.program.program_id)
+    )
+    materialization = None
+    if ordered_lanes:
+        represented_request_digests = {
+            lane.request.request_digest for lane in ordered_lanes
+        }
+        ordered_requests = tuple(
+            sorted(
+                (
+                    row
+                    for row in requests
+                    if row.request_digest in represented_request_digests
+                ),
+                key=lambda row: row.request_digest,
+            )
+        )
+        materialization = ReproductionFleetMaterialization(
+            ordered_requests,
+            ordered_lanes,
+            api.ResearchPortfolio(
+                portfolio_id,
+                tuple(row.program for row in ordered_lanes),
+            ),
+        )
+
+    return PartialReproductionFleetMaterialization(
+        materialization,
+        tuple(blockers),
+    )
 
 
 def materialize_repository_execution_fleet(
@@ -1385,12 +1637,57 @@ __all__ = [
     "ReproductionFleetExecutionResult",
     "ReproductionFleetExperimentClosureProvider",
     "ReproductionFleetLane",
+    "PartialReproductionFleetMaterialization",
     "ReproductionFleetMaterialization",
+    "ReproductionFleetMaterializationBlocker",
     "ReproductionFleetPreflightResult",
     "execute_materialized_reproduction_fleet",
     "preflight_materialized_reproduction_fleet",
     "preflight_repository_execution_fleet",
     "materialize_repository_execution_fleet",
+    "materialize_runnable_repository_execution_fleet",
     "resolve_repository_execution_requests",
     "run_repository_execution_fleet",
+    "select_execution_authority_closed_fleet",
 ]
+
+
+
+def select_execution_authority_closed_fleet(
+    fleet: ReproductionFleetMaterialization,
+    audit: ReproductionFleetAuthorityAudit,
+    *,
+    portfolio_id: str = "repository-reproductions.runnable-authority-closed",
+) -> ReproductionFleetMaterialization | None:
+    """Project one materialized fleet onto the lanes whose full authority closes.
+
+    Source/materialization blockers and owner-authority gaps remain in the audit
+    report; they never prevent unrelated closed lanes from executing.
+    """
+
+    if type(fleet) is not ReproductionFleetMaterialization:
+        raise TypeError("authority-closed selection requires fleet materialization")
+    if type(audit) is not ReproductionFleetAuthorityAudit:
+        raise TypeError("authority-closed selection requires typed authority audit")
+    if audit.materialization != fleet:
+        raise ValueError("authority-closed selection audit belongs to another fleet")
+    closed_program_ids = {
+        row.program_id for row in audit.lanes if row.execution_authority_closed
+    }
+    if not closed_program_ids:
+        return None
+    lanes = tuple(
+        row for row in fleet.lanes if row.program.program_id in closed_program_ids
+    )
+    represented_requests = {row.request.request_digest for row in lanes}
+    requests = tuple(
+        row for row in fleet.requests if row.request_digest in represented_requests
+    )
+    return ReproductionFleetMaterialization(
+        requests,
+        lanes,
+        api.ResearchPortfolio(
+            portfolio_id,
+            tuple(row.program for row in lanes),
+        ),
+    )

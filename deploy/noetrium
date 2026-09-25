@@ -23,7 +23,7 @@ Usage: ./deploy/noetrium <doctor|build|plan|requirements|preflight|run|env|docke
   docker     manage the optional ordinary-user rootless Docker daemon
 
 Configuration:
-  NOETRIUM_FLEET_AUTHORITY_MATERIALIZER=module:factory
+  NOETRIUM_FLEET_AUTHORITY_MATERIALIZER=module:factory  # optional advanced override
   NOETRIUM_DEPLOYMENT_STATE_ROOT=/writable/path
   NOETRIUM_CONTROL_ENV_FILE=/path/to/env-file
   NOETRIUM_SKIP_ENVIRONMENT_BUILD=1
@@ -81,20 +81,14 @@ emit_authority_requirements() {
   printf 'noetrium_authority_requirements=%s\n' "$path"
 }
 
-require_authority_materializer() {
+
+fleet_with_optional_materializer() {
   materializer="$(authority_materializer)"
   if [ -n "$materializer" ]; then
-    printf '%s\n' "$materializer"
-    return 0
+    fleet "$@" --authority-materializer "$materializer"
+  else
+    fleet "$@"
   fi
-  emit_authority_requirements
-  die "fleet authority materializer is unresolved; owner systems must materialize the emitted prerequisite manifest before preflight/run"
-}
-
-fleet_with_materializer() {
-  materializer="$1"
-  shift
-  fleet "$@" --authority-materializer "$materializer"
 }
 
 environment_bootstrap() {
@@ -143,17 +137,15 @@ case "$command" in
     ;;
   preflight)
     host_doctor
-    materializer="$(require_authority_materializer)"
-    fleet_with_materializer "$materializer" --preflight \
+    fleet_with_optional_materializer --preflight \
       --state-root "$FLEET_STATE_ROOT" "$@"
     ;;
   run)
     host_doctor
-    materializer="$(require_authority_materializer)"
     if [ "${NOETRIUM_SKIP_ENVIRONMENT_BUILD:-0}" != "1" ]; then
       environment_bootstrap build
     fi
-    fleet_with_materializer "$materializer" --execute \
+    fleet_with_optional_materializer --execute \
       --state-root "$FLEET_STATE_ROOT" "$@"
     ;;
   env)

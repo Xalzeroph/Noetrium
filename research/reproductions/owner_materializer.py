@@ -397,13 +397,26 @@ class RepositoryFleetAuthorityMaterializer:
         reconciliation_rows = []
         for lane in fleet.lanes:
             node = graph.node(lane.program.program_id + "::reproduction")
-            closure = closures.resolve(
-                graph_id=graph.plan.graph_id,
-                graph_digest=graph.plan.graph_digest,
-                research_revision_digest=revision.revision_digest,
-                node=node,
-            )
-            trial = self._sources.trial_providers.resolve(closure)
+            try:
+                closure = closures.resolve(
+                    graph_id=graph.plan.graph_id,
+                    graph_digest=graph.plan.graph_digest,
+                    research_revision_digest=revision.revision_digest,
+                    node=node,
+                )
+            except Exception:
+                # Partial owner materialization is intentional. The canonical
+                # fleet authority audit records the exact Research-binding gap
+                # for this lane without preventing independent lanes from
+                # reaching preflight/execution.
+                continue
+            try:
+                trial = self._sources.trial_providers.resolve(closure)
+            except Exception:
+                # Missing/unsupported Trial providers remain absent authority;
+                # registry.resolve() will surface one precise LookupError during
+                # the per-lane audit.
+                continue
             trial_rows.append(
                 ResearchOSExperimentTrialProviderRegistration(
                     trial.provider_identity,
@@ -413,16 +426,19 @@ class RepositoryFleetAuthorityMaterializer:
                     trial.verifier_identity_digest,
                 )
             )
-            reconciliation = self._sources.reconciliation.resolve(closure)
             protocol_digest = closure.research_plan.trial_protocol_identity.digest()
             provider_ids = {
                 row.provider_id
                 for row in closure.research_plan.experiment_plan.bindings
             }
             if provider_ids != {trial.provider_identity}:
-                raise ValueError(
-                    "Trial provider owner result does not match Research-selected provider"
-                )
+                # An owner that returns a provider inconsistent with the frozen
+                # Research binding is not admitted as partial authority.
+                continue
+            try:
+                reconciliation = self._sources.reconciliation.resolve(closure)
+            except Exception:
+                continue
             reconciliation_rows.append(
                 ResearchOSExperimentReconciliationRegistration(
                     trial.provider_identity,

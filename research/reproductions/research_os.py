@@ -1668,6 +1668,21 @@ def _method_factory_call(
     return method.factory.args, kwargs
 
 
+def bound_reproduction_program_id(
+    definition: ReproductionDefinition,
+    execution_binding: ReproductionExecutionBinding,
+) -> str:
+    """Return one stable ResearchProgram token for an exact execution lane."""
+
+    if type(definition) is not ReproductionDefinition:
+        raise TypeError("bound reproduction program id requires definition")
+    if type(execution_binding) is not ReproductionExecutionBinding:
+        raise TypeError("bound reproduction program id requires execution binding")
+    if execution_binding.package != definition.package:
+        raise ValueError("bound reproduction program id package identity drifted")
+    return f"{definition.package}.{execution_binding.binding_digest[:24]}"
+
+
 def _compile_reproduction_research_program(
     definition: ReproductionDefinition,
     execution_binding: ReproductionExecutionBinding | None,
@@ -1700,8 +1715,9 @@ def _compile_reproduction_research_program(
             execution_binding.study_factory,
         )
         benchmark_ids = (execution_binding.benchmark_id,)
-        program_id = (
-            f"{definition.package}.{execution_binding.binding_id}"
+        program_id = bound_reproduction_program_id(
+            definition,
+            execution_binding,
         )
 
     machine_dependencies = resolve_research_program_bindings(definition)
@@ -2170,6 +2186,7 @@ __all__ = [
     "ReproductionResearchOSCompileError",
     "bind_reproduction_execution",
     "compile_bound_reproduction_portfolio",
+    "bound_reproduction_program_id",
     "compile_bound_reproduction_research_program",
     "compile_reproduction_portfolio",
     "compile_resolved_reproduction_portfolio",

@@ -147,9 +147,9 @@ class ResearchOSExperimentTrialProviderRegistry:
             ResearchOSExperimentTrialProviderRegistration, ...
         ],
     ) -> None:
-        if type(registrations) is not tuple or not registrations:
+        if type(registrations) is not tuple:
             raise TypeError(
-                "Experiment Trial provider registry requires non-empty typed tuple"
+                "Experiment Trial provider registry requires typed tuple"
             )
         if any(
             type(row) is not ResearchOSExperimentTrialProviderRegistration

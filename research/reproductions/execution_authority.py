@@ -53,8 +53,9 @@ from .fleet import (
     ReproductionFleetAuthorityAudit,
     ReproductionFleetExecutionAuthorities,
     ReproductionFleetMaterialization,
+    ReproductionFleetMaterializationBlocker,
     audit_materialized_reproduction_fleet_authorities,
-    materialize_repository_execution_fleet,
+    materialize_runnable_repository_execution_fleet,
 )
 from .research_os import (
     ReproductionCapabilityRequirementResolverPort,
@@ -259,6 +260,7 @@ class MaterializedReproductionFleetExecutionAuthorities:
     capability_requirements: ReproductionFleetCapabilityRequirementManifest
     owner_authorities: ReproductionFleetOwnerAuthorities
     execution_authorities: ReproductionFleetExecutionAuthorities
+    materialization_blockers: tuple[ReproductionFleetMaterializationBlocker, ...] = ()
     materialization_digest: str = field(init=False)
 
     def __post_init__(self) -> None:
@@ -311,6 +313,18 @@ class MaterializedReproductionFleetExecutionAuthorities:
             raise TypeError(
                 "materialized fleet authorities require execution authorities"
             )
+        if type(self.materialization_blockers) is not tuple or any(
+            type(row) is not ReproductionFleetMaterializationBlocker
+            for row in self.materialization_blockers
+        ):
+            raise TypeError(
+                "materialized fleet authorities materialization_blockers "
+                "must be typed immutable tuple"
+            )
+        blockers = tuple(
+            sorted(self.materialization_blockers, key=lambda row: row.blocker_digest)
+        )
+        object.__setattr__(self, "materialization_blockers", blockers)
         if (
             self.owner_requirements.materialization_digest
             != self.fleet.materialization_digest
@@ -340,6 +354,9 @@ class MaterializedReproductionFleetExecutionAuthorities:
                     "execution_authority_manifest_digest": (
                         self.execution_authorities.authority_manifest_digest
                     ),
+                    "materialization_blockers": tuple(
+                        row.blocker_digest for row in self.materialization_blockers
+                    ),
                 }
             ),
         )
@@ -347,6 +364,8 @@ class MaterializedReproductionFleetExecutionAuthorities:
 
 def materialize_repository_fleet_execution_authorities(
     materializer: ReproductionFleetAuthorityMaterializerPort,
+    *,
+    require_full_closure: bool = True,
 ) -> MaterializedReproductionFleetExecutionAuthorities:
     """requirements -> owner materialization -> fleet -> owner registries -> authority."""
 
@@ -355,6 +374,8 @@ def materialize_repository_fleet_execution_authorities(
             "fleet authority materialization requires "
             "ReproductionFleetAuthorityMaterializerPort"
         )
+    if type(require_full_closure) is not bool:
+        raise TypeError("fleet authority materialization require_full_closure must be bool")
 
     prerequisites = compile_repository_fleet_prerequisites()
     prerequisite_authorities = materializer.materialize_prerequisites(
@@ -371,12 +392,18 @@ def materialize_repository_fleet_execution_authorities(
     benchmark_authority = RepositoryBenchmarkAuthority.discover(
         prerequisite_authorities.benchmark_resolutions
     )
-    fleet = materialize_repository_execution_fleet(
+    partial = materialize_runnable_repository_execution_fleet(
         benchmark_authority,
         capability_resolver=(
             prerequisite_authorities.reproduction_capabilities
         ),
     )
+    fleet = partial.materialization
+    if fleet is None:
+        raise RuntimeError(
+            "repository fleet has no source/materialization-ready execution lanes; "
+            f"blockers={len(partial.blockers)}"
+        )
     owner_requirements = compile_materialized_fleet_owner_requirements(fleet)
     manifests = materializer.materialize_manifests(
         owner_requirements,
@@ -429,7 +456,7 @@ def materialize_repository_fleet_execution_authorities(
             execution_authorities.authority_manifest_digest
         ),
     )
-    if audit.blocker_count or audit.gap_count:
+    if require_full_closure and (audit.blocker_count or audit.gap_count):
         raise ReproductionFleetAuthorityMaterializationError(
             audit,
             prerequisite_manifest_digest=prerequisites.manifest_digest,
@@ -448,6 +475,7 @@ def materialize_repository_fleet_execution_authorities(
         capability_requirements,
         owner_authorities,
         execution_authorities,
+        partial.blockers,
     )
 
 
