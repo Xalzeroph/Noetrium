@@ -19,6 +19,7 @@ def _receipt(branch_id: str, *, metrics=(("utility", 1.0),), **changes) -> Branc
         workload_id="workload-1",
         environment_generation="environment-1",
         task_manifest_digest="tasks-1",
+        measurement_semantics_digest="e" * 64,
         branch_writes=(),
         lifetime_writes=(),
         private_to_method_flows=(),
@@ -52,9 +53,13 @@ def test_branch_receipt_rejects_collection_and_identity_type_drift() -> None:
 
 def test_comparability_proof_rejects_impossible_validity_state() -> None:
     with pytest.raises(ValueError, match="validity"):
-        ComparabilityProof(True, "pair-1", ("mismatch",), "cp", "workload", "env", "tasks")
+        ComparabilityProof(
+            True, "pair-1", ("mismatch",), "cp", "workload", "env", "tasks", "e" * 64
+        )
     with pytest.raises(ValueError, match="validity"):
-        ComparabilityProof(False, "pair-1", (), "cp", "workload", "env", "tasks")
+        ComparabilityProof(
+            False, "pair-1", (), "cp", "workload", "env", "tasks", "e" * 64
+        )
 
 
 def test_comparability_requires_identical_metric_schema() -> None:
@@ -64,6 +69,15 @@ def test_comparability_requires_identical_metric_schema() -> None:
     )
     assert proof.valid is False
     assert proof.violations == ("metric schema mismatch",)
+
+
+def test_comparability_requires_identical_measurement_semantics() -> None:
+    proof = build_comparability_proof(
+        _receipt("control"),
+        _receipt("candidate", measurement_semantics_digest="f" * 64),
+    )
+    assert proof.valid is False
+    assert proof.violations == ("measurement_semantics_digest mismatch",)
 
 
 def test_metric_order_does_not_break_comparability() -> None:
@@ -80,6 +94,15 @@ def test_paired_evaluation_result_binds_proof_to_control_identity() -> None:
     candidate = _receipt("candidate")
     proof = build_comparability_proof(control, candidate)
     assert PairedEvaluationResult(control, candidate, proof).proof is proof
-    wrong = ComparabilityProof(True, "pair-2", (), "other", "workload-1", "environment-1", "tasks-1")
+    wrong = ComparabilityProof(
+        True,
+        "pair-2",
+        (),
+        "other",
+        "workload-1",
+        "environment-1",
+        "tasks-1",
+        "e" * 64,
+    )
     with pytest.raises(ValueError, match="source checkpoint"):
         PairedEvaluationResult(control, candidate, wrong)
