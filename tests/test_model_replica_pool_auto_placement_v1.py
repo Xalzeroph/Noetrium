@@ -526,6 +526,90 @@ def test_auto_model_replica_pool_does_not_mask_scheduler_failure(tmp_path) -> No
         raise AssertionError("unexpected scheduler failures must not be treated as exhaustion")
 
 
+def test_failed_creation_retains_cleanup_generation_until_retry(
+    tmp_path,
+) -> None:
+    class FailOnceCleanupRuntime(Runtime):
+        def __init__(self, catalog):
+            super().__init__(catalog)
+            self.fail_cleanup_once = True
+
+        def remove_deployment(self, generation):
+            if self.fail_cleanup_once:
+                self.fail_cleanup_once = False
+                raise RuntimeError("simulated creation cleanup failure")
+            return super().remove_deployment(generation)
+
+    class RejectingFleet(Fleet):
+        def reconcile(self):
+            rows = super().reconcile()
+            return tuple(
+                replace(
+                    row,
+                    runtime_state=ModelRuntimeState.ERROR,
+                    detail="simulated startup failure",
+                )
+                for row in rows
+            )
+
+    catalog = Catalog()
+    runtime = FailOnceCleanupRuntime(catalog)
+    scheduler = Scheduler()
+    endpoints = Endpoints()
+    compute_guards = ComputeGuards()
+    endpoint_guards = EndpointGuards()
+    pool = LocalModelReplicaPoolRuntime(
+        deployment_catalog=catalog,
+        deployment_runtime=runtime,
+        fleet=RejectingFleet(catalog),
+        compute_scheduler=scheduler,
+        endpoint_allocations=endpoints,
+        compute_lease_guards=compute_guards,
+        endpoint_lease_guards=endpoint_guards,
+    )
+    request = ModelReplicaPoolRequest(
+        pool_id="creation-cleanup-retry",
+        scope=PLATFORM_SCOPE,
+        model_id="qwen3-8b",
+        engine="vllm",
+        python_environment_id="vllm",
+        cwd=Path(tmp_path),
+        compute=ComputeRequirement(
+            cpu_cores=2,
+            memory_bytes=1024,
+            gpu_count=1,
+            minimum_gpu_memory_bytes=40 * 1024**3,
+        ),
+        replica_count=1,
+    )
+
+    with pytest.raises(
+        ExceptionGroup,
+        match="creation failed with pending cleanup",
+    ) as raised:
+        pool.ensure(request)
+    assert "simulated startup failure" in str(raised.value)
+    assert "simulated creation cleanup failure" in str(raised.value)
+    assert pool.pending_cleanup_count == 1
+
+    # Failed service convergence must keep both physical resource families
+    # fenced. Releasing them here could allow a replacement generation to
+    # overlap the still-unproven model process.
+    assert scheduler.released == []
+    assert endpoints.released == []
+    assert compute_guards.created[0].closed is False
+    assert endpoint_guards.created[0].closed is False
+
+    pool.close_all()
+
+    assert pool.pending_cleanup_count == 0
+    assert len(runtime.removed) == 1
+    assert len(scheduler.released) == 1
+    assert len(endpoints.released) == 1
+    assert compute_guards.created[0].closed is True
+    assert endpoint_guards.created[0].closed is True
+
+
 def test_model_replica_pool_cleanup_is_retryable_and_never_releases_resources_under_live_service(
     tmp_path,
 ) -> None:
