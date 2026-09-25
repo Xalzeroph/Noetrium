@@ -281,14 +281,24 @@ class BoundedThreadExecutor(_BoundedExecutor):
 
 
 class BoundedProcessExecutor(_BoundedExecutor):
-    def __init__(self, *, max_workers: int, max_in_flight: int) -> None:
+    def __init__(
+        self,
+        *,
+        max_workers: int,
+        max_in_flight: int,
+        initializer: Callable[[], None] | None = None,
+    ) -> None:
         # The concurrency runtime owns live threads (timer + serial lanes). Forking
         # a multithreaded process can inherit locked runtime state and deadlock.
         # Spawn gives every CPU worker a clean interpreter and is portable across
         # supported platforms; startup cost is amortized by the process pool.
         context = mp.get_context("spawn")
         super().__init__(
-            ProcessPoolExecutor(max_workers=max_workers, mp_context=context),
+            ProcessPoolExecutor(
+                max_workers=max_workers,
+                mp_context=context,
+                initializer=initializer,
+            ),
             max_in_flight=max_in_flight,
             max_parallelism=max_workers,
         )
