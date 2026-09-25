@@ -18,6 +18,7 @@ class VllmEngineResourceArgs:
     mm_processor_cache_gb: float | None = None
     api_server_count: int | None = None
     max_num_seqs: int | None = None
+    max_num_active_seqs: int | None = None
     max_num_queued_requests: int | None = None
 
     @property
@@ -152,7 +153,54 @@ def parse_vllm_engine_resource_args(
         ("--api-server-count", "-asc"),
     )
     max_num_seqs_raw = _option_value(engine_args, ("--max-num-seqs",))
+    max_active_raw = _option_value(engine_args, ("--max-num-active-seqs",))
     max_queued_raw = _option_value(engine_args, ("--max-num-queued-reqs",))
+
+    max_num_seqs = (
+        None
+        if max_num_seqs_raw is None
+        else _positive_human_integer(
+            max_num_seqs_raw,
+            field="max-num-seqs",
+        )
+    )
+    max_num_active_seqs = (
+        None
+        if max_active_raw is None
+        else _positive_human_integer(
+            max_active_raw,
+            field="max-num-active-seqs",
+        )
+    )
+    max_num_queued_requests = (
+        None
+        if max_queued_raw is None
+        else _positive_human_integer(
+            max_queued_raw,
+            field="max-num-queued-reqs",
+        )
+    )
+    effective_active_limit = (
+        max_num_seqs
+        if max_num_active_seqs is None
+        else max_num_active_seqs
+    )
+    if (
+        max_num_seqs is not None
+        and max_num_active_seqs is not None
+        and max_num_active_seqs > max_num_seqs
+    ):
+        raise ValueError(
+            "vLLM max-num-active-seqs cannot exceed max-num-seqs"
+        )
+    if (
+        max_num_queued_requests is not None
+        and effective_active_limit is not None
+        and max_num_queued_requests < effective_active_limit
+    ):
+        raise ValueError(
+            "vLLM max-num-queued-reqs cannot be below the active sequence limit"
+        )
 
     return VllmEngineResourceArgs(
         gpu_memory_utilization=(
@@ -208,22 +256,9 @@ def parse_vllm_engine_resource_args(
                 field="api-server-count",
             )
         ),
-        max_num_seqs=(
-            None
-            if max_num_seqs_raw is None
-            else _positive_human_integer(
-                max_num_seqs_raw,
-                field="max-num-seqs",
-            )
-        ),
-        max_num_queued_requests=(
-            None
-            if max_queued_raw is None
-            else _positive_human_integer(
-                max_queued_raw,
-                field="max-num-queued-reqs",
-            )
-        ),
+        max_num_seqs=max_num_seqs,
+        max_num_active_seqs=max_num_active_seqs,
+        max_num_queued_requests=max_num_queued_requests,
     )
 
 
