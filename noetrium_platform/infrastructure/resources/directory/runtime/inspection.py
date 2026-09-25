@@ -35,10 +35,12 @@ class LocalDirectoryInspector:
         return DirectoryContentStats(root, stats.files, stats.directories, stats.bytes)
 
     def entries(self, kind: ManagedDirectoryKind, *, limit: int | None = None) -> tuple[DirectoryEntryStats, ...]:
+        if limit is not None and (type(limit) is not int or limit < 0):
+            raise ValueError("directory entry limit must be a non-negative integer or None")
         root = self._directories.root(kind)
         values = [self.entry_stats(path) for path in root.iterdir()]
         values.sort(key=lambda value: (-value.bytes, value.path.name))
-        return tuple(values if limit is None else values[: max(0, limit)])
+        return tuple(values if limit is None else values[:limit])
 
     @staticmethod
     def entry_stats(path: Path, *, count_root_directory: bool = True) -> DirectoryEntryStats:
