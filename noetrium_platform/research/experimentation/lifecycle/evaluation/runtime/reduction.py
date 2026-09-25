@@ -82,6 +82,8 @@ def reduce_evaluation_scores(
     if type(values) is not tuple or not values:
         raise ValueError("evaluation score reduction requires a non-empty tuple")
     normalized = tuple(_primitive(value) for value in values)
+    if len({type(value) for value in normalized}) != 1:
+        raise TypeError("evaluation score epochs must have one stable value type")
     count = len(normalized)
     operation = spec.operation_id
 
