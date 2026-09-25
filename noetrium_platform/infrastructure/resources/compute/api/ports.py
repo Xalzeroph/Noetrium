@@ -4,7 +4,7 @@ from typing import Protocol
 
 from noetrium_platform.foundation.governance.api import ScopeIdentity
 
-from .contracts import ComputeAllocation, ComputeBindingProof, ComputeCluster, ComputeHost, ComputeLeasePolicy, ComputeRequirement
+from .contracts import ComputeAllocation, ComputeAllocationBatch, ComputeBindingProof, ComputeCluster, ComputeHost, ComputeLeasePolicy, ComputeRequirement
 
 
 class ComputeInventoryPort(Protocol):
@@ -40,6 +40,13 @@ class ComputeLeaseGuardFactoryPort(Protocol):
     def create(self, allocations: tuple[ComputeAllocation, ...]) -> ComputeLeaseGuardPort: ...
 
 class ComputeSchedulerPort(ComputeCandidatePort, Protocol):
+    def allocate_batch(
+        self,
+        batch: ComputeAllocationBatch,
+        *,
+        ttl_seconds: float | None = None,
+        now: float | None = None,
+    ) -> tuple[ComputeAllocation, ...]: ...
     def allocate(
         self,
         allocation_id: str,
