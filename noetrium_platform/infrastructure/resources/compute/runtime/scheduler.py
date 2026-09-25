@@ -9,7 +9,7 @@ from threading import RLock
 from time import time
 
 from noetrium_platform.infrastructure.resources.compute.api import (
-    ComputeAllocation, ComputeBindingProof, ComputeHost, ComputePlacementUnavailable, ComputeRequirement,
+    ComputeAllocation, ComputeBindingProof, ComputeDeviceHealth, ComputeHost, ComputePlacementUnavailable, ComputeRequirement,
     GpuDeviceStatus, GpuRuntimeObserverPort, GpuRuntimeSnapshot, GpuSharingMode,
     HostRuntimeObserverPort, HostRuntimeSnapshot, HostRuntimeStatus,
 )
@@ -422,6 +422,8 @@ def _eligible_gpus(
 ):
     rows = []
     for gpu in host.gpus:
+        if gpu.health is ComputeDeviceHealth.UNAVAILABLE:
+            continue
         if (host.host_id, gpu.gpu_id) in quarantined_gpus:
             continue
         allocation_count = usage.gpu_allocation_counts.get(gpu.gpu_id, 0)
@@ -444,7 +446,8 @@ def _eligible_gpus(
         )
         if rank is None:
             continue
-        rows.append((rank, gpu))
+        health_rank = 0 if gpu.health is ComputeDeviceHealth.HEALTHY else 1
+        rows.append(((health_rank, *rank), gpu))
     rows.sort(key=lambda item: item[0])
     return tuple(rows)
 
