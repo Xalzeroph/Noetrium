@@ -9,7 +9,7 @@ from noetrium_platform.infrastructure.resources.compute.api import (
     GpuRuntimeObserverPort,
     HostRuntimeObserverPort,
 )
-from .local_inventory import discover_local_compute_host
+from .local_inventory import discover_local_compute_host, reconcile_local_compute_host
 
 from noetrium_platform.infrastructure.resources.compute.runtime import (
     InMemoryComputeInventory,
@@ -104,4 +104,5 @@ __all__ = [
     "compose_in_memory_compute_scheduler",
     "compose_in_memory_compute_stack",
     "discover_local_compute_host",
+    "reconcile_local_compute_host",
 ]
