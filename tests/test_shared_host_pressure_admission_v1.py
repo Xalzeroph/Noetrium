@@ -423,6 +423,126 @@ def test_live_permits_reserve_declared_memory_across_competing_groups() -> None:
     right.release()
 
 
+def test_failed_delegate_release_keeps_resource_reservation_fenced() -> None:
+    class FailOnceLease:
+        def __init__(self, delegate):
+            self.delegate = delegate
+            self.failed = False
+
+        def release(self) -> None:
+            if not self.failed:
+                self.failed = True
+                raise RuntimeError("simulated delegate release failure")
+            self.delegate.release()
+
+    class FailFirstReleaseAdmission:
+        def __init__(self, delegate):
+            self.delegate = delegate
+            self.wrapped = False
+
+        def register_group(self, group_id, *, identity, intent=AdmissionIntent()):
+            self.delegate.register_group(
+                group_id,
+                identity=identity,
+                intent=intent,
+            )
+
+        def unregister_group(self, group_id):
+            self.delegate.unregister_group(group_id)
+
+        def acquire_many(
+            self,
+            group_id,
+            lane_kind,
+            *,
+            permit_count,
+            deadline,
+            cancellation,
+        ):
+            leases = self.delegate.acquire_many(
+                group_id,
+                lane_kind,
+                permit_count=permit_count,
+                deadline=deadline,
+                cancellation=cancellation,
+            )
+            if self.wrapped:
+                return leases
+            self.wrapped = True
+            assert len(leases) == 1
+            return (FailOnceLease(leases[0]),)
+
+        def snapshot(self):
+            return self.delegate.snapshot()
+
+        def close(self):
+            self.delegate.close()
+
+    base = build_execution_admission(
+        budget=AdmissionBudget(max_total_in_flight=8),
+        scheduling=build_admission_scheduling_policy(
+            priority_aging_seconds=0.01
+        ),
+    )
+    gate = ResourceCompetitionAdmissionGate(
+        FailFirstReleaseAdmission(base),
+        _MutableHostObserver(
+            _status(memory_bytes=2 * 1024**3)
+        ),
+        policy=ResourceCompetitionPolicy(
+            min_available_memory_bytes=1024**3,
+            min_available_pids=0,
+            min_available_fds=0,
+            min_storage_free_bytes=0,
+            min_storage_free_inodes=0,
+        ),
+    )
+    for group_id in ("first", "second"):
+        gate.register_group(
+            group_id,
+            identity=AdmissionIdentity(),
+            intent=AdmissionIntent(mode=AdmissionMode.REJECT),
+        )
+        gate.set_group_demand(
+            group_id,
+            ResourceCompetitionDemand(
+                memory_bytes_per_permit=1024**3,
+            ),
+        )
+
+    first = gate.acquire(
+        "first",
+        ExecutionLaneKind.CPU,
+        deadline=None,
+        cancellation=None,
+    )
+    with pytest.raises(
+        RuntimeError,
+        match="simulated delegate release failure",
+    ):
+        first.release()
+
+    # The underlying permit and its logical physical-capacity reservation are
+    # both still owned after a failed release. A competing group must not
+    # reuse that memory window.
+    with pytest.raises(AdmissionRejected, match="memory-headroom"):
+        gate.acquire(
+            "second",
+            ExecutionLaneKind.CPU,
+            deadline=None,
+            cancellation=None,
+        )
+
+    first.release()
+    second = gate.acquire(
+        "second",
+        ExecutionLaneKind.CPU,
+        deadline=None,
+        cancellation=None,
+    )
+    second.release()
+
+
 def test_live_io_permits_reserve_fd_demand_across_competing_groups() -> None:
     observer = _MutableHostObserver(
         _status(
