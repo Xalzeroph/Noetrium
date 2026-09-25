@@ -13,6 +13,7 @@ from noetrium_platform.capabilities.model.deployment.api import (
     ModelRuntimeState,
 )
 from noetrium_platform.foundation.kernel.kernel.errors import describe_exception
+from noetrium_platform.infrastructure.lifecycle.python.api import PythonEnvironmentRetired
 
 from .auto_recovery import DurableModelAutoRecoveryAuthority
 
@@ -118,7 +119,7 @@ class ModelFleetRuntime:
                 spec.desired_state,
                 (
                     ModelRuntimeState.MISSING
-                    if isinstance(exc, (FileNotFoundError, KeyError))
+                    if isinstance(exc, (FileNotFoundError, KeyError, PythonEnvironmentRetired))
                     else ModelRuntimeState.ERROR
                 ),
                 detail=detail,
