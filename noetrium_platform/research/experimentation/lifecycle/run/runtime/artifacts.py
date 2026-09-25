@@ -53,6 +53,7 @@ _RUN_ARTIFACT_RETIREMENT_FIELDS = frozenset({
 class _RunArtifactRetirementPhase(StrEnum):
     RETIRED = "retired"
     QUARANTINED = "quarantined"
+    PURGING = "purging"
     PURGED = "purged"
 
 
@@ -781,6 +782,40 @@ class DirectoryRunArtifactStore(RunArtifactStorePort):
                         raise RuntimeError(
                             "run artifact live root reappeared after quarantine"
                         )
+                    if not quarantine.exists():
+                        raise RuntimeError(
+                            "quarantined run artifact disappeared before purge intent"
+                        )
+                    quarantine_generation = (
+                        capture_filesystem_carrier_generation(
+                            quarantine,
+                            expected_kind=FilesystemCarrierKind.DIRECTORY,
+                        )
+                    )
+                    if not carrier_generation.same_generation(
+                        quarantine_generation
+                    ):
+                        raise RuntimeError(
+                            "run artifact quarantine filesystem generation "
+                            "changed before purge intent"
+                        )
+                    self._require_gc_identity(
+                        gc,
+                        self._tree_identity(quarantine),
+                    )
+                    self._publish_retirement(
+                        gc,
+                        _RunArtifactRetirementPhase.PURGING,
+                        carrier_generation=quarantine_generation,
+                    )
+                    carrier_generation = quarantine_generation
+                    phase = _RunArtifactRetirementPhase.PURGING
+
+                if phase is _RunArtifactRetirementPhase.PURGING:
+                    if self.root.exists():
+                        raise RuntimeError(
+                            "run artifact live root reappeared during physical purge"
+                        )
                     if quarantine.exists():
                         quarantine_generation = (
                             capture_filesystem_carrier_generation(
@@ -788,17 +823,13 @@ class DirectoryRunArtifactStore(RunArtifactStorePort):
                                 expected_kind=FilesystemCarrierKind.DIRECTORY,
                             )
                         )
-                        if not carrier_generation.same_generation(
+                        if not carrier_generation.same_object(
                             quarantine_generation
                         ):
                             raise RuntimeError(
-                                "run artifact quarantine filesystem generation "
-                                "changed across retry"
+                                "run artifact quarantine root generation changed "
+                                "during physical purge"
                             )
-                        self._require_gc_identity(
-                            gc,
-                            self._tree_identity(quarantine),
-                        )
                         shutil.rmtree(quarantine)
                         fsync_directory(quarantine.parent)
                     self._publish_retirement(
