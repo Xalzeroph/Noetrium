@@ -321,6 +321,16 @@ def _ordered_placements(
     runtime_snapshot: GpuRuntimeSnapshot | None,
     host_runtime_snapshot: HostRuntimeSnapshot | None,
 ):
+    if (
+        requirement.gpu_count > 0
+        and requirement.gpu_sharing_mode is GpuSharingMode.PREFER_IDLE_ALLOW_SHARED
+        and requirement.required_gpu_free_memory_bytes <= 0
+        and requirement.required_gpu_memory_fraction is None
+    ):
+        raise ValueError(
+            "shared GPU scheduling requires a positive free-memory reservation "
+            "or required_gpu_memory_fraction"
+        )
     runtime_index = _gpu_runtime_index(runtime_snapshot)
     host_runtime_index = _host_runtime_index(host_runtime_snapshot)
     rows = []
