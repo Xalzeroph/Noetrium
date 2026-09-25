@@ -211,6 +211,7 @@ def _exit_code(code: int) -> int:
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(add_help=False)
     parser.add_argument("--parent-pid", type=int, required=True)
+    parser.add_argument("--child-pid-fd", type=int, default=None)
     parser.add_argument("command", nargs=argparse.REMAINDER)
     ns = parser.parse_args(argv)
     command = list(ns.command)
@@ -235,6 +236,14 @@ def main(argv: list[str] | None = None) -> int:
     except BaseException:
         return 127
     _child_group = int(child.pid)
+    if ns.child_pid_fd is not None:
+        try:
+            with os.fdopen(ns.child_pid_fd, "w", encoding="ascii", closefd=True) as stream:
+                stream.write(f"{child.pid}\n")
+                stream.flush()
+        except OSError:
+            _request_force(int(signal.SIGKILL), None)
+            return 127
 
     # Close the tiny race between child creation and publishing its group into
     # the owner-death handler.
