@@ -197,8 +197,12 @@ def compose_local_research_os(
             artifact_group = pool.open_experiment_group(
                 f"research-os-experiment-artifacts:{uuid4().hex}",
                 resource_id="research-os-experiment-artifacts",
-                resource_demand=ResourceCompetitionDemand(
-                    storage_path=root / "run-artifacts",
+                resource_demand=(
+                    ResourceCompetitionDemand(
+                        storage_path=root / "run-artifacts",
+                    )
+                    if pool.resource_competition_enabled
+                    else None
                 ),
             )
             artifact_factory = DirectoryResearchOSExperimentArtifactStoreFactory(
