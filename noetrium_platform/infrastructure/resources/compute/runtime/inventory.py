@@ -196,6 +196,35 @@ class SQLiteComputeInventory:
         if self.host(host.host_id) != host:
             raise ValueError(f"host identity already registered: {host.host_id}")
 
+    def replace_host(self, expected: ComputeHost, replacement: ComputeHost) -> ComputeHost:
+        if type(expected) is not ComputeHost or type(replacement) is not ComputeHost:
+            raise TypeError("compute host replacement requires typed hosts")
+        if expected.host_id != replacement.host_id or expected.scope != replacement.scope:
+            raise ValueError("compute host replacement cannot change host identity or scope")
+        expected_payload = self._host_payload(expected)
+        replacement_payload = self._host_payload(replacement)
+        with self._connection() as conn:
+            with immediate_sqlite_transaction(
+                conn,
+                timeout_seconds=self.timeout_seconds,
+                label="compute inventory host replacement",
+            ):
+                updated = conn.execute(
+                    "UPDATE compute_hosts SET payload=? WHERE host_id=? AND payload=?",
+                    (replacement_payload, expected.host_id, expected_payload),
+                )
+                if updated.rowcount != 1:
+                    current = conn.execute(
+                        "SELECT payload FROM compute_hosts WHERE host_id=?",
+                        (expected.host_id,),
+                    ).fetchone()
+                    if current is None:
+                        raise KeyError(expected.host_id)
+                    raise ComputeInventoryConflict(
+                        f"stale compute host inventory generation: {expected.host_id}"
+                    )
+        return replacement
+
     def host(self, host_id: str) -> ComputeHost:
         with self._connection() as conn:
             row = conn.execute(
