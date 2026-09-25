@@ -284,10 +284,19 @@ class ComputeAllocationRequest:
         return canonical_digest(self)
 
 
+class ComputeBatchPlacementStrategy(StrEnum):
+    INDEPENDENT = "independent"
+    PACK = "pack"
+    STRICT_PACK = "strict-pack"
+    SPREAD = "spread"
+    STRICT_SPREAD = "strict-spread"
+
+
 @dataclass(frozen=True, slots=True)
 class ComputeAllocationBatch:
     batch_id: str
     requests: tuple[ComputeAllocationRequest, ...]
+    placement_strategy: ComputeBatchPlacementStrategy = ComputeBatchPlacementStrategy.INDEPENDENT
 
     def __post_init__(self) -> None:
         if type(self.batch_id) is not str or not self.batch_id.strip() or self.batch_id != self.batch_id.strip():
@@ -296,6 +305,8 @@ class ComputeAllocationBatch:
             raise ValueError("compute allocation batch requires requests")
         if any(type(row) is not ComputeAllocationRequest for row in self.requests):
             raise TypeError("compute allocation batch requests must be typed")
+        if type(self.placement_strategy) is not ComputeBatchPlacementStrategy:
+            raise TypeError("compute allocation batch placement_strategy must be ComputeBatchPlacementStrategy")
         canonical = tuple(sorted(self.requests, key=lambda row: row.allocation_id))
         if len({row.allocation_id for row in canonical}) != len(canonical):
             raise ValueError("compute allocation batch allocation ids must be unique")
@@ -305,6 +316,7 @@ class ComputeAllocationBatch:
     def batch_digest(self) -> str:
         return canonical_digest({
             "batch_id": self.batch_id,
+            "placement_strategy": self.placement_strategy.value,
             "request_digests": tuple(row.request_digest for row in self.requests),
         })
 
@@ -449,4 +461,4 @@ class ComputeAllocation:
         )
 
 
-__all__ = ["ComputeAllocation", "ComputeAllocationBatch", "ComputeAllocationRequest", "ComputeDeviceHealth", "ComputeBindingProof", "ComputeCluster", "ComputeGPU", "ComputeHost", "ComputeHostSchedulingState", "ComputeInventoryConflict", "ComputePlacementPreference", "ComputePlacementUnavailable", "ComputeRequirement", "ComputeLeasePolicy", "DEFAULT_COMPUTE_LEASE_POLICY", "GpuSharingMode"]
+__all__ = ["ComputeAllocation", "ComputeAllocationBatch", "ComputeBatchPlacementStrategy", "ComputeAllocationRequest", "ComputeDeviceHealth", "ComputeBindingProof", "ComputeCluster", "ComputeGPU", "ComputeHost", "ComputeHostSchedulingState", "ComputeInventoryConflict", "ComputePlacementPreference", "ComputePlacementUnavailable", "ComputeRequirement", "ComputeLeasePolicy", "DEFAULT_COMPUTE_LEASE_POLICY", "GpuSharingMode"]
