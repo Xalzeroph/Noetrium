@@ -784,6 +784,33 @@ class ManagementTests(unittest.TestCase):
             self.assertEqual(cloned.install_result.returncode, 0)
             self.assertFalse((directories.layout.layout.temp / "python-env-clone" / "clone.requirements.txt").exists())
 
+    def test_directory_cleanup_rejects_replaced_entry_from_stale_plan(self):
+        with TemporaryDirectory() as td:
+            root = Path(td)
+            directories = build_local_directory_authorities(layout(root))
+            candidate = (
+                directories.layout.root(ManagedDirectoryKind.CACHE)
+                / "download.partial"
+            )
+            candidate.mkdir()
+            (candidate / "old.bin").write_bytes(b"old")
+            stale = directories.cleanup.clean_plan(ManagedDirectoryKind.CACHE)[0]
+
+            # Model another generation replacing the pathname after planning.
+            candidate.rename(candidate.with_name("old-generation"))
+            candidate.mkdir()
+            (candidate / "new.bin").write_bytes(b"new")
+
+            with patch.object(
+                directories.cleanup,
+                "clean_plan",
+                return_value=(stale,),
+            ):
+                removed = directories.cleanup.clean(ManagedDirectoryKind.CACHE)
+
+            self.assertEqual(removed, ())
+            self.assertEqual((candidate / "new.bin").read_bytes(), b"new")
+
     def test_directory_cleanup_plan_is_non_destructive_until_clean_is_requested(self):
         with TemporaryDirectory() as td:
             root = Path(td)
