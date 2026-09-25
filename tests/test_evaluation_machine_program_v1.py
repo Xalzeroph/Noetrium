@@ -60,6 +60,7 @@ def _receipt(branch_id: str, score: float) -> dict[str, object]:
         "workload_id": "workload-1",
         "environment_generation": "environment-v1",
         "task_manifest_digest": "a" * 64,
+        "measurement_semantics_digest": "d" * 64,
         "branch_writes": (),
         "lifetime_writes": (),
         "private_to_method_flows": (),
@@ -74,6 +75,7 @@ def test_paired_evaluation_is_journal_backed_and_restartable() -> None:
         paired_evaluation_initial_data(
             evaluation_id="eval-1",
             source_execution_digest="b" * 64,
+            measurement_semantics_digest="d" * 64,
         ),
         command_id="evaluation:start",
     )
@@ -122,6 +124,7 @@ def test_paired_evaluation_records_invalid_comparability_without_scoring_delta()
         paired_evaluation_initial_data(
             evaluation_id="eval-2",
             source_execution_digest="c" * 64,
+            measurement_semantics_digest="d" * 64,
         ),
         command_id="evaluation:start",
     )
