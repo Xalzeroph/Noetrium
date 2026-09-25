@@ -1,0 +1,312 @@
+[
+  {
+    "path": "artifact",
+    "current_authority": "artifact_identity",
+    "node_kind": "authority",
+    "disposition": "KEEP",
+    "canonical_authority": "artifact",
+    "reason": "immutable content identity, references, retention and catalog",
+    "migration_target": "artifact",
+    "downstream_surface": "metadata_only"
+  },
+  {
+    "path": "data",
+    "current_authority": "data_authority",
+    "node_kind": "authority",
+    "disposition": "KEEP",
+    "canonical_authority": "data",
+    "reason": "durable facts, records, datasets, canonical state and projections",
+    "migration_target": "data",
+    "downstream_surface": "metadata_only"
+  },
+  {
+    "path": "data/fact",
+    "current_authority": "fact_authority",
+    "node_kind": "authority",
+    "disposition": "KEEP",
+    "canonical_authority": "data/fact",
+    "reason": "durable fact envelopes and authoritative fact writes",
+    "migration_target": "data/fact",
+    "downstream_surface": "metadata_only"
+  },
+  {
+    "path": "data/state",
+    "current_authority": "state_authority",
+    "node_kind": "authority",
+    "disposition": "KEEP",
+    "canonical_authority": "data/state",
+    "reason": "canonical mutable state and state-store contracts",
+    "migration_target": "data/state",
+    "downstream_surface": "metadata_only"
+  },
+  {
+    "path": "environment",
+    "current_authority": "environment_state",
+    "node_kind": "authority",
+    "disposition": "KEEP",
+    "canonical_authority": "environment",
+    "reason": "environment specs, bindings, resolution and instances",
+    "migration_target": "environment",
+    "downstream_surface": "metadata_only"
+  },
+  {
+    "path": "environment/gui",
+    "current_authority": "gui_environment",
+    "node_kind": "provider",
+    "disposition": "PROVIDER",
+    "canonical_authority": "environment",
+    "reason": "desktop and mobile GUI environment contracts and provider adapters",
+    "migration_target": "environment",
+    "downstream_surface": "metadata_only"
+  },
+  {
+    "path": "environment/minecraft",
+    "current_authority": "minecraft_environment",
+    "node_kind": "provider",
+    "disposition": "PROVIDER",
+    "canonical_authority": "environment",
+    "reason": "Minecraft environment contracts, server-control/world-cut semantics, state projection, bridge providers and readiness adapters",
+    "migration_target": "environment",
+    "downstream_surface": "metadata_only"
+  },
+  {
+    "path": "environment/software",
+    "current_authority": "software_environment",
+    "node_kind": "provider",
+    "disposition": "PROVIDER",
+    "canonical_authority": "environment",
+    "reason": "repository and software-workspace environment contracts and provider adapters",
+    "migration_target": "environment",
+    "downstream_surface": "metadata_only"
+  },
+  {
+    "path": "environment/text_world",
+    "current_authority": "text_world_environment",
+    "node_kind": "provider",
+    "disposition": "PROVIDER",
+    "canonical_authority": "environment",
+    "reason": "text-mediated stateful world contracts and provider adapters",
+    "migration_target": "environment",
+    "downstream_surface": "metadata_only"
+  },
+  {
+    "path": "environment/web",
+    "current_authority": "web_environment",
+    "node_kind": "provider",
+    "disposition": "PROVIDER",
+    "canonical_authority": "environment",
+    "reason": "stateful web and browser environment contracts and provider adapters",
+    "migration_target": "environment",
+    "downstream_surface": "metadata_only"
+  },
+  {
+    "path": "execution",
+    "current_authority": "execution_operations",
+    "node_kind": "authority",
+    "disposition": "KEEP",
+    "canonical_authority": "execution",
+    "reason": "workflow, canonical research-graph scheduling lifecycle, node attempt/lease state and operation orchestration contracts",
+    "migration_target": "execution",
+    "downstream_surface": "metadata_only"
+  },
+  {
+    "path": "execution/operation",
+    "current_authority": "operation_state",
+    "node_kind": "authority",
+    "disposition": "KEEP",
+    "canonical_authority": "execution/operation",
+    "reason": "immutable execution command intent plus operation identity, lifecycle and result envelopes",
+    "migration_target": "execution/operation",
+    "downstream_surface": "metadata_only"
+  },
+  {
+    "path": "experimentation",
+    "current_authority": "experimentation_state",
+    "node_kind": "authority",
+    "disposition": "KEEP",
+    "canonical_authority": "experimentation",
+    "reason": "study, experiment, run, branch and checkpoint semantics",
+    "migration_target": "experimentation",
+    "downstream_surface": "metadata_only"
+  },
+  {
+    "path": "governance",
+    "current_authority": "governance_policy",
+    "node_kind": "facet",
+    "disposition": "CONSOLIDATE",
+    "canonical_authority": null,
+    "reason": "architecture, quality, release and system topology rules",
+    "migration_target": "outside_runtime_authority_graph",
+    "downstream_surface": "metadata_only"
+  },
+  {
+    "path": "governance/release",
+    "current_authority": "release_authority",
+    "node_kind": "authority",
+    "disposition": "KEEP",
+    "canonical_authority": "governance/release",
+    "reason": "release identities, manifests, verification and promotion semantics",
+    "migration_target": "governance/release",
+    "downstream_surface": "metadata_only"
+  },
+  {
+    "path": "governance/system_registry",
+    "current_authority": "system_topology",
+    "node_kind": "authority",
+    "disposition": "KEEP",
+    "canonical_authority": "governance/system_registry",
+    "reason": "recursive system topology and ownership declarations",
+    "migration_target": "governance/system_registry",
+    "downstream_surface": "metadata_only"
+  },
+  {
+    "path": "model",
+    "current_authority": "model_identity",
+    "node_kind": "authority",
+    "disposition": "KEEP",
+    "canonical_authority": "model",
+    "reason": "model assets, stacks, assignments, deployments and serving identity",
+    "migration_target": "model",
+    "downstream_surface": "metadata_only"
+  },
+  {
+    "path": "observability",
+    "current_authority": "observability",
+    "node_kind": "projection",
+    "disposition": "PROJECTION",
+    "canonical_authority": null,
+    "reason": "logs, telemetry, traces, status and observation projections",
+    "migration_target": "outside_runtime_authority_graph",
+    "downstream_surface": "metadata_only"
+  },
+  {
+    "path": "observability/logging/storage",
+    "current_authority": "log_storage",
+    "node_kind": "provider",
+    "disposition": "PROVIDER",
+    "canonical_authority": "external/non_authoritative",
+    "reason": "durable or volatile log storage backends",
+    "migration_target": "outside_runtime_authority_graph",
+    "downstream_surface": "metadata_only"
+  },
+  {
+    "path": "operator",
+    "current_authority": "operator_surface",
+    "node_kind": "product_surface",
+    "disposition": "PRODUCT_SURFACE",
+    "canonical_authority": "external/non_authoritative",
+    "reason": "human-facing CLI, maintenance, incident and operator routing over the Research OS product surface",
+    "migration_target": "outside_runtime_authority_graph",
+    "downstream_surface": "metadata_only"
+  },
+  {
+    "path": "participant",
+    "current_authority": "participant_state",
+    "node_kind": "authority",
+    "disposition": "KEEP",
+    "canonical_authority": "participant",
+    "reason": "participant definitions, bindings, sessions, capabilities, agent specializations and participant-facing contracts",
+    "migration_target": "participant",
+    "downstream_surface": "metadata_only"
+  },
+  {
+    "path": "platform",
+    "current_authority": "platform_identity",
+    "node_kind": "authority",
+    "disposition": "KEEP",
+    "canonical_authority": "platform",
+    "reason": "platform lifecycle, global identity, composition boundaries",
+    "migration_target": "platform",
+    "downstream_surface": "metadata_only"
+  },
+  {
+    "path": "portfolio",
+    "current_authority": "portfolio_metadata",
+    "node_kind": "authority",
+    "disposition": "KEEP",
+    "canonical_authority": "portfolio",
+    "reason": "workspace/program/project metadata, immutable portfolio revision DAGs, branches, tags and portfolio organization",
+    "migration_target": "portfolio",
+    "downstream_surface": "metadata_only"
+  },
+  {
+    "path": "reliability",
+    "current_authority": "reliability_authority",
+    "node_kind": "facet",
+    "disposition": "CONSOLIDATE",
+    "canonical_authority": null,
+    "reason": "effects, failures, incidents, forensics, diagnosis, reconciliation and recovery",
+    "migration_target": "outside_runtime_authority_graph",
+    "downstream_surface": "metadata_only"
+  },
+  {
+    "path": "reliability/effect",
+    "current_authority": "effect_authority",
+    "node_kind": "authority",
+    "disposition": "KEEP",
+    "canonical_authority": "reliability/effect",
+    "reason": "external effect intent, outcome certainty and reconciliation state",
+    "migration_target": "reliability/effect",
+    "downstream_surface": "metadata_only"
+  },
+  {
+    "path": "reliability/failure",
+    "current_authority": "failure_authority",
+    "node_kind": "authority",
+    "disposition": "KEEP",
+    "canonical_authority": "reliability/failure",
+    "reason": "failure taxonomy, envelopes, fingerprints and semantic versions",
+    "migration_target": "reliability/failure",
+    "downstream_surface": "metadata_only"
+  },
+  {
+    "path": "research_os",
+    "current_authority": "research_os_surface",
+    "node_kind": "product_surface",
+    "disposition": "PRODUCT_SURFACE",
+    "canonical_authority": "external/non_authoritative",
+    "reason": "single downstream research authoring, revision, graph-control and live-intervention product surface",
+    "migration_target": "outside_runtime_authority_graph",
+    "downstream_surface": "public"
+  },
+  {
+    "path": "resource",
+    "current_authority": "resource_inventory",
+    "node_kind": "authority",
+    "disposition": "KEEP",
+    "canonical_authority": "resource",
+    "reason": "resource inventory, compute, directories, leases and allocation/resolution",
+    "migration_target": "resource",
+    "downstream_surface": "metadata_only"
+  },
+  {
+    "path": "resource/lease",
+    "current_authority": "resource_lease",
+    "node_kind": "authority",
+    "disposition": "KEEP",
+    "canonical_authority": "resource/lease",
+    "reason": "lease identity, acquisition, renewal and release",
+    "migration_target": "resource/lease",
+    "downstream_surface": "metadata_only"
+  },
+  {
+    "path": "runtime",
+    "current_authority": "runtime_state",
+    "node_kind": "authority",
+    "disposition": "KEEP",
+    "canonical_authority": "runtime",
+    "reason": "server, process, service and session orchestration",
+    "migration_target": "runtime",
+    "downstream_surface": "metadata_only"
+  },
+  {
+    "path": "scope",
+    "current_authority": "scope_tree",
+    "node_kind": "authority",
+    "disposition": "KEEP",
+    "canonical_authority": "scope",
+    "reason": "generic hierarchical scope identity, ancestry and ownership paths",
+    "migration_target": "scope",
+    "downstream_surface": "metadata_only"
+  }
+]

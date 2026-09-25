@@ -1,0 +1,13 @@
+{
+  "schema": "noetrium.benchmark-manifest.v2",
+  "package": "gats_synthetic",
+  "benchmark": {
+    "benchmark_id": "gats-synthetic",
+    "title": "GATS Synthetic Planning Stress Suite",
+    "source_uri": "https://github.com/MMWilliams/gats",
+    "environment_kinds": [],
+    "modalities": [
+      "text"
+    ]
+  }
+}

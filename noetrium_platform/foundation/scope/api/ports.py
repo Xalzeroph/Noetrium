@@ -1,0 +1,16 @@
+from __future__ import annotations
+
+from typing import Protocol
+
+from .contracts import ScopeIdentity
+
+
+class ScopeRegistryPort(Protocol):
+    def register(self, scope: ScopeIdentity, parent: ScopeIdentity | None) -> None: ...
+    def parent(self, scope: ScopeIdentity) -> ScopeIdentity | None: ...
+    def ancestry(self, scope: ScopeIdentity) -> tuple[ScopeIdentity, ...]: ...
+    def children(self, scope: ScopeIdentity) -> tuple[ScopeIdentity, ...]: ...
+    def contains(self, scope: ScopeIdentity) -> bool: ...
+
+
+__all__ = ["ScopeRegistryPort"]

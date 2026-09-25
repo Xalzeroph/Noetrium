@@ -1,0 +1,144 @@
+{
+  "schema": "noetrium.reproduction.projection.v10",
+  "authority": "generated_from_typed_definition_and_source",
+  "package": "exact_vwa",
+  "package_digest": "1559d7bfd9866f3096af0e3d76485fe112259642115fc2079a2c7b39de2ac48b",
+  "definition_digest": "d368ab60e481a14d2fbcffbe82133ebf04ae33f249a0dbdf4023b2a6fc508174",
+  "source_registry_digest": "b93999f0360494ac406ad8ced88c7229b3dcf0d13127db266739961ddbd1bfdd",
+  "lifecycle": "protocol_bound",
+  "identity": {
+    "method_id": "exact",
+    "title": "ExACT: Teaching AI Agents to Explore with Reflective-MCTS and Exploratory Learning",
+    "paper_uri": "https://arxiv.org/abs/2410.02052",
+    "year": 2024,
+    "paper_revision": "arXiv:2410.02052",
+    "identity_digest": "7292912866fd2b9d9ce5905da636a5af4067824ebb70e1da7d7169a8da79cd82"
+  },
+  "catalog": {
+    "domains": [
+      "planning-search",
+      "reflection-self-correction",
+      "self-improvement",
+      "web-agents"
+    ],
+    "families": [
+      "learning",
+      "reflection",
+      "tree_search",
+      "web_agent"
+    ],
+    "priority": 2,
+    "benchmark_ids": [
+      "osworld",
+      "visualwebarena"
+    ],
+    "platform_pressure": [
+      "environment/runtime",
+      "environment/web",
+      "experimentation/study",
+      "model/assignment",
+      "model/request"
+    ],
+    "method_owned": [
+      "Reflective-MCTS",
+      "contrastive reflection",
+      "exploratory learning policy",
+      "multi-agent debate value function"
+    ],
+    "platform_owned": [
+      "benchmark cut identity",
+      "environment lifecycle/reset",
+      "evidence and metrics",
+      "model role binding"
+    ],
+    "reference_repositories": [
+      "https://github.com/microsoft/ExACT"
+    ],
+    "reference_publications": [],
+    "catalog_digest": "e2003f8e0b9d0255d4670b2e4537fb1a64adb589387772c651fa5591ab66b030"
+  },
+  "source_lanes": [
+    {
+      "lane_id": "later_released_exact_vwa",
+      "kind": "later_released_executable",
+      "repository": "https://github.com/microsoft/ExACT",
+      "commit": "d08ebebca1b82aa2b48ce2850e9edc279894295a",
+      "artifacts": [
+        "shells/classifieds/rmcts_mad_som.sh",
+        "src/agent/mcts_agent.py",
+        "src/agent/search_agent.py",
+        "src/prompts/vwa/jsons/p_som_cot_id_actree_3s_final.json"
+      ],
+      "lane_digest": "ad879ecffd358fb4c2ea68a5bab5fa55e4c8fcd8c2e843ed7482c386a5e66894"
+    }
+  ],
+  "assets": [
+    {
+      "kind": "fidelity",
+      "path": "research/reproductions/exact_vwa/fidelity.py",
+      "declaration_digest": "84e1e7d95ac1e9730e37c84f24a3ae46fb15b243401c2fde9c81c4a5e7b08e70",
+      "content_sha256": "720ed066de1d661093865a279f079a27181590a0af9a5530cd4bd0cf64144d77"
+    },
+    {
+      "kind": "method_program",
+      "path": "research/reproductions/exact_vwa/program.py",
+      "declaration_digest": "10f230739802ccc7d61e0de03b11087f64f13287a3c1a155ce8b1249ea20fe48",
+      "content_sha256": "1aaf6cb371ac904caaa921b5ea0b4e9af4ec734514ecc89057de814dca825d9c"
+    },
+    {
+      "kind": "study",
+      "path": "research/reproductions/exact_vwa/study.py",
+      "declaration_digest": "edafb18475de48eef7e51e7daf752b404e9306bd69bb05d2107cefe5d3d7bbdd",
+      "content_sha256": "c253550f6ff4f0af91ebee1154fb074e2ff4049680aabf7133e513653a712264"
+    },
+    {
+      "kind": "support",
+      "path": "research/reproductions/exact_vwa/branch.py",
+      "declaration_digest": "01dfc1fbacc5f9aca4693921ab2815066685fbdd46a7014c31557dffa0ab0421",
+      "content_sha256": "0229d80684f0111e453a8a0c7ed75a509448ef26a6bc471104a46803e104e47a"
+    }
+  ],
+  "primary_executable": "research/reproductions/exact_vwa/program.py",
+  "reported_results": [],
+  "reference_baselines": [],
+  "deltas": [
+    {
+      "kind": "unresolved",
+      "description": "paper-era executable source cut preceding the later public VWA branch is unavailable",
+      "delta_digest": "f4cdabf2b6a845ec8198a16bc1c9eb5d405155045c01b05aeed191da0e17f7b5"
+    }
+  ],
+  "blockers": [
+    "public VWA executable history used here post-dates the paper",
+    "exact hosted GPT-4o and embedding deployment identities remain unresolved",
+    "matched browser/reset/replay infrastructure is not yet deployment-bound"
+  ],
+  "evidence_refs": [],
+  "scientific_tests": [
+    {
+      "path": "tests/test_scientific_exact_vwa_v1.py",
+      "content_sha256": "9fd02d324a7a52a31acee1856dfa807e5e56432b7fee541c9008a4708b8a30fc"
+    }
+  ],
+  "research_os": {
+    "surface": "noetrium.api",
+    "execution_state": "benchmark_authority_required",
+    "program_id": "exact_vwa",
+    "program_digest": "44ae76151d89782c0a7399500bf203a40411e74b902d72f5155c4c6ff3918cb3",
+    "benchmark_authority": {
+      "state": "required",
+      "selection_digests": [],
+      "blockers": [
+        "ReproductionResearchOSCompileError:benchmark 'osworld' has no exact repository or materialized authority"
+      ]
+    },
+    "benchmark_split_axis": {
+      "required": false,
+      "consumers": []
+    },
+    "reproduction_closure_state": "closed",
+    "execution_authority_state": "required",
+    "materialization_ready": false,
+    "execution_requirements": []
+  }
+}

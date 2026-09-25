@@ -1,0 +1,16 @@
+{
+  "schema": "noetrium.benchmark-manifest.v2",
+  "package": "vima_bench",
+  "benchmark": {
+    "benchmark_id": "vima-bench",
+    "title": "VIMA-Bench",
+    "source_uri": "https://github.com/vimalabs/VIMABench",
+    "environment_kinds": [
+      "embodied"
+    ],
+    "modalities": [
+      "text",
+      "image"
+    ]
+  }
+}

@@ -1,0 +1,27 @@
+{
+  "schema": "agent-noetrium.readme-schema.v1",
+  "section_ids": [
+    "overview",
+    "why",
+    "capabilities",
+    "architecture",
+    "downstream",
+    "quick-start",
+    "containers",
+    "repository-layout",
+    "testing",
+    "principles",
+    "extending",
+    "documentation",
+    "security",
+    "contributing",
+    "license",
+    "status"
+  ],
+  "required_code_block_languages": [
+    "text",
+    "bash"
+  ],
+  "authoritative_license": "LICENSE",
+  "license_spdx": "Apache-2.0"
+}

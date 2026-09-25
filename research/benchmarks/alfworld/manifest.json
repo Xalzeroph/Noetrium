@@ -1,0 +1,16 @@
+{
+  "schema": "noetrium.benchmark-manifest.v2",
+  "package": "alfworld",
+  "benchmark": {
+    "benchmark_id": "alfworld",
+    "title": "ALFWorld",
+    "source_uri": "https://github.com/alfworld/alfworld",
+    "environment_kinds": [
+      "text_world",
+      "embodied"
+    ],
+    "modalities": [
+      "text"
+    ]
+  }
+}

@@ -1,0 +1,221 @@
+{
+  "schema": "noetrium.reproduction.projection.v10",
+  "authority": "generated_from_typed_definition_and_source",
+  "package": "optimus2_minecraft",
+  "package_digest": "75bc2e94bccc8577a80564c4b08382e276b3aac6ab1baf09cb3c849f6093c945",
+  "definition_digest": "ead8b6545f783c364306558ed03cea28fcb86e5ac9b73f955201244752e4873f",
+  "source_registry_digest": "fc349c4a36d38cb8541352f436038b853fa4237fa54f9f5e475cf987b8603ed0",
+  "lifecycle": "protocol_bound",
+  "identity": {
+    "method_id": "optimus2-minecraft",
+    "title": "Optimus-2: Multimodal Minecraft Agent with Goal-Observation-Action Conditioned Policy",
+    "paper_uri": "https://openaccess.thecvf.com/content/CVPR2025/html/Li_Optimus-2_Multimodal_Minecraft_Agent_with_Goal-Observation-Action_Conditioned_Policy_CVPR_2025_paper.html",
+    "year": 2025,
+    "paper_revision": "CVPR 2025 camera-ready / official paper repository 8651b3177ac5c7fa73a36b74e4b350a35a679338",
+    "identity_digest": "85eb511be5d4d5a359278ae5edff7ccc386c52fae939bfc1142cff39aa0ebe8f"
+  },
+  "catalog": {
+    "domains": [
+      "embodied-robotics",
+      "minecraft",
+      "multimodal",
+      "vision-language-action"
+    ],
+    "families": [
+      "behavior_modeling",
+      "goal_conditioned_policy",
+      "minecraft",
+      "multimodal_policy",
+      "planner_controller"
+    ],
+    "priority": 1,
+    "benchmark_ids": [
+      "minecraft-long-horizon-67"
+    ],
+    "platform_pressure": [
+      "artifact/trajectory",
+      "environment/minecraft",
+      "execution/machines/method",
+      "experimentation/study",
+      "model/multimodal",
+      "participant/agent"
+    ],
+    "method_owned": [
+      "Goal-Observation-Action Conditioned Policy semantics",
+      "MLLM high-level task planning",
+      "action-guided behavior encoding",
+      "fixed-length behavior-token consolidation",
+      "language-conditioned autoregressive action prediction",
+      "observation-action causal modeling"
+    ],
+    "platform_owned": [
+      "MethodMachine journal authority",
+      "Minecraft environment lifecycle and effects",
+      "Study/Experiment orchestration",
+      "multimodal model transport",
+      "trajectory/evidence identity"
+    ],
+    "reference_repositories": [
+      "https://github.com/iLearn-Lab/CVPR25-Optimus-2"
+    ],
+    "reference_publications": [
+      "https://openaccess.thecvf.com/content/CVPR2025/html/Li_Optimus-2_Multimodal_Minecraft_Agent_with_Goal-Observation-Action_Conditioned_Policy_CVPR_2025_paper.html"
+    ],
+    "catalog_digest": "359671078ae8c94dfb71f854da9776e148daa6d298aa4ecb84ec41a771ef2938"
+  },
+  "source_lanes": [
+    {
+      "lane_id": "cvpr_2025_main",
+      "kind": "paper_provenance",
+      "venue": "CVPR",
+      "year": 2025,
+      "publication_id": "Li_2025_CVPR_Optimus2",
+      "publication_uri": "https://openaccess.thecvf.com/content/CVPR2025/html/Li_Optimus-2_Multimodal_Minecraft_Agent_with_Goal-Observation-Action_Conditioned_Policy_CVPR_2025_paper.html",
+      "revision": "CVPR 2025 camera-ready",
+      "content_sha256": null,
+      "lane_digest": "4ba78268cb16b52c8cd62dba11346ccbbb1abd3537218fb49c07b9a9cb131bbf"
+    },
+    {
+      "lane_id": "official_paper_repository_2025_02_28",
+      "kind": "paper_provenance",
+      "repository": "https://github.com/iLearn-Lab/CVPR25-Optimus-2",
+      "commit": "8651b3177ac5c7fa73a36b74e4b350a35a679338",
+      "artifacts": [
+        "README.md",
+        "assets/fig2.pdf",
+        "assets/fig2.png",
+        "assets/optimus2.png",
+        "assets/table1.png",
+        "assets/table2.png",
+        "assets/table3.png"
+      ],
+      "lane_digest": "dc5c3414405e5da47b82c7cfcd9984a5e2625af3e9706d5c28b6ac79977110a7"
+    }
+  ],
+  "assets": [
+    {
+      "kind": "benchmark",
+      "path": "research/reproductions/optimus2_minecraft/benchmark.py",
+      "declaration_digest": "962c808686b320ed15793bbd1c6d01155c632db777d338e846fefc3144c4c28f",
+      "content_sha256": "f22bc1df1accccbdcba36c8f0d6891c3cb37fc96318436c86fdcb50dd7a38e2b"
+    },
+    {
+      "kind": "fidelity",
+      "path": "research/reproductions/optimus2_minecraft/fidelity.py",
+      "declaration_digest": "4caff9dc1e915ea6caa4e1182b82d519e3e6ee82a9e06bb9fe50f4dee348643d",
+      "content_sha256": "c26a7b2dee702fd56b737a0fb6e15d6021980eaa2f6746da70c8a3ad7e4f6734"
+    },
+    {
+      "kind": "method_program",
+      "path": "research/reproductions/optimus2_minecraft/program.py",
+      "declaration_digest": "95e564d47da581562b5a492ecf021dd5258a887f0f74c1bec838c7a173126d5f",
+      "content_sha256": "43536b1b1f56c3fe00f07b363d02a3bb5238a83158afd8ca15afe8f534f532ed"
+    },
+    {
+      "kind": "study",
+      "path": "research/reproductions/optimus2_minecraft/study.py",
+      "declaration_digest": "7231724e32022bc95ba3552cfb1659ad49ae5933c39fb236040af0d65d1d3ba2",
+      "content_sha256": "1c845cb6aff637d526d7150d8c3ba9a4e98420ab8416aabf99ecd7252f1e59a0"
+    },
+    {
+      "kind": "support",
+      "path": "research/reproductions/optimus2_minecraft/source.py",
+      "declaration_digest": "c7b674922fb0347647f3092f5d940bfba3c290678e287d969852c2d5a820da87",
+      "content_sha256": "13ae4292bf08ad9fd39f1dd029e401b0ab98c03c2a3396df585fc38b73062845"
+    }
+  ],
+  "primary_executable": "research/reproductions/optimus2_minecraft/program.py",
+  "reported_results": [
+    {
+      "claim_id": "optimus2_mgoa_video_count",
+      "metric_id": "dataset_video_count",
+      "value": 25000,
+      "qualifiers": {
+        "dataset": "mgoa",
+        "source": "CVPR-2025 paper"
+      },
+      "claim_digest": "8eb758ee64df550bb433c9ff56e115d41080f7560ade0e69284fffebfac0de22"
+    },
+    {
+      "claim_id": "optimus2_mgoa_atomic_task_count",
+      "metric_id": "dataset_atomic_task_count",
+      "value": 8,
+      "qualifiers": {
+        "dataset": "mgoa",
+        "source": "CVPR-2025 paper"
+      },
+      "claim_digest": "97b6292343e3e8ad7e570927003f5a12490276f7b558a443217e1be1844df2a3"
+    },
+    {
+      "claim_id": "optimus2_mgoa_goa_pair_count",
+      "metric_id": "dataset_goal_observation_action_pair_count",
+      "value": 30000000,
+      "qualifiers": {
+        "dataset": "mgoa",
+        "approximate": true,
+        "source": "CVPR-2025 paper"
+      },
+      "claim_digest": "fa3371e852c59d61465ab58be49c07ebd1d9a8d56a94a5f38385d2f624614ffe"
+    }
+  ],
+  "reference_baselines": [
+    {
+      "baseline_id": "optimus2_minecraft_agent_baselines",
+      "description": "Prior Minecraft multimodal and behavior-modeling agents used in the CVPR 2025 evaluation.",
+      "qualifiers": {
+        "source": "CVPR-2025 paper evaluation"
+      },
+      "baseline_digest": "35700db7266e6bb144eb5978da60b583ce045a608346de369579fdc0b931fd25"
+    }
+  ],
+  "deltas": [
+    {
+      "kind": "substitution",
+      "description": "The official CVPR 2025 paper repository contains README, figures and tables but no executable GOAP/planner source at the paper-era cut or the later 2025-06 repository head. The Noetrium MethodProgram is therefore an explicitly independent reconstruction of paper-level control semantics, not an official-code reproduction.",
+      "delta_digest": "0915d944e0daef8279b4dabbac45427caf99d542c2756799c53f33c70c828aa3"
+    },
+    {
+      "kind": "unresolved",
+      "description": "GOAP network internals, trained weights, MGOA dataset bytes and exact evaluation runtime are not bound to immutable public executable artifacts in this reproduction.",
+      "delta_digest": "5090e45b53416c8bf5521f7074228477c15a314ce13c03132a290e3ee732d576"
+    }
+  ],
+  "blockers": [
+    "The official repository does not publish executable paper-era code.",
+    "MGOA training data and model/checkpoint identities are not yet content-addressed under reproduction authority.",
+    "Atomic and open-ended evaluation cuts remain unbound; the shared 67-task long-horizon BenchmarkTaskSet is now exact.",
+    "Matched paper-result execution is therefore not claim-ready."
+  ],
+  "evidence_refs": [],
+  "scientific_tests": [
+    {
+      "path": "tests/test_scientific_optimus2_minecraft_v1.py",
+      "content_sha256": "1962464752806cb2e153614ae6b8895c776a756f7870a520aa1a3fd3fc6f029e"
+    },
+    {
+      "path": "tests/test_scientific_optimus_long_horizon_67_v1.py",
+      "content_sha256": "c1453381ab8f10934e9699c4a37d4dfb2992c1cfd7105f4966f5642579087d46"
+    }
+  ],
+  "research_os": {
+    "surface": "noetrium.api",
+    "execution_state": "execution_authority_required",
+    "program_id": "optimus2_minecraft",
+    "program_digest": "82ff7207440219b9ed042d43bb8d539be73efea3491d4a8196bbd14b01b61c30",
+    "benchmark_authority": {
+      "state": "closed",
+      "selection_digests": [
+        "830dba0339c384410800761c3d19e392ec5f4c0d3d00917c41f9bb2244c47cf3"
+      ],
+      "blockers": []
+    },
+    "benchmark_split_axis": {
+      "required": false,
+      "consumers": []
+    },
+    "reproduction_closure_state": "closed",
+    "execution_authority_state": "required",
+    "materialization_ready": true,
+    "execution_requirements": []
+  }
+}

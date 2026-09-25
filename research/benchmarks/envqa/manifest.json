@@ -1,0 +1,16 @@
+{
+  "schema": "noetrium.benchmark-manifest.v2",
+  "package": "envqa",
+  "benchmark": {
+    "benchmark_id": "envqa",
+    "title": "Env-QA",
+    "source_uri": "https://github.com/maybelu9/env-qa",
+    "environment_kinds": [
+      "embodied"
+    ],
+    "modalities": [
+      "text",
+      "video"
+    ]
+  }
+}

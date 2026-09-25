@@ -1,0 +1,17 @@
+{
+  "schema": "noetrium.benchmark-manifest.v2",
+  "package": "webvoyager",
+  "benchmark": {
+    "benchmark_id": "webvoyager",
+    "title": "WebVoyager",
+    "source_uri": "https://github.com/MinorJerry/WebVoyager",
+    "environment_kinds": [
+      "web",
+      "gui"
+    ],
+    "modalities": [
+      "text",
+      "image"
+    ]
+  }
+}

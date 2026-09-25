@@ -1,0 +1,13 @@
+{
+  "schema": "noetrium.benchmark-manifest.v2",
+  "package": "math500",
+  "benchmark": {
+    "benchmark_id": "math500",
+    "title": "MATH500",
+    "source_uri": "https://huggingface.co/datasets/xinzhel/math500-float",
+    "environment_kinds": [],
+    "modalities": [
+      "text"
+    ]
+  }
+}

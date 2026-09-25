@@ -1,0 +1,17 @@
+{
+  "schema": "noetrium.benchmark-manifest.v2",
+  "package": "memoryarena",
+  "benchmark": {
+    "benchmark_id": "memoryarena",
+    "title": "MemoryArena",
+    "source_uri": "https://github.com/ZexueHe/MemoryArena",
+    "environment_kinds": [
+      "web",
+      "text_world"
+    ],
+    "modalities": [
+      "text",
+      "structured"
+    ]
+  }
+}

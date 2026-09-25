@@ -1,0 +1,193 @@
+{
+  "schema": "noetrium.reproduction.projection.v10",
+  "authority": "generated_from_typed_definition_and_source",
+  "package": "agemem_acl2026",
+  "package_digest": "9a05ff6c9bd88ed2f43b3f8b1cbe90ff06739e607fec3c6ac4999d2baec35fca",
+  "definition_digest": "4656452218c3b431bcec6dc8eb8bfad7766146bd8697f2d65a8bd6f41e2d2b14",
+  "source_registry_digest": "1362c5849fb9e462bb866792b448a978e8f703e4240025eb73a0a8ca00c034c6",
+  "lifecycle": "protocol_bound",
+  "identity": {
+    "method_id": "agemem_acl2026",
+    "title": "Agentic Memory: Learning Unified Long-Term and Short-Term Memory Management for Large Language Model Agents",
+    "paper_uri": "https://aclanthology.org/2026.acl-long.981/",
+    "year": 2026,
+    "paper_revision": "ACL 2026 final proceedings",
+    "identity_digest": "391c56a7a8a964b8fb63692c714701c1e37ed5eeaee2a14d02f99e8afa7cec83"
+  },
+  "catalog": {
+    "domains": [
+      "agent",
+      "frontier-2026",
+      "memory"
+    ],
+    "families": [
+      "long-horizon",
+      "memory",
+      "reinforcement-learning",
+      "tool-use"
+    ],
+    "priority": 1,
+    "benchmark_ids": [
+      "agentboard-pddl",
+      "alfworld",
+      "babyai",
+      "hotpotqa",
+      "scienceworld"
+    ],
+    "platform_pressure": [
+      "benchmark",
+      "evidence",
+      "execution/workflow",
+      "experimentation/study",
+      "model/request"
+    ],
+    "method_owned": [
+      "Apply the selected memory action while leaving memory authority to the platform.",
+      "Choose store, retrieve, update, summarize, discard, or no-op as a memory tool action.",
+      "Observe task state plus current short-term and long-term memory.",
+      "Reason over the resulting memory view and emit the next environment action.",
+      "Record step-wise process/outcome signals required by progressive RL and step-wise GRPO."
+    ],
+    "platform_owned": [
+      "MethodProgram execution and Machine Journal truth",
+      "Study/Experiment orchestration and measurement artifacts",
+      "content-addressed benchmark task identity",
+      "provider-independent model/tool dispatch and receipts",
+      "run/evidence provenance and replay"
+    ],
+    "reference_repositories": [],
+    "reference_publications": [
+      "https://aclanthology.org/2026.acl-long.981/"
+    ],
+    "catalog_digest": "968c52e6c61be53fb01b7fbd8f39951f846f5567aea1083e1418d37e140bbe99"
+  },
+  "source_lanes": [
+    {
+      "lane_id": "final_publication",
+      "kind": "paper_provenance",
+      "venue": "ACL",
+      "year": 2026,
+      "publication_id": "2026.acl-long.981",
+      "publication_uri": "https://aclanthology.org/2026.acl-long.981/",
+      "revision": "ACL 2026 final proceedings paper",
+      "content_sha256": null,
+      "lane_digest": "564362928ba6b526edce0bbab9ca1fb7efb3f877b315fcc9c355a2a89f858d7a"
+    }
+  ],
+  "assets": [
+    {
+      "kind": "benchmark",
+      "path": "research/reproductions/agemem_acl2026/benchmark.py",
+      "declaration_digest": "00cde3825f235907a5bfea33a36018c3421fb7da37d87c8014e7163f1e5d1c25",
+      "content_sha256": "be8ddaa2481361e0a0f36ca5ed4ac1b746bfaa09381187b64b1af6b29e37cc4f"
+    },
+    {
+      "kind": "method_program",
+      "path": "research/reproductions/agemem_acl2026/program.py",
+      "declaration_digest": "0a96fe07011c7e1cb95fa8a85667e2793e408fd37751b237921ae91572e2d576",
+      "content_sha256": "bb91a4b1a1e76373c7f3b985dcc4f6f5b3cb0978a4b9d291e8284692ae7b0372"
+    },
+    {
+      "kind": "study",
+      "path": "research/reproductions/agemem_acl2026/study.py",
+      "declaration_digest": "a68e7264467f3972e00c58784cb74949ecf0896b852c12bc8e6759d7fe9b2993",
+      "content_sha256": "471d73fdd58744341366fa7a868c660dbb1b5eb9f29e768bab76a44de99a44c9"
+    }
+  ],
+  "primary_executable": "research/reproductions/agemem_acl2026/program.py",
+  "reported_results": [
+    {
+      "claim_id": "agemem_qwen25_avg",
+      "metric_id": "average_score",
+      "value": 41.96,
+      "qualifiers": {
+        "model": "Qwen2.5-7B-Instruct",
+        "benchmarks": "ALFWorld/SciWorld/PDDL/BabyAI/HotpotQA"
+      },
+      "claim_digest": "da42e43883478eaf477a41ab841dd19145f54581d9564e88bde1573cbc0134dd"
+    },
+    {
+      "claim_id": "agemem_qwen3_avg",
+      "metric_id": "average_score",
+      "value": 54.31,
+      "qualifiers": {
+        "model": "Qwen3-4B-Instruct",
+        "benchmarks": "ALFWorld/SciWorld/PDDL/BabyAI/HotpotQA"
+      },
+      "claim_digest": "da6f833a22fa2f86bef3866845484b300052366981fecd17547f7d3645095f39"
+    }
+  ],
+  "reference_baselines": [
+    {
+      "baseline_id": "baseline_01",
+      "description": "No-Memory",
+      "qualifiers": {},
+      "baseline_digest": "a285a2eb0325bc46a2630a7141a94d999731377a99f90de360a85a4fc72e4ba5"
+    },
+    {
+      "baseline_id": "baseline_02",
+      "description": "LangMem",
+      "qualifiers": {},
+      "baseline_digest": "7aabc46f05a58b1d54984d1f52e04c5eb48fd689b54b7161502f74beb3785f5d"
+    },
+    {
+      "baseline_id": "baseline_03",
+      "description": "A-Mem",
+      "qualifiers": {},
+      "baseline_digest": "5c3922ec9286637dd966040510aaed72dcd13611d4254dcba5b0ab4e31c0e31c"
+    },
+    {
+      "baseline_id": "baseline_04",
+      "description": "Mem0",
+      "qualifiers": {},
+      "baseline_digest": "b0a0022f299297d0be577218acb4242298d335796a5805bba539f5475ba33c81"
+    },
+    {
+      "baseline_id": "baseline_05",
+      "description": "Mem0g",
+      "qualifiers": {},
+      "baseline_digest": "4c9247b0e0c190bb792341fa0b7154185e55f421b43f3ff35c8b012d57976a3d"
+    },
+    {
+      "baseline_id": "baseline_06",
+      "description": "AgeMem-noRL",
+      "qualifiers": {},
+      "baseline_digest": "d0d7e769e56db3c71d61bd568b3a221ee79741f408e712337356ce8752aa8ffe"
+    }
+  ],
+  "deltas": [],
+  "blockers": [
+    "Matched execution requires the released AgeMem training/checkpoint revision and exact five benchmark cuts.",
+    "Step-wise GRPO claims require real model training receipts rather than paper-reported numbers."
+  ],
+  "evidence_refs": [],
+  "scientific_tests": [
+    {
+      "path": "tests/test_scientific_frontier_2026_wave_01.py",
+      "content_sha256": "257928f82fe84a08dcd0ccf1ccf98e6e23032777b9d9c00c217a10c19c647b8a"
+    }
+  ],
+  "research_os": {
+    "surface": "noetrium.api",
+    "execution_state": "benchmark_authority_required",
+    "program_id": "agemem_acl2026",
+    "program_digest": "6479b01f49d26b110a37f56f952d2704696deb917d7ead60400a742406448228",
+    "benchmark_authority": {
+      "state": "required",
+      "selection_digests": [],
+      "blockers": [
+        "ReproductionResearchOSCompileError:benchmark 'agentboard-pddl' has no exact repository or materialized authority"
+      ]
+    },
+    "benchmark_split_axis": {
+      "required": true,
+      "consumers": [
+        "study:build_study"
+      ]
+    },
+    "reproduction_closure_state": "closed",
+    "execution_authority_state": "required",
+    "materialization_ready": false,
+    "execution_requirements": []
+  }
+}

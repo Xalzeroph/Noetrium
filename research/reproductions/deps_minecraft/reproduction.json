@@ -1,0 +1,207 @@
+{
+  "schema": "noetrium.reproduction.projection.v10",
+  "authority": "generated_from_typed_definition_and_source",
+  "package": "deps_minecraft",
+  "package_digest": "c204e34f1c821f7481bd5d9ccc4a7e77dcd400db96c74bbb1a274bc9692de460",
+  "definition_digest": "dfd76e1e43edd424426db654c8291f1984f6b6f4f4368f6906645298dc042218",
+  "source_registry_digest": "b34ac82a645a66821c20029f19473c146715222483bfaf316120b963fd884a90",
+  "lifecycle": "protocol_bound",
+  "identity": {
+    "method_id": "deps-minecraft",
+    "title": "Describe, Explain, Plan and Select: Interactive Planning with Large Language Models Enables Open-World Multi-Task Agents",
+    "paper_uri": "https://proceedings.neurips.cc/paper_files/paper/2023/hash/6b8dfb8c0c12e6fafc6c256cb08a5ca7-Abstract-Conference.html",
+    "year": 2023,
+    "paper_revision": "NeurIPS 2023 / official MC-Planner release df7067614ed527a2b56262441472886f1eb628ca",
+    "identity_digest": "f66e3c932233e41f603063cec7c0a7dd67d464f3fb92ce42ee0c1926640c92f3"
+  },
+  "catalog": {
+    "domains": [
+      "embodied-robotics",
+      "game-worlds",
+      "minecraft",
+      "planning-search"
+    ],
+    "families": [
+      "failure_explanation",
+      "goal_selection",
+      "hierarchical_control",
+      "interactive_planning",
+      "minecraft"
+    ],
+    "priority": 1,
+    "benchmark_ids": [
+      "deps-minecraft-70"
+    ],
+    "platform_pressure": [
+      "environment/minecraft",
+      "evaluation",
+      "execution/workflow",
+      "experimentation/study",
+      "model/request",
+      "participant/agent"
+    ],
+    "method_owned": [
+      "Describe-Explain-Plan-Select interaction order",
+      "LLM planner dialogue state",
+      "craft/smelt/mine replanning triggers",
+      "failure-conditioned explanation and replanning",
+      "learned horizon-based sub-goal selection",
+      "replanning round boundary"
+    ],
+    "platform_owned": [
+      "MethodProgram host and journal authority",
+      "Minecraft environment lifecycle",
+      "Study/Experiment orchestration",
+      "effect evidence and reconciliation",
+      "goal-conditioned controller capability execution",
+      "model invocation and model identity"
+    ],
+    "reference_repositories": [
+      "https://github.com/CraftJarvis/MC-Planner"
+    ],
+    "reference_publications": [
+      "https://proceedings.neurips.cc/paper_files/paper/2023/hash/6b8dfb8c0c12e6fafc6c256cb08a5ca7-Abstract-Conference.html"
+    ],
+    "catalog_digest": "726766bca235d30e5e29dac9959a68a65f285d8cb9a109cd28330f5b66413e3c"
+  },
+  "source_lanes": [
+    {
+      "lane_id": "neurips_2023_main",
+      "kind": "paper_provenance",
+      "venue": "NeurIPS",
+      "year": 2023,
+      "publication_id": "deps-minecraft-neurips-2023",
+      "publication_uri": "https://proceedings.neurips.cc/paper_files/paper/2023/hash/6b8dfb8c0c12e6fafc6c256cb08a5ca7-Abstract-Conference.html",
+      "revision": "NeurIPS 2023 main conference paper",
+      "content_sha256": null,
+      "lane_digest": "c9d02eb6e3eedb4219e052ff5baab8840fc2a88a8be8e5c0ab3e25af9f31499f"
+    },
+    {
+      "lane_id": "official_mc_planner_release",
+      "kind": "official_executable",
+      "repository": "https://github.com/CraftJarvis/MC-Planner",
+      "commit": "df7067614ed527a2b56262441472886f1eb628ca",
+      "artifacts": [
+        "configs",
+        "controller.py",
+        "data/deps_prompt.txt",
+        "data/goal_lib.json",
+        "data/parse_prompt.txt",
+        "data/task_info.json",
+        "data/task_prompt.txt",
+        "main.py",
+        "planner.py",
+        "selector.py"
+      ],
+      "lane_digest": "23419892d376da1221947c31751f82a5dd6f180b878f7edeedee1a6017359970"
+    },
+    {
+      "lane_id": "replan_semantics_fix",
+      "kind": "official_executable",
+      "repository": "https://github.com/CraftJarvis/MC-Planner",
+      "commit": "fa2278e523b85aede67a4225b2f0da2d187bc74b",
+      "artifacts": [
+        "main.py",
+        "planner.py"
+      ],
+      "lane_digest": "e01614f0f31e726ea1e9230b0aa709207a36d38109818deb2a40b283f73a9973"
+    }
+  ],
+  "assets": [
+    {
+      "kind": "benchmark",
+      "path": "research/reproductions/deps_minecraft/benchmark.py",
+      "declaration_digest": "50c41334949114b4f09eddc53c933d0d7d24f31db4fc1691966af20e937034b7",
+      "content_sha256": "4d6c0df4bf5f63002488bb0e55c113c5de925136acbab9575d16efc747c4fe45"
+    },
+    {
+      "kind": "fidelity",
+      "path": "research/reproductions/deps_minecraft/fidelity.py",
+      "declaration_digest": "e4b9c5396299372f95021ffd0321be03231dd0a645ce21c4cfb001863239c7a2",
+      "content_sha256": "1c7e5245fdcbc609de8f96cf1af0ef5ee9543858e2fc9ba166d624315bd82b66"
+    },
+    {
+      "kind": "method_program",
+      "path": "research/reproductions/deps_minecraft/program.py",
+      "declaration_digest": "f77243075d34aa2e07dcdea11506713e2b771b821d7287e35e060a7eb855d0c9",
+      "content_sha256": "348ead907c064ed879074865916dc26c3861f3e683e48b5dfaff8c7f632269b7"
+    },
+    {
+      "kind": "study",
+      "path": "research/reproductions/deps_minecraft/study.py",
+      "declaration_digest": "735ad684b39590c1b3de0ced1bd5b24011cf47d49fc26061212c31e56d92f79b",
+      "content_sha256": "39d73a28bd59c45a5d3fe3cde453115811a7ec996a7934174d23372e34280a6c"
+    },
+    {
+      "kind": "support",
+      "path": "research/reproductions/deps_minecraft/source.py",
+      "declaration_digest": "fe1e88bd3f542b1a8b10f37cdc37cc98a80ebdf2d38cae6c17bd15cea82e7046",
+      "content_sha256": "a68ebe34d4cf948694f79d07b184ea9300126e16416387d0972f2f0b97d62447"
+    }
+  ],
+  "primary_executable": "research/reproductions/deps_minecraft/program.py",
+  "reported_results": [
+    {
+      "claim_id": "deps_robust_minecraft_task_count",
+      "metric_id": "robustly_accomplished_task_count",
+      "value": 70,
+      "qualifiers": {
+        "bound": "greater-than",
+        "wording": "70+",
+        "setting": "zero-shot-multi-task",
+        "source": "NeurIPS-2023 abstract"
+      },
+      "claim_digest": "776626a98d6ade90b6b586d2961c23c0895384b38ce14e5e5e056458e612d5bb"
+    }
+  ],
+  "reference_baselines": [
+    {
+      "baseline_id": "deps_vanilla_planning_counterparts",
+      "description": "Planning counterparts used by the NeurIPS 2023 paper to establish the reported open-world multi-task gains.",
+      "qualifiers": {
+        "source": "NeurIPS-2023 paper evaluation"
+      },
+      "baseline_digest": "57d155a1874c603d8956373a2c73a69b9e92f318d5de7ef674543a4e868dea25"
+    }
+  ],
+  "deltas": [
+    {
+      "kind": "unresolved",
+      "description": "The official MC-Planner repository exposes selector.py only as an abstract shell, while the paper and default configuration require a learned horizon/ranking selector. The reproduction therefore preserves Selector as an explicit identity-bound method seam and does not invent a replacement implementation.",
+      "delta_digest": "f79e004d42220339cf7692730ead5b4b740d412775d7d4d1d0b5392798f70000"
+    }
+  ],
+  "blockers": [
+    "Matched execution requires the unreleased paper-era learned Selector implementation/checkpoint or an authoritatively identified equivalent.",
+    "The released planner targets historical code-davinci-002/text-davinci-003 serving; exact hosted model snapshots are not immutable public artifacts.",
+    "Matched Minecraft results additionally require the paper-era goal-conditioned controller checkpoint and modified MineDojo simulator runtime under Artifact authority."
+  ],
+  "evidence_refs": [],
+  "scientific_tests": [
+    {
+      "path": "tests/test_scientific_deps_minecraft_v1.py",
+      "content_sha256": "a80e526c681c3942dc3f8d2483357cbc1d385b0d2b9676f2848639c99affd41e"
+    }
+  ],
+  "research_os": {
+    "surface": "noetrium.api",
+    "execution_state": "execution_authority_required",
+    "program_id": "deps_minecraft",
+    "program_digest": "707506f34646907dcc6f451e18e3319fce90cf817f39152b0705a87b7ce1c1f9",
+    "benchmark_authority": {
+      "state": "closed",
+      "selection_digests": [
+        "aa3677e7c8aed01d4c2eb46e8bfb658bc54b5c809c93ec39c54aa25f403427ef"
+      ],
+      "blockers": []
+    },
+    "benchmark_split_axis": {
+      "required": false,
+      "consumers": []
+    },
+    "reproduction_closure_state": "closed",
+    "execution_authority_state": "required",
+    "materialization_ready": true,
+    "execution_requirements": []
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "schema": "noetrium.benchmark-manifest.v2",
+  "package": "gsm8k",
+  "benchmark": {
+    "benchmark_id": "gsm8k",
+    "title": "GSM8K",
+    "source_uri": "https://github.com/openai/grade-school-math",
+    "environment_kinds": [],
+    "modalities": [
+      "text"
+    ]
+  }
+}

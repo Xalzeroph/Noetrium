@@ -1,0 +1,17 @@
+{
+  "schema": "noetrium.benchmark-manifest.v2",
+  "package": "minedojo",
+  "benchmark": {
+    "benchmark_id": "minedojo",
+    "title": "MineDojo",
+    "source_uri": "https://github.com/MineDojo/MineDojo",
+    "environment_kinds": [
+      "minecraft",
+      "embodied"
+    ],
+    "modalities": [
+      "text",
+      "image"
+    ]
+  }
+}

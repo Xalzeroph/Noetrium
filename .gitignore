@@ -1,0 +1,40 @@
+# Python bytecode / interpreter caches
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Test / coverage caches
+.pytest_cache/
+.coverage
+.coverage.*
+htmlcov/
+
+# Build artifacts
+build/
+dist/
+*.egg-info/
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# Local server profiles and operator session state
+.env
+configs/server_profiles/*.local.env
+configs/server_profiles/*.local.*
+.server-state/
+runtime-state/
+.runtime-assets/
+
+# Tool caches
+.mypy_cache/
+.ruff_cache/
+.pyright/
+
+# OS / editor noise
+.DS_Store
+Thumbs.db
+
+# Local generated governance/test scratch
+.local/

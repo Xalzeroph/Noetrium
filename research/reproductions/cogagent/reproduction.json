@@ -1,0 +1,194 @@
+{
+  "schema": "noetrium.reproduction.projection.v10",
+  "authority": "generated_from_typed_definition_and_source",
+  "package": "cogagent",
+  "package_digest": "2d046258d401b3b3cccdc8be9071b98e8a04d4b57c950f4b782fc06212cd5071",
+  "definition_digest": "c8962c16f82b0a2b81c8ad00588563fa8b7aeb8bef391899f6bf7893867b5a00",
+  "source_registry_digest": "98cd238a80201177669fbbf1b36bc4033d8d0220869f0f27a93b8ff6efb05cb3",
+  "lifecycle": "protocol_bound",
+  "identity": {
+    "method_id": "cogagent",
+    "title": "CogAgent: A Visual Language Model for GUI Agents",
+    "paper_uri": "https://openaccess.thecvf.com/content/CVPR2024/html/Hong_CogAgent_A_Visual_Language_Model_for_GUI_Agents_CVPR_2024_paper.html",
+    "year": 2024,
+    "paper_revision": "CVPR 2024 final",
+    "identity_digest": "22856fe0e7607763e1e674233cb3ed8d929f852a9da1c63e22bcc381137ac914"
+  },
+  "catalog": {
+    "domains": [
+      "gui-agent",
+      "multimodal"
+    ],
+    "families": [
+      "gui_agent",
+      "multimodal",
+      "visual_grounding"
+    ],
+    "priority": 1,
+    "benchmark_ids": [
+      "mind2web"
+    ],
+    "platform_pressure": [
+      "artifact/lineage",
+      "environment/gui",
+      "experimentation/study",
+      "model/request"
+    ],
+    "method_owned": [
+      "candidate-element target selection and operation prediction",
+      "dual-resolution GUI visual representation",
+      "screenshot-only GUI policy"
+    ],
+    "platform_owned": [
+      "Mind2Web task cut and verifier",
+      "measurement and evidence lineage",
+      "model binding and immutable checkpoint identity",
+      "multimodal content references"
+    ],
+    "reference_repositories": [],
+    "reference_publications": [
+      "https://openaccess.thecvf.com/content/CVPR2024/html/Hong_CogAgent_A_Visual_Language_Model_for_GUI_Agents_CVPR_2024_paper.html"
+    ],
+    "catalog_digest": "cefeecc36df45f898f2efc88932a35029bf1d1ac9b4fcce46983d786f51bdaa1"
+  },
+  "source_lanes": [
+    {
+      "lane_id": "cvpr_2024_final",
+      "kind": "paper_provenance",
+      "venue": "CVPR",
+      "year": 2024,
+      "publication_id": "Hong_CogAgent_A_Visual_Language_Model_for_GUI_Agents_CVPR_2024",
+      "publication_uri": "https://openaccess.thecvf.com/content/CVPR2024/html/Hong_CogAgent_A_Visual_Language_Model_for_GUI_Agents_CVPR_2024_paper.html",
+      "revision": "CVPR 2024 final",
+      "content_sha256": null,
+      "lane_digest": "9b39c0f9f7501ab76ecd02633ff0e94467d1c0269d1b942ad8b289c80e42eda3"
+    }
+  ],
+  "assets": [
+    {
+      "kind": "fidelity",
+      "path": "research/reproductions/cogagent/fidelity.py",
+      "declaration_digest": "597b381e2f449738377e6a188fbe638596bc78abe97d1f20c066b2f665fc74d9",
+      "content_sha256": "8d5795a4e15efdfcbb189710c3d2315360175c7b9aafcb707b24ef84664de749"
+    },
+    {
+      "kind": "method_program",
+      "path": "research/reproductions/cogagent/program.py",
+      "declaration_digest": "bfbe83628d54bad8b28b0e557cbde7885969ed8b7cbf78aeb2e19ccbfe15e9f9",
+      "content_sha256": "f4090c55c4def1dec4aacf7994c64b1985e82994cd008dfa959c627ecb36aa07"
+    },
+    {
+      "kind": "study",
+      "path": "research/reproductions/cogagent/study.py",
+      "declaration_digest": "1a29e55934234270552cb80f38086aa4060b2c714948bcbe287a3e368afa997e",
+      "content_sha256": "55eade91b8d1870f8ac9454c0d473f521a60d658a8d81a03d07becf8debd166a"
+    }
+  ],
+  "primary_executable": "research/reproductions/cogagent/program.py",
+  "reported_results": [
+    {
+      "claim_id": "cogagent_mind2web_cross_task",
+      "metric_id": "step_success_rate_percent",
+      "value": 62.3,
+      "qualifiers": {
+        "benchmark": "Mind2Web",
+        "split": "cross-task",
+        "representation": "screenshot-only",
+        "source": "CVPR 2024 Table 3"
+      },
+      "claim_digest": "5efff2a82995808e917dde9be0318cf28e45ff6aef18a821ec7f376b568801aa"
+    },
+    {
+      "claim_id": "cogagent_mind2web_cross_website",
+      "metric_id": "step_success_rate_percent",
+      "value": 54.0,
+      "qualifiers": {
+        "benchmark": "Mind2Web",
+        "split": "cross-website",
+        "representation": "screenshot-only",
+        "source": "CVPR 2024 Table 3"
+      },
+      "claim_digest": "3ef63c697364913ab39e9b45fbcb0a699b1fbbc0d0fd3c5ba9bb68b57325c676"
+    },
+    {
+      "claim_id": "cogagent_mind2web_cross_domain",
+      "metric_id": "step_success_rate_percent",
+      "value": 59.4,
+      "qualifiers": {
+        "benchmark": "Mind2Web",
+        "split": "cross-domain",
+        "representation": "screenshot-only",
+        "source": "CVPR 2024 Table 3"
+      },
+      "claim_digest": "3a09934e41e6aed722d890e003ef91a6b5ecda9dd755eed6221ba81aa4e54bb7"
+    },
+    {
+      "claim_id": "cogagent_mind2web_overall",
+      "metric_id": "step_success_rate_percent",
+      "value": 58.2,
+      "qualifiers": {
+        "benchmark": "Mind2Web",
+        "split": "overall",
+        "representation": "screenshot-only",
+        "source": "CVPR 2024 Table 3"
+      },
+      "claim_digest": "b9e8aaf52fc06afbc267c4885c90aa7bf1b33efdfc89de697353b4d9ae978f47"
+    }
+  ],
+  "reference_baselines": [
+    {
+      "baseline_id": "llama2_70b_html_mind2web",
+      "description": "LLaMA2-70B using HTML screen representation in the same Mind2Web comparison.",
+      "qualifiers": {
+        "cross_task_step_success_percent": 55.8,
+        "cross_website_step_success_percent": 51.6,
+        "cross_domain_step_success_percent": 55.7,
+        "overall_step_success_percent": 54.4,
+        "source": "CVPR 2024 Table 3"
+      },
+      "baseline_digest": "0915305f3d732cb1a29ea8d14e387f2ad23ccf01c5e021d9199df1287efba01c"
+    }
+  ],
+  "deltas": [
+    {
+      "kind": "unresolved",
+      "description": "The MethodProgram reproduces paper-era screenshot-only GUI policy semantics while the dual-resolution CogAgent network is treated as a separately bound model artifact/provider rather than reimplemented inside the method package.",
+      "delta_digest": "586c17b191047fb9c386ee3fb09a639d9a0b3773c030ba228c948dec17a4a61f"
+    }
+  ],
+  "blockers": [
+    "the exact CVPR paper-era CogAgent-18B checkpoint must be materialized with immutable model identity",
+    "matched AITW execution awaits an AITW benchmark cut with exact paper evaluator identity",
+    "no matched CVPR execution evidence has yet been produced"
+  ],
+  "evidence_refs": [],
+  "scientific_tests": [
+    {
+      "path": "tests/test_scientific_cogagent_v1.py",
+      "content_sha256": "8f2385b239f1ef56ef5633aa54e5917ed4e63ee228aa33ae524ce655d7a443c4"
+    }
+  ],
+  "research_os": {
+    "surface": "noetrium.api",
+    "execution_state": "benchmark_authority_required",
+    "program_id": "cogagent",
+    "program_digest": "f5f69ab33d1dc2a5aa88c7e6a54b77117b5fb4bb2d8f01d4cd94387a57563f38",
+    "benchmark_authority": {
+      "state": "required",
+      "selection_digests": [],
+      "blockers": [
+        "ReproductionResearchOSCompileError:benchmark 'mind2web' has no exact repository or materialized authority"
+      ]
+    },
+    "benchmark_split_axis": {
+      "required": true,
+      "consumers": [
+        "study:build_cogagent_mind2web_study"
+      ]
+    },
+    "reproduction_closure_state": "closed",
+    "execution_authority_state": "required",
+    "materialization_ready": false,
+    "execution_requirements": []
+  }
+}

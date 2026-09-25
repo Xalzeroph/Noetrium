@@ -1,0 +1,13 @@
+{
+  "schema": "noetrium.benchmark-manifest.v2",
+  "package": "camel_ai_society",
+  "benchmark": {
+    "benchmark_id": "camel-ai-society",
+    "title": "CAMEL AI Society Agent Evaluation",
+    "source_uri": "https://proceedings.neurips.cc/paper/2023/hash/a3621ee907def47c1b952ade25c67698-Abstract-Conference.html",
+    "environment_kinds": [],
+    "modalities": [
+      "text"
+    ]
+  }
+}

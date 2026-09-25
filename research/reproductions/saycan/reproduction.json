@@ -1,0 +1,204 @@
+{
+  "schema": "noetrium.reproduction.projection.v10",
+  "authority": "generated_from_typed_definition_and_source",
+  "package": "saycan",
+  "package_digest": "ad2e11de7c4e85ce2b167247e1e77a5dab67df43037a8aa173d110f9b93168b1",
+  "definition_digest": "71dd04b1dc76f1794093ba5e23730308c091ad738dcc6d559210d69307e401a7",
+  "source_registry_digest": "358acfb9456c29c701634acb64fbce6b2a866522c9060ca11b081e7effdeec4f",
+  "lifecycle": "protocol_bound",
+  "identity": {
+    "method_id": "saycan",
+    "title": "Do As I Can, Not As I Say: Grounding Language in Robotic Affordances",
+    "paper_uri": "https://proceedings.mlr.press/v205/ichter23a.html",
+    "year": 2022,
+    "paper_revision": "CoRL 2022 / official released notebook commit 8c56e5dfc49613a57b80d6cfa2c9d6605cc08d10",
+    "identity_digest": "0fd71679588daa19c067cd4c828dcc1e0b916886ed819177697c332647761d3e"
+  },
+  "catalog": {
+    "domains": [
+      "embodied-robotics",
+      "planning-search"
+    ],
+    "families": [
+      "affordance",
+      "embodied",
+      "language_grounding",
+      "planning"
+    ],
+    "priority": 1,
+    "benchmark_ids": [
+      "saycan-101"
+    ],
+    "platform_pressure": [
+      "environment/embodied",
+      "experimentation/study",
+      "model/request",
+      "participant/capability",
+      "participant/method"
+    ],
+    "method_owned": [
+      "done() termination semantics",
+      "frozen-affordance recursive planning loop",
+      "language-score and affordance composition",
+      "plan-first then skill-execution ordering",
+      "skill selection policy"
+    ],
+    "platform_owned": [
+      "MethodProgram host and journal authority",
+      "effect evidence",
+      "embodied skill capability execution",
+      "evaluation",
+      "model invocation"
+    ],
+    "reference_repositories": [
+      "https://github.com/google-research/google-research"
+    ],
+    "reference_publications": [
+      "https://proceedings.mlr.press/v205/ichter23a.html"
+    ],
+    "catalog_digest": "8148e4c3ae840d910856bdf04b1adb8454de341df437e472029bf1744af890a5"
+  },
+  "source_lanes": [
+    {
+      "lane_id": "corl_2022_camera_ready",
+      "kind": "paper_provenance",
+      "venue": "CoRL",
+      "year": 2022,
+      "publication_id": "saycan-corl-2022",
+      "publication_uri": "https://proceedings.mlr.press/v205/ichter23a.html",
+      "revision": "CoRL 2022 / PMLR 205 camera-ready publication",
+      "content_sha256": null,
+      "lane_digest": "faae28a71aa1f8d325c498b502ebb907ff7dbfee6d8923cff6d311c2073d0cb8"
+    },
+    {
+      "lane_id": "official_pick_place_notebook",
+      "kind": "official_executable",
+      "repository": "https://github.com/google-research/google-research",
+      "commit": "8c56e5dfc49613a57b80d6cfa2c9d6605cc08d10",
+      "artifacts": [
+        "saycan/README.md",
+        "saycan/SayCan-Robot-Pick-Place.ipynb"
+      ],
+      "lane_digest": "0c780b06db8edf15f7104f5d0a0fc9744b507e76dbe492c44754c2f79651e560"
+    }
+  ],
+  "assets": [
+    {
+      "kind": "benchmark",
+      "path": "research/reproductions/saycan/benchmark.py",
+      "declaration_digest": "385c5092478b610a77618df585e02ed719bdca0a077529157f6c2c5a859bda1c",
+      "content_sha256": "6a9347caf7945f4b7226b829218bc2f910e1a05fdb6113a36ce3a126c68230f5"
+    },
+    {
+      "kind": "fidelity",
+      "path": "research/reproductions/saycan/fidelity.py",
+      "declaration_digest": "00229feaabab10b41030d7b13880b987979421cdae7a9170860687a12a62f743",
+      "content_sha256": "d270a921fbd5a1ac8b80ace45fb73549c3a26937dd2fd42820f0fc3c96750c73"
+    },
+    {
+      "kind": "method_program",
+      "path": "research/reproductions/saycan/program.py",
+      "declaration_digest": "75cb4168637e3a919fad3fa969dc86059ce79ad434c28f54fd799d231133a6f5",
+      "content_sha256": "017e95e1a4d920529d4648e987c8d18982a87e4a2250820f2beeff3967fb7c79"
+    },
+    {
+      "kind": "study",
+      "path": "research/reproductions/saycan/study.py",
+      "declaration_digest": "3934d34d5344a73aa383b1387dacc256fc0ebc9c2c5db1371170f028f7af0e3f",
+      "content_sha256": "0a7c57ca61476a1f8cb8461bf97e97d76bad2c2c1173900e9218a15861eb3c67"
+    },
+    {
+      "kind": "support",
+      "path": "research/reproductions/saycan/policy.py",
+      "declaration_digest": "a4d50e75216192380b3f1d725958e80449f538a58627935ceedf4a2210fe6717",
+      "content_sha256": "1574df8d21ade15a15c210d4513fa87a309c45c5dcd76b59c8e63e69d648a033"
+    },
+    {
+      "kind": "support",
+      "path": "research/reproductions/saycan/source.py",
+      "declaration_digest": "2bdff367bf3ef492b63fef94d6ffdedab9beeb30fb431d7b5f7108864bca99d7",
+      "content_sha256": "3d4eeab8f2ea1a9cc7cd2d6cdabd858d2d943e0047408570c5f420573d3fdbaa"
+    }
+  ],
+  "primary_executable": "research/reproductions/saycan/program.py",
+  "reported_results": [
+    {
+      "claim_id": "saycan_mock_kitchen_plan_success",
+      "metric_id": "plan_success_rate_percent",
+      "value": 84.0,
+      "qualifiers": {
+        "instruction_count": 101,
+        "environment": "mock-kitchen",
+        "human_raters": 3,
+        "source": "CoRL-2022 paper Table 2"
+      },
+      "claim_digest": "f9c0ddd112b214058e8972fd7699dc60b07d7f0098e9ba773dd1c67f2179f7e6"
+    },
+    {
+      "claim_id": "saycan_mock_kitchen_execution_success",
+      "metric_id": "execution_success_rate_percent",
+      "value": 74.0,
+      "qualifiers": {
+        "instruction_count": 101,
+        "environment": "mock-kitchen",
+        "human_raters": 3,
+        "source": "CoRL-2022 paper Table 2"
+      },
+      "claim_digest": "45527638bfc6abdae9353f99ca07bf1e9f19650c0c280087bfc5535e6a8cccac"
+    }
+  ],
+  "reference_baselines": [
+    {
+      "baseline_id": "saycan_language_and_affordance_ablations",
+      "description": "Language-only, affordance-only, and related planning ablations used in the SayCan paper evaluation.",
+      "qualifiers": {
+        "source": "CoRL-2022 paper evaluation"
+      },
+      "baseline_digest": "52f933793d7f66b54f0bab9954675572ea158aedb697c5bf8646e8b3bc6bec00"
+    }
+  ],
+  "deltas": [
+    {
+      "kind": "substitution",
+      "description": "The public Google Research notebook demonstrates SayCan with ViLD-derived binary affordances and CLIPort skill execution in place of the full paper robot value-function/policy stack. The reproduction preserves that released executable lane and does not relabel it as matched full-paper robot execution.",
+      "delta_digest": "f397eb09c35a942bae8dcf8067905d615a0047e0014a937cc916fbed7f41746b"
+    }
+  ],
+  "blockers": [
+    "Matched CoRL robot-result reproduction still requires immutable paper-era robot skill/value-function artifacts and the evaluated task scene/instruction cuts.",
+    "The historical hosted language-model serving snapshot used by the paper is not an immutable public model artifact.",
+    "Formal execution still requires the official SayCan v0 TSV bytes to be materialized under Artifact authority and an eligible human-majority evaluation provider for plan/execution judgments."
+  ],
+  "evidence_refs": [],
+  "scientific_tests": [
+    {
+      "path": "tests/test_scientific_saycan_benchmark_study_v1.py",
+      "content_sha256": "c0bff9301e2ec1b03f5b528a238047ad3fcd9c471c87eea71a049c2d8eeb226c"
+    },
+    {
+      "path": "tests/test_scientific_saycan_v1.py",
+      "content_sha256": "957503a9f3695ef1f9ad222fcc6825eec9f972b9f9b9bebe75a399ea3a76e6af"
+    }
+  ],
+  "research_os": {
+    "surface": "noetrium.api",
+    "execution_state": "benchmark_authority_required",
+    "program_id": "saycan",
+    "program_digest": "1e3111be8e6840cdfa680310569b1fed3097001fc129a01204f7220d7f37d9af",
+    "benchmark_authority": {
+      "state": "required",
+      "selection_digests": [],
+      "blockers": [
+        "ReproductionResearchOSCompileError:benchmark 'saycan-101' has no exact repository or materialized authority"
+      ]
+    },
+    "benchmark_split_axis": {
+      "required": false,
+      "consumers": []
+    },
+    "reproduction_closure_state": "closed",
+    "execution_authority_state": "required",
+    "materialization_ready": false,
+    "execution_requirements": []
+  }
+}

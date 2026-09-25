@@ -1,0 +1,259 @@
+{
+  "schema": "noetrium.reproduction.projection.v10",
+  "authority": "generated_from_typed_definition_and_source",
+  "package": "toolllm_toolbench",
+  "package_digest": "82d46aaf3c2bf2b77a89e5a706b40f80e0487b7a1e89cc647df0a06a465c5a0c",
+  "definition_digest": "c0fa5ef40151d3008d2c62449c48af0768b8e5896be45afaf33d45c003a7a30a",
+  "source_registry_digest": "87536d5be60f9ec27323a2924c41fbf0380a3f575e43cc044fc3f39779050898",
+  "lifecycle": "protocol_bound",
+  "identity": {
+    "method_id": "toolllm",
+    "title": "ToolLLM: Facilitating Large Language Models to Master 16000+ Real-world APIs",
+    "paper_uri": "https://proceedings.iclr.cc/paper_files/paper/2024/hash/28e50ee5b72e90b50e7196fde8ea260e-Abstract-Conference.html",
+    "year": 2024,
+    "paper_revision": null,
+    "identity_digest": "488ed76d89ffc9cf46869a31c3fd9900900c168e6278f04d7a5e2410a15048ab"
+  },
+  "catalog": {
+    "domains": [
+      "tool-use",
+      "training"
+    ],
+    "families": [
+      "api_agent",
+      "retrieval",
+      "search",
+      "tool_use"
+    ],
+    "priority": 1,
+    "benchmark_ids": [
+      "toolbench"
+    ],
+    "platform_pressure": [
+      "data/projection",
+      "data/query",
+      "execution",
+      "model/request",
+      "observability/telemetry",
+      "participant/capability"
+    ],
+    "method_owned": [
+      "API Retriever task-conditioned top-k policy",
+      "DFSDT tool-search policy",
+      "function-schema materialization and Finish injection semantics"
+    ],
+    "platform_owned": [
+      "capability descriptor authority",
+      "capability invocation and effect evidence",
+      "evaluation",
+      "semantic projection and query"
+    ],
+    "reference_repositories": [
+      "https://github.com/OpenBMB/ToolBench"
+    ],
+    "reference_publications": [],
+    "catalog_digest": "25868b5c02ee14e85a2b440284415a11c1c71433a2a05d677f225abf11012fad"
+  },
+  "source_lanes": [
+    {
+      "lane_id": "candidate_unclassified_01",
+      "kind": "candidate",
+      "repository": "https://github.com/OpenBMB/ToolBench",
+      "commit": "b2384c2a7f9c3e444a5e579596968ad88cd3201a",
+      "artifacts": [],
+      "lane_digest": "809f42b3dac6bb6eea59e7db7536720febc8fbda34e1add860920e9048ec6997"
+    }
+  ],
+  "assets": [
+    {
+      "kind": "fidelity",
+      "path": "research/reproductions/toolllm_toolbench/fidelity.py",
+      "declaration_digest": "d0bd5851f585198a5c768e5f4fa0190f64eaa0fed499472b4efdae3bbda149c7",
+      "content_sha256": "37f0b258265d4860a9009e504d986f6f6abc56938c487abf600d6579433753ad"
+    },
+    {
+      "kind": "method_program",
+      "path": "research/reproductions/toolllm_toolbench/program.py",
+      "declaration_digest": "37e587bfd408792ccc099909c55511f3f7fbe9e99a39bfae597d84fbe35a24ee",
+      "content_sha256": "9572ff84816e7d9be22d1fe9633d3e83c50bac236bf3619c43a51834c20c8926"
+    },
+    {
+      "kind": "study",
+      "path": "research/reproductions/toolllm_toolbench/study.py",
+      "declaration_digest": "40bee46f7346bc4a89b2e46685bb484bad8464acc0853b4c7c3ad198413dd197",
+      "content_sha256": "5156fabadf3552028fb36ebbbecb27fc7164c36a711b4461763a50d1216ef805"
+    },
+    {
+      "kind": "support",
+      "path": "research/reproductions/toolllm_toolbench/search.py",
+      "declaration_digest": "22da07a7b7e73f6f4da05cb64b60eaf9c8c34a68de9efede95112b1eaa7f30d9",
+      "content_sha256": "a98204fcc18d89759c206e9dac237a3a4149e89592ad461d9cd5488a811934c7"
+    },
+    {
+      "kind": "support",
+      "path": "research/reproductions/toolllm_toolbench/selection.py",
+      "declaration_digest": "889769fa29c3e8b6a2c880bde89de159a2f9e4864a10bb36e37ea31818ea261f",
+      "content_sha256": "ad439ad5553f525dd8011e2253cd40391a334667ba69ea11c2563096c3746fc1"
+    }
+  ],
+  "primary_executable": "research/reproductions/toolllm_toolbench/program.py",
+  "reported_results": [
+    {
+      "claim_id": "toolllama_dfsdt_average_pass",
+      "metric_id": "average_pass_rate_percent",
+      "value": 66.7,
+      "qualifiers": {
+        "benchmark": "toolbench",
+        "model": "toollama",
+        "inference": "dfsdt",
+        "source": "ICLR-2024 paper Table 4"
+      },
+      "claim_digest": "309e17eaed670992f57e2ff40aa815e9df1f0e60047d865fd2ce043a8fb7c551"
+    },
+    {
+      "claim_id": "toolllama_dfsdt_average_win",
+      "metric_id": "average_win_rate_percent",
+      "value": 60.0,
+      "qualifiers": {
+        "benchmark": "toolbench",
+        "model": "toollama",
+        "inference": "dfsdt",
+        "source": "ICLR-2024 paper Table 4"
+      },
+      "claim_digest": "ade9195c826de7ae13c547e28d4645c8f5c663e5ef3fae142282ab218de4c92b"
+    },
+    {
+      "claim_id": "toolllama_dfsdt_retriever_average_pass",
+      "metric_id": "average_pass_rate_percent",
+      "value": 67.3,
+      "qualifiers": {
+        "benchmark": "toolbench",
+        "model": "toollama",
+        "inference": "dfsdt-retriever",
+        "source": "ICLR-2024 paper Table 4"
+      },
+      "claim_digest": "090d106e6341d914fc4909511ac273ed2c2427ab5e7b23ae733f3bc7c6c2ff64"
+    },
+    {
+      "claim_id": "toolllama_dfsdt_retriever_average_win",
+      "metric_id": "average_win_rate_percent",
+      "value": 63.1,
+      "qualifiers": {
+        "benchmark": "toolbench",
+        "model": "toollama",
+        "inference": "dfsdt-retriever",
+        "source": "ICLR-2024 paper Table 4"
+      },
+      "claim_digest": "58e0b6470620c1fb3831349e7f1584034032aa0cc87cf8d112429947a061a1b9"
+    },
+    {
+      "claim_id": "tooleval_pass_human_agreement",
+      "metric_id": "human_agreement_percent",
+      "value": 87.1,
+      "qualifiers": {
+        "evaluation": "pass-rate",
+        "source": "ICLR-2024 paper evaluator analysis"
+      },
+      "claim_digest": "75cffeb0b5c4a4978a5a2e1d97e366edf25ed768b487267f9bfc0384e83f4a33"
+    },
+    {
+      "claim_id": "tooleval_win_human_agreement",
+      "metric_id": "human_agreement_percent",
+      "value": 80.3,
+      "qualifiers": {
+        "evaluation": "win-rate",
+        "source": "ICLR-2024 paper evaluator analysis"
+      },
+      "claim_digest": "ee8fef5b9e809f16ea47be18f9f4a6d29cd88eb9004eb68fb32f15fb23be25cd"
+    }
+  ],
+  "reference_baselines": [
+    {
+      "baseline_id": "chatgpt_react_toolbench",
+      "description": "ChatGPT ReAct baseline reported in ToolBench.",
+      "qualifiers": {
+        "average_pass_rate_percent": 40.2,
+        "source": "ICLR-2024 paper Table 4"
+      },
+      "baseline_digest": "0e0946713de14c3afea63498f18d6203cc167ac2cee20ab67b1a4029953b7107"
+    },
+    {
+      "baseline_id": "gpt4_dfsdt_toolbench",
+      "description": "GPT-4 DFSDT comparison reported in ToolBench.",
+      "qualifiers": {
+        "average_pass_rate_percent": 71.1,
+        "average_win_rate_percent": 70.4,
+        "source": "ICLR-2024 paper Table 4"
+      },
+      "baseline_digest": "500e55621efd53971cae26454d3fad72ef8feee96fbf35ea623e2fb2b9fada0a"
+    }
+  ],
+  "deltas": [
+    {
+      "kind": "unresolved",
+      "description": "Paper Table 4 combines ToolLLaMA checkpoint identity, paper-era RapidAPI availability and ToolEval model judging. Those external identities are not fully content-addressed by the current executable Study.",
+      "delta_digest": "28cf3d1eb6cdd58a8c36e80c7f8e925bef3496e1365ffc056fb151cd1714c70e"
+    }
+  ],
+  "blockers": [
+    "the exact paper-era ToolLLaMA checkpoint used for Table 4 must be materialized under immutable model identity",
+    "the paper-era RapidAPI inventory, availability and response behavior must be frozen before matched ToolBench execution",
+    "ToolEval pass/win claims require the historical evaluator model and prompt/service revisions under immutable authority"
+  ],
+  "evidence_refs": [],
+  "scientific_tests": [
+    {
+      "path": "tests/test_scientific_toolbench_cut_v1.py",
+      "content_sha256": "34504051bb66f89149a741b6923e75fed43d52c239984f023b6614fba8154dcd"
+    },
+    {
+      "path": "tests/test_scientific_toolllm_dfsdt_v1.py",
+      "content_sha256": "b52ad76fad333ebf26ba3d4ce20770c9e6c8d954a6a50044229ed86547b85a7f"
+    },
+    {
+      "path": "tests/test_scientific_toolllm_method_program_v1.py",
+      "content_sha256": "552cb9d33cf67e38fee5f89c63efa85d7c9309228eab4003026cde9ba60ef6fc"
+    },
+    {
+      "path": "tests/test_scientific_toolllm_study_v1.py",
+      "content_sha256": "66adf152411b3a3162151105aaf1e2d5669d4dd8e4119d651ddb67b9ae900417"
+    },
+    {
+      "path": "tests/test_scientific_toolllm_toolbench_v1.py",
+      "content_sha256": "28cbc0c336c8b9f1dc99163dffd077ee469f1591e8cc9580d84178cd50ec9eb2"
+    }
+  ],
+  "research_os": {
+    "surface": "noetrium.api",
+    "execution_state": "benchmark_authority_required",
+    "program_id": "toolllm_toolbench",
+    "program_digest": "edaa479449c168a42d0d2ab3ec287c666da860ab71209a8f5b9d02f2e4643470",
+    "benchmark_authority": {
+      "state": "required",
+      "selection_digests": [],
+      "blockers": [
+        "ReproductionResearchOSCompileError:benchmark 'toolbench' has no exact repository or materialized authority"
+      ]
+    },
+    "benchmark_split_axis": {
+      "required": true,
+      "consumers": [
+        "study:build_toolllm_toolbench_study"
+      ]
+    },
+    "reproduction_closure_state": "required",
+    "execution_authority_state": "required",
+    "materialization_ready": false,
+    "execution_requirements": [
+      {
+        "parameter": "capability_ids",
+        "kind": "capability_closure",
+        "consumers": [
+          "method:build_toolllm_toolbench_method_program",
+          "study:build_toolllm_toolbench_study"
+        ],
+        "requirement_digest": "5f78e48bb26e9655f491c4d0132fb6f346c78e42583b99bff7f9be01c5942f60"
+      }
+    ]
+  }
+}

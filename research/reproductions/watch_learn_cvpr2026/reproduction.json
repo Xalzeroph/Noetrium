@@ -1,0 +1,166 @@
+{
+  "schema": "noetrium.reproduction.projection.v10",
+  "authority": "generated_from_typed_definition_and_source",
+  "package": "watch_learn_cvpr2026",
+  "package_digest": "db6040ba8503925531ae5dddb600540129a5720729f3175bd43bb535214a9338",
+  "definition_digest": "81ae65ddce2774738456d379be9109762b1d9b75df7365efccfbbe271f332b22",
+  "source_registry_digest": "9377a15bf9b58f568842cac30b7cb6e1418ed33e0be6323790688bf0eebdb8e8",
+  "lifecycle": "protocol_bound",
+  "identity": {
+    "method_id": "watch-and-learn",
+    "title": "Watch and Learn: Learning to Use Computers from Online Videos",
+    "paper_uri": "https://openaccess.thecvf.com/content/CVPR2026/html/Song_Watch_and_Learn_Learning_to_Use_Computers_from_Online_Videos_CVPR_2026_paper.html",
+    "year": 2026,
+    "paper_revision": "CVPR 2026 proceedings",
+    "identity_digest": "b97b191bcbb3760653cb6ffa86a8826b1651e7ccbb3ca6ef45955418caf2440c"
+  },
+  "catalog": {
+    "domains": [
+      "agent",
+      "cvpr",
+      "recent"
+    ],
+    "families": [
+      "agentic_workflow",
+      "watch_and_learn"
+    ],
+    "priority": 1,
+    "benchmark_ids": [
+      "osworld"
+    ],
+    "platform_pressure": [
+      "benchmark",
+      "evidence",
+      "execution/workflow",
+      "experimentation/study",
+      "model/request"
+    ],
+    "method_owned": [
+      "ICL and SFT use of web-scale demonstrations",
+      "inverse-dynamics UI trajectory annotation",
+      "task-aware tutorial-video retrieval",
+      "trajectory filtering"
+    ],
+    "platform_owned": [
+      "MethodProgram and Machine Journal execution authority",
+      "benchmark cut identity",
+      "experiment and measurement orchestration",
+      "model/provider transport",
+      "run evidence and provenance"
+    ],
+    "reference_repositories": [],
+    "reference_publications": [
+      "https://openaccess.thecvf.com/content/CVPR2026/html/Song_Watch_and_Learn_Learning_to_Use_Computers_from_Online_Videos_CVPR_2026_paper.html"
+    ],
+    "catalog_digest": "1e70ba1a26352d96ec3b4a58583384af5a96b4bcc69ac3a71f5dc8124d28c140"
+  },
+  "source_lanes": [
+    {
+      "lane_id": "cvpr_2026",
+      "kind": "paper_provenance",
+      "venue": "CVPR",
+      "year": 2026,
+      "publication_id": "watch-learn-cvpr-2026",
+      "publication_uri": "https://openaccess.thecvf.com/content/CVPR2026/html/Song_Watch_and_Learn_Learning_to_Use_Computers_from_Online_Videos_CVPR_2026_paper.html",
+      "revision": "CVPR 2026 proceedings publication",
+      "content_sha256": null,
+      "lane_digest": "f7cf0c9ff91db064c61afe6a001e17b4cc710a48b8f446b6e9dd27c5854c0599"
+    }
+  ],
+  "assets": [
+    {
+      "kind": "benchmark",
+      "path": "research/reproductions/watch_learn_cvpr2026/benchmark.py",
+      "declaration_digest": "12c94534dbbfeba25a555783b606d1c2ff620cde9036a01b1dea787743b65417",
+      "content_sha256": "6bf9a6a4da8c377389dc77e358c1ccf540810948980ae5f028414a09e9d04d0d"
+    },
+    {
+      "kind": "fidelity",
+      "path": "research/reproductions/watch_learn_cvpr2026/fidelity.py",
+      "declaration_digest": "65100333da96adc09fdf5cd16f68b2bc6b2a1ffca937638177bf34e16d3b809d",
+      "content_sha256": "167fb2812ac98c80ca8048f74fbcec8fa3d2886d3d1eefcf34d470930b42e8a2"
+    },
+    {
+      "kind": "method_program",
+      "path": "research/reproductions/watch_learn_cvpr2026/program.py",
+      "declaration_digest": "55133fdaddd3954322bb8a3224af6f2edde6ded144f4a0f234b33103e5cca96a",
+      "content_sha256": "02510e3bc69678022ea6371492b379c4a14f26da5471f44fffefa06f6f511404"
+    },
+    {
+      "kind": "study",
+      "path": "research/reproductions/watch_learn_cvpr2026/study.py",
+      "declaration_digest": "a02c8b8e80449c8759bcf1f8aa7441d51febee4ee1e40548e5cde4bb90c03553",
+      "content_sha256": "354159b331857d83d80613f1c94db3fc685bb3ff72c56962df7a2be284025cda"
+    }
+  ],
+  "primary_executable": "research/reproductions/watch_learn_cvpr2026/program.py",
+  "reported_results": [
+    {
+      "claim_id": "watch_learn_trajectory_count",
+      "metric_id": "trajectory_count",
+      "value": 53000,
+      "qualifiers": {
+        "bound": "greater-than",
+        "source": "CVPR-2026 paper abstract"
+      },
+      "claim_digest": "f463d7c70f083ce2f0497e508b243003cade4867fd50b3fa51d05d7fffa001e9"
+    },
+    {
+      "claim_id": "watch_learn_osworld_o3_gain",
+      "metric_id": "successful_task_gain_count",
+      "value": 15,
+      "qualifiers": {
+        "benchmark": "osworld",
+        "base_successes": 83,
+        "with_method_successes": 98,
+        "source": "CVPR-2026 supplement Table 8"
+      },
+      "claim_digest": "4eab96cbc091302db1c7a6f0ea585da20989ea2ca98cf638f2c16f6a56fab851"
+    }
+  ],
+  "reference_baselines": [
+    {
+      "baseline_id": "osworld_unconditioned_agents",
+      "description": "Same computer-use agents without Watch-and-Learn trajectories",
+      "qualifiers": {
+        "source": "CVPR-2026 OSWorld evaluation"
+      },
+      "baseline_digest": "4f0a911570a9dda1ab5b8d1e5368ee6ebc07770167feffdc4a1d1930e5853572"
+    }
+  ],
+  "deltas": [],
+  "blockers": [
+    "Matched data generation requires exact online video corpus snapshots and inverse-dynamics labeling artifacts.",
+    "OSWorld runtime images and model checkpoints must match the evaluated configurations."
+  ],
+  "evidence_refs": [],
+  "scientific_tests": [
+    {
+      "path": "tests/test_scientific_recent_2025_2026_wave_v1.py",
+      "content_sha256": "11a5279b71d1113921dcaf67f385ea09612451fe35e356b9efbb782921b4b5a7"
+    }
+  ],
+  "research_os": {
+    "surface": "noetrium.api",
+    "execution_state": "benchmark_authority_required",
+    "program_id": "watch_learn_cvpr2026",
+    "program_digest": "f82edfa5184a31613143de7b69f86477dd3dc1be376940c506a8e164dc5e5fd6",
+    "benchmark_authority": {
+      "state": "required",
+      "selection_digests": [],
+      "blockers": [
+        "ReproductionResearchOSCompileError:benchmark 'osworld' has no exact repository or materialized authority"
+      ]
+    },
+    "benchmark_split_axis": {
+      "required": true,
+      "consumers": [
+        "study:build_watch_and_learn_study"
+      ]
+    },
+    "reproduction_closure_state": "closed",
+    "execution_authority_state": "required",
+    "materialization_ready": false,
+    "execution_requirements": []
+  }
+}

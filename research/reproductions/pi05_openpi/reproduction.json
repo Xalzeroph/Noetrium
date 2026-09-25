@@ -1,0 +1,109 @@
+{
+  "schema": "noetrium.reproduction.projection.v10",
+  "authority": "generated_from_typed_definition_and_source",
+  "package": "pi05_openpi",
+  "package_digest": "43a152f51c97a679ea43aa70baa7f3529f556ed960a5bc7e9d9455c85dbe302d",
+  "definition_digest": "9f9f320bdbeba68191303fb24c8ba4aeddd0b27a1885cd71a9dc4cc9ef6d6446",
+  "source_registry_digest": "6fd9550e5e62e26d5d5b30a198b91082ca51daf1f7f6619ca09c0115dcdf8f04",
+  "lifecycle": "catalogued",
+  "identity": {
+    "method_id": "pi0.5",
+    "title": "π0.5: a Vision-Language-Action Model with Open-World Generalization",
+    "paper_uri": "https://arxiv.org/abs/2504.16054",
+    "year": 2025,
+    "paper_revision": null,
+    "identity_digest": "e4a586d15d79c9b14af301a0f6a525805705fbc5604320aee0115bd023ad2360"
+  },
+  "catalog": {
+    "domains": [
+      "embodied-robotics",
+      "multimodal",
+      "training"
+    ],
+    "families": [
+      "embodied",
+      "multimodal",
+      "robot_policy",
+      "vla"
+    ],
+    "priority": 1,
+    "benchmark_ids": [],
+    "platform_pressure": [
+      "environment/embodied",
+      "experimentation/study",
+      "model/request",
+      "participant/agent"
+    ],
+    "method_owned": [
+      "discrete state tokenization",
+      "flow-based continuous action policy",
+      "heterogeneous co-training semantics"
+    ],
+    "platform_owned": [
+      "continuous action ABI",
+      "model execution",
+      "multimodal embodied observation transport",
+      "trajectory evidence and evaluation"
+    ],
+    "reference_repositories": [
+      "https://github.com/Physical-Intelligence/openpi"
+    ],
+    "reference_publications": [],
+    "catalog_digest": "a68e5b2a9de7a55a57bf375083eafb4830dafd6f83dee2b843ebceb7f1f9e1ff"
+  },
+  "source_lanes": [
+    {
+      "lane_id": "candidate_unclassified_01",
+      "kind": "candidate",
+      "repository": "https://github.com/Physical-Intelligence/openpi",
+      "commit": "8999e55c55ad43b976fa71949ec070ee0128a8bc",
+      "artifacts": [],
+      "lane_digest": "3d0a404deb5317ade11b427cbb3ae81f73ffe81798e9c6a347280c46d5dba909"
+    }
+  ],
+  "assets": [
+    {
+      "kind": "fidelity",
+      "path": "research/reproductions/pi05_openpi/fidelity.py",
+      "declaration_digest": "0ca0dc8af5397902b1238c300acb595baca6dba261f1a696746b7a052fc04818",
+      "content_sha256": "2a927b60792efcbfa3d3e1e29fed291c7f52594419f281cfab92d1c60bd3b413"
+    },
+    {
+      "kind": "support",
+      "path": "research/reproductions/pi05_openpi/binding.py",
+      "declaration_digest": "cf5dc6285a1803c633df64a75dc6672fb57c703c7f2b8532df8ab2ea126111be",
+      "content_sha256": "5ff375335b3bb64dc239bcfbadaa51bb2b23066b430061ddf6a3c2840e99929b"
+    }
+  ],
+  "primary_executable": null,
+  "reported_results": [],
+  "reference_baselines": [],
+  "deltas": [],
+  "blockers": [],
+  "evidence_refs": [],
+  "scientific_tests": [
+    {
+      "path": "tests/test_scientific_pi05_openpi_v1.py",
+      "content_sha256": "1bf02deafbb7b8ca0e53c8e2e2d86d9bb4efe564f23fd1d78b9bead689505e55"
+    }
+  ],
+  "research_os": {
+    "surface": "noetrium.api",
+    "execution_state": "not_executable",
+    "program_id": null,
+    "program_digest": null,
+    "benchmark_authority": {
+      "state": "not_applicable",
+      "selection_digests": [],
+      "blockers": []
+    },
+    "benchmark_split_axis": {
+      "required": false,
+      "consumers": []
+    },
+    "reproduction_closure_state": "not_applicable",
+    "execution_authority_state": "not_applicable",
+    "materialization_ready": false,
+    "execution_requirements": []
+  }
+}

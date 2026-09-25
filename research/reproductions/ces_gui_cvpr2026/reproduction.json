@@ -1,0 +1,173 @@
+{
+  "schema": "noetrium.reproduction.projection.v10",
+  "authority": "generated_from_typed_definition_and_source",
+  "package": "ces_gui_cvpr2026",
+  "package_digest": "4c81100dc7d11cd970831ce3769d7ad48cb20906cf2d05243faa64b3fb01f4fd",
+  "definition_digest": "a107308919879400a2faa321adadac511e19a659c7ebb5b9cd858bec7e28f0b2",
+  "source_registry_digest": "1b552ecdc0428896fe2cf149d77fc3b56180a74bb3f4927581ca6073ca28a4df",
+  "lifecycle": "protocol_bound",
+  "identity": {
+    "method_id": "ces_gui_cvpr2026",
+    "title": "Training High-Level Schedulers with Execution-Feedback Reinforcement Learning for Long-Horizon GUI Automation",
+    "paper_uri": "https://openaccess.thecvf.com/content/CVPR2026/html/Deng_Training_High-Level_Schedulers_with_Execution-Feedback_Reinforcement_Learning_for_Long-Horizon_GUI_CVPR_2026_paper.html",
+    "year": 2026,
+    "paper_revision": "CVPR 2026 final proceedings",
+    "identity_digest": "d865c51a3370add2f882ca77df0385ede028db916cf5ce6260d8ba5a9b9ff154"
+  },
+  "catalog": {
+    "domains": [
+      "agent",
+      "frontier-2026",
+      "gui-agent"
+    ],
+    "families": [
+      "gui-agent",
+      "multi-agent",
+      "reinforcement-learning",
+      "scheduler",
+      "state-tracking"
+    ],
+    "priority": 1,
+    "benchmark_ids": [
+      "aitz",
+      "amex",
+      "gui-odyssey"
+    ],
+    "platform_pressure": [
+      "benchmark",
+      "evidence",
+      "execution/workflow",
+      "experimentation/study",
+      "memory",
+      "model/request",
+      "participant"
+    ],
+    "method_owned": [
+      "Capture execution outcome and environment feedback after the GUI action.",
+      "Compress previous state and execution feedback into an updated progress summary.",
+      "Read the user goal, current screen and compressed task state; emit one atomic sub-instruction.",
+      "Use the frozen low-level GUI executor to reason over the sub-instruction and emit the concrete GUI action.",
+      "Use the new state summary to continue, revise, or terminate the high-level plan."
+    ],
+    "platform_owned": [
+      "MethodProgram execution and Machine Journal truth",
+      "Study/Experiment orchestration and measurement artifacts",
+      "content-addressed benchmark task identity",
+      "provider-independent model/tool dispatch and receipts",
+      "run/evidence provenance and replay"
+    ],
+    "reference_repositories": [
+      "https://github.com/hehehahi4/CES"
+    ],
+    "reference_publications": [
+      "https://openaccess.thecvf.com/content/CVPR2026/html/Deng_Training_High-Level_Schedulers_with_Execution-Feedback_Reinforcement_Learning_for_Long-Horizon_GUI_CVPR_2026_paper.html"
+    ],
+    "catalog_digest": "e07ce652248af0ec7e9f868f7d90bdf6dc45523e09e8a16e2f532f49eb3f8142"
+  },
+  "source_lanes": [
+    {
+      "lane_id": "final_publication",
+      "kind": "paper_provenance",
+      "venue": "CVPR",
+      "year": 2026,
+      "publication_id": "Deng_CES_CVPR_2026",
+      "publication_uri": "https://openaccess.thecvf.com/content/CVPR2026/html/Deng_Training_High-Level_Schedulers_with_Execution-Feedback_Reinforcement_Learning_for_Long-Horizon_GUI_CVPR_2026_paper.html",
+      "revision": "CVPR 2026 final proceedings paper",
+      "content_sha256": null,
+      "lane_digest": "5b29b0691eab715dc11bcb6473e22b3422576bcd8b0fb037f3928ff5f071d534"
+    },
+    {
+      "lane_id": "official_repository_cut",
+      "kind": "official_artifact",
+      "repository": "https://github.com/hehehahi4/CES",
+      "commit": "bf54b363eb769b957d6f80459fd0c0aadbbed44e",
+      "artifacts": [
+        "README.md"
+      ],
+      "lane_digest": "10c257469a6496a89f27bb1e10b7c54c9af56716fbbc1f02b41dca69b8e6e533"
+    }
+  ],
+  "assets": [
+    {
+      "kind": "benchmark",
+      "path": "research/reproductions/ces_gui_cvpr2026/benchmark.py",
+      "declaration_digest": "021444fe6bb086b4c15e2715ebaf5c9b3a9ff94d090f9ed1faf087a2722b0cb6",
+      "content_sha256": "ec74c2995f85358fb01f072602c98bf14bc19250fe314d73a516b832e60a9749"
+    },
+    {
+      "kind": "method_program",
+      "path": "research/reproductions/ces_gui_cvpr2026/program.py",
+      "declaration_digest": "f2a298a1793831a7480aa614623a78294b736336702f050a99950b66d201c812",
+      "content_sha256": "a34ae06107020f3eda673c476dfdaf73e18a84328ee32e0e06a9c2800da93e1b"
+    },
+    {
+      "kind": "study",
+      "path": "research/reproductions/ces_gui_cvpr2026/study.py",
+      "declaration_digest": "12e27290de29a996b9960f441f3f3181a46c6c84e067caf599dd15a6a2930215",
+      "content_sha256": "54d72d3fdcc14e17d72b6595d051e1611e4d7ce52a5c1d733d5b072d9c034af7"
+    }
+  ],
+  "primary_executable": "research/reproductions/ces_gui_cvpr2026/program.py",
+  "reported_results": [],
+  "reference_baselines": [
+    {
+      "baseline_id": "baseline_01",
+      "description": "GUI-R1 executor alone",
+      "qualifiers": {},
+      "baseline_digest": "4e7e936d3ab2292873847c280a5dca4bd2da88ad6782860a5ff6ca28a2eeceeb"
+    },
+    {
+      "baseline_id": "baseline_02",
+      "description": "GUI-Owl executor alone",
+      "qualifiers": {},
+      "baseline_digest": "75c73fed8d2de6cbb34c127ef72557cc6b5b6a9602231acfc4f92c9dd482c58a"
+    },
+    {
+      "baseline_id": "baseline_03",
+      "description": "zero-shot Qwen2.5-VL",
+      "qualifiers": {},
+      "baseline_digest": "eca173af3d373765d475e078621c9a1092d5fbfa4df55f2279c79e85fba38e0a"
+    },
+    {
+      "baseline_id": "baseline_04",
+      "description": "SFT-only scheduler",
+      "qualifiers": {},
+      "baseline_digest": "4200f2597ec45cf664b1566d3da90c07278ef799d4cced67ee7335dfc88bdea1"
+    }
+  ],
+  "deltas": [],
+  "blockers": [
+    "Matched reproduction requires the pinned CES model/data revisions, exact AITZ/AMEX/GUI-Odyssey cuts and frozen Executor identity.",
+    "Staged-RL claims require Coordinator and State-Tracker optimization receipts plus execution-feedback trajectories."
+  ],
+  "evidence_refs": [],
+  "scientific_tests": [
+    {
+      "path": "tests/test_scientific_frontier_2026_wave_02.py",
+      "content_sha256": "24b94183020cd24bd2b462fe8dc339d108dd405ec2a878c89bbfc4163f912a32"
+    }
+  ],
+  "research_os": {
+    "surface": "noetrium.api",
+    "execution_state": "benchmark_authority_required",
+    "program_id": "ces_gui_cvpr2026",
+    "program_digest": "76b2a4d0e09da826327a2e1051c6cc56195e7212cee2a85c50d434a90648faab",
+    "benchmark_authority": {
+      "state": "required",
+      "selection_digests": [],
+      "blockers": [
+        "ReproductionResearchOSCompileError:benchmark 'aitz' has no exact repository or materialized authority"
+      ]
+    },
+    "benchmark_split_axis": {
+      "required": true,
+      "consumers": [
+        "study:build_study"
+      ]
+    },
+    "reproduction_closure_state": "closed",
+    "execution_authority_state": "required",
+    "materialization_ready": false,
+    "execution_requirements": []
+  }
+}

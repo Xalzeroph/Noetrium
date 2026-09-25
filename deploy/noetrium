@@ -1,0 +1,154 @@
+#!/bin/sh
+set -eu
+
+ROOT="$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)"
+ENV_BOOTSTRAP="$ROOT/deploy/build-environments.sh"
+STATE_ROOT="${NOETRIUM_DEPLOYMENT_STATE_ROOT:-$ROOT/.noetrium/deployment}"
+ENV_WORK_ROOT="$STATE_ROOT/environment-images"
+FLEET_STATE_ROOT="$STATE_ROOT/reproduction-fleet"
+BOOTSTRAP_READY=0
+
+usage() {
+  cat <<'EOF'
+Usage: ./deploy/noetrium <doctor|build|plan|requirements|preflight|run|env> [args]
+
+  doctor     verify ordinary-user Docker/Compose access and environment registry
+  build      build or reuse all active environment profiles
+  plan       compile the repository reproduction fleet without starting work
+  requirements emit the machine-readable owner authority prerequisite manifest
+  preflight  materialize exact authority closure and admit the fleet without starting work
+  run        build/reuse environments and execute the fleet through one shared runtime
+  env        pass remaining arguments to the low-level environment bootstrap
+
+Configuration:
+  NOETRIUM_FLEET_AUTHORITY_MATERIALIZER=module:factory
+  NOETRIUM_DEPLOYMENT_STATE_ROOT=/writable/path
+  NOETRIUM_CONTROL_ENV_FILE=/path/to/env-file
+  NOETRIUM_SKIP_ENVIRONMENT_BUILD=1
+EOF
+}
+
+die() {
+  echo "noetrium-deploy: $*" >&2
+  exit 2
+}
+
+host_doctor() {
+  command -v docker >/dev/null 2>&1 || die "Docker CLI is required on the host"
+  docker info >/dev/null 2>&1 || die "ordinary user cannot reach the active Docker daemon"
+  docker compose version >/dev/null 2>&1 || die "Docker Compose plugin is required"
+  mkdir -p "$ENV_WORK_ROOT" "$FLEET_STATE_ROOT"
+}
+
+authority_materializer_from_env_file() {
+  file="${NOETRIUM_CONTROL_ENV_FILE:-$ROOT/deploy/.env}"
+  [ -f "$file" ] || return 0
+  sed -n 's/^NOETRIUM_FLEET_AUTHORITY_MATERIALIZER=//p' "$file" | tail -n 1
+}
+
+authority_materializer() {
+  if [ -n "${NOETRIUM_FLEET_AUTHORITY_MATERIALIZER:-}" ]; then
+    printf '%s\n' "$NOETRIUM_FLEET_AUTHORITY_MATERIALIZER"
+    return 0
+  fi
+  authority_materializer_from_env_file
+}
+
+authority_requirements_path() {
+  printf '%s\n' "$FLEET_STATE_ROOT/authority-prerequisites.json"
+}
+
+emit_authority_requirements() {
+  path="$(authority_requirements_path)"
+  mkdir -p "$FLEET_STATE_ROOT"
+  fleet --requirements --output "$path"
+  printf 'noetrium_authority_requirements=%s\n' "$path"
+}
+
+require_authority_materializer() {
+  materializer="$(authority_materializer)"
+  if [ -n "$materializer" ]; then
+    printf '%s\n' "$materializer"
+    return 0
+  fi
+  emit_authority_requirements
+  die "fleet authority materializer is unresolved; owner systems must materialize the emitted prerequisite manifest before preflight/run"
+}
+
+fleet_with_materializer() {
+  materializer="$1"
+  shift
+  fleet "$@" --authority-materializer "$materializer"
+}
+
+environment_bootstrap() {
+  NOETRIUM_BUILD_WORK_ROOT="$ENV_WORK_ROOT" "$ENV_BOOTSTRAP" "$@"
+  BOOTSTRAP_READY=1
+}
+
+control_python() {
+  if [ "$BOOTSTRAP_READY" = "1" ]; then
+    NOETRIUM_BOOTSTRAP_REUSE=1 NOETRIUM_BUILD_WORK_ROOT="$ENV_WORK_ROOT" \
+      "$ENV_BOOTSTRAP" control "$@"
+  else
+    NOETRIUM_BUILD_WORK_ROOT="$ENV_WORK_ROOT" "$ENV_BOOTSTRAP" control "$@"
+    BOOTSTRAP_READY=1
+  fi
+}
+
+fleet() {
+  control_python scripts/run_reproduction_fleet.py "$@"
+}
+
+command="${1:-}"
+[ -n "$command" ] || {
+  usage
+  exit 2
+}
+shift
+
+case "$command" in
+  doctor)
+    host_doctor
+    environment_bootstrap validate
+    echo "noetrium_deployment_ready=true"
+    ;;
+  build)
+    host_doctor
+    environment_bootstrap build "$@"
+    ;;
+  plan)
+    host_doctor
+    fleet "$@"
+    ;;
+  requirements)
+    host_doctor
+    emit_authority_requirements
+    ;;
+  preflight)
+    host_doctor
+    materializer="$(require_authority_materializer)"
+    fleet_with_materializer "$materializer" --preflight \
+      --state-root "$FLEET_STATE_ROOT" "$@"
+    ;;
+  run)
+    host_doctor
+    materializer="$(require_authority_materializer)"
+    if [ "${NOETRIUM_SKIP_ENVIRONMENT_BUILD:-0}" != "1" ]; then
+      environment_bootstrap build
+    fi
+    fleet_with_materializer "$materializer" --execute \
+      --state-root "$FLEET_STATE_ROOT" "$@"
+    ;;
+  env)
+    host_doctor
+    environment_bootstrap "$@"
+    ;;
+  help|-h|--help)
+    usage
+    ;;
+  *)
+    usage >&2
+    die "unknown command: $command"
+    ;;
+esac

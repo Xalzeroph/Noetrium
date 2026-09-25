@@ -1,0 +1,119 @@
+{
+  "schema": "noetrium.reproduction.projection.v10",
+  "authority": "generated_from_typed_definition_and_source",
+  "package": "multiagent_debate",
+  "package_digest": "12b2ed6ce6cb43af0e75afa8afc90b98e26374aea1a3331fd924b6c30b067b61",
+  "definition_digest": "3646b03d0929cb39dee125528cbdcd03a7c4848104073744a950f77e9862b8d7",
+  "source_registry_digest": "a444ca49adcadedba1e4bd45f955f057c6810af68c62d3b7782fe033e2d6882a",
+  "lifecycle": "protocol_bound",
+  "identity": {
+    "method_id": "multiagent-debate",
+    "title": "Improving Factuality and Reasoning in Language Models through Multiagent Debate",
+    "paper_uri": "https://arxiv.org/abs/2305.14325",
+    "year": 2023,
+    "paper_revision": null,
+    "identity_digest": "c38d575f6d857b01433754a57104d2b1faf7466cd0756db9d9edf66326e256bc"
+  },
+  "catalog": {
+    "domains": [
+      "multi-agent",
+      "reasoning"
+    ],
+    "families": [
+      "debate",
+      "multi_agent",
+      "reasoning"
+    ],
+    "priority": 1,
+    "benchmark_ids": [
+      "gsm8k"
+    ],
+    "platform_pressure": [
+      "execution/workflow",
+      "experimentation/study",
+      "model/request",
+      "observability/telemetry",
+      "participant/agent"
+    ],
+    "method_owned": [
+      "answer aggregation semantics",
+      "debate round protocol",
+      "peer-response injection policy"
+    ],
+    "platform_owned": [
+      "evaluation",
+      "message identity and transport",
+      "model invocation",
+      "participant topology",
+      "round evidence"
+    ],
+    "reference_repositories": [
+      "https://github.com/composable-models/llm_multiagent_debate"
+    ],
+    "reference_publications": [],
+    "catalog_digest": "c9e149393c3413981154afdb8e451cb00e835d007b4f69768374089cae168562"
+  },
+  "source_lanes": [
+    {
+      "lane_id": "candidate_unclassified_01",
+      "kind": "candidate",
+      "repository": "https://github.com/composable-models/llm_multiagent_debate",
+      "commit": "9b32e0971105a3ada91706d130582bde9b9a855c",
+      "artifacts": [],
+      "lane_digest": "4c7a910cb0c5ea432d2410bb480b3a770d5767c1437ac987402d4a7245815a97"
+    }
+  ],
+  "assets": [
+    {
+      "kind": "fidelity",
+      "path": "research/reproductions/multiagent_debate/fidelity.py",
+      "declaration_digest": "27d3d153c6a462279e61d2ba6c487b4989e5d53facc649e89791409ad9ba0e3e",
+      "content_sha256": "bbd170b9b758b379feba6d8f0022470c70245d9af969a14ab9f730ff6e1bae8c"
+    },
+    {
+      "kind": "method_program",
+      "path": "research/reproductions/multiagent_debate/program.py",
+      "declaration_digest": "f85c38f4641b883dd69da42a8615659c398e18cb07111dc7b7011f0f212552cb",
+      "content_sha256": "44a75312407b38801e48252b65d3a65b4a7c6a15b9ed33328f1a26ce10827aad"
+    },
+    {
+      "kind": "study",
+      "path": "research/reproductions/multiagent_debate/study.py",
+      "declaration_digest": "ce0a875bc86905ad695681b3e2587f10730cfc2d558f55c2d29331f30d376b4c",
+      "content_sha256": "a5d44d771f6f09d0528b7605dd947aafb256ba6f4e3ed36c2dc8217733302166"
+    }
+  ],
+  "primary_executable": "research/reproductions/multiagent_debate/program.py",
+  "reported_results": [],
+  "reference_baselines": [],
+  "deltas": [],
+  "blockers": [],
+  "evidence_refs": [],
+  "scientific_tests": [
+    {
+      "path": "tests/test_scientific_multiagent_debate_fidelity_v1.py",
+      "content_sha256": "ae917370eef786dba485ceaae9f88f6213a54ebb8407410ee367df6d43673d5c"
+    }
+  ],
+  "research_os": {
+    "surface": "noetrium.api",
+    "execution_state": "benchmark_authority_required",
+    "program_id": "multiagent_debate",
+    "program_digest": "ebfce1966bfc6a632c05d44603908ff0a7453df727993b3a6bdcba4200a75c16",
+    "benchmark_authority": {
+      "state": "required",
+      "selection_digests": [],
+      "blockers": [
+        "ReproductionResearchOSCompileError:benchmark 'gsm8k' has no exact repository or materialized authority"
+      ]
+    },
+    "benchmark_split_axis": {
+      "required": false,
+      "consumers": []
+    },
+    "reproduction_closure_state": "closed",
+    "execution_authority_state": "required",
+    "materialization_ready": false,
+    "execution_requirements": []
+  }
+}

@@ -1,0 +1,482 @@
+{
+  "schema": "noetrium.lineage-reproduction-status.v2",
+  "authority": "generated_from_lineage_graph_and_typed_reproduction_projections",
+  "lineage_id": "deliberative-language-agent-search",
+  "lineage_source_sha256": "b4603abced4134db2efccd0745165e3c4e768a9a1baf2de13a658d09abcedd1d",
+  "nodes": [
+    {
+      "id": "react",
+      "reproductions": [
+        {
+          "package": "react_alfworld",
+          "package_digest": "6d015027f43987b60b0aad5f43faadb11f998738d55b661f28e3b0883d48dc95",
+          "lifecycle": "protocol_bound",
+          "benchmark_ids": [
+            "alfworld",
+            "webshop"
+          ],
+          "source_lanes": [
+            {
+              "lane_id": "official_react_repo",
+              "kind": "official_executable",
+              "repository": "https://github.com/ysymyth/ReAct",
+              "commit": "19c6bae532250cf57bd7465d7f5a87edf2fda8f6"
+            }
+          ],
+          "assets": [
+            {
+              "kind": "fidelity",
+              "path": "research/reproductions/react_alfworld/fidelity.py",
+              "content_sha256": "ab2af0ce33c5b41dc4e90b48bbb857ae4e52af650dbf576222c1c198d4482dac"
+            },
+            {
+              "kind": "method_program",
+              "path": "research/reproductions/react_alfworld/program.py",
+              "content_sha256": "79f0428dd63bc86b5a2ad93a810d8ef805487b29ab5eddef6113c4944902472d"
+            },
+            {
+              "kind": "semantics",
+              "path": "research/reproductions/react_alfworld/semantics.py",
+              "content_sha256": "d0c41d44d7edf57880dd8a81141038dd7ca7cfae6ef4617386fcdb3bf92a0473"
+            },
+            {
+              "kind": "study",
+              "path": "research/reproductions/react_alfworld/study.py",
+              "content_sha256": "2e1aacb6e20fac43e0f9e358aec0e7689626eb7a2e5570776db076b17f10de82"
+            },
+            {
+              "kind": "support",
+              "path": "research/reproductions/react_alfworld/trajectory.py",
+              "content_sha256": "e86983ce1123421bce511ed91770a6704486d850265e2f473d627ce84a769fff"
+            }
+          ],
+          "blockers": [
+            "the PaLM-540B paper lane is not publicly reproducible as an exact model cut",
+            "text-davinci-002 used by the released notebook is decommissioned",
+            "the exact ALFWorld json_2.1.1 dataset/environment must be deployment-bound before matched execution"
+          ],
+          "evidence_refs": [],
+          "reported_claim_count": 8,
+          "reference_baseline_count": 4,
+          "fidelity_delta_count": 2,
+          "scientific_tests": [
+            {
+              "path": "tests/test_scientific_react_alfworld_fidelity_v1.py",
+              "content_sha256": "4bf82d92de46a99d791786f8ae2d99b4d1c272334f1a4852d50c5243c5f3fa2a"
+            },
+            {
+              "path": "tests/test_scientific_react_alfworld_method_program_v1.py",
+              "content_sha256": "dc5e549d5e7ba08e9a77ff127fbcc4a203b262858c6fe0ae859505674e097f61"
+            },
+            {
+              "path": "tests/test_scientific_react_alfworld_protocol_v1.py",
+              "content_sha256": "841786650b37e1806f9353fdbf156dd09b22122f87df8bb6ae572cc75708df6a"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "self-refine",
+      "reproductions": [
+        {
+          "package": "self_refine",
+          "package_digest": "1374d96768005230f6515ebc23924036d4678913b7279f5474711862bef2a767",
+          "lifecycle": "protocol_bound",
+          "benchmark_ids": [
+            "commongen"
+          ],
+          "source_lanes": [
+            {
+              "lane_id": "candidate_unclassified_01",
+              "kind": "candidate",
+              "repository": "https://github.com/madaan/self-refine",
+              "commit": "a56d135a49cdc9183e7db2527458822753a1f2c0"
+            }
+          ],
+          "assets": [
+            {
+              "kind": "fidelity",
+              "path": "research/reproductions/self_refine/fidelity.py",
+              "content_sha256": "7c152800628126df75a585d3b4f0608684b531d333504036ef2b3fab4723b23d"
+            },
+            {
+              "kind": "method_program",
+              "path": "research/reproductions/self_refine/program.py",
+              "content_sha256": "3ce36bfed3eeb87af19bc668878c56efb331174062205ad85bc40658b72e41ce"
+            },
+            {
+              "kind": "study",
+              "path": "research/reproductions/self_refine/study.py",
+              "content_sha256": "70c3d3040baaca70f5335e487160c97ec1fa469e8468de2f8b1c9efbb7637463"
+            }
+          ],
+          "blockers": [
+            "paper-era text-davinci-003 provider artifact is no longer intrinsically reproducible without an archived model endpoint",
+            "paper-era spaCy/NLTK lexical feedback post-processing artifacts remain to be content-addressed for exact historical replay"
+          ],
+          "evidence_refs": [],
+          "reported_claim_count": 1,
+          "reference_baseline_count": 1,
+          "fidelity_delta_count": 0,
+          "scientific_tests": [
+            {
+              "path": "tests/test_scientific_commongen_benchmark_v1.py",
+              "content_sha256": "2115c10c95ed2d95ae3a48c8f592e0eba6b78c3d32262c041cf2c990d5c95b06"
+            },
+            {
+              "path": "tests/test_scientific_reference_self_refine.py",
+              "content_sha256": "e24a1340878831aea12bfb5f845ba68f285f581c7ef26a943a6f048aae2ea557"
+            },
+            {
+              "path": "tests/test_scientific_self_refine_commongen_method_program_v1.py",
+              "content_sha256": "8168268016f0497db05db1c0ea34a1ccfaf7bdacbcdbad036d5d942ad8daea3d"
+            },
+            {
+              "path": "tests/test_scientific_self_refine_v1.py",
+              "content_sha256": "15f3f855f5fbdedc4e26c6804c9c58f8d3f2eaccf6f6aa5618a9ed6950c1b94e"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "reflexion",
+      "reproductions": [
+        {
+          "package": "reflexion_alfworld",
+          "package_digest": "443a0e0acb3ea117fa0629af70845495ba90d6c7f735b7255bce41adc8df9847",
+          "lifecycle": "protocol_bound",
+          "benchmark_ids": [
+            "alfworld"
+          ],
+          "source_lanes": [
+            {
+              "lane_id": "official_reflexion_repo",
+              "kind": "official_executable",
+              "repository": "https://github.com/noahshinn/reflexion",
+              "commit": "65001352fd8d1ce31e7aac79ebc470c9f1a09ee6"
+            }
+          ],
+          "assets": [
+            {
+              "kind": "fidelity",
+              "path": "research/reproductions/reflexion_alfworld/fidelity.py",
+              "content_sha256": "99730a9181f412330d9719a5ec4b4f5066025047e8cd742c7cfc81f2a2af1c09"
+            },
+            {
+              "kind": "method_program",
+              "path": "research/reproductions/reflexion_alfworld/program.py",
+              "content_sha256": "eba6422ee80a5ec97f6213f87fb19f5a2db7790b792c0118089b194272a9f4a6"
+            },
+            {
+              "kind": "semantics",
+              "path": "research/reproductions/reflexion_alfworld/semantics.py",
+              "content_sha256": "3da42cd993467c90ec615954af7aa93bcef30bb407e1ad35bd12e1684271de35"
+            },
+            {
+              "kind": "study",
+              "path": "research/reproductions/reflexion_alfworld/study.py",
+              "content_sha256": "37984a310c6217c408d0b9d5ea36ddae642574540109d3efe360c90f6b0fe59f"
+            },
+            {
+              "kind": "support",
+              "path": "research/reproductions/reflexion_alfworld/memory.py",
+              "content_sha256": "b7a50e3fda426a90a8987a7dc1cb68d175b2a1c5a1a06116b3c033aad827628f"
+            }
+          ],
+          "blockers": [
+            "historical action/reflection model serving snapshots are not exact-current deployments",
+            "exact ALFWorld dataset/runtime deployment cut must be bound before matched execution"
+          ],
+          "evidence_refs": [],
+          "reported_claim_count": 2,
+          "reference_baseline_count": 1,
+          "fidelity_delta_count": 1,
+          "scientific_tests": [
+            {
+              "path": "tests/test_scientific_reflexion_alfworld_fidelity_v1.py",
+              "content_sha256": "452d9eb5a9eaf777040a518c30cc5450a42d16b846a42393c2deb311b0b23002"
+            },
+            {
+              "path": "tests/test_scientific_reflexion_alfworld_v1.py",
+              "content_sha256": "a4c6801fe9fdead18548efcf3e8df52705e6f085ab8a385f55c6341ba190014d"
+            },
+            {
+              "path": "tests/test_scientific_reflexion_method_program_v1.py",
+              "content_sha256": "e632745dc937d79b0b140b502dc45d6cb0393073b6369fbb2ed65ee2945acc47"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "tree-of-thoughts",
+      "reproductions": [
+        {
+          "package": "tree_of_thoughts",
+          "package_digest": "41b32829d4ce55e542b77a93253eb3f8454ca0bd25fbefba13f218cd1bc86d4c",
+          "lifecycle": "protocol_bound",
+          "benchmark_ids": [
+            "game24"
+          ],
+          "source_lanes": [
+            {
+              "lane_id": "official_tot_repo",
+              "kind": "official_executable",
+              "repository": "https://github.com/princeton-nlp/tree-of-thought-llm",
+              "commit": "8050e67d0e3a0fddc424d7fa5801538722a4c4cc"
+            }
+          ],
+          "assets": [
+            {
+              "kind": "fidelity",
+              "path": "research/reproductions/tree_of_thoughts/fidelity.py",
+              "content_sha256": "6dcad9c69575c303237fab1cbce8d317e74f84e7a451a43462de8bf63b525ad6"
+            },
+            {
+              "kind": "method_program",
+              "path": "research/reproductions/tree_of_thoughts/program.py",
+              "content_sha256": "c758f6be1d39be27014bb5894ee56c237a27741fadfd878775e4aa9dfa852f21"
+            },
+            {
+              "kind": "study",
+              "path": "research/reproductions/tree_of_thoughts/study.py",
+              "content_sha256": "22c94c937a30c1fad331ee23c0b475d8fa55d2a7824d83c31d7a4db787d5686a"
+            },
+            {
+              "kind": "support",
+              "path": "research/reproductions/tree_of_thoughts/search.py",
+              "content_sha256": "c2d90dbdb6e7583233a7c21b180a571a8d70742b2914042034ffd02ec366265b"
+            }
+          ],
+          "blockers": [
+            "exact historical GPT-4 serving snapshot is not available as an immutable public model artifact"
+          ],
+          "evidence_refs": [],
+          "reported_claim_count": 1,
+          "reference_baseline_count": 1,
+          "fidelity_delta_count": 1,
+          "scientific_tests": [
+            {
+              "path": "tests/test_scientific_tree_of_thoughts_fidelity_v1.py",
+              "content_sha256": "e1ab3150bd2c7ac2bf59119fcb2addc4e9b19272e4e05a27526cb7367bc63b11"
+            },
+            {
+              "path": "tests/test_scientific_tree_of_thoughts_method_program_v1.py",
+              "content_sha256": "4fe1f6a22d6d34458f14a7355ee069c0ce8395b9627a7d2918c045d87242c8a1"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "rap",
+      "reproductions": [
+        {
+          "package": "rap_reasoning",
+          "package_digest": "0fa0696811325eda6f9d13051fc87d5b4dc1355b88aeb6fa965db8c320e86925",
+          "lifecycle": "protocol_bound",
+          "benchmark_ids": [
+            "blocksworld"
+          ],
+          "source_lanes": [
+            {
+              "lane_id": "official_rap_repo",
+              "kind": "official_executable",
+              "repository": "https://github.com/Ber666/RAP",
+              "commit": "774817c228b3d5ddfc18de2318f3476128ecf6eb"
+            }
+          ],
+          "assets": [
+            {
+              "kind": "fidelity",
+              "path": "research/reproductions/rap_reasoning/fidelity.py",
+              "content_sha256": "6bc1f8ceca6a80df29b833f50ba5c77f26bf71639f0beef60333583befd9b09a"
+            },
+            {
+              "kind": "method_program",
+              "path": "research/reproductions/rap_reasoning/program.py",
+              "content_sha256": "9b67472754370bbab5133a1a5610df039075232ab7115e94cacef6fb89328f54"
+            },
+            {
+              "kind": "study",
+              "path": "research/reproductions/rap_reasoning/study.py",
+              "content_sha256": "01d1baf2f33751280c35b02e1b6cfdd49f1fe4dc48a514ae2ad1ec7dc2d0b097"
+            },
+            {
+              "kind": "support",
+              "path": "research/reproductions/rap_reasoning/search.py",
+              "content_sha256": "055141e2d91e0afef54a3205c18b693d5db0e48e1c2fefa80e81e3f090680ffd"
+            }
+          ],
+          "blockers": [
+            "exact historical LLaMA checkpoint/deployment identity is not yet rebound"
+          ],
+          "evidence_refs": [],
+          "reported_claim_count": 1,
+          "reference_baseline_count": 1,
+          "fidelity_delta_count": 1,
+          "scientific_tests": [
+            {
+              "path": "tests/test_scientific_rap_method_program_v1.py",
+              "content_sha256": "a08f96f0eddd3fa395f38a0f3589cddcfe61ca04f5ede8641fc492ac1a717813"
+            },
+            {
+              "path": "tests/test_scientific_rap_reproduction_v1.py",
+              "content_sha256": "521174c2b202e1c3382af7d3962ff49b700b92d7c1676f0686d6543539e408b9"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "lats",
+      "reproductions": [
+        {
+          "package": "lats_webshop",
+          "package_digest": "3d3c9128e66d99a24763de513fb8da3da875d9e5d7febb09d1c8e71972ccc636",
+          "lifecycle": "protocol_bound",
+          "benchmark_ids": [
+            "webshop"
+          ],
+          "source_lanes": [
+            {
+              "lane_id": "later_released_lats_repo",
+              "kind": "later_released_executable",
+              "repository": "https://github.com/andyz245/LanguageAgentTreeSearch",
+              "commit": "853d81614607dd27433faf17c7b0a7d660f95d22"
+            }
+          ],
+          "assets": [
+            {
+              "kind": "fidelity",
+              "path": "research/reproductions/lats_webshop/fidelity.py",
+              "content_sha256": "acd33c4ad3a1ec1963ce1c8979c819f98bfca889bb831d47484d4b97e67d21c0"
+            },
+            {
+              "kind": "method_program",
+              "path": "research/reproductions/lats_webshop/program.py",
+              "content_sha256": "910430aa011b87a0d8afc1f2312c1adb3be64375902f88f68202fd0908ce8f57"
+            },
+            {
+              "kind": "study",
+              "path": "research/reproductions/lats_webshop/study.py",
+              "content_sha256": "7a7b8739982c9082c07a8bc6ea93173c734bb4e027fa92f8b4e9738ff593c4e2"
+            },
+            {
+              "kind": "support",
+              "path": "research/reproductions/lats_webshop/branch.py",
+              "content_sha256": "570e71367e437469af8a6ad9ee60ff81e2f9d64584b5ef056aefc42282b1f1e4"
+            },
+            {
+              "kind": "support",
+              "path": "research/reproductions/lats_webshop/reflection.py",
+              "content_sha256": "7be40072393202d10ee66a7cc11d538595542d3164f81939523b858fa7b9f227"
+            },
+            {
+              "kind": "support",
+              "path": "research/reproductions/lats_webshop/tree.py",
+              "content_sha256": "d4bf9b3b8fb3f6371f43c33939fdcb419249748baa46256c14f6c5f8fe74699e"
+            }
+          ],
+          "blockers": [
+            "the audited executable cut post-dates the original paper",
+            "exact historical gpt-3.5-turbo serving snapshot is unresolved",
+            "branch-restorable WebShop environment binding is not yet matched"
+          ],
+          "evidence_refs": [],
+          "reported_claim_count": 1,
+          "reference_baseline_count": 1,
+          "fidelity_delta_count": 1,
+          "scientific_tests": [
+            {
+              "path": "tests/test_scientific_lats_method_program_v1.py",
+              "content_sha256": "fda65f91329b8ea7e1b0b3f76e90da6864ceaddd97b601d0d59a4a6d27b70857"
+            },
+            {
+              "path": "tests/test_scientific_lats_webshop_v1.py",
+              "content_sha256": "1b503f696c3c692981f2c54c59a8b7e03a5774e5ed5d30c50e0cb433476c013a"
+            },
+            {
+              "path": "tests/test_scientific_parallel_lineage_wave1_v1.py",
+              "content_sha256": "3c869099f90c10f1cb72424126db54cbf21eddb613b5ff1084b7312ed7c4ad17"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "qlass",
+      "reproductions": [
+        {
+          "package": "qlass_alfworld",
+          "package_digest": "68e6a177651603a4f28413f4aeb44909c563f54b8ea2f5754e6f0eaea6a77ef9",
+          "lifecycle": "protocol_bound",
+          "benchmark_ids": [
+            "alfworld",
+            "webshop"
+          ],
+          "source_lanes": [
+            {
+              "lane_id": "later_released_qlass_code",
+              "kind": "later_released_executable",
+              "repository": "https://github.com/Rafa-zy/QLASS",
+              "commit": "df8e6a3b840d1ea994114f13fc2d5ccd63b7a8e9"
+            },
+            {
+              "lane_id": "paper_era_repository_state",
+              "kind": "paper_provenance",
+              "repository": "https://github.com/Rafa-zy/QLASS",
+              "commit": "65a291d3964a7f14a34cc274a28ca31636405334"
+            }
+          ],
+          "assets": [
+            {
+              "kind": "fidelity",
+              "path": "research/reproductions/qlass_alfworld/fidelity.py",
+              "content_sha256": "b12e0e1d3683523a8ad6d37eeaafe385cb2763bad1f2909968535596b2da640f"
+            },
+            {
+              "kind": "method_program",
+              "path": "research/reproductions/qlass_alfworld/program.py",
+              "content_sha256": "4ecdb0987bd330f43a84a3208ccafd85d642a42d3e4d86373bac46cd5f6a0757"
+            },
+            {
+              "kind": "study",
+              "path": "research/reproductions/qlass_alfworld/study.py",
+              "content_sha256": "efb60c16952923eaba2d4fe36b98f9a45e2bd8a0c1105e6e8c51accfd787d79e"
+            },
+            {
+              "kind": "support",
+              "path": "research/reproductions/qlass_alfworld/branch.py",
+              "content_sha256": "b37aea7a563e4f48e55f1c97cc980e52757972150be17b0e3644ea557487c1c0"
+            }
+          ],
+          "blockers": [
+            "paper-era source cut contains no executable training/evaluation implementation",
+            "released policy and Q-Net model artifact revisions are not yet content-addressed in Noetrium",
+            "matched ALFWorld dev deployment remains to be bound",
+            "released launcher references undefined explore_model_name when passing --model_name",
+            "released four-slice evaluator maps CUDA devices to 1,2,3,4 while the documented four-GPU server allocation is 0,1,2,3"
+          ],
+          "evidence_refs": [],
+          "reported_claim_count": 2,
+          "reference_baseline_count": 2,
+          "fidelity_delta_count": 2,
+          "scientific_tests": [
+            {
+              "path": "tests/test_scientific_qlass_alfworld_v1.py",
+              "content_sha256": "8d89aba3aca5cf6de612658e7f4249452b86622d196ad1b99b25b70b306d994e"
+            },
+            {
+              "path": "tests/test_scientific_qlass_method_program_v1.py",
+              "content_sha256": "272e4fa33cdaeea5193dbbd843816249c9d4dff215b32d4035d5fd6321cbf0fe"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "projection_digest": "d13af0c80580b2b2d32c13f5bd8f5a14b75ec6f2bf941f9592d1211108fba16d"
+}

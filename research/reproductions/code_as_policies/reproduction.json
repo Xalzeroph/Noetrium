@@ -1,0 +1,286 @@
+{
+  "schema": "noetrium.reproduction.projection.v10",
+  "authority": "generated_from_typed_definition_and_source",
+  "package": "code_as_policies",
+  "package_digest": "8bc37bcc6109f7f6d3593e515bcfe4d71cf8523d893119fcd8752ae724f636df",
+  "definition_digest": "5530735edb89956345e7651c7c7e7328f4ae400791789f5a58f1ec30833ec13c",
+  "source_registry_digest": "e1872de17b63bc7ff35434899df6e865b802ced52f48f4b8b3757d34b8c9f15d",
+  "lifecycle": "protocol_bound",
+  "identity": {
+    "method_id": "code-as-policies",
+    "title": "Code as Policies: Language Model Programs for Embodied Control",
+    "paper_uri": "https://arxiv.org/abs/2209.07753",
+    "year": 2023,
+    "paper_revision": "ICRA 2023 / paper-era google-research audit cut 71896d4b6816983672aa6999e2dc92a3cfe904e4",
+    "identity_digest": "23f0bfff1d7907d29df014da0aa1eb8b74f4b24e3159037b3929e221dee1652b"
+  },
+  "catalog": {
+    "domains": [
+      "embodied-robotics",
+      "software-engineering"
+    ],
+    "families": [
+      "embodied",
+      "hierarchical_code_generation",
+      "language_model_programs",
+      "robot_policy_synthesis"
+    ],
+    "priority": 1,
+    "benchmark_ids": [
+      "robocodegen-37"
+    ],
+    "platform_pressure": [
+      "artifact/lineage",
+      "environment/embodied",
+      "environment/software",
+      "execution/workflow",
+      "experimentation/study",
+      "model/request",
+      "participant/capability"
+    ],
+    "method_owned": [
+      "AST discovery of undefined direct-name function calls",
+      "assignment-aware helper signatures",
+      "fixed/variable LMP namespace semantics",
+      "language-to-policy code generation",
+      "recursive child-helper synthesis",
+      "session-context prompt semantics"
+    ],
+    "platform_owned": [
+      "MethodProgram host and journal authority",
+      "Study/Experiment orchestration",
+      "artifact lineage",
+      "effect evidence and reconciliation",
+      "embodied environment API execution",
+      "isolated generated-program execution",
+      "model invocation and model identity"
+    ],
+    "reference_repositories": [
+      "https://github.com/google-research/google-research"
+    ],
+    "reference_publications": [
+      "https://arxiv.org/abs/2209.07753"
+    ],
+    "catalog_digest": "7b5dd03d532e6e1459729dc4adb88fe670e8a60c84f34b67b6cc0a2c36386425"
+  },
+  "source_lanes": [
+    {
+      "lane_id": "icra_2023",
+      "kind": "paper_provenance",
+      "venue": "ICRA",
+      "year": 2023,
+      "publication_id": "code-as-policies-icra-2023",
+      "publication_uri": "https://arxiv.org/abs/2209.07753",
+      "revision": "ICRA 2023 paper; paper-era public code released in 2022",
+      "content_sha256": null,
+      "lane_digest": "37a31e63ab11b968972868abbfd7980d2120b993b6cbbb110379ccffd5484dc4"
+    },
+    {
+      "lane_id": "official_interactive_demo",
+      "kind": "official_executable",
+      "repository": "https://github.com/google-research/google-research",
+      "commit": "d39dfbb5d1256cc930d3946a933aa5dc5d416ad5",
+      "artifacts": [
+        "code_as_policies/Interactive_Demo.ipynb",
+        "code_as_policies/README.md"
+      ],
+      "lane_digest": "4d286676005aae6eab79c996562ffe41ec2c880873c191a084d1d5194edafcb9"
+    },
+    {
+      "lane_id": "official_method_colabs",
+      "kind": "official_executable",
+      "repository": "https://github.com/google-research/google-research",
+      "commit": "8ea35031973c001433944eef3bfa9587ce8e0f75",
+      "artifacts": [
+        "code_as_policies/Experiment_ HumanEval Benchmark.ipynb",
+        "code_as_policies/Experiment_ Reactive Controllers on Toy Tasks.ipynb",
+        "code_as_policies/Experiment_ Reasoning with Code vs Natural Language.ipynb",
+        "code_as_policies/Experiment_ Robot Code-Gen Benchmark.ipynb",
+        "code_as_policies/LMP Examples.ipynb",
+        "code_as_policies/README.md"
+      ],
+      "lane_digest": "87568682d5a2e43961a25dd68c8493339a7d74f69967685dc6aa511939a6ee8e"
+    },
+    {
+      "lane_id": "paper_era_audit_cut",
+      "kind": "official_executable",
+      "repository": "https://github.com/google-research/google-research",
+      "commit": "71896d4b6816983672aa6999e2dc92a3cfe904e4",
+      "artifacts": [
+        "code_as_policies/Experiment_ Robot Code-Gen Benchmark.ipynb",
+        "code_as_policies/Interactive_Demo.ipynb",
+        "code_as_policies/LMP Examples.ipynb",
+        "code_as_policies/README.md"
+      ],
+      "lane_digest": "38e7e016421eae3de003d37e3aa9a22c45e38bdf8ef0bace6e68c12ee76ad247"
+    }
+  ],
+  "assets": [
+    {
+      "kind": "benchmark",
+      "path": "research/reproductions/code_as_policies/benchmark.py",
+      "declaration_digest": "b00b526a478f4b39045beb498b7bbd4a2224ec1b140a943bea2b65434d14cb4f",
+      "content_sha256": "02b05b9da591d8f926c6486fea00392bd107986cff2290801c53d0e796a43743"
+    },
+    {
+      "kind": "fidelity",
+      "path": "research/reproductions/code_as_policies/fidelity.py",
+      "declaration_digest": "2a178a82e992a86a5a9c63d5e354b05770540417140454aa2faba53ae9aa78b9",
+      "content_sha256": "34356f10bc193f77c7fb41be9f3a567b72f6fe907fcc2eae8d33e4545094a727"
+    },
+    {
+      "kind": "method_program",
+      "path": "research/reproductions/code_as_policies/program.py",
+      "declaration_digest": "cf7888757baf793ef4738bfea7f799a48524d626c71341deaa402cdb79691b24",
+      "content_sha256": "8f03896922f584c08dd1ef29e9ba53329db6000329d18dc11bd5bef9231c05e0"
+    },
+    {
+      "kind": "semantics",
+      "path": "research/reproductions/code_as_policies/hierarchy.py",
+      "declaration_digest": "cae4bde0014bbb0ba21313f290173b577d62e4b2ff19d7328475c93cc4a6b948",
+      "content_sha256": "1d5537ccbb3e88832775c34965990bcd6d296c9cb2c3d1d986a925ab7c811dc9"
+    },
+    {
+      "kind": "study",
+      "path": "research/reproductions/code_as_policies/study.py",
+      "declaration_digest": "d614c87f5c66abe78e4ea8d57c037a9581641dc867d3b6889be7d4a79957fb20",
+      "content_sha256": "fee504f820fb4b18c4fbae9ba7e30e4de38d3fa16a9cea6da1cb0d477731dcfe"
+    },
+    {
+      "kind": "support",
+      "path": "research/reproductions/code_as_policies/source.py",
+      "declaration_digest": "7e45ff86509820809e819afedf4dc37b393833ed30d373f990f03c02cf05a372",
+      "content_sha256": "ae41102d792983d321eb6bcf015d9ec807838a9697d20463d6e0e7ed6c927003"
+    }
+  ],
+  "primary_executable": "research/reproductions/code_as_policies/program.py",
+  "reported_results": [
+    {
+      "claim_id": "code_as_policies_robocodegen_hierarchical_hierarchical",
+      "metric_id": "success_rate_percent",
+      "value": 97.0,
+      "qualifiers": {
+        "benchmark": "robocodegen-37",
+        "successes": 36,
+        "tasks": 37,
+        "model": "code-davinci-002",
+        "generation": "hierarchical-code-gen",
+        "prompt": "hierarchical",
+        "source": "official paper-era notebook Table II experiment"
+      },
+      "claim_digest": "1bac341fca5e73fcced43d656317731f57933449814a413e70a44f74cc840e50"
+    },
+    {
+      "claim_id": "code_as_policies_robocodegen_hierarchical_flat_prompt",
+      "metric_id": "success_rate_percent",
+      "value": 86.0,
+      "qualifiers": {
+        "benchmark": "robocodegen-37",
+        "successes": 32,
+        "tasks": 37,
+        "model": "code-davinci-002",
+        "generation": "hierarchical-code-gen",
+        "prompt": "flat",
+        "source": "official paper-era notebook Table II experiment"
+      },
+      "claim_digest": "9b6382610cbf89cc1fb28838a17b59359f393f2179d472d6379aa4328a2e1d69"
+    },
+    {
+      "claim_id": "code_as_policies_robocodegen_flat_hierarchical_prompt",
+      "metric_id": "success_rate_percent",
+      "value": 70.0,
+      "qualifiers": {
+        "benchmark": "robocodegen-37",
+        "successes": 26,
+        "tasks": 37,
+        "model": "code-davinci-002",
+        "generation": "flat-code-gen",
+        "prompt": "hierarchical",
+        "source": "official paper-era notebook Table II experiment"
+      },
+      "claim_digest": "8631d693cfb132824c4ef1d2548cf174c96f5ff6cc70793a831ff05aad2587aa"
+    },
+    {
+      "claim_id": "code_as_policies_robocodegen_flat_flat_prompt",
+      "metric_id": "success_rate_percent",
+      "value": 81.0,
+      "qualifiers": {
+        "benchmark": "robocodegen-37",
+        "successes": 30,
+        "tasks": 37,
+        "model": "code-davinci-002",
+        "generation": "flat-code-gen",
+        "prompt": "flat",
+        "source": "official paper-era notebook Table II experiment"
+      },
+      "claim_digest": "8d07ac75e2f375147c5127919ebcb8e5abc5f05f1b735b7bb75c962ddbacb1fa"
+    }
+  ],
+  "reference_baselines": [
+    {
+      "baseline_id": "code_cushman_001_robocodegen",
+      "description": "Paper-era code-cushman-001 comparisons under the same RoboCodeGen notebook protocol.",
+      "qualifiers": {
+        "hierarchical_hierarchical_success_percent": 57.0,
+        "hierarchical_flat_success_percent": 57.0,
+        "source": "official paper-era notebook"
+      },
+      "baseline_digest": "a7d08211be3a7c7406fe0a3e35e23e301b7040f82731869f89990f370d072c74"
+    }
+  ],
+  "deltas": [
+    {
+      "kind": "substitution",
+      "description": "The paper-era helper discovery checks symbol existence with Python eval() over live fixed/variable dictionaries. The reproduction freezes the same scientific decision as an explicit known_names plus generated-helper namespace view, so discovery itself needs no host eval/exec.",
+      "delta_digest": "08db02370b0381ece84ceba5716ff7db7889bb49ff620465e1d8f35905a43bb4"
+    },
+    {
+      "kind": "substitution",
+      "description": "The released recursive helper generator has no explicit depth/helper-count bound. The identity-bound synthesis agent adds fail-closed mechanical safety budgets without changing successful dependency-closure semantics inside those bounds.",
+      "delta_digest": "02cbf9d37dcd39274f15819c21aae0a57757bfbd25e6b664e51bd37693013769"
+    },
+    {
+      "kind": "unresolved",
+      "description": "The notebook's exec_safe blocks the substrings 'import' and '__' and shadows exec/eval, but it is not process or container isolation. Formal Noetrium execution therefore requires a qualified isolated environment provider for generated policy programs rather than executing model code in the host process.",
+      "delta_digest": "5e2b166c4b9875e54188eaad6f5ed861ab66ff0f256d2c8ac002d0e0d6859f0c"
+    }
+  ],
+  "blockers": [
+    "Exact paper-era Codex/code-davinci-002 serving is not an immutable public model artifact.",
+    "Formal embodied runs require a qualified isolated generated-program environment provider exposing the frozen robot/perception API surface.",
+    "The RoboCodeGen notebook generates five randomized test inputs per task without publishing a fixed NumPy seed, so exact matched 36/37 execution requires an explicitly reconstructed stochastic cut.",
+    "Matched physical-robot claims require the paper-era robot platforms, perception/control stacks, prompts, task cuts, and evaluation artifacts under immutable content identity."
+  ],
+  "evidence_refs": [],
+  "scientific_tests": [
+    {
+      "path": "tests/test_scientific_code_as_policies_robocodegen_v1.py",
+      "content_sha256": "c722e042583bf4dae05eb6476a6140273f1478adbda67bb089763c4113d61dec"
+    },
+    {
+      "path": "tests/test_scientific_code_as_policies_v1.py",
+      "content_sha256": "e896c9da3a8b8454e64c795ba50cd27c02cf33a7bcbe4a5a05e7344f026de3a0"
+    }
+  ],
+  "research_os": {
+    "surface": "noetrium.api",
+    "execution_state": "execution_authority_required",
+    "program_id": "code_as_policies",
+    "program_digest": "dd15e10086514286a6eaecd8048c802a0cfeb99fb25033397eb54744c64e1c1d",
+    "benchmark_authority": {
+      "state": "closed",
+      "selection_digests": [
+        "d3d3f242141520fbbf1be94138f702c566e10e7d238130aacd21030306ef0444"
+      ],
+      "blockers": []
+    },
+    "benchmark_split_axis": {
+      "required": false,
+      "consumers": []
+    },
+    "reproduction_closure_state": "closed",
+    "execution_authority_state": "required",
+    "materialization_ready": true,
+    "execution_requirements": []
+  }
+}

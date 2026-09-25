@@ -1,0 +1,1128 @@
+{
+  "schema": "noetrium.benchmark-catalog.projection.v2",
+  "authority": "generated_from_benchmark_manifests",
+  "benchmarks": [
+    {
+      "benchmark_id": "agentboard-pddl",
+      "title": "AgentBoard PDDL evaluation",
+      "source_uri": "https://github.com/hkust-nlp/AgentBoard",
+      "environment_kinds": [
+        "text_world"
+      ],
+      "modalities": [
+        "text",
+        "structured"
+      ]
+    },
+    {
+      "benchmark_id": "aitw",
+      "title": "Android in the Wild",
+      "source_uri": "https://github.com/google-research/google-research/tree/master/android_in_the_wild",
+      "environment_kinds": [
+        "gui"
+      ],
+      "modalities": [
+        "text",
+        "image",
+        "structured"
+      ]
+    },
+    {
+      "benchmark_id": "aitz",
+      "title": "Android-In-The-Zoo",
+      "source_uri": "https://github.com/IMNearth/Android-In-The-Zoo",
+      "environment_kinds": [
+        "gui"
+      ],
+      "modalities": [
+        "text",
+        "image",
+        "structured"
+      ]
+    },
+    {
+      "benchmark_id": "alfworld",
+      "title": "ALFWorld",
+      "source_uri": "https://github.com/alfworld/alfworld",
+      "environment_kinds": [
+        "text_world",
+        "embodied"
+      ],
+      "modalities": [
+        "text"
+      ]
+    },
+    {
+      "benchmark_id": "amex",
+      "title": "AMEX",
+      "source_uri": "https://github.com/hehehahi4/CES",
+      "environment_kinds": [
+        "gui"
+      ],
+      "modalities": [
+        "text",
+        "image",
+        "structured"
+      ]
+    },
+    {
+      "benchmark_id": "androidcontrol",
+      "title": "AndroidControl",
+      "source_uri": "https://github.com/google-research/google-research/tree/master/android_control",
+      "environment_kinds": [
+        "gui"
+      ],
+      "modalities": [
+        "text",
+        "image",
+        "structured"
+      ]
+    },
+    {
+      "benchmark_id": "androidlab",
+      "title": "AndroidLab",
+      "source_uri": "https://openaccess.thecvf.com/content/CVPR2026F/html/Li_EchoTrail-GUI_Building_Actionable_Memory_for_GUI_Agents_via_Critic-Guided_Self-Exploration_CVPRF_2026_paper.html",
+      "environment_kinds": [
+        "gui"
+      ],
+      "modalities": [
+        "text",
+        "image",
+        "structured"
+      ]
+    },
+    {
+      "benchmark_id": "androidworld",
+      "title": "AndroidWorld",
+      "source_uri": "https://github.com/google-research/android_world",
+      "environment_kinds": [
+        "gui"
+      ],
+      "modalities": [
+        "text",
+        "image",
+        "structured"
+      ]
+    },
+    {
+      "benchmark_id": "babyai",
+      "title": "BabyAI",
+      "source_uri": "https://github.com/mila-iqia/babyai",
+      "environment_kinds": [
+        "embodied"
+      ],
+      "modalities": [
+        "text",
+        "structured"
+      ]
+    },
+    {
+      "benchmark_id": "blocksworld",
+      "title": "Blocksworld",
+      "source_uri": "https://github.com/Ber666/RAP",
+      "environment_kinds": [],
+      "modalities": [
+        "text"
+      ]
+    },
+    {
+      "benchmark_id": "calvin",
+      "title": "CALVIN",
+      "source_uri": "https://github.com/mees/calvin",
+      "environment_kinds": [
+        "embodied"
+      ],
+      "modalities": [
+        "text",
+        "image",
+        "robot_state"
+      ]
+    },
+    {
+      "benchmark_id": "camel-ai-society",
+      "title": "CAMEL AI Society Agent Evaluation",
+      "source_uri": "https://proceedings.neurips.cc/paper/2023/hash/a3621ee907def47c1b952ade25c67698-Abstract-Conference.html",
+      "environment_kinds": [],
+      "modalities": [
+        "text"
+      ]
+    },
+    {
+      "benchmark_id": "commongen",
+      "title": "CommonGen",
+      "source_uri": "https://github.com/INK-USC/CommonGen",
+      "environment_kinds": [],
+      "modalities": [
+        "text"
+      ]
+    },
+    {
+      "benchmark_id": "deps-minecraft-70",
+      "title": "DEPS NeurIPS 2023 Official 70-Task Minecraft Cut",
+      "source_uri": "https://github.com/CraftJarvis/MC-Planner",
+      "environment_kinds": [
+        "minecraft",
+        "embodied"
+      ],
+      "modalities": [
+        "text",
+        "image",
+        "robot_state"
+      ]
+    },
+    {
+      "benchmark_id": "ego2web",
+      "title": "Ego2Web",
+      "source_uri": "https://openaccess.thecvf.com/content/CVPR2026/html/Yu_Ego2Web_A_Web_Agent_Benchmark_Grounded_in_Egocentric_Videos_CVPR_2026_paper.html",
+      "environment_kinds": [
+        "web"
+      ],
+      "modalities": [
+        "text",
+        "video",
+        "structured"
+      ]
+    },
+    {
+      "benchmark_id": "ego4d-goalstep",
+      "title": "Ego4D Goal-Step",
+      "source_uri": "https://github.com/facebookresearch/ego4d-goalstep",
+      "environment_kinds": [],
+      "modalities": [
+        "text",
+        "video"
+      ]
+    },
+    {
+      "benchmark_id": "ego4d-vq3d",
+      "title": "Ego4D VQ3D",
+      "source_uri": "https://github.com/facebookresearch/Ego4d",
+      "environment_kinds": [
+        "embodied"
+      ],
+      "modalities": [
+        "text",
+        "video"
+      ]
+    },
+    {
+      "benchmark_id": "egolifeqa",
+      "title": "EgoLifeQA",
+      "source_uri": "https://huggingface.co/datasets/lmms-lab/EgoLife",
+      "environment_kinds": [],
+      "modalities": [
+        "text",
+        "video",
+        "audio"
+      ]
+    },
+    {
+      "benchmark_id": "egoschema",
+      "title": "EgoSchema",
+      "source_uri": "https://github.com/egoschema/EgoSchema",
+      "environment_kinds": [],
+      "modalities": [
+        "text",
+        "video"
+      ]
+    },
+    {
+      "benchmark_id": "embodiedbench",
+      "title": "EmbodiedBench",
+      "source_uri": "https://github.com/EmbodiedBench/EmbodiedBench",
+      "environment_kinds": [
+        "embodied"
+      ],
+      "modalities": [
+        "text",
+        "image",
+        "structured"
+      ]
+    },
+    {
+      "benchmark_id": "envqa",
+      "title": "Env-QA",
+      "source_uri": "https://github.com/maybelu9/env-qa",
+      "environment_kinds": [
+        "embodied"
+      ],
+      "modalities": [
+        "text",
+        "video"
+      ]
+    },
+    {
+      "benchmark_id": "evomembench",
+      "title": "EvoMemBench",
+      "source_uri": "https://github.com/DSAIL-Memory/EvoMemBench",
+      "environment_kinds": [
+        "text_world",
+        "software"
+      ],
+      "modalities": [
+        "text"
+      ]
+    },
+    {
+      "benchmark_id": "flow-practical-tasks",
+      "title": "Flow ICLR 2025 Three Designed Tasks",
+      "source_uri": "https://proceedings.iclr.cc/paper_files/paper/2025/hash/ba84da6921f3040b74ee163aa7451f53-Abstract-Conference.html",
+      "environment_kinds": [
+        "software"
+      ],
+      "modalities": [
+        "text",
+        "structured"
+      ]
+    },
+    {
+      "benchmark_id": "foreact-real11",
+      "title": "ForeAct Real-World 11-Task Benchmark",
+      "source_uri": "https://github.com/mit-han-lab/foreact",
+      "environment_kinds": [
+        "embodied"
+      ],
+      "modalities": [
+        "text",
+        "image",
+        "robot_state"
+      ]
+    },
+    {
+      "benchmark_id": "freshwiki",
+      "title": "FreshWiki",
+      "source_uri": "https://github.com/stanford-oval/storm",
+      "environment_kinds": [],
+      "modalities": [
+        "text",
+        "structured"
+      ]
+    },
+    {
+      "benchmark_id": "game24",
+      "title": "Game24",
+      "source_uri": "https://github.com/princeton-nlp/tree-of-thought-llm",
+      "environment_kinds": [],
+      "modalities": [
+        "text"
+      ]
+    },
+    {
+      "benchmark_id": "gats-synthetic",
+      "title": "GATS Synthetic Planning Stress Suite",
+      "source_uri": "https://github.com/MMWilliams/gats",
+      "environment_kinds": [],
+      "modalities": [
+        "text"
+      ]
+    },
+    {
+      "benchmark_id": "generative-agents-smallville",
+      "title": "Generative Agents Smallville Paper Protocol",
+      "source_uri": "https://github.com/joonspk-research/generative_agents",
+      "environment_kinds": [
+        "text_world"
+      ],
+      "modalities": [
+        "text",
+        "structured"
+      ]
+    },
+    {
+      "benchmark_id": "goat-bench",
+      "title": "GOAT-Bench",
+      "source_uri": "https://github.com/Ram81/goat-bench",
+      "environment_kinds": [
+        "embodied"
+      ],
+      "modalities": [
+        "text",
+        "image",
+        "structured"
+      ]
+    },
+    {
+      "benchmark_id": "groundedvqa",
+      "title": "GroundedVQA",
+      "source_uri": "https://openaccess.thecvf.com/content/CVPR2026/html/Wu_ReFAct_Empowering_Multimodal_Web_Agents_with_Visual_and_Context_Focusing_CVPR_2026_paper.html",
+      "environment_kinds": [
+        "web"
+      ],
+      "modalities": [
+        "text",
+        "image",
+        "structured"
+      ]
+    },
+    {
+      "benchmark_id": "gsm8k",
+      "title": "GSM8K",
+      "source_uri": "https://github.com/openai/grade-school-math",
+      "environment_kinds": [],
+      "modalities": [
+        "text"
+      ]
+    },
+    {
+      "benchmark_id": "gui-odyssey",
+      "title": "GUI-Odyssey",
+      "source_uri": "https://github.com/OpenGVLab/GUI-Odyssey",
+      "environment_kinds": [
+        "gui"
+      ],
+      "modalities": [
+        "text",
+        "image",
+        "structured"
+      ]
+    },
+    {
+      "benchmark_id": "guiact",
+      "title": "GUIAct",
+      "source_uri": "https://github.com/xc-li/GUIAct",
+      "environment_kinds": [
+        "gui"
+      ],
+      "modalities": [
+        "text",
+        "image",
+        "structured"
+      ]
+    },
+    {
+      "benchmark_id": "hallusionbench",
+      "title": "HallusionBench",
+      "source_uri": "https://github.com/tianyi-lab/HallusionBench",
+      "environment_kinds": [],
+      "modalities": [
+        "text",
+        "image"
+      ]
+    },
+    {
+      "benchmark_id": "hd-epic",
+      "title": "HD-EPIC",
+      "source_uri": "https://github.com/hgaurav2k/HD-EPIC",
+      "environment_kinds": [],
+      "modalities": [
+        "text",
+        "video"
+      ]
+    },
+    {
+      "benchmark_id": "hm3d-ovon",
+      "title": "HM3D-OVON",
+      "source_uri": "https://github.com/facebookresearch/habitat-lab",
+      "environment_kinds": [
+        "embodied"
+      ],
+      "modalities": [
+        "text",
+        "image",
+        "structured"
+      ]
+    },
+    {
+      "benchmark_id": "hotpotqa",
+      "title": "HotpotQA",
+      "source_uri": "https://hotpotqa.github.io/",
+      "environment_kinds": [],
+      "modalities": [
+        "text",
+        "structured"
+      ]
+    },
+    {
+      "benchmark_id": "hugginggpt-paper-tasks",
+      "title": "HuggingGPT Paper-Era Multimodal Task Cut",
+      "source_uri": "https://github.com/microsoft/JARVIS",
+      "environment_kinds": [],
+      "modalities": [
+        "text",
+        "image",
+        "audio",
+        "structured"
+      ]
+    },
+    {
+      "benchmark_id": "humaneval",
+      "title": "HumanEval",
+      "source_uri": "https://github.com/openai/human-eval",
+      "environment_kinds": [
+        "software"
+      ],
+      "modalities": [
+        "text",
+        "code"
+      ]
+    },
+    {
+      "benchmark_id": "jarvis1-offline-185",
+      "title": "JARVIS-1 Public Offline 185-Task Evaluation Cut",
+      "source_uri": "https://github.com/CraftJarvis/JARVIS-1",
+      "environment_kinds": [
+        "minecraft",
+        "embodied"
+      ],
+      "modalities": [
+        "text",
+        "image",
+        "robot_state"
+      ]
+    },
+    {
+      "benchmark_id": "libero",
+      "title": "LIBERO",
+      "source_uri": "https://libero-project.github.io/",
+      "environment_kinds": [
+        "embodied"
+      ],
+      "modalities": [
+        "text",
+        "image",
+        "robot_state"
+      ]
+    },
+    {
+      "benchmark_id": "lmee-bench",
+      "title": "LMEE-Bench",
+      "source_uri": "https://github.com/wangsen99/LMEE",
+      "environment_kinds": [
+        "embodied"
+      ],
+      "modalities": [
+        "text",
+        "image",
+        "structured"
+      ]
+    },
+    {
+      "benchmark_id": "lvu",
+      "title": "Long-Form Video Understanding (LVU 1.0)",
+      "source_uri": "https://chaoyuan.org/lvu/lvu_1.0.tar.gz",
+      "environment_kinds": [],
+      "modalities": [
+        "text",
+        "video"
+      ]
+    },
+    {
+      "benchmark_id": "m3tooleval",
+      "title": "M3ToolEval vendored AgentSquare cut",
+      "source_uri": "https://github.com/tsinghua-fib-lab/AgentSquare",
+      "environment_kinds": [
+        "software"
+      ],
+      "modalities": [
+        "text",
+        "structured"
+      ]
+    },
+    {
+      "benchmark_id": "macosarena",
+      "title": "macOSArena",
+      "source_uri": "https://github.com/OS-Copilot/OS-Symphony",
+      "environment_kinds": [
+        "gui"
+      ],
+      "modalities": [
+        "text",
+        "image",
+        "structured"
+      ]
+    },
+    {
+      "benchmark_id": "math500",
+      "title": "MATH500",
+      "source_uri": "https://huggingface.co/datasets/xinzhel/math500-float",
+      "environment_kinds": [],
+      "modalities": [
+        "text"
+      ]
+    },
+    {
+      "benchmark_id": "mathvision",
+      "title": "MathVision",
+      "source_uri": "https://mathllm.github.io/mathvision/",
+      "environment_kinds": [],
+      "modalities": [
+        "text",
+        "image"
+      ]
+    },
+    {
+      "benchmark_id": "mathvista",
+      "title": "MathVista",
+      "source_uri": "https://mathvista.github.io/",
+      "environment_kinds": [],
+      "modalities": [
+        "text",
+        "image"
+      ]
+    },
+    {
+      "benchmark_id": "mem-gallery",
+      "title": "Mem-Gallery",
+      "source_uri": "https://github.com/YuanchenBei/Mem-Gallery",
+      "environment_kinds": [],
+      "modalities": [
+        "text",
+        "structured"
+      ]
+    },
+    {
+      "benchmark_id": "memoryarena",
+      "title": "MemoryArena",
+      "source_uri": "https://github.com/ZexueHe/MemoryArena",
+      "environment_kinds": [
+        "web",
+        "text_world"
+      ],
+      "modalities": [
+        "text",
+        "structured"
+      ]
+    },
+    {
+      "benchmark_id": "mgsm",
+      "title": "MGSM: Multilingual Grade School Math",
+      "source_uri": "https://huggingface.co/datasets/juletxara/mgsm",
+      "environment_kinds": [
+        "text_world"
+      ],
+      "modalities": [
+        "text"
+      ]
+    },
+    {
+      "benchmark_id": "mind2web",
+      "title": "Mind2Web: Towards a Generalist Agent for the Web",
+      "source_uri": "https://github.com/OSU-NLP-Group/Mind2Web",
+      "environment_kinds": [
+        "web"
+      ],
+      "modalities": [
+        "text",
+        "structured"
+      ]
+    },
+    {
+      "benchmark_id": "minecraft-long-horizon-67",
+      "title": "Minecraft Long-Horizon 67",
+      "source_uri": "https://proceedings.neurips.cc/paper_files/paper/2024/hash/5949a8750a110ce1f0631b1776c500a2-Abstract-Conference.html",
+      "environment_kinds": [
+        "minecraft"
+      ],
+      "modalities": [
+        "text",
+        "image",
+        "game_state"
+      ]
+    },
+    {
+      "benchmark_id": "minecraft-openha",
+      "title": "OpenHA Minecraft",
+      "source_uri": "https://github.com/CraftJarvis/OpenHA",
+      "environment_kinds": [
+        "minecraft",
+        "embodied"
+      ],
+      "modalities": [
+        "text",
+        "image",
+        "game_state"
+      ]
+    },
+    {
+      "benchmark_id": "minedojo",
+      "title": "MineDojo",
+      "source_uri": "https://github.com/MineDojo/MineDojo",
+      "environment_kinds": [
+        "minecraft",
+        "embodied"
+      ],
+      "modalities": [
+        "text",
+        "image"
+      ]
+    },
+    {
+      "benchmark_id": "mle-bench",
+      "title": "MLE-Bench",
+      "source_uri": "https://github.com/openai/mle-bench",
+      "environment_kinds": [
+        "software"
+      ],
+      "modalities": [
+        "text",
+        "code",
+        "structured"
+      ]
+    },
+    {
+      "benchmark_id": "mlvu",
+      "title": "MLVU",
+      "source_uri": "https://github.com/JUNJIE99/MLVU",
+      "environment_kinds": [],
+      "modalities": [
+        "text",
+        "video"
+      ]
+    },
+    {
+      "benchmark_id": "mmbench-gui",
+      "title": "MMBench-GUI",
+      "source_uri": "https://openaccess.thecvf.com/content/CVPR2026/html/Wang_MMBench-GUI_A_Unified_Hierarchical_Evaluation_Framework_for_Multi-Platform_GUI_Agents_CVPR_2026_paper.html",
+      "environment_kinds": [
+        "gui"
+      ],
+      "modalities": [
+        "text",
+        "image",
+        "structured"
+      ]
+    },
+    {
+      "benchmark_id": "mmmu",
+      "title": "MMMU",
+      "source_uri": "https://mmmu-benchmark.github.io/",
+      "environment_kinds": [],
+      "modalities": [
+        "text",
+        "image"
+      ]
+    },
+    {
+      "benchmark_id": "mmstar",
+      "title": "MMStar",
+      "source_uri": "https://github.com/MMStar-Benchmark/MMStar",
+      "environment_kinds": [],
+      "modalities": [
+        "text",
+        "image"
+      ]
+    },
+    {
+      "benchmark_id": "motus-realworld",
+      "title": "Motus Real-World Benchmark",
+      "source_uri": "https://github.com/thu-ml/Motus",
+      "environment_kinds": [
+        "embodied"
+      ],
+      "modalities": [
+        "text",
+        "image",
+        "robot_state"
+      ]
+    },
+    {
+      "benchmark_id": "moviechat-1k",
+      "title": "MovieChat-1K",
+      "source_uri": "https://huggingface.co/datasets/Enxin/MovieChat-1K-test",
+      "environment_kinds": [],
+      "modalities": [
+        "text",
+        "video"
+      ]
+    },
+    {
+      "benchmark_id": "multiagentbench",
+      "title": "MultiAgentBench",
+      "source_uri": "https://github.com/ulab-uiuc/MARBLE",
+      "environment_kinds": [
+        "text_world",
+        "software",
+        "minecraft"
+      ],
+      "modalities": [
+        "text",
+        "structured",
+        "image"
+      ]
+    },
+    {
+      "benchmark_id": "navrag-ce",
+      "title": "NavRAG-CE",
+      "source_uri": "https://github.com/MrZihan/D3D-VLP",
+      "environment_kinds": [
+        "embodied"
+      ],
+      "modalities": [
+        "text",
+        "image",
+        "structured"
+      ]
+    },
+    {
+      "benchmark_id": "open-eqa",
+      "title": "OpenEQA",
+      "source_uri": "https://github.com/facebookresearch/open-eqa",
+      "environment_kinds": [
+        "embodied"
+      ],
+      "modalities": [
+        "text",
+        "image",
+        "video"
+      ]
+    },
+    {
+      "benchmark_id": "osworld",
+      "title": "OSWorld",
+      "source_uri": "https://github.com/xlang-ai/OSWorld",
+      "environment_kinds": [
+        "gui"
+      ],
+      "modalities": [
+        "text",
+        "image"
+      ]
+    },
+    {
+      "benchmark_id": "osworld-verified",
+      "title": "OSWorld-Verified",
+      "source_uri": "https://github.com/xlang-ai/OSWorld",
+      "environment_kinds": [
+        "gui"
+      ],
+      "modalities": [
+        "text",
+        "image",
+        "structured"
+      ]
+    },
+    {
+      "benchmark_id": "r2r-ce",
+      "title": "R2R-CE",
+      "source_uri": "https://github.com/facebookresearch/habitat-lab",
+      "environment_kinds": [
+        "embodied"
+      ],
+      "modalities": [
+        "text",
+        "image",
+        "structured"
+      ]
+    },
+    {
+      "benchmark_id": "realworldqa",
+      "title": "RealWorldQA",
+      "source_uri": "https://huggingface.co/datasets/xai-org/RealworldQA",
+      "environment_kinds": [],
+      "modalities": [
+        "text",
+        "image"
+      ]
+    },
+    {
+      "benchmark_id": "reverie-ce",
+      "title": "REVERIE-CE",
+      "source_uri": "https://github.com/YicongHong/Recurrent-VLN-BERT",
+      "environment_kinds": [
+        "embodied"
+      ],
+      "modalities": [
+        "text",
+        "image",
+        "structured"
+      ]
+    },
+    {
+      "benchmark_id": "robocodegen-37",
+      "title": "RoboCodeGen 37",
+      "source_uri": "https://arxiv.org/abs/2209.07753",
+      "environment_kinds": [
+        "software"
+      ],
+      "modalities": [
+        "text",
+        "structured"
+      ]
+    },
+    {
+      "benchmark_id": "robotwin2",
+      "title": "RoboTwin 2.0",
+      "source_uri": "https://github.com/robotwin-Platform/RoboTwin",
+      "environment_kinds": [
+        "embodied"
+      ],
+      "modalities": [
+        "text",
+        "image",
+        "robot_state"
+      ]
+    },
+    {
+      "benchmark_id": "robotwin2-hard",
+      "title": "RoboTwin 2.0 Hard",
+      "source_uri": "https://github.com/robotwin-Platform/RoboTwin",
+      "environment_kinds": [
+        "embodied"
+      ],
+      "modalities": [
+        "text",
+        "image",
+        "robot_state"
+      ]
+    },
+    {
+      "benchmark_id": "saycan-101",
+      "title": "SayCan 101-Task Evaluation",
+      "source_uri": "https://github.com/say-can/say-can.github.io",
+      "environment_kinds": [
+        "embodied"
+      ],
+      "modalities": [
+        "text",
+        "robot_state"
+      ]
+    },
+    {
+      "benchmark_id": "scienceworld",
+      "title": "ScienceWorld / AgentBoard 90-task evaluation cut",
+      "source_uri": "https://github.com/hkust-nlp/AgentBoard",
+      "environment_kinds": [
+        "text_world"
+      ],
+      "modalities": [
+        "text",
+        "structured"
+      ]
+    },
+    {
+      "benchmark_id": "screenspot",
+      "title": "ScreenSpot GUI Grounding Benchmark",
+      "source_uri": "https://github.com/njucckevin/SeeClick",
+      "environment_kinds": [],
+      "modalities": [
+        "image",
+        "text"
+      ]
+    },
+    {
+      "benchmark_id": "screenspot-pro",
+      "title": "ScreenSpot-Pro",
+      "source_uri": "https://github.com/likaixin2000/ScreenSpot-Pro-GUI-Grounding",
+      "environment_kinds": [],
+      "modalities": [
+        "text",
+        "image"
+      ]
+    },
+    {
+      "benchmark_id": "screenspot-v2",
+      "title": "ScreenSpot-v2",
+      "source_uri": "https://github.com/njucckevin/ScreenSpot",
+      "environment_kinds": [],
+      "modalities": [
+        "text",
+        "image"
+      ]
+    },
+    {
+      "benchmark_id": "sg3d",
+      "title": "SG3D",
+      "source_uri": "https://github.com/MrZihan/D3D-VLP",
+      "environment_kinds": [
+        "embodied"
+      ],
+      "modalities": [
+        "text",
+        "image",
+        "structured"
+      ]
+    },
+    {
+      "benchmark_id": "srdd",
+      "title": "Software Requirement Description Dataset",
+      "source_uri": "https://github.com/OpenBMB/ChatDev",
+      "environment_kinds": [
+        "software"
+      ],
+      "modalities": [
+        "text"
+      ]
+    },
+    {
+      "benchmark_id": "state-control-benchmark",
+      "title": "StaR State-Control Benchmark",
+      "source_uri": "https://github.com/ZrW00/StaR",
+      "environment_kinds": [
+        "gui"
+      ],
+      "modalities": [
+        "text",
+        "image",
+        "structured"
+      ]
+    },
+    {
+      "benchmark_id": "steve1-paper-prompts",
+      "title": "STEVE-1 Released Paper Prompt Evaluation Cells",
+      "source_uri": "https://github.com/Shalev-Lifshitz/STEVE-1",
+      "environment_kinds": [
+        "minecraft",
+        "embodied"
+      ],
+      "modalities": [
+        "text",
+        "image",
+        "robot_state"
+      ]
+    },
+    {
+      "benchmark_id": "swe-bench",
+      "title": "SWE-bench",
+      "source_uri": "https://github.com/SWE-bench/SWE-bench",
+      "environment_kinds": [
+        "software"
+      ],
+      "modalities": [
+        "text",
+        "code"
+      ]
+    },
+    {
+      "benchmark_id": "toolbench",
+      "title": "ToolBench",
+      "source_uri": "https://github.com/OpenBMB/ToolBench",
+      "environment_kinds": [
+        "web"
+      ],
+      "modalities": [
+        "text",
+        "structured"
+      ]
+    },
+    {
+      "benchmark_id": "toolformer-eval",
+      "title": "Toolformer Zero-Shot Evaluation Cut",
+      "source_uri": "https://proceedings.neurips.cc/paper/2023/hash/d842425e4bf79ba039352da0f658a906-Abstract-Conference.html",
+      "environment_kinds": [],
+      "modalities": [
+        "text"
+      ]
+    },
+    {
+      "benchmark_id": "travelplanner",
+      "title": "TravelPlanner validation benchmark",
+      "source_uri": "https://github.com/OSU-NLP-Group/TravelPlanner",
+      "environment_kinds": [
+        "software"
+      ],
+      "modalities": [
+        "text",
+        "structured"
+      ]
+    },
+    {
+      "benchmark_id": "video-mme",
+      "title": "Video-MME",
+      "source_uri": "https://video-mme.github.io/",
+      "environment_kinds": [],
+      "modalities": [
+        "text",
+        "video"
+      ]
+    },
+    {
+      "benchmark_id": "vima-bench",
+      "title": "VIMA-Bench",
+      "source_uri": "https://github.com/vimalabs/VIMABench",
+      "environment_kinds": [
+        "embodied"
+      ],
+      "modalities": [
+        "text",
+        "image"
+      ]
+    },
+    {
+      "benchmark_id": "visualwebarena",
+      "title": "VisualWebArena",
+      "source_uri": "https://github.com/web-arena-x/visualwebarena",
+      "environment_kinds": [
+        "web",
+        "gui"
+      ],
+      "modalities": [
+        "text",
+        "image"
+      ]
+    },
+    {
+      "benchmark_id": "voyager-minecraft",
+      "title": "Voyager Minecraft Open-World Lifelong Learning Protocol",
+      "source_uri": "https://github.com/MineDojo/Voyager",
+      "environment_kinds": [
+        "minecraft",
+        "embodied"
+      ],
+      "modalities": [
+        "text"
+      ]
+    },
+    {
+      "benchmark_id": "vstream-qa",
+      "title": "VStream-QA",
+      "source_uri": "https://github.com/EliSpectre/MM-Mem",
+      "environment_kinds": [],
+      "modalities": [
+        "text",
+        "video"
+      ]
+    },
+    {
+      "benchmark_id": "webarena",
+      "title": "WebArena",
+      "source_uri": "https://github.com/web-arena-x/webarena",
+      "environment_kinds": [
+        "web",
+        "gui"
+      ],
+      "modalities": [
+        "text",
+        "structured"
+      ]
+    },
+    {
+      "benchmark_id": "webshop",
+      "title": "WebShop",
+      "source_uri": "https://github.com/princeton-nlp/WebShop",
+      "environment_kinds": [
+        "web",
+        "text_world"
+      ],
+      "modalities": [
+        "text",
+        "structured"
+      ]
+    },
+    {
+      "benchmark_id": "webvoyager",
+      "title": "WebVoyager",
+      "source_uri": "https://github.com/MinorJerry/WebVoyager",
+      "environment_kinds": [
+        "web",
+        "gui"
+      ],
+      "modalities": [
+        "text",
+        "image"
+      ]
+    },
+    {
+      "benchmark_id": "windowsagentarena",
+      "title": "WindowsAgentArena",
+      "source_uri": "https://github.com/microsoft/WindowsAgentArena",
+      "environment_kinds": [
+        "gui"
+      ],
+      "modalities": [
+        "text",
+        "image",
+        "structured"
+      ]
+    }
+  ]
+}

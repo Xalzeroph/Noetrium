@@ -1,0 +1,6006 @@
+{
+  "schema": "noetrium.research-program.projection.v3",
+  "authority": "generated_from_program_control_benchmark_catalog_and_reproduction_catalog",
+  "updated_at": "2026-09-18",
+  "policy": {
+    "external_repositories_are_runtime_dependencies": false,
+    "reproduction_target": "matched_stack",
+    "platform_promotion_reasons": [
+      "shared_by_multiple_methods",
+      "cross_cutting_runtime_invariant",
+      "required_for_reproducibility"
+    ],
+    "rule": "Novel paper semantics stay downstream. Generic runtime, evidence, recovery, evaluation and reproducibility mechanisms move upstream only after real reproduction pressure justifies them."
+  },
+  "benchmarks": [
+    {
+      "benchmark_id": "agentboard-pddl",
+      "title": "AgentBoard PDDL evaluation",
+      "source_uri": "https://github.com/hkust-nlp/AgentBoard",
+      "environment_kinds": [
+        "text_world"
+      ],
+      "modalities": [
+        "text",
+        "structured"
+      ]
+    },
+    {
+      "benchmark_id": "aitw",
+      "title": "Android in the Wild",
+      "source_uri": "https://github.com/google-research/google-research/tree/master/android_in_the_wild",
+      "environment_kinds": [
+        "gui"
+      ],
+      "modalities": [
+        "text",
+        "image",
+        "structured"
+      ]
+    },
+    {
+      "benchmark_id": "aitz",
+      "title": "Android-In-The-Zoo",
+      "source_uri": "https://github.com/IMNearth/Android-In-The-Zoo",
+      "environment_kinds": [
+        "gui"
+      ],
+      "modalities": [
+        "text",
+        "image",
+        "structured"
+      ]
+    },
+    {
+      "benchmark_id": "alfworld",
+      "title": "ALFWorld",
+      "source_uri": "https://github.com/alfworld/alfworld",
+      "environment_kinds": [
+        "text_world",
+        "embodied"
+      ],
+      "modalities": [
+        "text"
+      ]
+    },
+    {
+      "benchmark_id": "amex",
+      "title": "AMEX",
+      "source_uri": "https://github.com/hehehahi4/CES",
+      "environment_kinds": [
+        "gui"
+      ],
+      "modalities": [
+        "text",
+        "image",
+        "structured"
+      ]
+    },
+    {
+      "benchmark_id": "androidcontrol",
+      "title": "AndroidControl",
+      "source_uri": "https://github.com/google-research/google-research/tree/master/android_control",
+      "environment_kinds": [
+        "gui"
+      ],
+      "modalities": [
+        "text",
+        "image",
+        "structured"
+      ]
+    },
+    {
+      "benchmark_id": "androidlab",
+      "title": "AndroidLab",
+      "source_uri": "https://openaccess.thecvf.com/content/CVPR2026F/html/Li_EchoTrail-GUI_Building_Actionable_Memory_for_GUI_Agents_via_Critic-Guided_Self-Exploration_CVPRF_2026_paper.html",
+      "environment_kinds": [
+        "gui"
+      ],
+      "modalities": [
+        "text",
+        "image",
+        "structured"
+      ]
+    },
+    {
+      "benchmark_id": "androidworld",
+      "title": "AndroidWorld",
+      "source_uri": "https://github.com/google-research/android_world",
+      "environment_kinds": [
+        "gui"
+      ],
+      "modalities": [
+        "text",
+        "image",
+        "structured"
+      ]
+    },
+    {
+      "benchmark_id": "babyai",
+      "title": "BabyAI",
+      "source_uri": "https://github.com/mila-iqia/babyai",
+      "environment_kinds": [
+        "embodied"
+      ],
+      "modalities": [
+        "text",
+        "structured"
+      ]
+    },
+    {
+      "benchmark_id": "blocksworld",
+      "title": "Blocksworld",
+      "source_uri": "https://github.com/Ber666/RAP",
+      "environment_kinds": [],
+      "modalities": [
+        "text"
+      ]
+    },
+    {
+      "benchmark_id": "calvin",
+      "title": "CALVIN",
+      "source_uri": "https://github.com/mees/calvin",
+      "environment_kinds": [
+        "embodied"
+      ],
+      "modalities": [
+        "text",
+        "image",
+        "robot_state"
+      ]
+    },
+    {
+      "benchmark_id": "camel-ai-society",
+      "title": "CAMEL AI Society Agent Evaluation",
+      "source_uri": "https://proceedings.neurips.cc/paper/2023/hash/a3621ee907def47c1b952ade25c67698-Abstract-Conference.html",
+      "environment_kinds": [],
+      "modalities": [
+        "text"
+      ]
+    },
+    {
+      "benchmark_id": "commongen",
+      "title": "CommonGen",
+      "source_uri": "https://github.com/INK-USC/CommonGen",
+      "environment_kinds": [],
+      "modalities": [
+        "text"
+      ]
+    },
+    {
+      "benchmark_id": "deps-minecraft-70",
+      "title": "DEPS NeurIPS 2023 Official 70-Task Minecraft Cut",
+      "source_uri": "https://github.com/CraftJarvis/MC-Planner",
+      "environment_kinds": [
+        "minecraft",
+        "embodied"
+      ],
+      "modalities": [
+        "text",
+        "image",
+        "robot_state"
+      ]
+    },
+    {
+      "benchmark_id": "ego2web",
+      "title": "Ego2Web",
+      "source_uri": "https://openaccess.thecvf.com/content/CVPR2026/html/Yu_Ego2Web_A_Web_Agent_Benchmark_Grounded_in_Egocentric_Videos_CVPR_2026_paper.html",
+      "environment_kinds": [
+        "web"
+      ],
+      "modalities": [
+        "text",
+        "video",
+        "structured"
+      ]
+    },
+    {
+      "benchmark_id": "ego4d-goalstep",
+      "title": "Ego4D Goal-Step",
+      "source_uri": "https://github.com/facebookresearch/ego4d-goalstep",
+      "environment_kinds": [],
+      "modalities": [
+        "text",
+        "video"
+      ]
+    },
+    {
+      "benchmark_id": "ego4d-vq3d",
+      "title": "Ego4D VQ3D",
+      "source_uri": "https://github.com/facebookresearch/Ego4d",
+      "environment_kinds": [
+        "embodied"
+      ],
+      "modalities": [
+        "text",
+        "video"
+      ]
+    },
+    {
+      "benchmark_id": "egolifeqa",
+      "title": "EgoLifeQA",
+      "source_uri": "https://huggingface.co/datasets/lmms-lab/EgoLife",
+      "environment_kinds": [],
+      "modalities": [
+        "text",
+        "video",
+        "audio"
+      ]
+    },
+    {
+      "benchmark_id": "egoschema",
+      "title": "EgoSchema",
+      "source_uri": "https://github.com/egoschema/EgoSchema",
+      "environment_kinds": [],
+      "modalities": [
+        "text",
+        "video"
+      ]
+    },
+    {
+      "benchmark_id": "embodiedbench",
+      "title": "EmbodiedBench",
+      "source_uri": "https://github.com/EmbodiedBench/EmbodiedBench",
+      "environment_kinds": [
+        "embodied"
+      ],
+      "modalities": [
+        "text",
+        "image",
+        "structured"
+      ]
+    },
+    {
+      "benchmark_id": "envqa",
+      "title": "Env-QA",
+      "source_uri": "https://github.com/maybelu9/env-qa",
+      "environment_kinds": [
+        "embodied"
+      ],
+      "modalities": [
+        "text",
+        "video"
+      ]
+    },
+    {
+      "benchmark_id": "evomembench",
+      "title": "EvoMemBench",
+      "source_uri": "https://github.com/DSAIL-Memory/EvoMemBench",
+      "environment_kinds": [
+        "text_world",
+        "software"
+      ],
+      "modalities": [
+        "text"
+      ]
+    },
+    {
+      "benchmark_id": "flow-practical-tasks",
+      "title": "Flow ICLR 2025 Three Designed Tasks",
+      "source_uri": "https://proceedings.iclr.cc/paper_files/paper/2025/hash/ba84da6921f3040b74ee163aa7451f53-Abstract-Conference.html",
+      "environment_kinds": [
+        "software"
+      ],
+      "modalities": [
+        "text",
+        "structured"
+      ]
+    },
+    {
+      "benchmark_id": "foreact-real11",
+      "title": "ForeAct Real-World 11-Task Benchmark",
+      "source_uri": "https://github.com/mit-han-lab/foreact",
+      "environment_kinds": [
+        "embodied"
+      ],
+      "modalities": [
+        "text",
+        "image",
+        "robot_state"
+      ]
+    },
+    {
+      "benchmark_id": "freshwiki",
+      "title": "FreshWiki",
+      "source_uri": "https://github.com/stanford-oval/storm",
+      "environment_kinds": [],
+      "modalities": [
+        "text",
+        "structured"
+      ]
+    },
+    {
+      "benchmark_id": "game24",
+      "title": "Game24",
+      "source_uri": "https://github.com/princeton-nlp/tree-of-thought-llm",
+      "environment_kinds": [],
+      "modalities": [
+        "text"
+      ]
+    },
+    {
+      "benchmark_id": "gats-synthetic",
+      "title": "GATS Synthetic Planning Stress Suite",
+      "source_uri": "https://github.com/MMWilliams/gats",
+      "environment_kinds": [],
+      "modalities": [
+        "text"
+      ]
+    },
+    {
+      "benchmark_id": "generative-agents-smallville",
+      "title": "Generative Agents Smallville Paper Protocol",
+      "source_uri": "https://github.com/joonspk-research/generative_agents",
+      "environment_kinds": [
+        "text_world"
+      ],
+      "modalities": [
+        "text",
+        "structured"
+      ]
+    },
+    {
+      "benchmark_id": "goat-bench",
+      "title": "GOAT-Bench",
+      "source_uri": "https://github.com/Ram81/goat-bench",
+      "environment_kinds": [
+        "embodied"
+      ],
+      "modalities": [
+        "text",
+        "image",
+        "structured"
+      ]
+    },
+    {
+      "benchmark_id": "groundedvqa",
+      "title": "GroundedVQA",
+      "source_uri": "https://openaccess.thecvf.com/content/CVPR2026/html/Wu_ReFAct_Empowering_Multimodal_Web_Agents_with_Visual_and_Context_Focusing_CVPR_2026_paper.html",
+      "environment_kinds": [
+        "web"
+      ],
+      "modalities": [
+        "text",
+        "image",
+        "structured"
+      ]
+    },
+    {
+      "benchmark_id": "gsm8k",
+      "title": "GSM8K",
+      "source_uri": "https://github.com/openai/grade-school-math",
+      "environment_kinds": [],
+      "modalities": [
+        "text"
+      ]
+    },
+    {
+      "benchmark_id": "gui-odyssey",
+      "title": "GUI-Odyssey",
+      "source_uri": "https://github.com/OpenGVLab/GUI-Odyssey",
+      "environment_kinds": [
+        "gui"
+      ],
+      "modalities": [
+        "text",
+        "image",
+        "structured"
+      ]
+    },
+    {
+      "benchmark_id": "guiact",
+      "title": "GUIAct",
+      "source_uri": "https://github.com/xc-li/GUIAct",
+      "environment_kinds": [
+        "gui"
+      ],
+      "modalities": [
+        "text",
+        "image",
+        "structured"
+      ]
+    },
+    {
+      "benchmark_id": "hallusionbench",
+      "title": "HallusionBench",
+      "source_uri": "https://github.com/tianyi-lab/HallusionBench",
+      "environment_kinds": [],
+      "modalities": [
+        "text",
+        "image"
+      ]
+    },
+    {
+      "benchmark_id": "hd-epic",
+      "title": "HD-EPIC",
+      "source_uri": "https://github.com/hgaurav2k/HD-EPIC",
+      "environment_kinds": [],
+      "modalities": [
+        "text",
+        "video"
+      ]
+    },
+    {
+      "benchmark_id": "hm3d-ovon",
+      "title": "HM3D-OVON",
+      "source_uri": "https://github.com/facebookresearch/habitat-lab",
+      "environment_kinds": [
+        "embodied"
+      ],
+      "modalities": [
+        "text",
+        "image",
+        "structured"
+      ]
+    },
+    {
+      "benchmark_id": "hotpotqa",
+      "title": "HotpotQA",
+      "source_uri": "https://hotpotqa.github.io/",
+      "environment_kinds": [],
+      "modalities": [
+        "text",
+        "structured"
+      ]
+    },
+    {
+      "benchmark_id": "hugginggpt-paper-tasks",
+      "title": "HuggingGPT Paper-Era Multimodal Task Cut",
+      "source_uri": "https://github.com/microsoft/JARVIS",
+      "environment_kinds": [],
+      "modalities": [
+        "text",
+        "image",
+        "audio",
+        "structured"
+      ]
+    },
+    {
+      "benchmark_id": "humaneval",
+      "title": "HumanEval",
+      "source_uri": "https://github.com/openai/human-eval",
+      "environment_kinds": [
+        "software"
+      ],
+      "modalities": [
+        "text",
+        "code"
+      ]
+    },
+    {
+      "benchmark_id": "jarvis1-offline-185",
+      "title": "JARVIS-1 Public Offline 185-Task Evaluation Cut",
+      "source_uri": "https://github.com/CraftJarvis/JARVIS-1",
+      "environment_kinds": [
+        "minecraft",
+        "embodied"
+      ],
+      "modalities": [
+        "text",
+        "image",
+        "robot_state"
+      ]
+    },
+    {
+      "benchmark_id": "libero",
+      "title": "LIBERO",
+      "source_uri": "https://libero-project.github.io/",
+      "environment_kinds": [
+        "embodied"
+      ],
+      "modalities": [
+        "text",
+        "image",
+        "robot_state"
+      ]
+    },
+    {
+      "benchmark_id": "lmee-bench",
+      "title": "LMEE-Bench",
+      "source_uri": "https://github.com/wangsen99/LMEE",
+      "environment_kinds": [
+        "embodied"
+      ],
+      "modalities": [
+        "text",
+        "image",
+        "structured"
+      ]
+    },
+    {
+      "benchmark_id": "lvu",
+      "title": "Long-Form Video Understanding (LVU 1.0)",
+      "source_uri": "https://chaoyuan.org/lvu/lvu_1.0.tar.gz",
+      "environment_kinds": [],
+      "modalities": [
+        "text",
+        "video"
+      ]
+    },
+    {
+      "benchmark_id": "m3tooleval",
+      "title": "M3ToolEval vendored AgentSquare cut",
+      "source_uri": "https://github.com/tsinghua-fib-lab/AgentSquare",
+      "environment_kinds": [
+        "software"
+      ],
+      "modalities": [
+        "text",
+        "structured"
+      ]
+    },
+    {
+      "benchmark_id": "macosarena",
+      "title": "macOSArena",
+      "source_uri": "https://github.com/OS-Copilot/OS-Symphony",
+      "environment_kinds": [
+        "gui"
+      ],
+      "modalities": [
+        "text",
+        "image",
+        "structured"
+      ]
+    },
+    {
+      "benchmark_id": "math500",
+      "title": "MATH500",
+      "source_uri": "https://huggingface.co/datasets/xinzhel/math500-float",
+      "environment_kinds": [],
+      "modalities": [
+        "text"
+      ]
+    },
+    {
+      "benchmark_id": "mathvision",
+      "title": "MathVision",
+      "source_uri": "https://mathllm.github.io/mathvision/",
+      "environment_kinds": [],
+      "modalities": [
+        "text",
+        "image"
+      ]
+    },
+    {
+      "benchmark_id": "mathvista",
+      "title": "MathVista",
+      "source_uri": "https://mathvista.github.io/",
+      "environment_kinds": [],
+      "modalities": [
+        "text",
+        "image"
+      ]
+    },
+    {
+      "benchmark_id": "mem-gallery",
+      "title": "Mem-Gallery",
+      "source_uri": "https://github.com/YuanchenBei/Mem-Gallery",
+      "environment_kinds": [],
+      "modalities": [
+        "text",
+        "structured"
+      ]
+    },
+    {
+      "benchmark_id": "memoryarena",
+      "title": "MemoryArena",
+      "source_uri": "https://github.com/ZexueHe/MemoryArena",
+      "environment_kinds": [
+        "web",
+        "text_world"
+      ],
+      "modalities": [
+        "text",
+        "structured"
+      ]
+    },
+    {
+      "benchmark_id": "mgsm",
+      "title": "MGSM: Multilingual Grade School Math",
+      "source_uri": "https://huggingface.co/datasets/juletxara/mgsm",
+      "environment_kinds": [
+        "text_world"
+      ],
+      "modalities": [
+        "text"
+      ]
+    },
+    {
+      "benchmark_id": "mind2web",
+      "title": "Mind2Web: Towards a Generalist Agent for the Web",
+      "source_uri": "https://github.com/OSU-NLP-Group/Mind2Web",
+      "environment_kinds": [
+        "web"
+      ],
+      "modalities": [
+        "text",
+        "structured"
+      ]
+    },
+    {
+      "benchmark_id": "minecraft-long-horizon-67",
+      "title": "Minecraft Long-Horizon 67",
+      "source_uri": "https://proceedings.neurips.cc/paper_files/paper/2024/hash/5949a8750a110ce1f0631b1776c500a2-Abstract-Conference.html",
+      "environment_kinds": [
+        "minecraft"
+      ],
+      "modalities": [
+        "text",
+        "image",
+        "game_state"
+      ]
+    },
+    {
+      "benchmark_id": "minecraft-openha",
+      "title": "OpenHA Minecraft",
+      "source_uri": "https://github.com/CraftJarvis/OpenHA",
+      "environment_kinds": [
+        "minecraft",
+        "embodied"
+      ],
+      "modalities": [
+        "text",
+        "image",
+        "game_state"
+      ]
+    },
+    {
+      "benchmark_id": "minedojo",
+      "title": "MineDojo",
+      "source_uri": "https://github.com/MineDojo/MineDojo",
+      "environment_kinds": [
+        "minecraft",
+        "embodied"
+      ],
+      "modalities": [
+        "text",
+        "image"
+      ]
+    },
+    {
+      "benchmark_id": "mle-bench",
+      "title": "MLE-Bench",
+      "source_uri": "https://github.com/openai/mle-bench",
+      "environment_kinds": [
+        "software"
+      ],
+      "modalities": [
+        "text",
+        "code",
+        "structured"
+      ]
+    },
+    {
+      "benchmark_id": "mlvu",
+      "title": "MLVU",
+      "source_uri": "https://github.com/JUNJIE99/MLVU",
+      "environment_kinds": [],
+      "modalities": [
+        "text",
+        "video"
+      ]
+    },
+    {
+      "benchmark_id": "mmbench-gui",
+      "title": "MMBench-GUI",
+      "source_uri": "https://openaccess.thecvf.com/content/CVPR2026/html/Wang_MMBench-GUI_A_Unified_Hierarchical_Evaluation_Framework_for_Multi-Platform_GUI_Agents_CVPR_2026_paper.html",
+      "environment_kinds": [
+        "gui"
+      ],
+      "modalities": [
+        "text",
+        "image",
+        "structured"
+      ]
+    },
+    {
+      "benchmark_id": "mmmu",
+      "title": "MMMU",
+      "source_uri": "https://mmmu-benchmark.github.io/",
+      "environment_kinds": [],
+      "modalities": [
+        "text",
+        "image"
+      ]
+    },
+    {
+      "benchmark_id": "mmstar",
+      "title": "MMStar",
+      "source_uri": "https://github.com/MMStar-Benchmark/MMStar",
+      "environment_kinds": [],
+      "modalities": [
+        "text",
+        "image"
+      ]
+    },
+    {
+      "benchmark_id": "motus-realworld",
+      "title": "Motus Real-World Benchmark",
+      "source_uri": "https://github.com/thu-ml/Motus",
+      "environment_kinds": [
+        "embodied"
+      ],
+      "modalities": [
+        "text",
+        "image",
+        "robot_state"
+      ]
+    },
+    {
+      "benchmark_id": "moviechat-1k",
+      "title": "MovieChat-1K",
+      "source_uri": "https://huggingface.co/datasets/Enxin/MovieChat-1K-test",
+      "environment_kinds": [],
+      "modalities": [
+        "text",
+        "video"
+      ]
+    },
+    {
+      "benchmark_id": "multiagentbench",
+      "title": "MultiAgentBench",
+      "source_uri": "https://github.com/ulab-uiuc/MARBLE",
+      "environment_kinds": [
+        "text_world",
+        "software",
+        "minecraft"
+      ],
+      "modalities": [
+        "text",
+        "structured",
+        "image"
+      ]
+    },
+    {
+      "benchmark_id": "navrag-ce",
+      "title": "NavRAG-CE",
+      "source_uri": "https://github.com/MrZihan/D3D-VLP",
+      "environment_kinds": [
+        "embodied"
+      ],
+      "modalities": [
+        "text",
+        "image",
+        "structured"
+      ]
+    },
+    {
+      "benchmark_id": "open-eqa",
+      "title": "OpenEQA",
+      "source_uri": "https://github.com/facebookresearch/open-eqa",
+      "environment_kinds": [
+        "embodied"
+      ],
+      "modalities": [
+        "text",
+        "image",
+        "video"
+      ]
+    },
+    {
+      "benchmark_id": "osworld",
+      "title": "OSWorld",
+      "source_uri": "https://github.com/xlang-ai/OSWorld",
+      "environment_kinds": [
+        "gui"
+      ],
+      "modalities": [
+        "text",
+        "image"
+      ]
+    },
+    {
+      "benchmark_id": "osworld-verified",
+      "title": "OSWorld-Verified",
+      "source_uri": "https://github.com/xlang-ai/OSWorld",
+      "environment_kinds": [
+        "gui"
+      ],
+      "modalities": [
+        "text",
+        "image",
+        "structured"
+      ]
+    },
+    {
+      "benchmark_id": "r2r-ce",
+      "title": "R2R-CE",
+      "source_uri": "https://github.com/facebookresearch/habitat-lab",
+      "environment_kinds": [
+        "embodied"
+      ],
+      "modalities": [
+        "text",
+        "image",
+        "structured"
+      ]
+    },
+    {
+      "benchmark_id": "realworldqa",
+      "title": "RealWorldQA",
+      "source_uri": "https://huggingface.co/datasets/xai-org/RealworldQA",
+      "environment_kinds": [],
+      "modalities": [
+        "text",
+        "image"
+      ]
+    },
+    {
+      "benchmark_id": "reverie-ce",
+      "title": "REVERIE-CE",
+      "source_uri": "https://github.com/YicongHong/Recurrent-VLN-BERT",
+      "environment_kinds": [
+        "embodied"
+      ],
+      "modalities": [
+        "text",
+        "image",
+        "structured"
+      ]
+    },
+    {
+      "benchmark_id": "robocodegen-37",
+      "title": "RoboCodeGen 37",
+      "source_uri": "https://arxiv.org/abs/2209.07753",
+      "environment_kinds": [
+        "software"
+      ],
+      "modalities": [
+        "text",
+        "structured"
+      ]
+    },
+    {
+      "benchmark_id": "robotwin2",
+      "title": "RoboTwin 2.0",
+      "source_uri": "https://github.com/robotwin-Platform/RoboTwin",
+      "environment_kinds": [
+        "embodied"
+      ],
+      "modalities": [
+        "text",
+        "image",
+        "robot_state"
+      ]
+    },
+    {
+      "benchmark_id": "robotwin2-hard",
+      "title": "RoboTwin 2.0 Hard",
+      "source_uri": "https://github.com/robotwin-Platform/RoboTwin",
+      "environment_kinds": [
+        "embodied"
+      ],
+      "modalities": [
+        "text",
+        "image",
+        "robot_state"
+      ]
+    },
+    {
+      "benchmark_id": "saycan-101",
+      "title": "SayCan 101-Task Evaluation",
+      "source_uri": "https://github.com/say-can/say-can.github.io",
+      "environment_kinds": [
+        "embodied"
+      ],
+      "modalities": [
+        "text",
+        "robot_state"
+      ]
+    },
+    {
+      "benchmark_id": "scienceworld",
+      "title": "ScienceWorld / AgentBoard 90-task evaluation cut",
+      "source_uri": "https://github.com/hkust-nlp/AgentBoard",
+      "environment_kinds": [
+        "text_world"
+      ],
+      "modalities": [
+        "text",
+        "structured"
+      ]
+    },
+    {
+      "benchmark_id": "screenspot",
+      "title": "ScreenSpot GUI Grounding Benchmark",
+      "source_uri": "https://github.com/njucckevin/SeeClick",
+      "environment_kinds": [],
+      "modalities": [
+        "image",
+        "text"
+      ]
+    },
+    {
+      "benchmark_id": "screenspot-pro",
+      "title": "ScreenSpot-Pro",
+      "source_uri": "https://github.com/likaixin2000/ScreenSpot-Pro-GUI-Grounding",
+      "environment_kinds": [],
+      "modalities": [
+        "text",
+        "image"
+      ]
+    },
+    {
+      "benchmark_id": "screenspot-v2",
+      "title": "ScreenSpot-v2",
+      "source_uri": "https://github.com/njucckevin/ScreenSpot",
+      "environment_kinds": [],
+      "modalities": [
+        "text",
+        "image"
+      ]
+    },
+    {
+      "benchmark_id": "sg3d",
+      "title": "SG3D",
+      "source_uri": "https://github.com/MrZihan/D3D-VLP",
+      "environment_kinds": [
+        "embodied"
+      ],
+      "modalities": [
+        "text",
+        "image",
+        "structured"
+      ]
+    },
+    {
+      "benchmark_id": "srdd",
+      "title": "Software Requirement Description Dataset",
+      "source_uri": "https://github.com/OpenBMB/ChatDev",
+      "environment_kinds": [
+        "software"
+      ],
+      "modalities": [
+        "text"
+      ]
+    },
+    {
+      "benchmark_id": "state-control-benchmark",
+      "title": "StaR State-Control Benchmark",
+      "source_uri": "https://github.com/ZrW00/StaR",
+      "environment_kinds": [
+        "gui"
+      ],
+      "modalities": [
+        "text",
+        "image",
+        "structured"
+      ]
+    },
+    {
+      "benchmark_id": "steve1-paper-prompts",
+      "title": "STEVE-1 Released Paper Prompt Evaluation Cells",
+      "source_uri": "https://github.com/Shalev-Lifshitz/STEVE-1",
+      "environment_kinds": [
+        "minecraft",
+        "embodied"
+      ],
+      "modalities": [
+        "text",
+        "image",
+        "robot_state"
+      ]
+    },
+    {
+      "benchmark_id": "swe-bench",
+      "title": "SWE-bench",
+      "source_uri": "https://github.com/SWE-bench/SWE-bench",
+      "environment_kinds": [
+        "software"
+      ],
+      "modalities": [
+        "text",
+        "code"
+      ]
+    },
+    {
+      "benchmark_id": "toolbench",
+      "title": "ToolBench",
+      "source_uri": "https://github.com/OpenBMB/ToolBench",
+      "environment_kinds": [
+        "web"
+      ],
+      "modalities": [
+        "text",
+        "structured"
+      ]
+    },
+    {
+      "benchmark_id": "toolformer-eval",
+      "title": "Toolformer Zero-Shot Evaluation Cut",
+      "source_uri": "https://proceedings.neurips.cc/paper/2023/hash/d842425e4bf79ba039352da0f658a906-Abstract-Conference.html",
+      "environment_kinds": [],
+      "modalities": [
+        "text"
+      ]
+    },
+    {
+      "benchmark_id": "travelplanner",
+      "title": "TravelPlanner validation benchmark",
+      "source_uri": "https://github.com/OSU-NLP-Group/TravelPlanner",
+      "environment_kinds": [
+        "software"
+      ],
+      "modalities": [
+        "text",
+        "structured"
+      ]
+    },
+    {
+      "benchmark_id": "video-mme",
+      "title": "Video-MME",
+      "source_uri": "https://video-mme.github.io/",
+      "environment_kinds": [],
+      "modalities": [
+        "text",
+        "video"
+      ]
+    },
+    {
+      "benchmark_id": "vima-bench",
+      "title": "VIMA-Bench",
+      "source_uri": "https://github.com/vimalabs/VIMABench",
+      "environment_kinds": [
+        "embodied"
+      ],
+      "modalities": [
+        "text",
+        "image"
+      ]
+    },
+    {
+      "benchmark_id": "visualwebarena",
+      "title": "VisualWebArena",
+      "source_uri": "https://github.com/web-arena-x/visualwebarena",
+      "environment_kinds": [
+        "web",
+        "gui"
+      ],
+      "modalities": [
+        "text",
+        "image"
+      ]
+    },
+    {
+      "benchmark_id": "voyager-minecraft",
+      "title": "Voyager Minecraft Open-World Lifelong Learning Protocol",
+      "source_uri": "https://github.com/MineDojo/Voyager",
+      "environment_kinds": [
+        "minecraft",
+        "embodied"
+      ],
+      "modalities": [
+        "text"
+      ]
+    },
+    {
+      "benchmark_id": "vstream-qa",
+      "title": "VStream-QA",
+      "source_uri": "https://github.com/EliSpectre/MM-Mem",
+      "environment_kinds": [],
+      "modalities": [
+        "text",
+        "video"
+      ]
+    },
+    {
+      "benchmark_id": "webarena",
+      "title": "WebArena",
+      "source_uri": "https://github.com/web-arena-x/webarena",
+      "environment_kinds": [
+        "web",
+        "gui"
+      ],
+      "modalities": [
+        "text",
+        "structured"
+      ]
+    },
+    {
+      "benchmark_id": "webshop",
+      "title": "WebShop",
+      "source_uri": "https://github.com/princeton-nlp/WebShop",
+      "environment_kinds": [
+        "web",
+        "text_world"
+      ],
+      "modalities": [
+        "text",
+        "structured"
+      ]
+    },
+    {
+      "benchmark_id": "webvoyager",
+      "title": "WebVoyager",
+      "source_uri": "https://github.com/MinorJerry/WebVoyager",
+      "environment_kinds": [
+        "web",
+        "gui"
+      ],
+      "modalities": [
+        "text",
+        "image"
+      ]
+    },
+    {
+      "benchmark_id": "windowsagentarena",
+      "title": "WindowsAgentArena",
+      "source_uri": "https://github.com/microsoft/WindowsAgentArena",
+      "environment_kinds": [
+        "gui"
+      ],
+      "modalities": [
+        "text",
+        "image",
+        "structured"
+      ]
+    }
+  ],
+  "methods": [
+    {
+      "method_id": "adacm2",
+      "title": "AdaCM2: On Understanding Extremely Long-Term Video with Adaptive Cross-Modality Memory Reduction",
+      "paper_uri": "https://openaccess.thecvf.com/content/CVPR2025/html/Man_AdaCM2_On_Understanding_Extremely_Long-Term_Video_with_Adaptive_Cross-Modality_Memory_CVPR_2025_paper.html",
+      "year": 2025,
+      "families": [
+        "adaptive_kv_cache_reduction",
+        "cross_modal_memory",
+        "long_video_understanding",
+        "multimodal_memory"
+      ],
+      "reference_repositories": [],
+      "reproduction_packages": [
+        {
+          "package": "adacm2_memory",
+          "lifecycle": "protocol_bound"
+        }
+      ],
+      "priority": 1,
+      "benchmark_ids": [
+        "lvu"
+      ],
+      "platform_pressure": [
+        "artifact/content",
+        "benchmark/video",
+        "execution/machines",
+        "experimentation/study",
+        "memory",
+        "model/multimodal"
+      ],
+      "method_owned": [
+        "alpha/beta cache partition and retention semantics",
+        "cross-modal attention token importance",
+        "layer-wise K/V cache reduction",
+        "previous-cache top-beta conservation",
+        "recent-cache preservation",
+        "regressive frame-by-frame Q-Former processing"
+      ],
+      "platform_owned": [
+        "LVU full-video benchmark projection",
+        "MemoryMachine journal authority",
+        "cross-modal scorer implementation identity",
+        "multimodal tensor content identity",
+        "study and evaluation orchestration"
+      ],
+      "evidence_refs": []
+    },
+    {
+      "method_id": "adaptagent",
+      "title": "AdaptAgent: Adapting Multimodal Web Agents with Few-Shot Learning from Human Demonstrations",
+      "paper_uri": "https://aclanthology.org/2025.acl-long.1008/",
+      "year": 2025,
+      "families": [
+        "adaptagent",
+        "agentic_workflow"
+      ],
+      "reference_repositories": [],
+      "reproduction_packages": [
+        {
+          "package": "adaptagent_acl2025",
+          "lifecycle": "protocol_bound"
+        }
+      ],
+      "priority": 1,
+      "benchmark_ids": [
+        "mind2web",
+        "visualwebarena"
+      ],
+      "platform_pressure": [
+        "benchmark",
+        "evidence",
+        "execution/workflow",
+        "experimentation/study",
+        "model/request"
+      ],
+      "method_owned": [
+        "few-shot website adaptation",
+        "in-context and meta-adaptation variants",
+        "multimodal demonstration conditioning",
+        "two-demonstration adaptation regime"
+      ],
+      "platform_owned": [
+        "MethodProgram and Machine Journal execution authority",
+        "benchmark cut identity",
+        "experiment and measurement orchestration",
+        "model/provider transport",
+        "run evidence and provenance"
+      ],
+      "evidence_refs": []
+    },
+    {
+      "method_id": "adas-meta-agent-search",
+      "title": "Automated Design of Agentic Systems",
+      "paper_uri": "https://proceedings.iclr.cc/paper_files/paper/2025/hash/36b7acf6f6010652b3f2a433774a66fe-Abstract-Conference.html",
+      "year": 2025,
+      "families": [
+        "agent_design",
+        "meta_search",
+        "self_improvement"
+      ],
+      "reference_repositories": [
+        "https://github.com/ShengranHu/ADAS"
+      ],
+      "reproduction_packages": [
+        {
+          "package": "adas_meta_agent_search",
+          "lifecycle": "protocol_bound"
+        }
+      ],
+      "priority": 1,
+      "benchmark_ids": [
+        "mgsm"
+      ],
+      "platform_pressure": [
+        "artifact/lineage",
+        "execution",
+        "experimentation/study",
+        "experimentation/workbench",
+        "participant/method",
+        "reliability/recovery"
+      ],
+      "method_owned": [
+        "archive-conditioned agent design search",
+        "candidate acceptance threshold",
+        "candidate debug/regeneration policy",
+        "two-pass meta reflection"
+      ],
+      "platform_owned": [
+        "benchmark/evaluator cut identity",
+        "immutable candidate source publication",
+        "isolated candidate execution",
+        "measurement/evidence lineage",
+        "method host",
+        "recovery",
+        "whole-cut study assignment"
+      ],
+      "evidence_refs": []
+    },
+    {
+      "method_id": "aflow",
+      "title": "AFlow: Automating Agentic Workflow Generation",
+      "paper_uri": "https://proceedings.iclr.cc/paper_files/paper/2025/hash/5492ecbce4439401798dcd2c90be94cd-Abstract-Conference.html",
+      "year": 2025,
+      "families": [
+        "agentic_workflow_generation",
+        "meta_optimization",
+        "workflow_search"
+      ],
+      "reference_repositories": [
+        "https://github.com/FoundationAgents/AFlow",
+        "https://github.com/FoundationAgents/MetaGPT"
+      ],
+      "reproduction_packages": [
+        {
+          "package": "aflow",
+          "lifecycle": "protocol_bound"
+        }
+      ],
+      "priority": 1,
+      "benchmark_ids": [
+        "humaneval"
+      ],
+      "platform_pressure": [
+        "artifact/lineage",
+        "execution",
+        "execution/research_program",
+        "experimentation/workbench",
+        "model/request"
+      ],
+      "method_owned": [
+        "code-represented workflow search",
+        "experience-conditioned workflow mutation",
+        "mixed weighted parent selection",
+        "top-k convergence policy",
+        "validation-repeated workflow evaluation"
+      ],
+      "platform_owned": [
+        "OptimizationMachine journal authority",
+        "ResearchProgram hosting",
+        "immutable executable-source provenance",
+        "isolated generated-code execution",
+        "measurement and artifact lineage",
+        "random-decision evidence receipts"
+      ],
+      "evidence_refs": []
+    },
+    {
+      "method_id": "agemem_acl2026",
+      "title": "Agentic Memory: Learning Unified Long-Term and Short-Term Memory Management for Large Language Model Agents",
+      "paper_uri": "https://aclanthology.org/2026.acl-long.981/",
+      "year": 2026,
+      "families": [
+        "long-horizon",
+        "memory",
+        "reinforcement-learning",
+        "tool-use"
+      ],
+      "reference_repositories": [],
+      "reproduction_packages": [
+        {
+          "package": "agemem_acl2026",
+          "lifecycle": "protocol_bound"
+        }
+      ],
+      "priority": 1,
+      "benchmark_ids": [
+        "agentboard-pddl",
+        "alfworld",
+        "babyai",
+        "hotpotqa",
+        "scienceworld"
+      ],
+      "platform_pressure": [
+        "benchmark",
+        "evidence",
+        "execution/workflow",
+        "experimentation/study",
+        "model/request"
+      ],
+      "method_owned": [
+        "Apply the selected memory action while leaving memory authority to the platform.",
+        "Choose store, retrieve, update, summarize, discard, or no-op as a memory tool action.",
+        "Observe task state plus current short-term and long-term memory.",
+        "Reason over the resulting memory view and emit the next environment action.",
+        "Record step-wise process/outcome signals required by progressive RL and step-wise GRPO."
+      ],
+      "platform_owned": [
+        "MethodProgram execution and Machine Journal truth",
+        "Study/Experiment orchestration and measurement artifacts",
+        "content-addressed benchmark task identity",
+        "provider-independent model/tool dispatch and receipts",
+        "run/evidence provenance and replay"
+      ],
+      "evidence_refs": []
+    },
+    {
+      "method_id": "agent-q",
+      "title": "Agent Q: Advanced Reasoning and Learning for Autonomous AI Agents",
+      "paper_uri": "https://arxiv.org/abs/2408.07199",
+      "year": 2024,
+      "families": [
+        "preference_learning",
+        "self_critique",
+        "tree_search",
+        "web_agent"
+      ],
+      "reference_repositories": [
+        "https://github.com/sentient-engineering/agent-q"
+      ],
+      "reproduction_packages": [
+        {
+          "package": "agent_q_surrogate",
+          "lifecycle": "protocol_bound"
+        }
+      ],
+      "priority": 1,
+      "benchmark_ids": [
+        "webshop",
+        "webvoyager"
+      ],
+      "platform_pressure": [
+        "artifact/lineage",
+        "environment/web",
+        "experimentation/study",
+        "model/assignment",
+        "model/request"
+      ],
+      "method_owned": [
+        "actor-critic action ranking",
+        "guided MCTS semantics",
+        "search-derived preference-pair generation",
+        "terminal self-judging"
+      ],
+      "platform_owned": [
+        "benchmark cut identity",
+        "environment execution evidence",
+        "named model-role binding",
+        "source-lane provenance",
+        "study and artifact lineage"
+      ],
+      "evidence_refs": []
+    },
+    {
+      "method_id": "agent-s3",
+      "title": "The Unreasonable Effectiveness of Scaling Agents for Computer Use",
+      "paper_uri": "https://arxiv.org/abs/2510.02250",
+      "year": 2025,
+      "families": [
+        "computer_use",
+        "gui",
+        "multimodal",
+        "reflection"
+      ],
+      "reference_repositories": [
+        "https://github.com/simular-ai/Agent-S"
+      ],
+      "reproduction_packages": [
+        {
+          "package": "agent_s3",
+          "lifecycle": "protocol_bound"
+        }
+      ],
+      "priority": 1,
+      "benchmark_ids": [
+        "osworld"
+      ],
+      "platform_pressure": [
+        "environment/gui",
+        "execution",
+        "model/request",
+        "observability/telemetry",
+        "participant/agent"
+      ],
+      "method_owned": [
+        "optional bounded code-agent policy",
+        "single-action grounding policy",
+        "single-worker computer-use policy",
+        "trajectory reflection policy"
+      ],
+      "platform_owned": [
+        "GUI environment execution",
+        "controlled code execution",
+        "evidence and telemetry",
+        "model-view projection",
+        "multimodal transport"
+      ],
+      "evidence_refs": []
+    },
+    {
+      "method_id": "agentless",
+      "title": "Agentless: Demystifying LLM-based Software Engineering Agents",
+      "paper_uri": "https://conf.researchr.org/details/fse-2025/fse-2025-research-papers/85/Demystifying-LLM-based-Software-Engineering-Agents",
+      "year": 2025,
+      "families": [
+        "repair",
+        "software_agent",
+        "validation",
+        "workflow"
+      ],
+      "reference_repositories": [
+        "https://github.com/OpenAutoCoder/Agentless"
+      ],
+      "reproduction_packages": [
+        {
+          "package": "agentless_swebench",
+          "lifecycle": "protocol_bound"
+        }
+      ],
+      "priority": 1,
+      "benchmark_ids": [
+        "swe-bench"
+      ],
+      "platform_pressure": [
+        "artifact/lineage",
+        "environment/software",
+        "evaluation",
+        "execution/workflow",
+        "experimentation/study"
+      ],
+      "method_owned": [
+        "hierarchical file-to-symbol-to-edit localization",
+        "multiple patch candidate sampling",
+        "regression/reproduction-test validation policy",
+        "validation-conditioned patch reranking"
+      ],
+      "platform_owned": [
+        "artifact lineage",
+        "effect evidence",
+        "isolated verifier execution",
+        "model invocation",
+        "software workspace execution",
+        "study expansion"
+      ],
+      "evidence_refs": []
+    },
+    {
+      "method_id": "agentsquare",
+      "title": "AgentSquare: Automatic LLM Agent Search in Modular Design Space",
+      "paper_uri": "https://proceedings.iclr.cc/paper_files/paper/2025/hash/0ae94013da7cd459402fd77874e09ee3-Abstract-Conference.html",
+      "year": 2025,
+      "families": [
+        "automated_agent_design",
+        "modular_agent_search",
+        "module_evolution",
+        "module_recombination"
+      ],
+      "reference_repositories": [
+        "https://github.com/tsinghua-fib-lab/AgentSquare"
+      ],
+      "reproduction_packages": [
+        {
+          "package": "agentsquare",
+          "lifecycle": "protocol_bound"
+        }
+      ],
+      "priority": 1,
+      "benchmark_ids": [
+        "agentboard-pddl",
+        "alfworld",
+        "m3tooleval",
+        "scienceworld",
+        "travelplanner",
+        "webshop"
+      ],
+      "platform_pressure": [
+        "artifact/lineage",
+        "capability",
+        "execution/research_program",
+        "experimentation/workbench",
+        "memory",
+        "participant/method"
+      ],
+      "method_owned": [
+        "best-candidate benchmark evaluation loop",
+        "four-module planning/reasoning/tool-use/memory design space",
+        "in-context performance predictor",
+        "module evolution",
+        "module recombination"
+      ],
+      "platform_owned": [
+        "OptimizationMachine journal authority",
+        "ResearchProgram hosting",
+        "candidate execution/evaluation binding",
+        "checkpoint and replay",
+        "evidence and artifact lineage"
+      ],
+      "evidence_refs": []
+    },
+    {
+      "method_id": "ai-scientist",
+      "title": "The AI Scientist: Towards Fully Automated Open-Ended Scientific Discovery",
+      "paper_uri": "https://arxiv.org/abs/2408.06292",
+      "year": 2024,
+      "families": [
+        "code_execution",
+        "experimentation",
+        "paper_writing",
+        "review",
+        "scientific_agent"
+      ],
+      "reference_repositories": [
+        "https://github.com/SakanaAI/AI-Scientist"
+      ],
+      "reproduction_packages": [
+        {
+          "package": "ai_scientist_v1",
+          "lifecycle": "catalogued"
+        }
+      ],
+      "priority": 1,
+      "benchmark_ids": [],
+      "platform_pressure": [
+        "artifact/lineage",
+        "environment/software",
+        "experimentation/study",
+        "experimentation/workbench",
+        "model/request",
+        "reliability/recovery"
+      ],
+      "method_owned": [
+        "idea generation and novelty policy",
+        "template-bound experiment editing loop",
+        "writeup and review policy"
+      ],
+      "platform_owned": [
+        "artifact lineage",
+        "experiment identity and metrics",
+        "isolated project execution",
+        "parallel resource scheduling",
+        "recovery and evidence"
+      ],
+      "evidence_refs": []
+    },
+    {
+      "method_id": "ai-scientist-v2",
+      "title": "The AI Scientist-v2: Workshop-Level Automated Scientific Discovery via Agentic Tree Search",
+      "paper_uri": "https://arxiv.org/abs/2504.08066",
+      "year": 2025,
+      "families": [
+        "code_execution",
+        "experimentation",
+        "paper_writing",
+        "review",
+        "scientific_agent",
+        "tree_search"
+      ],
+      "reference_repositories": [
+        "https://github.com/SakanaAI/AI-Scientist-v2"
+      ],
+      "reproduction_packages": [
+        {
+          "package": "ai_scientist_v2",
+          "lifecycle": "catalogued"
+        }
+      ],
+      "priority": 1,
+      "benchmark_ids": [],
+      "platform_pressure": [
+        "artifact/lineage",
+        "environment/software",
+        "experimentation/study",
+        "experimentation/workbench",
+        "model/request",
+        "reliability/recovery",
+        "resource"
+      ],
+      "method_owned": [
+        "citation and multimodal review policy",
+        "downstream method journal",
+        "experiment-manager guidance",
+        "progressive agentic tree-search policy"
+      ],
+      "platform_owned": [
+        "Kernel Journal facts",
+        "artifact lineage",
+        "experiment identity and metrics",
+        "isolated branch execution",
+        "recovery and evidence",
+        "resource scheduling"
+      ],
+      "evidence_refs": []
+    },
+    {
+      "method_id": "astranav_memory_cvpr2026",
+      "title": "AstraNav-Memory: Contexts Compression for Long Memory",
+      "paper_uri": "https://openaccess.thecvf.com/content/CVPR2026/html/Hu_AstraNav-Memory_Contexts_Compression_for_Long_Memory_CVPR_2026_paper.html",
+      "year": 2026,
+      "families": [
+        "embodied",
+        "lifelong-agent",
+        "long-term-memory",
+        "navigation",
+        "visual-compression"
+      ],
+      "reference_repositories": [
+        "https://github.com/amap-cvlab/AstraNav-Memory"
+      ],
+      "reproduction_packages": [
+        {
+          "package": "astranav_memory_cvpr2026",
+          "lifecycle": "protocol_bound"
+        }
+      ],
+      "priority": 1,
+      "benchmark_ids": [
+        "goat-bench",
+        "hm3d-ovon"
+      ],
+      "platform_pressure": [
+        "benchmark",
+        "evidence",
+        "execution/workflow",
+        "experimentation/study",
+        "memory",
+        "model/request",
+        "perception"
+      ],
+      "method_owned": [
+        "Acquire the current navigation image and task context.",
+        "Append compressed image tokens to the long-horizon image-centric memory context.",
+        "Compress the image through frozen DINOv3 features plus PixelUnshuffle/Conv visual tokenizer.",
+        "Execute the next navigation action and preserve trajectory evidence.",
+        "Reason over current and historical compressed visual contexts with Qwen2.5-VL."
+      ],
+      "platform_owned": [
+        "MethodProgram execution and Machine Journal truth",
+        "Study/Experiment orchestration and measurement artifacts",
+        "content-addressed benchmark task identity",
+        "provider-independent model/tool dispatch and receipts",
+        "run/evidence provenance and replay"
+      ],
+      "evidence_refs": []
+    },
+    {
+      "method_id": "autogen",
+      "title": "AutoGen: Enabling Next-Gen LLM Applications via Multi-Agent Conversation",
+      "paper_uri": "https://www.microsoft.com/en-us/research/publication/autogen-enabling-next-gen-llm-applications-via-multi-agent-conversation-framework/",
+      "year": 2024,
+      "families": [
+        "code_execution",
+        "human_agent_interaction",
+        "multi_agent",
+        "tool_use"
+      ],
+      "reference_repositories": [
+        "https://github.com/microsoft/autogen"
+      ],
+      "reproduction_packages": [
+        {
+          "package": "autogen_agentchat",
+          "lifecycle": "protocol_bound"
+        }
+      ],
+      "priority": 1,
+      "benchmark_ids": [
+        "multiagentbench"
+      ],
+      "platform_pressure": [
+        "environment/software",
+        "execution",
+        "execution/workflow",
+        "observability/telemetry",
+        "participant/agent",
+        "reliability/recovery"
+      ],
+      "method_owned": [
+        "conversable-agent reply policy",
+        "group-chat and user-proxy conversation semantics",
+        "speaker selection policy"
+      ],
+      "platform_owned": [
+        "controlled code execution",
+        "effect evidence",
+        "human interruption",
+        "message routing",
+        "participant lifecycle",
+        "recovery"
+      ],
+      "evidence_refs": []
+    },
+    {
+      "method_id": "camel",
+      "title": "CAMEL: Communicative Agents for Mind Exploration of Large Language Model Society",
+      "paper_uri": "https://proceedings.neurips.cc/paper_files/paper/2023/file/a3621ee907def47c1b952ade25c67698-Paper-Conference.pdf",
+      "year": 2023,
+      "families": [
+        "communication",
+        "inception_prompting",
+        "multi_agent",
+        "role_playing"
+      ],
+      "reference_repositories": [
+        "https://github.com/camel-ai/camel"
+      ],
+      "reproduction_packages": [
+        {
+          "package": "camel_role_playing",
+          "lifecycle": "protocol_bound"
+        }
+      ],
+      "priority": 1,
+      "benchmark_ids": [
+        "camel-ai-society"
+      ],
+      "platform_pressure": [
+        "execution/workflow",
+        "experimentation/study",
+        "model/request",
+        "observability/telemetry",
+        "participant/agent"
+      ],
+      "method_owned": [
+        "alternating dialogue and termination protocol",
+        "assistant-user role semantics",
+        "inception prompting",
+        "independent role histories",
+        "task specification and task planning"
+      ],
+      "platform_owned": [
+        "evaluation isolation",
+        "model invocation",
+        "model-visible history projection",
+        "named model-role binding",
+        "participant lifecycle",
+        "transcript evidence"
+      ],
+      "evidence_refs": []
+    },
+    {
+      "method_id": "ces_gui_cvpr2026",
+      "title": "Training High-Level Schedulers with Execution-Feedback Reinforcement Learning for Long-Horizon GUI Automation",
+      "paper_uri": "https://openaccess.thecvf.com/content/CVPR2026/html/Deng_Training_High-Level_Schedulers_with_Execution-Feedback_Reinforcement_Learning_for_Long-Horizon_GUI_CVPR_2026_paper.html",
+      "year": 2026,
+      "families": [
+        "gui-agent",
+        "multi-agent",
+        "reinforcement-learning",
+        "scheduler",
+        "state-tracking"
+      ],
+      "reference_repositories": [
+        "https://github.com/hehehahi4/CES"
+      ],
+      "reproduction_packages": [
+        {
+          "package": "ces_gui_cvpr2026",
+          "lifecycle": "protocol_bound"
+        }
+      ],
+      "priority": 1,
+      "benchmark_ids": [
+        "aitz",
+        "amex",
+        "gui-odyssey"
+      ],
+      "platform_pressure": [
+        "benchmark",
+        "evidence",
+        "execution/workflow",
+        "experimentation/study",
+        "memory",
+        "model/request",
+        "participant"
+      ],
+      "method_owned": [
+        "Capture execution outcome and environment feedback after the GUI action.",
+        "Compress previous state and execution feedback into an updated progress summary.",
+        "Read the user goal, current screen and compressed task state; emit one atomic sub-instruction.",
+        "Use the frozen low-level GUI executor to reason over the sub-instruction and emit the concrete GUI action.",
+        "Use the new state summary to continue, revise, or terminate the high-level plan."
+      ],
+      "platform_owned": [
+        "MethodProgram execution and Machine Journal truth",
+        "Study/Experiment orchestration and measurement artifacts",
+        "content-addressed benchmark task identity",
+        "provider-independent model/tool dispatch and receipts",
+        "run/evidence provenance and replay"
+      ],
+      "evidence_refs": []
+    },
+    {
+      "method_id": "chain-of-thought",
+      "title": "Chain-of-Thought Prompting Elicits Reasoning in Large Language Models",
+      "paper_uri": "https://proceedings.neurips.cc/paper_files/paper/2022/hash/9d5609613524ecf4f15af0f7b31abca4-Abstract-Conference.html",
+      "year": 2022,
+      "families": [
+        "chain_of_thought",
+        "few_shot_prompting",
+        "reasoning"
+      ],
+      "reference_repositories": [],
+      "reproduction_packages": [
+        {
+          "package": "chain_of_thought_gsm8k",
+          "lifecycle": "protocol_bound"
+        }
+      ],
+      "priority": 1,
+      "benchmark_ids": [
+        "gsm8k"
+      ],
+      "platform_pressure": [
+        "experimentation/evaluation",
+        "experimentation/study",
+        "model/request",
+        "participant/method",
+        "research/provenance"
+      ],
+      "method_owned": [
+        "eight-shot chain-of-thought exemplar prompt",
+        "single greedy reasoning-path generation"
+      ],
+      "platform_owned": [
+        "benchmark cut identity",
+        "isolated exact-answer evaluation",
+        "measurement evidence",
+        "model invocation",
+        "publication provenance"
+      ],
+      "evidence_refs": []
+    },
+    {
+      "method_id": "chatdev",
+      "title": "ChatDev: Communicative Agents for Software Development",
+      "paper_uri": "https://aclanthology.org/2024.acl-long.810/",
+      "year": 2024,
+      "families": [
+        "communication",
+        "multi_agent",
+        "role_playing",
+        "software_agent"
+      ],
+      "reference_repositories": [
+        "https://github.com/OpenBMB/ChatDev"
+      ],
+      "reproduction_packages": [
+        {
+          "package": "chatdev_v1",
+          "lifecycle": "protocol_bound"
+        }
+      ],
+      "priority": 1,
+      "benchmark_ids": [
+        "srdd"
+      ],
+      "platform_pressure": [
+        "artifact/lineage",
+        "environment/software",
+        "execution/machines",
+        "execution/workflow",
+        "experimentation/study",
+        "model/request",
+        "participant/agent"
+      ],
+      "method_owned": [
+        "bounded composed-phase loops",
+        "eight-stage phase-chain orchestration",
+        "reflection phase semantics",
+        "software-company role specialization",
+        "two-role phase conversation semantics"
+      ],
+      "platform_owned": [
+        "MethodProgram host and journal authority",
+        "RuntimeProgram host and journal authority",
+        "artifact lineage",
+        "evaluation",
+        "nested ResearchMachine execution and child links",
+        "participant/model binding",
+        "software workspace execution"
+      ],
+      "evidence_refs": []
+    },
+    {
+      "method_id": "code-as-policies",
+      "title": "Code as Policies: Language Model Programs for Embodied Control",
+      "paper_uri": "https://arxiv.org/abs/2209.07753",
+      "year": 2023,
+      "families": [
+        "embodied",
+        "hierarchical_code_generation",
+        "language_model_programs",
+        "robot_policy_synthesis"
+      ],
+      "reference_repositories": [
+        "https://github.com/google-research/google-research"
+      ],
+      "reproduction_packages": [
+        {
+          "package": "code_as_policies",
+          "lifecycle": "protocol_bound"
+        }
+      ],
+      "priority": 1,
+      "benchmark_ids": [
+        "robocodegen-37"
+      ],
+      "platform_pressure": [
+        "artifact/lineage",
+        "environment/embodied",
+        "environment/software",
+        "execution/workflow",
+        "experimentation/study",
+        "model/request",
+        "participant/capability"
+      ],
+      "method_owned": [
+        "AST discovery of undefined direct-name function calls",
+        "assignment-aware helper signatures",
+        "fixed/variable LMP namespace semantics",
+        "language-to-policy code generation",
+        "recursive child-helper synthesis",
+        "session-context prompt semantics"
+      ],
+      "platform_owned": [
+        "MethodProgram host and journal authority",
+        "Study/Experiment orchestration",
+        "artifact lineage",
+        "effect evidence and reconciliation",
+        "embodied environment API execution",
+        "isolated generated-program execution",
+        "model invocation and model identity"
+      ],
+      "evidence_refs": []
+    },
+    {
+      "method_id": "cogagent",
+      "title": "CogAgent: A Visual Language Model for GUI Agents",
+      "paper_uri": "https://openaccess.thecvf.com/content/CVPR2024/html/Hong_CogAgent_A_Visual_Language_Model_for_GUI_Agents_CVPR_2024_paper.html",
+      "year": 2024,
+      "families": [
+        "gui_agent",
+        "multimodal",
+        "visual_grounding"
+      ],
+      "reference_repositories": [],
+      "reproduction_packages": [
+        {
+          "package": "cogagent",
+          "lifecycle": "protocol_bound"
+        }
+      ],
+      "priority": 1,
+      "benchmark_ids": [
+        "mind2web"
+      ],
+      "platform_pressure": [
+        "artifact/lineage",
+        "environment/gui",
+        "experimentation/study",
+        "model/request"
+      ],
+      "method_owned": [
+        "candidate-element target selection and operation prediction",
+        "dual-resolution GUI visual representation",
+        "screenshot-only GUI policy"
+      ],
+      "platform_owned": [
+        "Mind2Web task cut and verifier",
+        "measurement and evidence lineage",
+        "model binding and immutable checkpoint identity",
+        "multimodal content references"
+      ],
+      "evidence_refs": []
+    },
+    {
+      "method_id": "contextual-experience-replay",
+      "title": "Contextual Experience Replay for Self-Improvement of Language Agents",
+      "paper_uri": "https://aclanthology.org/2025.acl-long.694/",
+      "year": 2025,
+      "families": [
+        "agentic_workflow",
+        "contextual_experience_replay"
+      ],
+      "reference_repositories": [],
+      "reproduction_packages": [
+        {
+          "package": "cer_acl2025",
+          "lifecycle": "protocol_bound"
+        }
+      ],
+      "priority": 1,
+      "benchmark_ids": [
+        "visualwebarena",
+        "webarena"
+      ],
+      "platform_pressure": [
+        "benchmark",
+        "evidence",
+        "execution/workflow",
+        "experimentation/study",
+        "model/request"
+      ],
+      "method_owned": [
+        "contextual experience replay",
+        "experience-conditioned action context",
+        "successful-and-failed experience retrieval",
+        "token-efficient test-time self-improvement"
+      ],
+      "platform_owned": [
+        "MethodProgram and Machine Journal execution authority",
+        "benchmark cut identity",
+        "experiment and measurement orchestration",
+        "model/provider transport",
+        "run evidence and provenance"
+      ],
+      "evidence_refs": []
+    },
+    {
+      "method_id": "crossha_cvpr2026",
+      "title": "Training One Model to Master Cross-Level Agentic Actions via Reinforcement Learning",
+      "paper_uri": "https://openaccess.thecvf.com/content/CVPR2026/html/He_Training_One_Model_to_Master_Cross-Level_Agentic_Actions_via_Reinforcement_CVPR_2026_paper.html",
+      "year": 2026,
+      "families": [
+        "heterogeneous-actions",
+        "long-horizon",
+        "minecraft",
+        "open-world-agent",
+        "reinforcement-learning"
+      ],
+      "reference_repositories": [
+        "https://github.com/CraftJarvis/OpenHA"
+      ],
+      "reproduction_packages": [
+        {
+          "package": "crossha_cvpr2026",
+          "lifecycle": "protocol_bound"
+        }
+      ],
+      "priority": 1,
+      "benchmark_ids": [
+        "minecraft-openha"
+      ],
+      "platform_pressure": [
+        "benchmark",
+        "evidence",
+        "execution/workflow",
+        "experimentation/study",
+        "memory",
+        "model/request",
+        "participant"
+      ],
+      "method_owned": [
+        "Choose the most suitable action interface and granularity for the current step.",
+        "Collect multi-turn task reward used by Group Relative Policy Optimization.",
+        "Execute the human-like mouse/keyboard interaction in Minecraft 1.16.5.",
+        "Generate a motion-, grounding-, or text-level action under the selected interface.",
+        "Observe the Minecraft RGB stream, task instruction and recent trajectory context without privileged state.",
+        "Update the unified policy with multi-turn GRPO while preserving heterogeneous action switching."
+      ],
+      "platform_owned": [
+        "MethodProgram execution and Machine Journal truth",
+        "Study/Experiment orchestration and measurement artifacts",
+        "content-addressed benchmark task identity",
+        "provider-independent model/tool dispatch and receipts",
+        "run/evidence provenance and replay"
+      ],
+      "evidence_refs": []
+    },
+    {
+      "method_id": "d3d_vlp_cvpr2026",
+      "title": "D3D-VLP: Dynamic 3D Vision-Language-Planning Model for Embodied Grounding and Navigation",
+      "paper_uri": "https://openaccess.thecvf.com/content/CVPR2026/html/Wang_D3D-VLP_Dynamic_3D_Vision-Language-Planning_Model_for_Embodied_Grounding_and_Navigation_CVPR_2026_paper.html",
+      "year": 2026,
+      "families": [
+        "3d-reasoning",
+        "dynamic-replanning",
+        "embodied",
+        "grounding",
+        "navigation",
+        "planning"
+      ],
+      "reference_repositories": [
+        "https://github.com/MrZihan/D3D-VLP"
+      ],
+      "reproduction_packages": [
+        {
+          "package": "d3d_vlp_cvpr2026",
+          "lifecycle": "protocol_bound"
+        }
+      ],
+      "priority": 1,
+      "benchmark_ids": [
+        "hm3d-ovon",
+        "navrag-ce",
+        "r2r-ce",
+        "reverie-ce",
+        "sg3d"
+      ],
+      "platform_pressure": [
+        "benchmark",
+        "evidence",
+        "execution/workflow",
+        "experimentation/study",
+        "memory",
+        "model/request",
+        "perception"
+      ],
+      "method_owned": [
+        "Execute navigation actions toward the grounded target.",
+        "Generate a dynamic 3D chain-of-thought spanning planning, grounding, navigation and question answering.",
+        "Generate or revise the plan using current 3D memory and grounding feedback.",
+        "Ground the next target or detect that the current target is missing.",
+        "Update multi-level 3D memory with observations, trajectory history, grounded targets and prior plans.",
+        "Use blocked-plan or missing-target feedback to trigger another reasoning cycle."
+      ],
+      "platform_owned": [
+        "MethodProgram execution and Machine Journal truth",
+        "Study/Experiment orchestration and measurement artifacts",
+        "content-addressed benchmark task identity",
+        "provider-independent model/tool dispatch and receipts",
+        "run/evidence provenance and replay"
+      ],
+      "evidence_refs": []
+    },
+    {
+      "method_id": "dars",
+      "title": "DARS: Dynamic Action Re-Sampling to Enhance Coding Agent Performance by Adaptive Tree Traversal",
+      "paper_uri": "https://aclanthology.org/2025.acl-long.973/",
+      "year": 2025,
+      "families": [
+        "agentic_workflow",
+        "dars"
+      ],
+      "reference_repositories": [],
+      "reproduction_packages": [
+        {
+          "package": "dars_acl2025",
+          "lifecycle": "protocol_bound"
+        }
+      ],
+      "priority": 1,
+      "benchmark_ids": [
+        "swe-bench"
+      ],
+      "platform_pressure": [
+        "benchmark",
+        "evidence",
+        "execution/workflow",
+        "experimentation/study",
+        "model/request"
+      ],
+      "method_owned": [
+        "adaptive coding-agent tree traversal",
+        "dynamic action re-sampling",
+        "feedback-conditioned branch selection",
+        "inference-time compute scaling"
+      ],
+      "platform_owned": [
+        "MethodProgram and Machine Journal execution authority",
+        "benchmark cut identity",
+        "experiment and measurement orchestration",
+        "model/provider transport",
+        "run evidence and provenance"
+      ],
+      "evidence_refs": []
+    },
+    {
+      "method_id": "dejavu_cvpr2026",
+      "title": "Dejavu: Towards Experience Feedback Learning for Embodied Intelligence",
+      "paper_uri": "https://openaccess.thecvf.com/content/CVPR2026/html/Wu_Dejavu_Towards_Experience_Feedback_Learning_for_Embodied_Intelligence_CVPR_2026_paper.html",
+      "year": 2026,
+      "families": [
+        "experience-memory",
+        "post-deployment-learning",
+        "reinforcement-learning",
+        "vision-language-action"
+      ],
+      "reference_repositories": [],
+      "reproduction_packages": [
+        {
+          "package": "dejavu_cvpr2026",
+          "lifecycle": "protocol_bound"
+        }
+      ],
+      "priority": 1,
+      "benchmark_ids": [
+        "libero"
+      ],
+      "platform_pressure": [
+        "benchmark",
+        "evidence",
+        "execution/workflow",
+        "experimentation/study",
+        "memory",
+        "model/request"
+      ],
+      "method_owned": [
+        "Append successful trajectories and prioritize shorter successful experiences.",
+        "Encode current visual-language state while keeping the base VLA frozen.",
+        "Execute the corrected action under the current rollout horizon.",
+        "Predict a retrieval-conditioned residual correction to the frozen VLA action.",
+        "Retrieve a contextually successful prior transition from the live experience bank.",
+        "Train the residual controller with task return plus semantic-similarity shaping."
+      ],
+      "platform_owned": [
+        "MethodProgram execution and Machine Journal truth",
+        "Study/Experiment orchestration and measurement artifacts",
+        "content-addressed benchmark task identity",
+        "provider-independent model/tool dispatch and receipts",
+        "run/evidence provenance and replay"
+      ],
+      "evidence_refs": []
+    },
+    {
+      "method_id": "deps-minecraft",
+      "title": "Describe, Explain, Plan and Select: Interactive Planning with Large Language Models Enables Open-World Multi-Task Agents",
+      "paper_uri": "https://proceedings.neurips.cc/paper_files/paper/2023/hash/6b8dfb8c0c12e6fafc6c256cb08a5ca7-Abstract-Conference.html",
+      "year": 2023,
+      "families": [
+        "failure_explanation",
+        "goal_selection",
+        "hierarchical_control",
+        "interactive_planning",
+        "minecraft"
+      ],
+      "reference_repositories": [
+        "https://github.com/CraftJarvis/MC-Planner"
+      ],
+      "reproduction_packages": [
+        {
+          "package": "deps_minecraft",
+          "lifecycle": "protocol_bound"
+        }
+      ],
+      "priority": 1,
+      "benchmark_ids": [
+        "deps-minecraft-70"
+      ],
+      "platform_pressure": [
+        "environment/minecraft",
+        "evaluation",
+        "execution/workflow",
+        "experimentation/study",
+        "model/request",
+        "participant/agent"
+      ],
+      "method_owned": [
+        "Describe-Explain-Plan-Select interaction order",
+        "LLM planner dialogue state",
+        "craft/smelt/mine replanning triggers",
+        "failure-conditioned explanation and replanning",
+        "learned horizon-based sub-goal selection",
+        "replanning round boundary"
+      ],
+      "platform_owned": [
+        "MethodProgram host and journal authority",
+        "Minecraft environment lifecycle",
+        "Study/Experiment orchestration",
+        "effect evidence and reconciliation",
+        "goal-conditioned controller capability execution",
+        "model invocation and model identity"
+      ],
+      "evidence_refs": []
+    },
+    {
+      "method_id": "drvideo",
+      "title": "DrVideo: Document Retrieval Based Long Video Understanding",
+      "paper_uri": "https://openaccess.thecvf.com/content/CVPR2025/html/Ma_DrVideo_Document_Retrieval_Based_Long_Video_Understanding_CVPR_2025_paper.html",
+      "year": 2025,
+      "families": [
+        "document_retrieval",
+        "iterative_video_agent",
+        "long_video_understanding",
+        "question_conditioned_augmentation"
+      ],
+      "reference_repositories": [
+        "https://github.com/Upper9527/DrVideo"
+      ],
+      "reproduction_packages": [
+        {
+          "package": "drvideo",
+          "lifecycle": "protocol_bound"
+        }
+      ],
+      "priority": 1,
+      "benchmark_ids": [
+        "egoschema"
+      ],
+      "platform_pressure": [
+        "benchmark/video",
+        "data/semantic-similarity",
+        "execution/machines/method",
+        "experimentation/study",
+        "model/multimodal"
+      ],
+      "method_owned": [
+        "final chain-of-thought answer generation",
+        "interaction-agent adaptive frame/type selection",
+        "planning-agent sufficiency judgement",
+        "question-conditioned key-frame augmentation",
+        "question-to-document semantic frame retrieval",
+        "two-round document augmentation loop",
+        "video-to-text long-document construction"
+      ],
+      "platform_owned": [
+        "MethodMachine journal authority",
+        "artifact/evidence lineage",
+        "benchmark cut identity",
+        "multimodal model transport",
+        "semantic-similarity capability execution",
+        "study and evaluation orchestration"
+      ],
+      "evidence_refs": []
+    },
+    {
+      "method_id": "eaglet_acl2026",
+      "title": "A Goal Without a Plan Is Just a Wish: Efficient and Effective Global Planner Training for Long-Horizon Agent Tasks",
+      "paper_uri": "https://aclanthology.org/2026.acl-long.597/",
+      "year": 2026,
+      "families": [
+        "agent-training",
+        "long-horizon",
+        "planning",
+        "reinforcement-learning"
+      ],
+      "reference_repositories": [],
+      "reproduction_packages": [
+        {
+          "package": "eaglet_acl2026",
+          "lifecycle": "protocol_bound"
+        }
+      ],
+      "priority": 1,
+      "benchmark_ids": [
+        "alfworld",
+        "scienceworld",
+        "webshop"
+      ],
+      "platform_pressure": [
+        "benchmark",
+        "evidence",
+        "execution/workflow",
+        "experimentation/study",
+        "model/request"
+      ],
+      "method_owned": [
+        "Apply homologous consensus filtering to retain high-quality plans.",
+        "Fine-tune the planner on filtered plans for cold start.",
+        "Generate a global plan and execute it with the downstream executor agent.",
+        "Optimize with executor capability-gain reward without a learned reward model.",
+        "Synthesize candidate global plans with the teacher LLM."
+      ],
+      "platform_owned": [
+        "MethodProgram execution and Machine Journal truth",
+        "Study/Experiment orchestration and measurement artifacts",
+        "content-addressed benchmark task identity",
+        "provider-independent model/tool dispatch and receipts",
+        "run/evidence provenance and replay"
+      ],
+      "evidence_refs": []
+    },
+    {
+      "method_id": "echotrail_gui_cvprf2026",
+      "title": "EchoTrail-GUI: Building Actionable Memory for GUI Agents via Critic-Guided Self-Exploration",
+      "paper_uri": "https://openaccess.thecvf.com/content/CVPR2026F/html/Li_EchoTrail-GUI_Building_Actionable_Memory_for_GUI_Agents_via_Critic-Guided_Self-Exploration_CVPRF_2026_paper.html",
+      "year": 2026,
+      "families": [
+        "gui-agent",
+        "memory",
+        "multimodal",
+        "self-exploration"
+      ],
+      "reference_repositories": [],
+      "reproduction_packages": [
+        {
+          "package": "echotrail_gui_cvprf2026",
+          "lifecycle": "protocol_bound"
+        }
+      ],
+      "priority": 1,
+      "benchmark_ids": [
+        "androidlab",
+        "androidworld"
+      ],
+      "platform_pressure": [
+        "benchmark",
+        "evidence",
+        "execution/workflow",
+        "experimentation/study",
+        "model/request"
+      ],
+      "method_owned": [
+        "Autonomously explore GUI tasks and collect candidate successful trajectories.",
+        "Inject retrieved trajectories as in-context guidance and execute the task.",
+        "Retrieve relevant prior trajectories for a new GUI task.",
+        "Store critic-validated successful trajectories as actionable memories.",
+        "Validate explored trajectories with the reward/critic model."
+      ],
+      "platform_owned": [
+        "MethodProgram execution and Machine Journal truth",
+        "Study/Experiment orchestration and measurement artifacts",
+        "content-addressed benchmark task identity",
+        "provider-independent model/tool dispatch and receipts",
+        "run/evidence provenance and replay"
+      ],
+      "evidence_refs": []
+    },
+    {
+      "method_id": "ego2web_cvpr2026",
+      "title": "Ego2Web: A Web Agent Benchmark Grounded in Egocentric Videos",
+      "paper_uri": "https://openaccess.thecvf.com/content/CVPR2026/html/Yu_Ego2Web_A_Web_Agent_Benchmark_Grounded_in_Egocentric_Videos_CVPR_2026_paper.html",
+      "year": 2026,
+      "families": [
+        "benchmark",
+        "egocentric-video",
+        "multimodal",
+        "web-agent"
+      ],
+      "reference_repositories": [],
+      "reproduction_packages": [
+        {
+          "package": "ego2web_cvpr2026",
+          "lifecycle": "protocol_bound"
+        }
+      ],
+      "priority": 1,
+      "benchmark_ids": [
+        "ego2web"
+      ],
+      "platform_pressure": [
+        "benchmark",
+        "evidence",
+        "execution/workflow",
+        "experimentation/study",
+        "model/request"
+      ],
+      "method_owned": [
+        "Execute web actions under the frozen benchmark environment.",
+        "Extract task-relevant evidence from first-person video.",
+        "Ground the online task in observed physical-world evidence.",
+        "Plan the required online workflow.",
+        "Score completion with Ego2WebJudge and retain judge evidence."
+      ],
+      "platform_owned": [
+        "MethodProgram execution and Machine Journal truth",
+        "Study/Experiment orchestration and measurement artifacts",
+        "content-addressed benchmark task identity",
+        "provider-independent model/tool dispatch and receipts",
+        "run/evidence provenance and replay"
+      ],
+      "evidence_refs": []
+    },
+    {
+      "method_id": "embodied-videoagent",
+      "title": "Embodied VideoAgent: Persistent Memory from Egocentric Videos and Embodied Sensors Enables Dynamic Scene Understanding",
+      "paper_uri": "https://openaccess.thecvf.com/content/ICCV2025/html/Fan_Embodied_VideoAgent_Persistent_Memory_from_Egocentric_Videos_and_Embodied_Sensors_ICCV_2025_paper.html",
+      "year": 2025,
+      "families": [
+        "agentic_workflow",
+        "embodied_videoagent"
+      ],
+      "reference_repositories": [],
+      "reproduction_packages": [
+        {
+          "package": "embodied_videoagent_iccv2025",
+          "lifecycle": "protocol_bound"
+        }
+      ],
+      "priority": 1,
+      "benchmark_ids": [
+        "ego4d-vq3d",
+        "envqa",
+        "open-eqa"
+      ],
+      "platform_pressure": [
+        "benchmark",
+        "evidence",
+        "execution/workflow",
+        "experimentation/study",
+        "model/request"
+      ],
+      "method_owned": [
+        "VLM-triggered dynamic object-state update",
+        "depth-and-pose object association",
+        "embodied memory retrieval for reasoning and planning",
+        "persistent object-centric 3D memory"
+      ],
+      "platform_owned": [
+        "MethodProgram and Machine Journal execution authority",
+        "benchmark cut identity",
+        "experiment and measurement orchestration",
+        "model/provider transport",
+        "run evidence and provenance"
+      ],
+      "evidence_refs": []
+    },
+    {
+      "method_id": "exact",
+      "title": "ExACT: Teaching AI Agents to Explore with Reflective-MCTS and Exploratory Learning",
+      "paper_uri": "https://arxiv.org/abs/2410.02052",
+      "year": 2024,
+      "families": [
+        "learning",
+        "reflection",
+        "tree_search",
+        "web_agent"
+      ],
+      "reference_repositories": [
+        "https://github.com/microsoft/ExACT"
+      ],
+      "reproduction_packages": [
+        {
+          "package": "exact_vwa",
+          "lifecycle": "protocol_bound"
+        }
+      ],
+      "priority": 2,
+      "benchmark_ids": [
+        "osworld",
+        "visualwebarena"
+      ],
+      "platform_pressure": [
+        "environment/runtime",
+        "environment/web",
+        "experimentation/study",
+        "model/assignment",
+        "model/request"
+      ],
+      "method_owned": [
+        "Reflective-MCTS",
+        "contrastive reflection",
+        "exploratory learning policy",
+        "multi-agent debate value function"
+      ],
+      "platform_owned": [
+        "benchmark cut identity",
+        "environment lifecycle/reset",
+        "evidence and metrics",
+        "model role binding"
+      ],
+      "evidence_refs": []
+    },
+    {
+      "method_id": "flash-vstream",
+      "title": "Flash-VStream: Efficient Real-Time Understanding for Long Video Streams",
+      "paper_uri": "https://openaccess.thecvf.com/content/ICCV2025/html/Zhang_Flash-VStream_Efficient_Real-Time_Understanding_for_Long_Video_Streams_ICCV_2025_paper.html",
+      "year": 2025,
+      "families": [
+        "dual_flash_memory",
+        "long_video_understanding",
+        "multimodal_memory",
+        "streaming_video_memory"
+      ],
+      "reference_repositories": [
+        "https://github.com/IVGSZ/Flash-VStream"
+      ],
+      "reproduction_packages": [
+        {
+          "package": "flash_vstream_memory",
+          "lifecycle": "protocol_bound"
+        }
+      ],
+      "priority": 1,
+      "benchmark_ids": [
+        "egoschema"
+      ],
+      "platform_pressure": [
+        "artifact/tensor",
+        "benchmark/video",
+        "execution/machines/memory",
+        "experimentation/study",
+        "model/multimodal"
+      ],
+      "method_owned": [
+        "augmentation conditioned on context-memory centroids",
+        "augmentation-before-context memory composition",
+        "augmentation-memory high-resolution retrieval",
+        "context-memory temporal compression",
+        "memory-aware rotary-position semantics"
+      ],
+      "platform_owned": [
+        "MemoryMachine journal authority",
+        "benchmark cut identity",
+        "immutable tensor content references",
+        "multimodal model transport",
+        "study and evaluation orchestration"
+      ],
+      "evidence_refs": []
+    },
+    {
+      "method_id": "flow-modularized-agentic-workflow",
+      "title": "Flow: Modularized Agentic Workflow Automation",
+      "paper_uri": "https://proceedings.iclr.cc/paper_files/paper/2025/hash/ba84da6921f3040b74ee163aa7451f53-Abstract-Conference.html",
+      "year": 2025,
+      "families": [
+        "aov_graph",
+        "dynamic_workflow",
+        "multi_agent",
+        "parallel_scheduling",
+        "workflow_refinement"
+      ],
+      "reference_repositories": [
+        "https://github.com/tmllab/2025_ICLR_FLOW"
+      ],
+      "reproduction_packages": [
+        {
+          "package": "flow_modularized_agentic_workflow",
+          "lifecycle": "protocol_bound"
+        }
+      ],
+      "priority": 1,
+      "benchmark_ids": [
+        "flow-practical-tasks"
+      ],
+      "platform_pressure": [
+        "artifact/lineage",
+        "execution/research_program",
+        "execution/scheduling",
+        "execution/workflow",
+        "experimentation/study",
+        "participant/agent"
+      ],
+      "method_owned": [
+        "AOV workflow representation",
+        "dependency-complexity and parallelism candidate selection",
+        "dynamic subtask allocation",
+        "history-conditioned workflow refinement",
+        "lazy wait-for-active-tasks refinement strategy",
+        "subtask completion validation"
+      ],
+      "platform_owned": [
+        "MethodProgram execution",
+        "checkpoint and replay",
+        "concurrent child-batch mechanics",
+        "evidence and artifact lineage",
+        "experiment compilation",
+        "journal authority",
+        "model invocation",
+        "nested child ResearchMachine execution"
+      ],
+      "evidence_refs": []
+    },
+    {
+      "method_id": "foreact_cvpr2026",
+      "title": "ForeAct: Steering Your VLA with Efficient Visual Foresight Planning",
+      "paper_uri": "https://openaccess.thecvf.com/content/CVPR2026/html/Zhang_ForeAct_Steering_Your_VLA_with_Efficient_Visual_Foresight_Planning_CVPR_2026_paper.html",
+      "year": 2026,
+      "families": [
+        "planning",
+        "robotic-manipulation",
+        "vision-language-action",
+        "visual-foresight",
+        "world-model"
+      ],
+      "reference_repositories": [
+        "https://github.com/mit-han-lab/foreact"
+      ],
+      "reproduction_packages": [
+        {
+          "package": "foreact_cvpr2026",
+          "lifecycle": "protocol_bound"
+        }
+      ],
+      "priority": 1,
+      "benchmark_ids": [
+        "foreact-real11"
+      ],
+      "platform_pressure": [
+        "benchmark",
+        "evidence",
+        "execution/workflow",
+        "experimentation/study",
+        "memory",
+        "model/request",
+        "participant"
+      ],
+      "method_owned": [
+        "Attach imagined future observations to the VLA visual context without modifying VLA architecture.",
+        "Encode current multi-view robot observations and the high-level task instruction.",
+        "Generate the predicted future observation conditioned on current vision and the subtask.",
+        "Infer the next semantic subtask description.",
+        "Produce and execute the next visuo-motor action chunk.",
+        "Use the resulting observation to refresh foresight planning for the next step."
+      ],
+      "platform_owned": [
+        "MethodProgram execution and Machine Journal truth",
+        "Study/Experiment orchestration and measurement artifacts",
+        "content-addressed benchmark task identity",
+        "provider-independent model/tool dispatch and receipts",
+        "run/evidence provenance and replay"
+      ],
+      "evidence_refs": []
+    },
+    {
+      "method_id": "gats",
+      "title": "GATS: Graph-Augmented Tree Search with Layered World Models for Efficient Agent Planning",
+      "paper_uri": "https://arxiv.org/abs/2607.08894",
+      "year": 2026,
+      "families": [
+        "synthetic_planning",
+        "tree_search",
+        "world_model"
+      ],
+      "reference_repositories": [
+        "https://github.com/MMWilliams/gats"
+      ],
+      "reproduction_packages": [
+        {
+          "package": "gats",
+          "lifecycle": "protocol_bound"
+        }
+      ],
+      "priority": 1,
+      "benchmark_ids": [
+        "gats-synthetic"
+      ],
+      "platform_pressure": [
+        "artifact/lineage",
+        "experimentation/study"
+      ],
+      "method_owned": [
+        "UCB1 planning semantics",
+        "layered world-model semantics",
+        "stress-test direct-transition search implementation"
+      ],
+      "platform_owned": [
+        "benchmark task freezing",
+        "execution evidence",
+        "seed schedule identity",
+        "source-lane provenance",
+        "study expansion"
+      ],
+      "evidence_refs": []
+    },
+    {
+      "method_id": "generative-agents",
+      "title": "Generative Agents: Interactive Simulacra of Human Behavior",
+      "paper_uri": "https://uist.acm.org/2023/proceedings/",
+      "year": 2023,
+      "families": [
+        "memory",
+        "multi_agent",
+        "planning",
+        "reflection"
+      ],
+      "reference_repositories": [
+        "https://github.com/joonspk-research/generative_agents"
+      ],
+      "reproduction_packages": [
+        {
+          "package": "generative_agents_memory",
+          "lifecycle": "protocol_bound"
+        }
+      ],
+      "priority": 2,
+      "benchmark_ids": [
+        "generative-agents-smallville"
+      ],
+      "platform_pressure": [
+        "data/projection",
+        "data/query",
+        "data/state",
+        "execution/workflow",
+        "experimentation/study",
+        "observability/telemetry",
+        "participant/agent"
+      ],
+      "method_owned": [
+        "behavior planning semantics",
+        "memory stream scoring",
+        "reflection synthesis"
+      ],
+      "platform_owned": [
+        "durable state",
+        "multi-agent execution",
+        "semantic projection and query",
+        "study matrix",
+        "telemetry"
+      ],
+      "evidence_refs": []
+    },
+    {
+      "method_id": "gorilla",
+      "title": "Gorilla: Large Language Model Connected with Massive APIs",
+      "paper_uri": "https://arxiv.org/abs/2305.15334",
+      "year": 2023,
+      "families": [
+        "api_agent",
+        "retrieval",
+        "tool_use",
+        "training"
+      ],
+      "reference_repositories": [
+        "https://github.com/ShishirPatil/gorilla"
+      ],
+      "reproduction_packages": [
+        {
+          "package": "gorilla_apibench",
+          "lifecycle": "catalogued"
+        }
+      ],
+      "priority": 1,
+      "benchmark_ids": [],
+      "platform_pressure": [
+        "data/query",
+        "execution",
+        "experimentation/study",
+        "model/request",
+        "observability/telemetry",
+        "participant/capability"
+      ],
+      "method_owned": [
+        "API invocation generation policy",
+        "retrieval-conditioned API selection",
+        "retriever-aware training semantics"
+      ],
+      "platform_owned": [
+        "bounded execution",
+        "capability descriptors",
+        "evidence and evaluation",
+        "model invocation",
+        "query transport"
+      ],
+      "evidence_refs": []
+    },
+    {
+      "method_id": "hats_cvpr2026",
+      "title": "HATS: Hardness-Aware Trajectory Synthesis for GUI Agents",
+      "paper_uri": "https://openaccess.thecvf.com/content/CVPR2026/html/Shao_HATS_Hardness-Aware_Trajectory_Synthesis_for_GUI_Agents_CVPR_2026_paper.html",
+      "year": 2026,
+      "families": [
+        "data-generation",
+        "gui-agent",
+        "hardness-aware-exploration",
+        "mcts",
+        "trajectory-synthesis"
+      ],
+      "reference_repositories": [
+        "https://github.com/JiuTian-VL/HATS"
+      ],
+      "reproduction_packages": [
+        {
+          "package": "hats_cvpr2026",
+          "lifecycle": "protocol_bound"
+        }
+      ],
+      "priority": 1,
+      "benchmark_ids": [
+        "androidworld",
+        "webarena"
+      ],
+      "platform_pressure": [
+        "benchmark",
+        "evidence",
+        "execution/workflow",
+        "experimentation/study",
+        "model/request",
+        "perception"
+      ],
+      "method_owned": [
+        "Estimate semantic ambiguity and under-representation of candidate GUI actions.",
+        "Generate an instruction from the explored action trajectory.",
+        "Inject missing contextual cues until alignment reaches the paper threshold, then admit the trajectory.",
+        "Measure action-level reconstruction recall between instruction replay and source trajectory.",
+        "Replay the synthesized instruction in the environment to reconstruct the trajectory.",
+        "Select and expand GUI states with hardness-driven UCB Monte Carlo Tree Search."
+      ],
+      "platform_owned": [
+        "MethodProgram execution and Machine Journal truth",
+        "Study/Experiment orchestration and measurement artifacts",
+        "content-addressed benchmark task identity",
+        "provider-independent model/tool dispatch and receipts",
+        "run/evidence provenance and replay"
+      ],
+      "evidence_refs": []
+    },
+    {
+      "method_id": "hugginggpt",
+      "title": "HuggingGPT: Solving AI Tasks with ChatGPT and its Friends in Hugging Face",
+      "paper_uri": "https://proceedings.neurips.cc/paper_files/paper/2023/hash/77c33e6a367922d003ff102ffb92b658-Abstract-Conference.html",
+      "year": 2023,
+      "families": [
+        "model_orchestration",
+        "multimodal",
+        "planning",
+        "tool_use"
+      ],
+      "reference_repositories": [
+        "https://github.com/microsoft/JARVIS"
+      ],
+      "reproduction_packages": [
+        {
+          "package": "hugginggpt",
+          "lifecycle": "protocol_bound"
+        }
+      ],
+      "priority": 1,
+      "benchmark_ids": [
+        "hugginggpt-paper-tasks"
+      ],
+      "platform_pressure": [
+        "artifact/lineage",
+        "execution",
+        "model/request",
+        "participant/capability",
+        "participant/method"
+      ],
+      "method_owned": [
+        "dependency-aware execution policy",
+        "expert-model selection policy",
+        "response aggregation policy",
+        "task decomposition policy"
+      ],
+      "platform_owned": [
+        "artifact references",
+        "evidence and telemetry",
+        "method graph execution",
+        "model and capability invocation",
+        "parallel scheduling"
+      ],
+      "evidence_refs": []
+    },
+    {
+      "method_id": "implement_acl2026",
+      "title": "Model-Based Imaginative Planning for Embodied Agents",
+      "paper_uri": "https://aclanthology.org/2026.acl-long.827/",
+      "year": 2026,
+      "families": [
+        "embodied",
+        "planning",
+        "test-time-scaling",
+        "world-model"
+      ],
+      "reference_repositories": [],
+      "reproduction_packages": [
+        {
+          "package": "implement_acl2026",
+          "lifecycle": "protocol_bound"
+        }
+      ],
+      "priority": 1,
+      "benchmark_ids": [
+        "alfworld"
+      ],
+      "platform_pressure": [
+        "benchmark",
+        "evidence",
+        "execution/workflow",
+        "experimentation/study",
+        "model/request"
+      ],
+      "method_owned": [
+        "Condition the world model on new interaction history for unseen-environment adaptation.",
+        "Convert raw visual observations into object-centric symbolic states.",
+        "Execute the selected action in ALFWorld.",
+        "Predict Monte Carlo future states for candidate actions using temperature sampling.",
+        "Propose candidate actions from current symbolic state and task goal.",
+        "Rank imagined trajectories and refine the decision."
+      ],
+      "platform_owned": [
+        "MethodProgram execution and Machine Journal truth",
+        "Study/Experiment orchestration and measurement artifacts",
+        "content-addressed benchmark task identity",
+        "provider-independent model/tool dispatch and receipts",
+        "run/evidence provenance and replay"
+      ],
+      "evidence_refs": []
+    },
+    {
+      "method_id": "ishift_cvpr2026",
+      "title": "iSHIFT: Lightweight Slow-Fast GUI Agent with Adaptive Perception",
+      "paper_uri": "https://openaccess.thecvf.com/content/CVPR2026/html/Mehrotra_iSHIFT_Lightweight_Slow-Fast_GUI_Agent_with_Adaptive_Perception_CVPR_2026_paper.html",
+      "year": 2026,
+      "families": [
+        "adaptive-perception",
+        "efficient-agent",
+        "gui-agent",
+        "latent-thinking",
+        "slow-fast-reasoning"
+      ],
+      "reference_repositories": [
+        "https://github.com/SarthakM320/iSHIFT"
+      ],
+      "reproduction_packages": [
+        {
+          "package": "ishift_cvpr2026",
+          "lifecycle": "protocol_bound"
+        }
+      ],
+      "priority": 1,
+      "benchmark_ids": [
+        "aitw",
+        "androidcontrol",
+        "gui-odyssey",
+        "guiact"
+      ],
+      "platform_pressure": [
+        "benchmark",
+        "evidence",
+        "execution/workflow",
+        "experimentation/study",
+        "model/request",
+        "perception"
+      ],
+      "method_owned": [
+        "Activate the DINOv2-based Visual Perception Module for object-centered features when the slow path is selected.",
+        "Decide whether the current action needs fast global perception or slow fine-grained grounding.",
+        "Ground the target element and produce the GUI action.",
+        "Observe the resulting interface state and continue with adaptive reasoning depth.",
+        "Perform compact implicit deliberation with latent thinking tokens instead of explicit chain-of-thought."
+      ],
+      "platform_owned": [
+        "MethodProgram execution and Machine Journal truth",
+        "Study/Experiment orchestration and measurement artifacts",
+        "content-addressed benchmark task identity",
+        "provider-independent model/tool dispatch and receipts",
+        "run/evidence provenance and replay"
+      ],
+      "evidence_refs": []
+    },
+    {
+      "method_id": "jarvis1",
+      "title": "JARVIS-1: Open-World Multi-Task Agents With Memory-Augmented Multimodal Language Models",
+      "paper_uri": "https://ieeexplore.ieee.org/document/10778628/",
+      "year": 2025,
+      "families": [
+        "hierarchical_control",
+        "lifelong_learning",
+        "minecraft_agent",
+        "multimodal_memory"
+      ],
+      "reference_repositories": [
+        "https://github.com/CraftJarvis/JARVIS-1"
+      ],
+      "reproduction_packages": [
+        {
+          "package": "jarvis1_minecraft",
+          "lifecycle": "protocol_bound"
+        }
+      ],
+      "priority": 1,
+      "benchmark_ids": [
+        "jarvis1-offline-185"
+      ],
+      "platform_pressure": [
+        "artifact/lineage",
+        "environment/embodied",
+        "environment/minecraft",
+        "execution/machines/memory",
+        "execution/workflow",
+        "model/multimodal",
+        "participant/capability"
+      ],
+      "method_owned": [
+        "goal-conditioned controller dispatch",
+        "lifelong experience accumulation semantics",
+        "memory-conditioned high-level planning",
+        "multimodal-experience retrieval for planning",
+        "skill selection from agent state"
+      ],
+      "platform_owned": [
+        "MemoryMachine journal authority",
+        "MethodProgram and child-machine composition",
+        "Minecraft/embodied environment execution",
+        "content-addressed multimodal artifacts",
+        "controller capability execution",
+        "model transport and implementation identity"
+      ],
+      "evidence_refs": []
+    },
+    {
+      "method_id": "lats",
+      "title": "Language Agent Tree Search Unifies Reasoning, Acting, and Planning in Language Models",
+      "paper_uri": "https://proceedings.mlr.press/v235/zhou24r.html",
+      "year": 2024,
+      "families": [
+        "reflection",
+        "tree_search",
+        "web_agent"
+      ],
+      "reference_repositories": [
+        "https://github.com/andyz245/LanguageAgentTreeSearch"
+      ],
+      "reproduction_packages": [
+        {
+          "package": "lats_webshop",
+          "lifecycle": "protocol_bound"
+        }
+      ],
+      "priority": 1,
+      "benchmark_ids": [
+        "webshop"
+      ],
+      "platform_pressure": [
+        "environment/runtime",
+        "environment/web",
+        "experimentation/study",
+        "model/assignment",
+        "model/request"
+      ],
+      "method_owned": [
+        "LM value estimation",
+        "UCT tree policy",
+        "branch search semantics",
+        "failed-trajectory reflection policy"
+      ],
+      "platform_owned": [
+        "benchmark cut identity",
+        "branchable environment lifecycle",
+        "named model-role binding",
+        "study execution and evidence"
+      ],
+      "evidence_refs": []
+    },
+    {
+      "method_id": "lits",
+      "title": "LiTS: A Modular Framework for LLM Tree Search",
+      "paper_uri": "https://arxiv.org/abs/2603.00631",
+      "year": 2026,
+      "families": [
+        "modular_search",
+        "reasoning",
+        "tool_use",
+        "tree_search"
+      ],
+      "reference_repositories": [
+        "https://github.com/xinzhel/lits-llm"
+      ],
+      "reproduction_packages": [
+        {
+          "package": "lits_math500",
+          "lifecycle": "protocol_bound"
+        }
+      ],
+      "priority": 1,
+      "benchmark_ids": [
+        "math500"
+      ],
+      "platform_pressure": [
+        "execution",
+        "experimentation/study",
+        "model/assignment",
+        "model/request",
+        "observability/telemetry"
+      ],
+      "method_owned": [
+        "MCTS/BFS search semantics",
+        "Policy/Transition/RewardModel decomposition",
+        "component registration and composition policy"
+      ],
+      "platform_owned": [
+        "benchmark cut identity",
+        "bounded method execution",
+        "measurements and evidence",
+        "named model-role binding"
+      ],
+      "evidence_refs": []
+    },
+    {
+      "method_id": "live-swe-agent",
+      "title": "Live-SWE-agent: Can Software Engineering Agents Self-Evolve on the Fly?",
+      "paper_uri": "https://arxiv.org/abs/2511.13646",
+      "year": 2025,
+      "families": [
+        "runtime_adaptation",
+        "self_evolution",
+        "software_agent"
+      ],
+      "reference_repositories": [
+        "https://github.com/OpenAutoCoder/live-swe-agent"
+      ],
+      "reproduction_packages": [
+        {
+          "package": "live_swe_agent",
+          "lifecycle": "protocol_bound"
+        }
+      ],
+      "priority": 1,
+      "benchmark_ids": [
+        "swe-bench"
+      ],
+      "platform_pressure": [
+        "artifact/lineage",
+        "environment/software",
+        "execution",
+        "experimentation/workbench",
+        "participant/agent",
+        "reliability/recovery"
+      ],
+      "method_owned": [
+        "online scaffold evolution policy",
+        "runtime self-modification semantics"
+      ],
+      "platform_owned": [
+        "evaluation",
+        "isolated execution",
+        "lineage",
+        "rollback and recovery",
+        "software environment"
+      ],
+      "evidence_refs": []
+    },
+    {
+      "method_id": "lmee_cvpr2026",
+      "title": "Explore with Long-term Memory: A Benchmark and Multimodal LLM-based Reinforcement Learning Framework for Embodied Exploration",
+      "paper_uri": "https://openaccess.thecvf.com/content/CVPR2026/html/Wang_Explore_with_Long-term_Memory_A_Benchmark_and_Multimodal_LLM-based_Reinforcement_CVPR_2026_paper.html",
+      "year": 2026,
+      "families": [
+        "embodied",
+        "exploration",
+        "long-term-memory",
+        "multimodal",
+        "reinforcement-learning"
+      ],
+      "reference_repositories": [
+        "https://github.com/wangsen99/LMEE"
+      ],
+      "reproduction_packages": [
+        {
+          "package": "lmee_cvpr2026",
+          "lifecycle": "protocol_bound"
+        }
+      ],
+      "priority": 1,
+      "benchmark_ids": [
+        "lmee-bench"
+      ],
+      "platform_pressure": [
+        "benchmark",
+        "evidence",
+        "execution/workflow",
+        "experimentation/study",
+        "memory",
+        "model/request"
+      ],
+      "method_owned": [
+        "Answer memory-based questions when sufficient evidence exists or continue exploration.",
+        "Append and consolidate new visual experience into long-term episodic memory.",
+        "Execute the selected embodied exploration action.",
+        "Observe the embodied scene and current long-term episodic memory.",
+        "Plan exploration toward current navigation and memory-QA objectives.",
+        "Retrieve task-relevant historical visual episodes and memory-based evidence."
+      ],
+      "platform_owned": [
+        "MethodProgram execution and Machine Journal truth",
+        "Study/Experiment orchestration and measurement artifacts",
+        "content-addressed benchmark task identity",
+        "provider-independent model/tool dispatch and receipts",
+        "run/evidence provenance and replay"
+      ],
+      "evidence_refs": []
+    },
+    {
+      "method_id": "lvagent",
+      "title": "LVAgent: Long Video Understanding by Multi-Round Dynamical Collaboration of MLLM Agents",
+      "paper_uri": "https://openaccess.thecvf.com/content/ICCV2025/html/Chen_LVAgent_Long_Video_Understanding_by_Multi-Round_Dynamical_Collaboration_of_MLLM_ICCV_2025_paper.html",
+      "year": 2025,
+      "families": [
+        "agentic_workflow",
+        "lvagent"
+      ],
+      "reference_repositories": [
+        "https://github.com/64327069/LVAgent"
+      ],
+      "reproduction_packages": [
+        {
+          "package": "lvagent_iccv2025",
+          "lifecycle": "protocol_bound"
+        }
+      ],
+      "priority": 1,
+      "benchmark_ids": [
+        "egoschema"
+      ],
+      "platform_pressure": [
+        "benchmark",
+        "evidence",
+        "execution/workflow",
+        "experimentation/study",
+        "model/request"
+      ],
+      "method_owned": [
+        "long-video temporal retrieval",
+        "multi-round reason exchange",
+        "round-wise team reflection and optimization",
+        "task-adaptive MLLM team selection"
+      ],
+      "platform_owned": [
+        "MethodProgram and Machine Journal execution authority",
+        "benchmark cut identity",
+        "experiment and measurement orchestration",
+        "model/provider transport",
+        "run evidence and provenance"
+      ],
+      "evidence_refs": []
+    },
+    {
+      "method_id": "ma-lmm",
+      "title": "MA-LMM: Memory-Augmented Large Multimodal Model for Long-Term Video Understanding",
+      "paper_uri": "https://openaccess.thecvf.com/content/CVPR2024/html/He_MA-LMM_Memory-Augmented_Large_Multimodal_Model_for_Long-Term_Video_Understanding_CVPR_2024_paper.html",
+      "year": 2024,
+      "families": [
+        "long_video_understanding",
+        "memory_compression",
+        "multimodal_memory",
+        "online_memory"
+      ],
+      "reference_repositories": [
+        "https://github.com/boheumd/MA-LMM"
+      ],
+      "reproduction_packages": [
+        {
+          "package": "ma_lmm_memory",
+          "lifecycle": "protocol_bound"
+        }
+      ],
+      "priority": 1,
+      "benchmark_ids": [
+        "lvu"
+      ],
+      "platform_pressure": [
+        "artifact/content",
+        "execution/machines",
+        "experimentation/study",
+        "memory",
+        "model/multimodal"
+      ],
+      "method_owned": [
+        "compression-size-weighted memory consolidation",
+        "online visual memory-bank update semantics",
+        "per-token adjacent cosine merge selection",
+        "query-memory attention history semantics"
+      ],
+      "platform_owned": [
+        "MemoryMachine journal authority",
+        "artifact/evidence lineage",
+        "model execution",
+        "multimodal content identity and transport",
+        "study and evaluation orchestration"
+      ],
+      "evidence_refs": []
+    },
+    {
+      "method_id": "mars-automated-ai-research",
+      "title": "MARS: Modular Agent with Reflective Search for Automated AI Research",
+      "paper_uri": "https://arxiv.org/abs/2602.02660",
+      "year": 2026,
+      "families": [
+        "cost_constrained_mcts",
+        "modular_research_agent",
+        "reflective_memory"
+      ],
+      "reference_repositories": [
+        "https://github.com/jfc43/MARS"
+      ],
+      "reproduction_packages": [
+        {
+          "package": "mars_automated_ai_research",
+          "lifecycle": "artifact_only"
+        }
+      ],
+      "priority": 1,
+      "benchmark_ids": [
+        "mle-bench"
+      ],
+      "platform_pressure": [
+        "artifact/lineage",
+        "experimentation/evaluation",
+        "experimentation/study"
+      ],
+      "method_owned": [
+        "Design-Decompose-Implement modular construction",
+        "budget-aware cost-constrained MCTS",
+        "comparative reflective memory and cross-branch lesson transfer"
+      ],
+      "platform_owned": [
+        "artifact and grading-report lineage",
+        "benchmark cut identity",
+        "metric reconstruction and evidence ingestion",
+        "source-lane provenance"
+      ],
+      "evidence_refs": []
+    },
+    {
+      "method_id": "mem_gallery_acl2026",
+      "title": "Mem-Gallery: Benchmarking Multimodal Long-Term Conversational Memory for MLLM Agents",
+      "paper_uri": "https://aclanthology.org/2026.acl-long.1892/",
+      "year": 2026,
+      "families": [
+        "benchmark",
+        "conversation",
+        "long-term-memory",
+        "multimodal-memory"
+      ],
+      "reference_repositories": [
+        "https://github.com/YuanchenBei/Mem-Gallery"
+      ],
+      "reproduction_packages": [
+        {
+          "package": "mem_gallery_acl2026",
+          "lifecycle": "protocol_bound"
+        }
+      ],
+      "priority": 1,
+      "benchmark_ids": [
+        "mem-gallery"
+      ],
+      "platform_pressure": [
+        "benchmark",
+        "evidence",
+        "execution/workflow",
+        "experimentation/study",
+        "model/request"
+      ],
+      "method_owned": [
+        "Aggregate functional capability and efficiency measurements.",
+        "Evaluate memory extraction and test-time adaptation.",
+        "Evaluate organization and evolution of memory knowledge.",
+        "Evaluate reasoning over cross-session multimodal memories.",
+        "Replay the frozen multimodal multi-session conversation history."
+      ],
+      "platform_owned": [
+        "MethodProgram execution and Machine Journal truth",
+        "Study/Experiment orchestration and measurement artifacts",
+        "content-addressed benchmark task identity",
+        "provider-independent model/tool dispatch and receipts",
+        "run/evidence provenance and replay"
+      ],
+      "evidence_refs": []
+    },
+    {
+      "method_id": "memevolve",
+      "title": "MemEvolve: Meta-Evolution of Agent Memory Systems",
+      "paper_uri": "https://arxiv.org/abs/2512.18746",
+      "year": 2025,
+      "families": [
+        "memory",
+        "meta_search",
+        "self_evolution"
+      ],
+      "reference_repositories": [
+        "https://github.com/bingreeky/MemEvolve"
+      ],
+      "reproduction_packages": [
+        {
+          "package": "memevolve",
+          "lifecycle": "protocol_bound"
+        }
+      ],
+      "priority": 1,
+      "benchmark_ids": [
+        "evomembench",
+        "memoryarena"
+      ],
+      "platform_pressure": [
+        "artifact/lineage",
+        "data/state",
+        "execution",
+        "experimentation/workbench",
+        "participant/method"
+      ],
+      "method_owned": [
+        "memory architecture search space",
+        "memory meta-evolution policy"
+      ],
+      "platform_owned": [
+        "experiment workbench",
+        "lineage",
+        "method execution",
+        "state storage"
+      ],
+      "evidence_refs": []
+    },
+    {
+      "method_id": "memgpt",
+      "title": "MemGPT: Towards LLMs as Operating Systems",
+      "paper_uri": "https://arxiv.org/abs/2310.08560",
+      "year": 2023,
+      "families": [
+        "context_management",
+        "long_horizon",
+        "memory"
+      ],
+      "reference_repositories": [
+        "https://github.com/letta-ai/letta"
+      ],
+      "reproduction_packages": [
+        {
+          "package": "memgpt_classic",
+          "lifecycle": "protocol_bound"
+        }
+      ],
+      "priority": 1,
+      "benchmark_ids": [
+        "memoryarena"
+      ],
+      "platform_pressure": [
+        "artifact/lineage",
+        "data/projection",
+        "data/query",
+        "data/state",
+        "model/request",
+        "participant/agent",
+        "reliability/recovery"
+      ],
+      "method_owned": [
+        "memory hierarchy semantics",
+        "memory movement policy"
+      ],
+      "platform_owned": [
+        "checkpoint and recovery",
+        "context admission",
+        "durable state",
+        "lineage",
+        "semantic projection and query"
+      ],
+      "evidence_refs": []
+    },
+    {
+      "method_id": "metagpt",
+      "title": "MetaGPT: Meta Programming for A Multi-Agent Collaborative Framework",
+      "paper_uri": "https://proceedings.iclr.cc/paper_files/paper/2024/hash/6507b115562bb0a305f1958ccc87355a-Abstract-Conference.html",
+      "year": 2024,
+      "families": [
+        "artifact_pipeline",
+        "multi_agent",
+        "software_agent",
+        "sop"
+      ],
+      "reference_repositories": [
+        "https://github.com/FoundationAgents/MetaGPT"
+      ],
+      "reproduction_packages": [
+        {
+          "package": "metagpt_software_company",
+          "lifecycle": "protocol_bound"
+        }
+      ],
+      "priority": 1,
+      "benchmark_ids": [
+        "humaneval"
+      ],
+      "platform_pressure": [
+        "artifact/lineage",
+        "environment/software",
+        "execution",
+        "execution/workflow",
+        "experimentation/study",
+        "participant/agent"
+      ],
+      "method_owned": [
+        "SOP dependency graph",
+        "artifact-to-role workflow semantics",
+        "software-company role specialization"
+      ],
+      "platform_owned": [
+        "artifact lineage",
+        "bounded orchestration",
+        "evaluation",
+        "message transport",
+        "participant topology",
+        "software workspace execution"
+      ],
+      "evidence_refs": []
+    },
+    {
+      "method_id": "minedojo",
+      "title": "MineDojo: Building Open-Ended Embodied Agents with Internet-Scale Knowledge",
+      "paper_uri": "https://proceedings.neurips.cc/paper_files/paper/2022/hash/74a67268c5cc5910f64938cac4526a90-Abstract.html",
+      "year": 2022,
+      "families": [
+        "language_conditioned_control",
+        "minecraft",
+        "multimodal_knowledge",
+        "open_ended_embodied",
+        "video_language_reward"
+      ],
+      "reference_repositories": [
+        "https://github.com/MineDojo/MineCLIP",
+        "https://github.com/MineDojo/MineDojo"
+      ],
+      "reproduction_packages": [
+        {
+          "package": "minedojo",
+          "lifecycle": "protocol_bound"
+        }
+      ],
+      "priority": 1,
+      "benchmark_ids": [
+        "minedojo"
+      ],
+      "platform_pressure": [
+        "artifact/content",
+        "environment/minecraft",
+        "evaluation",
+        "experimentation/benchmark",
+        "experimentation/study",
+        "model/request",
+        "participant/policy"
+      ],
+      "method_owned": [
+        "3,142-task paper-consistent benchmark taxonomy",
+        "MineCLIP video-language reward semantics",
+        "language-conditioned MineAgent policy semantics",
+        "language-prompted Minecraft task semantics",
+        "logical-any programmatic success aggregation"
+      ],
+      "platform_owned": [
+        "Minecraft environment provider and lifecycle",
+        "Study/Experiment orchestration",
+        "content-addressed video/tensor artifacts",
+        "effect evidence and reconciliation",
+        "immutable benchmark cut identity",
+        "model deployment and serving identity"
+      ],
+      "evidence_refs": []
+    },
+    {
+      "method_id": "mm_mem_acl2026",
+      "title": "From Verbatim to Gist: Distilling Pyramidal Multimodal Memory via Semantic Information Bottleneck for Long-Horizon Video Agents",
+      "paper_uri": "https://aclanthology.org/2026.acl-long.533/",
+      "year": 2026,
+      "families": [
+        "long-horizon",
+        "multimodal-memory",
+        "reinforcement-learning",
+        "video-agent"
+      ],
+      "reference_repositories": [
+        "https://github.com/EliSpectre/MM-Mem"
+      ],
+      "reproduction_packages": [
+        {
+          "package": "mm_mem_acl2026",
+          "lifecycle": "protocol_bound"
+        }
+      ],
+      "priority": 1,
+      "benchmark_ids": [
+        "hd-epic",
+        "mlvu",
+        "video-mme",
+        "vstream-qa"
+      ],
+      "platform_pressure": [
+        "benchmark",
+        "evidence",
+        "execution/workflow",
+        "experimentation/study",
+        "model/request"
+      ],
+      "method_owned": [
+        "Answer the video query from retrieved multimodal memory.",
+        "Choose ADD_NEW, MERGE, or DISCARD under the Semantic Information Bottleneck objective.",
+        "Compress episodic evidence into high-level symbolic gist schemas.",
+        "Distill sensory traces into an episodic stream while preserving task-relevant evidence.",
+        "Encode incoming visual evidence into fine-grained sensory traces.",
+        "Retrieve memory top-down using entropy-driven adaptive selection."
+      ],
+      "platform_owned": [
+        "MethodProgram execution and Machine Journal truth",
+        "Study/Experiment orchestration and measurement artifacts",
+        "content-addressed benchmark task identity",
+        "provider-independent model/tool dispatch and receipts",
+        "run/evidence provenance and replay"
+      ],
+      "evidence_refs": []
+    },
+    {
+      "method_id": "mmbench_gui_cvpr2026",
+      "title": "MMBench-GUI: A Unified Hierarchical Evaluation Framework for Multi-Platform GUI Agents",
+      "paper_uri": "https://openaccess.thecvf.com/content/CVPR2026/html/Wang_MMBench-GUI_A_Unified_Hierarchical_Evaluation_Framework_for_Multi-Platform_GUI_Agents_CVPR_2026_paper.html",
+      "year": 2026,
+      "families": [
+        "benchmark",
+        "evaluation",
+        "gui-agent",
+        "multiplatform"
+      ],
+      "reference_repositories": [],
+      "reproduction_packages": [
+        {
+          "package": "mmbench_gui_cvpr2026",
+          "lifecycle": "protocol_bound"
+        }
+      ],
+      "priority": 1,
+      "benchmark_ids": [
+        "mmbench-gui"
+      ],
+      "platform_pressure": [
+        "benchmark",
+        "evidence",
+        "execution/workflow",
+        "experimentation/study",
+        "model/request"
+      ],
+      "method_owned": [
+        "Compute Efficiency-Quality-Aware score from success and action redundancy.",
+        "Evaluate GUI content understanding.",
+        "Evaluate cross-application task collaboration.",
+        "Evaluate end-to-end task automation.",
+        "Evaluate visual element grounding."
+      ],
+      "platform_owned": [
+        "MethodProgram execution and Machine Journal truth",
+        "Study/Experiment orchestration and measurement artifacts",
+        "content-addressed benchmark task identity",
+        "provider-independent model/tool dispatch and receipts",
+        "run/evidence provenance and replay"
+      ],
+      "evidence_refs": []
+    },
+    {
+      "method_id": "motus_cvpr2026",
+      "title": "Motus: A Unified Latent Action World Model",
+      "paper_uri": "https://openaccess.thecvf.com/content/CVPR2026/html/Bi_Motus_A_Unified_Latent_Action_World_Model_CVPR_2026_paper.html",
+      "year": 2026,
+      "families": [
+        "latent-action",
+        "robotics",
+        "video-generation",
+        "vision-language-action",
+        "world-model"
+      ],
+      "reference_repositories": [
+        "https://github.com/thu-ml/Motus"
+      ],
+      "reproduction_packages": [
+        {
+          "package": "motus_cvpr2026",
+          "lifecycle": "protocol_bound"
+        }
+      ],
+      "priority": 1,
+      "benchmark_ids": [
+        "motus-realworld",
+        "robotwin2"
+      ],
+      "platform_pressure": [
+        "artifact/lineage",
+        "benchmark",
+        "evidence",
+        "execution/workflow",
+        "experimentation/study",
+        "memory",
+        "model/request",
+        "perception"
+      ],
+      "method_owned": [
+        "Apply the UniDiffuser-style scheduler for the selected generation/prediction mode.",
+        "Derive optical-flow-based latent delta actions shared across heterogeneous data.",
+        "Emit action, future video, inverse action, or joint video-action prediction and preserve the corresponding artifact.",
+        "Encode image/video/language context through the understanding expert.",
+        "Route through the Mixture-of-Transformers understanding, action and video-generation experts.",
+        "Select world-model, VLA, inverse-dynamics, video-generation, or video-action joint-prediction mode."
+      ],
+      "platform_owned": [
+        "MethodProgram execution and Machine Journal truth",
+        "Study/Experiment orchestration and measurement artifacts",
+        "content-addressed benchmark task identity",
+        "provider-independent model/tool dispatch and receipts",
+        "run/evidence provenance and replay"
+      ],
+      "evidence_refs": []
+    },
+    {
+      "method_id": "moviechat",
+      "title": "MovieChat: From Dense Token to Sparse Memory for Long Video Understanding",
+      "paper_uri": "https://openaccess.thecvf.com/content/CVPR2024/html/Song_MovieChat_From_Dense_Token_to_Sparse_Memory_for_Long_Video_CVPR_2024_paper.html",
+      "year": 2024,
+      "families": [
+        "long_video_understanding",
+        "multimodal_memory",
+        "short_long_memory",
+        "sparse_memory"
+      ],
+      "reference_repositories": [
+        "https://github.com/wenhaochai/MovieChat"
+      ],
+      "reproduction_packages": [
+        {
+          "package": "moviechat_memory",
+          "lifecycle": "protocol_bound"
+        }
+      ],
+      "priority": 1,
+      "benchmark_ids": [
+        "moviechat-1k"
+      ],
+      "platform_pressure": [
+        "artifact/content",
+        "benchmark/video",
+        "execution/machines",
+        "experimentation/study",
+        "memory",
+        "model/multimodal"
+      ],
+      "method_owned": [
+        "global versus breakpoint memory readout",
+        "long-term sparse memory semantics",
+        "short-term FIFO buffer semantics",
+        "short-term adjacent-frame consolidation",
+        "source-faithful direct-LTM consolidation quirk"
+      ],
+      "platform_owned": [
+        "MemoryMachine journal authority",
+        "artifact/evidence lineage",
+        "benchmark materialization",
+        "model execution",
+        "multimodal content identity and transport",
+        "study and evaluation orchestration"
+      ],
+      "evidence_refs": []
+    },
+    {
+      "method_id": "multiagent-debate",
+      "title": "Improving Factuality and Reasoning in Language Models through Multiagent Debate",
+      "paper_uri": "https://arxiv.org/abs/2305.14325",
+      "year": 2023,
+      "families": [
+        "debate",
+        "multi_agent",
+        "reasoning"
+      ],
+      "reference_repositories": [
+        "https://github.com/composable-models/llm_multiagent_debate"
+      ],
+      "reproduction_packages": [
+        {
+          "package": "multiagent_debate",
+          "lifecycle": "protocol_bound"
+        }
+      ],
+      "priority": 1,
+      "benchmark_ids": [
+        "gsm8k"
+      ],
+      "platform_pressure": [
+        "execution/workflow",
+        "experimentation/study",
+        "model/request",
+        "observability/telemetry",
+        "participant/agent"
+      ],
+      "method_owned": [
+        "answer aggregation semantics",
+        "debate round protocol",
+        "peer-response injection policy"
+      ],
+      "platform_owned": [
+        "evaluation",
+        "message identity and transport",
+        "model invocation",
+        "participant topology",
+        "round evidence"
+      ],
+      "evidence_refs": []
+    },
+    {
+      "method_id": "openwebvoyager",
+      "title": "OpenWebVoyager: Building Multimodal Web Agents via Iterative Real-World Exploration, Feedback and Optimization",
+      "paper_uri": "https://aclanthology.org/2025.acl-long.1336/",
+      "year": 2025,
+      "families": [
+        "agentic_workflow",
+        "openwebvoyager"
+      ],
+      "reference_repositories": [],
+      "reproduction_packages": [
+        {
+          "package": "openwebvoyager_acl2025",
+          "lifecycle": "protocol_bound"
+        }
+      ],
+      "priority": 1,
+      "benchmark_ids": [
+        "mind2web",
+        "webvoyager"
+      ],
+      "platform_pressure": [
+        "benchmark",
+        "evidence",
+        "execution/workflow",
+        "experimentation/study",
+        "model/request"
+      ],
+      "method_owned": [
+        "external-model feedback",
+        "iterative self-improvement through retraining",
+        "real-web multimodal exploration",
+        "successful-trajectory filtering"
+      ],
+      "platform_owned": [
+        "MethodProgram and Machine Journal execution authority",
+        "benchmark cut identity",
+        "experiment and measurement orchestration",
+        "model/provider transport",
+        "run evidence and provenance"
+      ],
+      "evidence_refs": []
+    },
+    {
+      "method_id": "optimus1-minecraft",
+      "title": "Optimus-1: Hybrid Multimodal Memory Empowered Agents Excel in Long-Horizon Tasks",
+      "paper_uri": "https://proceedings.neurips.cc/paper_files/paper/2024/hash/5949a8750a110ce1f0631b1776c500a2-Abstract-Conference.html",
+      "year": 2024,
+      "families": [
+        "episodic_multimodal_memory",
+        "hybrid_memory",
+        "knowledge_graph_memory",
+        "minecraft",
+        "multimodal_memory",
+        "planning_reflection"
+      ],
+      "reference_repositories": [
+        "https://github.com/iLearn-Lab/NeurIPS24-Optimus-1"
+      ],
+      "reproduction_packages": [
+        {
+          "package": "optimus1_minecraft",
+          "lifecycle": "protocol_bound"
+        }
+      ],
+      "priority": 1,
+      "benchmark_ids": [
+        "minecraft-long-horizon-67"
+      ],
+      "platform_pressure": [
+        "artifact/multimodal",
+        "environment/minecraft",
+        "execution/machines/memory",
+        "execution/machines/method",
+        "experimentation/study",
+        "model/multimodal"
+      ],
+      "method_owned": [
+        "Abstracted Multimodal Experience Pool semantics",
+        "Experience-Driven Reflector semantics",
+        "Hierarchical Directed Knowledge Graph construction and retrieval",
+        "Knowledge-Guided Planner semantics",
+        "error-conditioned replan experience retrieval",
+        "multimodal reflection experience categories",
+        "periodic planner-reflector-controller interaction",
+        "successful-plan experience storage and fuzzy retrieval"
+      ],
+      "platform_owned": [
+        "MemoryMachine and MethodMachine journal authority",
+        "Minecraft environment lifecycle and effects",
+        "Study/Experiment orchestration",
+        "artifact/evidence lineage",
+        "model invocation and participant identity",
+        "multimodal content identity and transport"
+      ],
+      "evidence_refs": []
+    },
+    {
+      "method_id": "optimus2-minecraft",
+      "title": "Optimus-2: Multimodal Minecraft Agent with Goal-Observation-Action Conditioned Policy",
+      "paper_uri": "https://openaccess.thecvf.com/content/CVPR2025/html/Li_Optimus-2_Multimodal_Minecraft_Agent_with_Goal-Observation-Action_Conditioned_Policy_CVPR_2025_paper.html",
+      "year": 2025,
+      "families": [
+        "behavior_modeling",
+        "goal_conditioned_policy",
+        "minecraft",
+        "multimodal_policy",
+        "planner_controller"
+      ],
+      "reference_repositories": [
+        "https://github.com/iLearn-Lab/CVPR25-Optimus-2"
+      ],
+      "reproduction_packages": [
+        {
+          "package": "optimus2_minecraft",
+          "lifecycle": "protocol_bound"
+        }
+      ],
+      "priority": 1,
+      "benchmark_ids": [
+        "minecraft-long-horizon-67"
+      ],
+      "platform_pressure": [
+        "artifact/trajectory",
+        "environment/minecraft",
+        "execution/machines/method",
+        "experimentation/study",
+        "model/multimodal",
+        "participant/agent"
+      ],
+      "method_owned": [
+        "Goal-Observation-Action Conditioned Policy semantics",
+        "MLLM high-level task planning",
+        "action-guided behavior encoding",
+        "fixed-length behavior-token consolidation",
+        "language-conditioned autoregressive action prediction",
+        "observation-action causal modeling"
+      ],
+      "platform_owned": [
+        "MethodMachine journal authority",
+        "Minecraft environment lifecycle and effects",
+        "Study/Experiment orchestration",
+        "multimodal model transport",
+        "trajectory/evidence identity"
+      ],
+      "evidence_refs": []
+    },
+    {
+      "method_id": "optimusvla_cvpr2026",
+      "title": "Global Prior Meets Local Consistency: Dual-Memory Augmented Vision-Language-Action Model for Efficient Robotic Manipulation",
+      "paper_uri": "https://openaccess.thecvf.com/content/CVPR2026/html/Li_Global_Prior_Meets_Local_Consistency_Dual-Memory_Augmented_Vision-Language-Action_Model_for_CVPR_2026_paper.html",
+      "year": 2026,
+      "families": [
+        "dual-memory",
+        "efficient-inference",
+        "robotic-manipulation",
+        "vision-language-action"
+      ],
+      "reference_repositories": [
+        "https://github.com/iLearn-Lab/CVPR26-OptimusVLA"
+      ],
+      "reproduction_packages": [
+        {
+          "package": "optimusvla_cvpr2026",
+          "lifecycle": "protocol_bound"
+        }
+      ],
+      "priority": 1,
+      "benchmark_ids": [
+        "calvin",
+        "libero",
+        "robotwin2-hard"
+      ],
+      "platform_pressure": [
+        "benchmark",
+        "evidence",
+        "execution/workflow",
+        "experimentation/study",
+        "memory",
+        "model/request"
+      ],
+      "method_owned": [
+        "Apply local temporal-consistency constraints to the generated action chunk.",
+        "Encode executed action history into Local Consistency Memory and infer task progress.",
+        "Encode task language and current observations into the VLA multimodal representation.",
+        "Execute the action chunk and update local action-history memory.",
+        "Generate the next action chunk from prior-initialized flow with adaptive NFE scheduling.",
+        "Retrieve a task-level prior trajectory from Global Prior Memory."
+      ],
+      "platform_owned": [
+        "MethodProgram execution and Machine Journal truth",
+        "Study/Experiment orchestration and measurement artifacts",
+        "content-addressed benchmark task identity",
+        "provider-independent model/tool dispatch and receipts",
+        "run/evidence provenance and replay"
+      ],
+      "evidence_refs": []
+    },
+    {
+      "method_id": "orbit_acl2026",
+      "title": "On-policy Reinforcement Fine-tuning with Offline reward for Multi-step Embodied Planning",
+      "paper_uri": "https://aclanthology.org/2026.acl-long.1822/",
+      "year": 2026,
+      "families": [
+        "embodied",
+        "multimodal",
+        "planning",
+        "reinforcement-learning"
+      ],
+      "reference_repositories": [
+        "https://github.com/mail-taii/Reinforced-Reasoning-for-Embodied-Planning"
+      ],
+      "reproduction_packages": [
+        {
+          "package": "orbit_acl2026",
+          "lifecycle": "protocol_bound"
+        }
+      ],
+      "priority": 1,
+      "benchmark_ids": [
+        "embodiedbench"
+      ],
+      "platform_pressure": [
+        "benchmark",
+        "evidence",
+        "execution/workflow",
+        "experimentation/study",
+        "model/request"
+      ],
+      "method_owned": [
+        "Apply reinforcement fine-tuning using offline reward.",
+        "Collect on-policy multi-step embodied planning trajectories.",
+        "Evaluate in-domain EB-ALFRED tasks.",
+        "Evaluate unseen EB-Habitat tasks.",
+        "Score collected trajectories with the paper's offline reward mechanism."
+      ],
+      "platform_owned": [
+        "MethodProgram execution and Machine Journal truth",
+        "Study/Experiment orchestration and measurement artifacts",
+        "content-addressed benchmark task identity",
+        "provider-independent model/tool dispatch and receipts",
+        "run/evidence provenance and replay"
+      ],
+      "evidence_refs": []
+    },
+    {
+      "method_id": "os_symphony_acl2026",
+      "title": "OS-Symphony: A Holistic Framework for Robust and Generalist Computer-Using Agents",
+      "paper_uri": "https://aclanthology.org/2026.acl-long.1021/",
+      "year": 2026,
+      "families": [
+        "gui-agent",
+        "long-horizon",
+        "multimodal-memory",
+        "tool-agent"
+      ],
+      "reference_repositories": [
+        "https://github.com/OS-Copilot/OS-Symphony"
+      ],
+      "reproduction_packages": [
+        {
+          "package": "os_symphony_acl2026",
+          "lifecycle": "protocol_bound"
+        }
+      ],
+      "priority": 1,
+      "benchmark_ids": [
+        "macosarena",
+        "osworld-verified",
+        "windowsagentarena"
+      ],
+      "platform_pressure": [
+        "benchmark",
+        "evidence",
+        "execution/workflow",
+        "experimentation/study",
+        "model/request"
+      ],
+      "method_owned": [
+        "Curate/prune visual history and record trajectory-level corrective memory.",
+        "Execute the next computer action using current tutorial and memory context.",
+        "Retrieve milestone-driven long-term trajectory memory.",
+        "Route work between reflection-memory and versatile tool agents.",
+        "Use a SeeAct multimodal browser searcher to synthesize a visually aligned tutorial when needed."
+      ],
+      "platform_owned": [
+        "MethodProgram execution and Machine Journal truth",
+        "Study/Experiment orchestration and measurement artifacts",
+        "content-addressed benchmark task identity",
+        "provider-independent model/tool dispatch and receipts",
+        "run/evidence provenance and replay"
+      ],
+      "evidence_refs": []
+    },
+    {
+      "method_id": "pi0.5",
+      "title": "π0.5: a Vision-Language-Action Model with Open-World Generalization",
+      "paper_uri": "https://arxiv.org/abs/2504.16054",
+      "year": 2025,
+      "families": [
+        "embodied",
+        "multimodal",
+        "robot_policy",
+        "vla"
+      ],
+      "reference_repositories": [
+        "https://github.com/Physical-Intelligence/openpi"
+      ],
+      "reproduction_packages": [
+        {
+          "package": "pi05_openpi",
+          "lifecycle": "catalogued"
+        }
+      ],
+      "priority": 1,
+      "benchmark_ids": [],
+      "platform_pressure": [
+        "environment/embodied",
+        "experimentation/study",
+        "model/request",
+        "participant/agent"
+      ],
+      "method_owned": [
+        "discrete state tokenization",
+        "flow-based continuous action policy",
+        "heterogeneous co-training semantics"
+      ],
+      "platform_owned": [
+        "continuous action ABI",
+        "model execution",
+        "multimodal embodied observation transport",
+        "trajectory evidence and evaluation"
+      ],
+      "evidence_refs": []
+    },
+    {
+      "method_id": "providellm",
+      "title": "Streaming VideoLLMs for Real-Time Procedural Video Understanding",
+      "paper_uri": "https://openaccess.thecvf.com/content/ICCV2025/html/Chatterjee_Streaming_VideoLLMs_for_Real-Time_Procedural_Video_Understanding_ICCV_2025_paper.html",
+      "year": 2025,
+      "families": [
+        "interleaved_cache",
+        "multimodal_memory",
+        "procedural_video_understanding",
+        "streaming_video_memory"
+      ],
+      "reference_repositories": [
+        "https://github.com/dibschat/ProVideLLM"
+      ],
+      "reproduction_packages": [
+        {
+          "package": "providellm_memory",
+          "lifecycle": "protocol_bound"
+        }
+      ],
+      "priority": 1,
+      "benchmark_ids": [
+        "ego4d-goalstep"
+      ],
+      "platform_pressure": [
+        "artifact/video",
+        "benchmark/video",
+        "execution/machines/memory",
+        "experimentation/study",
+        "model/multimodal"
+      ],
+      "method_owned": [
+        "DETR-QFormer short-term visual memory",
+        "independent short-term and long-term exits",
+        "single-entry multimodal interleaved FIFO cache",
+        "tau-window duplicate suppression for verbalized observations",
+        "verbalized long-term text memory"
+      ],
+      "platform_owned": [
+        "MemoryMachine journal authority",
+        "artifact and evidence identity",
+        "benchmark cut identity",
+        "multimodal provider execution",
+        "study and evaluation orchestration"
+      ],
+      "evidence_refs": []
+    },
+    {
+      "method_id": "qlass",
+      "title": "QLASS: Boosting Language Agent Inference via Q-Guided Stepwise Search",
+      "paper_uri": "https://proceedings.mlr.press/v267/lin25l.html",
+      "year": 2025,
+      "families": [
+        "planning",
+        "process_reward",
+        "q_guided_inference",
+        "search"
+      ],
+      "reference_repositories": [
+        "https://github.com/Rafa-zy/QLASS"
+      ],
+      "reproduction_packages": [
+        {
+          "package": "qlass_alfworld",
+          "lifecycle": "protocol_bound"
+        }
+      ],
+      "priority": 1,
+      "benchmark_ids": [
+        "alfworld",
+        "webshop"
+      ],
+      "platform_pressure": [
+        "artifact/lineage",
+        "environment/text_world",
+        "experimentation/study",
+        "model/assignment",
+        "model/request"
+      ],
+      "method_owned": [
+        "Q-Net trajectory value estimation",
+        "Q-guided candidate selection",
+        "self-exploration and Q-training semantics",
+        "stepwise best-of-N action search"
+      ],
+      "platform_owned": [
+        "benchmark cut identity",
+        "environment execution and replay evidence",
+        "named model-role binding",
+        "study expansion and measurements"
+      ],
+      "evidence_refs": []
+    },
+    {
+      "method_id": "r2d2",
+      "title": "R2D2: Remembering, Replaying and Dynamic Decision Making with a Reflective Agentic Memory",
+      "paper_uri": "https://aclanthology.org/2025.acl-long.1464/",
+      "year": 2025,
+      "families": [
+        "agentic_workflow",
+        "r2d2"
+      ],
+      "reference_repositories": [],
+      "reproduction_packages": [
+        {
+          "package": "r2d2_acl2025",
+          "lifecycle": "protocol_bound"
+        }
+      ],
+      "priority": 1,
+      "benchmark_ids": [
+        "webarena"
+      ],
+      "platform_pressure": [
+        "benchmark",
+        "evidence",
+        "execution/workflow",
+        "experimentation/study",
+        "model/request"
+      ],
+      "method_owned": [
+        "dynamic web-environment map reconstruction",
+        "memory-conditioned action selection",
+        "navigation-error reflection",
+        "reflective replay memory"
+      ],
+      "platform_owned": [
+        "MethodProgram and Machine Journal execution authority",
+        "benchmark cut identity",
+        "experiment and measurement orchestration",
+        "model/provider transport",
+        "run evidence and provenance"
+      ],
+      "evidence_refs": []
+    },
+    {
+      "method_id": "rap",
+      "title": "Reasoning with Language Model is Planning with World Model",
+      "paper_uri": "https://aclanthology.org/2023.emnlp-main.507/",
+      "year": 2023,
+      "families": [
+        "mcts",
+        "reasoning",
+        "world_model"
+      ],
+      "reference_repositories": [
+        "https://github.com/Ber666/RAP"
+      ],
+      "reproduction_packages": [
+        {
+          "package": "rap_reasoning",
+          "lifecycle": "protocol_bound"
+        }
+      ],
+      "priority": 1,
+      "benchmark_ids": [
+        "blocksworld"
+      ],
+      "platform_pressure": [
+        "experimentation/evaluation",
+        "experimentation/study",
+        "model/assignment",
+        "model/request"
+      ],
+      "method_owned": [
+        "MCTS reasoning policy",
+        "RAP reward aggregation",
+        "reasoner/world-model role semantics"
+      ],
+      "platform_owned": [
+        "benchmark cut identity",
+        "evaluator binding",
+        "named model-role binding",
+        "study execution and evidence"
+      ],
+      "evidence_refs": []
+    },
+    {
+      "method_id": "react",
+      "title": "ReAct: Synergizing Reasoning and Acting in Language Models",
+      "paper_uri": "https://openreview.net/forum?id=WE_vluYUL-X",
+      "year": 2023,
+      "families": [
+        "agent_loop",
+        "reasoning",
+        "tool_use"
+      ],
+      "reference_repositories": [
+        "https://github.com/ysymyth/ReAct"
+      ],
+      "reproduction_packages": [
+        {
+          "package": "react_alfworld",
+          "lifecycle": "protocol_bound"
+        }
+      ],
+      "priority": 1,
+      "benchmark_ids": [
+        "alfworld",
+        "webshop"
+      ],
+      "platform_pressure": [
+        "environment/text_world",
+        "experimentation/study",
+        "model/request",
+        "observability/telemetry",
+        "participant/agent"
+      ],
+      "method_owned": [
+        "reasoning trace policy",
+        "thought-action interleaving policy"
+      ],
+      "platform_owned": [
+        "agent loop lifecycle",
+        "environment binding",
+        "evidence and metrics",
+        "model invocation"
+      ],
+      "evidence_refs": []
+    },
+    {
+      "method_id": "refact_cvpr2026",
+      "title": "ReFAct: Empowering Multimodal Web Agents with Visual and Context Focusing",
+      "paper_uri": "https://openaccess.thecvf.com/content/CVPR2026/html/Wu_ReFAct_Empowering_Multimodal_Web_Agents_with_Visual_and_Context_Focusing_CVPR_2026_paper.html",
+      "year": 2026,
+      "families": [
+        "active-perception",
+        "context-management",
+        "memory",
+        "multimodal-web-agent"
+      ],
+      "reference_repositories": [],
+      "reproduction_packages": [
+        {
+          "package": "refact_cvpr2026",
+          "lifecycle": "protocol_bound"
+        }
+      ],
+      "priority": 1,
+      "benchmark_ids": [
+        "groundedvqa"
+      ],
+      "platform_pressure": [
+        "benchmark",
+        "evidence",
+        "execution/workflow",
+        "experimentation/study",
+        "model/request"
+      ],
+      "method_owned": [
+        "Actively ground and filter visual information relevant to the current reasoning step.",
+        "Execute the next web-search or navigation action.",
+        "Observe new multimodal evidence and update the working context.",
+        "Reason over the current multimodal web-search state.",
+        "Use external-memory Defocus/Refocus operations to control retained context density."
+      ],
+      "platform_owned": [
+        "MethodProgram execution and Machine Journal truth",
+        "Study/Experiment orchestration and measurement artifacts",
+        "content-addressed benchmark task identity",
+        "provider-independent model/tool dispatch and receipts",
+        "run/evidence provenance and replay"
+      ],
+      "evidence_refs": []
+    },
+    {
+      "method_id": "reflexion",
+      "title": "Reflexion: Language Agents with Verbal Reinforcement Learning",
+      "paper_uri": "https://papers.neurips.cc/paper_files/paper/2023/hash/1b44b878bb782e6954cd888628510e90-Abstract-Conference.html",
+      "year": 2023,
+      "families": [
+        "agent_loop",
+        "memory",
+        "reflection"
+      ],
+      "reference_repositories": [
+        "https://github.com/noahshinn/reflexion"
+      ],
+      "reproduction_packages": [
+        {
+          "package": "reflexion_alfworld",
+          "lifecycle": "protocol_bound"
+        }
+      ],
+      "priority": 1,
+      "benchmark_ids": [
+        "alfworld"
+      ],
+      "platform_pressure": [
+        "environment/text_world",
+        "experimentation/study",
+        "model/assignment",
+        "model/request",
+        "participant/agent"
+      ],
+      "method_owned": [
+        "failed-trial verbal reflection policy",
+        "multi-trial retry policy",
+        "per-task reflection memory semantics"
+      ],
+      "platform_owned": [
+        "benchmark cut identity",
+        "environment lifecycle",
+        "named model-role binding",
+        "study execution and evidence"
+      ],
+      "evidence_refs": []
+    },
+    {
+      "method_id": "rewind",
+      "title": "ReWind: Understanding Long Videos with Instructed Learnable Memory",
+      "paper_uri": "https://openaccess.thecvf.com/content/CVPR2025/html/Diko_ReWind_Understanding_Long_Videos_with_Instructed_Learnable_Memory_CVPR_2025_paper.html",
+      "year": 2025,
+      "families": [
+        "dynamic_frame_selection",
+        "instruction_conditioned_memory",
+        "long_video_understanding",
+        "multimodal_memory"
+      ],
+      "reference_repositories": [],
+      "reproduction_packages": [
+        {
+          "package": "rewind_memory",
+          "lifecycle": "protocol_bound"
+        }
+      ],
+      "priority": 1,
+      "benchmark_ids": [
+        "moviechat-1k"
+      ],
+      "platform_pressure": [
+        "artifact/content",
+        "benchmark/video",
+        "execution/machines",
+        "experimentation/study",
+        "memory",
+        "model/multimodal"
+      ],
+      "method_owned": [
+        "DPC-KNN representative-frame selection",
+        "instruction-attention first-stage frame selection",
+        "instruction-conditioned memory interaction",
+        "learned read-perceive-write memory cycle",
+        "memory plus high-resolution frame LLM input ordering",
+        "two-token-per-frame temporal memory"
+      ],
+      "platform_owned": [
+        "MemoryMachine journal authority",
+        "benchmark materialization",
+        "learned operator/model binding identity",
+        "multimodal tensor content identity",
+        "study and evaluation orchestration"
+      ],
+      "evidence_refs": []
+    },
+    {
+      "method_id": "roboagent_cvpr2026",
+      "title": "RoboAgent: Chaining Basic Capabilities for Embodied Task Planning",
+      "paper_uri": "https://openaccess.thecvf.com/content/CVPR2026/html/Xu_RoboAgent_Chaining_Basic_Capabilities_for_Embodied_Task_Planning_CVPR_2026_paper.html",
+      "year": 2026,
+      "families": [
+        "capability-routing",
+        "dagger",
+        "embodied",
+        "planning",
+        "reinforcement-learning"
+      ],
+      "reference_repositories": [
+        "https://github.com/woyut/RoboAgent_CVPR26"
+      ],
+      "reproduction_packages": [
+        {
+          "package": "roboagent_cvpr2026",
+          "lifecycle": "protocol_bound"
+        }
+      ],
+      "priority": 1,
+      "benchmark_ids": [
+        "alfworld",
+        "embodiedbench"
+      ],
+      "platform_pressure": [
+        "benchmark",
+        "evidence",
+        "execution/workflow",
+        "experimentation/study",
+        "memory",
+        "model/request",
+        "perception"
+      ],
+      "method_owned": [
+        "Decompose the current embodied task and route the next query to a basic capability.",
+        "Execute an atomic embodied action when the selected capability requires environment interaction.",
+        "Load the selected capability's private context rather than a monolithic global history.",
+        "Return the capability result to the scheduler and update the high-level plan.",
+        "Solve the routed vision-language subproblem with the shared VLM."
+      ],
+      "platform_owned": [
+        "MethodProgram execution and Machine Journal truth",
+        "Study/Experiment orchestration and measurement artifacts",
+        "content-addressed benchmark task identity",
+        "provider-independent model/tool dispatch and receipts",
+        "run/evidence provenance and replay"
+      ],
+      "evidence_refs": []
+    },
+    {
+      "method_id": "saycan",
+      "title": "Do As I Can, Not As I Say: Grounding Language in Robotic Affordances",
+      "paper_uri": "https://proceedings.mlr.press/v205/ichter23a.html",
+      "year": 2022,
+      "families": [
+        "affordance",
+        "embodied",
+        "language_grounding",
+        "planning"
+      ],
+      "reference_repositories": [
+        "https://github.com/google-research/google-research"
+      ],
+      "reproduction_packages": [
+        {
+          "package": "saycan",
+          "lifecycle": "protocol_bound"
+        }
+      ],
+      "priority": 1,
+      "benchmark_ids": [
+        "saycan-101"
+      ],
+      "platform_pressure": [
+        "environment/embodied",
+        "experimentation/study",
+        "model/request",
+        "participant/capability",
+        "participant/method"
+      ],
+      "method_owned": [
+        "done() termination semantics",
+        "frozen-affordance recursive planning loop",
+        "language-score and affordance composition",
+        "plan-first then skill-execution ordering",
+        "skill selection policy"
+      ],
+      "platform_owned": [
+        "MethodProgram host and journal authority",
+        "effect evidence",
+        "embodied skill capability execution",
+        "evaluation",
+        "model invocation"
+      ],
+      "evidence_refs": []
+    },
+    {
+      "method_id": "seeclick",
+      "title": "SeeClick: Harnessing GUI Grounding for Advanced Visual GUI Agents",
+      "paper_uri": "https://aclanthology.org/2024.acl-long.505/",
+      "year": 2024,
+      "families": [
+        "gui_agent",
+        "multimodal",
+        "visual_grounding"
+      ],
+      "reference_repositories": [],
+      "reproduction_packages": [
+        {
+          "package": "seeclick",
+          "lifecycle": "protocol_bound"
+        }
+      ],
+      "priority": 1,
+      "benchmark_ids": [
+        "screenspot"
+      ],
+      "platform_pressure": [
+        "artifact/lineage",
+        "environment/gui",
+        "experimentation/study",
+        "model/request"
+      ],
+      "method_owned": [
+        "GUI grounding continual pre-training curriculum",
+        "normalized [0,1] GUI coordinate representation",
+        "screenshot-only downstream GUI agent policy",
+        "text-to-point and text-to-bbox grounding semantics"
+      ],
+      "platform_owned": [
+        "benchmark task and verifier identity",
+        "measurement and evidence lineage",
+        "model/checkpoint identity",
+        "multimodal image references"
+      ],
+      "evidence_refs": []
+    },
+    {
+      "method_id": "self-consistency",
+      "title": "Self-Consistency Improves Chain of Thought Reasoning in Language Models",
+      "paper_uri": "https://openreview.net/forum?id=1PL1NIMMrw",
+      "year": 2023,
+      "families": [
+        "chain_of_thought",
+        "reasoning",
+        "sampling",
+        "self_consistency"
+      ],
+      "reference_repositories": [],
+      "reproduction_packages": [
+        {
+          "package": "self_consistency_gsm8k",
+          "lifecycle": "protocol_bound"
+        }
+      ],
+      "priority": 1,
+      "benchmark_ids": [
+        "gsm8k"
+      ],
+      "platform_pressure": [
+        "execution/workflow",
+        "experimentation/evaluation",
+        "experimentation/study",
+        "model/request",
+        "observability/telemetry",
+        "participant/method",
+        "research/provenance"
+      ],
+      "method_owned": [
+        "answer-frequency marginalization",
+        "diverse chain-of-thought path sampling",
+        "task-specific final-answer projection"
+      ],
+      "platform_owned": [
+        "benchmark cut identity",
+        "independent model invocation accounting",
+        "isolated exact-answer evaluation",
+        "measurement evidence",
+        "publication provenance",
+        "repetition identity"
+      ],
+      "evidence_refs": []
+    },
+    {
+      "method_id": "self-refine",
+      "title": "Self-Refine: Iterative Refinement with Self-Feedback",
+      "paper_uri": "https://papers.neurips.cc/paper_files/paper/2023/hash/91edff07232fb1b55a505a9e9f6c0ff3-Abstract-Conference.html",
+      "year": 2023,
+      "families": [
+        "reasoning",
+        "reflection",
+        "self_improvement"
+      ],
+      "reference_repositories": [
+        "https://github.com/madaan/self-refine"
+      ],
+      "reproduction_packages": [
+        {
+          "package": "self_refine",
+          "lifecycle": "protocol_bound"
+        }
+      ],
+      "priority": 2,
+      "benchmark_ids": [
+        "commongen"
+      ],
+      "platform_pressure": [
+        "execution",
+        "experimentation/study",
+        "model/request",
+        "participant/method"
+      ],
+      "method_owned": [
+        "init-feedback-iterate loop",
+        "task-specific feedback and stopping semantics"
+      ],
+      "platform_owned": [
+        "bounded method execution",
+        "evaluation",
+        "model invocation"
+      ],
+      "evidence_refs": []
+    },
+    {
+      "method_id": "star_toggle_cvpr2026",
+      "title": "See, Think, Act: Teaching Multimodal Agents to Effectively Interact with GUI by Identifying Toggles",
+      "paper_uri": "https://openaccess.thecvf.com/content/CVPR2026/html/Wu_See_Think_Act_Teaching_Multimodal_Agents_to_Effectively_Interact_with_CVPR_2026_paper.html",
+      "year": 2026,
+      "families": [
+        "grounding",
+        "gui-agent",
+        "multimodal",
+        "state-reasoning"
+      ],
+      "reference_repositories": [
+        "https://github.com/ZrW00/StaR"
+      ],
+      "reproduction_packages": [
+        {
+          "package": "star_toggle_cvpr2026",
+          "lifecycle": "protocol_bound"
+        }
+      ],
+      "priority": 1,
+      "benchmark_ids": [
+        "state-control-benchmark"
+      ],
+      "platform_pressure": [
+        "benchmark",
+        "evidence",
+        "execution/workflow",
+        "experimentation/study",
+        "model/request"
+      ],
+      "method_owned": [
+        "Compare current and desired states and decide whether interaction is required.",
+        "Execute the toggle action only when a state transition is required.",
+        "Infer the desired toggle state from the user instruction.",
+        "Perceive the current binary toggle state from the GUI.",
+        "Verify the post-action state and retain evidence."
+      ],
+      "platform_owned": [
+        "MethodProgram execution and Machine Journal truth",
+        "Study/Experiment orchestration and measurement artifacts",
+        "content-addressed benchmark task identity",
+        "provider-independent model/tool dispatch and receipts",
+        "run/evidence provenance and replay"
+      ],
+      "evidence_refs": []
+    },
+    {
+      "method_id": "steve-1",
+      "title": "STEVE-1: A Generative Model for Text-to-Behavior in Minecraft",
+      "paper_uri": "https://proceedings.neurips.cc/paper_files/paper/2023/hash/dd03f856fc7f2efeec8b1c796284561d-Abstract-Conference.html",
+      "year": 2023,
+      "families": [
+        "goal_conditioned_control",
+        "minecraft_agent",
+        "vision_language_action"
+      ],
+      "reference_repositories": [
+        "https://github.com/Shalev-Lifshitz/STEVE-1"
+      ],
+      "reproduction_packages": [
+        {
+          "package": "steve1_minecraft",
+          "lifecycle": "protocol_bound"
+        }
+      ],
+      "priority": 1,
+      "benchmark_ids": [
+        "steve1-paper-prompts"
+      ],
+      "platform_pressure": [
+        "artifact/content",
+        "environment/minecraft",
+        "execution/workflow",
+        "model/multimodal",
+        "participant/capability"
+      ],
+      "method_owned": [
+        "MineCLIP-latent goal conditioning",
+        "classifier-free-guided recurrent VPT policy",
+        "stochastic low-level keyboard/mouse action sampling",
+        "text-to-latent prior conditioning",
+        "visual-prompt latent conditioning"
+      ],
+      "platform_owned": [
+        "MethodProgram execution and checkpoints",
+        "content-addressed goal embeddings and recurrent controller state",
+        "model weight/provider binding",
+        "raw-pixel Minecraft environment provider",
+        "trajectory/effect evidence"
+      ],
+      "evidence_refs": []
+    },
+    {
+      "method_id": "storm",
+      "title": "Assisting in Writing Wikipedia-like Articles From Scratch with Large Language Models",
+      "paper_uri": "https://aclanthology.org/2024.naacl-long.347/",
+      "year": 2024,
+      "families": [
+        "citation_grounding",
+        "question_asking",
+        "research_agent",
+        "retrieval"
+      ],
+      "reference_repositories": [
+        "https://github.com/stanford-oval/storm"
+      ],
+      "reproduction_packages": [
+        {
+          "package": "storm_wiki",
+          "lifecycle": "protocol_bound"
+        }
+      ],
+      "priority": 1,
+      "benchmark_ids": [
+        "freshwiki"
+      ],
+      "platform_pressure": [
+        "artifact/lineage",
+        "data/query",
+        "execution",
+        "experimentation/study",
+        "model/request",
+        "participant/method"
+      ],
+      "method_owned": [
+        "four-stage citation-grounded article pipeline",
+        "perspective-guided question asking",
+        "simulated expert conversation"
+      ],
+      "platform_owned": [
+        "artifact lineage",
+        "bounded stage execution",
+        "evidence and evaluation",
+        "model invocation",
+        "retrieval transport"
+      ],
+      "evidence_refs": []
+    },
+    {
+      "method_id": "swe-agent",
+      "title": "SWE-agent: Agent-Computer Interfaces Enable Automated Software Engineering",
+      "paper_uri": "https://proceedings.neurips.cc/paper_files/paper/2024/hash/5a7c947568c1b1328ccc5230172e1e7c-Abstract-Conference.html",
+      "year": 2024,
+      "families": [
+        "agent_computer_interface",
+        "software_agent",
+        "tool_use"
+      ],
+      "reference_repositories": [
+        "https://github.com/SWE-agent/SWE-agent"
+      ],
+      "reproduction_packages": [
+        {
+          "package": "swe_agent_swebench",
+          "lifecycle": "protocol_bound"
+        }
+      ],
+      "priority": 1,
+      "benchmark_ids": [
+        "swe-bench"
+      ],
+      "platform_pressure": [
+        "environment/software",
+        "execution",
+        "observability/telemetry",
+        "participant/agent",
+        "reliability/recovery"
+      ],
+      "method_owned": [
+        "agent-computer interface design",
+        "software navigation policy"
+      ],
+      "platform_owned": [
+        "checkpoint and recovery",
+        "software environment",
+        "telemetry",
+        "tool execution"
+      ],
+      "evidence_refs": []
+    },
+    {
+      "method_id": "toolformer",
+      "title": "Toolformer: Language Models Can Teach Themselves to Use Tools",
+      "paper_uri": "https://proceedings.neurips.cc/paper/2023/hash/d842425e4bf79ba039352da0f658a906-Abstract-Conference.html",
+      "year": 2023,
+      "families": [
+        "self_supervision",
+        "tool_use",
+        "training"
+      ],
+      "reference_repositories": [],
+      "reproduction_packages": [
+        {
+          "package": "toolformer",
+          "lifecycle": "protocol_bound"
+        }
+      ],
+      "priority": 1,
+      "benchmark_ids": [
+        "toolformer-eval"
+      ],
+      "platform_pressure": [
+        "artifact/lineage",
+        "execution",
+        "experimentation/study",
+        "model/request",
+        "participant/capability",
+        "participant/method"
+      ],
+      "method_owned": [
+        "API-aware interrupted decoding policy",
+        "API-call augmented language-model finetuning semantics",
+        "candidate API position and call sampling",
+        "few-shot API-call annotation prompts",
+        "future-token loss based API-call filtering"
+      ],
+      "platform_owned": [
+        "benchmark cut identity",
+        "capability execution and effect evidence",
+        "model invocation and immutable model identity",
+        "study and measurement authority",
+        "training artifact lineage when a qualified trainer is bound"
+      ],
+      "evidence_refs": []
+    },
+    {
+      "method_id": "toolllm",
+      "title": "ToolLLM: Facilitating Large Language Models to Master 16000+ Real-world APIs",
+      "paper_uri": "https://proceedings.iclr.cc/paper_files/paper/2024/hash/28e50ee5b72e90b50e7196fde8ea260e-Abstract-Conference.html",
+      "year": 2024,
+      "families": [
+        "api_agent",
+        "retrieval",
+        "search",
+        "tool_use"
+      ],
+      "reference_repositories": [
+        "https://github.com/OpenBMB/ToolBench"
+      ],
+      "reproduction_packages": [
+        {
+          "package": "toolllm_toolbench",
+          "lifecycle": "protocol_bound"
+        }
+      ],
+      "priority": 1,
+      "benchmark_ids": [
+        "toolbench"
+      ],
+      "platform_pressure": [
+        "data/projection",
+        "data/query",
+        "execution",
+        "model/request",
+        "observability/telemetry",
+        "participant/capability"
+      ],
+      "method_owned": [
+        "API Retriever task-conditioned top-k policy",
+        "DFSDT tool-search policy",
+        "function-schema materialization and Finish injection semantics"
+      ],
+      "platform_owned": [
+        "capability descriptor authority",
+        "capability invocation and effect evidence",
+        "evaluation",
+        "semantic projection and query"
+      ],
+      "evidence_refs": []
+    },
+    {
+      "method_id": "tree-of-thoughts",
+      "title": "Tree of Thoughts: Deliberate Problem Solving with Large Language Models",
+      "paper_uri": "https://proceedings.neurips.cc/paper/2023/hash/271db9922b8d1f4dd7aaef84ed5ac703-Abstract.html",
+      "year": 2023,
+      "families": [
+        "reasoning",
+        "tree_search"
+      ],
+      "reference_repositories": [
+        "https://github.com/princeton-nlp/tree-of-thought-llm"
+      ],
+      "reproduction_packages": [
+        {
+          "package": "tree_of_thoughts",
+          "lifecycle": "protocol_bound"
+        }
+      ],
+      "priority": 1,
+      "benchmark_ids": [
+        "game24"
+      ],
+      "platform_pressure": [
+        "experimentation/evaluation",
+        "experimentation/study",
+        "model/assignment",
+        "model/request"
+      ],
+      "method_owned": [
+        "frontier selection policy",
+        "thought evaluation policy",
+        "thought generation policy"
+      ],
+      "platform_owned": [
+        "benchmark cut identity",
+        "evaluation evidence and measurements",
+        "named model-role binding",
+        "study expansion"
+      ],
+      "evidence_refs": []
+    },
+    {
+      "method_id": "tree-search-language-model-agents",
+      "title": "Tree Search for Language Model Agents",
+      "paper_uri": "https://arxiv.org/abs/2407.01476",
+      "year": 2024,
+      "families": [
+        "test_time_compute",
+        "tree_search",
+        "web_agent"
+      ],
+      "reference_repositories": [
+        "https://github.com/kohjingyu/search-agents"
+      ],
+      "reproduction_packages": [
+        {
+          "package": "tree_search_language_model_agents",
+          "lifecycle": "protocol_bound"
+        }
+      ],
+      "priority": 2,
+      "benchmark_ids": [
+        "visualwebarena",
+        "webarena"
+      ],
+      "platform_pressure": [
+        "environment/runtime",
+        "environment/web",
+        "experimentation/study",
+        "model/assignment",
+        "model/request"
+      ],
+      "method_owned": [
+        "partial trajectory reuse",
+        "tree search policy",
+        "value-function search budget"
+      ],
+      "platform_owned": [
+        "benchmark cut identity",
+        "environment lifecycle",
+        "evidence and metrics",
+        "model role binding"
+      ],
+      "evidence_refs": []
+    },
+    {
+      "method_id": "ui-tars",
+      "title": "UI-TARS: Pioneering Automated GUI Interaction with Native Agents",
+      "paper_uri": "https://arxiv.org/abs/2501.12326",
+      "year": 2025,
+      "families": [
+        "agent_loop",
+        "computer_use",
+        "gui_agent",
+        "multimodal"
+      ],
+      "reference_repositories": [
+        "https://github.com/bytedance/UI-TARS-desktop"
+      ],
+      "reproduction_packages": [
+        {
+          "package": "ui_tars_desktop_v001",
+          "lifecycle": "protocol_bound"
+        }
+      ],
+      "priority": 1,
+      "benchmark_ids": [
+        "osworld"
+      ],
+      "platform_pressure": [
+        "environment/gui",
+        "execution",
+        "model/request",
+        "observability/telemetry",
+        "participant/agent",
+        "reliability/recovery"
+      ],
+      "method_owned": [
+        "desktop action grammar",
+        "multimodal conversation and loop policy",
+        "visual grounding and normalized coordinate semantics"
+      ],
+      "platform_owned": [
+        "GUI action execution",
+        "bounded lifecycle",
+        "effect evidence",
+        "multimodal content transport",
+        "recovery and telemetry"
+      ],
+      "evidence_refs": []
+    },
+    {
+      "method_id": "ui_agile_cvprf2026",
+      "title": "UI-AGILE: Advancing GUI Agents with Effective Reinforcement Learning and Precise Inference-Time Grounding",
+      "paper_uri": "https://openaccess.thecvf.com/content/CVPR2026F/html/Lian_UI-AGILE_Advancing_GUI_Agents_with_Effective_Reinforcement_Learning_and_Precise_CVPRF_2026_paper.html",
+      "year": 2026,
+      "families": [
+        "gui-agent",
+        "inference-time-selection",
+        "reinforcement-learning",
+        "visual-grounding"
+      ],
+      "reference_repositories": [
+        "https://github.com/KDEGroup/UI-AGILE"
+      ],
+      "reproduction_packages": [
+        {
+          "package": "ui_agile_cvprf2026",
+          "lifecycle": "protocol_bound"
+        }
+      ],
+      "priority": 1,
+      "benchmark_ids": [
+        "androidcontrol",
+        "screenspot-pro",
+        "screenspot-v2"
+      ],
+      "platform_pressure": [
+        "benchmark",
+        "evidence",
+        "execution/workflow",
+        "experimentation/study",
+        "model/request",
+        "perception"
+      ],
+      "method_owned": [
+        "Decompose high-resolution screens into candidate regions for precise grounding.",
+        "Resample difficult examples through crop-based visual refinement to reduce sparse rewards.",
+        "Score grounding predictions with a continuous precision-sensitive reward.",
+        "Select the final candidate grounding with the VLM before emitting the GUI action.",
+        "Use concise task reasoning that balances planning depth with grounding latency."
+      ],
+      "platform_owned": [
+        "MethodProgram execution and Machine Journal truth",
+        "Study/Experiment orchestration and measurement artifacts",
+        "content-addressed benchmark task identity",
+        "provider-independent model/tool dispatch and receipts",
+        "run/evidence provenance and replay"
+      ],
+      "evidence_refs": []
+    },
+    {
+      "method_id": "vca-video",
+      "title": "VCA: Video Curious Agent for Long Video Understanding",
+      "paper_uri": "https://openaccess.thecvf.com/content/ICCV2025/html/Yang_VCA_Video_Curious_Agent_for_Long_Video_Understanding_ICCV_2025_paper.html",
+      "year": 2025,
+      "families": [
+        "active_video_exploration",
+        "curiosity_driven_search",
+        "long_video_understanding",
+        "multimodal_memory"
+      ],
+      "reference_repositories": [],
+      "reproduction_packages": [
+        {
+          "package": "vca_video",
+          "lifecycle": "protocol_bound"
+        }
+      ],
+      "priority": 1,
+      "benchmark_ids": [
+        "egoschema"
+      ],
+      "platform_pressure": [
+        "benchmark/video",
+        "execution/machines/memory",
+        "execution/machines/method",
+        "experimentation/study",
+        "model/multimodal"
+      ],
+      "method_owned": [
+        "VLM self-generated intrinsic reward",
+        "fixed-size selected-frame memory",
+        "non-greedy temperature-controlled segment choice",
+        "reward-history-conditioned exploration",
+        "tree-structured video-segment exploration"
+      ],
+      "platform_owned": [
+        "MethodMachine and MemoryMachine journal authority",
+        "artifact/evidence lineage",
+        "benchmark cut identity",
+        "multimodal model transport",
+        "study and evaluation orchestration"
+      ],
+      "evidence_refs": []
+    },
+    {
+      "method_id": "videoagent-memory",
+      "title": "VideoAgent: A Memory-augmented Multimodal Agent for Video Understanding",
+      "paper_uri": "https://www.ecva.net/papers/eccv_2024/papers_ECCV/html/3241_ECCV_2024_paper.php",
+      "year": 2024,
+      "families": [
+        "memory_augmented_agent",
+        "multimodal_memory",
+        "react",
+        "video_agent"
+      ],
+      "reference_repositories": [
+        "https://github.com/YueFan1014/VideoAgent"
+      ],
+      "reproduction_packages": [
+        {
+          "package": "videoagent_memory",
+          "lifecycle": "protocol_bound"
+        }
+      ],
+      "priority": 1,
+      "benchmark_ids": [
+        "egoschema"
+      ],
+      "platform_pressure": [
+        "artifact/content",
+        "execution/machines/memory",
+        "execution/workflow",
+        "experimentation/study",
+        "model/embedding",
+        "model/multimodal"
+      ],
+      "method_owned": [
+        "18:11 visual/textual segment-localization fusion",
+        "nested object-memory two-tool ReAct policy",
+        "object-centric tracking/re-identification memory",
+        "paper-era caption-range and early-stop quirks",
+        "top-level four-tool ReAct policy",
+        "two-second temporal segment memory"
+      ],
+      "platform_owned": [
+        "MemoryMachine journal authority",
+        "MethodProgram host and child-machine links",
+        "benchmark cut authority",
+        "content-addressed video/memory artifacts",
+        "measurement and study execution",
+        "model and embedding provider transport"
+      ],
+      "evidence_refs": []
+    },
+    {
+      "method_id": "videoarm",
+      "title": "VideoARM: Agentic Reasoning over Hierarchical Memory for Long-Form Video Understanding",
+      "paper_uri": "https://openaccess.thecvf.com/content/CVPR2026/html/Yin_VideoARM_Agentic_Reasoning_over_Hierarchical_Memory_for_Long-Form_Video_Understanding_CVPR_2026_paper.html",
+      "year": 2026,
+      "families": [
+        "agentic_workflow",
+        "videoarm"
+      ],
+      "reference_repositories": [
+        "https://github.com/MILVLG/videoarm"
+      ],
+      "reproduction_packages": [
+        {
+          "package": "videoarm_cvpr2026",
+          "lifecycle": "protocol_bound"
+        }
+      ],
+      "priority": 1,
+      "benchmark_ids": [
+        "egoschema"
+      ],
+      "platform_pressure": [
+        "benchmark",
+        "evidence",
+        "execution/workflow",
+        "experimentation/study",
+        "model/request"
+      ],
+      "method_owned": [
+        "bounded long-video agent reasoning",
+        "coarse-to-fine evidence tool routing",
+        "hierarchical multimodal memory",
+        "observe-think-act-memorize control cycle"
+      ],
+      "platform_owned": [
+        "MethodProgram and Machine Journal execution authority",
+        "benchmark cut identity",
+        "experiment and measurement orchestration",
+        "model/provider transport",
+        "run evidence and provenance"
+      ],
+      "evidence_refs": []
+    },
+    {
+      "method_id": "videollamb",
+      "title": "VideoLLaMB: Long Streaming Video Understanding with Recurrent Memory Bridges",
+      "paper_uri": "https://openaccess.thecvf.com/content/ICCV2025/html/Wang_VideoLLaMB_Long_Streaming_Video_Understanding_with_Recurrent_Memory_Bridges_ICCV_2025_paper.html",
+      "year": 2025,
+      "families": [
+        "long_video_understanding",
+        "multimodal_memory",
+        "recurrent_memory_bridge",
+        "streaming_video_memory"
+      ],
+      "reference_repositories": [
+        "https://github.com/bigai-nlco/VideoLLaMB"
+      ],
+      "reproduction_packages": [
+        {
+          "package": "videollamb_memory",
+          "lifecycle": "protocol_bound"
+        }
+      ],
+      "priority": 1,
+      "benchmark_ids": [
+        "egoschema"
+      ],
+      "platform_pressure": [
+        "artifact/tensor",
+        "benchmark/video",
+        "execution/machines/memory",
+        "experimentation/study",
+        "model/multimodal"
+      ],
+      "method_owned": [
+        "SceneTiling semantic video segmentation",
+        "Transformer memory bridge update",
+        "memory-cache cross-attention retrieval",
+        "recurrent temporal memory tokens",
+        "streaming semantic-segment recurrence"
+      ],
+      "platform_owned": [
+        "MemoryMachine journal authority",
+        "artifact/evidence lineage",
+        "benchmark cut identity",
+        "immutable multimodal content identity",
+        "model execution and transport",
+        "study and evaluation orchestration"
+      ],
+      "evidence_refs": []
+    },
+    {
+      "method_id": "vilomem_cvpr2026",
+      "title": "ViLoMem: Agentic Learner with Grow-and-Refine Multimodal Semantic Memory",
+      "paper_uri": "https://openaccess.thecvf.com/content/CVPR2026/html/Bo_ViLoMem_Agentic_Learner_with_Grow-and-Refine_Multimodal_Semantic_Memory_CVPR_2026_paper.html",
+      "year": 2026,
+      "families": [
+        "agentic-learning",
+        "error-attribution",
+        "lifelong-learning",
+        "multimodal-memory",
+        "semantic-memory"
+      ],
+      "reference_repositories": [
+        "https://github.com/weihao-bo/ViLoMem"
+      ],
+      "reproduction_packages": [
+        {
+          "package": "vilomem_cvpr2026",
+          "lifecycle": "protocol_bound"
+        }
+      ],
+      "priority": 1,
+      "benchmark_ids": [
+        "hallusionbench",
+        "mathvision",
+        "mathvista",
+        "mmmu",
+        "mmstar",
+        "realworldqa"
+      ],
+      "platform_pressure": [
+        "artifact/lineage",
+        "benchmark",
+        "evidence",
+        "execution/workflow",
+        "experimentation/study",
+        "memory",
+        "model/request",
+        "perception"
+      ],
+      "method_owned": [
+        "Analyze attention/perception failures and isolate visual distraction or hallucination patterns.",
+        "Attribute reasoning failures into structured logical error and strategy schemas.",
+        "Merge with a similar memory schema or create a new schema while preserving stable reusable knowledge.",
+        "Retrieve logical memories by problem/text similarity and visual memories by image embedding plus query filtering.",
+        "Solve the multimodal query using retrieved logical and visual semantic memories.",
+        "Verify the prediction and identify whether the attempt should contribute new memory."
+      ],
+      "platform_owned": [
+        "MethodProgram execution and Machine Journal truth",
+        "Study/Experiment orchestration and measurement artifacts",
+        "content-addressed benchmark task identity",
+        "provider-independent model/tool dispatch and receipts",
+        "run/evidence provenance and replay"
+      ],
+      "evidence_refs": []
+    },
+    {
+      "method_id": "vima",
+      "title": "VIMA: Robot Manipulation with Multimodal Prompts",
+      "paper_uri": "https://proceedings.mlr.press/v202/jiang23b.html",
+      "year": 2023,
+      "families": [
+        "autoregressive_control",
+        "embodied",
+        "multimodal_prompting",
+        "object_centric_policy",
+        "robot_manipulation"
+      ],
+      "reference_repositories": [
+        "https://github.com/vimalabs/VIMA",
+        "https://github.com/vimalabs/VIMABench"
+      ],
+      "reproduction_packages": [
+        {
+          "package": "vima_embodied",
+          "lifecycle": "protocol_bound"
+        }
+      ],
+      "priority": 1,
+      "benchmark_ids": [
+        "vima-bench"
+      ],
+      "platform_pressure": [
+        "artifact/content",
+        "environment/embodied",
+        "execution/workflow",
+        "experimentation/study",
+        "model/request",
+        "participant/agent"
+      ],
+      "method_owned": [
+        "autoregressive observation/action-token interleaving",
+        "camera-ready action de-discretization semantics",
+        "interleaved language/object prompt sequence semantics",
+        "object-centric observation history semantics",
+        "six-component discretized pick/place action policy"
+      ],
+      "platform_owned": [
+        "MethodProgram host and journal authority",
+        "benchmark/study orchestration",
+        "effect evidence",
+        "embodied environment execution",
+        "model serving and policy execution",
+        "multimodal tensor content identity and transport"
+      ],
+      "evidence_refs": []
+    },
+    {
+      "method_id": "voyager",
+      "title": "Voyager: An Open-Ended Embodied Agent with Large Language Models",
+      "paper_uri": "https://mlanthology.org/tmlr/2024/wang2024tmlr-voyager/",
+      "year": 2024,
+      "families": [
+        "curriculum",
+        "embodied",
+        "self_improvement",
+        "skill_library"
+      ],
+      "reference_repositories": [
+        "https://github.com/MineDojo/Voyager"
+      ],
+      "reproduction_packages": [
+        {
+          "package": "voyager_minecraft",
+          "lifecycle": "protocol_bound"
+        }
+      ],
+      "priority": 1,
+      "benchmark_ids": [
+        "voyager-minecraft"
+      ],
+      "platform_pressure": [
+        "environment/minecraft",
+        "execution/machines",
+        "execution/workflow",
+        "memory",
+        "model/request",
+        "participant/agent",
+        "reliability/recovery"
+      ],
+      "method_owned": [
+        "automatic curriculum",
+        "chest memory update semantics",
+        "curriculum QA cache semantics",
+        "iterative prompting strategy",
+        "self-verification loop",
+        "skill library write and retrieval semantics"
+      ],
+      "platform_owned": [
+        "Machine Journal authority",
+        "MemoryMachine hosting",
+        "MethodProgram hosting",
+        "Minecraft provider and sandbox mechanics",
+        "model invocation",
+        "nested Machine composition",
+        "recovery and effect receipts"
+      ],
+      "evidence_refs": []
+    },
+    {
+      "method_id": "watch-and-learn",
+      "title": "Watch and Learn: Learning to Use Computers from Online Videos",
+      "paper_uri": "https://openaccess.thecvf.com/content/CVPR2026/html/Song_Watch_and_Learn_Learning_to_Use_Computers_from_Online_Videos_CVPR_2026_paper.html",
+      "year": 2026,
+      "families": [
+        "agentic_workflow",
+        "watch_and_learn"
+      ],
+      "reference_repositories": [],
+      "reproduction_packages": [
+        {
+          "package": "watch_learn_cvpr2026",
+          "lifecycle": "protocol_bound"
+        }
+      ],
+      "priority": 1,
+      "benchmark_ids": [
+        "osworld"
+      ],
+      "platform_pressure": [
+        "benchmark",
+        "evidence",
+        "execution/workflow",
+        "experimentation/study",
+        "model/request"
+      ],
+      "method_owned": [
+        "ICL and SFT use of web-scale demonstrations",
+        "inverse-dynamics UI trajectory annotation",
+        "task-aware tutorial-video retrieval",
+        "trajectory filtering"
+      ],
+      "platform_owned": [
+        "MethodProgram and Machine Journal execution authority",
+        "benchmark cut identity",
+        "experiment and measurement orchestration",
+        "model/provider transport",
+        "run evidence and provenance"
+      ],
+      "evidence_refs": []
+    },
+    {
+      "method_id": "webagent-r1",
+      "title": "WebAgent-R1: Training Web Agents via End-to-End Multi-Turn Reinforcement Learning",
+      "paper_uri": "https://aclanthology.org/2025.emnlp-main.401/",
+      "year": 2025,
+      "families": [
+        "agentic_workflow",
+        "webagent_r1"
+      ],
+      "reference_repositories": [
+        "https://github.com/weizhepei/WebAgent-R1"
+      ],
+      "reproduction_packages": [
+        {
+          "package": "webagent_r1_emnlp2025",
+          "lifecycle": "protocol_bound"
+        }
+      ],
+      "priority": 1,
+      "benchmark_ids": [
+        "webarena"
+      ],
+      "platform_pressure": [
+        "benchmark",
+        "evidence",
+        "execution/workflow",
+        "experimentation/study",
+        "model/request"
+      ],
+      "method_owned": [
+        "behavior-cloning warm-up",
+        "end-to-end multi-turn web-agent reinforcement learning",
+        "interaction-count test-time scaling",
+        "thinking-based web prompting"
+      ],
+      "platform_owned": [
+        "MethodProgram and Machine Journal execution authority",
+        "benchmark cut identity",
+        "experiment and measurement orchestration",
+        "model/provider transport",
+        "run evidence and provenance"
+      ],
+      "evidence_refs": []
+    },
+    {
+      "method_id": "webvoyager",
+      "title": "WebVoyager: Building an End-to-End Web Agent with Large Multimodal Models",
+      "paper_uri": "https://aclanthology.org/2024.acl-long.371/",
+      "year": 2024,
+      "families": [
+        "agent_loop",
+        "gui",
+        "multimodal",
+        "web_agent"
+      ],
+      "reference_repositories": [
+        "https://github.com/MinorJerry/WebVoyager"
+      ],
+      "reproduction_packages": [
+        {
+          "package": "webvoyager",
+          "lifecycle": "protocol_bound"
+        }
+      ],
+      "priority": 1,
+      "benchmark_ids": [
+        "webvoyager"
+      ],
+      "platform_pressure": [
+        "environment/gui",
+        "environment/web",
+        "experimentation/study",
+        "model/request",
+        "observability/telemetry",
+        "participant/agent"
+      ],
+      "method_owned": [
+        "browser reasoning policy",
+        "numerically labeled browser observation policy",
+        "one-action browser grammar"
+      ],
+      "platform_owned": [
+        "evidence and metrics",
+        "model invocation",
+        "multimodal content transport",
+        "web and GUI environment execution"
+      ],
+      "evidence_refs": []
+    },
+    {
+      "method_id": "worldmm",
+      "title": "WorldMM: Dynamic Multimodal Memory Agent for Long Video Reasoning",
+      "paper_uri": "https://openaccess.thecvf.com/content/CVPR2026/html/Yeo_WorldMM_Dynamic_Multimodal_Memory_Agent_for_Long_Video_Reasoning_CVPR_2026_paper.html",
+      "year": 2026,
+      "families": [
+        "agentic_retrieval",
+        "episodic_semantic_visual_memory",
+        "heterogeneous_memory",
+        "long_video_understanding",
+        "multimodal_memory"
+      ],
+      "reference_repositories": [
+        "https://github.com/wgcyeo/WorldMM"
+      ],
+      "reproduction_packages": [
+        {
+          "package": "worldmm_memory",
+          "lifecycle": "protocol_bound"
+        }
+      ],
+      "priority": 1,
+      "benchmark_ids": [
+        "egolifeqa"
+      ],
+      "platform_pressure": [
+        "artifact/content",
+        "benchmark/video",
+        "execution/machines/memory",
+        "execution/workflow",
+        "experimentation/study",
+        "model/multimodal"
+      ],
+      "method_owned": [
+        "HippoRAG candidate retrieval plus LLM multiscale reranking",
+        "cross-facet duplicate suppression",
+        "episodic memory over 30sec/3min/10min/1h temporal scales",
+        "five-round and five-error stopping semantics",
+        "iterative search-or-answer memory routing",
+        "semantic entity-relation graph retrieval with Personalized PageRank",
+        "visual clip similarity and timestamp-range frame retrieval"
+      ],
+      "platform_owned": [
+        "MethodProgram and child-machine composition",
+        "benchmark cut identity",
+        "capability/model transport",
+        "content-addressed multimodal artifacts",
+        "one MemoryMachine journal across heterogeneous memory facets",
+        "study and evaluation orchestration"
+      ],
+      "evidence_refs": []
+    }
+  ],
+  "platform_gaps": [
+    {
+      "gap_id": "context-model-view",
+      "status": "active",
+      "promotion_reason": "cross_cutting_runtime_invariant",
+      "trigger_method_ids": [
+        "react",
+        "reflexion",
+        "memgpt",
+        "swe-agent",
+        "live-swe-agent"
+      ],
+      "target_systems": [
+        "model/request",
+        "participant/agent"
+      ],
+      "problem": "Long-running methods need an auditable model-facing context projection that never mutates durable host truth, preserves tool-call/result atomicity, and fails closed on irrecoverable overflow."
+    },
+    {
+      "gap_id": "agent-turn-facts",
+      "status": "active",
+      "promotion_reason": "required_for_reproducibility",
+      "trigger_method_ids": [
+        "react",
+        "reflexion",
+        "memgpt",
+        "swe-agent",
+        "live-swe-agent"
+      ],
+      "target_systems": [
+        "participant/agent",
+        "execution",
+        "runtime",
+        "observability/telemetry"
+      ],
+      "problem": "Agent Turn VM must record exact model-visible inputs, decisions, actions, observations and tool-effect identities as typed ordered machine facts committed through the existing Kernel Journal. Checkpoints may reference a journal cursor/head digest for recovery, but must not become a second trajectory authority."
+    },
+    {
+      "gap_id": "reproduction-catalog",
+      "status": "active",
+      "promotion_reason": "required_for_reproducibility",
+      "trigger_method_ids": [
+        "react",
+        "reflexion",
+        "swe-agent",
+        "memevolve"
+      ],
+      "target_systems": [
+        "portfolio",
+        "participant/method",
+        "experimentation/study",
+        "experimentation/workbench"
+      ],
+      "problem": "A growing paper program needs a machine-verifiable inventory that maps external methods to Noetrium-owned runtime authorities without turning research intelligence into another runtime subsystem."
+    },
+    {
+      "gap_id": "long-horizon-recovery",
+      "status": "candidate",
+      "promotion_reason": "shared_by_multiple_methods",
+      "trigger_method_ids": [
+        "memgpt",
+        "swe-agent",
+        "live-swe-agent",
+        "memevolve",
+        "voyager"
+      ],
+      "target_systems": [
+        "reliability/recovery",
+        "execution",
+        "observability/telemetry"
+      ],
+      "problem": "Long-running agent methods require resumable, idempotent progress across extended tool/environment execution without duplicating per-paper checkpoint logic."
+    },
+    {
+      "gap_id": "semantic-retrieval",
+      "status": "active",
+      "promotion_reason": "shared_by_multiple_methods",
+      "trigger_method_ids": [
+        "memgpt",
+        "generative-agents",
+        "toolllm"
+      ],
+      "target_systems": [
+        "data/projection",
+        "data/query"
+      ],
+      "problem": "Independent memory and tool-use methods require semantic retrieval over authoritative source references. The reusable layer is a rebuildable derived projection plus read-only query contract; it never owns source truth, capability schemas, memory movement, paper-specific scoring or tool-search policy."
+    },
+    {
+      "gap_id": "generated-code-evolution-isolation",
+      "status": "candidate",
+      "promotion_reason": "shared_by_multiple_methods",
+      "trigger_method_ids": [
+        "adas-meta-agent-search",
+        "memevolve",
+        "live-swe-agent",
+        "voyager"
+      ],
+      "target_systems": [
+        "environment/software",
+        "execution",
+        "artifact/lineage",
+        "reliability/recovery"
+      ],
+      "problem": "Independent self-evolving methods generate or revise executable capabilities. Candidate identity, isolated execution, permissions, effect evidence, lineage and rollback must be reusable Platform mechanisms while mutation/search/selection semantics remain method-owned."
+    },
+    {
+      "gap_id": "multi-agent-causal-messaging",
+      "status": "active",
+      "promotion_reason": "shared_by_multiple_methods",
+      "trigger_method_ids": [
+        "camel",
+        "generative-agents",
+        "multiagent-debate",
+        "metagpt",
+        "autogen"
+      ],
+      "target_systems": [
+        "execution/workflow",
+        "observability/telemetry",
+        "artifact/lineage"
+      ],
+      "problem": "Independent multi-agent methods require attributable participant/message identities, explicit sender/receiver or broadcast topology, ordered or round-scoped causal facts, artifact/message lineage and replayable human interruption. Speaker selection, debate exchange, role-playing, society behavior and SOP policies remain method-owned."
+    }
+  ],
+  "innovation_tracks": [
+    {
+      "innovation_id": "sem",
+      "status": "running",
+      "parent_method_ids": [
+        "reflexion",
+        "memgpt",
+        "memevolve"
+      ],
+      "downstream_project": "SEM",
+      "scientific_boundary": "SEM owns Typed Memory DAG, evidence-grounded memory evolution, Meta-Architect decisions and trusted evolution semantics; Noetrium owns generic runtime, model, environment, evidence, experiment, checkpoint and evaluation infrastructure.",
+      "blocked_by_innovation_ids": []
+    },
+    {
+      "innovation_id": "memory-meta-evolution-next",
+      "status": "idea",
+      "parent_method_ids": [
+        "memevolve",
+        "adas-meta-agent-search"
+      ],
+      "downstream_project": "TBD",
+      "scientific_boundary": "Explore constrained search over memory architecture and evolution operators while keeping execution, provenance, evaluation and recovery platform-owned.",
+      "blocked_by_innovation_ids": []
+    },
+    {
+      "innovation_id": "long-horizon-scaffold-evolution",
+      "status": "idea",
+      "parent_method_ids": [
+        "live-swe-agent",
+        "adas-meta-agent-search",
+        "swe-agent"
+      ],
+      "downstream_project": "TBD",
+      "scientific_boundary": "Explore online scaffold adaptation under immutable evidence and rollback constraints, with self-modification semantics downstream and isolation/recovery upstream.",
+      "blocked_by_innovation_ids": []
+    }
+  ],
+  "project_constraints": [
+    {
+      "project_id": "sem",
+      "reason": "Voyager may be reproduced as an isolated external baseline, but its skill/curriculum machinery must not alter SEM scientific behavior.",
+      "forbidden_method_features": [
+        {
+          "method_id": "voyager",
+          "features": [
+            "automatic_curriculum",
+            "skill_library",
+            "skill_retrieval",
+            "executable_skills"
+          ]
+        }
+      ]
+    }
+  ]
+}

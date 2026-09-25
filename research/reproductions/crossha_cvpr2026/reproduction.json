@@ -1,0 +1,201 @@
+{
+  "schema": "noetrium.reproduction.projection.v10",
+  "authority": "generated_from_typed_definition_and_source",
+  "package": "crossha_cvpr2026",
+  "package_digest": "d7edd682e4efe752e4fdeeb8f5338ead1ef87edfbcd396df973541cc728371c0",
+  "definition_digest": "0dbd527b8a5223d3511d230e426f1b7d740cab26e48f781a7be0b08873e32655",
+  "source_registry_digest": "5a145e097816c7349d69d888b911b46ce88155c5829bc4dcc9d1017335ead762",
+  "lifecycle": "protocol_bound",
+  "identity": {
+    "method_id": "crossha_cvpr2026",
+    "title": "Training One Model to Master Cross-Level Agentic Actions via Reinforcement Learning",
+    "paper_uri": "https://openaccess.thecvf.com/content/CVPR2026/html/He_Training_One_Model_to_Master_Cross-Level_Agentic_Actions_via_Reinforcement_CVPR_2026_paper.html",
+    "year": 2026,
+    "paper_revision": "CVPR 2026 final proceedings",
+    "identity_digest": "cc54b328ee510d33e7a7418a926ae501a115c5c7dcd4ee32033ad5c161032863"
+  },
+  "catalog": {
+    "domains": [
+      "agent",
+      "frontier-2026",
+      "minecraft"
+    ],
+    "families": [
+      "heterogeneous-actions",
+      "long-horizon",
+      "minecraft",
+      "open-world-agent",
+      "reinforcement-learning"
+    ],
+    "priority": 1,
+    "benchmark_ids": [
+      "minecraft-openha"
+    ],
+    "platform_pressure": [
+      "benchmark",
+      "evidence",
+      "execution/workflow",
+      "experimentation/study",
+      "memory",
+      "model/request",
+      "participant"
+    ],
+    "method_owned": [
+      "Choose the most suitable action interface and granularity for the current step.",
+      "Collect multi-turn task reward used by Group Relative Policy Optimization.",
+      "Execute the human-like mouse/keyboard interaction in Minecraft 1.16.5.",
+      "Generate a motion-, grounding-, or text-level action under the selected interface.",
+      "Observe the Minecraft RGB stream, task instruction and recent trajectory context without privileged state.",
+      "Update the unified policy with multi-turn GRPO while preserving heterogeneous action switching."
+    ],
+    "platform_owned": [
+      "MethodProgram execution and Machine Journal truth",
+      "Study/Experiment orchestration and measurement artifacts",
+      "content-addressed benchmark task identity",
+      "provider-independent model/tool dispatch and receipts",
+      "run/evidence provenance and replay"
+    ],
+    "reference_repositories": [
+      "https://github.com/CraftJarvis/OpenHA"
+    ],
+    "reference_publications": [
+      "https://openaccess.thecvf.com/content/CVPR2026/html/He_Training_One_Model_to_Master_Cross-Level_Agentic_Actions_via_Reinforcement_CVPR_2026_paper.html"
+    ],
+    "catalog_digest": "9f1fff5b712cfb654cda2b2cb0bdc42927287a5d5a30ea3aee6b3f283589e2e3"
+  },
+  "source_lanes": [
+    {
+      "lane_id": "final_publication",
+      "kind": "paper_provenance",
+      "venue": "CVPR",
+      "year": 2026,
+      "publication_id": "He_CrossHA_CVPR_2026",
+      "publication_uri": "https://openaccess.thecvf.com/content/CVPR2026/html/He_Training_One_Model_to_Master_Cross-Level_Agentic_Actions_via_Reinforcement_CVPR_2026_paper.html",
+      "revision": "CVPR 2026 final proceedings paper",
+      "content_sha256": null,
+      "lane_digest": "5dcaf5ac3d7d9b86afba26a61c73b4383224e11cda6ecb483d331e3704d140ef"
+    },
+    {
+      "lane_id": "official_repository_cut",
+      "kind": "official_artifact",
+      "repository": "https://github.com/CraftJarvis/OpenHA",
+      "commit": "606efc69e945bd02c700e584136bcc105d22f122",
+      "artifacts": [
+        "README.md"
+      ],
+      "lane_digest": "a6a43414f2dc3eb6d47c1075a432c476eec8c213b9a5895b0b5282904970d1cd"
+    }
+  ],
+  "assets": [
+    {
+      "kind": "benchmark",
+      "path": "research/reproductions/crossha_cvpr2026/benchmark.py",
+      "declaration_digest": "8375e1516c5492355e5dfa76c010ef2c069cd9869545bd911a99c9dce608af4f",
+      "content_sha256": "2fd05d20a3e61afaa6e8636045108246b6add42d7a126a8718471739fda8d98d"
+    },
+    {
+      "kind": "method_program",
+      "path": "research/reproductions/crossha_cvpr2026/program.py",
+      "declaration_digest": "755dfa893d98e5eb8b8799bbd7e1eb9c19e9fc15336d2f945d599f7c999f93ea",
+      "content_sha256": "79b61887ae11c4056ed35a51fffd1ea2bbb2c32807b20b99d351eb66ef2ca95f"
+    },
+    {
+      "kind": "study",
+      "path": "research/reproductions/crossha_cvpr2026/study.py",
+      "declaration_digest": "1a359b070f57a00199d878418bf0d78392c68cb3b65e62cf2462ed1e9922d9c6",
+      "content_sha256": "54d72d3fdcc14e17d72b6595d051e1611e4d7ce52a5c1d733d5b072d9c034af7"
+    }
+  ],
+  "primary_executable": "research/reproductions/crossha_cvpr2026/program.py",
+  "reported_results": [
+    {
+      "claim_id": "crossha_mine_peak",
+      "metric_id": "mine_success",
+      "value": 94.7,
+      "qualifiers": {
+        "benchmark": "Mine Blocks",
+        "metric": "Finished Tasks",
+        "unit": "percent"
+      },
+      "claim_digest": "63dc217798e7f734a71c59e84e5254cca6044d85fe9b2ef130953cf6cf7b957f"
+    },
+    {
+      "claim_id": "crossha_craft_peak",
+      "metric_id": "craft_success",
+      "value": 83.3,
+      "qualifiers": {
+        "benchmark": "Craft Items",
+        "metric": "Finished Tasks",
+        "unit": "percent"
+      },
+      "claim_digest": "f041b341a956ab057b0dc1a748af18af6aad9f9720d65c1bdd78e484cc51d036"
+    }
+  ],
+  "reference_baselines": [
+    {
+      "baseline_id": "baseline_01",
+      "description": "OpenHA",
+      "qualifiers": {},
+      "baseline_digest": "6a2a3ef72401e4ab8e0af1f8330c3d1a0523da8a4dfa99529a70922bb94e2d49"
+    },
+    {
+      "baseline_id": "baseline_02",
+      "description": "GroundingHA",
+      "qualifiers": {},
+      "baseline_digest": "b419f2499613a69c33f2f70eafc4971f17312eac0faee2fdc73d4fb4729e8a23"
+    },
+    {
+      "baseline_id": "baseline_03",
+      "description": "MotionHA",
+      "qualifiers": {},
+      "baseline_digest": "d0f3059b79ffc4a3e0d16adb105d4c4d16827aa801deb7d18e30f52ecc86cb55"
+    },
+    {
+      "baseline_id": "baseline_04",
+      "description": "JARVIS-VLA",
+      "qualifiers": {},
+      "baseline_digest": "7fb036644339877b8b22afeb68998437365bf696511eacf31043f8926c376dd9"
+    },
+    {
+      "baseline_id": "baseline_05",
+      "description": "Game-TARS",
+      "qualifiers": {},
+      "baseline_digest": "91dda0a35dd563e2c07bbc47dfe7077a5fca25762fb1ee4931e69e120d1dbbaf"
+    }
+  ],
+  "deltas": [],
+  "blockers": [
+    "Matched reproduction requires the pinned OpenHA/CrossAgent code, model/data revisions, MineStudio/Minecraft 1.16.5 runtime and exact 800+ task manifest.",
+    "Multi-turn GRPO claims require rollout groups, reward traces, action-space selections and training receipts."
+  ],
+  "evidence_refs": [],
+  "scientific_tests": [
+    {
+      "path": "tests/test_scientific_frontier_2026_wave_02.py",
+      "content_sha256": "24b94183020cd24bd2b462fe8dc339d108dd405ec2a878c89bbfc4163f912a32"
+    }
+  ],
+  "research_os": {
+    "surface": "noetrium.api",
+    "execution_state": "benchmark_authority_required",
+    "program_id": "crossha_cvpr2026",
+    "program_digest": "73392aeaad928544764d91737e70c7054d073be64e8bd77394279090ed5a13ef",
+    "benchmark_authority": {
+      "state": "required",
+      "selection_digests": [],
+      "blockers": [
+        "ReproductionResearchOSCompileError:benchmark 'minecraft-openha' has no exact repository or materialized authority"
+      ]
+    },
+    "benchmark_split_axis": {
+      "required": true,
+      "consumers": [
+        "study:build_study"
+      ]
+    },
+    "reproduction_closure_state": "closed",
+    "execution_authority_state": "required",
+    "materialization_ready": false,
+    "execution_requirements": []
+  }
+}

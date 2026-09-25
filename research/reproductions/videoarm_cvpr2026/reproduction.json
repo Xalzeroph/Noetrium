@@ -1,0 +1,181 @@
+{
+  "schema": "noetrium.reproduction.projection.v10",
+  "authority": "generated_from_typed_definition_and_source",
+  "package": "videoarm_cvpr2026",
+  "package_digest": "46eb22bbe5233009f7eba90b1d8f58ea4f3e28f0fdbe751f09193ad025ce3d29",
+  "definition_digest": "16d76a6bf1558096961fdef74089e3c536dd3d43fc991582c6b0c7d603c7d01a",
+  "source_registry_digest": "dd8526fc8b15cc760274353f8a4c7bb10778f7149004af924220d6a2edcdd77e",
+  "lifecycle": "protocol_bound",
+  "identity": {
+    "method_id": "videoarm",
+    "title": "VideoARM: Agentic Reasoning over Hierarchical Memory for Long-Form Video Understanding",
+    "paper_uri": "https://openaccess.thecvf.com/content/CVPR2026/html/Yin_VideoARM_Agentic_Reasoning_over_Hierarchical_Memory_for_Long-Form_Video_Understanding_CVPR_2026_paper.html",
+    "year": 2026,
+    "paper_revision": "CVPR 2026 proceedings",
+    "identity_digest": "0435968ff7209a4105587f519ef6cadf17be73a3d9e01e97f44b31c239fd8db8"
+  },
+  "catalog": {
+    "domains": [
+      "agent",
+      "cvpr",
+      "recent"
+    ],
+    "families": [
+      "agentic_workflow",
+      "videoarm"
+    ],
+    "priority": 1,
+    "benchmark_ids": [
+      "egoschema"
+    ],
+    "platform_pressure": [
+      "benchmark",
+      "evidence",
+      "execution/workflow",
+      "experimentation/study",
+      "model/request"
+    ],
+    "method_owned": [
+      "bounded long-video agent reasoning",
+      "coarse-to-fine evidence tool routing",
+      "hierarchical multimodal memory",
+      "observe-think-act-memorize control cycle"
+    ],
+    "platform_owned": [
+      "MethodProgram and Machine Journal execution authority",
+      "benchmark cut identity",
+      "experiment and measurement orchestration",
+      "model/provider transport",
+      "run evidence and provenance"
+    ],
+    "reference_repositories": [
+      "https://github.com/MILVLG/videoarm"
+    ],
+    "reference_publications": [
+      "https://openaccess.thecvf.com/content/CVPR2026/html/Yin_VideoARM_Agentic_Reasoning_over_Hierarchical_Memory_for_Long-Form_Video_Understanding_CVPR_2026_paper.html"
+    ],
+    "catalog_digest": "ceacd8f14655e933815778ec15da7955f25387dd3327be060585ec8683f71ce9"
+  },
+  "source_lanes": [
+    {
+      "lane_id": "cvpr_2026",
+      "kind": "paper_provenance",
+      "venue": "CVPR",
+      "year": 2026,
+      "publication_id": "videoarm-cvpr-2026",
+      "publication_uri": "https://openaccess.thecvf.com/content/CVPR2026/html/Yin_VideoARM_Agentic_Reasoning_over_Hierarchical_Memory_for_Long-Form_Video_Understanding_CVPR_2026_paper.html",
+      "revision": "CVPR 2026 proceedings publication",
+      "content_sha256": null,
+      "lane_digest": "339f44f6a3729714efbc695e62b23cf8f2cca860d8c038951ec4098170b59126"
+    },
+    {
+      "lane_id": "official_executable",
+      "kind": "official_executable",
+      "repository": "https://github.com/MILVLG/videoarm",
+      "commit": "af1973ad8ffdb1ae3815c1f4e3f22b8c82858ef6",
+      "artifacts": [
+        "README.md"
+      ],
+      "lane_digest": "34a80d1da010e7b03fc1d07af97c30f22963b35a0d729d725dddf1ad38902219"
+    }
+  ],
+  "assets": [
+    {
+      "kind": "benchmark",
+      "path": "research/reproductions/videoarm_cvpr2026/benchmark.py",
+      "declaration_digest": "57fc994c56396baa25484ba1be5a2cae0bb4ff532cdf27e8012943ff4bbec046",
+      "content_sha256": "227385d181c91ff67ef70e3daca19d94124af8985319bf847d7b13c13ee7cbbb"
+    },
+    {
+      "kind": "fidelity",
+      "path": "research/reproductions/videoarm_cvpr2026/fidelity.py",
+      "declaration_digest": "d8de96709a076c9658b225b521cad20563c40f24c67ab1ef35f92c65a4e81551",
+      "content_sha256": "99089f1080a6d2a5fa5e5da92cb155959f6c7fe421c7b37951d7bface0f9d822"
+    },
+    {
+      "kind": "method_program",
+      "path": "research/reproductions/videoarm_cvpr2026/program.py",
+      "declaration_digest": "729f246d9c56cc20da254a9ab56804bc67c344088db1a719f89782875ec937ca",
+      "content_sha256": "9b82d9327a7b008997ea779470218d9e312e2a4400358490bab59aeb414ecc5f"
+    },
+    {
+      "kind": "study",
+      "path": "research/reproductions/videoarm_cvpr2026/study.py",
+      "declaration_digest": "8b0bef6fc0456a28498a8061ca39dc3f8709b2e3fd4ff750a563737f188790e1",
+      "content_sha256": "7e47042f33c5b69bb9c826574248c9a433a8ab6fe6629e60377a63c3c2b5e91a"
+    }
+  ],
+  "primary_executable": "research/reproductions/videoarm_cvpr2026/program.py",
+  "reported_results": [
+    {
+      "claim_id": "videoarm_egoschema_o3_gpt41",
+      "metric_id": "multiple_choice_accuracy_percent",
+      "value": 78.2,
+      "qualifiers": {
+        "benchmark": "egoschema",
+        "controller": "o3",
+        "multimodal_tool": "gpt-4.1",
+        "source": "CVPR-2026 paper Table 1"
+      },
+      "claim_digest": "8802448a724e957bf268721c4a796dfcda9b305dbccbce3dff7ab3f75764870a"
+    },
+    {
+      "claim_id": "videoarm_videomme_o3_gpt4o",
+      "metric_id": "multiple_choice_accuracy_percent",
+      "value": 82.8,
+      "qualifiers": {
+        "benchmark": "video-mme",
+        "controller": "o3",
+        "multimodal_tool": "gpt-4o",
+        "source": "CVPR-2026 paper Table 1"
+      },
+      "claim_digest": "f1586f673c103ffaf47785a5494d4a67d1be76dc78fa52dbe40e9a6ee95279c9"
+    }
+  ],
+  "reference_baselines": [
+    {
+      "baseline_id": "dvd_video_agent",
+      "description": "DVD long-video agent comparison reported by VideoARM",
+      "qualifiers": {
+        "egoschema_accuracy_percent": 76.6,
+        "source": "CVPR-2026 paper Table 1"
+      },
+      "baseline_digest": "c69498b17c1702690c79154914bb9af608b0c0cc24d767aba83ed68f6beae188"
+    }
+  ],
+  "deltas": [],
+  "blockers": [
+    "Matched execution requires immutable o3/GPT-4.x/Whisper provider identities and exact long-video assets.",
+    "Video-MME, LongVideoBench, MLVU and LVBench remain additional benchmark authorities beyond the bound EgoSchema lane."
+  ],
+  "evidence_refs": [],
+  "scientific_tests": [
+    {
+      "path": "tests/test_scientific_recent_2025_2026_wave_v1.py",
+      "content_sha256": "11a5279b71d1113921dcaf67f385ea09612451fe35e356b9efbb782921b4b5a7"
+    }
+  ],
+  "research_os": {
+    "surface": "noetrium.api",
+    "execution_state": "benchmark_authority_required",
+    "program_id": "videoarm_cvpr2026",
+    "program_digest": "fff22652932e88ecda3809c00fa8045269414f409d065275ada914f9be0b0b2e",
+    "benchmark_authority": {
+      "state": "required",
+      "selection_digests": [],
+      "blockers": [
+        "ReproductionResearchOSCompileError:benchmark 'egoschema' has no exact repository or materialized authority"
+      ]
+    },
+    "benchmark_split_axis": {
+      "required": true,
+      "consumers": [
+        "study:build_videoarm_study"
+      ]
+    },
+    "reproduction_closure_state": "closed",
+    "execution_authority_state": "required",
+    "materialization_ready": false,
+    "execution_requirements": []
+  }
+}

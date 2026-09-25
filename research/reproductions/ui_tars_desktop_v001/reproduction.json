@@ -1,0 +1,135 @@
+{
+  "schema": "noetrium.reproduction.projection.v10",
+  "authority": "generated_from_typed_definition_and_source",
+  "package": "ui_tars_desktop_v001",
+  "package_digest": "bf673f0a7c808125a45efefd5c9063598cbe260cd95ffe04fbf504fdafdad322",
+  "definition_digest": "b727da12acd74c46bfc6227a712a2b0ec9e1315c89e10ebf370bbbf9aa7aee77",
+  "source_registry_digest": "c7505a81ddcc5278a50aea896538f01d33110fb19d48872fa2f45a553c1a3768",
+  "lifecycle": "protocol_bound",
+  "identity": {
+    "method_id": "ui-tars",
+    "title": "UI-TARS: Pioneering Automated GUI Interaction with Native Agents",
+    "paper_uri": "https://arxiv.org/abs/2501.12326",
+    "year": 2025,
+    "paper_revision": null,
+    "identity_digest": "a234e461c61b06dd3a3076c726baefe391b65232a3515c16723b26ec8e46b6e4"
+  },
+  "catalog": {
+    "domains": [
+      "gui-computer-use",
+      "multimodal"
+    ],
+    "families": [
+      "agent_loop",
+      "computer_use",
+      "gui_agent",
+      "multimodal"
+    ],
+    "priority": 1,
+    "benchmark_ids": [
+      "osworld"
+    ],
+    "platform_pressure": [
+      "environment/gui",
+      "execution",
+      "model/request",
+      "observability/telemetry",
+      "participant/agent",
+      "reliability/recovery"
+    ],
+    "method_owned": [
+      "desktop action grammar",
+      "multimodal conversation and loop policy",
+      "visual grounding and normalized coordinate semantics"
+    ],
+    "platform_owned": [
+      "GUI action execution",
+      "bounded lifecycle",
+      "effect evidence",
+      "multimodal content transport",
+      "recovery and telemetry"
+    ],
+    "reference_repositories": [
+      "https://github.com/bytedance/UI-TARS-desktop"
+    ],
+    "reference_publications": [],
+    "catalog_digest": "b253d8bf5eef1679f1649666d99fb1509e3e254f4073dbbcc2d81671eda3ca4b"
+  },
+  "source_lanes": [
+    {
+      "lane_id": "candidate_unclassified_01",
+      "kind": "candidate",
+      "repository": "https://github.com/bytedance/UI-TARS-desktop",
+      "commit": "f05568b147afb00ece8a16954f2e12c569699220",
+      "artifacts": [],
+      "lane_digest": "c86157b607842b158ed6e7702ff36535cddedb674bcf9bf96d219a951d4a52ab"
+    }
+  ],
+  "assets": [
+    {
+      "kind": "fidelity",
+      "path": "research/reproductions/ui_tars_desktop_v001/fidelity.py",
+      "declaration_digest": "a30a85d16238cfa2c074036133113d92d006e3b04e37613f68f3597d2923ac52",
+      "content_sha256": "8c55df652b396c53ece02010900f3048c144a626aadbe66686562130517e9982"
+    },
+    {
+      "kind": "method_program",
+      "path": "research/reproductions/ui_tars_desktop_v001/program.py",
+      "declaration_digest": "b9ed650c5dc288b474f47fab64f94534faa29f417cb4ac4ed4c6f2d8edbdc1d0",
+      "content_sha256": "95b6e6282c45b5d2f55fb5a9f66206d495127d1bcfb9d8f9d02d939762876d0b"
+    },
+    {
+      "kind": "study",
+      "path": "research/reproductions/ui_tars_desktop_v001/study.py",
+      "declaration_digest": "9fd2b6c8975087479d4bdc333f3b7abb89192d6724346fb8a4b9884b087ea626",
+      "content_sha256": "d64989d5d28105d3822ad0ca8a806ce1a5ec1d47eee69c390a378917abe317da"
+    },
+    {
+      "kind": "support",
+      "path": "research/reproductions/ui_tars_desktop_v001/scaffold.py",
+      "declaration_digest": "5225e17dcbfb573138b53076c328e55a339a6ae4b15a2556e4e5418b92718724",
+      "content_sha256": "b1879779970794e7f8f493aee80281a17a7f74e7c2166bea1d14ff6f43809988"
+    }
+  ],
+  "primary_executable": "research/reproductions/ui_tars_desktop_v001/program.py",
+  "reported_results": [],
+  "reference_baselines": [],
+  "deltas": [],
+  "blockers": [
+    "matched execution still requires an exact immutable OSWorld task/harness cut plus deployment-qualified GUI and VLM bindings"
+  ],
+  "evidence_refs": [],
+  "scientific_tests": [
+    {
+      "path": "tests/test_scientific_ui_tars_desktop_v001.py",
+      "content_sha256": "08ffe3c3e48b30318e8f70e2fa8af41f8f4698505a67c6c0eeb502fd5d140167"
+    },
+    {
+      "path": "tests/test_scientific_ui_tars_method_program_v1.py",
+      "content_sha256": "598b7260d6a1d5daedf7e50459061756db632a5481a9f38416765096e76fb197"
+    }
+  ],
+  "research_os": {
+    "surface": "noetrium.api",
+    "execution_state": "benchmark_authority_required",
+    "program_id": "ui_tars_desktop_v001",
+    "program_digest": "b83b11a9b627ca228fb2bafbca98b517c09e0641e9653ac5418596caedd6d576",
+    "benchmark_authority": {
+      "state": "required",
+      "selection_digests": [],
+      "blockers": [
+        "ReproductionResearchOSCompileError:benchmark 'osworld' has no exact repository or materialized authority"
+      ]
+    },
+    "benchmark_split_axis": {
+      "required": true,
+      "consumers": [
+        "study:build_ui_tars_osworld_study"
+      ]
+    },
+    "reproduction_closure_state": "closed",
+    "execution_authority_state": "required",
+    "materialization_ready": false,
+    "execution_requirements": []
+  }
+}

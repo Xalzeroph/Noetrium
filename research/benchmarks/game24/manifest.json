@@ -1,0 +1,13 @@
+{
+  "schema": "noetrium.benchmark-manifest.v2",
+  "package": "game24",
+  "benchmark": {
+    "benchmark_id": "game24",
+    "title": "Game24",
+    "source_uri": "https://github.com/princeton-nlp/tree-of-thought-llm",
+    "environment_kinds": [],
+    "modalities": [
+      "text"
+    ]
+  }
+}

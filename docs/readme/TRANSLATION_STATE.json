@@ -1,0 +1,47 @@
+{
+  "schema": "agent-noetrium.readme-translation-state.v1",
+  "source_locale": "en",
+  "source_semantic_sha256": "b32071ffa979474bf29ab578430c11b093fe2733231cebcbda56bf194274b2af",
+  "translations": {
+    "en": {
+      "status": "source",
+      "source_semantic_sha256": "b32071ffa979474bf29ab578430c11b093fe2733231cebcbda56bf194274b2af"
+    },
+    "zh-CN": {
+      "status": "stale",
+      "source_semantic_sha256": "eb1fd832e42f6d9d3ab99197cb46ba3f7aa77a72d48184cf769427b3d7946131"
+    },
+    "zh-TW": {
+      "status": "stale",
+      "source_semantic_sha256": "eb1fd832e42f6d9d3ab99197cb46ba3f7aa77a72d48184cf769427b3d7946131"
+    },
+    "ja": {
+      "status": "stale",
+      "source_semantic_sha256": "eb1fd832e42f6d9d3ab99197cb46ba3f7aa77a72d48184cf769427b3d7946131"
+    },
+    "ko": {
+      "status": "stale",
+      "source_semantic_sha256": "eb1fd832e42f6d9d3ab99197cb46ba3f7aa77a72d48184cf769427b3d7946131"
+    },
+    "es": {
+      "status": "stale",
+      "source_semantic_sha256": "eb1fd832e42f6d9d3ab99197cb46ba3f7aa77a72d48184cf769427b3d7946131"
+    },
+    "pt-BR": {
+      "status": "stale",
+      "source_semantic_sha256": "eb1fd832e42f6d9d3ab99197cb46ba3f7aa77a72d48184cf769427b3d7946131"
+    },
+    "fr": {
+      "status": "stale",
+      "source_semantic_sha256": "eb1fd832e42f6d9d3ab99197cb46ba3f7aa77a72d48184cf769427b3d7946131"
+    },
+    "de": {
+      "status": "stale",
+      "source_semantic_sha256": "eb1fd832e42f6d9d3ab99197cb46ba3f7aa77a72d48184cf769427b3d7946131"
+    },
+    "ru": {
+      "status": "stale",
+      "source_semantic_sha256": "eb1fd832e42f6d9d3ab99197cb46ba3f7aa77a72d48184cf769427b3d7946131"
+    }
+  }
+}

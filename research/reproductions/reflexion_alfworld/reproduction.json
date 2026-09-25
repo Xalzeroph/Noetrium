@@ -1,0 +1,186 @@
+{
+  "schema": "noetrium.reproduction.projection.v10",
+  "authority": "generated_from_typed_definition_and_source",
+  "package": "reflexion_alfworld",
+  "package_digest": "443a0e0acb3ea117fa0629af70845495ba90d6c7f735b7255bce41adc8df9847",
+  "definition_digest": "ca97cfa0e2748d1a84ca6b3838480956a5d000d003ac6fb4dfd80cd643bff54a",
+  "source_registry_digest": "1ba271f6cca205054b041cb9ec92d5169ccecee597816374a82a9a19a1b0c81e",
+  "lifecycle": "protocol_bound",
+  "identity": {
+    "method_id": "reflexion",
+    "title": "Reflexion: Language Agents with Verbal Reinforcement Learning",
+    "paper_uri": "https://papers.neurips.cc/paper_files/paper/2023/hash/1b44b878bb782e6954cd888628510e90-Abstract-Conference.html",
+    "year": 2023,
+    "paper_revision": "NeurIPS 2023 / arXiv:2303.11366",
+    "identity_digest": "afdb4bfdf3f7af1c54ba326fa2bc628be575be926f6d9ab85624d9d3ce677526"
+  },
+  "catalog": {
+    "domains": [
+      "memory",
+      "reflection-self-correction",
+      "self-improvement"
+    ],
+    "families": [
+      "agent_loop",
+      "memory",
+      "reflection"
+    ],
+    "priority": 1,
+    "benchmark_ids": [
+      "alfworld"
+    ],
+    "platform_pressure": [
+      "environment/text_world",
+      "experimentation/study",
+      "model/assignment",
+      "model/request",
+      "participant/agent"
+    ],
+    "method_owned": [
+      "failed-trial verbal reflection policy",
+      "multi-trial retry policy",
+      "per-task reflection memory semantics"
+    ],
+    "platform_owned": [
+      "benchmark cut identity",
+      "environment lifecycle",
+      "named model-role binding",
+      "study execution and evidence"
+    ],
+    "reference_repositories": [
+      "https://github.com/noahshinn/reflexion"
+    ],
+    "reference_publications": [],
+    "catalog_digest": "c2363532877162b38ebbd6f70e19e99a364716c754421732af0e9c166d7e25c1"
+  },
+  "source_lanes": [
+    {
+      "lane_id": "official_reflexion_repo",
+      "kind": "official_executable",
+      "repository": "https://github.com/noahshinn/reflexion",
+      "commit": "65001352fd8d1ce31e7aac79ebc470c9f1a09ee6",
+      "artifacts": [
+        "alfworld_runs/alfworld_trial.py",
+        "alfworld_runs/generate_reflections.py",
+        "alfworld_runs/main.py",
+        "alfworld_runs/run_reflexion.sh"
+      ],
+      "lane_digest": "976a059e49f9b6d6b91d1476a69346242f44b53148d09f564092ec6b92530b77"
+    }
+  ],
+  "assets": [
+    {
+      "kind": "fidelity",
+      "path": "research/reproductions/reflexion_alfworld/fidelity.py",
+      "declaration_digest": "f1fa82197a8d7d7ca1f37608f0a3506e8c2cdf73c57180ee313e64f0e7aad03e",
+      "content_sha256": "99730a9181f412330d9719a5ec4b4f5066025047e8cd742c7cfc81f2a2af1c09"
+    },
+    {
+      "kind": "method_program",
+      "path": "research/reproductions/reflexion_alfworld/program.py",
+      "declaration_digest": "10ab90a13e79996c32bdc9c51139c9e164c1ea9a1137f3b0855076494703fd5f",
+      "content_sha256": "eba6422ee80a5ec97f6213f87fb19f5a2db7790b792c0118089b194272a9f4a6"
+    },
+    {
+      "kind": "semantics",
+      "path": "research/reproductions/reflexion_alfworld/semantics.py",
+      "declaration_digest": "e8c616e581ee4765acc83bc56ec5285b7fbe7e39ab355e4ea3e0de06b9a0241e",
+      "content_sha256": "3da42cd993467c90ec615954af7aa93bcef30bb407e1ad35bd12e1684271de35"
+    },
+    {
+      "kind": "study",
+      "path": "research/reproductions/reflexion_alfworld/study.py",
+      "declaration_digest": "91d7b3166188dbd63760882f4468e02cdd5c1ec5ef1710ca8a685397195f4651",
+      "content_sha256": "37984a310c6217c408d0b9d5ea36ddae642574540109d3efe360c90f6b0fe59f"
+    },
+    {
+      "kind": "support",
+      "path": "research/reproductions/reflexion_alfworld/memory.py",
+      "declaration_digest": "61f75f112876185fde452de3d323020bcecb246cf720fd351fc075caa7f773e6",
+      "content_sha256": "b7a50e3fda426a90a8987a7dc1cb68d175b2a1c5a1a06116b3c033aad827628f"
+    }
+  ],
+  "primary_executable": "research/reproductions/reflexion_alfworld/program.py",
+  "reported_results": [
+    {
+      "claim_id": "reflexion_alfworld_completed_tasks",
+      "metric_id": "completed_task_count",
+      "value": 130,
+      "qualifiers": {
+        "benchmark": "alfworld",
+        "total_tasks": 134,
+        "method": "react-plus-reflexion",
+        "source": "NeurIPS-2023 paper"
+      },
+      "claim_digest": "d2808cf8bf90dd7b4a5f9a1d9a64febad41f561594d65e11f8b7f5a1cc9e884b"
+    },
+    {
+      "claim_id": "reflexion_alfworld_gain",
+      "metric_id": "success_improvement_percent",
+      "value": 22.0,
+      "qualifiers": {
+        "benchmark": "alfworld",
+        "comparison": "strong-baselines",
+        "source": "NeurIPS-2023 paper"
+      },
+      "claim_digest": "e09a28b1c09a4f1738bfb89b04f6a02678827fb16d96acc773f008f5811093a3"
+    }
+  ],
+  "reference_baselines": [
+    {
+      "baseline_id": "react_alfworld",
+      "description": "ReAct-style ALFWorld agent baseline used to isolate the value of verbal reflection across repeated trials.",
+      "qualifiers": {
+        "source": "NeurIPS-2023 paper evaluation"
+      },
+      "baseline_digest": "1713c2a20e41e26b32dc16f6a8e75ae3c6cf0688d622a12291086d3d68031204"
+    }
+  ],
+  "deltas": [
+    {
+      "kind": "unresolved",
+      "description": "historical hosted model snapshots are unavailable as immutable public artifacts",
+      "delta_digest": "a15fe5a64bee6d04e52ff25741cbde1ae62c244cc6992d9513502cf2bff924cd"
+    }
+  ],
+  "blockers": [
+    "historical action/reflection model serving snapshots are not exact-current deployments",
+    "exact ALFWorld dataset/runtime deployment cut must be bound before matched execution"
+  ],
+  "evidence_refs": [],
+  "scientific_tests": [
+    {
+      "path": "tests/test_scientific_reflexion_alfworld_fidelity_v1.py",
+      "content_sha256": "452d9eb5a9eaf777040a518c30cc5450a42d16b846a42393c2deb311b0b23002"
+    },
+    {
+      "path": "tests/test_scientific_reflexion_alfworld_v1.py",
+      "content_sha256": "a4c6801fe9fdead18548efcf3e8df52705e6f085ab8a385f55c6341ba190014d"
+    },
+    {
+      "path": "tests/test_scientific_reflexion_method_program_v1.py",
+      "content_sha256": "e632745dc937d79b0b140b502dc45d6cb0393073b6369fbb2ed65ee2945acc47"
+    }
+  ],
+  "research_os": {
+    "surface": "noetrium.api",
+    "execution_state": "benchmark_authority_required",
+    "program_id": "reflexion_alfworld",
+    "program_digest": "0ae6a8f4653099d5cf6c639e10171f9a57cd6d49cef0fd1cb18c0b3f43892c44",
+    "benchmark_authority": {
+      "state": "required",
+      "selection_digests": [],
+      "blockers": [
+        "ReproductionResearchOSCompileError:benchmark 'alfworld' has no exact repository or materialized authority"
+      ]
+    },
+    "benchmark_split_axis": {
+      "required": false,
+      "consumers": []
+    },
+    "reproduction_closure_state": "closed",
+    "execution_authority_state": "required",
+    "materialization_ready": false,
+    "execution_requirements": []
+  }
+}

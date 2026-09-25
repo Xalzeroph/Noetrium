@@ -1,0 +1,19 @@
+logical_name: example_model
+model_id: organization/model-name
+revision: PIN_EXACT_MODEL_REVISION
+engine: example_engine
+engine_version: PIN_EXACT_ENGINE_VERSION
+dtype: bfloat16
+quantization: null
+context_length: 32768
+roles: [planner]
+policy:
+  immutable_identity: true
+  allow_model_fallback: false
+  allow_precision_downgrade: false
+  allow_context_downgrade: false
+  require_role_canary: true
+  require_exact_resume: true
+notes: >
+  Copy this file into a downstream project and replace every placeholder with
+  an exact model, revision, serving backend and scientifically intended policy.

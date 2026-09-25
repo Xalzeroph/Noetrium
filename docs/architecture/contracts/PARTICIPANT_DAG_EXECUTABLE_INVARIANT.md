@@ -1,0 +1,3 @@
+# Participant DAG Executable Invariant
+
+`Study` participant dependencies form a directed acyclic graph. Validation belongs to the generic Study authoring/compiler boundary: reject undeclared roles, self edges, and every direct or transitive cycle before binding resolution. The invariant is paper-agnostic; participant names and paper-private coordination semantics remain downstream. Tests must cover a two-node cycle, a longer cycle, and a valid diamond dependency graph.

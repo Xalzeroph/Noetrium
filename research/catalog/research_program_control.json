@@ -1,0 +1,193 @@
+{
+  "schema": "noetrium.research-program-control.v1",
+  "updated_at": "2026-09-18",
+  "policy": {
+    "external_repositories_are_runtime_dependencies": false,
+    "reproduction_target": "matched_stack",
+    "platform_promotion_reasons": [
+      "shared_by_multiple_methods",
+      "cross_cutting_runtime_invariant",
+      "required_for_reproducibility"
+    ],
+    "rule": "Novel paper semantics stay downstream. Generic runtime, evidence, recovery, evaluation and reproducibility mechanisms move upstream only after real reproduction pressure justifies them."
+  },
+  "platform_gaps": [
+    {
+      "gap_id": "context-model-view",
+      "status": "active",
+      "promotion_reason": "cross_cutting_runtime_invariant",
+      "trigger_method_ids": [
+        "react",
+        "reflexion",
+        "memgpt",
+        "swe-agent",
+        "live-swe-agent"
+      ],
+      "target_systems": [
+        "model/request",
+        "participant/agent"
+      ],
+      "problem": "Long-running methods need an auditable model-facing context projection that never mutates durable host truth, preserves tool-call/result atomicity, and fails closed on irrecoverable overflow."
+    },
+    {
+      "gap_id": "agent-turn-facts",
+      "status": "active",
+      "promotion_reason": "required_for_reproducibility",
+      "trigger_method_ids": [
+        "react",
+        "reflexion",
+        "memgpt",
+        "swe-agent",
+        "live-swe-agent"
+      ],
+      "target_systems": [
+        "participant/agent",
+        "execution",
+        "runtime",
+        "observability/telemetry"
+      ],
+      "problem": "Agent Turn VM must record exact model-visible inputs, decisions, actions, observations and tool-effect identities as typed ordered machine facts committed through the existing Kernel Journal. Checkpoints may reference a journal cursor/head digest for recovery, but must not become a second trajectory authority."
+    },
+    {
+      "gap_id": "reproduction-catalog",
+      "status": "active",
+      "promotion_reason": "required_for_reproducibility",
+      "trigger_method_ids": [
+        "react",
+        "reflexion",
+        "swe-agent",
+        "memevolve"
+      ],
+      "target_systems": [
+        "portfolio",
+        "participant/method",
+        "experimentation/study",
+        "experimentation/workbench"
+      ],
+      "problem": "A growing paper program needs a machine-verifiable inventory that maps external methods to Noetrium-owned runtime authorities without turning research intelligence into another runtime subsystem."
+    },
+    {
+      "gap_id": "long-horizon-recovery",
+      "status": "candidate",
+      "promotion_reason": "shared_by_multiple_methods",
+      "trigger_method_ids": [
+        "memgpt",
+        "swe-agent",
+        "live-swe-agent",
+        "memevolve",
+        "voyager"
+      ],
+      "target_systems": [
+        "reliability/recovery",
+        "execution",
+        "observability/telemetry"
+      ],
+      "problem": "Long-running agent methods require resumable, idempotent progress across extended tool/environment execution without duplicating per-paper checkpoint logic."
+    },
+    {
+      "gap_id": "semantic-retrieval",
+      "status": "active",
+      "promotion_reason": "shared_by_multiple_methods",
+      "trigger_method_ids": [
+        "memgpt",
+        "generative-agents",
+        "toolllm"
+      ],
+      "target_systems": [
+        "data/projection",
+        "data/query"
+      ],
+      "problem": "Independent memory and tool-use methods require semantic retrieval over authoritative source references. The reusable layer is a rebuildable derived projection plus read-only query contract; it never owns source truth, capability schemas, memory movement, paper-specific scoring or tool-search policy."
+    },
+    {
+      "gap_id": "generated-code-evolution-isolation",
+      "status": "candidate",
+      "promotion_reason": "shared_by_multiple_methods",
+      "trigger_method_ids": [
+        "adas-meta-agent-search",
+        "memevolve",
+        "live-swe-agent",
+        "voyager"
+      ],
+      "target_systems": [
+        "environment/software",
+        "execution",
+        "artifact/lineage",
+        "reliability/recovery"
+      ],
+      "problem": "Independent self-evolving methods generate or revise executable capabilities. Candidate identity, isolated execution, permissions, effect evidence, lineage and rollback must be reusable Platform mechanisms while mutation/search/selection semantics remain method-owned."
+    },
+    {
+      "gap_id": "multi-agent-causal-messaging",
+      "status": "active",
+      "promotion_reason": "shared_by_multiple_methods",
+      "trigger_method_ids": [
+        "camel",
+        "generative-agents",
+        "multiagent-debate",
+        "metagpt",
+        "autogen"
+      ],
+      "target_systems": [
+        "execution/workflow",
+        "observability/telemetry",
+        "artifact/lineage"
+      ],
+      "problem": "Independent multi-agent methods require attributable participant/message identities, explicit sender/receiver or broadcast topology, ordered or round-scoped causal facts, artifact/message lineage and replayable human interruption. Speaker selection, debate exchange, role-playing, society behavior and SOP policies remain method-owned."
+    }
+  ],
+  "innovation_tracks": [
+    {
+      "innovation_id": "sem",
+      "status": "running",
+      "parent_method_ids": [
+        "reflexion",
+        "memgpt",
+        "memevolve"
+      ],
+      "downstream_project": "SEM",
+      "scientific_boundary": "SEM owns Typed Memory DAG, evidence-grounded memory evolution, Meta-Architect decisions and trusted evolution semantics; Noetrium owns generic runtime, model, environment, evidence, experiment, checkpoint and evaluation infrastructure.",
+      "blocked_by_innovation_ids": []
+    },
+    {
+      "innovation_id": "memory-meta-evolution-next",
+      "status": "idea",
+      "parent_method_ids": [
+        "memevolve",
+        "adas-meta-agent-search"
+      ],
+      "downstream_project": "TBD",
+      "scientific_boundary": "Explore constrained search over memory architecture and evolution operators while keeping execution, provenance, evaluation and recovery platform-owned.",
+      "blocked_by_innovation_ids": []
+    },
+    {
+      "innovation_id": "long-horizon-scaffold-evolution",
+      "status": "idea",
+      "parent_method_ids": [
+        "live-swe-agent",
+        "adas-meta-agent-search",
+        "swe-agent"
+      ],
+      "downstream_project": "TBD",
+      "scientific_boundary": "Explore online scaffold adaptation under immutable evidence and rollback constraints, with self-modification semantics downstream and isolation/recovery upstream.",
+      "blocked_by_innovation_ids": []
+    }
+  ],
+  "project_constraints": [
+    {
+      "project_id": "sem",
+      "reason": "Voyager may be reproduced as an isolated external baseline, but its skill/curriculum machinery must not alter SEM scientific behavior.",
+      "forbidden_method_features": [
+        {
+          "method_id": "voyager",
+          "features": [
+            "automatic_curriculum",
+            "skill_library",
+            "skill_retrieval",
+            "executable_skills"
+          ]
+        }
+      ]
+    }
+  ]
+}

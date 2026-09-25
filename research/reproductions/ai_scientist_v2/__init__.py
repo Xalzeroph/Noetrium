@@ -1,0 +1,13 @@
+from .fidelity import (
+    AI_SCIENTIST_V2_FIDELITY,
+    AI_SCIENTIST_V2_REPOSITORY,
+    AI_SCIENTIST_V2_SOURCE_COMMIT,
+    AIScientistV2Fidelity,
+)
+
+__all__ = [
+    "AI_SCIENTIST_V2_FIDELITY",
+    "AI_SCIENTIST_V2_REPOSITORY",
+    "AI_SCIENTIST_V2_SOURCE_COMMIT",
+    "AIScientistV2Fidelity",
+]

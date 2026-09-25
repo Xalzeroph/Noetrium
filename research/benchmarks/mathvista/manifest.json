@@ -1,0 +1,14 @@
+{
+  "schema": "noetrium.benchmark-manifest.v2",
+  "package": "mathvista",
+  "benchmark": {
+    "benchmark_id": "mathvista",
+    "title": "MathVista",
+    "source_uri": "https://mathvista.github.io/",
+    "environment_kinds": [],
+    "modalities": [
+      "text",
+      "image"
+    ]
+  }
+}

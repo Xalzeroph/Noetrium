@@ -1,0 +1,17 @@
+{
+  "schema": "noetrium.benchmark-manifest.v2",
+  "package": "embodiedbench",
+  "benchmark": {
+    "benchmark_id": "embodiedbench",
+    "title": "EmbodiedBench",
+    "source_uri": "https://github.com/EmbodiedBench/EmbodiedBench",
+    "environment_kinds": [
+      "embodied"
+    ],
+    "modalities": [
+      "text",
+      "image",
+      "structured"
+    ]
+  }
+}

@@ -1,0 +1,207 @@
+{
+  "schema": "noetrium.reproduction.projection.v10",
+  "authority": "generated_from_typed_definition_and_source",
+  "package": "optimusvla_cvpr2026",
+  "package_digest": "6af610ae2fd99c02547909fffada31f3b7c46e2bb7288f3016e34e4ac73f6aa9",
+  "definition_digest": "924ba4ddda9619d14ef27319e474b5c94b1b08f0cb49141f0b840c0af4225ba4",
+  "source_registry_digest": "a14f0c02855003c848afa4330da888dfbf6930f445850857bd2f6e75e348b32b",
+  "lifecycle": "protocol_bound",
+  "identity": {
+    "method_id": "optimusvla_cvpr2026",
+    "title": "Global Prior Meets Local Consistency: Dual-Memory Augmented Vision-Language-Action Model for Efficient Robotic Manipulation",
+    "paper_uri": "https://openaccess.thecvf.com/content/CVPR2026/html/Li_Global_Prior_Meets_Local_Consistency_Dual-Memory_Augmented_Vision-Language-Action_Model_for_CVPR_2026_paper.html",
+    "year": 2026,
+    "paper_revision": "CVPR 2026 final proceedings",
+    "identity_digest": "82b80006f6d4dfc2332403a48999f6d5cded516a5a4863f20fb32c88f2410e4c"
+  },
+  "catalog": {
+    "domains": [
+      "agent",
+      "frontier-2026",
+      "vision-language-action"
+    ],
+    "families": [
+      "dual-memory",
+      "efficient-inference",
+      "robotic-manipulation",
+      "vision-language-action"
+    ],
+    "priority": 1,
+    "benchmark_ids": [
+      "calvin",
+      "libero",
+      "robotwin2-hard"
+    ],
+    "platform_pressure": [
+      "benchmark",
+      "evidence",
+      "execution/workflow",
+      "experimentation/study",
+      "memory",
+      "model/request"
+    ],
+    "method_owned": [
+      "Apply local temporal-consistency constraints to the generated action chunk.",
+      "Encode executed action history into Local Consistency Memory and infer task progress.",
+      "Encode task language and current observations into the VLA multimodal representation.",
+      "Execute the action chunk and update local action-history memory.",
+      "Generate the next action chunk from prior-initialized flow with adaptive NFE scheduling.",
+      "Retrieve a task-level prior trajectory from Global Prior Memory."
+    ],
+    "platform_owned": [
+      "MethodProgram execution and Machine Journal truth",
+      "Study/Experiment orchestration and measurement artifacts",
+      "content-addressed benchmark task identity",
+      "provider-independent model/tool dispatch and receipts",
+      "run/evidence provenance and replay"
+    ],
+    "reference_repositories": [
+      "https://github.com/iLearn-Lab/CVPR26-OptimusVLA"
+    ],
+    "reference_publications": [
+      "https://openaccess.thecvf.com/content/CVPR2026/html/Li_Global_Prior_Meets_Local_Consistency_Dual-Memory_Augmented_Vision-Language-Action_Model_for_CVPR_2026_paper.html"
+    ],
+    "catalog_digest": "620ee7054207bbdf7613a5bf22614f84242f5bfe90487348d7c9d22f477afd96"
+  },
+  "source_lanes": [
+    {
+      "lane_id": "final_publication",
+      "kind": "paper_provenance",
+      "venue": "CVPR",
+      "year": 2026,
+      "publication_id": "Li_Global_Prior_Meets_Local_Consistency_CVPR_2026",
+      "publication_uri": "https://openaccess.thecvf.com/content/CVPR2026/html/Li_Global_Prior_Meets_Local_Consistency_Dual-Memory_Augmented_Vision-Language-Action_Model_for_CVPR_2026_paper.html",
+      "revision": "CVPR 2026 final proceedings paper",
+      "content_sha256": null,
+      "lane_digest": "5e4d118b8a5d13d4e86d3dc726bbcce67ebb0280bbdae4018fb09153b4303698"
+    },
+    {
+      "lane_id": "official_repository_cut",
+      "kind": "official_artifact",
+      "repository": "https://github.com/iLearn-Lab/CVPR26-OptimusVLA",
+      "commit": "6d0c26bdd0efb5921d14844b9024e458a2e00fc7",
+      "artifacts": [
+        "README.md"
+      ],
+      "lane_digest": "1b6f16ca81d106d91e0b1be8f2a90e21a5b7377af78d0b64e8dbf526a1b1415c"
+    }
+  ],
+  "assets": [
+    {
+      "kind": "benchmark",
+      "path": "research/reproductions/optimusvla_cvpr2026/benchmark.py",
+      "declaration_digest": "0ec9fa3d04c516745ab2d820e9d9e829731052fb1c9f32817f597c73e638438d",
+      "content_sha256": "94aa3b93cfaaae3627b00f9c052719aa061e9b178d69091a12cf01b3284772e2"
+    },
+    {
+      "kind": "method_program",
+      "path": "research/reproductions/optimusvla_cvpr2026/program.py",
+      "declaration_digest": "c826707fdcb7309cc26520e0a2d6c3714695c5c11d505d2c060e6d0302d0b8b5",
+      "content_sha256": "69db3cd39825f2a6792e8622311dbf698df6d074e4c7e03c532f7c3df02ea99c"
+    },
+    {
+      "kind": "study",
+      "path": "research/reproductions/optimusvla_cvpr2026/study.py",
+      "declaration_digest": "1ad869366cf427dc9d731cd56868a3abe56d9d32870188c3aeb20e68466a76da",
+      "content_sha256": "54d72d3fdcc14e17d72b6595d051e1611e4d7ce52a5c1d733d5b072d9c034af7"
+    }
+  ],
+  "primary_executable": "research/reproductions/optimusvla_cvpr2026/program.py",
+  "reported_results": [
+    {
+      "claim_id": "optimus_libero_avg",
+      "metric_id": "task_success",
+      "value": 98.6,
+      "qualifiers": {
+        "benchmark": "LIBERO",
+        "unit": "percent"
+      },
+      "claim_digest": "52f4921c925f456987b8e8491324e9527fc464e753bf3ca17bc409115fcbe6ff"
+    },
+    {
+      "claim_id": "optimus_calvin_gain",
+      "metric_id": "calvin_gain",
+      "value": 13.5,
+      "qualifiers": {
+        "benchmark": "CALVIN",
+        "unit": "percent",
+        "reference": "pi_0"
+      },
+      "claim_digest": "4540c5b4e8da003d314a19d17abefb10a81ba237c16dcde5448ae3bc25f10769"
+    },
+    {
+      "claim_id": "optimus_robotwin_hard",
+      "metric_id": "task_success",
+      "value": 38,
+      "qualifiers": {
+        "benchmark": "RoboTwin 2.0 Hard",
+        "unit": "percent"
+      },
+      "claim_digest": "bab5eec2ac2b7898f9ada89d4bb9581d6c3c92bacebd6556a560d0fc28e8359a"
+    },
+    {
+      "claim_id": "optimus_speedup",
+      "metric_id": "inference_speedup",
+      "value": 2.9,
+      "qualifiers": {
+        "unit": "x"
+      },
+      "claim_digest": "c762313d3ad27138d4033435b19a6d9570da0831da66a61c1ff83a1b86b3a019"
+    }
+  ],
+  "reference_baselines": [
+    {
+      "baseline_id": "baseline_01",
+      "description": "pi_0",
+      "qualifiers": {},
+      "baseline_digest": "791af6059d0695a1ace3608847129bfaa35a4cb8e3d27df8ee048dc9bdc004bd"
+    },
+    {
+      "baseline_id": "baseline_02",
+      "description": "paper VLA baselines",
+      "qualifiers": {},
+      "baseline_digest": "5a4c75fd3c454d644592f12ffdd01770d3353fd1fe6532f09ac5c614f64aebb4"
+    },
+    {
+      "baseline_id": "baseline_03",
+      "description": "single-memory ablations",
+      "qualifiers": {},
+      "baseline_digest": "d762d8c2c02b798d904138e9719d307df719da4a10943aecf0ad058a8e74ea60"
+    }
+  ],
+  "deltas": [],
+  "blockers": [
+    "Matched reproduction requires the pinned OptimusVLA code/checkpoints plus exact LIBERO, CALVIN and RoboTwin 2.0 cuts.",
+    "Real-world long-horizon claims require the GALAXEA robot protocol and physical execution receipts."
+  ],
+  "evidence_refs": [],
+  "scientific_tests": [
+    {
+      "path": "tests/test_scientific_frontier_2026_wave_02.py",
+      "content_sha256": "24b94183020cd24bd2b462fe8dc339d108dd405ec2a878c89bbfc4163f912a32"
+    }
+  ],
+  "research_os": {
+    "surface": "noetrium.api",
+    "execution_state": "benchmark_authority_required",
+    "program_id": "optimusvla_cvpr2026",
+    "program_digest": "c3b1e54ed980c6918de8b69a87206434c48b95da37fa8c5d8ac31a6dbec71fa9",
+    "benchmark_authority": {
+      "state": "required",
+      "selection_digests": [],
+      "blockers": [
+        "ReproductionResearchOSCompileError:benchmark 'calvin' has no exact repository or materialized authority"
+      ]
+    },
+    "benchmark_split_axis": {
+      "required": true,
+      "consumers": [
+        "study:build_study"
+      ]
+    },
+    "reproduction_closure_state": "closed",
+    "execution_authority_state": "required",
+    "materialization_ready": false,
+    "execution_requirements": []
+  }
+}

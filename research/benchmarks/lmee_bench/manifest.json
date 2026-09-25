@@ -1,0 +1,17 @@
+{
+  "schema": "noetrium.benchmark-manifest.v2",
+  "package": "lmee_bench",
+  "benchmark": {
+    "benchmark_id": "lmee-bench",
+    "title": "LMEE-Bench",
+    "source_uri": "https://github.com/wangsen99/LMEE",
+    "environment_kinds": [
+      "embodied"
+    ],
+    "modalities": [
+      "text",
+      "image",
+      "structured"
+    ]
+  }
+}

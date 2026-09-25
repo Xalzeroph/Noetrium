@@ -1,0 +1,165 @@
+{
+  "schema": "noetrium.reproduction.projection.v10",
+  "authority": "generated_from_typed_definition_and_source",
+  "package": "dars_acl2025",
+  "package_digest": "62c29310e8112c5e7a9cf1d8b4636c0edf51d9e491504df0da353ad940220e21",
+  "definition_digest": "d0a94f94937cec33b1fe901761dbdc26659072b93f0bbe830b8485bf7c4051c9",
+  "source_registry_digest": "68e407725311866f47fa6f35bd6f15d8e5c52f9ee16764044386796ad5cd5ef3",
+  "lifecycle": "protocol_bound",
+  "identity": {
+    "method_id": "dars",
+    "title": "DARS: Dynamic Action Re-Sampling to Enhance Coding Agent Performance by Adaptive Tree Traversal",
+    "paper_uri": "https://aclanthology.org/2025.acl-long.973/",
+    "year": 2025,
+    "paper_revision": "ACL 2025 proceedings",
+    "identity_digest": "86648f839a4cb35c5373874aef4fdbe976f6ad280aa990dff7c597551725adaf"
+  },
+  "catalog": {
+    "domains": [
+      "acl",
+      "agent",
+      "recent"
+    ],
+    "families": [
+      "agentic_workflow",
+      "dars"
+    ],
+    "priority": 1,
+    "benchmark_ids": [
+      "swe-bench"
+    ],
+    "platform_pressure": [
+      "benchmark",
+      "evidence",
+      "execution/workflow",
+      "experimentation/study",
+      "model/request"
+    ],
+    "method_owned": [
+      "adaptive coding-agent tree traversal",
+      "dynamic action re-sampling",
+      "feedback-conditioned branch selection",
+      "inference-time compute scaling"
+    ],
+    "platform_owned": [
+      "MethodProgram and Machine Journal execution authority",
+      "benchmark cut identity",
+      "experiment and measurement orchestration",
+      "model/provider transport",
+      "run evidence and provenance"
+    ],
+    "reference_repositories": [],
+    "reference_publications": [
+      "https://aclanthology.org/2025.acl-long.973/"
+    ],
+    "catalog_digest": "ed5efd3e7f08d18428bf2839452f6ef9b07780f3d9f421df42a58330ff3ae0b1"
+  },
+  "source_lanes": [
+    {
+      "lane_id": "acl_2025",
+      "kind": "paper_provenance",
+      "venue": "ACL",
+      "year": 2025,
+      "publication_id": "dars-acl-2025",
+      "publication_uri": "https://aclanthology.org/2025.acl-long.973/",
+      "revision": "ACL 2025 proceedings publication",
+      "content_sha256": null,
+      "lane_digest": "8c9d7ca54627fb5e9c4d188bb3003dc161f6449b2506a09f77c4a242dc672930"
+    }
+  ],
+  "assets": [
+    {
+      "kind": "benchmark",
+      "path": "research/reproductions/dars_acl2025/benchmark.py",
+      "declaration_digest": "d30c8af0e12551b07fcf4492d25fd09a07f13d3e1f8cf65c6eada2c14812b57a",
+      "content_sha256": "46f28c41a6564922e4d6e782c98684c0ac1135476ac2407f14e8ea0afb9c1492"
+    },
+    {
+      "kind": "fidelity",
+      "path": "research/reproductions/dars_acl2025/fidelity.py",
+      "declaration_digest": "fa59b35da08b82ae3d8c79c89f02c0d2b97e863f3410a0ce1e48a558b9020ba2",
+      "content_sha256": "368f2e7ce24c8a046669a2af8c4996ef29fe5a089abd0f4cdfe81e6b439302a3"
+    },
+    {
+      "kind": "method_program",
+      "path": "research/reproductions/dars_acl2025/program.py",
+      "declaration_digest": "2088570779986ea480be0ce6af3522c6daaccc476724b3669bb2c1079ef324ce",
+      "content_sha256": "d6b6e5b17c48baeeb15b174a409838af0a6ec17d4b54c6d489c1465f9e9a17ad"
+    },
+    {
+      "kind": "study",
+      "path": "research/reproductions/dars_acl2025/study.py",
+      "declaration_digest": "de993e201f40244fec9c52b7c0715b2f7faacb83a1e962001404573ad39c02dc",
+      "content_sha256": "6110eb376318571601880715eca22b7fe450cfd16203589986de0993a13a2202"
+    }
+  ],
+  "primary_executable": "research/reproductions/dars_acl2025/program.py",
+  "reported_results": [
+    {
+      "claim_id": "dars_swebench_lite_pass_at_k",
+      "metric_id": "pass_at_k_percent",
+      "value": 55,
+      "qualifiers": {
+        "benchmark": "swe-bench-lite",
+        "model": "claude-3.5-sonnet-v2",
+        "source": "ACL-2025 abstract"
+      },
+      "claim_digest": "6f37da7081a8d2e773ebc4158df666dab57299891d2ec44781c4a087aa0fad7c"
+    },
+    {
+      "claim_id": "dars_swebench_lite_pass_at_1",
+      "metric_id": "pass_at_1_percent",
+      "value": 47,
+      "qualifiers": {
+        "benchmark": "swe-bench-lite",
+        "source": "ACL-2025 abstract"
+      },
+      "claim_digest": "6ce8b0545c131d080c04a8824c4941c5a381396006c245cc3d17864fb0d311ed"
+    }
+  ],
+  "reference_baselines": [
+    {
+      "baseline_id": "open_source_coding_agents",
+      "description": "State-of-the-art open-source coding-agent frameworks",
+      "qualifiers": {
+        "source": "ACL-2025 evaluation"
+      },
+      "baseline_digest": "8af891ce0fa4ca2040f8f209229556d06f0db08540efdb56be55690a2b15386a"
+    }
+  ],
+  "deltas": [],
+  "blockers": [
+    "The exact SWE-bench Lite subset must be frozen as a named split over the canonical SWE-bench authority.",
+    "Matched execution requires repository images, execution feedback and the paper-era Claude service identity."
+  ],
+  "evidence_refs": [],
+  "scientific_tests": [
+    {
+      "path": "tests/test_scientific_recent_2025_2026_wave_v1.py",
+      "content_sha256": "11a5279b71d1113921dcaf67f385ea09612451fe35e356b9efbb782921b4b5a7"
+    }
+  ],
+  "research_os": {
+    "surface": "noetrium.api",
+    "execution_state": "benchmark_authority_required",
+    "program_id": "dars_acl2025",
+    "program_digest": "ee4bf7a68f005ecced139dd388e203a140f049d95245b04537b31d7d9d6cf1c6",
+    "benchmark_authority": {
+      "state": "required",
+      "selection_digests": [],
+      "blockers": [
+        "ReproductionResearchOSCompileError:benchmark 'swe-bench' has no exact repository or materialized authority"
+      ]
+    },
+    "benchmark_split_axis": {
+      "required": true,
+      "consumers": [
+        "study:build_dars_study"
+      ]
+    },
+    "reproduction_closure_state": "closed",
+    "execution_authority_state": "required",
+    "materialization_ready": false,
+    "execution_requirements": []
+  }
+}

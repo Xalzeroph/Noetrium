@@ -1,0 +1,13 @@
+{
+  "schema": "noetrium.benchmark-manifest.v2",
+  "package": "commongen",
+  "benchmark": {
+    "benchmark_id": "commongen",
+    "title": "CommonGen",
+    "source_uri": "https://github.com/INK-USC/CommonGen",
+    "environment_kinds": [],
+    "modalities": [
+      "text"
+    ]
+  }
+}

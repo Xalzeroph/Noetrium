@@ -1,0 +1,262 @@
+{
+  "schema": "noetrium.reproduction.projection.v10",
+  "authority": "generated_from_typed_definition_and_source",
+  "package": "providellm_memory",
+  "package_digest": "ba91a0f37fa479a2d61a5531215c7ec38ed7913f14b0de067599490978b0e776",
+  "definition_digest": "a996e7348737dcf563b34e86f150b0cae75235c6c3da5dbf2dd98f14987854f0",
+  "source_registry_digest": "9e2a5d1186f95a8f45699ceebf02fe6c91c0af32ce912a7e1d4f40d4192a3979",
+  "lifecycle": "protocol_bound",
+  "identity": {
+    "method_id": "providellm",
+    "title": "Streaming VideoLLMs for Real-Time Procedural Video Understanding",
+    "paper_uri": "https://openaccess.thecvf.com/content/ICCV2025/html/Chatterjee_Streaming_VideoLLMs_for_Real-Time_Procedural_Video_Understanding_ICCV_2025_paper.html",
+    "year": 2025,
+    "paper_revision": "ICCV 2025 camera-ready",
+    "identity_digest": "824a14478ece12fabbf482229f28666a0b41018f85cc389714b5b9cd2d702c04"
+  },
+  "catalog": {
+    "domains": [
+      "memory",
+      "multimodal",
+      "streaming",
+      "video"
+    ],
+    "families": [
+      "interleaved_cache",
+      "multimodal_memory",
+      "procedural_video_understanding",
+      "streaming_video_memory"
+    ],
+    "priority": 1,
+    "benchmark_ids": [
+      "ego4d-goalstep"
+    ],
+    "platform_pressure": [
+      "artifact/video",
+      "benchmark/video",
+      "execution/machines/memory",
+      "experimentation/study",
+      "model/multimodal"
+    ],
+    "method_owned": [
+      "DETR-QFormer short-term visual memory",
+      "independent short-term and long-term exits",
+      "single-entry multimodal interleaved FIFO cache",
+      "tau-window duplicate suppression for verbalized observations",
+      "verbalized long-term text memory"
+    ],
+    "platform_owned": [
+      "MemoryMachine journal authority",
+      "artifact and evidence identity",
+      "benchmark cut identity",
+      "multimodal provider execution",
+      "study and evaluation orchestration"
+    ],
+    "reference_repositories": [
+      "https://github.com/dibschat/ProVideLLM"
+    ],
+    "reference_publications": [
+      "https://openaccess.thecvf.com/content/ICCV2025/html/Chatterjee_Streaming_VideoLLMs_for_Real-Time_Procedural_Video_Understanding_ICCV_2025_paper.html"
+    ],
+    "catalog_digest": "a9b5c3253f9d995a1dad8b3b6a25e6238f7c6b03d6b90fa8a416aae970c48359"
+  },
+  "source_lanes": [
+    {
+      "lane_id": "iccv_2025_camera_ready",
+      "kind": "paper_provenance",
+      "venue": "ICCV",
+      "year": 2025,
+      "publication_id": "providellm-iccv-2025",
+      "publication_uri": "https://openaccess.thecvf.com/content/ICCV2025/html/Chatterjee_Streaming_VideoLLMs_for_Real-Time_Procedural_Video_Understanding_ICCV_2025_paper.html",
+      "revision": "ICCV 2025 camera-ready paper",
+      "content_sha256": null,
+      "lane_digest": "4aaac8aae61553154533a54eb5df2c093edc255516698d6d251f96ccc6705ac6"
+    },
+    {
+      "lane_id": "initial_official_release",
+      "kind": "official_executable",
+      "repository": "https://github.com/dibschat/ProVideLLM",
+      "commit": "bd097cc0ee1c9a7eebe9ad767430c55456398a8d",
+      "artifacts": [
+        "README.md",
+        "models/arguments_live.py",
+        "models/live_llama/connector.py",
+        "models/live_llama/modeling_live_llama.py",
+        "models/modeling_live.py"
+      ],
+      "lane_digest": "2cac2f8b39fa8ad224eb1ce8c054491c711af1528f7354fad6481415d77173ca"
+    }
+  ],
+  "assets": [
+    {
+      "kind": "benchmark",
+      "path": "research/reproductions/providellm_memory/benchmark.py",
+      "declaration_digest": "e9907ce9ef38fea0675b2746fdf345cecf79e0421b5e2ea6c9c5ef6107fdd496",
+      "content_sha256": "be437e0a9dd831e3a2a4c3c35248dad64abfafaef4e2dc325b874cf6204d76d1"
+    },
+    {
+      "kind": "fidelity",
+      "path": "research/reproductions/providellm_memory/fidelity.py",
+      "declaration_digest": "a3da9169f9c6a3adcfad7a4105b72aa58577d61055ed67acf91173cbd96c4118",
+      "content_sha256": "6a774161525ca409e528019e9c4499693c40d0f7b696bdb0f055b9d74748a720"
+    },
+    {
+      "kind": "research_program",
+      "path": "research/reproductions/providellm_memory/memory.py",
+      "declaration_digest": "bd8af3b23a07f48e04cf30cfe795cb0d517d4323b46bfa688f336041f404d323",
+      "content_sha256": "73d87f15b2ca7b35c61869b21ee525f32bf1f18e983cd7598f84f2759c8e274c"
+    },
+    {
+      "kind": "study",
+      "path": "research/reproductions/providellm_memory/study.py",
+      "declaration_digest": "ee7ebcf23658701fd3688bded57b5056227e038ac7d39b2c2d090b5ccbb59b00",
+      "content_sha256": "198de0293f1114569a4a28f5cbb70c20d27bdff15f61c1f593235c93f8afbe77"
+    },
+    {
+      "kind": "support",
+      "path": "research/reproductions/providellm_memory/source.py",
+      "declaration_digest": "46aabe62d3175610a3d9c27fa10d08d42311d87e5a265494a0c519bdd40d61f2",
+      "content_sha256": "686473e8a51f54125653129816e2ff3a976db73bcb326498b3bf949bca602cc7"
+    }
+  ],
+  "primary_executable": "research/reproductions/providellm_memory/memory.py",
+  "reported_results": [
+    {
+      "claim_id": "providellm_goalstep_val_map",
+      "metric_id": "per_frame_map_percent",
+      "value": 13.0,
+      "qualifiers": {
+        "benchmark": "ego4d-goalstep",
+        "split": "val",
+        "variant": "ProVideLLM-1B/5",
+        "verbalization_and_interleaving": true,
+        "short_term_seconds": 16,
+        "long_term_seconds": 128,
+        "source": "ICCV-2025 paper Table 1"
+      },
+      "claim_digest": "0162e0e9f93342e0e1bbeee99bf89fd1b0a1351362ddfb2c37b65d11e6c0dfc8"
+    },
+    {
+      "claim_id": "providellm_goalstep_test_map",
+      "metric_id": "per_frame_map_percent",
+      "value": 12.9,
+      "qualifiers": {
+        "benchmark": "ego4d-goalstep",
+        "split": "test",
+        "variant": "ProVideLLM-1B/5",
+        "verbalization_and_interleaving": true,
+        "source": "ICCV-2025 paper Table 1"
+      },
+      "claim_digest": "3d1d1b5a91e21e958f2cc8518f2fc67b9cc258dfce5fe90707de20e722c965f1"
+    },
+    {
+      "claim_id": "providellm_streaming_dialogue_fps",
+      "metric_id": "streaming_fps",
+      "value": 24.6,
+      "qualifiers": {
+        "variant": "ProVideLLM-1B/5",
+        "mode": "streaming-dialogue",
+        "hardware": "single-A6000",
+        "source": "ICCV-2025 paper Table 9"
+      },
+      "claim_digest": "6bdf2a95a12e1464a8593a16628f986c3d32ef7bdae0211083102727d0d32802"
+    },
+    {
+      "claim_id": "providellm_per_frame_full_model_fps",
+      "metric_id": "streaming_fps",
+      "value": 9.1,
+      "qualifiers": {
+        "variant": "ProVideLLM-1B/5",
+        "mode": "per-frame",
+        "hardware": "single-A6000",
+        "source": "ICCV-2025 paper Table 9"
+      },
+      "claim_digest": "3031d165c724063e825adf938ed05090c62764b6e9848e9f167f1384714b3682"
+    },
+    {
+      "claim_id": "providellm_per_frame_gpu_memory",
+      "metric_id": "gpu_memory_gb",
+      "value": 2.0,
+      "qualifiers": {
+        "variant": "ProVideLLM-1B/5",
+        "mode": "per-frame",
+        "hardware": "single-A6000",
+        "source": "ICCV-2025 paper Table 9"
+      },
+      "claim_digest": "d52d0ef33dd7a05472b297d61c655b44f6086a7478c5cc8c78342ed7b65884da"
+    },
+    {
+      "claim_id": "providellm_one_hour_token_reduction",
+      "metric_id": "token_reduction_factor",
+      "value": 22.0,
+      "qualifiers": {
+        "horizon": "one-hour",
+        "long_term_representation": "verbalized-text",
+        "source": "ICCV-2025 abstract/runtime analysis"
+      },
+      "claim_digest": "281c25845e1fa00b21a8b230656d9ae12bf8e3726ae4cb0c932091e8a4b15078"
+    }
+  ],
+  "reference_baselines": [
+    {
+      "baseline_id": "providellm_no_verbalization",
+      "description": "ProVideLLM-1B/5 without long-term verbalization on Ego4D Goal-Step online step detection.",
+      "qualifiers": {
+        "val_per_frame_map_percent": 12.1,
+        "test_per_frame_map_percent": 12.2,
+        "source": "ICCV-2025 paper Table 1"
+      },
+      "baseline_digest": "16a537d7bd2d5d22ff3a1373feb02ecc040bb4b3cd5d46bcdaa2fa72d4b3b855"
+    },
+    {
+      "baseline_id": "lstr_goalstep",
+      "description": "LSTR long/short-term baseline on Ego4D Goal-Step online step detection.",
+      "qualifiers": {
+        "val_per_frame_map_percent": 8.9,
+        "test_per_frame_map_percent": 8.1,
+        "source": "ICCV-2025 paper Table 1"
+      },
+      "baseline_digest": "cd2623a9340d8f58657247ece6c3f96a9165ecbbfea6e67d32d5aa693d6fee30"
+    }
+  ],
+  "deltas": [
+    {
+      "kind": "unresolved",
+      "description": "The initial official release exposes DETR-QFormer and model training/evaluation code but explicitly does not release the verbalize-and-interleave streaming per-frame implementation. The MemoryProgram therefore implements Algorithms 1-2 from the ICCV paper rather than claiming official-code identity.",
+      "delta_digest": "dd521765aadd5939e48f73663ebcebcc6771b8970aed981214d8a8a499a95aa6"
+    }
+  ],
+  "blockers": [
+    "Matched-result execution requires released checkpoint and licensed Ego4D Goal-Step video bytes under content-addressed artifact authority.",
+    "Official streaming verbalize/interleave source remains unreleased in the audited initial repository release.",
+    "The paper also evaluates EgoExo4D, COIN and Assembly101; those additional dataset/task authorities remain to be bound."
+  ],
+  "evidence_refs": [],
+  "scientific_tests": [
+    {
+      "path": "tests/test_scientific_providellm_memory_v1.py",
+      "content_sha256": "356442bfd2e2710922970a21d861b65f316b3408aad67c1d8814c1d47b3ea083"
+    }
+  ],
+  "research_os": {
+    "surface": "noetrium.api",
+    "execution_state": "benchmark_authority_required",
+    "program_id": "providellm_memory",
+    "program_digest": "2a3e2265f561db1e9db0af56629cd5c812389b7422b827b8c6dbb8632a263124",
+    "benchmark_authority": {
+      "state": "required",
+      "selection_digests": [],
+      "blockers": [
+        "ReproductionResearchOSCompileError:benchmark 'ego4d-goalstep' has no exact repository or materialized authority"
+      ]
+    },
+    "benchmark_split_axis": {
+      "required": false,
+      "consumers": []
+    },
+    "reproduction_closure_state": "closed",
+    "execution_authority_state": "required",
+    "materialization_ready": false,
+    "execution_requirements": []
+  }
+}

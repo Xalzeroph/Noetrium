@@ -1,0 +1,261 @@
+{
+  "schema": "noetrium.reproduction.projection.v10",
+  "authority": "generated_from_typed_definition_and_source",
+  "package": "minedojo",
+  "package_digest": "008896ce43ecad6f209cf2882d134d1477fb3a296117b97994aeeee3f1c07b5c",
+  "definition_digest": "859f1c1220814ec7377557548db8c0a5703d0ebd323a8be89adff59072207a5e",
+  "source_registry_digest": "4e2bb1c63f4746aac56e56ee71551b01971ab4476cff7f802b1806783b01b3b1",
+  "lifecycle": "protocol_bound",
+  "identity": {
+    "method_id": "minedojo",
+    "title": "MineDojo: Building Open-Ended Embodied Agents with Internet-Scale Knowledge",
+    "paper_uri": "https://proceedings.neurips.cc/paper_files/paper/2022/hash/74a67268c5cc5910f64938cac4526a90-Abstract.html",
+    "year": 2022,
+    "paper_revision": "NeurIPS 2022 Datasets and Benchmarks / MineDojo 1fc46f58aaeed5eb8018abf030c95a13d41ab4a4 / MineCLIP 5ec098c1660da44933ae9a221ea3ee180f973e0d",
+    "identity_digest": "343f1ee1a66cd0f6f62999decc7327401bff86a629883d25d4e4fee8f5ab8486"
+  },
+  "catalog": {
+    "domains": [
+      "benchmark",
+      "embodied-robotics",
+      "minecraft",
+      "multimodal"
+    ],
+    "families": [
+      "language_conditioned_control",
+      "minecraft",
+      "multimodal_knowledge",
+      "open_ended_embodied",
+      "video_language_reward"
+    ],
+    "priority": 1,
+    "benchmark_ids": [
+      "minedojo"
+    ],
+    "platform_pressure": [
+      "artifact/content",
+      "environment/minecraft",
+      "evaluation",
+      "experimentation/benchmark",
+      "experimentation/study",
+      "model/request",
+      "participant/policy"
+    ],
+    "method_owned": [
+      "3,142-task paper-consistent benchmark taxonomy",
+      "MineCLIP video-language reward semantics",
+      "language-conditioned MineAgent policy semantics",
+      "language-prompted Minecraft task semantics",
+      "logical-any programmatic success aggregation"
+    ],
+    "platform_owned": [
+      "Minecraft environment provider and lifecycle",
+      "Study/Experiment orchestration",
+      "content-addressed video/tensor artifacts",
+      "effect evidence and reconciliation",
+      "immutable benchmark cut identity",
+      "model deployment and serving identity"
+    ],
+    "reference_repositories": [
+      "https://github.com/MineDojo/MineCLIP",
+      "https://github.com/MineDojo/MineDojo"
+    ],
+    "reference_publications": [
+      "https://proceedings.neurips.cc/paper_files/paper/2022/hash/74a67268c5cc5910f64938cac4526a90-Abstract.html"
+    ],
+    "catalog_digest": "cbfe7f9c6757c76fe244c9b172d66a4f79183c74660622cb050aec498de1b484"
+  },
+  "source_lanes": [
+    {
+      "lane_id": "mineclip_pretrained_release",
+      "kind": "official_executable",
+      "repository": "https://github.com/MineDojo/MineCLIP",
+      "commit": "5ec098c1660da44933ae9a221ea3ee180f973e0d",
+      "artifacts": [
+        "README.md",
+        "main/mineclip",
+        "mineclip/dense_reward",
+        "mineclip/mineagent",
+        "mineclip/mineclip"
+      ],
+      "lane_digest": "4067572fa0f6acc476e5db3a93f7efbdbb4d66a1b44640458993955b1b0a51ac"
+    },
+    {
+      "lane_id": "neurips_2022_datasets_benchmarks",
+      "kind": "paper_provenance",
+      "venue": "NeurIPS",
+      "year": 2022,
+      "publication_id": "minedojo-neurips-2022",
+      "publication_uri": "https://proceedings.neurips.cc/paper_files/paper/2022/hash/74a67268c5cc5910f64938cac4526a90-Abstract.html",
+      "revision": "NeurIPS 2022 Datasets and Benchmarks Track",
+      "content_sha256": null,
+      "lane_digest": "0c4beca85fb295ec57cdc79216a324ee874afa39dafb5ad62919c18800308770"
+    },
+    {
+      "lane_id": "paper_consistent_benchmark_release",
+      "kind": "official_executable",
+      "repository": "https://github.com/MineDojo/MineDojo",
+      "commit": "1fc46f58aaeed5eb8018abf030c95a13d41ab4a4",
+      "artifacts": [
+        "README.md",
+        "minedojo/sim",
+        "minedojo/tasks",
+        "minedojo/tasks/description_files/tasks_suite.yaml"
+      ],
+      "lane_digest": "38f6552bac736b0e00b2597088577447194cc7281ffbd854bd0052a1b17cd0f8"
+    }
+  ],
+  "assets": [
+    {
+      "kind": "benchmark",
+      "path": "research/reproductions/minedojo/benchmark.py",
+      "declaration_digest": "18d441af5864050077450d4986da1d09969a42320d90f06a33d62c0990281e79",
+      "content_sha256": "ca6bace8a435630cad6ab3e2faf35b6fade285f47c57f186621021e1c35f6533"
+    },
+    {
+      "kind": "fidelity",
+      "path": "research/reproductions/minedojo/fidelity.py",
+      "declaration_digest": "bbbf7bd47dbe3eb1d9b723bb19790f15773a989a8c7ff01988670f35e8142821",
+      "content_sha256": "513d8ff677b29248c49e891e6aef803ad347a6f068b3a2dbc0aea3a5e5b33481"
+    },
+    {
+      "kind": "method_program",
+      "path": "research/reproductions/minedojo/program.py",
+      "declaration_digest": "421ce9ae94216aa14c9a506f46af015655f801c606d339cec0175fcdff47196c",
+      "content_sha256": "c35fbb733ec9571fb63a271e2358073c50175e0329b542ea163d7d84a300a047"
+    },
+    {
+      "kind": "semantics",
+      "path": "research/reproductions/minedojo/reward.py",
+      "declaration_digest": "20371c53cce7dd83428151834edcd26bd86599fc9fb48098d566094ea52d8086",
+      "content_sha256": "dadb54fc5e9f5df79223ec88c3ce1d010545cee47329b3e86cfa857583532b06"
+    },
+    {
+      "kind": "study",
+      "path": "research/reproductions/minedojo/study.py",
+      "declaration_digest": "33ff80cc5a2d51de0beeacbf583c12052d3eb088fe8ca396055b5237e4979985",
+      "content_sha256": "a307f69f7a1d995e715336e01c9b0fae0fe41012f84eaeedd342a3925811ab03"
+    },
+    {
+      "kind": "support",
+      "path": "research/reproductions/minedojo/source.py",
+      "declaration_digest": "87e4746ce96aa148cc5a0068539123e1df8cf1c1f68a842fdbd513ba1895693e",
+      "content_sha256": "43f8c115fa3c336edf8d0a33186513c1dad7dffaf4bc6edac6a24a10eab81439"
+    }
+  ],
+  "primary_executable": "research/reproductions/minedojo/program.py",
+  "reported_results": [
+    {
+      "claim_id": "mineclip_attn_find_nether_portal",
+      "metric_id": "reward_model_f1_percent",
+      "value": 98.7,
+      "qualifiers": {
+        "task": "find-nether-portal",
+        "variant": "mineclip-attn",
+        "source": "NeurIPS-2022 paper reward-model evaluation"
+      },
+      "claim_digest": "c3e0bc6a3c14a75cc2d0a995302cafd92fd6caed2bddb9f3a913709a00bac230"
+    },
+    {
+      "claim_id": "mineclip_attn_find_ocean",
+      "metric_id": "reward_model_f1_percent",
+      "value": 100.0,
+      "qualifiers": {
+        "task": "find-ocean",
+        "variant": "mineclip-attn",
+        "source": "NeurIPS-2022 paper reward-model evaluation"
+      },
+      "claim_digest": "dd1ee26d67d12cff20bc60a1c4b483bd1d7c0d3ef4e2c4af765cd076e5f28d04"
+    },
+    {
+      "claim_id": "mineclip_attn_dig_hole",
+      "metric_id": "reward_model_f1_percent",
+      "value": 99.4,
+      "qualifiers": {
+        "task": "dig-hole",
+        "variant": "mineclip-attn",
+        "source": "NeurIPS-2022 paper reward-model evaluation"
+      },
+      "claim_digest": "9d937c804026d7f6837e6062b404da2a2a5cc6c3e6611993cfeed3a3ec33d56c"
+    },
+    {
+      "claim_id": "mineclip_attn_lay_carpet",
+      "metric_id": "reward_model_f1_percent",
+      "value": 97.4,
+      "qualifiers": {
+        "task": "lay-carpet",
+        "variant": "mineclip-attn",
+        "source": "NeurIPS-2022 paper reward-model evaluation"
+      },
+      "claim_digest": "9573a7ea2701efbb6863f38dd0e69c63c4b6edc70aa6a208e5d365ae29aa5ab7"
+    },
+    {
+      "claim_id": "minedojo_benchmark_task_count",
+      "metric_id": "benchmark_task_count",
+      "value": 3142,
+      "qualifiers": {
+        "benchmark": "minedojo",
+        "source": "NeurIPS-2022 paper"
+      },
+      "claim_digest": "a73834573dca2bf33cde7c07026a03ff6482efeb248e13ba62a0149ec15de4da"
+    }
+  ],
+  "reference_baselines": [
+    {
+      "baseline_id": "clip_openai_reward_model",
+      "description": "OpenAI CLIP reward-model baseline reported against MineCLIP.",
+      "qualifiers": {
+        "find_nether_portal_f1_percent": 48.7,
+        "find_ocean_f1_percent": 98.4,
+        "dig_hole_f1_percent": 80.6,
+        "lay_carpet_f1_percent": 54.1,
+        "source": "NeurIPS-2022 paper reward-model evaluation"
+      },
+      "baseline_digest": "57edfdc5f5032f06fbc8362c3f8ac23201f95d3aa53d4ad28773253705f682ac"
+    }
+  ],
+  "deltas": [
+    {
+      "kind": "unresolved",
+      "description": "The released run_env_in_loop.py uses random placeholder vectors for observation preprocessing and explicitly says real preprocessing must extract MineCLIP image/prompt features and other observation features. The MethodProgram therefore treats preprocessed MineAgent observation as an explicit model input seam instead of reproducing the random demo placeholder as scientific semantics.",
+      "delta_digest": "faa71a438a45da60e6c28ddce67a258612e091f517c8d98c96f507489a489703"
+    }
+  ],
+  "blockers": [
+    "The paper-era task loader and five YAML authorities are frozen by Git tree/blob identity and a deterministic official-registry materializer now derives per-task digests. Formal runs still require the audited MineDojo runtime image to materialize that registry under Artifact authority.",
+    "The released MineCLIP checkpoint bytes are externally hosted and have not yet been acquired into the content-addressed model/artifact store; the paper-release repository records MD5 identifiers but formal runs require immutable acquired artifact identity.",
+    "Full MineCLIP/MineAgent matched-result reproduction additionally requires the released MineDojo video/data cuts, policy checkpoint, and real observation/prompt frontend artifacts to be materialized under immutable content identity."
+  ],
+  "evidence_refs": [],
+  "scientific_tests": [
+    {
+      "path": "tests/test_scientific_minedojo_materializer_v1.py",
+      "content_sha256": "e35127fe5d4da2bab478c62edd34465f49c906b0236f8cc9828d5224db110d26"
+    },
+    {
+      "path": "tests/test_scientific_minedojo_v1.py",
+      "content_sha256": "0cc87f33026046a48ca939e5bc39f6a80e81eb7fed29a5819d6e86832ca5b1ec"
+    }
+  ],
+  "research_os": {
+    "surface": "noetrium.api",
+    "execution_state": "benchmark_authority_required",
+    "program_id": "minedojo",
+    "program_digest": "0b6ea403d57b97c00b92175804b721f2e5757f13589f46c5051ff8637d1ac6b8",
+    "benchmark_authority": {
+      "state": "required",
+      "selection_digests": [],
+      "blockers": [
+        "ReproductionResearchOSCompileError:benchmark 'minedojo' has no exact repository or materialized authority"
+      ]
+    },
+    "benchmark_split_axis": {
+      "required": false,
+      "consumers": []
+    },
+    "reproduction_closure_state": "closed",
+    "execution_authority_state": "required",
+    "materialization_ready": false,
+    "execution_requirements": []
+  }
+}

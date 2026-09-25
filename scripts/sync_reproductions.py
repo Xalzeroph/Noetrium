@@ -1,0 +1,583 @@
+from __future__ import annotations
+
+import argparse
+import ast
+import importlib.util
+import hashlib
+import json
+from pathlib import Path
+import sys
+from types import ModuleType
+from typing import Any, Mapping
+
+ROOT = Path(__file__).resolve().parents[1]
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
+
+from noetrium_platform.foundation.kernel.kernel import canonical_digest, thaw_json
+from research.reproductions.benchmark_authority import RepositoryBenchmarkAuthority
+from research.reproductions.provenance import (
+    MethodSourceLane,
+    MethodSourceRegistry,
+    PublicationSourceLane,
+    SourceLane,
+)
+from research.reproductions.contracts import (
+    ReferenceBaseline,
+    ReportedResult,
+    ReproductionAssetRef,
+    ReproductionDefinition,
+    ReproductionDelta,
+    ReproductionEvidenceQualification,
+    ReproductionEvidenceRef,
+    ReproductionMatchCriterion,
+)
+from research.reproductions.research_os import (
+    compile_reproduction_research_program,
+    is_research_os_executable,
+    resolve_benchmark_split_consumers,
+    resolve_execution_requirements,
+    resolve_study_factory_bindings,
+)
+
+PROJECTION_SCHEMA = "noetrium.reproduction.projection.v10"
+REPRODUCTION_CATALOG_SCHEMA = "noetrium.reproduction-catalog.projection.v1"
+REPRODUCTION_RESEARCH_OS_STATUS_SCHEMA = "noetrium.reproduction-research-os-status.v3"
+REPRODUCTION_CATALOG_AUTHORITY = "generated_from_typed_reproduction_definitions"
+_ALLOWED_DEFINITION_IMPORTS = {"__future__", "research.reproductions.contracts"}
+_ALLOWED_SOURCE_IMPORTS = {
+    "__future__",
+    "research.reproductions.provenance",
+}
+
+
+def _load_json(path: Path) -> dict[str, Any]:
+    value = json.loads(path.read_text(encoding="utf-8"))
+    if not isinstance(value, dict):
+        raise TypeError(f"{path} must contain a JSON object")
+    return value
+
+
+def _restricted_imports(path: Path, allowed: set[str]) -> None:
+    tree = ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
+    for node in ast.walk(tree):
+        if isinstance(node, ast.Import):
+            names = {row.name for row in node.names}
+        elif isinstance(node, ast.ImportFrom):
+            if node.level:
+                raise ValueError(f"{path} may not use relative imports")
+            names = {node.module or ""}
+        else:
+            continue
+        unknown = sorted(name for name in names if name not in allowed)
+        if unknown:
+            raise ValueError(f"{path} imports non-authority modules: {unknown}")
+
+
+def _load_module(path: Path, *, suffix: str) -> ModuleType:
+    name = f"_noetrium_reproduction_{path.parent.name}_{suffix}"
+    spec = importlib.util.spec_from_file_location(name, path)
+    if spec is None or spec.loader is None:
+        raise RuntimeError(f"cannot load {path}")
+    module = importlib.util.module_from_spec(spec)
+    sys.modules[name] = module
+    try:
+        spec.loader.exec_module(module)
+    finally:
+        sys.modules.pop(name, None)
+    return module
+
+
+def _definition(package_dir: Path) -> ReproductionDefinition:
+    path = package_dir / "definition.py"
+    if not path.is_file():
+        raise FileNotFoundError(f"missing typed reproduction authority: {path}")
+    _restricted_imports(path, _ALLOWED_DEFINITION_IMPORTS)
+    value = getattr(_load_module(path, suffix="definition"), "REPRODUCTION", None)
+    if type(value) is not ReproductionDefinition:
+        raise TypeError(f"{path}: REPRODUCTION must be ReproductionDefinition")
+    if value.package != package_dir.name:
+        raise ValueError(f"{path}: package identity mismatch")
+    return value
+
+
+def _sources(package_dir: Path) -> MethodSourceRegistry:
+    path = package_dir / "source.py"
+    if not path.is_file():
+        raise FileNotFoundError(f"missing typed reproduction source authority: {path}")
+    _restricted_imports(path, _ALLOWED_SOURCE_IMPORTS)
+    value = getattr(_load_module(path, suffix="source"), "SOURCES", None)
+    if type(value) is not MethodSourceRegistry:
+        raise TypeError(f"{path}: SOURCES must be MethodSourceRegistry")
+    return value
+
+
+def _lane(row: SourceLane) -> dict[str, Any]:
+    if type(row) is MethodSourceLane:
+        return {
+            "lane_id": row.lane_id,
+            "kind": row.kind.value,
+            "repository": row.repository,
+            "commit": row.commit,
+            "artifacts": list(row.artifacts),
+            "lane_digest": row.lane_digest,
+        }
+    if type(row) is PublicationSourceLane:
+        return {
+            "lane_id": row.lane_id,
+            "kind": row.kind.value,
+            "venue": row.venue,
+            "year": row.year,
+            "publication_id": row.publication_id,
+            "publication_uri": row.publication_uri,
+            "revision": row.revision,
+            "content_sha256": row.content_sha256,
+            "lane_digest": row.lane_digest,
+        }
+    raise TypeError("unsupported reproduction source lane")
+
+
+def _file_sha256(relative_path: str) -> str:
+    return hashlib.sha256((ROOT / relative_path).read_bytes()).hexdigest()
+
+
+def _asset(row: ReproductionAssetRef) -> dict[str, Any]:
+    return {
+        "kind": row.kind.value,
+        "path": row.path,
+        "declaration_digest": row.declaration_digest,
+        "content_sha256": _file_sha256(row.path),
+    }
+
+
+def _scientific_test(path: str) -> dict[str, Any]:
+    return {"path": path, "content_sha256": _file_sha256(path)}
+
+
+def _claim(row: ReportedResult) -> dict[str, Any]:
+    return {
+        "claim_id": row.claim_id,
+        "metric_id": row.metric_id,
+        "value": row.value,
+        "qualifiers": thaw_json(row.qualifiers),
+        "claim_digest": row.claim_digest,
+    }
+
+
+def _baseline(row: ReferenceBaseline) -> dict[str, Any]:
+    return {
+        "baseline_id": row.baseline_id,
+        "description": row.description,
+        "qualifiers": thaw_json(row.qualifiers),
+        "baseline_digest": row.baseline_digest,
+    }
+
+
+def _match_criterion(row: ReproductionMatchCriterion) -> dict[str, Any]:
+    return {
+        "criterion_id": row.criterion_id,
+        "status": row.status.value,
+        "authority_digest": row.authority_digest,
+        "detail": row.detail,
+        "criterion_digest": row.criterion_digest,
+    }
+
+
+def _qualification(
+    row: ReproductionEvidenceQualification,
+) -> dict[str, Any]:
+    return {
+        "qualification_id": row.qualification_id,
+        "decision": row.decision.value,
+        "run_id": row.run_id,
+        "run_manifest_digest": row.run_manifest_digest,
+        "evidence_bundle_digest": row.evidence_bundle_digest,
+        "claim_ids": list(row.claim_ids),
+        "criteria": [_match_criterion(item) for item in row.criteria],
+        "qualification_digest": row.qualification_digest,
+    }
+
+
+def _evidence(row: ReproductionEvidenceRef) -> dict[str, Any]:
+    return {
+        "evidence_id": row.evidence_id,
+        "kind": row.kind.value,
+        "run_id": row.run_id,
+        "run_manifest_digest": row.run_manifest_digest,
+        "bundle_id": row.bundle_id,
+        "evidence_bundle_digest": row.evidence_bundle_digest,
+        "manifest_ref": row.manifest_ref,
+        "manifest_sha256": row.manifest_sha256,
+        "claim_ids": list(row.claim_ids),
+        "qualification": (
+            None
+            if row.qualification is None
+            else _qualification(row.qualification)
+        ),
+        "evidence_digest": row.evidence_digest,
+    }
+
+
+def _delta(row: ReproductionDelta) -> dict[str, Any]:
+    return {
+        "kind": row.kind.value,
+        "description": row.description,
+        "delta_digest": row.delta_digest,
+    }
+
+
+def _projection(
+    definition: ReproductionDefinition,
+    sources: MethodSourceRegistry,
+    benchmark_authority: RepositoryBenchmarkAuthority,
+) -> dict[str, Any]:
+    assets = [_asset(row) for row in definition.assets]
+    scientific_tests = [_scientific_test(path) for path in definition.scientific_tests]
+    if is_research_os_executable(definition):
+        program = compile_reproduction_research_program(definition)
+        requirements = resolve_execution_requirements(definition)
+        split_consumers = resolve_benchmark_split_consumers(definition)
+        benchmark_selection_digests: list[str] = []
+        benchmark_blockers: list[str] = []
+        factories = resolve_study_factory_bindings(definition)
+        for factory in factories:
+            try:
+                selections = benchmark_authority.resolve(definition, factory)
+            except BaseException as exc:
+                benchmark_blockers.append(
+                    type(exc).__name__ + ":" + str(exc)
+                )
+                continue
+            benchmark_selection_digests.extend(
+                row.selection_digest for row in selections
+            )
+        benchmark_authority_state = (
+            "closed"
+            if not benchmark_blockers
+            and len(benchmark_selection_digests) >= len(factories)
+            else "required"
+        )
+        reproduction_closure_state = (
+            "required" if requirements else "closed"
+        )
+        materialization_ready = (
+            benchmark_authority_state == "closed"
+            and reproduction_closure_state == "closed"
+        )
+        research_os = {
+            "surface": "noetrium.api",
+            "execution_state": (
+                "benchmark_authority_required"
+                if benchmark_authority_state != "closed"
+                else (
+                    "reproduction_closure_required"
+                    if reproduction_closure_state != "closed"
+                    else "execution_authority_required"
+                )
+            ),
+            "program_id": program.program_id,
+            "program_digest": program.program_digest,
+            "benchmark_authority": {
+                "state": benchmark_authority_state,
+                "selection_digests": sorted(benchmark_selection_digests),
+                "blockers": sorted(set(benchmark_blockers)),
+            },
+            "benchmark_split_axis": {
+                "required": bool(split_consumers),
+                "consumers": list(split_consumers),
+            },
+            "reproduction_closure_state": reproduction_closure_state,
+            "execution_authority_state": "required",
+            "materialization_ready": materialization_ready,
+            "execution_requirements": [
+                {
+                    "parameter": row.parameter,
+                    "kind": row.kind.value,
+                    "consumers": list(row.consumers),
+                    "requirement_digest": row.requirement_digest,
+                }
+                for row in requirements
+            ],
+        }
+    else:
+        research_os = {
+            "surface": "noetrium.api",
+            "execution_state": "not_executable",
+            "program_id": None,
+            "program_digest": None,
+            "benchmark_authority": {
+                "state": "not_applicable",
+                "selection_digests": [],
+                "blockers": [],
+            },
+            "benchmark_split_axis": {
+                "required": False,
+                "consumers": [],
+            },
+            "reproduction_closure_state": "not_applicable",
+            "execution_authority_state": "not_applicable",
+            "materialization_ready": False,
+            "execution_requirements": [],
+        }
+    package_digest = canonical_digest(
+        {
+            "definition_digest": definition.definition_digest,
+            "source_registry_digest": sources.registry_digest,
+            "assets": assets,
+            "scientific_tests": scientific_tests,
+            "research_os": research_os,
+        }
+    )
+    return {
+        "schema": PROJECTION_SCHEMA,
+        "authority": "generated_from_typed_definition_and_source",
+        "package": definition.package,
+        "package_digest": package_digest,
+        "definition_digest": definition.definition_digest,
+        "source_registry_digest": sources.registry_digest,
+        "lifecycle": definition.lifecycle.value,
+        "identity": {
+            "method_id": definition.identity.method_id,
+            "title": definition.identity.title,
+            "paper_uri": definition.identity.paper_uri,
+            "year": definition.identity.year,
+            "paper_revision": definition.identity.paper_revision,
+            "identity_digest": definition.identity.identity_digest,
+        },
+        "catalog": {
+            "domains": list(definition.catalog.domains),
+            "families": list(definition.catalog.families),
+            "priority": definition.catalog.priority,
+            "benchmark_ids": list(definition.catalog.benchmark_ids),
+            "platform_pressure": list(definition.catalog.platform_pressure),
+            "method_owned": list(definition.catalog.method_owned),
+            "platform_owned": list(definition.catalog.platform_owned),
+            "reference_repositories": list(sources.repositories),
+            "reference_publications": list(sources.publication_uris),
+            "catalog_digest": definition.catalog.catalog_digest,
+        },
+        "source_lanes": [_lane(row) for row in sources.lanes],
+        "assets": assets,
+        "primary_executable": definition.primary_executable,
+        "reported_results": [_claim(row) for row in definition.reported_results],
+        "reference_baselines": [_baseline(row) for row in definition.reference_baselines],
+        "deltas": [_delta(row) for row in definition.deltas],
+        "blockers": list(definition.blockers),
+        "evidence_refs": [_evidence(row) for row in definition.evidence_refs],
+        "scientific_tests": scientific_tests,
+        "research_os": research_os,
+    }
+
+
+def _validate_paths(
+    package_dir: Path,
+    definition: ReproductionDefinition,
+) -> None:
+    package_prefix = package_dir.relative_to(ROOT).as_posix() + "/"
+    for asset in definition.assets:
+        if not asset.path.startswith(package_prefix):
+            raise ValueError(
+                f"{package_dir}: scientific asset must remain inside its reproduction package: {asset.path}"
+            )
+        if not (ROOT / asset.path).is_file():
+            raise FileNotFoundError(f"missing reproduction asset: {asset.path}")
+    for test in definition.scientific_tests:
+        if not test.startswith("tests/test_scientific_") or not test.endswith(".py"):
+            raise ValueError(f"scientific test path is not canonical: {test}")
+        if not (ROOT / test).is_file():
+            raise FileNotFoundError(f"missing scientific test: {test}")
+
+
+def _merge_method_rows(
+    rows: list[tuple[ReproductionDefinition, MethodSourceRegistry]],
+) -> list[dict[str, Any]]:
+    grouped: dict[str, list[tuple[ReproductionDefinition, MethodSourceRegistry]]] = {}
+    for definition, sources in rows:
+        grouped.setdefault(definition.identity.method_id, []).append((definition, sources))
+
+    result: list[dict[str, Any]] = []
+    for method_id, group in sorted(grouped.items()):
+        identities = {
+            (
+                row.identity.title,
+                row.identity.paper_uri,
+                row.identity.year,
+            )
+            for row, _ in group
+        }
+        if len(identities) != 1:
+            raise ValueError(f"reproduction method identity drift across packages: {method_id}")
+        title, paper_uri, year = next(iter(identities))
+        reproduction_packages = [
+            {"package": row.package, "lifecycle": row.lifecycle.value}
+            for row, _ in sorted(group, key=lambda item: item[0].package)
+        ]
+        if len({row["package"] for row in reproduction_packages}) != len(reproduction_packages):
+            raise ValueError(f"duplicate reproduction package for method: {method_id}")
+        result.append(
+            {
+                "method_id": method_id,
+                "title": title,
+                "paper_uri": paper_uri,
+                "year": year,
+                "families": sorted({value for row, _ in group for value in row.catalog.families}),
+                "reference_repositories": sorted(
+                    {value for _, sources in group for value in sources.repositories}
+                ),
+                "reproduction_packages": reproduction_packages,
+                "priority": min(row.catalog.priority for row, _ in group),
+                "benchmark_ids": sorted(
+                    {value for row, _ in group for value in row.catalog.benchmark_ids}
+                ),
+                "platform_pressure": sorted(
+                    {value for row, _ in group for value in row.catalog.platform_pressure}
+                ),
+                "method_owned": sorted(
+                    {value for row, _ in group for value in row.catalog.method_owned}
+                ),
+                "platform_owned": sorted(
+                    {value for row, _ in group for value in row.catalog.platform_owned}
+                ),
+                "evidence_refs": sorted(
+                    {
+                        value.evidence_id
+                        for row, _ in group
+                        for value in row.evidence_refs
+                    }
+                ),
+            }
+        )
+    return result
+
+
+def _render_json(value: Mapping[str, Any]) -> str:
+    return json.dumps(value, ensure_ascii=False, sort_keys=False, indent=2) + "\n"
+
+
+def sync(*, check: bool) -> int:
+    root = ROOT / "research/reproductions"
+    package_dirs = tuple(
+        sorted(
+            path
+            for path in root.iterdir()
+            if path.is_dir() and not path.name.startswith("__")
+        )
+    )
+    rows: list[tuple[ReproductionDefinition, MethodSourceRegistry]] = []
+    projections: list[dict[str, Any]] = []
+    benchmark_authority = RepositoryBenchmarkAuthority.discover()
+    drift: list[str] = []
+
+    for package_dir in package_dirs:
+        definition = _definition(package_dir)
+        sources = _sources(package_dir)
+        _validate_paths(package_dir, definition)
+        rows.append((definition, sources))
+        projection_path = package_dir / "reproduction.json"
+        projection = _projection(definition, sources, benchmark_authority)
+        projections.append(projection)
+        expected = _render_json(projection)
+        current = projection_path.read_text(encoding="utf-8") if projection_path.is_file() else ""
+        if current != expected:
+            if check:
+                drift.append(projection_path.relative_to(ROOT).as_posix())
+            else:
+                projection_path.write_text(expected, encoding="utf-8")
+
+    reproduction_catalog_path = ROOT / "research/catalog/reproduction_catalog.json"
+    reproduction_catalog = {
+        "schema": REPRODUCTION_CATALOG_SCHEMA,
+        "authority": REPRODUCTION_CATALOG_AUTHORITY,
+        "methods": _merge_method_rows(rows),
+    }
+    expected_catalog = _render_json(reproduction_catalog)
+    current_catalog = (
+        reproduction_catalog_path.read_text(encoding="utf-8")
+        if reproduction_catalog_path.is_file()
+        else ""
+    )
+    if current_catalog != expected_catalog:
+        if check:
+            drift.append(reproduction_catalog_path.relative_to(ROOT).as_posix())
+        else:
+            reproduction_catalog_path.write_text(expected_catalog, encoding="utf-8")
+
+    status_rows = [
+        {
+            "package": projection["package"],
+            "lifecycle": projection["lifecycle"],
+            "execution_state": projection["research_os"]["execution_state"],
+            "program_id": projection["research_os"]["program_id"],
+            "program_digest": projection["research_os"]["program_digest"],
+            "benchmark_ids": projection["catalog"]["benchmark_ids"],
+            "benchmark_authority": projection["research_os"]["benchmark_authority"],
+            "benchmark_split_axis": projection["research_os"]["benchmark_split_axis"],
+            "reproduction_closure_state": projection["research_os"]["reproduction_closure_state"],
+            "execution_authority_state": projection["research_os"]["execution_authority_state"],
+            "materialization_ready": projection["research_os"]["materialization_ready"],
+            "execution_requirements": projection["research_os"]["execution_requirements"],
+        }
+        for projection in sorted(projections, key=lambda row: row["package"])
+    ]
+    state_counts: dict[str, int] = {}
+    requirement_kind_counts: dict[str, int] = {}
+    for row in status_rows:
+        state = str(row["execution_state"])
+        state_counts[state] = state_counts.get(state, 0) + 1
+        for requirement in row["execution_requirements"]:
+            kind = str(requirement["kind"])
+            requirement_kind_counts[kind] = requirement_kind_counts.get(kind, 0) + 1
+    status_document = {
+        "schema": REPRODUCTION_RESEARCH_OS_STATUS_SCHEMA,
+        "authority": REPRODUCTION_CATALOG_AUTHORITY,
+        "package_count": len(status_rows),
+        "state_counts": {
+            key: state_counts[key] for key in sorted(state_counts)
+        },
+        "requirement_kind_counts": {
+            key: requirement_kind_counts[key]
+            for key in sorted(requirement_kind_counts)
+        },
+        "packages": status_rows,
+    }
+    status_document["status_digest"] = canonical_digest(status_document)
+    status_path = ROOT / "research/catalog/reproduction_research_os_status.json"
+    expected_status = _render_json(status_document)
+    current_status = (
+        status_path.read_text(encoding="utf-8")
+        if status_path.is_file()
+        else ""
+    )
+    if current_status != expected_status:
+        if check:
+            drift.append(status_path.relative_to(ROOT).as_posix())
+        else:
+            status_path.write_text(expected_status, encoding="utf-8")
+
+    # Typed reproduction definitions plus their required source registries are the
+    # discovery authority. Do not require a second hand-maintained seed/publication
+    # allowlist: ReproductionIdentity owns paper identity while MethodSourceRegistry
+    # owns executable/publication provenance.
+
+    report = {
+        "schema": PROJECTION_SCHEMA,
+        "authority": REPRODUCTION_CATALOG_AUTHORITY,
+        "package_count": len(rows),
+        "drift_count": len(drift),
+        "drift": sorted(drift),
+    }
+    print(json.dumps(report, ensure_ascii=False, sort_keys=True))
+    return 1 if drift else 0
+
+
+def main(argv: list[str] | None = None) -> int:
+    parser = argparse.ArgumentParser(
+        description="Project typed reproduction definitions into generated JSON and catalogs."
+    )
+    parser.add_argument("--check", action="store_true")
+    args = parser.parse_args(argv)
+    return sync(check=args.check)
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

@@ -1,0 +1,15 @@
+{
+  "schema": "noetrium.benchmark-manifest.v2",
+  "package": "mgsm",
+  "benchmark": {
+    "benchmark_id": "mgsm",
+    "title": "MGSM: Multilingual Grade School Math",
+    "source_uri": "https://huggingface.co/datasets/juletxara/mgsm",
+    "environment_kinds": [
+      "text_world"
+    ],
+    "modalities": [
+      "text"
+    ]
+  }
+}

@@ -1,0 +1,227 @@
+{
+  "schema": "noetrium.reproduction.projection.v10",
+  "authority": "generated_from_typed_definition_and_source",
+  "package": "ishift_cvpr2026",
+  "package_digest": "3f251efc037c83601ce0955f6ee54d550964ba82fde27cf6603697f74d7438fb",
+  "definition_digest": "71014d59993c0d6760c4e4084123323967e87540a3a576fb5641ec3efb47b4dd",
+  "source_registry_digest": "cba20db8cc89fd106370867aad306e63553e71b3d7f65bf597a47c087dc83dda",
+  "lifecycle": "protocol_bound",
+  "identity": {
+    "method_id": "ishift_cvpr2026",
+    "title": "iSHIFT: Lightweight Slow-Fast GUI Agent with Adaptive Perception",
+    "paper_uri": "https://openaccess.thecvf.com/content/CVPR2026/html/Mehrotra_iSHIFT_Lightweight_Slow-Fast_GUI_Agent_with_Adaptive_Perception_CVPR_2026_paper.html",
+    "year": 2026,
+    "paper_revision": "CVPR 2026 final proceedings",
+    "identity_digest": "5cc9e2bc6d0e0c724543c9f9563470fae053cdb146ef4a3504e6b5b283f44652"
+  },
+  "catalog": {
+    "domains": [
+      "agent",
+      "frontier-2026",
+      "gui-agent"
+    ],
+    "families": [
+      "adaptive-perception",
+      "efficient-agent",
+      "gui-agent",
+      "latent-thinking",
+      "slow-fast-reasoning"
+    ],
+    "priority": 1,
+    "benchmark_ids": [
+      "aitw",
+      "androidcontrol",
+      "gui-odyssey",
+      "guiact"
+    ],
+    "platform_pressure": [
+      "benchmark",
+      "evidence",
+      "execution/workflow",
+      "experimentation/study",
+      "model/request",
+      "perception"
+    ],
+    "method_owned": [
+      "Activate the DINOv2-based Visual Perception Module for object-centered features when the slow path is selected.",
+      "Decide whether the current action needs fast global perception or slow fine-grained grounding.",
+      "Ground the target element and produce the GUI action.",
+      "Observe the resulting interface state and continue with adaptive reasoning depth.",
+      "Perform compact implicit deliberation with latent thinking tokens instead of explicit chain-of-thought."
+    ],
+    "platform_owned": [
+      "MethodProgram execution and Machine Journal truth",
+      "Study/Experiment orchestration and measurement artifacts",
+      "content-addressed benchmark task identity",
+      "provider-independent model/tool dispatch and receipts",
+      "run/evidence provenance and replay"
+    ],
+    "reference_repositories": [
+      "https://github.com/SarthakM320/iSHIFT"
+    ],
+    "reference_publications": [
+      "https://openaccess.thecvf.com/content/CVPR2026/html/Mehrotra_iSHIFT_Lightweight_Slow-Fast_GUI_Agent_with_Adaptive_Perception_CVPR_2026_paper.html"
+    ],
+    "catalog_digest": "a29fd5e23d1ae9d27be8abbf9b25da9ee3e034789f10bc1643e1e088e67acbea"
+  },
+  "source_lanes": [
+    {
+      "lane_id": "final_publication",
+      "kind": "paper_provenance",
+      "venue": "CVPR",
+      "year": 2026,
+      "publication_id": "Mehrotra_iSHIFT_CVPR_2026",
+      "publication_uri": "https://openaccess.thecvf.com/content/CVPR2026/html/Mehrotra_iSHIFT_Lightweight_Slow-Fast_GUI_Agent_with_Adaptive_Perception_CVPR_2026_paper.html",
+      "revision": "CVPR 2026 final proceedings paper",
+      "content_sha256": null,
+      "lane_digest": "737e827bf3113170729699cd1b8925b77c4a11879d00ec26566a0e70070fc07e"
+    },
+    {
+      "lane_id": "official_repository_cut",
+      "kind": "official_artifact",
+      "repository": "https://github.com/SarthakM320/iSHIFT",
+      "commit": "d77267511fdb27cd46c030990bffe8d025fb8489",
+      "artifacts": [
+        "README.md"
+      ],
+      "lane_digest": "3a3b61deefb5d572be73413a05a3c1aa527c72c5f0d0e3759b39adf242f0143d"
+    }
+  ],
+  "assets": [
+    {
+      "kind": "benchmark",
+      "path": "research/reproductions/ishift_cvpr2026/benchmark.py",
+      "declaration_digest": "6ee6566a354736c76a82d761037b3d83dec0684b2aa3e4848ac39bae299dc970",
+      "content_sha256": "ed9e97d4b6029df27ed3c21dff367f5fff9abc751d97d72ac47ba0e36c6aa229"
+    },
+    {
+      "kind": "method_program",
+      "path": "research/reproductions/ishift_cvpr2026/program.py",
+      "declaration_digest": "284e64d2710d08cf36e3a9a59cd68538e024d6b62355acd1b7f84915d30c696b",
+      "content_sha256": "076a2c2c170cd4e95054567d8bfbff1b514ee141e5afa822fd103bf19929ab40"
+    },
+    {
+      "kind": "study",
+      "path": "research/reproductions/ishift_cvpr2026/study.py",
+      "declaration_digest": "047085be4689066e9accbeee202f12a839a627b3b74584efd41c382a113ba59d",
+      "content_sha256": "54d72d3fdcc14e17d72b6595d051e1611e4d7ce52a5c1d733d5b072d9c034af7"
+    }
+  ],
+  "primary_executable": "research/reproductions/ishift_cvpr2026/program.py",
+  "reported_results": [
+    {
+      "claim_id": "ishift_aitw",
+      "metric_id": "aitw_action_matching",
+      "value": 76.34,
+      "qualifiers": {
+        "benchmark": "AITW",
+        "model_size": "2.5B",
+        "unit": "percent"
+      },
+      "claim_digest": "686e1bfd019a2d74ec8fe5cbcc82ca219d82b8c9b85c9b63327a41f841917898"
+    },
+    {
+      "claim_id": "ishift_gui_odyssey",
+      "metric_id": "gui_odyssey_success",
+      "value": 73.97,
+      "qualifiers": {
+        "benchmark": "GUI Odyssey",
+        "unit": "percent"
+      },
+      "claim_digest": "99d4afc06a401ffaded74c5d7585dd09900719020359ec72ce832e46b1336155"
+    },
+    {
+      "claim_id": "ishift_android_low",
+      "metric_id": "androidcontrol_low_success",
+      "value": 87.7,
+      "qualifiers": {
+        "benchmark": "AndroidControl-Low",
+        "unit": "percent"
+      },
+      "claim_digest": "b4646f6e74c124fd7191cb2c8efd1d114bd1ae6410c0275fa92b0f90eb7d5b82"
+    },
+    {
+      "claim_id": "ishift_android_high",
+      "metric_id": "androidcontrol_high_success",
+      "value": 65.6,
+      "qualifiers": {
+        "benchmark": "AndroidControl-High",
+        "unit": "percent"
+      },
+      "claim_digest": "f88d90a6383f4f0a3cb7e1f71134fe4ee62229e28b9a86bad26e0c428aa04364"
+    }
+  ],
+  "reference_baselines": [
+    {
+      "baseline_id": "baseline_01",
+      "description": "Qwen2-VL baseline",
+      "qualifiers": {},
+      "baseline_digest": "aa5a3b92c3e9e77838b7f0091a2161beb4090a1c98e3f1351584741937623597"
+    },
+    {
+      "baseline_id": "baseline_02",
+      "description": "ShowUI",
+      "qualifiers": {},
+      "baseline_digest": "42f0a652b46c38e7b920c377d5f4bf8bc199b5aa8621d01e2c3bb5a47d59fdbc"
+    },
+    {
+      "baseline_id": "baseline_03",
+      "description": "TongUI",
+      "qualifiers": {},
+      "baseline_digest": "0ab503fa732684e84cae7791ceeb286964b9ac6299a9f98464c90a2cb36d0bd5"
+    },
+    {
+      "baseline_id": "baseline_04",
+      "description": "CogAgent",
+      "qualifiers": {},
+      "baseline_digest": "be0a914cd4f1e7c9941a19dab2ef754bb91f417f924c9588759d502b225c5239"
+    },
+    {
+      "baseline_id": "baseline_05",
+      "description": "SeeClick",
+      "qualifiers": {},
+      "baseline_digest": "999ddb7aff085cd6db249f57d0254dd1be2265dbb5123e1c41efef1cc00d7eca"
+    },
+    {
+      "baseline_id": "baseline_06",
+      "description": "Aguvis",
+      "qualifiers": {},
+      "baseline_digest": "8ca97dbe52582135b38c077096a5b33c2cfeb274437c39ea4a00277cd2600db0"
+    }
+  ],
+  "deltas": [],
+  "blockers": [
+    "Matched reproduction requires the pinned iSHIFT code/checkpoint, DINOv2/SAM/base-model revisions and exact benchmark preprocessing.",
+    "Efficiency claims require matched hardware, token accounting and inference traces."
+  ],
+  "evidence_refs": [],
+  "scientific_tests": [
+    {
+      "path": "tests/test_scientific_frontier_2026_wave_02.py",
+      "content_sha256": "24b94183020cd24bd2b462fe8dc339d108dd405ec2a878c89bbfc4163f912a32"
+    }
+  ],
+  "research_os": {
+    "surface": "noetrium.api",
+    "execution_state": "benchmark_authority_required",
+    "program_id": "ishift_cvpr2026",
+    "program_digest": "b3bd8993b02155dc5cb3b4095953e054d93ee2453717b1c5958fcd4df54dde8c",
+    "benchmark_authority": {
+      "state": "required",
+      "selection_digests": [],
+      "blockers": [
+        "ReproductionResearchOSCompileError:benchmark 'aitw' has no exact repository or materialized authority"
+      ]
+    },
+    "benchmark_split_axis": {
+      "required": true,
+      "consumers": [
+        "study:build_study"
+      ]
+    },
+    "reproduction_closure_state": "closed",
+    "execution_authority_state": "required",
+    "materialization_ready": false,
+    "execution_requirements": []
+  }
+}

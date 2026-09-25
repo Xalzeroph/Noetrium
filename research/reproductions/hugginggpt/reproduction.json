@@ -1,0 +1,242 @@
+{
+  "schema": "noetrium.reproduction.projection.v10",
+  "authority": "generated_from_typed_definition_and_source",
+  "package": "hugginggpt",
+  "package_digest": "95a843973e0071d06410b9c7e472b19cd67d42e29e932c44ac98715cfc02fc51",
+  "definition_digest": "2e0b013dd19a762c3afd8eda0a66bf0d9878f7b35aedb4659f5c9ea7f7be8afc",
+  "source_registry_digest": "694e1acf36f5bdc067e93ab86f80e49a41f98113ac5297bc5380a4dc00ad4428",
+  "lifecycle": "protocol_bound",
+  "identity": {
+    "method_id": "hugginggpt",
+    "title": "HuggingGPT: Solving AI Tasks with ChatGPT and its Friends in Hugging Face",
+    "paper_uri": "https://proceedings.neurips.cc/paper_files/paper/2023/hash/77c33e6a367922d003ff102ffb92b658-Abstract-Conference.html",
+    "year": 2023,
+    "paper_revision": null,
+    "identity_digest": "bd4ce0175102f24bbbed0478caa2ec9851e6de41427db304c6eadc1cc846bf9d"
+  },
+  "catalog": {
+    "domains": [
+      "multimodal",
+      "planning-search",
+      "runtime-systems",
+      "tool-use"
+    ],
+    "families": [
+      "model_orchestration",
+      "multimodal",
+      "planning",
+      "tool_use"
+    ],
+    "priority": 1,
+    "benchmark_ids": [
+      "hugginggpt-paper-tasks"
+    ],
+    "platform_pressure": [
+      "artifact/lineage",
+      "execution",
+      "model/request",
+      "participant/capability",
+      "participant/method"
+    ],
+    "method_owned": [
+      "dependency-aware execution policy",
+      "expert-model selection policy",
+      "response aggregation policy",
+      "task decomposition policy"
+    ],
+    "platform_owned": [
+      "artifact references",
+      "evidence and telemetry",
+      "method graph execution",
+      "model and capability invocation",
+      "parallel scheduling"
+    ],
+    "reference_repositories": [
+      "https://github.com/microsoft/JARVIS"
+    ],
+    "reference_publications": [],
+    "catalog_digest": "1131de60887999a419d4bb1d16a7dcc0cf7128087f9fbb31789d096768da8517"
+  },
+  "source_lanes": [
+    {
+      "lane_id": "candidate_unclassified_01",
+      "kind": "candidate",
+      "repository": "https://github.com/microsoft/JARVIS",
+      "commit": "2c19142b56663a54b2c85f8622b38f98c5b2580f",
+      "artifacts": [],
+      "lane_digest": "97e64daeb8b599dced56a438b833360b082598b7f87a74a2647edef9570cd9e0"
+    }
+  ],
+  "assets": [
+    {
+      "kind": "fidelity",
+      "path": "research/reproductions/hugginggpt/fidelity.py",
+      "declaration_digest": "510358f80fcdd9439d9d9952d8eb82c7b9d61678aeb5f0b92119a890d26a6e1a",
+      "content_sha256": "40843c3f353fc63573162cf2e8fef4effa350ffe7ae407c918ec0ab3a024b0b4"
+    },
+    {
+      "kind": "method_program",
+      "path": "research/reproductions/hugginggpt/program.py",
+      "declaration_digest": "fd8bdd512084088eb4035a3e0188a2e02d0e839b5db732cd115c07c282a5a0b6",
+      "content_sha256": "88446edd8902da4f810ad6947e90b3af745f127778b798b058c3bccfcf7e1ca9"
+    },
+    {
+      "kind": "study",
+      "path": "research/reproductions/hugginggpt/study.py",
+      "declaration_digest": "ecd6a486a16df6a678ae3b81a5e038253805d211354b3a5c0e29bfd349a9d496",
+      "content_sha256": "5542a7f435c2fb3490fc64bba6d43bdb10b5676c6e147f495c80b071f750dbd5"
+    },
+    {
+      "kind": "support",
+      "path": "research/reproductions/hugginggpt/task_graph.py",
+      "declaration_digest": "4740d9561712189494d505739ff3337f466bbefa3b309af6c95134c4abd5e339",
+      "content_sha256": "492fdd363803fd5230f42407382af38143bc261113131f24b2764295969b2ecf"
+    }
+  ],
+  "primary_executable": "research/reproductions/hugginggpt/program.py",
+  "reported_results": [
+    {
+      "claim_id": "hugginggpt_gpt35_task_planning_passing",
+      "metric_id": "human_evaluation_percent",
+      "value": 91.22,
+      "qualifiers": {
+        "stage": "task-planning",
+        "measure": "passing-rate",
+        "model": "GPT-3.5",
+        "request_count": 130,
+        "source": "NeurIPS 2023 Table 8"
+      },
+      "claim_digest": "79a748f96720b8c536f57e166ac3ac8070ec9c635ca4b5f0824419d41db2d87f"
+    },
+    {
+      "claim_id": "hugginggpt_gpt35_task_planning_rationality",
+      "metric_id": "human_evaluation_percent",
+      "value": 78.47,
+      "qualifiers": {
+        "stage": "task-planning",
+        "measure": "rationality",
+        "model": "GPT-3.5",
+        "request_count": 130,
+        "source": "NeurIPS 2023 Table 8"
+      },
+      "claim_digest": "07f596fed97be32ba29bb2d4b8bdbed20ac1d2b091106a8c21c67dd1dd43a353"
+    },
+    {
+      "claim_id": "hugginggpt_gpt35_model_selection_passing",
+      "metric_id": "human_evaluation_percent",
+      "value": 93.89,
+      "qualifiers": {
+        "stage": "model-selection",
+        "measure": "passing-rate",
+        "model": "GPT-3.5",
+        "request_count": 130,
+        "source": "NeurIPS 2023 Table 8"
+      },
+      "claim_digest": "0b3b3d5abe16d6e6a640f2518bc0eaaa06a4a47deb1c09e85b26c875f8a95cfe"
+    },
+    {
+      "claim_id": "hugginggpt_gpt35_model_selection_rationality",
+      "metric_id": "human_evaluation_percent",
+      "value": 84.29,
+      "qualifiers": {
+        "stage": "model-selection",
+        "measure": "rationality",
+        "model": "GPT-3.5",
+        "request_count": 130,
+        "source": "NeurIPS 2023 Table 8"
+      },
+      "claim_digest": "c9a7975b2ab919e6f7c5abfb3e906e4ae8406da6969c16f51d9e12ea19a3c083"
+    },
+    {
+      "claim_id": "hugginggpt_gpt35_response_success",
+      "metric_id": "human_evaluation_percent",
+      "value": 63.08,
+      "qualifiers": {
+        "stage": "response",
+        "measure": "success-rate",
+        "model": "GPT-3.5",
+        "request_count": 130,
+        "source": "NeurIPS 2023 Table 8"
+      },
+      "claim_digest": "d19e7d916db27ae0e63abcd82ed1e050b9bb55abf82bcc2399899403ca6169ba"
+    }
+  ],
+  "reference_baselines": [
+    {
+      "baseline_id": "alpaca13b_human_eval",
+      "description": "Alpaca-13B human-evaluation baseline reported in HuggingGPT Table 8.",
+      "qualifiers": {
+        "task_planning_passing_percent": 51.04,
+        "task_planning_rationality_percent": 32.17,
+        "response_success_percent": 6.92
+      },
+      "baseline_digest": "a87afe11bddd9298eb4591d63fe6377f36a66d843c9b5c4db5d45ff0821dce45"
+    },
+    {
+      "baseline_id": "vicuna13b_human_eval",
+      "description": "Vicuna-13B human-evaluation baseline reported in HuggingGPT Table 8.",
+      "qualifiers": {
+        "task_planning_passing_percent": 79.41,
+        "task_planning_rationality_percent": 58.41,
+        "response_success_percent": 15.64
+      },
+      "baseline_digest": "76fdbabe2a705c1482c59cc4642eef4d6ec54fed1874d260792f1c58cf5ac13e"
+    }
+  ],
+  "deltas": [
+    {
+      "kind": "unresolved",
+      "description": "The paper implementation may execute multiple dependency-ready subtasks concurrently. The current MethodProgram preserves the same dependency-ready set and deterministic task identities but dispatches ready subtasks one at a time until the generic Method execution surface gains batch-ready-set authoring.",
+      "delta_digest": "2e2ef1f41241055e5fa23de0672ce6116ec1c00a8a2e307c6d524680e1182a87"
+    }
+  ],
+  "blockers": [
+    "matched NeurIPS results require the exact paper-era ChatGPT service revision and expert-model inventory/availability cut",
+    "the released qualitative task examples must be materialized as an immutable task dataset before claim-ready execution",
+    "physical concurrent dispatch of one dependency-ready set is not yet expressed by MethodProgram"
+  ],
+  "evidence_refs": [],
+  "scientific_tests": [
+    {
+      "path": "tests/test_scientific_hugginggpt_method_program_v1.py",
+      "content_sha256": "3ff00881e7e4cbab775dd0591e0339cb340ab3774471c22fa9dc1273d09e4f73"
+    },
+    {
+      "path": "tests/test_scientific_hugginggpt_v1.py",
+      "content_sha256": "691ba0972a070cf0f00e03ca50ea1fe078fd2bb21c4e5a8625dda5da1beef070"
+    }
+  ],
+  "research_os": {
+    "surface": "noetrium.api",
+    "execution_state": "benchmark_authority_required",
+    "program_id": "hugginggpt",
+    "program_digest": "b74dd49a9f096097924e4ee5a2c404404ecefb58f03ef1cf4704e2dfa8094310",
+    "benchmark_authority": {
+      "state": "required",
+      "selection_digests": [],
+      "blockers": [
+        "ReproductionResearchOSCompileError:benchmark 'hugginggpt-paper-tasks' has no exact repository or materialized authority"
+      ]
+    },
+    "benchmark_split_axis": {
+      "required": true,
+      "consumers": [
+        "study:build_hugginggpt_study"
+      ]
+    },
+    "reproduction_closure_state": "required",
+    "execution_authority_state": "required",
+    "materialization_ready": false,
+    "execution_requirements": [
+      {
+        "parameter": "expert_capability_ids",
+        "kind": "capability_closure",
+        "consumers": [
+          "method:build_hugginggpt_method_program",
+          "study:build_hugginggpt_study"
+        ],
+        "requirement_digest": "a505952e039246b74a86ac49b3a34a186eddc66fbe22bc9acc9318334760839c"
+      }
+    ]
+  }
+}

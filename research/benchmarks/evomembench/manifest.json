@@ -1,0 +1,16 @@
+{
+  "schema": "noetrium.benchmark-manifest.v2",
+  "package": "evomembench",
+  "benchmark": {
+    "benchmark_id": "evomembench",
+    "title": "EvoMemBench",
+    "source_uri": "https://github.com/DSAIL-Memory/EvoMemBench",
+    "environment_kinds": [
+      "text_world",
+      "software"
+    ],
+    "modalities": [
+      "text"
+    ]
+  }
+}

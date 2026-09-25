@@ -1,0 +1,222 @@
+{
+  "schema": "noetrium.reproduction.projection.v10",
+  "authority": "generated_from_typed_definition_and_source",
+  "package": "ma_lmm_memory",
+  "package_digest": "7f09608eef3c40ec3b266f64dcbf43b493a2e3823e814b04926eb8d02d857453",
+  "definition_digest": "f7fccd8528c77d41c4a07f5983a6d27a26aefc2026bad491a6c468cc824c9b3e",
+  "source_registry_digest": "5f3d368fdee5eea455e920c9272f4c9bd9feddccd71af306baeaab1137bdff7e",
+  "lifecycle": "protocol_bound",
+  "identity": {
+    "method_id": "ma-lmm",
+    "title": "MA-LMM: Memory-Augmented Large Multimodal Model for Long-Term Video Understanding",
+    "paper_uri": "https://openaccess.thecvf.com/content/CVPR2024/html/He_MA-LMM_Memory-Augmented_Large_Multimodal_Model_for_Long-Term_Video_Understanding_CVPR_2024_paper.html",
+    "year": 2024,
+    "paper_revision": "CVPR 2024 / official initial implementation 6ad50f3efcaca7776d2e1e5f1be32e09ceff9910",
+    "identity_digest": "3ea6d5347ba920a4b3d3b73272ec5f90d41aac7bb0a868cd3ff60d5059334e7f"
+  },
+  "catalog": {
+    "domains": [
+      "memory",
+      "multimodal",
+      "video"
+    ],
+    "families": [
+      "long_video_understanding",
+      "memory_compression",
+      "multimodal_memory",
+      "online_memory"
+    ],
+    "priority": 1,
+    "benchmark_ids": [
+      "lvu"
+    ],
+    "platform_pressure": [
+      "artifact/content",
+      "execution/machines",
+      "experimentation/study",
+      "memory",
+      "model/multimodal"
+    ],
+    "method_owned": [
+      "compression-size-weighted memory consolidation",
+      "online visual memory-bank update semantics",
+      "per-token adjacent cosine merge selection",
+      "query-memory attention history semantics"
+    ],
+    "platform_owned": [
+      "MemoryMachine journal authority",
+      "artifact/evidence lineage",
+      "model execution",
+      "multimodal content identity and transport",
+      "study and evaluation orchestration"
+    ],
+    "reference_repositories": [
+      "https://github.com/boheumd/MA-LMM"
+    ],
+    "reference_publications": [
+      "https://openaccess.thecvf.com/content/CVPR2024/html/He_MA-LMM_Memory-Augmented_Large_Multimodal_Model_for_Long-Term_Video_Understanding_CVPR_2024_paper.html"
+    ],
+    "catalog_digest": "94486e8655aad2f867608bbcbe390c2bfc26ade5618cb6ae90803d35da6e3373"
+  },
+  "source_lanes": [
+    {
+      "lane_id": "compatibility_video_path_bugfix",
+      "kind": "later_released_executable",
+      "repository": "https://github.com/boheumd/MA-LMM",
+      "commit": "f9467665132bc258ae4119d0dc80ea02c4b5bd60",
+      "artifacts": [
+        "lavis/models/blip2_models/blip2_vicuna_instruct.py"
+      ],
+      "lane_digest": "a917241e15d0d158a2171a8a4f0c0d0662d000b43d90e0508e031dc0f2f61ea4"
+    },
+    {
+      "lane_id": "cvpr_2024_final",
+      "kind": "paper_provenance",
+      "venue": "CVPR",
+      "year": 2024,
+      "publication_id": "ma-lmm-cvpr-2024",
+      "publication_uri": "https://openaccess.thecvf.com/content/CVPR2024/html/He_MA-LMM_Memory-Augmented_Large_Multimodal_Model_for_Long-Term_Video_Understanding_CVPR_2024_paper.html",
+      "revision": "CVPR 2024 final paper",
+      "content_sha256": null,
+      "lane_digest": "9e87526776e9ba5428241557c10fbd11119ed16027818aaedcb25b990f962127"
+    },
+    {
+      "lane_id": "paper_era_official_initial",
+      "kind": "official_executable",
+      "repository": "https://github.com/boheumd/MA-LMM",
+      "commit": "6ad50f3efcaca7776d2e1e5f1be32e09ceff9910",
+      "artifacts": [
+        "lavis/configs/models/blip2/blip2_instruct_vicuna7b.yaml",
+        "lavis/models/blip2_models/blip2.py",
+        "lavis/models/blip2_models/blip2_vicuna_instruct.py",
+        "run_scripts/lvu/train.sh",
+        "run_scripts/msvd/train_cap.sh",
+        "run_scripts/msvd/train_qa.sh"
+      ],
+      "lane_digest": "5b218a6bfed9bb7ce002afa7ae947f9c905ec68b6a58750e919f1ea619b57dea"
+    }
+  ],
+  "assets": [
+    {
+      "kind": "benchmark",
+      "path": "research/reproductions/ma_lmm_memory/benchmark.py",
+      "declaration_digest": "c6c600a3b29a2fe50943a0b86eafb5eb016b1dfcfe687d67ade111f1e345aa10",
+      "content_sha256": "470f38ff9ec9e071d598aaa50b9ee563a66a521734f8a1fc951efa29584376ba"
+    },
+    {
+      "kind": "fidelity",
+      "path": "research/reproductions/ma_lmm_memory/fidelity.py",
+      "declaration_digest": "619b3656fddd01a83ff2acccab51bc245c28af6ef9baed55219f484f8852c3dc",
+      "content_sha256": "e085034880f901dd47a03c4f546bd46d32c774ade0f8c4f5b066dda584ff0d29"
+    },
+    {
+      "kind": "research_program",
+      "path": "research/reproductions/ma_lmm_memory/memory.py",
+      "declaration_digest": "6e7103bc1fb6d71bd11e3ce80e879b283ad31d29ffdb68337207032bf2610310",
+      "content_sha256": "3d5e07fcc796d82ad85cce93c2a31aea6b9544013e9e74aaec6e578faf648606"
+    },
+    {
+      "kind": "study",
+      "path": "research/reproductions/ma_lmm_memory/study.py",
+      "declaration_digest": "94b64a35a1bd6c11b7e87572bfefd55c6c232774e6c11d8c5f85bd061db9c7b9",
+      "content_sha256": "cd7922e0288f8afae029eb2228a575d713bbd03dc465dbdca4f5230ba68c6b42"
+    },
+    {
+      "kind": "support",
+      "path": "research/reproductions/ma_lmm_memory/source.py",
+      "declaration_digest": "a2c64c2fb580f81053bbe538f8e0e965884e5196ea6074dc5704d61f3e20d848",
+      "content_sha256": "40a2a485606819772fb7888ea12d0d1a598d34df60d8fc12843f831ea9723e0d"
+    }
+  ],
+  "primary_executable": "research/reproductions/ma_lmm_memory/memory.py",
+  "reported_results": [
+    {
+      "claim_id": "ma_lmm_lvu_average_top1",
+      "metric_id": "average_top1_accuracy_percent",
+      "value": 63.0,
+      "qualifiers": {
+        "benchmark": "lvu",
+        "tasks": 7,
+        "source": "CVPR-2024 paper Table 1"
+      },
+      "claim_digest": "f73d06a8d7cf8412fb8c73ef0618fd1d320d63a21d6fc4233bd142333bf1c5bd"
+    },
+    {
+      "claim_id": "ma_lmm_lvu_relation",
+      "metric_id": "top1_accuracy_percent",
+      "value": 58.2,
+      "qualifiers": {
+        "benchmark": "lvu",
+        "task": "relationship",
+        "source": "CVPR-2024 paper Table 1"
+      },
+      "claim_digest": "9066c5d6cc491292ce3591505115c625ad925864f1f20dda7602d20631629949"
+    },
+    {
+      "claim_id": "ma_lmm_lvu_scene",
+      "metric_id": "top1_accuracy_percent",
+      "value": 80.3,
+      "qualifiers": {
+        "benchmark": "lvu",
+        "task": "scene",
+        "source": "CVPR-2024 paper Table 1"
+      },
+      "claim_digest": "d7e80a911ee22e6c03f546fc92e0c5dda5a8867599fe1012f2257deb0a8e7d1e"
+    },
+    {
+      "claim_id": "ma_lmm_lvu_director",
+      "metric_id": "top1_accuracy_percent",
+      "value": 74.6,
+      "qualifiers": {
+        "benchmark": "lvu",
+        "task": "director",
+        "source": "CVPR-2024 paper Table 1"
+      },
+      "claim_digest": "fd0bcad3ae8ff88b0730286e2ec00bc717c5ea00576b0121739498f3f35dfdf7"
+    }
+  ],
+  "reference_baselines": [
+    {
+      "baseline_id": "s5_lvu",
+      "description": "S5 long-video baseline reported in the MA-LMM LVU comparison.",
+      "qualifiers": {
+        "average_top1_accuracy_percent": 59.2,
+        "source": "CVPR-2024 paper Table 1"
+      },
+      "baseline_digest": "e6e86776ab68c39882daa77d8227aac928c62a010042f9c19d6a3eb48f8bdf1f"
+    }
+  ],
+  "deltas": [],
+  "blockers": [
+    "Full checkpoint-level CVPR result reproduction still requires frozen official model weights and acquisition of the LVU 1.0 video/data bytes into content-addressed artifact authority.",
+    "The current executable pressure target isolates the paper memory algorithm from the surrounding LAVIS/Vicuna tensor stack."
+  ],
+  "evidence_refs": [],
+  "scientific_tests": [
+    {
+      "path": "tests/test_scientific_ma_lmm_memory_v1.py",
+      "content_sha256": "909083f97394d2aab8297a8ed41504d4d3dd54ffdf0300fb9c8af7cc3f1a904f"
+    }
+  ],
+  "research_os": {
+    "surface": "noetrium.api",
+    "execution_state": "benchmark_authority_required",
+    "program_id": "ma_lmm_memory",
+    "program_digest": "41140ec744986d38e9a6e998b6c7e4352f5889acea9d669ed2643f963224f1e3",
+    "benchmark_authority": {
+      "state": "required",
+      "selection_digests": [],
+      "blockers": [
+        "ReproductionResearchOSCompileError:benchmark 'lvu' has no exact repository or materialized authority"
+      ]
+    },
+    "benchmark_split_axis": {
+      "required": false,
+      "consumers": []
+    },
+    "reproduction_closure_state": "closed",
+    "execution_authority_state": "required",
+    "materialization_ready": false,
+    "execution_requirements": []
+  }
+}

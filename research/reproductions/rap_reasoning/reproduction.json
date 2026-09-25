@@ -1,0 +1,162 @@
+{
+  "schema": "noetrium.reproduction.projection.v10",
+  "authority": "generated_from_typed_definition_and_source",
+  "package": "rap_reasoning",
+  "package_digest": "0fa0696811325eda6f9d13051fc87d5b4dc1355b88aeb6fa965db8c320e86925",
+  "definition_digest": "3de23b790a18d3bd15b16ce34f0a87cb7e95fa74b9b4c06fde9cfa49bba55e61",
+  "source_registry_digest": "ced15295ec849f883db78704fb7a1e4351e59bd9ff1229c652b243f23abfdff2",
+  "lifecycle": "protocol_bound",
+  "identity": {
+    "method_id": "rap",
+    "title": "Reasoning with Language Model is Planning with World Model",
+    "paper_uri": "https://aclanthology.org/2023.emnlp-main.507/",
+    "year": 2023,
+    "paper_revision": "arXiv:2305.14992 / EMNLP 2023",
+    "identity_digest": "90b612f5ce3ffc1c4a1b17e48664369c8a782250e26e660408eb8994a7e3236d"
+  },
+  "catalog": {
+    "domains": [
+      "planning-search",
+      "reasoning",
+      "world-models"
+    ],
+    "families": [
+      "mcts",
+      "reasoning",
+      "world_model"
+    ],
+    "priority": 1,
+    "benchmark_ids": [
+      "blocksworld"
+    ],
+    "platform_pressure": [
+      "experimentation/evaluation",
+      "experimentation/study",
+      "model/assignment",
+      "model/request"
+    ],
+    "method_owned": [
+      "MCTS reasoning policy",
+      "RAP reward aggregation",
+      "reasoner/world-model role semantics"
+    ],
+    "platform_owned": [
+      "benchmark cut identity",
+      "evaluator binding",
+      "named model-role binding",
+      "study execution and evidence"
+    ],
+    "reference_repositories": [
+      "https://github.com/Ber666/RAP"
+    ],
+    "reference_publications": [],
+    "catalog_digest": "010546117e36e02b9a10ce1864b11430e986eee4f5c77ee7f77e336b216bdf8d"
+  },
+  "source_lanes": [
+    {
+      "lane_id": "official_rap_repo",
+      "kind": "official_executable",
+      "repository": "https://github.com/Ber666/RAP",
+      "commit": "774817c228b3d5ddfc18de2318f3476128ecf6eb",
+      "artifacts": [
+        "data/blocksworld/step_4.json",
+        "rap/blocksworld_mcts.py",
+        "rap/mcts.py"
+      ],
+      "lane_digest": "bb5f023bc5379478b71ec65b037293ff514e34e2ab940164e1c3b354b145788a"
+    }
+  ],
+  "assets": [
+    {
+      "kind": "fidelity",
+      "path": "research/reproductions/rap_reasoning/fidelity.py",
+      "declaration_digest": "6a2c47cf098c58cb81c6f8721c34cf2143ebb07a4f968d2e9ed3c0b80f39ece2",
+      "content_sha256": "6bc1f8ceca6a80df29b833f50ba5c77f26bf71639f0beef60333583befd9b09a"
+    },
+    {
+      "kind": "method_program",
+      "path": "research/reproductions/rap_reasoning/program.py",
+      "declaration_digest": "16761ca8e2a1fa885e92e661eb17bb9f3c2406bf53af198549ea98348a34fcde",
+      "content_sha256": "9b67472754370bbab5133a1a5610df039075232ab7115e94cacef6fb89328f54"
+    },
+    {
+      "kind": "study",
+      "path": "research/reproductions/rap_reasoning/study.py",
+      "declaration_digest": "d969ffcb041c8fd22dd72b0f9e6a5e0a0979f20b350bf3167bf058a346656136",
+      "content_sha256": "01d1baf2f33751280c35b02e1b6cfdd49f1fe4dc48a514ae2ad1ec7dc2d0b097"
+    },
+    {
+      "kind": "support",
+      "path": "research/reproductions/rap_reasoning/search.py",
+      "declaration_digest": "ebec4d2a5026956c6e72f082477ad1325f1925c5137a7155ca37d1462994952a",
+      "content_sha256": "055141e2d91e0afef54a3205c18b693d5db0e48e1c2fefa80e81e3f090680ffd"
+    }
+  ],
+  "primary_executable": "research/reproductions/rap_reasoning/program.py",
+  "reported_results": [
+    {
+      "claim_id": "rap_llama33b_plan_generation_relative_gain",
+      "metric_id": "relative_improvement_percent",
+      "value": 33.0,
+      "qualifiers": {
+        "task": "plan generation",
+        "model": "LLaMA-33B",
+        "comparison": "CoT on GPT-4",
+        "source": "EMNLP 2023 abstract"
+      },
+      "claim_digest": "f0d4691b3c7e3f5191b38bfe01146ed5bd2634a053e6e6b38720f2280ea869ef"
+    }
+  ],
+  "reference_baselines": [
+    {
+      "baseline_id": "cot_gpt4_plan_generation",
+      "description": "GPT-4 chain-of-thought plan-generation baseline used by the RAP paper for the reported relative improvement comparison.",
+      "qualifiers": {
+        "source": "EMNLP 2023 paper"
+      },
+      "baseline_digest": "0abd6a88daf4b9df08fa4be39dead5374cb5af0c2ee4f0b8d9b21e0699688de7"
+    }
+  ],
+  "deltas": [
+    {
+      "kind": "unresolved",
+      "description": "exact paper-era LLaMA deployment/checkpoint provenance remains incomplete",
+      "delta_digest": "9c890e7166001a0844601175302d92a70a5e62e582cd38a919711019857cd655"
+    }
+  ],
+  "blockers": [
+    "exact historical LLaMA checkpoint/deployment identity is not yet rebound"
+  ],
+  "evidence_refs": [],
+  "scientific_tests": [
+    {
+      "path": "tests/test_scientific_rap_method_program_v1.py",
+      "content_sha256": "a08f96f0eddd3fa395f38a0f3589cddcfe61ca04f5ede8641fc492ac1a717813"
+    },
+    {
+      "path": "tests/test_scientific_rap_reproduction_v1.py",
+      "content_sha256": "521174c2b202e1c3382af7d3962ff49b700b92d7c1676f0686d6543539e408b9"
+    }
+  ],
+  "research_os": {
+    "surface": "noetrium.api",
+    "execution_state": "benchmark_authority_required",
+    "program_id": "rap_reasoning",
+    "program_digest": "792acb6fdd56a3d9b2cc13f30036f3815644aa5cbf3605de31250e54713e4871",
+    "benchmark_authority": {
+      "state": "required",
+      "selection_digests": [],
+      "blockers": [
+        "ReproductionResearchOSCompileError:benchmark 'blocksworld' has no exact repository or materialized authority"
+      ]
+    },
+    "benchmark_split_axis": {
+      "required": false,
+      "consumers": []
+    },
+    "reproduction_closure_state": "closed",
+    "execution_authority_state": "required",
+    "materialization_ready": false,
+    "execution_requirements": []
+  }
+}

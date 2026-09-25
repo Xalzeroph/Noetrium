@@ -1,0 +1,236 @@
+{
+  "schema": "noetrium.reproduction.projection.v10",
+  "authority": "generated_from_typed_definition_and_source",
+  "package": "optimus1_minecraft",
+  "package_digest": "0a5077f0d42477f4c2ffb0047c7c083460c127e9b778ba2af54dd42d3152d7a8",
+  "definition_digest": "0ace154a57fd245b13e848a840bc9f3069085d6995554a66cc2723f47d990eed",
+  "source_registry_digest": "a3acfe40764ad2d81394436f3bd10ed392d9c039e7f7dd83810b26b7bffbf7fe",
+  "lifecycle": "protocol_bound",
+  "identity": {
+    "method_id": "optimus1-minecraft",
+    "title": "Optimus-1: Hybrid Multimodal Memory Empowered Agents Excel in Long-Horizon Tasks",
+    "paper_uri": "https://proceedings.neurips.cc/paper_files/paper/2024/hash/5949a8750a110ce1f0631b1776c500a2-Abstract-Conference.html",
+    "year": 2024,
+    "paper_revision": "NeurIPS 2024 / official code release e789c58f53a4f831d67c4d6aaa008dbfd198a229",
+    "identity_digest": "2254046b2a4e071fad3acde018c30154e5ee8c32284f10fe8cc78cdf521c4c08"
+  },
+  "catalog": {
+    "domains": [
+      "embodied-robotics",
+      "long-horizon-planning",
+      "memory",
+      "minecraft",
+      "multimodal"
+    ],
+    "families": [
+      "episodic_multimodal_memory",
+      "hybrid_memory",
+      "knowledge_graph_memory",
+      "minecraft",
+      "multimodal_memory",
+      "planning_reflection"
+    ],
+    "priority": 1,
+    "benchmark_ids": [
+      "minecraft-long-horizon-67"
+    ],
+    "platform_pressure": [
+      "artifact/multimodal",
+      "environment/minecraft",
+      "execution/machines/memory",
+      "execution/machines/method",
+      "experimentation/study",
+      "model/multimodal"
+    ],
+    "method_owned": [
+      "Abstracted Multimodal Experience Pool semantics",
+      "Experience-Driven Reflector semantics",
+      "Hierarchical Directed Knowledge Graph construction and retrieval",
+      "Knowledge-Guided Planner semantics",
+      "error-conditioned replan experience retrieval",
+      "multimodal reflection experience categories",
+      "periodic planner-reflector-controller interaction",
+      "successful-plan experience storage and fuzzy retrieval"
+    ],
+    "platform_owned": [
+      "MemoryMachine and MethodMachine journal authority",
+      "Minecraft environment lifecycle and effects",
+      "Study/Experiment orchestration",
+      "artifact/evidence lineage",
+      "model invocation and participant identity",
+      "multimodal content identity and transport"
+    ],
+    "reference_repositories": [
+      "https://github.com/iLearn-Lab/NeurIPS24-Optimus-1"
+    ],
+    "reference_publications": [
+      "https://proceedings.neurips.cc/paper_files/paper/2024/hash/5949a8750a110ce1f0631b1776c500a2-Abstract-Conference.html"
+    ],
+    "catalog_digest": "326fa902c941c53d7ff42ed813396ea1b7d8a3b9bb9e3f51c4a3639359b82cda"
+  },
+  "source_lanes": [
+    {
+      "lane_id": "neurips_2024_main",
+      "kind": "paper_provenance",
+      "venue": "NeurIPS",
+      "year": 2024,
+      "publication_id": "optimus1-neurips-2024",
+      "publication_uri": "https://proceedings.neurips.cc/paper_files/paper/2024/hash/5949a8750a110ce1f0631b1776c500a2-Abstract-Conference.html",
+      "revision": "NeurIPS 2024 main conference paper",
+      "content_sha256": null,
+      "lane_digest": "d2c2e69b7600cfdf30b615d4358941ef647186e7accb9e7e06811ae94c2636a9"
+    },
+    {
+      "lane_id": "official_code_release_2024_10_21",
+      "kind": "official_executable",
+      "repository": "https://github.com/iLearn-Lab/NeurIPS24-Optimus-1",
+      "commit": "e789c58f53a4f831d67c4d6aaa008dbfd198a229",
+      "artifacts": [
+        "scripts/diamond.sh",
+        "src/optimus1/conf/benchmark",
+        "src/optimus1/conf/evaluate.yaml",
+        "src/optimus1/main.py",
+        "src/optimus1/memories/graph.py",
+        "src/optimus1/memories/memory.py",
+        "src/optimus1/models/gpt4_planning.py",
+        "src/optimus1/models/steve_action_model.py"
+      ],
+      "lane_digest": "73a6e6d1c03db16d07ea1fe3a1aef280e729c40d0aa6a4f8563853a4e2031526"
+    }
+  ],
+  "assets": [
+    {
+      "kind": "benchmark",
+      "path": "research/reproductions/optimus1_minecraft/benchmark.py",
+      "declaration_digest": "60093beaf0e23dcd714b2a8517e3241b4783209020fd884d4247e8a860d4b03a",
+      "content_sha256": "3e565d45ef8b4978df3b33c7fa0d8243ac51c45b0a2daf64f28b85fa56c37408"
+    },
+    {
+      "kind": "fidelity",
+      "path": "research/reproductions/optimus1_minecraft/fidelity.py",
+      "declaration_digest": "c1cd532fea031b27a6fd8cb36a4e4f80f67a1d3e6e8939d31fbc2783b981e6fe",
+      "content_sha256": "f42869ac3ce9aee11eaa6cb982b3d901a881855a358c58d105c99b9ae178010e"
+    },
+    {
+      "kind": "method_program",
+      "path": "research/reproductions/optimus1_minecraft/program.py",
+      "declaration_digest": "933f6ee7d053cc455e0dc540c61ecbdebc5af0b2e05b708aea49c4c9a44ecfef",
+      "content_sha256": "3484527f14e7de73e7f1e68d12a3d4744d830dc2818ed9b5307e9a4bbb38e493"
+    },
+    {
+      "kind": "research_program",
+      "path": "research/reproductions/optimus1_minecraft/memory.py",
+      "declaration_digest": "95cf8bca4d80c759237c2e81b7ddf3e57b04150e15d6056d7c7132feb0532c87",
+      "content_sha256": "e045530132c7282126c77cfa65d2e6689f46d03999ba1d91069cd1e02182fd0a"
+    },
+    {
+      "kind": "study",
+      "path": "research/reproductions/optimus1_minecraft/study.py",
+      "declaration_digest": "4727bef3dbd5ed894003ddb4a09d5cbaf4a2af2d06a8badb77e17d23c96e6633",
+      "content_sha256": "c1edd87bec5d268d36986422455f9e4157b19271ad877ac5e27e5f030c7566fe"
+    },
+    {
+      "kind": "support",
+      "path": "research/reproductions/optimus1_minecraft/source.py",
+      "declaration_digest": "84b3c6eaa6048411698f60c9ddb8b17c646d1c45788e178ee1f7a9405f642002",
+      "content_sha256": "455ad6bdf22501f271386974b1c33d29c7562d111e1438f5e3f319a19634bf84"
+    }
+  ],
+  "primary_executable": "research/reproductions/optimus1_minecraft/program.py",
+  "reported_results": [
+    {
+      "claim_id": "optimus1_wooden_pickaxe_success",
+      "metric_id": "success_rate_percent",
+      "value": 100.0,
+      "qualifiers": {
+        "task": "craft-wooden-pickaxe",
+        "evaluation_times": 30,
+        "average_steps": 1153.91,
+        "average_time_seconds": 57.7,
+        "source": "NeurIPS-2024 paper appendix"
+      },
+      "claim_digest": "fe46fa6f78bdc6ee1f884df4b4e0a98c3bd7f878587c0f5ec05be28846f2b3c5"
+    },
+    {
+      "claim_id": "optimus1_stone_pickaxe_success",
+      "metric_id": "success_rate_percent",
+      "value": 96.77,
+      "qualifiers": {
+        "task": "craft-stone-pickaxe",
+        "evaluation_times": 31,
+        "average_steps": 2310.09,
+        "average_time_seconds": 115.5,
+        "source": "NeurIPS-2024 paper appendix"
+      },
+      "claim_digest": "b245b5ad17530049e5a900df70165a26618001a44e9acaf2788d4bcf2306281d"
+    },
+    {
+      "claim_id": "optimus1_paper_long_horizon_task_count",
+      "metric_id": "evaluation_task_count",
+      "value": 67,
+      "qualifiers": {
+        "scope": "paper-main-long-horizon-benchmark",
+        "source": "NeurIPS-2024 paper"
+      },
+      "claim_digest": "b5219f3f7317ae232974654bd7dc3eebdffea4a145eecb5e37b9f19e76084e03"
+    }
+  ],
+  "reference_baselines": [
+    {
+      "baseline_id": "optimus1_minecraft_agents",
+      "description": "Minecraft embodied-agent baselines used in the NeurIPS 2024 long-horizon task comparison.",
+      "qualifiers": {
+        "source": "NeurIPS-2024 paper evaluation"
+      },
+      "baseline_digest": "de99db203d193f6a16b6f35ef80b5b427f85ea9ec1bc8a2f6d6af712d9398460"
+    }
+  ],
+  "deltas": [
+    {
+      "kind": "unresolved",
+      "description": "The paper analyzes GPT-4V and multiple MLLM backbones, while the 2024-10 official planning implementation invokes gpt-4o. Model identity is therefore kept source-lane-specific until the exact main-result service cut is bound.",
+      "delta_digest": "1c0c1a9592fea679ac5fb40895943f5533e1915446cf4171ebdb2b3fb321d47c"
+    },
+    {
+      "kind": "unresolved",
+      "description": "The paper/framework description says Experience-Driven Reflector feedback can trigger replanning, but the paper-era released main.py parses replan_type and stores reflection memory without branching on the replan label. The executable MethodProgram preserves that released control-flow fact; craft/smelt/equip failure remains the explicit source-level replan path.",
+      "delta_digest": "e0e36b0ee79d124eaf1590ba0204bffafab2aae99d1589fa81380a71abd094ef"
+    }
+  ],
+  "blockers": [
+    "Matched execution requires the paper-era MCP-Reborn Minecraft runtime and STEVE-1 controller checkpoint under content-addressed authority.",
+    "The later 2025 full-memory release must not be substituted for the NeurIPS 2024 paper-era memory state without explicit provenance."
+  ],
+  "evidence_refs": [],
+  "scientific_tests": [
+    {
+      "path": "tests/test_scientific_optimus1_minecraft_v1.py",
+      "content_sha256": "756084f08be07dea823edbd2de832957c4456f9edecce6379e8200228d8040d5"
+    },
+    {
+      "path": "tests/test_scientific_optimus_long_horizon_67_v1.py",
+      "content_sha256": "c1453381ab8f10934e9699c4a37d4dfb2992c1cfd7105f4966f5642579087d46"
+    }
+  ],
+  "research_os": {
+    "surface": "noetrium.api",
+    "execution_state": "execution_authority_required",
+    "program_id": "optimus1_minecraft",
+    "program_digest": "331088f1e05bfd018f9e567e55c900fa21c34eb350551d01bb2c89f10bac43c2",
+    "benchmark_authority": {
+      "state": "closed",
+      "selection_digests": [
+        "d81d4132870d47205869ebcfb5eace837c4eb49cf0df3afd9487c6c8f27ed6d0"
+      ],
+      "blockers": []
+    },
+    "benchmark_split_axis": {
+      "required": false,
+      "consumers": []
+    },
+    "reproduction_closure_state": "closed",
+    "execution_authority_state": "required",
+    "materialization_ready": true,
+    "execution_requirements": []
+  }
+}

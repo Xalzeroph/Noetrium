@@ -1,0 +1,17 @@
+{
+  "schema": "noetrium.benchmark-manifest.v2",
+  "package": "macosarena",
+  "benchmark": {
+    "benchmark_id": "macosarena",
+    "title": "macOSArena",
+    "source_uri": "https://github.com/OS-Copilot/OS-Symphony",
+    "environment_kinds": [
+      "gui"
+    ],
+    "modalities": [
+      "text",
+      "image",
+      "structured"
+    ]
+  }
+}

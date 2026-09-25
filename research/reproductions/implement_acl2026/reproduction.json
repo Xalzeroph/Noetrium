@@ -1,0 +1,163 @@
+{
+  "schema": "noetrium.reproduction.projection.v10",
+  "authority": "generated_from_typed_definition_and_source",
+  "package": "implement_acl2026",
+  "package_digest": "e8585ff58e01b288f99a27de4b26aa6f522f7ca834a1e2a588a977afe788dfce",
+  "definition_digest": "5bdaedd930762f9be7b32f9da0ecd5c227d805303b8b3b5e6d473f5dc963512d",
+  "source_registry_digest": "764630eb6f61e32075615209950579afc67c89224820b6983da5640c0bea8440",
+  "lifecycle": "protocol_bound",
+  "identity": {
+    "method_id": "implement_acl2026",
+    "title": "Model-Based Imaginative Planning for Embodied Agents",
+    "paper_uri": "https://aclanthology.org/2026.acl-long.827/",
+    "year": 2026,
+    "paper_revision": "ACL 2026 final proceedings",
+    "identity_digest": "784cdfb6cbe338ea13a29254785f44e3c7d90a6595032ebf1824f5c5f79cafb5"
+  },
+  "catalog": {
+    "domains": [
+      "agent",
+      "embodied",
+      "frontier-2026"
+    ],
+    "families": [
+      "embodied",
+      "planning",
+      "test-time-scaling",
+      "world-model"
+    ],
+    "priority": 1,
+    "benchmark_ids": [
+      "alfworld"
+    ],
+    "platform_pressure": [
+      "benchmark",
+      "evidence",
+      "execution/workflow",
+      "experimentation/study",
+      "model/request"
+    ],
+    "method_owned": [
+      "Condition the world model on new interaction history for unseen-environment adaptation.",
+      "Convert raw visual observations into object-centric symbolic states.",
+      "Execute the selected action in ALFWorld.",
+      "Predict Monte Carlo future states for candidate actions using temperature sampling.",
+      "Propose candidate actions from current symbolic state and task goal.",
+      "Rank imagined trajectories and refine the decision."
+    ],
+    "platform_owned": [
+      "MethodProgram execution and Machine Journal truth",
+      "Study/Experiment orchestration and measurement artifacts",
+      "content-addressed benchmark task identity",
+      "provider-independent model/tool dispatch and receipts",
+      "run/evidence provenance and replay"
+    ],
+    "reference_repositories": [],
+    "reference_publications": [
+      "https://aclanthology.org/2026.acl-long.827/"
+    ],
+    "catalog_digest": "1496ef25023e5f657a195827b5a3d7303fa0a6f7666ac8495a6c807e1972ef2c"
+  },
+  "source_lanes": [
+    {
+      "lane_id": "final_publication",
+      "kind": "paper_provenance",
+      "venue": "ACL",
+      "year": 2026,
+      "publication_id": "2026.acl-long.827",
+      "publication_uri": "https://aclanthology.org/2026.acl-long.827/",
+      "revision": "ACL 2026 final proceedings paper",
+      "content_sha256": null,
+      "lane_digest": "a195ed822bc8c4dc0e04d534144615f5686db696c1261c459a00542b89f56ced"
+    }
+  ],
+  "assets": [
+    {
+      "kind": "benchmark",
+      "path": "research/reproductions/implement_acl2026/benchmark.py",
+      "declaration_digest": "4f7ac82958e5dd1feda01f29c352a63a4bb0f241503f35fb5ed116fb1524e0ac",
+      "content_sha256": "cedd3a50ebcc91158fe38f1c787fb8b6941081192f98b03bf04a19f674281d20"
+    },
+    {
+      "kind": "method_program",
+      "path": "research/reproductions/implement_acl2026/program.py",
+      "declaration_digest": "cb80e18cd37cc0982c0cd4e044a283845e0a65dcd4629be8ff2876f03cc1e0d3",
+      "content_sha256": "da03369bab3e4183578959a12ce8815846171fe9001d01ffff65304668c50b3f"
+    },
+    {
+      "kind": "study",
+      "path": "research/reproductions/implement_acl2026/study.py",
+      "declaration_digest": "ee882f4dbd63fbb4f8eb31bb089f7e7e2c00fd7c4c5ac77616ed78438509453e",
+      "content_sha256": "2f589c3b1aaf52efd696f2fcb4d77107f09fa2d702efd04c0330cadbeb3a6c52"
+    }
+  ],
+  "primary_executable": "research/reproductions/implement_acl2026/program.py",
+  "reported_results": [],
+  "reference_baselines": [
+    {
+      "baseline_id": "baseline_01",
+      "description": "finetuning-based embodied agents",
+      "qualifiers": {},
+      "baseline_digest": "26ed864011c47ce9fb24699c710e5478b83cf48f88f639f92f8d9671ee7fe542"
+    },
+    {
+      "baseline_id": "baseline_02",
+      "description": "ReAct",
+      "qualifiers": {},
+      "baseline_digest": "e1ca34b5e4eff728c0c090f7dd901fc91fc417cbaae17c73472e7d4356a6a3e5"
+    },
+    {
+      "baseline_id": "baseline_03",
+      "description": "Reflexion",
+      "qualifiers": {},
+      "baseline_digest": "96bafe99261c8afbcaa4b0a308bed95cde784dc46e5a579dc4355094834ed313"
+    },
+    {
+      "baseline_id": "baseline_04",
+      "description": "Self-consistency",
+      "qualifiers": {},
+      "baseline_digest": "a5d51f326c1a0d688d006c989f8c35e590455f8f8396849542fd461f531b11d5"
+    },
+    {
+      "baseline_id": "baseline_05",
+      "description": "SimuRA",
+      "qualifiers": {},
+      "baseline_digest": "3f4b91a1619e9d48d17ab2d87de31c1c44b9d4f67d54e453fd28dc261fd86d1b"
+    }
+  ],
+  "deltas": [],
+  "blockers": [
+    "Matched execution requires the exact world-model checkpoint/training transitions and ALFWorld visual configuration.",
+    "Final success-rate claims must be extracted from the final paper tables and reproduced with real model/environment runs."
+  ],
+  "evidence_refs": [],
+  "scientific_tests": [
+    {
+      "path": "tests/test_scientific_frontier_2026_wave_01.py",
+      "content_sha256": "257928f82fe84a08dcd0ccf1ccf98e6e23032777b9d9c00c217a10c19c647b8a"
+    }
+  ],
+  "research_os": {
+    "surface": "noetrium.api",
+    "execution_state": "benchmark_authority_required",
+    "program_id": "implement_acl2026",
+    "program_digest": "8bf8f01fe419f8660bea9aec3f078b4b53ebef23579627e6d5443f332a9d037f",
+    "benchmark_authority": {
+      "state": "required",
+      "selection_digests": [],
+      "blockers": [
+        "ReproductionResearchOSCompileError:benchmark 'alfworld' has no exact repository or materialized authority"
+      ]
+    },
+    "benchmark_split_axis": {
+      "required": true,
+      "consumers": [
+        "study:build_study"
+      ]
+    },
+    "reproduction_closure_state": "closed",
+    "execution_authority_state": "required",
+    "materialization_ready": false,
+    "execution_requirements": []
+  }
+}

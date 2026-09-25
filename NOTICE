@@ -1,0 +1,18 @@
+Noetrium
+Copyright 2026 The Noetrium Authors
+
+English
+-------
+This product is distributed under the Apache License, Version 2.0.
+This NOTICE file is informational and does not modify the License.
+Third-party software included in or used by the repository remains subject to
+its respective license terms. See THIRD_PARTY_NOTICES.md for the repository
+licensing overview and the release evidence/SBOM for exact distributed cuts.
+
+中文
+----
+本项目依据 Apache License, Version 2.0 分发。
+本 NOTICE 文件仅用于说明与 attribution，不修改许可证本身的任何条款。
+仓库中包含或使用的第三方软件继续受其各自许可证约束。
+仓库级许可概览见 THIRD_PARTY_NOTICES.md；具体发布物的精确第三方依赖
+应以该发布物绑定的 release evidence / SBOM 为准。

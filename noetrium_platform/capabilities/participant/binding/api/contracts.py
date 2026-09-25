@@ -1,0 +1,64 @@
+from __future__ import annotations
+
+from typing import Callable, Protocol
+
+from noetrium_platform.capabilities.participant.core.api import (
+    ParticipantConfigurationArtifact,
+    ParticipantImplementationIdentity,
+    ParticipantRuntimeBinding,
+    ParticipantSessionRuntimeIdentity,
+)
+from noetrium_platform.capabilities.participant.core.api import (
+    ParticipantRuntimeEndpoint,
+    ParticipantRuntimeHandle,
+    ParticipantSessionRuntime,
+)
+
+
+class ParticipantImplementationRegistration(Protocol):
+    identity: ParticipantImplementationIdentity
+    factory: Callable[[ParticipantConfigurationArtifact], object]
+
+
+class ParticipantImplementationResolverPort(Protocol):
+    def resolve(
+        self,
+        identity: ParticipantImplementationIdentity,
+    ) -> ParticipantImplementationRegistration: ...
+
+
+class ParticipantConfigurationResolverPort(Protocol):
+    def resolve(self, configuration_digest: str) -> ParticipantConfigurationArtifact: ...
+
+
+class ParticipantSessionRuntimeRegistration(Protocol):
+    identity: ParticipantSessionRuntimeIdentity
+    factory: Callable[[], ParticipantSessionRuntime]
+
+
+class ParticipantSessionRuntimeResolverPort(Protocol):
+    def resolve(
+        self,
+        identity: ParticipantSessionRuntimeIdentity,
+    ) -> ParticipantSessionRuntimeRegistration: ...
+
+
+ParticipantRuntimeEndpointFactory = Callable[
+    [ParticipantImplementationIdentity, ParticipantSessionRuntimeIdentity, object, ParticipantSessionRuntime],
+    ParticipantRuntimeEndpoint,
+]
+
+
+class ParticipantBindingResolverPort(Protocol):
+    def resolve(self, binding: ParticipantRuntimeBinding) -> ParticipantRuntimeHandle: ...
+
+
+__all__ = [
+    "ParticipantBindingResolverPort",
+    "ParticipantConfigurationResolverPort",
+    "ParticipantImplementationResolverPort",
+    "ParticipantImplementationRegistration",
+    "ParticipantRuntimeEndpointFactory",
+    "ParticipantSessionRuntimeResolverPort",
+    "ParticipantSessionRuntimeRegistration",
+]

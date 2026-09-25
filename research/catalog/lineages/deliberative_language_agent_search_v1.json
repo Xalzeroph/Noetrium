@@ -1,0 +1,191 @@
+{
+  "schema": "noetrium-research-lineage.v1",
+  "lineage_id": "deliberative-language-agent-search",
+  "title": "Peer-Reviewed Deliberative Language-Agent Search",
+  "status": "active_discovery",
+  "as_of": "2026-09-18",
+  "purpose": "Reproduce the peer-reviewed core mechanism lineage from reasoning/acting and reflection through deliberate search, world-model planning, interactive MCTS and process-reward-guided search.",
+  "scope_rule": {
+    "core": "A node must be a qualifying peer-reviewed conference/journal publication and introduce or materially change a transferable reasoning/search/agent-control mechanism.",
+    "satellite": "Application descendants are added only after a qualifying peer-reviewed publication is verified.",
+    "completeness": "Continuously audit flagship venue proceedings and forward/backward citations. Preprint-only nodes are not part of the formal lineage.",
+    "reproduction_unit": "Exact publication + source cut + benchmark/environment cut + model/prompt/config + search/trial/token/cost budget + baselines + metrics/statistics + fidelity deltas."
+  },
+  "platform_rule": {
+    "downstream_owns": [
+      "paper method control semantics",
+      "search policy and expansion rule",
+      "paper-specific reflection or memory policy",
+      "paper-specific reward/value semantics",
+      "benchmark scoring and task-success semantics"
+    ],
+    "platform_owns": [
+      "Machine and Journal execution truth",
+      "model/environment/tool capability invocation",
+      "branch/fork/checkpoint identities and source cuts",
+      "resource and budget accounting",
+      "operation/effect certainty",
+      "evidence, evaluation and experiment linkage",
+      "recovery and reproducibility provenance"
+    ],
+    "promotion_gate": "Promote a mechanism upstream only after repeated pressure from multiple independent peer-reviewed nodes demonstrates method-independent semantics."
+  },
+  "core_nodes": [
+    {
+      "id": "react",
+      "year": 2023,
+      "paper": "ReAct: Synergizing Reasoning and Acting in Language Models",
+      "paper_id": "ICLR 2023",
+      "venue": "ICLR",
+      "publication_status": "peer_reviewed_conference",
+      "role": "reasoning-acting root",
+      "parents": [],
+      "mechanism": [
+        "interleaved thought/action/observation trajectory",
+        "environment-grounded reasoning"
+      ],
+      "benchmarks": ["HotpotQA", "FEVER", "ALFWorld", "WebShop"]
+    },
+    {
+      "id": "self-refine",
+      "year": 2023,
+      "paper": "Self-Refine: Iterative Refinement with Self-Feedback",
+      "paper_id": "NeurIPS 2023",
+      "venue": "NeurIPS",
+      "publication_status": "peer_reviewed_conference",
+      "role": "self-feedback branch",
+      "parents": [],
+      "mechanism": [
+        "self-feedback",
+        "iterative refinement"
+      ],
+      "benchmarks": ["seven generation/reasoning tasks"]
+    },
+    {
+      "id": "reflexion",
+      "year": 2023,
+      "paper": "Reflexion: Language Agents with Verbal Reinforcement Learning",
+      "paper_id": "NeurIPS 2023",
+      "venue": "NeurIPS",
+      "publication_status": "peer_reviewed_conference",
+      "role": "reflection branch",
+      "parents": [
+        {
+          "id": "react",
+          "edge": "adds retry-level verbal self-reflection and episodic verbal memory"
+        }
+      ],
+      "mechanism": [
+        "verbal reinforcement",
+        "self-reflection",
+        "persistent recent reflection memory"
+      ],
+      "benchmarks": ["ALFWorld", "HotpotQA", "HumanEval"]
+    },
+    {
+      "id": "tree-of-thoughts",
+      "year": 2023,
+      "paper": "Tree of Thoughts: Deliberate Problem Solving with Large Language Models",
+      "paper_id": "NeurIPS 2023",
+      "venue": "NeurIPS",
+      "publication_status": "peer_reviewed_conference",
+      "role": "deliberative search branch",
+      "parents": [],
+      "mechanism": [
+        "thought-level branching",
+        "LM state evaluation",
+        "BFS/DFS lookahead and backtracking"
+      ],
+      "benchmarks": ["Game of 24", "Creative Writing", "Mini Crosswords"]
+    },
+    {
+      "id": "rap",
+      "year": 2023,
+      "paper": "Reasoning with Language Model is Planning with World Model",
+      "paper_id": "EMNLP 2023",
+      "venue": "EMNLP",
+      "publication_status": "peer_reviewed_conference",
+      "role": "world-model planning branch",
+      "parents": [],
+      "mechanism": [
+        "LLM as world model",
+        "LLM as reasoning agent",
+        "MCTS over reasoning states",
+        "task reward guided exploration"
+      ],
+      "benchmarks": ["Blocksworld", "GSM8K", "ProntoQA"]
+    },
+    {
+      "id": "lats",
+      "year": 2024,
+      "paper": "Language Agent Tree Search Unifies Reasoning, Acting, and Planning in Language Models",
+      "paper_id": "ICML 2024 / PMLR 235",
+      "venue": "ICML",
+      "publication_status": "peer_reviewed_conference",
+      "role": "core convergence",
+      "parents": [
+        {"id": "react", "edge": "environment-grounded action trajectory"},
+        {"id": "reflexion", "edge": "self-reflection semantic feedback"},
+        {"id": "tree-of-thoughts", "edge": "branching deliberate search and LM heuristic evaluation"},
+        {"id": "rap", "edge": "MCTS/world-model planning lineage"}
+      ],
+      "mechanism": [
+        "MCTS",
+        "LM value function",
+        "self-reflection",
+        "external environment feedback"
+      ],
+      "benchmarks": ["HumanEval", "HotpotQA", "WebShop", "GSM8K"]
+    },
+    {
+      "id": "qlass",
+      "year": 2025,
+      "paper": "QLASS: Boosting Language Agent Inference via Q-Guided Stepwise Search",
+      "paper_id": "ICML 2025 / PMLR 267",
+      "venue": "ICML",
+      "publication_status": "peer_reviewed_conference",
+      "role": "stepwise value-guided search descendant",
+      "parents": [
+        {
+          "id": "lats",
+          "edge": "replaces trajectory-only guidance with learned stepwise Q-value/process-reward guidance over a reasoning tree"
+        }
+      ],
+      "mechanism": [
+        "reasoning tree",
+        "Q-value estimation",
+        "process reward modeling",
+        "Q-guided generation"
+      ],
+      "benchmarks": ["WebShop", "ALFWorld", "SciWorld"]
+    }
+  ],
+  "satellite_candidates": [],
+  "execution_protocol": [
+    "Verify qualifying peer-reviewed publication identity before coding.",
+    "Freeze exact publication/source version and paper-era repository commit/tag.",
+    "Extract algorithm, prompt, state/action/observation, reflection/memory, stopping and search hyperparameters.",
+    "Freeze benchmark version, split, environment build and evaluation code.",
+    "Freeze model/provider/revision, decoding parameters, seeds and model-facing history projection.",
+    "Record trajectory/search/token/model-call/wall-clock/currency budgets separately.",
+    "Reproduce baselines, metrics, ablations and statistical aggregation needed for the published claim.",
+    "Implement scientific semantics under research/reproductions and consume native Noetrium contracts.",
+    "Run fidelity tests, source-cut smokes, pilot experiments and matched experiments.",
+    "Bind every result to immutable source/model/environment/prompt/config/evaluation cuts.",
+    "Promote upstream only method-independent mechanisms demanded by multiple publications."
+  ],
+  "immediate_platform_pressure_hypotheses": [
+    "branch/fork/checkpoint identity and environment snapshot semantics",
+    "tree-node/trajectory/trial lineage and Machine-Journal reconstruction",
+    "search-node and run-level token/model-call/cost/compute budgets",
+    "reproducible stochastic expansion with seed and sampling provenance",
+    "search frontier checkpoint/resume without a second durability authority",
+    "paper-level reflection memory versus platform durable evidence",
+    "value/reward/process-model binding and source cuts",
+    "budget-normalized evaluation across search methods"
+  ],
+  "execution_mode": {
+    "mode": "parallel_peer_reviewed_core_lanes",
+    "rule": "All eligible core reproduction lanes advance independently and in parallel. Preprint-only descendants do not consume formal pressure capacity."
+  }
+}

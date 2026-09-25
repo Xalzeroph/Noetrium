@@ -1,0 +1,41 @@
+"""Pinned SRDD benchmark cut for ChatDev software-generation studies."""
+
+from .cut import (
+    SRDD_BENCHMARK_ID,
+    SRDD_DATASET_COMMIT,
+    SRDD_DATASET_GIT_BLOB_SHA1,
+    SRDD_DATASET_PATH,
+    SRDD_LICENSE,
+    SRDD_MAIN_AREAS,
+    SRDD_REPOSITORY,
+    SRDD_SOURCE_CONTENT_DIGEST,
+    SRDD_SPLIT_ID,
+    SRDD_SUBCATEGORY_COUNT,
+    SRDD_TASKS_PER_SUBCATEGORY,
+    SRDD_TASK_COUNT,
+    SRDD_TASK_SCHEMA_ID,
+    SrddTaskRecord,
+    build_srdd_source,
+    build_srdd_task_set,
+    srdd_revision,
+)
+
+__all__ = [
+    "SRDD_BENCHMARK_ID",
+    "SRDD_DATASET_COMMIT",
+    "SRDD_DATASET_GIT_BLOB_SHA1",
+    "SRDD_DATASET_PATH",
+    "SRDD_LICENSE",
+    "SRDD_MAIN_AREAS",
+    "SRDD_REPOSITORY",
+    "SRDD_SOURCE_CONTENT_DIGEST",
+    "SRDD_SPLIT_ID",
+    "SRDD_SUBCATEGORY_COUNT",
+    "SRDD_TASKS_PER_SUBCATEGORY",
+    "SRDD_TASK_COUNT",
+    "SRDD_TASK_SCHEMA_ID",
+    "SrddTaskRecord",
+    "build_srdd_source",
+    "build_srdd_task_set",
+    "srdd_revision",
+]

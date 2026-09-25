@@ -1,0 +1,17 @@
+{
+  "schema": "noetrium.benchmark-manifest.v2",
+  "package": "gui_odyssey",
+  "benchmark": {
+    "benchmark_id": "gui-odyssey",
+    "title": "GUI-Odyssey",
+    "source_uri": "https://github.com/OpenGVLab/GUI-Odyssey",
+    "environment_kinds": [
+      "gui"
+    ],
+    "modalities": [
+      "text",
+      "image",
+      "structured"
+    ]
+  }
+}

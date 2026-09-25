@@ -1,0 +1,215 @@
+{
+  "schema": "noetrium.reproduction.projection.v10",
+  "authority": "generated_from_typed_definition_and_source",
+  "package": "vca_video",
+  "package_digest": "344ec6f50ce9faafb4edfe91968cac6e4626438fcb6b7eb9fcb5ed3fda40f9b2",
+  "definition_digest": "475825bad1ef41fa8e9bc3bec73c0374d2425e0cd6019f7b44b79ffa9d2dd184",
+  "source_registry_digest": "993b22ccf2d2e42518ffca18ac76bb9e7465b2b1dfd22cf2c63ca2867c6a8a4b",
+  "lifecycle": "protocol_bound",
+  "identity": {
+    "method_id": "vca-video",
+    "title": "VCA: Video Curious Agent for Long Video Understanding",
+    "paper_uri": "https://openaccess.thecvf.com/content/ICCV2025/html/Yang_VCA_Video_Curious_Agent_for_Long_Video_Understanding_ICCV_2025_paper.html",
+    "year": 2025,
+    "paper_revision": "ICCV 2025 camera-ready",
+    "identity_digest": "b6e6162324e059db6e51e2b802b0d44a8ce7a580006fdfb67f61cee11ffc493b"
+  },
+  "catalog": {
+    "domains": [
+      "agent",
+      "memory",
+      "multimodal",
+      "search",
+      "video"
+    ],
+    "families": [
+      "active_video_exploration",
+      "curiosity_driven_search",
+      "long_video_understanding",
+      "multimodal_memory"
+    ],
+    "priority": 1,
+    "benchmark_ids": [
+      "egoschema"
+    ],
+    "platform_pressure": [
+      "benchmark/video",
+      "execution/machines/memory",
+      "execution/machines/method",
+      "experimentation/study",
+      "model/multimodal"
+    ],
+    "method_owned": [
+      "VLM self-generated intrinsic reward",
+      "fixed-size selected-frame memory",
+      "non-greedy temperature-controlled segment choice",
+      "reward-history-conditioned exploration",
+      "tree-structured video-segment exploration"
+    ],
+    "platform_owned": [
+      "MethodMachine and MemoryMachine journal authority",
+      "artifact/evidence lineage",
+      "benchmark cut identity",
+      "multimodal model transport",
+      "study and evaluation orchestration"
+    ],
+    "reference_repositories": [],
+    "reference_publications": [
+      "https://openaccess.thecvf.com/content/ICCV2025/html/Yang_VCA_Video_Curious_Agent_for_Long_Video_Understanding_ICCV_2025_paper.html"
+    ],
+    "catalog_digest": "526f9052291f6a8e1f853bf1a1b55c4e9aa88c382ea8990e65f128b15db14800"
+  },
+  "source_lanes": [
+    {
+      "lane_id": "iccv_2025_camera_ready",
+      "kind": "paper_provenance",
+      "venue": "ICCV",
+      "year": 2025,
+      "publication_id": "vca-video-iccv-2025",
+      "publication_uri": "https://openaccess.thecvf.com/content/ICCV2025/html/Yang_VCA_Video_Curious_Agent_for_Long_Video_Understanding_ICCV_2025_paper.html",
+      "revision": "ICCV 2025 camera-ready paper",
+      "content_sha256": null,
+      "lane_digest": "dbc58b6bf96cf2495e765e117e73938a52967c4482360e95753f512d5f4a8fd9"
+    }
+  ],
+  "assets": [
+    {
+      "kind": "fidelity",
+      "path": "research/reproductions/vca_video/fidelity.py",
+      "declaration_digest": "562acdd886619cd0fd092ad0421b525f9e5d5b89be4a06ac42ae29623686ff6e",
+      "content_sha256": "8c734ee1b02bfbfd601f4139768648717a1570fcaa6fd6c3de81cec0a0418c25"
+    },
+    {
+      "kind": "method_program",
+      "path": "research/reproductions/vca_video/program.py",
+      "declaration_digest": "05be28204185be60f25035c661840b08e3dd19ea5c30320bc4ce702018aac607",
+      "content_sha256": "acafb85c478e65a972ade8498bcb13397bfe56d8afb86b3442ef9d71ee8efc79"
+    },
+    {
+      "kind": "study",
+      "path": "research/reproductions/vca_video/study.py",
+      "declaration_digest": "ecea08a091320896f8014d8b2bd449f1ff27b918171a2669b251677417c6800f",
+      "content_sha256": "e99db7e29f5f01558240586e2c62d828c7ce39c7063dc955f797000fab29afcd"
+    },
+    {
+      "kind": "support",
+      "path": "research/reproductions/vca_video/source.py",
+      "declaration_digest": "7cd9537bbaf1396e71030a6d40fb4582ff292702e9a31b9cd99f99e502332126",
+      "content_sha256": "3cf3e8c6205ab80c28d1ec6e82821e538d398ba1a24ab1038718710479abb557"
+    }
+  ],
+  "primary_executable": "research/reproductions/vca_video/program.py",
+  "reported_results": [
+    {
+      "claim_id": "vca_egoschema_accuracy",
+      "metric_id": "multiple_choice_accuracy_percent",
+      "value": 73.6,
+      "qualifiers": {
+        "benchmark": "egoschema",
+        "average_frames": 7.2,
+        "source": "ICCV-2025 paper evaluation"
+      },
+      "claim_digest": "c4a87cff0f2c30cf690ea96e7ffd0317ed4ddfb55b5a8660ad555811dbad9a93"
+    },
+    {
+      "claim_id": "vca_egoschema_average_frames",
+      "metric_id": "average_selected_frame_count",
+      "value": 7.2,
+      "qualifiers": {
+        "benchmark": "egoschema",
+        "accuracy_percent": 73.6,
+        "source": "ICCV-2025 paper evaluation"
+      },
+      "claim_digest": "b7fdc9f251b6d41a992992ae304e7a0970b7ffc8e90c23bffc37be6c74658b90"
+    },
+    {
+      "claim_id": "vca_lvbench_accuracy",
+      "metric_id": "multiple_choice_accuracy_percent",
+      "value": 41.3,
+      "qualifiers": {
+        "benchmark": "lvbench",
+        "average_frames": 20.0,
+        "source": "ICCV-2025 paper evaluation"
+      },
+      "claim_digest": "dcb222bfbade2255ccb5123a271c43c70d4b676061f99297c961c330c44c03f7"
+    },
+    {
+      "claim_id": "vca_lvbench_average_frames",
+      "metric_id": "average_selected_frame_count",
+      "value": 20.0,
+      "qualifiers": {
+        "benchmark": "lvbench",
+        "accuracy_percent": 41.3,
+        "source": "ICCV-2025 paper evaluation"
+      },
+      "claim_digest": "c4f61988d4b86bcffe57324a971ebe6839a8682f4bf86165a70d6d8b839514fd"
+    },
+    {
+      "claim_id": "vca_egoschema_uniform_gain",
+      "metric_id": "accuracy_gain_points",
+      "value": 3.2,
+      "qualifiers": {
+        "benchmark": "egoschema",
+        "comparison": "uniform-frame-gpt-4o",
+        "frame_budget": "less-than-30-percent",
+        "source": "ICCV-2025 paper analysis"
+      },
+      "claim_digest": "a0561a87d5769cb95fa13485d3a05973d1dac2c1673dcf3ffd7ca460a722a5e8"
+    },
+    {
+      "claim_id": "vca_lvbench_uniform_gain",
+      "metric_id": "accuracy_gain_points",
+      "value": 6.6,
+      "qualifiers": {
+        "benchmark": "lvbench",
+        "comparison": "uniform-frame-gpt-4o",
+        "frame_budget": "less-than-30-percent",
+        "source": "ICCV-2025 paper analysis"
+      },
+      "claim_digest": "8095d265b542f76e9a1d733861da2cc7c38f09e2333217da3692b9a9ea7e72e7"
+    }
+  ],
+  "reference_baselines": [
+    {
+      "baseline_id": "vca_uniform_frame_gpt4o",
+      "description": "Uniform-frame GPT-4o baseline used to measure the gain from curiosity-driven active video exploration.",
+      "qualifiers": {
+        "source": "ICCV-2025 paper evaluation"
+      },
+      "baseline_digest": "aafaac5a63cae9d864d6e6bedec8e6435fd94fe727d1376eae81ec1f490ae6ac"
+    }
+  ],
+  "deltas": [],
+  "blockers": [
+    "LVBench, MMBench-Video and Video-MME benchmark cuts remain to be content-addressed alongside the bound EgoSchema public cut.",
+    "Matched-result execution still requires the released multimodal model/provider binding and exact video assets."
+  ],
+  "evidence_refs": [],
+  "scientific_tests": [
+    {
+      "path": "tests/test_scientific_vca_video_v1.py",
+      "content_sha256": "75ebe70579608f9fdeb1f03e7a1a6942a7da2ae8c762ce09d8df91b4ed5f8a30"
+    }
+  ],
+  "research_os": {
+    "surface": "noetrium.api",
+    "execution_state": "benchmark_authority_required",
+    "program_id": "vca_video",
+    "program_digest": "3c79a606d39bc5ba967f1420f67198e2588e99fb27138e47c772b61ad8d3b6ab",
+    "benchmark_authority": {
+      "state": "required",
+      "selection_digests": [],
+      "blockers": [
+        "ReproductionResearchOSCompileError:benchmark 'egoschema' has no exact repository or materialized authority"
+      ]
+    },
+    "benchmark_split_axis": {
+      "required": false,
+      "consumers": []
+    },
+    "reproduction_closure_state": "closed",
+    "execution_authority_state": "required",
+    "materialization_ready": false,
+    "execution_requirements": []
+  }
+}

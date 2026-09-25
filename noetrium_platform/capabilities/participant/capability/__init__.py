@@ -1,0 +1,1 @@
+"""participant.capability subsystem boundary."""

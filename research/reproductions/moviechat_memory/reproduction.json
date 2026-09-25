@@ -1,0 +1,230 @@
+{
+  "schema": "noetrium.reproduction.projection.v10",
+  "authority": "generated_from_typed_definition_and_source",
+  "package": "moviechat_memory",
+  "package_digest": "6575e570cbe10d5160f7557cc2a583b67f680ae3ad9e65c5f50c9c8d45092b95",
+  "definition_digest": "866e3fd622f501c3f9086956fbc189285777133db76bdda212503dcf35c8af91",
+  "source_registry_digest": "2cef17c8d328384849759d7e5d19d69f4b2d8cee4baf1d186f767e439b1fd60c",
+  "lifecycle": "protocol_bound",
+  "identity": {
+    "method_id": "moviechat",
+    "title": "MovieChat: From Dense Token to Sparse Memory for Long Video Understanding",
+    "paper_uri": "https://openaccess.thecvf.com/content/CVPR2024/html/Song_MovieChat_From_Dense_Token_to_Sparse_Memory_for_Long_Video_CVPR_2024_paper.html",
+    "year": 2024,
+    "paper_revision": "CVPR 2024 / paper-era core executable f73f49233ea315bddc659ab3d1e358e0130eadb7",
+    "identity_digest": "22037ad49a4254c367029c8dd5dc54e717112a0d9962ab703b9cd500a3892e2a"
+  },
+  "catalog": {
+    "domains": [
+      "memory",
+      "multimodal",
+      "video"
+    ],
+    "families": [
+      "long_video_understanding",
+      "multimodal_memory",
+      "short_long_memory",
+      "sparse_memory"
+    ],
+    "priority": 1,
+    "benchmark_ids": [
+      "moviechat-1k"
+    ],
+    "platform_pressure": [
+      "artifact/content",
+      "benchmark/video",
+      "execution/machines",
+      "experimentation/study",
+      "memory",
+      "model/multimodal"
+    ],
+    "method_owned": [
+      "global versus breakpoint memory readout",
+      "long-term sparse memory semantics",
+      "short-term FIFO buffer semantics",
+      "short-term adjacent-frame consolidation",
+      "source-faithful direct-LTM consolidation quirk"
+    ],
+    "platform_owned": [
+      "MemoryMachine journal authority",
+      "artifact/evidence lineage",
+      "benchmark materialization",
+      "model execution",
+      "multimodal content identity and transport",
+      "study and evaluation orchestration"
+    ],
+    "reference_repositories": [
+      "https://github.com/wenhaochai/MovieChat"
+    ],
+    "reference_publications": [
+      "https://openaccess.thecvf.com/content/CVPR2024/html/Song_MovieChat_From_Dense_Token_to_Sparse_Memory_for_Long_Video_CVPR_2024_paper.html"
+    ],
+    "catalog_digest": "d9c9ad2f7fb823ffd13f9935babf2e3230fd0d484194923178ae4ffdf85a28a6"
+  },
+  "source_lanes": [
+    {
+      "lane_id": "cvpr_2024_final",
+      "kind": "paper_provenance",
+      "venue": "CVPR",
+      "year": 2024,
+      "publication_id": "moviechat-cvpr-2024",
+      "publication_uri": "https://openaccess.thecvf.com/content/CVPR2024/html/Song_MovieChat_From_Dense_Token_to_Sparse_Memory_for_Long_Video_CVPR_2024_paper.html",
+      "revision": "CVPR 2024 final paper",
+      "content_sha256": null,
+      "lane_digest": "b85792fdbb192390e13617ba6428fd86d5ef6f8adc8cc4165bd08da67c6a6eda"
+    },
+    {
+      "lane_id": "initial_public_executable",
+      "kind": "official_executable",
+      "repository": "https://github.com/wenhaochai/MovieChat",
+      "commit": "20fe48055acbb9f95dcf628fd90caacbe418d2d5",
+      "artifacts": [
+        "MovieChat/models/moviechat.py",
+        "inference.py"
+      ],
+      "lane_digest": "49d047d10c19f114cabe828b62b1704595a90883f44eb4e624ffe8d7e99e2c69"
+    },
+    {
+      "lane_id": "paper_era_final_executable",
+      "kind": "official_executable",
+      "repository": "https://github.com/wenhaochai/MovieChat",
+      "commit": "f73f49233ea315bddc659ab3d1e358e0130eadb7",
+      "artifacts": [
+        "MovieChat/models/moviechat.py",
+        "eval_code/Acc_score/run_eval_qa_moviechat.py",
+        "eval_code/result_prepare/run_inference_qa_moviechat.py",
+        "eval_configs/MovieChat.yaml",
+        "inference.py"
+      ],
+      "lane_digest": "111481b5aa67ae5110c1246e7ffbe11849b35afc2b7f65f46724a6397215604c"
+    }
+  ],
+  "assets": [
+    {
+      "kind": "benchmark",
+      "path": "research/reproductions/moviechat_memory/benchmark.py",
+      "declaration_digest": "60fed04d892465410ec91b702e1d38dc3f615d0b3c5da923078b38d813ab37ba",
+      "content_sha256": "8edf4942648a4a6f46a47298c6670bcd554c4813ca486fea92517b34eb38308a"
+    },
+    {
+      "kind": "fidelity",
+      "path": "research/reproductions/moviechat_memory/fidelity.py",
+      "declaration_digest": "c6c25ac12c8bcbcf25cfee79b46436f5843a3bfbe371947309112536fb5e6548",
+      "content_sha256": "3f5c8991e51aea0871d07b1d31c9debeabb9c06eb742b1107ef677a984aa327c"
+    },
+    {
+      "kind": "research_program",
+      "path": "research/reproductions/moviechat_memory/memory.py",
+      "declaration_digest": "761366a1cf00d2344580d8ced2ab2a676260708a59a30bd268cbda51c1a771dd",
+      "content_sha256": "cc560d0ad2e4030a6bda288174917514ebe897df9dbeb78cbca488651894d450"
+    },
+    {
+      "kind": "study",
+      "path": "research/reproductions/moviechat_memory/study.py",
+      "declaration_digest": "0d79b248ef07a24d9673db8f437368d23f448617fdbd1f4d23e28d505f18732c",
+      "content_sha256": "f524acdce8ad5a9667ace8143d239847ce164dd5bdc274677a3f0da443164c96"
+    },
+    {
+      "kind": "support",
+      "path": "research/reproductions/moviechat_memory/source.py",
+      "declaration_digest": "68e3e5681d14b98b5f52ee2caf8089445586bcdb3f8fedb607077e2879f8af28",
+      "content_sha256": "9df0b9591abcb39a1893ffd5c5ce11a1aa1cc863b11a20562a686bae822d4275"
+    }
+  ],
+  "primary_executable": "research/reproductions/moviechat_memory/memory.py",
+  "reported_results": [
+    {
+      "claim_id": "moviechat_global_accuracy",
+      "metric_id": "open_ended_accuracy_percent",
+      "value": 67.8,
+      "qualifiers": {
+        "benchmark": "moviechat-1k",
+        "mode": "global",
+        "evaluator": "gpt-3.5",
+        "source": "CVPR-2024 supplementary Table H5"
+      },
+      "claim_digest": "366bb59608724918f7e2548eabf396ffc24b3245c3b7a53b10111382f02b88bf"
+    },
+    {
+      "claim_id": "moviechat_global_score",
+      "metric_id": "open_ended_quality_score_0_to_5",
+      "value": 3.81,
+      "qualifiers": {
+        "benchmark": "moviechat-1k",
+        "mode": "global",
+        "evaluator": "gpt-3.5",
+        "source": "CVPR-2024 supplementary Table H5"
+      },
+      "claim_digest": "300763226f8513f20bcc6bb45506e00a10676bdecec58a8fa0fa3fec5a0421d3"
+    },
+    {
+      "claim_id": "moviechat_breakpoint_accuracy",
+      "metric_id": "open_ended_accuracy_percent",
+      "value": 50.4,
+      "qualifiers": {
+        "benchmark": "moviechat-1k",
+        "mode": "breakpoint",
+        "evaluator": "gpt-3.5",
+        "source": "CVPR-2024 supplementary Table H5"
+      },
+      "claim_digest": "121eeac464a71f2dbbf60b93b0f7ef50abd4e941ef7dce281e4fb8b800c4ec4b"
+    },
+    {
+      "claim_id": "moviechat_breakpoint_score",
+      "metric_id": "open_ended_quality_score_0_to_5",
+      "value": 2.96,
+      "qualifiers": {
+        "benchmark": "moviechat-1k",
+        "mode": "breakpoint",
+        "evaluator": "gpt-3.5",
+        "source": "CVPR-2024 supplementary Table H5"
+      },
+      "claim_digest": "2b4b888a66a4c0d87c40356fadc1abdcd4e057dcee16924e9c31ca80ebd9f027"
+    }
+  ],
+  "reference_baselines": [
+    {
+      "baseline_id": "videochat_moviechat1k",
+      "description": "VideoChat baseline reported in the MovieChat-1K comparison.",
+      "qualifiers": {
+        "global_accuracy_percent": 61.0,
+        "global_score_0_to_5": 3.34,
+        "source": "CVPR-2024 supplementary evaluation"
+      },
+      "baseline_digest": "6e444e5b3e40a1c24259081743467a0b47b3a2c1829eceb9f0ad805717ef571b"
+    }
+  ],
+  "deltas": [],
+  "blockers": [
+    "Full result reproduction requires acquisition of the official MovieChat-1K test video/QA bytes and released model weights into content-addressed artifact authority.",
+    "The executable source and the paper differ in one direct-LTM pair selection detail; both identities are preserved rather than silently normalizing the implementation to the paper description."
+  ],
+  "evidence_refs": [],
+  "scientific_tests": [
+    {
+      "path": "tests/test_scientific_moviechat_memory_v1.py",
+      "content_sha256": "e6e5001e4ca5ae177ceaf71b09775df9453b2cee898161ffed182f19e8b42206"
+    }
+  ],
+  "research_os": {
+    "surface": "noetrium.api",
+    "execution_state": "benchmark_authority_required",
+    "program_id": "moviechat_memory",
+    "program_digest": "534538e4e5d67e8777e762469fd6b6e1ba5e26eda7bfa19717aab9315632d916",
+    "benchmark_authority": {
+      "state": "required",
+      "selection_digests": [],
+      "blockers": [
+        "ReproductionResearchOSCompileError:benchmark 'moviechat-1k' has no exact repository or materialized authority"
+      ]
+    },
+    "benchmark_split_axis": {
+      "required": false,
+      "consumers": []
+    },
+    "reproduction_closure_state": "closed",
+    "execution_authority_state": "required",
+    "materialization_ready": false,
+    "execution_requirements": []
+  }
+}

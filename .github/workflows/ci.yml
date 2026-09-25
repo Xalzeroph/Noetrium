@@ -1,0 +1,263 @@
+name: platform-assurance
+
+on:
+  workflow_dispatch:
+  pull_request:
+  push:
+    branches: [main]
+    tags: ["v*"]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: platform-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  quality:
+    name: quality / py${{ matrix.python-version }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.11", "3.12"]
+    steps:
+      - name: Checkout exact source
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: pip
+      - name: Install package and test tooling
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -e ".[test]"
+      - name: Compile platform source
+        run: python -m compileall -q noetrium_platform noetrium components orchestration
+      - name: Smoke-test installed platform surface
+        run: |
+          python - <<'PY'
+          import noetrium
+          import noetrium_platform
+          from noetrium_platform.foundation.kernel.kernel import canonical_digest
+
+          assert canonical_digest({"platform": "noetrium"})
+          assert noetrium is not None
+          assert noetrium_platform is not None
+          PY
+      - name: Verify programmable machine persistence
+        run: python -m pytest -q tests/test_programmable_research_machine_v1.py
+      - name: Verify crash-critical lifecycle invariants
+        run: |
+          python -m pytest -q \
+            tests/test_machine_journal_gc_v1.py \
+            tests/test_run_artifact_gc_v1.py \
+            tests/test_machine_delivery_receipt_state_v1.py \
+            tests/test_machine_executor_v1.py \
+            tests/test_durable_resource_directory_v1.py \
+            tests/test_recovery_physical_crash_matrix_v1.py \
+            tests/test_environment_container_profiles_v1.py \
+            tests/test_managed_docker_container_leases_v1.py \
+            tests/test_managed_resource_reconciler_v1.py \
+            tests/test_compute_physical_convergence_v1.py \
+            tests/test_compute_runtime_sharing_v1.py \
+            tests/test_model_auto_recovery_v1.py \
+            tests/test_resource_endpoint_atomicity_v2.py \
+            tests/test_linux_process_signal_generation_v1.py \
+            tests/test_linux_prepared_start_visibility_v1.py \
+            tests/test_service_prepared_start_recovery_v146.py \
+            tests/test_local_service_process_v110.py \
+            tests/test_process_supervision_async_v2.py \
+            tests/test_runtime_asset_management_v190.py::test_applied_clear_tombstone_survives_delete_commit_caller_error \
+            tests/test_runtime_asset_management_v190.py::test_stale_same_config_generation_cannot_stop_restarted_process \
+            tests/test_runtime_asset_management_v190.py::test_model_stop_refuses_unowned_process_replacement
+
+      - name: Verify scale-critical execution invariants
+        run: |
+          python -m pytest -q \
+            tests/test_capacity_atomic_admission_v1.py \
+            tests/test_platform_concurrency_runtime_v1.py \
+            tests/test_research_execution_pool_v1.py \
+            tests/test_atomic_task_batch_v1.py \
+            tests/test_pooled_child_research_machine_batch_v1.py \
+            tests/test_execution_admission_boundary_v1.py \
+            tests/test_shared_host_pressure_admission_v1.py \
+            tests/test_shared_storage_pressure_admission_v1.py \
+            tests/test_shared_network_pressure_admission_v1.py \
+            tests/test_compute_host_runtime_pressure_v1.py \
+            tests/test_vllm_resource_intent_v1.py \
+            tests/test_model_replica_pool_auto_placement_v1.py \
+            tests/test_capacity_v20.py \
+            tests/test_research_graph_scheduler_durable_v1.py \
+            tests/test_research_graph_admission_claim_v1.py \
+            tests/test_research_graph_state_batch_v1.py \
+            tests/test_research_graph_scale_v1.py \
+            tests/test_research_graph_claim_control_fence_v1.py \
+            tests/test_research_graph_cut_switch_fence_v1.py \
+            tests/test_research_graph_batch_lease_renewal_v1.py \
+            tests/test_research_graph_attempt_point_read_v1.py \
+            tests/test_research_graph_cancellation_propagation_v1.py \
+            tests/test_research_graph_reconcile_retry_control_v1.py \
+            tests/test_research_os_multi_program_selection_v1.py \
+            tests/test_research_os_retry_pause_intent_v1.py \
+            tests/test_research_os_retry_scope_v1.py \
+            tests/test_research_os_migration_v1.py \
+            tests/test_research_os_migration_node_control_intent_v1.py \
+            tests/test_research_os_artifact_migration_v1.py
+
+  governance:
+    name: governance / contracts / quality
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout exact source
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - name: Install package and test tooling
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -e ".[test]"
+      - name: Verify platform / research-workspace isolation
+        run: noetrium-repository-boundary . --skip-release-manifest
+      - name: Verify public contracts
+        run: python scripts/public_contract_audit.py
+      - name: Verify canonical workflow policy
+        run: python scripts/canonical_workflow_policy_gate.py
+      - name: Verify public surface generation converges
+        run: |
+          python scripts/update_generated_docs.py
+          python scripts/update_generated_docs.py --check
+      - name: Verify source-derived architecture and integration
+        run: |
+          python scripts/sync_platform_architecture_map.py --verify-build
+          python scripts/audit_system_integration.py --fail-on-shape --fail-on-disconnected --fail-on-concrete-bypass
+      - name: Verify README localization
+        run: python scripts/check_readme_i18n.py
+      - name: Run no-degradation audit
+        run: python scripts/no_degradation_audit.py
+      - name: Verify Research OS scale readiness
+        run: |
+          python scripts/research_os_scale_readiness_gate.py \
+            --output "$RUNNER_TEMP/research-os-scale-readiness.json"
+      - name: Upload Research OS scale readiness evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: research-os-scale-readiness-${{ github.sha }}
+          if-no-files-found: warn
+          path: ${{ runner.temp }}/research-os-scale-readiness.json
+
+  assurance:
+    needs: [quality, governance]
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - name: Checkout exact source
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - name: Install test and build tooling
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -e ".[test]" build
+
+      - name: Run machine-readable product assurance gate
+        run: python scripts/product_assurance_gate.py --full --skip-architecture --output "$RUNNER_TEMP/product-assurance.json"
+
+      - name: Build and qualify installed distributions
+        run: python scripts/release_distribution.py "$RUNNER_TEMP/platform-distribution"
+
+      - name: Prepare exact distribution container context
+        run: |
+          python scripts/prepare_container_context.py \
+            "$RUNNER_TEMP/platform-distribution" \
+            "$RUNNER_TEMP/platform-container-context" \
+            --expected-source-sha "${GITHUB_SHA}"
+          python - <<'PY' >> "$GITHUB_ENV"
+          import json, os
+          from pathlib import Path
+          root = Path(os.environ["RUNNER_TEMP"])
+          ctx = json.loads((root / "platform-container-context" / "CONTAINER_CONTEXT.json").read_text())
+          print(f"ROLE06_WHEEL_SHA256={ctx['wheel_sha256']}")
+          print(f"ROLE06_DISTRIBUTION_EVIDENCE_SHA256={ctx['distribution_evidence_sha256']}")
+          PY
+
+      - name: Resolve exact Python runtime source
+        run: |
+          ROLE06_PYTHON_RUNTIME_IMAGE="python:3.12-slim-bookworm"
+          docker pull "${ROLE06_PYTHON_RUNTIME_IMAGE}"
+          ROLE06_PYTHON_RUNTIME_IMAGE_ID="$(docker image inspect "${ROLE06_PYTHON_RUNTIME_IMAGE}" --format '{{.Id}}')"
+          ROLE06_PYTHON_RUNTIME_IDENTITY_DIGEST="${ROLE06_PYTHON_RUNTIME_IMAGE_ID#sha256:}"
+          if [ "${ROLE06_PYTHON_RUNTIME_IMAGE_ID}" = "${ROLE06_PYTHON_RUNTIME_IDENTITY_DIGEST}" ] || \
+             ! printf '%s' "${ROLE06_PYTHON_RUNTIME_IDENTITY_DIGEST}" | grep -Eq '^[0-9a-f]{64}$'; then
+            echo "invalid Python runtime image identity: ${ROLE06_PYTHON_RUNTIME_IMAGE_ID}" >&2
+            exit 1
+          fi
+          echo "ROLE06_PYTHON_RUNTIME_IMAGE=${ROLE06_PYTHON_RUNTIME_IMAGE}" >> "$GITHUB_ENV"
+          echo "ROLE06_PYTHON_RUNTIME_IDENTITY_DIGEST=${ROLE06_PYTHON_RUNTIME_IDENTITY_DIGEST}" >> "$GITHUB_ENV"
+
+      - name: Build exact-distribution container
+        run: |
+          docker build \
+            --build-arg PYTHON_RUNTIME_IMAGE="${ROLE06_PYTHON_RUNTIME_IMAGE}" \
+            --build-arg PLATFORM_PYTHON_RUNTIME_IDENTITY_DIGEST="${ROLE06_PYTHON_RUNTIME_IDENTITY_DIGEST}" \
+            --build-arg PLATFORM_SOURCE_SHA="${GITHUB_SHA}" \
+            --build-arg PLATFORM_WHEEL_SHA256="${ROLE06_WHEEL_SHA256}" \
+            --build-arg PLATFORM_DISTRIBUTION_EVIDENCE_SHA256="${ROLE06_DISTRIBUTION_EVIDENCE_SHA256}" \
+            --tag "noetrium:${GITHUB_SHA}" \
+            "$RUNNER_TEMP/platform-container-context"
+
+      - name: Verify installed container provenance and lifecycle
+        run: |
+          python scripts/verify_container_image.py \
+            "noetrium:${GITHUB_SHA}" \
+            --expected-source-sha "${GITHUB_SHA}" \
+            --expected-wheel-sha256 "${ROLE06_WHEEL_SHA256}" \
+            --expected-distribution-evidence-sha256 "${ROLE06_DISTRIBUTION_EVIDENCE_SHA256}" \
+            --expected-python-runtime-identity-digest "${ROLE06_PYTHON_RUNTIME_IDENTITY_DIGEST}" \
+            --output "$RUNNER_TEMP/container-verification.json"
+
+      - name: Validate deployment entrypoint syntax
+        run: sh -n deploy/noetrium deploy/build-environments.sh
+
+      - name: Validate environment profile authority through canonical bootstrap
+        env:
+          NOETRIUM_BUILD_WORK_ROOT: ${{ runner.temp }}/noetrium-environment-images
+        run: sh deploy/build-environments.sh validate
+
+      - name: Build and doctor reusable environment profiles through canonical bootstrap
+        env:
+          NOETRIUM_BUILD_WORK_ROOT: ${{ runner.temp }}/noetrium-environment-images
+        run: |
+          sh deploy/build-environments.sh build \
+            --profiles minecraft embodied gui web software text_world
+
+      - name: Upload assurance evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: product-assurance-${{ github.sha }}
+          if-no-files-found: error
+          path: |
+            ${{ runner.temp }}/product-assurance.json
+            ${{ runner.temp }}/platform-distribution/**
+            ${{ runner.temp }}/platform-container-context/CONTAINER_CONTEXT.json
+            ${{ runner.temp }}/container-verification.json
+            ${{ runner.temp }}/noetrium-environment-images/environment-image-build.json

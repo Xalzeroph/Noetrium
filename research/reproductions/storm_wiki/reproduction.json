@@ -1,0 +1,199 @@
+{
+  "schema": "noetrium.reproduction.projection.v10",
+  "authority": "generated_from_typed_definition_and_source",
+  "package": "storm_wiki",
+  "package_digest": "7c1a3efdc1709ba4d191806c3194a55946976c621dee556895a41f7fcb03fbd9",
+  "definition_digest": "6984850bbaaa1139acee2db5aee2b4bfbeb80ccd94ddd7f49c298c04d45bc06d",
+  "source_registry_digest": "a81615aa99cc6d96340bca8447ebe87504c9bdb0bcc0f961f51286299458a9b0",
+  "lifecycle": "protocol_bound",
+  "identity": {
+    "method_id": "storm",
+    "title": "Assisting in Writing Wikipedia-like Articles From Scratch with Large Language Models",
+    "paper_uri": "https://aclanthology.org/2024.naacl-long.347/",
+    "year": 2024,
+    "paper_revision": null,
+    "identity_digest": "066fcf624e698cc5a978b231e7e8e040ddcd5851a54f6da5b10471135252da54"
+  },
+  "catalog": {
+    "domains": [
+      "retrieval-knowledge",
+      "scientific-research"
+    ],
+    "families": [
+      "citation_grounding",
+      "question_asking",
+      "research_agent",
+      "retrieval"
+    ],
+    "priority": 1,
+    "benchmark_ids": [
+      "freshwiki"
+    ],
+    "platform_pressure": [
+      "artifact/lineage",
+      "data/query",
+      "execution",
+      "experimentation/study",
+      "model/request",
+      "participant/method"
+    ],
+    "method_owned": [
+      "four-stage citation-grounded article pipeline",
+      "perspective-guided question asking",
+      "simulated expert conversation"
+    ],
+    "platform_owned": [
+      "artifact lineage",
+      "bounded stage execution",
+      "evidence and evaluation",
+      "model invocation",
+      "retrieval transport"
+    ],
+    "reference_repositories": [
+      "https://github.com/stanford-oval/storm"
+    ],
+    "reference_publications": [
+      "https://aclanthology.org/2024.naacl-long.347/"
+    ],
+    "catalog_digest": "e0ca51390f6a191fb63a9e6d78826e47dd532d5abb555e9906bc0906b23f1ddf"
+  },
+  "source_lanes": [
+    {
+      "lane_id": "naacl_2024_final",
+      "kind": "paper_provenance",
+      "venue": "NAACL",
+      "year": 2024,
+      "publication_id": "2024.naacl-long.347",
+      "publication_uri": "https://aclanthology.org/2024.naacl-long.347/",
+      "revision": "NAACL 2024 final",
+      "content_sha256": null,
+      "lane_digest": "05f6d6b546b001c685a66eb7ec216cfcdb445beee034b0fc8b4bb2da0d9fb333"
+    },
+    {
+      "lane_id": "official_storm_wiki",
+      "kind": "official_executable",
+      "repository": "https://github.com/stanford-oval/storm",
+      "commit": "1f8ac2ddb4dd5f8cfcc250fdd3611c693098134b",
+      "artifacts": [
+        "src/storm_wiki/engine.py",
+        "src/storm_wiki/modules/article_generation.py",
+        "src/storm_wiki/modules/article_polish.py",
+        "src/storm_wiki/modules/knowledge_curation.py",
+        "src/storm_wiki/modules/outline_generation.py",
+        "src/storm_wiki/modules/persona_generator.py"
+      ],
+      "lane_digest": "32ea7907b71a6e455d46fa107bf9613281e0d33d66a125b985b46e8326d7c636"
+    }
+  ],
+  "assets": [
+    {
+      "kind": "fidelity",
+      "path": "research/reproductions/storm_wiki/fidelity.py",
+      "declaration_digest": "413d957754efbc52d7d8410824c81928c0f62803a769e4101c857de0d8aa3503",
+      "content_sha256": "db591261d70b4f8d908d2e09ee1c01e73166a99e035c20ff217e5bd1660da76b"
+    },
+    {
+      "kind": "method_program",
+      "path": "research/reproductions/storm_wiki/program.py",
+      "declaration_digest": "4379726c42ff8db6190cb47dd44230d7b3e17aaca7c16787e5b10bcf47bd3acd",
+      "content_sha256": "ac52ea50baac059daba9b304fb8c7dce197ff28b986a7130dc923f060b610598"
+    },
+    {
+      "kind": "study",
+      "path": "research/reproductions/storm_wiki/study.py",
+      "declaration_digest": "4141ae8f24e3a995b5d418446f42488eb924974525e0bc8eb81a66ebe477e9f1",
+      "content_sha256": "aab75853c518941226a28069685e8dd5adfdf054dda7f3a90dcf771b69d1cbe3"
+    },
+    {
+      "kind": "support",
+      "path": "research/reproductions/storm_wiki/pipeline.py",
+      "declaration_digest": "f40fb7c1b9f90211b6f540a520c1f188d25dc986573732374cc9f7c1c69eba08",
+      "content_sha256": "225662fbe33f945370fe5faea2816e664d9dad90d5f7514943fe1d6dd279f30f"
+    }
+  ],
+  "primary_executable": "research/reproductions/storm_wiki/program.py",
+  "reported_results": [
+    {
+      "claim_id": "storm_editor_organized_gain",
+      "metric_id": "organized_absolute_gain_percentage_points",
+      "value": 25.0,
+      "qualifiers": {
+        "comparison": "outline-driven retrieval-augmented baseline"
+      },
+      "claim_digest": "77ac65e7790640a752c625f95c0a9aad51da5e45664349c413ed56df1facf78e"
+    },
+    {
+      "claim_id": "storm_editor_breadth_gain",
+      "metric_id": "broad_coverage_absolute_gain_percentage_points",
+      "value": 10.0,
+      "qualifiers": {
+        "comparison": "outline-driven retrieval-augmented baseline"
+      },
+      "claim_digest": "7b48f169ad77dfab16e37872bc12a1f742e316a70bdb906f368be09292e1eb67"
+    }
+  ],
+  "reference_baselines": [
+    {
+      "baseline_id": "outline-driven-rag",
+      "description": "outline-driven retrieval-augmented article generation baseline used by the NAACL paper editor study",
+      "qualifiers": {},
+      "baseline_digest": "03aeb769f94160c47c57d15bc2f29665fd13c52ca8f4ad1c361f181b22a4d35e"
+    }
+  ],
+  "deltas": [
+    {
+      "kind": "unresolved",
+      "description": "The official runner can schedule independent perspective research threads concurrently. The MethodProgram preserves the same bounded perspective/turn dependency graph but commits them serially until generic ready-set parallel authoring is available.",
+      "delta_digest": "cae1b99835234c3407aa841cfc8a795f871b31b792a0833ea3a33713b61f1165"
+    }
+  ],
+  "blockers": [
+    "the exact FreshWiki 100-topic article bytes must be materialized under immutable dataset authority",
+    "matched search results require a frozen paper-era retrieval provider/index cut",
+    "matched rubric grading requires the exact paper evaluator/model assignment",
+    "no matched NAACL execution evidence has yet been produced"
+  ],
+  "evidence_refs": [],
+  "scientific_tests": [
+    {
+      "path": "tests/test_scientific_storm_method_program_v1.py",
+      "content_sha256": "07fe4d3e60f72d1f3ddc33b943fd8cb34a7c976fae9784f0b6a78bf65a105455"
+    },
+    {
+      "path": "tests/test_scientific_storm_wiki_v1.py",
+      "content_sha256": "1f3205677e20c3a12ea58a1ca38f15ac216b78dd0786d4c3d1e0b5f596f72163"
+    }
+  ],
+  "research_os": {
+    "surface": "noetrium.api",
+    "execution_state": "benchmark_authority_required",
+    "program_id": "storm_wiki",
+    "program_digest": "a9dd0a6e2f0faf7239fe98136ca3ba37db96d1529e3c4e41528a0d4044814f25",
+    "benchmark_authority": {
+      "state": "required",
+      "selection_digests": [],
+      "blockers": [
+        "ReproductionResearchOSCompileError:benchmark 'freshwiki' has no exact repository or materialized authority"
+      ]
+    },
+    "benchmark_split_axis": {
+      "required": true,
+      "consumers": [
+        "study:build_storm_freshwiki_study"
+      ]
+    },
+    "reproduction_closure_state": "required",
+    "execution_authority_state": "required",
+    "materialization_ready": false,
+    "execution_requirements": [
+      {
+        "parameter": "search_capability_id",
+        "kind": "capability_id",
+        "consumers": [
+          "study:build_storm_freshwiki_study"
+        ],
+        "requirement_digest": "52286be5265c197296585c48aea97c63de1add0fca06e37c537f1e89f057de48"
+      }
+    ]
+  }
+}

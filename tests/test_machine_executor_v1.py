@@ -1,0 +1,264 @@
+from __future__ import annotations
+
+from typing import cast
+
+import pytest
+
+from noetrium_platform.foundation.kernel.kernel import (
+    DeliveryReceipt,
+    DeliveryStatus,
+    InMemoryMachineInbox,
+    InMemoryMachineJournal,
+    InMemoryMachineOutbox,
+    InMemoryMachineSnapshotStore,
+    MachineCommand,
+    MachineFamilyDescriptor,
+    MachineConflict,
+    MachineIdentity,
+    MachineIntegrityError,
+    MachineKind,
+    MachineProgramRef,
+    ProgramLock,
+    MachineExecutor,
+    MachineExecutionError,
+    TransitionProposal,
+    canonical_digest,
+)
+
+
+class IncrementInterpreter:
+    def propose(self, command, state):
+        count = cast(int, state.state.get("count", 0))
+        return TransitionProposal(
+            machine_id=state.machine_id,
+            command_id=command.command_id,
+            base_revision=state.revision,
+            state_delta={"count": count + 1},
+            event_payloads=({"type": "increment", "command_id": command.command_id},),
+        )
+
+
+class EmittingIncrementInterpreter:
+    def propose(self, command, state):
+        count = cast(int, state.state.get("count", 0))
+        return TransitionProposal(
+            machine_id=state.machine_id,
+            command_id=command.command_id,
+            base_revision=state.revision,
+            state_delta={"count": count + 1},
+            event_payloads=({"type": "increment", "command_id": command.command_id},),
+            emitted_commands=(MachineCommand(
+                command_id=f"child-{command.command_id}",
+                machine_id="agent-1",
+                expected_revision=0,
+                kind="observe",
+                payload={"source": command.command_id},
+                scope=("run:run-1", "agent:agent-1"),
+            ),),
+        )
+
+
+def make_runtime(
+    journal,
+    snapshot_store=None,
+    outbox=None,
+    *,
+    dependency_tag: str = "none",
+):
+    identity = MachineIdentity(
+        machine_id="run-1",
+        kind=MachineKind.RUN,
+        implementation_version="1",
+        generation_id="generation-1",
+    )
+    program = MachineProgramRef(
+        program_digest=canonical_digest({"program": "increment"}),
+        schema_id="run.schema.v1",
+        program_kind="run",
+        program_version="1",
+        program_lock=ProgramLock(
+            code_digest=canonical_digest({"code": "increment"}),
+            dependency_digest=canonical_digest({"deps": dependency_tag}),
+            schema_digest=canonical_digest({"schema": "run.schema.v1"}),
+            interpreter_digest=canonical_digest({"interpreter": "run"}),
+            data_digest=canonical_digest({"data": "test"}),
+            config_digest=canonical_digest({"config": "default"}),
+        ),
+    )
+    return MachineExecutor(
+        identity=identity,
+        program=program,
+        journal=journal,
+        snapshot_store=snapshot_store,
+        outbox=outbox,
+        family=MachineFamilyDescriptor(
+            family_id="run.increment.v1",
+            kind=MachineKind.RUN,
+            implementation_version="1",
+            state_schema="run.state.v1",
+            command_kinds=("increment",),
+        ),
+    )
+
+
+def command(revision: int, command_id: str) -> MachineCommand:
+    return MachineCommand(
+        command_id=command_id,
+        machine_id="run-1",
+        expected_revision=revision,
+        kind="increment",
+        payload={"amount": 1},
+        scope=("run:run-1",),
+    )
+
+
+def test_runtime_commits_and_replays_idempotently() -> None:
+    journal = InMemoryMachineJournal()
+    snapshot_store = InMemoryMachineSnapshotStore()
+    runtime = make_runtime(journal, snapshot_store)
+    assert runtime.open({"count": 0}).revision == 0
+    assert runtime.checkpoint().revision == 0
+    interpreter = IncrementInterpreter()
+    first = runtime.step(command(0, "command-1"), interpreter)
+    assert first.revision == 1
+    assert first.state["count"] == 1
+    assert runtime.step(command(0, "command-1"), interpreter) == first
+    with pytest.raises(MachineConflict):
+        runtime.step(command(0, "command-1-different"), interpreter)
+
+
+def test_runtime_replays_committed_command_after_head_revision_advances() -> None:
+    journal = InMemoryMachineJournal()
+    runtime = make_runtime(journal)
+    runtime.open({"count": 0})
+    interpreter = IncrementInterpreter()
+    first = runtime.step(command(0, "command-1"), interpreter)
+
+    replay_at_current_head = command(1, "command-1")
+    assert runtime.step(replay_at_current_head, interpreter) == first
+
+    drifted = MachineCommand(
+        command_id="command-1",
+        machine_id="run-1",
+        expected_revision=1,
+        kind="increment",
+        payload={"amount": 2},
+        scope=("run:run-1",),
+    )
+    with pytest.raises(MachineConflict, match="different payload"):
+        runtime.step(drifted, interpreter)
+
+
+def test_runtime_recovers_authoritative_head_after_restart() -> None:
+    journal = InMemoryMachineJournal()
+    first_runtime = make_runtime(journal)
+    first_runtime.open({"count": 0})
+    first = first_runtime.step(command(0, "command-1"), IncrementInterpreter())
+
+    restarted = make_runtime(journal)
+    snapshot = restarted.open({"count": 999})
+    assert snapshot.revision == first.revision
+    assert snapshot.state["count"] == 1
+    assert restarted.inspect().last_commit_id == first.commit_id
+
+
+def test_runtime_rejects_program_lock_drift_after_restart_and_replay() -> None:
+    journal = InMemoryMachineJournal()
+    first_runtime = make_runtime(journal, dependency_tag="provider-a")
+    first_runtime.open({"count": 0})
+    first_runtime.step(command(0, "command-1"), IncrementInterpreter())
+
+    drifted = make_runtime(journal, dependency_tag="provider-b")
+    assert (
+        drifted.program.program_digest
+        == first_runtime.program.program_digest
+    )
+    assert (
+        drifted.program.program_lock.lock_digest
+        != first_runtime.program.program_lock.lock_digest
+    )
+
+    with pytest.raises(MachineIntegrityError, match="ProgramLock"):
+        drifted.open({"count": 0})
+    with pytest.raises(MachineIntegrityError, match="ProgramLock"):
+        drifted.replay()
+    with pytest.raises(MachineIntegrityError, match="ProgramLock"):
+        drifted.step(
+            command(0, "command-1"),
+            IncrementInterpreter(),
+        )
+
+
+def test_runtime_reconciles_outbox_and_inbox_deduplicates() -> None:
+    journal = InMemoryMachineJournal()
+    outbox = InMemoryMachineOutbox()
+    runtime = make_runtime(journal, outbox=outbox)
+    runtime.open({"count": 0})
+    first = runtime.step(command(0, "command-1"), EmittingIncrementInterpreter())
+    pending = outbox.pending()
+    assert len(pending) == 1
+    assert runtime.reconcile_outbox() == pending
+    inbox = InMemoryMachineInbox()
+    assert inbox.accept(pending[0]) is True
+    assert inbox.accept(pending[0]) is False
+    receipt = DeliveryReceipt(
+        envelope_id=pending[0].envelope_id,
+        envelope_digest=pending[0].envelope_digest,
+        status=DeliveryStatus.DELIVERED,
+        attempt=1,
+    )
+    outbox.mark(receipt)
+    assert outbox.pending() == ()
+    assert first.emitted_commands[0].command_id == pending[0].command.command_id
+
+
+def test_runtime_rejects_emitted_commands_without_outbox_before_commit() -> None:
+    journal = InMemoryMachineJournal()
+    runtime = make_runtime(journal)
+    runtime.open({"count": 0})
+
+    with pytest.raises(
+        MachineExecutionError,
+        match="emitted commands require an outbox authority",
+    ):
+        runtime.step(
+            command(0, "command-with-child"),
+            EmittingIncrementInterpreter(),
+        )
+
+    assert journal.latest("run-1") is None
+
+
+def test_runtime_rejects_reopen_of_emitting_history_without_outbox() -> None:
+    journal = InMemoryMachineJournal()
+    outbox = InMemoryMachineOutbox()
+    writer = make_runtime(journal, outbox=outbox)
+    writer.open({"count": 0})
+    writer.step(
+        command(0, "command-with-child"),
+        EmittingIncrementInterpreter(),
+    )
+
+    restarted_without_delivery = make_runtime(journal)
+    with pytest.raises(
+        MachineIntegrityError,
+        match="no outbox authority is bound",
+    ):
+        restarted_without_delivery.open({"count": 0})
+
+
+def test_runtime_rejects_command_outside_family_contract() -> None:
+    runtime = make_runtime(InMemoryMachineJournal())
+    runtime.open({"count": 0})
+    with pytest.raises(MachineConflict):
+        runtime.step(
+            MachineCommand(
+                command_id="wrong-kind",
+                machine_id="run-1",
+                expected_revision=0,
+                kind="stop",
+                payload=None,
+                scope=("run:run-1",),
+            ),
+            IncrementInterpreter(),
+        )

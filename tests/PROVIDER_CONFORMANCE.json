@@ -1,0 +1,26 @@
+{
+  "schema_version": 1,
+  "required_classes": ["durable", "environment", "model", "effect", "checkpoint"],
+  "classes": {
+    "durable": [
+      "tests/test_durable_file_v141.py",
+      "tests/test_sqlite_atomic_state_v101.py"
+    ],
+    "environment": [
+      "tests/test_state_machine_environment_v1.py",
+      "tests/test_minecraft_environment_v1.py"
+    ],
+    "model": [
+      "tests/test_model_endpoint_provider_v1.py",
+      "tests/test_model_runtime_canary_v1.py"
+    ],
+    "effect": [
+      "tests/test_environment_effect_safety_v127.py",
+      "tests/test_effect_journal_scope_index_v176.py"
+    ],
+    "checkpoint": [
+      "tests/test_workload_checkpoint_v1.py",
+      "tests/test_state_workload_checkpoint_transaction_v1.py"
+    ]
+  }
+}

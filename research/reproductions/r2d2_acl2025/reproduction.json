@@ -1,0 +1,164 @@
+{
+  "schema": "noetrium.reproduction.projection.v10",
+  "authority": "generated_from_typed_definition_and_source",
+  "package": "r2d2_acl2025",
+  "package_digest": "a79f12773201c2776ce4ca2478bfb0c70602145064b936f93bce64b05c3ea8e0",
+  "definition_digest": "bbe3561172dcb641e719208eea8385c919e49942e5c4ddf12c29f60c539bc9e4",
+  "source_registry_digest": "8d79934f44114bad0dcb49471b4eb91eb57933384e01bad96921f469dc20e06b",
+  "lifecycle": "protocol_bound",
+  "identity": {
+    "method_id": "r2d2",
+    "title": "R2D2: Remembering, Replaying and Dynamic Decision Making with a Reflective Agentic Memory",
+    "paper_uri": "https://aclanthology.org/2025.acl-long.1464/",
+    "year": 2025,
+    "paper_revision": "ACL 2025 proceedings",
+    "identity_digest": "0e326a7ed6d1568e22591aeb9a723ebed577abde09e47621d71b66dfa28ad119"
+  },
+  "catalog": {
+    "domains": [
+      "acl",
+      "agent",
+      "recent"
+    ],
+    "families": [
+      "agentic_workflow",
+      "r2d2"
+    ],
+    "priority": 1,
+    "benchmark_ids": [
+      "webarena"
+    ],
+    "platform_pressure": [
+      "benchmark",
+      "evidence",
+      "execution/workflow",
+      "experimentation/study",
+      "model/request"
+    ],
+    "method_owned": [
+      "dynamic web-environment map reconstruction",
+      "memory-conditioned action selection",
+      "navigation-error reflection",
+      "reflective replay memory"
+    ],
+    "platform_owned": [
+      "MethodProgram and Machine Journal execution authority",
+      "benchmark cut identity",
+      "experiment and measurement orchestration",
+      "model/provider transport",
+      "run evidence and provenance"
+    ],
+    "reference_repositories": [],
+    "reference_publications": [
+      "https://aclanthology.org/2025.acl-long.1464/"
+    ],
+    "catalog_digest": "1d2c8374f376c8659e5c448abb65d3ecf8d98415f5ae81001a67fb513144b4b2"
+  },
+  "source_lanes": [
+    {
+      "lane_id": "acl_2025",
+      "kind": "paper_provenance",
+      "venue": "ACL",
+      "year": 2025,
+      "publication_id": "r2d2-acl-2025",
+      "publication_uri": "https://aclanthology.org/2025.acl-long.1464/",
+      "revision": "ACL 2025 proceedings publication",
+      "content_sha256": null,
+      "lane_digest": "19e3809d1c6201ae71eae62624842c8b94ad4b1ae74fc1b42b279831d86241cf"
+    }
+  ],
+  "assets": [
+    {
+      "kind": "benchmark",
+      "path": "research/reproductions/r2d2_acl2025/benchmark.py",
+      "declaration_digest": "44e7f11702267565d31cd0eabe9fe117beec214f60946dce7a2930ea0b668770",
+      "content_sha256": "3c12822e5b7d438ab25fd520da4d3e2c522484bd20100ed0ada8c432f1973f99"
+    },
+    {
+      "kind": "fidelity",
+      "path": "research/reproductions/r2d2_acl2025/fidelity.py",
+      "declaration_digest": "f23154be1a3c8ce8cc3f5fce38a6723ffbca17cacefabe594ae7d757ef130251",
+      "content_sha256": "6c7aac47deea8ed2cb5294499d1d68ccfcafeca709febad900b243469fa0a0ba"
+    },
+    {
+      "kind": "method_program",
+      "path": "research/reproductions/r2d2_acl2025/program.py",
+      "declaration_digest": "46b5d810a45795c657bde411ac7557ed03f247d044f183b167276b95f2bb1005",
+      "content_sha256": "6cbde2ca32a17f842aa82fd7da15ec3a26d255d304bcca44b9f8fa0a3454f98c"
+    },
+    {
+      "kind": "study",
+      "path": "research/reproductions/r2d2_acl2025/study.py",
+      "declaration_digest": "29cf48064a8a9a40604703d9afc1d553b73305249c58b61666f41c065f4bd05e",
+      "content_sha256": "7a0a5c6277be60580ee685d29bb3dc78c239fe1418f9db5fd07de8497ec8f8b6"
+    }
+  ],
+  "primary_executable": "research/reproductions/r2d2_acl2025/program.py",
+  "reported_results": [
+    {
+      "claim_id": "r2d2_navigation_error_reduction",
+      "metric_id": "navigation_error_reduction_percent",
+      "value": 50,
+      "qualifiers": {
+        "benchmark": "webarena",
+        "source": "ACL-2025 abstract"
+      },
+      "claim_digest": "8b161184d5ffdb8135e7986bf8b8efdd92fead1ba325b3b4197d79c7b4f5aba5"
+    },
+    {
+      "claim_id": "r2d2_completion_multiplier",
+      "metric_id": "task_completion_rate_multiplier",
+      "value": 3,
+      "qualifiers": {
+        "benchmark": "webarena",
+        "source": "ACL-2025 abstract"
+      },
+      "claim_digest": "d97837aad5cbcd6d88bf460d3ce291920f77de60cabf6239e5e4484c9ab6ac41"
+    }
+  ],
+  "reference_baselines": [
+    {
+      "baseline_id": "existing_webarena_agents",
+      "description": "Existing WebArena navigation agents from the ACL comparison",
+      "qualifiers": {
+        "source": "ACL-2025 evaluation"
+      },
+      "baseline_digest": "97e237574bc882f775a8b6bf38b80e0ce1fd8ca45e798ebfd19e02cc5c59bc3c"
+    }
+  ],
+  "deltas": [],
+  "blockers": [
+    "Matched WebArena execution requires paper-era website snapshots, replay-buffer prompts and model identity.",
+    "Navigation-error accounting must be frozen to the paper evaluator implementation."
+  ],
+  "evidence_refs": [],
+  "scientific_tests": [
+    {
+      "path": "tests/test_scientific_recent_2025_2026_wave_v1.py",
+      "content_sha256": "11a5279b71d1113921dcaf67f385ea09612451fe35e356b9efbb782921b4b5a7"
+    }
+  ],
+  "research_os": {
+    "surface": "noetrium.api",
+    "execution_state": "benchmark_authority_required",
+    "program_id": "r2d2_acl2025",
+    "program_digest": "0b9dbaeb49f6ce024abbd30555b6f2ac3267a195c53146fc18e0803e9f025dfa",
+    "benchmark_authority": {
+      "state": "required",
+      "selection_digests": [],
+      "blockers": [
+        "ReproductionResearchOSCompileError:benchmark 'webarena' has no exact repository or materialized authority"
+      ]
+    },
+    "benchmark_split_axis": {
+      "required": true,
+      "consumers": [
+        "study:build_r2d2_study"
+      ]
+    },
+    "reproduction_closure_state": "closed",
+    "execution_authority_state": "required",
+    "materialization_ready": false,
+    "execution_requirements": []
+  }
+}

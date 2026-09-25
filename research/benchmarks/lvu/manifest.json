@@ -1,0 +1,14 @@
+{
+  "schema": "noetrium.benchmark-manifest.v2",
+  "package": "lvu",
+  "benchmark": {
+    "benchmark_id": "lvu",
+    "title": "Long-Form Video Understanding (LVU 1.0)",
+    "source_uri": "https://chaoyuan.org/lvu/lvu_1.0.tar.gz",
+    "environment_kinds": [],
+    "modalities": [
+      "text",
+      "video"
+    ]
+  }
+}

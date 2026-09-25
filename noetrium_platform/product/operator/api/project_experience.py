@@ -1,0 +1,158 @@
+from __future__ import annotations
+
+from dataclasses import dataclass
+from enum import StrEnum
+from pathlib import Path
+import re
+from typing import Protocol
+
+
+PROJECT_TEMPLATE_REVISION = "noetrium.project-template.v10"
+_PROJECT_TOKEN = re.compile(r"[a-z][a-z0-9_.-]*")
+_PROJECT_VERSION = re.compile(r"[0-9A-Za-z][0-9A-Za-z._+-]*")
+
+
+def project_template_revision() -> str:
+    return PROJECT_TEMPLATE_REVISION
+
+
+class ProjectDoctorDisposition(StrEnum):
+    PASS = "pass"
+    BLOCKED = "blocked"
+
+
+@dataclass(frozen=True, slots=True)
+class ProjectCreateRequest:
+    project_id: str
+    version: str
+    destination: Path
+
+    def __post_init__(self) -> None:
+        if _PROJECT_TOKEN.fullmatch(self.project_id) is None:
+            raise ValueError("project_id must be a canonical lowercase token")
+        if _PROJECT_VERSION.fullmatch(self.version) is None:
+            raise ValueError("project version is not canonical")
+        if not isinstance(self.destination, Path):
+            raise TypeError("project destination must be a pathlib.Path")
+
+@dataclass(frozen=True, slots=True)
+class ProjectCreateReceipt:
+    project_id: str
+    version: str
+    destination: str
+    template_revision: str
+    manifest_path: str
+    manifest_semantic_digest: str
+    generated_files: tuple[str, ...]
+
+
+@dataclass(frozen=True, slots=True)
+class ProjectSyncReceipt:
+    project_root: str
+    regenerated_files: tuple[str, ...]
+
+
+@dataclass(frozen=True, slots=True)
+class ProjectDoctorCheck:
+    check_id: str
+    disposition: ProjectDoctorDisposition
+    summary: str
+    remediation: str = ""
+
+    def __post_init__(self) -> None:
+        if not self.check_id.strip() or not self.summary.strip():
+            raise ValueError("project doctor check identity/summary are required")
+        if self.disposition is ProjectDoctorDisposition.BLOCKED and not self.remediation.strip():
+            raise ValueError("blocked project doctor checks require remediation")
+
+
+@dataclass(frozen=True, slots=True)
+class ProjectDoctorReport:
+    project_root: str
+    template_revision: str | None
+    checks: tuple[ProjectDoctorCheck, ...]
+
+    @property
+    def ready(self) -> bool:
+        return bool(self.checks) and all(
+            check.disposition is ProjectDoctorDisposition.PASS for check in self.checks
+        )
+
+
+class ProjectTestStage(StrEnum):
+    BUILD_INSTALL = "build_install"
+    CONTRACT_TEST = "contract_test"
+
+
+@dataclass(frozen=True, slots=True)
+class ProjectTestStageReceipt:
+    stage: ProjectTestStage
+    command: tuple[str, ...]
+    exit_code: int
+
+    @property
+    def passed(self) -> bool:
+        return self.exit_code == 0
+
+
+@dataclass(frozen=True, slots=True)
+class ProjectTestReceipt:
+    project_root: str
+    stages: tuple[ProjectTestStageReceipt, ...]
+
+    @property
+    def passed(self) -> bool:
+        return bool(self.stages) and all(stage.passed for stage in self.stages)
+
+
+class ProjectExperiencePort(Protocol):
+    def create(self, request: ProjectCreateRequest) -> ProjectCreateReceipt: ...
+    def sync(self, project_root: Path) -> ProjectSyncReceipt: ...
+    def doctor(self, project_root: Path) -> ProjectDoctorReport: ...
+    def test(self, project_root: Path) -> ProjectTestReceipt: ...
+
+
+class ProjectFacade:
+    """Topology-hiding Python facade over the unified project experience."""
+
+    def __init__(self, experience: ProjectExperiencePort) -> None:
+        for name in ("create", "sync", "doctor", "test"):
+            if not callable(getattr(experience, name, None)):
+                raise TypeError(f"project experience must implement {name}()")
+        self._experience = experience
+
+    def create(
+        self,
+        project_id: str,
+        version: str,
+        destination: Path,
+    ) -> ProjectCreateReceipt:
+        return self._experience.create(
+            ProjectCreateRequest(project_id, version, destination)
+        )
+
+    def sync(self, project_root: Path) -> ProjectSyncReceipt:
+        return self._experience.sync(project_root)
+
+    def doctor(self, project_root: Path) -> ProjectDoctorReport:
+        return self._experience.doctor(project_root)
+
+    def test(self, project_root: Path) -> ProjectTestReceipt:
+        return self._experience.test(project_root)
+
+
+__all__ = [
+    "PROJECT_TEMPLATE_REVISION",
+    "ProjectCreateReceipt",
+    "ProjectCreateRequest",
+    "ProjectDoctorCheck",
+    "ProjectDoctorDisposition",
+    "ProjectDoctorReport",
+    "ProjectExperiencePort",
+    "ProjectFacade",
+    "ProjectSyncReceipt",
+    "ProjectTestReceipt",
+    "ProjectTestStage",
+    "ProjectTestStageReceipt",
+    "project_template_revision",
+]

@@ -1,0 +1,225 @@
+{
+  "schema": "noetrium.reproduction.projection.v10",
+  "authority": "generated_from_typed_definition_and_source",
+  "package": "seeclick",
+  "package_digest": "7ebd89170530acc8a5d1574be680042a07a3062969428d411e20a33fac779ca0",
+  "definition_digest": "a7dc27f765e0cd9d6f6ef4fb784124a06d339ec5aaf3c43a239cdda32ae071a1",
+  "source_registry_digest": "703701aa516e21be3cdc470ed08bd842843e88a39dbdeba1a063fc280cf96439",
+  "lifecycle": "protocol_bound",
+  "identity": {
+    "method_id": "seeclick",
+    "title": "SeeClick: Harnessing GUI Grounding for Advanced Visual GUI Agents",
+    "paper_uri": "https://aclanthology.org/2024.acl-long.505/",
+    "year": 2024,
+    "paper_revision": "ACL 2024 final",
+    "identity_digest": "96404ad1897c9a57a7659a928b55a56fea58c98c7e71456163536664f3002bcd"
+  },
+  "catalog": {
+    "domains": [
+      "gui-agent",
+      "multimodal"
+    ],
+    "families": [
+      "gui_agent",
+      "multimodal",
+      "visual_grounding"
+    ],
+    "priority": 1,
+    "benchmark_ids": [
+      "screenspot"
+    ],
+    "platform_pressure": [
+      "artifact/lineage",
+      "environment/gui",
+      "experimentation/study",
+      "model/request"
+    ],
+    "method_owned": [
+      "GUI grounding continual pre-training curriculum",
+      "normalized [0,1] GUI coordinate representation",
+      "screenshot-only downstream GUI agent policy",
+      "text-to-point and text-to-bbox grounding semantics"
+    ],
+    "platform_owned": [
+      "benchmark task and verifier identity",
+      "measurement and evidence lineage",
+      "model/checkpoint identity",
+      "multimodal image references"
+    ],
+    "reference_repositories": [],
+    "reference_publications": [
+      "https://aclanthology.org/2024.acl-long.505/"
+    ],
+    "catalog_digest": "9154d01945f11820ea2da3fc1123137b4c57c7d7823f41e514740296d86dbc9e"
+  },
+  "source_lanes": [
+    {
+      "lane_id": "acl_2024_final",
+      "kind": "paper_provenance",
+      "venue": "ACL",
+      "year": 2024,
+      "publication_id": "2024.acl-long.505",
+      "publication_uri": "https://aclanthology.org/2024.acl-long.505/",
+      "revision": "ACL 2024 final",
+      "content_sha256": null,
+      "lane_digest": "346afed49afdeb4363aa100b9af9c89841d07a5a472d41abdc7123d3aec7e9db"
+    }
+  ],
+  "assets": [
+    {
+      "kind": "fidelity",
+      "path": "research/reproductions/seeclick/fidelity.py",
+      "declaration_digest": "b754485af5793e0cb735a3f6c87bd339498cfaa635588a6e596586d9bfdd94c5",
+      "content_sha256": "4f8b57d796b0303f3343b52d5a85b705db4addef09cf1c673ff006fb5f9d85a1"
+    },
+    {
+      "kind": "method_program",
+      "path": "research/reproductions/seeclick/program.py",
+      "declaration_digest": "70939e3416964f0823eaa3ee9c206307172b7b412a7ed314830bebcb2f5cf6d4",
+      "content_sha256": "63781a6bb9e9ad02265b2686ea62d558f103f8b41a8dd36b8a6b7bae55dfd898"
+    },
+    {
+      "kind": "study",
+      "path": "research/reproductions/seeclick/study.py",
+      "declaration_digest": "4a21caff6742071f79aca25cce006633d5c8e7a50f4aac5fc77f8079cd604dac",
+      "content_sha256": "b34ee48e3a0fcd1b4aabb2c3665b8db29a3781bf64f2b28040f150cb70be04d6"
+    },
+    {
+      "kind": "support",
+      "path": "research/reproductions/seeclick/grounding.py",
+      "declaration_digest": "ae93cecb76e5242a7e840eb1ecae5b23713afbface15fd2be1da89c001338d2e",
+      "content_sha256": "65d2673276eb145a2754d9ab56963ccfe722f83ef6d30be9acabd4af2520df2e"
+    }
+  ],
+  "primary_executable": "research/reproductions/seeclick/program.py",
+  "reported_results": [
+    {
+      "claim_id": "seeclick_screenspot_average",
+      "metric_id": "grounding_accuracy_percent",
+      "value": 53.4,
+      "qualifiers": {
+        "benchmark": "ScreenSpot",
+        "model": "SeeClick"
+      },
+      "claim_digest": "3af3b0d5812c7f90b08d45e6b421b129dc5b9a08578f3f035656454b0a42734f"
+    },
+    {
+      "claim_id": "seeclick_screenspot_mobile_text",
+      "metric_id": "grounding_accuracy_percent",
+      "value": 78.0,
+      "qualifiers": {
+        "benchmark": "ScreenSpot",
+        "platform": "mobile",
+        "element": "text"
+      },
+      "claim_digest": "a664bb5ca1410b87981761f5f0a6a0c6c53d9030591bf8d48dee46822965e0f4"
+    },
+    {
+      "claim_id": "seeclick_screenspot_mobile_icon",
+      "metric_id": "grounding_accuracy_percent",
+      "value": 52.0,
+      "qualifiers": {
+        "benchmark": "ScreenSpot",
+        "platform": "mobile",
+        "element": "icon-widget"
+      },
+      "claim_digest": "9631e674802e0df3fcefb67052c04c4f61534c37dfebe565980a93cb1cbdb969"
+    },
+    {
+      "claim_id": "seeclick_screenspot_desktop_text",
+      "metric_id": "grounding_accuracy_percent",
+      "value": 72.2,
+      "qualifiers": {
+        "benchmark": "ScreenSpot",
+        "platform": "desktop",
+        "element": "text"
+      },
+      "claim_digest": "d3d63f623a5eeba8680d480baaf57b5ec4b30f7409fef441e89ed0eef3ea9c74"
+    },
+    {
+      "claim_id": "seeclick_screenspot_desktop_icon",
+      "metric_id": "grounding_accuracy_percent",
+      "value": 30.0,
+      "qualifiers": {
+        "benchmark": "ScreenSpot",
+        "platform": "desktop",
+        "element": "icon-widget"
+      },
+      "claim_digest": "255f853f372d324ae869ad569975a55af5d8b912f78d626776a6c3118b1142b7"
+    },
+    {
+      "claim_id": "seeclick_screenspot_web_text",
+      "metric_id": "grounding_accuracy_percent",
+      "value": 55.7,
+      "qualifiers": {
+        "benchmark": "ScreenSpot",
+        "platform": "web",
+        "element": "text"
+      },
+      "claim_digest": "0237393fb0d73d17d2a2db2591cc2af5d743ae4ac363ba4c21c09bff6997ffc9"
+    },
+    {
+      "claim_id": "seeclick_screenspot_web_icon",
+      "metric_id": "grounding_accuracy_percent",
+      "value": 32.5,
+      "qualifiers": {
+        "benchmark": "ScreenSpot",
+        "platform": "web",
+        "element": "icon-widget"
+      },
+      "claim_digest": "30885966e9174a9ba4ffb6df674f0a4e1baccab7557758549a732b2cd1e57ec9"
+    }
+  ],
+  "reference_baselines": [
+    {
+      "baseline_id": "cogagent-screenspot",
+      "description": "CogAgent-18B on ScreenSpot as reported by the SeeClick release",
+      "qualifiers": {
+        "average_grounding_accuracy_percent": 47.4
+      },
+      "baseline_digest": "47e2c32ea005e4ffad502a3ce3ae26b782eac512ed4612576fd51cdb73a461b7"
+    }
+  ],
+  "deltas": [
+    {
+      "kind": "unresolved",
+      "description": "The executable package reproduces the text-to-point grounding projection and ScreenSpot protocol. Exact continual pre-training of Qwen-VL-Chat remains a separately qualified model-training workload rather than MethodProgram runtime semantics.",
+      "delta_digest": "fdc20a0447acac0bb71f1adf0d401be72fb310628abff287bd60976758790dbe"
+    }
+  ],
+  "blockers": [
+    "the exact ACL paper SeeClick checkpoint and LoRA/model closure must be materialized under immutable model identity",
+    "the exact released ScreenSpot image/annotation cut must be frozen under Artifact authority",
+    "matched downstream Mind2Web/AITW/MiniWob agent evaluation has not yet been bound"
+  ],
+  "evidence_refs": [],
+  "scientific_tests": [
+    {
+      "path": "tests/test_scientific_seeclick_v1.py",
+      "content_sha256": "477f50a4671a8a20b7def5121c5095510989fbf35aa178ae2e0f70e1f89edcc3"
+    }
+  ],
+  "research_os": {
+    "surface": "noetrium.api",
+    "execution_state": "benchmark_authority_required",
+    "program_id": "seeclick",
+    "program_digest": "68c422d8021a89689b1fd22f8eccc17f0e5751f12dde10320ed3323358c62224",
+    "benchmark_authority": {
+      "state": "required",
+      "selection_digests": [],
+      "blockers": [
+        "ReproductionResearchOSCompileError:benchmark 'screenspot' has no exact repository or materialized authority"
+      ]
+    },
+    "benchmark_split_axis": {
+      "required": true,
+      "consumers": [
+        "study:build_seeclick_screenspot_study"
+      ]
+    },
+    "reproduction_closure_state": "closed",
+    "execution_authority_state": "required",
+    "materialization_ready": false,
+    "execution_requirements": []
+  }
+}

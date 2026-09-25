@@ -1,0 +1,16 @@
+{
+  "schema": "noetrium.benchmark-manifest.v2",
+  "package": "osworld",
+  "benchmark": {
+    "benchmark_id": "osworld",
+    "title": "OSWorld",
+    "source_uri": "https://github.com/xlang-ai/OSWorld",
+    "environment_kinds": [
+      "gui"
+    ],
+    "modalities": [
+      "text",
+      "image"
+    ]
+  }
+}
