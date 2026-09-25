@@ -161,9 +161,9 @@ run_bootstrap_container() {
   if docker run --rm --init --restart no \
     --name "$BOOTSTRAP_CONTAINER_NAME" \
     --label "$BOOTSTRAP_MANAGED_LABEL=$BOOTSTRAP_MANAGED_VALUE" \
-    --label "io.noetrium.bootstrap-owner-pid=$" \
-    --label "io.noetrium.bootstrap-owner-boot=$BOOT_ID" \
-    --label "io.noetrium.bootstrap-owner-start=$OWNER_START" \
+    --label "$OWNER_PID_LABEL=$" \
+    --label "$OWNER_BOOT_LABEL=$BOOT_ID" \
+    --label "$OWNER_START_LABEL=$OWNER_START" \
     "$@"; then
     status=0
   else
