@@ -868,7 +868,7 @@ class InMemoryComputeScheduler:
 class SQLiteComputeScheduler:
     """Crash-safe compute placement over the canonical SQLite lease authority."""
 
-    SCHEMA_VERSION = 2
+    SCHEMA_VERSION = 3
 
     def __init__(
         self,
@@ -920,7 +920,7 @@ class SQLiteComputeScheduler:
         ).fetchone()
         if row is not None and int(row[0]) != self.SCHEMA_VERSION:
             raise RuntimeError(
-                "unsupported SQLiteComputeScheduler schema; recreate the v2 authority store"
+                "unsupported SQLiteComputeScheduler schema; recreate the v3 authority store"
             )
         conn.execute(
             "INSERT OR REPLACE INTO compute_scheduler_meta(key,value) VALUES('schema_version',?)",
@@ -935,8 +935,12 @@ class SQLiteComputeScheduler:
             "CREATE TABLE IF NOT EXISTS compute_allocations("
             "allocation_id TEXT PRIMARY KEY REFERENCES compute_allocation_identity(allocation_id),"
             "host_id TEXT NOT NULL,cpu_cores INTEGER NOT NULL,memory_bytes INTEGER NOT NULL,"
-            "gpu_ids_json TEXT NOT NULL,lease_id TEXT NOT NULL UNIQUE "
-            "REFERENCES resource_leases(lease_id))"
+            "gpu_ids_json TEXT NOT NULL,"
+            "binding_proof_digest TEXT,"
+            "binding_binder_identity_digest TEXT,"
+            "binding_evidence_ref TEXT,"
+            "bound_at_epoch_s REAL,"
+            "lease_id TEXT NOT NULL UNIQUE REFERENCES resource_leases(lease_id))"
         )
         conn.execute("DROP TABLE IF EXISTS compute_allocation_fencing")
 
@@ -945,7 +949,9 @@ class SQLiteComputeScheduler:
         return json.dumps(list(gpu_ids), sort_keys=False, separators=(",", ":"))
     _SELECT = (
         "c.allocation_id,i.scope_kind,i.scope_id,c.host_id,c.cpu_cores,c.memory_bytes,"
-        "c.gpu_ids_json,l.lease_id,l.holder_generation,l.fencing_token,l.expires_at_epoch_s"
+        "c.gpu_ids_json,c.binding_proof_digest,c.binding_binder_identity_digest,"
+        "c.binding_evidence_ref,c.bound_at_epoch_s,"
+        "l.lease_id,l.holder_generation,l.fencing_token,l.expires_at_epoch_s"
     )
 
     @classmethod
@@ -960,8 +966,12 @@ class SQLiteComputeScheduler:
             cpu_cores=int(row[4]),
             memory_bytes=int(row[5]),
             gpu_ids=tuple(gpu_value),
-            lease_fencing_token=int(row[9]),
-            lease_expires_at_epoch_s=None if row[10] is None else float(row[10]),
+            lease_fencing_token=int(row[13]),
+            lease_expires_at_epoch_s=None if row[14] is None else float(row[14]),
+            binding_proof_digest=None if row[7] is None else str(row[7]),
+            binding_binder_identity_digest=None if row[8] is None else str(row[8]),
+            binding_evidence_ref=None if row[9] is None else str(row[9]),
+            bound_at_epoch_s=None if row[10] is None else float(row[10]),
         )
 
     def _active_rows(
@@ -1062,6 +1072,9 @@ class SQLiteComputeScheduler:
                 continue
             usage.cpu_cores += row.cpu_cores
             usage.memory_bytes += row.memory_bytes
+            if not row.is_bound:
+                usage.unbound_cpu_cores += row.cpu_cores
+                usage.unbound_memory_bytes += row.memory_bytes
             usage.gpu_ids.update(row.gpu_ids)
         return usage
 
@@ -1245,6 +1258,176 @@ class SQLiteComputeScheduler:
                     label="compute scheduler",
                 )
                 raise
+    @staticmethod
+    def _validate_binding_proof(
+        current: ComputeAllocation,
+        proof: ComputeBindingProof,
+    ) -> str:
+        if type(proof) is not ComputeBindingProof:
+            raise TypeError("compute binding requires ComputeBindingProof")
+        if (
+            proof.allocation_id != current.allocation_id
+            or proof.host_id != current.host_id
+            or proof.gpu_ids != current.gpu_ids
+            or proof.lease_fencing_token != current.lease_fencing_token
+        ):
+            raise ResourceLeaseConflict(
+                f"compute binding proof does not match allocation generation: "
+                f"{current.allocation_id}"
+            )
+        return proof.digest()
+
+    def confirm_bound(
+        self,
+        proof: ComputeBindingProof,
+    ) -> ComputeAllocation:
+        with self._connection() as conn:
+            begin_immediate_sqlite_transaction(
+                conn,
+                timeout_seconds=self.timeout_seconds,
+            )
+            try:
+                now_epoch_s = self._authority_now(conn, None)
+                current = self._active_row(
+                    conn,
+                    proof.allocation_id,
+                    now_epoch_s,
+                )
+                if current is None:
+                    raise ResourceLeaseConflict(
+                        f"compute binding lost active allocation: "
+                        f"{proof.allocation_id}"
+                    )
+                proof_digest = self._validate_binding_proof(current, proof)
+                if current.binding_proof_digest is not None:
+                    if current.binding_proof_digest == proof_digest:
+                        conn.commit()
+                        return current
+                    raise ResourceLeaseConflict(
+                        f"compute allocation already bound: {proof.allocation_id}"
+                    )
+                updated = conn.execute(
+                    "UPDATE compute_allocations SET "
+                    "binding_proof_digest=?,binding_binder_identity_digest=?,"
+                    "binding_evidence_ref=?,bound_at_epoch_s=? "
+                    "WHERE allocation_id=? AND binding_proof_digest IS NULL",
+                    (
+                        proof_digest,
+                        proof.binder_identity_digest,
+                        proof.evidence_ref,
+                        proof.observed_at_epoch_s,
+                        proof.allocation_id,
+                    ),
+                )
+                if updated.rowcount != 1:
+                    raise ResourceLeaseConflict(
+                        f"compute binding lost unbound generation: "
+                        f"{proof.allocation_id}"
+                    )
+                row = self._active_row(
+                    conn,
+                    proof.allocation_id,
+                    now_epoch_s,
+                )
+                if row is None:
+                    raise ResourceLeaseConflict(
+                        f"compute binding disappeared before commit: "
+                        f"{proof.allocation_id}"
+                    )
+                conn.commit()
+                return row
+            except BaseException as primary:
+                rollback_sqlite_writer(
+                    conn,
+                    primary,
+                    label="compute binding",
+                )
+                raise
+
+    def replace_bound(
+        self,
+        proof: ComputeBindingProof,
+        *,
+        previous_binding_proof_digest: str,
+    ) -> ComputeAllocation:
+        if (
+            type(previous_binding_proof_digest) is not str
+            or len(previous_binding_proof_digest) != 64
+            or any(
+                character not in "0123456789abcdef"
+                for character in previous_binding_proof_digest
+            )
+        ):
+            raise ValueError(
+                "previous compute binding proof digest must be canonical SHA-256"
+            )
+        with self._connection() as conn:
+            begin_immediate_sqlite_transaction(
+                conn,
+                timeout_seconds=self.timeout_seconds,
+            )
+            try:
+                now_epoch_s = self._authority_now(conn, None)
+                current = self._active_row(
+                    conn,
+                    proof.allocation_id,
+                    now_epoch_s,
+                )
+                if current is None:
+                    raise ResourceLeaseConflict(
+                        f"compute binding replacement lost active allocation: "
+                        f"{proof.allocation_id}"
+                    )
+                proof_digest = self._validate_binding_proof(current, proof)
+                if current.binding_proof_digest != previous_binding_proof_digest:
+                    raise ResourceLeaseConflict(
+                        f"compute binding replacement lost prior generation: "
+                        f"{proof.allocation_id}"
+                    )
+                if current.binding_binder_identity_digest == proof.binder_identity_digest:
+                    raise ResourceLeaseConflict(
+                        f"compute binding replacement requires a new binder generation: "
+                        f"{proof.allocation_id}"
+                    )
+                updated = conn.execute(
+                    "UPDATE compute_allocations SET "
+                    "binding_proof_digest=?,binding_binder_identity_digest=?,"
+                    "binding_evidence_ref=?,bound_at_epoch_s=? "
+                    "WHERE allocation_id=? AND binding_proof_digest=?",
+                    (
+                        proof_digest,
+                        proof.binder_identity_digest,
+                        proof.evidence_ref,
+                        proof.observed_at_epoch_s,
+                        proof.allocation_id,
+                        previous_binding_proof_digest,
+                    ),
+                )
+                if updated.rowcount != 1:
+                    raise ResourceLeaseConflict(
+                        f"compute binding replacement lost CAS authority: "
+                        f"{proof.allocation_id}"
+                    )
+                row = self._active_row(
+                    conn,
+                    proof.allocation_id,
+                    now_epoch_s,
+                )
+                if row is None:
+                    raise ResourceLeaseConflict(
+                        f"compute binding replacement disappeared before commit: "
+                        f"{proof.allocation_id}"
+                    )
+                conn.commit()
+                return row
+            except BaseException as primary:
+                rollback_sqlite_writer(
+                    conn,
+                    primary,
+                    label="compute binding replacement",
+                )
+                raise
+
     def renew_many(
         self,
         allocations: tuple[ComputeAllocation, ...],
