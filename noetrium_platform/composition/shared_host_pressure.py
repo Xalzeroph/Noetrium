@@ -459,8 +459,11 @@ class SharedHostPressureAdmissionGate(ExecutionAdmissionPort):
                 return "cpu-pressure"
 
         if lane_kind in {ExecutionLaneKind.BLOCKING_IO, ExecutionLaneKind.ASYNC_IO}:
-            network = self._network_status()
-            if self._network_observer is not None:
+            if (
+                self._network_observer is not None
+                and self._policy.max_network_utilization_percent < 100.0
+            ):
+                network = self._network_status()
                 if (
                     network is None
                     or not network.available
