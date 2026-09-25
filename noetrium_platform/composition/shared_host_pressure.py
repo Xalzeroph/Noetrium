@@ -458,6 +458,146 @@ class ResourceCompetitionPolicy:
             raise TypeError("shared-host runtime availability policy must be boolean")
 
 
+class ResourceCompetitionReservationLedger:
+    """One process-wide logical reservation authority for competing workload gates.
+
+    Live host facts lag process/thread/container launch. This ledger fences the
+    interval between admission and those facts becoming observable. Multiple
+    admission domains must share one ledger or they can spend the same residual
+    capacity independently.
+    """
+
+    def __init__(self) -> None:
+        self._lock = RLock()
+        self._reserved_memory_bytes = 0
+        self._reserved_pids = 0
+        self._reserved_fds = 0
+        self._reserved_storage_bytes: dict[str, int] = {}
+        self._reserved_storage_inodes: dict[str, int] = {}
+
+    @property
+    def lock(self) -> RLock:
+        return self._lock
+
+    def reserved_demand(self) -> ResourceCompetitionDemand:
+        with self._lock:
+            return ResourceCompetitionDemand(
+                memory_bytes_per_permit=self._reserved_memory_bytes,
+                pids_per_permit=self._reserved_pids,
+                fds_per_permit=self._reserved_fds,
+            )
+
+    @staticmethod
+    def _storage_key(
+        demand: ResourceCompetitionDemand,
+        status: SharedStoragePressureStatus | None,
+    ) -> str:
+        if demand.storage_path is None:
+            return "*"
+        if status is None or not status.available or status.capacity_id is None:
+            raise RuntimeError(
+                "scoped storage demand requires an observable physical filesystem"
+            )
+        return status.capacity_id
+
+    def reserved_storage_for(
+        self,
+        demand: ResourceCompetitionDemand,
+        status: SharedStoragePressureStatus | None,
+    ) -> tuple[int, int]:
+        with self._lock:
+            if demand.storage_path is None:
+                return (
+                    sum(self._reserved_storage_bytes.values()),
+                    sum(self._reserved_storage_inodes.values()),
+                )
+            key = self._storage_key(demand, status)
+            return (
+                self._reserved_storage_bytes.get("*", 0)
+                + self._reserved_storage_bytes.get(key, 0),
+                self._reserved_storage_inodes.get("*", 0)
+                + self._reserved_storage_inodes.get(key, 0),
+            )
+
+    def reserve(
+        self,
+        demand: ResourceCompetitionDemand,
+        *,
+        permit_count: int,
+        storage_status: SharedStoragePressureStatus | None,
+    ) -> str:
+        with self._lock:
+            self._reserved_memory_bytes += (
+                demand.memory_bytes_per_permit * permit_count
+            )
+            self._reserved_pids += demand.pids_per_permit * permit_count
+            self._reserved_fds += demand.fds_per_permit * permit_count
+            storage_bytes = demand.storage_bytes_per_permit * permit_count
+            storage_inodes = demand.storage_inodes_per_permit * permit_count
+            storage_key = (
+                "*"
+                if storage_bytes <= 0 and storage_inodes <= 0
+                else self._storage_key(demand, storage_status)
+            )
+            if storage_bytes:
+                self._reserved_storage_bytes[storage_key] = (
+                    self._reserved_storage_bytes.get(storage_key, 0)
+                    + storage_bytes
+                )
+            if storage_inodes:
+                self._reserved_storage_inodes[storage_key] = (
+                    self._reserved_storage_inodes.get(storage_key, 0)
+                    + storage_inodes
+                )
+            return storage_key
+
+    def release_one(
+        self,
+        demand: ResourceCompetitionDemand,
+        *,
+        storage_key: str,
+    ) -> None:
+        with self._lock:
+            next_memory = (
+                self._reserved_memory_bytes
+                - demand.memory_bytes_per_permit
+            )
+            next_pids = self._reserved_pids - demand.pids_per_permit
+            next_fds = self._reserved_fds - demand.fds_per_permit
+            if min(next_memory, next_pids, next_fds) < 0:
+                raise RuntimeError(
+                    "resource competition reservation accounting underflow"
+                )
+            self._reserved_memory_bytes = next_memory
+            self._reserved_pids = next_pids
+            self._reserved_fds = next_fds
+
+            for reservations, amount, label in (
+                (
+                    self._reserved_storage_bytes,
+                    demand.storage_bytes_per_permit,
+                    "storage bytes",
+                ),
+                (
+                    self._reserved_storage_inodes,
+                    demand.storage_inodes_per_permit,
+                    "storage inodes",
+                ),
+            ):
+                if amount <= 0:
+                    continue
+                remaining = reservations.get(storage_key, 0) - amount
+                if remaining < 0:
+                    raise RuntimeError(
+                        "resource competition "
+                        f"{label} reservation accounting underflow"
+                    )
+                if remaining:
+                    reservations[storage_key] = remaining
+                else:
+                    reservations.pop(storage_key, None)
+
+
 class _ResourceCompetitionLease:
     """Delegate permit plus fail-closed logical resource reservation."""
 
@@ -494,6 +634,7 @@ class ResourceCompetitionAdmissionGate(ExecutionAdmissionPort):
         storage_observer: SharedStoragePressureObserverPort | None = None,
         network_observer: SharedNetworkPressureObserverPort | None = None,
         policy: ResourceCompetitionPolicy = ResourceCompetitionPolicy(),
+        reservations: ResourceCompetitionReservationLedger | None = None,
     ) -> None:
         self._delegate = delegate
         self._observer = observer
@@ -502,12 +643,19 @@ class ResourceCompetitionAdmissionGate(ExecutionAdmissionPort):
         self._policy = policy
         self._intents: dict[str, AdmissionIntent] = {}
         self._demands: dict[str, ResourceCompetitionDemand] = {}
-        self._reservation_lock = RLock()
-        self._reserved_memory_bytes = 0
-        self._reserved_pids = 0
-        self._reserved_fds = 0
-        self._reserved_storage_bytes: dict[str, int] = {}
-        self._reserved_storage_inodes: dict[str, int] = {}
+        self._reservations = (
+            ResourceCompetitionReservationLedger()
+            if reservations is None
+            else reservations
+        )
+        if not isinstance(
+            self._reservations,
+            ResourceCompetitionReservationLedger,
+        ):
+            raise TypeError(
+                "resource competition reservations must be a typed ledger"
+            )
+        self._reservation_lock = self._reservations.lock
 
     def register_group(
         self,
@@ -557,44 +705,14 @@ class ResourceCompetitionAdmissionGate(ExecutionAdmissionPort):
         )
 
     def _reserved_demand(self) -> ResourceCompetitionDemand:
-        with self._reservation_lock:
-            return ResourceCompetitionDemand(
-                memory_bytes_per_permit=self._reserved_memory_bytes,
-                pids_per_permit=self._reserved_pids,
-                fds_per_permit=self._reserved_fds,
-            )
-
-    @staticmethod
-    def _storage_key(
-        demand: ResourceCompetitionDemand,
-        status: SharedStoragePressureStatus | None,
-    ) -> str:
-        if demand.storage_path is None:
-            return "*"
-        if status is None or not status.available or status.capacity_id is None:
-            raise RuntimeError(
-                "scoped storage demand requires an observable physical filesystem"
-            )
-        return status.capacity_id
+        return self._reservations.reserved_demand()
 
     def _reserved_storage_for(
         self,
         demand: ResourceCompetitionDemand,
         status: SharedStoragePressureStatus | None,
     ) -> tuple[int, int]:
-        with self._reservation_lock:
-            if demand.storage_path is None:
-                return (
-                    sum(self._reserved_storage_bytes.values()),
-                    sum(self._reserved_storage_inodes.values()),
-                )
-            key = self._storage_key(demand, status)
-            return (
-                self._reserved_storage_bytes.get("*", 0)
-                + self._reserved_storage_bytes.get(key, 0),
-                self._reserved_storage_inodes.get("*", 0)
-                + self._reserved_storage_inodes.get(key, 0),
-            )
+        return self._reservations.reserved_storage_for(demand, status)
 
     def _reserve_demand(
         self,
@@ -603,27 +721,11 @@ class ResourceCompetitionAdmissionGate(ExecutionAdmissionPort):
         permit_count: int,
         storage_status: SharedStoragePressureStatus | None,
     ) -> str:
-        self._reserved_memory_bytes += demand.memory_bytes_per_permit * permit_count
-        self._reserved_pids += demand.pids_per_permit * permit_count
-        self._reserved_fds += demand.fds_per_permit * permit_count
-        storage_bytes = demand.storage_bytes_per_permit * permit_count
-        storage_inodes = demand.storage_inodes_per_permit * permit_count
-        storage_key = (
-            "*"
-            if storage_bytes <= 0 and storage_inodes <= 0
-            else self._storage_key(demand, storage_status)
+        return self._reservations.reserve(
+            demand,
+            permit_count=permit_count,
+            storage_status=storage_status,
         )
-        if storage_bytes:
-            self._reserved_storage_bytes[storage_key] = (
-                self._reserved_storage_bytes.get(storage_key, 0)
-                + storage_bytes
-            )
-        if storage_inodes:
-            self._reserved_storage_inodes[storage_key] = (
-                self._reserved_storage_inodes.get(storage_key, 0)
-                + storage_inodes
-            )
-        return storage_key
 
     def _release_one_demand(
         self,
@@ -631,42 +733,10 @@ class ResourceCompetitionAdmissionGate(ExecutionAdmissionPort):
         *,
         storage_key: str,
     ) -> None:
-        with self._reservation_lock:
-            next_memory = self._reserved_memory_bytes - demand.memory_bytes_per_permit
-            next_pids = self._reserved_pids - demand.pids_per_permit
-            next_fds = self._reserved_fds - demand.fds_per_permit
-            if min(next_memory, next_pids, next_fds) < 0:
-                raise RuntimeError(
-                    "resource competition reservation accounting underflow"
-                )
-            self._reserved_memory_bytes = next_memory
-            self._reserved_pids = next_pids
-            self._reserved_fds = next_fds
-
-            for reservations, amount, label in (
-                (
-                    self._reserved_storage_bytes,
-                    demand.storage_bytes_per_permit,
-                    "storage bytes",
-                ),
-                (
-                    self._reserved_storage_inodes,
-                    demand.storage_inodes_per_permit,
-                    "storage inodes",
-                ),
-            ):
-                if amount <= 0:
-                    continue
-                remaining = reservations.get(storage_key, 0) - amount
-                if remaining < 0:
-                    raise RuntimeError(
-                        "resource competition "
-                        f"{label} reservation accounting underflow"
-                    )
-                if remaining:
-                    reservations[storage_key] = remaining
-                else:
-                    reservations.pop(storage_key, None)
+        self._reservations.release_one(
+            demand,
+            storage_key=storage_key,
+        )
 
     def _status(self) -> HostRuntimeStatus | None:
         try:
@@ -1080,6 +1150,7 @@ __all__ = [
     "ResourceCompetitionDecision",
     "ResourceCompetitionDemand",
     "ResourceCompetitionPolicy",
+    "ResourceCompetitionReservationLedger",
     "SharedNetworkPressureObserverPort",
     "SharedNetworkPressureStatus",
     "SharedStoragePressureObserverPort",
