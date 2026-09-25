@@ -172,6 +172,68 @@ def test_expired_gpu_lease_does_not_release_capacity_while_process_survives(
 
 
 @pytest.mark.parametrize("durable", [False, True])
+def test_expired_gpu_generation_quarantines_only_its_exact_device(
+    tmp_path,
+    durable: bool,
+) -> None:
+    class TwoGpuObserver:
+        def snapshot(self) -> GpuRuntimeSnapshot:
+            return GpuRuntimeSnapshot(
+                True,
+                devices=(
+                    GpuDeviceStatus(
+                        "0", "GPU-0", "test-gpu", 81920, 0, 81920, 0
+                    ),
+                    GpuDeviceStatus(
+                        "1", "GPU-1", "test-gpu", 81920, 0, 81920, 0
+                    ),
+                ),
+                processes=(),
+                processes_complete=True,
+            )
+
+    inventory = InMemoryComputeInventory()
+    inventory.register_host(
+        ComputeHost(
+            "gpu-node",
+            _scope(),
+            8,
+            64 * 1024**3,
+            gpus=(
+                ComputeGPU("GPU-0", 80 * 1024**3, "test-gpu"),
+                ComputeGPU("GPU-1", 80 * 1024**3, "test-gpu"),
+            ),
+        )
+    )
+    scheduler, clock = _scheduler(
+        tmp_path,
+        durable=durable,
+        inventory=inventory,
+        observer=TwoGpuObserver(),
+        filename="compute-exact-gpu-quarantine.sqlite",
+    )
+    first = scheduler.allocate(
+        "first",
+        _scope(),
+        _requirement(),
+        ttl_seconds=1.0,
+    )
+    assert first.gpu_ids == ("GPU-0",)
+
+    clock.advance(2.0)
+    with pytest.raises(ComputePhysicalConvergencePending):
+        scheduler.reconcile_expired()
+
+    replacement = scheduler.allocate(
+        "replacement",
+        _scope(),
+        _requirement(),
+        ttl_seconds=30.0,
+    )
+    assert replacement.gpu_ids == ("GPU-1",)
+
+
+@pytest.mark.parametrize("durable", [False, True])
 def test_exact_owner_release_ignores_foreign_gpu_reoccupation(
     tmp_path,
     durable: bool,
