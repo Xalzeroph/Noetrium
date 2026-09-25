@@ -196,11 +196,13 @@ def _runtime_rank(
     if device is None:
         return None
     free_bytes = device.memory_free_mb * 1024 * 1024
+    runtime_total_bytes = device.memory_total_mb * 1024 * 1024
     fractional_requirement = (
         0
         if requirement.required_gpu_memory_fraction is None
         else math.ceil(
-            gpu.memory_bytes * requirement.required_gpu_memory_fraction
+            max(gpu.memory_bytes, runtime_total_bytes)
+            * requirement.required_gpu_memory_fraction
         )
     )
     required_free_bytes = max(
