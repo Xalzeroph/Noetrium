@@ -181,6 +181,9 @@ class DirectoryCleanupCandidate:
     files: int
     directories: int
     bytes: int
+    device: int
+    inode: int
+    change_time_ns: int
 
 
 __all__ = [
