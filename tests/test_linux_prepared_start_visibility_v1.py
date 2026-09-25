@@ -16,7 +16,6 @@ from noetrium_platform.infrastructure.lifecycle.service.runtime.linux_backend im
     LinuxProcessBackend,
 )
 from noetrium_platform.infrastructure.lifecycle.service.runtime.linux_start_marker import (
-    decode_linux_start_handle,
     prepare_linux_start_handle,
 )
 from noetrium_platform.infrastructure.lifecycle.service.runtime.prepared_start import (
@@ -116,8 +115,6 @@ def test_unobservable_other_uid_process_does_not_block_not_started_proof(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    import noetrium_platform.infrastructure.lifecycle.service.runtime.linux_backend as backend_module
-
     environment = MaterializedServiceEnvironment.from_mapping(
         {"TEST": "1"},
         "environment:test",
@@ -129,11 +126,10 @@ def test_unobservable_other_uid_process_does_not_block_not_started_proof(
         intent_id="intent-2",
         attempt=1,
     )
-    token = decode_linux_start_handle(handle, contract, environment)
     monkeypatch.setattr(
-        backend_module,
-        "time",
-        lambda: token.prepared_at_epoch_s + 10.0,
+        LinuxProcessBackend,
+        "_PREPARED_START_SETTLEMENT_SECONDS",
+        0.0,
     )
     backend = LinuxProcessBackend(
         object(),
