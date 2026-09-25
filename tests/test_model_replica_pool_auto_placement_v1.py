@@ -320,6 +320,16 @@ def test_auto_model_replica_pool_exhausts_available_gpu_capacity_without_gpu_or_
         ("GPU-b",),
     )
     assert all(row.endpoint.state is EndpointAllocationState.BOUND for row in lease.report.placements)
+    assert all(
+        row.endpoint.binding_binder_identity_digest
+        == row.generation.applied_runtime_digest
+        for row in lease.report.placements
+    )
+    assert all(
+        row.endpoint.binding_binder_identity_digest
+        != canonical_digest(row.deployment)
+        for row in lease.report.placements
+    )
     assert all(row.deployment.readiness_url for row in lease.report.placements)
     assert compute_guards.created[0].started
     assert endpoint_guards.created[0].started
@@ -331,6 +341,57 @@ def test_auto_model_replica_pool_exhausts_available_gpu_capacity_without_gpu_or_
     assert len(endpoints.released) == 2
     assert compute_guards.created[0].closed
     assert endpoint_guards.created[0].closed
+
+
+def test_model_endpoint_binding_requires_applied_runtime_generation(
+    tmp_path,
+) -> None:
+    class NoAppliedRuntime(Runtime):
+        def generation(self, deployment_id):
+            spec = self.catalog.rows[deployment_id]
+            return ModelDeploymentGeneration(
+                deployment_id,
+                canonical_digest(spec),
+                None,
+            )
+
+    catalog = Catalog()
+    runtime = NoAppliedRuntime(catalog)
+    scheduler = Scheduler()
+    endpoints = Endpoints()
+    pool = LocalModelReplicaPoolRuntime(
+        deployment_catalog=catalog,
+        deployment_runtime=runtime,
+        fleet=Fleet(catalog),
+        compute_scheduler=scheduler,
+        endpoint_allocations=endpoints,
+        compute_lease_guards=ComputeGuards(),
+        endpoint_lease_guards=EndpointGuards(),
+    )
+
+    with pytest.raises(RuntimeError, match="no applied runtime generation"):
+        pool.ensure(
+            ModelReplicaPoolRequest(
+                pool_id="no-applied-runtime",
+                scope=PLATFORM_SCOPE,
+                model_id="qwen3-8b",
+                engine="vllm",
+                python_environment_id="vllm",
+                cwd=Path(tmp_path),
+                compute=ComputeRequirement(
+                    cpu_cores=2,
+                    memory_bytes=1024,
+                    gpu_count=1,
+                    minimum_gpu_memory_bytes=40 * 1024**3,
+                ),
+                replica_count=1,
+            )
+        )
+
+    row = next(iter(endpoints.rows.values()))
+    assert row.state is EndpointAllocationState.RELEASED
+    assert row.binding_binder_identity_digest is None
+    assert scheduler.released
 
 
 def test_auto_model_replica_pool_launches_frozen_vllm_engine_args(
