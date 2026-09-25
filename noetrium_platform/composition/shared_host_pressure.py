@@ -643,6 +643,22 @@ class ResourceCompetitionAdmissionGate(ExecutionAdmissionPort):
             raise RuntimeError("resource competition gate returned invalid lease cardinality")
         return leases[0]
 
+    @staticmethod
+    def _release_delegate_leases(
+        leases: tuple[ExecutionPermitLeasePort, ...],
+    ) -> None:
+        errors: list[BaseException] = []
+        for lease in reversed(leases):
+            try:
+                lease.release()
+            except BaseException as exc:
+                errors.append(exc)
+        if errors:
+            raise ExceptionGroup(
+                "resource competition failed to release provisional permits",
+                errors,
+            )
+
     def acquire_many(
         self,
         group_id: str,
@@ -654,20 +670,69 @@ class ResourceCompetitionAdmissionGate(ExecutionAdmissionPort):
     ) -> tuple[ExecutionPermitLeasePort, ...]:
         if type(permit_count) is not int or permit_count <= 0:
             raise ValueError("resource competition permit_count must be positive")
-        self._wait_for_pressure_clearance(
-            group_id,
-            lane_kind,
-            permit_count=permit_count,
-            deadline=deadline,
-            cancellation=cancellation,
-        )
-        return self._delegate.acquire_many(
-            group_id,
-            lane_kind,
-            permit_count=permit_count,
-            deadline=deadline,
-            cancellation=cancellation,
-        )
+        intent = self._intents.get(group_id)
+        if intent is None:
+            raise KeyError(
+                "execution group is not registered with resource competition gate: "
+                f"{group_id}"
+            )
+
+        while True:
+            self._wait_for_pressure_clearance(
+                group_id,
+                lane_kind,
+                permit_count=permit_count,
+                deadline=deadline,
+                cancellation=cancellation,
+            )
+            leases = self._delegate.acquire_many(
+                group_id,
+                lane_kind,
+                permit_count=permit_count,
+                deadline=deadline,
+                cancellation=cancellation,
+            )
+            if len(leases) != permit_count:
+                self._release_delegate_leases(leases)
+                raise RuntimeError(
+                    "resource competition delegate returned invalid lease cardinality"
+                )
+
+            if self._cancelled(cancellation):
+                self._release_delegate_leases(leases)
+                raise TaskCancelled(
+                    cancellation.reason or "resource competition admission cancelled"
+                )
+            if deadline is not None and deadline.expired:
+                self._release_delegate_leases(leases)
+                raise TimeoutError(
+                    "resource competition admission deadline expired after provisional grant"
+                )
+
+            try:
+                decision = self.decision(
+                    group_id,
+                    lane_kind,
+                    permit_count=permit_count,
+                )
+            except BaseException:
+                self._release_delegate_leases(leases)
+                raise
+            if decision.admitted:
+                return leases
+
+            self._release_delegate_leases(leases)
+            if intent.mode is AdmissionMode.REJECT:
+                raise AdmissionRejected(
+                    "resource competition rejected execution admission after "
+                    "provisional grant: "
+                    f"group={group_id} lane={lane_kind.value} "
+                    f"class={decision.competition_class.value} "
+                    f"reason={decision.reason}"
+                )
+            # BLOCK mode loops through the pressure gate again. Existing
+            # workload leases are never revoked; only this not-yet-returned
+            # provisional grant is surrendered.
 
     def snapshot(self) -> AdmissionTopologySnapshot:
         return self._delegate.snapshot()
