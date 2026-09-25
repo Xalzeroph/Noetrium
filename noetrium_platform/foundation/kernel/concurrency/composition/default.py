@@ -3,6 +3,7 @@ from __future__ import annotations
 from typing import Callable
 
 from noetrium_platform.foundation.kernel.concurrency.api import ConcurrencyBudget, ExecutionPermitPort
+from noetrium_platform.foundation.kernel.concurrency.api.ports import CpuWorkerPoolProviderPort
 from noetrium_platform.foundation.kernel.concurrency.providers import (
     AsyncIoExecutor,
     BoundedProcessExecutor,
@@ -32,7 +33,7 @@ def _build_async_io_provider(budget: ConcurrencyBudget) -> AsyncIoExecutor:
     )
 
 
-def _build_cpu_provider(
+def build_cpu_worker_pool_provider(
     budget: ConcurrencyBudget,
     *,
     initializer: Callable[[], None] | None = None,
@@ -51,6 +52,7 @@ def build_concurrency_runtime(
     timer_name: str = "platform-timer",
     permits: ExecutionPermitPort | None = None,
     cpu_worker_initializer: Callable[[], None] | None = None,
+    cpu_provider: CpuWorkerPoolProviderPort | None = None,
 ) -> StructuredConcurrencyRuntime:
     """Build the process-level structured-concurrency authority.
 
@@ -68,10 +70,15 @@ def build_concurrency_runtime(
             thread_name_prefix=blocking_io_thread_name_prefix,
         ),
         _async_io=_build_async_io_provider(resolved),
-        _cpu=_build_cpu_provider(
-            resolved,
-            initializer=cpu_worker_initializer,
+        _cpu=(
+            build_cpu_worker_pool_provider(
+                resolved,
+                initializer=cpu_worker_initializer,
+            )
+            if cpu_provider is None
+            else cpu_provider
         ),
+        _owns_cpu_provider=cpu_provider is None,
         _timers=HeapTimerScheduler(
             name=timer_name,
             shutdown_timeout_seconds=resolved.shutdown_timeout_seconds,
@@ -82,3 +89,5 @@ def build_concurrency_runtime(
             shutdown_timeout_seconds=resolved.shutdown_timeout_seconds,
         ),
     )
+
+__all__ = ["build_concurrency_runtime", "build_cpu_worker_pool_provider"]
