@@ -122,6 +122,8 @@ class SQLiteComputeInventory:
             "labels": list(host.labels),
             "enabled": host.enabled,
             "scheduling_state": host.scheduling_state.value,
+            "reserved_cpu_cores": host.reserved_cpu_cores,
+            "reserved_memory_bytes": host.reserved_memory_bytes,
         }, sort_keys=True, separators=(",", ":"))
 
     @classmethod
@@ -140,6 +142,8 @@ class SQLiteComputeInventory:
             int(value["cpu_cores"]), int(value["memory_bytes"]), gpus,
             tuple(tuple(item) for item in value["labels"]), bool(value["enabled"]),
             ComputeHostSchedulingState(value.get("scheduling_state", ComputeHostSchedulingState.ACTIVE.value)),
+            int(value.get("reserved_cpu_cores", 0)),
+            int(value.get("reserved_memory_bytes", 0)),
         )
 
     @classmethod
