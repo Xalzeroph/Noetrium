@@ -646,15 +646,18 @@ class InMemoryComputeScheduler:
             self._release_usage_locked(row)
 
     def recover_release(self, allocation: ComputeAllocation) -> None:
-        """Retire one exact generation under exclusive upper-layer recovery."""
+        """Retire one exact generation only after physical GPU convergence."""
 
         if type(allocation) is not ComputeAllocation:
             raise TypeError("compute recovery release requires ComputeAllocation")
+        runtime_snapshot = _observe_gpu_runtime(self._gpu_runtime_observer)
         with self._lock:
             row = self._allocations.get(allocation.allocation_id)
             if row is None:
                 return
             _require_compute_generation(row, allocation)
+            if not _gpu_allocation_physically_converged(row, runtime_snapshot):
+                raise ComputePhysicalConvergencePending((row,))
             lease = self._leases.get(
                 f"compute:{allocation.allocation_id}",
             )
@@ -1183,10 +1186,13 @@ class SQLiteComputeScheduler:
                 raise
 
     def recover_release(self, allocation: ComputeAllocation) -> None:
-        """Retire one exact generation under exclusive upper-layer recovery."""
+        """Retire one exact generation only after physical GPU convergence."""
 
         if type(allocation) is not ComputeAllocation:
             raise TypeError("compute recovery release requires ComputeAllocation")
+        runtime_snapshot = _observe_gpu_runtime(self._gpu_runtime_observer)
+        if not _gpu_allocation_physically_converged(allocation, runtime_snapshot):
+            raise ComputePhysicalConvergencePending((allocation,))
         with self._connection() as conn:
             begin_immediate_sqlite_transaction(
                 conn,
