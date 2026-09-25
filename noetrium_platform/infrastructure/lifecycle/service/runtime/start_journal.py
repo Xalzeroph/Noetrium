@@ -60,9 +60,18 @@ class ServiceStartJournal:
         current = self.store.get(intent.intent_id)
         if current.process is not None and current.process != process:
             raise ServiceStartIntentConflict("service-start intent process identity changed")
-        if current.phase in {ServiceStartIntentPhase.STATE_COMMITTED, ServiceStartIntentPhase.COMPLETE}:
+        if current.phase is ServiceStartIntentPhase.ABORTED:
+            raise ServiceStartIntentConflict(
+                "aborted service-start intent cannot acquire a process"
+            )
+        if current.phase in {
+            ServiceStartIntentPhase.STATE_COMMITTED,
+            ServiceStartIntentPhase.COMPLETE,
+        }:
             if current.process != process:
-                raise ServiceStartIntentConflict("committed service-start intent disagrees on process")
+                raise ServiceStartIntentConflict(
+                    "committed service-start intent disagrees on process"
+                )
             return current
         updated = replace(
             current,
@@ -77,6 +86,10 @@ class ServiceStartJournal:
         current = self.store.get(intent.intent_id)
         if current.process is None:
             raise ServiceStartIntentConflict("cannot commit start state without process identity")
+        if current.phase is ServiceStartIntentPhase.ABORTED:
+            raise ServiceStartIntentConflict(
+                "aborted service-start intent cannot commit state"
+            )
         if current.phase is ServiceStartIntentPhase.COMPLETE:
             return current
         updated = replace(current, phase=ServiceStartIntentPhase.STATE_COMMITTED, updated_at=time.time())
@@ -85,9 +98,39 @@ class ServiceStartJournal:
 
     def complete(self, intent: ServiceStartIntent) -> ServiceStartIntent:
         current = self.store.get(intent.intent_id)
+        if current.phase is ServiceStartIntentPhase.ABORTED:
+            raise ServiceStartIntentConflict(
+                "aborted service-start intent cannot complete"
+            )
         if current.process is None:
-            raise ServiceStartIntentConflict("cannot complete service-start intent without process identity")
-        updated = replace(current, phase=ServiceStartIntentPhase.COMPLETE, updated_at=time.time())
+            raise ServiceStartIntentConflict(
+                "cannot complete service-start intent without process identity"
+            )
+        if current.phase is ServiceStartIntentPhase.COMPLETE:
+            return current
+        updated = replace(
+            current,
+            phase=ServiceStartIntentPhase.COMPLETE,
+            updated_at=time.time(),
+        )
+        self.store.put(updated)
+        return updated
+
+    def abort(self, intent: ServiceStartIntent) -> ServiceStartIntent:
+        """Terminalize a start effect only after external quiescence is proven."""
+
+        current = self.store.get(intent.intent_id)
+        if current.phase is ServiceStartIntentPhase.COMPLETE:
+            raise ServiceStartIntentConflict(
+                "completed service-start intent cannot be aborted"
+            )
+        if current.phase is ServiceStartIntentPhase.ABORTED:
+            return current
+        updated = replace(
+            current,
+            phase=ServiceStartIntentPhase.ABORTED,
+            updated_at=time.time(),
+        )
         self.store.put(updated)
         return updated
 
