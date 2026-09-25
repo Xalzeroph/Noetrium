@@ -544,7 +544,26 @@ def _placement_score(
     )
     if len(eligible) < requirement.gpu_count:
         return None
-    selected_rows = eligible[: requirement.gpu_count]
+    if requirement.gpu_colocation_label is not None and requirement.gpu_count > 1:
+        domains: dict[str, list[tuple[tuple[object, ...], object]]] = {}
+        for row in eligible:
+            _rank, gpu = row
+            domain = dict(gpu.labels).get(requirement.gpu_colocation_label)
+            if domain is not None:
+                domains.setdefault(domain, []).append(row)
+        feasible_domains = tuple(
+            tuple(rows)
+            for _domain, rows in sorted(domains.items())
+            if len(rows) >= requirement.gpu_count
+        )
+        if not feasible_domains:
+            return None
+        selected_rows = min(
+            feasible_domains,
+            key=lambda rows: tuple(rank for rank, _gpu in rows[: requirement.gpu_count]),
+        )[: requirement.gpu_count]
+    else:
+        selected_rows = eligible[: requirement.gpu_count]
     selected = tuple(gpu for _rank, gpu in selected_rows)
     if requirement.gpu_count == 0:
         accelerator_penalty = 0 if not host.gpus else 1
@@ -561,7 +580,8 @@ def _placement_score(
         gpu_excess = sum(
             gpu.memory_bytes - requirement.minimum_gpu_memory_bytes for gpu in selected
         )
-        remaining = eligible[requirement.gpu_count :]
+        selected_ids = {gpu.gpu_id for _rank, gpu in selected_rows}
+        remaining = tuple(row for row in eligible if row[1].gpu_id not in selected_ids)
         score = (
             shared_count, utilization, runtime_rank, _host_preference_penalty(host, requirement), _placement_density_rank(host, usage, requirement), free_excess, gpu_excess, len(remaining),
             sum(gpu.schedulable_memory_bytes for _rank, gpu in remaining),
