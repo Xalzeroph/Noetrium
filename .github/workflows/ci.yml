@@ -61,7 +61,10 @@ jobs:
             tests/test_machine_executor_v1.py \
             tests/test_durable_resource_directory_v1.py \
             tests/test_recovery_physical_crash_matrix_v1.py \
-            tests/test_environment_container_profiles_v1.py
+            tests/test_environment_container_profiles_v1.py \
+            tests/test_compute_physical_convergence_v1.py \
+            tests/test_compute_runtime_sharing_v1.py \
+            tests/test_resource_endpoint_atomicity_v2.py
 
       - name: Verify scale-critical execution invariants
         run: |
