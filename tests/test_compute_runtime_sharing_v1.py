@@ -118,6 +118,27 @@ def test_shared_gpu_mode_fails_closed_without_live_runtime_facts() -> None:
             raise AssertionError("shared GPU allocation admitted without live usage facts")
 
 
+def test_idle_only_gpu_mode_fails_closed_without_runtime_observation() -> None:
+    strict = ComputeRequirement(
+        cpu_cores=2,
+        memory_bytes=4 * 1024**3,
+        gpu_count=1,
+        minimum_gpu_memory_bytes=40 * 1024**3,
+        gpu_sharing_mode=GpuSharingMode.IDLE_ONLY,
+    )
+    for observer in (None, _UnavailableObserver(), _FailingObserver()):
+        kwargs = {} if observer is None else {"gpu_runtime_observer": observer}
+        scheduler = in_memory_compute_scheduler(_inventory(), **kwargs)
+        try:
+            scheduler.allocate("strict-no-runtime", _scope(), strict)
+        except RuntimeError as exc:
+            assert "no compute host" in str(exc)
+        else:
+            raise AssertionError(
+                "idle-only GPU allocation admitted without runtime observation"
+            )
+
+
 class _IncompleteProcessObserver:
     def snapshot(self) -> GpuRuntimeSnapshot:
         value = _snapshot(idle_free=70 * 1024, busy_free=48 * 1024, busy_util=10)
