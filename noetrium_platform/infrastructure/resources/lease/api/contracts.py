@@ -86,6 +86,8 @@ class ResourceLease:
             raise ValueError("lease identity and purpose must be non-empty")
         if type(self.resource) is not ResourceIdentity:
             raise TypeError("lease resource must be ResourceIdentity")
+        if type(self.holder_scope) is not ScopeIdentity:
+            raise TypeError("lease holder_scope must be ScopeIdentity")
         if self.holder_generation < 1:
             raise ValueError("lease holder generation must be >= 1")
         if self.fencing_token < 1:
