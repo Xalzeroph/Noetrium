@@ -21,7 +21,7 @@
 
 <!-- readme-locale:en -->
 
-<!-- readme-source-sha256:b32071ffa979474bf29ab578430c11b093fe2733231cebcbda56bf194274b2af -->
+<!-- readme-source-sha256:016f6bdbdf3620a35d4855b8d7f92f4ddfbbaf0bf7312d7d63896b83123f0fcf -->
 
 <p align="center">
   <strong>Research infrastructure for attributable, recoverable, evidence-preserving AI-agent experiments.</strong><br>
@@ -580,9 +580,27 @@ Local project control state lives under:
 <project>/.noetrium/research-os/
 ~~~
 
-Current limitation: the generic project CLI has not yet bound <code>--config</code> to the canonical external-provider resolver. Passing <code>--config</code> currently fails closed. Therefore project create/sync/doctor/test and provider-neutral Research OS control are canonical today, while real model/environment/provider-backed server execution must use a composition path whose owner authorities are actually materialized.
+Real provider-backed project execution uses the same canonical portfolio execution authorities as multi-program/fleet execution. The project remains provider-free; machine-local composition is selected with <code>--config</code>.
 
-Do not work around this limitation by importing <code>noetrium_platform</code> in downstream <code>core.py</code> or by creating a second provider/service locator in the paper.
+A project execution config is strict JSON:
+
+~~~json
+{
+  "schema": "noetrium.project-execution-config.v1",
+  "authority_factory": "deployment.authorities:build",
+  "start_background_controllers": true
+}
+~~~
+
+Run it with:
+
+~~~bash
+noetrium run --project . --config ./execution.json
+~~~
+
+The factory receives a Platform-owned execution context containing the one <code>ManagedResearchRuntime</code>, shared execution pool, Model/Environment/Resource authorities and the frozen project portfolio. It must return <code>ResearchExecutionAuthorities</code>. Experiment execution may bind a generic Study closure plus exact Experiment runtime components; direct MethodPrograms may bind a <code>MethodRuntimePortInventory</code>. Both routes reuse the same physical authorities.
+
+The authority factory is deployment/composition code, not scientific method semantics. Keep it outside the generated scientific <code>core.py</code>; do not work around the boundary by importing <code>noetrium_platform</code> from downstream scientific source or by constructing shadow Docker, endpoint, compute, model or journal authorities.
 
 <!-- readme-section:containers -->
 
@@ -603,7 +621,7 @@ The canonical launcher never invokes sudo.
 
 GPU hosts must already have a working NVIDIA driver and Docker GPU runtime. Noetrium does not mutate the host driver.
 
-<code>deploy/install_workspace_docker_engine.sh</code> can install Docker binaries into the workspace, but starting that bundled daemon currently requires rootful Linux privileges. It is not a substitute for an already usable ordinary-user Docker daemon or separately configured rootless Docker service.
+<code>deploy/install_workspace_docker_engine.sh</code> can install Docker binaries into the workspace, but starting that bundled rootful daemon requires host privileges. For an ordinary-user deployment, prefer the rootless manager described below. Rootless Docker still requires <code>dockerd-rootless.sh</code>, RootlessKit, slirp4netns, setuid <code>newuidmap/newgidmap</code>, subordinate UID/GID ranges and enabled unprivileged user namespaces. Noetrium checks these prerequisites and fails closed; it never emulates the privileged UID/GID mapping helpers in user space.
 
 On a shared server, inspect current GPU and host load before launch. Existing foreign workloads are external ownership facts and must not be killed or preempted merely to make room for Noetrium.
 
@@ -633,6 +651,24 @@ docker info --format '{{.DockerRootDir}}'
 ~~~
 
 If that path is on a nearly-full system partition, fix the daemon/rootless-Docker data root first. Otherwise image pulls and builds can still consume the system disk even though Noetrium state is on a data volume.
+
+Noetrium can own a user-level rootless Docker daemon entirely on the selected data volume:
+
+~~~bash
+export NOETRIUM_DEPLOYMENT_STATE_ROOT=/data/noetrium-runtime
+export NOETRIUM_DOCKER_DATA_ROOT=/data/noetrium-runtime/docker
+export NOETRIUM_DOCKER_RUNTIME_ROOT=/data/noetrium-runtime/docker-runtime
+
+./deploy/noetrium docker doctor
+./deploy/noetrium docker start
+eval "$(./deploy/noetrium docker env)"
+./deploy/noetrium docker status
+./deploy/noetrium doctor
+~~~
+
+When <code>NOETRIUM_DOCKER_DATA_ROOT</code> is set, normal deployment doctor/build/run paths verify that the active daemon's actual <code>DockerRootDir</code> equals that canonical path. A variable pointing at a data disk is not accepted as proof that Docker really moved. Stop only the exact user-owned daemon with <code>./deploy/noetrium docker stop</code>.
+
+If <code>docker doctor</code> reports a missing privileged host prerequisite such as <code>newuidmap</code>, an administrator must install or enable that prerequisite once. Do not fall back to a nearly-full system DockerRootDir merely to continue a run.
 
 The current evidence-bound image builder also requires real Git source metadata. It derives the source identity with Git and refuses a dirty checkout before building the qualified wheel/image. A source-only archive with no .git metadata is not currently sufficient for the formal image-build path. When transporting source without GitHub, preserve the repository metadata by copying the complete checkout or by using a verified Git bundle/local transport. Do not invent a source SHA or bypass the clean-source check.
 

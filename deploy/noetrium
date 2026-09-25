@@ -3,6 +3,7 @@ set -eu
 
 ROOT="$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)"
 ENV_BOOTSTRAP="$ROOT/deploy/build-environments.sh"
+ROOTLESS_DOCKER="$ROOT/deploy/rootless-docker.sh"
 STATE_ROOT="${NOETRIUM_DEPLOYMENT_STATE_ROOT:-$ROOT/.noetrium/deployment}"
 ENV_WORK_ROOT="$STATE_ROOT/environment-images"
 FLEET_STATE_ROOT="$STATE_ROOT/reproduction-fleet"
@@ -10,7 +11,7 @@ BOOTSTRAP_READY=0
 
 usage() {
   cat <<'EOF'
-Usage: ./deploy/noetrium <doctor|build|plan|requirements|preflight|run|env> [args]
+Usage: ./deploy/noetrium <doctor|build|plan|requirements|preflight|run|env|docker> [args]
 
   doctor     verify ordinary-user Docker/Compose access and environment registry
   build      build or reuse all active environment profiles
@@ -19,12 +20,15 @@ Usage: ./deploy/noetrium <doctor|build|plan|requirements|preflight|run|env> [arg
   preflight  materialize exact authority closure and admit the fleet without starting work
   run        build/reuse environments and execute the fleet through one shared runtime
   env        pass remaining arguments to the low-level environment bootstrap
+  docker     manage the optional ordinary-user rootless Docker daemon
 
 Configuration:
   NOETRIUM_FLEET_AUTHORITY_MATERIALIZER=module:factory
   NOETRIUM_DEPLOYMENT_STATE_ROOT=/writable/path
   NOETRIUM_CONTROL_ENV_FILE=/path/to/env-file
   NOETRIUM_SKIP_ENVIRONMENT_BUILD=1
+  NOETRIUM_DOCKER_DATA_ROOT=/data/noetrium/docker
+  NOETRIUM_DOCKER_RUNTIME_ROOT=/data/noetrium/docker-runtime
 EOF
 }
 
@@ -38,6 +42,18 @@ host_doctor() {
   docker info >/dev/null 2>&1 || die "ordinary user cannot reach the active Docker daemon"
   docker compose version >/dev/null 2>&1 || die "Docker Compose plugin is required"
   mkdir -p "$ENV_WORK_ROOT" "$FLEET_STATE_ROOT"
+
+  if [ -n "${NOETRIUM_DOCKER_DATA_ROOT:-}" ]; then
+    mkdir -p "$NOETRIUM_DOCKER_DATA_ROOT"
+    expected="$(CDPATH= cd -- "$NOETRIUM_DOCKER_DATA_ROOT" && pwd -P)"
+    actual="$(docker info --format '{{.DockerRootDir}}')"
+    actual_parent="$(dirname "$actual")"
+    actual_name="$(basename "$actual")"
+    if [ -d "$actual_parent" ]; then
+      actual="$(CDPATH= cd -- "$actual_parent" && pwd -P)/$actual_name"
+    fi
+    [ "$actual" = "$expected" ] || die "active DockerRootDir does not match NOETRIUM_DOCKER_DATA_ROOT: expected=$expected actual=$actual"
+  fi
 }
 
 authority_materializer_from_env_file() {
@@ -143,6 +159,10 @@ case "$command" in
   env)
     host_doctor
     environment_bootstrap "$@"
+    ;;
+  docker)
+    [ "$#" -gt 0 ] || die "docker requires doctor|start|status|stop|env"
+    "$ROOTLESS_DOCKER" "$@"
     ;;
   help|-h|--help)
     usage
