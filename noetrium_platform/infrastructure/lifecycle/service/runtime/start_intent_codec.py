@@ -48,6 +48,7 @@ class ServiceStartIntentCodec:
                 "control_pid": intent.process.control_pid,
                 "anchor_pid": intent.process.anchor_pid,
                 "anchor_start_identity": intent.process.anchor_start_identity,
+                "anchor_control_pid": intent.process.anchor_control_pid,
             },
             "created_at": intent.created_at,
             "updated_at": intent.updated_at,
