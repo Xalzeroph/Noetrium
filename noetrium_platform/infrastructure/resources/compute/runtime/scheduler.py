@@ -405,11 +405,15 @@ def _required_gpu_memory_bytes(
     device: GpuDeviceStatus,
 ) -> int:
     runtime_total_bytes = device.memory_total_mb * 1024 * 1024
+    runtime_schedulable_bytes = max(
+        0,
+        runtime_total_bytes - gpu.reserved_memory_bytes,
+    )
     fractional_requirement = (
         0
         if requirement.required_gpu_memory_fraction is None
         else math.ceil(
-            min(gpu.schedulable_memory_bytes, runtime_total_bytes)
+            max(gpu.schedulable_memory_bytes, runtime_schedulable_bytes)
             * requirement.required_gpu_memory_fraction
         )
     )
@@ -439,7 +443,9 @@ def _runtime_rank(
     )
     free_bytes = max(
         0,
-        device.memory_free_mb * 1024 * 1024 - unbound_reserved_bytes,
+        device.memory_free_mb * 1024 * 1024
+        - gpu.reserved_memory_bytes
+        - unbound_reserved_bytes,
     )
     if free_bytes < required_free_bytes:
         return None
