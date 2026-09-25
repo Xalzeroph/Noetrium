@@ -791,7 +791,7 @@ def test_workspace_gc_purging_rejects_same_tree_replacement(
     )
     with pytest.raises(
         RuntimeError,
-        match="filesystem object changed during purge",
+        match="directory carrier object changed during recursive purge",
     ):
         authorities.workspaces.remove_workspace(
             "run-purging-replaced",
