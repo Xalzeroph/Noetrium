@@ -529,6 +529,78 @@ def test_workspace_gc_recovers_rename_committed_before_phase_publication(
     assert not quarantined[0].exists()
 
 
+def test_workspace_gc_rejects_quarantine_replacement_after_rename_crash(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    import noetrium_platform.infrastructure.resources.directory.runtime.workspaces as workspace_runtime
+
+    authorities = build_local_directory_authorities(_layout(tmp_path))
+    scope = ScopeIdentity(ScopeKind.BRANCH, "branch-quarantine-replaced")
+    allocation = authorities.workspaces.allocate_workspace(
+        "run-quarantine-replaced",
+        scope=scope,
+        category="study",
+    )
+    (allocation.path / "payload").write_text("owned", encoding="utf-8")
+    gc = _closed_workspace_gc(
+        authorities,
+        "run-quarantine-replaced",
+        scope=scope,
+        category="study",
+    )
+
+    real_atomic_replace = workspace_runtime.atomic_replace_bytes
+    retirement_writes = 0
+
+    def fail_after_rename(path, data):
+        nonlocal retirement_writes
+        retirement_writes += 1
+        if retirement_writes == 2:
+            raise OSError("simulated crash after rename before phase publication")
+        return real_atomic_replace(path, data)
+
+    monkeypatch.setattr(
+        workspace_runtime,
+        "atomic_replace_bytes",
+        fail_after_rename,
+    )
+    with pytest.raises(OSError, match="after rename"):
+        authorities.workspaces.remove_workspace(
+            "run-quarantine-replaced",
+            scope=scope,
+            category="study",
+            gc=gc,
+        )
+
+    quarantine_root = tmp_path / "workspaces" / ".retired-workspaces"
+    (quarantine,) = tuple(quarantine_root.iterdir())
+    old_generation = quarantine.with_name(f"{quarantine.name}-original")
+    quarantine.rename(old_generation)
+    quarantine.mkdir()
+    (quarantine / ".workspace.json").write_bytes(
+        (old_generation / ".workspace.json").read_bytes()
+    )
+    foreign = quarantine / "replacement-data"
+    foreign.write_text("must-survive", encoding="utf-8")
+
+    monkeypatch.setattr(
+        workspace_runtime,
+        "atomic_replace_bytes",
+        real_atomic_replace,
+    )
+    with pytest.raises(RuntimeError, match="filesystem generation changed"):
+        authorities.workspaces.remove_workspace(
+            "run-quarantine-replaced",
+            scope=scope,
+            category="study",
+            gc=gc,
+        )
+
+    assert foreign.read_text(encoding="utf-8") == "must-survive"
+    assert old_generation.exists()
+
+
 def test_workspace_gc_recovers_purge_committed_before_terminal_publication(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
