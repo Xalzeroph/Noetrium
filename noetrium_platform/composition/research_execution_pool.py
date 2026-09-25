@@ -46,7 +46,7 @@ from noetrium_platform.research.execution.policy.api import ExecutionPriority
 
 from .concurrency import build_execution_concurrency_runtime
 from .shared_host_pressure import (
-    SharedHostPressurePolicy,
+    ResourceCompetitionPolicy,
     SharedNetworkPressureObserverPort,
     SharedStoragePressureObserverPort,
 )
@@ -81,7 +81,7 @@ class ResearchExecutionPool:
         host_runtime_observer: HostRuntimeObserverPort | None = None,
         storage_pressure_observer: SharedStoragePressureObserverPort | None = None,
         network_pressure_observer: SharedNetworkPressureObserverPort | None = None,
-        shared_host_pressure_policy: SharedHostPressurePolicy | None = None,
+        resource_competition_policy: ResourceCompetitionPolicy | None = None,
         exclusive_owner_generation: bool = False,
     ) -> None:
         self._control = build_execution_concurrency_runtime(
@@ -99,7 +99,7 @@ class ResearchExecutionPool:
                 host_runtime_observer=host_runtime_observer,
                 storage_pressure_observer=storage_pressure_observer,
                 network_pressure_observer=network_pressure_observer,
-                shared_host_pressure_policy=shared_host_pressure_policy,
+                resource_competition_policy=resource_competition_policy,
                 blocking_io_thread_name_prefix="research-orchestration-io",
                 timer_name="research-orchestration-timer",
             )
@@ -114,7 +114,7 @@ class ResearchExecutionPool:
                 host_runtime_observer=host_runtime_observer,
                 storage_pressure_observer=storage_pressure_observer,
                 network_pressure_observer=network_pressure_observer,
-                shared_host_pressure_policy=shared_host_pressure_policy,
+                resource_competition_policy=resource_competition_policy,
                 blocking_io_thread_name_prefix="research-experiment-io",
                 timer_name="research-experiment-timer",
             )
@@ -124,7 +124,7 @@ class ResearchExecutionPool:
                     admission_budget=model_io_admission_budget,
                     priority_aging_seconds=priority_aging_seconds,
                     host_runtime_observer=host_runtime_observer,
-                    shared_host_pressure_policy=shared_host_pressure_policy,
+                    resource_competition_policy=resource_competition_policy,
                     blocking_io_thread_name_prefix="research-model-io",
                     timer_name="research-model-timer",
                 )
