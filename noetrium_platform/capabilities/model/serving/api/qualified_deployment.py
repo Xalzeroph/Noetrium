@@ -117,12 +117,19 @@ class QualifiedDeploymentManifest:
             )
         if self.stack.identity.engine.lower() == "vllm":
             intent = parse_vllm_engine_resource_args(self.stack.engine_args)
+            qualified = self.certificate.resource_envelope.max_qualified_concurrency
+            active_limit = (
+                intent.max_num_seqs
+                if intent.max_num_active_seqs is None
+                else intent.max_num_active_seqs
+            )
             queue_limit = intent.max_num_queued_requests
-            if (
-                queue_limit is not None
-                and self.certificate.resource_envelope.max_qualified_concurrency
-                > queue_limit
-            ):
+            if active_limit is not None and qualified > active_limit:
+                raise ValueError(
+                    "qualified concurrency exceeds frozen vLLM active "
+                    "sequence admission limit"
+                )
+            if queue_limit is not None and qualified > queue_limit:
                 raise ValueError(
                     "qualified concurrency exceeds frozen vLLM "
                     "max-num-queued-reqs"
