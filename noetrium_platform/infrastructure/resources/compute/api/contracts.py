@@ -66,6 +66,8 @@ class ComputeHost:
     labels: tuple[tuple[str, str], ...] = ()
     enabled: bool = True
     scheduling_state: ComputeHostSchedulingState = ComputeHostSchedulingState.ACTIVE
+    reserved_cpu_cores: int = 0
+    reserved_memory_bytes: int = 0
 
     def __post_init__(self) -> None:
         if not self.host_id.strip() or self.cpu_cores < 1 or self.memory_bytes < 1:
@@ -76,11 +78,23 @@ class ComputeHost:
             raise TypeError("host enabled must be bool")
         if type(self.scheduling_state) is not ComputeHostSchedulingState:
             raise TypeError("host scheduling_state must be ComputeHostSchedulingState")
+        if type(self.reserved_cpu_cores) is not int or not 0 <= self.reserved_cpu_cores < self.cpu_cores:
+            raise ValueError("host reserved_cpu_cores must be an integer below total CPU capacity")
+        if type(self.reserved_memory_bytes) is not int or not 0 <= self.reserved_memory_bytes < self.memory_bytes:
+            raise ValueError("host reserved_memory_bytes must be an integer below total memory capacity")
         object.__setattr__(self, "labels", _canonical_labels(self.labels, "host labels"))
 
     @property
     def accepts_new_allocations(self) -> bool:
         return self.enabled and self.scheduling_state is ComputeHostSchedulingState.ACTIVE
+
+    @property
+    def schedulable_cpu_cores(self) -> int:
+        return self.cpu_cores - self.reserved_cpu_cores
+
+    @property
+    def schedulable_memory_bytes(self) -> int:
+        return self.memory_bytes - self.reserved_memory_bytes
 
 
 @dataclass(frozen=True, slots=True)
