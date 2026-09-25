@@ -8,7 +8,7 @@ from noetrium_platform.infrastructure.resources.directory.api import DirectoryLa
 def standard_local_directory_layout(root: Path) -> DirectoryLayout:
     """Canonical local platform directory tree under one root."""
 
-    if type(root) is not Path:
+    if not isinstance(root, Path):
         raise TypeError("local directory root must be pathlib.Path")
     base = root.expanduser().absolute()
     if base.exists() and (base.is_symlink() or not base.is_dir()):
