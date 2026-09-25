@@ -286,12 +286,167 @@ class MeasurementRecord:
 
 
 
+class MeasurementSetDisposition(StrEnum):
+    """Scientific disposition of one complete MeasurementProtocol output set."""
+
+    COMPLETE = "complete"
+    UNSCORED = "unscored"
+
+
+@dataclass(frozen=True, slots=True)
+class MeasurementSetOutcome:
+    """Protocol-bound outcome for a set of value-bearing MeasurementRecord rows.
+
+    MeasurementRecord remains the authority for an actual measured value.
+    Absence/abstention is represented here instead of inventing a nullable value
+    or overloading one MeasurementValueKind.
+    """
+
+    measurement_protocol_semantic_digest: str
+    disposition: MeasurementSetDisposition
+    record_digests: tuple[str, ...]
+    reason_code: str | None = None
+    explanation: str | None = None
+    outcome_digest: str = field(init=False)
+
+    def __post_init__(self) -> None:
+        _sha(
+            self.measurement_protocol_semantic_digest,
+            "measurement set outcome protocol semantic digest",
+        )
+        if not isinstance(self.disposition, MeasurementSetDisposition):
+            raise TypeError(
+                "measurement set outcome disposition must be MeasurementSetDisposition"
+            )
+        if type(self.record_digests) is not tuple:
+            raise TypeError("measurement set outcome record_digests must be a tuple")
+        for digest in self.record_digests:
+            _sha(digest, "measurement set outcome record digest")
+        if len(self.record_digests) != len(set(self.record_digests)):
+            raise ValueError("measurement set outcome record digests must be unique")
+
+        if self.disposition is MeasurementSetDisposition.COMPLETE:
+            if not self.record_digests:
+                raise ValueError(
+                    "complete measurement set outcome requires measurement records"
+                )
+            if self.reason_code is not None or self.explanation is not None:
+                raise ValueError(
+                    "complete measurement set outcome cannot carry unscored reason"
+                )
+        else:
+            if self.record_digests:
+                raise ValueError(
+                    "unscored measurement set outcome cannot carry measurement records"
+                )
+            _text(self.reason_code, "unscored measurement set outcome reason_code")
+            if self.explanation is not None:
+                _text(
+                    self.explanation,
+                    "unscored measurement set outcome explanation",
+                )
+
+        object.__setattr__(
+            self,
+            "outcome_digest",
+            canonical_digest(
+                {
+                    "measurement_protocol_semantic_digest": (
+                        self.measurement_protocol_semantic_digest
+                    ),
+                    "disposition": self.disposition.value,
+                    "record_digests": self.record_digests,
+                    "reason_code": self.reason_code,
+                    "explanation": self.explanation,
+                }
+            ),
+        )
+
+    @classmethod
+    def complete(
+        cls,
+        protocol: MeasurementProtocol,
+        records: tuple[MeasurementRecord, ...],
+    ) -> "MeasurementSetOutcome":
+        if type(protocol) is not MeasurementProtocol:
+            raise TypeError("measurement set outcome requires MeasurementProtocol")
+        if type(records) is not tuple or not records or any(
+            type(row) is not MeasurementRecord for row in records
+        ):
+            raise TypeError(
+                "complete measurement set outcome requires non-empty MeasurementRecord tuple"
+            )
+        ids = tuple(row.measurement_id for row in records)
+        if len(ids) != len(set(ids)):
+            raise ValueError("complete measurement set contains duplicate measurement ids")
+        expected = {row.measurement_id for row in protocol.definitions}
+        if set(ids) != expected:
+            raise ValueError(
+                "complete measurement set must exactly cover the measurement protocol"
+            )
+        for record in records:
+            record.validate_against(protocol)
+        return cls(
+            protocol.semantic_digest,
+            MeasurementSetDisposition.COMPLETE,
+            tuple(row.record_digest for row in records),
+        )
+
+    @classmethod
+    def unscored(
+        cls,
+        protocol: MeasurementProtocol,
+        *,
+        reason_code: str,
+        explanation: str | None = None,
+    ) -> "MeasurementSetOutcome":
+        if type(protocol) is not MeasurementProtocol:
+            raise TypeError("measurement set outcome requires MeasurementProtocol")
+        return cls(
+            protocol.semantic_digest,
+            MeasurementSetDisposition.UNSCORED,
+            (),
+            reason_code,
+            explanation,
+        )
+
+    def validate(
+        self,
+        protocol: MeasurementProtocol,
+        records: tuple[MeasurementRecord, ...],
+    ) -> None:
+        if type(protocol) is not MeasurementProtocol:
+            raise TypeError("measurement set validation requires MeasurementProtocol")
+        if protocol.semantic_digest != self.measurement_protocol_semantic_digest:
+            raise ValueError("measurement set outcome protocol semantics drifted")
+        if type(records) is not tuple or any(
+            type(row) is not MeasurementRecord for row in records
+        ):
+            raise TypeError("measurement set validation requires MeasurementRecord tuple")
+        actual_digests = tuple(row.record_digest for row in records)
+        if actual_digests != self.record_digests:
+            raise ValueError("measurement set outcome record cut drifted")
+        if self.disposition is MeasurementSetDisposition.UNSCORED:
+            if records:
+                raise ValueError("unscored measurement set cannot contain records")
+            return
+        expected = {row.measurement_id for row in protocol.definitions}
+        actual = tuple(row.measurement_id for row in records)
+        if len(actual) != len(set(actual)) or set(actual) != expected:
+            raise ValueError(
+                "complete measurement set must exactly cover the measurement protocol"
+            )
+        for record in records:
+            record.validate_against(protocol)
+
 
 __all__ = [
     "MeasurementContentReference",
     "MeasurementDefinition",
     "MeasurementProtocol",
     "MeasurementRecord",
+    "MeasurementSetDisposition",
+    "MeasurementSetOutcome",
     "MeasurementValue",
     "MeasurementValueKind",
 ]
