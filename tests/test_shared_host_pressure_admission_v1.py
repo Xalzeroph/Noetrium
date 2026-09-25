@@ -6,8 +6,8 @@ import time
 import pytest
 
 from noetrium_platform.composition.shared_host_pressure import (
-    SharedHostPressureAdmissionGate,
-    SharedHostPressurePolicy,
+    ResourceCompetitionAdmissionGate,
+    ResourceCompetitionPolicy,
 )
 from noetrium_platform.foundation.kernel.concurrency.api import (
     Deadline,
@@ -70,15 +70,15 @@ def _gate(
     *,
     mode: AdmissionMode = AdmissionMode.BLOCK,
     priority: ExecutionPriority = ExecutionPriority.NORMAL,
-) -> SharedHostPressureAdmissionGate:
+) -> ResourceCompetitionAdmissionGate:
     admission = build_execution_admission(
         budget=AdmissionBudget(max_total_in_flight=8),
         scheduling=build_admission_scheduling_policy(priority_aging_seconds=0.01),
     )
-    gate = SharedHostPressureAdmissionGate(
+    gate = ResourceCompetitionAdmissionGate(
         admission,
         observer,
-        policy=SharedHostPressurePolicy(
+        policy=ResourceCompetitionPolicy(
             min_available_memory_bytes=1024**3,
             min_available_pids=16,
             max_cpu_pressure_some_avg10_percent=90.0,
@@ -113,7 +113,7 @@ def test_default_policy_keeps_competing_at_soft_pressure_saturation() -> None:
         budget=AdmissionBudget(max_total_in_flight=8),
         scheduling=build_admission_scheduling_policy(priority_aging_seconds=0.01),
     )
-    gate = SharedHostPressureAdmissionGate(
+    gate = ResourceCompetitionAdmissionGate(
         admission,
         _MutableHostObserver(
             _status(
@@ -123,7 +123,7 @@ def test_default_policy_keeps_competing_at_soft_pressure_saturation() -> None:
                 io_pressure=100.0,
             )
         ),
-        policy=SharedHostPressurePolicy(),
+        policy=ResourceCompetitionPolicy(),
     )
     gate.register_group(
         "aggressive",
@@ -334,7 +334,7 @@ def test_blocked_pressure_respects_deadline() -> None:
     observer = _MutableHostObserver(_status(memory_pressure=50.0))
     gate = _gate(observer)
 
-    with pytest.raises(TimeoutError, match="pressure admission deadline expired"):
+    with pytest.raises(TimeoutError, match="resource competition admission deadline expired"):
         gate.acquire(
             "g",
             ExecutionLaneKind.CPU,
