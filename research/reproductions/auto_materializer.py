@@ -10,6 +10,15 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
+from noetrium_platform.capabilities.participant.api import (
+    ParticipantImplementationIdentity,
+    ParticipantProviderProfile,
+    ParticipantRequirement,
+    ParticipantRuntimeBinding,
+    ParticipantSessionRuntimeIdentity,
+    ProjectParticipantBinding,
+)
+from noetrium_platform.composition.method_runtime import standard_method_runtime_binder
 from noetrium import api
 from noetrium_platform.composition.research_binding_authority import (
     ResearchCapabilityBindingRegistration,
@@ -27,6 +36,7 @@ from noetrium_platform.composition.research_os_experiment_runtime_binding import
 from noetrium_platform.composition.research_os_experiment_trial_execution import (
     ResearchOSExperimentTrialProviderRegistry,
 )
+from noetrium_platform.research.execution.workflow.runtime import METHOD_MACHINE_IDENTITY
 from noetrium_platform.foundation.governance.architecture.api import (
     BindingDiagnostic,
     BindingDiagnosticCode,
@@ -105,35 +115,97 @@ def _capability_requirement(
     )
 
 
-def _method_program_digests(lane) -> dict[str, str]:
-    rows: dict[str, str] = {}
+def _method_programs(lane) -> dict[str, object]:
+    rows: dict[str, object] = {}
     for definition in lane.program.definitions:
         if definition.kind is not api.ResearchDefinitionKind.METHOD:
             continue
-        implementation = definition.implementation
-        program_digest = getattr(implementation, "program_digest", None)
-        if type(program_digest) is not str or len(program_digest) != 64:
-            continue
-        method_id = None
         try:
             from noetrium_platform.composition.research_os_lowering import (
                 resolve_method_program_implementation,
             )
 
             resolved = resolve_method_program_implementation(definition)
-            method_id = resolved.program.identity.method.method_id
-        except BaseException:
-            pass
-        if isinstance(method_id, str) and method_id:
-            rows[method_id] = program_digest
+        except Exception:
+            continue
+        program = resolved.program
+        method_id = program.program_identity.implementation.method_id
+        previous = rows.get(method_id)
+        if (
+            previous is not None
+            and getattr(previous, "program_digest", None) != program.program_digest
+        ):
+            raise ValueError(
+                "auto materializer resolved multiple MethodPrograms for "
+                f"method_id={method_id!r}"
+            )
+        rows[method_id] = program
     return rows
+
+
+def _method_implementation_identity(
+    program,
+    participant_kind: str,
+) -> ParticipantImplementationIdentity:
+    method = program.program_identity.implementation
+    return ParticipantImplementationIdentity(
+        participant_kind,
+        method.method_id,
+        method.implementation_version,
+        method.abi_version,
+        method.schema_version,
+        method.artifact_digest,
+    )
+
+
+def _method_requirement_implementation_digest(
+    study,
+    method_programs: dict[str, object],
+    *,
+    method_id: str,
+    treatment_id: str,
+    program_digest: str,
+) -> str:
+    program = method_programs.get(method_id)
+    matches = tuple(
+        row
+        for row in study.binding_requirements.participants
+        if row.method_id == method_id and row.treatment_id == treatment_id
+    )
+    if program is not None and len(matches) == 1:
+        return _method_implementation_identity(
+            program,
+            matches[0].participant_kind,
+        ).digest()
+    return canonical_digest(
+        {
+            "schema": "noetrium.unresolved-method-requirement.v1",
+            "program_digest": program_digest,
+            "method_id": method_id,
+            "treatment_id": treatment_id,
+        }
+    )
+
+
+def _method_runtime_identity() -> ParticipantSessionRuntimeIdentity:
+    return ParticipantSessionRuntimeIdentity(
+        "noetrium.universal-method-machine",
+        METHOD_MACHINE_IDENTITY.implementation_version,
+        "method-runtime.v1",
+        canonical_digest(
+            {
+                "component": METHOD_MACHINE_IDENTITY,
+                "runtime_binder": standard_method_runtime_binder().identity_digest,
+            }
+        ),
+    )
 
 
 def _auto_manifest(lane) -> ProjectManifest:
     study = lane.study
     keys = research_manifest_requirement_keys(study)
     program_digest = lane.program.program_digest
-    method_programs = _method_program_digests(lane)
+    method_programs = _method_programs(lane)
     capabilities = tuple(
         _capability_requirement(row, program_digest=program_digest)
         for row in keys.capability_requirement_ids
@@ -160,16 +232,12 @@ def _auto_manifest(lane) -> ProjectManifest:
         ProjectMethodRequirement(
             method_id,
             treatment_id,
-            method_programs.get(
-                method_id,
-                canonical_digest(
-                    {
-                        "schema": "noetrium.unresolved-method-requirement.v1",
-                        "program_digest": program_digest,
-                        "method_id": method_id,
-                        "treatment_id": treatment_id,
-                    }
-                ),
+            _method_requirement_implementation_digest(
+                study,
+                method_programs,
+                method_id=method_id,
+                treatment_id=treatment_id,
+                program_digest=program_digest,
             ),
         )
         for method_id, treatment_id in keys.method_requirement_keys
@@ -243,6 +311,58 @@ def _diagnostic(
             ),
         )
     )
+
+
+def _auto_method_participant_resolution(
+    lane,
+    requirement,
+    subject: CompositionSubject,
+) -> BindingResolution:
+    program = _method_programs(lane).get(requirement.method_id)
+    if program is None:
+        return _diagnostic(
+            owner="participant",
+            subject=subject,
+            requirement_digest=requirement.requirement_digest,
+            code="participant.runtime_unavailable",
+            summary="automatic MethodProgram runtime binding is unavailable",
+        )
+
+    implementation = _method_implementation_identity(
+        program,
+        requirement.participant_kind,
+    )
+    participant_requirement = ParticipantRequirement(
+        requirement.role,
+        implementation,
+        program.program_identity.configuration_digest,
+        requirement.capability_requirement_ids,
+    )
+    profile = ParticipantProviderProfile(
+        "noetrium.auto.method",
+        (requirement.participant_kind,),
+        requirement.capability_requirement_ids,
+    )
+    runtime_binding = ParticipantRuntimeBinding(
+        requirement.role,
+        implementation,
+        _method_runtime_identity(),
+        program.program_identity.configuration_digest,
+    )
+    project_binding = ProjectParticipantBinding.from_runtime(
+        participant_requirement,
+        profile,
+        runtime_binding,
+    )
+    proof = BindingProof(
+        owner=CompositionSubject.system_subject(SystemIdentity("participant")),
+        subject=subject,
+        requirement_digest=Sha256Digest(requirement.requirement_digest),
+        provider_identity=profile.provider_id,
+        provider_profile_digest=Sha256Digest(profile.digest()),
+        binding_generation="auto-method-" + program.program_digest[:16],
+    )
+    return BindingResolution.bound(project_binding, proof)
 
 
 @dataclass(frozen=True, slots=True)
@@ -345,15 +465,10 @@ class AutoRepositoryFleetAuthorityMaterializer:
                     ResearchParticipantBindingRegistration(
                         manifest.semantic_digest,
                         requirement.requirement_digest,
-                        _diagnostic(
-                            owner="participant",
-                            subject=subject,
-                            requirement_digest=requirement.requirement_digest,
-                            code="participant.runtime_unavailable",
-                            summary=(
-                                "automatic participant runtime binding is not "
-                                "closed for this lane"
-                            ),
+                        _auto_method_participant_resolution(
+                            lane,
+                            requirement,
+                            subject,
                         ),
                     )
                 )
