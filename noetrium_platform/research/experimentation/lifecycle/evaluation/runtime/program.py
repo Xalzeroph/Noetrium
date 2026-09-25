@@ -352,7 +352,7 @@ def paired_evaluation_operations() -> ProgramHandlerRegistry:
         finalize,
         implementation_digest=canonical_digest({
             "operation": "evaluation.paired.finalize",
-            "implementation_revision": 1,
+            "implementation_revision": 2,
         }),
     )
     return operations
