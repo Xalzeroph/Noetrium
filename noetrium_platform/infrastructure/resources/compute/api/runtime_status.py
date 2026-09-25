@@ -36,6 +36,10 @@ class HostRuntimeStatus:
     effective_cpu_cores: float = 0.0
     cpu_load_1m: float = 0.0
     available_memory_bytes: int = 0
+    cpu_pressure_some_avg10_percent: float | None = None
+    memory_pressure_some_avg10_percent: float | None = None
+    io_pressure_some_avg10_percent: float | None = None
+    available_pids: int | None = None
     detail: str = ""
 
     def __post_init__(self) -> None:
@@ -46,6 +50,24 @@ class HostRuntimeStatus:
                 raise ValueError(f"host runtime {name} must be finite and non-negative")
         if type(self.available_memory_bytes) is not int or self.available_memory_bytes < 0:
             raise ValueError("host runtime available_memory_bytes must be non-negative")
+        for name, value in (
+            ("cpu_pressure_some_avg10_percent", self.cpu_pressure_some_avg10_percent),
+            ("memory_pressure_some_avg10_percent", self.memory_pressure_some_avg10_percent),
+            ("io_pressure_some_avg10_percent", self.io_pressure_some_avg10_percent),
+        ):
+            if value is None:
+                continue
+            if (
+                isinstance(value, bool)
+                or not isinstance(value, (int, float))
+                or not math.isfinite(float(value))
+                or not 0.0 <= float(value) <= 100.0
+            ):
+                raise ValueError(f"host runtime {name} must be a finite percentage")
+        if self.available_pids is not None and (
+            type(self.available_pids) is not int or self.available_pids < 0
+        ):
+            raise ValueError("host runtime available_pids must be non-negative or None")
 
 
 @dataclass(frozen=True, slots=True)
