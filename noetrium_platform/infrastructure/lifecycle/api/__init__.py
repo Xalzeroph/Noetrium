@@ -80,6 +80,7 @@ __all__ = tuple(__all__) + _PARENT_FACADE_EXPORTS
 
 from .resources import (
     ComputeAllocation,
+    ComputeBindingProof,
     ComputeLeaseGuardFactoryPort,
     ComputePlacementUnavailable,
     ComputeRequirement,
@@ -106,6 +107,7 @@ from .resources import (
 
 _RUNTIME_RESOURCE_EXPORTS = (
     "ComputeAllocation",
+    "ComputeBindingProof",
     "ComputeLeaseGuardFactoryPort",
     "ComputePlacementUnavailable",
     "ComputeRequirement",
