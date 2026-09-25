@@ -242,6 +242,53 @@ _SHA256 = re.compile(r"[0-9a-f]{64}")
 
 
 @dataclass(frozen=True, slots=True)
+class ComputeAllocationRequest:
+    allocation_id: str
+    scope: ScopeIdentity
+    requirement: ComputeRequirement
+    placement_scope: ScopeIdentity | None = None
+
+    def __post_init__(self) -> None:
+        if type(self.allocation_id) is not str or not self.allocation_id.strip() or self.allocation_id != self.allocation_id.strip():
+            raise ValueError("compute allocation request id must be canonical text")
+        if type(self.scope) is not ScopeIdentity:
+            raise TypeError("compute allocation request scope must be ScopeIdentity")
+        if type(self.requirement) is not ComputeRequirement:
+            raise TypeError("compute allocation request requirement must be ComputeRequirement")
+        if self.placement_scope is not None and type(self.placement_scope) is not ScopeIdentity:
+            raise TypeError("compute allocation request placement_scope must be ScopeIdentity or None")
+
+    @property
+    def request_digest(self) -> str:
+        return canonical_digest(self)
+
+
+@dataclass(frozen=True, slots=True)
+class ComputeAllocationBatch:
+    batch_id: str
+    requests: tuple[ComputeAllocationRequest, ...]
+
+    def __post_init__(self) -> None:
+        if type(self.batch_id) is not str or not self.batch_id.strip() or self.batch_id != self.batch_id.strip():
+            raise ValueError("compute allocation batch id must be canonical text")
+        if type(self.requests) is not tuple or not self.requests:
+            raise ValueError("compute allocation batch requires requests")
+        if any(type(row) is not ComputeAllocationRequest for row in self.requests):
+            raise TypeError("compute allocation batch requests must be typed")
+        canonical = tuple(sorted(self.requests, key=lambda row: row.allocation_id))
+        if len({row.allocation_id for row in canonical}) != len(canonical):
+            raise ValueError("compute allocation batch allocation ids must be unique")
+        object.__setattr__(self, "requests", canonical)
+
+    @property
+    def batch_digest(self) -> str:
+        return canonical_digest({
+            "batch_id": self.batch_id,
+            "request_digests": tuple(row.request_digest for row in self.requests),
+        })
+
+
+@dataclass(frozen=True, slots=True)
 class ComputeBindingProof:
     """Attest that one compute reservation is physically owned by an exact runtime generation."""
 
@@ -381,4 +428,4 @@ class ComputeAllocation:
         )
 
 
-__all__ = ["ComputeAllocation", "ComputeDeviceHealth", "ComputeBindingProof", "ComputeCluster", "ComputeGPU", "ComputeHost", "ComputeHostSchedulingState", "ComputePlacementPreference", "ComputePlacementUnavailable", "ComputeRequirement", "ComputeLeasePolicy", "DEFAULT_COMPUTE_LEASE_POLICY", "GpuSharingMode"]
+__all__ = ["ComputeAllocation", "ComputeAllocationBatch", "ComputeAllocationRequest", "ComputeDeviceHealth", "ComputeBindingProof", "ComputeCluster", "ComputeGPU", "ComputeHost", "ComputeHostSchedulingState", "ComputePlacementPreference", "ComputePlacementUnavailable", "ComputeRequirement", "ComputeLeasePolicy", "DEFAULT_COMPUTE_LEASE_POLICY", "GpuSharingMode"]
