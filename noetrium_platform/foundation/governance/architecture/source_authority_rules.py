@@ -27,6 +27,27 @@ DEFAULT_SOURCE_AUTHORITY_RULES: tuple[SourceAuthorityRule, ...] = (
         protect_reference=True,
     ),
     SourceAuthorityRule(
+        "concurrency.multiprocessing_context",
+        "multiprocessing.get_context",
+        ("noetrium_platform.foundation.kernel.concurrency.providers.executors",),
+        exact_call("multiprocessing.get_context"),
+        protect_reference=True,
+    ),
+    SourceAuthorityRule(
+        "process.raw_fork",
+        "os.fork",
+        (),
+        exact_call("os.fork"),
+        protect_reference=True,
+    ),
+    SourceAuthorityRule(
+        "process.raw_forkpty",
+        "os.forkpty",
+        (),
+        exact_call("os.forkpty"),
+        protect_reference=True,
+    ),
+    SourceAuthorityRule(
         "concurrency.thread",
         "threading.Thread",
         (
