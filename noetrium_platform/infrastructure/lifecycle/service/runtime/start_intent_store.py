@@ -41,7 +41,7 @@ class DirectoryServiceStartIntentStore:
                 return self.codec.decode(path.read_bytes())
             self._assert_no_other_active_locked(intent)
             atomic_replace_bytes(path, self.codec.encode(intent))
-            if intent.phase is not ServiceStartIntentPhase.COMPLETE:
+            if not intent.phase.terminal:
                 self._empty_scope_mtime.pop((intent.service_id, intent.contract_digest), None)
                 self._active.bind(intent)
             else:
@@ -59,12 +59,12 @@ class DirectoryServiceStartIntentStore:
                     or current.attempt != intent.attempt
                 ):
                     raise ServiceStartIntentConflict("service-start intent immutable identity changed")
-            if intent.phase is not ServiceStartIntentPhase.COMPLETE:
+            if not intent.phase.terminal:
                 self._assert_no_other_active_locked(intent)
             # Intent document is authoritative.  Publish it before touching the disposable
             # pointer so a crash can always recover by scanning these documents.
             atomic_replace_bytes(path, self.codec.encode(intent))
-            if intent.phase is ServiceStartIntentPhase.COMPLETE:
+            if intent.phase.terminal:
                 self._active.clear(
                     intent.service_id,
                     intent.contract_digest,
@@ -89,7 +89,7 @@ class DirectoryServiceStartIntentStore:
                     )
                 intent = self.codec.decode(path.read_bytes())
                 self._assert_scope(intent, service_id, contract_digest)
-                if intent.phase is ServiceStartIntentPhase.COMPLETE:
+                if intent.phase.terminal:
                     # Crash window: COMPLETE document was durable but pointer clear was not.
                     self._active.clear(service_id, contract_digest, expected_intent_id=active_id)
                     self._remember_empty_scope(service_id, contract_digest)
@@ -127,7 +127,7 @@ class DirectoryServiceStartIntentStore:
             for intent in self.all()
             if intent.service_id == service_id
             and intent.contract_digest == contract_digest
-            and intent.phase is not ServiceStartIntentPhase.COMPLETE
+            and not intent.phase.terminal
         ]
         return tuple(sorted(values, key=lambda item: (item.attempt, item.intent_id)))
 
@@ -141,7 +141,7 @@ class DirectoryServiceStartIntentStore:
                 "active service-start intent pointer references missing authoritative intent"
             )
         active = self.codec.decode(active_path.read_bytes())
-        if active.phase is ServiceStartIntentPhase.COMPLETE:
+        if active.phase.terminal:
             self._active.clear(
                 intent.service_id,
                 intent.contract_digest,
