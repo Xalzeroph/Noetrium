@@ -104,6 +104,8 @@ class ResourceLease:
             not math.isfinite(float(self.expires_at_epoch_s)) or self.expires_at_epoch_s <= 0
         ):
             raise ValueError("lease expiry must be a finite positive epoch timestamp")
+        if self.acquired_at_epoch_s is not None and type(self.acquired_at_epoch_s) not in (int, float):
+            raise TypeError("lease acquisition must be int or float")
         if self.acquired_at_epoch_s is not None and (
             not math.isfinite(float(self.acquired_at_epoch_s)) or self.acquired_at_epoch_s <= 0
         ):
