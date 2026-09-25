@@ -75,13 +75,32 @@ def _finite_float(value: str, *, field: str, minimum: float, maximum: float | No
 
 
 def _positive_int(value: str, *, field: str) -> int:
+    multipliers = {
+        "k": 1000,
+        "m": 1000**2,
+        "g": 1000**3,
+        "K": 1024,
+        "M": 1024**2,
+        "G": 1024**3,
+    }
+    suffix = value[-1:] if value else ""
+    raw = value[:-1] if suffix in multipliers else value
     try:
-        parsed = int(value)
+        numeric = float(raw) if suffix in multipliers else float(value)
     except ValueError as exc:
-        raise ValueError(f"vLLM {field} must be an integer") from exc
-    if parsed <= 0:
-        raise ValueError(f"vLLM {field} must be positive")
-    return parsed
+        raise ValueError(
+            f"vLLM {field} must be a positive human-readable integer"
+        ) from exc
+    scaled = numeric * multipliers.get(suffix, 1)
+    if (
+        not math.isfinite(scaled)
+        or scaled <= 0
+        or not float(scaled).is_integer()
+    ):
+        raise ValueError(
+            f"vLLM {field} must resolve to a positive integer"
+        )
+    return int(scaled)
 
 
 def parse_vllm_resource_intent(engine_args: tuple[str, ...]) -> VllmResourceIntent:
@@ -109,10 +128,6 @@ def parse_vllm_resource_intent(engine_args: tuple[str, ...]) -> VllmResourceInte
             maximum=1.0,
         )
     )
-    if gpu_fraction == 0.0:
-        raise ValueError(
-            "vLLM gpu-memory-utilization must be > 0 for GPU replica placement"
-        )
     cpu_offload = (
         0.0
         if cpu_offload_raw is None
@@ -161,7 +176,10 @@ def reconcile_vllm_compute_requirement(
 
     intent = parse_vllm_resource_intent(stack.engine_args)
     fraction = requirement.required_gpu_memory_fraction
-    if intent.gpu_memory_utilization is not None:
+    if (
+        intent.gpu_memory_utilization is not None
+        and intent.gpu_memory_utilization > 0.0
+    ):
         fraction = max(
             0.0 if fraction is None else float(fraction),
             intent.gpu_memory_utilization,
