@@ -421,7 +421,10 @@ def _eligible_gpus(
     quarantined_gpus: frozenset[tuple[str, str]] = frozenset(),
 ):
     rows = []
+    required_gpu_labels = dict(requirement.required_gpu_labels)
     for gpu in host.gpus:
+        if any(dict(gpu.labels).get(key) != value for key, value in required_gpu_labels.items()):
+            continue
         if gpu.health is ComputeDeviceHealth.UNAVAILABLE:
             continue
         if (host.host_id, gpu.gpu_id) in quarantined_gpus:
