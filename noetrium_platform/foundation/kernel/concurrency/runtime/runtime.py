@@ -41,6 +41,7 @@ class StructuredConcurrencyRuntime:
     _blocking_io: ExecutorProviderPort
     _async_io: ExecutorProviderPort
     _cpu: CpuWorkerPoolProviderPort
+    _owns_cpu_provider: bool = True
     _timers: TimerSchedulerProviderPort
     _serial_lane_factory: SerialExecutionLaneFactoryProviderPort
     _groups: dict[str, StructuredTaskGroup] = field(default_factory=dict)
@@ -288,7 +289,14 @@ class StructuredConcurrencyRuntime:
             # If the structured join deadline was breached, do not replace the
             # explicit convergence error with an unbounded Executor.shutdown().
             provider_errors_before = len(errors)
-            for provider in (self._blocking_io, self._async_io, self._cpu):
+            providers = (
+                (self._blocking_io, True),
+                (self._async_io, True),
+                (self._cpu, self._owns_cpu_provider),
+            )
+            for provider, owned in providers:
+                if not owned:
+                    continue
                 try:
                     provider.close(wait=not timed_out, cancel_pending=True)
                 except BaseException as exc:
