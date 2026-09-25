@@ -4,7 +4,6 @@ from threading import Event
 
 import pytest
 
-from noetrium_platform.platform import bind_research_execution_pool
 from noetrium_platform.composition.research_execution_pool import ResearchExecutionPool
 from noetrium_platform.composition.shared_host_pressure import (
     ResourceCompetitionDemand,
@@ -53,7 +52,7 @@ class _FixedHostObserver:
 
 
 def test_pool_group_lifecycle_unregisters_identity_for_safe_reuse() -> None:
-    pool = bind_research_execution_pool()
+    pool = ResearchExecutionPool()
     try:
         first = pool.open_experiment_group("study:reuse", tenant_id="project-a")
         pool.close_experiment_group(first)
@@ -65,7 +64,7 @@ def test_pool_group_lifecycle_unregisters_identity_for_safe_reuse() -> None:
 
 
 def test_experiment_and_model_io_use_independent_admission_domains() -> None:
-    pool = bind_research_execution_pool(
+    pool = ResearchExecutionPool(
         experiment_concurrency_budget=ConcurrencyBudget(
             max_blocking_io_workers=1, max_cpu_workers=1, max_async_io_in_flight=1,
         ),
@@ -198,7 +197,7 @@ def test_workload_domains_share_one_physical_resource_reservation_ledger() -> No
 
 
 def test_pool_shares_exact_model_admission_by_deployment_generation() -> None:
-    pool = bind_research_execution_pool()
+    pool = ResearchExecutionPool()
     generation = "a" * 64
     try:
         first = pool.model_admission.controller_for(
@@ -230,7 +229,7 @@ def test_orchestration_experiment_model_dependency_chain_has_no_nested_admission
         max_blocking_io_in_flight=1,
         max_async_io_in_flight=1,
     )
-    pool = bind_research_execution_pool(
+    pool = ResearchExecutionPool(
         orchestration_concurrency_budget=one,
         orchestration_admission_budget=one_admission,
         experiment_concurrency_budget=one,
@@ -277,7 +276,7 @@ def test_orchestration_experiment_model_dependency_chain_has_no_nested_admission
 
 
 def test_workload_quiesce_seals_work_domains_but_keeps_cleanup_orchestration_alive() -> None:
-    pool = bind_research_execution_pool()
+    pool = ResearchExecutionPool()
     pool.quiesce_workloads()
 
     for operation in (
@@ -297,7 +296,7 @@ def test_workload_quiesce_seals_work_domains_but_keeps_cleanup_orchestration_ali
 
 
 def test_workload_failure_does_not_block_physical_quiescence_or_pool_close() -> None:
-    pool = bind_research_execution_pool()
+    pool = ResearchExecutionPool()
     group = pool.open_experiment_group("failed-workload")
 
     def boom(context: TaskContextPort) -> None:
