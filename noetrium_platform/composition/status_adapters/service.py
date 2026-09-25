@@ -61,7 +61,12 @@ class ServiceOperationalStatusProbe:
                     f"{intent.recovery_handle.payload_sha256}"
                 )
             if intent.process is not None:
-                refs.append(f"start-intent-process:{intent.process.pid}:{intent.process.start_identity}")
+                refs.append(
+                    "start-intent-process:"
+                    f"{intent.process.pid}:{intent.process.start_identity}:"
+                    f"anchor={intent.process.anchor_pid}:"
+                    f"{intent.process.anchor_start_identity}"
+                )
 
         if health is HealthState.DEGRADED_OPERATIONAL:
             next_commands = (
