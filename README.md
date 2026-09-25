@@ -21,7 +21,7 @@
 
 <!-- readme-locale:en -->
 
-<!-- readme-source-sha256:8ae7e37540bc540e8ddc011c5ea00d7f1b4082d0f238ab2aa7548c5e36abefaa -->
+<!-- readme-source-sha256:fb87a4f18b727c65ea8d9e28365036ac34eca18d2d448281ca821b01f490d52d -->
 
 <p align="center">
   <strong>Research infrastructure for attributable, recoverable, evidence-preserving AI-agent experiments.</strong><br>
@@ -683,6 +683,12 @@ When <code>NOETRIUM_DOCKER_DATA_ROOT</code> is set, normal deployment doctor/bui
 If <code>docker doctor</code> reports a missing privileged host prerequisite such as <code>newuidmap</code>, an administrator must install or enable that prerequisite once. Do not fall back to a nearly-full system DockerRootDir merely to continue a run.
 
 The current evidence-bound image builder also requires real Git source metadata. It derives the source identity with Git and refuses a dirty checkout before building the qualified wheel/image. A source-only archive with no .git metadata is not currently sufficient for the formal image-build path. When transporting source without GitHub, preserve the repository metadata by copying the complete checkout or by using a verified Git bundle/local transport. Do not invent a source SHA or bypass the clean-source check.
+
+Offline/local Git transport must also preserve tracked executable modes. The canonical
+Linux launcher and its shell entrypoints are committed as executable files, so a
+verified Git bundle/clone reproduces both source identity and executable bits. Do not
+replace the formal server source cut with a filesystem copy that silently strips
+Git mode metadata.
 
 ### 3. Verify Docker and environment-profile authority
 
