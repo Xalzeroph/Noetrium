@@ -21,6 +21,9 @@ from noetrium_platform.capabilities.model.deployment.runtime.templates import (
     sglang_deployment,
     vllm_deployment,
 )
+from noetrium_platform.capabilities.model.deployment.runtime.vllm_resources import (
+    reconcile_vllm_compute_requirement,
+)
 from noetrium_platform.capabilities.model.stack.api import ModelStackSpec
 from noetrium_platform.foundation.kernel.kernel import canonical_digest
 from noetrium_platform.substrate.api import PLATFORM_SCOPE, ScopeIdentity
@@ -114,6 +117,15 @@ class ModelReplicaPoolRequest:
             raise ValueError("replica_count must be positive when provided")
         if type(self.endpoint_candidate_count) is not int or self.endpoint_candidate_count <= 0:
             raise ValueError("endpoint_candidate_count must be positive")
+
+    @property
+    def effective_compute(self) -> ComputeRequirement:
+        if self.model_stack is None or self.engine != "vllm":
+            return self.compute
+        return reconcile_vllm_compute_requirement(
+            self.model_stack,
+            self.compute,
+        )
 
 
 @dataclass(frozen=True, slots=True)
@@ -361,8 +373,9 @@ class LocalModelReplicaPoolRuntime:
     def _target_count(self, request: ModelReplicaPoolRequest) -> int:
         if request.replica_count is not None:
             return request.replica_count
-        hosts = self._compute_scheduler.candidates(request.compute, scope=request.scope)
-        count = sum(len(host.gpus) // request.compute.gpu_count for host in hosts)
+        compute = request.effective_compute
+        hosts = self._compute_scheduler.candidates(compute, scope=request.scope)
+        count = sum(len(host.gpus) // compute.gpu_count for host in hosts)
         if count <= 0:
             raise RuntimeError("no automatic model replica capacity is currently available")
         return count
@@ -439,6 +452,7 @@ class LocalModelReplicaPoolRuntime:
             raise TypeError("model replica pool requires ModelReplicaPoolRequest")
         request_digest = canonical_digest(request)
         placement_generation_id = uuid4().hex
+        compute_requirement = request.effective_compute
         target_count = self._target_count(request)
         compute_rows: list[ComputeAllocation] = []
         endpoint_rows: list[EndpointAllocation] = []
@@ -455,7 +469,7 @@ class LocalModelReplicaPoolRuntime:
                     compute = self._compute_scheduler.allocate(
                         allocation_id,
                         request.scope,
-                        request.compute,
+                        compute_requirement,
                         placement_scope=request.scope,
                         ttl_seconds=self._compute_lease_guards.policy.ttl_seconds,
                     )
