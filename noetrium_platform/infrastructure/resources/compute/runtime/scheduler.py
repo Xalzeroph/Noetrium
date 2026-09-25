@@ -9,7 +9,7 @@ from threading import RLock
 from time import time
 
 from noetrium_platform.infrastructure.resources.compute.api import (
-    ComputeAllocation, ComputeAllocationBatch, ComputeBindingProof, ComputeDeviceHealth, ComputeHost, ComputePlacementPreference, ComputePlacementUnavailable, ComputeRequirement,
+    ComputeAllocation, ComputeAllocationBatch, ComputeBatchPlacementStrategy, ComputeBindingProof, ComputeDeviceHealth, ComputeHost, ComputePlacementPreference, ComputePlacementUnavailable, ComputeRequirement,
     GpuDeviceStatus, GpuRuntimeObserverPort, GpuRuntimeSnapshot, GpuSharingMode,
     HostRuntimeObserverPort, HostRuntimeSnapshot, HostRuntimeStatus,
 )
@@ -65,6 +65,23 @@ def _host_matches_requirement_labels(host: ComputeHost, requirement: ComputeRequ
     if any(labels.get(key) == value for key, value in forbidden.items()):
         return False
     return True
+
+
+def _batch_requirement(
+    requirement: ComputeRequirement,
+    strategy: ComputeBatchPlacementStrategy,
+) -> ComputeRequirement:
+    if strategy is ComputeBatchPlacementStrategy.PACK:
+        return replace(
+            requirement,
+            placement_preference=ComputePlacementPreference.PACK,
+        )
+    if strategy is ComputeBatchPlacementStrategy.SPREAD:
+        return replace(
+            requirement,
+            placement_preference=ComputePlacementPreference.SPREAD,
+        )
+    return requirement
 
 
 def _allocation_matches(
@@ -850,7 +867,10 @@ class InMemoryComputeScheduler:
                         self.allocate(
                             request.allocation_id,
                             request.scope,
-                            request.requirement,
+                            _batch_requirement(
+                                request.requirement,
+                                batch.placement_strategy,
+                            ),
                             placement_scope=request.placement_scope,
                             ttl_seconds=ttl_seconds,
                             now=now,
@@ -1741,7 +1761,10 @@ class SQLiteComputeScheduler:
                         conn,
                         allocation_id=request.allocation_id,
                         scope=request.scope,
-                        requirement=request.requirement,
+                        requirement=_batch_requirement(
+                            request.requirement,
+                            batch.placement_strategy,
+                        ),
                         placement_scope=request.placement_scope,
                         ttl_seconds=ttl_seconds,
                         now_epoch_s=now_epoch_s,
