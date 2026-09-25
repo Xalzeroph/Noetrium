@@ -173,17 +173,47 @@ class AtomicEndpointAllocator(EndpointAllocationPort):
             )
         )
 
+    def _reconcile_existing_allocation(
+        self,
+        allocation_id: str,
+    ) -> EndpointAllocation | None:
+        current = self._reservations.get(allocation_id)
+        if current is None or not current.state.is_live:
+            return current
+        orphan = next(
+            (
+                row
+                for row in self._reservations.expire_orphans()
+                if row.allocation_id == allocation_id
+            ),
+            None,
+        )
+        if orphan is None:
+            return current
+        if orphan.state is EndpointAllocationState.BOUND:
+            physical = self._probe.probe(orphan.endpoint)
+            if not physical.available:
+                raise EndpointPhysicalConvergencePending((allocation_id,))
+        return self._reservations.retire_orphan(orphan)
+
     def allocate(self, request: EndpointAllocationRequest) -> EndpointAllocation:
-        # Never admit a fresh physical endpoint while stale durable generations
-        # have not yet converged against OS listener truth.
-        self.reconcile()
         request_digest = request.digest()
-        existing = self._reservations.get(request.allocation_id)
+        existing = self._reconcile_existing_allocation(request.allocation_id)
         if existing is not None:
             return self._resolve_existing(request, request_digest, existing)
 
+        # A quarantined generation fences only its own physical endpoint. It
+        # must never stop unrelated endpoint allocations elsewhere on the host.
+        quarantined_resources = {
+            row.endpoint.resource
+            for row in self._reservations.active()
+            if row.state.is_live
+        }
         attempts: list[str] = []
         for endpoint in request.candidates():
+            if endpoint.resource in quarantined_resources:
+                attempts.append(f"{endpoint.key}:generation-quarantined")
+                continue
             probe = self._probe.probe(endpoint)
             if not probe.available:
                 attempts.append(f"{endpoint.key}:probe:{probe.reason}")
