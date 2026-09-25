@@ -22,7 +22,10 @@ from noetrium_platform.foundation.kernel.concurrency.api import (
     TaskFailurePolicy,
     TaskState,
 )
-from noetrium_platform.foundation.kernel.concurrency.composition import build_concurrency_runtime
+from noetrium_platform.foundation.kernel.concurrency.composition import (
+    build_concurrency_runtime,
+    build_cpu_worker_pool_provider,
+)
 from noetrium_platform.foundation.kernel.concurrency.providers import (
     AsyncIoExecutor,
     BoundedThreadExecutor,
@@ -93,6 +96,59 @@ def _runtime(*, io_workers: int = 2):
         blocking_io_thread_name_prefix="structured-test-io",
         timer_name="structured-test-timer",
     )
+
+
+def test_external_cpu_provider_survives_individual_runtime_close() -> None:
+    budget = ConcurrencyBudget(
+        max_blocking_io_workers=1,
+        max_serial_workers=1,
+        max_cpu_workers=1,
+        max_blocking_io_in_flight=1,
+        max_async_io_in_flight=1,
+        max_cpu_in_flight=1,
+        default_queue_capacity=8,
+    )
+    provider = build_cpu_worker_pool_provider(budget)
+    left = build_concurrency_runtime(
+        budget=budget,
+        cpu_provider=provider,
+        blocking_io_thread_name_prefix="shared-cpu-left",
+        timer_name="shared-cpu-left-timer",
+    )
+    right = build_concurrency_runtime(
+        budget=budget,
+        cpu_provider=provider,
+        blocking_io_thread_name_prefix="shared-cpu-right",
+        timer_name="shared-cpu-right-timer",
+    )
+    try:
+        left_group = left.open_task_group("shared-cpu-left")
+        assert _cpu(
+            left_group,
+            "left",
+            _cpu_square,
+            3,
+        ).result(10) == 9
+        left.close()
+
+        right_group = right.open_task_group("shared-cpu-right")
+        assert _cpu(
+            right_group,
+            "right",
+            _cpu_square,
+            4,
+        ).result(10) == 16
+        right.close()
+    finally:
+        try:
+            left.close()
+        except BaseException:
+            pass
+        try:
+            right.close()
+        except BaseException:
+            pass
+        provider.close(wait=True, cancel_pending=True)
 
 
 def test_provider_bounded_executor_applies_admission_backpressure_and_closes() -> None:
