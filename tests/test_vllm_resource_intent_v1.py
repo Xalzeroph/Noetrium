@@ -18,6 +18,12 @@ from noetrium_platform.infrastructure.resources.compute.api import (
     ComputeRequirement,
     GpuSharingMode,
 )
+from noetrium_platform.capabilities.model.serving.api.placement import DeploymentPlacement
+from noetrium_platform.capabilities.model.serving.api.qualified_deployment import (
+    QualificationCertificate,
+    QualifiedDeploymentManifest,
+    ResourceEnvelope,
+)
 
 
 def _h(value: str) -> str:
@@ -81,7 +87,93 @@ def test_vllm_resource_args_parse_aliases_and_human_capacity() -> None:
     assert intent.mm_processor_cache_gb == 1.25
     assert intent.api_server_count == 2
     assert intent.max_num_seqs == 1024
+    assert intent.max_num_active_seqs is None
     assert intent.max_num_queued_requests == 2000
+
+
+def test_vllm_resource_args_parse_and_validate_admission_limits() -> None:
+    intent = parse_vllm_engine_resource_args(
+        (
+            "--max-num-seqs",
+            "128",
+            "--max-num-active-seqs",
+            "96",
+            "--max-num-queued-reqs",
+            "256",
+        )
+    )
+    assert intent.max_num_seqs == 128
+    assert intent.max_num_active_seqs == 96
+    assert intent.max_num_queued_requests == 256
+
+    with pytest.raises(ValueError, match="cannot exceed max-num-seqs"):
+        parse_vllm_engine_resource_args(
+            (
+                "--max-num-seqs",
+                "64",
+                "--max-num-active-seqs",
+                "65",
+            )
+        )
+    with pytest.raises(ValueError, match="cannot be below the active"):
+        parse_vllm_engine_resource_args(
+            (
+                "--max-num-seqs",
+                "64",
+                "--max-num-active-seqs",
+                "32",
+                "--max-num-queued-reqs",
+                "31",
+            )
+        )
+
+
+def _qualified_vllm(
+    stack: ModelStackSpec,
+    *,
+    concurrency: int,
+) -> QualifiedDeploymentManifest:
+    host = _h("host")
+    return QualifiedDeploymentManifest(
+        "vllm-qualified",
+        stack,
+        QualificationCertificate(
+            stack.digest(),
+            _h("evidence"),
+            ("planner",),
+            ResourceEnvelope(
+                24 * 1024**3,
+                48 * 1024**3,
+                concurrency,
+                0.2,
+                0.02,
+                50.0,
+            ),
+            host,
+        ),
+        DeploymentPlacement(("GPU-0",)),
+        host,
+    )
+
+
+def test_vllm_qualification_cannot_exceed_frozen_engine_admission() -> None:
+    stack = _stack(
+        (
+            "--max-num-seqs",
+            "64",
+            "--max-num-active-seqs",
+            "32",
+            "--max-num-queued-reqs",
+            "128",
+        )
+    )
+    assert _qualified_vllm(stack, concurrency=32).certificate.resource_envelope.max_qualified_concurrency == 32
+    with pytest.raises(ValueError, match="active sequence admission limit"):
+        _qualified_vllm(stack, concurrency=33)
+
+    default_active = _stack(("--max-num-seqs", "16"))
+    with pytest.raises(ValueError, match="active sequence admission limit"):
+        _qualified_vllm(default_active, concurrency=17)
 
 
 def test_vllm_resource_args_reject_duplicate_memory_aliases() -> None:
