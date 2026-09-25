@@ -461,7 +461,7 @@ def test_environment_bootstrap_signal_cleanup_uses_exact_ids_and_surfaces_failur
 
     for block in (child_cleanup, owner_cleanup):
         assert "docker ps -aq --no-trunc" in block
-        assert 'label=$OWNER_PID_LABEL=$"' in block
+        assert 'label=$OWNER_PID_LABEL=$$"' in block
         assert 'label=$OWNER_PID_LABEL=$"' not in block
         assert "remove_bootstrap_container_exact" in block
         assert "|| true" not in block
@@ -473,7 +473,6 @@ def test_environment_bootstrap_signal_cleanup_uses_exact_ids_and_surfaces_failur
     assert '[ "$status" -ne 0 ] || status=1' in trap_cleanup
 
 
-
 def test_minecraft_doctor_is_single_body_and_pipefail_safe() -> None:
     doctor = (ROOT / "deploy" / "environments" / "minecraft" / "doctor.sh").read_text(
         encoding="utf-8"
@@ -482,7 +481,7 @@ def test_minecraft_doctor_is_single_body_and_pipefail_safe() -> None:
     assert doctor.count("minecraft_bridge_root=") == 1
     assert doctor.count("MC_BRIDGE_DIR=\"$bridge\" node - <<'JS'") == 1
     assert "java -version 2>&1 | head" not in doctor
-    assert "${java_version%%
+    assert "${java_version%%$'\\n'*}" in doctor
 
 
 def test_bootstrap_child_reaper_distinguishes_boot_and_process_start_generations(
@@ -555,8 +554,8 @@ def test_bootstrap_run_labels_exact_live_owner_generation(
         'OWNER_BOOT_LABEL="io.noetrium.bootstrap-owner-boot"\n'
         'OWNER_START_LABEL="io.noetrium.bootstrap-owner-start"\n'
         'BOOT_ID="current-boot"\n'
-        'OWNER_START="$(awk \'{print $22}\' /proc/$/stat)"\n'
-        'EXPECTED_PID="$"\n'
+        'OWNER_START="$(awk \'{print $22}\' /proc/$$/stat)"\n'
+        'EXPECTED_PID="$$"\n'
         'BOOTSTRAP_CONTAINER_NAME="noetrium-bootstrap-test"\n'
         'BOOTSTRAP_ACTIVE=0\n'
         'docker() {\n'
