@@ -212,7 +212,7 @@ def test_managed_docker_crash_expiry_removes_orphan_on_reconcile() -> None:
     ).state is LeaseState.EXPIRED
 
 
-def test_managed_docker_restart_before_ttl_reaps_old_controller_generation() -> None:
+def test_managed_docker_restart_quarantines_old_generation_until_exclusive_recovery() -> None:
     resources = InMemoryResourceLeaseRegistry()
     runtime = FakeDockerRuntime()
     first = _authority(resources, runtime, owner_generation_id="2" * 64)
@@ -221,8 +221,22 @@ def test_managed_docker_restart_before_ttl_reaps_old_controller_generation() -> 
 
     restarted = _authority(resources, runtime, owner_generation_id="3" * 64)
     report = restarted.reconcile()
-    assert report.removed_container_ids == (old.container_id,)
-    assert report.released_lease_ids == (first_handle.lease.lease_id,)
+    assert report.removed_container_ids == ()
+    assert report.released_lease_ids == ()
+    assert report.quarantined_container_ids == (old.container_id,)
+    assert runtime.inspect(old.container_id) == old
+
+    with pytest.raises(
+        RuntimeError,
+        match="quarantined by another owner generation",
+    ):
+        _reserve(restarted)
+
+    # ManagedResearchRuntime calls this only while holding its outer
+    # interprocess lock. That exclusive proof is what makes takeover safe.
+    recovered = restarted.shutdown_cleanup()
+    assert recovered.removed_container_ids == (old.container_id,)
+    assert recovered.released_lease_ids == (first_handle.lease.lease_id,)
     assert runtime.inspect(old.container_id) is None
 
     replacement = _reserve(restarted)
@@ -257,6 +271,7 @@ def test_managed_docker_reconcile_removes_malformed_noetrium_container() -> None
         {
             MANAGED_CONTAINER_LABEL: MANAGED_CONTAINER_LABEL_VALUE,
             LABEL_AUTHORITY: runtime.authority_id,
+            LABEL_OWNER_GENERATION: "2" * 64,
         },
     )
     authority = _authority(resources, runtime)
@@ -265,6 +280,32 @@ def test_managed_docker_reconcile_removes_malformed_noetrium_container() -> None
 
     assert report.removed_container_ids == ("malformed",)
     assert runtime.rows == {}
+
+
+def test_managed_docker_unknown_owner_generation_is_quarantined_until_exclusive_cleanup() -> None:
+    resources = InMemoryResourceLeaseRegistry()
+    runtime = FakeDockerRuntime()
+    unknown = DockerContainerObservation(
+        "unknown-generation",
+        "noetrium-unknown-generation",
+        "noetrium-env-text:sha256",
+        True,
+        {
+            MANAGED_CONTAINER_LABEL: MANAGED_CONTAINER_LABEL_VALUE,
+            LABEL_AUTHORITY: runtime.authority_id,
+        },
+    )
+    runtime.rows[unknown.container_id] = unknown
+    authority = _authority(resources, runtime)
+
+    report = authority.reconcile()
+    assert report.removed_container_ids == ()
+    assert report.quarantined_container_ids == (unknown.container_id,)
+    assert runtime.inspect(unknown.container_id) == unknown
+
+    exclusive = authority.shutdown_cleanup()
+    assert exclusive.removed_container_ids == (unknown.container_id,)
+    assert runtime.inspect(unknown.container_id) is None
 
 
 def test_managed_docker_stopped_live_generation_is_reaped_and_fence_advances() -> None:
