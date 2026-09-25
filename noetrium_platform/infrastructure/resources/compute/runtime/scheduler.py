@@ -53,6 +53,10 @@ def _lease_expiry(ttl_seconds: float | None, now_epoch_s: float) -> float | None
 
 
 def _host_matches_requirement_labels(host: ComputeHost, requirement: ComputeRequirement) -> bool:
+    if requirement.allowed_host_ids and host.host_id not in requirement.allowed_host_ids:
+        return False
+    if host.host_id in requirement.forbidden_host_ids:
+        return False
     labels = dict(host.labels)
     required = dict(requirement.required_labels)
     forbidden = dict(requirement.forbidden_host_labels)
