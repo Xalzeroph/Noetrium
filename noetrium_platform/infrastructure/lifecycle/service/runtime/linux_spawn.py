@@ -104,7 +104,7 @@ class LinuxProcessSpawner:
             while True:
                 if child.poll() is not None:
                     raise RuntimeError(
-                        "opportunistic service trampoline exited before target exec"
+                        "service exec trampoline exited before target exec"
                     )
                 try:
                     facts = self._procfs.facts(
@@ -122,7 +122,7 @@ class LinuxProcessSpawner:
                     break
                 if time.monotonic() >= deadline:
                     raise RuntimeError(
-                        "opportunistic service trampoline did not exec exact target"
+                        "service exec trampoline did not exec exact target"
                     )
                 time.sleep(0.005)
         except BaseException as primary:
