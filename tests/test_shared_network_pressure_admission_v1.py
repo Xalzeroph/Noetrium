@@ -6,8 +6,8 @@ import pytest
 
 from noetrium_platform.composition.shared_host_pressure import (
     LocalSharedNetworkPressureObserver,
-    SharedHostPressureAdmissionGate,
-    SharedHostPressurePolicy,
+    ResourceCompetitionAdmissionGate,
+    ResourceCompetitionPolicy,
     SharedNetworkPressureStatus,
 )
 from noetrium_platform.foundation.kernel.concurrency.api import ExecutionLaneKind
@@ -60,16 +60,16 @@ class _Network:
         )
 
 
-def _gate(network: _Network) -> SharedHostPressureAdmissionGate:
+def _gate(network: _Network) -> ResourceCompetitionAdmissionGate:
     base = build_execution_admission(
         budget=AdmissionBudget(max_total_in_flight=8),
         scheduling=build_admission_scheduling_policy(priority_aging_seconds=0.01),
     )
-    gate = SharedHostPressureAdmissionGate(
+    gate = ResourceCompetitionAdmissionGate(
         base,
         _HealthyHost(),
         network_observer=network,
-        policy=SharedHostPressurePolicy(
+        policy=ResourceCompetitionPolicy(
             min_available_memory_bytes=0,
             min_available_pids=0,
             min_available_fds=0,
@@ -122,11 +122,11 @@ def test_default_policy_does_not_yield_or_fail_closed_on_soft_link_telemetry() -
         budget=AdmissionBudget(max_total_in_flight=8),
         scheduling=build_admission_scheduling_policy(priority_aging_seconds=0.01),
     )
-    gate = SharedHostPressureAdmissionGate(
+    gate = ResourceCompetitionAdmissionGate(
         base,
         _HealthyHost(),
         network_observer=_Network(None),
-        policy=SharedHostPressurePolicy(),
+        policy=ResourceCompetitionPolicy(),
     )
     gate.register_group(
         "aggressive",
