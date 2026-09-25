@@ -146,7 +146,7 @@ def test_expired_gpu_lease_does_not_release_capacity_while_process_survives(
     ):
         scheduler.reconcile_expired()
 
-    with pytest.raises(ComputePlacementUnavailable):
+    with pytest.raises(ComputePhysicalConvergencePending):
         scheduler.allocate(
             "replacement",
             _scope(),
