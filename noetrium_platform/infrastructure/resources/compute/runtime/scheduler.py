@@ -9,7 +9,7 @@ from threading import RLock
 from time import time
 
 from noetrium_platform.infrastructure.resources.compute.api import (
-    ComputeAllocation, ComputeHost, ComputePlacementUnavailable, ComputeRequirement,
+    ComputeAllocation, ComputeBindingProof, ComputeHost, ComputePlacementUnavailable, ComputeRequirement,
     GpuDeviceStatus, GpuRuntimeObserverPort, GpuRuntimeSnapshot, GpuSharingMode,
     HostRuntimeObserverPort, HostRuntimeSnapshot, HostRuntimeStatus,
 )
@@ -105,6 +105,8 @@ def _require_compute_generation(
 class _HostUsage:
     cpu_cores: int = 0
     memory_bytes: int = 0
+    unbound_cpu_cores: int = 0
+    unbound_memory_bytes: int = 0
     gpu_ids: set[str] = field(default_factory=set)
 
 
@@ -266,7 +268,10 @@ def _placement_score(
         effective_cpu = min(float(host.cpu_cores), float(live.effective_cpu_cores))
         if effective_cpu <= 0:
             return None
-        cpu_load_ratio = live.cpu_load_1m / effective_cpu
+        projected_unbound_cpu = usage.unbound_cpu_cores
+        cpu_load_ratio = (
+            live.cpu_load_1m + projected_unbound_cpu
+        ) / effective_cpu
         if (
             requirement.max_cpu_load_ratio is not None
             and cpu_load_ratio > requirement.max_cpu_load_ratio
@@ -275,12 +280,18 @@ def _placement_score(
         if (
             requirement.cpu_headroom_cores > 0
             and live.cpu_load_1m
+            + projected_unbound_cpu
             + requirement.cpu_cores
             + requirement.cpu_headroom_cores
             > effective_cpu
         ):
             return None
-        if requirement.memory_bytes + requirement.memory_headroom_bytes > live.available_memory_bytes:
+        if (
+            usage.unbound_memory_bytes
+            + requirement.memory_bytes
+            + requirement.memory_headroom_bytes
+            > live.available_memory_bytes
+        ):
             return None
         memory_pressure = 1.0 - min(
             1.0, live.available_memory_bytes / max(1, host.memory_bytes)
@@ -445,11 +456,30 @@ class InMemoryComputeScheduler:
         next_usage = _HostUsage(
             cpu_cores=usage.cpu_cores - row.cpu_cores,
             memory_bytes=usage.memory_bytes - row.memory_bytes,
+            unbound_cpu_cores=(
+                usage.unbound_cpu_cores
+                - (0 if row.is_bound else row.cpu_cores)
+            ),
+            unbound_memory_bytes=(
+                usage.unbound_memory_bytes
+                - (0 if row.is_bound else row.memory_bytes)
+            ),
             gpu_ids=remaining_gpus,
         )
-        if next_usage.cpu_cores < 0 or next_usage.memory_bytes < 0:
+        if (
+            next_usage.cpu_cores < 0
+            or next_usage.memory_bytes < 0
+            or next_usage.unbound_cpu_cores < 0
+            or next_usage.unbound_memory_bytes < 0
+        ):
             raise RuntimeError(f"compute usage index underflow: {row.allocation_id}")
-        if next_usage.cpu_cores or next_usage.memory_bytes or next_usage.gpu_ids:
+        if (
+            next_usage.cpu_cores
+            or next_usage.memory_bytes
+            or next_usage.unbound_cpu_cores
+            or next_usage.unbound_memory_bytes
+            or next_usage.gpu_ids
+        ):
             self._usage_by_host[row.host_id] = next_usage
         else:
             self._usage_by_host.pop(row.host_id, None)
@@ -589,6 +619,12 @@ class InMemoryComputeScheduler:
                 self._usage_by_host[host.host_id] = _HostUsage(
                     cpu_cores=usage.cpu_cores + allocation.cpu_cores,
                     memory_bytes=usage.memory_bytes + allocation.memory_bytes,
+                    unbound_cpu_cores=(
+                        usage.unbound_cpu_cores + allocation.cpu_cores
+                    ),
+                    unbound_memory_bytes=(
+                        usage.unbound_memory_bytes + allocation.memory_bytes
+                    ),
                     gpu_ids=set(usage.gpu_ids).union(allocation.gpu_ids),
                 )
                 self._allocations[allocation_id] = allocation
@@ -597,6 +633,119 @@ class InMemoryComputeScheduler:
             except BaseException:
                 self._leases.release(granted.lease_id, fencing_token=granted.fencing_token)
                 raise
+
+    @staticmethod
+    def _validate_binding_proof(
+        current: ComputeAllocation,
+        proof: ComputeBindingProof,
+    ) -> str:
+        if type(proof) is not ComputeBindingProof:
+            raise TypeError("compute binding requires ComputeBindingProof")
+        if (
+            proof.allocation_id != current.allocation_id
+            or proof.host_id != current.host_id
+            or proof.gpu_ids != current.gpu_ids
+            or proof.lease_fencing_token != current.lease_fencing_token
+        ):
+            raise ResourceLeaseConflict(
+                f"compute binding proof does not match allocation generation: "
+                f"{current.allocation_id}"
+            )
+        return proof.digest()
+
+    def confirm_bound(
+        self,
+        proof: ComputeBindingProof,
+    ) -> ComputeAllocation:
+        with self._lock:
+            current = self._allocations.get(proof.allocation_id)
+            if current is None:
+                raise KeyError(proof.allocation_id)
+            proof_digest = self._validate_binding_proof(current, proof)
+            if current.binding_proof_digest is not None:
+                if current.binding_proof_digest == proof_digest:
+                    return current
+                raise ResourceLeaseConflict(
+                    f"compute allocation already bound: {proof.allocation_id}"
+                )
+            lease = self._leases.get(f"compute:{proof.allocation_id}")
+            if (
+                lease.state is not LeaseState.ACTIVE
+                or lease.fencing_token != proof.lease_fencing_token
+            ):
+                raise ResourceLeaseConflict(
+                    f"compute binding lost active lease authority: "
+                    f"{proof.allocation_id}"
+                )
+            usage = self._usage(current.host_id)
+            if (
+                usage.unbound_cpu_cores < current.cpu_cores
+                or usage.unbound_memory_bytes < current.memory_bytes
+            ):
+                raise RuntimeError(
+                    f"compute unbound usage index drifted: {current.allocation_id}"
+                )
+            updated = replace(
+                current,
+                binding_proof_digest=proof_digest,
+                binding_binder_identity_digest=proof.binder_identity_digest,
+                binding_evidence_ref=proof.evidence_ref,
+                bound_at_epoch_s=proof.observed_at_epoch_s,
+            )
+            self._allocations[current.allocation_id] = updated
+            self._usage_by_host[current.host_id] = _HostUsage(
+                cpu_cores=usage.cpu_cores,
+                memory_bytes=usage.memory_bytes,
+                unbound_cpu_cores=usage.unbound_cpu_cores - current.cpu_cores,
+                unbound_memory_bytes=(
+                    usage.unbound_memory_bytes - current.memory_bytes
+                ),
+                gpu_ids=set(usage.gpu_ids),
+            )
+            return updated
+
+    def replace_bound(
+        self,
+        proof: ComputeBindingProof,
+        *,
+        previous_binding_proof_digest: str,
+    ) -> ComputeAllocation:
+        with self._lock:
+            current = self._allocations.get(proof.allocation_id)
+            if current is None:
+                raise KeyError(proof.allocation_id)
+            proof_digest = self._validate_binding_proof(current, proof)
+            if (
+                current.binding_proof_digest is None
+                or current.binding_proof_digest != previous_binding_proof_digest
+            ):
+                raise ResourceLeaseConflict(
+                    f"compute binding replacement lost prior generation: "
+                    f"{proof.allocation_id}"
+                )
+            if current.binding_binder_identity_digest == proof.binder_identity_digest:
+                raise ResourceLeaseConflict(
+                    f"compute binding replacement requires a new binder generation: "
+                    f"{proof.allocation_id}"
+                )
+            lease = self._leases.get(f"compute:{proof.allocation_id}")
+            if (
+                lease.state is not LeaseState.ACTIVE
+                or lease.fencing_token != proof.lease_fencing_token
+            ):
+                raise ResourceLeaseConflict(
+                    f"compute binding replacement lost active lease authority: "
+                    f"{proof.allocation_id}"
+                )
+            updated = replace(
+                current,
+                binding_proof_digest=proof_digest,
+                binding_binder_identity_digest=proof.binder_identity_digest,
+                binding_evidence_ref=proof.evidence_ref,
+                bound_at_epoch_s=proof.observed_at_epoch_s,
+            )
+            self._allocations[current.allocation_id] = updated
+            return updated
 
     def renew_many(
         self,
