@@ -33,7 +33,7 @@ class MutableGpuObserver:
 
     def snapshot(self) -> GpuRuntimeSnapshot:
         processes = (
-            (GpuProcessStatus(4242, "GPU-0", 4096, "surviving-owner"),)
+            (GpuProcessStatus(4242, "GPU-0", 4096, "external-reoccupant"),)
             if self.busy
             else ()
         )
@@ -170,12 +170,12 @@ def test_expired_gpu_lease_does_not_release_capacity_while_process_survives(
 
 
 @pytest.mark.parametrize("durable", [False, True])
-def test_normal_release_refuses_live_gpu_process(
+def test_exact_owner_release_ignores_foreign_gpu_reoccupation(
     tmp_path,
     durable: bool,
 ) -> None:
     observer = MutableGpuObserver()
-    scheduler, clock = _scheduler(
+    scheduler, _clock_value = _scheduler(
         tmp_path,
         durable=durable,
         inventory=_inventory(),
@@ -189,23 +189,22 @@ def test_normal_release_refuses_live_gpu_process(
         ttl_seconds=30.0,
         now=100.0,
     )
-    observer.busy = True
-    with pytest.raises(ComputePhysicalConvergencePending):
-        scheduler.release(allocation)
-    assert scheduler.allocations() == (allocation,)
 
-    observer.busy = False
+    # The upper owner has already stopped its exact process generation. A
+    # different user can occupy the same physical GPU before our logical lease
+    # is retired; that foreign process must not be mistaken for our owner.
+    observer.busy = True
     scheduler.release(allocation)
     assert scheduler.allocations() == ()
 
 
 @pytest.mark.parametrize("durable", [False, True])
-def test_recovery_release_refuses_live_orphan_gpu_process(
+def test_exclusive_recovery_release_ignores_foreign_gpu_reoccupation(
     tmp_path,
     durable: bool,
 ) -> None:
     observer = MutableGpuObserver()
-    scheduler, clock = _scheduler(
+    scheduler, _clock_value = _scheduler(
         tmp_path,
         durable=durable,
         inventory=_inventory(),
@@ -221,25 +220,17 @@ def test_recovery_release_refuses_live_orphan_gpu_process(
     )
 
     observer.busy = True
-    with pytest.raises(
-        ComputePhysicalConvergencePending,
-        match="physical convergence pending",
-    ):
-        scheduler.recover_release(allocation)
-    assert scheduler.allocations() == (allocation,)
-
-    observer.busy = False
     scheduler.recover_release(allocation)
     assert scheduler.allocations() == ()
 
 
 @pytest.mark.parametrize("durable", [False, True])
-def test_recovery_release_fails_closed_when_gpu_visibility_is_unknown(
+def test_exclusive_recovery_release_does_not_depend_on_global_gpu_visibility(
     tmp_path,
     durable: bool,
 ) -> None:
     observer = MutableGpuObserver()
-    scheduler, clock = _scheduler(
+    scheduler, _clock_value = _scheduler(
         tmp_path,
         durable=durable,
         inventory=_inventory(),
@@ -254,9 +245,8 @@ def test_recovery_release_fails_closed_when_gpu_visibility_is_unknown(
         now=100.0,
     )
     observer.complete = False
-    with pytest.raises(ComputePhysicalConvergencePending):
-        scheduler.recover_release(allocation)
-    assert scheduler.allocations() == (allocation,)
+    scheduler.recover_release(allocation)
+    assert scheduler.allocations() == ()
 
 
 @pytest.mark.parametrize("durable", [False, True])
