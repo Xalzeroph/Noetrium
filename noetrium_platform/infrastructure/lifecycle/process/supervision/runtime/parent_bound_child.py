@@ -13,6 +13,7 @@ A fresh interpreter is used deliberately instead of multithreaded preexec_fn.
 
 import argparse
 import ctypes
+import json
 import os
 import signal
 import subprocess
@@ -27,6 +28,69 @@ _force_requested = False
 
 _PR_SET_PDEATHSIG = 1
 _PR_SET_CHILD_SUBREAPER = 36
+
+
+def encode_child_environment(environment: dict[str, str]) -> bytes:
+    """Encode the exact target environment across the Python guardian.
+
+    Python startup may normalize locale-related variables before this module
+    runs, so an exact child must not inherit the guardian's mutated os.environ.
+    """
+
+    if type(environment) is not dict or any(
+        type(key) is not str
+        or not key
+        or "=" in key
+        or "\x00" in key
+        or type(value) is not str
+        or "\x00" in value
+        for key, value in environment.items()
+    ):
+        raise ValueError("guardian child environment must contain valid text pairs")
+    return json.dumps(
+        tuple(sorted(environment.items())),
+        ensure_ascii=True,
+        separators=(",", ":"),
+    ).encode("ascii")
+
+
+def _decode_child_environment(payload: bytes) -> dict[str, str]:
+    try:
+        raw = json.loads(payload.decode("ascii"))
+    except (UnicodeDecodeError, json.JSONDecodeError) as exc:
+        raise ValueError("guardian child environment payload is invalid") from exc
+    if not isinstance(raw, list):
+        raise ValueError("guardian child environment payload must be a pair list")
+    environment: dict[str, str] = {}
+    for row in raw:
+        if (
+            not isinstance(row, list)
+            or len(row) != 2
+            or not all(isinstance(item, str) for item in row)
+        ):
+            raise ValueError("guardian child environment row is invalid")
+        key, value = row
+        if not key or "=" in key or "\x00" in key or "\x00" in value:
+            raise ValueError("guardian child environment row is invalid")
+        if key in environment:
+            raise ValueError("guardian child environment contains duplicate keys")
+        environment[key] = value
+    return environment
+
+
+def _read_child_environment(fd: int) -> dict[str, str]:
+    if type(fd) is not int or fd < 0:
+        raise ValueError("guardian child environment fd must be non-negative")
+    payload = bytearray()
+    try:
+        while True:
+            chunk = os.read(fd, 65536)
+            if not chunk:
+                break
+            payload.extend(chunk)
+    finally:
+        os.close(fd)
+    return _decode_child_environment(bytes(payload))
 
 
 def _linux_prctl(option: int, value: int) -> None:
@@ -214,6 +278,7 @@ def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(add_help=False)
     parser.add_argument("--parent-pid", type=int, required=True)
     parser.add_argument("--child-pid-fd", type=int, default=None)
+    parser.add_argument("--child-env-fd", type=int, default=None)
     parser.add_argument("--survive-parent-exit", action="store_true")
     parser.add_argument("command", nargs=argparse.REMAINDER)
     ns = parser.parse_args(argv)
@@ -235,9 +300,20 @@ def main(argv: list[str] | None = None) -> int:
     if not ns.survive_parent_exit and os.getppid() != ns.parent_pid:
         _owner_died()
 
+    child_environment: dict[str, str] | None = None
+    if ns.child_env_fd is not None:
+        try:
+            child_environment = _read_child_environment(ns.child_env_fd)
+        except (OSError, ValueError):
+            return 127
+
     global _child_group
     try:
-        child = subprocess.Popen(command, process_group=0)
+        child = subprocess.Popen(
+            command,
+            process_group=0,
+            env=child_environment,
+        )
     except BaseException:
         return 127
     _child_group = int(child.pid)
