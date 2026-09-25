@@ -209,6 +209,39 @@ def test_machine_journal_gc_recovers_rename_committed_before_phase_publication(
     assert not quarantine.exists()
 
 
+def test_machine_journal_gc_rejects_same_content_quarantine_replacement(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    journal, first = _journal(tmp_path)
+    gc = journal.assess_gc(first.machine_id, closures=_closed_closures())
+    real_publish = journal_module.atomic_replace_bytes
+    calls = 0
+
+    def fail_second(path: Path, payload: bytes) -> None:
+        nonlocal calls
+        calls += 1
+        if calls == 2:
+            raise OSError("simulated crash after journal quarantine rename")
+        real_publish(path, payload)
+
+    monkeypatch.setattr(journal_module, "atomic_replace_bytes", fail_second)
+    with pytest.raises(OSError, match="after journal quarantine"):
+        journal.purge(first.machine_id, gc=gc)
+
+    quarantine = journal._quarantine_path(first.machine_id)
+    original = quarantine.with_name(f"{quarantine.name}.original-generation")
+    quarantine.rename(original)
+    quarantine.write_bytes(original.read_bytes())
+
+    monkeypatch.setattr(journal_module, "atomic_replace_bytes", real_publish)
+    with pytest.raises(RuntimeError, match="filesystem generation changed"):
+        journal.purge(first.machine_id, gc=gc)
+
+    assert quarantine.read_bytes() == original.read_bytes()
+    assert original.exists()
+
+
 def test_machine_journal_gc_recovers_unlink_committed_before_terminal_publication(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
