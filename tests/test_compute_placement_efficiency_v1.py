@@ -10,6 +10,7 @@ from noetrium_platform.infrastructure.resources.compute.runtime import (
     InMemoryComputeInventory,
     SQLiteComputeScheduler,
 )
+from noetrium_platform.infrastructure.resources.lease.runtime import ManualLeaseClock
 from tests.resource_compute_support import (
     idle_gpu_runtime_observer,
     in_memory_compute_scheduler,
@@ -89,6 +90,10 @@ def test_sqlite_scheduler_uses_same_gpu_best_fit_policy(tmp_path) -> None:
     scheduler = SQLiteComputeScheduler(
         tmp_path / "compute.sqlite3",
         inventory,
+        clock=ManualLeaseClock(
+            elapsed_seconds=1.0,
+            wall_epoch_seconds=100.0,
+        ),
         gpu_runtime_observer=idle_gpu_runtime_observer(
             "gpu-large",
             "gpu-small",
