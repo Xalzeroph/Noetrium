@@ -22,6 +22,7 @@ from noetrium_platform.infrastructure.resources.providers import SQLiteEndpointA
 from noetrium_platform.foundation.kernel.concurrency.api import ConcurrencyBudget
 from noetrium_platform.foundation.kernel.concurrency.composition import build_concurrency_runtime
 from noetrium_platform.infrastructure.resources.allocation.runtime import (
+    EndpointAllocationUnavailable,
     AtomicEndpointAllocator,
     EndpointLeaseHeartbeatError,
     EndpointLeaseHeartbeatFactory,

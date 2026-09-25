@@ -257,3 +257,26 @@ jobs:
             ${{ runner.temp }}/platform-container-context/CONTAINER_CONTEXT.json
             ${{ runner.temp }}/container-verification.json
             ${{ runner.temp }}/noetrium-environment-images/environment-image-build.json
+
+
+  fixed-source-snapshot:
+    name: fixed source snapshot
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout repository history
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Archive exact stress baseline
+        run: |
+          git archive --format=tar.gz             --output="$RUNNER_TEMP/noetrium-c51706f771e7ceeeb66c4cee6e41614ab2eae1c5.tar.gz"             c51706f771e7ceeeb66c4cee6e41614ab2eae1c5
+          sha256sum "$RUNNER_TEMP/noetrium-c51706f771e7ceeeb66c4cee6e41614ab2eae1c5.tar.gz"             > "$RUNNER_TEMP/noetrium-c51706f771e7ceeeb66c4cee6e41614ab2eae1c5.tar.gz.sha256"
+      - name: Upload exact source snapshot
+        uses: actions/upload-artifact@v4
+        with:
+          name: fixed-source-c51706f771e7ceeeb66c4cee6e41614ab2eae1c5
+          if-no-files-found: error
+          path: |
+            ${{ runner.temp }}/noetrium-c51706f771e7ceeeb66c4cee6e41614ab2eae1c5.tar.gz
+            ${{ runner.temp }}/noetrium-c51706f771e7ceeeb66c4cee6e41614ab2eae1c5.tar.gz.sha256
