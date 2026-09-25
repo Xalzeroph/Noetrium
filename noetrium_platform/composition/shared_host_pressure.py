@@ -2,7 +2,10 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 import math
+import os
+from pathlib import Path
 import time
+from typing import Protocol
 
 from noetrium_platform.foundation.kernel.concurrency.api import (
     CancellationTokenPort,
@@ -27,6 +30,86 @@ from noetrium_platform.research.execution.policy.api import (
 
 
 @dataclass(frozen=True, slots=True)
+class SharedStoragePressureStatus:
+    available: bool
+    free_bytes: int = 0
+    free_inodes: int | None = None
+    detail: str = ""
+
+    def __post_init__(self) -> None:
+        if type(self.available) is not bool:
+            raise TypeError("shared storage availability must be boolean")
+        if type(self.free_bytes) is not int or self.free_bytes < 0:
+            raise ValueError("shared storage free_bytes must be non-negative")
+        if self.free_inodes is not None and (
+            type(self.free_inodes) is not int or self.free_inodes < 0
+        ):
+            raise ValueError("shared storage free_inodes must be non-negative or None")
+
+
+class SharedStoragePressureObserverPort(Protocol):
+    def snapshot(self) -> SharedStoragePressureStatus: ...
+
+
+class LocalSharedStoragePressureObserver:
+    """Observe residual capacity across unique filesystems backing managed roots."""
+
+    def __init__(self, paths: tuple[Path, ...]) -> None:
+        if not paths or any(type(path) is not Path for path in paths):
+            raise ValueError("shared storage observer requires managed Path roots")
+        self._paths = paths
+
+    @staticmethod
+    def _existing_capacity_path(path: Path) -> Path | None:
+        current = path
+        while True:
+            if current.exists():
+                return current
+            parent = current.parent
+            if parent == current:
+                return None
+            current = parent
+
+    def snapshot(self) -> SharedStoragePressureStatus:
+        by_device: dict[int, tuple[int, int | None]] = {}
+        try:
+            for requested in self._paths:
+                path = self._existing_capacity_path(requested)
+                if path is None:
+                    return SharedStoragePressureStatus(
+                        False,
+                        detail=f"managed-storage-path-unresolvable:{requested}",
+                    )
+                device = int(path.stat().st_dev)
+                if device in by_device:
+                    continue
+                stat = os.statvfs(path)
+                free_bytes = max(0, int(stat.f_bavail) * int(stat.f_frsize))
+                free_inodes = (
+                    None
+                    if int(stat.f_files) <= 0
+                    else max(0, int(stat.f_favail))
+                )
+                by_device[device] = (free_bytes, free_inodes)
+        except OSError as exc:
+            return SharedStoragePressureStatus(
+                False,
+                detail=f"{type(exc).__name__}:{exc}",
+            )
+        if not by_device:
+            return SharedStoragePressureStatus(False, detail="no-managed-filesystem")
+        free_bytes = min(row[0] for row in by_device.values())
+        inode_values = tuple(
+            row[1] for row in by_device.values() if row[1] is not None
+        )
+        return SharedStoragePressureStatus(
+            True,
+            free_bytes=free_bytes,
+            free_inodes=None if not inode_values else min(inode_values),
+        )
+
+
+@dataclass(frozen=True, slots=True)
 class SharedHostPressurePolicy:
     """Aggressive residual-capacity policy for shared multi-user hosts.
 
@@ -40,6 +123,8 @@ class SharedHostPressurePolicy:
 
     min_available_memory_bytes: int = 512 * 1024 * 1024
     min_available_pids: int = 32
+    min_storage_free_bytes: int = 1024 * 1024 * 1024
+    min_storage_free_inodes: int = 1024
     max_cpu_pressure_some_avg10_percent: float = 95.0
     max_memory_pressure_some_avg10_percent: float = 10.0
     max_io_pressure_some_avg10_percent: float = 50.0
@@ -51,6 +136,10 @@ class SharedHostPressurePolicy:
             raise ValueError("shared-host memory headroom must be non-negative")
         if type(self.min_available_pids) is not int or self.min_available_pids < 0:
             raise ValueError("shared-host PID headroom must be non-negative")
+        if type(self.min_storage_free_bytes) is not int or self.min_storage_free_bytes < 0:
+            raise ValueError("shared-host storage byte headroom must be non-negative")
+        if type(self.min_storage_free_inodes) is not int or self.min_storage_free_inodes < 0:
+            raise ValueError("shared-host storage inode headroom must be non-negative")
         for name, value in (
             ("max_cpu_pressure_some_avg10_percent", self.max_cpu_pressure_some_avg10_percent),
             ("max_memory_pressure_some_avg10_percent", self.max_memory_pressure_some_avg10_percent),
@@ -82,10 +171,12 @@ class SharedHostPressureAdmissionGate(ExecutionAdmissionPort):
         delegate: ExecutionAdmissionPort,
         observer: HostRuntimeObserverPort,
         *,
+        storage_observer: SharedStoragePressureObserverPort | None = None,
         policy: SharedHostPressurePolicy = SharedHostPressurePolicy(),
     ) -> None:
         self._delegate = delegate
         self._observer = observer
+        self._storage_observer = storage_observer
         self._policy = policy
         self._intents: dict[str, AdmissionIntent] = {}
 
@@ -112,6 +203,15 @@ class SharedHostPressureAdmissionGate(ExecutionAdmissionPort):
             return None
         rows = tuple(row for row in snapshot.hosts if row.available)
         return rows[0] if rows else None
+
+    def _storage_status(self) -> SharedStoragePressureStatus | None:
+        if self._storage_observer is None:
+            return None
+        try:
+            status = self._storage_observer.snapshot()
+        except Exception:
+            return SharedStoragePressureStatus(False, detail="storage-observer-failed")
+        return status
 
     def _pressure_reason(
         self,
@@ -146,6 +246,20 @@ class SharedHostPressureAdmissionGate(ExecutionAdmissionPort):
             > self._policy.max_memory_pressure_some_avg10_percent
         ):
             return "memory-pressure"
+
+        storage = self._storage_status()
+        if self._storage_observer is not None:
+            if storage is None or not storage.available:
+                if self._policy.fail_closed_when_runtime_unavailable:
+                    return "storage-runtime-unavailable"
+            else:
+                if storage.free_bytes < self._policy.min_storage_free_bytes:
+                    return "storage-byte-headroom"
+                if (
+                    storage.free_inodes is not None
+                    and storage.free_inodes < self._policy.min_storage_free_inodes
+                ):
+                    return "storage-inode-headroom"
 
         if lane_kind is ExecutionLaneKind.CPU:
             if status.effective_cpu_cores <= 0:
@@ -265,4 +379,10 @@ class SharedHostPressureAdmissionGate(ExecutionAdmissionPort):
         self._delegate.close()
 
 
-__all__ = ["SharedHostPressureAdmissionGate", "SharedHostPressurePolicy"]
+__all__ = [
+    "LocalSharedStoragePressureObserver",
+    "SharedHostPressureAdmissionGate",
+    "SharedHostPressurePolicy",
+    "SharedStoragePressureObserverPort",
+    "SharedStoragePressureStatus",
+]
