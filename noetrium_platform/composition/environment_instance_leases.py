@@ -369,22 +369,23 @@ class EnvironmentInstanceLeaseAuthority:
                     continue
                 for row in rows:
                     self.catalog.unbind(row.role, row.scope)
-                for lease in active:
-                    self.leases.release(
-                        lease.lease_id,
-                        fencing_token=lease.fencing_token,
-                    )
-                    released.append(lease.lease_id)
+                # Missing/expired authority or binding drift makes the
+                # catalog generation unsafe to reuse. Any still-active lease
+                # remains fenced because normal reconciliation has no provider
+                # proof that its physical generation converged.
                 self.catalog.mark_instance_dirty(instance.instance_id)
                 dirtied.append(instance.instance_id)
                 continue
 
-            for lease in active:
-                self.leases.release(
-                    lease.lease_id,
-                    fencing_token=lease.fencing_token,
-                )
-                released.append(lease.lease_id)
+            if active:
+                # Catalog state alone is not physical-convergence proof. An
+                # active resource lease on a non-IN_USE instance is a split-
+                # authority condition: quarantine the generation instead of
+                # releasing a lease that may still fence live provider state.
+                # TTL expiry or exclusive shutdown/recovery owns retirement.
+                if instance.state is EnvironmentInstanceState.CLEAN:
+                    self.catalog.mark_instance_dirty(instance.instance_id)
+                    dirtied.append(instance.instance_id)
 
         return EnvironmentInstanceReconciliation(
             tuple(sorted(set(dirtied))),
