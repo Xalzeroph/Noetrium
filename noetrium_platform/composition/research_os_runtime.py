@@ -11,6 +11,9 @@ from noetrium_platform.composition.method_runtime import (
 )
 from noetrium_platform.foundation.kernel.concurrency.api import Deadline, TaskContextPort
 from noetrium_platform.composition.research_execution_pool import ResearchExecutionPool
+from noetrium_platform.composition.shared_host_pressure import (
+    ResourceCompetitionDemand,
+)
 from noetrium_platform.foundation.kernel.kernel import (
     DirectoryMachineJournal,
     ExecutionContext,
@@ -512,6 +515,9 @@ class CanonicalResearchOSNodeRuntime(ResearchOSNodeRuntimePort):
             resource_id=(
                 "research-os-experiment:"
                 f"{closure.research_plan.experiment.experiment_id}"
+            ),
+            resource_demand=ResourceCompetitionDemand(
+                storage_path=self._state_root,
             ),
             deadline=deadline,
         )
