@@ -94,6 +94,8 @@ class ResourceLease:
             raise TypeError("lease holder_generation must be int")
         if self.holder_generation < 1:
             raise ValueError("lease holder generation must be >= 1")
+        if type(self.fencing_token) is not int:
+            raise TypeError("lease fencing_token must be int")
         if self.fencing_token < 1:
             raise ValueError("lease fencing token must be >= 1")
         if self.expires_at_epoch_s is not None and (
