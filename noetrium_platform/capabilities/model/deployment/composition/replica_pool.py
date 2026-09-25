@@ -713,6 +713,12 @@ class LocalModelReplicaPoolRuntime:
                     lease.close()
                 except BaseException as exc:
                     errors.append(exc)
+                else:
+                    # A concurrent external close may have committed lease
+                    # teardown but still be waiting to run its registry callback
+                    # outside the lease lock. Retire it idempotently under the
+                    # pool authority before judging global convergence.
+                    self._lease_closed(lease)
             try:
                 self._retry_pending_cleanups_locked()
             except BaseException as exc:
