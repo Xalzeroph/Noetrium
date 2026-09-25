@@ -362,25 +362,26 @@ def test_endpoint_lease_persists_canonical_acquire_and_release_provenance() -> N
 def test_endpoint_reconciliation_does_not_expire_other_resource_kinds() -> None:
     with TemporaryDirectory() as directory:
         database = Path(directory) / "platform.sqlite"
-        leases = _sqlite_resource_leases(database)
+        clock = _clock()
+        leases = _sqlite_resource_leases(database, clock=clock)
         compute = ResourceIdentity(ResourceKind.COMPUTE, "host-scoped-reconcile")
         leases.register_owner(ResourceOwner(compute, PLATFORM_SCOPE))
         granted = leases.acquire(
             ResourceLease("compute-lease", compute, PLATFORM_SCOPE, "scope isolation"),
             ttl_seconds=1.0,
-            now=10.0,
         )
         assert granted.state is LeaseState.ACTIVE
 
-        endpoint_store = _sqlite_endpoint_store(database)
-        assert endpoint_store.expire_orphans(now=12.0) == ()
+        clock.advance(2.0)
+        endpoint_store = _sqlite_endpoint_store(database, clock=clock)
+        assert endpoint_store.expire_orphans() == ()
         with closing(sqlite3.connect(database)) as conn:
             state = conn.execute(
                 "SELECT state FROM resource_leases WHERE lease_id='compute-lease'"
             ).fetchone()
         assert state == ("active",)
 
-        reconciled = leases.reconcile_expired(now=12.0)
+        reconciled = leases.reconcile_expired()
         assert [row.lease_id for row in reconciled] == ["compute-lease"]
 
 
