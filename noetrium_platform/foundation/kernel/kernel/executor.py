@@ -362,7 +362,11 @@ class MachineExecutor:
                     else (MachineStatus.WAITING if proposal.wait_reason is not None else MachineStatus.RUNNABLE)
                 ),
             )
-            accepted = self.journal.append(commit)
+            if self.authority is not None and self.authority_lease is not None:
+                with self.authority.commit_guard(self.authority_lease):
+                    accepted = self.journal.append(commit)
+            else:
+                accepted = self.journal.append(commit)
             self._snapshot = MachineSnapshot(
                 machine_id=self.machine_id,
                 revision=accepted.revision,
