@@ -20,7 +20,7 @@ from noetrium_platform.foundation.kernel.kernel.durability.file_lock import (
 from noetrium_platform.substrate.api import DirectoryLayoutPort, ManagedDirectoryKind
 
 
-_SCHEMA = "model.auto-recovery-state.v2"
+_SCHEMA = "model.auto-recovery-state.v3"
 
 
 @dataclass(frozen=True, slots=True)
@@ -69,6 +69,7 @@ class ModelAutoRecoveryState:
     circuit_open: bool = False
     running_since_epoch_s: float | None = None
     total_attempts: int = 0
+    attempts_since_reset: int = 0
     total_failures: int = 0
     circuit_trip_count: int = 0
     manual_reset_count: int = 0
@@ -96,6 +97,7 @@ class ModelAutoRecoveryState:
             )
         for name in (
             "total_attempts",
+            "attempts_since_reset",
             "total_failures",
             "circuit_trip_count",
             "manual_reset_count",
@@ -217,6 +219,7 @@ class DurableModelAutoRecoveryAuthority:
             "circuit_open": state.circuit_open,
             "running_since_epoch_s": state.running_since_epoch_s,
             "total_attempts": state.total_attempts,
+            "attempts_since_reset": state.attempts_since_reset,
             "total_failures": state.total_failures,
             "circuit_trip_count": state.circuit_trip_count,
             "manual_reset_count": state.manual_reset_count,
@@ -280,6 +283,7 @@ class DurableModelAutoRecoveryAuthority:
                 else float(decoded["running_since_epoch_s"])
             ),
             total_attempts=int(decoded["total_attempts"]),
+            attempts_since_reset=int(decoded["attempts_since_reset"]),
             total_failures=int(decoded["total_failures"]),
             circuit_trip_count=int(decoded["circuit_trip_count"]),
             manual_reset_count=int(decoded["manual_reset_count"]),
@@ -363,7 +367,7 @@ class DurableModelAutoRecoveryAuthority:
                     state,
                 )
 
-            if len(recent) >= self._policy.max_attempts:
+            if state.attempts_since_reset >= self._policy.max_attempts:
                 tripped = ModelAutoRecoveryState(
                     deployment_id=state.deployment_id,
                     desired_spec_digest=state.desired_spec_digest,
@@ -376,6 +380,7 @@ class DurableModelAutoRecoveryAuthority:
                     circuit_open=True,
                     running_since_epoch_s=None,
                     total_attempts=state.total_attempts,
+                    attempts_since_reset=state.attempts_since_reset,
                     total_failures=state.total_failures,
                     circuit_trip_count=state.circuit_trip_count + 1,
                     manual_reset_count=state.manual_reset_count,
@@ -419,6 +424,7 @@ class DurableModelAutoRecoveryAuthority:
                 circuit_open=False,
                 running_since_epoch_s=None,
                 total_attempts=ordinal,
+                attempts_since_reset=state.attempts_since_reset + 1,
                 total_failures=state.total_failures,
                 circuit_trip_count=state.circuit_trip_count,
                 manual_reset_count=state.manual_reset_count,
@@ -467,7 +473,7 @@ class DurableModelAutoRecoveryAuthority:
                 else 1
             )
             recent = self._recent(state, now)
-            opens = len(recent) >= self._policy.max_attempts
+            opens = state.attempts_since_reset >= self._policy.max_attempts
             delay = min(
                 self._policy.max_backoff_seconds,
                 self._policy.base_backoff_seconds
@@ -485,6 +491,7 @@ class DurableModelAutoRecoveryAuthority:
                 circuit_open=opens,
                 running_since_epoch_s=None,
                 total_attempts=state.total_attempts,
+                attempts_since_reset=state.attempts_since_reset,
                 total_failures=state.total_failures + 1,
                 circuit_trip_count=(
                     state.circuit_trip_count
@@ -522,6 +529,7 @@ class DurableModelAutoRecoveryAuthority:
                 circuit_open=state.circuit_open,
                 running_since_epoch_s=now,
                 total_attempts=state.total_attempts,
+                attempts_since_reset=state.attempts_since_reset,
                 total_failures=state.total_failures,
                 circuit_trip_count=state.circuit_trip_count,
                 manual_reset_count=state.manual_reset_count,
@@ -564,6 +572,9 @@ class DurableModelAutoRecoveryAuthority:
                 circuit_open=False if stable else state.circuit_open,
                 running_since_epoch_s=running_since,
                 total_attempts=state.total_attempts,
+                attempts_since_reset=(
+                    0 if stable else state.attempts_since_reset
+                ),
                 total_failures=state.total_failures,
                 circuit_trip_count=state.circuit_trip_count,
                 manual_reset_count=state.manual_reset_count,
@@ -600,6 +611,7 @@ class DurableModelAutoRecoveryAuthority:
                 circuit_open=False,
                 running_since_epoch_s=None,
                 total_attempts=state.total_attempts,
+                attempts_since_reset=0,
                 total_failures=state.total_failures,
                 circuit_trip_count=state.circuit_trip_count,
                 manual_reset_count=state.manual_reset_count + 1,
