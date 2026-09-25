@@ -69,6 +69,7 @@ jobs:
             tests/test_linux_process_signal_generation_v1.py \
             tests/test_linux_prepared_start_visibility_v1.py \
             tests/test_service_prepared_start_recovery_v146.py \
+            tests/test_local_service_process_v110.py \
             tests/test_process_supervision_async_v2.py \
             tests/test_runtime_asset_management_v190.py::test_applied_clear_tombstone_survives_delete_commit_caller_error \
             tests/test_runtime_asset_management_v190.py::test_stale_same_config_generation_cannot_stop_restarted_process \
