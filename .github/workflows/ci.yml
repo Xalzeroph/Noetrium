@@ -59,9 +59,8 @@ jobs:
             tests/test_run_artifact_gc_v1.py \
             tests/test_machine_delivery_receipt_state_v1.py \
             tests/test_machine_executor_v1.py \
-            tests/test_checkpoint_gc_v1.py \
-            tests/test_workspace_gc_v1.py \
-            tests/test_physical_resource_crash_matrix_v1.py \
+            tests/test_durable_resource_directory_v1.py \
+            tests/test_recovery_physical_crash_matrix_v1.py \
             tests/test_environment_container_profiles_v1.py
 
       - name: Verify scale-critical execution invariants
