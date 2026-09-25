@@ -3,9 +3,12 @@ from __future__ import annotations
 from pathlib import Path
 
 from noetrium import api
+from noetrium_platform.composition.managed_research_runtime import ManagedResearchRuntime
 from noetrium_platform.composition.research_portfolio_execution import (
     ResearchExecutionAuthorities,
+    ResearchExecutionContext,
     execute_research_portfolio,
+    load_research_execution_authority_materializer,
     preflight_research_portfolio,
 )
 
@@ -71,3 +74,83 @@ def test_portfolio_execution_identity_changes_with_authority_cut(
         authorities=right,
     )
     assert left_preflight.revision_digest != right_preflight.revision_digest
+
+
+def _second_bootstrap():
+    return None
+
+
+def _program(program_id: str, implementation) -> api.ResearchProgram:
+    builder = api.ResearchProgramBuilder(program_id)
+    builder.definition(
+        "bootstrap",
+        kind=api.ResearchDefinitionKind.CUSTOM,
+        implementation=implementation,
+    )
+    builder.node(
+        "root",
+        kind=api.ResearchNodeKind.CUSTOM,
+        definitions=("bootstrap",),
+    )
+    return builder.freeze()
+
+
+def test_multiple_programs_use_the_same_portfolio_executor(tmp_path: Path) -> None:
+    portfolio = api.ResearchPortfolio(
+        "many",
+        (
+            _program("p1", _bootstrap),
+            _program("p2", _second_bootstrap),
+        ),
+    )
+    authorities = ResearchExecutionAuthorities.provider_neutral()
+
+    preflight = preflight_research_portfolio(
+        portfolio,
+        state_root=tmp_path / "state",
+        authorities=authorities,
+    )
+    result = execute_research_portfolio(
+        portfolio,
+        state_root=tmp_path / "state",
+        authorities=authorities,
+    )
+
+    assert preflight.selected_node_ids == ("p1::root", "p2::root")
+    assert result.receipt.state == "succeeded"
+
+
+def test_generic_materializer_loader_is_cardinality_agnostic(
+    monkeypatch,
+    tmp_path: Path,
+) -> None:
+    import sys
+    from types import ModuleType
+
+    class _Materializer:
+        def materialize(self, portfolio):
+            assert type(portfolio) is api.ResearchPortfolio
+            return ResearchExecutionAuthorities.provider_neutral()
+
+    module_name = "_noetrium_test_research_execution_materializer"
+    module = ModuleType(module_name)
+    seen = []
+
+    def build(context):
+        seen.append(context)
+        return _Materializer()
+
+    module.build = build
+    monkeypatch.setitem(sys.modules, module_name, module)
+    context = ResearchExecutionContext(
+        tmp_path,
+        object.__new__(ManagedResearchRuntime),
+    )
+
+    materializer = load_research_execution_authority_materializer(
+        module_name + ":build",
+        context,
+    )
+
+    assert isinstance(materializer, _Materializer)
+    assert seen == [context]

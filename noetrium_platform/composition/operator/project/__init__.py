@@ -1,6 +1,5 @@
 from .project_execution_authority import (
     ProjectExecutionAuthorityConfig,
-    ProjectExecutionContext,
 )
 from noetrium_platform.composition.research_portfolio_execution import (
     ResearchExecutionAuthorities,
@@ -16,6 +15,5 @@ __all__ = [
     "LocalProjectExperience",
     "ProjectExecutionAuthorityConfig",
     "ResearchExecutionAuthorities",
-    "ProjectExecutionContext",
     "load_project_research_os",
 ]

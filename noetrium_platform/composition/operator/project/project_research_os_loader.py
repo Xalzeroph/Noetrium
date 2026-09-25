@@ -29,9 +29,11 @@ from noetrium_platform.product.research_os import (
 )
 
 from .project_execution_authority import (
-    ProjectExecutionContext,
     load_project_execution_authority_config,
     materialize_project_execution_authorities,
+)
+from noetrium_platform.composition.research_portfolio_execution import (
+    ResearchExecutionContext,
 )
 from .project_layout import project_package_name
 
@@ -189,16 +191,14 @@ def load_project_research_os(
             ),
         )
         try:
-            context = ProjectExecutionContext(
-                root,
+            context = ResearchExecutionContext(
                 state_root,
-                manifest,
-                portfolio,
                 managed_runtime,
             )
             authorities = materialize_project_execution_authorities(
                 config.authority_factory,
                 context,
+                portfolio,
             )
             composition = compose_local_research_os(
                 state_root,

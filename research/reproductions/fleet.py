@@ -19,8 +19,10 @@ from noetrium_platform.composition.research_binding_authority import (
 from noetrium_platform.composition.research_execution_pool import (
     ResearchExecutionPool,
 )
-from noetrium_platform.composition.research_os_local import (
-    compose_local_research_os,
+from noetrium_platform.composition.research_portfolio_execution import (
+    ResearchExecutionAuthorities,
+    execute_research_portfolio,
+    preflight_research_portfolio,
 )
 from noetrium_platform.composition.research_os_experiment import (
     ResearchOSExperimentClosure,
@@ -1054,8 +1056,10 @@ def preflight_materialized_reproduction_fleet(
     execution_id: str | None = None,
     execution_pool: ResearchExecutionPool | None = None,
 ) -> ReproductionFleetPreflightResult:
-    """Resolve the exact fleet and run canonical whole-graph admission only."""
+    """Repository discovery/materialization adapter over generic portfolio preflight."""
 
+    if type(fleet) is not ReproductionFleetMaterialization:
+        raise TypeError("fleet preflight requires ReproductionFleetMaterialization")
     if not isinstance(state_root, Path):
         raise TypeError("fleet preflight state_root must be pathlib.Path")
     if not isinstance(research_bindings, ResearchBindingAuthorityPort):
@@ -1067,36 +1071,31 @@ def preflight_materialized_reproduction_fleet(
         authority_manifest_digest,
         execution_id,
     )
-    revision = api.ResearchGraphRevision(
-        fleet.portfolio.portfolio_id,
-        fleet.portfolio.portfolio_digest,
-        (),
-        _fleet_revision_message(fleet, authority_manifest_digest),
+    authorities = ResearchExecutionAuthorities(
+        authority_manifest_digest,
+        ReproductionFleetExperimentClosureProvider(
+            fleet,
+            research_bindings,
+        ),
+        experiment_runtime_components,
     )
-    target = api.ResearchExecutionTarget(resolved_execution_id, revision)
-    closures = ReproductionFleetExperimentClosureProvider(
-        fleet,
-        research_bindings,
-    )
-    composition = compose_local_research_os(
-        state_root,
-        experiment_closures=closures,
-        experiment_runtime_components=experiment_runtime_components,
+    prepared = preflight_research_portfolio(
+        fleet.portfolio,
+        state_root=state_root,
+        authorities=authorities,
+        execution_id=resolved_execution_id,
+        message=_fleet_revision_message(fleet, authority_manifest_digest),
         execution_pool=execution_pool,
     )
-    try:
-        prepared = composition.prepare(target, fleet.portfolio)
-        return ReproductionFleetPreflightResult(
-            fleet,
-            authority_manifest_digest,
-            resolved_execution_id,
-            revision.revision_digest,
-            prepared.selected_node_ids,
-            tuple(row.admission_digest for row in prepared.admissions),
-            prepared.preflight_digest,
-        )
-    finally:
-        composition.close()
+    return ReproductionFleetPreflightResult(
+        fleet,
+        authority_manifest_digest,
+        prepared.execution_id,
+        prepared.revision_digest,
+        prepared.selected_node_ids,
+        prepared.admission_digests,
+        prepared.preflight_digest,
+    )
 
 
 def execute_materialized_reproduction_fleet(
@@ -1109,76 +1108,37 @@ def execute_materialized_reproduction_fleet(
     execution_id: str | None = None,
     execution_pool: ResearchExecutionPool | None = None,
 ):
-    """Commit and RUN one fully materialized fleet through canonical Research OS.
-
-    Durable stores, graph control, resource pool, value authority, Machine
-    journals and Experimentation runtime all come from the platform's single
-    local Research OS composition. No reproduction-owned launcher exists.
-    """
+    """Repository adapter over the cardinality-agnostic portfolio executor."""
 
     if type(fleet) is not ReproductionFleetMaterialization:
         raise TypeError("fleet execution requires ReproductionFleetMaterialization")
     if not isinstance(state_root, Path):
         raise TypeError("fleet execution state_root must be pathlib.Path")
-    if not isinstance(
-        research_bindings,
-        ResearchBindingAuthorityPort,
-    ):
+    if not isinstance(research_bindings, ResearchBindingAuthorityPort):
         raise TypeError("fleet execution requires research binding resolver")
     if type(experiment_runtime_components) is not ResearchOSExperimentRuntimeComponents:
         raise TypeError("fleet execution requires typed Experiment runtime components")
-    execution_id = _fleet_execution_id(
+    resolved_execution_id = _fleet_execution_id(
         fleet,
         authority_manifest_digest,
         execution_id,
     )
-
-    closures = ReproductionFleetExperimentClosureProvider(
-        fleet,
-        research_bindings,
+    authorities = ResearchExecutionAuthorities(
+        authority_manifest_digest,
+        ReproductionFleetExperimentClosureProvider(
+            fleet,
+            research_bindings,
+        ),
+        experiment_runtime_components,
     )
-    composition = compose_local_research_os(
-        state_root,
-        experiment_closures=closures,
-        experiment_runtime_components=experiment_runtime_components,
+    return execute_research_portfolio(
+        fleet.portfolio,
+        state_root=state_root,
+        authorities=authorities,
+        execution_id=resolved_execution_id,
+        message=_fleet_revision_message(fleet, authority_manifest_digest),
         execution_pool=execution_pool,
-    )
-    try:
-        # Build the exact would-be revision identity and prove the entire fleet
-        # admission closure before writing revision/blob state.  RUN performs
-        # the same fail-closed preflight again immediately before cut
-        # activation, so provider drift between proof and execution is detected
-        # without ever starting partial fleet work.
-        message = _fleet_revision_message(fleet, authority_manifest_digest)
-        prospective_revision = api.ResearchGraphRevision(
-            fleet.portfolio.portfolio_id,
-            fleet.portfolio.portfolio_digest,
-            (),
-            message,
-        )
-        prospective_target = api.ResearchExecutionTarget(
-            execution_id,
-            prospective_revision,
-        )
-        prepared = composition.prepare(
-            prospective_target,
-            fleet.portfolio,
-        )
-        if prepared.target != prospective_target:
-            raise ValueError("fleet preflight target identity drifted")
-
-        revision = composition.research_os.commit(
-            fleet.portfolio,
-            message=message,
-        )
-        if revision != prospective_revision:
-            raise ValueError(
-                "fleet revision commit drifted from preflighted revision identity"
-            )
-        target = api.ResearchExecutionTarget(execution_id, revision)
-        return composition.research_os.run(target)
-    finally:
-        composition.close()
+    ).receipt
 
 
 @dataclass(frozen=True, slots=True)
@@ -1262,12 +1222,26 @@ class ReproductionFleetExecutionResult:
                         self.materialization.materialization_digest
                     ),
                     "authority_manifest_digest": self.authority_manifest_digest,
-                    "receipt_digest": self.receipt.receipt_digest,
-                    "execution_id": self.receipt.target.execution_id,
-                    "revision_digest": (
-                        self.receipt.target.research_revision_digest
-                    ),
-                    "state": self.receipt.state,
+                    "receipt": {
+                        "action": self.receipt.action.value,
+                        "execution_id": self.receipt.target.execution_id,
+                        "revision_digest": (
+                            self.receipt.target.revision.revision_digest
+                        ),
+                        "node": (
+                            None
+                            if self.receipt.target.node is None
+                            else {
+                                "program_id": self.receipt.target.node.program_id,
+                                "node_id": self.receipt.target.node.node_id,
+                            }
+                        ),
+                        "state": self.receipt.state,
+                        "control_revision_digest": (
+                            self.receipt.control_revision_digest
+                        ),
+                        "payload": self.receipt.payload,
+                    },
                 }
             ),
         )

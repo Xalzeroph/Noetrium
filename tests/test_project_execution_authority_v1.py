@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import json
+import sys
+from types import ModuleType
 from pathlib import Path
 
 import pytest
@@ -9,9 +11,12 @@ from noetrium import api
 from noetrium_platform.composition.operator.project.project_execution_authority import (
     ProjectExecutionAuthorityConfig,
     load_project_execution_authority_config,
+    materialize_project_execution_authorities,
 )
+from noetrium_platform.composition.managed_research_runtime import ManagedResearchRuntime
 from noetrium_platform.composition.research_portfolio_execution import (
     ResearchExecutionAuthorities,
+    ResearchExecutionContext,
 )
 from noetrium_platform.composition.research_os_graph import (
     compile_research_portfolio_graph,
@@ -116,3 +121,47 @@ def test_project_execution_config_is_strict_and_fail_closed(tmp_path: Path) -> N
     )
     with pytest.raises(ValueError, match="unknown fields"):
         load_project_execution_authority_config(config)
+
+
+def test_project_config_materializes_through_generic_portfolio_seam(
+    monkeypatch,
+    tmp_path: Path,
+) -> None:
+    class _Materializer:
+        def materialize(self, portfolio):
+            assert type(portfolio) is api.ResearchPortfolio
+            return ResearchExecutionAuthorities.provider_neutral()
+
+    module_name = "_noetrium_test_project_materializer"
+    module = ModuleType(module_name)
+
+    def build(context):
+        assert type(context) is ResearchExecutionContext
+        return _Materializer()
+
+    module.build = build
+    monkeypatch.setitem(sys.modules, module_name, module)
+
+    builder = api.ResearchProgramBuilder("paper")
+    builder.definition(
+        "bootstrap",
+        kind=api.ResearchDefinitionKind.CUSTOM,
+        config={"kind": "test"},
+    )
+    builder.node(
+        "root",
+        kind=api.ResearchNodeKind.CUSTOM,
+        definitions=("bootstrap",),
+    )
+    portfolio = api.ResearchPortfolio("paper", (builder.freeze(),))
+    context = ResearchExecutionContext(
+        tmp_path,
+        object.__new__(ManagedResearchRuntime),
+    )
+
+    authorities = materialize_project_execution_authorities(
+        module_name + ":build",
+        context,
+        portfolio,
+    )
+    assert type(authorities) is ResearchExecutionAuthorities

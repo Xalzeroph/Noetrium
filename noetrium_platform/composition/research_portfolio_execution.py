@@ -8,6 +8,7 @@ composition, execution pool and shutdown path.
 from __future__ import annotations
 
 from contextlib import contextmanager
+import importlib
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Iterator, Protocol, runtime_checkable
@@ -169,6 +170,54 @@ class ResearchExecutionAuthorityMaterializerPort(Protocol):
         self,
         portfolio: ResearchPortfolio,
     ) -> ResearchExecutionAuthorities: ...
+
+
+def load_research_execution_authority_materializer(
+    spec: str,
+    context: ResearchExecutionContext,
+) -> ResearchExecutionAuthorityMaterializerPort:
+    """Load one public materializer factory for any ResearchPortfolio."""
+
+    if type(spec) is not str or not spec.strip() or spec != spec.strip():
+        raise ValueError(
+            "research execution authority materializer spec must be canonical text"
+        )
+    if type(context) is not ResearchExecutionContext:
+        raise TypeError(
+            "research execution authority materializer requires ResearchExecutionContext"
+        )
+    module_name, separator, qualname = spec.partition(":")
+    if (
+        separator != ":"
+        or not module_name
+        or not qualname
+        or ":" in qualname
+        or any(not part or part.startswith("_") for part in qualname.split("."))
+    ):
+        raise ValueError(
+            "research execution authority materializer must use public "
+            "module:factory format"
+        )
+    try:
+        value: object = importlib.import_module(module_name)
+        for part in qualname.split("."):
+            value = getattr(value, part)
+    except (ImportError, AttributeError) as exc:
+        raise ValueError(
+            "research execution authority materializer factory cannot be imported: "
+            f"{spec}"
+        ) from exc
+    if not callable(value):
+        raise TypeError(
+            "research execution authority materializer factory must be callable"
+        )
+    materializer = value(context)
+    if not isinstance(materializer, ResearchExecutionAuthorityMaterializerPort):
+        raise TypeError(
+            "research execution authority factory must return "
+            "ResearchExecutionAuthorityMaterializerPort"
+        )
+    return materializer
 
 
 @contextmanager
@@ -450,6 +499,7 @@ __all__ = [
     "ResearchPortfolioExecutionResult",
     "ResearchPortfolioPreflightResult",
     "execute_research_portfolio",
+    "load_research_execution_authority_materializer",
     "open_local_research_execution_context",
     "preflight_research_portfolio",
 ]

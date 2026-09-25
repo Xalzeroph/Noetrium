@@ -1,17 +1,14 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-import importlib
 import json
 from pathlib import Path
 
-from noetrium_platform.composition.managed_research_runtime import (
-    ManagedResearchRuntime,
-)
 from noetrium_platform.composition.research_portfolio_execution import (
     ResearchExecutionAuthorities,
+    ResearchExecutionContext,
+    load_research_execution_authority_materializer,
 )
-from noetrium_platform.foundation.portfolio.project.api import ProjectManifest
 from noetrium_platform.product.research_os import ResearchPortfolio
 
 
@@ -51,45 +48,6 @@ class ProjectExecutionAuthorityConfig:
             raise TypeError(
                 "project execution start_background_controllers must be boolean"
             )
-
-
-@dataclass(frozen=True, slots=True)
-class ProjectExecutionContext:
-    project_root: Path
-    state_root: Path
-    manifest: ProjectManifest
-    portfolio: ResearchPortfolio
-    runtime: ManagedResearchRuntime
-
-    def __post_init__(self) -> None:
-        if not isinstance(self.project_root, Path):
-            raise TypeError("project execution project_root must be pathlib.Path")
-        if not isinstance(self.state_root, Path):
-            raise TypeError("project execution state_root must be pathlib.Path")
-        if type(self.manifest) is not ProjectManifest:
-            raise TypeError("project execution manifest must be ProjectManifest")
-        if type(self.portfolio) is not ResearchPortfolio:
-            raise TypeError("project execution portfolio must be ResearchPortfolio")
-        if not isinstance(self.runtime, ManagedResearchRuntime):
-            raise TypeError(
-                "project execution runtime must be ManagedResearchRuntime"
-            )
-
-    @property
-    def execution_pool(self):
-        return self.runtime.execution_pool
-
-    @property
-    def management(self):
-        return self.runtime.management
-
-    @property
-    def resources(self):
-        return self.runtime.resources
-
-    @property
-    def model_replica_pool(self):
-        return self.runtime.model_replica_pool
 
 
 def load_project_execution_authority_config(
@@ -134,31 +92,23 @@ def load_project_execution_authority_config(
 
 def materialize_project_execution_authorities(
     spec: str,
-    context: ProjectExecutionContext,
-) -> ProjectExecutionAuthorities:
-    if type(context) is not ProjectExecutionContext:
+    context: ResearchExecutionContext,
+    portfolio: ResearchPortfolio,
+) -> ResearchExecutionAuthorities:
+    """Resolve project input through the cardinality-agnostic execution seam."""
+
+    if type(portfolio) is not ResearchPortfolio:
         raise TypeError(
-            "project authority materialization requires ProjectExecutionContext"
+            "project authority materialization requires ResearchPortfolio"
         )
-    config = ProjectExecutionAuthorityConfig(spec)
-    module_name, _separator, qualname = config.authority_factory.partition(":")
-    try:
-        value: object = importlib.import_module(module_name)
-        for part in qualname.split("."):
-            value = getattr(value, part)
-    except (ImportError, AttributeError) as exc:
-        raise ValueError(
-            "project execution authority factory cannot be imported: "
-            f"{config.authority_factory}"
-        ) from exc
-    if not callable(value):
-        raise TypeError(
-            "project execution authority factory target must be callable"
-        )
-    authorities = value(context)
+    materializer = load_research_execution_authority_materializer(
+        spec,
+        context,
+    )
+    authorities = materializer.materialize(portfolio)
     if type(authorities) is not ResearchExecutionAuthorities:
         raise TypeError(
-            "project execution authority factory must return "
+            "research execution authority materializer must return "
             "ResearchExecutionAuthorities"
         )
     return authorities
@@ -166,7 +116,6 @@ def materialize_project_execution_authorities(
 
 __all__ = [
     "ProjectExecutionAuthorityConfig",
-    "ProjectExecutionContext",
     "load_project_execution_authority_config",
     "materialize_project_execution_authorities",
 ]
