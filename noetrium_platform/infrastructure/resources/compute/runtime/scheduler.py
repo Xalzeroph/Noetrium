@@ -115,6 +115,166 @@ class _HostUsage:
     unbound_gpu_memory_bytes: dict[str, int] = field(default_factory=dict)
 
 
+def _increment_count(values: dict[str, int], key: str) -> dict[str, int]:
+    updated = dict(values)
+    updated[key] = updated.get(key, 0) + 1
+    return updated
+
+
+def _decrement_count(values: dict[str, int], key: str) -> dict[str, int]:
+    updated = dict(values)
+    current = updated.get(key, 0)
+    if current <= 0:
+        raise RuntimeError(f"compute GPU usage index underflow: {key}")
+    if current == 1:
+        updated.pop(key, None)
+    else:
+        updated[key] = current - 1
+    return updated
+
+
+def _add_allocation_usage(
+    usage: _HostUsage,
+    allocation: ComputeAllocation,
+) -> _HostUsage:
+    allocation_counts = dict(usage.gpu_allocation_counts)
+    exclusive_counts = dict(usage.gpu_exclusive_counts)
+    unbound_gpu_memory = dict(usage.unbound_gpu_memory_bytes)
+    for index, gpu_id in enumerate(allocation.gpu_ids):
+        allocation_counts = _increment_count(allocation_counts, gpu_id)
+        if allocation.gpu_sharing_mode is GpuSharingMode.IDLE_ONLY:
+            exclusive_counts = _increment_count(exclusive_counts, gpu_id)
+        if not allocation.is_bound:
+            reserved = (
+                0
+                if not allocation.gpu_memory_reservation_bytes
+                else allocation.gpu_memory_reservation_bytes[index]
+            )
+            unbound_gpu_memory[gpu_id] = (
+                unbound_gpu_memory.get(gpu_id, 0) + reserved
+            )
+    return _HostUsage(
+        cpu_cores=usage.cpu_cores + allocation.cpu_cores,
+        memory_bytes=usage.memory_bytes + allocation.memory_bytes,
+        unbound_cpu_cores=(
+            usage.unbound_cpu_cores
+            + (0 if allocation.is_bound else allocation.cpu_cores)
+        ),
+        unbound_memory_bytes=(
+            usage.unbound_memory_bytes
+            + (0 if allocation.is_bound else allocation.memory_bytes)
+        ),
+        gpu_allocation_counts=allocation_counts,
+        gpu_exclusive_counts=exclusive_counts,
+        unbound_gpu_memory_bytes=unbound_gpu_memory,
+    )
+
+
+def _remove_allocation_usage(
+    usage: _HostUsage,
+    allocation: ComputeAllocation,
+) -> _HostUsage:
+    allocation_counts = dict(usage.gpu_allocation_counts)
+    exclusive_counts = dict(usage.gpu_exclusive_counts)
+    unbound_gpu_memory = dict(usage.unbound_gpu_memory_bytes)
+    for index, gpu_id in enumerate(allocation.gpu_ids):
+        allocation_counts = _decrement_count(allocation_counts, gpu_id)
+        if allocation.gpu_sharing_mode is GpuSharingMode.IDLE_ONLY:
+            exclusive_counts = _decrement_count(exclusive_counts, gpu_id)
+        if not allocation.is_bound:
+            reserved = (
+                0
+                if not allocation.gpu_memory_reservation_bytes
+                else allocation.gpu_memory_reservation_bytes[index]
+            )
+            remaining = unbound_gpu_memory.get(gpu_id, 0) - reserved
+            if remaining < 0:
+                raise RuntimeError(
+                    f"compute GPU reservation index underflow: {gpu_id}"
+                )
+            if remaining:
+                unbound_gpu_memory[gpu_id] = remaining
+            else:
+                unbound_gpu_memory.pop(gpu_id, None)
+    updated = _HostUsage(
+        cpu_cores=usage.cpu_cores - allocation.cpu_cores,
+        memory_bytes=usage.memory_bytes - allocation.memory_bytes,
+        unbound_cpu_cores=(
+            usage.unbound_cpu_cores
+            - (0 if allocation.is_bound else allocation.cpu_cores)
+        ),
+        unbound_memory_bytes=(
+            usage.unbound_memory_bytes
+            - (0 if allocation.is_bound else allocation.memory_bytes)
+        ),
+        gpu_allocation_counts=allocation_counts,
+        gpu_exclusive_counts=exclusive_counts,
+        unbound_gpu_memory_bytes=unbound_gpu_memory,
+    )
+    if min(
+        updated.cpu_cores,
+        updated.memory_bytes,
+        updated.unbound_cpu_cores,
+        updated.unbound_memory_bytes,
+    ) < 0:
+        raise RuntimeError(
+            f"compute usage index underflow: {allocation.allocation_id}"
+        )
+    return updated
+
+
+def _bind_allocation_usage(
+    usage: _HostUsage,
+    allocation: ComputeAllocation,
+) -> _HostUsage:
+    if allocation.is_bound:
+        return usage
+    unbound_gpu_memory = dict(usage.unbound_gpu_memory_bytes)
+    for index, gpu_id in enumerate(allocation.gpu_ids):
+        reserved = (
+            0
+            if not allocation.gpu_memory_reservation_bytes
+            else allocation.gpu_memory_reservation_bytes[index]
+        )
+        remaining = unbound_gpu_memory.get(gpu_id, 0) - reserved
+        if remaining < 0:
+            raise RuntimeError(
+                f"compute GPU reservation index underflow: {gpu_id}"
+            )
+        if remaining:
+            unbound_gpu_memory[gpu_id] = remaining
+        else:
+            unbound_gpu_memory.pop(gpu_id, None)
+    updated = _HostUsage(
+        cpu_cores=usage.cpu_cores,
+        memory_bytes=usage.memory_bytes,
+        unbound_cpu_cores=usage.unbound_cpu_cores - allocation.cpu_cores,
+        unbound_memory_bytes=(
+            usage.unbound_memory_bytes - allocation.memory_bytes
+        ),
+        gpu_allocation_counts=dict(usage.gpu_allocation_counts),
+        gpu_exclusive_counts=dict(usage.gpu_exclusive_counts),
+        unbound_gpu_memory_bytes=unbound_gpu_memory,
+    )
+    if updated.unbound_cpu_cores < 0 or updated.unbound_memory_bytes < 0:
+        raise RuntimeError(
+            f"compute unbound usage index drifted: {allocation.allocation_id}"
+        )
+    return updated
+
+
+def _usage_is_empty(usage: _HostUsage) -> bool:
+    return not (
+        usage.cpu_cores
+        or usage.memory_bytes
+        or usage.unbound_cpu_cores
+        or usage.unbound_memory_bytes
+        or usage.gpu_allocation_counts
+        or usage.gpu_exclusive_counts
+        or usage.unbound_gpu_memory_bytes
+    )
+
+
 def _observe_gpu_runtime(observer: GpuRuntimeObserverPort | None) -> GpuRuntimeSnapshot | None:
     if observer is None:
         return None
@@ -512,39 +672,14 @@ class InMemoryComputeScheduler:
     def _release_usage_locked(self, row: ComputeAllocation) -> None:
         usage = self._usage_by_host.get(row.host_id)
         if usage is None:
-            raise RuntimeError(f"compute usage index missing for allocation: {row.allocation_id}")
-        remaining_gpus = set(usage.gpu_ids)
-        remaining_gpus.difference_update(row.gpu_ids)
-        next_usage = _HostUsage(
-            cpu_cores=usage.cpu_cores - row.cpu_cores,
-            memory_bytes=usage.memory_bytes - row.memory_bytes,
-            unbound_cpu_cores=(
-                usage.unbound_cpu_cores
-                - (0 if row.is_bound else row.cpu_cores)
-            ),
-            unbound_memory_bytes=(
-                usage.unbound_memory_bytes
-                - (0 if row.is_bound else row.memory_bytes)
-            ),
-            gpu_ids=remaining_gpus,
-        )
-        if (
-            next_usage.cpu_cores < 0
-            or next_usage.memory_bytes < 0
-            or next_usage.unbound_cpu_cores < 0
-            or next_usage.unbound_memory_bytes < 0
-        ):
-            raise RuntimeError(f"compute usage index underflow: {row.allocation_id}")
-        if (
-            next_usage.cpu_cores
-            or next_usage.memory_bytes
-            or next_usage.unbound_cpu_cores
-            or next_usage.unbound_memory_bytes
-            or next_usage.gpu_ids
-        ):
-            self._usage_by_host[row.host_id] = next_usage
-        else:
+            raise RuntimeError(
+                f"compute usage index missing for allocation: {row.allocation_id}"
+            )
+        next_usage = _remove_allocation_usage(usage, row)
+        if _usage_is_empty(next_usage):
             self._usage_by_host.pop(row.host_id, None)
+        else:
+            self._usage_by_host[row.host_id] = next_usage
 
     def _reconcile_expired_locked(
         self,
@@ -676,18 +811,18 @@ class InMemoryComputeScheduler:
                     gpu_ids=gpu_ids,
                     lease_fencing_token=granted.fencing_token,
                     lease_expires_at_epoch_s=granted.expires_at_epoch_s,
+                    gpu_sharing_mode=requirement.gpu_sharing_mode,
+                    gpu_memory_reservation_bytes=_gpu_memory_reservations(
+                        host,
+                        gpu_ids,
+                        requirement,
+                        runtime_snapshot,
+                    ),
                 )
                 usage = self._usage(host.host_id)
-                self._usage_by_host[host.host_id] = _HostUsage(
-                    cpu_cores=usage.cpu_cores + allocation.cpu_cores,
-                    memory_bytes=usage.memory_bytes + allocation.memory_bytes,
-                    unbound_cpu_cores=(
-                        usage.unbound_cpu_cores + allocation.cpu_cores
-                    ),
-                    unbound_memory_bytes=(
-                        usage.unbound_memory_bytes + allocation.memory_bytes
-                    ),
-                    gpu_ids=set(usage.gpu_ids).union(allocation.gpu_ids),
+                self._usage_by_host[host.host_id] = _add_allocation_usage(
+                    usage,
+                    allocation,
                 )
                 self._allocations[allocation_id] = allocation
                 self._request_digests[allocation_id] = request_digest
@@ -740,13 +875,7 @@ class InMemoryComputeScheduler:
                     f"{proof.allocation_id}"
                 )
             usage = self._usage(current.host_id)
-            if (
-                usage.unbound_cpu_cores < current.cpu_cores
-                or usage.unbound_memory_bytes < current.memory_bytes
-            ):
-                raise RuntimeError(
-                    f"compute unbound usage index drifted: {current.allocation_id}"
-                )
+            next_usage = _bind_allocation_usage(usage, current)
             updated = replace(
                 current,
                 binding_proof_digest=proof_digest,
@@ -755,15 +884,7 @@ class InMemoryComputeScheduler:
                 bound_at_epoch_s=proof.observed_at_epoch_s,
             )
             self._allocations[current.allocation_id] = updated
-            self._usage_by_host[current.host_id] = _HostUsage(
-                cpu_cores=usage.cpu_cores,
-                memory_bytes=usage.memory_bytes,
-                unbound_cpu_cores=usage.unbound_cpu_cores - current.cpu_cores,
-                unbound_memory_bytes=(
-                    usage.unbound_memory_bytes - current.memory_bytes
-                ),
-                gpu_ids=set(usage.gpu_ids),
-            )
+            self._usage_by_host[current.host_id] = next_usage
             return updated
 
     def replace_bound(
