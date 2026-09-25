@@ -2,6 +2,7 @@ import pytest
 
 from noetrium_platform.foundation.scope.api import ScopeIdentity, ScopeKind
 from noetrium_platform.infrastructure.resources.compute.api import (
+    ComputeBindingProof,
     ComputeHost,
     ComputeRequirement,
 )
@@ -10,6 +11,7 @@ from noetrium_platform.infrastructure.resources.compute.runtime import (
     InMemoryComputeInventory,
     SQLiteComputeScheduler,
 )
+from noetrium_platform.infrastructure.resources.lease.api import ResourceLeaseConflict
 from noetrium_platform.infrastructure.resources.lease.runtime import (
     InMemoryResourceLeaseRegistry,
     ManualLeaseClock,
@@ -96,6 +98,75 @@ def test_inmemory_renew_extends_expiry_without_changing_fencing():
     assert scheduler.reconcile_expired() == ()
 
 
+def _proof(
+    allocation,
+    *,
+    binder: str,
+    observed_at: float = 101.0,
+):
+    return ComputeBindingProof(
+        allocation_id=allocation.allocation_id,
+        host_id=allocation.host_id,
+        gpu_ids=allocation.gpu_ids,
+        lease_fencing_token=allocation.lease_fencing_token,
+        binder_identity_digest=binder,
+        observed_at_epoch_s=observed_at,
+        evidence_ref=f"runtime:{binder[:8]}",
+    )
+
+
+def test_inmemory_compute_binding_is_idempotent_and_rebind_is_cas_fenced():
+    clock = ManualLeaseClock(
+        elapsed_seconds=1.0,
+        wall_epoch_seconds=100.0,
+    )
+    scheduler = _memory_scheduler(clock)
+    allocation = scheduler.allocate(
+        "bound",
+        _scope(),
+        _req(),
+        ttl_seconds=30,
+    )
+    first_proof = _proof(allocation, binder="a" * 64)
+    first = scheduler.confirm_bound(first_proof)
+    assert first.is_bound
+    assert scheduler.confirm_bound(first_proof) == first
+
+    second_proof = _proof(allocation, binder="b" * 64, observed_at=102.0)
+    with pytest.raises(ResourceLeaseConflict, match="already bound"):
+        scheduler.confirm_bound(second_proof)
+
+    second = scheduler.replace_bound(
+        second_proof,
+        previous_binding_proof_digest=first_proof.digest(),
+    )
+    assert second.binding_binder_identity_digest == "b" * 64
+    with pytest.raises(ResourceLeaseConflict, match="lost prior generation"):
+        scheduler.replace_bound(
+            _proof(allocation, binder="c" * 64, observed_at=103.0),
+            previous_binding_proof_digest=first_proof.digest(),
+        )
+
+
+def test_inmemory_expired_compute_generation_cannot_be_bound():
+    clock = ManualLeaseClock(
+        elapsed_seconds=1.0,
+        wall_epoch_seconds=100.0,
+    )
+    scheduler = _memory_scheduler(clock)
+    allocation = scheduler.allocate(
+        "expired-bind",
+        _scope(),
+        _req(),
+        ttl_seconds=1,
+    )
+    clock.advance(1.0)
+    with pytest.raises(ResourceLeaseConflict, match="active lease authority"):
+        scheduler.confirm_bound(
+            _proof(allocation, binder="d" * 64, observed_at=102.0)
+        )
+
+
 def test_sqlite_exact_retry_survives_rebuild(tmp_path):
     clock = ManualLeaseClock(
         elapsed_seconds=1.0,
@@ -129,6 +200,52 @@ def test_sqlite_exact_retry_survives_rebuild(tmp_path):
 
     assert second == first
     assert second.lease_fencing_token == 1
+
+
+def test_sqlite_compute_binding_cas_survives_authority_rebuild(tmp_path):
+    clock = ManualLeaseClock(
+        elapsed_seconds=1.0,
+        wall_epoch_seconds=100.0,
+    )
+    database = tmp_path / "compute-binding.sqlite"
+    scheduler = SQLiteComputeScheduler(
+        database,
+        _inventory(),
+        clock=clock,
+    )
+    allocation = scheduler.allocate(
+        "bound",
+        _scope(),
+        _req(),
+        ttl_seconds=30,
+    )
+    first_proof = _proof(allocation, binder="a" * 64)
+    first = scheduler.confirm_bound(first_proof)
+
+    rebuilt = SQLiteComputeScheduler(
+        database,
+        _inventory(),
+        clock=clock,
+    )
+    assert rebuilt.allocations() == (first,)
+    second_proof = _proof(allocation, binder="b" * 64, observed_at=102.0)
+    second = rebuilt.replace_bound(
+        second_proof,
+        previous_binding_proof_digest=first_proof.digest(),
+    )
+    assert second.binding_binder_identity_digest == "b" * 64
+
+    restarted = SQLiteComputeScheduler(
+        database,
+        _inventory(),
+        clock=clock,
+    )
+    assert restarted.allocations() == (second,)
+    with pytest.raises(ResourceLeaseConflict, match="lost prior generation"):
+        restarted.replace_bound(
+            _proof(allocation, binder="c" * 64, observed_at=103.0),
+            previous_binding_proof_digest=first_proof.digest(),
+        )
 
 
 def test_sqlite_expiry_quarantines_then_recovery_reacquire_increments_fencing(
