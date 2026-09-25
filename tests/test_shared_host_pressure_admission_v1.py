@@ -7,6 +7,7 @@ import pytest
 
 from noetrium_platform.composition.shared_host_pressure import (
     ResourceCompetitionAdmissionGate,
+    ResourceCompetitionClass,
     ResourceCompetitionPolicy,
 )
 from noetrium_platform.foundation.kernel.concurrency.api import (
@@ -210,6 +211,53 @@ def test_io_pressure_gates_io_without_wasting_idle_cpu() -> None:
             deadline=None,
             cancellation=None,
         )
+
+
+def test_competition_decision_classifies_hard_safety_separately_from_soft_contention() -> None:
+    hard = _gate(
+        _MutableHostObserver(_status(memory_bytes=128 * 1024**2)),
+        mode=AdmissionMode.REJECT,
+    )
+    hard_decision = hard.decision("g", ExecutionLaneKind.CPU)
+    assert not hard_decision.admitted
+    assert hard_decision.reason == "memory-headroom"
+    assert hard_decision.competition_class is ResourceCompetitionClass.HARD_SAFETY
+
+    soft = _gate(
+        _MutableHostObserver(_status(cpu_pressure=99.0)),
+        mode=AdmissionMode.REJECT,
+    )
+    soft_decision = soft.decision("g", ExecutionLaneKind.CPU)
+    assert not soft_decision.admitted
+    assert soft_decision.reason == "cpu-pressure"
+    assert soft_decision.competition_class is ResourceCompetitionClass.SOFT_CONTENTION
+
+
+def test_default_competition_decision_admits_soft_contention() -> None:
+    admission = build_execution_admission(
+        budget=AdmissionBudget(max_total_in_flight=8),
+        scheduling=build_admission_scheduling_policy(priority_aging_seconds=0.01),
+    )
+    gate = ResourceCompetitionAdmissionGate(
+        admission,
+        _MutableHostObserver(
+            _status(
+                cpu_pressure=100.0,
+                memory_pressure=100.0,
+                io_pressure=100.0,
+            )
+        ),
+        policy=ResourceCompetitionPolicy(),
+    )
+    gate.register_group(
+        "aggressive",
+        identity=AdmissionIdentity(),
+        intent=AdmissionIntent(mode=AdmissionMode.REJECT),
+    )
+    decision = gate.decision("aggressive", ExecutionLaneKind.CPU)
+    assert decision.admitted
+    assert decision.reason is None
+    assert decision.competition_class is None
 
 
 def test_pid_headroom_blocks_expansion_before_cgroup_exhaustion() -> None:
