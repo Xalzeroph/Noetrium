@@ -51,6 +51,7 @@ from .concurrency import build_execution_concurrency_runtime
 from .shared_host_pressure import (
     ResourceCompetitionDemand,
     ResourceCompetitionPolicy,
+    ResourceCompetitionReservationLedger,
     SharedNetworkPressureObserverPort,
     SharedStoragePressureObserverPort,
 )
@@ -145,6 +146,9 @@ class ResearchExecutionPool:
         )
         self._shared_workload_cpu = None
         self._shared_workload_cpu_closed = False
+        self._resource_competition_reservations = (
+            ResourceCompetitionReservationLedger()
+        )
         try:
             self._shared_workload_cpu = build_cpu_worker_pool_provider(
                 shared_cpu_budget
@@ -157,6 +161,7 @@ class ResearchExecutionPool:
                 storage_pressure_observer=storage_pressure_observer,
                 network_pressure_observer=network_pressure_observer,
                 resource_competition_policy=resource_competition_policy,
+                resource_competition_reservations=self._resource_competition_reservations,
                 blocking_io_thread_name_prefix="research-orchestration-io",
                 timer_name="research-orchestration-timer",
                 cpu_provider=self._shared_workload_cpu,
@@ -169,6 +174,7 @@ class ResearchExecutionPool:
                 storage_pressure_observer=storage_pressure_observer,
                 network_pressure_observer=network_pressure_observer,
                 resource_competition_policy=resource_competition_policy,
+                resource_competition_reservations=self._resource_competition_reservations,
                 blocking_io_thread_name_prefix="research-experiment-io",
                 timer_name="research-experiment-timer",
                 cpu_provider=self._shared_workload_cpu,
@@ -179,6 +185,7 @@ class ResearchExecutionPool:
                 priority_aging_seconds=priority_aging_seconds,
                 host_runtime_observer=host_runtime_observer,
                 resource_competition_policy=resource_competition_policy,
+                resource_competition_reservations=self._resource_competition_reservations,
                 blocking_io_thread_name_prefix="research-model-io",
                 timer_name="research-model-timer",
                 cpu_provider=self._shared_workload_cpu,
