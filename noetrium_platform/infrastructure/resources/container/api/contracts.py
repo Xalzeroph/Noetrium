@@ -129,6 +129,7 @@ class ManagedDockerContainerLease:
 class DockerContainerReconciliation:
     removed_container_ids: tuple[str, ...]
     released_lease_ids: tuple[str, ...] = ()
+    quarantined_container_ids: tuple[str, ...] = ()
 
 
 __all__ = [
