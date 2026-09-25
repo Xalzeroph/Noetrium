@@ -6,6 +6,7 @@ from noetrium_platform.foundation.governance.architecture.system_graphs import d
 from noetrium_platform.infrastructure.resources.compute.api import ComputeGPU, ComputeHost, ComputeRequirement
 from noetrium_platform.infrastructure.resources.lease.api import ResourceIdentity, ResourceKind, ResourceLease, ResourceOwner
 from noetrium_platform.foundation.scope.api import PLATFORM_SCOPE, ScopeIdentity, ScopeKind
+from tests.resource_compute_support import idle_gpu_runtime_observer
 
 
 def test_platform_meta_composes_independent_authorities() -> None:
@@ -25,7 +26,9 @@ def test_platform_meta_composes_independent_authorities() -> None:
 
 
 def test_compute_scheduler_allocates_matching_gpu_without_embedding_host_policy_in_runs() -> None:
-    meta = build_in_memory_platform_meta()
+    meta = build_in_memory_platform_meta(
+        gpu_runtime_observer=idle_gpu_runtime_observer("0", "1")
+    )
     meta.compute_inventory.register_host(ComputeHost(
         "gpu01", PLATFORM_SCOPE, 64, 512 * 1024**3,
         gpus=(ComputeGPU("0", 80 * 1024**3, "H100"), ComputeGPU("1", 80 * 1024**3, "H100")),
