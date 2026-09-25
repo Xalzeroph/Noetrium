@@ -59,11 +59,59 @@ def vllm_deployment(
     port: int,
     host: str = "127.0.0.1",
     tensor_parallel: int = 1,
+    data_parallel: int = 1,
+    pipeline_parallel: int = 1,
     gpu_devices: tuple[str, ...] = (),
     extra_args: tuple[str, ...] = (),
 ) -> ModelDeploymentSpec:
     if type(port) is not int or not 1 <= port <= 65535:
         raise ValueError("vLLM deployment port must be Resource-assigned")
+    for name, value in (
+        ("tensor_parallel", tensor_parallel),
+        ("data_parallel", data_parallel),
+        ("pipeline_parallel", pipeline_parallel),
+    ):
+        if type(value) is not int or value <= 0:
+            raise ValueError(f"vLLM {name} must be a positive integer")
+    required_devices = tensor_parallel * data_parallel * pipeline_parallel
+    if gpu_devices and len(gpu_devices) != required_devices:
+        raise ValueError(
+            "vLLM GPU device count must equal tensor_parallel * "
+            "data_parallel * pipeline_parallel"
+        )
+    reserved_flags = (
+        "--model",
+        "--host",
+        "--port",
+        "--tensor-parallel-size",
+        "-tp",
+        "--data-parallel-size",
+        "-dp",
+        "--pipeline-parallel-size",
+        "-pp",
+    )
+    for argument in extra_args:
+        if any(
+            argument == flag or argument.startswith(flag + "=")
+            for flag in reserved_flags
+        ):
+            raise ValueError(
+                f"vLLM topology/endpoint argument is platform-owned: {argument}"
+            )
+    parallel_args = (
+        "--tensor-parallel-size",
+        str(tensor_parallel),
+        *(
+            ("--data-parallel-size", str(data_parallel))
+            if data_parallel != 1
+            else ()
+        ),
+        *(
+            ("--pipeline-parallel-size", str(pipeline_parallel))
+            if pipeline_parallel != 1
+            else ()
+        ),
+    )
     return ModelDeploymentSpec(
         deployment_id=deployment_id,
         scope=scope,
@@ -81,8 +129,7 @@ def vllm_deployment(
             host,
             "--port",
             str(port),
-            "--tensor-parallel-size",
-            str(tensor_parallel),
+            *parallel_args,
             *extra_args,
         ),
         cwd=cwd,
