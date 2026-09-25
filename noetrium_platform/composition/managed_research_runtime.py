@@ -49,7 +49,7 @@ from .resource_lifecycle import ManagedResourceReconciler
 from .shared_host_pressure import (
     LocalSharedNetworkPressureObserver,
     LocalSharedStoragePressureObserver,
-    SharedHostPressurePolicy,
+    ResourceCompetitionPolicy,
 )
 
 
@@ -345,7 +345,7 @@ def build_local_managed_research_runtime(
     start_background_controllers: bool = True,
     model_reconcile_interval_seconds: float = 10.0,
     resource_reconcile_interval_seconds: float = 30.0,
-    shared_host_pressure_policy: SharedHostPressurePolicy | None = None,
+    resource_competition_policy: ResourceCompetitionPolicy | None = None,
 ) -> ManagedResearchRuntime:
     runtime_lock = InterprocessFileLock(
         layout.locks / "managed-research-runtime.lock",
@@ -369,7 +369,7 @@ def build_local_managed_research_runtime(
         host_runtime_observer=host_pressure_observer,
         storage_pressure_observer=storage_pressure_observer,
         network_pressure_observer=network_pressure_observer,
-        shared_host_pressure_policy=shared_host_pressure_policy,
+        resource_competition_policy=resource_competition_policy,
         exclusive_owner_generation=True,
         )
         group = pool.open_orchestration_group(
