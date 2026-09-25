@@ -60,6 +60,8 @@ class ResourceOwner:
     def __post_init__(self) -> None:
         if type(self.resource) is not ResourceIdentity:
             raise TypeError("resource owner resource must be ResourceIdentity")
+        if type(self.ownership) is not ResourceOwnership:
+            raise TypeError("resource owner ownership must be ResourceOwnership")
 
 
 @dataclass(frozen=True, slots=True)
