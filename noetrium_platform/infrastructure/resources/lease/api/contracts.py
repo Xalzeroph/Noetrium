@@ -41,6 +41,8 @@ class ResourceIdentity:
     def __post_init__(self) -> None:
         if type(self.kind) is not ResourceKind:
             raise TypeError("resource kind must be ResourceKind")
+        if type(self.resource_id) is not str:
+            raise TypeError("resource_id must be str")
         if not self.resource_id.strip():
             raise ValueError("resource_id must be non-empty")
 
