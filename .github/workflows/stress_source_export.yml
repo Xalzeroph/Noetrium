@@ -1,0 +1,29 @@
+name: stress-source-export
+
+on:
+  push:
+    branches:
+      - stress-export-19f4b32a2d9c
+
+permissions:
+  contents: read
+
+jobs:
+  export:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Archive exact main snapshot
+        run: |
+          git archive --format=tar.gz --output "$RUNNER_TEMP/noetrium-19f4b32a2d9c6e9ce7af4ec3405dd0beb3fcc3e6.tar.gz" 19f4b32a2d9c6e9ce7af4ec3405dd0beb3fcc3e6
+          sha256sum "$RUNNER_TEMP/noetrium-19f4b32a2d9c6e9ce7af4ec3405dd0beb3fcc3e6.tar.gz" > "$RUNNER_TEMP/noetrium-19f4b32a2d9c6e9ce7af4ec3405dd0beb3fcc3e6.tar.gz.sha256"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: noetrium-stress-source-19f4b32a2d9c6e9ce7af4ec3405dd0beb3fcc3e6
+          path: |
+            ${{ runner.temp }}/noetrium-19f4b32a2d9c6e9ce7af4ec3405dd0beb3fcc3e6.tar.gz
+            ${{ runner.temp }}/noetrium-19f4b32a2d9c6e9ce7af4ec3405dd0beb3fcc3e6.tar.gz.sha256
+          if-no-files-found: error
