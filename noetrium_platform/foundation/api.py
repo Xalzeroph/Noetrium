@@ -83,6 +83,7 @@ from noetrium_platform.infrastructure.reliability.api import (
 
 from noetrium_platform.infrastructure.resources.api import (
     ComputeAllocation,
+    ComputeBindingProof,
     ComputeLeaseGuardFactoryPort,
     ComputeLeaseGuardPort,
     ComputePlacementUnavailable,
@@ -143,6 +144,7 @@ __all__ = (
     "CompositionIdentity",
     "CompositionSubject",
     "ComputeAllocation",
+    "ComputeBindingProof",
     "ComputeLeaseGuardFactoryPort",
     "ComputeLeaseGuardPort",
     "ComputePlacementUnavailable",
