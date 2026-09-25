@@ -70,25 +70,78 @@ class LocalHostRuntimeObserver:
         return None
 
     @staticmethod
-    def _available_pids() -> int | None:
-        limit = LocalHostRuntimeObserver._integer_file(Path("/sys/fs/cgroup/pids.max"))
-        current = LocalHostRuntimeObserver._integer_file(Path("/sys/fs/cgroup/pids.current"))
-        if limit is None or current is None or limit < 0 or current < 0:
+    def _system_available_pids() -> int | None:
+        pid_max = LocalHostRuntimeObserver._integer_file(
+            Path("/proc/sys/kernel/pid_max")
+        )
+        if pid_max is None or pid_max <= 0:
             return None
-        return max(0, limit - current)
+        try:
+            fields = Path("/proc/loadavg").read_text(
+                "utf-8", errors="replace"
+            ).split()
+            running_total = fields[3].split("/", 1)
+            total_tasks = int(running_total[1])
+        except (OSError, IndexError, ValueError):
+            return None
+        if total_tasks < 0:
+            return None
+        return max(0, pid_max - total_tasks)
+
+    @staticmethod
+    def _available_pids() -> int | None:
+        values: list[int] = []
+        limit = LocalHostRuntimeObserver._integer_file(
+            Path("/sys/fs/cgroup/pids.max")
+        )
+        current = LocalHostRuntimeObserver._integer_file(
+            Path("/sys/fs/cgroup/pids.current")
+        )
+        if (
+            limit is not None
+            and current is not None
+            and limit >= 0
+            and current >= 0
+        ):
+            values.append(max(0, limit - current))
+        system = LocalHostRuntimeObserver._system_available_pids()
+        if system is not None:
+            values.append(system)
+        return None if not values else min(values)
+
+    @staticmethod
+    def _system_available_fds() -> int | None:
+        try:
+            fields = Path("/proc/sys/fs/file-nr").read_text(
+                "utf-8", errors="replace"
+            ).split()
+            allocated = int(fields[0])
+            unused = int(fields[1])
+            maximum = int(fields[2])
+        except (OSError, IndexError, ValueError):
+            return None
+        if allocated < 0 or unused < 0 or maximum <= 0:
+            return None
+        in_use = max(0, allocated - unused)
+        return max(0, maximum - in_use)
 
     @staticmethod
     def _available_fds() -> int | None:
-        if resource is None:
-            return None
-        try:
-            soft, _hard = resource.getrlimit(resource.RLIMIT_NOFILE)
-            if soft == resource.RLIM_INFINITY or int(soft) < 0:
-                return None
-            in_use = sum(1 for _entry in Path("/proc/self/fd").iterdir())
-        except (OSError, ValueError):
-            return None
-        return max(0, int(soft) - in_use)
+        values: list[int] = []
+        if resource is not None:
+            try:
+                soft, _hard = resource.getrlimit(resource.RLIMIT_NOFILE)
+                if soft != resource.RLIM_INFINITY and int(soft) >= 0:
+                    in_use = sum(
+                        1 for _entry in Path("/proc/self/fd").iterdir()
+                    )
+                    values.append(max(0, int(soft) - in_use))
+            except (OSError, ValueError):
+                pass
+        system = LocalHostRuntimeObserver._system_available_fds()
+        if system is not None:
+            values.append(system)
+        return None if not values else min(values)
 
     @staticmethod
     def _effective_cpu_cores() -> float | None:
