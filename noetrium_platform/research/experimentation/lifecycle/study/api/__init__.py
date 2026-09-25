@@ -33,6 +33,8 @@ from .measurement import (
     MeasurementDefinition,
     MeasurementProtocol,
     MeasurementRecord,
+    MeasurementSetDisposition,
+    MeasurementSetOutcome,
     MeasurementValue,
     MeasurementValueKind,
 )
@@ -40,7 +42,8 @@ from .trial import (
     TaskVerifierArtifact, TaskVerifierPort, TaskVerifierReceipt,
     TaskVerifierRequest, TrialExecutionReceipt, TrialExecutionRequest,
     TrialExecutionStageReceipt, TrialMatrixExecutionReport,
-    TrialMeasurementProjectionPort, TrialProviderPort, TrialTaskProjectionPort,
+    TrialMeasurementProjectionPort, TrialMeasurementsUnscored,
+    TrialProviderPort, TrialTaskProjectionPort,
 )
 from .research_read import StudyResearchReadPort, StudyResearchReadSnapshot
 from .ports import (
@@ -73,6 +76,7 @@ __all__ = [
     "StudyResearchReadSnapshot",
     "TrialMatrixExecutionReport",
     "TrialMeasurementProjectionPort",
+    "TrialMeasurementsUnscored",
     "TrialExecutionRequest",
     "TrialExecutionReceipt",
     "TrialExecutionStageReceipt",
@@ -111,6 +115,8 @@ __all__ = [
     "MeasurementDefinition",
     "MeasurementProtocol",
     "MeasurementRecord",
+    "MeasurementSetDisposition",
+    "MeasurementSetOutcome",
     "MeasurementValue",
     "MeasurementValueKind",
     "StudyAssignment",
