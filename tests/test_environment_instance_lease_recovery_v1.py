@@ -11,6 +11,7 @@ from noetrium_platform.capabilities.environment.catalog.api import (
     EnvironmentProfileRevision,
 )
 from noetrium_platform.capabilities.environment.catalog.runtime import (
+    EnvironmentCatalogNotFound,
     ExecutionEnvironmentCatalog,
     SQLiteExecutionEnvironmentCatalog,
 )
@@ -33,6 +34,7 @@ from noetrium_platform.infrastructure.resources.lease.api import (
 )
 from noetrium_platform.infrastructure.resources.lease.runtime import (
     InMemoryResourceLeaseRegistry,
+    ManualLeaseClock,
 )
 from noetrium_platform.infrastructure.resources.providers import (
     SQLiteResourceLeaseRegistry,
@@ -136,7 +138,11 @@ def test_environment_instance_expired_lease_becomes_dirty_and_is_not_reused() ->
     scopes.register(scope, PLATFORM_SCOPE)
     catalog = ExecutionEnvironmentCatalog(scopes)
     materialization, _instance = _prepare_catalog(catalog, scope)
-    resources = InMemoryResourceLeaseRegistry()
+    clock = ManualLeaseClock(
+        elapsed_seconds=1.0,
+        wall_epoch_seconds=100.0,
+    )
+    resources = InMemoryResourceLeaseRegistry(clock=clock)
     authority = EnvironmentInstanceLeaseAuthority(
         catalog=catalog,
         ownership=resources,
@@ -158,7 +164,8 @@ def test_environment_instance_expired_lease_becomes_dirty_and_is_not_reused() ->
     )
     assert handle.lease.expires_at_epoch_s is not None
 
-    report = authority.reconcile(now=handle.lease.expires_at_epoch_s + 1.0)
+    clock.advance(1.0)
+    report = authority.reconcile()
     assert report.dirtied_instance_ids == (handle.instance.instance_id,)
     assert catalog.bindings() == ()
     current = catalog.instances()[0]
@@ -182,7 +189,11 @@ def test_environment_instance_restart_reconciliation_persists_dirty_state(tmp_pa
     scopes.register(scope, PLATFORM_SCOPE)
     catalog = SQLiteExecutionEnvironmentCatalog(environment_db, scopes)
     materialization, _instance = _prepare_catalog(catalog, scope)
-    resources = SQLiteResourceLeaseRegistry(resource_db)
+    clock = ManualLeaseClock(
+        elapsed_seconds=1.0,
+        wall_epoch_seconds=100.0,
+    )
+    resources = SQLiteResourceLeaseRegistry(resource_db, clock=clock)
     authority = EnvironmentInstanceLeaseAuthority(
         catalog=catalog,
         ownership=resources,
@@ -209,11 +220,12 @@ def test_environment_instance_restart_reconciliation_persists_dirty_state(tmp_pa
             environment_db,
             SQLiteScopeRegistry(resource_db),
         ),
-        ownership=SQLiteResourceLeaseRegistry(resource_db),
-        leases=SQLiteResourceLeaseRegistry(resource_db),
+        ownership=SQLiteResourceLeaseRegistry(resource_db, clock=clock),
+        leases=SQLiteResourceLeaseRegistry(resource_db, clock=clock),
         reconcile_on_start=False,
     )
-    report = restarted.reconcile(now=handle.lease.expires_at_epoch_s + 1.0)
+    clock.advance(1.0)
+    report = restarted.reconcile()
     assert report.dirtied_instance_ids == (handle.instance.instance_id,)
 
     reopened = SQLiteExecutionEnvironmentCatalog(
@@ -252,7 +264,7 @@ def test_environment_instance_lease_conflict_compensates_to_dirty() -> None:
         reconcile_on_start=False,
     )
 
-    with pytest.raises(RuntimeError):
+    with pytest.raises(EnvironmentCatalogNotFound):
         authority.acquire_reusable_instance(
             PROFILE_ID,
             PROFILE_REVISION,
@@ -265,6 +277,9 @@ def test_environment_instance_lease_conflict_compensates_to_dirty() -> None:
 
     assert catalog.bindings() == ()
     assert catalog.instances()[0].state is EnvironmentInstanceState.DIRTY
+    active = resources.active_for(resource)
+    assert len(active) == 1
+    assert active[0].lease_id == "conflicting-environment-holder"
 
 
 def test_environment_shutdown_cleanup_marks_live_generation_dirty() -> None:
