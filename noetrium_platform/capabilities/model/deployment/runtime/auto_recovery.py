@@ -144,10 +144,44 @@ def _sha(value: str, field: str) -> None:
 
 
 def _time_value(value: float, field: str) -> float:
+    if isinstance(value, bool) or not isinstance(value, (int, float)):
+        raise TypeError(
+            f"model auto-recovery {field} must be a real number"
+        )
     resolved = float(value)
     if not math.isfinite(resolved) or resolved < 0:
         raise ValueError(
             f"model auto-recovery {field} must be finite and non-negative"
+        )
+    return resolved
+
+
+def _decoded_int(payload: dict[str, object], field: str) -> int:
+    value = payload[field]
+    if type(value) is not int or value < 0:
+        raise RuntimeError(
+            f"model auto-recovery {field} must be a non-negative integer"
+        )
+    return value
+
+
+def _decoded_time(
+    payload: dict[str, object],
+    field: str,
+    *,
+    optional: bool = False,
+) -> float | None:
+    value = payload[field]
+    if optional and value is None:
+        return None
+    if isinstance(value, bool) or not isinstance(value, (int, float)):
+        raise RuntimeError(
+            f"model auto-recovery {field} must be a finite timestamp"
+        )
+    resolved = float(value)
+    if not math.isfinite(resolved) or resolved < 0:
+        raise RuntimeError(
+            f"model auto-recovery {field} must be a finite timestamp"
         )
     return resolved
 
@@ -249,45 +283,67 @@ class DurableModelAutoRecoveryAuthority:
             raise RuntimeError(
                 "model auto-recovery circuit_open must be boolean"
             )
+        deployment_value = decoded["deployment_id"]
+        digest_value = decoded["desired_spec_digest"]
+        if type(deployment_value) is not str or not deployment_value.strip():
+            raise RuntimeError(
+                "model auto-recovery deployment_id must be non-empty text"
+            )
+        if type(digest_value) is not str:
+            raise RuntimeError(
+                "model auto-recovery desired_spec_digest must be text"
+            )
+        attempts_value = decoded["attempt_timestamps"]
+        if type(attempts_value) is not list:
+            raise RuntimeError(
+                "model auto-recovery attempt_timestamps must be an array"
+            )
+        attempt_timestamps = tuple(
+            _decoded_time({"value": value}, "value")
+            for value in attempts_value
+        )
+        active_claim_value = decoded["active_claim_id"]
+        failure_digest_value = decoded["last_failure_digest"]
+        if active_claim_value is not None and type(active_claim_value) is not str:
+            raise RuntimeError(
+                "model auto-recovery active_claim_id must be text or null"
+            )
+        if failure_digest_value is not None and type(failure_digest_value) is not str:
+            raise RuntimeError(
+                "model auto-recovery last_failure_digest must be text or null"
+            )
         state = ModelAutoRecoveryState(
-            deployment_id=str(decoded["deployment_id"]),
-            desired_spec_digest=str(decoded["desired_spec_digest"]),
-            attempt_timestamps=tuple(
-                float(x) for x in decoded["attempt_timestamps"]
+            deployment_id=deployment_value,
+            desired_spec_digest=digest_value,
+            attempt_timestamps=attempt_timestamps,
+            active_claim_id=active_claim_value,
+            active_claimed_at_epoch_s=_decoded_time(
+                decoded,
+                "active_claimed_at_epoch_s",
+                optional=True,
             ),
-            active_claim_id=(
-                None
-                if decoded["active_claim_id"] is None
-                else str(decoded["active_claim_id"])
-            ),
-            active_claimed_at_epoch_s=(
-                None
-                if decoded["active_claimed_at_epoch_s"] is None
-                else float(decoded["active_claimed_at_epoch_s"])
-            ),
-            last_failure_digest=(
-                None
-                if decoded["last_failure_digest"] is None
-                else str(decoded["last_failure_digest"])
-            ),
-            same_failure_streak=int(decoded["same_failure_streak"]),
-            next_retry_at_epoch_s=(
-                None
-                if decoded["next_retry_at_epoch_s"] is None
-                else float(decoded["next_retry_at_epoch_s"])
+            last_failure_digest=failure_digest_value,
+            same_failure_streak=_decoded_int(decoded, "same_failure_streak"),
+            next_retry_at_epoch_s=_decoded_time(
+                decoded,
+                "next_retry_at_epoch_s",
+                optional=True,
             ),
             circuit_open=decoded["circuit_open"],
-            running_since_epoch_s=(
-                None
-                if decoded["running_since_epoch_s"] is None
-                else float(decoded["running_since_epoch_s"])
+            running_since_epoch_s=_decoded_time(
+                decoded,
+                "running_since_epoch_s",
+                optional=True,
             ),
-            total_attempts=int(decoded["total_attempts"]),
-            attempts_since_reset=int(decoded["attempts_since_reset"]),
-            total_failures=int(decoded["total_failures"]),
-            circuit_trip_count=int(decoded["circuit_trip_count"]),
-            manual_reset_count=int(decoded["manual_reset_count"]),
-            updated_at_epoch_s=float(decoded["updated_at_epoch_s"]),
+            total_attempts=_decoded_int(decoded, "total_attempts"),
+            attempts_since_reset=_decoded_int(decoded, "attempts_since_reset"),
+            total_failures=_decoded_int(decoded, "total_failures"),
+            circuit_trip_count=_decoded_int(decoded, "circuit_trip_count"),
+            manual_reset_count=_decoded_int(decoded, "manual_reset_count"),
+            updated_at_epoch_s=_decoded_time(
+                decoded,
+                "updated_at_epoch_s",
+            ),
         )
         if (
             state.deployment_id != deployment_id
