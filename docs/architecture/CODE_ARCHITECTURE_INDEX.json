@@ -79145,7 +79145,9 @@
         "_integer_file",
         "_meminfo_bytes",
         "_pressure_some_avg10_percent",
+        "_system_available_pids",
         "_available_pids",
+        "_system_available_fds",
         "_available_fds",
         "_effective_cpu_cores",
         "_effective_available_memory",
@@ -146007,7 +146009,7 @@
   "parse_errors": [],
   "registry_sha256": "276e2729e0b700e814e98f8460d87e0ebee66c4620226fe2d880fe55cc970aec",
   "schema": "noetrium-code-architecture-index.v1",
-  "source_git_sha": "b4f5110f7089680ee08259de624e14c04cf603b5",
+  "source_git_sha": "578155d50225d7cb86cb6a1a299c2851785fdece",
   "system_import_edges": [
     {
       "count": 85,

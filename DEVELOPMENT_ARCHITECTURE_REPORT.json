@@ -873,7 +873,7 @@
     }
   ],
   "package_cycles": [],
-  "report_sha256": "506d84892b4b4c82258066697355c695019b0f4b081190f1c4ea5397129f65a7",
+  "report_sha256": "dcaee0642e09a7961a109617e951173cbbcf841bb80f06a0ee7810ceb2d97092",
   "source_authority_violations": [
     {
       "allowed_modules": [
@@ -892,7 +892,7 @@
       ],
       "authority": "kernel.blocking_wait",
       "detail": "time.sleep is a protected mutation primitive; authority belongs to noetrium_platform.foundation.kernel.kernel.retry",
-      "line": 532,
+      "line": 559,
       "module": "noetrium_platform.composition.shared_host_pressure",
       "path": "noetrium_platform/composition/shared_host_pressure.py",
       "primitive": "time.sleep"
@@ -931,7 +931,7 @@
       "primitive": "Path.write_text"
     }
   ],
-  "source_digest": "433da353e8f2f6bfe096ebdc8ace3373dc827b21d383bb1281f40c9cff1de586",
+  "source_digest": "3ebd8420ca243c2018eec4cca1a9919c8ab8cd90b07447eab3f5be37aaaeb68e",
   "source_invariant_violations": [
     {
       "detail": "direct SQLite rollback bypasses the canonical Platform durability authority; use abort_sqlite_writer() or rollback_sqlite_writer()",
