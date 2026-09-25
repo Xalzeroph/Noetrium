@@ -18,12 +18,12 @@ jobs:
           fetch-depth: 0
       - name: Archive exact main snapshot
         run: |
-          git archive --format=tar.gz --output "$RUNNER_TEMP/noetrium-849a75273831b313afdbd469441eecd389cead78.tar.gz" 849a75273831b313afdbd469441eecd389cead78
-          sha256sum "$RUNNER_TEMP/noetrium-849a75273831b313afdbd469441eecd389cead78.tar.gz" > "$RUNNER_TEMP/noetrium-849a75273831b313afdbd469441eecd389cead78.tar.gz.sha256"
+          git archive --format=tar.gz --output "$RUNNER_TEMP/noetrium-fa2573769e0dcde1d80ba350bf6091c642e09f54.tar.gz" fa2573769e0dcde1d80ba350bf6091c642e09f54
+          sha256sum "$RUNNER_TEMP/noetrium-fa2573769e0dcde1d80ba350bf6091c642e09f54.tar.gz" > "$RUNNER_TEMP/noetrium-fa2573769e0dcde1d80ba350bf6091c642e09f54.tar.gz.sha256"
       - uses: actions/upload-artifact@v4
         with:
-          name: noetrium-stress-source-849a75273831b313afdbd469441eecd389cead78
+          name: noetrium-stress-source-fa2573769e0dcde1d80ba350bf6091c642e09f54
           path: |
-            ${{ runner.temp }}/noetrium-849a75273831b313afdbd469441eecd389cead78.tar.gz
-            ${{ runner.temp }}/noetrium-849a75273831b313afdbd469441eecd389cead78.tar.gz.sha256
+            ${{ runner.temp }}/noetrium-fa2573769e0dcde1d80ba350bf6091c642e09f54.tar.gz
+            ${{ runner.temp }}/noetrium-fa2573769e0dcde1d80ba350bf6091c642e09f54.tar.gz.sha256
           if-no-files-found: error
