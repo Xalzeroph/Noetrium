@@ -172,24 +172,6 @@ class ComputePhysicalConvergencePending(RuntimeError):
         )
 
 
-def _gpu_allocation_physically_converged(
-    allocation: ComputeAllocation,
-    snapshot: GpuRuntimeSnapshot | None,
-) -> bool:
-    if not allocation.gpu_ids:
-        return True
-    runtime = _gpu_runtime_index(snapshot)
-    if runtime is None or not runtime.processes_complete:
-        return False
-    for gpu_id in allocation.gpu_ids:
-        device = runtime.devices_by_id.get(gpu_id)
-        if device is None:
-            return False
-        if runtime.process_count_by_uuid.get(device.uuid, 0) > 0:
-            return False
-    return True
-
-
 def _host_runtime_index(
     snapshot: HostRuntimeSnapshot | None,
 ) -> dict[str, HostRuntimeStatus] | None:
@@ -644,33 +626,34 @@ class InMemoryComputeScheduler:
             return ()
 
     def release(self, allocation: ComputeAllocation) -> None:
+        """Release one exact live-owner generation after its upper owner stopped.
+
+        This authority fences the allocation generation but does not own process
+        identity. A foreign process may have occupied the same GPU after the
+        caller stopped its exact process/container generation, so whole-device
+        idleness is not an ownership proof and must not pin the old lease.
+        """
         if type(allocation) is not ComputeAllocation:
             raise TypeError("compute release requires ComputeAllocation")
-        runtime_snapshot = _observe_gpu_runtime(self._gpu_runtime_observer)
         with self._lock:
             row = self._allocations.get(allocation.allocation_id)
             if row is None:
                 return
             _require_compute_generation(row, allocation)
-            if not _gpu_allocation_physically_converged(row, runtime_snapshot):
-                raise ComputePhysicalConvergencePending((row,))
             self._leases.release(f"compute:{allocation.allocation_id}", fencing_token=row.lease_fencing_token)
             self._allocations.pop(allocation.allocation_id, None)
             self._release_usage_locked(row)
 
     def recover_release(self, allocation: ComputeAllocation) -> None:
-        """Retire one exact generation only after physical GPU convergence."""
+        """Retire one exact generation after upper recovery proves convergence."""
 
         if type(allocation) is not ComputeAllocation:
             raise TypeError("compute recovery release requires ComputeAllocation")
-        runtime_snapshot = _observe_gpu_runtime(self._gpu_runtime_observer)
         with self._lock:
             row = self._allocations.get(allocation.allocation_id)
             if row is None:
                 return
             _require_compute_generation(row, allocation)
-            if not _gpu_allocation_physically_converged(row, runtime_snapshot):
-                raise ComputePhysicalConvergencePending((row,))
             lease = self._leases.get(
                 f"compute:{allocation.allocation_id}",
             )
@@ -1177,18 +1160,13 @@ class SQLiteComputeScheduler:
                 raise
 
     def release(self, allocation: ComputeAllocation) -> None:
+        """Release exact live-owner bookkeeping after upper teardown converged."""
         if type(allocation) is not ComputeAllocation:
             raise TypeError("compute release requires ComputeAllocation")
-        runtime_snapshot = _observe_gpu_runtime(self._gpu_runtime_observer)
         with self._connection() as conn:
             begin_immediate_sqlite_transaction(conn, timeout_seconds=self.timeout_seconds)
             try:
                 now_epoch_s = self._authority_now(conn, None)
-                self._cleanup_expired(
-                    conn,
-                    now_epoch_s,
-                    runtime_snapshot,
-                )
                 current = self._active_row(
                     conn,
                     allocation.allocation_id,
@@ -1198,11 +1176,6 @@ class SQLiteComputeScheduler:
                     conn.commit()
                     return
                 _require_compute_generation(current, allocation)
-                if not _gpu_allocation_physically_converged(
-                    current,
-                    runtime_snapshot,
-                ):
-                    raise ComputePhysicalConvergencePending((current,))
                 release_resource_lease(
                     conn,
                     f"compute:{allocation.allocation_id}",
@@ -1229,13 +1202,10 @@ class SQLiteComputeScheduler:
                 raise
 
     def recover_release(self, allocation: ComputeAllocation) -> None:
-        """Retire one exact generation only after physical GPU convergence."""
+        """Retire one exact generation after upper recovery proves convergence."""
 
         if type(allocation) is not ComputeAllocation:
             raise TypeError("compute recovery release requires ComputeAllocation")
-        runtime_snapshot = _observe_gpu_runtime(self._gpu_runtime_observer)
-        if not _gpu_allocation_physically_converged(allocation, runtime_snapshot):
-            raise ComputePhysicalConvergencePending((allocation,))
         with self._connection() as conn:
             begin_immediate_sqlite_transaction(
                 conn,
