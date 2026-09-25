@@ -463,17 +463,54 @@ class InMemoryEndpointAllocator(EndpointAllocationPort):
             )
         )
 
-    def allocate(self, request: EndpointAllocationRequest) -> EndpointAllocation:
-        self.reconcile()
-        request_digest = request.digest()
+    def _reconcile_existing_allocation(
+        self,
+        allocation_id: str,
+    ) -> EndpointAllocation | None:
+        self._leases.reconcile_expired(
+            resource_kind=ResourceKind.NETWORK_ENDPOINT,
+        )
         with self._lock:
-            existing = self._existing_for_request_locked(request, request_digest)
-            if existing is not None:
-                return existing
+            current = self._allocations.get(allocation_id)
+            if current is None or not current.state.is_live:
+                return current
+            if self._lease_authoritative_locked(current):
+                return current
+            expected = current
+
+        if expected.state is EndpointAllocationState.BOUND:
+            physical = self._probe.probe(expected.endpoint)
+            if not physical.available:
+                raise EndpointPhysicalConvergencePending((allocation_id,))
+
+        with self._lock:
+            current = self._reconcile_allocation_locked(allocation_id)
+            _require_allocation_generation(current, expected)
+            if self._lease_authoritative_locked(current):
+                return current
+            retired = replace(current, state=EndpointAllocationState.RELEASED)
+            self._allocations[allocation_id] = retired
+            return retired
+
+    def allocate(self, request: EndpointAllocationRequest) -> EndpointAllocation:
+        request_digest = request.digest()
+        existing = self._reconcile_existing_allocation(request.allocation_id)
+        if existing is not None:
+            return self._resolve_existing(request, request_digest, existing)
+
+        with self._lock:
+            quarantined_resources = {
+                row.endpoint.resource
+                for row in self._allocations.values()
+                if row.state.is_live
+            }
 
         attempts: list[str] = []
         for endpoint in request.candidates():
             resource = endpoint.resource
+            if resource in quarantined_resources:
+                attempts.append(f"{endpoint.key}:generation-quarantined")
+                continue
             try:
                 self._ownership.register_owner(
                     ResourceOwner(resource, request.owner_scope, request.ownership)
