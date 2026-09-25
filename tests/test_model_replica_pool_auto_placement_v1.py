@@ -150,6 +150,7 @@ class Scheduler:
         )
         self.next = 0
         self.released = []
+        self.requirements = []
 
     def candidates(self, requirement, *, scope=None):
         return (self.host,)
@@ -164,6 +165,7 @@ class Scheduler:
         ttl_seconds=None,
         now=None,
     ):
+        self.requirements.append(requirement)
         if self.next >= 2:
             raise ComputePlacementUnavailable(requirement)
         gpu = self.host.gpus[self.next]
@@ -378,6 +380,54 @@ def test_auto_model_replica_pool_launches_frozen_vllm_engine_args(
     assert argv[argv.index("--max-num-seqs") + 1] == "64"
     assert "--enable-prefix-caching" in argv
     assert f"model-stack:{stack.digest()}" in lease.report.placements[0].deployment.tags
+    lease.close()
+
+
+def test_frozen_vllm_stack_drives_physical_vram_and_cpu_offload_reservation(
+    tmp_path,
+) -> None:
+    catalog = Catalog()
+    scheduler = Scheduler()
+    pool = LocalModelReplicaPoolRuntime(
+        deployment_catalog=catalog,
+        deployment_runtime=Runtime(catalog),
+        fleet=Fleet(catalog),
+        compute_scheduler=scheduler,
+        endpoint_allocations=Endpoints(),
+        compute_lease_guards=ComputeGuards(),
+        endpoint_lease_guards=EndpointGuards(),
+    )
+    stack = _vllm_stack(
+        engine_args=(
+            "--gpu-memory-utilization=0.75",
+            "--cpu-offload-gb",
+            "2.5",
+        )
+    )
+    base_memory = 1024**3
+    lease = pool.ensure(
+        ModelReplicaPoolRequest(
+            pool_id="qwen-resources",
+            scope=PLATFORM_SCOPE,
+            model_id="qwen3-8b",
+            engine="vllm",
+            python_environment_id="vllm",
+            cwd=Path(tmp_path),
+            compute=ComputeRequirement(
+                cpu_cores=2,
+                memory_bytes=base_memory,
+                gpu_count=1,
+                minimum_gpu_memory_bytes=40 * 1024**3,
+            ),
+            model_stack=stack,
+            replica_count=1,
+        )
+    )
+
+    effective = scheduler.requirements[0]
+    assert effective.required_gpu_memory_fraction == 0.75
+    assert effective.memory_bytes == base_memory + int(2.5 * 1024**3)
+    assert lease.report.placements[0].compute.memory_bytes == effective.memory_bytes
     lease.close()
 
 
