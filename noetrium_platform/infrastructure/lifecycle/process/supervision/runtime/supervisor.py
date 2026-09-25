@@ -19,6 +19,7 @@ from noetrium_platform.foundation.kernel.concurrency.api import (
 )
 
 from ..api import ProcessExitReceipt, ProcessSupervisorPort, ProcessTerminationPolicy, SupervisedProcessPort
+from . import parent_bound_child as guardian_runtime
 from .windows_job import WindowsProcessJob, suspended_creation_flag
 
 
@@ -182,23 +183,49 @@ class AsyncProcessSupervisor(ProcessSupervisorPort):
         }
 
         if os.name == "posix" and start_new_session:
-            # A fresh Python guardian avoids the well-known multithreaded
-            # preexec_fn deadlock class. It remains the session leader, watches
-            # owner liveness, and forwards termination to the complete process
-            # group. Linux additionally uses PR_SET_PDEATHSIG inside the fresh
-            # interpreter for immediate owner-death convergence.
-            guardian = Path(__file__).with_name("parent_bound_child.py")
+            # The guardian is a Python interpreter and may normalize its own
+            # environment during startup. Carry the exact target environment on
+            # a separate FD so the target never inherits those mutations.
+            guardian = Path(guardian_runtime.__file__).resolve()
+            env_read_fd, env_write_fd = os.pipe()
             command = [
                 sys.executable,
                 str(guardian),
                 "--parent-pid",
                 str(os.getpid()),
+                "--child-env-fd",
+                str(env_read_fd),
                 "--",
                 *command,
             ]
-            return _PosixGroupOwnedProcess(
-                subprocess.Popen(command, **options)
-            )
+            options["pass_fds"] = (env_read_fd,)
+            try:
+                process = subprocess.Popen(command, **options)
+            except BaseException:
+                os.close(env_read_fd)
+                os.close(env_write_fd)
+                raise
+            os.close(env_read_fd)
+            try:
+                payload = guardian_runtime.encode_child_environment(environment)
+                view = memoryview(payload)
+                while view:
+                    written = os.write(env_write_fd, view)
+                    if written <= 0:
+                        raise OSError(
+                            "interactive guardian child-environment pipe made no progress"
+                        )
+                    view = view[written:]
+            except BaseException:
+                try:
+                    process.kill()
+                    process.wait(timeout=2.0)
+                except BaseException:
+                    pass
+                raise
+            finally:
+                os.close(env_write_fd)
+            return _PosixGroupOwnedProcess(process)
 
         if os.name == "nt":
             flags = int(creationflags) | suspended_creation_flag()
