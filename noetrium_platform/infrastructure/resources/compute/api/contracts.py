@@ -180,6 +180,7 @@ class ComputeRequirement:
     preferred_host_labels: tuple[tuple[str, str], ...] = ()
     placement_preference: ComputePlacementPreference = ComputePlacementPreference.PACK
     gpu_colocation_label: str | None = None
+    max_runtime_observation_age_seconds: float | None = None
 
     def __post_init__(self) -> None:
         if (
@@ -224,6 +225,13 @@ class ComputeRequirement:
             or self.gpu_colocation_label != self.gpu_colocation_label.strip()
         ):
             raise ValueError("compute gpu_colocation_label must be canonical text or None")
+        if self.max_runtime_observation_age_seconds is not None and (
+            isinstance(self.max_runtime_observation_age_seconds, bool)
+            or not isinstance(self.max_runtime_observation_age_seconds, (int, float))
+            or not math.isfinite(float(self.max_runtime_observation_age_seconds))
+            or self.max_runtime_observation_age_seconds <= 0
+        ):
+            raise ValueError("compute runtime observation age must be finite and positive or None")
         object.__setattr__(self, "required_labels", _canonical_labels(self.required_labels, "compute required host labels"))
         object.__setattr__(self, "required_gpu_labels", _canonical_labels(self.required_gpu_labels, "compute required GPU labels"))
         object.__setattr__(self, "forbidden_host_labels", _canonical_labels(self.forbidden_host_labels, "compute forbidden host labels"))
