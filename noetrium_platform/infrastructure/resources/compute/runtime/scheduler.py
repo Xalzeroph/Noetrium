@@ -1051,7 +1051,7 @@ class InMemoryComputeScheduler:
 class SQLiteComputeScheduler:
     """Crash-safe compute placement over the canonical SQLite lease authority."""
 
-    SCHEMA_VERSION = 3
+    SCHEMA_VERSION = 4
 
     def __init__(
         self,
@@ -1103,7 +1103,7 @@ class SQLiteComputeScheduler:
         ).fetchone()
         if row is not None and int(row[0]) != self.SCHEMA_VERSION:
             raise RuntimeError(
-                "unsupported SQLiteComputeScheduler schema; recreate the v3 authority store"
+                "unsupported SQLiteComputeScheduler schema; recreate the v4 authority store"
             )
         conn.execute(
             "INSERT OR REPLACE INTO compute_scheduler_meta(key,value) VALUES('schema_version',?)",
@@ -1119,6 +1119,8 @@ class SQLiteComputeScheduler:
             "allocation_id TEXT PRIMARY KEY REFERENCES compute_allocation_identity(allocation_id),"
             "host_id TEXT NOT NULL,cpu_cores INTEGER NOT NULL,memory_bytes INTEGER NOT NULL,"
             "gpu_ids_json TEXT NOT NULL,"
+            "gpu_sharing_mode TEXT NOT NULL,"
+            "gpu_memory_reservation_json TEXT NOT NULL,"
             "binding_proof_digest TEXT,"
             "binding_binder_identity_digest TEXT,"
             "binding_evidence_ref TEXT,"
@@ -1132,7 +1134,8 @@ class SQLiteComputeScheduler:
         return json.dumps(list(gpu_ids), sort_keys=False, separators=(",", ":"))
     _SELECT = (
         "c.allocation_id,i.scope_kind,i.scope_id,c.host_id,c.cpu_cores,c.memory_bytes,"
-        "c.gpu_ids_json,c.binding_proof_digest,c.binding_binder_identity_digest,"
+        "c.gpu_ids_json,c.gpu_sharing_mode,c.gpu_memory_reservation_json,"
+        "c.binding_proof_digest,c.binding_binder_identity_digest,"
         "c.binding_evidence_ref,c.bound_at_epoch_s,"
         "l.lease_id,l.holder_generation,l.fencing_token,l.expires_at_epoch_s"
     )
@@ -1140,8 +1143,22 @@ class SQLiteComputeScheduler:
     @classmethod
     def _decode_row(cls, row: tuple[object, ...]) -> ComputeAllocation:
         gpu_value = json.loads(str(row[6]))
-        if not isinstance(gpu_value, list) or not all(isinstance(item, str) for item in gpu_value):
+        reservation_value = json.loads(str(row[8]))
+        if (
+            not isinstance(gpu_value, list)
+            or not all(isinstance(item, str) for item in gpu_value)
+        ):
             raise RuntimeError("compute allocation GPU payload is corrupt")
+        if (
+            not isinstance(reservation_value, list)
+            or not all(
+                type(item) is int and item >= 0
+                for item in reservation_value
+            )
+        ):
+            raise RuntimeError(
+                "compute allocation GPU reservation payload is corrupt"
+            )
         return ComputeAllocation(
             allocation_id=str(row[0]),
             scope=ScopeIdentity(ScopeKind(str(row[1])), str(row[2])),
@@ -1149,12 +1166,24 @@ class SQLiteComputeScheduler:
             cpu_cores=int(row[4]),
             memory_bytes=int(row[5]),
             gpu_ids=tuple(gpu_value),
-            lease_fencing_token=int(row[13]),
-            lease_expires_at_epoch_s=None if row[14] is None else float(row[14]),
-            binding_proof_digest=None if row[7] is None else str(row[7]),
-            binding_binder_identity_digest=None if row[8] is None else str(row[8]),
-            binding_evidence_ref=None if row[9] is None else str(row[9]),
-            bound_at_epoch_s=None if row[10] is None else float(row[10]),
+            lease_fencing_token=int(row[15]),
+            lease_expires_at_epoch_s=(
+                None if row[16] is None else float(row[16])
+            ),
+            binding_proof_digest=(
+                None if row[9] is None else str(row[9])
+            ),
+            binding_binder_identity_digest=(
+                None if row[10] is None else str(row[10])
+            ),
+            binding_evidence_ref=(
+                None if row[11] is None else str(row[11])
+            ),
+            bound_at_epoch_s=(
+                None if row[12] is None else float(row[12])
+            ),
+            gpu_sharing_mode=GpuSharingMode(str(row[7])),
+            gpu_memory_reservation_bytes=tuple(reservation_value),
         )
 
     def _active_rows(
@@ -1248,17 +1277,14 @@ class SQLiteComputeScheduler:
         # owners converge, may remove them.
         return (), pending
     @staticmethod
-    def _usage(rows: tuple[ComputeAllocation, ...], host_id: str) -> _HostUsage:
+    def _usage(
+        rows: tuple[ComputeAllocation, ...],
+        host_id: str,
+    ) -> _HostUsage:
         usage = _HostUsage()
         for row in rows:
-            if row.host_id != host_id:
-                continue
-            usage.cpu_cores += row.cpu_cores
-            usage.memory_bytes += row.memory_bytes
-            if not row.is_bound:
-                usage.unbound_cpu_cores += row.cpu_cores
-                usage.unbound_memory_bytes += row.memory_bytes
-            usage.gpu_ids.update(row.gpu_ids)
+            if row.host_id == host_id:
+                usage = _add_allocation_usage(usage, row)
         return usage
 
     def _placements(
@@ -1407,16 +1433,25 @@ class SQLiteComputeScheduler:
                     ttl_seconds=ttl_seconds,
                     now_epoch_s=now_epoch_s,
                 )
+                gpu_reservations = _gpu_memory_reservations(
+                    host,
+                    gpu_ids,
+                    requirement,
+                    runtime_snapshot,
+                )
                 conn.execute(
                     "INSERT INTO compute_allocations("
-                    "allocation_id,host_id,cpu_cores,memory_bytes,gpu_ids_json,lease_id) "
-                    "VALUES(?,?,?,?,?,?)",
+                    "allocation_id,host_id,cpu_cores,memory_bytes,gpu_ids_json,"
+                    "gpu_sharing_mode,gpu_memory_reservation_json,lease_id) "
+                    "VALUES(?,?,?,?,?,?,?,?)",
                     (
                         allocation_id,
                         host.host_id,
                         requirement.cpu_cores,
                         requirement.memory_bytes,
                         self._gpu_json(gpu_ids),
+                        requirement.gpu_sharing_mode.value,
+                        self._gpu_json(gpu_reservations),
                         granted.lease_id,
                     ),
                 )
@@ -1429,6 +1464,8 @@ class SQLiteComputeScheduler:
                     gpu_ids=gpu_ids,
                     lease_fencing_token=granted.fencing_token,
                     lease_expires_at_epoch_s=granted.expires_at_epoch_s,
+                    gpu_sharing_mode=requirement.gpu_sharing_mode,
+                    gpu_memory_reservation_bytes=gpu_reservations,
                 )
                 conn.commit()
                 return allocation
