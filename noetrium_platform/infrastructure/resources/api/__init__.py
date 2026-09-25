@@ -26,6 +26,7 @@ from noetrium_platform.infrastructure.resources.container.api import (
 )
 from noetrium_platform.infrastructure.resources.compute.api import (
     ComputeAllocation,
+    ComputeBindingProof,
     ComputeLeaseGuardFactoryPort,
     ComputeLeaseGuardPort,
     ComputePlacementUnavailable,
@@ -46,6 +47,7 @@ from noetrium_platform.infrastructure.resources.resolution.api import (
 
 _RESOURCE_PARENT_EXTRA_EXPORTS = (
     "ComputeAllocation",
+    "ComputeBindingProof",
     "DEFAULT_DOCKER_CONTAINER_LEASE_POLICY",
     "DockerContainerLeaseGuardFactoryPort",
     "DockerContainerLeaseGuardPort",
