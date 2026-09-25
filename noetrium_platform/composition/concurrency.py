@@ -108,12 +108,17 @@ class ExecutionConcurrencyAuthorities:
 
 
 def _default_admission_budget(concurrency: ConcurrencyBudget) -> AdmissionBudget:
-    total = 64
+    total = max(
+        64,
+        int(concurrency.max_blocking_io_in_flight),
+        int(concurrency.max_async_io_in_flight),
+        int(concurrency.max_cpu_in_flight),
+    )
     return AdmissionBudget(
         max_total_in_flight=total,
-        max_blocking_io_in_flight=min(total, int(concurrency.max_blocking_io_in_flight)),
-        max_async_io_in_flight=min(total, int(concurrency.max_async_io_in_flight)),
-        max_cpu_in_flight=min(total, int(concurrency.max_cpu_in_flight)),
+        max_blocking_io_in_flight=int(concurrency.max_blocking_io_in_flight),
+        max_async_io_in_flight=int(concurrency.max_async_io_in_flight),
+        max_cpu_in_flight=int(concurrency.max_cpu_in_flight),
         max_serial_in_flight=total,
     )
 
