@@ -30,26 +30,6 @@ from noetrium_platform.research.execution.policy.api import (
 )
 
 
-def configure_opportunistic_cpu_worker() -> None:
-    """Make one CPU worker yield under host contention without capping idle use."""
-
-    if os.name != "posix":
-        return
-    try:
-        current = os.getpriority(os.PRIO_PROCESS, 0)
-        if current < 5:
-            os.setpriority(os.PRIO_PROCESS, 0, 5)
-    except (AttributeError, OSError):
-        pass
-    oom_path = Path("/proc/self/oom_score_adj")
-    try:
-        current_oom = int(oom_path.read_text("utf-8").strip())
-        if current_oom < 500:
-            oom_path.write_text("500", encoding="utf-8")
-    except (OSError, ValueError):
-        pass
-
-
 @dataclass(frozen=True, slots=True)
 class SharedNetworkPressureStatus:
     available: bool
@@ -283,14 +263,17 @@ class LocalSharedStoragePressureObserver:
 
 @dataclass(frozen=True, slots=True)
 class SharedHostPressurePolicy:
-    """Aggressive residual-capacity policy for shared multi-user hosts.
+    """Hard-safety admission policy for shared multi-user hosts.
 
-    The policy never signals, kills, renices, deletes, or otherwise mutates
-    external work. It only stops Noetrium from admitting additional workload
-    while live host pressure says that doing so would consume capacity already
-    needed by existing processes. CRITICAL control/recovery groups bypass this
-    workload gate so fencing, lease renewal, checkpointing, and teardown cannot
-    be starved by the pressure mechanism itself.
+    Noetrium keeps competing when other users arrive. By default, CPU load,
+    PSI, and link utilization are observation/evidence only; they do not make
+    Noetrium yield. Admission stops only at explicit hard residual-capacity
+    reserves such as memory, PID, FD, storage bytes, and storage inodes.
+    Callers may opt into soft-pressure throttling by setting a threshold below
+    100 percent. CRITICAL control/recovery groups always bypass this workload
+    gate so fencing, lease renewal, checkpointing, and teardown cannot starve.
+    External processes are never signalled, reniced, deleted, or otherwise
+    mutated by this policy.
     """
 
     min_available_memory_bytes: int = 512 * 1024 * 1024
@@ -298,10 +281,10 @@ class SharedHostPressurePolicy:
     min_available_fds: int = 64
     min_storage_free_bytes: int = 1024 * 1024 * 1024
     min_storage_free_inodes: int = 1024
-    max_cpu_pressure_some_avg10_percent: float = 95.0
-    max_memory_pressure_some_avg10_percent: float = 10.0
-    max_io_pressure_some_avg10_percent: float = 50.0
-    max_network_utilization_percent: float = 95.0
+    max_cpu_pressure_some_avg10_percent: float = 100.0
+    max_memory_pressure_some_avg10_percent: float = 100.0
+    max_io_pressure_some_avg10_percent: float = 100.0
+    max_network_utilization_percent: float = 100.0
     poll_interval_seconds: float = 0.05
     fail_closed_when_runtime_unavailable: bool = True
 
@@ -463,8 +446,6 @@ class SharedHostPressureAdmissionGate(ExecutionAdmissionPort):
         if lane_kind is ExecutionLaneKind.CPU:
             if status.effective_cpu_cores <= 0:
                 return "cpu-capacity"
-            if status.cpu_load_1m + permit_count > status.effective_cpu_cores:
-                return "cpu-residual-capacity"
             if status.cpu_pressure_some_avg10_percent is None:
                 if (
                     self._policy.fail_closed_when_runtime_unavailable
@@ -613,7 +594,6 @@ class SharedHostPressureAdmissionGate(ExecutionAdmissionPort):
 __all__ = [
     "LocalSharedNetworkPressureObserver",
     "LocalSharedStoragePressureObserver",
-    "configure_opportunistic_cpu_worker",
     "SharedHostPressureAdmissionGate",
     "SharedHostPressurePolicy",
     "SharedNetworkPressureObserverPort",
