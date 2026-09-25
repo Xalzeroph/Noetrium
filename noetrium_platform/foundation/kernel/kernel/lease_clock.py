@@ -215,10 +215,18 @@ class ManualLeaseClock(LeaseClockPort):
             raise TypeError("manual lease clock seeds must be str")
         if not host_seed.strip() or not boot_seed.strip():
             raise ValueError("manual lease clock seeds must be non-empty")
+        if type(elapsed_seconds) not in (int, float) or type(wall_epoch_seconds) not in (int, float):
+            raise TypeError("manual lease clock times must be int or float")
+        elapsed = float(elapsed_seconds)
+        wall = float(wall_epoch_seconds)
+        if not math.isfinite(elapsed) or elapsed < 0:
+            raise ValueError("manual lease elapsed time must be finite and non-negative")
+        if not math.isfinite(wall) or wall <= 0:
+            raise ValueError("manual lease wall time must be finite and positive")
         self._host_seed = host_seed
         self._boot_seed = boot_seed
-        self._elapsed = float(elapsed_seconds)
-        self._wall = float(wall_epoch_seconds)
+        self._elapsed = elapsed
+        self._wall = wall
 
     def read(self) -> LeaseClockReading:
         return LeaseClockReading(
