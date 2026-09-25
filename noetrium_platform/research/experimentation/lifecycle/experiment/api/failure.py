@@ -4,12 +4,7 @@ from enum import IntEnum, StrEnum
 
 
 class FailureScope(StrEnum):
-    """Smallest durable execution scope invalidated by a failure.
-
-    A task-scoped failure may be represented as a task result.  A wider scope
-    invalidates the state that later tasks would rely on and must therefore
-    escape the task loop for branch/run-level cleanup and recovery.
-    """
+    """Smallest durable execution scope invalidated by a failure."""
 
     TASK = "task"
     PARTICIPANT = "participant"
@@ -30,6 +25,17 @@ def failure_scope_rank(scope: FailureScope) -> FailureScopeRank:
     return FailureScopeRank[scope.name]
 
 
+class FailureDisposition(StrEnum):
+    """Execution disposition declared by the failure authority.
+
+    RETRYABLE is intentionally explicit. Unknown exceptions are never upgraded
+    to retryable by the Experiment scheduler.
+    """
+
+    TERMINAL = "terminal"
+    RETRYABLE = "retryable"
+
+
 class ExperimentWorkloadFailure(RuntimeError):
     """Typed failure shared by environment adapters and workload runners."""
 
@@ -40,26 +46,46 @@ class ExperimentWorkloadFailure(RuntimeError):
         message: str,
         *,
         scope: FailureScope = FailureScope.TASK,
+        disposition: FailureDisposition = FailureDisposition.TERMINAL,
     ) -> None:
         if not phase.strip() or not code.strip():
             raise ValueError("workload failure phase and code must be non-empty")
         if not message.strip():
             raise ValueError("workload failure message must be non-empty")
+        if not isinstance(scope, FailureScope):
+            raise TypeError("workload failure scope must be FailureScope")
+        if not isinstance(disposition, FailureDisposition):
+            raise TypeError(
+                "workload failure disposition must be FailureDisposition"
+            )
+        if (
+            disposition is FailureDisposition.RETRYABLE
+            and scope is not FailureScope.TASK
+        ):
+            raise ValueError(
+                "assignment retry is valid only for task-scoped workload failures"
+            )
         self.phase = phase
         self.code = code
         self.scope = scope
+        self.disposition = disposition
         super().__init__(
             f"workload phase {phase} failed [{code}] "
-            f"(scope={scope.value}): {message}"
+            f"(scope={scope.value}, disposition={disposition.value}): {message}"
         )
 
     @property
     def may_continue_with_next_task(self) -> bool:
         return self.scope is FailureScope.TASK
 
+    @property
+    def retryable(self) -> bool:
+        return self.disposition is FailureDisposition.RETRYABLE
+
 
 __all__ = [
     "ExperimentWorkloadFailure",
+    "FailureDisposition",
     "FailureScope",
     "FailureScopeRank",
     "failure_scope_rank",
