@@ -62,6 +62,8 @@ jobs:
             tests/test_durable_resource_directory_v1.py \
             tests/test_recovery_physical_crash_matrix_v1.py \
             tests/test_environment_container_profiles_v1.py \
+            tests/test_managed_docker_container_leases_v1.py \
+            tests/test_managed_resource_reconciler_v1.py \
             tests/test_compute_physical_convergence_v1.py \
             tests/test_compute_runtime_sharing_v1.py \
             tests/test_model_auto_recovery_v1.py \
