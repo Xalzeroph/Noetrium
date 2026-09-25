@@ -195,6 +195,8 @@ class ComputeAllocation:
     binding_binder_identity_digest: str | None = None
     binding_evidence_ref: str | None = None
     bound_at_epoch_s: float | None = None
+    gpu_sharing_mode: GpuSharingMode = GpuSharingMode.IDLE_ONLY
+    gpu_memory_reservation_bytes: tuple[int, ...] = ()
 
     def __post_init__(self) -> None:
         if not self.allocation_id.strip() or not self.host_id.strip():
@@ -211,6 +213,35 @@ class ComputeAllocation:
             or self.bound_at_epoch_s <= 0
         ):
             raise ValueError("compute allocation bound timestamp must be finite and positive")
+        if not isinstance(self.gpu_sharing_mode, GpuSharingMode):
+            raise TypeError("compute allocation gpu_sharing_mode must be GpuSharingMode")
+        if (
+            not isinstance(self.gpu_memory_reservation_bytes, tuple)
+            or any(
+                type(value) is not int or value < 0
+                for value in self.gpu_memory_reservation_bytes
+            )
+        ):
+            raise ValueError(
+                "compute allocation GPU memory reservations must be non-negative integers"
+            )
+        if self.gpu_memory_reservation_bytes and (
+            len(self.gpu_memory_reservation_bytes) != len(self.gpu_ids)
+        ):
+            raise ValueError(
+                "compute allocation GPU memory reservations must align with gpu_ids"
+            )
+        if (
+            self.gpu_sharing_mode is GpuSharingMode.PREFER_IDLE_ALLOW_SHARED
+            and self.gpu_ids
+            and (
+                len(self.gpu_memory_reservation_bytes) != len(self.gpu_ids)
+                or any(value <= 0 for value in self.gpu_memory_reservation_bytes)
+            )
+        ):
+            raise ValueError(
+                "shared compute allocation requires positive per-device VRAM reservations"
+            )
         for value, field in (
             (self.binding_proof_digest, "compute allocation binding proof"),
             (
