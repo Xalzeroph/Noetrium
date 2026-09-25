@@ -36,7 +36,38 @@ from noetrium_platform.infrastructure.resources.lease.api import (
     ResourceOwner,
 )
 from noetrium_platform.infrastructure.resources.providers import SQLiteResourceLeaseRegistry
+from noetrium_platform.infrastructure.resources.lease.runtime import (
+    InMemoryResourceLeaseRegistry,
+    ManualLeaseClock,
+)
 from noetrium_platform.foundation.scope.api import PLATFORM_SCOPE, ScopeIdentity, ScopeKind
+
+
+def _clock(
+    *,
+    elapsed: float = 1.0,
+    wall: float = 100.0,
+) -> ManualLeaseClock:
+    return ManualLeaseClock(
+        elapsed_seconds=elapsed,
+        wall_epoch_seconds=wall,
+    )
+
+
+def _sqlite_endpoint_store(path, *, clock=None, **kwargs):
+    return SQLiteEndpointAllocationStore(
+        path,
+        clock=_clock() if clock is None else clock,
+        **kwargs,
+    )
+
+
+def _sqlite_resource_leases(path, *, clock=None, **kwargs):
+    return SQLiteResourceLeaseRegistry(
+        path,
+        clock=_clock() if clock is None else clock,
+        **kwargs,
+    )
 
 
 class _AvailableProbe:
@@ -84,12 +115,12 @@ def test_same_allocation_race_commits_exactly_one_allocation_and_one_lease() -> 
         database = Path(directory) / "platform.sqlite"
         barrier = Barrier(2)
         left = AtomicEndpointAllocator(
-            reservations=SQLiteEndpointAllocationStore(database),
+            reservations=_sqlite_endpoint_store(database),
             probe=_AvailableProbe(barrier),
             lease_ttl_seconds=60,
         )
         right = AtomicEndpointAllocator(
-            reservations=SQLiteEndpointAllocationStore(database),
+            reservations=_sqlite_endpoint_store(database),
             probe=_AvailableProbe(barrier),
             lease_ttl_seconds=60,
         )
@@ -99,7 +130,7 @@ def test_same_allocation_race_commits_exactly_one_allocation_and_one_lease() -> 
             results = tuple(pool.map(lambda allocator: allocator.allocate(request), (left, right)))
 
         assert results[0] == results[1]
-        assert len(SQLiteEndpointAllocationStore(database).active()) == 1
+        assert len(_sqlite_endpoint_store(database).active()) == 1
         assert _active_lease_count(database) == 1
 
 
@@ -111,7 +142,7 @@ def test_expiry_quarantines_endpoint_until_os_listener_converges(
     probe = _MutableProbe()
     if durable:
         allocator = AtomicEndpointAllocator(
-            reservations=SQLiteEndpointAllocationStore(
+            reservations=_sqlite_endpoint_store(
                 tmp_path / "endpoint-quarantine.sqlite"
             ),
             probe=probe,
@@ -164,7 +195,7 @@ def test_endpoint_orphan_probe_failure_retains_quarantined_generation(
     probe = _MutableProbe()
     if durable:
         allocator = AtomicEndpointAllocator(
-            reservations=SQLiteEndpointAllocationStore(
+            reservations=_sqlite_endpoint_store(
                 tmp_path / "endpoint-probe-unknown.sqlite"
             ),
             probe=probe,
@@ -203,7 +234,7 @@ def test_unbound_reservation_release_ignores_external_listener(
     probe = _MutableProbe()
     if durable:
         allocator = AtomicEndpointAllocator(
-            reservations=SQLiteEndpointAllocationStore(
+            reservations=_sqlite_endpoint_store(
                 tmp_path / "endpoint-unbound-release.sqlite"
             ),
             probe=probe,
@@ -234,7 +265,7 @@ def test_expired_unbound_reservation_retires_without_probe_authority(
     probe = _MutableProbe()
     if durable:
         allocator = AtomicEndpointAllocator(
-            reservations=SQLiteEndpointAllocationStore(
+            reservations=_sqlite_endpoint_store(
                 tmp_path / "endpoint-unbound-expiry.sqlite"
             ),
             probe=probe,
@@ -262,7 +293,7 @@ def test_expired_unbound_reservation_retires_without_probe_authority(
 def test_renew_is_fenced_and_atomic_with_allocation_expiry_projection() -> None:
     with TemporaryDirectory() as directory:
         database = Path(directory) / "platform.sqlite"
-        store = SQLiteEndpointAllocationStore(database)
+        store = _sqlite_endpoint_store(database)
         allocator = AtomicEndpointAllocator(
             reservations=store,
             probe=_AvailableProbe(),
@@ -292,13 +323,13 @@ def test_renew_is_fenced_and_atomic_with_allocation_expiry_projection() -> None:
 def test_release_updates_lease_and_allocation_in_one_transaction() -> None:
     with TemporaryDirectory() as directory:
         database = Path(directory) / "platform.sqlite"
-        store = SQLiteEndpointAllocationStore(database)
+        store = _sqlite_endpoint_store(database)
         allocator = AtomicEndpointAllocator(reservations=store, probe=_AvailableProbe())
         allocation = allocator.allocate(_request("release"))
 
         released = allocator.release(allocation)
         assert released.state is EndpointAllocationState.RELEASED
-        lease = SQLiteResourceLeaseRegistry(database).get(allocation.lease_id)
+        lease = _sqlite_resource_leases(database).get(allocation.lease_id)
         assert lease.state is LeaseState.RELEASED
         assert allocator.release(allocation) == released
 
@@ -306,11 +337,11 @@ def test_release_updates_lease_and_allocation_in_one_transaction() -> None:
 def test_endpoint_lease_persists_canonical_acquire_and_release_provenance() -> None:
     with TemporaryDirectory() as directory:
         database = Path(directory) / "platform.sqlite"
-        store = SQLiteEndpointAllocationStore(database)
+        store = _sqlite_endpoint_store(database)
         allocator = AtomicEndpointAllocator(reservations=store, probe=_AvailableProbe())
         allocation = allocator.allocate(_request("provenance"))
 
-        leases = SQLiteResourceLeaseRegistry(database)
+        leases = _sqlite_resource_leases(database)
         acquired = leases.get(allocation.lease_id)
         assert acquired.acquired_at_epoch_s is not None
         assert acquired.released_at_epoch_s is None
@@ -325,7 +356,7 @@ def test_endpoint_lease_persists_canonical_acquire_and_release_provenance() -> N
 def test_endpoint_reconciliation_does_not_expire_other_resource_kinds() -> None:
     with TemporaryDirectory() as directory:
         database = Path(directory) / "platform.sqlite"
-        leases = SQLiteResourceLeaseRegistry(database)
+        leases = _sqlite_resource_leases(database)
         compute = ResourceIdentity(ResourceKind.COMPUTE, "host-scoped-reconcile")
         leases.register_owner(ResourceOwner(compute, PLATFORM_SCOPE))
         granted = leases.acquire(
@@ -335,7 +366,7 @@ def test_endpoint_reconciliation_does_not_expire_other_resource_kinds() -> None:
         )
         assert granted.state is LeaseState.ACTIVE
 
-        endpoint_store = SQLiteEndpointAllocationStore(database)
+        endpoint_store = _sqlite_endpoint_store(database)
         assert endpoint_store.expire_orphans(now=12.0) == ()
         with closing(sqlite3.connect(database)) as conn:
             state = conn.execute(
@@ -350,11 +381,11 @@ def test_endpoint_reconciliation_does_not_expire_other_resource_kinds() -> None:
 def test_early_external_lease_release_is_reconciled_by_point_get() -> None:
     with TemporaryDirectory() as directory:
         database = Path(directory) / "platform.sqlite"
-        store = SQLiteEndpointAllocationStore(database)
+        store = _sqlite_endpoint_store(database)
         allocator = AtomicEndpointAllocator(reservations=store, probe=_AvailableProbe())
         allocation = allocator.allocate(_request("orphan"))
 
-        SQLiteResourceLeaseRegistry(database).release(
+        _sqlite_resource_leases(database).release(
             allocation.lease_id,
             fencing_token=allocation.lease_fencing_token,
         )
@@ -374,8 +405,8 @@ def test_concurrent_schema_bootstrap_is_idempotent() -> None:
 
         def build(_: int) -> int:
             barrier.wait(timeout=5)
-            SQLiteEndpointAllocationStore(database)
-            SQLiteResourceLeaseRegistry(database)
+            _sqlite_endpoint_store(database)
+            _sqlite_resource_leases(database)
             return 1
 
         with ThreadPoolExecutor(max_workers=8) as pool:
@@ -403,7 +434,7 @@ def _binding_proof(allocation, *, evidence_ref: str = "runtime-listener-evidence
 def test_endpoint_binding_requires_current_fencing_and_is_idempotent() -> None:
     with TemporaryDirectory() as directory:
         database = Path(directory) / "platform.sqlite"
-        store = SQLiteEndpointAllocationStore(database)
+        store = _sqlite_endpoint_store(database)
         allocator = AtomicEndpointAllocator(reservations=store, probe=_AvailableProbe())
         reserved = allocator.allocate(_request("bind"))
         assert reserved.state is EndpointAllocationState.RESERVED
@@ -460,7 +491,7 @@ def test_v2_active_endpoint_migrates_fail_closed_to_reserved() -> None:
                 ),
             )
             conn.commit()
-        SQLiteEndpointAllocationStore(database)
+        _sqlite_endpoint_store(database)
         with closing(sqlite3.connect(database)) as conn:
             row = conn.execute(
                 "SELECT state,binding_proof_digest,binding_evidence_ref,bound_at_epoch_s "
@@ -546,7 +577,6 @@ from noetrium_platform.infrastructure.resources.allocation.runtime import (
     EndpointAllocationConflict,
     InMemoryEndpointAllocator,
 )
-from noetrium_platform.infrastructure.resources.lease.runtime import InMemoryResourceLeaseRegistry
 from noetrium_platform.infrastructure.resources.providers import SQLiteEndpointAllocationStore
 from noetrium_platform.foundation.scope.api import ScopeIdentity, ScopeKind
 
@@ -654,11 +684,11 @@ def test_rebind_in_memory_concurrent_rebind_has_exactly_one_winner() -> None:
 def test_sqlite_rebind_persists_winning_generation_across_reopen() -> None:
     with TemporaryDirectory() as directory:
         database = Path(directory) / "platform.sqlite"
-        store = SQLiteEndpointAllocationStore(database)
+        store = _sqlite_endpoint_store(database)
         allocator = AtomicEndpointAllocator(reservations=store, probe=_RebindAvailableProbe())
         reserved = allocator.allocate(_rebind_request("sqlite", 25566))
         _assert_rebind_contract(allocator, reserved)
-        reopened = SQLiteEndpointAllocationStore(database).get(reserved.allocation_id)
+        reopened = _sqlite_endpoint_store(database).get(reserved.allocation_id)
         assert reopened is not None
         assert reopened.binding_binder_identity_digest == "b" * 64
         assert reopened.binding_evidence_ref == "ready:b"
@@ -669,7 +699,7 @@ def test_sqlite_concurrent_rebind_has_exactly_one_winner() -> None:
     with TemporaryDirectory() as directory:
         database = Path(directory) / "platform.sqlite"
         left = AtomicEndpointAllocator(
-            reservations=SQLiteEndpointAllocationStore(database), probe=_RebindAvailableProbe()
+            reservations=_sqlite_endpoint_store(database), probe=_RebindAvailableProbe()
         )
         reserved = left.allocate(_rebind_request("sqlite-race", 25567))
         first = _rebind_proof(reserved, "a", 1000.0)
@@ -678,7 +708,7 @@ def test_sqlite_concurrent_rebind_has_exactly_one_winner() -> None:
 
         def attempt(proof):
             allocator = AtomicEndpointAllocator(
-                reservations=SQLiteEndpointAllocationStore(database), probe=_RebindAvailableProbe()
+                reservations=_sqlite_endpoint_store(database), probe=_RebindAvailableProbe()
             )
             try:
                 return allocator.replace_bound(
@@ -691,7 +721,7 @@ def test_sqlite_concurrent_rebind_has_exactly_one_winner() -> None:
             results = tuple(pool.map(attempt, contenders))
         winners = tuple(row for row in results if row is not None)
         assert len(winners) == 1
-        persisted = SQLiteEndpointAllocationStore(database).get(reserved.allocation_id)
+        persisted = _sqlite_endpoint_store(database).get(reserved.allocation_id)
         assert persisted == winners[0]
         assert persisted is not None
         assert persisted.binding_binder_identity_digest in {"b" * 64, "c" * 64}
@@ -712,7 +742,7 @@ def test_released_endpoint_identity_remains_terminal_across_restart(
     database = tmp_path / "endpoint-terminal.sqlite"
     request = _request("terminal-endpoint", port=25601)
     first = AtomicEndpointAllocator(
-        reservations=SQLiteEndpointAllocationStore(database),
+        reservations=_sqlite_endpoint_store(database),
         probe=_AvailableProbe(),
     )
     allocation = first.allocate(request)
@@ -720,7 +750,7 @@ def test_released_endpoint_identity_remains_terminal_across_restart(
     assert released.state is EndpointAllocationState.RELEASED
 
     restarted = AtomicEndpointAllocator(
-        reservations=SQLiteEndpointAllocationStore(database),
+        reservations=_sqlite_endpoint_store(database),
         probe=_AvailableProbe(),
     )
     with pytest.raises(
