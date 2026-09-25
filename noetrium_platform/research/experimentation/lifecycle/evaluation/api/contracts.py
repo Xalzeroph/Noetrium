@@ -14,6 +14,13 @@ def _require_string(value: object, field: str) -> str:
     return value
 
 
+def _require_digest(value: object, field: str) -> str:
+    text = _require_string(value, field)
+    if len(text) != 64 or any(ch not in "0123456789abcdef" for ch in text):
+        raise ValueError(f"{field} must be lowercase SHA-256")
+    return text
+
+
 def _require_string_tuple(value: object, field: str) -> tuple[str, ...]:
     if type(value) is not tuple:
         raise TypeError(f"{field} must be a tuple")
@@ -58,6 +65,7 @@ class BranchReceipt:
     workload_id: str
     environment_generation: str
     task_manifest_digest: str
+    measurement_semantics_digest: str
     branch_writes: tuple[str, ...]
     lifetime_writes: tuple[str, ...]
     private_to_method_flows: tuple[str, ...]
@@ -72,6 +80,10 @@ class BranchReceipt:
             ("task_manifest_digest", self.task_manifest_digest),
         ):
             _require_string(value, f"branch receipt {field}")
+        _require_digest(
+            self.measurement_semantics_digest,
+            "branch receipt measurement_semantics_digest",
+        )
         _require_string_tuple(self.branch_writes, "branch receipt branch_writes")
         _require_string_tuple(self.lifetime_writes, "branch receipt lifetime_writes")
         _require_string_tuple(self.private_to_method_flows, "branch receipt private_to_method_flows")
@@ -87,6 +99,7 @@ class ComparabilityProof:
     workload_id: str
     environment_generation: str
     task_manifest_digest: str
+    measurement_semantics_digest: str
 
     def __post_init__(self) -> None:
         if type(self.valid) is not bool:
@@ -99,6 +112,10 @@ class ComparabilityProof:
             ("task_manifest_digest", self.task_manifest_digest),
         ):
             _require_string(value, f"comparability proof {field}")
+        _require_digest(
+            self.measurement_semantics_digest,
+            "comparability proof measurement_semantics_digest",
+        )
         violations = _require_string_tuple(self.violations, "comparability proof violations")
         if len(violations) != len(set(violations)):
             raise ValueError("comparability proof violations must be unique")
@@ -125,6 +142,13 @@ class PairedEvaluationResult:
             raise ValueError("paired evaluation proof environment generation must match control")
         if self.proof.task_manifest_digest != self.control.task_manifest_digest:
             raise ValueError("paired evaluation proof task manifest must match control")
+        if (
+            self.proof.measurement_semantics_digest
+            != self.control.measurement_semantics_digest
+        ):
+            raise ValueError(
+                "paired evaluation proof measurement semantics must match control"
+            )
 
 
 def _identity_violations(control: BranchReceipt, candidate: BranchReceipt) -> tuple[str, ...]:
@@ -136,6 +160,11 @@ def _identity_violations(control: BranchReceipt, candidate: BranchReceipt) -> tu
         ("workload_id", control.workload_id, candidate.workload_id),
         ("environment_generation", control.environment_generation, candidate.environment_generation),
         ("task_manifest_digest", control.task_manifest_digest, candidate.task_manifest_digest),
+        (
+            "measurement_semantics_digest",
+            control.measurement_semantics_digest,
+            candidate.measurement_semantics_digest,
+        ),
     )
     violations.extend(f"{name} mismatch" for name, left, right in fields if left != right)
     if _metric_names(control) != _metric_names(candidate):
@@ -174,6 +203,7 @@ def build_comparability_proof(control: BranchReceipt, candidate: BranchReceipt) 
             "w": control.workload_id,
             "e": control.environment_generation,
             "t": control.task_manifest_digest,
+            "m": control.measurement_semantics_digest,
         },
         sort_keys=True,
         separators=(",", ":"),
@@ -187,6 +217,7 @@ def build_comparability_proof(control: BranchReceipt, candidate: BranchReceipt) 
         control.workload_id,
         control.environment_generation,
         control.task_manifest_digest,
+        control.measurement_semantics_digest,
     )
 
 
