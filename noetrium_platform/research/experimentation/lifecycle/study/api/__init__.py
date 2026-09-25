@@ -1,5 +1,4 @@
 from .authoring import AgentStudySpec, Study, StudyModel, StudyParticipant
-from .evaluation import PostHocEvaluationDefinition, PostHocEvaluationResult
 from .contracts import (
     StudyConcurrencyPolicy,
     StudyAssignment,
@@ -64,8 +63,6 @@ __all__ = [
     "DEFAULT_STUDY_AGGREGATION_REQUIREMENT_ID",
     "StudyModel",
     "StudyParticipant",
-    "PostHocEvaluationDefinition",
-    "PostHocEvaluationResult",
     "TaskVerifierArtifact",
     "TaskVerifierPort",
     "TaskVerifierReceipt",
