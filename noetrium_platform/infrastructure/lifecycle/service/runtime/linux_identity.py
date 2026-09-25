@@ -38,6 +38,7 @@ class LinuxExactProcessVerifier:
             "start_identity": process.start_identity,
             "anchor_pid": process.anchor_pid,
             "anchor_start_identity": process.anchor_start_identity,
+            "anchor_control_pid": process.anchor_control_pid,
             "status": status.value,
             "facts": facts,
         }
@@ -79,8 +80,11 @@ class LinuxExactProcessVerifier:
             self._procfs.start_identity(target_visible),
             os.getpgid(target_pid),
             None if target_visible == target_pid else target_pid,
-            anchor_pid=anchor_pid,
+            anchor_pid=anchor_visible,
             anchor_start_identity=self._procfs.start_identity(anchor_visible),
+            anchor_control_pid=(
+                None if anchor_visible == anchor_pid else anchor_pid
+            ),
         )
 
     def _anchor_status(
@@ -90,7 +94,9 @@ class LinuxExactProcessVerifier:
         if process.anchor_pid is None:
             return True, None
         assert process.anchor_start_identity is not None
-        if not self._procfs.alive_pid(process.anchor_pid):
+        anchor_control_pid = process.anchor_execution_pid
+        assert anchor_control_pid is not None
+        if not self._procfs.alive_pid(anchor_control_pid):
             return False, "ownership anchor is missing"
         try:
             observed = self._procfs.start_identity(process.anchor_pid)
@@ -99,7 +105,7 @@ class LinuxExactProcessVerifier:
         if observed != process.anchor_start_identity:
             return False, "ownership anchor generation drifted"
         try:
-            if os.getpgid(process.anchor_pid) != process.anchor_pid:
+            if os.getpgid(anchor_control_pid) != anchor_control_pid:
                 return False, "ownership anchor process-group identity drifted"
         except ProcessLookupError:
             return False, "ownership anchor disappeared"
@@ -176,14 +182,8 @@ class LinuxExactProcessVerifier:
         anchor_parent_exact = True
         anchor_visible_pid: int | None = None
         if process.anchor_pid is not None:
-            try:
-                anchor_visible_pid = self._procfs.visible_pid(
-                    process.anchor_pid
-                )
-            except (FileNotFoundError, ProcessLookupError):
-                anchor_parent_exact = False
-            else:
-                anchor_parent_exact = facts.parent_pid == anchor_visible_pid
+            anchor_visible_pid = process.anchor_pid
+            anchor_parent_exact = facts.parent_pid == anchor_visible_pid
 
         evidence_facts = {
             "exe": facts.executable,
