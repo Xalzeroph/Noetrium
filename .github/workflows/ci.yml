@@ -64,6 +64,7 @@ jobs:
             tests/test_environment_container_profiles_v1.py \
             tests/test_compute_physical_convergence_v1.py \
             tests/test_compute_runtime_sharing_v1.py \
+            tests/test_model_auto_recovery_v1.py \
             tests/test_resource_endpoint_atomicity_v2.py \
             tests/test_linux_process_signal_generation_v1.py \
             tests/test_service_prepared_start_recovery_v146.py \
