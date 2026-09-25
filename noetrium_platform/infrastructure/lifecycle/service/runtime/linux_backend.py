@@ -2,8 +2,9 @@ from __future__ import annotations
 
 import os
 from pathlib import Path
-from time import time
+from time import monotonic
 
+from noetrium_platform.foundation.kernel.kernel.retry import blocking_wait
 from noetrium_platform.infrastructure.lifecycle.process.api import ProcessSupervisorPort
 from noetrium_platform.infrastructure.lifecycle.service.api import ServiceLaunchContract, ServiceProcessIdentity
 
@@ -94,15 +95,12 @@ class LinuxProcessBackend:
             launch_marker=(LINUX_PREPARED_START_ENV, token.token),
         )
 
-    def reconcile_prepared_start(
+    def _observe_prepared_start_once(
         self,
         contract: ServiceLaunchContract,
         environment: MaterializedServiceEnvironment,
-        captures: ServiceCapturePaths,
-        handle: ServiceStartRecoveryHandle,
-    ) -> PreparedServiceStartReconcileResult:
-        del captures
-        token = decode_linux_start_handle(handle, contract, environment)
+        token,
+    ) -> PreparedServiceStartReconcileResult | None:
         marker_processes: list[int] = []
         exact_roots: list[ServiceProcessIdentity] = []
         uncertain_same_uid: list[int] = []
@@ -115,9 +113,9 @@ class LinuxProcessBackend:
             except (FileNotFoundError, ProcessLookupError):
                 continue
             except (PermissionError, OSError, RuntimeError):
-                # A procfs entry hidden by host policy cannot be attributed to
-                # this controller. Same-UID entries remain visible under the
-                # supported Linux ownership contract and are handled below.
+                # Linux ownership policy permits the controller to inspect its
+                # own UID. Hidden other-UID entries are irrelevant to this
+                # prepared-start token.
                 continue
             if process_uid != controller_uid:
                 continue
@@ -143,10 +141,12 @@ class LinuxProcessBackend:
                 process.process_group_id is None
                 or process.process_group_id != process.execution_pid
             ):
-                # Prepared-start metadata is inherited by descendants. Only the
-                # start_new_session root may be adopted as the service owner.
                 continue
-            reconciled = self._verifier.reconcile(process, contract, environment)
+            reconciled = self._verifier.reconcile(
+                process,
+                contract,
+                environment,
+            )
             evidence.extend(reconciled.evidence_refs)
             if reconciled.status is ProcessReconcileStatus.EXACT:
                 exact_roots.append(process)
@@ -159,7 +159,9 @@ class LinuxProcessBackend:
                 (
                     "same-UID Linux process facts are not fully observable during "
                     "prepared-start reconciliation: "
-                    + ",".join(str(pid) for pid in sorted(set(uncertain_same_uid)))
+                    + ",".join(
+                        str(pid) for pid in sorted(set(uncertain_same_uid))
+                    )
                 ),
             )
         if len(exact_roots) == 1:
@@ -182,20 +184,39 @@ class LinuxProcessBackend:
                 tuple(evidence),
                 "prepared Linux start has marker-bearing processes but no exact session leader",
             )
+        return None
 
-        age = time() - float(token.prepared_at_epoch_s)
-        if not age >= self._PREPARED_START_SETTLEMENT_SECONDS:
-            return PreparedServiceStartReconcileResult(
-                PreparedServiceStartStatus.UNKNOWN,
-                None,
-                (),
-                "prepared Linux start is still inside the spawn settlement window",
+    def reconcile_prepared_start(
+        self,
+        contract: ServiceLaunchContract,
+        environment: MaterializedServiceEnvironment,
+        captures: ServiceCapturePaths,
+        handle: ServiceStartRecoveryHandle,
+    ) -> PreparedServiceStartReconcileResult:
+        del captures
+        token = decode_linux_start_handle(handle, contract, environment)
+
+        # Wall-clock age cannot prove spawn quiescence: NTP/admin clock jumps
+        # can make a freshly prepared intent look old. Recovery therefore owns
+        # one bounded local monotonic observation window. Only complete absence
+        # throughout this window proves NOT_STARTED.
+        deadline = monotonic() + self._PREPARED_START_SETTLEMENT_SECONDS
+        while True:
+            observed = self._observe_prepared_start_once(
+                contract,
+                environment,
+                token,
             )
-        return PreparedServiceStartReconcileResult(
-            PreparedServiceStartStatus.NOT_STARTED,
-            None,
-            (),
-        )
+            if observed is not None:
+                return observed
+            remaining = deadline - monotonic()
+            if remaining <= 0:
+                return PreparedServiceStartReconcileResult(
+                    PreparedServiceStartStatus.NOT_STARTED,
+                    None,
+                    (),
+                )
+            blocking_wait(min(0.05, remaining))
 
     def alive(self, process: ServiceProcessIdentity) -> bool:
         return self._signaler.alive(process)
