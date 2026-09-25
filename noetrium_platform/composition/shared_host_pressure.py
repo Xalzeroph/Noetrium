@@ -506,8 +506,8 @@ class ResourceCompetitionAdmissionGate(ExecutionAdmissionPort):
         self._reserved_memory_bytes = 0
         self._reserved_pids = 0
         self._reserved_fds = 0
-        self._reserved_storage_bytes = 0
-        self._reserved_storage_inodes = 0
+        self._reserved_storage_bytes: dict[str, int] = {}
+        self._reserved_storage_inodes: dict[str, int] = {}
 
     def register_group(
         self,
@@ -562,8 +562,38 @@ class ResourceCompetitionAdmissionGate(ExecutionAdmissionPort):
                 memory_bytes_per_permit=self._reserved_memory_bytes,
                 pids_per_permit=self._reserved_pids,
                 fds_per_permit=self._reserved_fds,
-                storage_bytes_per_permit=self._reserved_storage_bytes,
-                storage_inodes_per_permit=self._reserved_storage_inodes,
+            )
+
+    @staticmethod
+    def _storage_key(
+        demand: ResourceCompetitionDemand,
+        status: SharedStoragePressureStatus | None,
+    ) -> str:
+        if demand.storage_path is None:
+            return "*"
+        if status is None or not status.available or status.capacity_id is None:
+            raise RuntimeError(
+                "scoped storage demand requires an observable physical filesystem"
+            )
+        return status.capacity_id
+
+    def _reserved_storage_for(
+        self,
+        demand: ResourceCompetitionDemand,
+        status: SharedStoragePressureStatus | None,
+    ) -> tuple[int, int]:
+        with self._reservation_lock:
+            if demand.storage_path is None:
+                return (
+                    sum(self._reserved_storage_bytes.values()),
+                    sum(self._reserved_storage_inodes.values()),
+                )
+            key = self._storage_key(demand, status)
+            return (
+                self._reserved_storage_bytes.get("*", 0)
+                + self._reserved_storage_bytes.get(key, 0),
+                self._reserved_storage_inodes.get("*", 0)
+                + self._reserved_storage_inodes.get(key, 0),
             )
 
     def _reserve_demand(
@@ -571,42 +601,68 @@ class ResourceCompetitionAdmissionGate(ExecutionAdmissionPort):
         demand: ResourceCompetitionDemand,
         *,
         permit_count: int,
-    ) -> None:
+        storage_status: SharedStoragePressureStatus | None,
+    ) -> str:
         self._reserved_memory_bytes += demand.memory_bytes_per_permit * permit_count
         self._reserved_pids += demand.pids_per_permit * permit_count
         self._reserved_fds += demand.fds_per_permit * permit_count
-        self._reserved_storage_bytes += demand.storage_bytes_per_permit * permit_count
-        self._reserved_storage_inodes += demand.storage_inodes_per_permit * permit_count
+        storage_key = self._storage_key(demand, storage_status)
+        storage_bytes = demand.storage_bytes_per_permit * permit_count
+        storage_inodes = demand.storage_inodes_per_permit * permit_count
+        if storage_bytes:
+            self._reserved_storage_bytes[storage_key] = (
+                self._reserved_storage_bytes.get(storage_key, 0)
+                + storage_bytes
+            )
+        if storage_inodes:
+            self._reserved_storage_inodes[storage_key] = (
+                self._reserved_storage_inodes.get(storage_key, 0)
+                + storage_inodes
+            )
+        return storage_key
 
     def _release_one_demand(
         self,
         demand: ResourceCompetitionDemand,
+        *,
+        storage_key: str,
     ) -> None:
         with self._reservation_lock:
             next_memory = self._reserved_memory_bytes - demand.memory_bytes_per_permit
             next_pids = self._reserved_pids - demand.pids_per_permit
             next_fds = self._reserved_fds - demand.fds_per_permit
-            next_storage_bytes = (
-                self._reserved_storage_bytes - demand.storage_bytes_per_permit
-            )
-            next_storage_inodes = (
-                self._reserved_storage_inodes - demand.storage_inodes_per_permit
-            )
-            if min(
-                next_memory,
-                next_pids,
-                next_fds,
-                next_storage_bytes,
-                next_storage_inodes,
-            ) < 0:
+            if min(next_memory, next_pids, next_fds) < 0:
                 raise RuntimeError(
                     "resource competition reservation accounting underflow"
                 )
             self._reserved_memory_bytes = next_memory
             self._reserved_pids = next_pids
             self._reserved_fds = next_fds
-            self._reserved_storage_bytes = next_storage_bytes
-            self._reserved_storage_inodes = next_storage_inodes
+
+            for reservations, amount, label in (
+                (
+                    self._reserved_storage_bytes,
+                    demand.storage_bytes_per_permit,
+                    "storage bytes",
+                ),
+                (
+                    self._reserved_storage_inodes,
+                    demand.storage_inodes_per_permit,
+                    "storage inodes",
+                ),
+            ):
+                if amount <= 0:
+                    continue
+                remaining = reservations.get(storage_key, 0) - amount
+                if remaining < 0:
+                    raise RuntimeError(
+                        "resource competition "
+                        f"{label} reservation accounting underflow"
+                    )
+                if remaining:
+                    reservations[storage_key] = remaining
+                else:
+                    reservations.pop(storage_key, None)
 
     def _status(self) -> HostRuntimeStatus | None:
         try:
@@ -618,13 +674,19 @@ class ResourceCompetitionAdmissionGate(ExecutionAdmissionPort):
         rows = tuple(row for row in snapshot.hosts if row.available)
         return rows[0] if rows else None
 
-    def _storage_status(self) -> SharedStoragePressureStatus | None:
+    def _storage_status(
+        self,
+        path: Path | None = None,
+    ) -> SharedStoragePressureStatus | None:
         if self._storage_observer is None:
             return None
         try:
-            status = self._storage_observer.snapshot()
+            status = self._storage_observer.snapshot(path)
         except Exception:
-            return SharedStoragePressureStatus(False, detail="storage-observer-failed")
+            return SharedStoragePressureStatus(
+                False,
+                detail="storage-observer-failed",
+            )
         return status
 
     def _network_status(self) -> SharedNetworkPressureStatus | None:
@@ -711,15 +773,19 @@ class ResourceCompetitionAdmissionGate(ExecutionAdmissionPort):
                 return "cpu-pressure"
 
         if lane_kind in {ExecutionLaneKind.BLOCKING_IO, ExecutionLaneKind.ASYNC_IO}:
-            storage = self._storage_status()
+            storage = self._storage_status(demand.storage_path)
             if self._storage_observer is not None:
                 if storage is None or not storage.available:
                     if self._policy.fail_closed_when_runtime_unavailable:
                         return "storage-runtime-unavailable"
                 else:
+                    (
+                        reserved_storage_bytes,
+                        reserved_storage_inodes,
+                    ) = self._reserved_storage_for(demand, storage)
                     required_storage_bytes = (
                         self._policy.min_storage_free_bytes
-                        + reserved.storage_bytes_per_permit
+                        + reserved_storage_bytes
                         + demand.storage_bytes_per_permit * permit_count
                     )
                     if storage.free_bytes < required_storage_bytes:
@@ -735,7 +801,7 @@ class ResourceCompetitionAdmissionGate(ExecutionAdmissionPort):
                             return "storage-inode-runtime-unavailable"
                     elif storage.free_inodes < (
                         self._policy.min_storage_free_inodes
-                        + reserved.storage_inodes_per_permit
+                        + reserved_storage_inodes
                         + demand.storage_inodes_per_permit * permit_count
                     ):
                         return "storage-inode-headroom"
@@ -954,9 +1020,18 @@ class ResourceCompetitionAdmissionGate(ExecutionAdmissionPort):
                         permit_count=permit_count,
                     )
                     if decision.admitted:
-                        self._reserve_demand(
+                        storage_status = (
+                            self._storage_status(effective_demand.storage_path)
+                            if (
+                                effective_demand.storage_bytes_per_permit > 0
+                                or effective_demand.storage_inodes_per_permit > 0
+                            )
+                            else None
+                        )
+                        storage_key = self._reserve_demand(
                             effective_demand,
                             permit_count=permit_count,
+                            storage_status=storage_status,
                         )
             except BaseException:
                 self._release_delegate_leases(leases)
@@ -965,8 +1040,9 @@ class ResourceCompetitionAdmissionGate(ExecutionAdmissionPort):
                 return tuple(
                     _ResourceCompetitionLease(
                         lease,
-                        lambda owned_demand=effective_demand: self._release_one_demand(
-                            owned_demand
+                        lambda owned_demand=effective_demand, owned_storage_key=storage_key: self._release_one_demand(
+                            owned_demand,
+                            storage_key=owned_storage_key,
                         ),
                     )
                     for lease in leases
