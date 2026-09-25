@@ -1,4 +1,5 @@
 from .paired import build_comparability_proof
+from .reduction import reduce_evaluation_scores
 from .program import (
     compile_paired_evaluation_program,
     paired_evaluation_handlers,
@@ -16,4 +17,5 @@ __all__ = [
     "paired_evaluation_initial_data",
     "paired_evaluation_operations",
     "paired_evaluation_rule_set",
+    "reduce_evaluation_scores",
 ]
