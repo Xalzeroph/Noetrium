@@ -65,15 +65,109 @@ class TaskVerifierArtifact:
 
 
 @dataclass(frozen=True, slots=True)
-class TaskVerifierRequest:
-    """Minimal scientific context plus artifact-only verifier handoff.
+class TaskVerifierArtifactCut:
+    """Immutable verifier-input cut independent of any verifier execution.
 
-    The verifier receives enough frozen identity to emit valid MeasurementRecord
-    values, but never receives the execution environment, participant session,
-    method state, work directory, or arbitrary trial-provider internals.
+    This is the regrade authority: if the declared artifacts are preserved, a
+    future verifier can be run against the same task output without depending on
+    how the source trial was originally graded.
     """
 
     source_trial_request_digest: str
+    task_digest: str
+    task_package_digest: str
+    artifacts: tuple[TaskVerifierArtifact, ...]
+    cut_digest: str = field(init=False)
+
+    def __post_init__(self) -> None:
+        _sha(
+            self.source_trial_request_digest,
+            "verifier artifact cut source trial digest",
+        )
+        _sha(self.task_digest, "verifier artifact cut task_digest")
+        _sha(self.task_package_digest, "verifier artifact cut task_package_digest")
+        if type(self.artifacts) is not tuple or any(
+            type(row) is not TaskVerifierArtifact for row in self.artifacts
+        ):
+            raise TypeError(
+                "verifier artifact cut artifacts must contain TaskVerifierArtifact"
+            )
+        artifact_ids = tuple(row.declaration.artifact_id for row in self.artifacts)
+        if len(artifact_ids) != len(set(artifact_ids)):
+            raise ValueError("verifier artifact cut artifact declarations must be unique")
+        object.__setattr__(
+            self,
+            "cut_digest",
+            canonical_digest(
+                {
+                    "source_trial_request_digest": self.source_trial_request_digest,
+                    "task_digest": self.task_digest,
+                    "task_package_digest": self.task_package_digest,
+                    "artifacts": tuple(row.artifact_digest for row in self.artifacts),
+                }
+            ),
+        )
+
+    @classmethod
+    def for_trial(
+        cls,
+        *,
+        trial_request: "TrialExecutionRequest",
+        artifacts: tuple[TaskVerifierArtifact, ...],
+    ) -> "TaskVerifierArtifactCut":
+        if type(trial_request) is not TrialExecutionRequest:
+            raise TypeError("verifier artifact cut requires TrialExecutionRequest")
+        task = trial_request.task
+        if task is None:
+            raise ValueError("verifier artifact cut requires a frozen task")
+        package = task.package
+        if package is None or package.verifier_requirement_id is None:
+            raise ValueError("task package does not declare a verifier")
+        if type(artifacts) is not tuple or any(
+            type(row) is not TaskVerifierArtifact for row in artifacts
+        ):
+            raise TypeError("verifier artifact cut artifacts must be typed")
+
+        declared = {row.artifact_id: row for row in package.artifacts}
+        provided = {row.declaration.artifact_id: row for row in artifacts}
+        undeclared = set(provided) - set(declared)
+        if undeclared:
+            raise ValueError(
+                f"verifier artifact cut contains undeclared artifacts: "
+                f"{sorted(undeclared)}"
+            )
+        for artifact_id, row in provided.items():
+            if row.declaration != declared[artifact_id]:
+                raise ValueError(
+                    f"verifier artifact declaration drifted: {artifact_id}"
+                )
+        missing = tuple(
+            row.artifact_id
+            for row in package.artifacts
+            if row.required and row.artifact_id not in provided
+        )
+        if missing:
+            raise ValueError(
+                f"verifier artifact cut is missing required artifacts: {missing}"
+            )
+        ordered = tuple(
+            provided[row.artifact_id]
+            for row in package.artifacts
+            if row.artifact_id in provided
+        )
+        return cls(
+            source_trial_request_digest=trial_request.request_digest,
+            task_digest=task.task_digest,
+            task_package_digest=package.package_digest,
+            artifacts=ordered,
+        )
+
+
+@dataclass(frozen=True, slots=True)
+class TaskVerifierRequest:
+    """Minimal scientific context plus an immutable artifact-only handoff."""
+
+    artifact_cut: TaskVerifierArtifactCut
     project_id: str
     study_id: str
     run_id: str
@@ -81,17 +175,17 @@ class TaskVerifierRequest:
     variant_id: str
     intervention: OptionalIdentityFacet
     revision: OptionalIdentityFacet
-    task_digest: str
-    task_package_digest: str
     verifier_requirement_id: str
     verifier_isolation: TaskVerifierIsolation
     verifier_environment_requirement_id: str | None
     measurement_protocol: MeasurementProtocol
-    artifacts: tuple[TaskVerifierArtifact, ...]
     request_digest: str = field(init=False)
 
     def __post_init__(self) -> None:
-        _sha(self.source_trial_request_digest, "verifier request source trial digest")
+        if type(self.artifact_cut) is not TaskVerifierArtifactCut:
+            raise TypeError(
+                "verifier request artifact_cut must be TaskVerifierArtifactCut"
+            )
         for field_name in ("project_id", "study_id", "run_id", "variant_id"):
             _text(getattr(self, field_name), f"verifier request {field_name}")
         _sha(self.assignment_digest, "verifier request assignment_digest")
@@ -99,8 +193,6 @@ class TaskVerifierRequest:
             raise TypeError("verifier request intervention must be OptionalIdentityFacet")
         if type(self.revision) is not OptionalIdentityFacet:
             raise TypeError("verifier request revision must be OptionalIdentityFacet")
-        _sha(self.task_digest, "verifier request task_digest")
-        _sha(self.task_package_digest, "verifier request task_package_digest")
         _text(self.verifier_requirement_id, "verifier request verifier requirement")
         if not isinstance(self.verifier_isolation, TaskVerifierIsolation):
             raise TypeError("verifier request isolation must be TaskVerifierIsolation")
@@ -110,22 +202,15 @@ class TaskVerifierRequest:
                 "verifier request verifier environment requirement",
             )
         if type(self.measurement_protocol) is not MeasurementProtocol:
-            raise TypeError("verifier request measurement_protocol must be MeasurementProtocol")
-        if type(self.artifacts) is not tuple or any(
-            type(row) is not TaskVerifierArtifact for row in self.artifacts
-        ):
             raise TypeError(
-                "verifier request artifacts must contain TaskVerifierArtifact"
+                "verifier request measurement_protocol must be MeasurementProtocol"
             )
-        artifact_ids = tuple(row.declaration.artifact_id for row in self.artifacts)
-        if len(artifact_ids) != len(set(artifact_ids)):
-            raise ValueError("verifier request artifact declarations must be unique")
         object.__setattr__(
             self,
             "request_digest",
             canonical_digest(
                 {
-                    "source_trial_request_digest": self.source_trial_request_digest,
+                    "artifact_cut_digest": self.artifact_cut.cut_digest,
                     "project_id": self.project_id,
                     "study_id": self.study_id,
                     "run_id": self.run_id,
@@ -133,18 +218,33 @@ class TaskVerifierRequest:
                     "variant_id": self.variant_id,
                     "intervention": self.intervention,
                     "revision": self.revision,
-                    "task_digest": self.task_digest,
-                    "task_package_digest": self.task_package_digest,
                     "verifier_requirement_id": self.verifier_requirement_id,
                     "verifier_isolation": self.verifier_isolation.value,
                     "verifier_environment_requirement_id": (
                         self.verifier_environment_requirement_id
                     ),
-                    "measurement_protocol_digest": self.measurement_protocol.protocol_digest,
-                    "artifacts": tuple(row.artifact_digest for row in self.artifacts),
+                    "measurement_protocol_digest": (
+                        self.measurement_protocol.protocol_digest
+                    ),
                 }
             ),
         )
+
+    @property
+    def source_trial_request_digest(self) -> str:
+        return self.artifact_cut.source_trial_request_digest
+
+    @property
+    def task_digest(self) -> str:
+        return self.artifact_cut.task_digest
+
+    @property
+    def task_package_digest(self) -> str:
+        return self.artifact_cut.task_package_digest
+
+    @property
+    def artifacts(self) -> tuple[TaskVerifierArtifact, ...]:
+        return self.artifact_cut.artifacts
 
     @property
     def measurement_protocol_digest(self) -> str:
@@ -199,38 +299,12 @@ class TaskVerifierRequest:
         package = task.package
         if package is None or package.verifier_requirement_id is None:
             raise ValueError("task package does not declare a verifier")
-        if type(artifacts) is not tuple or any(
-            type(row) is not TaskVerifierArtifact for row in artifacts
-        ):
-            raise TypeError("verifier handoff artifacts must be typed")
-        declared = {row.artifact_id: row for row in package.artifacts}
-        provided = {row.declaration.artifact_id: row for row in artifacts}
-        undeclared = set(provided) - set(declared)
-        if undeclared:
-            raise ValueError(
-                f"verifier handoff contains undeclared artifacts: {sorted(undeclared)}"
-            )
-        for artifact_id, row in provided.items():
-            if row.declaration != declared[artifact_id]:
-                raise ValueError(
-                    f"verifier artifact declaration drifted: {artifact_id}"
-                )
-        missing = tuple(
-            row.artifact_id
-            for row in package.artifacts
-            if row.required and row.artifact_id not in provided
-        )
-        if missing:
-            raise ValueError(
-                f"verifier handoff is missing required artifacts: {missing}"
-            )
-        ordered = tuple(
-            provided[row.artifact_id]
-            for row in package.artifacts
-            if row.artifact_id in provided
+        artifact_cut = TaskVerifierArtifactCut.for_trial(
+            trial_request=trial_request,
+            artifacts=artifacts,
         )
         return cls(
-            source_trial_request_digest=trial_request.request_digest,
+            artifact_cut=artifact_cut,
             project_id=trial_request.project_id,
             study_id=trial_request.assignment.study_id,
             run_id=trial_request.run_id,
@@ -238,15 +312,12 @@ class TaskVerifierRequest:
             variant_id=trial_request.assignment.variant_id,
             intervention=trial_request.intervention,
             revision=trial_request.revision,
-            task_digest=task.task_digest,
-            task_package_digest=package.package_digest,
             verifier_requirement_id=package.verifier_requirement_id,
             verifier_isolation=package.verifier_isolation,
             verifier_environment_requirement_id=(
                 package.verifier_environment_requirement_id
             ),
             measurement_protocol=trial_request.measurement_protocol,
-            artifacts=ordered,
         )
 
 
@@ -637,6 +708,7 @@ class TrialMatrixExecutionReport:
 
 __all__ = [
     "TaskVerifierArtifact",
+    "TaskVerifierArtifactCut",
     "TaskVerifierPort",
     "TaskVerifierReceipt",
     "TaskVerifierRequest",
