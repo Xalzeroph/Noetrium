@@ -34421,6 +34421,7 @@
         "gpu_memory_utilization",
         "kv_cache_memory_bytes",
         "kv_offloading_size_gb",
+        "max_num_active_seqs",
         "max_num_queued_requests",
         "max_num_seqs",
         "mm_processor_cache_gb"
@@ -44508,6 +44509,7 @@
         "_cancelled",
         "_wait_for_pressure_clearance",
         "acquire",
+        "_release_delegate_leases",
         "acquire_many",
         "snapshot",
         "close"
@@ -67816,7 +67818,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 105,
+      "line": 106,
       "methods": [
         "__init__",
         "_task_id",
@@ -67840,7 +67842,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 25,
+      "line": 26,
       "methods": [
         "__init__",
         "poll",
@@ -67863,7 +67865,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 66,
+      "line": 67,
       "methods": [
         "__init__",
         "_retire_job_if_exited",
@@ -78652,7 +78654,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 124,
+      "line": 169,
       "methods": [
         "__init__",
         "allocate_auto",
@@ -78684,7 +78686,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 33,
+      "line": 34,
       "methods": [],
       "module": "noetrium_platform.infrastructure.resources.allocation.runtime.endpoint_allocator",
       "name": "EndpointAllocationConflict",
@@ -78702,7 +78704,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 48,
+      "line": 49,
       "methods": [
         "__init__"
       ],
@@ -78722,7 +78724,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 37,
+      "line": 38,
       "methods": [
         "__init__"
       ],
@@ -78742,7 +78744,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 361,
+      "line": 410,
       "methods": [
         "__init__",
         "_reconcile_allocation_locked",
@@ -105225,7 +105227,7 @@
     "classes": 3411,
     "constructor_edges": 962,
     "inheritance_edges": 151,
-    "module_import_edges": 5077,
+    "module_import_edges": 5078,
     "parse_errors": 0,
     "python_modules": 1918,
     "registry_authorities": 20,
@@ -119577,6 +119579,10 @@
     {
       "source": "noetrium_platform.infrastructure.lifecycle.process.supervision.runtime.supervisor",
       "target": "noetrium_platform.infrastructure.lifecycle.process.supervision.api"
+    },
+    {
+      "source": "noetrium_platform.infrastructure.lifecycle.process.supervision.runtime.supervisor",
+      "target": "noetrium_platform.infrastructure.lifecycle.process.supervision.runtime"
     },
     {
       "source": "noetrium_platform.infrastructure.lifecycle.process.supervision.runtime.supervisor",
@@ -139788,6 +139794,7 @@
       "imports": [
         "noetrium_platform.foundation.kernel.concurrency.api",
         "noetrium_platform.infrastructure.lifecycle.process.supervision.api",
+        "noetrium_platform.infrastructure.lifecycle.process.supervision.runtime",
         "noetrium_platform.infrastructure.lifecycle.process.supervision.runtime.windows_job"
       ],
       "module": "noetrium_platform.infrastructure.lifecycle.process.supervision.runtime.supervisor",
@@ -146422,7 +146429,7 @@
   "parse_errors": [],
   "registry_sha256": "276e2729e0b700e814e98f8460d87e0ebee66c4620226fe2d880fe55cc970aec",
   "schema": "noetrium-code-architecture-index.v1",
-  "source_git_sha": "8d6128f4f6bc46e15d6b2fd55f2e4d65ba91194a",
+  "source_git_sha": "d3a8dd2ab39291409a472c6f703d37c12dfbd9bd",
   "system_import_edges": [
     {
       "count": 85,
@@ -146660,7 +146667,7 @@
       "target": "platform"
     },
     {
-      "count": 552,
+      "count": 553,
       "source": "runtime",
       "target": "runtime"
     },

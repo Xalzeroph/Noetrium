@@ -2,14 +2,14 @@
   "counts": {
     "parse_errors": 0,
     "python_files": 3709,
-    "python_import_edges": 7031,
-    "symbols": 5083,
+    "python_import_edges": 7033,
+    "symbols": 5085,
     "tracked_files": 4346,
     "typescript_javascript_files": 11
   },
   "language_symbol_counts": {
     "javascript": 1,
-    "python": 5077,
+    "python": 5079,
     "typescript": 5
   },
   "parse_errors": [],
@@ -41633,6 +41633,18 @@
     {
       "source_module": "tests.test_vllm_resource_intent_v1",
       "source_role": "tests",
+      "target_module": "noetrium_platform.capabilities.model.serving.api.placement",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "tests.test_vllm_resource_intent_v1",
+      "source_role": "tests",
+      "target_module": "noetrium_platform.capabilities.model.serving.api.qualified_deployment",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "tests.test_vllm_resource_intent_v1",
+      "source_role": "tests",
       "target_module": "noetrium_platform.capabilities.model.stack.api",
       "target_role": "core_platform"
     },
@@ -42263,7 +42275,7 @@
       "target_role": "research_reproductions"
     },
     {
-      "count": 2870,
+      "count": 2872,
       "source_role": "tests",
       "target_role": "core_platform"
     },
@@ -42338,11 +42350,11 @@
     "reference_orchestration": 14,
     "research_reproductions": 444,
     "sdk": 5,
-    "tests": 1075,
+    "tests": 1077,
     "tooling": 39
   },
   "schema": "noetrium-repository-code-architecture-index.v1",
-  "source_git_sha": "8d6128f4f6bc46e15d6b2fd55f2e4d65ba91194a",
+  "source_git_sha": "d3a8dd2ab39291409a472c6f703d37c12dfbd9bd",
   "symbols": [
     {
       "bases": [],
@@ -59312,6 +59324,7 @@
         "mm_processor_cache_gb: float | None",
         "api_server_count: int | None",
         "max_num_seqs: int | None",
+        "max_num_active_seqs: int | None",
         "max_num_queued_requests: int | None"
       ],
       "kind": "dataclass",
@@ -68679,6 +68692,7 @@
         "_cancelled",
         "_wait_for_pressure_clearance",
         "acquire",
+        "_release_delegate_leases",
         "acquire_many",
         "snapshot",
         "close"
@@ -89775,7 +89789,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 25,
+      "line": 26,
       "methods": [
         "__init__",
         "poll",
@@ -89796,7 +89810,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 66,
+      "line": 67,
       "methods": [
         "__init__",
         "_retire_job_if_exited",
@@ -89819,7 +89833,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 105,
+      "line": 106,
       "methods": [
         "__init__",
         "_task_id",
@@ -99660,7 +99674,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 33,
+      "line": 34,
       "methods": [],
       "module": "noetrium_platform.infrastructure.resources.allocation.runtime.endpoint_allocator",
       "name": "EndpointAllocationConflict",
@@ -99676,7 +99690,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 37,
+      "line": 38,
       "methods": [
         "__init__"
       ],
@@ -99694,7 +99708,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 48,
+      "line": 49,
       "methods": [
         "__init__"
       ],
@@ -99712,7 +99726,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 124,
+      "line": 169,
       "methods": [
         "__init__",
         "allocate_auto",
@@ -99742,7 +99756,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 361,
+      "line": 410,
       "methods": [
         "__init__",
         "_reconcile_allocation_locked",
@@ -144276,7 +144290,41 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 170,
+      "line": 118,
+      "methods": [
+        "__init__",
+        "candidate_ports"
+      ],
+      "module": "tests.test_resource_endpoint_allocation_v1",
+      "name": "RoundCandidates",
+      "path": "tests/test_resource_endpoint_allocation_v1.py",
+      "qualname": "tests.test_resource_endpoint_allocation_v1.RoundCandidates",
+      "role": "tests"
+    },
+    {
+      "bases": [],
+      "decorators": [],
+      "fields": [],
+      "kind": "class",
+      "language": "python",
+      "line": 152,
+      "methods": [
+        "__init__",
+        "candidate_ports"
+      ],
+      "module": "tests.test_resource_endpoint_allocation_v1",
+      "name": "RoundCandidates",
+      "path": "tests/test_resource_endpoint_allocation_v1.py",
+      "qualname": "tests.test_resource_endpoint_allocation_v1.RoundCandidates",
+      "role": "tests"
+    },
+    {
+      "bases": [],
+      "decorators": [],
+      "fields": [],
+      "kind": "class",
+      "language": "python",
+      "line": 240,
       "methods": [
         "probe"
       ],
@@ -144294,7 +144342,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 192,
+      "line": 262,
       "methods": [
         "get"
       ],
@@ -144312,7 +144360,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 218,
+      "line": 288,
       "methods": [
         "get"
       ],
@@ -144328,7 +144376,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 73,
+      "line": 74,
       "methods": [
         "__init__",
         "probe"
@@ -144345,7 +144393,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 83,
+      "line": 84,
       "methods": [
         "__init__",
         "probe"
@@ -144362,7 +144410,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 523,
+      "line": 524,
       "methods": [
         "renew_many"
       ],
@@ -144378,7 +144426,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 597,
+      "line": 598,
       "methods": [
         "probe"
       ],
