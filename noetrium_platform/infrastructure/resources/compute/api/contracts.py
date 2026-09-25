@@ -3,8 +3,10 @@ from __future__ import annotations
 from dataclasses import dataclass
 from enum import StrEnum
 import math
+import re
 
 from noetrium_platform.foundation.governance.api import ScopeIdentity
+from noetrium_platform.foundation.kernel.kernel import canonical_digest
 
 
 @dataclass(frozen=True, slots=True)
@@ -137,6 +139,48 @@ class ComputeRequirement:
             raise TypeError("compute gpu_sharing_mode must be GpuSharingMode")
 
 
+_SHA256 = re.compile(r"[0-9a-f]{64}")
+
+
+@dataclass(frozen=True, slots=True)
+class ComputeBindingProof:
+    """Attest that one compute reservation is physically owned by an exact runtime generation."""
+
+    allocation_id: str
+    host_id: str
+    gpu_ids: tuple[str, ...]
+    lease_fencing_token: int
+    binder_identity_digest: str
+    observed_at_epoch_s: float
+    evidence_ref: str
+
+    def __post_init__(self) -> None:
+        if not self.allocation_id.strip() or not self.host_id.strip():
+            raise ValueError("compute binding proof allocation/host identity is required")
+        if self.lease_fencing_token < 1:
+            raise ValueError("compute binding proof fencing token must be >= 1")
+        if (
+            not _SHA256.fullmatch(self.binder_identity_digest)
+        ):
+            raise ValueError(
+                "compute binder identity must be a canonical lowercase SHA-256 digest"
+            )
+        if (
+            not math.isfinite(float(self.observed_at_epoch_s))
+            or self.observed_at_epoch_s <= 0
+        ):
+            raise ValueError(
+                "compute binding observation timestamp must be finite and positive"
+            )
+        if not self.evidence_ref.strip():
+            raise ValueError("compute binding evidence reference is required")
+        if len(set(self.gpu_ids)) != len(self.gpu_ids):
+            raise ValueError("compute binding proof GPU ids must be unique")
+
+    def digest(self) -> str:
+        return canonical_digest(self)
+
+
 @dataclass(frozen=True, slots=True)
 class ComputeAllocation:
     allocation_id: str
@@ -147,6 +191,10 @@ class ComputeAllocation:
     gpu_ids: tuple[str, ...] = ()
     lease_fencing_token: int = 1
     lease_expires_at_epoch_s: float | None = None
+    binding_proof_digest: str | None = None
+    binding_binder_identity_digest: str | None = None
+    binding_evidence_ref: str | None = None
+    bound_at_epoch_s: float | None = None
 
     def __post_init__(self) -> None:
         if not self.allocation_id.strip() or not self.host_id.strip():
@@ -158,6 +206,41 @@ class ComputeAllocation:
             or self.lease_expires_at_epoch_s <= 0
         ):
             raise ValueError("compute allocation lease expiry must be finite and positive")
+        if self.bound_at_epoch_s is not None and (
+            not math.isfinite(float(self.bound_at_epoch_s))
+            or self.bound_at_epoch_s <= 0
+        ):
+            raise ValueError("compute allocation bound timestamp must be finite and positive")
+        for value, field in (
+            (self.binding_proof_digest, "compute allocation binding proof"),
+            (
+                self.binding_binder_identity_digest,
+                "compute allocation binder identity",
+            ),
+        ):
+            if value is not None and not _SHA256.fullmatch(value):
+                raise ValueError(f"{field} must be a canonical lowercase SHA-256 digest")
+        if (
+            self.binding_evidence_ref is not None
+            and not self.binding_evidence_ref.strip()
+        ):
+            raise ValueError(
+                "compute allocation binding evidence reference must be non-empty"
+            )
+        presence = (
+            self.binding_proof_digest is not None,
+            self.binding_binder_identity_digest is not None,
+            self.binding_evidence_ref is not None,
+            self.bound_at_epoch_s is not None,
+        )
+        if any(presence) and not all(presence):
+            raise ValueError(
+                "compute allocation binding metadata must be complete or absent"
+            )
+
+    @property
+    def is_bound(self) -> bool:
+        return self.binding_proof_digest is not None
 
     def expired_at(self, now_epoch_s: float) -> bool:
         if not math.isfinite(float(now_epoch_s)):
@@ -168,4 +251,4 @@ class ComputeAllocation:
         )
 
 
-__all__ = ["ComputeAllocation", "ComputeCluster", "ComputeGPU", "ComputeHost", "ComputePlacementUnavailable", "ComputeRequirement", "ComputeLeasePolicy", "DEFAULT_COMPUTE_LEASE_POLICY", "GpuSharingMode"]
+__all__ = ["ComputeAllocation", "ComputeBindingProof", "ComputeCluster", "ComputeGPU", "ComputeHost", "ComputePlacementUnavailable", "ComputeRequirement", "ComputeLeasePolicy", "DEFAULT_COMPUTE_LEASE_POLICY", "GpuSharingMode"]
