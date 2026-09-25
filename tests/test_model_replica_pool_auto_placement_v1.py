@@ -32,6 +32,7 @@ from noetrium_platform.infrastructure.resources.compute.api import (
     ComputeLeasePolicy,
     ComputePlacementUnavailable,
     ComputeRequirement,
+    GpuSharingMode,
 )
 
 
@@ -420,6 +421,91 @@ def test_model_endpoint_binding_requires_applied_runtime_generation(
     assert row.state is EndpointAllocationState.RELEASED
     assert row.binding_binder_identity_digest is None
     assert scheduler.released
+
+
+def test_auto_model_replica_pool_uses_multiple_shared_slots_on_one_gpu(
+    tmp_path,
+) -> None:
+    class SharedScheduler(Scheduler):
+        def __init__(self):
+            super().__init__()
+            self.host = ComputeHost(
+                "node-a",
+                PLATFORM_SCOPE,
+                64,
+                256 * 1024**3,
+                (ComputeGPU("GPU-shared", 48 * 1024**3, "GPU"),),
+            )
+
+        def allocate(
+            self,
+            allocation_id,
+            scope,
+            requirement,
+            *,
+            placement_scope=None,
+            ttl_seconds=None,
+            now=None,
+        ):
+            del placement_scope, ttl_seconds, now
+            self.requirements.append(requirement)
+            if self.next >= 2:
+                raise ComputePlacementUnavailable(requirement)
+            self.next += 1
+            row = ComputeAllocation(
+                allocation_id=allocation_id,
+                scope=scope,
+                host_id=self.host.host_id,
+                cpu_cores=requirement.cpu_cores,
+                memory_bytes=requirement.memory_bytes,
+                gpu_ids=("GPU-shared",),
+                lease_fencing_token=self.next,
+                lease_expires_at_epoch_s=9999999999.0,
+                gpu_sharing_mode=requirement.gpu_sharing_mode,
+                gpu_memory_reservation_bytes=(
+                    requirement.required_gpu_free_memory_bytes,
+                ),
+            )
+            self.rows[row.allocation_id] = row
+            return row
+
+    catalog = Catalog()
+    scheduler = SharedScheduler()
+    pool = LocalModelReplicaPoolRuntime(
+        deployment_catalog=catalog,
+        deployment_runtime=Runtime(catalog),
+        fleet=Fleet(catalog),
+        compute_scheduler=scheduler,
+        endpoint_allocations=Endpoints(),
+        compute_lease_guards=ComputeGuards(),
+        endpoint_lease_guards=EndpointGuards(),
+    )
+
+    lease = pool.ensure(
+        ModelReplicaPoolRequest(
+            pool_id="shared-qwen",
+            scope=PLATFORM_SCOPE,
+            model_id="qwen3-8b",
+            engine="vllm",
+            python_environment_id="vllm",
+            cwd=Path(tmp_path),
+            compute=ComputeRequirement(
+                cpu_cores=2,
+                memory_bytes=1024,
+                gpu_count=1,
+                required_gpu_free_memory_bytes=16 * 1024**3,
+                gpu_sharing_mode=GpuSharingMode.PREFER_IDLE_ALLOW_SHARED,
+            ),
+        )
+    )
+
+    assert len(lease.report.placements) == 2
+    assert {
+        row.compute.gpu_ids
+        for row in lease.report.placements
+    } == {("GPU-shared",)}
+    assert all(row.compute.is_bound for row in lease.report.placements)
+    lease.close()
 
 
 def test_auto_model_replica_pool_launches_frozen_vllm_engine_args(
