@@ -210,23 +210,130 @@ class ModelReplicaPoolLease:
         self._compute_guard_closed = False
         self._released_endpoint_ids: set[str] = set()
         self._released_compute_ids: set[str] = set()
+        self._current_generations = {
+            row.deployment_id: row.generation
+            for row in report.placements
+        }
+        self._current_compute = {
+            row.compute.allocation_id: row.compute
+            for row in report.placements
+        }
+        self._current_endpoints = {
+            row.endpoint.allocation_id: row.endpoint
+            for row in report.placements
+        }
         self._closed = False
         self._on_closed = on_closed
         self._lifecycle_lock = RLock()
+
+    def _current_generation(
+        self,
+        row: ModelReplicaPlacement,
+    ) -> ModelDeploymentGeneration:
+        generation = self._deployment_runtime.generation(row.deployment_id)
+        if generation.desired_spec_digest != row.generation.desired_spec_digest:
+            raise RuntimeError(
+                "model replica desired generation drifted: "
+                f"{row.deployment_id}"
+            )
+        return generation
+
+    def _rebind_running_generation(
+        self,
+        row: ModelReplicaPlacement,
+        generation: ModelDeploymentGeneration,
+        status: ModelDeploymentStatus,
+    ) -> None:
+        applied = generation.applied_runtime_digest
+        if applied is None:
+            raise RuntimeError(
+                "running model replica has no applied runtime generation: "
+                f"{row.deployment_id}"
+            )
+        observed_at = time()
+        evidence_ref = (
+            status.detail or f"model-recovered:{row.deployment_id}"
+        )
+
+        compute = self._current_compute[row.compute.allocation_id]
+        if compute.binding_binder_identity_digest != applied:
+            proof = ComputeBindingProof(
+                allocation_id=compute.allocation_id,
+                host_id=compute.host_id,
+                gpu_ids=compute.gpu_ids,
+                lease_fencing_token=compute.lease_fencing_token,
+                binder_identity_digest=applied,
+                observed_at_epoch_s=observed_at,
+                evidence_ref=evidence_ref,
+            )
+            if compute.binding_proof_digest is None:
+                compute = self._compute_scheduler.confirm_bound(proof)
+            else:
+                compute = self._compute_scheduler.replace_bound(
+                    proof,
+                    previous_binding_proof_digest=compute.binding_proof_digest,
+                )
+            self._current_compute[compute.allocation_id] = compute
+
+        endpoint = self._current_endpoints[row.endpoint.allocation_id]
+        if endpoint.binding_binder_identity_digest != applied:
+            proof = EndpointBindingProof(
+                allocation_id=endpoint.allocation_id,
+                endpoint=endpoint.endpoint,
+                lease_fencing_token=endpoint.lease_fencing_token,
+                binder_identity_digest=applied,
+                observed_at_epoch_s=observed_at,
+                evidence_ref=evidence_ref,
+            )
+            if endpoint.binding_proof_digest is None:
+                endpoint = self._endpoint_allocations.confirm_bound(proof)
+            else:
+                endpoint = self._endpoint_allocations.replace_bound(
+                    proof,
+                    expected_previous_binding_proof_digest=(
+                        endpoint.binding_proof_digest
+                    ),
+                )
+            self._current_endpoints[endpoint.allocation_id] = endpoint
+
+        if (
+            self._current_compute[row.compute.allocation_id]
+            .binding_binder_identity_digest
+            != applied
+            or self._current_endpoints[row.endpoint.allocation_id]
+            .binding_binder_identity_digest
+            != applied
+        ):
+            raise RuntimeError(
+                "model replica physical resource bindings did not converge: "
+                f"{row.deployment_id}"
+            )
+        self._current_generations[row.deployment_id] = generation
 
     def assert_healthy(self) -> None:
         with self._lifecycle_lock:
             if self._closed:
                 raise RuntimeError("model replica pool lease is closed")
-        self._compute_guard.assert_healthy()
-        self._endpoint_guard.assert_healthy()
-        for row in self.report.placements:
-            status = self._deployment_runtime.status(row.deployment_id)
-            if status.runtime_state is not ModelRuntimeState.RUNNING:
-                raise RuntimeError(
-                    f"model replica is not running: {row.deployment_id}: "
-                    f"{status.runtime_state.value}:{status.detail}"
-                )
+            self._compute_guard.assert_healthy()
+            self._endpoint_guard.assert_healthy()
+            for row in self.report.placements:
+                status = self._deployment_runtime.status(row.deployment_id)
+                if status.runtime_state is not ModelRuntimeState.RUNNING:
+                    raise RuntimeError(
+                        f"model replica is not running: {row.deployment_id}: "
+                        f"{status.runtime_state.value}:{status.detail}"
+                    )
+                generation = self._current_generation(row)
+                if (
+                    generation.applied_runtime_digest
+                    != self._current_generations[row.deployment_id]
+                    .applied_runtime_digest
+                ):
+                    self._rebind_running_generation(
+                        row,
+                        generation,
+                        status,
+                    )
 
     def close(self) -> None:
         with self._lifecycle_lock:
@@ -241,10 +348,12 @@ class ModelReplicaPoolLease:
             if row.deployment_id in self._removed_deployment_ids:
                 continue
             try:
-                self._deployment_runtime.remove_deployment(row.generation)
+                generation = self._current_generation(row)
+                self._deployment_runtime.remove_deployment(generation)
             except BaseException as exc:
                 errors.append(exc)
             else:
+                self._current_generations[row.deployment_id] = generation
                 self._removed_deployment_ids.add(row.deployment_id)
 
         if len(self._removed_deployment_ids) != len(self.report.placements):
@@ -271,7 +380,9 @@ class ModelReplicaPoolLease:
                 if allocation_id in self._released_endpoint_ids:
                     continue
                 try:
-                    self._endpoint_allocations.release(row.endpoint)
+                    self._endpoint_allocations.release(
+                        self._current_endpoints[allocation_id]
+                    )
                 except BaseException as exc:
                     errors.append(exc)
                 else:
@@ -283,7 +394,9 @@ class ModelReplicaPoolLease:
                 if allocation_id in self._released_compute_ids:
                     continue
                 try:
-                    self._compute_scheduler.release(row.compute)
+                    self._compute_scheduler.release(
+                        self._current_compute[allocation_id]
+                    )
                 except BaseException as exc:
                     errors.append(exc)
                 else:
