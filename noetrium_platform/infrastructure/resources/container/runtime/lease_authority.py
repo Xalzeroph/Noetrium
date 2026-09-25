@@ -356,6 +356,7 @@ class DockerContainerLeaseAuthority:
             raise ValueError("Docker reconciliation time must be finite")
 
         self.leases.reconcile_expired(
+            now=now_epoch_s,
             resource_kind=ResourceKind.CONTAINER,
         )
         removed: list[str] = []
