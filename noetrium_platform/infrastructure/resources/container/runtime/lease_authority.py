@@ -382,7 +382,7 @@ class DockerContainerLeaseAuthority:
             if allocation_id and lease_id and fencing_raw:
                 try:
                     fencing = int(fencing_raw)
-                    lease = self.leases.get(lease_id)
+                    lease = self.leases.get(lease_id, now=now_epoch_s)
                 except (KeyError, ValueError):
                     lease = None
 
