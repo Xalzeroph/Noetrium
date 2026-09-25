@@ -633,6 +633,11 @@ class TrialExecutionReceipt:
                     "measurement_outcome_digest": (
                         self.measurement_outcome.outcome_digest
                     ),
+                    "verifier_artifact_cut_digest": (
+                        None
+                        if self.verifier_artifact_cut is None
+                        else self.verifier_artifact_cut.cut_digest
+                    ),
                     "measurements": tuple(
                         row.record_digest for row in self.measurements
                     ),
