@@ -181,7 +181,10 @@ class ServiceStopResumeV145Tests(unittest.TestCase):
             )
             adapter = Adapter()
             with self.assertRaises(ServiceStopRecoveryRequired):
-                make_service_supervisor(store, adapter).stop_exact(launch)
+                make_service_supervisor(store, adapter).stop_exact(
+                    launch,
+                    ServiceProcessIdentity(999, "expected:999", 999),
+                )
             self.assertEqual(store.read().phase, ServicePhase.START_CHILD)
             self.assertEqual(adapter.start_calls, 0)
 
@@ -198,6 +201,9 @@ class ServiceStopResumeV145Tests(unittest.TestCase):
                 )
             )
             adapter = Adapter()
-            stopped = make_service_supervisor(store, adapter).stop_exact(launch)
+            stopped = make_service_supervisor(store, adapter).stop_exact(
+                launch,
+                process,
+            )
             self.assertEqual(stopped.phase, ServicePhase.EXITED)
             self.assertIsNone(stopped.process)
