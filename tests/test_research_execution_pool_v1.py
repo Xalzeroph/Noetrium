@@ -15,6 +15,10 @@ from noetrium_platform.foundation.kernel.concurrency.api import (
 from noetrium_platform.research.execution.policy.api import AdmissionBudget
 
 
+def _cpu_identity(value: int) -> int:
+    return value
+
+
 def test_pool_group_lifecycle_unregisters_identity_for_safe_reuse() -> None:
     pool = bind_research_execution_pool()
     try:
@@ -298,3 +302,104 @@ def test_workload_quiesce_keeps_owned_control_group_operational() -> None:
     finally:
         pool.close_control_group(control, cancel_pending=True)
         pool.close()
+
+
+def test_workload_domains_share_one_cpu_provider_while_control_is_isolated() -> None:
+    budget = ConcurrencyBudget(
+        max_blocking_io_workers=1,
+        max_serial_workers=1,
+        max_cpu_workers=2,
+        max_blocking_io_in_flight=1,
+        max_async_io_in_flight=1,
+        max_cpu_in_flight=2,
+        default_queue_capacity=8,
+    )
+    pool = ResearchExecutionPool(
+        orchestration_concurrency_budget=budget,
+        experiment_concurrency_budget=budget,
+        model_io_concurrency_budget=budget,
+    )
+    orchestration = pool.open_orchestration_group("shared-cpu-orchestration")
+    experiment = pool.open_experiment_group("shared-cpu-experiment")
+    model_io = pool.open_model_io_group("shared-cpu-model")
+    try:
+        shared = pool._shared_workload_cpu
+        assert shared is not None
+        assert pool._orchestration.concurrency._cpu is shared
+        assert pool._experiments.concurrency._cpu is shared
+        assert pool._model_io.concurrency._cpu is shared
+        assert pool._control.concurrency._cpu is not shared
+        assert pool.workload_cpu_workers == 2
+
+        handles = (
+            orchestration.submit(
+                ExecutionSpec(
+                    task_id="cpu-orchestration",
+                    lane_kind=ExecutionLaneKind.CPU,
+                ),
+                _cpu_identity,
+                11,
+            ),
+            experiment.submit(
+                ExecutionSpec(
+                    task_id="cpu-experiment",
+                    lane_kind=ExecutionLaneKind.CPU,
+                ),
+                _cpu_identity,
+                22,
+            ),
+            model_io.submit(
+                ExecutionSpec(
+                    task_id="cpu-model",
+                    lane_kind=ExecutionLaneKind.CPU,
+                ),
+                _cpu_identity,
+                33,
+            ),
+        )
+        assert tuple(handle.result(10) for handle in handles) == (11, 22, 33)
+    finally:
+        pool.close_orchestration_group(orchestration, cancel_pending=True)
+        pool.close_experiment_group(experiment, cancel_pending=True)
+        pool.close_model_io_group(model_io, cancel_pending=True)
+        pool.close()
+    assert pool._shared_workload_cpu_closed
+
+
+def test_workload_quiesce_does_not_close_cpu_provider_needed_by_orchestration() -> None:
+    budget = ConcurrencyBudget(
+        max_blocking_io_workers=1,
+        max_serial_workers=1,
+        max_cpu_workers=1,
+        max_blocking_io_in_flight=1,
+        max_async_io_in_flight=1,
+        max_cpu_in_flight=1,
+        default_queue_capacity=8,
+    )
+    pool = ResearchExecutionPool(
+        orchestration_concurrency_budget=budget,
+        experiment_concurrency_budget=budget,
+        model_io_concurrency_budget=budget,
+    )
+    orchestration = pool.open_orchestration_group("post-quiesce-cpu")
+    try:
+        pool.quiesce_workloads()
+        assert not pool._shared_workload_cpu_closed
+        handle = orchestration.submit(
+            ExecutionSpec(
+                task_id="cleanup-cpu",
+                lane_kind=ExecutionLaneKind.CPU,
+            ),
+            _cpu_identity,
+            41,
+        )
+        assert handle.result(10) == 41
+    finally:
+        pool.close_orchestration_group(orchestration, cancel_pending=True)
+        pool.close()
+    assert pool._shared_workload_cpu_closed
+
+
+def test_invalid_owner_generation_mode_fails_before_provider_construction() -> None:
+    with pytest.raises(TypeError, match="exclusive_owner_generation"):
+        ResearchExecutionPool(exclusive_owner_generation=1)  # type: ignore[arg-type]
