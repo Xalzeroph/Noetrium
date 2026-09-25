@@ -50,6 +50,12 @@ class ComputeGPU:
         object.__setattr__(self, "labels", _canonical_labels(self.labels, "GPU labels"))
 
 
+class ComputeHostSchedulingState(StrEnum):
+    ACTIVE = "active"
+    DRAINING = "draining"
+    DISABLED = "disabled"
+
+
 @dataclass(frozen=True, slots=True)
 class ComputeHost:
     host_id: str
@@ -59,13 +65,22 @@ class ComputeHost:
     gpus: tuple[ComputeGPU, ...] = ()
     labels: tuple[tuple[str, str], ...] = ()
     enabled: bool = True
+    scheduling_state: ComputeHostSchedulingState = ComputeHostSchedulingState.ACTIVE
 
     def __post_init__(self) -> None:
         if not self.host_id.strip() or self.cpu_cores < 1 or self.memory_bytes < 1:
             raise ValueError("host identity/capacity must be valid")
         if len({gpu.gpu_id for gpu in self.gpus}) != len(self.gpus):
             raise ValueError("GPU identities must be unique within a host")
+        if type(self.enabled) is not bool:
+            raise TypeError("host enabled must be bool")
+        if type(self.scheduling_state) is not ComputeHostSchedulingState:
+            raise TypeError("host scheduling_state must be ComputeHostSchedulingState")
         object.__setattr__(self, "labels", _canonical_labels(self.labels, "host labels"))
+
+    @property
+    def accepts_new_allocations(self) -> bool:
+        return self.enabled and self.scheduling_state is ComputeHostSchedulingState.ACTIVE
 
 
 @dataclass(frozen=True, slots=True)
@@ -315,4 +330,4 @@ class ComputeAllocation:
         )
 
 
-__all__ = ["ComputeAllocation", "ComputeDeviceHealth", "ComputeBindingProof", "ComputeCluster", "ComputeGPU", "ComputeHost", "ComputePlacementUnavailable", "ComputeRequirement", "ComputeLeasePolicy", "DEFAULT_COMPUTE_LEASE_POLICY", "GpuSharingMode"]
+__all__ = ["ComputeAllocation", "ComputeDeviceHealth", "ComputeBindingProof", "ComputeCluster", "ComputeGPU", "ComputeHost", "ComputeHostSchedulingState", "ComputePlacementUnavailable", "ComputeRequirement", "ComputeLeasePolicy", "DEFAULT_COMPUTE_LEASE_POLICY", "GpuSharingMode"]
