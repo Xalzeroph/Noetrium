@@ -58,9 +58,18 @@ class ExactCapacityPlanner:
         if host.memory.effective_available_bytes<required_host: raise PlacementCapacityError("insufficient effective host memory for qualified stack")
         required_gpu=cert.resource_envelope.peak_gpu_memory_bytes_per_device+req.gpu_memory_headroom_bytes
         candidates=tuple(g for g in host.gpus if g.free_memory_bytes>=required_gpu)
-        if len(candidates)<stack.tensor_parallel: raise PlacementCapacityError("insufficient qualified GPU VRAM; stack may not be degraded")
-        group=self._placement_policy.select(host,candidates,stack.tensor_parallel)
-        if len(group) != stack.tensor_parallel or len({g.uuid for g in group}) != len(group):
+        if stack.identity.engine.lower() == "vllm":
+            if stack.data_parallel != 1:
+                raise PlacementCapacityError(
+                    "qualified vLLM internal data parallel requires auxiliary "
+                    "RPC endpoint authority before placement"
+                )
+            required_gpu_count = stack.tensor_parallel * stack.pipeline_parallel
+        else:
+            required_gpu_count = stack.tensor_parallel
+        if len(candidates)<required_gpu_count: raise PlacementCapacityError("insufficient qualified GPU VRAM; stack may not be degraded")
+        group=self._placement_policy.select(host,candidates,required_gpu_count)
+        if len(group) != required_gpu_count or len({g.uuid for g in group}) != len(group):
             raise PlacementCapacityError("GPU placement policy returned an invalid group")
         candidate_ids={g.uuid for g in candidates}
         if any(g.uuid not in candidate_ids for g in group):
