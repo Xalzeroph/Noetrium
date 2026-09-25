@@ -42420,7 +42420,7 @@
     "tooling": 39
   },
   "schema": "noetrium-repository-code-architecture-index.v1",
-  "source_git_sha": "ae4a2ba4068061b87b509fcea39e01b7045ead28",
+  "source_git_sha": "d3935f69f98c7e238b36f64a42b4d921a92df188",
   "symbols": [
     {
       "bases": [],
@@ -101157,7 +101157,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 515,
+      "line": 516,
       "methods": [],
       "module": "noetrium_platform.infrastructure.resources.container.runtime.lease_authority",
       "name": "DockerContainerLeaseHeartbeatError",
@@ -101173,7 +101173,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 519,
+      "line": 520,
       "methods": [
         "__init__",
         "handles",
@@ -101196,7 +101196,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 627,
+      "line": 628,
       "methods": [
         "__init__",
         "policy",
@@ -135088,7 +135088,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 369,
+      "line": 373,
       "methods": [
         "snapshot"
       ],
@@ -135104,7 +135104,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 374,
+      "line": 378,
       "methods": [
         "snapshot"
       ],
@@ -135120,7 +135120,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 411,
+      "line": 415,
       "methods": [
         "snapshot"
       ],
@@ -140470,7 +140470,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 80,
+      "line": 82,
       "methods": [
         "__init__",
         "put_deployment"
@@ -140487,7 +140487,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 89,
+      "line": 91,
       "methods": [
         "__init__",
         "status",
@@ -140506,7 +140506,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 122,
+      "line": 124,
       "methods": [
         "__init__",
         "reconcile"
@@ -140523,7 +140523,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 140,
+      "line": 142,
       "methods": [
         "__init__",
         "candidates",
@@ -140544,7 +140544,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 232,
+      "line": 234,
       "methods": [
         "__init__",
         "allocate_auto",
@@ -140565,7 +140565,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 308,
+      "line": 310,
       "methods": [
         "__init__",
         "start",
@@ -140584,7 +140584,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 324,
+      "line": 326,
       "methods": [
         "__init__",
         "create"
@@ -140601,7 +140601,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 336,
+      "line": 338,
       "methods": [
         "__init__",
         "create"
@@ -140620,7 +140620,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 420,
+      "line": 422,
       "methods": [
         "__init__",
         "generation"
@@ -140639,7 +140639,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 499,
+      "line": 501,
       "methods": [
         "generation"
       ],
@@ -140657,7 +140657,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 550,
+      "line": 552,
       "methods": [
         "__init__",
         "allocate"
@@ -140676,7 +140676,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 782,
+      "line": 784,
       "methods": [
         "allocate"
       ],
@@ -140694,7 +140694,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 828,
+      "line": 830,
       "methods": [
         "__init__",
         "remove_deployment"
@@ -140713,7 +140713,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 839,
+      "line": 841,
       "methods": [
         "reconcile"
       ],
@@ -140731,7 +140731,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 912,
+      "line": 914,
       "methods": [
         "__init__",
         "remove_deployment"
@@ -140750,7 +140750,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 1026,
+      "line": 1028,
       "methods": [
         "__init__",
         "remove_deployment"

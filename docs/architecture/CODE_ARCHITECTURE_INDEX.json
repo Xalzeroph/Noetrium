@@ -80256,7 +80256,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 515,
+      "line": 516,
       "methods": [],
       "module": "noetrium_platform.infrastructure.resources.container.runtime.lease_authority",
       "name": "DockerContainerLeaseHeartbeatError",
@@ -80274,7 +80274,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 627,
+      "line": 628,
       "methods": [
         "__init__",
         "policy",
@@ -80296,7 +80296,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 519,
+      "line": 520,
       "methods": [
         "__init__",
         "handles",
@@ -146708,7 +146708,7 @@
   "parse_errors": [],
   "registry_sha256": "276e2729e0b700e814e98f8460d87e0ebee66c4620226fe2d880fe55cc970aec",
   "schema": "noetrium-code-architecture-index.v1",
-  "source_git_sha": "ae4a2ba4068061b87b509fcea39e01b7045ead28",
+  "source_git_sha": "d3935f69f98c7e238b36f64a42b4d921a92df188",
   "system_import_edges": [
     {
       "count": 85,
