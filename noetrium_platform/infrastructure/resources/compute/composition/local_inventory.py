@@ -9,6 +9,7 @@ from noetrium_platform.foundation.governance.api import PLATFORM_SCOPE, ScopeIde
 from noetrium_platform.infrastructure.resources.compute.api import (
     ComputeGPU,
     ComputeHost,
+    ComputeInventoryPort,
     GpuRuntimeObserverPort,
 )
 
@@ -128,4 +129,74 @@ def discover_local_compute_host(
     )
 
 
-__all__ = ["discover_local_compute_host"]
+def _merge_labels(
+    current: tuple[tuple[str, str], ...],
+    discovered: tuple[tuple[str, str], ...],
+) -> tuple[tuple[str, str], ...]:
+    values = dict(current)
+    values.update(dict(discovered))
+    return tuple(sorted(values.items()))
+
+
+def reconcile_local_compute_host(
+    *,
+    inventory: ComputeInventoryPort,
+    gpu_runtime_observer: GpuRuntimeObserverPort,
+    scope: ScopeIdentity = PLATFORM_SCOPE,
+    host_id: str | None = None,
+) -> ComputeHost:
+    """Refresh physical host fingerprint while preserving operator policy.
+
+    Discovery owns physical capacity, device identity and runtime-index facts.
+    Inventory state owns scheduling policy, reservations and device health. The
+    exact previous host value is used as the CAS generation, so a stale probe
+    can never overwrite a newer operator or health-controller update.
+    """
+
+    discovered = discover_local_compute_host(
+        gpu_runtime_observer=gpu_runtime_observer,
+        scope=scope,
+        host_id=host_id,
+    )
+    try:
+        current = inventory.host(discovered.host_id)
+    except KeyError:
+        inventory.register_host(discovered)
+        return discovered
+    if current.scope != discovered.scope:
+        raise ValueError("local compute fingerprint cannot change host scope")
+
+    current_gpus = {gpu.gpu_id: gpu for gpu in current.gpus}
+    refreshed_gpus: list[ComputeGPU] = []
+    for gpu in discovered.gpus:
+        previous = current_gpus.get(gpu.gpu_id)
+        if previous is None:
+            refreshed_gpus.append(gpu)
+            continue
+        refreshed_gpus.append(
+            ComputeGPU(
+                gpu_id=gpu.gpu_id,
+                memory_bytes=gpu.memory_bytes,
+                model=gpu.model,
+                labels=_merge_labels(previous.labels, gpu.labels),
+                health=previous.health,
+                reserved_memory_bytes=previous.reserved_memory_bytes,
+            )
+        )
+
+    replacement = ComputeHost(
+        host_id=discovered.host_id,
+        scope=discovered.scope,
+        cpu_cores=discovered.cpu_cores,
+        memory_bytes=discovered.memory_bytes,
+        gpus=tuple(refreshed_gpus),
+        labels=_merge_labels(current.labels, discovered.labels),
+        enabled=current.enabled,
+        scheduling_state=current.scheduling_state,
+        reserved_cpu_cores=current.reserved_cpu_cores,
+        reserved_memory_bytes=current.reserved_memory_bytes,
+    )
+    return inventory.replace_host(current, replacement)
+
+
+__all__ = ["discover_local_compute_host", "reconcile_local_compute_host"]
