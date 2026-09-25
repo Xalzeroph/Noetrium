@@ -100,14 +100,20 @@ class QualifiedDeploymentManifest:
             raise ValueError("qualification certificate does not match model stack")
         if self.certificate.target_host_identity_digest!=self.host_identity_digest:
             raise ValueError("qualification certificate is for a different host inventory")
-        expected_gpu_count = (
-            self.stack.tensor_parallel
-            * self.stack.data_parallel
-            * self.stack.pipeline_parallel
-        )
+        if self.stack.identity.engine.lower() == "vllm":
+            if self.stack.data_parallel != 1:
+                raise ValueError(
+                    "qualified vLLM internal data parallel requires an auxiliary "
+                    "RPC endpoint with exact resource authority"
+                )
+            expected_gpu_count = (
+                self.stack.tensor_parallel * self.stack.pipeline_parallel
+            )
+        else:
+            expected_gpu_count = self.stack.tensor_parallel
         if len(self.placement.gpu_uuids) != expected_gpu_count:
             raise ValueError(
-                "placement GPU count must match tensor/data/pipeline parallel world size"
+                "placement GPU count does not match frozen engine topology"
             )
         if self.stack.identity.engine.lower() == "vllm":
             intent = parse_vllm_engine_resource_args(self.stack.engine_args)
