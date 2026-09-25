@@ -6,17 +6,50 @@ import pytest
 
 from noetrium_platform.platform import bind_research_execution_pool
 from noetrium_platform.composition.research_execution_pool import ResearchExecutionPool
+from noetrium_platform.composition.shared_host_pressure import (
+    ResourceCompetitionDemand,
+    ResourceCompetitionPolicy,
+)
 from noetrium_platform.foundation.kernel.concurrency.api import (
     ConcurrencyBudget,
     ExecutionLaneKind,
     ExecutionSpec,
     TaskContextPort,
 )
-from noetrium_platform.research.execution.policy.api import AdmissionBudget
+from noetrium_platform.infrastructure.resources.compute.api import (
+    HostRuntimeSnapshot,
+    HostRuntimeStatus,
+)
+from noetrium_platform.research.execution.policy.api import (
+    AdmissionBudget,
+    AdmissionMode,
+    AdmissionRejected,
+)
 
 
 def _cpu_identity(value: int) -> int:
     return value
+
+
+class _FixedHostObserver:
+    def snapshot(self) -> HostRuntimeSnapshot:
+        return HostRuntimeSnapshot(
+            True,
+            (
+                HostRuntimeStatus(
+                    "shared-node",
+                    True,
+                    effective_cpu_cores=8.0,
+                    cpu_load_1m=0.0,
+                    available_memory_bytes=2 * 1024**3,
+                    cpu_pressure_some_avg10_percent=0.0,
+                    memory_pressure_some_avg10_percent=0.0,
+                    io_pressure_some_avg10_percent=0.0,
+                    available_pids=1024,
+                    available_fds=4096,
+                ),
+            ),
+        )
 
 
 def test_pool_group_lifecycle_unregisters_identity_for_safe_reuse() -> None:
@@ -78,6 +111,89 @@ def test_experiment_and_model_io_use_independent_admission_domains() -> None:
     finally:
         pool.close_experiment_group(outer)
         pool.close_model_io_group(model)
+        pool.close()
+
+
+def test_workload_domains_share_one_physical_resource_reservation_ledger() -> None:
+    pool = ResearchExecutionPool(
+        host_runtime_observer=_FixedHostObserver(),
+        resource_competition_policy=ResourceCompetitionPolicy(
+            min_available_memory_bytes=1024**3,
+            min_available_pids=0,
+            min_available_fds=0,
+            min_storage_free_bytes=0,
+            min_storage_free_inodes=0,
+        ),
+    )
+    demand = ResourceCompetitionDemand(
+        memory_bytes_per_permit=1024**3,
+    )
+    orchestration = pool.open_orchestration_group(
+        "reserve-orchestration",
+        admission_mode=AdmissionMode.REJECT,
+        resource_demand=demand,
+    )
+    experiment = pool.open_experiment_group(
+        "reserve-experiment",
+        admission_mode=AdmissionMode.REJECT,
+        resource_demand=demand,
+    )
+    entered = Event()
+    release = Event()
+
+    def hold(context: TaskContextPort) -> None:
+        context.checkpoint()
+        entered.set()
+        if not release.wait(2):
+            raise TimeoutError("reservation test release was not signalled")
+        context.checkpoint()
+
+    def quick(context: TaskContextPort) -> int:
+        context.checkpoint()
+        return 1
+
+    try:
+        first = orchestration.submit(
+            ExecutionSpec(
+                task_id="hold-reservation",
+                lane_kind=ExecutionLaneKind.BLOCKING_IO,
+            ),
+            hold,
+        )
+        assert entered.wait(1)
+
+        # The experiment admission domain has independent logical admission
+        # capacity, but it must see the orchestration domain's physical-memory
+        # reservation before the first task appears in host runtime facts.
+        with pytest.raises(AdmissionRejected, match="memory-headroom"):
+            experiment.submit(
+                ExecutionSpec(
+                    task_id="cross-domain-overbook",
+                    lane_kind=ExecutionLaneKind.BLOCKING_IO,
+                ),
+                quick,
+            )
+
+        release.set()
+        first.result(1)
+        second = experiment.submit(
+            ExecutionSpec(
+                task_id="after-reservation-release",
+                lane_kind=ExecutionLaneKind.BLOCKING_IO,
+            ),
+            quick,
+        )
+        assert second.result(1) == 1
+    finally:
+        release.set()
+        pool.close_orchestration_group(
+            orchestration,
+            cancel_pending=True,
+        )
+        pool.close_experiment_group(
+            experiment,
+            cancel_pending=True,
+        )
         pool.close()
 
 
