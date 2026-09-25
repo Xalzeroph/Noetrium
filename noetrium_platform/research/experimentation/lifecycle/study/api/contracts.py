@@ -126,6 +126,8 @@ class StudyConcurrencyPolicy:
     scheduler_policy: str
     repetition_timeout_seconds: float
     max_parallel_assignments: int
+    max_assignment_attempts: int = 3
+    assignment_retry_policy: str = "retryable-task-failures-v1"
 
     @classmethod
     def serial_shared_v1(cls, *, repetition_timeout_seconds: float) -> Self:
@@ -184,6 +186,14 @@ class StudyConcurrencyPolicy:
         if type(self.parallel_assignments) is not bool:
             raise TypeError("parallel_assignments must be boolean")
         _require_positive_int(self.max_parallel_assignments, "max_parallel_assignments")
+        _require_positive_int(
+            self.max_assignment_attempts,
+            "max_assignment_attempts",
+        )
+        _require_non_empty_string(
+            self.assignment_retry_policy,
+            "study concurrency assignment_retry_policy",
+        )
         if self.parallel_assignments and self.max_parallel_assignments < 2:
             raise ValueError(
                 "parallel_assignments requires max_parallel_assignments greater than one"
