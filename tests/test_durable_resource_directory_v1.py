@@ -628,7 +628,7 @@ def test_workspace_gc_recovers_purge_committed_before_terminal_publication(
     def fail_terminal_publication(path, data):
         nonlocal retirement_writes
         retirement_writes += 1
-        if retirement_writes == 3:
+        if retirement_writes == 4:
             raise OSError(
                 "simulated crash after quarantine purge before terminal publication"
             )
@@ -663,6 +663,139 @@ def test_workspace_gc_recovers_purge_committed_before_terminal_publication(
         gc=gc,
     )
     assert not allocation.path.exists()
+
+
+def test_workspace_gc_retries_partial_recursive_delete(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    import noetrium_platform.infrastructure.resources.directory.runtime.workspaces as workspace_runtime
+
+    authorities = build_local_directory_authorities(_layout(tmp_path))
+    scope = ScopeIdentity(ScopeKind.BRANCH, "branch-partial-purge")
+    allocation = authorities.workspaces.allocate_workspace(
+        "run-partial-purge",
+        scope=scope,
+        category="study",
+    )
+    nested = allocation.path / "nested"
+    nested.mkdir()
+    (nested / "payload.bin").write_bytes(b"durable-state")
+    gc = _closed_workspace_gc(
+        authorities,
+        "run-partial-purge",
+        scope=scope,
+        category="study",
+    )
+
+    real_rmtree = workspace_runtime.shutil.rmtree
+    calls = 0
+
+    def partial_then_fail(path: Path) -> None:
+        nonlocal calls
+        calls += 1
+        if calls == 1:
+            (path / "nested" / "payload.bin").unlink()
+            raise OSError("partial workspace recursive delete interruption")
+        real_rmtree(path)
+
+    monkeypatch.setattr(
+        workspace_runtime.shutil,
+        "rmtree",
+        partial_then_fail,
+    )
+    with pytest.raises(OSError, match="partial workspace recursive"):
+        authorities.workspaces.remove_workspace(
+            "run-partial-purge",
+            scope=scope,
+            category="study",
+            gc=gc,
+        )
+
+    quarantine_root = tmp_path / "workspaces" / ".retired-workspaces"
+    (quarantine,) = tuple(quarantine_root.iterdir())
+    assert quarantine.is_dir()
+    assert not (quarantine / "nested" / "payload.bin").exists()
+
+    monkeypatch.setattr(
+        workspace_runtime.shutil,
+        "rmtree",
+        real_rmtree,
+    )
+    assert authorities.workspaces.remove_workspace(
+        "run-partial-purge",
+        scope=scope,
+        category="study",
+        gc=gc,
+    )
+    assert not quarantine.exists()
+
+
+def test_workspace_gc_purging_rejects_same_tree_replacement(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    import noetrium_platform.infrastructure.resources.directory.runtime.workspaces as workspace_runtime
+
+    authorities = build_local_directory_authorities(_layout(tmp_path))
+    scope = ScopeIdentity(ScopeKind.BRANCH, "branch-purging-replaced")
+    allocation = authorities.workspaces.allocate_workspace(
+        "run-purging-replaced",
+        scope=scope,
+        category="study",
+    )
+    (allocation.path / "payload.bin").write_bytes(b"same-tree")
+    gc = _closed_workspace_gc(
+        authorities,
+        "run-purging-replaced",
+        scope=scope,
+        category="study",
+    )
+
+    real_rmtree = workspace_runtime.shutil.rmtree
+
+    def fail_before_delete(_path: Path) -> None:
+        raise OSError("crash after durable workspace purging intent")
+
+    monkeypatch.setattr(
+        workspace_runtime.shutil,
+        "rmtree",
+        fail_before_delete,
+    )
+    with pytest.raises(OSError, match="workspace purging intent"):
+        authorities.workspaces.remove_workspace(
+            "run-purging-replaced",
+            scope=scope,
+            category="study",
+            gc=gc,
+        )
+
+    quarantine_root = tmp_path / "workspaces" / ".retired-workspaces"
+    (quarantine,) = tuple(quarantine_root.iterdir())
+    original = quarantine.with_name(
+        f"{quarantine.name}-original-generation"
+    )
+    quarantine.rename(original)
+    workspace_runtime.shutil.copytree(original, quarantine)
+
+    monkeypatch.setattr(
+        workspace_runtime.shutil,
+        "rmtree",
+        real_rmtree,
+    )
+    with pytest.raises(
+        RuntimeError,
+        match="filesystem object changed during purge",
+    ):
+        authorities.workspaces.remove_workspace(
+            "run-purging-replaced",
+            scope=scope,
+            category="study",
+            gc=gc,
+        )
+
+    assert (quarantine / "payload.bin").read_bytes() == b"same-tree"
+    assert original.is_dir()
 
 
 def test_workspace_gc_rejects_live_path_reappearance_after_quarantine(
