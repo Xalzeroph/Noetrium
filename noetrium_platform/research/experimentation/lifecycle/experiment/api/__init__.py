@@ -15,6 +15,7 @@ from .trial_protocol import (
 )
 from .failure import (
     ExperimentWorkloadFailure,
+    FailureDisposition,
     FailureScope,
     FailureScopeRank,
     failure_scope_rank,
@@ -48,6 +49,7 @@ __all__ = [
     "ExperimentParticipantTopology",
     "ExperimentTaskSpec",
     "ExperimentWorkloadFailure",
+    "FailureDisposition",
     "ExperimentSpec",
     "ExperimentTrialProtocolIdentity",
     "ExperimentTrialProtocolIdentityMismatch",
