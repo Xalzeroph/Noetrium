@@ -436,7 +436,10 @@ class ModelReplicaPoolLease:
                 if allocation_id in self._released_endpoint_ids:
                     continue
                 try:
-                    self._endpoint_allocations.release(
+                    # Every deployment generation was stopped above. Use the
+                    # recovery-aware retirement path so a heartbeat-expired
+                    # lease cannot strand ownership after physical convergence.
+                    self._endpoint_allocations.recover_release(
                         self._current_endpoints[allocation_id]
                     )
                 except BaseException as exc:
@@ -450,7 +453,7 @@ class ModelReplicaPoolLease:
                 if allocation_id in self._released_compute_ids:
                     continue
                 try:
-                    self._compute_scheduler.release(
+                    self._compute_scheduler.recover_release(
                         self._current_compute[allocation_id]
                     )
                 except BaseException as exc:
@@ -575,7 +578,7 @@ class _PendingModelReplicaCleanup:
                     if endpoint.allocation_id in self._released_endpoint_ids:
                         continue
                     try:
-                        self._endpoint_allocations.release(endpoint)
+                        self._endpoint_allocations.recover_release(endpoint)
                     except BaseException as exc:
                         errors.append(exc)
                     else:
@@ -586,7 +589,7 @@ class _PendingModelReplicaCleanup:
                     if compute.allocation_id in self._released_compute_ids:
                         continue
                     try:
-                        self._compute_scheduler.release(compute)
+                        self._compute_scheduler.recover_release(compute)
                     except BaseException as exc:
                         errors.append(exc)
                     else:
