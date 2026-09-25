@@ -7,9 +7,11 @@ import pytest
 
 from noetrium import api
 from noetrium_platform.composition.operator.project.project_execution_authority import (
-    ProjectExecutionAuthorities,
     ProjectExecutionAuthorityConfig,
     load_project_execution_authority_config,
+)
+from noetrium_platform.composition.research_portfolio_execution import (
+    ResearchExecutionAuthorities,
 )
 from noetrium_platform.composition.research_os_graph import (
     compile_research_portfolio_graph,
@@ -72,11 +74,15 @@ def test_study_protocol_factory_requires_exactly_one_implemented_protocol() -> N
         )
 
 
-def test_project_execution_authorities_require_complete_experiment_pair() -> None:
+def test_research_execution_authorities_require_complete_experiment_pair() -> None:
+    class _Closure:
+        def resolve(self, **kwargs):
+            raise AssertionError
+
     with pytest.raises(ValueError, match="requires both"):
-        ProjectExecutionAuthorities(
+        ResearchExecutionAuthorities(
             "a" * 64,
-            research_bindings=_BindingAuthority(),
+            experiment_closures=_Closure(),
         )
 
 

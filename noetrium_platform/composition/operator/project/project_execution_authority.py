@@ -8,18 +8,11 @@ from pathlib import Path
 from noetrium_platform.composition.managed_research_runtime import (
     ManagedResearchRuntime,
 )
-from noetrium_platform.composition.research_binding_authority import (
-    ResearchBindingAuthorityPort,
+from noetrium_platform.composition.research_portfolio_execution import (
+    ResearchExecutionAuthorities,
 )
-from noetrium_platform.composition.research_os_experiment_runtime_binding import (
-    ResearchOSExperimentRuntimeComponents,
-)
-from noetrium_platform.foundation.kernel.kernel import require_sha256
 from noetrium_platform.foundation.portfolio.project.api import ProjectManifest
 from noetrium_platform.product.research_os import ResearchPortfolio
-from noetrium_platform.research.execution.workflow.api.runtime_binding import (
-    MethodRuntimePortInventory,
-)
 
 
 _SCHEMA = "noetrium.project-execution-config.v1"
@@ -99,49 +92,6 @@ class ProjectExecutionContext:
         return self.runtime.model_replica_pool
 
 
-@dataclass(frozen=True, slots=True)
-class ProjectExecutionAuthorities:
-    authority_manifest_digest: str
-    research_bindings: ResearchBindingAuthorityPort | None = None
-    experiment_runtime_components: ResearchOSExperimentRuntimeComponents | None = None
-    method_runtime_inventory: MethodRuntimePortInventory | None = None
-
-    def __post_init__(self) -> None:
-        require_sha256(
-            self.authority_manifest_digest,
-            "project execution authority manifest",
-        )
-        if (self.research_bindings is None) != (
-            self.experiment_runtime_components is None
-        ):
-            raise ValueError(
-                "project Experiment execution requires both research_bindings "
-                "and experiment_runtime_components"
-            )
-        if self.research_bindings is not None and not isinstance(
-            self.research_bindings,
-            ResearchBindingAuthorityPort,
-        ):
-            raise TypeError(
-                "project research_bindings must satisfy ResearchBindingAuthorityPort"
-            )
-        if (
-            self.experiment_runtime_components is not None
-            and type(self.experiment_runtime_components)
-            is not ResearchOSExperimentRuntimeComponents
-        ):
-            raise TypeError(
-                "project experiment_runtime_components must be typed"
-            )
-        if self.method_runtime_inventory is not None and not isinstance(
-            self.method_runtime_inventory,
-            MethodRuntimePortInventory,
-        ):
-            raise TypeError(
-                "project method_runtime_inventory must be MethodRuntimePortInventory"
-            )
-
-
 def load_project_execution_authority_config(
     path: Path,
 ) -> ProjectExecutionAuthorityConfig:
@@ -206,16 +156,15 @@ def materialize_project_execution_authorities(
             "project execution authority factory target must be callable"
         )
     authorities = value(context)
-    if type(authorities) is not ProjectExecutionAuthorities:
+    if type(authorities) is not ResearchExecutionAuthorities:
         raise TypeError(
             "project execution authority factory must return "
-            "ProjectExecutionAuthorities"
+            "ResearchExecutionAuthorities"
         )
     return authorities
 
 
 __all__ = [
-    "ProjectExecutionAuthorities",
     "ProjectExecutionAuthorityConfig",
     "ProjectExecutionContext",
     "load_project_execution_authority_config",

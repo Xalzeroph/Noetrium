@@ -14,9 +14,6 @@ from noetrium_platform.composition.research_os_local import (
     LocalResearchOSComposition,
     compose_local_research_os,
 )
-from noetrium_platform.composition.research_os_study_closure import (
-    ResearchStudyProtocolClosureProvider,
-)
 from noetrium_platform.infrastructure.resources.directory.runtime import (
     standard_local_directory_layout,
 )
@@ -203,16 +200,9 @@ def load_project_research_os(
                 config.authority_factory,
                 context,
             )
-            closures = (
-                None
-                if authorities.research_bindings is None
-                else ResearchStudyProtocolClosureProvider(
-                    authorities.research_bindings
-                )
-            )
             composition = compose_local_research_os(
                 state_root,
-                experiment_closures=closures,
+                experiment_closures=authorities.experiment_closures,
                 experiment_runtime_components=(
                     authorities.experiment_runtime_components
                 ),
