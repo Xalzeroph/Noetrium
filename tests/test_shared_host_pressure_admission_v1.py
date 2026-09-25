@@ -431,6 +431,64 @@ def test_declared_pid_and_fd_demand_scale_with_atomic_batch_size() -> None:
         )
 
 
+def test_declared_demand_fails_closed_when_required_runtime_fact_is_unknown() -> None:
+    admission = build_execution_admission(
+        budget=AdmissionBudget(max_total_in_flight=8),
+        scheduling=build_admission_scheduling_policy(
+            priority_aging_seconds=0.01
+        ),
+    )
+    observer = _MutableHostObserver(
+        _status(
+            available_pids=None,
+            available_fds=None,
+        )
+    )
+    gate = ResourceCompetitionAdmissionGate(
+        admission,
+        observer,
+        policy=ResourceCompetitionPolicy(
+            min_available_memory_bytes=0,
+            min_available_pids=0,
+            min_available_fds=0,
+            min_storage_free_bytes=0,
+            min_storage_free_inodes=0,
+        ),
+    )
+    gate.register_group(
+        "unknown-demand",
+        identity=AdmissionIdentity(),
+        intent=AdmissionIntent(mode=AdmissionMode.REJECT),
+    )
+    gate.set_group_demand(
+        "unknown-demand",
+        ResourceCompetitionDemand(
+            pids_per_permit=1,
+            fds_per_permit=1,
+        ),
+    )
+
+    with pytest.raises(AdmissionRejected, match="pid-runtime-unavailable"):
+        gate.acquire(
+            "unknown-demand",
+            ExecutionLaneKind.CPU,
+            deadline=None,
+            cancellation=None,
+        )
+
+    observer.status = _status(
+        available_pids=256,
+        available_fds=None,
+    )
+    with pytest.raises(AdmissionRejected, match="fd-runtime-unavailable"):
+        gate.acquire(
+            "unknown-demand",
+            ExecutionLaneKind.ASYNC_IO,
+            deadline=None,
+            cancellation=None,
+        )
+
+
 def test_pid_headroom_blocks_expansion_before_cgroup_exhaustion() -> None:
     observer = _MutableHostObserver(_status(available_pids=8))
     gate = _gate(observer, mode=AdmissionMode.REJECT)
