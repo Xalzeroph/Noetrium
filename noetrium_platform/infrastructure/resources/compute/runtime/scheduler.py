@@ -85,6 +85,9 @@ def _same_compute_generation(
         and current.cpu_cores == expected.cpu_cores
         and current.memory_bytes == expected.memory_bytes
         and current.gpu_ids == expected.gpu_ids
+        and current.gpu_sharing_mode is expected.gpu_sharing_mode
+        and current.gpu_memory_reservation_bytes
+        == expected.gpu_memory_reservation_bytes
         and current.lease_fencing_token == expected.lease_fencing_token
     )
 
@@ -107,7 +110,9 @@ class _HostUsage:
     memory_bytes: int = 0
     unbound_cpu_cores: int = 0
     unbound_memory_bytes: int = 0
-    gpu_ids: set[str] = field(default_factory=set)
+    gpu_allocation_counts: dict[str, int] = field(default_factory=dict)
+    gpu_exclusive_counts: dict[str, int] = field(default_factory=dict)
+    unbound_gpu_memory_bytes: dict[str, int] = field(default_factory=dict)
 
 
 def _observe_gpu_runtime(observer: GpuRuntimeObserverPort | None) -> GpuRuntimeSnapshot | None:
@@ -186,18 +191,11 @@ def _host_runtime_index(
     }
 
 
-def _runtime_rank(
-    gpu, requirement: ComputeRequirement, runtime_index: _GpuRuntimeIndex | None,
-):
-    if runtime_index is None:
-        # Any GPU placement depends on live external usage facts. IDLE_ONLY
-        # cannot prove idleness and shared placement cannot prove safe residual
-        # capacity when runtime observation is unavailable.
-        return None
-    device = runtime_index.devices_by_id.get(gpu.gpu_id)
-    if device is None:
-        return None
-    free_bytes = device.memory_free_mb * 1024 * 1024
+def _required_gpu_memory_bytes(
+    gpu,
+    requirement: ComputeRequirement,
+    device: GpuDeviceStatus,
+) -> int:
     runtime_total_bytes = device.memory_total_mb * 1024 * 1024
     fractional_requirement = (
         0
@@ -207,9 +205,33 @@ def _runtime_rank(
             * requirement.required_gpu_memory_fraction
         )
     )
-    required_free_bytes = max(
+    return max(
         requirement.required_gpu_free_memory_bytes,
         fractional_requirement,
+    )
+
+
+def _runtime_rank(
+    gpu,
+    requirement: ComputeRequirement,
+    runtime_index: _GpuRuntimeIndex | None,
+    *,
+    unbound_reserved_bytes: int = 0,
+):
+    if runtime_index is None:
+        # GPU placement always depends on live external usage facts.
+        return None
+    device = runtime_index.devices_by_id.get(gpu.gpu_id)
+    if device is None:
+        return None
+    required_free_bytes = _required_gpu_memory_bytes(
+        gpu,
+        requirement,
+        device,
+    )
+    free_bytes = max(
+        0,
+        device.memory_free_mb * 1024 * 1024 - unbound_reserved_bytes,
     )
     if free_bytes < required_free_bytes:
         return None
@@ -217,7 +239,9 @@ def _runtime_rank(
         return None
     process_count = runtime_index.process_count_by_uuid.get(device.uuid, 0)
     process_visibility_unknown = not runtime_index.processes_complete
-    if (process_count or process_visibility_unknown) and requirement.gpu_sharing_mode is GpuSharingMode.IDLE_ONLY:
+    if (
+        process_count or process_visibility_unknown
+    ) and requirement.gpu_sharing_mode is GpuSharingMode.IDLE_ONLY:
         return None
     return (
         1 if process_count or process_visibility_unknown else 0,
@@ -229,22 +253,36 @@ def _runtime_rank(
 
 
 def _eligible_gpus(
-    host: ComputeHost, usage: _HostUsage, requirement: ComputeRequirement,
+    host: ComputeHost,
+    usage: _HostUsage,
+    requirement: ComputeRequirement,
     runtime_index: _GpuRuntimeIndex | None,
 ):
     rows = []
     for gpu in host.gpus:
-        if gpu.gpu_id in usage.gpu_ids:
+        allocation_count = usage.gpu_allocation_counts.get(gpu.gpu_id, 0)
+        exclusive_count = usage.gpu_exclusive_counts.get(gpu.gpu_id, 0)
+        if requirement.gpu_sharing_mode is GpuSharingMode.IDLE_ONLY:
+            if allocation_count:
+                continue
+        elif exclusive_count:
             continue
         if gpu.memory_bytes < requirement.minimum_gpu_memory_bytes:
             continue
-        rank = _runtime_rank(gpu, requirement, runtime_index)
+        rank = _runtime_rank(
+            gpu,
+            requirement,
+            runtime_index,
+            unbound_reserved_bytes=usage.unbound_gpu_memory_bytes.get(
+                gpu.gpu_id,
+                0,
+            ),
+        )
         if rank is None:
             continue
         rows.append((rank, gpu))
     rows.sort(key=lambda item: item[0])
     return tuple(rows)
-
 
 def _placement_score(
     host: ComputeHost, usage: _HostUsage, requirement: ComputeRequirement,
@@ -358,6 +396,30 @@ def _ordered_placements(
             rows.append((score, host, gpu_ids))
     rows.sort(key=lambda item: item[0])
     return tuple(rows)
+
+
+def _gpu_memory_reservations(
+    host: ComputeHost,
+    gpu_ids: tuple[str, ...],
+    requirement: ComputeRequirement,
+    runtime_snapshot: GpuRuntimeSnapshot | None,
+) -> tuple[int, ...]:
+    if not gpu_ids:
+        return ()
+    runtime_index = _gpu_runtime_index(runtime_snapshot)
+    if runtime_index is None:
+        raise ComputePlacementUnavailable(requirement)
+    gpu_map = {gpu.gpu_id: gpu for gpu in host.gpus}
+    reservations: list[int] = []
+    for gpu_id in gpu_ids:
+        gpu = gpu_map[gpu_id]
+        device = runtime_index.devices_by_id.get(gpu_id)
+        if device is None:
+            raise ComputePlacementUnavailable(requirement)
+        reservations.append(
+            _required_gpu_memory_bytes(gpu, requirement, device)
+        )
+    return tuple(reservations)
 
 
 def _allocation_resource(allocation_id: str) -> ResourceIdentity:
