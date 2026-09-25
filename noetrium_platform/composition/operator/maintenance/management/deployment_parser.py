@@ -27,7 +27,7 @@ def register(groups) -> None:
     desire_all.add_argument("--model")
     desire_all.add_argument("--engine")
     desire_all.add_argument("--env")
-    for action in ("start", "stop", "restart", "status", "remove"):
+    for action in ("start", "stop", "restart", "status", "remove", "reset-auto-recovery"):
         command = sub.add_parser(action)
         command.add_argument("deployment_id")
     set_gpus = sub.add_parser("set-gpus")
