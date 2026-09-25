@@ -642,6 +642,7 @@ def _ordered_placements(
     host_runtime_snapshot: HostRuntimeSnapshot | None,
     *,
     quarantined_gpus: frozenset[tuple[str, str]] = frozenset(),
+    observation_now_epoch_s: float | None = None,
 ):
     if (
         requirement.gpu_count > 0
@@ -655,7 +656,11 @@ def _ordered_placements(
         )
     freshness = requirement.max_runtime_observation_age_seconds
     if freshness is not None:
-        observed_now = time()
+        observed_now = (
+            time()
+            if observation_now_epoch_s is None
+            else _lease_now(observation_now_epoch_s)
+        )
         if runtime_snapshot is not None and not _runtime_observation_is_fresh(
             runtime_snapshot.observed_at_epoch_s,
             float(freshness),
@@ -1679,6 +1684,7 @@ class SQLiteComputeScheduler:
         host_runtime_snapshot: HostRuntimeSnapshot | None,
         *,
         quarantined_gpus: frozenset[tuple[str, str]] = frozenset(),
+        observation_now_epoch_s: float | None = None,
     ):
         hosts = tuple(
             host for host in self._inventory.list_hosts(scope=scope)
@@ -1692,6 +1698,7 @@ class SQLiteComputeScheduler:
             runtime_snapshot,
             host_runtime_snapshot,
             quarantined_gpus=quarantined_gpus,
+            observation_now_epoch_s=observation_now_epoch_s,
         )
 
     def candidates(
@@ -1737,6 +1744,7 @@ class SQLiteComputeScheduler:
                 runtime_snapshot,
                 host_runtime_snapshot,
                 quarantined_gpus=quarantined_gpus,
+                observation_now_epoch_s=now_epoch_s,
             )
         )
 
@@ -1805,6 +1813,7 @@ class SQLiteComputeScheduler:
             runtime_snapshot,
             host_runtime_snapshot,
             quarantined_gpus=quarantined_gpus,
+            observation_now_epoch_s=now_epoch_s,
         )
         if not placements:
             eligible_host_ids = {
@@ -1827,6 +1836,7 @@ class SQLiteComputeScheduler:
                     placement_identity,
                     runtime_snapshot,
                     host_runtime_snapshot,
+                    observation_now_epoch_s=now_epoch_s,
                 )
                 if without_quarantine:
                     raise ComputePhysicalConvergencePending(
@@ -2045,6 +2055,7 @@ class SQLiteComputeScheduler:
                                 runtime_snapshot,
                                 host_runtime_snapshot,
                                 quarantined_gpus=quarantined_gpus,
+                                observation_now_epoch_s=now_epoch_s,
                             )
                             ranked.append(
                                 (
@@ -2180,6 +2191,7 @@ class SQLiteComputeScheduler:
                                 runtime_snapshot,
                                 host_runtime_snapshot,
                                 quarantined_gpus=quarantined_gpus,
+                                observation_now_epoch_s=now_epoch_s,
                             )
                         )
                         candidate_orders.append(ids)
