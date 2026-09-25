@@ -70,13 +70,17 @@ class LocalServiceProcessV110Tests(unittest.TestCase):
             )
             state=FileServiceStateStore(root/"state.json")
             supervisor=make_service_supervisor(state,adapter)
+            controller_nice = os.getpriority(os.PRIO_PROCESS, 0)
+            controller_oom_score_adj = int(
+                Path("/proc/self/oom_score_adj").read_text("utf-8").strip()
+            )
             report=supervisor.start_exact(c)
             self.assertEqual(report.state.phase,ServicePhase.RUNNING)
             process=report.state.process
             self.assertIsNotNone(process)
-            self.assertGreaterEqual(
+            self.assertEqual(
                 os.getpriority(os.PRIO_PROCESS, process.execution_pid),
-                5,
+                controller_nice,
             )
             oom_score_adj = int(
                 (
@@ -85,7 +89,7 @@ class LocalServiceProcessV110Tests(unittest.TestCase):
                     / "oom_score_adj"
                 ).read_text("utf-8").strip()
             )
-            self.assertGreaterEqual(oom_score_adj, 500)
+            self.assertEqual(oom_score_adj, controller_oom_score_adj)
             try:
                 reconciled,refs=adapter.reconcile(state.read(),c)
                 self.assertEqual(reconciled,process)
