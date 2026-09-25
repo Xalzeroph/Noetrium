@@ -170,6 +170,7 @@ class ComputeRequirement:
     require_host_runtime: bool = False
     gpu_sharing_mode: GpuSharingMode = GpuSharingMode.IDLE_ONLY
     required_labels: tuple[tuple[str, str], ...] = ()
+    required_gpu_labels: tuple[tuple[str, str], ...] = ()
 
     def __post_init__(self) -> None:
         if (
@@ -206,6 +207,8 @@ class ComputeRequirement:
             raise TypeError("compute require_host_runtime must be bool")
         if not isinstance(self.gpu_sharing_mode, GpuSharingMode):
             raise TypeError("compute gpu_sharing_mode must be GpuSharingMode")
+        object.__setattr__(self, "required_labels", _canonical_labels(self.required_labels, "compute required host labels"))
+        object.__setattr__(self, "required_gpu_labels", _canonical_labels(self.required_gpu_labels, "compute required GPU labels"))
 
 
 _SHA256 = re.compile(r"[0-9a-f]{64}")
