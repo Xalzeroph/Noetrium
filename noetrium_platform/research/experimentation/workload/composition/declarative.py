@@ -285,6 +285,7 @@ class DeclarativeWorkloadMethodCompiler:
     runtime: MethodRuntimeBindings
     input_projection: TaskFieldProjection = field(default_factory=TaskFieldProjection)
     initial_state: JsonObject | None = None
+    initial_state_projection: TaskFieldProjection | None = None
     resume: bool = False
 
     def __post_init__(self) -> None:
@@ -298,6 +299,17 @@ class DeclarativeWorkloadMethodCompiler:
             if not isinstance(self.initial_state, Mapping):
                 raise TypeError("declarative workload initial_state must be a mapping or None")
             object.__setattr__(self, "initial_state", freeze_json(self.initial_state))
+        if self.initial_state_projection is not None:
+            if not isinstance(self.initial_state_projection, TaskFieldProjection):
+                raise TypeError(
+                    "declarative workload initial_state_projection must be "
+                    "TaskFieldProjection or None"
+                )
+            if self.initial_state is not None:
+                raise ValueError(
+                    "declarative workload accepts static initial_state or "
+                    "initial_state_projection, not both"
+                )
         if type(self.resume) is not bool:
             raise TypeError("declarative workload resume must be boolean")
 
@@ -309,6 +321,11 @@ class DeclarativeWorkloadMethodCompiler:
             "runtime_binding_digest": self.runtime.resolved_runtime_binding_digest(),
             "input_projection_digest": self.input_projection.digest,
             "initial_state": self.initial_state,
+            "initial_state_projection_digest": (
+                None
+                if self.initial_state_projection is None
+                else self.initial_state_projection.digest
+            ),
             "resume": self.resume,
         })
 
@@ -324,11 +341,16 @@ class DeclarativeWorkloadMethodCompiler:
             binding_plan_digest=self.digest,
         )
         analyze_method_runtime_requirements(self.program).require(runtime)
+        initial_state = (
+            self.initial_state
+            if self.initial_state_projection is None
+            else self.initial_state_projection.project(task)
+        )
         return WorkloadMethodInvocation(
             program=self.program,
             runtime=runtime,
             input_value=self.input_projection.project(task),
-            initial_state=self.initial_state,
+            initial_state=initial_state,
             resume=self.resume,
         )
 

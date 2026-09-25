@@ -201,3 +201,76 @@ def test_auto_composed_declarative_runtime_attaches_only_required_ports(tmp_path
     )
     assert result.value == {"agent": "auto"}
     assert loop.calls == ["agent-a"]
+
+
+def test_declarative_compiler_can_project_task_fields_into_initial_state(
+    tmp_path: Path,
+) -> None:
+    identity = MethodProgramIdentity(
+        MethodIdentity("declarative.initial-state", "1", "1", "1")
+    )
+
+    def finish(request):
+        return MethodNodeResult(
+            value={
+                "task_id": request.state["task_id"],
+                "question": request.state["question"],
+                "lane": request.state["lane"],
+            }
+        )
+
+    program = (
+        MethodProgramBuilder(identity, entrypoint="finish")
+        .return_node("finish", "declarative.initial-state.finish", finish)
+        .build()
+    )
+    compiler = DeclarativeWorkloadMethodCompiler(
+        program=program,
+        runtime=MethodRuntimeBindings(
+            runtime_binder=standard_method_runtime_binder(),
+            evidence_factory=standard_method_evidence_factory(),
+            state_root=tmp_path / "state",
+        ),
+        initial_state_projection=TaskFieldProjection(
+            fields=(("task_id", "task_id"), ("question", "objective")),
+            constants={"lane": "paper"},
+        ),
+    )
+    invocation = compiler.compile(
+        ExperimentTaskSpec("task-1", "qa", "What is 2+2?"),
+        ExecutionContext("run", "trace", "root"),
+    )
+    result = UniversalMethodMachine().run(
+        invocation.program,
+        runtime=invocation.runtime,
+        input_value=invocation.input_value,
+        initial_state=invocation.initial_state,
+    )
+    assert result.value == {
+        "task_id": "task-1",
+        "question": "What is 2+2?",
+        "lane": "paper",
+    }
+    assert compiler.digest != DeclarativeWorkloadMethodCompiler(
+        program=program,
+        runtime=compiler.runtime,
+    ).digest
+
+
+def test_declarative_compiler_rejects_two_initial_state_authorities(
+    tmp_path: Path,
+) -> None:
+    program = _program()
+    with pytest.raises(ValueError, match="static initial_state or"):
+        DeclarativeWorkloadMethodCompiler(
+            program=program,
+            runtime=MethodRuntimeBindings(
+                runtime_binder=standard_method_runtime_binder(),
+                evidence_factory=standard_method_evidence_factory(),
+                state_root=tmp_path / "state",
+            ),
+            initial_state={"fixed": True},
+            initial_state_projection=TaskFieldProjection(
+                fields=(("task_id", "task_id"),),
+            ),
+        )
