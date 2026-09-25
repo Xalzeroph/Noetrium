@@ -1,8 +1,7 @@
 from __future__ import annotations
 
+from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
-
-import pytest
 
 from noetrium_platform.capabilities.model.deployment.api import (
     ModelDeploymentGeneration,
@@ -50,20 +49,39 @@ def _authority(
     root: Path,
     clock: _Clock,
     *,
-    max_failures: int = 3,
+    max_attempts: int = 3,
     stable_reset_seconds: float = 30.0,
+    attempt_timeout_seconds: float = 10.0,
 ) -> DurableModelAutoRecoveryAuthority:
     directories = build_local_directory_authorities(_layout(root))
     return DurableModelAutoRecoveryAuthority(
         directories.layout,
         policy=ModelAutoRecoveryPolicy(
-            max_failures=max_failures,
+            max_attempts=max_attempts,
             window_seconds=300.0,
             base_backoff_seconds=2.0,
             max_backoff_seconds=30.0,
             stable_reset_seconds=stable_reset_seconds,
+            attempt_timeout_seconds=attempt_timeout_seconds,
         ),
         clock=clock,
+    )
+
+
+def _fail_claim(
+    authority: DurableModelAutoRecoveryAuthority,
+    deployment_id: str,
+    digest: str,
+    failure: str,
+):
+    claim = authority.claim_attempt(deployment_id, digest)
+    assert claim.allow
+    assert claim.claim_id is not None
+    return authority.record_failure(
+        deployment_id,
+        digest,
+        claim.claim_id,
+        failure,
     )
 
 
@@ -71,32 +89,32 @@ def test_auto_recovery_circuit_survives_controller_restart(tmp_path: Path) -> No
     clock = _Clock(100.0)
     digest = "a" * 64
     failure = "b" * 64
-    authority = _authority(tmp_path, clock, max_failures=2)
+    authority = _authority(tmp_path, clock, max_attempts=2)
 
-    assert authority.authorize("deployment", digest).allow
-    first = authority.record_failure("deployment", digest, failure)
+    first = _fail_claim(authority, "deployment", digest, failure)
     assert not first.circuit_open
-    assert not authority.authorize("deployment", digest).allow
+    blocked = authority.claim_attempt("deployment", digest)
+    assert not blocked.allow
+    assert blocked.reason == "auto-recovery-backoff"
 
     clock.value = 102.0
-    assert authority.authorize("deployment", digest).allow
-    second = authority.record_failure("deployment", digest, failure)
+    second = _fail_claim(authority, "deployment", digest, failure)
     assert second.circuit_open
 
-    # Reconstructing every controller object from the same durable root must not
-    # erase the trip. Even aging the rolling timestamps out never auto-closes an
-    # OPEN circuit.
     clock.value = 1000.0
-    reopened = _authority(tmp_path, clock, max_failures=2)
-    blocked = reopened.authorize("deployment", digest)
+    reopened = _authority(tmp_path, clock, max_attempts=2)
+    blocked = reopened.claim_attempt("deployment", digest)
     assert not blocked.allow
     assert blocked.reason == "auto-recovery-circuit-open"
 
     reopened.reset("deployment", digest)
-    assert reopened.authorize("deployment", digest).allow
+    claim = reopened.claim_attempt("deployment", digest)
+    assert claim.allow
+    assert claim.claim_id is not None
     state = reopened.state("deployment", digest)
     assert state.manual_reset_count == 1
     assert state.circuit_trip_count == 1
+    assert state.total_attempts == 3
     assert state.total_failures == 2
 
 
@@ -109,14 +127,12 @@ def test_stable_running_window_is_required_before_failure_budget_heals(
     authority = _authority(
         tmp_path,
         clock,
-        max_failures=1,
+        max_attempts=1,
         stable_reset_seconds=20.0,
     )
-    tripped = authority.record_failure("deployment", digest, failure)
+    tripped = _fail_claim(authority, "deployment", digest, failure)
     assert tripped.circuit_open
 
-    # A manual start can make the service RUNNING while the automatic circuit
-    # stays OPEN. One healthy observation is not sufficient to forgive history.
     clock.value = 12.0
     early = authority.record_running("deployment", digest)
     assert early.circuit_open
@@ -132,7 +148,109 @@ def test_stable_running_window_is_required_before_failure_budget_heals(
     assert stable.attempt_timestamps == ()
     assert stable.last_failure_digest is None
     assert stable.same_failure_streak == 0
-    assert authority.authorize("deployment", digest).allow
+    claim = authority.claim_attempt("deployment", digest)
+    assert claim.allow
+
+
+def test_concurrent_controllers_cannot_claim_same_restart_attempt(
+    tmp_path: Path,
+) -> None:
+    clock = _Clock(50.0)
+    digest = "1" * 64
+    left = _authority(tmp_path, clock, max_attempts=3)
+    right = _authority(tmp_path, clock, max_attempts=3)
+
+    with ThreadPoolExecutor(max_workers=2) as pool:
+        decisions = tuple(
+            pool.map(
+                lambda authority: authority.claim_attempt("deployment", digest),
+                (left, right),
+            )
+        )
+
+    allowed = tuple(row for row in decisions if row.allow)
+    blocked = tuple(row for row in decisions if not row.allow)
+    assert len(allowed) == 1
+    assert len(blocked) == 1
+    assert blocked[0].reason == "auto-recovery-attempt-inflight"
+    state = left.state("deployment", digest)
+    assert state.total_attempts == 1
+    assert len(state.attempt_timestamps) == 1
+
+
+def test_crash_after_claim_consumes_budget_and_eventually_opens_circuit(
+    tmp_path: Path,
+) -> None:
+    clock = _Clock(100.0)
+    digest = "2" * 64
+    authority = _authority(
+        tmp_path,
+        clock,
+        max_attempts=2,
+        attempt_timeout_seconds=5.0,
+    )
+
+    first = authority.claim_attempt("deployment", digest)
+    assert first.allow
+    assert first.claim_id is not None
+
+    # Simulate SIGKILL before success/failure publication.
+    clock.value = 102.0
+    inflight = _authority(
+        tmp_path,
+        clock,
+        max_attempts=2,
+        attempt_timeout_seconds=5.0,
+    ).claim_attempt("deployment", digest)
+    assert not inflight.allow
+    assert inflight.reason == "auto-recovery-attempt-inflight"
+
+    clock.value = 106.0
+    second_authority = _authority(
+        tmp_path,
+        clock,
+        max_attempts=2,
+        attempt_timeout_seconds=5.0,
+    )
+    second = second_authority.claim_attempt("deployment", digest)
+    assert second.allow
+    assert second.claim_id is not None
+    assert second_authority.state("deployment", digest).total_attempts == 2
+
+    # Crash again. Once the second durable claim expires, no third automatic
+    # restart is allowed even though neither crashed controller recorded failure.
+    clock.value = 112.0
+    terminal = _authority(
+        tmp_path,
+        clock,
+        max_attempts=2,
+        attempt_timeout_seconds=5.0,
+    ).claim_attempt("deployment", digest)
+    assert not terminal.allow
+    assert terminal.reason == "auto-recovery-attempt-budget-exhausted"
+    assert terminal.state.circuit_open
+
+
+def test_manual_reset_refuses_to_race_active_auto_recovery(
+    tmp_path: Path,
+) -> None:
+    clock = _Clock(10.0)
+    digest = "3" * 64
+    authority = _authority(tmp_path, clock, attempt_timeout_seconds=5.0)
+    claim = authority.claim_attempt("deployment", digest)
+    assert claim.allow
+
+    try:
+        authority.reset("deployment", digest)
+    except RuntimeError as exc:
+        assert "attempt is active" in str(exc)
+    else:
+        raise AssertionError("manual reset raced an active auto-recovery claim")
+
+    clock.value = 16.0
+    reset = authority.reset("deployment", digest)
+    assert reset.manual_reset_count == 1
+    assert reset.active_claim_id is None
 
 
 class _Catalog:
@@ -198,14 +316,13 @@ def test_fleet_reconcile_never_restarts_forever_after_budget_exhaustion(
         cwd=tmp_path,
         desired_state=ModelDesiredState.RUNNING,
     )
-    authority = _authority(tmp_path, clock, max_failures=2)
+    authority = _authority(tmp_path, clock, max_attempts=2)
     fleet = ModelFleetRuntime(_Catalog(spec), runtime, authority)
 
     first = fleet.reconcile()[0]
     assert runtime.start_calls == 1
     assert "auto-recovery-failed" in first.detail
 
-    # Backoff cycles observe state only; they do not call start again.
     second = fleet.reconcile()[0]
     assert runtime.start_calls == 1
     assert "auto-recovery-backoff" in second.detail
@@ -215,11 +332,10 @@ def test_fleet_reconcile_never_restarts_forever_after_budget_exhaustion(
     assert runtime.start_calls == 2
     assert "circuit-open" in third.detail
 
-    # A new controller/fleet object over the same state root remains fenced.
     reopened = ModelFleetRuntime(
         _Catalog(spec),
         runtime,
-        _authority(tmp_path, clock, max_failures=2),
+        _authority(tmp_path, clock, max_attempts=2),
     )
     fourth = reopened.reconcile()[0]
     assert runtime.start_calls == 2
