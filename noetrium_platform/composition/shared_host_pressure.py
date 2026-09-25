@@ -99,7 +99,7 @@ class LocalSharedNetworkPressureObserver:
         self._previous_at: float | None = None
         self._previous: dict[str, tuple[int, int, int]] = {}
         self._last = SharedNetworkPressureStatus(
-            True,
+            False,
             max_utilization_percent=None,
             detail="network-pressure-warming",
         )
@@ -150,7 +150,7 @@ class LocalSharedNetworkPressureObserver:
                 self._previous_at = now
                 self._previous = {}
                 self._last = SharedNetworkPressureStatus(
-                    True,
+                    False,
                     max_utilization_percent=None,
                     detail="network-link-speed-unavailable",
                 )
@@ -188,7 +188,7 @@ class LocalSharedNetworkPressureObserver:
             self._previous_at = now
             self._previous = current
             self._last = SharedNetworkPressureStatus(
-                True,
+                bool(percentages),
                 max_utilization_percent=(
                     None if not percentages else max(percentages)
                 ),
@@ -423,14 +423,22 @@ class SharedHostPressureAdmissionGate(ExecutionAdmissionPort):
 
         if status.available_memory_bytes < self._policy.min_available_memory_bytes:
             return "memory-headroom"
-        if (
-            status.available_pids is not None
-            and status.available_pids < self._policy.min_available_pids + permit_count
-        ):
+        if status.available_pids is None:
+            if (
+                self._policy.fail_closed_when_runtime_unavailable
+                and self._policy.min_available_pids > 0
+            ):
+                return "pid-runtime-unavailable"
+        elif status.available_pids < self._policy.min_available_pids + permit_count:
             return "pid-headroom"
-        if (
-            status.memory_pressure_some_avg10_percent is not None
-            and status.memory_pressure_some_avg10_percent
+        if status.memory_pressure_some_avg10_percent is None:
+            if (
+                self._policy.fail_closed_when_runtime_unavailable
+                and self._policy.max_memory_pressure_some_avg10_percent < 100.0
+            ):
+                return "memory-pressure-runtime-unavailable"
+        elif (
+            status.memory_pressure_some_avg10_percent
             > self._policy.max_memory_pressure_some_avg10_percent
         ):
             return "memory-pressure"
@@ -443,10 +451,13 @@ class SharedHostPressureAdmissionGate(ExecutionAdmissionPort):
             else:
                 if storage.free_bytes < self._policy.min_storage_free_bytes:
                     return "storage-byte-headroom"
-                if (
-                    storage.free_inodes is not None
-                    and storage.free_inodes < self._policy.min_storage_free_inodes
-                ):
+                if storage.free_inodes is None:
+                    if (
+                        self._policy.fail_closed_when_runtime_unavailable
+                        and self._policy.min_storage_free_inodes > 0
+                    ):
+                        return "storage-inode-runtime-unavailable"
+                elif storage.free_inodes < self._policy.min_storage_free_inodes:
                     return "storage-inode-headroom"
 
         if lane_kind is ExecutionLaneKind.CPU:
@@ -454,9 +465,14 @@ class SharedHostPressureAdmissionGate(ExecutionAdmissionPort):
                 return "cpu-capacity"
             if status.cpu_load_1m + permit_count > status.effective_cpu_cores:
                 return "cpu-residual-capacity"
-            if (
-                status.cpu_pressure_some_avg10_percent is not None
-                and status.cpu_pressure_some_avg10_percent
+            if status.cpu_pressure_some_avg10_percent is None:
+                if (
+                    self._policy.fail_closed_when_runtime_unavailable
+                    and self._policy.max_cpu_pressure_some_avg10_percent < 100.0
+                ):
+                    return "cpu-pressure-runtime-unavailable"
+            elif (
+                status.cpu_pressure_some_avg10_percent
                 > self._policy.max_cpu_pressure_some_avg10_percent
             ):
                 return "cpu-pressure"
@@ -464,23 +480,34 @@ class SharedHostPressureAdmissionGate(ExecutionAdmissionPort):
         if lane_kind in {ExecutionLaneKind.BLOCKING_IO, ExecutionLaneKind.ASYNC_IO}:
             network = self._network_status()
             if self._network_observer is not None:
-                if network is None or not network.available:
+                if (
+                    network is None
+                    or not network.available
+                    or network.max_utilization_percent is None
+                ):
                     if self._policy.fail_closed_when_runtime_unavailable:
                         return "network-runtime-unavailable"
                 elif (
-                    network.max_utilization_percent is not None
-                    and network.max_utilization_percent
+                    network.max_utilization_percent
                     > self._policy.max_network_utilization_percent
                 ):
                     return "network-pressure"
-            if (
-                status.available_fds is not None
-                and status.available_fds < self._policy.min_available_fds + permit_count
-            ):
+            if status.available_fds is None:
+                if (
+                    self._policy.fail_closed_when_runtime_unavailable
+                    and self._policy.min_available_fds > 0
+                ):
+                    return "fd-runtime-unavailable"
+            elif status.available_fds < self._policy.min_available_fds + permit_count:
                 return "fd-headroom"
-            if (
-                status.io_pressure_some_avg10_percent is not None
-                and status.io_pressure_some_avg10_percent
+            if status.io_pressure_some_avg10_percent is None:
+                if (
+                    self._policy.fail_closed_when_runtime_unavailable
+                    and self._policy.max_io_pressure_some_avg10_percent < 100.0
+                ):
+                    return "io-pressure-runtime-unavailable"
+            elif (
+                status.io_pressure_some_avg10_percent
                 > self._policy.max_io_pressure_some_avg10_percent
             ):
                 return "io-pressure"
