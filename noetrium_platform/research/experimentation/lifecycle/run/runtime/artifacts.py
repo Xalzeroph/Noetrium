@@ -16,8 +16,11 @@ from noetrium_platform.foundation.kernel.kernel import (
 )
 from noetrium_platform.foundation.kernel.kernel.durability import (
     ChecksummedDocumentError,
+    FilesystemCarrierGeneration,
+    FilesystemCarrierKind,
     InterprocessFileLock,
     atomic_replace_bytes,
+    capture_filesystem_carrier_generation,
     decode_checksummed_document,
     durable_append_bytes,
     encode_checksummed_document,
@@ -40,10 +43,10 @@ _RECEIPT_FIELDS = frozenset({
     "run_id", "artifact_ref", "artifact_kind", "generation",
     "content_sha256", "byte_size", "record_count",
 })
-_RUN_ARTIFACT_RETIREMENT_SCHEMA = "run-artifact.retirement.v1"
+_RUN_ARTIFACT_RETIREMENT_SCHEMA = "run-artifact.retirement.v2"
 _RUN_ARTIFACT_RETIREMENT_FIELDS = frozenset({
     "run_id", "root_name", "tree_digest", "entry_count", "total_bytes",
-    "gc_proof_digest", "phase",
+    "gc_proof_digest", "carrier_generation", "phase",
 })
 
 
@@ -129,6 +132,13 @@ class DirectoryRunArtifactStore(RunArtifactStorePort):
                 raise ValueError("invalid retirement digest")
             entry_count = payload["entry_count"]
             total_bytes = payload["total_bytes"]
+            carrier_generation = FilesystemCarrierGeneration.from_data(
+                payload["carrier_generation"]
+            )
+            if carrier_generation.kind is not FilesystemCarrierKind.DIRECTORY:
+                raise ValueError(
+                    "run artifact carrier generation must be a directory"
+                )
             if (
                 type(entry_count) is not int
                 or entry_count < 0
@@ -148,6 +158,7 @@ class DirectoryRunArtifactStore(RunArtifactStorePort):
             "entry_count": entry_count,
             "total_bytes": total_bytes,
             "gc_proof_digest": proof_digest,
+            "carrier_generation": carrier_generation,
             "phase": phase,
         }
 
@@ -155,7 +166,13 @@ class DirectoryRunArtifactStore(RunArtifactStorePort):
         self,
         gc: RunArtifactGcAssessment,
         phase: _RunArtifactRetirementPhase,
+        *,
+        carrier_generation: FilesystemCarrierGeneration,
     ) -> None:
+        if carrier_generation.kind is not FilesystemCarrierKind.DIRECTORY:
+            raise TypeError(
+                "run artifact retirement carrier must be a directory"
+            )
         atomic_replace_bytes(
             self._retirement_path(),
             encode_checksummed_document(
@@ -167,6 +184,7 @@ class DirectoryRunArtifactStore(RunArtifactStorePort):
                     "entry_count": gc.entry_count,
                     "total_bytes": gc.total_bytes,
                     "gc_proof_digest": gc.proof_digest,
+                    "carrier_generation": carrier_generation.to_data(),
                     "phase": phase.value,
                 },
             ),
@@ -631,9 +649,14 @@ class DirectoryRunArtifactStore(RunArtifactStorePort):
                         gc,
                         self._tree_identity(self.root),
                     )
+                    carrier_generation = capture_filesystem_carrier_generation(
+                        self.root,
+                        expected_kind=FilesystemCarrierKind.DIRECTORY,
+                    )
                     self._publish_retirement(
                         gc,
                         _RunArtifactRetirementPhase.RETIRED,
+                        carrier_generation=carrier_generation,
                     )
                     retirement = self._load_retirement()
                     assert retirement is not None
@@ -652,6 +675,15 @@ class DirectoryRunArtifactStore(RunArtifactStorePort):
                         )
 
                 phase = retirement["phase"]
+                carrier_generation = retirement["carrier_generation"]
+                if not isinstance(
+                    carrier_generation,
+                    FilesystemCarrierGeneration,
+                ):
+                    raise RunArtifactVerificationError(
+                        "run artifact retirement carrier generation is not typed"
+                    )
+
                 if phase is _RunArtifactRetirementPhase.RETIRED:
                     live = self.root.exists()
                     quarantined = quarantine.exists()
@@ -660,6 +692,19 @@ class DirectoryRunArtifactStore(RunArtifactStorePort):
                             "run artifact retirement has split live/quarantine truth"
                         )
                     if quarantined:
+                        quarantine_generation = (
+                            capture_filesystem_carrier_generation(
+                                quarantine,
+                                expected_kind=FilesystemCarrierKind.DIRECTORY,
+                            )
+                        )
+                        if not carrier_generation.same_object(
+                            quarantine_generation
+                        ):
+                            raise RuntimeError(
+                                "run artifact quarantine filesystem generation "
+                                "changed after retirement"
+                            )
                         self._require_gc_identity(
                             gc,
                             self._tree_identity(quarantine),
@@ -667,13 +712,28 @@ class DirectoryRunArtifactStore(RunArtifactStorePort):
                         self._publish_retirement(
                             gc,
                             _RunArtifactRetirementPhase.QUARANTINED,
+                            carrier_generation=quarantine_generation,
                         )
+                        carrier_generation = quarantine_generation
                         phase = _RunArtifactRetirementPhase.QUARANTINED
                     elif live:
                         self._require_gc_identity(
                             gc,
                             self._tree_identity(self.root),
                         )
+                        live_generation = (
+                            capture_filesystem_carrier_generation(
+                                self.root,
+                                expected_kind=FilesystemCarrierKind.DIRECTORY,
+                            )
+                        )
+                        if not carrier_generation.same_generation(
+                            live_generation
+                        ):
+                            raise RuntimeError(
+                                "run artifact filesystem generation changed "
+                                "after durable retirement"
+                            )
                         quarantine.parent.mkdir(parents=True, exist_ok=True)
                         fsync_directory(quarantine.parent.parent)
                         if quarantine.exists():
@@ -687,14 +747,29 @@ class DirectoryRunArtifactStore(RunArtifactStorePort):
                                 raise
                         fsync_directory(self.root.parent)
                         fsync_directory(quarantine.parent)
-                        self._publish_retirement(
-                            gc,
-                            _RunArtifactRetirementPhase.QUARANTINED,
+                        quarantine_generation = (
+                            capture_filesystem_carrier_generation(
+                                quarantine,
+                                expected_kind=FilesystemCarrierKind.DIRECTORY,
+                            )
                         )
+                        if not carrier_generation.same_object(
+                            quarantine_generation
+                        ):
+                            raise RuntimeError(
+                                "run artifact quarantine no longer carries "
+                                "the retired filesystem object"
+                            )
                         self._require_gc_identity(
                             gc,
                             self._tree_identity(quarantine),
                         )
+                        self._publish_retirement(
+                            gc,
+                            _RunArtifactRetirementPhase.QUARANTINED,
+                            carrier_generation=quarantine_generation,
+                        )
+                        carrier_generation = quarantine_generation
                         phase = _RunArtifactRetirementPhase.QUARANTINED
                     else:
                         raise RuntimeError(
@@ -707,15 +782,29 @@ class DirectoryRunArtifactStore(RunArtifactStorePort):
                             "run artifact live root reappeared after quarantine"
                         )
                     if quarantine.exists():
-                        if quarantine.is_symlink() or not quarantine.is_dir():
-                            raise RuntimeError(
-                                "run artifact quarantine is not an owned directory"
+                        quarantine_generation = (
+                            capture_filesystem_carrier_generation(
+                                quarantine,
+                                expected_kind=FilesystemCarrierKind.DIRECTORY,
                             )
+                        )
+                        if not carrier_generation.same_generation(
+                            quarantine_generation
+                        ):
+                            raise RuntimeError(
+                                "run artifact quarantine filesystem generation "
+                                "changed across retry"
+                            )
+                        self._require_gc_identity(
+                            gc,
+                            self._tree_identity(quarantine),
+                        )
                         shutil.rmtree(quarantine)
                         fsync_directory(quarantine.parent)
                     self._publish_retirement(
                         gc,
                         _RunArtifactRetirementPhase.PURGED,
+                        carrier_generation=carrier_generation,
                     )
                     phase = _RunArtifactRetirementPhase.PURGED
 
