@@ -13,7 +13,9 @@ import signal
 from pathlib import Path
 import sys
 import tempfile
+import time
 import unittest
+from unittest.mock import patch
 
 from noetrium_platform.infrastructure.lifecycle.service.runtime.state_storage import FileServiceStateStore
 from noetrium_platform.infrastructure.lifecycle.service.runtime import (
@@ -78,6 +80,15 @@ class LocalServiceProcessV110Tests(unittest.TestCase):
             self.assertEqual(report.state.phase,ServicePhase.RUNNING)
             process=report.state.process
             self.assertIsNotNone(process)
+            self.assertIsNotNone(process.anchor_pid)
+            self.assertIsNotNone(process.anchor_start_identity)
+            self.assertEqual(process.ownership_pid, process.anchor_pid)
+            self.assertEqual(os.getpgid(process.anchor_pid), process.anchor_pid)
+            target_stat = (
+                Path("/proc") / str(process.pid) / "stat"
+            ).read_text("utf-8")
+            target_fields = target_stat[target_stat.rfind(")") + 2 :].split()
+            self.assertEqual(int(target_fields[1]), process.anchor_pid)
             self.assertEqual(
                 os.getpriority(os.PRIO_PROCESS, process.execution_pid),
                 controller_nice,
@@ -145,6 +156,8 @@ class LocalServiceProcessV110Tests(unittest.TestCase):
                     first.start_exact(launch)
 
             original = spawned["process"]
+            self.assertIsNotNone(original.anchor_pid)
+            self.assertIsNotNone(original.anchor_start_identity)
             self.assertTrue(first_backend.alive(original))
             self.assertEqual(state.read().phase, ServicePhase.START_CHILD)
 
@@ -164,6 +177,14 @@ class LocalServiceProcessV110Tests(unittest.TestCase):
             report = second.start_exact(launch)
             self.assertEqual(report.state.phase, ServicePhase.RUNNING)
             self.assertEqual(report.state.process, original)
+            self.assertEqual(
+                report.state.process.anchor_pid,
+                original.anchor_pid,
+            )
+            self.assertEqual(
+                report.state.process.anchor_start_identity,
+                original.anchor_start_identity,
+            )
             self.assertTrue(second_backend.alive(original))
             try:
                 actual_env = (
@@ -176,6 +197,98 @@ class LocalServiceProcessV110Tests(unittest.TestCase):
             finally:
                 stopped = second.stop_exact(launch)
                 self.assertEqual(stopped.phase, ServicePhase.EXITED)
+
+    @unittest.skipUnless(
+        sys.platform.startswith("linux"),
+        "Linux fork-tree ownership requires Linux subreaper/pidfd",
+    )
+    def test_service_stop_reaps_forked_setsid_descendant(self):
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            environment = MaterializedServiceEnvironment.from_mapping(
+                {"RP_SENTINEL": "fork-tree"},
+                "env:fork-tree",
+            )
+            pid_file = root / "service-tree.pids"
+            detached_ready = root / "service-tree.detached-ready"
+            executable = str(Path(sys.executable).resolve())
+            code = "\n".join(
+                (
+                    "import os,pathlib,signal,time",
+                    "pid=os.fork()",
+                    "if pid == 0:",
+                    "    os.setsid()",
+                    "    signal.signal(signal.SIGTERM, signal.SIG_IGN)",
+                    f"    pathlib.Path({str(detached_ready)!r}).write_text(str(os.getpid()))",
+                    "    time.sleep(60)",
+                    "    os._exit(0)",
+                    f"pathlib.Path({str(pid_file)!r}).write_text(str(os.getpid())+','+str(pid))",
+                    "time.sleep(60)",
+                )
+            )
+            launch = ServiceLaunchContract(
+                "study.fork-tree",
+                "g1",
+                executable,
+                (executable, "-c", code),
+                str(root),
+                environment.digest,
+                h("fork-tree-artifact"),
+                h("fork-tree-runtime"),
+                3.0,
+                0.1,
+                0.05,
+            )
+            backend = LinuxProcessBackend(
+                build_process_supervisor(self._task_group)
+            )
+            adapter = LocalServiceProcessAdapter(
+                StaticServiceEnvironmentProvider((environment,)),
+                DirectoryCapturePathProvider(root / "captures"),
+                backend,
+                ProcessAliveReadinessProbe(
+                    self._task_group,
+                    poll_interval_s=0.01,
+                ),
+            )
+            state = FileServiceStateStore(root / "state.json")
+            supervisor = make_service_supervisor(state, adapter)
+            report = supervisor.start_exact(launch)
+            process = report.state.process
+            self.assertIsNotNone(process)
+            self.assertIsNotNone(process.anchor_pid)
+
+            deadline = time.monotonic() + 3.0
+            while (
+                (not pid_file.exists() or not detached_ready.exists())
+                and time.monotonic() < deadline
+            ):
+                time.sleep(0.01)
+            self.assertTrue(pid_file.exists())
+            self.assertTrue(detached_ready.exists())
+            target_pid, detached_pid = map(
+                int,
+                pid_file.read_text().split(","),
+            )
+            self.assertEqual(target_pid, process.pid)
+            self.assertEqual(
+                detached_pid,
+                int(detached_ready.read_text()),
+            )
+            anchor_pid = process.anchor_pid
+            stopped = supervisor.stop_exact(launch)
+            self.assertEqual(stopped.phase, ServicePhase.EXITED)
+
+            deadline = time.monotonic() + 3.0
+            owned_pids = (anchor_pid, target_pid, detached_pid)
+            while time.monotonic() < deadline:
+                if all(_pid_absent_or_zombie(pid) for pid in owned_pids):
+                    break
+                time.sleep(0.02)
+            else:
+                self.fail(
+                    "service fork/setsid descendant survived exact stop"
+                )
 
     @unittest.skipUnless(
         sys.platform.startswith("linux"),
@@ -203,9 +316,14 @@ class LocalServiceProcessV110Tests(unittest.TestCase):
                 def __init__(self):
                     self.returncode = None
                     self.wait_calls = 0
+                    self.signals = []
 
                 def poll(self):
                     return self.returncode
+
+                def send_signal(self, sig):
+                    self.signals.append(sig)
+                    self.returncode = -int(sig)
 
                 def wait(self, timeout=None):
                     del timeout
@@ -236,13 +354,6 @@ class LocalServiceProcessV110Tests(unittest.TestCase):
                     return FailedHandle()
 
             child = FakeChild()
-            signals = []
-
-            def force_group(pid, sig):
-                signals.append((pid, sig))
-                child.returncode = -int(sig)
-                return True
-
             spawner = LinuxProcessSpawner(
                 FailingProcfs(),
                 Children(),
@@ -253,9 +364,9 @@ class LocalServiceProcessV110Tests(unittest.TestCase):
                 "Popen",
                 return_value=child,
             ), patch.object(
-                linux_spawn,
-                "signal_new_session_process_group",
-                force_group,
+                LinuxProcessSpawner,
+                "_read_guarded_child_pid",
+                return_value=9876,
             ):
                 with self.assertRaisesRegex(
                     RuntimeError,
@@ -267,11 +378,11 @@ class LocalServiceProcessV110Tests(unittest.TestCase):
                         captures,
                     )
 
-            self.assertEqual(signals, [(4321, signal.SIGKILL)])
+            self.assertEqual(child.signals, [signal.SIGUSR1])
             self.assertEqual(child.wait_calls, 1)
             notes = "\n".join(getattr(caught.exception, "__notes__", ()))
             self.assertIn("structured spawn cleanup failed", notes)
-            self.assertIn("force-kill/reap fallback converged", notes)
+            self.assertIn("guardian force cleanup converged", notes)
 
     def test_materialized_environment_drift_fails_before_spawn(self):
         with tempfile.TemporaryDirectory() as td:
@@ -309,6 +420,22 @@ class LocalServiceProcessV110Tests(unittest.TestCase):
                 self.assertTrue(any(ref.startswith("proc-pid-reused:") for ref in refs))
             finally:
                 adapter.stop(process,c)
+
+
+def _pid_absent_or_zombie(pid: int) -> bool:
+    try:
+        os.kill(pid, 0)
+    except ProcessLookupError:
+        return True
+    stat_path = Path("/proc") / str(pid) / "stat"
+    if not stat_path.exists():
+        return True
+    stat = stat_path.read_text("utf-8")
+    close = stat.rfind(")")
+    if close < 0:
+        return False
+    fields = stat[close + 2 :].split()
+    return bool(fields) and fields[0] == "Z"
 
 
 if __name__ == "__main__": unittest.main()
@@ -352,6 +479,7 @@ class LinuxProcfsSnapshotV110Tests(unittest.TestCase):
 
             self.assertEqual(reader.directory_resolutions, 1)
             self.assertEqual(facts.process_group_id, 42)
+            self.assertEqual(facts.parent_pid, 0)
             self.assertEqual(facts.start_identity, "linux-proc:boot-test:777")
             self.assertEqual(facts.argv, ("python", "-m", "worker"))
             self.assertEqual(facts.environment, {"A": "1", "B": "two"})
