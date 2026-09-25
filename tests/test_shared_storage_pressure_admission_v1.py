@@ -7,6 +7,7 @@ import pytest
 from noetrium_platform.composition.shared_host_pressure import (
     LocalSharedStoragePressureObserver,
     ResourceCompetitionAdmissionGate,
+    ResourceCompetitionDemand,
     ResourceCompetitionPolicy,
     SharedStoragePressureStatus,
 )
@@ -60,7 +61,8 @@ class _StorageObserver:
     def __init__(self, status: SharedStoragePressureStatus) -> None:
         self.status = status
 
-    def snapshot(self) -> SharedStoragePressureStatus:
+    def snapshot(self, path=None) -> SharedStoragePressureStatus:
+        del path
         return self.status
 
 
@@ -131,6 +133,167 @@ def test_unknown_inode_capacity_fails_closed_when_inode_headroom_is_required() -
             deadline=None,
             cancellation=None,
         )
+
+
+class _ScopedStorageObserver:
+    def __init__(
+        self,
+        statuses: dict[str, SharedStoragePressureStatus],
+    ) -> None:
+        self.statuses = statuses
+
+    def snapshot(self, path=None) -> SharedStoragePressureStatus:
+        if path is None:
+            rows = tuple(self.statuses.values())
+            inode_values = tuple(
+                row.free_inodes
+                for row in rows
+                if row.free_inodes is not None
+            )
+            return SharedStoragePressureStatus(
+                True,
+                min(row.free_bytes for row in rows),
+                None if not inode_values else min(inode_values),
+                capacity_id=None,
+            )
+        return self.statuses[str(path)]
+
+
+def _scoped_gate(
+    storage: _ScopedStorageObserver,
+) -> ResourceCompetitionAdmissionGate:
+    base = build_execution_admission(
+        budget=AdmissionBudget(max_total_in_flight=8),
+        scheduling=build_admission_scheduling_policy(
+            priority_aging_seconds=0.01
+        ),
+    )
+    return ResourceCompetitionAdmissionGate(
+        base,
+        _HostObserver(),
+        storage_observer=storage,
+        policy=ResourceCompetitionPolicy(
+            min_available_memory_bytes=0,
+            min_available_pids=0,
+            min_available_fds=0,
+            min_storage_free_bytes=1024,
+            min_storage_free_inodes=10,
+        ),
+    )
+
+
+def test_scoped_storage_pressure_does_not_freeze_unrelated_filesystem(
+    tmp_path,
+) -> None:
+    left = (tmp_path / "left").absolute()
+    right = (tmp_path / "right").absolute()
+    storage = _ScopedStorageObserver(
+        {
+            str(left): SharedStoragePressureStatus(
+                True,
+                512,
+                100,
+                capacity_id="dev:left",
+            ),
+            str(right): SharedStoragePressureStatus(
+                True,
+                8192,
+                100,
+                capacity_id="dev:right",
+            ),
+        }
+    )
+    gate = _scoped_gate(storage)
+    for group, path in (("left", left), ("right", right)):
+        gate.register_group(
+            group,
+            identity=AdmissionIdentity(),
+            intent=AdmissionIntent(mode=AdmissionMode.REJECT),
+        )
+        gate.set_group_demand(
+            group,
+            ResourceCompetitionDemand(storage_path=path),
+        )
+
+    with pytest.raises(AdmissionRejected, match="storage-byte-headroom"):
+        gate.acquire(
+            "left",
+            ExecutionLaneKind.BLOCKING_IO,
+            deadline=None,
+            cancellation=None,
+        )
+
+    lease = gate.acquire(
+        "right",
+        ExecutionLaneKind.BLOCKING_IO,
+        deadline=None,
+        cancellation=None,
+    )
+    lease.release()
+
+
+def test_scoped_storage_reservations_compete_only_on_same_filesystem(
+    tmp_path,
+) -> None:
+    left = (tmp_path / "left").absolute()
+    right = (tmp_path / "right").absolute()
+    storage = _ScopedStorageObserver(
+        {
+            str(left): SharedStoragePressureStatus(
+                True,
+                4096,
+                100,
+                capacity_id="dev:left",
+            ),
+            str(right): SharedStoragePressureStatus(
+                True,
+                4096,
+                100,
+                capacity_id="dev:right",
+            ),
+        }
+    )
+    gate = _scoped_gate(storage)
+    for group, path in (
+        ("left-a", left),
+        ("left-b", left),
+        ("right", right),
+    ):
+        gate.register_group(
+            group,
+            identity=AdmissionIdentity(),
+            intent=AdmissionIntent(mode=AdmissionMode.REJECT),
+        )
+        gate.set_group_demand(
+            group,
+            ResourceCompetitionDemand(
+                storage_bytes_per_permit=2048,
+                storage_path=path,
+            ),
+        )
+
+    left_lease = gate.acquire(
+        "left-a",
+        ExecutionLaneKind.BLOCKING_IO,
+        deadline=None,
+        cancellation=None,
+    )
+    with pytest.raises(AdmissionRejected, match="storage-byte-headroom"):
+        gate.acquire(
+            "left-b",
+            ExecutionLaneKind.BLOCKING_IO,
+            deadline=None,
+            cancellation=None,
+        )
+
+    right_lease = gate.acquire(
+        "right",
+        ExecutionLaneKind.BLOCKING_IO,
+        deadline=None,
+        cancellation=None,
+    )
+    right_lease.release()
+    left_lease.release()
 
 
 def test_storage_capacity_recovery_reenables_aggressive_admission() -> None:
