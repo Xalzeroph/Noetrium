@@ -47,20 +47,50 @@ class ServiceLaunchContract:
 class ServiceProcessIdentity:
     """Stable process identity across nested PID namespaces.
 
-    ``pid`` is the PID visible in the configured procfs.  ``control_pid`` is
-    the optional PID understood by the current process namespace for signals
-    and ``waitpid``-style bookkeeping.  On ordinary hosts they are identical
-    and callers only need ``pid``.
+    ``pid`` is the logical target PID visible in the configured procfs.
+    ``control_pid`` is the optional target PID understood by the current PID
+    namespace. ``anchor_pid`` / ``anchor_start_identity`` identify an
+    optional persistent ownership guardian. The anchor outlives the target root
+    until every forked descendant converges, so target exit never proves tree
+    cleanup by itself.
     """
 
     pid: int
     start_identity: str
     process_group_id: int | None = None
     control_pid: int | None = None
+    anchor_pid: int | None = None
+    anchor_start_identity: str | None = None
+
+    def __post_init__(self) -> None:
+        if type(self.pid) is not int or self.pid <= 0:
+            raise ValueError("service process pid must be positive")
+        if type(self.start_identity) is not str or not self.start_identity:
+            raise ValueError("service process start identity required")
+        for name, value in (
+            ("process_group_id", self.process_group_id),
+            ("control_pid", self.control_pid),
+            ("anchor_pid", self.anchor_pid),
+        ):
+            if value is not None and (type(value) is not int or value <= 0):
+                raise ValueError(f"service process {name} must be positive or None")
+        if (self.anchor_pid is None) != (self.anchor_start_identity is None):
+            raise ValueError(
+                "service process ownership anchor pid/start identity must be complete together"
+            )
+        if self.anchor_start_identity is not None and (
+            type(self.anchor_start_identity) is not str
+            or not self.anchor_start_identity
+        ):
+            raise ValueError("service process ownership anchor start identity required")
 
     @property
     def execution_pid(self) -> int:
         return self.control_pid if self.control_pid is not None else self.pid
+
+    @property
+    def ownership_pid(self) -> int:
+        return self.anchor_pid if self.anchor_pid is not None else self.execution_pid
 
 
 class ServiceContractDrift(RuntimeError):
