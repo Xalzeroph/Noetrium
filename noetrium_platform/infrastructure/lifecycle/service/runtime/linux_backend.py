@@ -250,19 +250,10 @@ class LinuxProcessBackend:
             elif error is not None:
                 ownership_errors.append(error)
 
-        if uncertain_same_uid:
-            return PreparedServiceStartReconcileResult(
-                PreparedServiceStartStatus.UNKNOWN,
-                None,
-                tuple(evidence),
-                (
-                    "same-UID Linux process facts are not fully observable during "
-                    "prepared-start reconciliation: "
-                    + ",".join(
-                        str(pid) for pid in sorted(set(uncertain_same_uid))
-                    )
-                ),
-            )
+        # One exact token-bearing guarded root is sufficient ownership proof.
+        # Unrelated same-UID processes can race exit/exec while /proc is scanned
+        # (and hardened hosts may hide their environ). They must not veto an
+        # already-proven exact prepared-start generation.
         if len(exact_roots) == 1:
             return PreparedServiceStartReconcileResult(
                 PreparedServiceStartStatus.PROCESS_CONFIRMED,
@@ -277,6 +268,19 @@ class LinuxProcessBackend:
                 (
                     "multiple exact guarded Linux service roots carry one "
                     "prepared-start token"
+                ),
+            )
+        if uncertain_same_uid:
+            return PreparedServiceStartReconcileResult(
+                PreparedServiceStartStatus.UNKNOWN,
+                None,
+                tuple(evidence),
+                (
+                    "same-UID Linux process facts are not fully observable during "
+                    "prepared-start reconciliation: "
+                    + ",".join(
+                        str(pid) for pid in sorted(set(uncertain_same_uid))
+                    )
                 ),
             )
         if marker_processes:
