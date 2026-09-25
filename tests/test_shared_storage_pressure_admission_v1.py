@@ -315,7 +315,15 @@ def test_directory_usage_exposes_user_available_inode_headroom(
     layout = standard_local_directory_layout(tmp_path)
     authorities = build_local_directory_authorities(layout)
 
-    fake = SimpleNamespace(f_files=1000, f_favail=123)
+    fake = SimpleNamespace(
+        f_frsize=4096,
+        f_bsize=4096,
+        f_blocks=100,
+        f_bfree=40,
+        f_bavail=30,
+        f_files=1000,
+        f_favail=123,
+    )
     monkeypatch.setattr(
         "noetrium_platform.infrastructure.resources.directory.runtime.inspection.os.statvfs",
         lambda _path: fake,
