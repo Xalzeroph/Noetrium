@@ -119,6 +119,16 @@ class ManagedDockerContainerLease:
             "--restart",
             "no",
             "--init",
+            # Relative weights preserve full idle-host throughput while making
+            # Noetrium yield CPU/block-I/O first when other users contend.
+            "--cpu-shares",
+            "128",
+            "--blkio-weight",
+            "100",
+            # Under unrecoverable host memory pressure, prefer sacrificing our
+            # disposable worker generation over unrelated user processes.
+            "--oom-score-adj",
+            "500",
         ]
         for key, value in self.labels:
             values.extend(("--label", f"{key}={value}"))
