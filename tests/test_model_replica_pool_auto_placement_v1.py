@@ -151,6 +151,7 @@ class Scheduler:
         self.next = 0
         self.released = []
         self.requirements = []
+        self.rows = {}
 
     def candidates(self, requirement, *, scope=None):
         return (self.host,)
@@ -170,7 +171,7 @@ class Scheduler:
             raise ComputePlacementUnavailable(requirement)
         gpu = self.host.gpus[self.next]
         self.next += 1
-        return ComputeAllocation(
+        row = ComputeAllocation(
             allocation_id,
             scope,
             self.host.host_id,
@@ -180,9 +181,30 @@ class Scheduler:
             self.next,
             9999999999.0,
         )
+        self.rows[row.allocation_id] = row
+        return row
+
+    def confirm_bound(self, proof):
+        current = self.rows[proof.allocation_id]
+        if (
+            proof.host_id != current.host_id
+            or proof.gpu_ids != current.gpu_ids
+            or proof.lease_fencing_token != current.lease_fencing_token
+        ):
+            raise RuntimeError("stale compute binding generation")
+        bound = replace(
+            current,
+            binding_proof_digest=proof.digest(),
+            binding_binder_identity_digest=proof.binder_identity_digest,
+            binding_evidence_ref=proof.evidence_ref,
+            bound_at_epoch_s=proof.observed_at_epoch_s,
+        )
+        self.rows[proof.allocation_id] = bound
+        return bound
 
     def release(self, allocation):
         self.released.append(allocation.allocation_id)
+        self.rows.pop(allocation.allocation_id, None)
 
 
 class Endpoints:
@@ -322,6 +344,12 @@ def test_auto_model_replica_pool_exhausts_available_gpu_capacity_without_gpu_or_
     assert all(row.endpoint.state is EndpointAllocationState.BOUND for row in lease.report.placements)
     assert all(
         row.endpoint.binding_binder_identity_digest
+        == row.generation.applied_runtime_digest
+        for row in lease.report.placements
+    )
+    assert all(row.compute.is_bound for row in lease.report.placements)
+    assert all(
+        row.compute.binding_binder_identity_digest
         == row.generation.applied_runtime_digest
         for row in lease.report.placements
     )
