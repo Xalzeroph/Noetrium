@@ -545,6 +545,88 @@ def test_interactive_supervisor_term_to_kill_reaps_descendant_tree(tmp_path) -> 
         runtime.close()
 
 
+@pytest.mark.skipif(
+    not __import__("sys").platform.startswith("linux"),
+    reason="Linux subreaper/pidfd fork-tree proof",
+)
+def test_interactive_guardian_reaps_forked_setsid_descendant(tmp_path) -> None:
+    import os
+    import sys
+    from pathlib import Path
+
+    runtime = _runtime()
+    group = runtime.open_task_group(
+        "interactive-fork-setsid-tree",
+        failure_policy=TaskFailurePolicy.COLLECT_ALL,
+    )
+    supervisor = build_process_supervisor(
+        group,
+        policy=ProcessTerminationPolicy(
+            poll_interval_seconds=0.005,
+            graceful_timeout_seconds=0.08,
+            kill_timeout_seconds=1.0,
+        ),
+    )
+    pid_file = Path(tmp_path) / "fork-setsid-tree.pids"
+    detached_ready = Path(tmp_path) / "fork-setsid-tree.detached-ready"
+    target_code = "\n".join(
+        (
+            "import os,pathlib,signal,time",
+            "pid=os.fork()",
+            "if pid == 0:",
+            "    os.setsid()",
+            "    signal.signal(signal.SIGTERM, signal.SIG_IGN)",
+            f"    pathlib.Path({str(detached_ready)!r}).write_text(str(os.getpid()))",
+            "    time.sleep(30)",
+            "    os._exit(0)",
+            f"pathlib.Path({str(pid_file)!r}).write_text(str(os.getpid())+','+str(pid))",
+            "time.sleep(30)",
+        )
+    )
+    process = supervisor.spawn_interactive(
+        (sys.executable, "-c", target_code),
+        cwd=str(tmp_path),
+        environment=dict(os.environ),
+        start_new_session=True,
+    )
+    try:
+        deadline = time.monotonic() + 3.0
+        while (
+            (not pid_file.exists() or not detached_ready.exists())
+            and time.monotonic() < deadline
+        ):
+            time.sleep(0.01)
+        assert pid_file.exists()
+        assert detached_ready.exists()
+        target_pid, detached_pid = map(int, pid_file.read_text().split(","))
+        assert detached_pid == int(detached_ready.read_text())
+
+        receipt = supervisor.terminate(
+            "interactive-fork-setsid-tree",
+            process,
+            deadline=Deadline.after(3.0),
+        ).result(4)
+        assert receipt.escalated_to_kill
+
+        deadline = time.monotonic() + 3.0
+        while time.monotonic() < deadline:
+            if all(
+                _pid_absent_or_zombie(pid)
+                for pid in (target_pid, detached_pid)
+            ):
+                break
+            time.sleep(0.02)
+        else:
+            raise AssertionError(
+                "forked setsid descendant escaped guardian force cleanup"
+            )
+    finally:
+        if process.poll() is None:
+            process.kill()
+        group.close(cancel_pending=True)
+        runtime.close()
+
+
 @pytest.mark.skipif(__import__("os").name != "posix", reason="POSIX owner-death proof")
 def test_parent_bound_guardian_reaps_tree_after_owner_sigkill(tmp_path) -> None:
     import os
