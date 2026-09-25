@@ -206,11 +206,10 @@ def _runtime_rank(
     gpu, requirement: ComputeRequirement, runtime_index: _GpuRuntimeIndex | None,
 ):
     if runtime_index is None:
-        # Shared placement depends on live external usage facts.  Falling back
-        # to static inventory would treat an unknown busy GPU as spare capacity.
-        if requirement.gpu_sharing_mode is GpuSharingMode.PREFER_IDLE_ALLOW_SHARED:
-            return None
-        return (2, 0, 0, gpu.memory_bytes, gpu.gpu_id)
+        # Any GPU placement depends on live external usage facts. IDLE_ONLY
+        # cannot prove idleness and shared placement cannot prove safe residual
+        # capacity when runtime observation is unavailable.
+        return None
     device = runtime_index.devices_by_id.get(gpu.gpu_id)
     if device is None:
         return None
