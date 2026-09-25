@@ -179,6 +179,7 @@ class ComputeRequirement:
     forbidden_host_labels: tuple[tuple[str, str], ...] = ()
     preferred_host_labels: tuple[tuple[str, str], ...] = ()
     placement_preference: ComputePlacementPreference = ComputePlacementPreference.PACK
+    gpu_colocation_label: str | None = None
 
     def __post_init__(self) -> None:
         if (
@@ -217,6 +218,12 @@ class ComputeRequirement:
             raise TypeError("compute gpu_sharing_mode must be GpuSharingMode")
         if type(self.placement_preference) is not ComputePlacementPreference:
             raise TypeError("compute placement_preference must be ComputePlacementPreference")
+        if self.gpu_colocation_label is not None and (
+            type(self.gpu_colocation_label) is not str
+            or not self.gpu_colocation_label.strip()
+            or self.gpu_colocation_label != self.gpu_colocation_label.strip()
+        ):
+            raise ValueError("compute gpu_colocation_label must be canonical text or None")
         object.__setattr__(self, "required_labels", _canonical_labels(self.required_labels, "compute required host labels"))
         object.__setattr__(self, "required_gpu_labels", _canonical_labels(self.required_gpu_labels, "compute required GPU labels"))
         object.__setattr__(self, "forbidden_host_labels", _canonical_labels(self.forbidden_host_labels, "compute forbidden host labels"))
