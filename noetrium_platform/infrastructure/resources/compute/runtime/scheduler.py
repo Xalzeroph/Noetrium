@@ -57,7 +57,7 @@ def _allocation_matches(
     placement_scope: ScopeIdentity | None, requirement: ComputeRequirement,
 ) -> bool:
     target_scope = scope if placement_scope is None else placement_scope
-    if allocation.scope != scope or host.scope != target_scope or not host.enabled:
+    if allocation.scope != scope or host.scope != target_scope or not host.accepts_new_allocations:
         return False
     if allocation.cpu_cores != requirement.cpu_cores or allocation.memory_bytes != requirement.memory_bytes:
         return False
@@ -664,7 +664,7 @@ class InMemoryComputeScheduler:
         return tuple(
             host
             for host in hosts
-            if host.enabled
+            if host.accepts_new_allocations
             and not any(
                 dict(host.labels).get(key) != value
                 for key, value in required_labels.items()
