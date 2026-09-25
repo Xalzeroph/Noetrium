@@ -85,9 +85,14 @@ class ModelReplicaPoolRequest:
                     "put engine arguments in ModelStackSpec.engine_args"
                 )
             if self.engine == "vllm":
+                if self.model_stack.data_parallel != 1:
+                    raise ValueError(
+                        "automatic vLLM replica pools use independent replicas; "
+                        "internal data_parallel requires an auxiliary RPC endpoint "
+                        "with its own binding/recovery authority"
+                    )
                 required_gpus = (
                     self.model_stack.tensor_parallel
-                    * self.model_stack.data_parallel
                     * self.model_stack.pipeline_parallel
                 )
             else:
@@ -397,7 +402,7 @@ class LocalModelReplicaPoolRuntime:
         if request.engine == "vllm":
             spec = vllm_deployment(
                 **common,
-                data_parallel=1 if stack is None else stack.data_parallel,
+                data_parallel=1,
                 pipeline_parallel=1 if stack is None else stack.pipeline_parallel,
             )
         elif request.engine == "sglang":
