@@ -123,17 +123,12 @@ def test_expired_gpu_lease_does_not_release_capacity_while_process_survives(
     durable: bool,
 ) -> None:
     observer = MutableGpuObserver()
-    scheduler = (
-        SQLiteComputeScheduler(
-            tmp_path / "compute-quarantine.sqlite",
-            _inventory(),
-            gpu_runtime_observer=observer,
-        )
-        if durable
-        else in_memory_compute_scheduler(
-            _inventory(),
-            gpu_runtime_observer=observer,
-        )
+    scheduler, clock = _scheduler(
+        tmp_path,
+        durable=durable,
+        inventory=_inventory(),
+        observer=observer,
+        filename="compute-quarantine.sqlite",
     )
     first = scheduler.allocate(
         "gpu-job",
@@ -143,12 +138,13 @@ def test_expired_gpu_lease_does_not_release_capacity_while_process_survives(
         now=100.0,
     )
 
+    clock.advance(2.0)
     observer.busy = True
     with pytest.raises(
         ComputePhysicalConvergencePending,
         match="physical convergence pending",
     ):
-        scheduler.reconcile_expired(now=102.0)
+        scheduler.reconcile_expired()
 
     with pytest.raises(ComputePhysicalConvergencePending):
         scheduler.allocate(
@@ -156,12 +152,11 @@ def test_expired_gpu_lease_does_not_release_capacity_while_process_survives(
             _scope(),
             _requirement(),
             ttl_seconds=30.0,
-            now=102.0,
         )
 
     observer.busy = False
     with pytest.raises(ComputePhysicalConvergencePending):
-        scheduler.reconcile_expired(now=103.0)
+        scheduler.reconcile_expired()
 
     scheduler.recover_release(first)
     replacement = scheduler.allocate(
@@ -169,7 +164,6 @@ def test_expired_gpu_lease_does_not_release_capacity_while_process_survives(
         _scope(),
         _requirement(),
         ttl_seconds=30.0,
-        now=104.0,
     )
     assert replacement.gpu_ids == ("GPU-0",)
     assert replacement.lease_fencing_token > first.lease_fencing_token
@@ -181,17 +175,12 @@ def test_normal_release_refuses_live_gpu_process(
     durable: bool,
 ) -> None:
     observer = MutableGpuObserver()
-    scheduler = (
-        SQLiteComputeScheduler(
-            tmp_path / "compute-normal-release.sqlite",
-            _inventory(),
-            gpu_runtime_observer=observer,
-        )
-        if durable
-        else in_memory_compute_scheduler(
-            _inventory(),
-            gpu_runtime_observer=observer,
-        )
+    scheduler, clock = _scheduler(
+        tmp_path,
+        durable=durable,
+        inventory=_inventory(),
+        observer=observer,
+        filename="compute-normal-release.sqlite",
     )
     allocation = scheduler.allocate(
         "gpu-job",
@@ -216,17 +205,12 @@ def test_recovery_release_refuses_live_orphan_gpu_process(
     durable: bool,
 ) -> None:
     observer = MutableGpuObserver()
-    scheduler = (
-        SQLiteComputeScheduler(
-            tmp_path / "compute-recovery-gpu.sqlite",
-            _inventory(),
-            gpu_runtime_observer=observer,
-        )
-        if durable
-        else in_memory_compute_scheduler(
-            _inventory(),
-            gpu_runtime_observer=observer,
-        )
+    scheduler, clock = _scheduler(
+        tmp_path,
+        durable=durable,
+        inventory=_inventory(),
+        observer=observer,
+        filename="compute-recovery-gpu.sqlite",
     )
     allocation = scheduler.allocate(
         "gpu-job",
@@ -255,17 +239,12 @@ def test_recovery_release_fails_closed_when_gpu_visibility_is_unknown(
     durable: bool,
 ) -> None:
     observer = MutableGpuObserver()
-    scheduler = (
-        SQLiteComputeScheduler(
-            tmp_path / "compute-recovery-unknown.sqlite",
-            _inventory(),
-            gpu_runtime_observer=observer,
-        )
-        if durable
-        else in_memory_compute_scheduler(
-            _inventory(),
-            gpu_runtime_observer=observer,
-        )
+    scheduler, clock = _scheduler(
+        tmp_path,
+        durable=durable,
+        inventory=_inventory(),
+        observer=observer,
+        filename="compute-recovery-unknown.sqlite",
     )
     allocation = scheduler.allocate(
         "gpu-job",
@@ -286,17 +265,12 @@ def test_expired_gpu_lease_fails_closed_when_process_visibility_is_incomplete(
     durable: bool,
 ) -> None:
     observer = MutableGpuObserver()
-    scheduler = (
-        SQLiteComputeScheduler(
-            tmp_path / "compute-unknown.sqlite",
-            _inventory(),
-            gpu_runtime_observer=observer,
-        )
-        if durable
-        else in_memory_compute_scheduler(
-            _inventory(),
-            gpu_runtime_observer=observer,
-        )
+    scheduler, clock = _scheduler(
+        tmp_path,
+        durable=durable,
+        inventory=_inventory(),
+        observer=observer,
+        filename="compute-unknown.sqlite",
     )
     scheduler.allocate(
         "gpu-job",
@@ -306,13 +280,14 @@ def test_expired_gpu_lease_fails_closed_when_process_visibility_is_incomplete(
         now=100.0,
     )
 
+    clock.advance(2.0)
     observer.complete = False
     with pytest.raises(ComputePhysicalConvergencePending):
-        scheduler.reconcile_expired(now=102.0)
+        scheduler.reconcile_expired()
 
     observer.complete = True
     with pytest.raises(ComputePhysicalConvergencePending):
-        scheduler.reconcile_expired(now=103.0)
+        scheduler.reconcile_expired()
 
 
 @pytest.mark.parametrize("durable", [False, True])
@@ -322,10 +297,12 @@ def test_cpu_only_expiry_quarantines_capacity_until_exclusive_recovery(
 ) -> None:
     inventory = InMemoryComputeInventory()
     inventory.register_host(ComputeHost("cpu-node", _scope(), 2, 4096))
-    scheduler = (
-        SQLiteComputeScheduler(tmp_path / "cpu-quarantine.sqlite", inventory)
-        if durable
-        else in_memory_compute_scheduler(inventory)
+    scheduler, clock = _scheduler(
+        tmp_path,
+        durable=durable,
+        inventory=inventory,
+        observer=None,
+        filename="cpu-quarantine.sqlite",
     )
     requirement = ComputeRequirement(cpu_cores=2, memory_bytes=1024)
     first = scheduler.allocate(
@@ -335,8 +312,9 @@ def test_cpu_only_expiry_quarantines_capacity_until_exclusive_recovery(
         ttl_seconds=1.0,
         now=100.0,
     )
+    clock.advance(2.0)
     with pytest.raises(ComputePhysicalConvergencePending):
-        scheduler.reconcile_expired(now=102.0)
+        scheduler.reconcile_expired()
     assert scheduler.allocations() == (first,)
     with pytest.raises(ComputePlacementUnavailable):
         scheduler.allocate(
@@ -344,7 +322,6 @@ def test_cpu_only_expiry_quarantines_capacity_until_exclusive_recovery(
             _scope(),
             requirement,
             ttl_seconds=30.0,
-            now=103.0,
         )
 
     scheduler.recover_release(first)
@@ -353,7 +330,6 @@ def test_cpu_only_expiry_quarantines_capacity_until_exclusive_recovery(
         _scope(),
         requirement,
         ttl_seconds=30.0,
-        now=104.0,
     )
     assert replacement.host_id == "cpu-node"
 
@@ -366,10 +342,12 @@ def test_quarantined_compute_generation_does_not_globally_block_spare_capacity(
 ) -> None:
     inventory = InMemoryComputeInventory()
     inventory.register_host(ComputeHost("cpu-wide", _scope(), 4, 8192))
-    scheduler = (
-        SQLiteComputeScheduler(tmp_path / "compute-spare.sqlite", inventory)
-        if durable
-        else in_memory_compute_scheduler(inventory)
+    scheduler, clock = _scheduler(
+        tmp_path,
+        durable=durable,
+        inventory=inventory,
+        observer=None,
+        filename="compute-spare.sqlite",
     )
     requirement = ComputeRequirement(cpu_cores=1, memory_bytes=1024)
     first = scheduler.allocate(
@@ -379,15 +357,15 @@ def test_quarantined_compute_generation_does_not_globally_block_spare_capacity(
         ttl_seconds=1.0,
         now=100.0,
     )
+    clock.advance(2.0)
     with pytest.raises(ComputePhysicalConvergencePending):
-        scheduler.reconcile_expired(now=102.0)
+        scheduler.reconcile_expired()
 
     second = scheduler.allocate(
         "independent",
         _scope(),
         requirement,
         ttl_seconds=30.0,
-        now=103.0,
     )
     assert second.host_id == first.host_id
     assert {row.allocation_id for row in scheduler.allocations()} == {
@@ -403,10 +381,12 @@ def test_stale_recovery_release_cannot_delete_replacement_generation(
 ) -> None:
     inventory = InMemoryComputeInventory()
     inventory.register_host(ComputeHost("cpu-reuse", _scope(), 2, 4096))
-    scheduler = (
-        SQLiteComputeScheduler(tmp_path / "compute-reuse.sqlite", inventory)
-        if durable
-        else in_memory_compute_scheduler(inventory)
+    scheduler, clock = _scheduler(
+        tmp_path,
+        durable=durable,
+        inventory=inventory,
+        observer=None,
+        filename="compute-reuse.sqlite",
     )
     requirement = ComputeRequirement(cpu_cores=1, memory_bytes=1024)
     first = scheduler.allocate(
@@ -416,8 +396,9 @@ def test_stale_recovery_release_cannot_delete_replacement_generation(
         ttl_seconds=1.0,
         now=100.0,
     )
+    clock.advance(2.0)
     with pytest.raises(ComputePhysicalConvergencePending):
-        scheduler.reconcile_expired(now=102.0)
+        scheduler.reconcile_expired()
     scheduler.recover_release(first)
 
     replacement = scheduler.allocate(
@@ -425,7 +406,6 @@ def test_stale_recovery_release_cannot_delete_replacement_generation(
         _scope(),
         requirement,
         ttl_seconds=30.0,
-        now=103.0,
     )
     assert replacement.lease_fencing_token > first.lease_fencing_token
 
