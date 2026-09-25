@@ -79,6 +79,10 @@ jobs:
             tests/test_atomic_task_batch_v1.py \
             tests/test_pooled_child_research_machine_batch_v1.py \
             tests/test_execution_admission_boundary_v1.py \
+            tests/test_shared_host_pressure_admission_v1.py \
+            tests/test_shared_storage_pressure_admission_v1.py \
+            tests/test_shared_network_pressure_admission_v1.py \
+            tests/test_compute_host_runtime_pressure_v1.py \
             tests/test_research_graph_scheduler_durable_v1.py \
             tests/test_research_graph_admission_claim_v1.py \
             tests/test_research_graph_state_batch_v1.py \
