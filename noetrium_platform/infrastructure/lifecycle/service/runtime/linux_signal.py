@@ -60,7 +60,9 @@ class _ExactLinuxProcess:
         if self.identity.anchor_pid is None:
             return self._target_alive_exact()
         assert self.identity.anchor_start_identity is not None
-        if not self.procfs.alive_pid(self.identity.anchor_pid):
+        anchor_control_pid = self.identity.anchor_execution_pid
+        assert anchor_control_pid is not None
+        if not self.procfs.alive_pid(anchor_control_pid):
             return False
         try:
             return (
@@ -89,7 +91,8 @@ class _ExactLinuxProcess:
 
     def _pidfd_signal(
         self,
-        pid: int,
+        visible_pid: int,
+        control_pid: int,
         expected_start_identity: str,
         sig: signal.Signals,
         *,
@@ -101,15 +104,23 @@ class _ExactLinuxProcess:
             raise ServiceProcessDrift(
                 f"{label} pidfd signaling unavailable; refusing racy PID signal"
             )
-        self._require_start_identity(pid, expected_start_identity, label)
+        self._require_start_identity(
+            visible_pid,
+            expected_start_identity,
+            label,
+        )
         try:
-            descriptor = int(pidfd_open(pid, 0))
+            descriptor = int(pidfd_open(control_pid, 0))
         except ProcessLookupError:
             raise
         try:
             # Re-prove after opening. Once the pidfd exists, later numeric PID
             # reuse cannot retarget the signal.
-            self._require_start_identity(pid, expected_start_identity, label)
+            self._require_start_identity(
+                visible_pid,
+                expected_start_identity,
+                label,
+            )
             pidfd_send_signal(descriptor, sig, None, 0)
         finally:
             os.close(descriptor)
@@ -117,13 +128,18 @@ class _ExactLinuxProcess:
     def _signal_anchor(self, sig: signal.Signals) -> None:
         anchor_pid = self.identity.anchor_pid
         anchor_start = self.identity.anchor_start_identity
-        assert anchor_pid is not None and anchor_start is not None
+        anchor_control_pid = self.identity.anchor_execution_pid
+        assert (
+            anchor_pid is not None
+            and anchor_start is not None
+            and anchor_control_pid is not None
+        )
         self._require_start_identity(anchor_pid, anchor_start, "ownership anchor")
         try:
-            observed_pgid = os.getpgid(anchor_pid)
+            observed_pgid = os.getpgid(anchor_control_pid)
         except ProcessLookupError:
             raise
-        if observed_pgid != anchor_pid:
+        if observed_pgid != anchor_control_pid:
             raise ServiceProcessDrift(
                 "ownership anchor process-group drift; refusing signal"
             )
@@ -131,9 +147,10 @@ class _ExactLinuxProcess:
         # TERM asks the guardian to forward graceful termination to the target
         # group. Force cleanup is guardian-private SIGUSR1 so the guardian stays
         # alive long enough to kill/reap setsid and double-fork descendants.
-        delivered = signal.SIGTERM if sig is signal.SIGTERM else signal.SIGUSR1
+        delivered = signal.SIGTERM if sig == signal.SIGTERM else signal.SIGUSR1
         self._pidfd_signal(
             anchor_pid,
+            anchor_control_pid,
             anchor_start,
             delivered,
             label="ownership anchor",
@@ -193,7 +210,9 @@ class LinuxProcessSignaler:
         if process.anchor_pid is None:
             return True
         assert process.anchor_start_identity is not None
-        if not self._procfs.alive_pid(process.anchor_pid):
+        anchor_control_pid = process.anchor_execution_pid
+        assert anchor_control_pid is not None
+        if not self._procfs.alive_pid(anchor_control_pid):
             return False
         try:
             return (
