@@ -376,6 +376,36 @@ class AtomicEndpointAllocator(EndpointAllocationPort):
             return current
         return self._reservations.release(allocation)
 
+    def recover_release(
+        self,
+        allocation: EndpointAllocation,
+        *,
+        now: float | None = None,
+    ) -> EndpointAllocation:
+        """Retire one exact generation after upper recovery proved binder stop."""
+
+        if type(allocation) is not EndpointAllocation:
+            raise TypeError("endpoint recovery release requires EndpointAllocation")
+        current = self._reservations.get(allocation.allocation_id)
+        if current is None:
+            raise KeyError(allocation.allocation_id)
+        _require_allocation_generation(current, allocation)
+        if current.state is EndpointAllocationState.RELEASED:
+            return current
+
+        orphans = {
+            row.allocation_id: row
+            for row in self._reservations.expire_orphans(now=now)
+        }
+        orphan = orphans.get(allocation.allocation_id)
+        if orphan is not None:
+            _require_allocation_generation(orphan, allocation)
+            return self._reservations.retire_orphan(orphan, now=now)
+
+        # The lease is still authoritative. Upper recovery has already proven
+        # the exact binder generation stopped, so live-owner release is safe.
+        return self._reservations.release(allocation)
+
     def get(self, allocation_id: str) -> EndpointAllocation:
         current = self._reservations.get(allocation_id)
         if current is None:
@@ -759,6 +789,38 @@ class InMemoryEndpointAllocator(EndpointAllocationPort):
                 current.lease_id,
                 fencing_token=current.lease_fencing_token,
             )
+            released = replace(current, state=EndpointAllocationState.RELEASED)
+            self._allocations[allocation.allocation_id] = released
+            return released
+
+    def recover_release(
+        self,
+        allocation: EndpointAllocation,
+        *,
+        now: float | None = None,
+    ) -> EndpointAllocation:
+        """Retire one exact generation after upper recovery proved binder stop."""
+
+        if type(allocation) is not EndpointAllocation:
+            raise TypeError("endpoint recovery release requires EndpointAllocation")
+        self._leases.reconcile_expired(
+            now=now,
+            resource_kind=ResourceKind.NETWORK_ENDPOINT,
+        )
+        with self._lock:
+            current = self._reconcile_allocation_locked(allocation.allocation_id)
+            _require_allocation_generation(current, allocation)
+            if current.state is EndpointAllocationState.RELEASED:
+                return current
+            if self._lease_authoritative_locked(current):
+                self._leases.release(
+                    current.lease_id,
+                    fencing_token=current.lease_fencing_token,
+                    now=now,
+                )
+            # If lease authority is already expired/released/drifted, do not
+            # mutate a possible replacement lease. Upper convergence proof is
+            # sufficient to retire only this allocation generation.
             released = replace(current, state=EndpointAllocationState.RELEASED)
             self._allocations[allocation.allocation_id] = released
             return released
