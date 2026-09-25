@@ -109,16 +109,8 @@ class LinuxProcfsReader:
             break
         return int(visible_pid)
 
-    @staticmethod
-    def alive_pid(pid: int) -> bool:
-        try:
-            os.kill(pid, 0)
-            return True
-        except ProcessLookupError:
-            return False
-        except PermissionError:
-            return True
-
+    def alive_pid(self, pid: int) -> bool:
+        """Return whether a process generation is still execution-live.\n\n        ``kill(pid, 0)`` proves only that a PID exists. A zombie still has a\n        numeric PID but can no longer execute or own physical work; treating it\n        as live makes crash-recovered supervisors wait forever when they no\n        longer hold the original ``Popen`` wait handle.\n        """\n\n        try:\n            process_directory = self._process_directory(pid)\n            fields = self._stat_fields_from_directory(process_directory)\n        except (FileNotFoundError, ProcessLookupError):\n            return False\n        except PermissionError:\n            # Preserve fail-closed semantics when procfs cannot prove exit.\n            return True\n        except OSError:\n            return True\n        return bool(fields) and fields[0] != "Z"\n
     @staticmethod
     def _stat_fields_from_directory(process_directory: Path) -> list[str]:
         stat = (process_directory / "stat").read_text(encoding="utf-8")
