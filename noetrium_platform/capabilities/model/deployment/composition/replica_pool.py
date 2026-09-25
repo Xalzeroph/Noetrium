@@ -35,6 +35,7 @@ from noetrium_platform.substrate.api import (
 )
 from noetrium_platform.substrate.api import (
     ComputeAllocation,
+    ComputeBindingProof,
     ComputeLeaseGuardFactoryPort,
     ComputePlacementUnavailable,
     ComputeRequirement,
@@ -699,21 +700,36 @@ class LocalModelReplicaPoolRuntime:
                         "model replica has no applied runtime generation before "
                         f"endpoint ownership capture: {spec.deployment_id}"
                     )
+                observed_at = time()
+                evidence_ref = (
+                    status.detail or f"model-ready:{spec.deployment_id}"
+                )
+                bound_compute = self._compute_scheduler.confirm_bound(
+                    ComputeBindingProof(
+                        allocation_id=compute.allocation_id,
+                        host_id=compute.host_id,
+                        gpu_ids=compute.gpu_ids,
+                        lease_fencing_token=compute.lease_fencing_token,
+                        binder_identity_digest=generation.applied_runtime_digest,
+                        observed_at_epoch_s=observed_at,
+                        evidence_ref=evidence_ref,
+                    )
+                )
                 bound = self._endpoint_allocations.confirm_bound(
                     EndpointBindingProof(
                         allocation_id=endpoint.allocation_id,
                         endpoint=endpoint.endpoint,
                         lease_fencing_token=endpoint.lease_fencing_token,
                         binder_identity_digest=generation.applied_runtime_digest,
-                        observed_at_epoch_s=time(),
-                        evidence_ref=status.detail or f"model-ready:{spec.deployment_id}",
+                        observed_at_epoch_s=observed_at,
+                        evidence_ref=evidence_ref,
                     )
                 )
                 placements.append(
                     ModelReplicaPlacement(
                         index,
                         spec.deployment_id,
-                        compute,
+                        bound_compute,
                         bound,
                         spec,
                         generation,
