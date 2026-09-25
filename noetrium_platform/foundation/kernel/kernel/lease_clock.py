@@ -259,7 +259,15 @@ class ManualLeaseClock(LeaseClockPort):
         self._wall = next_wall
 
     def jump_wall(self, seconds: float) -> None:
-        self._wall += float(seconds)
+        if type(seconds) not in (int, float):
+            raise TypeError("manual lease wall shift must be int or float")
+        delta = float(seconds)
+        if not math.isfinite(delta):
+            raise ValueError("manual lease wall shift must be finite")
+        next_wall = self._wall + delta
+        if not math.isfinite(next_wall) or next_wall <= 0:
+            raise ValueError("manual lease wall time must remain finite and positive")
+        self._wall = next_wall
 
     def reboot(
         self,
