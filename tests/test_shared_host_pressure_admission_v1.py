@@ -194,6 +194,51 @@ def test_fd_headroom_gates_io_but_not_cpu_only_work() -> None:
         )
 
 
+@pytest.mark.parametrize(
+    ("status", "lane", "reason"),
+    (
+        (
+            _status(available_pids=None),
+            ExecutionLaneKind.CPU,
+            "pid-runtime-unavailable",
+        ),
+        (
+            _status(memory_pressure=None),
+            ExecutionLaneKind.CPU,
+            "memory-pressure-runtime-unavailable",
+        ),
+        (
+            _status(cpu_pressure=None),
+            ExecutionLaneKind.CPU,
+            "cpu-pressure-runtime-unavailable",
+        ),
+        (
+            _status(available_fds=None),
+            ExecutionLaneKind.ASYNC_IO,
+            "fd-runtime-unavailable",
+        ),
+        (
+            _status(io_pressure=None),
+            ExecutionLaneKind.BLOCKING_IO,
+            "io-pressure-runtime-unavailable",
+        ),
+    ),
+)
+def test_resource_specific_unknown_pressure_fails_closed(
+    status: HostRuntimeStatus,
+    lane: ExecutionLaneKind,
+    reason: str,
+) -> None:
+    gate = _gate(_MutableHostObserver(status), mode=AdmissionMode.REJECT)
+    with pytest.raises(AdmissionRejected, match=reason):
+        gate.acquire(
+            "g",
+            lane,
+            deadline=None,
+            cancellation=None,
+        )
+
+
 def test_runtime_observation_failure_is_fail_closed_for_workload() -> None:
     observer = _MutableHostObserver(None)
     gate = _gate(observer, mode=AdmissionMode.REJECT)
