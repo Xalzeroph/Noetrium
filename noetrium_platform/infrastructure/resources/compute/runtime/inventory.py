@@ -9,7 +9,7 @@ from noetrium_platform.foundation.kernel.kernel.durability.sqlite import (
     durable_sqlite_connection,
     immediate_sqlite_transaction,
 )
-from noetrium_platform.infrastructure.resources.compute.api import ComputeCluster, ComputeGPU, ComputeHost
+from noetrium_platform.infrastructure.resources.compute.api import ComputeCluster, ComputeDeviceHealth, ComputeGPU, ComputeHost
 from noetrium_platform.foundation.governance.api import ScopeIdentity, ScopeKind
 
 
@@ -116,7 +116,7 @@ class SQLiteComputeInventory:
             "memory_bytes": host.memory_bytes,
             "gpus": [
                 {"gpu_id": gpu.gpu_id, "memory_bytes": gpu.memory_bytes,
-                 "model": gpu.model, "labels": list(gpu.labels)}
+                 "model": gpu.model, "labels": list(gpu.labels), "health": gpu.health.value}
                 for gpu in host.gpus
             ],
             "labels": list(host.labels),
@@ -130,6 +130,7 @@ class SQLiteComputeInventory:
             ComputeGPU(
                 row["gpu_id"], int(row["memory_bytes"]), row["model"],
                 tuple(tuple(item) for item in row["labels"]),
+                ComputeDeviceHealth(row.get("health", ComputeDeviceHealth.HEALTHY.value)),
             )
             for row in value["gpus"]
         )
