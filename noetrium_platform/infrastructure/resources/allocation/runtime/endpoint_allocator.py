@@ -288,9 +288,10 @@ class AtomicEndpointAllocator(EndpointAllocationPort):
         _require_allocation_generation(current, allocation)
         if current.state is EndpointAllocationState.RELEASED:
             return current
-        physical = self._probe.probe(current.endpoint)
-        if not physical.available:
-            raise EndpointPhysicalConvergencePending((current.allocation_id,))
+        if current.state is EndpointAllocationState.BOUND:
+            physical = self._probe.probe(current.endpoint)
+            if not physical.available:
+                raise EndpointPhysicalConvergencePending((current.allocation_id,))
         return self._reservations.release(allocation)
 
     def get(self, allocation_id: str) -> EndpointAllocation:
@@ -311,10 +312,11 @@ class AtomicEndpointAllocator(EndpointAllocationPort):
         released: list[EndpointAllocation] = []
         pending: list[str] = []
         for allocation in orphans:
-            physical = self._probe.probe(allocation.endpoint)
-            if not physical.available:
-                pending.append(allocation.allocation_id)
-                continue
+            if allocation.state is EndpointAllocationState.BOUND:
+                physical = self._probe.probe(allocation.endpoint)
+                if not physical.available:
+                    pending.append(allocation.allocation_id)
+                    continue
             released.append(
                 self._reservations.retire_orphan(allocation, now=now)
             )
@@ -624,9 +626,10 @@ class InMemoryEndpointAllocator(EndpointAllocationPort):
                 return current
             self._require_lease_authority_locked(current)
 
-        physical = self._probe.probe(current.endpoint)
-        if not physical.available:
-            raise EndpointPhysicalConvergencePending((current.allocation_id,))
+        if current.state is EndpointAllocationState.BOUND:
+            physical = self._probe.probe(current.endpoint)
+            if not physical.available:
+                raise EndpointPhysicalConvergencePending((current.allocation_id,))
 
         with self._lock:
             current = self._reconcile_allocation_locked(allocation.allocation_id)
@@ -681,10 +684,11 @@ class InMemoryEndpointAllocator(EndpointAllocationPort):
         released: list[EndpointAllocation] = []
         pending: list[str] = []
         for expected in orphans:
-            physical = self._probe.probe(expected.endpoint)
-            if not physical.available:
-                pending.append(expected.allocation_id)
-                continue
+            if expected.state is EndpointAllocationState.BOUND:
+                physical = self._probe.probe(expected.endpoint)
+                if not physical.available:
+                    pending.append(expected.allocation_id)
+                    continue
             with self._lock:
                 current = self._reconcile_allocation_locked(expected.allocation_id)
                 _require_allocation_generation(current, expected)
