@@ -6,7 +6,6 @@ from noetrium_platform.foundation.scope.api import ScopeIdentity, ScopeKind
 from noetrium_platform.infrastructure.resources.compute.api import (
     ComputeGPU,
     ComputeHost,
-    ComputePlacementUnavailable,
     ComputeRequirement,
     GpuDeviceStatus,
     GpuProcessStatus,
@@ -146,7 +145,10 @@ def test_expired_gpu_lease_does_not_release_capacity_while_process_survives(
     ):
         scheduler.reconcile_expired()
 
-    with pytest.raises(ComputePlacementUnavailable):
+    with pytest.raises(
+        ComputePhysicalConvergencePending,
+        match="physical convergence pending",
+    ):
         scheduler.allocate(
             "replacement",
             _scope(),
