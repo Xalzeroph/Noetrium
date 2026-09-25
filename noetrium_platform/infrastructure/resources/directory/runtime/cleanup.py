@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from pathlib import Path
+import math
 import shutil
 import time
 
@@ -24,8 +25,21 @@ class LocalDirectoryCleaner:
     ) -> tuple[DirectoryCleanupCandidate, ...]:
         if kind not in {ManagedDirectoryKind.CACHE, ManagedDirectoryKind.TEMP}:
             raise ValueError("automatic clean is restricted to cache/temp directories")
+        if older_than_seconds is not None:
+            if (
+                type(older_than_seconds) not in {int, float}
+                or not math.isfinite(float(older_than_seconds))
+                or older_than_seconds < 0
+            ):
+                raise ValueError(
+                    "older_than_seconds must be a finite non-negative number or None"
+                )
         root = self._directories.root(kind)
-        cutoff = None if older_than_seconds is None else time.time() - older_than_seconds
+        cutoff = (
+            None
+            if older_than_seconds is None
+            else time.time() - float(older_than_seconds)
+        )
         values: list[DirectoryCleanupCandidate] = []
         for path in sorted(root.iterdir()):
             try:
