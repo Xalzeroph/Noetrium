@@ -23,6 +23,7 @@ from noetrium_platform.foundation.kernel.kernel.durability.file_lock import (
 from noetrium_platform.research.execution.policy.api import AdmissionBudget
 from noetrium_platform.research.execution.policy.api import ExecutionPriority
 from noetrium_platform.infrastructure.resources.directory.api import DirectoryLayout
+from noetrium_platform.infrastructure.resources.compute.providers import LocalHostRuntimeObserver
 from noetrium_platform.infrastructure.reliability.recovery.api import (
     RecoveryExecutionFactoryPort,
 )
@@ -45,6 +46,7 @@ from .model_management import (
 )
 from .research_execution_pool import ResearchExecutionPool
 from .resource_lifecycle import ManagedResourceReconciler
+from .shared_host_pressure import SharedHostPressurePolicy
 
 
 class _EventStop:
@@ -339,6 +341,7 @@ def build_local_managed_research_runtime(
     start_background_controllers: bool = True,
     model_reconcile_interval_seconds: float = 10.0,
     resource_reconcile_interval_seconds: float = 30.0,
+    shared_host_pressure_policy: SharedHostPressurePolicy | None = None,
 ) -> ManagedResearchRuntime:
     runtime_lock = InterprocessFileLock(
         layout.locks / "managed-research-runtime.lock",
@@ -347,6 +350,7 @@ def build_local_managed_research_runtime(
     runtime_lock.__enter__()
     pool: ResearchExecutionPool | None = None
     try:
+        host_pressure_observer = LocalHostRuntimeObserver()
         pool = ResearchExecutionPool(
         orchestration_concurrency_budget=orchestration_concurrency_budget,
         orchestration_admission_budget=orchestration_admission_budget,
@@ -354,6 +358,8 @@ def build_local_managed_research_runtime(
         experiment_admission_budget=experiment_admission_budget,
         model_io_concurrency_budget=model_io_concurrency_budget,
         model_io_admission_budget=model_io_admission_budget,
+        host_runtime_observer=host_pressure_observer,
+        shared_host_pressure_policy=shared_host_pressure_policy,
         exclusive_owner_generation=True,
         )
         group = pool.open_orchestration_group(
