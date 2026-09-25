@@ -98,6 +98,8 @@ class ResourceLease:
             raise TypeError("lease fencing_token must be int")
         if self.fencing_token < 1:
             raise ValueError("lease fencing token must be >= 1")
+        if self.expires_at_epoch_s is not None and type(self.expires_at_epoch_s) not in (int, float):
+            raise TypeError("lease expiry must be int or float")
         if self.expires_at_epoch_s is not None and (
             not math.isfinite(float(self.expires_at_epoch_s)) or self.expires_at_epoch_s <= 0
         ):
