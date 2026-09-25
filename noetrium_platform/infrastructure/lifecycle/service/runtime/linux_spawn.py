@@ -143,7 +143,8 @@ class LinuxProcessSpawner:
                 )
             child_environment[marker_key] = marker_value
 
-        read_fd, write_fd = os.pipe()
+        pid_read_fd, pid_write_fd = os.pipe()
+        env_read_fd, env_write_fd = os.pipe()
         try:
             try:
                 with captures.stdout_path.open(
@@ -162,7 +163,9 @@ class LinuxProcessSpawner:
                             "--parent-pid",
                             str(os.getpid()),
                             "--child-pid-fd",
-                            str(write_fd),
+                            str(pid_write_fd),
+                            "--child-env-fd",
+                            str(env_read_fd),
                             "--survive-parent-exit",
                             "--",
                             contract.executable,
@@ -176,23 +179,40 @@ class LinuxProcessSpawner:
                         stderr=stderr,
                         start_new_session=True,
                         close_fds=True,
-                        pass_fds=(write_fd,),
+                        pass_fds=(pid_write_fd, env_read_fd),
                     )
             finally:
-                os.close(write_fd)
+                os.close(pid_write_fd)
+                os.close(env_read_fd)
         except BaseException:
-            os.close(read_fd)
+            os.close(pid_read_fd)
+            os.close(env_write_fd)
             raise
 
         try:
             try:
+                payload = guardian_runtime.encode_child_environment(
+                    child_environment
+                )
+                view = memoryview(payload)
+                while view:
+                    written = os.write(env_write_fd, view)
+                    if written <= 0:
+                        raise OSError(
+                            "service guardian child-environment pipe made no progress"
+                        )
+                    view = view[written:]
+            finally:
+                os.close(env_write_fd)
+
+            try:
                 target_control_pid = self._read_guarded_child_pid(
                     child,
-                    read_fd,
+                    pid_read_fd,
                     timeout_seconds=self._EXEC_SETTLEMENT_SECONDS,
                 )
             finally:
-                os.close(read_fd)
+                os.close(pid_read_fd)
 
             anchor_visible_pid = self._procfs.visible_pid(child.pid)
             anchor_start_identity = self._procfs.start_identity(anchor_visible_pid)
