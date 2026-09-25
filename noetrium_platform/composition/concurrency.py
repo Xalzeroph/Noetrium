@@ -28,6 +28,7 @@ from noetrium_platform.infrastructure.resources.compute.api import HostRuntimeOb
 from .shared_host_pressure import (
     SharedHostPressureAdmissionGate,
     SharedHostPressurePolicy,
+    SharedNetworkPressureObserverPort,
     SharedStoragePressureObserverPort,
     configure_opportunistic_cpu_worker,
 )
@@ -183,6 +184,7 @@ def build_execution_concurrency_runtime(
     priority_aging_seconds: float = 1.0,
     host_runtime_observer: HostRuntimeObserverPort | None = None,
     storage_pressure_observer: SharedStoragePressureObserverPort | None = None,
+    network_pressure_observer: SharedNetworkPressureObserverPort | None = None,
     shared_host_pressure_policy: SharedHostPressurePolicy | None = None,
     blocking_io_thread_name_prefix: str = "platform-blocking-io",
     timer_name: str = "platform-timer",
@@ -210,6 +212,7 @@ def build_execution_concurrency_runtime(
             base_admission,
             host_runtime_observer,
             storage_observer=storage_pressure_observer,
+            network_observer=network_pressure_observer,
             policy=shared_host_pressure_policy or SharedHostPressurePolicy(),
         )
     concurrency = build_structured_concurrency_runtime(
