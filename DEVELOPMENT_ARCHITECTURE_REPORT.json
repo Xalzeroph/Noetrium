@@ -3,7 +3,7 @@
   "architecture_complexity": {
     "authorities": 20,
     "contract_declarations": 184,
-    "import_edges": 5356,
+    "import_edges": 5359,
     "subsystems": 15,
     "top_level_systems": 16
   },
@@ -23,7 +23,7 @@
     "effective_limits": {
       "authorities": 31,
       "contract_declarations": 184,
-      "import_edges": 5356,
+      "import_edges": 5359,
       "subsystems": 15,
       "top_level_systems": 16
     },
@@ -627,7 +627,7 @@
       "seam_id": "completed"
     }
   ],
-  "import_edges": 5356,
+  "import_edges": 5359,
   "import_violations": [],
   "layer_violations": [],
   "operation_graph": [
@@ -873,7 +873,7 @@
     }
   ],
   "package_cycles": [],
-  "report_sha256": "7bb1a11a6f60626552a8fc5234c82711d4ef40cf83a00b22067ca08e20a9d1b8",
+  "report_sha256": "3814cbbd8ce16bf6dd56fd65bbbedd7aaddef0876c45c7371a21b13b791c6a81",
   "source_authority_violations": [
     {
       "allowed_modules": [
@@ -903,14 +903,20 @@
       ],
       "authority": "filesystem.raw_fd_write",
       "detail": "os.write is a protected mutation primitive; authority belongs to noetrium_platform.foundation.kernel.kernel.durability.durable_append",
-      "line": 199,
+      "line": 85,
       "module": "noetrium_platform.infrastructure.lifecycle.service.runtime.linux_spawn",
       "path": "noetrium_platform/infrastructure/lifecycle/service/runtime/linux_spawn.py",
       "primitive": "os.write"
     }
   ],
-  "source_digest": "ae733395c86dcfb03dc7067f676cf2bee2f8d2e6c7e8c204b2b8df6c08fee94a",
+  "source_digest": "e7e37ba125623a8188f6fffa4c99489931a34844197df9977a411b35c0fb39d1",
   "source_invariant_violations": [
+    {
+      "detail": "direct concurrency implementation import noetrium_platform.foundation.kernel.concurrency.api.ports; depend on noetrium_platform.foundation.kernel.concurrency.api and obtain task groups from composition",
+      "invariant": "structured_concurrency_provider_firewall",
+      "line": 25,
+      "path": "noetrium_platform/composition/concurrency.py"
+    },
     {
       "detail": "direct SQLite rollback bypasses the canonical Platform durability authority; use abort_sqlite_writer() or rollback_sqlite_writer()",
       "invariant": "sqlite_durability_authority",

@@ -2,7 +2,7 @@
   "counts": {
     "parse_errors": 0,
     "python_files": 3709,
-    "python_import_edges": 7033,
+    "python_import_edges": 7036,
     "symbols": 5085,
     "tracked_files": 4346,
     "typescript_javascript_files": 11
@@ -3437,6 +3437,12 @@
     {
       "source_module": "noetrium_platform.composition.concurrency",
       "source_role": "core_platform",
+      "target_module": "noetrium_platform.foundation.kernel.concurrency.api.ports",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "noetrium_platform.composition.concurrency",
+      "source_role": "core_platform",
       "target_module": "noetrium_platform.foundation.kernel.concurrency.composition",
       "target_role": "core_platform"
     },
@@ -5628,6 +5634,12 @@
       "source_module": "noetrium_platform.composition.research_execution_pool",
       "source_role": "core_platform",
       "target_module": "noetrium_platform.foundation.kernel.concurrency.api",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "noetrium_platform.composition.research_execution_pool",
+      "source_role": "core_platform",
+      "target_module": "noetrium_platform.foundation.kernel.concurrency.composition",
       "target_role": "core_platform"
     },
     {
@@ -10170,6 +10182,12 @@
       "source_module": "noetrium_platform.foundation.kernel.concurrency.composition.default",
       "source_role": "core_platform",
       "target_module": "noetrium_platform.foundation.kernel.concurrency.api",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "noetrium_platform.foundation.kernel.concurrency.composition.default",
+      "source_role": "core_platform",
+      "target_module": "noetrium_platform.foundation.kernel.concurrency.api.ports",
       "target_role": "core_platform"
     },
     {
@@ -42215,7 +42233,7 @@
   ],
   "role_import_counts": [
     {
-      "count": 2629,
+      "count": 2632,
       "source_role": "core_platform",
       "target_role": "core_platform"
     },
@@ -42354,7 +42372,7 @@
     "tooling": 39
   },
   "schema": "noetrium-repository-code-architecture-index.v1",
-  "source_git_sha": "d3a8dd2ab39291409a472c6f703d37c12dfbd9bd",
+  "source_git_sha": "1599e8fd10c258e0975e3b82111af272da1c8055",
   "symbols": [
     {
       "bases": [],
@@ -63865,7 +63883,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 37,
+      "line": 40,
       "methods": [
         "heartbeats",
         "open_task_group",
@@ -65657,7 +65675,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 55,
+      "line": 83,
       "methods": [
         "__init__",
         "_require_workloads_open",
@@ -81508,7 +81526,7 @@
       ],
       "kind": "enum",
       "language": "python",
-      "line": 9,
+      "line": 11,
       "methods": [],
       "module": "noetrium_platform.foundation.kernel.concurrency.api.contracts",
       "name": "ExecutionLaneKind",
@@ -81528,7 +81546,7 @@
       ],
       "kind": "enum",
       "language": "python",
-      "line": 17,
+      "line": 19,
       "methods": [],
       "module": "noetrium_platform.foundation.kernel.concurrency.api.contracts",
       "name": "SerialMailboxPolicy",
@@ -81547,7 +81565,7 @@
       ],
       "kind": "enum",
       "language": "python",
-      "line": 25,
+      "line": 27,
       "methods": [],
       "module": "noetrium_platform.foundation.kernel.concurrency.api.contracts",
       "name": "TaskFailurePolicy",
@@ -81566,7 +81584,7 @@
       ],
       "kind": "enum",
       "language": "python",
-      "line": 30,
+      "line": 32,
       "methods": [],
       "module": "noetrium_platform.foundation.kernel.concurrency.api.contracts",
       "name": "TaskFailureScope",
@@ -81588,7 +81606,7 @@
       ],
       "kind": "enum",
       "language": "python",
-      "line": 35,
+      "line": 37,
       "methods": [],
       "module": "noetrium_platform.foundation.kernel.concurrency.api.contracts",
       "name": "TaskState",
@@ -81604,7 +81622,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 43,
+      "line": 73,
       "methods": [],
       "module": "noetrium_platform.foundation.kernel.concurrency.api.contracts",
       "name": "TaskCancelled",
@@ -81620,7 +81638,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 47,
+      "line": 77,
       "methods": [],
       "module": "noetrium_platform.foundation.kernel.concurrency.api.contracts",
       "name": "TaskDeadlineExceeded",
@@ -81636,7 +81654,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 51,
+      "line": 81,
       "methods": [],
       "module": "noetrium_platform.foundation.kernel.concurrency.api.contracts",
       "name": "ExecutionPermitRejected",
@@ -81652,7 +81670,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 55,
+      "line": 85,
       "methods": [],
       "module": "noetrium_platform.foundation.kernel.concurrency.api.contracts",
       "name": "SerialMailboxRejected",
@@ -81677,7 +81695,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 60,
+      "line": 90,
       "methods": [
         "__post_init__"
       ],
@@ -81697,7 +81715,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 96,
+      "line": 126,
       "methods": [
         "after",
         "child",
@@ -81726,7 +81744,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 122,
+      "line": 152,
       "methods": [
         "__post_init__"
       ],
@@ -81750,7 +81768,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 162,
+      "line": 192,
       "methods": [
         "__post_init__",
         "resolved_initial_delay_seconds"
@@ -81773,7 +81791,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 189,
+      "line": 219,
       "methods": [
         "__post_init__"
       ],
@@ -81801,7 +81819,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 204,
+      "line": 234,
       "methods": [],
       "module": "noetrium_platform.foundation.kernel.concurrency.api.contracts",
       "name": "TaskTopologySnapshot",
@@ -81827,7 +81845,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 217,
+      "line": 247,
       "methods": [],
       "module": "noetrium_platform.foundation.kernel.concurrency.api.contracts",
       "name": "TaskGroupTopologySnapshot",
@@ -81859,7 +81877,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 230,
+      "line": 260,
       "methods": [],
       "module": "noetrium_platform.foundation.kernel.concurrency.api.contracts",
       "name": "SerialLaneTopologySnapshot",
@@ -81882,7 +81900,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 249,
+      "line": 279,
       "methods": [],
       "module": "noetrium_platform.foundation.kernel.concurrency.api.contracts",
       "name": "HeartbeatTopologySnapshot",
@@ -81906,7 +81924,7 @@
       ],
       "kind": "dataclass",
       "language": "python",
-      "line": 259,
+      "line": 289,
       "methods": [],
       "module": "noetrium_platform.foundation.kernel.concurrency.api.contracts",
       "name": "ConcurrencyTopologySnapshot",
@@ -82855,6 +82873,7 @@
         "_cpu: CpuWorkerPoolProviderPort",
         "_timers: TimerSchedulerProviderPort",
         "_serial_lane_factory: SerialExecutionLaneFactoryProviderPort",
+        "_owns_cpu_provider: bool",
         "_groups: dict[str, StructuredTaskGroup]",
         "_serial_lanes: dict[str, _OwnedLane]",
         "_lock: Lock",
@@ -93424,6 +93443,7 @@
       "line": 56,
       "methods": [
         "__init__",
+        "_send_child_environment",
         "_read_guarded_child_pid",
         "start"
       ],
@@ -137371,7 +137391,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 393,
+      "line": 397,
       "methods": [
         "resolve"
       ],
@@ -137389,7 +137409,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 444,
+      "line": 448,
       "methods": [
         "test_facts_resolves_process_directory_once"
       ],
@@ -137407,7 +137427,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 464,
+      "line": 468,
       "methods": [
         "__init__",
         "_process_directory"

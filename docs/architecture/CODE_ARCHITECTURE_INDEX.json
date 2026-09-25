@@ -39376,7 +39376,7 @@
         "concurrency"
       ],
       "kind": "dataclass",
-      "line": 37,
+      "line": 40,
       "methods": [
         "heartbeats",
         "open_task_group",
@@ -41355,7 +41355,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 55,
+      "line": 83,
       "methods": [
         "__init__",
         "_require_workloads_open",
@@ -58748,7 +58748,7 @@
         "shutdown_timeout_seconds"
       ],
       "kind": "dataclass",
-      "line": 60,
+      "line": 90,
       "methods": [
         "__post_init__"
       ],
@@ -58776,7 +58776,7 @@
         "shutdown_failure_type"
       ],
       "kind": "dataclass",
-      "line": 259,
+      "line": 289,
       "methods": [],
       "module": "noetrium_platform.foundation.kernel.concurrency.api.contracts",
       "name": "ConcurrencyTopologySnapshot",
@@ -58796,7 +58796,7 @@
         "monotonic_deadline"
       ],
       "kind": "dataclass",
-      "line": 96,
+      "line": 126,
       "methods": [
         "after",
         "child",
@@ -58825,7 +58825,7 @@
         "TIMER"
       ],
       "kind": "enum",
-      "line": 9,
+      "line": 11,
       "methods": [],
       "module": "noetrium_platform.foundation.kernel.concurrency.api.contracts",
       "name": "ExecutionLaneKind",
@@ -58843,7 +58843,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 51,
+      "line": 81,
       "methods": [],
       "module": "noetrium_platform.foundation.kernel.concurrency.api.contracts",
       "name": "ExecutionPermitRejected",
@@ -58869,7 +58869,7 @@
         "task_id"
       ],
       "kind": "dataclass",
-      "line": 122,
+      "line": 152,
       "methods": [
         "__post_init__"
       ],
@@ -58895,7 +58895,7 @@
         "lane_id"
       ],
       "kind": "dataclass",
-      "line": 162,
+      "line": 192,
       "methods": [
         "__post_init__",
         "resolved_initial_delay_seconds"
@@ -58923,7 +58923,7 @@
         "owner_group_id"
       ],
       "kind": "dataclass",
-      "line": 249,
+      "line": 279,
       "methods": [],
       "module": "noetrium_platform.foundation.kernel.concurrency.api.contracts",
       "name": "HeartbeatTopologySnapshot",
@@ -58945,7 +58945,7 @@
         "task_id"
       ],
       "kind": "dataclass",
-      "line": 189,
+      "line": 219,
       "methods": [
         "__post_init__"
       ],
@@ -58981,7 +58981,7 @@
         "scheduled"
       ],
       "kind": "dataclass",
-      "line": 230,
+      "line": 260,
       "methods": [],
       "module": "noetrium_platform.foundation.kernel.concurrency.api.contracts",
       "name": "SerialLaneTopologySnapshot",
@@ -59003,7 +59003,7 @@
         "REJECT"
       ],
       "kind": "enum",
-      "line": 17,
+      "line": 19,
       "methods": [],
       "module": "noetrium_platform.foundation.kernel.concurrency.api.contracts",
       "name": "SerialMailboxPolicy",
@@ -59021,7 +59021,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 55,
+      "line": 85,
       "methods": [],
       "module": "noetrium_platform.foundation.kernel.concurrency.api.contracts",
       "name": "SerialMailboxRejected",
@@ -59039,7 +59039,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 43,
+      "line": 73,
       "methods": [],
       "module": "noetrium_platform.foundation.kernel.concurrency.api.contracts",
       "name": "TaskCancelled",
@@ -59057,7 +59057,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 47,
+      "line": 77,
       "methods": [],
       "module": "noetrium_platform.foundation.kernel.concurrency.api.contracts",
       "name": "TaskDeadlineExceeded",
@@ -59078,7 +59078,7 @@
         "FAIL_FAST"
       ],
       "kind": "enum",
-      "line": 25,
+      "line": 27,
       "methods": [],
       "module": "noetrium_platform.foundation.kernel.concurrency.api.contracts",
       "name": "TaskFailurePolicy",
@@ -59099,7 +59099,7 @@
         "GROUP"
       ],
       "kind": "enum",
-      "line": 30,
+      "line": 32,
       "methods": [],
       "module": "noetrium_platform.foundation.kernel.concurrency.api.contracts",
       "name": "TaskFailureScope",
@@ -59127,7 +59127,7 @@
         "tasks"
       ],
       "kind": "dataclass",
-      "line": 217,
+      "line": 247,
       "methods": [],
       "module": "noetrium_platform.foundation.kernel.concurrency.api.contracts",
       "name": "TaskGroupTopologySnapshot",
@@ -59151,7 +59151,7 @@
         "SUCCEEDED"
       ],
       "kind": "enum",
-      "line": 35,
+      "line": 37,
       "methods": [],
       "module": "noetrium_platform.foundation.kernel.concurrency.api.contracts",
       "name": "TaskState",
@@ -59179,7 +59179,7 @@
         "task_id"
       ],
       "kind": "dataclass",
-      "line": 204,
+      "line": 234,
       "methods": [],
       "module": "noetrium_platform.foundation.kernel.concurrency.api.contracts",
       "name": "TaskTopologySnapshot",
@@ -60198,6 +60198,7 @@
         "_groups",
         "_heartbeat_scheduler",
         "_lock",
+        "_owns_cpu_provider",
         "_permits",
         "_serial_lane_factory",
         "_serial_lanes",
@@ -71772,6 +71773,7 @@
       "line": 56,
       "methods": [
         "__init__",
+        "_send_child_environment",
         "_read_guarded_child_pid",
         "start"
       ],
@@ -105227,7 +105229,7 @@
     "classes": 3411,
     "constructor_edges": 962,
     "inheritance_edges": 151,
-    "module_import_edges": 5078,
+    "module_import_edges": 5081,
     "parse_errors": 0,
     "python_modules": 1918,
     "registry_authorities": 20,
@@ -110462,6 +110464,10 @@
     },
     {
       "source": "noetrium_platform.composition.concurrency",
+      "target": "noetrium_platform.foundation.kernel.concurrency.api.ports"
+    },
+    {
+      "source": "noetrium_platform.composition.concurrency",
       "target": "noetrium_platform.foundation.kernel.concurrency.composition"
     },
     {
@@ -112191,6 +112197,10 @@
     {
       "source": "noetrium_platform.composition.research_execution_pool",
       "target": "noetrium_platform.foundation.kernel.concurrency.api"
+    },
+    {
+      "source": "noetrium_platform.composition.research_execution_pool",
+      "target": "noetrium_platform.foundation.kernel.concurrency.composition"
     },
     {
       "source": "noetrium_platform.composition.research_execution_pool",
@@ -118083,6 +118093,10 @@
     {
       "source": "noetrium_platform.foundation.kernel.concurrency.composition.default",
       "target": "noetrium_platform.foundation.kernel.concurrency.api"
+    },
+    {
+      "source": "noetrium_platform.foundation.kernel.concurrency.composition.default",
+      "target": "noetrium_platform.foundation.kernel.concurrency.api.ports"
     },
     {
       "source": "noetrium_platform.foundation.kernel.concurrency.composition.default",
@@ -130743,6 +130757,7 @@
       "imports": [
         "noetrium_platform.composition.shared_host_pressure",
         "noetrium_platform.foundation.kernel.concurrency.api",
+        "noetrium_platform.foundation.kernel.concurrency.api.ports",
         "noetrium_platform.foundation.kernel.concurrency.composition",
         "noetrium_platform.infrastructure.resources.compute.api",
         "noetrium_platform.research.execution.policy.api",
@@ -131984,6 +131999,7 @@
         "noetrium_platform.composition.environment_instance_leases",
         "noetrium_platform.composition.shared_host_pressure",
         "noetrium_platform.foundation.kernel.concurrency.api",
+        "noetrium_platform.foundation.kernel.concurrency.composition",
         "noetrium_platform.infrastructure.resources.allocation.api",
         "noetrium_platform.infrastructure.resources.allocation.runtime",
         "noetrium_platform.infrastructure.resources.compute.api",
@@ -138073,6 +138089,7 @@
     {
       "imports": [
         "noetrium_platform.foundation.kernel.concurrency.api",
+        "noetrium_platform.foundation.kernel.concurrency.api.ports",
         "noetrium_platform.foundation.kernel.concurrency.providers",
         "noetrium_platform.foundation.kernel.concurrency.runtime"
       ],
@@ -146429,7 +146446,7 @@
   "parse_errors": [],
   "registry_sha256": "276e2729e0b700e814e98f8460d87e0ebee66c4620226fe2d880fe55cc970aec",
   "schema": "noetrium-code-architecture-index.v1",
-  "source_git_sha": "d3a8dd2ab39291409a472c6f703d37c12dfbd9bd",
+  "source_git_sha": "1599e8fd10c258e0975e3b82111af272da1c8055",
   "system_import_edges": [
     {
       "count": 85,
@@ -146542,7 +146559,7 @@
       "target": "platform"
     },
     {
-      "count": 190,
+      "count": 191,
       "source": "platform",
       "target": "platform"
     },
@@ -146612,7 +146629,7 @@
       "target": "participant"
     },
     {
-      "count": 126,
+      "count": 128,
       "source": "research_os",
       "target": "platform"
     },
