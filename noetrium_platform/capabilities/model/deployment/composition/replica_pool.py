@@ -363,6 +363,21 @@ class ModelReplicaPoolLease:
             )
         return generation
 
+    def _retire_current_generation(
+        self,
+        row: ModelReplicaPlacement,
+    ) -> ModelDeploymentGeneration:
+        fallback = self._current_generations[row.deployment_id]
+        try:
+            generation = self._current_generation(row)
+        except (KeyError, FileNotFoundError):
+            # Absence of the desired row is not, by itself, physical convergence.
+            # Let the deployment runtime validate the last exact applied
+            # generation (or prove terminal retirement) before resources move.
+            generation = fallback
+        self._deployment_runtime.remove_deployment(generation)
+        return generation
+
     def _converge_running_generation(
         self,
         row: ModelReplicaPlacement,
@@ -404,8 +419,7 @@ class ModelReplicaPoolLease:
             if row.deployment_id in self._removed_deployment_ids:
                 continue
             try:
-                generation = self._current_generation(row)
-                self._deployment_runtime.remove_deployment(generation)
+                generation = self._retire_current_generation(row)
             except BaseException as exc:
                 errors.append(exc)
             else:
@@ -530,20 +544,29 @@ class _PendingModelReplicaCleanup:
             for spec in reversed(self._specs):
                 if spec.deployment_id in self._removed_deployment_ids:
                     continue
+                expected_desired_digest = canonical_digest(spec)
                 try:
-                    generation = self._deployment_runtime.generation(
-                        spec.deployment_id
-                    )
-                    if generation.desired_spec_digest != canonical_digest(spec):
+                    try:
+                        generation = self._deployment_runtime.generation(
+                            spec.deployment_id
+                        )
+                    except (KeyError, FileNotFoundError):
+                        # Desired-state absence cannot prove that the applied
+                        # process generation is gone. Ask the runtime to retire
+                        # the known desired identity with a no-applied fallback;
+                        # the real runtime only accepts this when no applied
+                        # generation remains.
+                        generation = ModelDeploymentGeneration(
+                            spec.deployment_id,
+                            expected_desired_digest,
+                            None,
+                        )
+                    if generation.desired_spec_digest != expected_desired_digest:
                         raise RuntimeError(
                             "model replica cleanup lost desired generation authority: "
                             f"{spec.deployment_id}"
                         )
                     self._deployment_runtime.remove_deployment(generation)
-                except KeyError:
-                    # No desired/applied generation remains: physical service
-                    # ownership is already converged for this identity.
-                    self._removed_deployment_ids.add(spec.deployment_id)
                 except BaseException as exc:
                     errors.append(exc)
                 else:
