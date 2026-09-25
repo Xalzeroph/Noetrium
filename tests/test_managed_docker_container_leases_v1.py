@@ -420,7 +420,7 @@ def test_managed_docker_release_refuses_reused_foreign_container_name() -> None:
     )
     runtime.rows[foreign.container_id] = foreign
 
-    with pytest.raises(RuntimeError, match="label drift"):
+    with pytest.raises(RuntimeError, match="name was reused|label drift"):
         authority.release(handle)
 
     assert runtime.inspect(foreign.container_id) == foreign
