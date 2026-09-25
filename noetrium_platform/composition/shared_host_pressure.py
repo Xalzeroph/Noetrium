@@ -143,6 +143,7 @@ class SharedHostPressurePolicy:
 
     min_available_memory_bytes: int = 512 * 1024 * 1024
     min_available_pids: int = 32
+    min_available_fds: int = 64
     min_storage_free_bytes: int = 1024 * 1024 * 1024
     min_storage_free_inodes: int = 1024
     max_cpu_pressure_some_avg10_percent: float = 95.0
@@ -156,6 +157,8 @@ class SharedHostPressurePolicy:
             raise ValueError("shared-host memory headroom must be non-negative")
         if type(self.min_available_pids) is not int or self.min_available_pids < 0:
             raise ValueError("shared-host PID headroom must be non-negative")
+        if type(self.min_available_fds) is not int or self.min_available_fds < 0:
+            raise ValueError("shared-host FD headroom must be non-negative")
         if type(self.min_storage_free_bytes) is not int or self.min_storage_free_bytes < 0:
             raise ValueError("shared-host storage byte headroom must be non-negative")
         if type(self.min_storage_free_inodes) is not int or self.min_storage_free_inodes < 0:
@@ -294,6 +297,11 @@ class SharedHostPressureAdmissionGate(ExecutionAdmissionPort):
                 return "cpu-pressure"
 
         if lane_kind in {ExecutionLaneKind.BLOCKING_IO, ExecutionLaneKind.ASYNC_IO}:
+            if (
+                status.available_fds is not None
+                and status.available_fds < self._policy.min_available_fds + permit_count
+            ):
+                return "fd-headroom"
             if (
                 status.io_pressure_some_avg10_percent is not None
                 and status.io_pressure_some_avg10_percent
