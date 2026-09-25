@@ -141,6 +141,10 @@ class ComputeLeasePolicy:
 DEFAULT_COMPUTE_LEASE_POLICY = ComputeLeasePolicy()
 
 
+class ComputeInventoryConflict(RuntimeError):
+    """Exact observed inventory generation no longer matches authority."""
+
+
 class ComputePlacementUnavailable(RuntimeError):
     """Expected capacity exhaustion for one exact compute placement request."""
 
@@ -428,4 +432,4 @@ class ComputeAllocation:
         )
 
 
-__all__ = ["ComputeAllocation", "ComputeAllocationBatch", "ComputeAllocationRequest", "ComputeDeviceHealth", "ComputeBindingProof", "ComputeCluster", "ComputeGPU", "ComputeHost", "ComputeHostSchedulingState", "ComputePlacementPreference", "ComputePlacementUnavailable", "ComputeRequirement", "ComputeLeasePolicy", "DEFAULT_COMPUTE_LEASE_POLICY", "GpuSharingMode"]
+__all__ = ["ComputeAllocation", "ComputeAllocationBatch", "ComputeAllocationRequest", "ComputeDeviceHealth", "ComputeBindingProof", "ComputeCluster", "ComputeGPU", "ComputeHost", "ComputeHostSchedulingState", "ComputeInventoryConflict", "ComputePlacementPreference", "ComputePlacementUnavailable", "ComputeRequirement", "ComputeLeasePolicy", "DEFAULT_COMPUTE_LEASE_POLICY", "GpuSharingMode"]
