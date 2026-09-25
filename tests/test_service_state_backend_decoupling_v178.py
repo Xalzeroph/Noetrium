@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from noetrium_platform.infrastructure.lifecycle.service.api import ServiceLaunchContract, ServiceProcessIdentity
+from contextlib import nullcontext
 from pathlib import Path
 from tempfile import TemporaryDirectory
 import hashlib
@@ -32,6 +33,10 @@ class MemoryServiceStateStore:
 
     def reference(self) -> str:
         return "memory://service-state"
+
+    def mutation(self):
+        return nullcontext()
+
 
 
 class Adapter:
@@ -78,7 +83,7 @@ class ServiceStateBackendDecouplingV178Tests(unittest.TestCase):
             report = supervisor.start_exact(contract())
             self.assertEqual(report.state.phase, ServicePhase.RUNNING)
             self.assertEqual(state.reference(), "memory://service-state")
-            stopped = supervisor.stop_exact(contract())
+            stopped = supervisor.stop_exact(contract(), report.state.process)
             self.assertEqual(stopped.phase, ServicePhase.EXITED)
 
 
