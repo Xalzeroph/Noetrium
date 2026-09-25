@@ -47,6 +47,7 @@ from .model_management import (
 from .research_execution_pool import ResearchExecutionPool
 from .resource_lifecycle import ManagedResourceReconciler
 from .shared_host_pressure import (
+    LocalSharedNetworkPressureObserver,
     LocalSharedStoragePressureObserver,
     SharedHostPressurePolicy,
 )
@@ -357,6 +358,7 @@ def build_local_managed_research_runtime(
         storage_pressure_observer = LocalSharedStoragePressureObserver(
             tuple(path for _kind, path in layout.entries())
         )
+        network_pressure_observer = LocalSharedNetworkPressureObserver()
         pool = ResearchExecutionPool(
         orchestration_concurrency_budget=orchestration_concurrency_budget,
         orchestration_admission_budget=orchestration_admission_budget,
@@ -366,6 +368,7 @@ def build_local_managed_research_runtime(
         model_io_admission_budget=model_io_admission_budget,
         host_runtime_observer=host_pressure_observer,
         storage_pressure_observer=storage_pressure_observer,
+        network_pressure_observer=network_pressure_observer,
         shared_host_pressure_policy=shared_host_pressure_policy,
         exclusive_owner_generation=True,
         )
