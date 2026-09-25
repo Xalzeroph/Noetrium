@@ -27,6 +27,11 @@ from .durable_file import (
     flush_file_descriptor,
 )
 from .file_lock import InterprocessFileLock, InterprocessLockBusy, InterprocessLockUnavailable
+from .filesystem_generation import (
+    FilesystemCarrierGeneration,
+    FilesystemCarrierKind,
+    capture_filesystem_carrier_generation,
+)
 from .stream_digest import sha256_bytes, sha256_file
 from .sqlite import (
     SQLiteDurabilityProfile,
@@ -72,6 +77,9 @@ __all__ = [
     "InterprocessFileLock",
     "InterprocessLockBusy",
     "InterprocessLockUnavailable",
+    "FilesystemCarrierGeneration",
+    "FilesystemCarrierKind",
+    "capture_filesystem_carrier_generation",
     "sha256_bytes",
     "sha256_file",
     "SQLiteDurabilityProfile",
