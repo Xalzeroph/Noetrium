@@ -31,6 +31,9 @@ from .filesystem_generation import (
     FilesystemCarrierGeneration,
     FilesystemCarrierKind,
     capture_filesystem_carrier_generation,
+    purge_directory_contents,
+    remove_empty_directory_carrier,
+    rename_directory_carrier,
 )
 from .stream_digest import sha256_bytes, sha256_file
 from .sqlite import (
@@ -80,6 +83,9 @@ __all__ = [
     "FilesystemCarrierGeneration",
     "FilesystemCarrierKind",
     "capture_filesystem_carrier_generation",
+    "purge_directory_contents",
+    "remove_empty_directory_carrier",
+    "rename_directory_carrier",
     "sha256_bytes",
     "sha256_file",
     "SQLiteDurabilityProfile",
