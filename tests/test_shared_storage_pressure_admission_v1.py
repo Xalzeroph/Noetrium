@@ -6,8 +6,8 @@ import pytest
 
 from noetrium_platform.composition.shared_host_pressure import (
     LocalSharedStoragePressureObserver,
-    SharedHostPressureAdmissionGate,
-    SharedHostPressurePolicy,
+    ResourceCompetitionAdmissionGate,
+    ResourceCompetitionPolicy,
     SharedStoragePressureStatus,
 )
 from noetrium_platform.foundation.kernel.concurrency.api import ExecutionLaneKind
@@ -64,16 +64,16 @@ class _StorageObserver:
         return self.status
 
 
-def _gate(storage: _StorageObserver) -> SharedHostPressureAdmissionGate:
+def _gate(storage: _StorageObserver) -> ResourceCompetitionAdmissionGate:
     base = build_execution_admission(
         budget=AdmissionBudget(max_total_in_flight=8),
         scheduling=build_admission_scheduling_policy(priority_aging_seconds=0.01),
     )
-    gate = SharedHostPressureAdmissionGate(
+    gate = ResourceCompetitionAdmissionGate(
         base,
         _HostObserver(),
         storage_observer=storage,
-        policy=SharedHostPressurePolicy(
+        policy=ResourceCompetitionPolicy(
             min_available_memory_bytes=0,
             min_available_pids=0,
             min_storage_free_bytes=1024,
