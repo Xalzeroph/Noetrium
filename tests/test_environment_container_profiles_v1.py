@@ -482,8 +482,171 @@ def test_minecraft_doctor_is_single_body_and_pipefail_safe() -> None:
     assert doctor.count("minecraft_bridge_root=") == 1
     assert doctor.count("MC_BRIDGE_DIR=\"$bridge\" node - <<'JS'") == 1
     assert "java -version 2>&1 | head" not in doctor
-    assert "${java_version%%$'\\n'*}" in doctor
-    assert "\\n'*}\"" not in doctor
+    assert "${java_version%%
+
+
+def test_bootstrap_child_reaper_distinguishes_boot_and_process_start_generations(
+    tmp_path: Path,
+) -> None:
+    bootstrap = (ROOT / "deploy" / "build-environments.sh").read_text(
+        encoding="utf-8"
+    )
+    start = bootstrap.index("bootstrap_owner_alive() {")
+    end = bootstrap.index("cleanup_owned_bootstrap_children() {")
+    functions = bootstrap[start:end]
+    removed = tmp_path / "removed.txt"
+    script = (
+        'BOOTSTRAP_CHILD_LABEL="io.noetrium.bootstrap-child"\n'
+        'BOOTSTRAP_CHILD_VALUE="qualification-v1"\n'
+        'BOOT_ID="current-boot"\n'
+        'OWNER_START="$(awk \'{print $22}\' /proc/$$/stat)"\n'
+        'docker() {\n'
+        '  command="$1"; shift\n'
+        '  case "$command" in\n'
+        '    ps) printf "%s\\n" old-boot reused-pid live-owner ;;\n'
+        '    inspect)\n'
+        '      id="$3"\n'
+        '      case "$id" in\n'
+        '        old-boot) printf "%s\\n" "999999|old-boot|1|true" ;;\n'
+        '        reused-pid) printf "%s\\n" "$$|$BOOT_ID|stale-start|true" ;;\n'
+        '        live-owner) printf "%s\\n" "$$|$BOOT_ID|$OWNER_START|true" ;;\n'
+        '        *) return 1 ;;\n'
+        '      esac ;;\n'
+        '    rm) printf "%s\\n" "$2" >> "$REMOVED" ;;\n'
+        '    *) return 1 ;;\n'
+        '  esac\n'
+        '}\n'
+        + functions
+        + '\nreconcile_bootstrap_children\n'
+    )
+    completed = subprocess.run(
+        ("sh", "-eu", "-c", script),
+        cwd=ROOT,
+        env={**os.environ, "REMOVED": str(removed)},
+        text=True,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        check=False,
+    )
+    assert completed.returncode == 0, completed.stderr
+    assert removed.read_text(encoding="utf-8").splitlines() == [
+        "old-boot",
+        "reused-pid",
+    ]
+
+
+
+def test_bootstrap_run_labels_exact_live_owner_generation(
+    tmp_path: Path,
+) -> None:
+    bootstrap = (ROOT / "deploy" / "build-environments.sh").read_text(
+        encoding="utf-8"
+    )
+    start = bootstrap.index("bootstrap_owner_alive() {")
+    end = bootstrap.index("command -v docker")
+    functions = bootstrap[start:end]
+    argv = tmp_path / "docker-run-argv.txt"
+    script = (
+        'BOOTSTRAP_MANAGED_LABEL="io.noetrium.bootstrap-managed"\n'
+        'BOOTSTRAP_MANAGED_VALUE="control-v1"\n'
+        'BOOTSTRAP_CHILD_LABEL="io.noetrium.bootstrap-child"\n'
+        'BOOTSTRAP_CHILD_VALUE="qualification-v1"\n'
+        'OWNER_PID_LABEL="io.noetrium.bootstrap-owner-pid"\n'
+        'OWNER_BOOT_LABEL="io.noetrium.bootstrap-owner-boot"\n'
+        'OWNER_START_LABEL="io.noetrium.bootstrap-owner-start"\n'
+        'BOOT_ID="current-boot"\n'
+        'OWNER_START="$(awk \'{print $22}\' /proc/$/stat)"\n'
+        'EXPECTED_PID="$"\n'
+        'BOOTSTRAP_CONTAINER_NAME="noetrium-bootstrap-test"\n'
+        'BOOTSTRAP_ACTIVE=0\n'
+        'docker() {\n'
+        '  command="$1"; shift\n'
+        '  case "$command" in\n'
+        '    run) printf "%s\\n" "$@" > "$ARGV"; return 0 ;;\n'
+        '    ps) return 0 ;;\n'
+        '    *) return 1 ;;\n'
+        '  esac\n'
+        '}\n'
+        + functions
+        + '\nrun_bootstrap_container image:test\n'
+        + 'grep -Fx -- "$OWNER_PID_LABEL=$EXPECTED_PID" "$ARGV"\n'
+        + 'grep -Fx -- "$OWNER_BOOT_LABEL=$BOOT_ID" "$ARGV"\n'
+        + 'grep -Fx -- "$OWNER_START_LABEL=$OWNER_START" "$ARGV"\n'
+        + '! grep -Fx -- "$OWNER_PID_LABEL=$" "$ARGV"\n'
+    )
+    completed = subprocess.run(
+        ("sh", "-eu", "-c", script),
+        cwd=ROOT,
+        env={**os.environ, "ARGV": str(argv)},
+        text=True,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        check=False,
+    )
+    assert completed.returncode == 0, completed.stderr
+
+
+def test_bootstrap_normal_completion_proves_exact_container_absence(
+    tmp_path: Path,
+) -> None:
+    bootstrap = (ROOT / "deploy" / "build-environments.sh").read_text(
+        encoding="utf-8"
+    )
+    start = bootstrap.index("bootstrap_owner_alive() {")
+    end = bootstrap.index("command -v docker")
+    functions = bootstrap[start:end]
+    removed = tmp_path / "removed.txt"
+    script = (
+        'BOOTSTRAP_MANAGED_LABEL="io.noetrium.bootstrap-managed"\n'
+        'BOOTSTRAP_MANAGED_VALUE="control-v1"\n'
+        'BOOTSTRAP_CHILD_LABEL="io.noetrium.bootstrap-child"\n'
+        'BOOTSTRAP_CHILD_VALUE="qualification-v1"\n'
+        'OWNER_PID_LABEL="io.noetrium.bootstrap-owner-pid"\n'
+        'OWNER_BOOT_LABEL="io.noetrium.bootstrap-owner-boot"\n'
+        'OWNER_START_LABEL="io.noetrium.bootstrap-owner-start"\n'
+        'BOOT_ID="current-boot"\n'
+        'OWNER_START="$(awk \'{print $22}\' /proc/$$/stat)"\n'
+        'BOOTSTRAP_CONTAINER_NAME="noetrium-bootstrap-test"\n'
+        'BOOTSTRAP_ACTIVE=0\n'
+        'container_present=0\n'
+        'docker() {\n'
+        '  command="$1"; shift\n'
+        '  case "$command" in\n'
+        '    run) container_present=1; return 0 ;;\n'
+        '    ps)\n'
+        '      case "$*" in\n'
+        '        *io.noetrium.bootstrap-child*) return 0 ;;\n'
+        '        *io.noetrium.bootstrap-managed*)\n'
+        '          [ "$container_present" = "1" ] && printf "%s\\n" bootstrap-id\n'
+        '          return 0 ;;\n'
+        '        *id=bootstrap-id*)\n'
+        '          [ "$container_present" = "1" ] && printf "%s\\n" bootstrap-id\n'
+        '          return 0 ;;\n'
+        '      esac ;;\n'
+        '    rm) container_present=0; printf "%s\\n" "$2" >> "$REMOVED" ;;\n'
+        '    inspect)\n'
+        '      printf "%s\\n" "$$|$BOOT_ID|$OWNER_START|false" ;;\n'
+        '    *) return 1 ;;\n'
+        '  esac\n'
+        '}\n'
+        + functions
+        + '\nrun_bootstrap_container image:test\n'
+        + '[ "$container_present" = "0" ]\n'
+    )
+    completed = subprocess.run(
+        ("sh", "-eu", "-c", script),
+        cwd=ROOT,
+        env={**os.environ, "REMOVED": str(removed)},
+        text=True,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        check=False,
+    )
+    assert completed.returncode == 0, completed.stderr
+    assert removed.read_text(encoding="utf-8").splitlines() == [
+        "bootstrap-id",
+    ]
+\\n'*}" in doctor
 
 
 
