@@ -127,6 +127,7 @@ def test_expiry_quarantines_endpoint_until_os_listener_converges(
         )
 
     first = allocator.allocate(_request("first"))
+    first = allocator.confirm_bound(_binding_proof(first))
     expiry = first.lease_expires_at_epoch_s
     assert expiry is not None
 
@@ -179,6 +180,7 @@ def test_endpoint_orphan_probe_failure_retains_quarantined_generation(
         )
 
     first = allocator.allocate(_request("unknown"))
+    first = allocator.confirm_bound(_binding_proof(first))
     expiry = first.lease_expires_at_epoch_s
     assert expiry is not None
     probe.raise_error = True
@@ -191,6 +193,70 @@ def test_endpoint_orphan_probe_failure_retains_quarantined_generation(
 
     probe.raise_error = False
     assert allocator.reconcile(now=expiry + 2.0)[0].allocation_id == "unknown"
+
+
+@pytest.mark.parametrize("durable", (False, True))
+def test_unbound_reservation_release_ignores_external_listener(
+    tmp_path,
+    durable: bool,
+) -> None:
+    probe = _MutableProbe()
+    if durable:
+        allocator = AtomicEndpointAllocator(
+            reservations=SQLiteEndpointAllocationStore(
+                tmp_path / "endpoint-unbound-release.sqlite"
+            ),
+            probe=probe,
+            lease_ttl_seconds=30.0,
+        )
+    else:
+        resources = InMemoryResourceLeaseRegistry()
+        allocator = InMemoryEndpointAllocator(
+            ownership=resources,
+            leases=resources,
+            probe=probe,
+            lease_ttl_seconds=30.0,
+        )
+
+    reserved = allocator.allocate(_request("unbound-release"))
+    assert reserved.state is EndpointAllocationState.RESERVED
+    probe.available = False
+
+    released = allocator.release(reserved)
+    assert released.state is EndpointAllocationState.RELEASED
+
+
+@pytest.mark.parametrize("durable", (False, True))
+def test_expired_unbound_reservation_retires_without_probe_authority(
+    tmp_path,
+    durable: bool,
+) -> None:
+    probe = _MutableProbe()
+    if durable:
+        allocator = AtomicEndpointAllocator(
+            reservations=SQLiteEndpointAllocationStore(
+                tmp_path / "endpoint-unbound-expiry.sqlite"
+            ),
+            probe=probe,
+            lease_ttl_seconds=0.05,
+        )
+    else:
+        resources = InMemoryResourceLeaseRegistry()
+        allocator = InMemoryEndpointAllocator(
+            ownership=resources,
+            leases=resources,
+            probe=probe,
+            lease_ttl_seconds=0.05,
+        )
+
+    reserved = allocator.allocate(_request("unbound-expiry"))
+    expiry = reserved.lease_expires_at_epoch_s
+    assert expiry is not None
+    probe.raise_error = True
+
+    retired = allocator.reconcile(now=expiry + 1.0)
+    assert tuple(row.allocation_id for row in retired) == ("unbound-expiry",)
+    assert allocator.get("unbound-expiry").state is EndpointAllocationState.RELEASED
 
 
 def test_renew_is_fenced_and_atomic_with_allocation_expiry_projection() -> None:
