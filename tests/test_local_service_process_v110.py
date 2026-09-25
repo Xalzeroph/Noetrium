@@ -74,6 +74,18 @@ class LocalServiceProcessV110Tests(unittest.TestCase):
             self.assertEqual(report.state.phase,ServicePhase.RUNNING)
             process=report.state.process
             self.assertIsNotNone(process)
+            self.assertGreaterEqual(
+                os.getpriority(os.PRIO_PROCESS, process.execution_pid),
+                5,
+            )
+            oom_score_adj = int(
+                (
+                    Path("/proc")
+                    / str(process.pid)
+                    / "oom_score_adj"
+                ).read_text("utf-8").strip()
+            )
+            self.assertGreaterEqual(oom_score_adj, 500)
             try:
                 reconciled,refs=adapter.reconcile(state.read(),c)
                 self.assertEqual(reconciled,process)
