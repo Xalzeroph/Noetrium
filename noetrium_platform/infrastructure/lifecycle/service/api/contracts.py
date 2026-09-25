@@ -50,9 +50,10 @@ class ServiceProcessIdentity:
     ``pid`` is the logical target PID visible in the configured procfs.
     ``control_pid`` is the optional target PID understood by the current PID
     namespace. ``anchor_pid`` / ``anchor_start_identity`` identify an
-    optional persistent ownership guardian. The anchor outlives the target root
-    until every forked descendant converges, so target exit never proves tree
-    cleanup by itself.
+    optional persistent ownership guardian. ``anchor_pid`` is procfs-visible
+    and ``anchor_control_pid`` is the optional PID understood by the current
+    namespace. The anchor outlives the target root until every forked descendant
+    converges, so target exit never proves tree cleanup by itself.
     """
 
     pid: int
@@ -61,6 +62,7 @@ class ServiceProcessIdentity:
     control_pid: int | None = None
     anchor_pid: int | None = None
     anchor_start_identity: str | None = None
+    anchor_control_pid: int | None = None
 
     def __post_init__(self) -> None:
         if type(self.pid) is not int or self.pid <= 0:
@@ -71,12 +73,17 @@ class ServiceProcessIdentity:
             ("process_group_id", self.process_group_id),
             ("control_pid", self.control_pid),
             ("anchor_pid", self.anchor_pid),
+            ("anchor_control_pid", self.anchor_control_pid),
         ):
             if value is not None and (type(value) is not int or value <= 0):
                 raise ValueError(f"service process {name} must be positive or None")
         if (self.anchor_pid is None) != (self.anchor_start_identity is None):
             raise ValueError(
                 "service process ownership anchor pid/start identity must be complete together"
+            )
+        if self.anchor_pid is None and self.anchor_control_pid is not None:
+            raise ValueError(
+                "service process anchor control pid requires an ownership anchor"
             )
         if self.anchor_start_identity is not None and (
             type(self.anchor_start_identity) is not str
@@ -89,8 +96,19 @@ class ServiceProcessIdentity:
         return self.control_pid if self.control_pid is not None else self.pid
 
     @property
+    def anchor_execution_pid(self) -> int | None:
+        if self.anchor_pid is None:
+            return None
+        return (
+            self.anchor_control_pid
+            if self.anchor_control_pid is not None
+            else self.anchor_pid
+        )
+
+    @property
     def ownership_pid(self) -> int:
-        return self.anchor_pid if self.anchor_pid is not None else self.execution_pid
+        anchor = self.anchor_execution_pid
+        return anchor if anchor is not None else self.execution_pid
 
 
 class ServiceContractDrift(RuntimeError):
