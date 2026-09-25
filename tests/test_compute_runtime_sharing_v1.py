@@ -363,7 +363,11 @@ def test_sqlite_scheduler_uses_same_idle_then_shared_policy(tmp_path) -> None:
     first = scheduler.allocate("first", _scope(), _requirement())
     assert first.gpu_ids == ("GPU-idle",)
     second = scheduler.allocate("second", _scope(), _requirement())
-    assert second.gpu_ids == ("GPU-busy",)
+    # The live observer still reports 70 GiB free on GPU-idle. The first
+    # unbound Noetrium reservation subtracts 24 GiB, leaving 46 GiB, so packing
+    # another 24 GiB reservation there is both safe and preferred over an
+    # externally busy GPU.
+    assert second.gpu_ids == ("GPU-idle",)
 
 
 class _UnavailableObserver:
