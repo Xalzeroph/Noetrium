@@ -5,9 +5,20 @@ import importlib
 from pathlib import Path
 import sys
 
+from noetrium_platform.composition.managed_research_runtime import (
+    ManagedResearchRuntime,
+    build_local_managed_research_runtime,
+)
 from noetrium_platform.composition.research_execution_pool import ResearchExecutionPool
 from noetrium_platform.composition.research_os_local import (
+    LocalResearchOSComposition,
     compose_local_research_os,
+)
+from noetrium_platform.composition.research_os_study_closure import (
+    ResearchStudyProtocolClosureProvider,
+)
+from noetrium_platform.infrastructure.resources.directory.runtime import (
+    standard_local_directory_layout,
 )
 from noetrium_platform.foundation.portfolio.project.api import (
     ProjectManifest,
@@ -20,6 +31,11 @@ from noetrium_platform.product.research_os import (
     ResearchPortfolio,
 )
 
+from .project_execution_authority import (
+    ProjectExecutionContext,
+    load_project_execution_authority_config,
+    materialize_project_execution_authorities,
+)
 from .project_layout import project_package_name
 
 
@@ -39,13 +55,33 @@ class LoadedProjectResearchOS:
     active_revision: ResearchGraphRevision | None
     research_os: ResearchOS
     execution_pool: ResearchExecutionPool
+    _composition: LocalResearchOSComposition
+    _managed_runtime: ManagedResearchRuntime | None = None
+    _closed: bool = False
 
     @property
     def default_execution_id(self) -> str:
         return self.manifest.project.identity.project_id
 
     def close(self) -> None:
-        self.execution_pool.close()
+        if self._closed:
+            return
+        errors: list[BaseException] = []
+        try:
+            self._composition.close()
+        except BaseException as exc:
+            errors.append(exc)
+        if self._managed_runtime is not None:
+            try:
+                self._managed_runtime.close()
+            except BaseException as exc:
+                errors.append(exc)
+        if errors:
+            raise ExceptionGroup(
+                "project Research OS close failed",
+                errors,
+            )
+        self._closed = True
 
 
 def _project_manifest(root: Path) -> ProjectManifest:
@@ -127,27 +163,73 @@ def load_project_research_os(
 ) -> LoadedProjectResearchOS:
     """Load one project directly into the canonical Research OS.
 
-    No downstream application/runtime glue is accepted here. External provider
-    configuration is a platform-composition concern and will be resolved by the
-    canonical provider configuration surface; until such a binding is available,
-    passing an explicit config fails closed rather than selecting a second path.
+    Downstream scientific code remains provider-free. Optional machine-local
+    provider composition is loaded from one typed authority factory and receives
+    the canonical ManagedResearchRuntime rather than constructing shadow Docker,
+    endpoint, compute, environment, model or execution-pool authorities.
     """
 
     root = project_root.expanduser().absolute()
     if root.is_symlink() or not root.is_dir():
         raise ValueError("project Research OS root must be a real directory")
-    if config_path is not None:
-        raise ValueError(
-            "project Research OS provider configuration is not yet bound to the "
-            "canonical platform resolver"
-        )
 
     manifest = _project_manifest(root)
     portfolio = _load_generated_portfolio(root, manifest)
     state_root = root / _STATE_DIRECTORY
     state_root.mkdir(parents=True, exist_ok=True)
 
-    composition = compose_local_research_os(state_root)
+    managed_runtime: ManagedResearchRuntime | None = None
+    if config_path is None:
+        composition = compose_local_research_os(state_root)
+    else:
+        config = load_project_execution_authority_config(config_path)
+        managed_runtime = build_local_managed_research_runtime(
+            standard_local_directory_layout(
+                state_root / "platform-runtime"
+            ),
+            start_background_controllers=(
+                config.start_background_controllers
+            ),
+        )
+        try:
+            context = ProjectExecutionContext(
+                root,
+                state_root,
+                manifest,
+                portfolio,
+                managed_runtime,
+            )
+            authorities = materialize_project_execution_authorities(
+                config.authority_factory,
+                context,
+            )
+            closures = (
+                None
+                if authorities.research_bindings is None
+                else ResearchStudyProtocolClosureProvider(
+                    authorities.research_bindings
+                )
+            )
+            composition = compose_local_research_os(
+                state_root,
+                experiment_closures=closures,
+                experiment_runtime_components=(
+                    authorities.experiment_runtime_components
+                ),
+                execution_pool=managed_runtime.execution_pool,
+                method_runtime_inventory=(
+                    authorities.method_runtime_inventory
+                ),
+            )
+        except BaseException as primary:
+            try:
+                managed_runtime.close()
+            except BaseException as cleanup:
+                raise ExceptionGroup(
+                    "project authority composition failed with runtime cleanup error",
+                    [primary, cleanup],
+                ) from primary
+            raise
     research_os = composition.research_os
     revisions = composition.revision_store
     graph = composition.graph_store
@@ -184,6 +266,8 @@ def load_project_research_os(
         active_revision,
         research_os,
         pool,
+        composition,
+        managed_runtime,
     )
 
 

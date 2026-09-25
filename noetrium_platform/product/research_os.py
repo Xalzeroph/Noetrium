@@ -1907,6 +1907,27 @@ class ResearchProgramBuilder:
             config=config,
         )
 
+    def study_protocol(
+        self,
+        definition_id: str,
+        *,
+        implementation: ResearchImplementation | Callable[..., object],
+        config: JsonInput = None,
+    ) -> "ResearchProgramBuilder":
+        """Bind one module-level zero-argument ResearchStudyDefinition factory.
+
+        The callable identity is frozen exactly like every other Research
+        implementation. Experiment closure composition invokes it before
+        execution and requires an exact ResearchStudyDefinition result.
+        """
+
+        return self.definition(
+            definition_id,
+            kind=ResearchDefinitionKind.PROTOCOL,
+            implementation=implementation,
+            config=config,
+        )
+
     def resource_policy(
         self,
         definition_id: str,

@@ -10,6 +10,9 @@ from pathlib import Path
 from uuid import uuid4
 
 from noetrium_platform.foundation.kernel.concurrency.api import TaskGroupPort
+from noetrium_platform.research.execution.workflow.api.runtime_binding import (
+    MethodRuntimePortInventory,
+)
 
 from noetrium_platform.composition.research_execution_pool import ResearchExecutionPool
 from noetrium_platform.composition.shared_host_pressure import (
@@ -134,6 +137,7 @@ def compose_local_research_os(
     experiment_closures: ResearchOSExperimentClosurePort | None = None,
     experiment_runtime_components: ResearchOSExperimentRuntimeComponents | None = None,
     execution_pool: ResearchExecutionPool | None = None,
+    method_runtime_inventory: MethodRuntimePortInventory | None = None,
 ) -> LocalResearchOSComposition:
     """Compose the single durable local Research OS implementation.
 
@@ -168,6 +172,13 @@ def compose_local_research_os(
         raise TypeError(
             "local Research OS experiment_runtime_components must be typed"
         )
+    if method_runtime_inventory is not None and not isinstance(
+        method_runtime_inventory,
+        MethodRuntimePortInventory,
+    ):
+        raise TypeError(
+            "local Research OS method_runtime_inventory must be MethodRuntimePortInventory"
+        )
 
     root.mkdir(parents=True, exist_ok=True)
     blobs = DirectoryArtifactBlobStore(root / "blobs")
@@ -192,7 +203,10 @@ def compose_local_research_os(
     artifact_group: TaskGroupPort | None = None
     try:
         if experiment_runtime_components is None:
-            runtime = CanonicalResearchOSNodeRuntime(root / "machine-state")
+            runtime = CanonicalResearchOSNodeRuntime(
+                root / "machine-state",
+                method_runtime_inventory=method_runtime_inventory,
+            )
         else:
             artifact_group = pool.open_experiment_group(
                 f"research-os-experiment-artifacts:{uuid4().hex}",
@@ -216,6 +230,7 @@ def compose_local_research_os(
                 root / "machine-state",
                 execution_pool=pool,
                 experiment_bindings=experiment_bindings,
+                method_runtime_inventory=method_runtime_inventory,
             )
 
         control = StrictResearchOSControl(
