@@ -61,6 +61,7 @@ def vllm_deployment(
     tensor_parallel: int = 1,
     data_parallel: int = 1,
     pipeline_parallel: int = 1,
+    data_parallel_rpc_port: int | None = None,
     gpu_devices: tuple[str, ...] = (),
     extra_args: tuple[str, ...] = (),
 ) -> ModelDeploymentSpec:
@@ -74,11 +75,23 @@ def vllm_deployment(
         if type(value) is not int or value <= 0:
             raise ValueError(f"vLLM {name} must be a positive integer")
     required_devices = tensor_parallel * data_parallel * pipeline_parallel
-    if gpu_devices and len(gpu_devices) != required_devices:
+    if len(gpu_devices) != required_devices:
         raise ValueError(
-            "vLLM GPU device count must equal tensor_parallel * "
-            "data_parallel * pipeline_parallel"
+            "vLLM requires exact platform-owned gpu_devices matching "
+            "tensor_parallel * data_parallel * pipeline_parallel"
         )
+    if data_parallel == 1:
+        if data_parallel_rpc_port is not None:
+            raise ValueError("vLLM data_parallel_rpc_port requires data_parallel > 1")
+    else:
+        if (
+            type(data_parallel_rpc_port) is not int
+            or not 1 <= data_parallel_rpc_port <= 65535
+            or data_parallel_rpc_port == port
+        ):
+            raise ValueError(
+                "vLLM data parallel requires a distinct Resource-assigned RPC port"
+            )
     reserved_flags = (
         "--model",
         "--host",
@@ -89,6 +102,9 @@ def vllm_deployment(
         "-dp",
         "--pipeline-parallel-size",
         "-pp",
+        "--data-parallel-rpc-port",
+        "-dpp",
+        "--device-ids",
     )
     for argument in extra_args:
         if any(
@@ -109,6 +125,11 @@ def vllm_deployment(
         *(
             ("--pipeline-parallel-size", str(pipeline_parallel))
             if pipeline_parallel != 1
+            else ()
+        ),
+        *(
+            ("--data-parallel-rpc-port", str(data_parallel_rpc_port))
+            if data_parallel_rpc_port is not None
             else ()
         ),
     )
