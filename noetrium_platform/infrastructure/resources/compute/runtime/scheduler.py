@@ -464,6 +464,15 @@ def _eligible_gpus(
     rows.sort(key=lambda item: item[0])
     return tuple(rows)
 
+def _host_preference_penalty(host: ComputeHost, requirement: ComputeRequirement) -> int:
+    labels = dict(host.labels)
+    return sum(
+        1
+        for key, value in requirement.preferred_host_labels
+        if labels.get(key) != value
+    )
+
+
 def _placement_score(
     host: ComputeHost, usage: _HostUsage, requirement: ComputeRequirement,
     runtime_index: _GpuRuntimeIndex | None,
@@ -532,7 +541,7 @@ def _placement_score(
         accelerator_penalty = 0 if not host.gpus else 1
         accelerator_bytes = sum(gpu.memory_bytes for gpu in host.gpus)
         score = (
-            runtime_rank, accelerator_penalty, accelerator_bytes,
+            runtime_rank, _host_preference_penalty(host, requirement), accelerator_penalty, accelerator_bytes,
             cpu_after / host.schedulable_cpu_cores + memory_after / host.schedulable_memory_bytes,
             cpu_after, memory_after, host.host_id,
         )
@@ -545,7 +554,7 @@ def _placement_score(
         )
         remaining = eligible[requirement.gpu_count :]
         score = (
-            shared_count, utilization, runtime_rank, free_excess, gpu_excess, len(remaining),
+            shared_count, utilization, runtime_rank, _host_preference_penalty(host, requirement), free_excess, gpu_excess, len(remaining),
             sum(gpu.schedulable_memory_bytes for _rank, gpu in remaining),
             cpu_after / host.cpu_cores + memory_after / host.memory_bytes,
             cpu_after, memory_after, host.host_id,
