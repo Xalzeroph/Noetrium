@@ -35,6 +35,8 @@ from noetrium_platform.substrate.api import (
 )
 from noetrium_platform.substrate.api import (
     ComputeAllocation,
+    ComputeAllocationBatch,
+    ComputeAllocationRequest,
     ComputeBindingProof,
     ComputeLeaseGuardFactoryPort,
     ComputePlacementUnavailable,
@@ -831,25 +833,68 @@ class LocalModelReplicaPoolRuntime:
         compute_guard = None
         endpoint_guard = None
         try:
+            preallocated_compute: dict[str, ComputeAllocation] = {}
+            if target_count is not None:
+                batch = ComputeAllocationBatch(
+                    batch_id=(
+                        f"model-pool:{request.pool_id}:"
+                        f"{placement_generation_id}:compute"
+                    ),
+                    requests=tuple(
+                        ComputeAllocationRequest(
+                            allocation_id=(
+                                f"model-pool:{request.pool_id}:"
+                                f"{placement_generation_id}:"
+                                f"{index}:compute"
+                            ),
+                            scope=request.scope,
+                            requirement=compute_requirement,
+                            placement_scope=request.scope,
+                        )
+                        for index in range(target_count)
+                    ),
+                )
+                reserved = self._compute_scheduler.allocate_batch(
+                    batch,
+                    ttl_seconds=(
+                        self._compute_lease_guards.policy.ttl_seconds
+                    ),
+                )
+                compute_rows.extend(reserved)
+                preallocated_compute = {
+                    row.allocation_id: row for row in reserved
+                }
+
             index = 0
             while target_count is None or index < target_count:
                 allocation_id = (
                     f"model-pool:{request.pool_id}:{placement_generation_id}:"
                     f"{index}:compute"
                 )
-                try:
-                    compute = self._compute_scheduler.allocate(
-                        allocation_id,
-                        request.scope,
-                        compute_requirement,
-                        placement_scope=request.scope,
-                        ttl_seconds=self._compute_lease_guards.policy.ttl_seconds,
-                    )
-                except ComputePlacementUnavailable:
-                    if target_count is None and compute_rows:
-                        break
-                    raise
-                compute_rows.append(compute)
+                if target_count is None:
+                    try:
+                        compute = self._compute_scheduler.allocate(
+                            allocation_id,
+                            request.scope,
+                            compute_requirement,
+                            placement_scope=request.scope,
+                            ttl_seconds=(
+                                self._compute_lease_guards.policy.ttl_seconds
+                            ),
+                        )
+                    except ComputePlacementUnavailable:
+                        if compute_rows:
+                            break
+                        raise
+                    compute_rows.append(compute)
+                else:
+                    try:
+                        compute = preallocated_compute[allocation_id]
+                    except KeyError as exc:
+                        raise RuntimeError(
+                            "atomic model replica compute batch omitted "
+                            f"allocation: {allocation_id}"
+                        ) from exc
                 endpoint = self._endpoint_allocations.allocate_auto(
                     allocation_id=(
                         f"model-pool:{request.pool_id}:{placement_generation_id}:"
