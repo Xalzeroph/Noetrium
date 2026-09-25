@@ -321,6 +321,19 @@ class ComputeAllocationBatch:
         })
 
 
+class ComputeBatchPlacementUnavailable(RuntimeError):
+    """Atomic compute batch cannot satisfy its group placement contract."""
+
+    def __init__(self, batch: ComputeAllocationBatch) -> None:
+        if type(batch) is not ComputeAllocationBatch:
+            raise TypeError("compute batch placement failure requires ComputeAllocationBatch")
+        self.batch = batch
+        super().__init__(
+            f"compute allocation batch cannot satisfy {batch.placement_strategy.value}: "
+            f"{batch.batch_id}"
+        )
+
+
 @dataclass(frozen=True, slots=True)
 class ComputeBindingProof:
     """Attest that one compute reservation is physically owned by an exact runtime generation."""
@@ -461,4 +474,4 @@ class ComputeAllocation:
         )
 
 
-__all__ = ["ComputeAllocation", "ComputeAllocationBatch", "ComputeBatchPlacementStrategy", "ComputeAllocationRequest", "ComputeDeviceHealth", "ComputeBindingProof", "ComputeCluster", "ComputeGPU", "ComputeHost", "ComputeHostSchedulingState", "ComputeInventoryConflict", "ComputePlacementPreference", "ComputePlacementUnavailable", "ComputeRequirement", "ComputeLeasePolicy", "DEFAULT_COMPUTE_LEASE_POLICY", "GpuSharingMode"]
+__all__ = ["ComputeAllocation", "ComputeAllocationBatch", "ComputeBatchPlacementStrategy", "ComputeBatchPlacementUnavailable", "ComputeAllocationRequest", "ComputeDeviceHealth", "ComputeBindingProof", "ComputeCluster", "ComputeGPU", "ComputeHost", "ComputeHostSchedulingState", "ComputeInventoryConflict", "ComputePlacementPreference", "ComputePlacementUnavailable", "ComputeRequirement", "ComputeLeasePolicy", "DEFAULT_COMPUTE_LEASE_POLICY", "GpuSharingMode"]
