@@ -49,6 +49,7 @@ def _status(
     memory_pressure: float | None = 0.0,
     io_pressure: float | None = 0.0,
     available_pids: int | None = 256,
+    available_fds: int | None = 1024,
 ) -> HostRuntimeStatus:
     return HostRuntimeStatus(
         "shared-node",
@@ -60,6 +61,7 @@ def _status(
         memory_pressure_some_avg10_percent=memory_pressure,
         io_pressure_some_avg10_percent=io_pressure,
         available_pids=available_pids,
+        available_fds=available_fds,
     )
 
 
@@ -163,6 +165,27 @@ def test_pid_headroom_blocks_expansion_before_cgroup_exhaustion() -> None:
     gate = _gate(observer, mode=AdmissionMode.REJECT)
 
     with pytest.raises(AdmissionRejected, match="pid-headroom"):
+        gate.acquire(
+            "g",
+            ExecutionLaneKind.ASYNC_IO,
+            deadline=None,
+            cancellation=None,
+        )
+
+
+def test_fd_headroom_gates_io_but_not_cpu_only_work() -> None:
+    observer = _MutableHostObserver(_status(available_fds=8))
+    gate = _gate(observer, mode=AdmissionMode.REJECT)
+
+    cpu = gate.acquire(
+        "g",
+        ExecutionLaneKind.CPU,
+        deadline=None,
+        cancellation=None,
+    )
+    cpu.release()
+
+    with pytest.raises(AdmissionRejected, match="fd-headroom"):
         gate.acquire(
             "g",
             ExecutionLaneKind.ASYNC_IO,
