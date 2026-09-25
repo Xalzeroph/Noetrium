@@ -145,51 +145,55 @@ class LinuxProcessSpawner:
 
         read_fd, write_fd = os.pipe()
         try:
-            with captures.stdout_path.open(
-                "ab",
-                buffering=0,
-            ) as stdout, captures.stderr_path.open(
-                "ab",
-                buffering=0,
-            ) as stderr:
-                guardian_path = Path(guardian_runtime.__file__).resolve()
-                child = subprocess.Popen(
-                    (
-                        sys.executable,
-                        "-E",
-                        str(guardian_path),
-                        "--parent-pid",
-                        str(os.getpid()),
-                        "--child-pid-fd",
-                        str(write_fd),
-                        "--survive-parent-exit",
-                        "--",
-                        contract.executable,
-                        *contract.argv[1:],
-                    ),
-                    executable=sys.executable,
-                    cwd=contract.cwd,
-                    env=child_environment,
-                    stdin=subprocess.DEVNULL,
-                    stdout=stdout,
-                    stderr=stderr,
-                    start_new_session=True,
-                    close_fds=True,
-                    pass_fds=(write_fd,),
-                )
-        finally:
-            os.close(write_fd)
-
-        try:
-            target_control_pid = self._read_guarded_child_pid(
-                child,
-                read_fd,
-                timeout_seconds=self._EXEC_SETTLEMENT_SECONDS,
-            )
-        finally:
+            try:
+                with captures.stdout_path.open(
+                    "ab",
+                    buffering=0,
+                ) as stdout, captures.stderr_path.open(
+                    "ab",
+                    buffering=0,
+                ) as stderr:
+                    guardian_path = Path(guardian_runtime.__file__).resolve()
+                    child = subprocess.Popen(
+                        (
+                            sys.executable,
+                            "-E",
+                            str(guardian_path),
+                            "--parent-pid",
+                            str(os.getpid()),
+                            "--child-pid-fd",
+                            str(write_fd),
+                            "--survive-parent-exit",
+                            "--",
+                            contract.executable,
+                            *contract.argv[1:],
+                        ),
+                        executable=sys.executable,
+                        cwd=contract.cwd,
+                        env=child_environment,
+                        stdin=subprocess.DEVNULL,
+                        stdout=stdout,
+                        stderr=stderr,
+                        start_new_session=True,
+                        close_fds=True,
+                        pass_fds=(write_fd,),
+                    )
+            finally:
+                os.close(write_fd)
+        except BaseException:
             os.close(read_fd)
+            raise
 
         try:
+            try:
+                target_control_pid = self._read_guarded_child_pid(
+                    child,
+                    read_fd,
+                    timeout_seconds=self._EXEC_SETTLEMENT_SECONDS,
+                )
+            finally:
+                os.close(read_fd)
+
             anchor_visible_pid = self._procfs.visible_pid(child.pid)
             anchor_start_identity = self._procfs.start_identity(anchor_visible_pid)
             if os.getpgid(child.pid) != child.pid:
