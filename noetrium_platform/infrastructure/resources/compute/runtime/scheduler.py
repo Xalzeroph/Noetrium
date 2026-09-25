@@ -499,7 +499,7 @@ def _placement_score(
         else host_runtime_index.get(host.host_id)
     )
     if live is None:
-        if requirement.require_host_runtime:
+        if requirement.require_host_runtime or requirement.max_runtime_observation_age_seconds is not None:
             return None
         runtime_rank = (1, 0.0, 0.0)
     else:
@@ -591,6 +591,13 @@ def _placement_score(
     return score, tuple(gpu.gpu_id for gpu in selected)
 
 
+def _runtime_observation_is_fresh(observed_at_epoch_s: float | None, max_age_seconds: float, now_epoch_s: float) -> bool:
+    if observed_at_epoch_s is None:
+        return False
+    age = now_epoch_s - float(observed_at_epoch_s)
+    return math.isfinite(age) and 0.0 <= age <= max_age_seconds
+
+
 def _ordered_placements(
     hosts: tuple[ComputeHost, ...], usage_for, requirement: ComputeRequirement,
     runtime_snapshot: GpuRuntimeSnapshot | None,
@@ -608,6 +615,21 @@ def _ordered_placements(
             "shared GPU scheduling requires a positive free-memory reservation "
             "or required_gpu_memory_fraction"
         )
+    freshness = requirement.max_runtime_observation_age_seconds
+    if freshness is not None:
+        observed_now = time()
+        if runtime_snapshot is not None and not _runtime_observation_is_fresh(
+            runtime_snapshot.observed_at_epoch_s,
+            float(freshness),
+            observed_now,
+        ):
+            runtime_snapshot = None
+        if host_runtime_snapshot is not None and not _runtime_observation_is_fresh(
+            host_runtime_snapshot.observed_at_epoch_s,
+            float(freshness),
+            observed_now,
+        ):
+            host_runtime_snapshot = None
     runtime_index = _gpu_runtime_index(runtime_snapshot)
     host_runtime_index = _host_runtime_index(host_runtime_snapshot)
     rows = []
