@@ -4,6 +4,7 @@ from dataclasses import replace
 import math
 from threading import RLock
 from time import time
+from typing import Callable
 
 from noetrium_platform.infrastructure.resources.allocation.api import (
     AtomicEndpointReservationPort,
@@ -121,6 +122,50 @@ def _automatic_request(
     )
 
 
+def _allocate_auto_with_fresh_candidates(
+    allocate: Callable[[EndpointAllocationRequest], EndpointAllocation],
+    candidates: EndpointCandidatePortSourcePort | None,
+    *,
+    allocation_id: str,
+    holder_scope: ScopeIdentity,
+    purpose: str,
+    host: str,
+    candidate_count: int,
+    preferred_ports: tuple[int, ...],
+    protocol: EndpointProtocol,
+    owner_scope: ScopeIdentity,
+    ownership: ResourceOwnership,
+    candidate_rounds: int,
+) -> EndpointAllocation:
+    if type(candidate_rounds) is not int or candidate_rounds <= 0:
+        raise ValueError("endpoint automatic candidate rounds must be positive")
+    failures: list[str] = []
+    last_request: EndpointAllocationRequest | None = None
+    for round_index in range(candidate_rounds):
+        request = _automatic_request(
+            candidates,
+            allocation_id=allocation_id,
+            holder_scope=holder_scope,
+            purpose=purpose,
+            host=host,
+            candidate_count=candidate_count,
+            preferred_ports=preferred_ports,
+            protocol=protocol,
+            owner_scope=owner_scope,
+            ownership=ownership,
+        )
+        last_request = request
+        try:
+            return allocate(request)
+        except EndpointAllocationUnavailable as exc:
+            failures.extend(
+                f"round={round_index + 1}:{attempt}"
+                for attempt in exc.attempts
+            )
+    assert last_request is not None
+    raise EndpointAllocationUnavailable(last_request, tuple(failures))
+
+
 class AtomicEndpointAllocator(EndpointAllocationPort):
     """Provider-neutral endpoint allocation policy over one atomic reservation authority.
 
@@ -137,13 +182,17 @@ class AtomicEndpointAllocator(EndpointAllocationPort):
         probe: EndpointProbePort,
         candidates: EndpointCandidatePortSourcePort | None = None,
         lease_ttl_seconds: float = DEFAULT_ENDPOINT_LEASE_POLICY.ttl_seconds,
+        auto_candidate_rounds: int = 4,
     ) -> None:
         if not math.isfinite(float(lease_ttl_seconds)) or lease_ttl_seconds <= 0:
             raise ValueError("endpoint lease_ttl_seconds must be finite and > 0")
         self._reservations = reservations
         self._probe = probe
         self._candidates = candidates
+        if type(auto_candidate_rounds) is not int or auto_candidate_rounds <= 0:
+            raise ValueError("endpoint auto_candidate_rounds must be positive")
         self._lease_ttl_seconds = float(lease_ttl_seconds)
+        self._auto_candidate_rounds = auto_candidate_rounds
 
     def allocate_auto(
         self,
@@ -158,19 +207,19 @@ class AtomicEndpointAllocator(EndpointAllocationPort):
         owner_scope: ScopeIdentity = PLATFORM_SCOPE,
         ownership: ResourceOwnership = ResourceOwnership.PLATFORM_MANAGED,
     ) -> EndpointAllocation:
-        return self.allocate(
-            _automatic_request(
-                self._candidates,
-                allocation_id=allocation_id,
-                holder_scope=holder_scope,
-                purpose=purpose,
-                host=host,
-                candidate_count=candidate_count,
-                preferred_ports=preferred_ports,
-                protocol=protocol,
-                owner_scope=owner_scope,
-                ownership=ownership,
-            )
+        return _allocate_auto_with_fresh_candidates(
+            self.allocate,
+            self._candidates,
+            allocation_id=allocation_id,
+            holder_scope=holder_scope,
+            purpose=purpose,
+            host=host,
+            candidate_count=candidate_count,
+            preferred_ports=preferred_ports,
+            protocol=protocol,
+            owner_scope=owner_scope,
+            ownership=ownership,
+            candidate_rounds=self._auto_candidate_rounds,
         )
 
     def _reconcile_existing_allocation(
@@ -375,6 +424,7 @@ class InMemoryEndpointAllocator(EndpointAllocationPort):
         probe: EndpointProbePort,
         candidates: EndpointCandidatePortSourcePort | None = None,
         lease_ttl_seconds: float = DEFAULT_ENDPOINT_LEASE_POLICY.ttl_seconds,
+        auto_candidate_rounds: int = 4,
     ) -> None:
         if not math.isfinite(float(lease_ttl_seconds)) or lease_ttl_seconds <= 0:
             raise ValueError("endpoint lease_ttl_seconds must be finite and > 0")
@@ -382,7 +432,10 @@ class InMemoryEndpointAllocator(EndpointAllocationPort):
         self._leases = leases
         self._probe = probe
         self._candidates = candidates
+        if type(auto_candidate_rounds) is not int or auto_candidate_rounds <= 0:
+            raise ValueError("endpoint auto_candidate_rounds must be positive")
         self._lease_ttl_seconds = float(lease_ttl_seconds)
+        self._auto_candidate_rounds = auto_candidate_rounds
         self._allocations: dict[str, EndpointAllocation] = {}
         self._lock = RLock()
 
@@ -448,19 +501,19 @@ class InMemoryEndpointAllocator(EndpointAllocationPort):
         owner_scope: ScopeIdentity = PLATFORM_SCOPE,
         ownership: ResourceOwnership = ResourceOwnership.PLATFORM_MANAGED,
     ) -> EndpointAllocation:
-        return self.allocate(
-            _automatic_request(
-                self._candidates,
-                allocation_id=allocation_id,
-                holder_scope=holder_scope,
-                purpose=purpose,
-                host=host,
-                candidate_count=candidate_count,
-                preferred_ports=preferred_ports,
-                protocol=protocol,
-                owner_scope=owner_scope,
-                ownership=ownership,
-            )
+        return _allocate_auto_with_fresh_candidates(
+            self.allocate,
+            self._candidates,
+            allocation_id=allocation_id,
+            holder_scope=holder_scope,
+            purpose=purpose,
+            host=host,
+            candidate_count=candidate_count,
+            preferred_ports=preferred_ports,
+            protocol=protocol,
+            owner_scope=owner_scope,
+            ownership=ownership,
+            candidate_rounds=self._auto_candidate_rounds,
         )
 
     def _reconcile_existing_allocation(
