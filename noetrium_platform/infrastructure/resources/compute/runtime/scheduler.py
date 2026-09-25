@@ -1448,14 +1448,10 @@ class SQLiteComputeScheduler:
         *,
         quarantined_gpus: frozenset[tuple[str, str]] = frozenset(),
     ):
-        required_labels = dict(requirement.required_labels)
         hosts = tuple(
             host for host in self._inventory.list_hosts(scope=scope)
-            if host.enabled
-            and not any(
-                dict(host.labels).get(key) != value
-                for key, value in required_labels.items()
-            )
+            if host.accepts_new_allocations
+            and _host_matches_requirement_labels(host, requirement)
         )
         return _ordered_placements(
             hosts,
