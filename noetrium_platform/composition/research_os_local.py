@@ -12,6 +12,9 @@ from uuid import uuid4
 from noetrium_platform.foundation.kernel.concurrency.api import TaskGroupPort
 
 from noetrium_platform.composition.research_execution_pool import ResearchExecutionPool
+from noetrium_platform.composition.shared_host_pressure import (
+    ResourceCompetitionDemand,
+)
 from noetrium_platform.composition.research_os import bind_portfolio_research_os
 from noetrium_platform.composition.research_os_execution import (
     PreparedResearchOSExecution,
@@ -194,6 +197,9 @@ def compose_local_research_os(
             artifact_group = pool.open_experiment_group(
                 f"research-os-experiment-artifacts:{uuid4().hex}",
                 resource_id="research-os-experiment-artifacts",
+                resource_demand=ResourceCompetitionDemand(
+                    storage_path=root / "run-artifacts",
+                ),
             )
             artifact_factory = DirectoryResearchOSExperimentArtifactStoreFactory(
                 root / "run-artifacts",
