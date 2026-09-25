@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from enum import StrEnum
 import math
 import os
 from pathlib import Path
@@ -261,6 +262,60 @@ class LocalSharedStoragePressureObserver:
         )
 
 
+class ResourceCompetitionClass(StrEnum):
+    HARD_SAFETY = "hard-safety"
+    SOFT_CONTENTION = "soft-contention"
+
+
+@dataclass(frozen=True, slots=True)
+class ResourceCompetitionDecision:
+    admitted: bool
+    reason: str | None = None
+    competition_class: ResourceCompetitionClass | None = None
+
+    def __post_init__(self) -> None:
+        if type(self.admitted) is not bool:
+            raise TypeError("resource competition decision admitted must be boolean")
+        if self.admitted:
+            if self.reason is not None or self.competition_class is not None:
+                raise ValueError("admitted resource competition decision cannot carry a blocker")
+            return
+        if not isinstance(self.reason, str) or not self.reason.strip():
+            raise ValueError("blocked resource competition decision requires a reason")
+        if not isinstance(self.competition_class, ResourceCompetitionClass):
+            raise TypeError("blocked resource competition decision requires a class")
+
+
+_HARD_COMPETITION_REASONS = frozenset(
+    {
+        "host-runtime-unavailable",
+        "memory-headroom",
+        "pid-runtime-unavailable",
+        "pid-headroom",
+        "storage-runtime-unavailable",
+        "storage-byte-headroom",
+        "storage-inode-runtime-unavailable",
+        "storage-inode-headroom",
+        "cpu-capacity",
+        "fd-runtime-unavailable",
+        "fd-headroom",
+    }
+)
+
+_SOFT_COMPETITION_REASONS = frozenset(
+    {
+        "memory-pressure-runtime-unavailable",
+        "memory-pressure",
+        "cpu-pressure-runtime-unavailable",
+        "cpu-pressure",
+        "network-runtime-unavailable",
+        "network-pressure",
+        "io-pressure-runtime-unavailable",
+        "io-pressure",
+    }
+)
+
+
 @dataclass(frozen=True, slots=True)
 class ResourceCompetitionPolicy:
     """Hard-safety admission policy for shared multi-user hosts.
@@ -384,7 +439,7 @@ class ResourceCompetitionAdmissionGate(ExecutionAdmissionPort):
             return SharedNetworkPressureStatus(False, detail="network-observer-failed")
         return status
 
-    def _pressure_reason(
+    def _competition_reason(
         self,
         group_id: str,
         lane_kind: ExecutionLaneKind,
@@ -499,6 +554,32 @@ class ResourceCompetitionAdmissionGate(ExecutionAdmissionPort):
         return None
 
     @staticmethod
+    def _competition_class(reason: str) -> ResourceCompetitionClass:
+        if reason in _HARD_COMPETITION_REASONS:
+            return ResourceCompetitionClass.HARD_SAFETY
+        if reason in _SOFT_COMPETITION_REASONS:
+            return ResourceCompetitionClass.SOFT_CONTENTION
+        raise RuntimeError(f"unclassified resource competition reason: {reason}")
+
+    def decision(
+        self,
+        group_id: str,
+        lane_kind: ExecutionLaneKind,
+        *,
+        permit_count: int = 1,
+    ) -> ResourceCompetitionDecision:
+        if type(permit_count) is not int or permit_count <= 0:
+            raise ValueError("resource competition permit_count must be positive")
+        reason = self._competition_reason(group_id, lane_kind, permit_count)
+        if reason is None:
+            return ResourceCompetitionDecision(True)
+        return ResourceCompetitionDecision(
+            False,
+            reason=reason,
+            competition_class=self._competition_class(reason),
+        )
+
+    @staticmethod
     def _cancelled(cancellation: CancellationTokenPort | None) -> bool:
         return cancellation is not None and cancellation.cancelled
 
@@ -515,13 +596,15 @@ class ResourceCompetitionAdmissionGate(ExecutionAdmissionPort):
         if intent is None:
             raise KeyError(f"execution group is not registered with resource competition gate: {group_id}")
         while True:
-            reason = self._pressure_reason(group_id, lane_kind, permit_count)
+            decision = self.decision(group_id, lane_kind, permit_count=permit_count)
+            reason = decision.reason
             if reason is None:
                 return
             if intent.mode is AdmissionMode.REJECT:
                 raise AdmissionRejected(
                     "resource competition rejected execution admission: "
-                    f"group={group_id} lane={lane_kind.value} reason={reason}"
+                    f"group={group_id} lane={lane_kind.value} "
+                    f"class={decision.competition_class.value} reason={reason}"
                 )
             if self._cancelled(cancellation):
                 raise TaskCancelled(
@@ -598,6 +681,8 @@ __all__ = [
     "LocalSharedNetworkPressureObserver",
     "LocalSharedStoragePressureObserver",
     "ResourceCompetitionAdmissionGate",
+    "ResourceCompetitionClass",
+    "ResourceCompetitionDecision",
     "ResourceCompetitionPolicy",
     "SharedNetworkPressureObserverPort",
     "SharedNetworkPressureStatus",
