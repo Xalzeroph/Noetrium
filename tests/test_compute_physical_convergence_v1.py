@@ -140,6 +140,41 @@ def test_expired_gpu_lease_does_not_release_capacity_while_process_survives(
 
 
 @pytest.mark.parametrize("durable", [False, True])
+def test_normal_release_refuses_live_gpu_process(
+    tmp_path,
+    durable: bool,
+) -> None:
+    observer = MutableGpuObserver()
+    scheduler = (
+        SQLiteComputeScheduler(
+            tmp_path / "compute-normal-release.sqlite",
+            _inventory(),
+            gpu_runtime_observer=observer,
+        )
+        if durable
+        else in_memory_compute_scheduler(
+            _inventory(),
+            gpu_runtime_observer=observer,
+        )
+    )
+    allocation = scheduler.allocate(
+        "gpu-job",
+        _scope(),
+        _requirement(),
+        ttl_seconds=30.0,
+        now=100.0,
+    )
+    observer.busy = True
+    with pytest.raises(ComputePhysicalConvergencePending):
+        scheduler.release(allocation)
+    assert scheduler.allocations() == (allocation,)
+
+    observer.busy = False
+    scheduler.release(allocation)
+    assert scheduler.allocations() == ()
+
+
+@pytest.mark.parametrize("durable", [False, True])
 def test_recovery_release_refuses_live_orphan_gpu_process(
     tmp_path,
     durable: bool,
