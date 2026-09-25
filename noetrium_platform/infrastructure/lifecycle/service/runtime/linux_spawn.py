@@ -3,23 +3,37 @@ from __future__ import annotations
 import hashlib
 import os
 from pathlib import Path
+import select
 import signal
 import subprocess
 import sys
 import time
 
 from noetrium_platform.foundation.kernel.concurrency.api import Deadline
-from noetrium_platform.infrastructure.lifecycle.process.api import ProcessSupervisorPort, ProcessTerminationPolicy
-from noetrium_platform.infrastructure.lifecycle.service.api import ServiceLaunchContract, ServiceProcessIdentity
+from noetrium_platform.infrastructure.lifecycle.process.api import (
+    ProcessSupervisorPort,
+    ProcessTerminationPolicy,
+)
+from noetrium_platform.infrastructure.lifecycle.process.supervision.runtime import (
+    parent_bound_child as guardian_runtime,
+)
+from noetrium_platform.infrastructure.lifecycle.service.api import (
+    ServiceLaunchContract,
+    ServiceProcessIdentity,
+)
 
 from .capture_paths import ServiceCapturePaths
-from noetrium_platform.infrastructure.lifecycle.service.api.environment import MaterializedServiceEnvironment
+from noetrium_platform.infrastructure.lifecycle.service.api.environment import (
+    MaterializedServiceEnvironment,
+)
 from .linux_children import LinuxChildRegistry
 from .linux_procfs import LinuxProcfsReader
-from .linux_signal import signal_new_session_process_group
+from .linux_start_marker import process_environment_without_start_marker
 
 
 class _SpawnCleanupProcess:
+    """Supervisor facade over the exact freshly-spawned service guardian."""
+
     def __init__(self, child: subprocess.Popen[bytes]) -> None:
         self._child = child
         self.pid = int(child.pid)
@@ -29,14 +43,24 @@ class _SpawnCleanupProcess:
         return None if code is None else int(code)
 
     def terminate(self) -> None:
-        signal_new_session_process_group(self.pid, signal.SIGTERM)
+        if self._child.poll() is None:
+            self._child.send_signal(signal.SIGTERM)
 
     def kill(self) -> None:
-        signal_new_session_process_group(self.pid, signal.SIGKILL)
+        if self._child.poll() is None:
+            # Guardian-private force cleanup kills the complete owned descendant
+            # tree, including setsid/double-fork descendants, before it exits.
+            self._child.send_signal(signal.SIGUSR1)
 
 
 class LinuxProcessSpawner:
-    """The sole local ``subprocess.Popen`` authority for supervised services."""
+    """Sole local subprocess spawn authority for supervised Linux services.
+
+    Every service is rooted under a persistent Linux guardian. The logical
+    target process remains the contract/readiness identity, while the guardian
+    is the physical ownership anchor that survives controller restart and does
+    not retire until the complete fork tree converges.
+    """
 
     _EXEC_SETTLEMENT_SECONDS = 2.0
 
@@ -49,6 +73,56 @@ class LinuxProcessSpawner:
         self._procfs = procfs
         self._children = children
         self._process_supervisor = process_supervisor
+
+    @staticmethod
+    def _read_guarded_child_pid(
+        guardian: subprocess.Popen[bytes],
+        read_fd: int,
+        *,
+        timeout_seconds: float,
+    ) -> int:
+        deadline = time.monotonic() + timeout_seconds
+        payload = bytearray()
+        while True:
+            if guardian.poll() is not None:
+                raise RuntimeError(
+                    "service guardian exited before publishing target pid"
+                )
+            remaining = deadline - time.monotonic()
+            if remaining <= 0:
+                raise TimeoutError(
+                    "service guardian did not publish target pid before deadline"
+                )
+            readable, _, _ = select.select(
+                (read_fd,),
+                (),
+                (),
+                min(0.05, remaining),
+            )
+            if not readable:
+                continue
+            chunk = os.read(read_fd, 64)
+            if not chunk:
+                raise RuntimeError(
+                    "service guardian closed target-pid channel before publication"
+                )
+            payload.extend(chunk)
+            if b"\n" not in payload:
+                if len(payload) > 32:
+                    raise RuntimeError("service guardian published invalid target pid")
+                continue
+            line, _separator, remainder = bytes(payload).partition(b"\n")
+            if remainder:
+                raise RuntimeError("service guardian target-pid channel contained extra data")
+            try:
+                pid = int(line.decode("ascii"))
+            except (UnicodeDecodeError, ValueError) as exc:
+                raise RuntimeError(
+                    "service guardian published invalid target pid"
+                ) from exc
+            if pid <= 0:
+                raise RuntimeError("service guardian published non-positive target pid")
+            return pid
 
     def start(
         self,
@@ -68,63 +142,116 @@ class LinuxProcessSpawner:
                     f"service launch marker collides with frozen environment: {marker_key}"
                 )
             child_environment[marker_key] = marker_value
-        with captures.stdout_path.open("ab", buffering=0) as stdout, captures.stderr_path.open(
-            "ab", buffering=0
-        ) as stderr:
-            launcher = Path(__file__).with_name("opportunistic_exec.py")
-            child = subprocess.Popen(
-                (
-                    sys.executable,
-                    "-E",
-                    str(launcher),
-                    contract.executable,
-                    *contract.argv,
-                ),
-                executable=sys.executable,
-                cwd=contract.cwd,
-                env=child_environment,
-                stdin=subprocess.DEVNULL,
-                stdout=stdout,
-                stderr=stderr,
-                start_new_session=True,
-                close_fds=True,
-            )
-        try:
-            visible_pid = self._procfs.visible_pid(child.pid)
-            start_identity = self._procfs.start_identity(visible_pid)
-            pgid = os.getpgid(child.pid)
 
-            # The trampoline retains PID/session identity across exec, but a
-            # ProcessAlive readiness probe must never observe the transient
-            # launcher as the service generation. Wait for the exact frozen
-            # executable/argv/cwd before publishing process ownership.
+        read_fd, write_fd = os.pipe()
+        try:
+            with captures.stdout_path.open(
+                "ab",
+                buffering=0,
+            ) as stdout, captures.stderr_path.open(
+                "ab",
+                buffering=0,
+            ) as stderr:
+                guardian_path = Path(guardian_runtime.__file__).resolve()
+                child = subprocess.Popen(
+                    (
+                        sys.executable,
+                        "-E",
+                        str(guardian_path),
+                        "--parent-pid",
+                        str(os.getpid()),
+                        "--child-pid-fd",
+                        str(write_fd),
+                        "--survive-parent-exit",
+                        "--",
+                        contract.executable,
+                        *contract.argv[1:],
+                    ),
+                    executable=sys.executable,
+                    cwd=contract.cwd,
+                    env=child_environment,
+                    stdin=subprocess.DEVNULL,
+                    stdout=stdout,
+                    stderr=stderr,
+                    start_new_session=True,
+                    close_fds=True,
+                    pass_fds=(write_fd,),
+                )
+        finally:
+            os.close(write_fd)
+
+        try:
+            target_control_pid = self._read_guarded_child_pid(
+                child,
+                read_fd,
+                timeout_seconds=self._EXEC_SETTLEMENT_SECONDS,
+            )
+        finally:
+            os.close(read_fd)
+
+        try:
+            anchor_visible_pid = self._procfs.visible_pid(child.pid)
+            anchor_start_identity = self._procfs.start_identity(anchor_visible_pid)
+            if os.getpgid(child.pid) != child.pid:
+                raise RuntimeError(
+                    "service guardian did not retain exact session-leader identity"
+                )
+
+            visible_pid = self._procfs.visible_pid(target_control_pid)
+            start_identity = self._procfs.start_identity(visible_pid)
+            pgid = os.getpgid(target_control_pid)
+            if pgid != target_control_pid:
+                raise RuntimeError(
+                    "service target did not retain exact process-group root identity"
+                )
+            control_pid = (
+                None
+                if visible_pid == target_control_pid
+                else target_control_pid
+            )
+
+            # Popen in the guardian does not publish the child pid until exec has
+            # succeeded. Still verify the complete frozen target before exposing
+            # ownership to higher layers.
             expected_executable = str(Path(contract.executable).resolve())
             expected_cwd = str(Path(contract.cwd).resolve())
             deadline = time.monotonic() + self._EXEC_SETTLEMENT_SECONDS
             while True:
                 if child.poll() is not None:
                     raise RuntimeError(
-                        "service exec trampoline exited before target exec"
+                        "service guardian exited before target identity settled"
                     )
                 try:
                     facts = self._procfs.facts(
                         visible_pid,
-                        control_pid=None if visible_pid == child.pid else child.pid,
+                        control_pid=control_pid,
                     )
                 except (FileNotFoundError, ProcessLookupError):
                     facts = None
-                if (
-                    facts is not None
-                    and facts.executable == expected_executable
-                    and facts.argv == contract.argv
-                    and facts.cwd == expected_cwd
-                ):
-                    break
+                if facts is not None:
+                    observed_environment, _marker = (
+                        process_environment_without_start_marker(
+                            facts.environment
+                        )
+                    )
+                    if (
+                        facts.executable == expected_executable
+                        and facts.argv == contract.argv
+                        and facts.cwd == expected_cwd
+                        and observed_environment == environment.as_dict()
+                        and facts.process_group_id == pgid
+                        and facts.parent_pid == anchor_visible_pid
+                    ):
+                        break
                 if time.monotonic() >= deadline:
                     raise RuntimeError(
-                        "service exec trampoline did not exec exact target"
+                        "service target did not settle to exact frozen identity"
                     )
-                time.sleep(0.005)
+                from noetrium_platform.foundation.kernel.kernel.retry import (
+                    blocking_wait,
+                )
+
+                blocking_wait(0.005)
         except BaseException as primary:
             cleanup = _SpawnCleanupProcess(child)
             policy = ProcessTerminationPolicy(
@@ -155,16 +282,28 @@ class LinuxProcessSpawner:
                         [primary, supervisor_cleanup, *fallback_errors],
                     ) from primary
                 primary.add_note(
-                    "structured spawn cleanup failed but force-kill/reap fallback "
+                    "structured spawn cleanup failed but guardian force cleanup "
                     f"converged: {type(supervisor_cleanup).__name__}: "
                     f"{supervisor_cleanup}"
                 )
             raise
+
         self._children.remember(child)
-        control_pid = None if visible_pid == child.pid else child.pid
-        process = ServiceProcessIdentity(visible_pid, start_identity, pgid, control_pid)
-        launch_payload = f"{contract.digest()}:{visible_pid}:{control_pid}:{start_identity}:{pgid}"
-        evidence = "proc-start:" + hashlib.sha256(launch_payload.encode()).hexdigest()
+        process = ServiceProcessIdentity(
+            visible_pid,
+            start_identity,
+            pgid,
+            control_pid,
+            anchor_pid=int(child.pid),
+            anchor_start_identity=anchor_start_identity,
+        )
+        launch_payload = (
+            f"{contract.digest()}:{visible_pid}:{control_pid}:{start_identity}:{pgid}:"
+            f"{child.pid}:{anchor_start_identity}"
+        )
+        evidence = "proc-start:" + hashlib.sha256(
+            launch_payload.encode()
+        ).hexdigest()
         return process, (evidence,)
 
 
