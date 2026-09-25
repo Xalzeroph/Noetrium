@@ -14,7 +14,13 @@ from noetrium_platform.research.experimentation.identity import OptionalIdentity
 
 from .benchmark import TaskArtifactSpec, TaskDefinition, TaskVerifierIsolation
 from .contracts import StudyAssignment
-from .measurement import MeasurementProtocol, MeasurementRecord, MeasurementValue
+from .measurement import (
+    MeasurementProtocol,
+    MeasurementRecord,
+    MeasurementSetDisposition,
+    MeasurementSetOutcome,
+    MeasurementValue,
+)
 from .plan import VariantBinding
 
 _HEX = frozenset("0123456789abcdef")
@@ -246,10 +252,11 @@ class TaskVerifierRequest:
 
 @dataclass(frozen=True, slots=True)
 class TaskVerifierReceipt:
-    """Verifier outcome plus evidence that declared isolation was honored."""
+    """Verifier result bound to one explicit MeasurementSetOutcome."""
 
     request: TaskVerifierRequest
     measurements: tuple[MeasurementRecord, ...]
+    measurement_outcome: MeasurementSetOutcome
     evidence_refs: tuple[ArtifactReference, ...] = ()
     receipt_digest: str = field(init=False)
 
@@ -262,6 +269,14 @@ class TaskVerifierReceipt:
             raise TypeError(
                 "verifier receipt measurements must contain MeasurementRecord"
             )
+        if type(self.measurement_outcome) is not MeasurementSetOutcome:
+            raise TypeError(
+                "verifier receipt measurement_outcome must be MeasurementSetOutcome"
+            )
+        self.measurement_outcome.validate(
+            self.request.measurement_protocol,
+            self.measurements,
+        )
         if type(self.evidence_refs) is not tuple or any(
             type(row) is not ArtifactReference for row in self.evidence_refs
         ):
@@ -283,6 +298,9 @@ class TaskVerifierReceipt:
             canonical_digest(
                 {
                     "request_digest": self.request.request_digest,
+                    "measurement_outcome_digest": (
+                        self.measurement_outcome.outcome_digest
+                    ),
                     "measurements": tuple(
                         row.record_digest for row in self.measurements
                     ),
@@ -432,11 +450,29 @@ class TrialExecutionStageReceipt:
         )
 
 
+class TrialMeasurementsUnscored(RuntimeError):
+    """A scientifically valid Trial completed without a scoreable measurement set."""
+
+    def __init__(self, outcome: MeasurementSetOutcome) -> None:
+        if type(outcome) is not MeasurementSetOutcome:
+            raise TypeError("unscored trial requires MeasurementSetOutcome")
+        if outcome.disposition is not MeasurementSetDisposition.UNSCORED:
+            raise ValueError("unscored trial exception requires UNSCORED outcome")
+        self.outcome = outcome
+        self.reason_code = outcome.reason_code
+        self.outcome_digest = outcome.outcome_digest
+        super().__init__(
+            "trial measurement set is unscored: "
+            f"{outcome.reason_code} [{outcome.outcome_digest}]"
+        )
+
+
 @dataclass(frozen=True, slots=True)
 class TrialExecutionReceipt:
     request_digest: str
     assignment_digest: str
     measurements: tuple[MeasurementRecord, ...]
+    measurement_outcome: MeasurementSetOutcome
     evidence_refs: tuple[ArtifactReference, ...] = ()
     verifier_receipt: TaskVerifierReceipt | None = None
     receipt_digest: str = field(init=False)
@@ -450,6 +486,15 @@ class TrialExecutionReceipt:
             raise TypeError(
                 "trial receipt measurements must contain MeasurementRecord"
             )
+        if type(self.measurement_outcome) is not MeasurementSetOutcome:
+            raise TypeError(
+                "trial receipt measurement_outcome must be MeasurementSetOutcome"
+            )
+        if (
+            tuple(row.record_digest for row in self.measurements)
+            != self.measurement_outcome.record_digests
+        ):
+            raise ValueError("trial receipt measurement outcome record cut drifted")
         if type(self.evidence_refs) is not tuple or any(
             type(row) is not ArtifactReference for row in self.evidence_refs
         ):
@@ -472,6 +517,13 @@ class TrialExecutionReceipt:
                 raise ValueError(
                     "trial receipt measurements must equal verifier measurements"
                 )
+            if (
+                self.verifier_receipt.measurement_outcome
+                != self.measurement_outcome
+            ):
+                raise ValueError(
+                    "trial receipt measurement outcome must equal verifier outcome"
+                )
         object.__setattr__(
             self,
             "receipt_digest",
@@ -479,6 +531,9 @@ class TrialExecutionReceipt:
                 {
                     "request_digest": self.request_digest,
                     "assignment_digest": self.assignment_digest,
+                    "measurement_outcome_digest": (
+                        self.measurement_outcome.outcome_digest
+                    ),
                     "measurements": tuple(
                         row.record_digest for row in self.measurements
                     ),
@@ -491,6 +546,18 @@ class TrialExecutionReceipt:
                 }
             ),
         )
+
+    def require_complete_measurements(
+        self,
+        protocol: MeasurementProtocol,
+    ) -> tuple[MeasurementRecord, ...]:
+        self.measurement_outcome.validate(protocol, self.measurements)
+        if (
+            self.measurement_outcome.disposition
+            is MeasurementSetDisposition.UNSCORED
+        ):
+            raise TrialMeasurementsUnscored(self.measurement_outcome)
+        return self.measurements
 
 
 @runtime_checkable
@@ -578,6 +645,7 @@ __all__ = [
     "TrialExecutionStageReceipt",
     "TrialMatrixExecutionReport",
     "TrialMeasurementProjectionPort",
+    "TrialMeasurementsUnscored",
     "TrialProviderPort",
     "TrialTaskProjectionPort",
 ]
