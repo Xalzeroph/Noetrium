@@ -192,6 +192,88 @@ def test_pressure_clearance_resumes_blocked_work_without_external_mutation() -> 
     assert admitted.is_set()
 
 
+def test_hard_pressure_revalidates_after_delegate_queue_before_return() -> None:
+    observer = _MutableHostObserver(_status())
+    admission = build_execution_admission(
+        budget=AdmissionBudget(
+            max_total_in_flight=1,
+            max_waiting=4,
+        ),
+        scheduling=build_admission_scheduling_policy(
+            priority_aging_seconds=0.01
+        ),
+    )
+    gate = ResourceCompetitionAdmissionGate(
+        admission,
+        observer,
+        policy=ResourceCompetitionPolicy(
+            min_available_memory_bytes=1024**3,
+            min_available_pids=0,
+            min_available_fds=0,
+            min_storage_free_bytes=0,
+            min_storage_free_inodes=0,
+            poll_interval_seconds=0.005,
+        ),
+    )
+    gate.register_group(
+        "race",
+        identity=AdmissionIdentity(),
+        intent=AdmissionIntent(mode=AdmissionMode.BLOCK),
+    )
+
+    first = gate.acquire(
+        "race",
+        ExecutionLaneKind.CPU,
+        deadline=Deadline.after(2.0),
+        cancellation=None,
+    )
+    returned = Event()
+    errors: list[BaseException] = []
+
+    def queued_acquire() -> None:
+        try:
+            lease = gate.acquire(
+                "race",
+                ExecutionLaneKind.CPU,
+                deadline=Deadline.after(2.0),
+                cancellation=None,
+            )
+            returned.set()
+            lease.release()
+        except BaseException as exc:
+            errors.append(exc)
+
+    thread = Thread(target=queued_acquire)
+    thread.start()
+
+    queued_deadline = time.monotonic() + 1.0
+    while gate.snapshot().waiting != 1 and time.monotonic() < queued_deadline:
+        time.sleep(0.005)
+    assert gate.snapshot().waiting == 1
+
+    # Pressure appears only after the second request has already passed the
+    # outer gate and is queued inside hierarchical admission.
+    observer.status = _status(memory_bytes=128 * 1024**2)
+    first.release()
+
+    provisional_deadline = time.monotonic() + 1.0
+    while (
+        gate.snapshot().in_flight != 0
+        and time.monotonic() < provisional_deadline
+    ):
+        time.sleep(0.005)
+
+    assert not returned.is_set()
+    assert gate.snapshot().in_flight == 0
+
+    observer.status = _status()
+    thread.join(timeout=2.0)
+    assert not thread.is_alive()
+    assert errors == []
+    assert returned.is_set()
+    assert gate.snapshot().in_flight == 0
+
+
 def test_io_pressure_gates_io_without_wasting_idle_cpu() -> None:
     observer = _MutableHostObserver(_status(load=1.0, io_pressure=75.0))
     gate = _gate(observer, mode=AdmissionMode.REJECT)
