@@ -81,6 +81,154 @@ def test_runtime_scheduler_uses_busy_gpu_when_idle_gpu_lacks_required_headroom()
     assert allocation.gpu_ids == ("GPU-busy",)
 
 
+def _single_gpu_inventory() -> InMemoryComputeInventory:
+    inventory = InMemoryComputeInventory()
+    inventory.register_host(
+        ComputeHost(
+            "single-node",
+            _scope(),
+            32,
+            256 * 1024**3,
+            gpus=(ComputeGPU("GPU-shared", 80 * 1024**3, "A100"),),
+        )
+    )
+    return inventory
+
+
+def _single_gpu_snapshot(*, free_gib: int = 70) -> GpuRuntimeSnapshot:
+    return GpuRuntimeSnapshot(
+        True,
+        devices=(
+            GpuDeviceStatus(
+                "0",
+                "GPU-shared",
+                "A100",
+                80 * 1024,
+                (80 - free_gib) * 1024,
+                free_gib * 1024,
+                10,
+            ),
+        ),
+        processes=(),
+        processes_complete=True,
+    )
+
+
+def test_shared_noetrium_allocations_pack_same_gpu_by_unbound_vram_reservation() -> None:
+    observer = _Observer(_single_gpu_snapshot(free_gib=70))
+    scheduler = in_memory_compute_scheduler(
+        _single_gpu_inventory(),
+        gpu_runtime_observer=observer,
+    )
+    requirement = ComputeRequirement(
+        cpu_cores=2,
+        memory_bytes=4 * 1024**3,
+        gpu_count=1,
+        required_gpu_free_memory_bytes=24 * 1024**3,
+        gpu_sharing_mode=GpuSharingMode.PREFER_IDLE_ALLOW_SHARED,
+    )
+
+    first = scheduler.allocate("shared-a", _scope(), requirement)
+    second = scheduler.allocate("shared-b", _scope(), requirement)
+
+    assert first.gpu_ids == ("GPU-shared",)
+    assert second.gpu_ids == ("GPU-shared",)
+    assert first.gpu_memory_reservation_bytes == (24 * 1024**3,)
+    assert second.gpu_memory_reservation_bytes == (24 * 1024**3,)
+
+    try:
+        scheduler.allocate("shared-c", _scope(), requirement)
+    except RuntimeError as exc:
+        assert "no compute host" in str(exc)
+    else:
+        raise AssertionError(
+            "third shared allocation reused VRAM already reserved by unbound launches"
+        )
+
+
+def test_sqlite_shared_gpu_reservations_survive_scheduler_restart(tmp_path) -> None:
+    observer = _Observer(_single_gpu_snapshot(free_gib=70))
+    clock = ManualLeaseClock(
+        elapsed_seconds=1.0,
+        wall_epoch_seconds=100.0,
+    )
+    database = tmp_path / "shared-gpu.sqlite"
+    requirement = ComputeRequirement(
+        cpu_cores=2,
+        memory_bytes=4 * 1024**3,
+        gpu_count=1,
+        required_gpu_free_memory_bytes=24 * 1024**3,
+        gpu_sharing_mode=GpuSharingMode.PREFER_IDLE_ALLOW_SHARED,
+    )
+    first_scheduler = SQLiteComputeScheduler(
+        database,
+        _single_gpu_inventory(),
+        clock=clock,
+        gpu_runtime_observer=observer,
+    )
+    first_scheduler.allocate(
+        "shared-a",
+        _scope(),
+        requirement,
+        ttl_seconds=60,
+    )
+    first_scheduler.allocate(
+        "shared-b",
+        _scope(),
+        requirement,
+        ttl_seconds=60,
+    )
+
+    rebuilt = SQLiteComputeScheduler(
+        database,
+        _single_gpu_inventory(),
+        clock=clock,
+        gpu_runtime_observer=observer,
+    )
+    try:
+        rebuilt.allocate(
+            "shared-c",
+            _scope(),
+            requirement,
+            ttl_seconds=60,
+        )
+    except RuntimeError as exc:
+        assert "no compute host" in str(exc)
+    else:
+        raise AssertionError(
+            "durable scheduler lost unbound shared-GPU VRAM reservations"
+        )
+
+
+def test_idle_only_allocation_blocks_shared_noetrium_reoccupation() -> None:
+    scheduler = in_memory_compute_scheduler(
+        _single_gpu_inventory(),
+        gpu_runtime_observer=_Observer(_single_gpu_snapshot()),
+    )
+    exclusive = ComputeRequirement(
+        cpu_cores=1,
+        memory_bytes=1,
+        gpu_count=1,
+        gpu_sharing_mode=GpuSharingMode.IDLE_ONLY,
+    )
+    shared = ComputeRequirement(
+        cpu_cores=1,
+        memory_bytes=1,
+        gpu_count=1,
+        required_gpu_free_memory_bytes=8 * 1024**3,
+        gpu_sharing_mode=GpuSharingMode.PREFER_IDLE_ALLOW_SHARED,
+    )
+    scheduler.allocate("exclusive", _scope(), exclusive)
+    try:
+        scheduler.allocate("shared", _scope(), shared)
+    except RuntimeError as exc:
+        assert "no compute host" in str(exc)
+    else:
+        raise AssertionError(
+            "shared work violated an existing idle-only GPU allocation"
+        )
+
+
 def test_fractional_gpu_memory_requirement_uses_live_residual_capacity() -> None:
     requirement = ComputeRequirement(
         cpu_cores=2,
