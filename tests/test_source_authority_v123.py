@@ -215,6 +215,38 @@ class SourceAuthorityV123Tests(unittest.TestCase):
             self.assertEqual(len(findings), 1)
             self.assertEqual(findings[0].authority, "concurrency.thread_pool")
 
+    def test_raw_fork_is_rejected_everywhere_in_platform_source(self):
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            target = root / "noetrium_platform" / "rogue_runtime"
+            target.mkdir(parents=True)
+            (root / "noetrium_platform" / "__init__.py").write_text("", encoding="utf-8")
+            (target / "x.py").write_text(
+                "import os\n\ndef split():\n    return os.fork()\n",
+                encoding="utf-8",
+            )
+            findings = audit_source_authorities(root)
+            self.assertEqual(len(findings), 1)
+            self.assertEqual(findings[0].authority, "process.raw_fork")
+
+    def test_multiprocessing_context_is_owned_by_executor_provider(self):
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            target = root / "noetrium_platform" / "rogue_runtime"
+            target.mkdir(parents=True)
+            (root / "noetrium_platform" / "__init__.py").write_text("", encoding="utf-8")
+            (target / "x.py").write_text(
+                "import multiprocessing as mp\n\ndef context():\n"
+                "    return mp.get_context('fork')\n",
+                encoding="utf-8",
+            )
+            findings = audit_source_authorities(root)
+            self.assertEqual(len(findings), 1)
+            self.assertEqual(
+                findings[0].authority,
+                "concurrency.multiprocessing_context",
+            )
+
     def test_raw_thread_outside_concurrency_provider_is_rejected(self):
         with tempfile.TemporaryDirectory() as td:
             root = Path(td)
