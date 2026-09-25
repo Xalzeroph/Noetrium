@@ -122,6 +122,12 @@ class EndpointShutdownAuthority:
         self.live.remove(allocation_id)
         return allocation
 
+    def recover_release(self, allocation, *, now=None):
+        allocation_id = allocation.allocation_id
+        self.events.append(f"endpoint-recover-release:{allocation_id}")
+        self.live.remove(allocation_id)
+        return allocation
+
 
 class ComputeShutdownAuthority:
     def __init__(self, events: list[str]) -> None:
@@ -166,8 +172,7 @@ def test_managed_resource_shutdown_actively_reclaims_endpoint_and_compute() -> N
     assert endpoints.active() == ()
     assert compute.allocations() == ()
     assert events == [
-        "endpoint-reconcile",
-        "endpoint-release:endpoint-live",
+        "endpoint-recover-release:endpoint-live",
         "compute-recover-release:compute-live",
     ]
 
@@ -250,7 +255,6 @@ def test_abandoned_owner_takeover_reclaims_prestart_resources_without_ttl_wait()
     assert events == [
         "containers",
         "environments",
-        "endpoint-reconcile",
-        "endpoint-release:endpoint-live",
+        "endpoint-recover-release:endpoint-live",
         "compute-recover-release:compute-live",
     ]
