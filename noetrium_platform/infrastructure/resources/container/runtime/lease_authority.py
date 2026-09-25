@@ -186,6 +186,18 @@ class DockerContainerLeaseAuthority:
             )
 
         self.reconcile()
+        foreign = tuple(
+            observed
+            for observed in self.runtime.list_managed()
+            if observed.labels.get(LABEL_ALLOCATION) == allocation_id
+            and observed.labels.get(LABEL_OWNER_GENERATION)
+            != self.owner_generation_id
+        )
+        if foreign:
+            raise DockerContainerLeaseConflict(
+                "managed Docker allocation is quarantined by another owner "
+                "generation and requires exclusive recovery"
+            )
         resource = self._resource(allocation_id)
         self.ownership.register_owner(
             ResourceOwner(
@@ -348,6 +360,7 @@ class DockerContainerLeaseAuthority:
         )
         removed: list[str] = []
         released: list[str] = []
+        quarantined: list[str] = []
 
         for observed in self.runtime.list_managed():
             labels = observed.labels
@@ -360,6 +373,10 @@ class DockerContainerLeaseAuthority:
             holder_key = labels.get(LABEL_HOLDER)
             lease: ResourceLease | None = None
             fencing: int | None = None
+
+            if owner_generation_id != self.owner_generation_id:
+                quarantined.append(observed.container_id)
+                continue
 
             if allocation_id and lease_id and fencing_raw:
                 try:
@@ -414,6 +431,7 @@ class DockerContainerLeaseAuthority:
         return DockerContainerReconciliation(
             tuple(sorted(set(removed))),
             tuple(sorted(set(released))),
+            tuple(sorted(set(quarantined))),
         )
 
     def shutdown_cleanup(
