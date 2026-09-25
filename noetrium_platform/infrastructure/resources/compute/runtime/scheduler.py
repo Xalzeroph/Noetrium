@@ -458,8 +458,8 @@ def _placement_score(
     *,
     quarantined_gpus: frozenset[tuple[str, str]] = frozenset(),
 ):
-    cpu_after = host.cpu_cores - usage.cpu_cores - requirement.cpu_cores
-    memory_after = host.memory_bytes - usage.memory_bytes - requirement.memory_bytes
+    cpu_after = host.schedulable_cpu_cores - usage.cpu_cores - requirement.cpu_cores
+    memory_after = host.schedulable_memory_bytes - usage.memory_bytes - requirement.memory_bytes
     if cpu_after < 0 or memory_after < 0:
         return None
     live = (
@@ -472,7 +472,7 @@ def _placement_score(
             return None
         runtime_rank = (1, 0.0, 0.0)
     else:
-        effective_cpu = min(float(host.cpu_cores), float(live.effective_cpu_cores))
+        effective_cpu = min(float(host.schedulable_cpu_cores), float(live.effective_cpu_cores))
         if effective_cpu <= 0:
             return None
         projected_unbound_cpu = usage.unbound_cpu_cores
@@ -501,7 +501,7 @@ def _placement_score(
         ):
             return None
         memory_pressure = 1.0 - min(
-            1.0, live.available_memory_bytes / max(1, host.memory_bytes)
+            1.0, live.available_memory_bytes / max(1, host.schedulable_memory_bytes)
         )
         runtime_rank = (0, cpu_load_ratio, memory_pressure)
     eligible = _eligible_gpus(
@@ -520,7 +520,7 @@ def _placement_score(
         accelerator_bytes = sum(gpu.memory_bytes for gpu in host.gpus)
         score = (
             runtime_rank, accelerator_penalty, accelerator_bytes,
-            cpu_after / host.cpu_cores + memory_after / host.memory_bytes,
+            cpu_after / host.schedulable_cpu_cores + memory_after / host.schedulable_memory_bytes,
             cpu_after, memory_after, host.host_id,
         )
     else:
