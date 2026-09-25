@@ -112,6 +112,9 @@ class ResearchExecutionPool:
         resource_competition_policy: ResourceCompetitionPolicy | None = None,
         exclusive_owner_generation: bool = False,
     ) -> None:
+        if type(exclusive_owner_generation) is not bool:
+            raise TypeError("exclusive_owner_generation must be boolean")
+
         resolved_control_budget = (
             control_concurrency_budget or _default_control_concurrency_budget()
         )
@@ -209,8 +212,6 @@ class ResearchExecutionPool:
                 errors,
             ) from exc
         self._workload_cpu_workers = shared_cpu_budget.max_cpu_workers
-        if type(exclusive_owner_generation) is not bool:
-            raise TypeError("exclusive_owner_generation must be boolean")
         self._owner_generation_id = uuid4().hex
         self._exclusive_owner_generation = exclusive_owner_generation
         self._compute_lease_group: TaskGroupPort | None = None
@@ -229,6 +230,12 @@ class ResearchExecutionPool:
             raise RuntimeError("research execution pool is closing")
         if self._workloads_quiescing or self._workloads_quiesced:
             raise RuntimeError("research execution pool workloads are quiescing")
+
+    @property
+    def workload_cpu_workers(self) -> int:
+        """Physical CPU workers shared by all workload execution domains."""
+
+        return self._workload_cpu_workers
 
     @property
     def owner_generation_id(self) -> str:
@@ -587,31 +594,63 @@ class ResearchExecutionPool:
     def close(self, *, deadline: Deadline | None = None) -> None:
         if self._closed:
             return
-        # Seal every submission path immediately, but mark fully closed only
-        # after every provider has physically converged. Failed bounded close
-        # attempts remain retryable.
+        # Seal every workload submission path immediately. Control-plane
+        # ownership remains alive until every workload domain and its shared
+        # physical CPU provider have converged, so lease/fencing/recovery can
+        # still make progress after a bounded close failure.
         self._closing = True
         errors: list[BaseException] = []
-        # Control-plane ownership is closed last so lease/fencing maintenance
-        # remains alive while workload/orchestration providers physically join.
-        for runtime in (
+        workload_runtimes = (
             self._experiments,
             self._model_io,
             self._orchestration,
-            self._control,
-        ):
+        )
+        for runtime in workload_runtimes:
             error = self._close_domain_for_physical_convergence(
                 runtime,
                 deadline=deadline,
             )
             if error is not None:
                 errors.append(error)
-        try:
-            self._model_admission.close()
-        except BaseException as exc:
-            errors.append(exc)
+
+        workloads_converged = all(
+            runtime.topology_snapshot().converged
+            for runtime in workload_runtimes
+        )
+        if workloads_converged and not self._shared_workload_cpu_closed:
+            try:
+                assert self._shared_workload_cpu is not None
+                self._shared_workload_cpu.close(
+                    wait=True,
+                    cancel_pending=True,
+                )
+            except BaseException as exc:
+                errors.append(exc)
+            else:
+                self._shared_workload_cpu_closed = True
+
+        if workloads_converged and self._shared_workload_cpu_closed:
+            try:
+                self._model_admission.close()
+            except BaseException as exc:
+                errors.append(exc)
+            control_error = self._close_domain_for_physical_convergence(
+                self._control,
+                deadline=deadline,
+            )
+            if control_error is not None:
+                errors.append(control_error)
+
         if errors:
             raise ExceptionGroup("research execution pool close failed", errors)
+        if not workloads_converged or not self._shared_workload_cpu_closed:
+            raise RuntimeError(
+                "research execution pool close did not converge workload CPU ownership"
+            )
+        if not self._control.topology_snapshot().converged:
+            raise RuntimeError(
+                "research execution pool close did not converge control ownership"
+            )
         self._closed = True
 
     def __enter__(self) -> "ResearchExecutionPool":
