@@ -254,12 +254,18 @@ def _placement_score(
         if effective_cpu <= 0:
             return None
         cpu_load_ratio = live.cpu_load_1m / effective_cpu
-        if cpu_load_ratio > requirement.max_cpu_load_ratio:
+        if (
+            requirement.max_cpu_load_ratio is not None
+            and cpu_load_ratio > requirement.max_cpu_load_ratio
+        ):
             return None
-        runtime_cpu_available = max(
-            0.0, effective_cpu - live.cpu_load_1m - requirement.cpu_headroom_cores
-        )
-        if requirement.cpu_cores > runtime_cpu_available:
+        if (
+            requirement.cpu_headroom_cores > 0
+            and live.cpu_load_1m
+            + requirement.cpu_cores
+            + requirement.cpu_headroom_cores
+            > effective_cpu
+        ):
             return None
         if requirement.memory_bytes + requirement.memory_headroom_bytes > live.available_memory_bytes:
             return None
