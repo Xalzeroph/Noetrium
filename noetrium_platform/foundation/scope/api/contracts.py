@@ -41,6 +41,8 @@ class ScopeIdentity:
     def __post_init__(self) -> None:
         if type(self.kind) is not ScopeKind:
             raise TypeError("scope kind must be ScopeKind")
+        if type(self.scope_id) is not str:
+            raise TypeError("scope_id must be str")
         if not self.scope_id.strip():
             raise ValueError("scope_id must be non-empty")
 
