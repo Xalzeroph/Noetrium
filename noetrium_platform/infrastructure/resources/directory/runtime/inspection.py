@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from pathlib import Path
+import os
 import shutil
 
 from noetrium_platform.infrastructure.resources.directory.api import (
@@ -19,15 +20,43 @@ class LocalDirectoryInspector:
     def __init__(self, directories: DirectoryLayoutPort) -> None:
         self._directories = directories
 
+    @staticmethod
+    def _inode_capacity(path: Path) -> tuple[int | None, int | None]:
+        try:
+            stat = os.statvfs(path)
+        except OSError:
+            return None, None
+        total = int(stat.f_files)
+        if total <= 0:
+            return None, None
+        return total, max(0, int(stat.f_favail))
+
     def usage(self, kind: ManagedDirectoryKind) -> DirectoryUsage:
         path = self._directories.root(kind)
         total, used, free = shutil.disk_usage(path)
-        return DirectoryUsage(path, total, used, free)
+        total_inodes, free_inodes = self._inode_capacity(path)
+        return DirectoryUsage(
+            path,
+            total,
+            used,
+            free,
+            total_inodes=total_inodes,
+            free_inodes=free_inodes,
+        )
 
     def overview(self, kind: ManagedDirectoryKind) -> DirectoryOverview:
         path = self._directories.root(kind)
         total, used, free = shutil.disk_usage(path)
-        return DirectoryOverview(path, sum(1 for _ in path.iterdir()), total, used, free)
+        total_inodes, free_inodes = self._inode_capacity(path)
+        return DirectoryOverview(
+            path,
+            sum(1 for _ in path.iterdir()),
+            total,
+            used,
+            free,
+            total_inodes=total_inodes,
+            free_inodes=free_inodes,
+        )
 
     def content_stats(self, kind: ManagedDirectoryKind) -> DirectoryContentStats:
         root = self._directories.root(kind)
