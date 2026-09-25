@@ -23,6 +23,12 @@ from noetrium_platform.foundation.kernel.concurrency.api import (
     StructuredConcurrencyRuntimePort,
 )
 from noetrium_platform.foundation.kernel.concurrency.composition import build_concurrency_runtime as _build_kernel_concurrency_runtime
+from noetrium_platform.infrastructure.resources.compute.api import HostRuntimeObserverPort
+
+from .shared_host_pressure import (
+    SharedHostPressureAdmissionGate,
+    SharedHostPressurePolicy,
+)
 
 
 @dataclass(slots=True)
@@ -170,6 +176,8 @@ def build_execution_concurrency_runtime(
     concurrency_budget: ConcurrencyBudget | None = None,
     admission_budget: AdmissionBudget | None = None,
     priority_aging_seconds: float = 1.0,
+    host_runtime_observer: HostRuntimeObserverPort | None = None,
+    shared_host_pressure_policy: SharedHostPressurePolicy | None = None,
     blocking_io_thread_name_prefix: str = "platform-blocking-io",
     timer_name: str = "platform-timer",
 ) -> ExecutionConcurrencyAuthorities:
@@ -182,10 +190,21 @@ def build_execution_concurrency_runtime(
     scheduling = build_admission_scheduling_policy(
         priority_aging_seconds=priority_aging_seconds,
     )
-    admission = build_execution_admission(
+    base_admission = build_execution_admission(
         budget=resolved_admission,
         scheduling=scheduling,
     )
+    if shared_host_pressure_policy is not None and host_runtime_observer is None:
+        raise ValueError(
+            "shared-host pressure policy requires a host runtime observer"
+        )
+    admission: ExecutionAdmissionPort = base_admission
+    if host_runtime_observer is not None:
+        admission = SharedHostPressureAdmissionGate(
+            base_admission,
+            host_runtime_observer,
+            policy=shared_host_pressure_policy or SharedHostPressurePolicy(),
+        )
     concurrency = build_structured_concurrency_runtime(
         budget=resolved_concurrency,
         blocking_io_thread_name_prefix=blocking_io_thread_name_prefix,
