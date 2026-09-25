@@ -155,6 +155,8 @@ class DirectoryUsage:
     total_bytes: int
     used_bytes: int
     free_bytes: int
+    total_inodes: int | None = None
+    free_inodes: int | None = None
 
 
 @dataclass(frozen=True, slots=True)
@@ -164,6 +166,8 @@ class DirectoryOverview:
     total_bytes: int
     used_bytes: int
     free_bytes: int
+    total_inodes: int | None = None
+    free_inodes: int | None = None
 
 
 @dataclass(frozen=True, slots=True)
