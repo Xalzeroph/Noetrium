@@ -518,7 +518,10 @@ class InMemoryComputeScheduler:
             requirement,
         )
         with self._lock:
-            self._reconcile_expired_locked(now_epoch_s, runtime_snapshot)
+            pending = self._reconcile_expired_locked(
+                now_epoch_s,
+                runtime_snapshot,
+            )
             prior_digest = self._request_digests.get(allocation_id)
             if prior_digest is not None and prior_digest != request_digest:
                 raise ValueError(f"allocation identity conflict: {allocation_id}")
@@ -541,6 +544,14 @@ class InMemoryComputeScheduler:
                 host_runtime_snapshot=host_runtime_snapshot,
             )
             if not placements:
+                eligible_host_ids = {host.host_id for host in hosts}
+                blocking_pending = tuple(
+                    row
+                    for row in pending
+                    if row.gpu_ids and row.host_id in eligible_host_ids
+                )
+                if requirement.gpu_count and blocking_pending:
+                    raise ComputePhysicalConvergencePending(blocking_pending)
                 raise ComputePlacementUnavailable(requirement)
             _score, host, gpu_ids = placements[0]
             resource = _allocation_resource(allocation_id)
@@ -1001,6 +1012,31 @@ class SQLiteComputeScheduler:
                     host_runtime_snapshot,
                 )
                 if not placements:
+                    required_labels = dict(requirement.required_labels)
+                    placement_identity = (
+                        scope if placement_scope is None else placement_scope
+                    )
+                    eligible_host_ids = {
+                        host.host_id
+                        for host in self._inventory.list_hosts(
+                            scope=placement_identity
+                        )
+                        if host.enabled
+                        and not any(
+                            dict(host.labels).get(key) != value
+                            for key, value in required_labels.items()
+                        )
+                    }
+                    blocking_pending = tuple(
+                        row
+                        for row in pending
+                        if row.gpu_ids and row.host_id in eligible_host_ids
+                    )
+                    if requirement.gpu_count and blocking_pending:
+                        conn.rollback()
+                        raise ComputePhysicalConvergencePending(
+                            blocking_pending
+                        )
                     raise ComputePlacementUnavailable(requirement)
                 _score, host, gpu_ids = placements[0]
                 resource = _allocation_resource(allocation_id)
