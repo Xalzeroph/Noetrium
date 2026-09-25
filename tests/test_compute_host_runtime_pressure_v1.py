@@ -1,6 +1,10 @@
+import pytest
+
 from noetrium_platform.foundation.scope.api import ScopeIdentity, ScopeKind
 from noetrium_platform.infrastructure.resources.compute.api import (
+    ComputeBindingProof,
     ComputeHost,
+    ComputePlacementUnavailable,
     ComputeRequirement,
     HostRuntimeSnapshot,
     HostRuntimeStatus,
@@ -9,6 +13,7 @@ from noetrium_platform.infrastructure.resources.compute.runtime import (
     InMemoryComputeInventory,
     SQLiteComputeScheduler,
 )
+from noetrium_platform.infrastructure.resources.lease.runtime import ManualLeaseClock
 from tests.resource_compute_support import in_memory_compute_scheduler
 
 
@@ -158,9 +163,124 @@ def test_runtime_pressure_and_committed_capacity_are_independent_constraints() -
     assert second.cpu_cores == 10
 
 
+def _fixed_residual_inventory() -> InMemoryComputeInventory:
+    inventory = InMemoryComputeInventory()
+    inventory.register_host(
+        ComputeHost("node-a", _scope(), 32, 64 * 1024**3)
+    )
+    return inventory
+
+
+def _fixed_residual_observer() -> _HostObserver:
+    return _HostObserver(
+        _status("node-a", load=1.0, memory_gib=10)
+    )
+
+
+def _bind(
+    scheduler,
+    allocation,
+    *,
+    binder: str = "a" * 64,
+):
+    return scheduler.confirm_bound(
+        ComputeBindingProof(
+            allocation_id=allocation.allocation_id,
+            host_id=allocation.host_id,
+            gpu_ids=allocation.gpu_ids,
+            lease_fencing_token=allocation.lease_fencing_token,
+            binder_identity_digest=binder,
+            observed_at_epoch_s=101.0,
+            evidence_ref="runtime-running",
+        )
+    )
+
+
+def test_unmaterialized_compute_reservation_fences_stale_live_memory_snapshot() -> None:
+    scheduler = in_memory_compute_scheduler(
+        _fixed_residual_inventory(),
+        host_runtime_observer=_fixed_residual_observer(),
+    )
+    requirement = ComputeRequirement(
+        cpu_cores=2,
+        memory_bytes=6 * 1024**3,
+        require_host_runtime=True,
+    )
+    first = scheduler.allocate("first", _scope(), requirement)
+    assert not first.is_bound
+
+    # The observer intentionally remains at 10 GiB to model the interval
+    # before the first process is visible in host runtime facts.
+    with pytest.raises(ComputePlacementUnavailable):
+        scheduler.allocate("second", _scope(), requirement)
+
+    bound = _bind(scheduler, first)
+    assert bound.is_bound
+    # Once exact physical ownership is attested, the same live snapshot is
+    # authoritative for residual capacity and the reservation is not double
+    # subtracted.
+    second = scheduler.allocate("second", _scope(), requirement)
+    assert second.memory_bytes == 6 * 1024**3
+
+
+def test_sqlite_unmaterialized_reservation_survives_restart_and_fences_capacity(
+    tmp_path,
+) -> None:
+    clock = ManualLeaseClock(
+        elapsed_seconds=1.0,
+        wall_epoch_seconds=100.0,
+    )
+    database = tmp_path / "compute-binding.sqlite"
+    requirement = ComputeRequirement(
+        cpu_cores=2,
+        memory_bytes=6 * 1024**3,
+        require_host_runtime=True,
+    )
+    first_scheduler = SQLiteComputeScheduler(
+        database,
+        _fixed_residual_inventory(),
+        clock=clock,
+        host_runtime_observer=_fixed_residual_observer(),
+    )
+    first = first_scheduler.allocate(
+        "first",
+        _scope(),
+        requirement,
+        ttl_seconds=60.0,
+    )
+
+    rebuilt = SQLiteComputeScheduler(
+        database,
+        _fixed_residual_inventory(),
+        clock=clock,
+        host_runtime_observer=_fixed_residual_observer(),
+    )
+    with pytest.raises(ComputePlacementUnavailable):
+        rebuilt.allocate(
+            "second",
+            _scope(),
+            requirement,
+            ttl_seconds=60.0,
+        )
+
+    bound = _bind(rebuilt, first)
+    assert bound.is_bound
+    second = rebuilt.allocate(
+        "second",
+        _scope(),
+        requirement,
+        ttl_seconds=60.0,
+    )
+    assert second.memory_bytes == requirement.memory_bytes
+
+
 def test_sqlite_scheduler_applies_same_live_pressure_policy(tmp_path) -> None:
     scheduler = SQLiteComputeScheduler(
         tmp_path / "compute.sqlite", _inventory(),
+        clock=ManualLeaseClock(
+            elapsed_seconds=1.0,
+            wall_epoch_seconds=100.0,
+        ),
         host_runtime_observer=_HostObserver(
             _status("node-a", load=15.0, memory_gib=50),
             _status("node-b", load=1.0, memory_gib=50),
