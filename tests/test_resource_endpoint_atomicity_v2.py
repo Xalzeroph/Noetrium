@@ -197,6 +197,51 @@ def test_expiry_quarantines_endpoint_until_os_listener_converges(
 
 
 @pytest.mark.parametrize("durable", (False, True))
+def test_endpoint_recovery_release_ignores_foreign_reoccupation_after_expiry(
+    tmp_path,
+    durable: bool,
+) -> None:
+    probe = _MutableProbe()
+    clock = _clock()
+    if durable:
+        allocator = AtomicEndpointAllocator(
+            reservations=_sqlite_endpoint_store(
+                tmp_path / "endpoint-recovery-foreign.sqlite",
+                clock=clock,
+            ),
+            probe=probe,
+            lease_ttl_seconds=0.05,
+        )
+    else:
+        resources = InMemoryResourceLeaseRegistry(clock=clock)
+        allocator = InMemoryEndpointAllocator(
+            ownership=resources,
+            leases=resources,
+            probe=probe,
+            lease_ttl_seconds=0.05,
+        )
+
+    first = allocator.allocate(_request("recovery-foreign", port=25570))
+    first = allocator.confirm_bound(_binding_proof(first))
+    assert first.lease_expires_at_epoch_s is not None
+    clock.advance(1.0)
+
+    # A foreign listener reoccupies the same physical endpoint after upper
+    # recovery has already stopped our exact binder generation. Conservative
+    # orphan reconcile cannot distinguish it and must quarantine.
+    probe.unavailable_ports.add(first.endpoint.port)
+    with pytest.raises(EndpointPhysicalConvergencePending):
+        allocator.reconcile()
+
+    # Exclusive upper recovery supplies the missing ownership proof. Retire
+    # only our generation; never probe/remove the foreign listener.
+    released = allocator.recover_release(first)
+    assert released.state is EndpointAllocationState.RELEASED
+    assert allocator.active() == ()
+    assert first.endpoint.port in probe.unavailable_ports
+
+
+@pytest.mark.parametrize("durable", (False, True))
 def test_endpoint_orphan_probe_failure_retains_quarantined_generation(
     tmp_path,
     durable: bool,
