@@ -6,7 +6,10 @@ import json
 import math
 
 from .placement import DeploymentPlacement
-from noetrium_platform.capabilities.model.stack.api import ModelStackSpec
+from noetrium_platform.capabilities.model.stack.api import (
+    ModelStackSpec,
+    parse_vllm_engine_resource_args,
+)
 
 
 def _digest(value: object) -> str:
@@ -97,8 +100,27 @@ class QualifiedDeploymentManifest:
             raise ValueError("qualification certificate does not match model stack")
         if self.certificate.target_host_identity_digest!=self.host_identity_digest:
             raise ValueError("qualification certificate is for a different host inventory")
-        if len(self.placement.gpu_uuids)!=self.stack.tensor_parallel:
-            raise ValueError("placement GPU count must match tensor parallel degree")
+        expected_gpu_count = (
+            self.stack.tensor_parallel
+            * self.stack.data_parallel
+            * self.stack.pipeline_parallel
+        )
+        if len(self.placement.gpu_uuids) != expected_gpu_count:
+            raise ValueError(
+                "placement GPU count must match tensor/data/pipeline parallel world size"
+            )
+        if self.stack.identity.engine.lower() == "vllm":
+            intent = parse_vllm_engine_resource_args(self.stack.engine_args)
+            queue_limit = intent.max_num_queued_requests
+            if (
+                queue_limit is not None
+                and self.certificate.resource_envelope.max_qualified_concurrency
+                > queue_limit
+            ):
+                raise ValueError(
+                    "qualified concurrency exceeds frozen vLLM "
+                    "max-num-queued-reqs"
+                )
 
     def digest(self) -> str:
         payload={"deployment_id":self.deployment_id,"stack_digest":self.stack.digest(),"certificate_digest":self.certificate.digest(),"placement":asdict(self.placement),"host_identity_digest":self.host_identity_digest}
