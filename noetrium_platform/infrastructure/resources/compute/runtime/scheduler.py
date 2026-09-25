@@ -1530,6 +1530,123 @@ class SQLiteComputeScheduler:
             "allocation_id,request_digest,scope_kind,scope_id) VALUES(?,?,?,?)",
             (allocation_id, request_digest, scope.kind.value, scope.scope_id),
         )
+    def _allocate_one_in_transaction(
+        self,
+        conn: sqlite3.Connection,
+        *,
+        allocation_id: str,
+        scope: ScopeIdentity,
+        requirement: ComputeRequirement,
+        placement_scope: ScopeIdentity | None,
+        ttl_seconds: float | None,
+        now_epoch_s: float,
+        runtime_snapshot: GpuRuntimeSnapshot | None,
+        host_runtime_snapshot: HostRuntimeSnapshot | None,
+        pending: tuple[ComputeAllocation, ...],
+    ) -> ComputeAllocation:
+        request_digest = _allocation_request_digest(
+            scope,
+            placement_scope,
+            requirement,
+        )
+        self._ensure_identity(conn, allocation_id, request_digest, scope)
+        existing = self._active_row(conn, allocation_id, now_epoch_s)
+        if existing is not None:
+            return existing
+        quarantined = self._capacity_row(conn, allocation_id)
+        if quarantined is not None:
+            raise ComputePhysicalConvergencePending((quarantined,))
+
+        rows = self._capacity_rows(conn)
+        quarantined_gpus = frozenset(
+            (row.host_id, gpu_id)
+            for row in pending
+            for gpu_id in row.gpu_ids
+        )
+        placement_identity = scope if placement_scope is None else placement_scope
+        placements = self._placements(
+            rows,
+            requirement,
+            placement_identity,
+            runtime_snapshot,
+            host_runtime_snapshot,
+            quarantined_gpus=quarantined_gpus,
+        )
+        if not placements:
+            eligible_host_ids = {
+                host.host_id
+                for host in self._inventory.list_hosts(scope=placement_identity)
+                if host.accepts_new_allocations
+                and _host_matches_requirement_labels(host, requirement)
+            }
+            blocking_pending = tuple(
+                row
+                for row in pending
+                if row.gpu_ids and row.host_id in eligible_host_ids
+            )
+            if requirement.gpu_count and blocking_pending:
+                without_quarantine = self._placements(
+                    rows,
+                    requirement,
+                    placement_identity,
+                    runtime_snapshot,
+                    host_runtime_snapshot,
+                )
+                if without_quarantine:
+                    raise ComputePhysicalConvergencePending(blocking_pending)
+            raise ComputePlacementUnavailable(requirement)
+
+        _score, host, gpu_ids = placements[0]
+        resource = _allocation_resource(allocation_id)
+        ensure_resource_owner(
+            conn,
+            ResourceOwner(
+                resource,
+                scope,
+                ResourceOwnership.PLATFORM_MANAGED,
+            ),
+        )
+        granted = acquire_resource_lease(
+            conn,
+            _allocation_lease(allocation_id, scope),
+            ttl_seconds=ttl_seconds,
+            now_epoch_s=now_epoch_s,
+        )
+        gpu_reservations = _gpu_memory_reservations(
+            host,
+            gpu_ids,
+            requirement,
+            runtime_snapshot,
+        )
+        conn.execute(
+            "INSERT INTO compute_allocations("
+            "allocation_id,host_id,cpu_cores,memory_bytes,gpu_ids_json,"
+            "gpu_sharing_mode,gpu_memory_reservation_json,lease_id) "
+            "VALUES(?,?,?,?,?,?,?,?)",
+            (
+                allocation_id,
+                host.host_id,
+                requirement.cpu_cores,
+                requirement.memory_bytes,
+                self._gpu_json(gpu_ids),
+                requirement.gpu_sharing_mode.value,
+                self._gpu_json(gpu_reservations),
+                granted.lease_id,
+            ),
+        )
+        return ComputeAllocation(
+            allocation_id=allocation_id,
+            scope=scope,
+            host_id=host.host_id,
+            cpu_cores=requirement.cpu_cores,
+            memory_bytes=requirement.memory_bytes,
+            gpu_ids=gpu_ids,
+            lease_fencing_token=granted.fencing_token,
+            lease_expires_at_epoch_s=granted.expires_at_epoch_s,
+            gpu_sharing_mode=requirement.gpu_sharing_mode,
+            gpu_memory_reservation_bytes=gpu_reservations,
+        )
+
     def allocate(
         self,
         allocation_id: str,
@@ -1540,11 +1657,13 @@ class SQLiteComputeScheduler:
         ttl_seconds: float | None = None,
         now: float | None = None,
     ) -> ComputeAllocation:
-        request_digest = _allocation_request_digest(scope, placement_scope, requirement)
         runtime_snapshot = _observe_gpu_runtime(self._gpu_runtime_observer)
         host_runtime_snapshot = _observe_host_runtime(self._host_runtime_observer)
         with self._connection() as conn:
-            begin_immediate_sqlite_transaction(conn, timeout_seconds=self.timeout_seconds)
+            begin_immediate_sqlite_transaction(
+                conn,
+                timeout_seconds=self.timeout_seconds,
+            )
             try:
                 now_epoch_s = self._authority_now(conn, now)
                 _converged, pending = self._cleanup_expired(
@@ -1552,110 +1671,20 @@ class SQLiteComputeScheduler:
                     now_epoch_s,
                     runtime_snapshot,
                 )
-                self._ensure_identity(conn, allocation_id, request_digest, scope)
-                existing = self._active_row(conn, allocation_id, now_epoch_s)
-                if existing is not None:
-                    conn.commit()
-                    return existing
-                quarantined = self._capacity_row(conn, allocation_id)
-                if quarantined is not None:
-                    conn.commit()
-                    raise ComputePhysicalConvergencePending((quarantined,))
-                rows = self._capacity_rows(conn)
-                quarantined_gpus = frozenset(
-                    (row.host_id, gpu_id)
-                    for row in pending
-                    for gpu_id in row.gpu_ids
-                )
-                placements = self._placements(
-                    rows,
-                    requirement,
-                    scope if placement_scope is None else placement_scope,
-                    runtime_snapshot,
-                    host_runtime_snapshot,
-                    quarantined_gpus=quarantined_gpus,
-                )
-                if not placements:
-                    placement_identity = (
-                        scope if placement_scope is None else placement_scope
-                    )
-                    eligible_host_ids = {
-                        host.host_id
-                        for host in self._inventory.list_hosts(
-                            scope=placement_identity
-                        )
-                        if host.accepts_new_allocations
-                        and _host_matches_requirement_labels(host, requirement)
-                    }
-                    blocking_pending = tuple(
-                        row
-                        for row in pending
-                        if row.gpu_ids and row.host_id in eligible_host_ids
-                    )
-                    if requirement.gpu_count and blocking_pending:
-                        without_quarantine = self._placements(
-                            rows,
-                            requirement,
-                            placement_identity,
-                            runtime_snapshot,
-                            host_runtime_snapshot,
-                        )
-                        if without_quarantine:
-                            conn.rollback()
-                            raise ComputePhysicalConvergencePending(
-                                blocking_pending
-                            )
-                    raise ComputePlacementUnavailable(requirement)
-                _score, host, gpu_ids = placements[0]
-                resource = _allocation_resource(allocation_id)
-                ensure_resource_owner(
+                allocation = self._allocate_one_in_transaction(
                     conn,
-                    ResourceOwner(resource, scope, ResourceOwnership.PLATFORM_MANAGED),
-                )
-                granted = acquire_resource_lease(
-                    conn,
-                    _allocation_lease(allocation_id, scope),
-                    ttl_seconds=ttl_seconds,
-                    now_epoch_s=now_epoch_s,
-                )
-                gpu_reservations = _gpu_memory_reservations(
-                    host,
-                    gpu_ids,
-                    requirement,
-                    runtime_snapshot,
-                )
-                conn.execute(
-                    "INSERT INTO compute_allocations("
-                    "allocation_id,host_id,cpu_cores,memory_bytes,gpu_ids_json,"
-                    "gpu_sharing_mode,gpu_memory_reservation_json,lease_id) "
-                    "VALUES(?,?,?,?,?,?,?,?)",
-                    (
-                        allocation_id,
-                        host.host_id,
-                        requirement.cpu_cores,
-                        requirement.memory_bytes,
-                        self._gpu_json(gpu_ids),
-                        requirement.gpu_sharing_mode.value,
-                        self._gpu_json(gpu_reservations),
-                        granted.lease_id,
-                    ),
-                )
-                allocation = ComputeAllocation(
                     allocation_id=allocation_id,
                     scope=scope,
-                    host_id=host.host_id,
-                    cpu_cores=requirement.cpu_cores,
-                    memory_bytes=requirement.memory_bytes,
-                    gpu_ids=gpu_ids,
-                    lease_fencing_token=granted.fencing_token,
-                    lease_expires_at_epoch_s=granted.expires_at_epoch_s,
-                    gpu_sharing_mode=requirement.gpu_sharing_mode,
-                    gpu_memory_reservation_bytes=gpu_reservations,
+                    requirement=requirement,
+                    placement_scope=placement_scope,
+                    ttl_seconds=ttl_seconds,
+                    now_epoch_s=now_epoch_s,
+                    runtime_snapshot=runtime_snapshot,
+                    host_runtime_snapshot=host_runtime_snapshot,
+                    pending=pending,
                 )
                 conn.commit()
                 return allocation
-            except ComputePhysicalConvergencePending:
-                raise
             except BaseException as primary:
                 rollback_sqlite_writer(
                     conn,
@@ -1663,6 +1692,59 @@ class SQLiteComputeScheduler:
                     label="compute scheduler",
                 )
                 raise
+
+    def allocate_batch(
+        self,
+        batch: ComputeAllocationBatch,
+        *,
+        ttl_seconds: float | None = None,
+        now: float | None = None,
+    ) -> tuple[ComputeAllocation, ...]:
+        if type(batch) is not ComputeAllocationBatch:
+            raise TypeError(
+                "compute batch allocation requires ComputeAllocationBatch"
+            )
+        runtime_snapshot = _observe_gpu_runtime(self._gpu_runtime_observer)
+        host_runtime_snapshot = _observe_host_runtime(
+            self._host_runtime_observer
+        )
+        with self._connection() as conn:
+            begin_immediate_sqlite_transaction(
+                conn,
+                timeout_seconds=self.timeout_seconds,
+            )
+            try:
+                now_epoch_s = self._authority_now(conn, now)
+                _converged, pending = self._cleanup_expired(
+                    conn,
+                    now_epoch_s,
+                    runtime_snapshot,
+                )
+                allocations = tuple(
+                    self._allocate_one_in_transaction(
+                        conn,
+                        allocation_id=request.allocation_id,
+                        scope=request.scope,
+                        requirement=request.requirement,
+                        placement_scope=request.placement_scope,
+                        ttl_seconds=ttl_seconds,
+                        now_epoch_s=now_epoch_s,
+                        runtime_snapshot=runtime_snapshot,
+                        host_runtime_snapshot=host_runtime_snapshot,
+                        pending=pending,
+                    )
+                    for request in batch.requests
+                )
+                conn.commit()
+                return allocations
+            except BaseException as primary:
+                rollback_sqlite_writer(
+                    conn,
+                    primary,
+                    label="compute batch scheduler",
+                )
+                raise
+
     @staticmethod
     def _validate_binding_proof(
         current: ComputeAllocation,
