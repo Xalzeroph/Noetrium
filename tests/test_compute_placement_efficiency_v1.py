@@ -108,3 +108,34 @@ def test_sqlite_scheduler_uses_same_gpu_best_fit_policy(tmp_path) -> None:
         ),
     )
     assert allocation.gpu_ids == ("gpu-small",)
+
+
+
+def test_exact_host_allow_and_deny_constraints_override_best_fit() -> None:
+    scope = _scope()
+    inventory = InMemoryComputeInventory()
+    inventory.register_host(ComputeHost("a-tight", scope, 8, 32))
+    inventory.register_host(ComputeHost("z-large", scope, 64, 256))
+    scheduler = in_memory_compute_scheduler(inventory)
+
+    allowed = scheduler.allocate(
+        "allowed-host",
+        scope,
+        ComputeRequirement(
+            cpu_cores=4,
+            memory_bytes=16,
+            allowed_host_ids=("z-large",),
+        ),
+    )
+    assert allowed.host_id == "z-large"
+
+    forbidden = scheduler.allocate(
+        "forbidden-host",
+        scope,
+        ComputeRequirement(
+            cpu_cores=2,
+            memory_bytes=8,
+            forbidden_host_ids=("a-tight",),
+        ),
+    )
+    assert forbidden.host_id == "z-large"
