@@ -30,7 +30,12 @@ _DEPLOYMENT_FIELDS = frozenset({
 })
 _APPLIED_FIELDS = frozenset({"spec", "contract", "environment", "process"})
 _PROCESS_FIELDS = frozenset({
-    "pid", "start_identity", "process_group_id", "control_pid",
+    "pid",
+    "start_identity",
+    "process_group_id",
+    "control_pid",
+    "anchor_pid",
+    "anchor_start_identity",
 })
 _CONTRACT_FIELDS = frozenset({
     "service_id", "generation", "executable", "argv", "cwd", "environment_digest",
@@ -116,6 +121,8 @@ def encode_applied(value: AppliedModelDeployment) -> bytes:
             "start_identity": value.process.start_identity,
             "process_group_id": value.process.process_group_id,
             "control_pid": value.process.control_pid,
+            "anchor_pid": value.process.anchor_pid,
+            "anchor_start_identity": value.process.anchor_start_identity,
         },
     }
     return json.dumps(
@@ -177,6 +184,15 @@ def decode_applied(data: dict[str, object]) -> AppliedModelDeployment:
             process_data["control_pid"],
             field="process.control_pid",
             minimum=1,
+        ),
+        anchor_pid=optional_integer(
+            process_data["anchor_pid"],
+            field="process.anchor_pid",
+            minimum=1,
+        ),
+        anchor_start_identity=optional_text(
+            process_data["anchor_start_identity"],
+            field="process.anchor_start_identity",
         ),
     )
     return AppliedModelDeployment(spec, contract, environment, process)
