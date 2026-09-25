@@ -9,6 +9,7 @@ from noetrium_platform.infrastructure.resources.compute.runtime import (
     InMemoryComputeInventory, SQLiteComputeScheduler,
 )
 from tests.resource_compute_support import in_memory_compute_scheduler
+from noetrium_platform.infrastructure.resources.lease.runtime import ManualLeaseClock
 
 
 class _Observer:
@@ -88,7 +89,12 @@ def test_runtime_scheduler_rejects_shared_gpu_above_utilization_ceiling() -> Non
 
 def test_sqlite_scheduler_uses_same_idle_then_shared_policy(tmp_path) -> None:
     scheduler = SQLiteComputeScheduler(
-        tmp_path / "compute.sqlite", _inventory(),
+        tmp_path / "compute.sqlite",
+        _inventory(),
+        clock=ManualLeaseClock(
+            elapsed_seconds=1.0,
+            wall_epoch_seconds=100.0,
+        ),
         gpu_runtime_observer=_Observer(_snapshot()),
     )
     first = scheduler.allocate("first", _scope(), _requirement())
