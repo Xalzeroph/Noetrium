@@ -78,17 +78,18 @@ include = ["{package}*"]
 def _readme(project_id: str) -> str:
     return f'''# {project_id}
 
-This is a Noetrium Research OS project with one unconstrained scientific core.
+This is a Noetrium downstream project with one user-owned executable Program.
 
-The only required user-owned entrypoint is `src/<package>/core.py::build_research()`.
-It may import any package-local modules or subpackages you create and may construct
-any valid ResearchPortfolio: one paper or hundreds, arbitrary ResearchPrograms,
-custom DAGs, methods, memory, participants, runtimes, benchmarks, experiments,
-analyses, Machine-backed semantics, and cross-program dependencies.
+The only required user-owned entrypoint is `src/<package>/core.py::build_program()`.
+It returns a `noetrium.api.MethodProgram` and may import arbitrary package-local
+method, memory, policy, rule, handler or sub-IR modules. You do not author a
+ResearchPortfolio, Study, ProjectManifest, provider map or resource declaration.
 
-`src/<package>/research.py`, project metadata, tests, execution wiring,
-model/environment/resource composition, scheduling, checkpointing, evidence,
-artifacts, recovery, revision migration, and operator plumbing are platform-owned.
+`src/<package>/research.py` automatically lifts the Program into Noetrium's
+internal ResearchProgram/ResearchPortfolio IR. Project metadata, tests, execution
+wiring, model/environment/resource composition, scheduling, checkpointing,
+evidence, artifacts, recovery, revision migration and operator plumbing are
+platform-owned.
 
 Run `noetrium project doctor --project .` and
 `noetrium project test --project .`.

@@ -480,35 +480,47 @@ my-paper/
 The only required user-owned entrypoint is:
 
 ~~~text
-src/<package>/core.py::build_research()
+src/<package>/core.py::build_program()
 ~~~
 
-It returns a <code>noetrium.api.ResearchPortfolio</code>. It may import arbitrary package-local scientific modules, but all Noetrium imports remain through <code>noetrium.api</code>.
+It returns a `noetrium.api.MethodProgram`. The downstream author writes the real
+method/agent semantics: Program nodes, rules, policies, handlers, memory semantics
+or package-local sub-IR. No ResearchPortfolio, Study, ProjectManifest, provider map,
+GPU request, Docker declaration or scheduler declaration is required.
 
 A minimal core is:
 
 ~~~python
 from noetrium import api
 
-def _bootstrap():
-    return None
+def _finish(request):
+    return api.MethodNodeResult(value=request.input_value)
 
-def build_research() -> api.ResearchPortfolio:
-    program = api.ResearchProgramBuilder("my-paper")
-    program.definition(
-        "bootstrap",
-        kind=api.ResearchDefinitionKind.CUSTOM,
-        implementation=_bootstrap,
+def build_program() -> api.MethodProgram:
+    identity = api.MethodProgramIdentity(
+        api.MethodIdentity(
+            "my-paper",
+            "1",
+            "noetrium.method-machine.v1",
+            "1",
+        )
     )
-    program.node(
-        "root",
-        kind=api.ResearchNodeKind.CUSTOM,
-        definitions=("bootstrap",),
+    return (
+        api.MethodProgramBuilder(identity, entrypoint="finish")
+        .return_node("finish", "my-paper.finish", _finish)
+        .build()
     )
-    return api.ResearchPortfolio("my-paper", (program.freeze(),))
 ~~~
 
-Replace the semantics-neutral body with the real research core. Keep project-specific source downstream.
+Replace that semantics-neutral Program with the real paper method. You may split
+the implementation across arbitrary package-local modules. The generated
+`research.py` automatically lifts the Program into Noetrium's internal
+ResearchProgram/ResearchPortfolio graph for scheduling, revisioning and control.
+
+ResearchPortfolio, Study, binding requirements and authority manifests are
+Platform IR. They may be generated or inspected internally, but they are not a
+second authoring contract that downstream researchers must maintain.
+
 ### 4. Decide where scientific semantics belong
 
 | Concern | Canonical home |
@@ -544,7 +556,7 @@ noetrium project doctor --project .
 noetrium project test --project .
 ~~~
 
-Doctor checks template revision, project metadata, canonical manifest, manifest identity, exact installed Noetrium version, Platform artifact provenance, generated shell identity, the public import boundary and ResearchPortfolio compile readiness.
+Doctor checks template revision, project metadata, canonical platform manifest, exact installed Noetrium version, Platform artifact provenance, generated shell identity, the public import boundary, Program validity and the automatically lifted internal ResearchPortfolio.
 
 Project test installs the project into an isolated temporary target and executes the generated contract tests against that isolated install.
 

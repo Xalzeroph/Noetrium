@@ -271,7 +271,7 @@ def doctor_project(
     checks.append(_check(
         "standard_bindings",
         compile_ready,
-        "user core produces a valid top-level ResearchPortfolio through noetrium.api",
+        "user Program is valid and the generated shell lifts it into internal ResearchPortfolio IR",
         "resolve project compile readiness: " + compile_detail,
     ))
 
