@@ -59,6 +59,10 @@ def service_crash_failure(report: ServiceCrashReport, context: ExecutionContext)
         f"process://pid={process.pid}"
         f"?start_identity={process.start_identity}"
         f"&process_group_id={process.process_group_id}"
+        f"&control_pid={process.control_pid}"
+        f"&anchor_pid={process.anchor_pid}"
+        f"&anchor_start_identity={process.anchor_start_identity}"
+        f"&anchor_control_pid={process.anchor_control_pid}"
     )
     contract_ref = f"service-contract://sha256={report.contract_digest}"
     artifacts = (
