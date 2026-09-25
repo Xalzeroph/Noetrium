@@ -9,7 +9,7 @@ from threading import RLock
 from time import time
 
 from noetrium_platform.infrastructure.resources.compute.api import (
-    ComputeAllocation, ComputeBindingProof, ComputeDeviceHealth, ComputeHost, ComputePlacementPreference, ComputePlacementUnavailable, ComputeRequirement,
+    ComputeAllocation, ComputeAllocationBatch, ComputeBindingProof, ComputeDeviceHealth, ComputeHost, ComputePlacementPreference, ComputePlacementUnavailable, ComputeRequirement,
     GpuDeviceStatus, GpuRuntimeObserverPort, GpuRuntimeSnapshot, GpuSharingMode,
     HostRuntimeObserverPort, HostRuntimeSnapshot, HostRuntimeStatus,
 )
@@ -828,6 +828,47 @@ class InMemoryComputeScheduler:
                     quarantined_gpus=quarantined_gpus,
                 )
             )
+    def allocate_batch(
+        self,
+        batch: ComputeAllocationBatch,
+        *,
+        ttl_seconds: float | None = None,
+        now: float | None = None,
+    ) -> tuple[ComputeAllocation, ...]:
+        if type(batch) is not ComputeAllocationBatch:
+            raise TypeError("compute batch allocation requires ComputeAllocationBatch")
+        with self._lock:
+            preexisting = frozenset(self._allocations)
+            acquired: list[ComputeAllocation] = []
+            try:
+                for request in batch.requests:
+                    acquired.append(
+                        self.allocate(
+                            request.allocation_id,
+                            request.scope,
+                            request.requirement,
+                            placement_scope=request.placement_scope,
+                            ttl_seconds=ttl_seconds,
+                            now=now,
+                        )
+                    )
+                return tuple(acquired)
+            except BaseException as primary:
+                rollback_errors: list[BaseException] = []
+                for allocation in reversed(acquired):
+                    if allocation.allocation_id in preexisting:
+                        continue
+                    try:
+                        self.release(allocation)
+                    except BaseException as rollback_error:
+                        rollback_errors.append(rollback_error)
+                if rollback_errors:
+                    raise ExceptionGroup(
+                        "compute batch allocation failed and rollback was incomplete",
+                        [primary, *rollback_errors],
+                    )
+                raise
+
     def allocate(
         self,
         allocation_id: str,
