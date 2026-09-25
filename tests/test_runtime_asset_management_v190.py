@@ -36,6 +36,7 @@ from noetrium_platform.capabilities.model.composition import DeploymentModelAsse
 from noetrium_platform.capabilities.model.assignment.runtime import ModelAssignmentManager
 from noetrium_platform.capabilities.model.deployment.runtime import (
     AppliedModelDeploymentStore,
+    DurableModelAutoRecoveryAuthority,
     FileModelControllerStateStore,
     ModelDesiredStateController,
     ModelDeploymentCatalog,
@@ -224,7 +225,11 @@ def build_models(directories, environments, factory, *, source_backends=(), gpu_
     assets = ModelAssetManager(asset_registry, DeploymentModelAssetReferences(catalog), storage, source_backends)
     materializer = ModelLaunchMaterializer(assets, environments.lifecycle)
     runtime = ModelDeploymentRuntime(applied_store, catalog, materializer, factory)
-    fleet = ModelFleetRuntime(catalog, runtime)
+    fleet = ModelFleetRuntime(
+        catalog,
+        runtime,
+        DurableModelAutoRecoveryAuthority(directories.layout),
+    )
     logs = ModelDeploymentLogReader(applied_store, catalog, materializer, factory)
     resources = ModelResourceView(assets, catalog, fleet, gpu_observer or FakeGpuObserver())
     controller = ModelDesiredStateController(
