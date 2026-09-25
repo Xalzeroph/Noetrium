@@ -3,7 +3,7 @@
   "architecture_complexity": {
     "authorities": 20,
     "contract_declarations": 184,
-    "import_edges": 5359,
+    "import_edges": 5362,
     "subsystems": 15,
     "top_level_systems": 16
   },
@@ -23,7 +23,7 @@
     "effective_limits": {
       "authorities": 31,
       "contract_declarations": 184,
-      "import_edges": 5359,
+      "import_edges": 5362,
       "subsystems": 15,
       "top_level_systems": 16
     },
@@ -627,7 +627,7 @@
       "seam_id": "completed"
     }
   ],
-  "import_edges": 5359,
+  "import_edges": 5362,
   "import_violations": [],
   "layer_violations": [],
   "operation_graph": [
@@ -873,7 +873,7 @@
     }
   ],
   "package_cycles": [],
-  "report_sha256": "3a6671d856e32e436d4051b8409efd1644e6f62ee43f538e007f03f6cfe2ca7a",
+  "report_sha256": "10ca26f84b777f23979a9b3b58513105a734af557b5494c9cf37615629180bfc",
   "source_authority_violations": [
     {
       "allowed_modules": [
@@ -881,7 +881,7 @@
       ],
       "authority": "kernel.blocking_wait",
       "detail": "time.sleep is a protected mutation primitive; authority belongs to noetrium_platform.foundation.kernel.kernel.retry",
-      "line": 696,
+      "line": 998,
       "module": "noetrium_platform.composition.shared_host_pressure",
       "path": "noetrium_platform/composition/shared_host_pressure.py",
       "primitive": "time.sleep"
@@ -909,7 +909,7 @@
       "primitive": "os.write"
     }
   ],
-  "source_digest": "b8060604844fc1ee9f0ed3b22725d954616b7cdc2ee92a361762279af16f9437",
+  "source_digest": "b63a29d5bfefdc729974ff4fbaed3a27b7c37bdb1603e162abf7d55f9bc8bb12",
   "source_invariant_violations": [
     {
       "detail": "direct concurrency implementation import noetrium_platform.foundation.kernel.concurrency.api.ports; depend on noetrium_platform.foundation.kernel.concurrency.api and obtain task groups from composition",
@@ -920,7 +920,7 @@
     {
       "detail": "direct SQLite rollback bypasses the canonical Platform durability authority; use abort_sqlite_writer() or rollback_sqlite_writer()",
       "invariant": "sqlite_durability_authority",
-      "line": 1048,
+      "line": 1419,
       "path": "noetrium_platform/infrastructure/resources/compute/runtime/scheduler.py"
     }
   ],
@@ -1696,6 +1696,30 @@
       "score": 3718
     },
     {
+      "branches": 172,
+      "classes": 5,
+      "exception_handlers": 14,
+      "functions": 65,
+      "imports": 16,
+      "max_function_lines": 123,
+      "module": "noetrium_platform.infrastructure.resources.compute.runtime.scheduler",
+      "path": "noetrium_platform/infrastructure/resources/compute/runtime/scheduler.py",
+      "physical_lines": 1863,
+      "score": 3573
+    },
+    {
+      "branches": 141,
+      "classes": 13,
+      "exception_handlers": 8,
+      "functions": 45,
+      "imports": 12,
+      "max_function_lines": 152,
+      "module": "noetrium_platform.composition.shared_host_pressure",
+      "path": "noetrium_platform/composition/shared_host_pressure.py",
+      "physical_lines": 1158,
+      "score": 2606
+    },
+    {
       "branches": 133,
       "classes": 12,
       "exception_handlers": 9,
@@ -1706,18 +1730,6 @@
       "path": "noetrium_platform/composition/research_os_lowering.py",
       "physical_lines": 1128,
       "score": 2545
-    },
-    {
-      "branches": 114,
-      "classes": 5,
-      "exception_handlers": 12,
-      "functions": 51,
-      "imports": 16,
-      "max_function_lines": 112,
-      "module": "noetrium_platform.infrastructure.resources.compute.runtime.scheduler",
-      "path": "noetrium_platform/infrastructure/resources/compute/runtime/scheduler.py",
-      "physical_lines": 1311,
-      "score": 2515
     },
     {
       "branches": 120,
@@ -1804,6 +1816,18 @@
       "score": 2258
     },
     {
+      "branches": 103,
+      "classes": 6,
+      "exception_handlers": 18,
+      "functions": 25,
+      "imports": 17,
+      "max_function_lines": 180,
+      "module": "noetrium_platform.capabilities.model.deployment.composition.replica_pool",
+      "path": "noetrium_platform/capabilities/model/deployment/composition/replica_pool.py",
+      "physical_lines": 911,
+      "score": 2226
+    },
+    {
       "branches": 97,
       "classes": 11,
       "exception_handlers": 2,
@@ -1826,18 +1850,6 @@
       "path": "noetrium_platform/research/execution/workflow/runtime/method_machine.py",
       "physical_lines": 986,
       "score": 2101
-    },
-    {
-      "branches": 118,
-      "classes": 11,
-      "exception_handlers": 8,
-      "functions": 30,
-      "imports": 12,
-      "max_function_lines": 139,
-      "module": "noetrium_platform.composition.shared_host_pressure",
-      "path": "noetrium_platform/composition/shared_host_pressure.py",
-      "physical_lines": 827,
-      "score": 2065
     },
     {
       "branches": 88,
@@ -1864,18 +1876,6 @@
       "score": 2000
     },
     {
-      "branches": 95,
-      "classes": 6,
-      "exception_handlers": 18,
-      "functions": 23,
-      "imports": 17,
-      "max_function_lines": 163,
-      "module": "noetrium_platform.capabilities.model.deployment.composition.replica_pool",
-      "path": "noetrium_platform/capabilities/model/deployment/composition/replica_pool.py",
-      "physical_lines": 774,
-      "score": 1991
-    },
-    {
       "branches": 115,
       "classes": 9,
       "exception_handlers": 4,
@@ -1891,7 +1891,7 @@
   "top_optimization_risks": [
     {
       "exception_handlers": 0,
-      "import_fan_in": 463,
+      "import_fan_in": 464,
       "import_fan_out": 29,
       "io_sites": 0,
       "lock_sites": 0,
@@ -1902,7 +1902,7 @@
         "HIGH_FAN_IN",
         "HIGH_FAN_OUT"
       ],
-      "risk_score": 1939,
+      "risk_score": 1943,
       "self_mutation_sites": 0,
       "serialization_sites": 0
     },
@@ -1924,31 +1924,12 @@
       "serialization_sites": 2
     },
     {
-      "exception_handlers": 18,
-      "import_fan_in": 1,
-      "import_fan_out": 9,
-      "io_sites": 0,
-      "lock_sites": 7,
-      "long_functions": 5,
-      "module": "noetrium_platform.capabilities.model.deployment.composition.replica_pool",
-      "path": "noetrium_platform/capabilities/model/deployment/composition/replica_pool.py",
-      "reason_codes": [
-        "LOCK_CONTENTION_RISK",
-        "STATE_MUTATION_CONCENTRATION",
-        "FAILURE_BRANCH_CONCENTRATION",
-        "LONG_FUNCTION"
-      ],
-      "risk_score": 619,
-      "self_mutation_sites": 52,
-      "serialization_sites": 0
-    },
-    {
-      "exception_handlers": 12,
+      "exception_handlers": 14,
       "import_fan_in": 1,
       "import_fan_out": 8,
-      "io_sites": 27,
+      "io_sites": 32,
       "lock_sites": 5,
-      "long_functions": 5,
+      "long_functions": 8,
       "module": "noetrium_platform.infrastructure.resources.compute.runtime.scheduler",
       "path": "noetrium_platform/infrastructure/resources/compute/runtime/scheduler.py",
       "reason_codes": [
@@ -1958,9 +1939,28 @@
         "FAILURE_BRANCH_CONCENTRATION",
         "LONG_FUNCTION"
       ],
-      "risk_score": 613,
-      "self_mutation_sites": 21,
-      "serialization_sites": 2
+      "risk_score": 748,
+      "self_mutation_sites": 24,
+      "serialization_sites": 3
+    },
+    {
+      "exception_handlers": 18,
+      "import_fan_in": 1,
+      "import_fan_out": 9,
+      "io_sites": 0,
+      "lock_sites": 7,
+      "long_functions": 6,
+      "module": "noetrium_platform.capabilities.model.deployment.composition.replica_pool",
+      "path": "noetrium_platform/capabilities/model/deployment/composition/replica_pool.py",
+      "reason_codes": [
+        "LOCK_CONTENTION_RISK",
+        "STATE_MUTATION_CONCENTRATION",
+        "FAILURE_BRANCH_CONCENTRATION",
+        "LONG_FUNCTION"
+      ],
+      "risk_score": 674,
+      "self_mutation_sites": 59,
+      "serialization_sites": 0
     },
     {
       "exception_handlers": 14,
@@ -2014,6 +2014,25 @@
       ],
       "risk_score": 474,
       "self_mutation_sites": 20,
+      "serialization_sites": 0
+    },
+    {
+      "exception_handlers": 8,
+      "import_fan_in": 5,
+      "import_fan_out": 3,
+      "io_sites": 2,
+      "lock_sites": 5,
+      "long_functions": 3,
+      "module": "noetrium_platform.composition.shared_host_pressure",
+      "path": "noetrium_platform/composition/shared_host_pressure.py",
+      "reason_codes": [
+        "LOCK_CONTENTION_RISK",
+        "STATE_MUTATION_CONCENTRATION",
+        "FAILURE_BRANCH_CONCENTRATION",
+        "LONG_FUNCTION"
+      ],
+      "risk_score": 469,
+      "self_mutation_sites": 48,
       "serialization_sites": 0
     },
     {
@@ -2227,24 +2246,6 @@
       "risk_score": 341,
       "self_mutation_sites": 0,
       "serialization_sites": 0
-    },
-    {
-      "exception_handlers": 13,
-      "import_fan_in": 2,
-      "import_fan_out": 5,
-      "io_sites": 0,
-      "lock_sites": 0,
-      "long_functions": 3,
-      "module": "noetrium_platform.capabilities.environment.providers.jsonl_process",
-      "path": "noetrium_platform/capabilities/environment/providers/jsonl_process.py",
-      "reason_codes": [
-        "STATE_MUTATION_CONCENTRATION",
-        "FAILURE_BRANCH_CONCENTRATION",
-        "LONG_FUNCTION"
-      ],
-      "risk_score": 325,
-      "self_mutation_sites": 26,
-      "serialization_sites": 2
     }
   ]
 }

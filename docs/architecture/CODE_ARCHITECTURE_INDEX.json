@@ -1803,6 +1803,11 @@
     {
       "kind": "references",
       "source": "noetrium_platform.capabilities.model.deployment.composition.replica_pool.ModelReplicaPoolLease",
+      "target": "noetrium_platform.capabilities.model.deployment.composition.replica_pool.ModelReplicaPlacement"
+    },
+    {
+      "kind": "references",
+      "source": "noetrium_platform.capabilities.model.deployment.composition.replica_pool.ModelReplicaPoolLease",
       "target": "noetrium_platform.capabilities.model.deployment.composition.replica_pool.ModelReplicaPoolReport"
     },
     {
@@ -6253,6 +6258,11 @@
     {
       "kind": "references",
       "source": "noetrium_platform.composition.shared_host_pressure.ResourceCompetitionAdmissionGate",
+      "target": "noetrium_platform.composition.shared_host_pressure.ResourceCompetitionReservationLedger"
+    },
+    {
+      "kind": "references",
+      "source": "noetrium_platform.composition.shared_host_pressure.ResourceCompetitionAdmissionGate",
       "target": "noetrium_platform.composition.shared_host_pressure.SharedNetworkPressureObserverPort"
     },
     {
@@ -6274,6 +6284,16 @@
       "kind": "references",
       "source": "noetrium_platform.composition.shared_host_pressure.ResourceCompetitionDecision",
       "target": "noetrium_platform.composition.shared_host_pressure.ResourceCompetitionClass"
+    },
+    {
+      "kind": "references",
+      "source": "noetrium_platform.composition.shared_host_pressure.ResourceCompetitionReservationLedger",
+      "target": "noetrium_platform.composition.shared_host_pressure.ResourceCompetitionDemand"
+    },
+    {
+      "kind": "references",
+      "source": "noetrium_platform.composition.shared_host_pressure.ResourceCompetitionReservationLedger",
+      "target": "noetrium_platform.composition.shared_host_pressure.SharedStoragePressureStatus"
     },
     {
       "kind": "references",
@@ -13087,6 +13107,11 @@
     },
     {
       "kind": "references",
+      "source": "noetrium_platform.infrastructure.resources.compute.api.contracts.ComputeAllocation",
+      "target": "noetrium_platform.infrastructure.resources.compute.api.contracts.GpuSharingMode"
+    },
+    {
+      "kind": "references",
       "source": "noetrium_platform.infrastructure.resources.compute.api.contracts.ComputeHost",
       "target": "noetrium_platform.infrastructure.resources.compute.api.contracts.ComputeGPU"
     },
@@ -13134,6 +13159,11 @@
       "kind": "references",
       "source": "noetrium_platform.infrastructure.resources.compute.api.ports.ComputeSchedulerPort",
       "target": "noetrium_platform.infrastructure.resources.compute.api.contracts.ComputeAllocation"
+    },
+    {
+      "kind": "references",
+      "source": "noetrium_platform.infrastructure.resources.compute.api.ports.ComputeSchedulerPort",
+      "target": "noetrium_platform.infrastructure.resources.compute.api.contracts.ComputeBindingProof"
     },
     {
       "kind": "references",
@@ -27438,7 +27468,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 443,
+      "line": 557,
       "methods": [
         "__init__",
         "active_lease_count",
@@ -27475,7 +27505,7 @@
         "status"
       ],
       "kind": "dataclass",
-      "line": 132,
+      "line": 133,
       "methods": [
         "placement_digest"
       ],
@@ -27493,9 +27523,11 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 182,
+      "line": 183,
       "methods": [
         "__init__",
+        "_current_generation",
+        "_rebind_running_generation",
         "assert_healthy",
         "close",
         "_close_locked",
@@ -27523,7 +27555,7 @@
         "request_digest"
       ],
       "kind": "dataclass",
-      "line": 147,
+      "line": 148,
       "methods": [
         "__post_init__"
       ],
@@ -27557,7 +27589,7 @@
         "tags"
       ],
       "kind": "dataclass",
-      "line": 47,
+      "line": 48,
       "methods": [
         "__post_init__",
         "effective_compute"
@@ -27576,7 +27608,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 313,
+      "line": 427,
       "methods": [
         "__init__",
         "closed",
@@ -39424,7 +39456,7 @@
         "resource_competition"
       ],
       "kind": "dataclass",
-      "line": 41,
+      "line": 42,
       "methods": [
         "heartbeats",
         "open_task_group",
@@ -41403,7 +41435,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 84,
+      "line": 85,
       "methods": [
         "__init__",
         "_require_workloads_open",
@@ -42733,7 +42765,7 @@
         "state_root"
       ],
       "kind": "dataclass",
-      "line": 66,
+      "line": 69,
       "methods": [
         "prepare",
         "close"
@@ -43318,7 +43350,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 78,
+      "line": 81,
       "methods": [
         "__init__",
         "admit",
@@ -43351,7 +43383,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 74,
+      "line": 77,
       "methods": [],
       "module": "noetrium_platform.composition.research_os_runtime",
       "name": "CanonicalResearchOSRuntimeFailure",
@@ -43369,7 +43401,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 70,
+      "line": 73,
       "methods": [],
       "module": "noetrium_platform.composition.research_os_runtime",
       "name": "CanonicalResearchOSRuntimeUnsupported",
@@ -44522,10 +44554,11 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 207,
+      "line": 217,
       "methods": [
         "__init__",
         "_existing_capacity_path",
+        "_capacity",
         "snapshot"
       ],
       "module": "noetrium_platform.composition.shared_host_pressure",
@@ -44544,12 +44577,17 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 406,
+      "line": 626,
       "methods": [
         "__init__",
         "register_group",
         "set_group_demand",
         "unregister_group",
+        "_effective_demand",
+        "_reserved_demand",
+        "_reserved_storage_for",
+        "_reserve_demand",
+        "_release_one_demand",
         "_status",
         "_storage_status",
         "_network_status",
@@ -44583,7 +44621,7 @@
         "SOFT_CONTENTION"
       ],
       "kind": "enum",
-      "line": 290,
+      "line": 345,
       "methods": [],
       "module": "noetrium_platform.composition.shared_host_pressure",
       "name": "ResourceCompetitionClass",
@@ -44605,7 +44643,7 @@
         "reason"
       ],
       "kind": "dataclass",
-      "line": 296,
+      "line": 351,
       "methods": [
         "__post_init__"
       ],
@@ -44628,10 +44666,11 @@
         "memory_bytes_per_permit",
         "pids_per_permit",
         "storage_bytes_per_permit",
-        "storage_inodes_per_permit"
+        "storage_inodes_per_permit",
+        "storage_path"
       ],
       "kind": "dataclass",
-      "line": 266,
+      "line": 310,
       "methods": [
         "__post_init__"
       ],
@@ -44663,7 +44702,7 @@
         "poll_interval_seconds"
       ],
       "kind": "dataclass",
-      "line": 345,
+      "line": 400,
       "methods": [
         "__post_init__"
       ],
@@ -44673,6 +44712,30 @@
         "ResourceCompetitionPolicy"
       ],
       "qualname": "noetrium_platform.composition.shared_host_pressure.ResourceCompetitionPolicy",
+      "system_key": "research_os",
+      "top_system": "research_os"
+    },
+    {
+      "bases": [],
+      "decorators": [],
+      "fields": [],
+      "kind": "class",
+      "line": 461,
+      "methods": [
+        "__init__",
+        "lock",
+        "reserved_demand",
+        "_storage_key",
+        "reserved_storage_for",
+        "reserve",
+        "release_one"
+      ],
+      "module": "noetrium_platform.composition.shared_host_pressure",
+      "name": "ResourceCompetitionReservationLedger",
+      "nesting": [
+        "ResourceCompetitionReservationLedger"
+      ],
+      "qualname": "noetrium_platform.composition.shared_host_pressure.ResourceCompetitionReservationLedger",
       "system_key": "research_os",
       "top_system": "research_os"
     },
@@ -44727,7 +44790,7 @@
       "decorators": [],
       "fields": [],
       "kind": "protocol",
-      "line": 203,
+      "line": 210,
       "methods": [
         "snapshot"
       ],
@@ -44747,6 +44810,7 @@
       ],
       "fields": [
         "available",
+        "capacity_id",
         "detail",
         "free_bytes",
         "free_inodes"
@@ -44762,6 +44826,25 @@
         "SharedStoragePressureStatus"
       ],
       "qualname": "noetrium_platform.composition.shared_host_pressure.SharedStoragePressureStatus",
+      "system_key": "research_os",
+      "top_system": "research_os"
+    },
+    {
+      "bases": [],
+      "decorators": [],
+      "fields": [],
+      "kind": "class",
+      "line": 601,
+      "methods": [
+        "__init__",
+        "release"
+      ],
+      "module": "noetrium_platform.composition.shared_host_pressure",
+      "name": "_ResourceCompetitionLease",
+      "nesting": [
+        "_ResourceCompetitionLease"
+      ],
+      "qualname": "noetrium_platform.composition.shared_host_pressure._ResourceCompetitionLease",
       "system_key": "research_os",
       "top_system": "research_os"
     },
@@ -78923,8 +79006,14 @@
       ],
       "fields": [
         "allocation_id",
+        "binding_binder_identity_digest",
+        "binding_evidence_ref",
+        "binding_proof_digest",
+        "bound_at_epoch_s",
         "cpu_cores",
         "gpu_ids",
+        "gpu_memory_reservation_bytes",
+        "gpu_sharing_mode",
         "host_id",
         "lease_expires_at_epoch_s",
         "lease_fencing_token",
@@ -78932,9 +79021,10 @@
         "scope"
       ],
       "kind": "dataclass",
-      "line": 141,
+      "line": 185,
       "methods": [
         "__post_init__",
+        "is_bound",
         "expired_at"
       ],
       "module": "noetrium_platform.infrastructure.resources.compute.api.contracts",
@@ -78952,13 +79042,42 @@
         "dataclass(frozen=True, slots=True)"
       ],
       "fields": [
+        "allocation_id",
+        "binder_identity_digest",
+        "evidence_ref",
+        "gpu_ids",
+        "host_id",
+        "lease_fencing_token",
+        "observed_at_epoch_s"
+      ],
+      "kind": "dataclass",
+      "line": 146,
+      "methods": [
+        "__post_init__",
+        "digest"
+      ],
+      "module": "noetrium_platform.infrastructure.resources.compute.api.contracts",
+      "name": "ComputeBindingProof",
+      "nesting": [
+        "ComputeBindingProof"
+      ],
+      "qualname": "noetrium_platform.infrastructure.resources.compute.api.contracts.ComputeBindingProof",
+      "system_key": "resource",
+      "top_system": "resource"
+    },
+    {
+      "bases": [],
+      "decorators": [
+        "dataclass(frozen=True, slots=True)"
+      ],
+      "fields": [
         "cluster_id",
         "host_ids",
         "labels",
         "scope"
       ],
       "kind": "dataclass",
-      "line": 40,
+      "line": 42,
       "methods": [
         "__post_init__"
       ],
@@ -78983,7 +79102,7 @@
         "model"
       ],
       "kind": "dataclass",
-      "line": 11,
+      "line": 13,
       "methods": [
         "__post_init__"
       ],
@@ -79011,7 +79130,7 @@
         "scope"
       ],
       "kind": "dataclass",
-      "line": 23,
+      "line": 25,
       "methods": [
         "__post_init__"
       ],
@@ -79034,7 +79153,7 @@
         "ttl_seconds"
       ],
       "kind": "dataclass",
-      "line": 54,
+      "line": 56,
       "methods": [
         "__post_init__"
       ],
@@ -79054,7 +79173,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 73,
+      "line": 75,
       "methods": [
         "__init__"
       ],
@@ -79088,7 +79207,7 @@
         "required_labels"
       ],
       "kind": "dataclass",
-      "line": 88,
+      "line": 90,
       "methods": [
         "__post_init__"
       ],
@@ -79111,7 +79230,7 @@
         "PREFER_IDLE_ALLOW_SHARED"
       ],
       "kind": "enum",
-      "line": 82,
+      "line": 84,
       "methods": [],
       "module": "noetrium_platform.infrastructure.resources.compute.api.contracts",
       "name": "GpuSharingMode",
@@ -79221,6 +79340,8 @@
       "methods": [
         "allocate",
         "renew_many",
+        "confirm_bound",
+        "replace_bound",
         "reconcile_expired",
         "release",
         "recover_release",
@@ -79661,7 +79782,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 161,
+      "line": 328,
       "methods": [
         "__init__"
       ],
@@ -79679,7 +79800,7 @@
       "decorators": [],
       "fields": [],
       "kind": "class",
-      "line": 379,
+      "line": 612,
       "methods": [
         "__init__",
         "_usage",
@@ -79689,6 +79810,9 @@
         "_reconcile_expired_locked",
         "candidates",
         "allocate",
+        "_validate_binding_proof",
+        "confirm_bound",
+        "replace_bound",
         "renew_many",
         "reconcile_expired",
         "release",
@@ -79711,7 +79835,7 @@
         "SCHEMA_VERSION"
       ],
       "kind": "class",
-      "line": 719,
+      "line": 1051,
       "methods": [
         "__init__",
         "_connection",
@@ -79729,6 +79853,9 @@
         "candidates",
         "_ensure_identity",
         "allocate",
+        "_validate_binding_proof",
+        "confirm_bound",
+        "replace_bound",
         "renew_many",
         "reconcile_expired",
         "release",
@@ -79755,7 +79882,7 @@
         "processes_complete"
       ],
       "kind": "dataclass",
-      "line": 132,
+      "line": 299,
       "methods": [],
       "module": "noetrium_platform.infrastructure.resources.compute.runtime.scheduler",
       "name": "_GpuRuntimeIndex",
@@ -79773,11 +79900,15 @@
       ],
       "fields": [
         "cpu_cores",
-        "gpu_ids",
-        "memory_bytes"
+        "gpu_allocation_counts",
+        "gpu_exclusive_counts",
+        "memory_bytes",
+        "unbound_cpu_cores",
+        "unbound_gpu_memory_bytes",
+        "unbound_memory_bytes"
       ],
       "kind": "dataclass",
-      "line": 105,
+      "line": 108,
       "methods": [],
       "module": "noetrium_platform.infrastructure.resources.compute.runtime.scheduler",
       "name": "_HostUsage",
@@ -101630,6 +101761,11 @@
     },
     {
       "kind": "constructs",
+      "source": "noetrium_platform.composition.research_execution_pool.ResearchExecutionPool",
+      "target": "noetrium_platform.composition.shared_host_pressure.ResourceCompetitionReservationLedger"
+    },
+    {
+      "kind": "constructs",
       "source": "noetrium_platform.composition.research_graph.ResearchGraphScheduler",
       "target": "noetrium_platform.composition.research_graph.ResearchGraphControlHalt"
     },
@@ -101875,6 +102011,11 @@
     },
     {
       "kind": "constructs",
+      "source": "noetrium_platform.composition.research_os_runtime.CanonicalResearchOSNodeRuntime",
+      "target": "noetrium_platform.composition.shared_host_pressure.ResourceCompetitionDemand"
+    },
+    {
+      "kind": "constructs",
       "source": "noetrium_platform.composition.research_os_value_authorities.ResearchOSImmutableValueAuthority",
       "target": "noetrium_platform.composition.research_os_values.ResearchOSValueReference"
     },
@@ -102001,12 +102142,27 @@
     {
       "kind": "constructs",
       "source": "noetrium_platform.composition.shared_host_pressure.ResourceCompetitionAdmissionGate",
+      "target": "noetrium_platform.composition.shared_host_pressure.ResourceCompetitionReservationLedger"
+    },
+    {
+      "kind": "constructs",
+      "source": "noetrium_platform.composition.shared_host_pressure.ResourceCompetitionAdmissionGate",
       "target": "noetrium_platform.composition.shared_host_pressure.SharedNetworkPressureStatus"
     },
     {
       "kind": "constructs",
       "source": "noetrium_platform.composition.shared_host_pressure.ResourceCompetitionAdmissionGate",
       "target": "noetrium_platform.composition.shared_host_pressure.SharedStoragePressureStatus"
+    },
+    {
+      "kind": "constructs",
+      "source": "noetrium_platform.composition.shared_host_pressure.ResourceCompetitionAdmissionGate",
+      "target": "noetrium_platform.composition.shared_host_pressure._ResourceCompetitionLease"
+    },
+    {
+      "kind": "constructs",
+      "source": "noetrium_platform.composition.shared_host_pressure.ResourceCompetitionReservationLedger",
+      "target": "noetrium_platform.composition.shared_host_pressure.ResourceCompetitionDemand"
     },
     {
       "kind": "constructs",
@@ -105315,11 +105471,11 @@
     }
   ],
   "counts": {
-    "association_edges": 3520,
-    "classes": 3413,
-    "constructor_edges": 964,
+    "association_edges": 3526,
+    "classes": 3416,
+    "constructor_edges": 969,
     "inheritance_edges": 151,
-    "module_import_edges": 5081,
+    "module_import_edges": 5084,
     "parse_errors": 0,
     "python_modules": 1918,
     "registry_authorities": 20,
@@ -112602,6 +112758,10 @@
     },
     {
       "source": "noetrium_platform.composition.research_os_local",
+      "target": "noetrium_platform.composition.shared_host_pressure"
+    },
+    {
+      "source": "noetrium_platform.composition.research_os_local",
       "target": "noetrium_platform.evidence.artifact.catalog.providers"
     },
     {
@@ -112719,6 +112879,10 @@
     {
       "source": "noetrium_platform.composition.research_os_runtime",
       "target": "noetrium_platform.composition.research_os_reconciliation"
+    },
+    {
+      "source": "noetrium_platform.composition.research_os_runtime",
+      "target": "noetrium_platform.composition.shared_host_pressure"
     },
     {
       "source": "noetrium_platform.composition.research_os_runtime",
@@ -122921,6 +123085,10 @@
       "target": "noetrium_platform.foundation.governance.api"
     },
     {
+      "source": "noetrium_platform.infrastructure.resources.compute.api.contracts",
+      "target": "noetrium_platform.foundation.kernel.kernel"
+    },
+    {
       "source": "noetrium_platform.infrastructure.resources.compute.api.ports",
       "target": "noetrium_platform.foundation.governance.api"
     },
@@ -132263,6 +132431,7 @@
         "noetrium_platform.composition.research_os_runtime",
         "noetrium_platform.composition.research_os_value_authorities",
         "noetrium_platform.composition.research_os_values",
+        "noetrium_platform.composition.shared_host_pressure",
         "noetrium_platform.evidence.artifact.catalog.providers",
         "noetrium_platform.evidence.artifact.content.providers",
         "noetrium_platform.evidence.artifact.lineage.relation.providers",
@@ -132325,6 +132494,7 @@
         "noetrium_platform.composition.research_os_graph",
         "noetrium_platform.composition.research_os_lowering",
         "noetrium_platform.composition.research_os_reconciliation",
+        "noetrium_platform.composition.shared_host_pressure",
         "noetrium_platform.foundation.kernel.concurrency.api",
         "noetrium_platform.foundation.kernel.kernel",
         "noetrium_platform.product.research_os",
@@ -143035,7 +143205,8 @@
     },
     {
       "imports": [
-        "noetrium_platform.foundation.governance.api"
+        "noetrium_platform.foundation.governance.api",
+        "noetrium_platform.foundation.kernel.kernel"
       ],
       "module": "noetrium_platform.infrastructure.resources.compute.api.contracts",
       "path": "noetrium_platform/infrastructure/resources/compute/api/contracts.py",
@@ -146536,7 +146707,7 @@
   "parse_errors": [],
   "registry_sha256": "276e2729e0b700e814e98f8460d87e0ebee66c4620226fe2d880fe55cc970aec",
   "schema": "noetrium-code-architecture-index.v1",
-  "source_git_sha": "849a75273831b313afdbd469441eecd389cead78",
+  "source_git_sha": "1f40d46e35d1bf366afe6f4aa3cebd60ce880740",
   "system_import_edges": [
     {
       "count": 85,
@@ -146734,7 +146905,7 @@
       "target": "reliability"
     },
     {
-      "count": 327,
+      "count": 329,
       "source": "research_os",
       "target": "research_os"
     },
@@ -146759,7 +146930,7 @@
       "target": "governance"
     },
     {
-      "count": 21,
+      "count": 22,
       "source": "resource",
       "target": "platform"
     },
