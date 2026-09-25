@@ -21,6 +21,7 @@ from noetrium_platform.capabilities.model.deployment.runtime.templates import (
     sglang_deployment,
     vllm_deployment,
 )
+from noetrium_platform.capabilities.model.stack.api import ModelStackSpec
 from noetrium_platform.foundation.kernel.kernel import canonical_digest
 from noetrium_platform.substrate.api import PLATFORM_SCOPE, ScopeIdentity
 from noetrium_platform.substrate.api import (
@@ -50,6 +51,7 @@ class ModelReplicaPoolRequest:
     python_environment_id: str
     cwd: Path
     compute: ComputeRequirement
+    model_stack: ModelStackSpec | None = None
     replica_count: int | None = None
     endpoint_host: str = "127.0.0.1"
     endpoint_candidate_count: int = 32
@@ -70,6 +72,37 @@ class ModelReplicaPoolRequest:
             raise ValueError("model replica pool supports vllm or sglang")
         if self.compute.gpu_count <= 0:
             raise ValueError("automatic model replica pools currently require GPU resources")
+        if self.model_stack is not None:
+            if not isinstance(self.model_stack, ModelStackSpec):
+                raise TypeError("model replica pool model_stack must be ModelStackSpec")
+            if self.model_stack.identity.model_id != self.model_id:
+                raise ValueError("model replica pool model_id must match frozen model stack")
+            if self.model_stack.identity.engine.lower() != self.engine:
+                raise ValueError("model replica pool engine must match frozen model stack")
+            if self.extra_args:
+                raise ValueError(
+                    "model replica pool extra_args are forbidden when model_stack is frozen; "
+                    "put engine arguments in ModelStackSpec.engine_args"
+                )
+            if self.engine == "vllm":
+                required_gpus = (
+                    self.model_stack.tensor_parallel
+                    * self.model_stack.data_parallel
+                    * self.model_stack.pipeline_parallel
+                )
+            else:
+                if (
+                    self.model_stack.data_parallel != 1
+                    or self.model_stack.pipeline_parallel != 1
+                ):
+                    raise ValueError(
+                        "automatic SGLang replica pools currently support tensor parallel only"
+                    )
+                required_gpus = self.model_stack.tensor_parallel
+            if self.compute.gpu_count != required_gpus:
+                raise ValueError(
+                    "model replica pool compute.gpu_count must match frozen engine topology"
+                )
         if self.replica_count is not None and (
             type(self.replica_count) is not int or self.replica_count <= 0
         ):
@@ -342,6 +375,13 @@ class LocalModelReplicaPoolRuntime:
             f"{request.pool_id}-generation-{placement_generation_id[:16]}"
             f"-replica-{replica_index:03d}"
         )
+        stack = request.model_stack
+        engine_args = request.extra_args if stack is None else stack.engine_args
+        tensor_parallel = (
+            request.compute.gpu_count
+            if stack is None
+            else stack.tensor_parallel
+        )
         common = dict(
             deployment_id=deployment_id,
             scope=request.scope,
@@ -350,12 +390,16 @@ class LocalModelReplicaPoolRuntime:
             cwd=request.cwd,
             host=endpoint.endpoint.host,
             port=endpoint.endpoint.port,
-            tensor_parallel=request.compute.gpu_count,
+            tensor_parallel=tensor_parallel,
             gpu_devices=compute.gpu_ids,
-            extra_args=request.extra_args,
+            extra_args=engine_args,
         )
         if request.engine == "vllm":
-            spec = vllm_deployment(**common)
+            spec = vllm_deployment(
+                **common,
+                data_parallel=1 if stack is None else stack.data_parallel,
+                pipeline_parallel=1 if stack is None else stack.pipeline_parallel,
+            )
         elif request.engine == "sglang":
             spec = sglang_deployment(**common)
         else:
@@ -365,6 +409,11 @@ class LocalModelReplicaPoolRuntime:
             "auto-managed",
             f"replica-pool:{request.pool_id}",
             f"placement-generation:{placement_generation_id}",
+            *(
+                ()
+                if stack is None
+                else (f"model-stack:{stack.digest()}",)
+            ),
         }))
         from dataclasses import replace
         return replace(spec, desired_state=ModelDesiredState.RUNNING, tags=tags)
