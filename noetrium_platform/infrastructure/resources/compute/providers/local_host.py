@@ -50,6 +50,30 @@ class LocalHostRuntimeObserver:
         return None
 
     @staticmethod
+    def _pressure_some_avg10_percent(path: Path) -> float | None:
+        try:
+            lines = path.read_text("utf-8", errors="replace").splitlines()
+        except OSError:
+            return None
+        for line in lines:
+            if not line.startswith("some "):
+                continue
+            match = re.search(r"(?:^|\\s)avg10=([0-9]+(?:\\.[0-9]+)?)", line)
+            if match is None:
+                return None
+            value = float(match.group(1))
+            return value if math.isfinite(value) and 0.0 <= value <= 100.0 else None
+        return None
+
+    @staticmethod
+    def _available_pids() -> int | None:
+        limit = LocalHostRuntimeObserver._integer_file(Path("/sys/fs/cgroup/pids.max"))
+        current = LocalHostRuntimeObserver._integer_file(Path("/sys/fs/cgroup/pids.current"))
+        if limit is None or current is None or limit < 0 or current < 0:
+            return None
+        return max(0, limit - current)
+
+    @staticmethod
     def _effective_cpu_cores() -> float | None:
         try:
             affinity_count = len(os.sched_getaffinity(0))
@@ -101,6 +125,16 @@ class LocalHostRuntimeObserver:
                 effective_cpu_cores=cpu,
                 cpu_load_1m=load,
                 available_memory_bytes=memory,
+                cpu_pressure_some_avg10_percent=self._pressure_some_avg10_percent(
+                    Path("/proc/pressure/cpu")
+                ),
+                memory_pressure_some_avg10_percent=self._pressure_some_avg10_percent(
+                    Path("/proc/pressure/memory")
+                ),
+                io_pressure_some_avg10_percent=self._pressure_some_avg10_percent(
+                    Path("/proc/pressure/io")
+                ),
+                available_pids=self._available_pids(),
             ),),
         )
 
