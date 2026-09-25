@@ -2,7 +2,7 @@
   "counts": {
     "parse_errors": 0,
     "python_files": 3709,
-    "python_import_edges": 7045,
+    "python_import_edges": 7046,
     "symbols": 5113,
     "tracked_files": 4346,
     "typescript_javascript_files": 11
@@ -24725,6 +24725,12 @@
     {
       "source_module": "tests.test_durable_resource_sqlite_hardening_v1",
       "source_role": "tests",
+      "target_module": "noetrium_platform.infrastructure.resources.lease.runtime",
+      "target_role": "core_platform"
+    },
+    {
+      "source_module": "tests.test_durable_resource_sqlite_hardening_v1",
+      "source_role": "tests",
       "target_module": "noetrium_platform.infrastructure.resources.providers",
       "target_role": "core_platform"
     },
@@ -42347,7 +42353,7 @@
       "target_role": "research_reproductions"
     },
     {
-      "count": 2876,
+      "count": 2877,
       "source_role": "tests",
       "target_role": "core_platform"
     },
@@ -42426,7 +42432,7 @@
     "tooling": 39
   },
   "schema": "noetrium-repository-code-architecture-index.v1",
-  "source_git_sha": "0d38bf4f3276976b83e932d5e1bbdbc410588cf6",
+  "source_git_sha": "29466f78b8c3ffb5ae87f9ed4b8968bafdd54938",
   "symbols": [
     {
       "bases": [],
@@ -135520,7 +135526,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 81,
+      "line": 104,
       "methods": [
         "probe"
       ],
@@ -135538,7 +135544,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 86,
+      "line": 109,
       "methods": [
         "test_scope_and_lease_survive_rebuild_and_fence_conflicts",
         "test_endpoint_allocation_survives_rebuild_and_release_is_idempotent",
@@ -140513,7 +140519,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 83,
+      "line": 93,
       "methods": [
         "__init__",
         "put_deployment"
@@ -140530,7 +140536,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 92,
+      "line": 102,
       "methods": [
         "__init__",
         "status",
@@ -140549,7 +140555,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 125,
+      "line": 135,
       "methods": [
         "__init__",
         "reconcile"
@@ -140566,7 +140572,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 143,
+      "line": 153,
       "methods": [
         "__init__",
         "candidates",
@@ -140588,7 +140594,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 238,
+      "line": 248,
       "methods": [
         "__init__",
         "allocate_auto",
@@ -140610,7 +140616,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 318,
+      "line": 328,
       "methods": [
         "__init__",
         "start",
@@ -140629,7 +140635,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 334,
+      "line": 344,
       "methods": [
         "__init__",
         "create"
@@ -140646,7 +140652,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 346,
+      "line": 356,
       "methods": [
         "__init__",
         "create"
@@ -140665,7 +140671,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 430,
+      "line": 440,
       "methods": [
         "__init__",
         "generation"
@@ -140684,7 +140690,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 509,
+      "line": 519,
       "methods": [
         "__init__",
         "status",
@@ -140704,7 +140710,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 586,
+      "line": 596,
       "methods": [
         "__init__",
         "generation"
@@ -140723,7 +140729,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 604,
+      "line": 614,
       "methods": [
         "__init__",
         "confirm_bound"
@@ -140742,7 +140748,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 668,
+      "line": 678,
       "methods": [
         "__init__",
         "status",
@@ -140762,7 +140768,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 753,
+      "line": 763,
       "methods": [
         "generation"
       ],
@@ -140780,7 +140786,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 804,
+      "line": 814,
       "methods": [
         "__init__",
         "allocate"
@@ -140799,7 +140805,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 1036,
+      "line": 1046,
       "methods": [
         "allocate"
       ],
@@ -140817,7 +140823,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 1082,
+      "line": 1092,
       "methods": [
         "__init__",
         "remove_deployment"
@@ -140836,7 +140842,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 1093,
+      "line": 1103,
       "methods": [
         "reconcile"
       ],
@@ -140854,7 +140860,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 1166,
+      "line": 1180,
       "methods": [
         "reconcile"
       ],
@@ -140872,7 +140878,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 1178,
+      "line": 1192,
       "methods": [
         "release",
         "recover_release"
@@ -140891,7 +140897,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 1187,
+      "line": 1201,
       "methods": [
         "release",
         "recover_release"
@@ -140910,7 +140916,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 1244,
+      "line": 1258,
       "methods": [
         "release",
         "recover_release"
@@ -140929,7 +140935,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 1251,
+      "line": 1265,
       "methods": [
         "release",
         "recover_release"
@@ -140948,7 +140954,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 1301,
+      "line": 1315,
       "methods": [
         "remove_deployment"
       ],
@@ -140966,7 +140972,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 1352,
+      "line": 1366,
       "methods": [
         "__init__",
         "remove_deployment"
@@ -140985,7 +140991,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 1365,
+      "line": 1379,
       "methods": [
         "reconcile"
       ],
@@ -141003,7 +141009,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 1435,
+      "line": 1449,
       "methods": [
         "__init__",
         "remove_deployment"
@@ -141022,7 +141028,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 1504,
+      "line": 1518,
       "methods": [
         "__init__",
         "remove_deployment"
@@ -141041,7 +141047,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 1646,
+      "line": 1660,
       "methods": [
         "__init__",
         "remove_deployment"
@@ -149524,13 +149530,14 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 16,
+      "line": 17,
       "methods": [
         "__init__",
         "exists",
         "write",
         "read",
-        "reference"
+        "reference",
+        "mutation"
       ],
       "module": "tests.test_service_state_backend_decoupling_v178",
       "name": "MemoryServiceStateStore",
@@ -149544,7 +149551,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 37,
+      "line": 42,
       "methods": [
         "reconcile",
         "start",
@@ -149565,7 +149572,7 @@
       "fields": [],
       "kind": "class",
       "language": "python",
-      "line": 69,
+      "line": 74,
       "methods": [
         "test_exact_supervisor_runs_with_non_file_state_backend"
       ],

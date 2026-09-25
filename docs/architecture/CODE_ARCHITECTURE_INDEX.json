@@ -146741,7 +146741,7 @@
   "parse_errors": [],
   "registry_sha256": "276e2729e0b700e814e98f8460d87e0ebee66c4620226fe2d880fe55cc970aec",
   "schema": "noetrium-code-architecture-index.v1",
-  "source_git_sha": "0d38bf4f3276976b83e932d5e1bbdbc410588cf6",
+  "source_git_sha": "29466f78b8c3ffb5ae87f9ed4b8968bafdd54938",
   "system_import_edges": [
     {
       "count": 85,

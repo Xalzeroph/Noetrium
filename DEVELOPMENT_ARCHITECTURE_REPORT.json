@@ -873,7 +873,7 @@
     }
   ],
   "package_cycles": [],
-  "report_sha256": "6aa8ef82cd68c83779d4baaa153bf3f3dc077261878ac56678a20c0c0ef8bc41",
+  "report_sha256": "f21f9bc1b8b283fad2f387f862f14bc25836d4f179c0f71eff8285ff64fb011c",
   "source_authority_violations": [
     {
       "allowed_modules": [
@@ -909,7 +909,7 @@
       "primitive": "os.write"
     }
   ],
-  "source_digest": "7f6ef0439cb619605364a1fd2d0e4e15b54f942a9caaf942ed421fe26754f71a",
+  "source_digest": "fc07f39d14f0fa4338b2271804005a5aa1fade1f42ee82ab21b3d5890cdc1791",
   "source_invariant_violations": [
     {
       "detail": "direct concurrency implementation import noetrium_platform.foundation.kernel.concurrency.api.ports; depend on noetrium_platform.foundation.kernel.concurrency.api and obtain task groups from composition",
