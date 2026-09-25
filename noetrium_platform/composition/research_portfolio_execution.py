@@ -28,6 +28,10 @@ from .managed_research_runtime import (
     ManagedResearchRuntime,
     build_local_managed_research_runtime,
 )
+from .research_execution_content import (
+    ResearchExecutionContentAuthorities,
+    compose_research_execution_content,
+)
 from .research_execution_pool import ResearchExecutionPool
 from noetrium_platform.research.execution.workflow.api.runtime_binding import (
     MethodRuntimePortInventory,
@@ -136,6 +140,7 @@ class ResearchExecutionContext:
 
     state_root: Path
     runtime: ManagedResearchRuntime
+    content: ResearchExecutionContentAuthorities | None = None
 
     def __post_init__(self) -> None:
         if not isinstance(self.state_root, Path):
@@ -143,6 +148,19 @@ class ResearchExecutionContext:
         if not isinstance(self.runtime, ManagedResearchRuntime):
             raise TypeError(
                 "research execution context runtime must be ManagedResearchRuntime"
+            )
+        if self.content is None:
+            object.__setattr__(
+                self,
+                "content",
+                compose_research_execution_content(
+                    self.state_root / "content"
+                ),
+            )
+        elif type(self.content) is not ResearchExecutionContentAuthorities:
+            raise TypeError(
+                "research execution context content must be "
+                "ResearchExecutionContentAuthorities"
             )
 
     @property
@@ -418,6 +436,9 @@ def preflight_research_portfolio(
         experiment_runtime_components=authorities.experiment_runtime_components,
         execution_pool=execution_pool,
         method_runtime_inventory=authorities.method_runtime_inventory,
+        content_authorities=compose_research_execution_content(
+            state_root / "content"
+        ),
     )
     try:
         prepared = composition.prepare(target, portfolio)
@@ -463,6 +484,9 @@ def execute_research_portfolio(
         experiment_runtime_components=authorities.experiment_runtime_components,
         execution_pool=execution_pool,
         method_runtime_inventory=authorities.method_runtime_inventory,
+        content_authorities=compose_research_execution_content(
+            state_root / "content"
+        ),
     )
     try:
         prepared = composition.prepare(target, portfolio)

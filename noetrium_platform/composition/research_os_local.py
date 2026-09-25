@@ -49,6 +49,12 @@ from noetrium_platform.evidence.artifact.catalog.providers import (
 from noetrium_platform.evidence.artifact.content.providers import (
     DirectoryArtifactBlobStore,
 )
+from noetrium_platform.evidence.artifact.reference.providers import (
+    SQLiteArtifactReferenceStore,
+)
+from noetrium_platform.composition.research_execution_content import (
+    ResearchExecutionContentAuthorities,
+)
 from noetrium_platform.evidence.artifact.lineage.relation.providers import (
     SQLiteArtifactLineageStore,
 )
@@ -75,6 +81,7 @@ class LocalResearchOSComposition:
     revision_store: SQLitePortfolioRevisionStore
     graph_store: SQLiteResearchGraphExecutionStore
     execution_pool: ResearchExecutionPool
+    content: ResearchExecutionContentAuthorities
     _runtime: CanonicalResearchOSNodeRuntime
     _values: ResearchOSValueRouter
     _experiment_closures: ResearchOSExperimentClosurePort | None
@@ -138,6 +145,7 @@ def compose_local_research_os(
     experiment_runtime_components: ResearchOSExperimentRuntimeComponents | None = None,
     execution_pool: ResearchExecutionPool | None = None,
     method_runtime_inventory: MethodRuntimePortInventory | None = None,
+    content_authorities: ResearchExecutionContentAuthorities | None = None,
 ) -> LocalResearchOSComposition:
     """Compose the single durable local Research OS implementation.
 
@@ -181,10 +189,24 @@ def compose_local_research_os(
         )
 
     root.mkdir(parents=True, exist_ok=True)
-    blobs = DirectoryArtifactBlobStore(root / "blobs")
+    if content_authorities is None:
+        content = ResearchExecutionContentAuthorities(
+            root,
+            DirectoryArtifactBlobStore(root / "blobs"),
+            SQLiteArtifactRegistry(root / "artifact-catalog.sqlite3"),
+            SQLiteArtifactReferenceStore(root / "artifact-references.sqlite3"),
+        )
+    else:
+        if type(content_authorities) is not ResearchExecutionContentAuthorities:
+            raise TypeError(
+                "local Research OS content_authorities must be "
+                "ResearchExecutionContentAuthorities"
+            )
+        content = content_authorities
+    blobs = content.blobs
+    registry = content.artifacts
     revisions = SQLitePortfolioRevisionStore(root / "portfolio.sqlite3")
     graph = SQLiteResearchGraphExecutionStore(root / "graph.sqlite3")
-    registry = SQLiteArtifactRegistry(root / "artifact-catalog.sqlite3")
     retention = SQLiteArtifactRetentionStore(
         root / "artifact-retention.sqlite3"
     )
@@ -275,6 +297,7 @@ def compose_local_research_os(
         revisions,
         graph,
         pool,
+        content,
         runtime,
         values,
         experiment_closures,
