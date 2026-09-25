@@ -41,6 +41,9 @@ from noetrium_platform.foundation.kernel.concurrency.api import (
     TaskFailurePolicy,
     TaskGroupPort,
 )
+from noetrium_platform.foundation.kernel.concurrency.composition import (
+    build_cpu_worker_pool_provider,
+)
 from noetrium_platform.research.execution.policy.api import AdmissionBudget, AdmissionMode
 from noetrium_platform.research.execution.policy.api import ExecutionPriority
 
@@ -50,6 +53,31 @@ from .shared_host_pressure import (
     SharedNetworkPressureObserverPort,
     SharedStoragePressureObserverPort,
 )
+
+
+def _default_control_concurrency_budget() -> ConcurrencyBudget:
+    """Keep lifecycle/recovery control isolated with a minimal CPU reserve."""
+
+    return ConcurrencyBudget(
+        max_blocking_io_workers=2,
+        max_serial_workers=2,
+        max_cpu_workers=1,
+        max_blocking_io_in_flight=8,
+        max_async_io_in_flight=16,
+        max_cpu_in_flight=1,
+        default_queue_capacity=256,
+    )
+
+
+def _shared_workload_cpu_budget(
+    budgets: tuple[ConcurrencyBudget, ...],
+) -> ConcurrencyBudget:
+    if not budgets:
+        raise ValueError("shared workload CPU budget requires logical domains")
+    return ConcurrencyBudget(
+        max_cpu_workers=max(item.max_cpu_workers for item in budgets),
+        max_cpu_in_flight=max(int(item.max_cpu_in_flight) for item in budgets),
+    )
 
 
 class ResearchExecutionPool:
@@ -84,16 +112,41 @@ class ResearchExecutionPool:
         resource_competition_policy: ResourceCompetitionPolicy | None = None,
         exclusive_owner_generation: bool = False,
     ) -> None:
+        resolved_control_budget = (
+            control_concurrency_budget or _default_control_concurrency_budget()
+        )
+        resolved_orchestration_budget = (
+            orchestration_concurrency_budget or ConcurrencyBudget()
+        )
+        resolved_experiment_budget = (
+            experiment_concurrency_budget or ConcurrencyBudget()
+        )
+        resolved_model_io_budget = (
+            model_io_concurrency_budget or ConcurrencyBudget()
+        )
+        shared_cpu_budget = _shared_workload_cpu_budget(
+            (
+                resolved_orchestration_budget,
+                resolved_experiment_budget,
+                resolved_model_io_budget,
+            )
+        )
+
         self._control = build_execution_concurrency_runtime(
-            concurrency_budget=control_concurrency_budget,
+            concurrency_budget=resolved_control_budget,
             admission_budget=control_admission_budget,
             priority_aging_seconds=priority_aging_seconds,
             blocking_io_thread_name_prefix="research-control-io",
             timer_name="research-control-timer",
         )
+        self._shared_workload_cpu = None
+        self._shared_workload_cpu_closed = False
         try:
+            self._shared_workload_cpu = build_cpu_worker_pool_provider(
+                shared_cpu_budget
+            )
             self._orchestration = build_execution_concurrency_runtime(
-                concurrency_budget=orchestration_concurrency_budget,
+                concurrency_budget=resolved_orchestration_budget,
                 admission_budget=orchestration_admission_budget,
                 priority_aging_seconds=priority_aging_seconds,
                 host_runtime_observer=host_runtime_observer,
@@ -102,13 +155,10 @@ class ResearchExecutionPool:
                 resource_competition_policy=resource_competition_policy,
                 blocking_io_thread_name_prefix="research-orchestration-io",
                 timer_name="research-orchestration-timer",
+                cpu_provider=self._shared_workload_cpu,
             )
-        except BaseException:
-            self._control.close()
-            raise
-        try:
             self._experiments = build_execution_concurrency_runtime(
-                concurrency_budget=experiment_concurrency_budget,
+                concurrency_budget=resolved_experiment_budget,
                 admission_budget=experiment_admission_budget,
                 priority_aging_seconds=priority_aging_seconds,
                 host_runtime_observer=host_runtime_observer,
@@ -117,25 +167,48 @@ class ResearchExecutionPool:
                 resource_competition_policy=resource_competition_policy,
                 blocking_io_thread_name_prefix="research-experiment-io",
                 timer_name="research-experiment-timer",
+                cpu_provider=self._shared_workload_cpu,
             )
+            self._model_io = build_execution_concurrency_runtime(
+                concurrency_budget=resolved_model_io_budget,
+                admission_budget=model_io_admission_budget,
+                priority_aging_seconds=priority_aging_seconds,
+                host_runtime_observer=host_runtime_observer,
+                resource_competition_policy=resource_competition_policy,
+                blocking_io_thread_name_prefix="research-model-io",
+                timer_name="research-model-timer",
+                cpu_provider=self._shared_workload_cpu,
+            )
+            self._model_admission: ModelAdmissionRegistryPort = ModelAdmissionRegistry()
+        except BaseException as exc:
+            errors: list[BaseException] = [exc]
+            for name in ("_model_io", "_experiments", "_orchestration"):
+                runtime = getattr(self, name, None)
+                if runtime is None:
+                    continue
+                try:
+                    runtime.close()
+                except BaseException as cleanup_exc:
+                    errors.append(cleanup_exc)
+            if self._shared_workload_cpu is not None:
+                try:
+                    self._shared_workload_cpu.close(
+                        wait=True,
+                        cancel_pending=True,
+                    )
+                except BaseException as cleanup_exc:
+                    errors.append(cleanup_exc)
             try:
-                self._model_io = build_execution_concurrency_runtime(
-                    concurrency_budget=model_io_concurrency_budget,
-                    admission_budget=model_io_admission_budget,
-                    priority_aging_seconds=priority_aging_seconds,
-                    host_runtime_observer=host_runtime_observer,
-                    resource_competition_policy=resource_competition_policy,
-                    blocking_io_thread_name_prefix="research-model-io",
-                    timer_name="research-model-timer",
-                )
-                self._model_admission: ModelAdmissionRegistryPort = ModelAdmissionRegistry()
-            except BaseException:
-                self._experiments.close()
+                self._control.close()
+            except BaseException as cleanup_exc:
+                errors.append(cleanup_exc)
+            if len(errors) == 1:
                 raise
-        except BaseException:
-            self._orchestration.close()
-            self._control.close()
-            raise
+            raise ExceptionGroup(
+                "research execution pool construction failed",
+                errors,
+            ) from exc
+        self._workload_cpu_workers = shared_cpu_budget.max_cpu_workers
         if type(exclusive_owner_generation) is not bool:
             raise TypeError("exclusive_owner_generation must be boolean")
         self._owner_generation_id = uuid4().hex
