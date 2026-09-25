@@ -172,7 +172,7 @@ class FakeRuntime:
         self.start_calls += 1
         self.live = True
         self.process = ServiceProcessIdentity(
-            1234 + self.start_calls,
+            1233 + self.start_calls,
             f"start:{self.start_calls}",
         )
         return ServiceStartOutcome(
@@ -588,7 +588,11 @@ class ManagementTests(unittest.TestCase):
             assets = ModelAssetManager(asset_registry, DeploymentModelAssetReferences(catalog), storage, (source,))
             materializer = ModelLaunchMaterializer(assets, environments.lifecycle)
             runtime = ModelDeploymentRuntime(applied_store, catalog, materializer, factory)
-            fleet = ModelFleetRuntime(catalog, runtime)
+            fleet = ModelFleetRuntime(
+                catalog,
+                runtime,
+                DurableModelAutoRecoveryAuthority(directories.layout),
+            )
             logs = ModelDeploymentLogReader(applied_store, catalog, materializer, factory)
             resources = ModelResourceView(assets, catalog, fleet, FakeGpuObserver())
             controller = ModelDesiredStateController(
