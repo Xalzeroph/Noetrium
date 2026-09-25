@@ -80,7 +80,7 @@ class ModelFleetRuntime:
                 "auto-recovery-blocked:runtime-missing",
             )
 
-        decision = self._auto_recovery.authorize(
+        decision = self._auto_recovery.claim_attempt(
             spec.deployment_id,
             generation.desired_spec_digest,
         )
@@ -93,6 +93,9 @@ class ModelFleetRuntime:
                 )
             return self._status_detail(current, detail)
 
+        claim_id = decision.claim_id
+        if claim_id is None:
+            raise RuntimeError("authorized model auto-recovery is missing claim identity")
         try:
             started = self._runtime.start(generation)
         except Exception as exc:
@@ -100,6 +103,7 @@ class ModelFleetRuntime:
             state = self._auto_recovery.record_failure(
                 spec.deployment_id,
                 generation.desired_spec_digest,
+                claim_id,
                 descriptor.error_digest,
             )
             detail = (
@@ -121,9 +125,10 @@ class ModelFleetRuntime:
             )
 
         if started.runtime_state is ModelRuntimeState.RUNNING:
-            self._auto_recovery.record_running(
+            self._auto_recovery.record_attempt_success(
                 spec.deployment_id,
                 generation.desired_spec_digest,
+                claim_id,
             )
         return started
 
