@@ -74,6 +74,64 @@ def test_runtime_scheduler_uses_busy_gpu_when_idle_gpu_lacks_required_headroom()
     assert allocation.gpu_ids == ("GPU-busy",)
 
 
+def test_fractional_gpu_memory_requirement_uses_live_residual_capacity() -> None:
+    requirement = ComputeRequirement(
+        cpu_cores=2,
+        memory_bytes=4 * 1024**3,
+        gpu_count=1,
+        minimum_gpu_memory_bytes=40 * 1024**3,
+        required_gpu_memory_fraction=0.75,
+        max_gpu_utilization_percent=100,
+        gpu_sharing_mode=GpuSharingMode.PREFER_IDLE_ALLOW_SHARED,
+    )
+    scheduler = in_memory_compute_scheduler(
+        _inventory(),
+        gpu_runtime_observer=_Observer(
+            _snapshot(idle_free=70 * 1024, busy_free=48 * 1024)
+        ),
+    )
+
+    allocation = scheduler.allocate("fractional", _scope(), requirement)
+
+    assert allocation.gpu_ids == ("GPU-idle",)
+
+
+def test_fractional_gpu_memory_requirement_rejects_when_no_gpu_has_enough_free_vram() -> None:
+    requirement = ComputeRequirement(
+        cpu_cores=2,
+        memory_bytes=4 * 1024**3,
+        gpu_count=1,
+        minimum_gpu_memory_bytes=40 * 1024**3,
+        required_gpu_memory_fraction=0.75,
+        gpu_sharing_mode=GpuSharingMode.PREFER_IDLE_ALLOW_SHARED,
+    )
+    scheduler = in_memory_compute_scheduler(
+        _inventory(),
+        gpu_runtime_observer=_Observer(
+            _snapshot(idle_free=55 * 1024, busy_free=48 * 1024)
+        ),
+    )
+
+    try:
+        scheduler.allocate("fractional-exhausted", _scope(), requirement)
+    except RuntimeError as exc:
+        assert "no compute host" in str(exc)
+    else:
+        raise AssertionError("fractional VRAM demand was admitted without residual capacity")
+
+
+def test_shared_gpu_mode_accepts_fraction_as_its_memory_reservation() -> None:
+    requirement = ComputeRequirement(
+        cpu_cores=1,
+        memory_bytes=1,
+        gpu_count=1,
+        required_gpu_memory_fraction=0.5,
+        gpu_sharing_mode=GpuSharingMode.PREFER_IDLE_ALLOW_SHARED,
+    )
+    assert requirement.required_gpu_free_memory_bytes == 0
+    assert requirement.required_gpu_memory_fraction == 0.5
+
+
 def test_runtime_scheduler_rejects_shared_gpu_above_utilization_ceiling() -> None:
     scheduler = in_memory_compute_scheduler(
         _inventory(),
