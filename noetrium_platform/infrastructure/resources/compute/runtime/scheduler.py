@@ -196,7 +196,18 @@ def _runtime_rank(
     if device is None:
         return None
     free_bytes = device.memory_free_mb * 1024 * 1024
-    if free_bytes < requirement.required_gpu_free_memory_bytes:
+    fractional_requirement = (
+        0
+        if requirement.required_gpu_memory_fraction is None
+        else math.ceil(
+            gpu.memory_bytes * requirement.required_gpu_memory_fraction
+        )
+    )
+    required_free_bytes = max(
+        requirement.required_gpu_free_memory_bytes,
+        fractional_requirement,
+    )
+    if free_bytes < required_free_bytes:
         return None
     if device.utilization_percent > requirement.max_gpu_utilization_percent:
         return None
@@ -207,7 +218,7 @@ def _runtime_rank(
     return (
         1 if process_count or process_visibility_unknown else 0,
         device.utilization_percent,
-        free_bytes - requirement.required_gpu_free_memory_bytes,
+        free_bytes - required_free_bytes,
         gpu.memory_bytes - requirement.minimum_gpu_memory_bytes,
         gpu.gpu_id,
     )
