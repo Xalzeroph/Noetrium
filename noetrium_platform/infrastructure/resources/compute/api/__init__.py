@@ -1,4 +1,4 @@
-from .contracts import ComputeAllocation, ComputeAllocationBatch, ComputeAllocationRequest, ComputeBindingProof, ComputeCluster, ComputeDeviceHealth, ComputeGPU, ComputeHost, ComputeHostSchedulingState, ComputePlacementPreference, ComputePlacementUnavailable, ComputeRequirement, ComputeLeasePolicy, DEFAULT_COMPUTE_LEASE_POLICY, GpuSharingMode
+from .contracts import ComputeAllocation, ComputeAllocationBatch, ComputeAllocationRequest, ComputeBindingProof, ComputeCluster, ComputeDeviceHealth, ComputeGPU, ComputeHost, ComputeHostSchedulingState, ComputeInventoryConflict, ComputePlacementPreference, ComputePlacementUnavailable, ComputeRequirement, ComputeLeasePolicy, DEFAULT_COMPUTE_LEASE_POLICY, GpuSharingMode
 from .ports import ComputeCandidatePort, ComputeInventoryPort, ComputeLeaseGuardFactoryPort, ComputeLeaseGuardPort, ComputeSchedulerPort
 from .runtime_status import GpuDeviceStatus, GpuProcessStatus, GpuRuntimeObserverPort, GpuRuntimeSnapshot, HostRuntimeObserverPort, HostRuntimeSnapshot, HostRuntimeStatus
 
@@ -13,6 +13,7 @@ __all__ = [
     "ComputeGPU",
     "ComputeHost",
     "ComputeHostSchedulingState",
+    "ComputeInventoryConflict",
     "ComputePlacementPreference",
     "ComputePlacementUnavailable",
     "ComputeRequirement",
