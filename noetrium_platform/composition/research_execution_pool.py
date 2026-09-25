@@ -49,6 +49,7 @@ from noetrium_platform.research.execution.policy.api import ExecutionPriority
 
 from .concurrency import build_execution_concurrency_runtime
 from .shared_host_pressure import (
+    ResourceCompetitionDemand,
     ResourceCompetitionPolicy,
     SharedNetworkPressureObserverPort,
     SharedStoragePressureObserverPort,
@@ -262,6 +263,7 @@ class ResearchExecutionPool:
         resource_id: str | None = None,
         priority: ExecutionPriority = ExecutionPriority.NORMAL,
         admission_mode: AdmissionMode = AdmissionMode.BLOCK,
+        resource_demand: ResourceCompetitionDemand | None = None,
         deadline: Deadline | None = None,
         failure_policy: TaskFailurePolicy = TaskFailurePolicy.FAIL_FAST,
     ) -> TaskGroupPort:
@@ -275,6 +277,7 @@ class ResearchExecutionPool:
             resource_id=resource_id,
             priority=priority,
             admission_mode=admission_mode,
+            resource_demand=resource_demand,
             deadline=deadline,
             failure_policy=failure_policy,
         )
@@ -322,6 +325,7 @@ class ResearchExecutionPool:
         resource_id: str | None = None,
         priority: ExecutionPriority = ExecutionPriority.NORMAL,
         admission_mode: AdmissionMode = AdmissionMode.BLOCK,
+        resource_demand: ResourceCompetitionDemand | None = None,
         deadline: Deadline | None = None,
         failure_policy: TaskFailurePolicy = TaskFailurePolicy.FAIL_FAST,
     ) -> TaskGroupPort:
@@ -332,6 +336,7 @@ class ResearchExecutionPool:
             resource_id=resource_id,
             priority=priority,
             admission_mode=admission_mode,
+            resource_demand=resource_demand,
             deadline=deadline,
             failure_policy=failure_policy,
         )
@@ -451,6 +456,7 @@ class ResearchExecutionPool:
         tenant_id: str | None = None,
         priority: ExecutionPriority = ExecutionPriority.NORMAL,
         admission_mode: AdmissionMode = AdmissionMode.BLOCK,
+        resource_demand: ResourceCompetitionDemand | None = None,
         deadline: Deadline | None = None,
         failure_policy: TaskFailurePolicy = TaskFailurePolicy.FAIL_FAST,
     ) -> TaskGroupPort:
@@ -460,6 +466,7 @@ class ResearchExecutionPool:
             tenant_id=tenant_id,
             priority=priority,
             admission_mode=admission_mode,
+            resource_demand=resource_demand,
             deadline=deadline,
             failure_policy=failure_policy,
         )
