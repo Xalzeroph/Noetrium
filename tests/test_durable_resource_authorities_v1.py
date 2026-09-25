@@ -56,6 +56,25 @@ from noetrium_platform.research.experimentation.lifecycle.study import StudySpec
 from noetrium_platform.research.experimentation.lifecycle.api import ExperimentSpec
 
 
+def _environment_materialization(
+    catalog,
+    profile_id: str,
+    profile_revision: str,
+    runtime_identity_digest: str,
+    runtime_reference: str,
+) -> EnvironmentProfileMaterialization:
+    value = EnvironmentProfileMaterialization(
+        profile_id,
+        profile_revision,
+        "f" * 64,
+        runtime_identity_digest,
+        "e" * 64,
+        runtime_reference,
+    )
+    catalog.register_profile_materialization(value)
+    return value
+
+
 def _environment_gc_closures(
     retained_authority: DurableCarrierClosureAuthority | None = None,
     retained_reference_id: str | None = None,
@@ -227,12 +246,20 @@ class DurableResourceAuthoritiesTests(TestCase):
                     revision,
                 )
             )
+            materialization = _environment_materialization(
+                meta.environments,
+                "web-default",
+                revision,
+                runtime_digest,
+                "container:env-reuse",
+            )
             instance = EnvironmentInstance(
                 "env-reuse",
                 "b" * 64,
                 "docker",
                 "container:env-reuse",
                 runtime_digest,
+                materialization.materialization_digest,
                 scope,
                 "web-default",
                 revision,
@@ -240,7 +267,10 @@ class DurableResourceAuthoritiesTests(TestCase):
             meta.environments.register_instance(instance)
             self.assertEqual(
                 meta.environments.reusable_instances(
-                    "web-default", revision, runtime_digest
+                    "web-default",
+                    revision,
+                    runtime_digest,
+                    materialization.materialization_digest,
                 ),
                 (instance,),
             )
@@ -250,6 +280,7 @@ class DurableResourceAuthoritiesTests(TestCase):
                     "web-default",
                     revision,
                     "e" * 64,
+                    materialization.materialization_digest,
                     binding_id="wrong-runtime",
                     role="runner",
                     scope=scope,
@@ -259,6 +290,7 @@ class DurableResourceAuthoritiesTests(TestCase):
                 "web-default",
                 revision,
                 runtime_digest,
+                materialization.materialization_digest,
                 binding_id="binding-reuse",
                 role="runner",
                 scope=scope,
@@ -272,7 +304,10 @@ class DurableResourceAuthoritiesTests(TestCase):
             self.assertEqual(acquisition.instance.generation, 1)
             self.assertEqual(
                 meta.environments.reusable_instances(
-                    "web-default", revision, runtime_digest
+                    "web-default",
+                    revision,
+                    runtime_digest,
+                    materialization.materialization_digest,
                 ),
                 (),
             )
@@ -290,6 +325,7 @@ class DurableResourceAuthoritiesTests(TestCase):
                 "env-reuse",
                 revision,
                 runtime_digest,
+                materialization.materialization_digest,
                 dirty.generation,
                 EnvironmentCleanlinessKind.OVERLAY_DESTROYED,
                 "c" * 64,
@@ -301,7 +337,10 @@ class DurableResourceAuthoritiesTests(TestCase):
             self.assertIs(clean.state, EnvironmentInstanceState.CLEAN)
             self.assertEqual(
                 meta.environments.reusable_instances(
-                    "web-default", revision, runtime_digest
+                    "web-default",
+                    revision,
+                    runtime_digest,
+                    materialization.materialization_digest,
                 ),
                 (clean,),
             )
@@ -310,6 +349,7 @@ class DurableResourceAuthoritiesTests(TestCase):
                 "web-default",
                 revision,
                 runtime_digest,
+                materialization.materialization_digest,
                 binding_id=binding.binding_id,
                 role=binding.role,
                 scope=binding.scope,
@@ -394,12 +434,27 @@ class DurableResourceAuthoritiesTests(TestCase):
             meta.environments.register_profile_revision(
                 EnvironmentProfileRevision("web-multi-runtime", "web", revision)
             )
+            materialization_a = _environment_materialization(
+                meta.environments,
+                "web-multi-runtime",
+                revision,
+                runtime_a,
+                "container:runtime-a",
+            )
+            materialization_b = _environment_materialization(
+                meta.environments,
+                "web-multi-runtime",
+                revision,
+                runtime_b,
+                "container:runtime-b",
+            )
             first = EnvironmentInstance(
                 "env-runtime-a",
                 "d" * 64,
                 "docker",
                 "container:runtime-a",
                 runtime_a,
+                materialization_a.materialization_digest,
                 scope,
                 "web-multi-runtime",
                 revision,
@@ -410,6 +465,7 @@ class DurableResourceAuthoritiesTests(TestCase):
                 "docker",
                 "container:runtime-b",
                 runtime_b,
+                materialization_b.materialization_digest,
                 scope,
                 "web-multi-runtime",
                 revision,
@@ -480,12 +536,27 @@ class DurableResourceAuthoritiesTests(TestCase):
                 revision,
             )
             meta.environments.register_profile_revision(profile)
+            materialization = _environment_materialization(
+                meta.environments,
+                profile.profile_id,
+                profile.profile_revision,
+                runtime_digest,
+                "container:env-lifecycle",
+            )
+            replacement_materialization = _environment_materialization(
+                meta.environments,
+                profile.profile_id,
+                profile.profile_revision,
+                runtime_digest,
+                "container:env-lifecycle-replacement",
+            )
             instance = EnvironmentInstance(
                 "env-lifecycle",
                 "6" * 64,
                 "docker",
                 "container:env-lifecycle",
                 runtime_digest,
+                materialization.materialization_digest,
                 scope,
                 profile.profile_id,
                 profile.profile_revision,
@@ -496,6 +567,7 @@ class DurableResourceAuthoritiesTests(TestCase):
                 profile.profile_id,
                 profile.profile_revision,
                 runtime_digest,
+                materialization.materialization_digest,
                 binding_id="pinned-binding",
                 role="runner",
                 scope=scope,
@@ -516,6 +588,7 @@ class DurableResourceAuthoritiesTests(TestCase):
                     profile.profile_id,
                     profile.profile_revision,
                     runtime_digest,
+                    materialization.materialization_digest,
                     binding_id="new-work",
                     role="runner-2",
                     scope=scope,
@@ -527,6 +600,7 @@ class DurableResourceAuthoritiesTests(TestCase):
                 "docker",
                 "container:env-lifecycle-replacement",
                 runtime_digest,
+                replacement_materialization.materialization_digest,
                 scope,
                 profile.profile_id,
                 profile.profile_revision,
@@ -541,6 +615,7 @@ class DurableResourceAuthoritiesTests(TestCase):
                         "docker",
                         "container:env-wrong-scope",
                         runtime_digest,
+                        replacement_materialization.materialization_digest,
                         other_scope,
                         profile.profile_id,
                         profile.profile_revision,
@@ -558,6 +633,7 @@ class DurableResourceAuthoritiesTests(TestCase):
                 profile.profile_id,
                 profile.profile_revision,
                 runtime_digest,
+                replacement_materialization.materialization_digest,
                 role="runner",
                 scope=scope,
             )
@@ -581,6 +657,7 @@ class DurableResourceAuthoritiesTests(TestCase):
                     recovered.instance.instance_id,
                     revision,
                     runtime_digest,
+                    replacement_materialization.materialization_digest,
                     recovered.instance.generation,
                     EnvironmentCleanlinessKind.PROVIDER_RESET_VERIFIED,
                     "7" * 64,
@@ -601,6 +678,7 @@ class DurableResourceAuthoritiesTests(TestCase):
                     profile.profile_id,
                     profile.profile_revision,
                     runtime_digest,
+                    replacement_materialization.materialization_digest,
                     binding_id="new-after-retire",
                     role="runner",
                     scope=scope,
@@ -610,6 +688,7 @@ class DurableResourceAuthoritiesTests(TestCase):
                     profile.profile_id,
                     profile.profile_revision,
                     runtime_digest,
+                    replacement_materialization.materialization_digest,
                     role="runner",
                     scope=scope,
                 )
@@ -621,6 +700,7 @@ class DurableResourceAuthoritiesTests(TestCase):
                         "docker",
                         "container:env-retired-replacement",
                         runtime_digest,
+                        replacement_materialization.materialization_digest,
                         scope,
                         profile.profile_id,
                         profile.profile_revision,
@@ -667,12 +747,20 @@ class DurableResourceAuthoritiesTests(TestCase):
                     revision,
                 )
             )
+            materialization = _environment_materialization(
+                first.environments,
+                "text-world-default",
+                revision,
+                "3" * 64,
+                "python.exe",
+            )
             instance = EnvironmentInstance(
                 "env-1",
                 "1" * 64,
                 "local",
                 "python.exe",
                 "3" * 64,
+                materialization.materialization_digest,
                 scope,
                 "text-world-default",
                 revision,
