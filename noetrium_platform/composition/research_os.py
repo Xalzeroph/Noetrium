@@ -28,6 +28,7 @@ from noetrium_platform.product.research_os import (
     ResearchGraphRevision,
     ResearchImpactState,
     ResearchImplementation,
+    ResearchMachineProgramImplementation,
     ResearchMethodProgramBindingKind,
     ResearchMethodProgramImplementation,
     ResearchInputBinding,
@@ -87,7 +88,11 @@ def _decode_binding(value: object, field: str) -> ResearchInputBinding:
 def _decode_implementation(
     value: object,
     field: str,
-) -> ResearchImplementation | ResearchMethodProgramImplementation:
+) -> (
+    ResearchImplementation
+    | ResearchMethodProgramImplementation
+    | ResearchMachineProgramImplementation
+):
     row = _object(value, field)
     implementation_type = _text(
         row.get("implementation_type"),
@@ -108,13 +113,15 @@ def _decode_implementation(
             ),
             field,
         )
-        implementation: ResearchImplementation | ResearchMethodProgramImplementation = (
-            ResearchImplementation(
-                _text(row["implementation_id"], field + ".implementation_id"),
-                _text(row["module"], field + ".module"),
-                _text(row["qualname"], field + ".qualname"),
-                _text(row["source_digest"], field + ".source_digest"),
-            )
+        implementation: (
+            ResearchImplementation
+            | ResearchMethodProgramImplementation
+            | ResearchMachineProgramImplementation
+        ) = ResearchImplementation(
+            _text(row["implementation_id"], field + ".implementation_id"),
+            _text(row["module"], field + ".module"),
+            _text(row["qualname"], field + ".qualname"),
+            _text(row["source_digest"], field + ".source_digest"),
         )
     elif implementation_type == "method_program":
         _exact(
@@ -146,6 +153,58 @@ def _decode_implementation(
                 _array(row["factory_args"], field + ".factory_args")
             ),
             _object(row["factory_kwargs"], field + ".factory_kwargs"),
+        )
+    elif implementation_type == "research_machine_program":
+        _exact(
+            row,
+            frozenset(
+                {
+                    "implementation_type",
+                    "implementation_id",
+                    "program_module",
+                    "program_qualname",
+                    "operations_module",
+                    "operations_qualname",
+                    "program_digest",
+                    "machine_kind",
+                    "operations_digest",
+                    "operation_identities",
+                    "implementation_digest",
+                }
+            ),
+            field,
+        )
+        identities: list[tuple[str, str]] = []
+        for index, raw_identity in enumerate(
+            _array(
+                row["operation_identities"],
+                field + ".operation_identities",
+            )
+        ):
+            identity_field = (
+                field + f".operation_identities[{index}]"
+            )
+            pair = _array(raw_identity, identity_field)
+            if len(pair) != 2:
+                raise ValueError(
+                    f"{identity_field} must contain exactly two text values"
+                )
+            identities.append(
+                (
+                    _text(pair[0], identity_field + "[0]"),
+                    _text(pair[1], identity_field + "[1]"),
+                )
+            )
+        implementation = ResearchMachineProgramImplementation(
+            _text(row["implementation_id"], field + ".implementation_id"),
+            _text(row["program_module"], field + ".program_module"),
+            _text(row["program_qualname"], field + ".program_qualname"),
+            _text(row["operations_module"], field + ".operations_module"),
+            _text(row["operations_qualname"], field + ".operations_qualname"),
+            _text(row["program_digest"], field + ".program_digest"),
+            _text(row["machine_kind"], field + ".machine_kind"),
+            _text(row["operations_digest"], field + ".operations_digest"),
+            tuple(identities),
         )
     else:
         raise ValueError(

@@ -4,6 +4,7 @@ from collections.abc import Mapping
 from dataclasses import asdict, replace
 import hashlib
 from pathlib import Path
+from threading import RLock
 
 from noetrium_platform.composition.method_runtime import (
     bind_standard_method_runtime,
@@ -60,8 +61,12 @@ from .research_os_experiment import (
 from .research_os_execution import (
     ResearchOSNodeAdmission,
     ResearchOSNodeRuntimePort,
+    ResearchOSPortfolioRuntimePort,
 )
-from .research_os_graph import CompiledResearchOSGraphNode
+from .research_os_graph import CompiledResearchOSGraph, CompiledResearchOSGraphNode
+from .research_child_machine_runtime import (
+    compose_program_method_runtime_inventory,
+)
 from .research_os_lowering import (
     LoweredResearchOSGraphNode,
     ResearchOSLoweringTarget,
@@ -80,7 +85,10 @@ class CanonicalResearchOSRuntimeFailure(RuntimeError):
     pass
 
 
-class CanonicalResearchOSNodeRuntime(ResearchOSNodeRuntimePort):
+class CanonicalResearchOSNodeRuntime(
+    ResearchOSNodeRuntimePort,
+    ResearchOSPortfolioRuntimePort,
+):
     """Built-in strict runtime for already unambiguous Machine lowerings.
 
     Experiment-family nodes are intentionally rejected until their top-level
@@ -151,6 +159,54 @@ class CanonicalResearchOSNodeRuntime(ResearchOSNodeRuntimePort):
         self._machine_journal = DirectoryMachineJournal(root / "program-journal")
         self._method_journal = DirectoryMachineJournal(root / "method-state" / "journal")
         self._method_binder_digest = standard_method_runtime_binder().identity_digest
+        self._program_method_runtime_inventories: dict[
+            tuple[str, str],
+            MethodRuntimePortInventory,
+        ] = {}
+        self._method_inventory_lock = RLock()
+
+    def bind_portfolio(self, compilation: CompiledResearchOSGraph) -> None:
+        if type(compilation) is not CompiledResearchOSGraph:
+            raise TypeError(
+                "canonical Research OS portfolio binding requires compiled graph"
+            )
+        staged: dict[tuple[str, str], MethodRuntimePortInventory] = {}
+        nodes_by_program: dict[str, list[CompiledResearchOSGraphNode]] = {}
+        for node in compilation.nodes:
+            nodes_by_program.setdefault(node.ref.program_id, []).append(node)
+        for program in compilation.portfolio.programs:
+            inventory = compose_program_method_runtime_inventory(
+                program,
+                self._method_runtime_inventory,
+                journal=self._machine_journal,
+                max_steps=self._max_steps,
+            )
+            for node in nodes_by_program.get(program.program_id, ()):
+                staged[(program.program_id, node.semantic_digest)] = inventory
+
+        with self._method_inventory_lock:
+            for key, inventory in staged.items():
+                current = self._program_method_runtime_inventories.get(key)
+                if (
+                    current is not None
+                    and current.identity_digest != inventory.identity_digest
+                ):
+                    raise ValueError(
+                        "program-scoped Method runtime inventory identity drifted: "
+                        f"program_id={key[0]!r} semantic_digest={key[1]}"
+                    )
+            self._program_method_runtime_inventories.update(staged)
+
+    def _method_inventory_for(
+        self,
+        node: CompiledResearchOSGraphNode,
+    ) -> MethodRuntimePortInventory:
+        key = (node.ref.program_id, node.semantic_digest)
+        with self._method_inventory_lock:
+            return self._program_method_runtime_inventories.get(
+                key,
+                self._method_runtime_inventory,
+            )
 
     def admit(
         self,
@@ -222,9 +278,10 @@ class CanonicalResearchOSNodeRuntime(ResearchOSNodeRuntimePort):
                     "METHOD node must lower to exactly one MethodProgram"
                 )
             program = lowering.method_programs[0].program
+            inventory = self._method_inventory_for(node)
             binding_plan = plan_method_runtime_binding(
                 program,
-                self._method_runtime_inventory,
+                inventory,
             )
             try:
                 binding_plan.require_complete()
@@ -241,7 +298,7 @@ class CanonicalResearchOSNodeRuntime(ResearchOSNodeRuntimePort):
                     "program_digest": program.program_digest,
                     "method_runtime_binder_digest": self._method_binder_digest,
                     "method_runtime_inventory_digest": (
-                        self._method_runtime_inventory.identity_digest
+                        inventory.identity_digest
                     ),
                     "method_runtime_binding_plan_digest": binding_plan.digest,
                     "journal": "directory-machine-journal",
@@ -336,6 +393,7 @@ class CanonicalResearchOSNodeRuntime(ResearchOSNodeRuntimePort):
             return self._execute_method(
                 runtime_context,
                 machine_id,
+                node,
                 lowering,
                 payload,
                 admission.runtime_binding_digest,
@@ -594,17 +652,18 @@ class CanonicalResearchOSNodeRuntime(ResearchOSNodeRuntimePort):
         self,
         context: ExecutionContext,
         machine_id: str,
+        node: CompiledResearchOSGraphNode,
         lowering: LoweredResearchOSGraphNode,
         payload: JsonValue,
         runtime_binding_digest: str,
     ) -> JsonValue:
         program = lowering.method_programs[0].program
+        inventory = self._method_inventory_for(node)
         binding_plan = plan_method_runtime_binding(
             program,
-            self._method_runtime_inventory,
+            inventory,
         )
         binding_plan.require_complete()
-        inventory = self._method_runtime_inventory
         runtime = bind_standard_method_runtime(
             program,
             MethodRuntimeContext(

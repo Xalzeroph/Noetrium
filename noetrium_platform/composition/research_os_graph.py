@@ -13,6 +13,7 @@ from noetrium_platform.foundation.kernel.kernel import (
 )
 from noetrium_platform.product.research_os import (
     ResearchDefinition,
+    ResearchDefinitionKind,
     ResearchGraphRevision,
     ResearchInputBinding,
     ResearchNode,
@@ -238,6 +239,20 @@ def compile_research_portfolio_graph(
         )
         for ref in ordered_refs
     }
+    program_child_definition_digests = {
+        program.program_id: tuple(
+            definition.definition_digest
+            for definition in sorted(
+                (
+                    definition
+                    for definition in program.definitions
+                    if definition.kind is ResearchDefinitionKind.CHILD_MACHINE
+                ),
+                key=lambda definition: definition.definition_id,
+            )
+        )
+        for program in portfolio.programs
+    }
     semantic_digests: dict[ResearchNodeRef, str] = {}
 
     def semantic_digest(ref: ResearchNodeRef) -> str:
@@ -253,6 +268,9 @@ def compile_research_portfolio_graph(
                 "definition_digests": tuple(
                     definition.definition_digest
                     for definition in node_definitions
+                ),
+                "program_child_machine_definition_digests": (
+                    program_child_definition_digests[ref.program_id]
                 ),
                 "incoming": tuple(
                     {

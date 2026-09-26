@@ -150,6 +150,13 @@ class ResearchOSNodeRuntimePort(Protocol):
     ) -> JsonValue: ...
 
 
+@runtime_checkable
+class ResearchOSPortfolioRuntimePort(Protocol):
+    """Optional portfolio-scoped runtime composition before node admission."""
+
+    def bind_portfolio(self, compilation: CompiledResearchOSGraph) -> None: ...
+
+
 @dataclass(frozen=True, slots=True)
 class PreparedResearchOSExecution:
     target: ResearchExecutionTarget
@@ -360,6 +367,8 @@ def prepare_research_os_execution(
         target.revision,
         portfolio,
     )
+    if isinstance(runtime, ResearchOSPortfolioRuntimePort):
+        runtime.bind_portfolio(compilation)
     if selection_seed_node_ids is None:
         selected_node_ids = _execution_selection_node_ids(compilation, target)
     else:
@@ -2130,6 +2139,7 @@ __all__ = [
     "ResearchOSExecutionUnsupported",
     "ResearchOSNodeAdmission",
     "ResearchOSNodeRuntimePort",
+    "ResearchOSPortfolioRuntimePort",
     "StrictResearchOSControl",
     "prepare_research_os_execution",
 ]
