@@ -27,6 +27,8 @@ from noetrium_platform.research.experimentation.api.research_compiler import (
     CompiledResearchPlan,
 )
 from noetrium_platform.research.experimentation.workload.api import (
+    WorkloadCutExecutionPort,
+    WorkloadCutResult,
     WorkloadTaskExecutionPort,
     WorkloadTaskResult,
 )
@@ -196,6 +198,86 @@ class WorkloadTrialProvider:
             raise TypeError("workload trial provider requires WorkloadTaskResult")
         if result.task_id != task_id:
             raise ValueError("workload result task identity drift")
+        measurements = self._measurement_projection.project(request, result)
+        for row in measurements:
+            row.validate_against(request.measurement_protocol)
+        return TrialExecutionReceipt(
+            request_digest=request.request_digest,
+            assignment_digest=request.assignment.assignment_digest,
+            measurements=measurements,
+        )
+
+
+class CutWorkloadTrialProvider:
+    """Execute one frozen ordered task cut inside one assignment lifetime."""
+
+    def __init__(
+        self,
+        *,
+        protocol_identity: object,
+        workload: WorkloadCutExecutionPort,
+        task_projection: TrialTaskProjectionPort,
+        measurement_projection: TrialMeasurementProjectionPort,
+    ) -> None:
+        digest = getattr(protocol_identity, "digest", None)
+        if not callable(digest):
+            raise TypeError("cut workload trial provider requires protocol identity")
+        protocol_digest = digest()
+        if type(protocol_digest) is not str or len(protocol_digest) != 64:
+            raise TypeError("cut workload trial protocol identity digest is invalid")
+        if not callable(getattr(workload, "execute_cut", None)):
+            raise TypeError("cut workload trial provider requires WorkloadCutExecutionPort")
+        if not isinstance(task_projection, TrialTaskProjectionPort):
+            raise TypeError("cut workload provider requires TrialTaskProjectionPort")
+        if not isinstance(measurement_projection, TrialMeasurementProjectionPort):
+            raise TypeError("cut workload provider requires TrialMeasurementProjectionPort")
+        self.protocol_identity = protocol_identity
+        self._workload = workload
+        self._task_projection = task_projection
+        self._measurement_projection = measurement_projection
+        self.identity_digest = canonical_digest({
+            "provider": "cut-workload-trial-provider.v1",
+            "protocol_identity": protocol_digest,
+            "task_projection": task_projection.identity_digest,
+            "measurement_projection": measurement_projection.identity_digest,
+        })
+
+    def run_trial(self, request: TrialExecutionRequest) -> TrialExecutionReceipt:
+        if not isinstance(request, TrialExecutionRequest):
+            raise TypeError("cut workload provider requires TrialExecutionRequest")
+        if request.protocol_identity != self.protocol_identity:
+            raise ValueError("trial request protocol identity drift")
+        if request.assignment.task_id is not None:
+            raise ValueError("cut workload provider requires cut-level assignment")
+        if any(
+            row.package is not None and row.package.verifier_requirement_id is not None
+            for row in request.task_cut
+        ):
+            raise RuntimeError(
+                "cut workload provider does not bypass task-declared verifier isolation"
+            )
+        tasks = tuple(
+            self._task_projection.task(row.task_id) for row in request.task_cut
+        )
+        expected_ids = tuple(row.task_id for row in request.task_cut)
+        if tuple(getattr(row, "task_id", None) for row in tasks) != expected_ids:
+            raise ValueError("projected cut workload task identity/order drift")
+        context = ExecutionContext(
+            run_id=request.run_id,
+            trace_id=request.request_digest,
+            span_id=f"trial:{request.assignment.assignment_digest[:16]}",
+            study_id=request.assignment.study_id,
+            condition_id=request.assignment.variant_id,
+            lifetime_id=request.assignment.assignment_digest,
+            task_id=None,
+            operation_id=request.request_digest,
+            component_id="cut-workload-trial-provider",
+        )
+        result = self._workload.execute_cut(tasks, context)
+        if not isinstance(result, WorkloadCutResult):
+            raise TypeError("cut workload provider requires WorkloadCutResult")
+        if result.task_ids != expected_ids:
+            raise ValueError("cut workload result task identity/order drift")
         measurements = self._measurement_projection.project(request, result)
         for row in measurements:
             row.validate_against(request.measurement_protocol)
@@ -505,6 +587,7 @@ class TrialVerifierOrchestrator:
 
 
 __all__ = [
+    "CutWorkloadTrialProvider",
     "StandardWorkloadMeasurementProjection",
     "TrialVerifierArtifactPublisherPort",
     "TrialVerifierOrchestrator",

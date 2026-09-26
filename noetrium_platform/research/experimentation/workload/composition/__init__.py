@@ -6,7 +6,7 @@ from .declarative import (
     MethodRuntimeBindings,
     TaskFieldProjection,
 )
-from .default import bind_method_workload
+from .default import bind_method_workload, bind_sequential_workload_cut
 
 __all__ = [
     "DeclarativeExecutionResultAdapter",
@@ -16,4 +16,5 @@ __all__ = [
     "MethodRuntimeBindings",
     "TaskFieldProjection",
     "bind_method_workload",
+    "bind_sequential_workload_cut",
 ]

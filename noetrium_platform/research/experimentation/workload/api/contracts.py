@@ -152,6 +152,38 @@ class WorkloadTaskResult:
 
 
 @dataclass(frozen=True, slots=True)
+class WorkloadCutResult:
+    task_results: tuple[WorkloadTaskResult, ...]
+    result_digest: str = field(init=False)
+
+    def __post_init__(self) -> None:
+        if type(self.task_results) is not tuple or not self.task_results:
+            raise TypeError("workload cut result requires a non-empty task tuple")
+        if any(not isinstance(row, WorkloadTaskResult) for row in self.task_results):
+            raise TypeError("workload cut result must contain WorkloadTaskResult")
+        task_ids = tuple(row.task_id for row in self.task_results)
+        if len(task_ids) != len(set(task_ids)):
+            raise ValueError("workload cut result task ids must be unique")
+        object.__setattr__(
+            self,
+            "result_digest",
+            canonical_digest({"task_results": self.task_results}),
+        )
+
+    @property
+    def task_ids(self) -> tuple[str, ...]:
+        return tuple(row.task_id for row in self.task_results)
+
+    @property
+    def steps_total(self) -> int:
+        return sum(row.steps for row in self.task_results)
+
+    @property
+    def duration_s_total(self) -> float:
+        return sum(row.duration_s for row in self.task_results)
+
+
+@dataclass(frozen=True, slots=True)
 class StaticExperimentTaskProjection:
     """Study-agnostic lookup over already-authored ExperimentTaskSpec values."""
 
@@ -190,6 +222,7 @@ class WorkloadTaskRunError(ExperimentWorkloadFailure):
 __all__ = [
     "WorkloadCompletionReceipt",
     "StaticExperimentTaskProjection",
+    "WorkloadCutResult",
     "WorkloadEvaluation", "WorkloadMethodInvocation", "WorkloadMethodReceipt",
     "WorkloadTaskResult", "WorkloadTaskRunError",
 ]

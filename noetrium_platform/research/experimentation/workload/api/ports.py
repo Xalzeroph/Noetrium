@@ -6,7 +6,12 @@ from noetrium_platform.research.experimentation.lifecycle.api import ExperimentT
 from noetrium_platform.research.execution.api import MethodRunResult
 from noetrium_platform.foundation.kernel.kernel import ExecutionContext
 
-from .contracts import WorkloadEvaluation, WorkloadMethodInvocation, WorkloadTaskResult
+from .contracts import (
+    WorkloadCutResult,
+    WorkloadEvaluation,
+    WorkloadMethodInvocation,
+    WorkloadTaskResult,
+)
 
 
 class WorkloadMethodCompilerPort(Protocol):
@@ -39,7 +44,18 @@ class WorkloadTaskExecutionPort(Protocol):
     ) -> WorkloadTaskResult: ...
 
 
+class WorkloadCutExecutionPort(Protocol):
+    """Ordered multi-task seam for one persistent assignment lifetime."""
+
+    def execute_cut(
+        self,
+        tasks: tuple[ExperimentTaskSpec, ...],
+        context: ExecutionContext,
+    ) -> WorkloadCutResult: ...
+
+
 __all__ = [
+    "WorkloadCutExecutionPort",
     "WorkloadMethodCompilerPort",
     "WorkloadMethodResultAdapterPort",
     "WorkloadTaskExecutionPort",

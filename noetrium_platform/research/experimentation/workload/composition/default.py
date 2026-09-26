@@ -2,8 +2,13 @@ from __future__ import annotations
 
 from noetrium_platform.research.execution.api import MethodMachinePort
 
-from ..api import WorkloadMethodCompilerPort, WorkloadMethodResultAdapterPort, WorkloadTaskExecutionPort
-from ..runtime import WorkloadMethodBinding
+from ..api import (
+    WorkloadCutExecutionPort,
+    WorkloadMethodCompilerPort,
+    WorkloadMethodResultAdapterPort,
+    WorkloadTaskExecutionPort,
+)
+from ..runtime import SequentialWorkloadCutBinding, WorkloadMethodBinding
 
 
 def bind_method_workload(
@@ -21,4 +26,10 @@ def bind_method_workload(
     )
 
 
-__all__ = ["bind_method_workload"]
+def bind_sequential_workload_cut(
+    workload: WorkloadTaskExecutionPort,
+) -> WorkloadCutExecutionPort:
+    return SequentialWorkloadCutBinding(workload)
+
+
+__all__ = ["bind_method_workload", "bind_sequential_workload_cut"]

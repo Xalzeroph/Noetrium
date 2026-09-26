@@ -3,7 +3,7 @@ from __future__ import annotations
 import pytest
 
 from noetrium_platform.foundation.governance.api import PLATFORM_SCOPE
-from noetrium_platform.foundation.kernel.kernel import canonical_digest
+from noetrium_platform.foundation.kernel.kernel import ExecutionContext, canonical_digest
 from noetrium_platform.research.execution.api import ArtifactReference
 from noetrium_platform.research.experimentation.lifecycle.api import (
     ExperimentTaskSpec,
@@ -14,6 +14,8 @@ from noetrium_platform.research.experimentation.lifecycle.api import (
     FactorSelection,
     MeasurementDefinition,
     MeasurementProtocol,
+    MeasurementRecord,
+    MeasurementValue,
     MeasurementValueKind,
     StudyAssignment,
     StudyIntervention,
@@ -29,8 +31,13 @@ from noetrium_platform.research.experimentation.lifecycle.api import (
 from noetrium_platform.research.experimentation.workload.api import (
     WorkloadMethodReceipt,
     WorkloadTaskResult,
+    WorkloadTaskRunError,
+)
+from noetrium_platform.research.experimentation.workload.composition import (
+    bind_sequential_workload_cut,
 )
 from noetrium_platform.research.experimentation.lifecycle.study.providers.trial import (
+    CutWorkloadTrialProvider,
     StandardWorkloadMeasurementProjection,
     VerifierStageWorkloadTrialProvider,
     WorkloadTrialProvider,
@@ -48,6 +55,58 @@ class _Workload:
     def execute_one(self, task, context):
         self.calls.append((task, context))
         return self.result
+
+
+class _SequencedWorkload:
+    def __init__(self, *, second_failure_scope: str = "task") -> None:
+        self.second_failure_scope = second_failure_scope
+        self.calls = []
+
+    def execute_one(self, task, context):
+        self.calls.append((task, context))
+        success = task.task_id != "task-2"
+        return WorkloadTaskResult(
+            task_id=task.task_id,
+            family=task.family,
+            success=success,
+            utility=1.0 if success else 0.0,
+            steps=1,
+            duration_s=0.1,
+            lineage_id=task.task_id,
+            failure_reason="" if success else "expected task failure",
+            failure_scope="task" if success else self.second_failure_scope,
+        )
+
+
+class _CutMeasurementProjection:
+    identity_digest = canonical_digest({"projection": "cut-test.v1"})
+
+    def project(self, request, result):
+        definition = request.measurement_protocol.definition("cut_success_rate")
+        successes = sum(1 for row in result.task_results if row.success)
+        value = MeasurementValue(
+            MeasurementValueKind.SCALAR,
+            scalar=successes / len(result.task_results),
+        )
+        return (
+            MeasurementRecord(
+                project_id=request.project_id,
+                study_id=request.assignment.study_id,
+                run_id=request.run_id,
+                assignment_digest=request.assignment.assignment_digest,
+                variant_id=request.assignment.variant_id,
+                producer_id="test.cut-projection",
+                producer_revision_digest=self.identity_digest,
+                measurement_id=definition.measurement_id,
+                schema_id=definition.schema_id,
+                measurement_semantic_digest=definition.semantic_contract_digest,
+                measurement_protocol_semantic_digest=request.measurement_protocol.semantic_digest,
+                value=value,
+                logical_time="cut:complete",
+                intervention=request.intervention,
+                revision=request.revision,
+            ),
+        )
 
 
 def _protocol(*definitions: MeasurementDefinition) -> MeasurementProtocol:
@@ -145,7 +204,7 @@ def _request(
     )
 
 
-def test_cut_trial_request_preserves_exact_intervention_and_ordered_task_cut() -> None:
+def _cut_request(protocol: MeasurementProtocol) -> TrialExecutionRequest:
     first = _task_definition()
     second = TaskDefinition(
         "task-2",
@@ -174,7 +233,7 @@ def test_cut_trial_request_preserves_exact_intervention_and_ordered_task_cut() -
         "none",
         "treatment",
     )
-    request = TrialExecutionRequest(
+    return TrialExecutionRequest(
         "project",
         "run",
         "5" * 64,
@@ -183,12 +242,18 @@ def test_cut_trial_request_preserves_exact_intervention_and_ordered_task_cut() -
         intervention,
         assignment,
         binding,
-        _protocol(_success_definition()),
+        protocol,
         ExperimentTrialProtocolIdentity("trial.cut", "7" * 64),
         (first, second),
     )
-    assert request.intervention_spec.selections == (selection,)
-    assert request.intervention.digest == intervention.intervention_digest
+
+
+def test_cut_trial_request_preserves_exact_intervention_and_ordered_task_cut() -> None:
+    request = _cut_request(_protocol(_success_definition()))
+    selection = request.intervention_spec.selections[0]
+    assert selection.factor_id == "memory_treatment"
+    assert selection.level_id == "sem"
+    assert request.intervention.digest == request.intervention_spec.intervention_digest
     assert request.task is None
     assert tuple(row.task_id for row in request.task_cut) == ("task-1", "task-2")
 
@@ -228,6 +293,72 @@ def _provider(protocol: MeasurementProtocol, workload: _Workload) -> WorkloadTri
             ),
         )),
         measurement_projection=StandardWorkloadMeasurementProjection(),
+    )
+
+
+def _cut_tasks() -> tuple[ExperimentTaskSpec, ...]:
+    return (
+        ExperimentTaskSpec("task-1", "family", "First task."),
+        ExperimentTaskSpec("task-2", "family", "Second task."),
+    )
+
+
+def test_sequential_cut_execution_preserves_assignment_lifetime_and_order() -> None:
+    workload = _SequencedWorkload()
+    cut = bind_sequential_workload_cut(workload)
+    context = ExecutionContext(
+        run_id="run",
+        trace_id="trace",
+        span_id="assignment",
+        lifetime_id="assignment-lifetime",
+    )
+    result = cut.execute_cut(_cut_tasks(), context)
+    assert result.task_ids == ("task-1", "task-2")
+    assert result.steps_total == 2
+    assert result.duration_s_total == pytest.approx(0.2)
+    assert tuple(row[1].task_id for row in workload.calls) == ("task-1", "task-2")
+    assert all(row[1].run_id == "run" for row in workload.calls)
+    assert all(row[1].trace_id == "trace" for row in workload.calls)
+    assert all(row[1].lifetime_id == "assignment-lifetime" for row in workload.calls)
+
+
+def test_sequential_cut_execution_escalates_wider_scope_failure() -> None:
+    workload = _SequencedWorkload(second_failure_scope="branch")
+    cut = bind_sequential_workload_cut(workload)
+    context = ExecutionContext(
+        run_id="run",
+        trace_id="trace",
+        span_id="assignment",
+        lifetime_id="assignment-lifetime",
+    )
+    with pytest.raises(WorkloadTaskRunError, match="scope=branch"):
+        cut.execute_cut(_cut_tasks(), context)
+
+
+def test_cut_trial_provider_executes_frozen_cut_and_projects_cut_measurement() -> None:
+    protocol = _protocol(
+        MeasurementDefinition.scalar(
+            "cut_success_rate",
+            schema_id="scalar.v1",
+            semantic_kind="cut_success_rate",
+        )
+    )
+    request = _cut_request(protocol)
+    workload = _SequencedWorkload()
+    provider = CutWorkloadTrialProvider(
+        protocol_identity=request.protocol_identity,
+        workload=bind_sequential_workload_cut(workload),
+        task_projection=StaticExperimentTaskProjection(_cut_tasks()),
+        measurement_projection=_CutMeasurementProjection(),
+    )
+    receipt = provider.run_trial(request)
+    assert receipt.request_digest == request.request_digest
+    assert receipt.assignment_digest == request.assignment.assignment_digest
+    assert receipt.measurements[0].value.scalar == pytest.approx(0.5)
+    assert tuple(row[1].task_id for row in workload.calls) == ("task-1", "task-2")
+    assert all(
+        row[1].lifetime_id == request.assignment.assignment_digest
+        for row in workload.calls
     )
 
 
