@@ -719,25 +719,18 @@ def test_pid_headroom_blocks_expansion_before_cgroup_exhaustion() -> None:
         )
 
 
-def test_fd_headroom_gates_io_but_not_cpu_only_work() -> None:
+def test_fd_headroom_is_a_global_hard_safety_fence() -> None:
     observer = _MutableHostObserver(_status(available_fds=8))
     gate = _gate(observer, queue_wait_timeout_seconds=0.0)
 
-    cpu = gate.acquire(
-        "g",
-        ExecutionLaneKind.CPU,
-        deadline=None,
-        cancellation=None,
-    )
-    cpu.release()
-
-    with pytest.raises(AdmissionRejected, match="fd-headroom"):
-        gate.acquire(
-            "g",
-            ExecutionLaneKind.ASYNC_IO,
-            deadline=None,
-            cancellation=None,
-        )
+    for lane in (ExecutionLaneKind.CPU, ExecutionLaneKind.ASYNC_IO):
+        with pytest.raises(AdmissionRejected, match="fd-headroom"):
+            gate.acquire(
+                "g",
+                lane,
+                deadline=None,
+                cancellation=None,
+            )
 
 
 @pytest.mark.parametrize(

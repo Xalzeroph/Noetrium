@@ -14,6 +14,7 @@ from noetrium_platform.foundation.kernel.concurrency.api import Deadline, TaskCo
 from noetrium_platform.composition.research_execution_pool import ResearchExecutionPool
 from noetrium_platform.composition.shared_host_pressure import (
     ResourceCompetitionDemand,
+    StorageCompetitionDemand,
 )
 from noetrium_platform.foundation.kernel.kernel import (
     DirectoryMachineJournal,
@@ -601,7 +602,9 @@ class CanonicalResearchOSNodeRuntime(
             ),
             resource_demand=(
                 ResourceCompetitionDemand(
-                    storage_path=self._state_root,
+                    storage_targets=(
+                        StorageCompetitionDemand(self._state_root),
+                    ),
                 )
                 if self._execution_pool.resource_competition_enabled
                 else None

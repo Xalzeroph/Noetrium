@@ -17,6 +17,7 @@ from noetrium_platform.research.execution.workflow.api.runtime_binding import (
 from noetrium_platform.composition.research_execution_pool import ResearchExecutionPool
 from noetrium_platform.composition.shared_host_pressure import (
     ResourceCompetitionDemand,
+    StorageCompetitionDemand,
 )
 from noetrium_platform.composition.research_os import bind_portfolio_research_os
 from noetrium_platform.composition.research_os_execution import (
@@ -235,7 +236,9 @@ def compose_local_research_os(
                 resource_id="research-os-experiment-artifacts",
                 resource_demand=(
                     ResourceCompetitionDemand(
-                        storage_path=root / "run-artifacts",
+                        storage_targets=(
+                            StorageCompetitionDemand(root / "run-artifacts"),
+                        ),
                     )
                     if pool.resource_competition_enabled
                     else None

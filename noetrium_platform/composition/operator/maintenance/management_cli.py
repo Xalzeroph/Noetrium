@@ -18,6 +18,7 @@ from noetrium_platform.composition.shared_host_pressure import (
     LocalSharedNetworkPressureObserver,
     LocalSharedStoragePressureObserver,
     ResourceCompetitionDemand,
+    StorageCompetitionDemand,
 )
 from noetrium_platform.infrastructure.resources.directory.api import DirectoryLayout
 from noetrium_platform.foundation.kernel.kernel.errors import describe_exception
@@ -139,7 +140,9 @@ def main(argv: list[str] | None = None) -> int:
                 resource_id="docker-management-io",
                 priority=ExecutionPriority.NORMAL,
                 resource_demand=(
-                    ResourceCompetitionDemand(storage_path=docker_root)
+                    ResourceCompetitionDemand(
+                    storage_targets=(StorageCompetitionDemand(docker_root),)
+                )
                     if docker_root is not None
                     else ResourceCompetitionDemand()
                 ),
