@@ -16,6 +16,7 @@ from noetrium_platform.research.experimentation.lifecycle.api import (
     MeasurementValue,
     MeasurementValueKind,
     StudyAssignment,
+    StudyIntervention,
     StudyVariantSpec,
     TaskArtifactSpec,
     TaskDefinition,
@@ -109,15 +110,16 @@ def _trial_request(task: TaskDefinition) -> TrialExecutionRequest:
         "seed",
         task.task_id,
     )
+    intervention = StudyIntervention("control", ())
     variant = StudyVariantSpec(
         "control",
         VariantKind.CONTROL,
         "provider",
-        "3" * 64,
+        intervention.intervention_digest,
     )
     binding = VariantBinding(
         variant,
-        "4" * 64,
+        intervention.intervention_digest,
         "provider",
         "none",
         "control",
@@ -128,12 +130,12 @@ def _trial_request(task: TaskDefinition) -> TrialExecutionRequest:
         "5" * 64,
         OptionalIdentityFacet(),
         OptionalIdentityFacet(),
-        OptionalIdentityFacet("6" * 64),
+        intervention,
         assignment,
         binding,
         _protocol(),
         ExperimentTrialProtocolIdentity("trial.test", "7" * 64),
-        task,
+        (task,),
     )
 
 

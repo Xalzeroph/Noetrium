@@ -10,7 +10,6 @@ from dataclasses import dataclass
 from typing import Protocol, runtime_checkable
 
 from noetrium_platform.foundation.kernel.kernel import canonical_digest, require_sha256
-from noetrium_platform.research.experimentation.identity import OptionalIdentityFacet
 from noetrium_platform.research.experimentation.lifecycle.api import (
     BoundStudyExecutionPort,
     MeasurementValueKind,
@@ -302,10 +301,10 @@ class _TrialBoundStudyExecution(BoundStudyExecutionPort):
             raise ValueError(
                 "Trial Study assignment has no matching intervention identity"
             )
-        task = (
-            None
+        task_cut = (
+            plan.task_definitions
             if assignment.task_id is None
-            else plan.task_for(assignment.task_id)
+            else (plan.task_for(assignment.task_id),)
         )
         return TrialExecutionRequest(
             project_id=self._closure.definition.project_id,
@@ -313,14 +312,12 @@ class _TrialBoundStudyExecution(BoundStudyExecutionPort):
             research_plan_digest=plan.research_plan_digest,
             revision=plan.research_semantics.revision,
             participant_schedule=plan.research_semantics.participant_schedule,
-            intervention=OptionalIdentityFacet(
-                intervention.intervention_digest
-            ),
+            intervention_spec=intervention,
             assignment=assignment,
             binding=binding,
             measurement_protocol=plan.measurement_protocol,
             protocol_identity=plan.trial_protocol_identity,
-            task=task,
+            task_cut=task_cut,
         )
 
     def _observation(

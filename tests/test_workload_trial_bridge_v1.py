@@ -11,10 +11,12 @@ from noetrium_platform.research.experimentation.lifecycle.api import (
 )
 from noetrium_platform.research.experimentation.identity import OptionalIdentityFacet
 from noetrium_platform.research.experimentation.lifecycle.api import (
+    FactorSelection,
     MeasurementDefinition,
     MeasurementProtocol,
     MeasurementValueKind,
     StudyAssignment,
+    StudyIntervention,
     StudyVariantSpec,
     TaskArtifactSpec,
     TaskDefinition,
@@ -114,15 +116,16 @@ def _request(
 ) -> TrialExecutionRequest:
     task = _task_definition(verifier=verifier)
     assignment = StudyAssignment("study", "control", 0, "seed", task.task_id)
+    intervention = StudyIntervention("control", ())
     variant = StudyVariantSpec(
         "control",
         VariantKind.CONTROL,
         "provider",
-        "3" * 64,
+        intervention.intervention_digest,
     )
     binding = VariantBinding(
         variant,
-        "4" * 64,
+        intervention.intervention_digest,
         "provider",
         "none",
         "control",
@@ -133,13 +136,61 @@ def _request(
         "5" * 64,
         OptionalIdentityFacet(),
         OptionalIdentityFacet(),
-        OptionalIdentityFacet("6" * 64),
+        intervention,
         assignment,
         binding,
         protocol,
         protocol_identity or ExperimentTrialProtocolIdentity("trial.workload", "7" * 64),
-        task,
+        (task,),
     )
+
+
+def test_cut_trial_request_preserves_exact_intervention_and_ordered_task_cut() -> None:
+    first = _task_definition()
+    second = TaskDefinition(
+        "task-2",
+        "1",
+        "family",
+        "task.v1",
+        "8" * 64,
+    )
+    selection = FactorSelection(
+        "memory_treatment",
+        "sem",
+        "9" * 64,
+    )
+    intervention = StudyIntervention("sem-variant", (selection,))
+    assignment = StudyAssignment("study", "sem-variant", 0, "seed", None)
+    variant = StudyVariantSpec(
+        "sem-variant",
+        VariantKind.TREATMENT,
+        "provider",
+        intervention.intervention_digest,
+    )
+    binding = VariantBinding(
+        variant,
+        intervention.intervention_digest,
+        "provider",
+        "none",
+        "treatment",
+    )
+    request = TrialExecutionRequest(
+        "project",
+        "run",
+        "5" * 64,
+        OptionalIdentityFacet(),
+        OptionalIdentityFacet(),
+        intervention,
+        assignment,
+        binding,
+        _protocol(_success_definition()),
+        ExperimentTrialProtocolIdentity("trial.cut", "7" * 64),
+        (first, second),
+    )
+    assert request.intervention_spec.selections == (selection,)
+    assert request.intervention.digest == intervention.intervention_digest
+    assert request.task is None
+    assert tuple(row.task_id for row in request.task_cut) == ("task-1", "task-2")
 
 
 def _result() -> WorkloadTaskResult:

@@ -14,6 +14,7 @@ from noetrium_platform.research.experimentation.identity import OptionalIdentity
 
 from .benchmark import TaskArtifactSpec, TaskDefinition, TaskVerifierIsolation
 from .contracts import StudyAssignment
+from .design import StudyIntervention
 from .measurement import MeasurementProtocol, MeasurementRecord, MeasurementValue
 from .plan import VariantBinding
 
@@ -303,12 +304,12 @@ class TrialExecutionRequest:
     research_plan_digest: str
     revision: OptionalIdentityFacet
     participant_schedule: OptionalIdentityFacet
-    intervention: OptionalIdentityFacet
+    intervention_spec: StudyIntervention
     assignment: StudyAssignment
     binding: VariantBinding
     measurement_protocol: MeasurementProtocol
     protocol_identity: ExperimentTrialProtocolIdentity
-    task: TaskDefinition | None = None
+    task_cut: tuple[TaskDefinition, ...]
     request_digest: str = field(init=False)
 
     def __post_init__(self) -> None:
@@ -321,9 +322,9 @@ class TrialExecutionRequest:
             raise TypeError(
                 "trial request participant_schedule must be OptionalIdentityFacet"
             )
-        if type(self.intervention) is not OptionalIdentityFacet:
+        if type(self.intervention_spec) is not StudyIntervention:
             raise TypeError(
-                "trial request intervention must be OptionalIdentityFacet"
+                "trial request intervention_spec must be StudyIntervention"
             )
         if type(self.assignment) is not StudyAssignment:
             raise TypeError("trial request assignment must be StudyAssignment")
@@ -331,6 +332,10 @@ class TrialExecutionRequest:
             raise TypeError("trial request binding must be VariantBinding")
         if self.assignment.variant_id != self.binding.variant.variant_id:
             raise ValueError("trial request binding does not match assignment")
+        if self.binding.intervention_digest != self.intervention_spec.intervention_digest:
+            raise ValueError(
+                "trial request intervention does not match variant binding"
+            )
         if type(self.measurement_protocol) is not MeasurementProtocol:
             raise TypeError(
                 "trial request measurement_protocol must be MeasurementProtocol"
@@ -339,11 +344,21 @@ class TrialExecutionRequest:
             raise TypeError(
                 "trial request protocol_identity must be ExperimentTrialProtocolIdentity"
             )
-        if self.task is not None:
-            if type(self.task) is not TaskDefinition:
-                raise TypeError("trial request task must be TaskDefinition or None")
-            if self.assignment.task_id != self.task.task_id:
-                raise ValueError("trial request task does not match assignment")
+        if type(self.task_cut) is not tuple or not self.task_cut or any(
+            type(row) is not TaskDefinition for row in self.task_cut
+        ):
+            raise TypeError(
+                "trial request task_cut must be a non-empty tuple of TaskDefinition"
+            )
+        task_ids = tuple(row.task_id for row in self.task_cut)
+        if len(task_ids) != len(set(task_ids)):
+            raise ValueError("trial request task_cut task ids must be unique")
+        if self.assignment.task_id is None:
+            pass
+        elif len(self.task_cut) != 1 or task_ids != (self.assignment.task_id,):
+            raise ValueError(
+                "task-level trial request must contain exactly its assigned task"
+            )
         object.__setattr__(
             self,
             "request_digest",
@@ -354,24 +369,31 @@ class TrialExecutionRequest:
                     "research_plan_digest": self.research_plan_digest,
                     "revision": self.revision,
                     "participant_schedule": self.participant_schedule,
-                    "intervention": self.intervention,
+                    "intervention_spec_digest": (
+                        self.intervention_spec.intervention_digest
+                    ),
                     "assignment_digest": self.assignment.assignment_digest,
                     "binding_digest": self.binding.binding_digest,
                     "measurement_protocol_digest": (
                         self.measurement_protocol.protocol_digest
                     ),
                     "protocol_identity_digest": self.protocol_identity.digest(),
-                    "task_digest": (
-                        None if self.task is None else self.task.task_digest
-                    ),
-                    "task_package_digest": (
-                        None
-                        if self.task is None or self.task.package is None
-                        else self.task.package.package_digest
+                    "task_cut_digests": tuple(
+                        row.task_digest for row in self.task_cut
                     ),
                 }
             ),
         )
+
+    @property
+    def intervention(self) -> OptionalIdentityFacet:
+        return OptionalIdentityFacet(self.intervention_spec.intervention_digest)
+
+    @property
+    def task(self) -> TaskDefinition | None:
+        if self.assignment.task_id is None:
+            return None
+        return self.task_cut[0]
 
 
 @dataclass(frozen=True, slots=True)
