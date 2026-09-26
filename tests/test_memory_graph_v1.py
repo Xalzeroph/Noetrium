@@ -34,6 +34,26 @@ def test_memory_graph_stages_and_activates_atomically() -> None:
     assert graph.diagnostics()["ledger_count"] == 1
 
 
+def test_memory_graph_allows_large_atomic_macro_edits_without_count_cap() -> None:
+    graph = VersionedMemoryGraph()
+    operations = tuple(
+        MemoryGraphOperation(
+            "create_node",
+            f"node:{index:03d}",
+            {
+                "kind": "semantic",
+                "label": f"n{index:03d}",
+                "content": f"node {index}",
+            },
+        )
+        for index in range(128)
+    )
+    transaction = graph.stage(operations, rationale_digest="large-atomic-edit")
+    graph.activate(transaction)
+    assert len(graph.snapshot().nodes) == 128
+    assert len(transaction.operation_digests) == 128
+
+
 def test_memory_graph_rejects_stale_activation() -> None:
     graph = VersionedMemoryGraph()
     first = graph.stage(

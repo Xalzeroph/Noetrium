@@ -23,9 +23,6 @@ class MemoryGraphIntegrityError(ValueError):
     pass
 
 
-_MAX_ATOMIC_GRAPH_OPERATIONS = 64
-
-
 def _generation_number(generation: str) -> int:
     if not generation.startswith("g"):
         raise MemoryGraphIntegrityError("memory graph generation must start with g")
@@ -67,10 +64,6 @@ class VersionedMemoryGraph:
         base = self.snapshot()
         if not operations:
             raise MemoryGraphIntegrityError("cannot stage an empty memory graph edit")
-        if len(operations) > _MAX_ATOMIC_GRAPH_OPERATIONS:
-            raise MemoryGraphIntegrityError(
-                "memory graph edit exceeds bounded operation count"
-            )
         nodes = {node.node_id: node for node in base.nodes}
         edges = {(edge.source_id, edge.target_id, edge.relation): edge for edge in base.edges}
         operation_digests: list[str] = []
