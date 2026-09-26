@@ -31,11 +31,6 @@ from .program import (
 )
 
 
-class RuleDispatchMode(StrEnum):
-    FIRST = "first"
-    ALL = "all"
-
-
 class UnhandledEventPolicy(StrEnum):
     ERROR = "error"
     IGNORE = "ignore"
@@ -132,7 +127,7 @@ class ProgramRule:
 @dataclass(frozen=True, slots=True)
 class ProgramRuleSet:
     rules: tuple[ProgramRule, ...]
-    mode: RuleDispatchMode = RuleDispatchMode.FIRST
+    max_matches: int | None = 1
     unhandled: UnhandledEventPolicy = UnhandledEventPolicy.ERROR
     rule_set_digest: str = field(init=False)
 
@@ -144,8 +139,10 @@ class ProgramRuleSet:
         ids = tuple(rule.rule_id for rule in self.rules)
         if len(ids) != len(set(ids)):
             raise ValueError("program rule ids must be unique")
-        if not isinstance(self.mode, RuleDispatchMode):
-            raise TypeError("rule dispatch mode must be RuleDispatchMode")
+        if self.max_matches is not None and (
+            type(self.max_matches) is not int or self.max_matches < 1
+        ):
+            raise ValueError("rule dispatch max_matches must be positive or None")
         if not isinstance(self.unhandled, UnhandledEventPolicy):
             raise TypeError("unhandled policy must be UnhandledEventPolicy")
         object.__setattr__(
@@ -153,7 +150,7 @@ class ProgramRuleSet:
             "rule_set_digest",
             canonical_digest({
                 "rules": tuple(rule.as_payload() for rule in self.rules),
-                "mode": self.mode.value,
+                "max_matches": self.max_matches,
                 "unhandled": self.unhandled.value,
             }),
         )
@@ -173,12 +170,12 @@ class ProgramRuleSet:
         ordered = tuple(
             sorted(matches, key=lambda rule: (-rule.priority, rule.rule_id))
         )
-        return ordered[:1] if self.mode is RuleDispatchMode.FIRST else ordered
+        return ordered if self.max_matches is None else ordered[: self.max_matches]
 
     def as_payload(self) -> JsonObject:
         return {
             "rules": tuple(rule.as_payload() for rule in self.rules),
-            "mode": self.mode.value,
+            "max_matches": self.max_matches,
             "unhandled": self.unhandled.value,
             "rule_set_digest": self.rule_set_digest,
         }
@@ -368,7 +365,6 @@ __all__ = [
     "MachineEvent",
     "ProgramRule",
     "ProgramRuleSet",
-    "RuleDispatchMode",
     "UnhandledEventPolicy",
     "build_rule_handlers",
     "compile_rule_program",

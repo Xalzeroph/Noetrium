@@ -27,7 +27,6 @@ from .program_host import ResearchProgramHost
 from .rule_program import (
     ProgramRule,
     ProgramRuleSet,
-    RuleDispatchMode,
     UnhandledEventPolicy,
     build_rule_handlers,
     compile_rule_program,
@@ -123,7 +122,6 @@ def communication_rule_set() -> ProgramRuleSet:
                 priority=100,
             ),
         ),
-        mode=RuleDispatchMode.FIRST,
         unhandled=UnhandledEventPolicy.ERROR,
     )
 

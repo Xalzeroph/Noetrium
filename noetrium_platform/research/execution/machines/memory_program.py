@@ -32,7 +32,6 @@ from .program import (
 from .rule_program import (
     ProgramRule,
     ProgramRuleSet,
-    RuleDispatchMode,
     UnhandledEventPolicy,
     build_rule_handlers,
     compile_rule_program,
@@ -197,7 +196,6 @@ def memory_rule_set() -> ProgramRuleSet:
                 semantic=MemoryConcern.CONSOLIDATION.value,
             ),
         ),
-        mode=RuleDispatchMode.FIRST,
         unhandled=UnhandledEventPolicy.ERROR,
     )
 

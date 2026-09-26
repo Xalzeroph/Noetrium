@@ -46,7 +46,6 @@ from .program import (
 from .rule_program import (
     ProgramRule,
     ProgramRuleSet,
-    RuleDispatchMode,
     UnhandledEventPolicy,
     build_rule_handlers,
     compile_rule_program,
@@ -161,7 +160,6 @@ def environment_rule_set() -> ProgramRuleSet:
                 semantic=EnvironmentConcern.RECOVERY.value,
             ),
         ),
-        mode=RuleDispatchMode.FIRST,
         unhandled=UnhandledEventPolicy.ERROR,
     )
 

@@ -28,7 +28,6 @@ from noetrium_platform.research.execution.api import (
     ProgramRuleSet,
     ResearchProgram,
     ResearchProgramHost,
-    RuleDispatchMode,
     UnhandledEventPolicy,
     build_rule_handlers,
     compile_rule_program,
@@ -65,7 +64,6 @@ def paired_evaluation_rule_set() -> ProgramRuleSet:
                 semantic=EvaluationConcern.FINALIZATION.value,
             ),
         ),
-        mode=RuleDispatchMode.FIRST,
         unhandled=UnhandledEventPolicy.ERROR,
     )
 
