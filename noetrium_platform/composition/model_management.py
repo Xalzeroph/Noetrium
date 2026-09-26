@@ -212,6 +212,7 @@ def build_local_management_plane(
         ownership=meta.resource_ownership,
         leases=meta.resource_leases,
         runtime=DockerCliManagedContainerProvider(
+            local_commands,
             docker_commands,
             authority_id=docker_authority_id,
         ),

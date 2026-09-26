@@ -47,6 +47,9 @@ class FakeDockerRuntime:
         self.rows = {} if rows is None else rows
         self.events = [] if events is None else events
 
+    def assert_expansion_admissible(self) -> None:
+        return None
+
     def start(self, handle) -> DockerContainerObservation:
         row = DockerContainerObservation(
             container_id=f"cid-{handle.container_name}",
@@ -526,6 +529,7 @@ def test_docker_provider_accepts_only_proven_absence_after_ambiguous_remove_ack(
     runner = _AmbiguousRemoveRunner()
     provider = DockerCliManagedContainerProvider(
         runner,
+        runner,
         authority_id="1" * 64,
     )
 
@@ -538,6 +542,7 @@ def test_docker_provider_accepts_only_proven_absence_after_ambiguous_remove_ack(
 def test_docker_provider_keeps_ambiguous_remove_fail_closed_when_daemon_unobservable() -> None:
     runner = _AmbiguousRemoveRunner(observable_after_remove=False)
     provider = DockerCliManagedContainerProvider(
+        runner,
         runner,
         authority_id="1" * 64,
     )
@@ -593,6 +598,25 @@ class _DockerInfoRunner:
             stdout=self.stdout,
             stderr="",
         )
+
+
+def test_docker_provider_separates_recovery_control_from_expansion_admission() -> None:
+    control = _AmbiguousRemoveRunner()
+    expansion = _DockerInfoRunner()
+    provider = DockerCliManagedContainerProvider(
+        control,
+        expansion,
+        authority_id="1" * 64,
+    )
+
+    provider.remove("cid-ambiguous")
+    assert [call[1] for call in control.calls] == ["inspect", "rm", "inspect"]
+    assert expansion.calls == []
+
+    provider.assert_expansion_admissible()
+    assert expansion.calls == [
+        (("docker", "info", "--format", "{{.DockerRootDir}}"), 15.0)
+    ]
 
 
 def test_discover_docker_root_uses_runtime_authority_path() -> None:

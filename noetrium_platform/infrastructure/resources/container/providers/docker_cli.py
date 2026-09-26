@@ -56,7 +56,8 @@ class DockerCliManagedContainerProvider(DockerManagedContainerPort):
 
     def __init__(
         self,
-        runner: DockerCommandRunnerPort,
+        control_runner: DockerCommandRunnerPort,
+        expansion_runner: DockerCommandRunnerPort,
         *,
         authority_id: str,
         docker_executable: str = "docker",
@@ -72,7 +73,8 @@ class DockerCliManagedContainerProvider(DockerManagedContainerPort):
             raise ValueError("docker executable is required")
         if command_timeout_seconds <= 0:
             raise ValueError("Docker command timeout must be positive")
-        self._runner = runner
+        self._control_runner = control_runner
+        self._expansion_runner = expansion_runner
         self._authority_id = authority_id
         self._docker = docker_executable
         self._timeout = float(command_timeout_seconds)
@@ -80,6 +82,24 @@ class DockerCliManagedContainerProvider(DockerManagedContainerPort):
     @property
     def docker_executable(self) -> str:
         return self._docker
+
+    def assert_expansion_admissible(self) -> None:
+        """Fence storage-expanding Docker effects through the physical admission group."""
+
+        result = self._expansion_runner.run(
+            (
+                self._docker,
+                "info",
+                "--format",
+                "{{.DockerRootDir}}",
+            ),
+            timeout_seconds=self._timeout,
+        )
+        if result.returncode != 0:
+            raise DockerContainerRuntimeError(
+                "Docker expansion admission probe failed with exit code "
+                f"{result.returncode}"
+            )
 
     @staticmethod
     def _missing(stderr: str) -> bool:
@@ -113,7 +133,7 @@ class DockerCliManagedContainerProvider(DockerManagedContainerPort):
     def inspect(self, reference: str) -> DockerContainerObservation | None:
         if not reference.strip():
             raise ValueError("Docker container reference is required")
-        result = self._runner.run(
+        result = self._control_runner.run(
             (self._docker, "inspect", reference),
             timeout_seconds=self._timeout,
         )
@@ -126,7 +146,7 @@ class DockerCliManagedContainerProvider(DockerManagedContainerPort):
         return self._decode_inspect(result.stdout)
 
     def list_managed(self) -> tuple[DockerContainerObservation, ...]:
-        result = self._runner.run(
+        result = self._control_runner.run(
             (
                 self._docker,
                 "ps",
@@ -182,7 +202,7 @@ class DockerCliManagedContainerProvider(DockerManagedContainerPort):
         if force:
             argv.append("-f")
         argv.append(observed.container_id)
-        result = self._runner.run(tuple(argv), timeout_seconds=self._timeout)
+        result = self._control_runner.run(tuple(argv), timeout_seconds=self._timeout)
         if result.returncode != 0 and not self._missing(result.stderr):
             # Docker can commit removal and then lose the command response when
             # the daemon/socket restarts. Re-observe the immutable container ID

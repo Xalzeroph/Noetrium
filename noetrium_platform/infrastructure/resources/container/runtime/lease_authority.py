@@ -258,6 +258,10 @@ class DockerContainerLeaseAuthority:
         handle: ManagedDockerContainerLease,
     ) -> tuple[str, ...]:
         self._require_handle_authority(handle)
+        # Read/recovery Docker commands remain available under hard pressure,
+        # but every new physical container generation must cross the dedicated
+        # storage-expansion admission group immediately before process launch.
+        self.runtime.assert_expansion_admissible()
         return (
             self.runtime.docker_executable,
             "run",
