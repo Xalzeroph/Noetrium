@@ -18,6 +18,10 @@ from noetrium_platform.composition.research_authority_inputs import (
 from noetrium_platform.composition.research_binding_authority import (
     ResearchProjectManifestRequirement,
 )
+from noetrium_platform.composition.research_portfolio_execution import (
+    ResearchExecutionContext,
+    open_local_research_execution_context,
+)
 from noetrium_platform.composition.research_os_graph import (
     compile_research_portfolio_graph,
 )
@@ -35,10 +39,6 @@ from research.reproductions.contracts import ReproductionAssetKind
 from research.reproductions.execution_authority import (
     ReproductionFleetAuthorityMaterializerPort,
     materialize_repository_fleet_execution_authorities,
-)
-from research.reproductions.execution_context import (
-    ReproductionFleetExecutionContext,
-    open_local_reproduction_fleet_execution_context,
 )
 from research.reproductions.fleet import (
     ReproductionFleetExecutionResult,
@@ -493,7 +493,7 @@ def build_plan() -> dict:
 
 def _load_authority_materializer(
     spec: str,
-    context: ReproductionFleetExecutionContext,
+    context: ResearchExecutionContext,
 ) -> ReproductionFleetAuthorityMaterializerPort:
     if type(spec) is not str or not spec.strip() or spec != spec.strip():
         raise ValueError("fleet authority materializer spec must be canonical text")
@@ -529,7 +529,7 @@ def _load_authority_materializer(
 def _execution_source(
     args,
     parser,
-    context: ReproductionFleetExecutionContext,
+    context: ResearchExecutionContext,
 ):
     materializer = (
         build_auto_repository_fleet_authority_materializer(context)
@@ -660,7 +660,7 @@ def main() -> int:
         return 0
 
     if args.authority_audit:
-        with open_local_reproduction_fleet_execution_context(
+        with open_local_research_execution_context(
             args.state_root,
             start_background_controllers=False,
             authority_inputs=authority_inputs,
@@ -755,7 +755,7 @@ def main() -> int:
         return 0 if payload["all_execution_authority_closed"] else 1
 
     if args.preflight:
-        with open_local_reproduction_fleet_execution_context(
+        with open_local_research_execution_context(
             args.state_root,
             start_background_controllers=False,
             authority_inputs=authority_inputs,
@@ -804,6 +804,7 @@ def main() -> int:
                 authority_manifest_digest=authorities.authority_manifest_digest,
                 execution_id=args.execution_id,
                 execution_pool=context.execution_pool,
+                content_authorities=context.content,
             )
         payload = {
             "schema": "noetrium.reproduction-fleet-preflight.v3",
@@ -828,7 +829,7 @@ def main() -> int:
         return 0
 
     if args.execute:
-        with open_local_reproduction_fleet_execution_context(
+        with open_local_research_execution_context(
             args.state_root,
             start_background_controllers=True,
             authority_inputs=authority_inputs,
@@ -877,6 +878,7 @@ def main() -> int:
                 authority_manifest_digest=authorities.authority_manifest_digest,
                 execution_id=args.execution_id,
                 execution_pool=context.execution_pool,
+                content_authorities=context.content,
             )
             context.runtime.assert_healthy()
             result = ReproductionFleetExecutionResult(

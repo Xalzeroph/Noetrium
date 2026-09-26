@@ -211,6 +211,7 @@ def load_project_research_os(
                 method_runtime_inventory=(
                     authorities.method_runtime_inventory
                 ),
+                content_authorities=context.content,
             )
         except BaseException as primary:
             try:

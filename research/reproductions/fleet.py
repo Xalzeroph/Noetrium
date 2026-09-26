@@ -16,6 +16,9 @@ from noetrium_platform.composition.research_binding_authority import (
     ResearchBindingRequirementMissing,
     ResearchProjectManifestRequirement,
 )
+from noetrium_platform.composition.research_execution_content import (
+    ResearchExecutionContentAuthorities,
+)
 from noetrium_platform.composition.research_execution_pool import (
     ResearchExecutionPool,
 )
@@ -1307,6 +1310,7 @@ def preflight_materialized_reproduction_fleet(
     authority_manifest_digest: str,
     execution_id: str | None = None,
     execution_pool: ResearchExecutionPool | None = None,
+    content_authorities: ResearchExecutionContentAuthorities | None = None,
 ) -> ReproductionFleetPreflightResult:
     """Repository discovery/materialization adapter over generic portfolio preflight."""
 
@@ -1338,6 +1342,7 @@ def preflight_materialized_reproduction_fleet(
         execution_id=resolved_execution_id,
         message=_fleet_revision_message(fleet, authority_manifest_digest),
         execution_pool=execution_pool,
+        content_authorities=content_authorities,
     )
     return ReproductionFleetPreflightResult(
         fleet,
@@ -1359,6 +1364,7 @@ def execute_materialized_reproduction_fleet(
     authority_manifest_digest: str,
     execution_id: str | None = None,
     execution_pool: ResearchExecutionPool | None = None,
+    content_authorities: ResearchExecutionContentAuthorities | None = None,
 ):
     """Repository adapter over the cardinality-agnostic portfolio executor."""
 
@@ -1390,6 +1396,7 @@ def execute_materialized_reproduction_fleet(
         execution_id=resolved_execution_id,
         message=_fleet_revision_message(fleet, authority_manifest_digest),
         execution_pool=execution_pool,
+        content_authorities=content_authorities,
     ).receipt
 
 

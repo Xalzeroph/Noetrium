@@ -11,6 +11,9 @@ from noetrium_platform.composition.research_authority_inputs import (
     authority_input_value,
     normalize_authority_inputs,
 )
+from noetrium_platform.composition.research_execution_content import (
+    compose_research_execution_content,
+)
 from research.benchmarks.gsm8k.materializer import (
     GSM8K_REPOSITORY_TEST_INPUT,
     materialize_repository_benchmark_authority,
@@ -18,7 +21,9 @@ from research.benchmarks.gsm8k.materializer import (
 from research.reproductions.benchmark_input_materializer import (
     materialize_repository_benchmark_inputs,
 )
-from research.reproductions.execution_context import ReproductionFleetExecutionContext
+from noetrium_platform.composition.research_portfolio_execution import (
+    ResearchExecutionContext,
+)
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -43,7 +48,7 @@ def test_fleet_context_exposes_same_authority_input_contract_as_project_executio
     tmp_path: Path,
 ) -> None:
     runtime = object.__new__(ManagedResearchRuntime)
-    context = ReproductionFleetExecutionContext(
+    context = ResearchExecutionContext(
         tmp_path,
         runtime,
         authority_inputs=(("benchmark.gsm8k.test_jsonl", "/data/test.jsonl"),),
@@ -53,10 +58,15 @@ def test_fleet_context_exposes_same_authority_input_contract_as_project_executio
         == "/data/test.jsonl"
     )
     assert context.authority_input("missing") is None
+    assert context.content is not None
+    assert context.content.root == (tmp_path / "content").absolute()
 
 
-def test_repository_benchmark_materialization_is_zero_input_neutral() -> None:
-    registry = materialize_repository_benchmark_inputs(())
+def test_repository_benchmark_materialization_is_zero_input_neutral(
+    tmp_path: Path,
+) -> None:
+    content = compose_research_execution_content(tmp_path / "content")
+    registry = materialize_repository_benchmark_inputs((), content=content)
     assert registry.registrations == ()
     assert registry.benchmark_ids == ()
 
@@ -66,9 +76,11 @@ def test_gsm8k_repository_materializer_is_fail_closed_on_wrong_asset(
 ) -> None:
     wrong = tmp_path / "test.jsonl"
     wrong.write_text('{"question":"1+1?","answer":"#### 2"}\n', encoding="utf-8")
+    content = compose_research_execution_content(tmp_path / "content")
     with pytest.raises(ValueError, match="Git blob identity mismatch"):
         materialize_repository_benchmark_authority(
-            ((GSM8K_REPOSITORY_TEST_INPUT, str(wrong)),)
+            ((GSM8K_REPOSITORY_TEST_INPUT, str(wrong)),),
+            content=content,
         )
 
 

@@ -263,6 +263,7 @@ def open_local_research_execution_context(
     state_root: Path,
     *,
     start_background_controllers: bool,
+    authority_inputs: tuple[tuple[str, str], ...] = (),
 ) -> Iterator[ResearchExecutionContext]:
     """Open the one ManagedResearchRuntime used by a portfolio execution."""
 
@@ -273,7 +274,11 @@ def open_local_research_execution_context(
         standard_local_directory_layout(resolved_root / "platform-runtime"),
         start_background_controllers=start_background_controllers,
     )
-    context = ResearchExecutionContext(resolved_root, runtime)
+    context = ResearchExecutionContext(
+        resolved_root,
+        runtime,
+        authority_inputs=authority_inputs,
+    )
     try:
         yield context
     except BaseException as primary:
@@ -437,6 +442,7 @@ def preflight_research_portfolio(
     parents: tuple[ResearchGraphRevision, ...] = (),
     message: str | None = None,
     execution_pool: ResearchExecutionPool | None = None,
+    content_authorities: ResearchExecutionContentAuthorities | None = None,
 ) -> ResearchPortfolioPreflightResult:
     """Run whole-portfolio admission without committing a durable revision/cut."""
 
@@ -456,8 +462,10 @@ def preflight_research_portfolio(
         experiment_runtime_components=authorities.experiment_runtime_components,
         execution_pool=execution_pool,
         method_runtime_inventory=authorities.method_runtime_inventory,
-        content_authorities=compose_research_execution_content(
-            state_root / "content"
+        content_authorities=(
+            compose_research_execution_content(state_root / "content")
+            if content_authorities is None
+            else content_authorities
         ),
     )
     try:
@@ -485,6 +493,7 @@ def execute_research_portfolio(
     parents: tuple[ResearchGraphRevision, ...] = (),
     message: str | None = None,
     execution_pool: ResearchExecutionPool | None = None,
+    content_authorities: ResearchExecutionContentAuthorities | None = None,
 ) -> ResearchPortfolioExecutionResult:
     """Preflight, commit and RUN any ResearchPortfolio through one canonical path."""
 
@@ -504,8 +513,10 @@ def execute_research_portfolio(
         experiment_runtime_components=authorities.experiment_runtime_components,
         execution_pool=execution_pool,
         method_runtime_inventory=authorities.method_runtime_inventory,
-        content_authorities=compose_research_execution_content(
-            state_root / "content"
+        content_authorities=(
+            compose_research_execution_content(state_root / "content")
+            if content_authorities is None
+            else content_authorities
         ),
     )
     try:

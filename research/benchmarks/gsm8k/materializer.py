@@ -5,7 +5,11 @@ import json
 from dataclasses import dataclass
 from pathlib import Path
 
-from noetrium_platform.foundation.kernel.kernel import canonical_digest
+from noetrium_platform.composition.research_execution_content import (
+    ResearchExecutionContentAuthorities,
+)
+from noetrium_platform.foundation.kernel.kernel import canonical_bytes, canonical_digest
+from noetrium_platform.foundation.scope.api import ScopeIdentity, ScopeKind
 from noetrium_platform.research.experimentation.lifecycle.api import (
     BenchmarkSourceResolution,
 )
@@ -66,6 +70,26 @@ def _final_answer(answer: str, index: int) -> str:
     if not value:
         raise ValueError(f"GSM8K row {index} has empty final answer")
     return value
+
+
+def _task_content_document(
+    *,
+    git_blob_sha1: str,
+    file_sha256: str,
+    split_id: str,
+    index: int,
+    question: str,
+    answer: str,
+) -> dict[str, object]:
+    return {
+        "source_commit": GSM8K_ARCHIVED_COMMIT,
+        "source_git_blob_sha1": git_blob_sha1,
+        "source_file_sha256": file_sha256,
+        "split_id": split_id,
+        "index": index,
+        "question": question,
+        "answer": answer,
+    }
 
 
 def register_gsm8k_materialization(
@@ -143,15 +167,14 @@ def materialize_gsm8k_jsonl_bytes(
             question_digest=hashlib.sha256(question.encode("utf-8")).hexdigest(),
             answer_digest=hashlib.sha256(answer.encode("utf-8")).hexdigest(),
             content_digest=canonical_digest(
-                {
-                    "source_commit": GSM8K_ARCHIVED_COMMIT,
-                    "source_git_blob_sha1": git_blob_sha1,
-                    "source_file_sha256": file_sha256,
-                    "split_id": split_id,
-                    "index": index,
-                    "question": question,
-                    "answer": answer,
-                }
+                _task_content_document(
+                    git_blob_sha1=git_blob_sha1,
+                    file_sha256=file_sha256,
+                    split_id=split_id,
+                    index=index,
+                    question=question,
+                    answer=answer,
+                )
             ),
         )
         tasks.append(GSM8KMaterializedTask(record, question, answer, final_answer))
@@ -206,14 +229,71 @@ def materialize_archived_gsm8k_test(path: str | Path) -> GSM8KMaterialization:
 
 def materialize_repository_benchmark_authority(
     authority_inputs: tuple[tuple[str, str], ...],
+    *,
+    content: ResearchExecutionContentAuthorities,
 ) -> tuple[BenchmarkResolutionRegistration, ...]:
-    """Materialize the exact archived test cut when its local file is supplied."""
+    """Materialize the exact cut and publish its source/task bytes once."""
 
+    if type(content) is not ResearchExecutionContentAuthorities:
+        raise TypeError(
+            "GSM8K repository materialization requires "
+            "ResearchExecutionContentAuthorities"
+        )
     path = dict(authority_inputs).get(GSM8K_REPOSITORY_TEST_INPUT)
     if path is None:
         return ()
-    materialized = materialize_archived_gsm8k_test(Path(path).resolve(strict=True))
-    return (register_gsm8k_materialization(materialized),)
+
+    source_path = Path(path).resolve(strict=True)
+    source_bytes = source_path.read_bytes()
+    materialized = materialize_gsm8k_jsonl_bytes(
+        source_bytes,
+        split_id="test",
+        expected_git_blob_sha1=GSM8K_ARCHIVED_TEST_GIT_BLOB_SHA1,
+        expected_file_sha256=GSM8K_ARCHIVED_TEST_SHA256,
+    )
+    scope = ScopeIdentity(ScopeKind.PLATFORM, "benchmark:gsm8k")
+    source_reference = content.publish(
+        reference_id=f"gsm8k:source:{materialized.file_sha256}",
+        scope=scope,
+        payload=source_bytes,
+        media_type="application/x-ndjson",
+        producer_component_id="research.benchmarks.gsm8k",
+    )
+    content_references = {}
+    for task in materialized.tasks:
+        document = _task_content_document(
+            git_blob_sha1=materialized.git_blob_sha1,
+            file_sha256=materialized.file_sha256,
+            split_id=task.record.split_id,
+            index=task.record.index,
+            question=task.question,
+            answer=task.answer,
+        )
+        payload = canonical_bytes(document)
+        if hashlib.sha256(payload).hexdigest() != task.record.content_digest:
+            raise RuntimeError("GSM8K canonical task content digest drifted")
+        content_references[task.record.task_id] = content.publish(
+            reference_id=f"gsm8k:task:{task.record.content_digest}",
+            scope=scope,
+            payload=payload,
+            media_type="application/json",
+            producer_component_id="research.benchmarks.gsm8k",
+        )
+
+    cut = build_gsm8k_task_set(
+        tuple(task.record for task in materialized.tasks),
+        dataset_content_sha256=materialized.file_sha256,
+        source_reference=source_reference,
+        content_references=content_references,
+    )
+    bound = GSM8KMaterialization(
+        split_id=materialized.split_id,
+        git_blob_sha1=materialized.git_blob_sha1,
+        file_sha256=materialized.file_sha256,
+        tasks=materialized.tasks,
+        cut=cut,
+    )
+    return (register_gsm8k_materialization(bound),)
 
 
 __all__ = [

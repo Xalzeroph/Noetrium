@@ -13,6 +13,9 @@ from pathlib import Path
 from noetrium_platform.composition.research_authority_inputs import (
     normalize_authority_inputs,
 )
+from noetrium_platform.composition.research_execution_content import (
+    ResearchExecutionContentAuthorities,
+)
 from noetrium_platform.research.experimentation.lifecycle.study.api import (
     BenchmarkResolutionRegistration,
     BenchmarkResolutionRegistry,
@@ -23,9 +26,16 @@ _ENTRYPOINT = "materialize_repository_benchmark_authority"
 
 def materialize_repository_benchmark_inputs(
     authority_inputs: tuple[tuple[str, str], ...],
+    *,
+    content: ResearchExecutionContentAuthorities,
 ) -> BenchmarkResolutionRegistry:
-    """Materialize every benchmark whose exact required inputs are present."""
+    """Materialize exact Benchmark cuts into the shared immutable content authority."""
 
+    if type(content) is not ResearchExecutionContentAuthorities:
+        raise TypeError(
+            "repository benchmark materialization requires "
+            "ResearchExecutionContentAuthorities"
+        )
     frozen_inputs = normalize_authority_inputs(
         authority_inputs,
         label="repository benchmark authority_inputs",
@@ -50,7 +60,7 @@ def materialize_repository_benchmark_inputs(
             raise TypeError(
                 f"{module.__name__}.{_ENTRYPOINT} must be callable"
             )
-        rows = factory(frozen_inputs)
+        rows = factory(frozen_inputs, content=content)
         if type(rows) is not tuple or any(
             type(row) is not BenchmarkResolutionRegistration for row in rows
         ):

@@ -272,7 +272,10 @@ class AutoRepositoryFleetAuthorityMaterializer:
         if not hasattr(requirements, "manifest_digest"):
             raise TypeError("auto fleet prerequisite requirements must be typed")
         return ReproductionFleetPrerequisiteAuthorities(
-            materialize_repository_benchmark_inputs(self.context.authority_inputs),
+            materialize_repository_benchmark_inputs(
+                self.context.authority_inputs,
+                content=self.context.content,
+            ),
             None,
         )
 
