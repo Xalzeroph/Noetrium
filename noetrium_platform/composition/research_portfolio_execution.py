@@ -141,6 +141,7 @@ class ResearchExecutionContext:
     state_root: Path
     runtime: ManagedResearchRuntime
     content: ResearchExecutionContentAuthorities | None = None
+    authority_inputs: tuple[tuple[str, str], ...] = ()
 
     def __post_init__(self) -> None:
         if not isinstance(self.state_root, Path):
@@ -162,6 +163,39 @@ class ResearchExecutionContext:
                 "research execution context content must be "
                 "ResearchExecutionContentAuthorities"
             )
+        if type(self.authority_inputs) is not tuple:
+            raise TypeError("research execution authority_inputs must be a tuple")
+        ordered: list[tuple[str, str]] = []
+        for row in self.authority_inputs:
+            if type(row) is not tuple or len(row) != 2:
+                raise TypeError(
+                    "research execution authority_inputs must contain text pairs"
+                )
+            key, value = row
+            if (
+                type(key) is not str
+                or not key.strip()
+                or key != key.strip()
+                or type(value) is not str
+                or not value.strip()
+                or value != value.strip()
+            ):
+                raise ValueError(
+                    "research execution authority_inputs require canonical non-empty text"
+                )
+            ordered.append((key, value))
+        ordered.sort(key=lambda row: row[0])
+        if len({key for key, _value in ordered}) != len(ordered):
+            raise ValueError("research execution authority_inputs keys must be unique")
+        object.__setattr__(self, "authority_inputs", tuple(ordered))
+
+    def authority_input(self, key: str) -> str | None:
+        if type(key) is not str or not key.strip() or key != key.strip():
+            raise ValueError("research execution authority input key must be canonical text")
+        for candidate, value in self.authority_inputs:
+            if candidate == key:
+                return value
+        return None
 
     @property
     def execution_pool(self) -> ResearchExecutionPool:

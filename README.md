@@ -21,7 +21,7 @@
 
 <!-- readme-locale:en -->
 
-<!-- readme-source-sha256:fb87a4f18b727c65ea8d9e28365036ac34eca18d2d448281ca821b01f490d52d -->
+<!-- readme-source-sha256:10e078ab7c0d7b721c7f86c0e3ed5ea154f01f672f2645a18eca660d278e1df0 -->
 
 <p align="center">
   <strong>Research infrastructure for attributable, recoverable, evidence-preserving AI-agent experiments.</strong><br>
@@ -600,7 +600,11 @@ A project execution config is strict JSON:
 {
   "schema": "noetrium.project-execution-config.v1",
   "authority_factory": "deployment.authorities:build",
-  "start_background_controllers": true
+  "start_background_controllers": true,
+  "authority_inputs": {
+    "qualified_model_closure": "/data/models/qualified-model-closure.json",
+    "benchmark_assets": "/data/benchmarks/my-paper"
+  }
 }
 ~~~
 
@@ -610,7 +614,7 @@ Run it with:
 noetrium run --project . --config ./execution.json
 ~~~
 
-The factory receives a Platform-owned execution context containing the one <code>ManagedResearchRuntime</code>, shared execution pool, Model/Environment/Resource authorities and the frozen project portfolio. It must return <code>ResearchExecutionAuthorities</code>. Experiment execution may bind a generic Study closure plus exact Experiment runtime components; direct MethodPrograms may bind a <code>MethodRuntimePortInventory</code>. Both routes reuse the same physical authorities.
+The factory receives a Platform-owned execution context containing the one <code>ManagedResearchRuntime</code>, shared execution pool, Model/Environment/Resource authorities, immutable content authority, and any explicit <code>authority_inputs</code> from the execution config. Use those inputs only for machine-local facts that cannot be uniquely inferred—for example the path to a qualified model closure, a private benchmark asset root, or an exact world snapshot. The factory must validate those references and return <code>ResearchExecutionAuthorities</code>. Experiment execution may bind a generic Study closure plus exact Experiment runtime components; direct MethodPrograms may bind a <code>MethodRuntimePortInventory</code>. Both routes reuse the same physical authorities.
 
 The authority factory is deployment/composition code, not scientific method semantics. Keep it outside the generated scientific <code>core.py</code>; do not work around the boundary by importing <code>noetrium_platform</code> from downstream scientific source or by constructing shadow Docker, endpoint, compute, model or journal authorities.
 
@@ -771,7 +775,7 @@ Emit the machine-readable prerequisite manifest:
 ./deploy/noetrium requirements
 ~~~
 
-No materializer configuration is required for the normal path. <code>preflight</code> and <code>run</code> use Noetrium's built-in automatic owner-authority materializer, which derives internal binding IR from the already-frozen programs/studies and inspects owner-system runtime state.
+No materializer configuration is required for the normal repository path. <code>preflight</code> and <code>run</code> use Noetrium's built-in owner-authority materializer, which derives internal binding IR and deterministic platform-owned bindings from already-frozen programs/studies. Machine-local or external authority that cannot be inferred uniquely remains explicit: downstream project execution may pass exact locations through <code>authority_inputs</code>, while specialized repository deployments may supply <code>NOETRIUM_FLEET_AUTHORITY_MATERIALIZER</code>.
 
 The automatic materializer never invents model, environment, GPU, endpoint, verifier or external-asset proof. A lane whose real owner authority cannot close is retained as a content-addressed <code>BLOCKED</code> lane while unrelated closed lanes continue into the runnable ResearchPortfolio.
 

@@ -99,6 +99,10 @@ def test_project_execution_config_is_strict_and_fail_closed(tmp_path: Path) -> N
                 "schema": "noetrium.project-execution-config.v1",
                 "authority_factory": "fixture.providers:build",
                 "start_background_controllers": False,
+                "authority_inputs": {
+                    "qualified_model_closure": "/data/models/qualified.json",
+                    "world_root": "/data/worlds/sem",
+                },
             }
         ),
         encoding="utf-8",
@@ -107,6 +111,10 @@ def test_project_execution_config_is_strict_and_fail_closed(tmp_path: Path) -> N
     assert loaded == ProjectExecutionAuthorityConfig(
         "fixture.providers:build",
         False,
+        (
+            ("qualified_model_closure", "/data/models/qualified.json"),
+            ("world_root", "/data/worlds/sem"),
+        ),
     )
 
     config.write_text(
@@ -137,6 +145,8 @@ def test_project_config_materializes_through_generic_portfolio_seam(
 
     def build(context):
         assert type(context) is ResearchExecutionContext
+        assert context.authority_input("qualified_model_closure") == "/tmp/qualified.json"
+        assert context.authority_input("missing") is None
         return _Materializer()
 
     module.build = build
@@ -157,6 +167,7 @@ def test_project_config_materializes_through_generic_portfolio_seam(
     context = ResearchExecutionContext(
         tmp_path,
         object.__new__(ManagedResearchRuntime),
+        authority_inputs=(("qualified_model_closure", "/tmp/qualified.json"),),
     )
 
     authorities = materialize_project_execution_authorities(

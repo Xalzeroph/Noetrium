@@ -194,6 +194,7 @@ def load_project_research_os(
             context = ResearchExecutionContext(
                 state_root,
                 managed_runtime,
+                authority_inputs=config.authority_inputs,
             )
             authorities = materialize_project_execution_authorities(
                 config.authority_factory,

@@ -19,6 +19,7 @@ _SCHEMA = "noetrium.project-execution-config.v1"
 class ProjectExecutionAuthorityConfig:
     authority_factory: str
     start_background_controllers: bool = True
+    authority_inputs: tuple[tuple[str, str], ...] = ()
 
     def __post_init__(self) -> None:
         if (
@@ -48,6 +49,31 @@ class ProjectExecutionAuthorityConfig:
             raise TypeError(
                 "project execution start_background_controllers must be boolean"
             )
+        if type(self.authority_inputs) is not tuple:
+            raise TypeError("project execution authority_inputs must be a tuple")
+        normalized: list[tuple[str, str]] = []
+        for row in self.authority_inputs:
+            if type(row) is not tuple or len(row) != 2:
+                raise TypeError(
+                    "project execution authority_inputs must contain text pairs"
+                )
+            key, value = row
+            if (
+                type(key) is not str
+                or not key.strip()
+                or key != key.strip()
+                or type(value) is not str
+                or not value.strip()
+                or value != value.strip()
+            ):
+                raise ValueError(
+                    "project execution authority_inputs require canonical non-empty text"
+                )
+            normalized.append((key, value))
+        normalized.sort(key=lambda row: row[0])
+        if len({key for key, _value in normalized}) != len(normalized):
+            raise ValueError("project execution authority_inputs keys must be unique")
+        object.__setattr__(self, "authority_inputs", tuple(normalized))
 
 
 def load_project_execution_authority_config(
@@ -75,18 +101,23 @@ def load_project_execution_authority_config(
         "schema",
         "authority_factory",
         "start_background_controllers",
+        "authority_inputs",
     }
     unknown = tuple(sorted(set(document) - allowed))
     if unknown:
         raise ValueError(
             f"project execution config contains unknown fields: {unknown}"
         )
+    authority_inputs = document.get("authority_inputs", {})
+    if type(authority_inputs) is not dict:
+        raise TypeError("project execution authority_inputs must be a JSON object")
     return ProjectExecutionAuthorityConfig(
         authority_factory=document.get("authority_factory", ""),
         start_background_controllers=document.get(
             "start_background_controllers",
             True,
         ),
+        authority_inputs=tuple(authority_inputs.items()),
     )
 
 
