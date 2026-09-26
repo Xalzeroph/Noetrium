@@ -26,6 +26,7 @@ Configuration:
   NOETRIUM_FLEET_AUTHORITY_MATERIALIZER=module:factory  # optional advanced override
   NOETRIUM_DEPLOYMENT_STATE_ROOT=/writable/path
   NOETRIUM_CONTROL_ENV_FILE=/path/to/env-file
+  NOETRIUM_CONTROL_INPUT_ROOT=/read-only/authority-assets
   NOETRIUM_SKIP_ENVIRONMENT_BUILD=1
   NOETRIUM_DOCKER_DATA_ROOT=/data/noetrium/docker
   NOETRIUM_DOCKER_RUNTIME_ROOT=/data/noetrium/docker-runtime
@@ -60,6 +61,12 @@ authority_materializer_from_env_file() {
   file="${NOETRIUM_CONTROL_ENV_FILE:-$ROOT/deploy/.env}"
   [ -f "$file" ] || return 0
   sed -n 's/^NOETRIUM_FLEET_AUTHORITY_MATERIALIZER=//p' "$file" | tail -n 1
+}
+
+control_input_root_from_env_file() {
+  file="${NOETRIUM_CONTROL_ENV_FILE:-$ROOT/deploy/.env}"
+  [ -f "$file" ] || return 0
+  sed -n "s/^NOETRIUM_CONTROL_INPUT_ROOT=//p" "$file" | tail -n 1
 }
 
 authority_materializer() {
@@ -97,6 +104,13 @@ environment_bootstrap() {
 }
 
 control_python() {
+  input_root="${NOETRIUM_CONTROL_INPUT_ROOT:-}"
+  if [ -z "$input_root" ]; then
+    input_root="$(control_input_root_from_env_file)"
+  fi
+  if [ -n "$input_root" ]; then
+    export NOETRIUM_CONTROL_INPUT_ROOT="$input_root"
+  fi
   if [ "$BOOTSTRAP_READY" = "1" ]; then
     NOETRIUM_BOOTSTRAP_REUSE=1 \
       NOETRIUM_BUILD_WORK_ROOT="$ENV_WORK_ROOT" \
@@ -133,7 +147,7 @@ case "$command" in
     ;;
   plan)
     host_doctor
-    fleet "$@"
+    fleet "$@" --state-root "$FLEET_STATE_ROOT"
     ;;
   requirements)
     host_doctor

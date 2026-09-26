@@ -7,11 +7,12 @@ composition, execution pool and shutdown path.
 """
 from __future__ import annotations
 
-from contextlib import contextmanager
 import importlib
+from collections.abc import Iterator
+from contextlib import contextmanager
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Iterator, Protocol, runtime_checkable
+from typing import Protocol, runtime_checkable
 
 from noetrium_platform.foundation.kernel.kernel import canonical_digest
 from noetrium_platform.infrastructure.resources.directory.runtime import (
@@ -23,21 +24,24 @@ from noetrium_platform.product.research_os import (
     ResearchGraphRevision,
     ResearchPortfolio,
 )
+from noetrium_platform.research.execution.workflow.api.runtime_binding import (
+    MethodRuntimePortInventory,
+)
 
 from .managed_research_runtime import (
     ManagedResearchRuntime,
     build_local_managed_research_runtime,
 )
+from .research_authority_inputs import (
+    authority_input_value,
+    normalize_authority_inputs,
+)
+from .research_binding_authority import ResearchBindingAuthorityPort
 from .research_execution_content import (
     ResearchExecutionContentAuthorities,
     compose_research_execution_content,
 )
 from .research_execution_pool import ResearchExecutionPool
-from noetrium_platform.research.execution.workflow.api.runtime_binding import (
-    MethodRuntimePortInventory,
-)
-
-from .research_binding_authority import ResearchBindingAuthorityPort
 from .research_os_experiment import ResearchOSExperimentClosurePort
 from .research_os_experiment_runtime_binding import (
     ResearchOSExperimentRuntimeComponents,
@@ -109,7 +113,7 @@ class ResearchExecutionAuthorities:
         research_bindings: ResearchBindingAuthorityPort,
         experiment_runtime_components: ResearchOSExperimentRuntimeComponents,
         method_runtime_inventory: MethodRuntimePortInventory | None = None,
-    ) -> "ResearchExecutionAuthorities":
+    ) -> ResearchExecutionAuthorities:
         if not isinstance(research_bindings, ResearchBindingAuthorityPort):
             raise TypeError(
                 "research execution research_bindings must satisfy "
@@ -123,7 +127,7 @@ class ResearchExecutionAuthorities:
         )
 
     @classmethod
-    def provider_neutral(cls) -> "ResearchExecutionAuthorities":
+    def provider_neutral(cls) -> ResearchExecutionAuthorities:
         return cls(
             canonical_digest(
                 {
@@ -163,39 +167,21 @@ class ResearchExecutionContext:
                 "research execution context content must be "
                 "ResearchExecutionContentAuthorities"
             )
-        if type(self.authority_inputs) is not tuple:
-            raise TypeError("research execution authority_inputs must be a tuple")
-        ordered: list[tuple[str, str]] = []
-        for row in self.authority_inputs:
-            if type(row) is not tuple or len(row) != 2:
-                raise TypeError(
-                    "research execution authority_inputs must contain text pairs"
-                )
-            key, value = row
-            if (
-                type(key) is not str
-                or not key.strip()
-                or key != key.strip()
-                or type(value) is not str
-                or not value.strip()
-                or value != value.strip()
-            ):
-                raise ValueError(
-                    "research execution authority_inputs require canonical non-empty text"
-                )
-            ordered.append((key, value))
-        ordered.sort(key=lambda row: row[0])
-        if len({key for key, _value in ordered}) != len(ordered):
-            raise ValueError("research execution authority_inputs keys must be unique")
-        object.__setattr__(self, "authority_inputs", tuple(ordered))
+        object.__setattr__(
+            self,
+            "authority_inputs",
+            normalize_authority_inputs(
+                self.authority_inputs,
+                label="research execution authority_inputs",
+            ),
+        )
 
     def authority_input(self, key: str) -> str | None:
-        if type(key) is not str or not key.strip() or key != key.strip():
-            raise ValueError("research execution authority input key must be canonical text")
-        for candidate, value in self.authority_inputs:
-            if candidate == key:
-                return value
-        return None
+        return authority_input_value(
+            self.authority_inputs,
+            key,
+            label="research execution authority input",
+        )
 
     @property
     def execution_pool(self) -> ResearchExecutionPool:

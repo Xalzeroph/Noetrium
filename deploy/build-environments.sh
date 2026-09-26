@@ -307,21 +307,61 @@ if [ "${1:-}" = "control" ]; then
       echo "Noetrium control env file does not exist: $CONTROL_ENV_FILE" >&2
       exit 1
     }
+  fi
+
+  CONTROL_INPUT_ROOT="${NOETRIUM_CONTROL_INPUT_ROOT:-}"
+  if [ -n "$CONTROL_INPUT_ROOT" ]; then
+    test -d "$CONTROL_INPUT_ROOT" || {
+      echo "Noetrium control input root does not exist: $CONTROL_INPUT_ROOT" >&2
+      exit 1
+    }
+    test ! -L "$CONTROL_INPUT_ROOT" || {
+      echo "Noetrium control input root must not be a symlink: $CONTROL_INPUT_ROOT" >&2
+      exit 1
+    }
+    CONTROL_INPUT_ROOT="$(CDPATH= cd -- "$CONTROL_INPUT_ROOT" && pwd -P)"
+  fi
+
+  if [ -n "$CONTROL_ENV_FILE" ]; then
+    if [ -n "$CONTROL_INPUT_ROOT" ]; then
+      # shellcheck disable=SC2086
+      run_bootstrap_container --entrypoint python3 $COMMON_ARGS \
+        --env-file "$CONTROL_ENV_FILE" \
+        -v "$WORK_ROOT:$WORK_ROOT" \
+        -v "$CONTROL_STATE_ROOT:$CONTROL_STATE_ROOT" \
+        -v "$CONTROL_INPUT_ROOT:$CONTROL_INPUT_ROOT:ro" \
+        -e NOETRIUM_CONTROL_STATE_ROOT="$CONTROL_STATE_ROOT" \
+        -e NOETRIUM_CONTROL_INPUT_ROOT="$CONTROL_INPUT_ROOT" \
+        "$BOOTSTRAP_IMAGE" "$@"
+    else
+      # shellcheck disable=SC2086
+      run_bootstrap_container --entrypoint python3 $COMMON_ARGS \
+        --env-file "$CONTROL_ENV_FILE" \
+        -v "$WORK_ROOT:$WORK_ROOT" \
+        -v "$CONTROL_STATE_ROOT:$CONTROL_STATE_ROOT" \
+        -e NOETRIUM_CONTROL_STATE_ROOT="$CONTROL_STATE_ROOT" \
+        "$BOOTSTRAP_IMAGE" "$@"
+    fi
+    exit $?
+  fi
+
+  if [ -n "$CONTROL_INPUT_ROOT" ]; then
     # shellcheck disable=SC2086
     run_bootstrap_container --entrypoint python3 $COMMON_ARGS \
-      --env-file "$CONTROL_ENV_FILE" \
+      -v "$WORK_ROOT:$WORK_ROOT" \
+      -v "$CONTROL_STATE_ROOT:$CONTROL_STATE_ROOT" \
+      -v "$CONTROL_INPUT_ROOT:$CONTROL_INPUT_ROOT:ro" \
+      -e NOETRIUM_CONTROL_STATE_ROOT="$CONTROL_STATE_ROOT" \
+      -e NOETRIUM_CONTROL_INPUT_ROOT="$CONTROL_INPUT_ROOT" \
+      "$BOOTSTRAP_IMAGE" "$@"
+  else
+    # shellcheck disable=SC2086
+    run_bootstrap_container --entrypoint python3 $COMMON_ARGS \
       -v "$WORK_ROOT:$WORK_ROOT" \
       -v "$CONTROL_STATE_ROOT:$CONTROL_STATE_ROOT" \
       -e NOETRIUM_CONTROL_STATE_ROOT="$CONTROL_STATE_ROOT" \
       "$BOOTSTRAP_IMAGE" "$@"
-    exit $?
   fi
-  # shellcheck disable=SC2086
-  run_bootstrap_container --entrypoint python3 $COMMON_ARGS \
-    -v "$WORK_ROOT:$WORK_ROOT" \
-    -v "$CONTROL_STATE_ROOT:$CONTROL_STATE_ROOT" \
-    -e NOETRIUM_CONTROL_STATE_ROOT="$CONTROL_STATE_ROOT" \
-    "$BOOTSTRAP_IMAGE" "$@"
   exit $?
 fi
 

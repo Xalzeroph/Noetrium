@@ -1,8 +1,8 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
 import hashlib
 import json
+from dataclasses import dataclass
 from pathlib import Path
 
 from noetrium_platform.foundation.kernel.kernel import canonical_digest
@@ -22,7 +22,6 @@ from .cut import (
     build_gsm8k_task_set,
 )
 
-
 GSM8K_ARCHIVED_TEST_GIT_BLOB_SHA1 = "e4c2ff4942b9a78bd74f04141224c11e28d12dc9"
 GSM8K_ARCHIVED_TEST_SHA256 = (
     "3730d312f6e3440559ace48831e51066acaca737f6eabec99bccb9e4b3c39d14"
@@ -35,6 +34,8 @@ class GSM8KMaterializedTask:
     question: str
     answer: str
     final_answer: str
+
+GSM8K_REPOSITORY_TEST_INPUT = "benchmark.gsm8k.test_jsonl"
 
 
 @dataclass(frozen=True, slots=True)
@@ -203,13 +204,27 @@ def materialize_archived_gsm8k_test(path: str | Path) -> GSM8KMaterialization:
     )
 
 
+def materialize_repository_benchmark_authority(
+    authority_inputs: tuple[tuple[str, str], ...],
+) -> tuple[BenchmarkResolutionRegistration, ...]:
+    """Materialize the exact archived test cut when its local file is supplied."""
+
+    path = dict(authority_inputs).get(GSM8K_REPOSITORY_TEST_INPUT)
+    if path is None:
+        return ()
+    materialized = materialize_archived_gsm8k_test(Path(path).resolve(strict=True))
+    return (register_gsm8k_materialization(materialized),)
+
+
 __all__ = [
     "GSM8K_ARCHIVED_TEST_GIT_BLOB_SHA1",
     "GSM8K_ARCHIVED_TEST_SHA256",
+    "GSM8K_REPOSITORY_TEST_INPUT",
     "GSM8KMaterialization",
     "GSM8KMaterializedTask",
     "materialize_archived_gsm8k_test",
     "materialize_gsm8k_jsonl",
     "materialize_gsm8k_jsonl_bytes",
+    "materialize_repository_benchmark_authority",
     "register_gsm8k_materialization",
 ]

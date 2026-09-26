@@ -10,12 +10,6 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-from noetrium import api
-from noetrium_platform.composition.research_method_participant_binding import (
-    exact_method_programs,
-    exact_method_requirement_implementation_digest,
-    resolve_exact_method_participant,
-)
 from noetrium_platform.composition.research_binding_authority import (
     ResearchCapabilityBindingRegistration,
     ResearchCapabilityBindingRegistry,
@@ -24,6 +18,11 @@ from noetrium_platform.composition.research_binding_authority import (
     ResearchParticipantBindingRegistration,
     ResearchParticipantBindingRegistry,
     ResearchProjectManifestRegistry,
+)
+from noetrium_platform.composition.research_method_participant_binding import (
+    exact_method_programs,
+    exact_method_requirement_implementation_digest,
+    resolve_exact_method_participant,
 )
 from noetrium_platform.composition.research_os_experiment_runtime_binding import (
     ResearchOSExperimentAggregationRegistry,
@@ -41,12 +40,12 @@ from noetrium_platform.foundation.governance.architecture.api import (
     BindingResolution,
     CompositionSubject,
 )
+from noetrium_platform.foundation.governance.system_registry.api import (
+    SystemIdentity,
+)
 from noetrium_platform.foundation.kernel.kernel import (
     Sha256Digest,
     canonical_digest,
-)
-from noetrium_platform.foundation.governance.system_registry.api import (
-    SystemIdentity,
 )
 from noetrium_platform.foundation.portfolio.api import (
     ProjectCapabilityRequirement,
@@ -62,21 +61,19 @@ from noetrium_platform.research.experimentation.api import (
     research_manifest_requirement_keys,
     resolve_research_requirements,
 )
-from noetrium_platform.research.experimentation.lifecycle.study.api import (
-    BenchmarkResolutionRegistry,
-)
 
 from .authority_requirements import (
     ReproductionFleetCapabilityRequirementManifest,
     ReproductionFleetOwnerRequirementManifest,
+)
+from .benchmark_input_materializer import (
+    materialize_repository_benchmark_inputs,
 )
 from .execution_authority import (
     ReproductionFleetOwnerAuthorities,
     ReproductionFleetPrerequisiteAuthorities,
 )
 from .fleet import ReproductionFleetMaterialization
-from .research_os import ReproductionCapabilitySelectionRegistry
-
 
 _AUTO_TRIAL_PROVIDER = "noetrium.auto.workload"
 _AUTO_PROVIDER_VERSION = "1"
@@ -275,7 +272,7 @@ class AutoRepositoryFleetAuthorityMaterializer:
         if not hasattr(requirements, "manifest_digest"):
             raise TypeError("auto fleet prerequisite requirements must be typed")
         return ReproductionFleetPrerequisiteAuthorities(
-            BenchmarkResolutionRegistry(),
+            materialize_repository_benchmark_inputs(self.context.authority_inputs),
             None,
         )
 

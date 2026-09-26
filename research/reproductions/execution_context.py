@@ -1,13 +1,17 @@
 from __future__ import annotations
 
+from collections.abc import Iterator
 from contextlib import contextmanager
 from dataclasses import dataclass
-from collections.abc import Iterator
 from pathlib import Path
 
 from noetrium_platform.composition.managed_research_runtime import (
     ManagedResearchRuntime,
     build_local_managed_research_runtime,
+)
+from noetrium_platform.composition.research_authority_inputs import (
+    authority_input_value,
+    normalize_authority_inputs,
 )
 from noetrium_platform.infrastructure.resources.directory.runtime import (
     standard_local_directory_layout,
@@ -20,11 +24,13 @@ class ReproductionFleetExecutionContext:
 
     Scientific factories receive this context rather than constructing their own
     Docker, endpoint, compute, environment, model, workspace or execution-pool
-    authorities.
+    authorities. Machine-local facts that cannot be inferred enter only through
+    canonical ``authority_inputs`` and never mutate paper semantics.
     """
 
     state_root: Path
     runtime: ManagedResearchRuntime
+    authority_inputs: tuple[tuple[str, str], ...] = ()
 
     def __post_init__(self) -> None:
         if not isinstance(self.state_root, Path):
@@ -33,6 +39,21 @@ class ReproductionFleetExecutionContext:
             raise TypeError(
                 "fleet execution context runtime must be ManagedResearchRuntime"
             )
+        object.__setattr__(
+            self,
+            "authority_inputs",
+            normalize_authority_inputs(
+                self.authority_inputs,
+                label="fleet execution authority_inputs",
+            ),
+        )
+
+    def authority_input(self, key: str) -> str | None:
+        return authority_input_value(
+            self.authority_inputs,
+            key,
+            label="fleet execution authority input",
+        )
 
     @property
     def execution_pool(self):
@@ -56,6 +77,7 @@ def open_local_reproduction_fleet_execution_context(
     state_root: Path,
     *,
     start_background_controllers: bool,
+    authority_inputs: tuple[tuple[str, str], ...] = (),
 ) -> Iterator[ReproductionFleetExecutionContext]:
     """Open the one local platform runtime used by a fleet process."""
 
@@ -70,6 +92,7 @@ def open_local_reproduction_fleet_execution_context(
     context = ReproductionFleetExecutionContext(
         state_root=resolved_root,
         runtime=runtime,
+        authority_inputs=authority_inputs,
     )
     try:
         yield context

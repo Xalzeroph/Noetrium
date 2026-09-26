@@ -12,6 +12,9 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 from noetrium import api
+from noetrium_platform.composition.research_authority_inputs import (
+    normalize_authority_inputs,
+)
 from noetrium_platform.composition.research_binding_authority import (
     ResearchProjectManifestRequirement,
 )
@@ -24,14 +27,14 @@ from research.reproductions.authority_requirements import (
     compile_materialized_fleet_owner_requirements,
     compile_repository_fleet_prerequisites,
 )
+from research.reproductions.auto_materializer import (
+    build_auto_repository_fleet_authority_materializer,
+)
 from research.reproductions.benchmark_authority import RepositoryBenchmarkAuthority
 from research.reproductions.contracts import ReproductionAssetKind
 from research.reproductions.execution_authority import (
     ReproductionFleetAuthorityMaterializerPort,
     materialize_repository_fleet_execution_authorities,
-)
-from research.reproductions.auto_materializer import (
-    build_auto_repository_fleet_authority_materializer,
 )
 from research.reproductions.execution_context import (
     ReproductionFleetExecutionContext,
@@ -48,8 +51,8 @@ from research.reproductions.research_os import (
     compile_reproduction_research_program,
     discover_reproduction_definitions,
     executable_reproduction_definitions,
-    is_research_os_executable,
     expand_reproduction_benchmark_lanes,
+    is_research_os_executable,
     materialize_reproduction_study,
     resolve_benchmark_split_consumers,
     resolve_execution_requirements,
@@ -539,6 +542,23 @@ def _execution_source(
     )
     return materialized
 
+def _parse_authority_inputs(rows: list[str], parser) -> tuple[tuple[str, str], ...]:
+    parsed: list[tuple[str, str]] = []
+    for raw in rows:
+        key, separator, value = raw.partition("=")
+        if separator != "=":
+            parser.error("--authority-input must use KEY=VALUE")
+        parsed.append((key, value))
+    try:
+        return normalize_authority_inputs(
+            tuple(parsed),
+            label="fleet execution authority_inputs",
+        )
+    except (TypeError, ValueError) as exc:
+        parser.error(str(exc))
+        raise AssertionError("unreachable") from exc
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(
         description=(
@@ -595,7 +615,18 @@ def main() -> int:
         default=ROOT / ".noetrium" / "reproduction-fleet",
     )
     parser.add_argument("--execution-id")
+    parser.add_argument(
+        "--authority-input",
+        action="append",
+        default=[],
+        metavar="KEY=VALUE",
+        help=(
+            "explicit machine-local authority fact; repeat for multiple inputs; "
+            "accepted only for authority-audit/preflight/execute"
+        ),
+    )
     args = parser.parse_args()
+    authority_inputs = _parse_authority_inputs(args.authority_input, parser)
 
     if args.requirements:
         if args.authority_materializer is not None:
@@ -604,6 +635,8 @@ def main() -> int:
             )
         if args.execution_id is not None:
             parser.error("--requirements does not accept --execution-id")
+        if authority_inputs:
+            parser.error("--requirements does not accept --authority-input")
         manifest = compile_repository_fleet_prerequisites()
         payload = {
             "schema": "noetrium.reproduction-fleet-prerequisites.v1",
@@ -630,6 +663,7 @@ def main() -> int:
         with open_local_reproduction_fleet_execution_context(
             args.state_root,
             start_background_controllers=False,
+            authority_inputs=authority_inputs,
         ) as context:
             materialized = _execution_source(args, parser, context)
             authorities = materialized.execution_authorities
@@ -724,6 +758,7 @@ def main() -> int:
         with open_local_reproduction_fleet_execution_context(
             args.state_root,
             start_background_controllers=False,
+            authority_inputs=authority_inputs,
         ) as context:
             materialized = _execution_source(args, parser, context)
             authorities = materialized.execution_authorities
@@ -796,6 +831,7 @@ def main() -> int:
         with open_local_reproduction_fleet_execution_context(
             args.state_root,
             start_background_controllers=True,
+            authority_inputs=authority_inputs,
         ) as context:
             materialized = _execution_source(args, parser, context)
             authorities = materialized.execution_authorities
@@ -888,6 +924,10 @@ def main() -> int:
         )
     if args.execution_id is not None:
         parser.error("--execution-id requires --preflight or --execute")
+    if authority_inputs:
+        parser.error(
+            "--authority-input requires --authority-audit, --preflight, or --execute"
+        )
 
     payload = build_plan()
     rendered = json.dumps(payload, indent=2, sort_keys=True) + "\n"

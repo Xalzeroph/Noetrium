@@ -21,7 +21,7 @@
 
 <!-- readme-locale:en -->
 
-<!-- readme-source-sha256:0235721302c5fc3ab743f8b5a7058c09d7adedc7a107237fbc64b73a0b28a094 -->
+<!-- readme-source-sha256:963bbb91c132979a1ccbaff8e855355537b24b4c01bb0ba6fe82784c8f951305 -->
 
 <p align="center">
   <strong>Research infrastructure for attributable, recoverable, evidence-preserving AI-agent experiments.</strong><br>
@@ -778,7 +778,17 @@ Emit the machine-readable prerequisite manifest:
 ./deploy/noetrium requirements
 ~~~
 
-No materializer configuration is required for the normal repository path. <code>preflight</code> and <code>run</code> use Noetrium's built-in owner-authority materializer, which derives internal binding IR and deterministic platform-owned bindings from already-frozen programs/studies. Machine-local or external authority that cannot be inferred uniquely remains explicit: downstream project execution may pass exact locations through <code>authority_inputs</code>, while specialized repository deployments may supply <code>NOETRIUM_FLEET_AUTHORITY_MATERIALIZER</code>.
+No materializer configuration is required for the normal repository path. <code>preflight</code> and <code>run</code> use Noetrium's built-in owner-authority materializer, which derives internal binding IR and deterministic platform-owned bindings from already-frozen programs/studies. Machine-local or external authority that cannot be inferred uniquely remains explicit: downstream project execution passes exact facts through <code>authority_inputs</code>, and repository fleet execution accepts the same kind of facts through repeatable <code>--authority-input KEY=VALUE</code> arguments. Specialized repository deployments may still replace the owner materializer with <code>NOETRIUM_FLEET_AUTHORITY_MATERIALIZER</code>.
+
+When an authority input refers to host data that the Docker control plane must read, set <code>NOETRIUM_CONTROL_INPUT_ROOT</code> to the common host root. The bootstrap validates that root, refuses a symlink root, and mounts it at the same absolute path read-only. Benchmark-owned materializers then verify exact source revision, content digest and task-cut identity before registering a <code>BenchmarkResolutionRegistry</code> entry; a path alone is never authority proof.
+
+~~~bash
+export NOETRIUM_CONTROL_INPUT_ROOT=/data/noetrium-authority-assets
+./deploy/noetrium plan --authority-audit \
+  --authority-input benchmark.gsm8k.test_jsonl=/data/noetrium-authority-assets/gsm8k/test.jsonl
+~~~
+
+The launcher keeps stateful authority-audit work under <code>$NOETRIUM_DEPLOYMENT_STATE_ROOT/reproduction-fleet</code>; it never falls back to writable state inside the read-only source checkout. Authority inputs are deployment/composition facts, not a channel for paper semantics.
 
 The automatic materializer never invents model, environment, GPU, endpoint, verifier or external-asset proof. A lane whose real owner authority cannot close is retained as a content-addressed <code>BLOCKED</code> lane while unrelated closed lanes continue into the runnable ResearchPortfolio.
 
