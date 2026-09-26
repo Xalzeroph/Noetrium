@@ -8,15 +8,11 @@ from noetrium_platform.infrastructure.resources.compute.api import (
 )
 from noetrium_platform.infrastructure.resources.compute.runtime import (
     ComputePhysicalConvergencePending,
-    InMemoryComputeInventory,
-    SQLiteComputeScheduler,
+    ComputeScheduler,
 )
 from noetrium_platform.infrastructure.resources.lease.api import ResourceLeaseConflict
-from noetrium_platform.infrastructure.resources.lease.runtime import (
-    InMemoryResourceLeaseRegistry,
-    ManualLeaseClock,
-)
-from tests.resource_compute_support import in_memory_compute_scheduler
+from noetrium_platform.infrastructure.resources.lease.runtime import ManualLeaseClock
+from tests.resource_compute_support import TestComputeInventory, compute_scheduler
 
 
 def _scope():
@@ -24,7 +20,7 @@ def _scope():
 
 
 def _inventory(cpu=8):
-    inventory = InMemoryComputeInventory()
+    inventory = TestComputeInventory()
     inventory.register_host(ComputeHost("lease-node", _scope(), cpu, 1024))
     return inventory
 
@@ -33,20 +29,16 @@ def _req(cpu=4):
     return ComputeRequirement(cpu_cores=cpu, memory_bytes=128)
 
 
-def _memory_scheduler(clock: ManualLeaseClock, *, cpu: int = 8):
-    resources = InMemoryResourceLeaseRegistry(clock=clock)
-    return in_memory_compute_scheduler(
-        _inventory(cpu=cpu),
-        resource_authority=resources,
-    )
+def _scheduler(clock: ManualLeaseClock, *, cpu: int = 8):
+    return compute_scheduler(_inventory(cpu=cpu), clock=clock)
 
 
-def test_inmemory_exact_retry_reuses_same_fenced_allocation():
+def test_compute_exact_retry_reuses_same_fenced_allocation():
     clock = ManualLeaseClock(
         elapsed_seconds=1.0,
         wall_epoch_seconds=100.0,
     )
-    scheduler = _memory_scheduler(clock)
+    scheduler = _scheduler(clock)
     first = scheduler.allocate("same", _scope(), _req(), ttl_seconds=10)
     clock.advance(1.0)
     second = scheduler.allocate("same", _scope(), _req(), ttl_seconds=50)
@@ -56,12 +48,12 @@ def test_inmemory_exact_retry_reuses_same_fenced_allocation():
     assert first.lease_expires_at_epoch_s == pytest.approx(110.0)
 
 
-def test_inmemory_expiry_quarantines_then_recovery_reacquire_fences_old_holder():
+def test_compute_expiry_quarantines_then_recovery_reacquire_fences_old_holder():
     clock = ManualLeaseClock(
         elapsed_seconds=1.0,
         wall_epoch_seconds=100.0,
     )
-    scheduler = _memory_scheduler(clock, cpu=4)
+    scheduler = _scheduler(clock, cpu=4)
     first = scheduler.allocate("job", _scope(), _req(), ttl_seconds=5)
 
     clock.advance(4.0)
@@ -80,12 +72,12 @@ def test_inmemory_expiry_quarantines_then_recovery_reacquire_fences_old_holder()
     assert second.lease_expires_at_epoch_s == pytest.approx(111.0)
 
 
-def test_inmemory_renew_extends_expiry_without_changing_fencing():
+def test_compute_renew_extends_expiry_without_changing_fencing():
     clock = ManualLeaseClock(
         elapsed_seconds=1.0,
         wall_epoch_seconds=100.0,
     )
-    scheduler = _memory_scheduler(clock)
+    scheduler = _scheduler(clock)
     first = scheduler.allocate("job", _scope(), _req(), ttl_seconds=5)
 
     clock.advance(2.0)
@@ -115,12 +107,12 @@ def _proof(
     )
 
 
-def test_inmemory_compute_binding_is_idempotent_and_rebind_is_cas_fenced():
+def test_compute_compute_binding_is_idempotent_and_rebind_is_cas_fenced():
     clock = ManualLeaseClock(
         elapsed_seconds=1.0,
         wall_epoch_seconds=100.0,
     )
-    scheduler = _memory_scheduler(clock)
+    scheduler = _scheduler(clock)
     allocation = scheduler.allocate(
         "bound",
         _scope(),
@@ -148,12 +140,12 @@ def test_inmemory_compute_binding_is_idempotent_and_rebind_is_cas_fenced():
         )
 
 
-def test_inmemory_expired_compute_generation_cannot_be_bound():
+def test_compute_expired_compute_generation_cannot_be_bound():
     clock = ManualLeaseClock(
         elapsed_seconds=1.0,
         wall_epoch_seconds=100.0,
     )
-    scheduler = _memory_scheduler(clock)
+    scheduler = _scheduler(clock)
     allocation = scheduler.allocate(
         "expired-bind",
         _scope(),
@@ -161,7 +153,7 @@ def test_inmemory_expired_compute_generation_cannot_be_bound():
         ttl_seconds=1,
     )
     clock.advance(1.0)
-    with pytest.raises(ResourceLeaseConflict, match="active lease authority"):
+    with pytest.raises(ResourceLeaseConflict, match="lost active allocation"):
         scheduler.confirm_bound(
             _proof(allocation, binder="d" * 64, observed_at=102.0)
         )
@@ -173,7 +165,7 @@ def test_sqlite_exact_retry_survives_rebuild(tmp_path):
         wall_epoch_seconds=100.0,
     )
     db = tmp_path / "compute.sqlite"
-    first_scheduler = SQLiteComputeScheduler(
+    first_scheduler = ComputeScheduler(
         db,
         _inventory(),
         clock=clock,
@@ -186,7 +178,7 @@ def test_sqlite_exact_retry_survives_rebuild(tmp_path):
     )
 
     clock.advance(1.0)
-    second_scheduler = SQLiteComputeScheduler(
+    second_scheduler = ComputeScheduler(
         db,
         _inventory(),
         clock=clock,
@@ -208,7 +200,7 @@ def test_sqlite_compute_binding_cas_survives_authority_rebuild(tmp_path):
         wall_epoch_seconds=100.0,
     )
     database = tmp_path / "compute-binding.sqlite"
-    scheduler = SQLiteComputeScheduler(
+    scheduler = ComputeScheduler(
         database,
         _inventory(),
         clock=clock,
@@ -222,7 +214,7 @@ def test_sqlite_compute_binding_cas_survives_authority_rebuild(tmp_path):
     first_proof = _proof(allocation, binder="a" * 64)
     first = scheduler.confirm_bound(first_proof)
 
-    rebuilt = SQLiteComputeScheduler(
+    rebuilt = ComputeScheduler(
         database,
         _inventory(),
         clock=clock,
@@ -235,7 +227,7 @@ def test_sqlite_compute_binding_cas_survives_authority_rebuild(tmp_path):
     )
     assert second.binding_binder_identity_digest == "b" * 64
 
-    restarted = SQLiteComputeScheduler(
+    restarted = ComputeScheduler(
         database,
         _inventory(),
         clock=clock,
@@ -256,7 +248,7 @@ def test_sqlite_expiry_quarantines_then_recovery_reacquire_increments_fencing(
         wall_epoch_seconds=100.0,
     )
     db = tmp_path / "compute.sqlite"
-    scheduler = SQLiteComputeScheduler(
+    scheduler = ComputeScheduler(
         db,
         _inventory(cpu=4),
         clock=clock,
@@ -269,7 +261,7 @@ def test_sqlite_expiry_quarantines_then_recovery_reacquire_increments_fencing(
     scheduler.recover_release(first)
 
     clock.advance(1.0)
-    rebuilt = SQLiteComputeScheduler(
+    rebuilt = ComputeScheduler(
         db,
         _inventory(cpu=4),
         clock=clock,
@@ -287,7 +279,7 @@ def test_sqlite_candidates_keep_expired_capacity_quarantined_until_recovery(
         wall_epoch_seconds=100.0,
     )
     db = tmp_path / "compute.sqlite"
-    scheduler = SQLiteComputeScheduler(
+    scheduler = ComputeScheduler(
         db,
         _inventory(cpu=4),
         clock=clock,
@@ -311,7 +303,7 @@ def test_same_allocation_id_with_different_contract_conflicts(tmp_path):
         elapsed_seconds=1.0,
         wall_epoch_seconds=100.0,
     )
-    scheduler = SQLiteComputeScheduler(
+    scheduler = ComputeScheduler(
         tmp_path / "compute.sqlite",
         _inventory(),
         clock=clock,

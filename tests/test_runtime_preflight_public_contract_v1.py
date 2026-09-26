@@ -17,7 +17,6 @@ from noetrium_platform.infrastructure.resources.compute.api import (
     ComputeRequirement,
     ComputeSchedulerPort,
 )
-from noetrium_platform.infrastructure.resources.compute.composition import compose_in_memory_compute_scheduler
 from noetrium_platform.infrastructure.lifecycle.server.health.api import (
     ServerDiagnosticIssue,
     ServerDiagnosticReport,
@@ -27,7 +26,7 @@ from noetrium_platform.infrastructure.lifecycle.server.health.api import (
 )
 from noetrium_platform.infrastructure.lifecycle.server.identity.api import ServerCommandResult
 from noetrium_platform.foundation.scope.api import ScopeIdentity, ScopeKind
-from tests.resource_compute_support import idle_gpu_runtime_observer
+from tests.resource_compute_support import TestComputeInventory, compute_scheduler, idle_gpu_runtime_observer
 
 
 def _server(status: ServerDiagnosticStatus) -> ServerDiagnosticReport:
@@ -59,8 +58,11 @@ def _recovery(blocked: bool) -> RecoveryDecisionReport:
 def _scheduler_and_candidates(
     hosts: tuple[ComputeHost, ...],
 ) -> tuple[ComputeSchedulerPort, ComputeCandidatePort]:
-    scheduler = compose_in_memory_compute_scheduler(
-        hosts,
+    inventory = TestComputeInventory()
+    for host in hosts:
+        inventory.register_host(host)
+    scheduler = compute_scheduler(
+        inventory,
         gpu_runtime_observer=idle_gpu_runtime_observer(
             *(gpu.gpu_id for host in hosts for gpu in host.gpus)
         ),

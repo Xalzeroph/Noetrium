@@ -7,13 +7,13 @@ from noetrium_platform.infrastructure.resources.compute.api import (
     ComputeRequirement,
 )
 from noetrium_platform.infrastructure.resources.compute.runtime import (
-    InMemoryComputeInventory,
-    SQLiteComputeScheduler,
+    ComputeScheduler,
 )
 from noetrium_platform.infrastructure.resources.lease.runtime import ManualLeaseClock
 from tests.resource_compute_support import (
+    TestComputeInventory,
     idle_gpu_runtime_observer,
-    in_memory_compute_scheduler,
+    compute_scheduler,
 )
 
 
@@ -23,13 +23,13 @@ def _scope() -> ScopeIdentity:
 
 def test_cpu_only_work_preserves_accelerator_hosts() -> None:
     scope = _scope()
-    inventory = InMemoryComputeInventory()
+    inventory = TestComputeInventory()
     inventory.register_host(ComputeHost(
         "a-gpu", scope, 32, 256,
         gpus=(ComputeGPU("gpu-0", 80, "H100"),),
     ))
     inventory.register_host(ComputeHost("z-cpu", scope, 32, 256))
-    scheduler = in_memory_compute_scheduler(inventory)
+    scheduler = compute_scheduler(inventory)
     allocation = scheduler.allocate(
         "cpu-only", scope, ComputeRequirement(cpu_cores=4, memory_bytes=16)
     )
@@ -39,7 +39,7 @@ def test_cpu_only_work_preserves_accelerator_hosts() -> None:
 
 def test_gpu_work_uses_smallest_sufficient_device() -> None:
     scope = _scope()
-    inventory = InMemoryComputeInventory()
+    inventory = TestComputeInventory()
     inventory.register_host(ComputeHost(
         "gpu-host", scope, 32, 256,
         gpus=(
@@ -47,7 +47,7 @@ def test_gpu_work_uses_smallest_sufficient_device() -> None:
             ComputeGPU("gpu-small", 48, "L40S"),
         ),
     ))
-    scheduler = in_memory_compute_scheduler(
+    scheduler = compute_scheduler(
         inventory,
         gpu_runtime_observer=idle_gpu_runtime_observer(
             "gpu-large",
@@ -67,10 +67,10 @@ def test_gpu_work_uses_smallest_sufficient_device() -> None:
 
 def test_best_fit_packs_cpu_memory_before_spreading() -> None:
     scope = _scope()
-    inventory = InMemoryComputeInventory()
+    inventory = TestComputeInventory()
     inventory.register_host(ComputeHost("a-large", scope, 64, 256))
     inventory.register_host(ComputeHost("z-tight", scope, 8, 32))
-    scheduler = in_memory_compute_scheduler(inventory)
+    scheduler = compute_scheduler(inventory)
     allocation = scheduler.allocate(
         "best-fit", scope, ComputeRequirement(cpu_cores=4, memory_bytes=16)
     )
@@ -79,7 +79,7 @@ def test_best_fit_packs_cpu_memory_before_spreading() -> None:
 
 def test_sqlite_scheduler_uses_same_gpu_best_fit_policy(tmp_path) -> None:
     scope = _scope()
-    inventory = InMemoryComputeInventory()
+    inventory = TestComputeInventory()
     inventory.register_host(ComputeHost(
         "gpu-host", scope, 32, 256,
         gpus=(
@@ -87,7 +87,7 @@ def test_sqlite_scheduler_uses_same_gpu_best_fit_policy(tmp_path) -> None:
             ComputeGPU("gpu-small", 48, "L40S"),
         ),
     ))
-    scheduler = SQLiteComputeScheduler(
+    scheduler = ComputeScheduler(
         tmp_path / "compute.sqlite3",
         inventory,
         clock=ManualLeaseClock(

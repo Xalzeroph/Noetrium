@@ -44,10 +44,7 @@ from noetrium_platform.foundation.kernel.kernel.durability.sqlite import (
     durable_sqlite_connection,
 )
 from noetrium_platform.infrastructure.resources.allocation.runtime import AtomicEndpointAllocator
-from noetrium_platform.infrastructure.resources.compute.runtime import (
-    SQLiteComputeInventory,
-    SQLiteComputeScheduler,
-)
+from noetrium_platform.infrastructure.resources.compute.composition import compose_compute_authority
 from noetrium_platform.infrastructure.resources.lease.api import ResourceLeasePort, ResourceOwnershipPort
 from noetrium_platform.infrastructure.resources.lease.runtime import LocalLeaseClock
 from noetrium_platform.capabilities.environment.catalog.api import ExecutionEnvironmentCatalogPort
@@ -130,14 +127,14 @@ def build_platform_meta(
         probe=SocketEndpointProbe(),
         candidates=endpoint_candidates,
     )
-    compute_inventory = SQLiteComputeInventory(database)
-    compute_scheduler = SQLiteComputeScheduler(
+    compute = compose_compute_authority(
         database,
-        compute_inventory,
         clock=lease_clock,
         gpu_runtime_observer=gpu_runtime_observer,
         host_runtime_observer=host_runtime_observer,
     )
+    compute_inventory = compute.inventory
+    compute_scheduler = compute.scheduler
     artifacts = cast(
         ArtifactRegistryPort,
         import_module(

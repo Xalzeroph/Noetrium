@@ -5,10 +5,8 @@ from noetrium_platform.infrastructure.resources.compute.api import (
     ComputeGPU, ComputeHost, ComputeRequirement, GpuDeviceStatus,
     GpuProcessStatus, GpuRuntimeSnapshot, GpuSharingMode,
 )
-from noetrium_platform.infrastructure.resources.compute.runtime import (
-    InMemoryComputeInventory, SQLiteComputeScheduler,
-)
-from tests.resource_compute_support import in_memory_compute_scheduler
+from noetrium_platform.infrastructure.resources.compute.runtime import ComputeScheduler
+from tests.resource_compute_support import TestComputeInventory, compute_scheduler
 from noetrium_platform.infrastructure.resources.lease.runtime import ManualLeaseClock
 
 
@@ -24,8 +22,8 @@ def _scope() -> ScopeIdentity:
     return ScopeIdentity(ScopeKind.PROJECT, "shared-server")
 
 
-def _inventory() -> InMemoryComputeInventory:
-    inventory = InMemoryComputeInventory()
+def _inventory() -> TestComputeInventory:
+    inventory = TestComputeInventory()
     inventory.register_host(ComputeHost(
         "node", _scope(), 32, 256 * 1024**3,
         gpus=(
@@ -65,7 +63,7 @@ def _snapshot(
 
 
 def test_runtime_scheduler_prefers_idle_gpu_over_eligible_shared_gpu() -> None:
-    scheduler = in_memory_compute_scheduler(
+    scheduler = compute_scheduler(
         _inventory(), gpu_runtime_observer=_Observer(_snapshot())
     )
     allocation = scheduler.allocate("a", _scope(), _requirement())
@@ -73,7 +71,7 @@ def test_runtime_scheduler_prefers_idle_gpu_over_eligible_shared_gpu() -> None:
 
 
 def test_runtime_scheduler_uses_busy_gpu_when_idle_gpu_lacks_required_headroom() -> None:
-    scheduler = in_memory_compute_scheduler(
+    scheduler = compute_scheduler(
         _inventory(),
         gpu_runtime_observer=_Observer(_snapshot(idle_free=8 * 1024, busy_free=48 * 1024)),
     )
@@ -81,8 +79,8 @@ def test_runtime_scheduler_uses_busy_gpu_when_idle_gpu_lacks_required_headroom()
     assert allocation.gpu_ids == ("GPU-busy",)
 
 
-def _single_gpu_inventory() -> InMemoryComputeInventory:
-    inventory = InMemoryComputeInventory()
+def _single_gpu_inventory() -> TestComputeInventory:
+    inventory = TestComputeInventory()
     inventory.register_host(
         ComputeHost(
             "single-node",
@@ -116,7 +114,7 @@ def _single_gpu_snapshot(*, free_gib: int = 70) -> GpuRuntimeSnapshot:
 
 def test_shared_noetrium_allocations_pack_same_gpu_by_unbound_vram_reservation() -> None:
     observer = _Observer(_single_gpu_snapshot(free_gib=70))
-    scheduler = in_memory_compute_scheduler(
+    scheduler = compute_scheduler(
         _single_gpu_inventory(),
         gpu_runtime_observer=observer,
     )
@@ -160,7 +158,7 @@ def test_sqlite_shared_gpu_reservations_survive_scheduler_restart(tmp_path) -> N
         required_gpu_free_memory_bytes=24 * 1024**3,
         gpu_sharing_mode=GpuSharingMode.PREFER_IDLE_ALLOW_SHARED,
     )
-    first_scheduler = SQLiteComputeScheduler(
+    first_scheduler = ComputeScheduler(
         database,
         _single_gpu_inventory(),
         clock=clock,
@@ -179,7 +177,7 @@ def test_sqlite_shared_gpu_reservations_survive_scheduler_restart(tmp_path) -> N
         ttl_seconds=60,
     )
 
-    rebuilt = SQLiteComputeScheduler(
+    rebuilt = ComputeScheduler(
         database,
         _single_gpu_inventory(),
         clock=clock,
@@ -201,7 +199,7 @@ def test_sqlite_shared_gpu_reservations_survive_scheduler_restart(tmp_path) -> N
 
 
 def test_idle_only_allocation_blocks_shared_noetrium_reoccupation() -> None:
-    scheduler = in_memory_compute_scheduler(
+    scheduler = compute_scheduler(
         _single_gpu_inventory(),
         gpu_runtime_observer=_Observer(_single_gpu_snapshot()),
     )
@@ -239,7 +237,7 @@ def test_fractional_gpu_memory_requirement_uses_live_residual_capacity() -> None
         max_gpu_utilization_percent=100,
         gpu_sharing_mode=GpuSharingMode.PREFER_IDLE_ALLOW_SHARED,
     )
-    scheduler = in_memory_compute_scheduler(
+    scheduler = compute_scheduler(
         _inventory(),
         gpu_runtime_observer=_Observer(
             _snapshot(idle_free=70 * 1024, busy_free=48 * 1024)
@@ -260,7 +258,7 @@ def test_fractional_gpu_memory_requirement_rejects_when_no_gpu_has_enough_free_v
         required_gpu_memory_fraction=0.75,
         gpu_sharing_mode=GpuSharingMode.PREFER_IDLE_ALLOW_SHARED,
     )
-    scheduler = in_memory_compute_scheduler(
+    scheduler = compute_scheduler(
         _inventory(),
         gpu_runtime_observer=_Observer(
             _snapshot(idle_free=55 * 1024, busy_free=48 * 1024)
@@ -283,7 +281,7 @@ def test_fractional_vram_uses_larger_live_total_when_inventory_is_stale() -> Non
         required_gpu_memory_fraction=0.75,
         gpu_sharing_mode=GpuSharingMode.PREFER_IDLE_ALLOW_SHARED,
     )
-    scheduler = in_memory_compute_scheduler(
+    scheduler = compute_scheduler(
         _inventory(),
         gpu_runtime_observer=_Observer(
             _snapshot(
@@ -312,7 +310,7 @@ def test_scheduler_rejects_unresolved_shared_gpu_memory_demand() -> None:
         gpu_count=1,
         gpu_sharing_mode=GpuSharingMode.PREFER_IDLE_ALLOW_SHARED,
     )
-    scheduler = in_memory_compute_scheduler(
+    scheduler = compute_scheduler(
         _inventory(),
         gpu_runtime_observer=_Observer(_snapshot()),
     )
@@ -338,7 +336,7 @@ def test_shared_gpu_mode_accepts_fraction_as_its_memory_reservation() -> None:
 
 
 def test_runtime_scheduler_rejects_shared_gpu_above_utilization_ceiling() -> None:
-    scheduler = in_memory_compute_scheduler(
+    scheduler = compute_scheduler(
         _inventory(),
         gpu_runtime_observer=_Observer(_snapshot(idle_free=8 * 1024, busy_util=95)),
     )
@@ -351,7 +349,7 @@ def test_runtime_scheduler_rejects_shared_gpu_above_utilization_ceiling() -> Non
 
 
 def test_sqlite_scheduler_uses_same_idle_then_shared_policy(tmp_path) -> None:
-    scheduler = SQLiteComputeScheduler(
+    scheduler = ComputeScheduler(
         tmp_path / "compute.sqlite",
         _inventory(),
         clock=ManualLeaseClock(
@@ -382,7 +380,7 @@ class _FailingObserver:
 
 def test_shared_gpu_mode_fails_closed_without_live_runtime_facts() -> None:
     for observer in (_UnavailableObserver(), _FailingObserver()):
-        scheduler = in_memory_compute_scheduler(_inventory(), gpu_runtime_observer=observer)
+        scheduler = compute_scheduler(_inventory(), gpu_runtime_observer=observer)
         try:
             scheduler.allocate("unknown", _scope(), _requirement())
         except RuntimeError as exc:
@@ -401,7 +399,7 @@ def test_idle_only_gpu_mode_fails_closed_without_runtime_observation() -> None:
     )
     for observer in (None, _UnavailableObserver(), _FailingObserver()):
         kwargs = {} if observer is None else {"gpu_runtime_observer": observer}
-        scheduler = in_memory_compute_scheduler(_inventory(), **kwargs)
+        scheduler = compute_scheduler(_inventory(), **kwargs)
         try:
             scheduler.allocate("strict-no-runtime", _scope(), strict)
         except RuntimeError as exc:
@@ -425,7 +423,7 @@ class _IncompleteProcessObserver:
 
 
 def test_unknown_process_visibility_is_never_ranked_as_idle() -> None:
-    scheduler = in_memory_compute_scheduler(
+    scheduler = compute_scheduler(
         _inventory(), gpu_runtime_observer=_IncompleteProcessObserver()
     )
     shared = scheduler.allocate("shared-unknown", _scope(), _requirement())
@@ -438,7 +436,7 @@ def test_unknown_process_visibility_is_never_ranked_as_idle() -> None:
         max_gpu_utilization_percent=70,
         gpu_sharing_mode=GpuSharingMode.IDLE_ONLY,
     )
-    strict_scheduler = in_memory_compute_scheduler(
+    strict_scheduler = compute_scheduler(
         _inventory(), gpu_runtime_observer=_IncompleteProcessObserver()
     )
     try:
