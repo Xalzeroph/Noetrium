@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from noetrium_platform.infrastructure.resources.lease.runtime import ResourceLeaseRegistry
+
 import sqlite3
 
 from noetrium_platform.foundation.scope.api import PLATFORM_SCOPE
@@ -11,11 +13,7 @@ from noetrium_platform.infrastructure.resources.lease.api import (
     ResourceOwner,
 )
 from noetrium_platform.infrastructure.resources.lease.runtime import (
-    InMemoryResourceLeaseRegistry,
     ManualLeaseClock,
-)
-from noetrium_platform.infrastructure.resources.providers import (
-    SQLiteResourceLeaseRegistry,
 )
 
 
@@ -45,33 +43,13 @@ def _populate(registry) -> tuple[ResourceLease, ResourceLease]:
     return container_lease, endpoint_lease
 
 
-def test_in_memory_active_lease_enumeration_is_kind_scoped() -> None:
-    clock = ManualLeaseClock(
-        elapsed_seconds=1.0,
-        wall_epoch_seconds=10.0,
-    )
-    registry = InMemoryResourceLeaseRegistry(clock=clock)
-    container_lease, endpoint_lease = _populate(registry)
-
-    clock.advance(2.0)
-    rows = registry.active_leases(resource_kind=ResourceKind.CONTAINER)
-
-    assert rows == (container_lease,)
-    assert registry._leases[endpoint_lease.lease_id].state is LeaseState.ACTIVE
-
-    assert registry.active_leases(
-        resource_kind=ResourceKind.NETWORK_ENDPOINT
-    ) == ()
-    assert registry._leases[endpoint_lease.lease_id].state is LeaseState.EXPIRED
-
-
-def test_sqlite_active_lease_enumeration_is_kind_scoped(tmp_path) -> None:
+def test_active_lease_enumeration_is_kind_scoped(tmp_path) -> None:
     clock = ManualLeaseClock(
         elapsed_seconds=1.0,
         wall_epoch_seconds=10.0,
     )
     database = tmp_path / "resource.sqlite"
-    registry = SQLiteResourceLeaseRegistry(database, clock=clock)
+    registry = ResourceLeaseRegistry(database, clock=clock)
     container_lease, endpoint_lease = _populate(registry)
 
     clock.advance(2.0)

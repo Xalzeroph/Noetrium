@@ -17,7 +17,7 @@ from noetrium_platform.infrastructure.resources.lease.api import (
     ResourceOwnershipConflict,
 )
 
-from .sqlite_resource import expire_lease, expire_resource, next_fencing_token
+from noetrium_platform.infrastructure.resources.sqlite_resource import expire_lease, expire_resource, next_fencing_token
 
 
 def decode_resource_owner(row: tuple[object, ...]) -> ResourceOwner:

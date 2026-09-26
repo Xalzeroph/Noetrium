@@ -3,7 +3,6 @@ from .endpoint_allocator import (
     EndpointAllocationConflict,
     EndpointAllocationUnavailable,
     EndpointPhysicalConvergencePending,
-    InMemoryEndpointAllocator,
 )
 
 __all__ = [
@@ -11,7 +10,6 @@ __all__ = [
     "EndpointAllocationConflict",
     "EndpointAllocationUnavailable",
     "EndpointPhysicalConvergencePending",
-    "InMemoryEndpointAllocator",
 ]
 
 from .lease_heartbeat import (

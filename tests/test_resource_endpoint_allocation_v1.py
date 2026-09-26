@@ -1,6 +1,9 @@
 from __future__ import annotations
 
-from dataclasses import replace
+from tests.resource_endpoint_support import TestEndpointAllocator
+
+from tests.resource_lease_support import TestResourceLeaseRegistry
+
 import socket
 import pytest
 from concurrent.futures import ThreadPoolExecutor
@@ -15,7 +18,6 @@ from noetrium_platform.infrastructure.resources.allocation.api import (
 )
 from noetrium_platform.infrastructure.resources.allocation.runtime import (
     EndpointAllocationUnavailable,
-    InMemoryEndpointAllocator,
 )
 from noetrium_platform.infrastructure.resources.allocation.providers import (
     LocalEndpointCandidateSource,
@@ -24,8 +26,13 @@ from noetrium_platform.infrastructure.resources.allocation.providers import (
 from noetrium_platform.infrastructure.resources.allocation.providers import (
     LocalEndpointCandidateSource,
 )
-from noetrium_platform.infrastructure.resources.lease.api import ResourceIdentity, ResourceKind
-from noetrium_platform.infrastructure.resources.lease.runtime import InMemoryResourceLeaseRegistry
+from noetrium_platform.infrastructure.resources.lease.api import (
+    ResourceIdentity,
+    ResourceKind,
+    ResourceLease,
+    ResourceLeaseConflict,
+)
+from noetrium_platform.infrastructure.resources.lease.runtime import ManualLeaseClock
 from noetrium_platform.foundation.scope.api import PLATFORM_SCOPE, ScopeIdentity, ScopeKind
 
 
@@ -55,9 +62,9 @@ def _request(allocation_id: str, ports: tuple[int, ...]) -> EndpointAllocationRe
 
 
 def test_endpoint_allocator_uses_explicit_order_and_lease_exclusivity() -> None:
-    leases = InMemoryResourceLeaseRegistry()
+    leases = TestResourceLeaseRegistry()
     probe = ScriptedProbe()
-    allocator = InMemoryEndpointAllocator(ownership=leases, leases=leases, probe=probe)
+    allocator = TestEndpointAllocator(ownership=leases, leases=leases, probe=probe)
 
     first = allocator.allocate(_request("branch-a", (25565, 25566)))
     second = allocator.allocate(_request("branch-b", (25565, 25566)))
@@ -69,8 +76,8 @@ def test_endpoint_allocator_uses_explicit_order_and_lease_exclusivity() -> None:
 
 
 def test_endpoint_allocator_releases_logical_lease_and_allows_reallocation() -> None:
-    leases = InMemoryResourceLeaseRegistry()
-    allocator = InMemoryEndpointAllocator(
+    leases = TestResourceLeaseRegistry()
+    allocator = TestEndpointAllocator(
         ownership=leases,
         leases=leases,
         probe=ScriptedProbe(),
@@ -90,8 +97,8 @@ def test_existing_endpoint_system_skips_real_os_bound_port_and_uses_kernel_candi
     blocker.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 0)
     blocker.bind(("127.0.0.1", 0))
     occupied = int(blocker.getsockname()[1])
-    leases = InMemoryResourceLeaseRegistry()
-    allocator = InMemoryEndpointAllocator(
+    leases = TestResourceLeaseRegistry()
+    allocator = TestEndpointAllocator(
         ownership=leases,
         leases=leases,
         probe=SocketEndpointProbe(),
@@ -125,9 +132,9 @@ def test_automatic_endpoint_allocation_retries_fresh_candidates_after_contention
             return (25565,) if self.calls == 1 else (25566,)
 
     candidates = RoundCandidates()
-    leases = InMemoryResourceLeaseRegistry()
+    leases = TestResourceLeaseRegistry()
     probe = ScriptedProbe({25565})
-    allocator = InMemoryEndpointAllocator(
+    allocator = TestEndpointAllocator(
         ownership=leases,
         leases=leases,
         probe=probe,
@@ -159,8 +166,8 @@ def test_automatic_endpoint_retry_exhaustion_preserves_round_evidence() -> None:
             return (25564 + self.calls,)
 
     candidates = RoundCandidates()
-    leases = InMemoryResourceLeaseRegistry()
-    allocator = InMemoryEndpointAllocator(
+    leases = TestResourceLeaseRegistry()
+    allocator = TestEndpointAllocator(
         ownership=leases,
         leases=leases,
         probe=ScriptedProbe({25565, 25566}),
@@ -185,8 +192,8 @@ def test_automatic_endpoint_retry_exhaustion_preserves_round_evidence() -> None:
 
 
 def test_in_memory_endpoint_binding_is_fencing_bound_and_preserves_history() -> None:
-    leases = InMemoryResourceLeaseRegistry()
-    allocator = InMemoryEndpointAllocator(
+    leases = TestResourceLeaseRegistry()
+    allocator = TestEndpointAllocator(
         ownership=leases,
         leases=leases,
         probe=ScriptedProbe(),
@@ -210,9 +217,9 @@ def test_in_memory_endpoint_binding_is_fencing_bound_and_preserves_history() -> 
 
 
 def test_endpoint_allocator_reports_probe_rejection_without_fallback() -> None:
-    leases = InMemoryResourceLeaseRegistry()
+    leases = TestResourceLeaseRegistry()
     probe = ScriptedProbe({25565, 25566})
-    allocator = InMemoryEndpointAllocator(ownership=leases, leases=leases, probe=probe)
+    allocator = TestEndpointAllocator(ownership=leases, leases=leases, probe=probe)
 
     with pytest.raises(EndpointAllocationUnavailable) as raised:
         allocator.allocate(_request("branch-a", (25565, 25566)))
@@ -224,9 +231,9 @@ def test_endpoint_allocator_reports_probe_rejection_without_fallback() -> None:
 
 
 def test_resource_lease_registry_rejects_two_active_leases_for_one_resource() -> None:
-    registry = InMemoryResourceLeaseRegistry()
+    registry = TestResourceLeaseRegistry()
     resource = ResourceIdentity(ResourceKind.STORAGE, "artifact-pool")
-    from noetrium_platform.infrastructure.resources.lease.api import ResourceLease, ResourceOwner
+    from noetrium_platform.infrastructure.resources.lease.api import ResourceOwner
 
     registry.register_owner(ResourceOwner(resource, PLATFORM_SCOPE))
     registry.acquire(ResourceLease("lease-a", resource, PLATFORM_SCOPE, "first"))
@@ -242,8 +249,8 @@ def test_endpoint_allocator_does_not_hold_state_lock_during_probe() -> None:
             barrier.wait(timeout=2.0)
             return EndpointProbeResult(endpoint, True, "concurrent-probe")
 
-    leases = InMemoryResourceLeaseRegistry()
-    allocator = InMemoryEndpointAllocator(
+    leases = TestResourceLeaseRegistry()
+    allocator = TestEndpointAllocator(
         ownership=leases,
         leases=leases,
         probe=ConcurrentProbe(),
@@ -258,51 +265,73 @@ def test_endpoint_allocator_does_not_hold_state_lock_during_probe() -> None:
 
     assert {row.endpoint.port for row in results} == {25565, 25566}
 
-def test_expired_in_memory_endpoint_lease_cannot_be_confirmed_bound() -> None:
-    class StaleLeaseRegistry(InMemoryResourceLeaseRegistry):
-        stale = False
-
-        def get(self, lease_id: str):
-            lease = super().get(lease_id)
-            if self.stale:
-                return replace(lease, expires_at_epoch_s=1.0, acquired_at_epoch_s=0.5)
-            return lease
-
-    leases = StaleLeaseRegistry()
-    allocator = InMemoryEndpointAllocator(
-        ownership=leases, leases=leases, probe=ScriptedProbe()
+def test_expired_endpoint_lease_cannot_be_confirmed_bound() -> None:
+    clock = ManualLeaseClock(
+        elapsed_seconds=1.0,
+        wall_epoch_seconds=1_000.0,
+    )
+    leases = TestResourceLeaseRegistry(clock=clock)
+    allocator = TestEndpointAllocator(
+        ownership=leases,
+        leases=leases,
+        probe=ScriptedProbe(),
+        lease_ttl_seconds=5.0,
     )
     reserved = allocator.allocate(_request("branch-expired", (25567,)))
-    leases.stale = True
+    clock.advance(6.0, wall_seconds=0.0)
     proof = EndpointBindingProof(
-        reserved.allocation_id, reserved.endpoint, reserved.lease_fencing_token,
-        "d" * 64, 1234.0, "expired-listener-evidence",
+        reserved.allocation_id,
+        reserved.endpoint,
+        reserved.lease_fencing_token,
+        "d" * 64,
+        1234.0,
+        "expired-listener-evidence",
     )
-    with pytest.raises(RuntimeError, match="released"):
+
+    with pytest.raises(ResourceLeaseConflict, match="no longer authoritative"):
         allocator.confirm_bound(proof)
+
+    # Lease loss alone does not silently erase endpoint state. The still-live
+    # row remains quarantined until the endpoint reconciliation authority
+    # retires the unbound reservation.
+    assert allocator.get(reserved.allocation_id).state is EndpointAllocationState.RESERVED
+    released = allocator.reconcile()
+    assert tuple(row.allocation_id for row in released) == ("branch-expired",)
     assert allocator.get(reserved.allocation_id).state is EndpointAllocationState.RELEASED
     assert allocator.active() == ()
 
 
-def test_in_memory_endpoint_reconciles_underlying_fencing_drift() -> None:
-    class DriftedLeaseRegistry(InMemoryResourceLeaseRegistry):
-        drifted = False
-
-        def get(self, lease_id: str):
-            lease = super().get(lease_id)
-            if self.drifted:
-                return replace(lease, fencing_token=lease.fencing_token + 1)
-            return lease
-
-    leases = DriftedLeaseRegistry()
-    allocator = InMemoryEndpointAllocator(
-        ownership=leases, leases=leases, probe=ScriptedProbe()
+def test_endpoint_reconciles_underlying_fencing_drift() -> None:
+    leases = TestResourceLeaseRegistry()
+    allocator = TestEndpointAllocator(
+        ownership=leases,
+        leases=leases,
+        probe=ScriptedProbe(),
     )
     reserved = allocator.allocate(_request("branch-fencing-drift", (25568,)))
-    leases.drifted = True
+
+    leases.release(
+        reserved.lease_id,
+        fencing_token=reserved.lease_fencing_token,
+    )
+    replacement_lease = leases.acquire(
+        ResourceLease(
+            reserved.lease_id,
+            reserved.endpoint.resource,
+            reserved.holder_scope,
+            reserved.purpose,
+        ),
+        ttl_seconds=30.0,
+    )
+    assert replacement_lease.fencing_token > reserved.lease_fencing_token
+
+    # The endpoint row is quarantined until reconciliation proves this old
+    # allocation generation no longer owns the Resource lease generation.
+    assert allocator.get(reserved.allocation_id).state is EndpointAllocationState.RESERVED
+    released = allocator.reconcile()
+    assert tuple(row.allocation_id for row in released) == ("branch-fencing-drift",)
     assert allocator.get(reserved.allocation_id).state is EndpointAllocationState.RELEASED
     assert allocator.active() == ()
-
 
 def test_automatic_endpoint_request_identity_ignores_transient_candidate_set() -> None:
     left = _request("stable-request", (25001, 25002))
@@ -311,8 +340,8 @@ def test_automatic_endpoint_request_identity_ignores_transient_candidate_set() -
 
 
 def test_automatic_endpoint_allocation_is_resource_owned() -> None:
-    leases = InMemoryResourceLeaseRegistry()
-    allocator = InMemoryEndpointAllocator(
+    leases = TestResourceLeaseRegistry()
+    allocator = TestEndpointAllocator(
         ownership=leases,
         leases=leases,
         probe=SocketEndpointProbe(),
@@ -330,19 +359,26 @@ def test_automatic_endpoint_allocation_is_resource_owned() -> None:
 
 
 def test_endpoint_reconcile_releases_expired_allocation() -> None:
-    leases = InMemoryResourceLeaseRegistry()
-    allocator = InMemoryEndpointAllocator(
+    clock = ManualLeaseClock(
+        elapsed_seconds=1.0,
+        wall_epoch_seconds=2_000.0,
+    )
+    leases = TestResourceLeaseRegistry(clock=clock)
+    allocator = TestEndpointAllocator(
         ownership=leases,
         leases=leases,
         probe=ScriptedProbe(),
+        lease_ttl_seconds=5.0,
     )
     allocation = allocator.allocate(_request("branch-expiring-reconcile", (25579,)))
     lease = leases.get(allocation.lease_id)
     assert lease.expires_at_epoch_s is not None
 
-    released = allocator.reconcile(now=lease.expires_at_epoch_s + 1.0)
+    clock.advance(6.0, wall_seconds=0.0)
+    released = allocator.reconcile()
 
     assert tuple(row.allocation_id for row in released) == (
         "branch-expiring-reconcile",
     )
+    assert allocator.get(allocation.allocation_id).state is EndpointAllocationState.RELEASED
     assert allocator.active() == ()

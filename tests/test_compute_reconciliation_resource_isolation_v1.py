@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from noetrium_platform.infrastructure.resources.lease.runtime import ResourceLeaseRegistry
+
 import sqlite3
 
 from tests.resource_compute_support import TestComputeInventory
@@ -15,7 +17,6 @@ from noetrium_platform.infrastructure.resources.lease.api import (
     ResourceOwner,
 )
 from noetrium_platform.infrastructure.resources.lease.runtime import ManualLeaseClock
-from noetrium_platform.infrastructure.resources.providers import SQLiteResourceLeaseRegistry
 
 
 def test_compute_reconciliation_does_not_expire_other_resource_kinds(tmp_path) -> None:
@@ -24,7 +25,7 @@ def test_compute_reconciliation_does_not_expire_other_resource_kinds(tmp_path) -
         wall_epoch_seconds=10.0,
     )
     database = tmp_path / "resources.sqlite"
-    resources = SQLiteResourceLeaseRegistry(database, clock=clock)
+    resources = ResourceLeaseRegistry(database, clock=clock)
     endpoint = ResourceIdentity(ResourceKind.NETWORK_ENDPOINT, "endpoint-a")
     resources.register_owner(ResourceOwner(endpoint, PLATFORM_SCOPE))
     resources.acquire(

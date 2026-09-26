@@ -1,5 +1,6 @@
 from .contracts import (
     EndpointAllocation,
+    EndpointAllocationConflict,
     EndpointAllocationRequest,
     EndpointBindingProof,
     DEFAULT_ENDPOINT_LEASE_POLICY,
@@ -24,6 +25,7 @@ __all__ = [
     "AtomicEndpointReservationPort",
     "DEFAULT_ENDPOINT_LEASE_POLICY",
     "EndpointAllocation",
+    "EndpointAllocationConflict",
     "EndpointCandidatePortSourcePort",
     "EndpointAllocationPort",
     "EndpointAllocationRequest",

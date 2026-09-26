@@ -1,10 +1,10 @@
 from __future__ import annotations
 
 from dataclasses import fields
-from time import time
 
 import pytest
 
+from noetrium_platform.foundation.scope.api import PLATFORM_SCOPE
 from noetrium_platform.infrastructure.resources.lease.api import (
     LeaseState,
     ResourceIdentity,
@@ -14,9 +14,11 @@ from noetrium_platform.infrastructure.resources.lease.api import (
     ResourceOwner,
     ResourceOwnership,
 )
-from noetrium_platform.infrastructure.resources.lease.runtime import InMemoryResourceLeaseRegistry
-from noetrium_platform.infrastructure.resources.providers import SQLiteResourceLeaseRegistry
-from noetrium_platform.foundation.scope.api import PLATFORM_SCOPE
+from noetrium_platform.infrastructure.resources.lease.runtime import (
+    ManualLeaseClock,
+    ResourceLeaseRegistry,
+)
+from tests.resource_lease_support import TestResourceLeaseRegistry
 
 
 @pytest.mark.parametrize(
@@ -31,8 +33,11 @@ def test_shared_mutable_carrier_reuse_is_generation_fenced(
     kind: ResourceKind,
     resource_id: str,
 ) -> None:
-    registry = InMemoryResourceLeaseRegistry()
-    base = time() + 60.0
+    clock = ManualLeaseClock(
+        elapsed_seconds=1.0,
+        wall_epoch_seconds=100_000.0,
+    )
+    registry = TestResourceLeaseRegistry(clock=clock)
     resource = ResourceIdentity(kind, resource_id)
     registry.register_owner(
         ResourceOwner(resource, PLATFORM_SCOPE, ResourceOwnership.SHARED)
@@ -46,10 +51,11 @@ def test_shared_mutable_carrier_reuse_is_generation_fenced(
             holder_generation=1,
         ),
         ttl_seconds=5.0,
-        now=base,
     )
     assert generation_one.fencing_token == 1
-    expired = registry.reconcile_expired(now=base + 6.0)
+
+    clock.advance(6.0, wall_seconds=0.0)
+    expired = registry.reconcile_expired()
     assert len(expired) == 1
     assert expired[0].lease_id == generation_one.lease_id
     assert expired[0].state is LeaseState.EXPIRED
@@ -63,7 +69,6 @@ def test_shared_mutable_carrier_reuse_is_generation_fenced(
             holder_generation=2,
         ),
         ttl_seconds=5.0,
-        now=base + 6.0,
     )
     assert generation_two.holder_generation == 2
     assert generation_two.fencing_token == 2
@@ -73,18 +78,19 @@ def test_shared_mutable_carrier_reuse_is_generation_fenced(
             generation_two.lease_id,
             fencing_token=generation_one.fencing_token,
             ttl_seconds=5.0,
-            now=base + 7.0,
         )
 
     with pytest.raises(Exception):
         registry.release(
             generation_one.lease_id,
             fencing_token=generation_one.fencing_token,
-            now=base + 7.0,
         )
     assert registry.active_for(resource) == (generation_two,)
 
-    with pytest.raises(ResourceLeaseConflict, match="resource already has an active lease"):
+    with pytest.raises(
+        ResourceLeaseConflict,
+        match="resource already has an active lease",
+    ):
         registry.acquire(
             ResourceLease(
                 "carrier-lease-stale-g1",
@@ -94,7 +100,6 @@ def test_shared_mutable_carrier_reuse_is_generation_fenced(
                 holder_generation=1,
             ),
             ttl_seconds=5.0,
-            now=base + 7.0,
         )
 
 
@@ -112,10 +117,16 @@ def test_resource_lease_cannot_masquerade_as_durable_content_evidence() -> None:
 
 def test_shared_carrier_fence_persists_across_sqlite_restart(tmp_path) -> None:
     database = tmp_path / "resource-leases.sqlite"
-    resource = ResourceIdentity(ResourceKind.STORAGE, "carrier:file:restart.bin")
-    base = time() + 60.0
+    resource = ResourceIdentity(
+        ResourceKind.STORAGE,
+        "carrier:file:restart.bin",
+    )
+    clock = ManualLeaseClock(
+        elapsed_seconds=1.0,
+        wall_epoch_seconds=200_000.0,
+    )
 
-    first = SQLiteResourceLeaseRegistry(database)
+    first = ResourceLeaseRegistry(database, clock=clock)
     first.register_owner(
         ResourceOwner(resource, PLATFORM_SCOPE, ResourceOwnership.SHARED)
     )
@@ -128,12 +139,13 @@ def test_shared_carrier_fence_persists_across_sqlite_restart(tmp_path) -> None:
             holder_generation=1,
         ),
         ttl_seconds=5.0,
-        now=base,
     )
     assert generation_one.fencing_token == 1
-    assert first.reconcile_expired(now=base + 6.0)[0].state is LeaseState.EXPIRED
 
-    restarted = SQLiteResourceLeaseRegistry(database)
+    clock.advance(6.0, wall_seconds=0.0)
+    assert first.reconcile_expired()[0].state is LeaseState.EXPIRED
+
+    restarted = ResourceLeaseRegistry(database, clock=clock)
     generation_two = restarted.acquire(
         ResourceLease(
             "restart-carrier-g2",
@@ -143,51 +155,52 @@ def test_shared_carrier_fence_persists_across_sqlite_restart(tmp_path) -> None:
             holder_generation=2,
         ),
         ttl_seconds=20.0,
-        now=base + 6.0,
     )
     assert generation_two.fencing_token == 2
 
-    after_restart = SQLiteResourceLeaseRegistry(database)
+    after_restart = ResourceLeaseRegistry(database, clock=clock)
     with pytest.raises(ResourceLeaseConflict, match="stale lease fencing token"):
         after_restart.renew(
             generation_two.lease_id,
             fencing_token=generation_one.fencing_token,
             ttl_seconds=20.0,
-            now=base + 7.0,
         )
     assert after_restart.get(generation_two.lease_id).fencing_token == 2
 
 
-@pytest.mark.parametrize("registry_factory", [InMemoryResourceLeaseRegistry, SQLiteResourceLeaseRegistry])
-def test_reused_lease_id_rejects_delayed_release_from_old_generation(
-    registry_factory,
-    tmp_path,
-) -> None:
-    registry = (
-        registry_factory()
-        if registry_factory is InMemoryResourceLeaseRegistry
-        else registry_factory(tmp_path / "reused-release.sqlite")
+def test_reused_lease_id_rejects_delayed_release_from_old_generation(tmp_path) -> None:
+    clock = ManualLeaseClock(
+        elapsed_seconds=1.0,
+        wall_epoch_seconds=300_000.0,
     )
-    resource = ResourceIdentity(ResourceKind.CONTAINER, "same-logical-container")
+    registry = ResourceLeaseRegistry(
+        tmp_path / "reused-release.sqlite",
+        clock=clock,
+    )
+    resource = ResourceIdentity(
+        ResourceKind.CONTAINER,
+        "same-logical-container",
+    )
     registry.register_owner(ResourceOwner(resource, PLATFORM_SCOPE))
-    base = time() + 60.0
     requested = ResourceLease(
         "container:same-logical-container",
         resource,
         PLATFORM_SCOPE,
         "managed container",
     )
-    old = registry.acquire(requested, ttl_seconds=1.0, now=base)
-    registry.reconcile_expired(now=base + 2.0)
-    current = registry.acquire(requested, ttl_seconds=30.0, now=base + 2.0)
+    old = registry.acquire(requested, ttl_seconds=1.0)
+
+    clock.advance(2.0, wall_seconds=0.0)
+    registry.reconcile_expired()
+    current = registry.acquire(requested, ttl_seconds=30.0)
 
     assert current.fencing_token > old.fencing_token
+    assert current.holder_generation > old.holder_generation
     with pytest.raises(ResourceLeaseConflict, match="stale lease fencing token"):
         registry.release(
             old.lease_id,
             fencing_token=old.fencing_token,
-            now=base + 3.0,
         )
 
-    active = registry.active_for(resource, now=base + 3.0)
+    active = registry.active_for(resource)
     assert active == (current,)

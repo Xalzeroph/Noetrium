@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from tests.resource_lease_support import TestResourceLeaseRegistry
+
 import json
 import pytest
 
@@ -25,7 +27,6 @@ from noetrium_platform.infrastructure.resources.lease.api import (
     ResourceKind,
 )
 from noetrium_platform.infrastructure.resources.lease.runtime import (
-    InMemoryResourceLeaseRegistry,
     ManualLeaseClock,
 )
 
@@ -116,7 +117,7 @@ def _reserve(authority, allocation_id: str = "worker-a"):
 
 
 def test_managed_docker_release_removes_physical_container_before_logical_lease() -> None:
-    resources = InMemoryResourceLeaseRegistry()
+    resources = TestResourceLeaseRegistry()
     runtime = FakeDockerRuntime()
     authority = _authority(resources, runtime)
     handle = _reserve(authority)
@@ -142,7 +143,7 @@ def test_managed_docker_release_removes_physical_container_before_logical_lease(
 
 
 def test_managed_docker_release_follows_exact_generation_after_external_rename() -> None:
-    resources = InMemoryResourceLeaseRegistry()
+    resources = TestResourceLeaseRegistry()
     runtime = FakeDockerRuntime()
     authority = _authority(resources, runtime)
     handle = _reserve(authority)
@@ -164,7 +165,7 @@ def test_managed_docker_release_follows_exact_generation_after_external_rename()
 
 
 def test_managed_docker_release_ignores_reused_name_when_exact_generation_was_renamed() -> None:
-    resources = InMemoryResourceLeaseRegistry()
+    resources = TestResourceLeaseRegistry()
     runtime = FakeDockerRuntime()
     authority = _authority(resources, runtime)
     handle = _reserve(authority)
@@ -200,7 +201,7 @@ def test_managed_docker_crash_expiry_removes_orphan_on_reconcile() -> None:
         elapsed_seconds=1.0,
         wall_epoch_seconds=100.0,
     )
-    resources = InMemoryResourceLeaseRegistry(clock=clock)
+    resources = TestResourceLeaseRegistry(clock=clock)
     runtime = FakeDockerRuntime()
     authority = _authority(resources, runtime)
     handle = _reserve(authority)
@@ -216,7 +217,7 @@ def test_managed_docker_crash_expiry_removes_orphan_on_reconcile() -> None:
 
 
 def test_managed_docker_restart_quarantines_old_generation_until_exclusive_recovery() -> None:
-    resources = InMemoryResourceLeaseRegistry()
+    resources = TestResourceLeaseRegistry()
     runtime = FakeDockerRuntime()
     first = _authority(resources, runtime, owner_generation_id="2" * 64)
     first_handle = _reserve(first)
@@ -253,7 +254,7 @@ def test_managed_docker_expired_generation_can_be_replaced_with_higher_fence() -
         elapsed_seconds=1.0,
         wall_epoch_seconds=100.0,
     )
-    resources = InMemoryResourceLeaseRegistry(clock=clock)
+    resources = TestResourceLeaseRegistry(clock=clock)
     runtime = FakeDockerRuntime()
     authority = _authority(resources, runtime)
     first = _reserve(authority)
@@ -270,7 +271,7 @@ def test_managed_docker_expired_generation_can_be_replaced_with_higher_fence() -
 
 
 def test_managed_docker_reconcile_removes_malformed_noetrium_container() -> None:
-    resources = InMemoryResourceLeaseRegistry()
+    resources = TestResourceLeaseRegistry()
     runtime = FakeDockerRuntime()
     runtime.rows["malformed"] = DockerContainerObservation(
         "malformed",
@@ -292,7 +293,7 @@ def test_managed_docker_reconcile_removes_malformed_noetrium_container() -> None
 
 
 def test_managed_docker_unknown_owner_generation_is_quarantined_until_exclusive_cleanup() -> None:
-    resources = InMemoryResourceLeaseRegistry()
+    resources = TestResourceLeaseRegistry()
     runtime = FakeDockerRuntime()
     unknown = DockerContainerObservation(
         "unknown-generation",
@@ -318,7 +319,7 @@ def test_managed_docker_unknown_owner_generation_is_quarantined_until_exclusive_
 
 
 def test_managed_docker_stopped_live_generation_is_reaped_and_fence_advances() -> None:
-    resources = InMemoryResourceLeaseRegistry()
+    resources = TestResourceLeaseRegistry()
     runtime = FakeDockerRuntime()
     authority = _authority(resources, runtime)
     first = _reserve(authority)
@@ -342,7 +343,7 @@ def test_managed_docker_stopped_live_generation_is_reaped_and_fence_advances() -
 
 
 def test_managed_docker_shutdown_cleanup_releases_prestart_lease() -> None:
-    resources = InMemoryResourceLeaseRegistry()
+    resources = TestResourceLeaseRegistry()
     runtime = FakeDockerRuntime()
     authority = _authority(resources, runtime)
     handle = _reserve(authority)
@@ -356,7 +357,7 @@ def test_managed_docker_shutdown_cleanup_releases_prestart_lease() -> None:
 
 
 def test_managed_docker_shutdown_cleanup_removes_physical_before_releasing() -> None:
-    resources = InMemoryResourceLeaseRegistry()
+    resources = TestResourceLeaseRegistry()
     runtime = FakeDockerRuntime()
     authority = _authority(resources, runtime)
     handle = _reserve(authority)
@@ -373,8 +374,8 @@ def test_managed_docker_shutdown_cleanup_removes_physical_before_releasing() -> 
 def test_managed_docker_authority_namespace_isolates_shared_daemon() -> None:
     rows: dict[str, DockerContainerObservation] = {}
     events: list[str] = []
-    left_resources = InMemoryResourceLeaseRegistry()
-    right_resources = InMemoryResourceLeaseRegistry()
+    left_resources = TestResourceLeaseRegistry()
+    right_resources = TestResourceLeaseRegistry()
     left_runtime = FakeDockerRuntime("a" * 64, rows=rows, events=events)
     right_runtime = FakeDockerRuntime("b" * 64, rows=rows, events=events)
     left = _authority(left_resources, left_runtime)
@@ -399,7 +400,7 @@ def test_managed_docker_authority_namespace_isolates_shared_daemon() -> None:
 
 
 def test_managed_docker_live_current_generation_cannot_be_double_started() -> None:
-    resources = InMemoryResourceLeaseRegistry()
+    resources = TestResourceLeaseRegistry()
     runtime = FakeDockerRuntime()
     authority = _authority(resources, runtime)
     handle = _reserve(authority)
@@ -413,7 +414,7 @@ def test_managed_docker_live_current_generation_cannot_be_double_started() -> No
 
 
 def test_managed_docker_release_refuses_reused_foreign_container_name() -> None:
-    resources = InMemoryResourceLeaseRegistry()
+    resources = TestResourceLeaseRegistry()
     runtime = FakeDockerRuntime()
     authority = _authority(resources, runtime)
     handle = _reserve(authority)
@@ -439,7 +440,7 @@ def test_managed_docker_release_refuses_reused_foreign_container_name() -> None:
 
 
 def test_new_docker_owner_generation_cannot_close_old_generation_handle() -> None:
-    resources = InMemoryResourceLeaseRegistry()
+    resources = TestResourceLeaseRegistry()
     runtime = FakeDockerRuntime()
     old_authority = _authority(
         resources,
@@ -555,7 +556,7 @@ class _UnavailableDockerRuntime(FakeDockerRuntime):
 
 
 def test_managed_docker_daemon_restart_during_reconcile_preserves_lease_authority() -> None:
-    resources = InMemoryResourceLeaseRegistry()
+    resources = TestResourceLeaseRegistry()
     runtime = FakeDockerRuntime()
     authority = _authority(resources, runtime)
     handle = _reserve(authority)

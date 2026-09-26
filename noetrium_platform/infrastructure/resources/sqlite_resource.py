@@ -103,6 +103,15 @@ def ensure_resource_schema(conn: sqlite3.Connection) -> None:
 _LEASE_CLOCK_ANCHOR_KEY = "lease_clock_anchor_v1"
 
 
+def _boot_anchor_epoch(reading: LeaseClockReading) -> float:
+    logical_epoch = float(reading.wall_epoch_seconds)
+    if not math.isfinite(logical_epoch) or logical_epoch <= 0:
+        raise ResourceLeaseClockConflict(
+            "lease wall clock must be positive when establishing a durable boot anchor"
+        )
+    return logical_epoch
+
+
 def authoritative_lease_now(
     conn: sqlite3.Connection,
     reading: LeaseClockReading,
@@ -121,7 +130,7 @@ def authoritative_lease_now(
         (_LEASE_CLOCK_ANCHOR_KEY,),
     ).fetchone()
     if row is None:
-        logical_epoch = float(reading.wall_epoch_seconds)
+        logical_epoch = _boot_anchor_epoch(reading)
         payload = {
             "host_identity_digest": reading.host_identity_digest,
             "boot_identity_digest": reading.boot_identity_digest,
@@ -177,7 +186,7 @@ def authoritative_lease_now(
         conn.execute(
             "UPDATE resource_leases SET state='expired' WHERE state='active'"
         )
-        logical_epoch = float(reading.wall_epoch_seconds)
+        logical_epoch = _boot_anchor_epoch(reading)
         replacement = {
             "host_identity_digest": reading.host_identity_digest,
             "boot_identity_digest": reading.boot_identity_digest,

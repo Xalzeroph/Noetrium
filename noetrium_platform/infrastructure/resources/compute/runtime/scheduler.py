@@ -23,11 +23,11 @@ from noetrium_platform.foundation.kernel.kernel.durability.sqlite import (
     durable_sqlite_connection,
     rollback_sqlite_writer,
 )
-from noetrium_platform.infrastructure.resources.providers.sqlite_resource import (
+from noetrium_platform.infrastructure.resources.sqlite_resource import (
     authoritative_lease_now,
     ensure_resource_schema,
 )
-from noetrium_platform.infrastructure.resources.providers.sqlite_lease_ops import (
+from noetrium_platform.infrastructure.resources.lease.runtime.operations import (
     acquire_resource_lease, ensure_resource_owner, reconcile_expired_resource_leases,
     release_resource_lease, renew_resource_lease,
 )

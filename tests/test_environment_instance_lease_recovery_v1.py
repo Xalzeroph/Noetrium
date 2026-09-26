@@ -1,5 +1,9 @@
 from __future__ import annotations
 
+from noetrium_platform.infrastructure.resources.lease.runtime import ResourceLeaseRegistry
+
+from tests.resource_lease_support import TestResourceLeaseRegistry
+
 import pytest
 
 from noetrium_platform.capabilities.environment.catalog.api import (
@@ -32,11 +36,7 @@ from noetrium_platform.infrastructure.resources.lease.api import (
     ResourceOwner,
 )
 from noetrium_platform.infrastructure.resources.lease.runtime import (
-    InMemoryResourceLeaseRegistry,
     ManualLeaseClock,
-)
-from noetrium_platform.infrastructure.resources.providers import (
-    SQLiteResourceLeaseRegistry,
 )
 
 
@@ -98,7 +98,7 @@ def test_environment_instance_release_is_lease_first_and_returns_clean_only_with
     scopes.register(scope, PLATFORM_SCOPE)
     catalog = ExecutionEnvironmentCatalog(scopes)
     materialization, instance = _prepare_catalog(catalog, scope)
-    resources = InMemoryResourceLeaseRegistry()
+    resources = TestResourceLeaseRegistry()
     authority = EnvironmentInstanceLeaseAuthority(
         catalog=catalog,
         ownership=resources,
@@ -138,7 +138,7 @@ def test_environment_instance_expired_lease_becomes_dirty_and_is_not_reused() ->
     catalog = ExecutionEnvironmentCatalog(scopes)
     materialization, _instance = _prepare_catalog(catalog, scope)
     clock = ManualLeaseClock()
-    resources = InMemoryResourceLeaseRegistry(clock=clock)
+    resources = TestResourceLeaseRegistry(clock=clock)
     authority = EnvironmentInstanceLeaseAuthority(
         catalog=catalog,
         ownership=resources,
@@ -186,7 +186,7 @@ def test_environment_instance_restart_reconciliation_persists_dirty_state(tmp_pa
     catalog = SQLiteExecutionEnvironmentCatalog(environment_db, scopes)
     materialization, _instance = _prepare_catalog(catalog, scope)
     clock = ManualLeaseClock()
-    resources = SQLiteResourceLeaseRegistry(resource_db, clock=clock)
+    resources = ResourceLeaseRegistry(resource_db, clock=clock)
     authority = EnvironmentInstanceLeaseAuthority(
         catalog=catalog,
         ownership=resources,
@@ -213,8 +213,8 @@ def test_environment_instance_restart_reconciliation_persists_dirty_state(tmp_pa
             environment_db,
             SQLiteScopeRegistry(resource_db),
         ),
-        ownership=SQLiteResourceLeaseRegistry(resource_db, clock=clock),
-        leases=SQLiteResourceLeaseRegistry(resource_db, clock=clock),
+        ownership=ResourceLeaseRegistry(resource_db, clock=clock),
+        leases=ResourceLeaseRegistry(resource_db, clock=clock),
         reconcile_on_start=False,
     )
     clock.advance(1.1)
@@ -235,7 +235,7 @@ def test_environment_instance_lease_conflict_compensates_to_dirty() -> None:
     scopes.register(scope, PLATFORM_SCOPE)
     catalog = ExecutionEnvironmentCatalog(scopes)
     materialization, instance = _prepare_catalog(catalog, scope)
-    resources = InMemoryResourceLeaseRegistry()
+    resources = TestResourceLeaseRegistry()
     resource = ResourceIdentity(
         ResourceKind.EXECUTION_ENVIRONMENT,
         instance.instance_id,
@@ -278,7 +278,7 @@ def test_environment_shutdown_cleanup_marks_live_generation_dirty() -> None:
     scopes.register(scope, PLATFORM_SCOPE)
     catalog = ExecutionEnvironmentCatalog(scopes)
     materialization, instance = _prepare_catalog(catalog, scope)
-    resources = InMemoryResourceLeaseRegistry()
+    resources = TestResourceLeaseRegistry()
     authority = EnvironmentInstanceLeaseAuthority(
         catalog=catalog,
         ownership=resources,
@@ -312,7 +312,7 @@ def test_environment_instance_reconcile_quarantines_live_generation_without_rele
     scopes.register(scope, PLATFORM_SCOPE)
     catalog = ExecutionEnvironmentCatalog(scopes)
     materialization, instance = _prepare_catalog(catalog, scope)
-    resources = InMemoryResourceLeaseRegistry()
+    resources = TestResourceLeaseRegistry()
     authority = EnvironmentInstanceLeaseAuthority(
         catalog=catalog,
         ownership=resources,
@@ -363,7 +363,7 @@ def test_environment_instance_recovery_preserves_abandoned_generation_fence() ->
         PROFILE_REVISION,
     )
     catalog.register_instance(second)
-    resources = InMemoryResourceLeaseRegistry()
+    resources = TestResourceLeaseRegistry()
     authority = EnvironmentInstanceLeaseAuthority(
         catalog=catalog,
         ownership=resources,
@@ -443,7 +443,7 @@ def test_environment_instance_release_retries_uncertain_durable_release_without_
     scopes.register(scope, PLATFORM_SCOPE)
     catalog = ExecutionEnvironmentCatalog(scopes)
     materialization, instance = _prepare_catalog(catalog, scope)
-    resources = InMemoryResourceLeaseRegistry()
+    resources = TestResourceLeaseRegistry()
     leases = _FailOnceLeaseRelease(
         resources,
         commit_before_error=commit_before_error,
