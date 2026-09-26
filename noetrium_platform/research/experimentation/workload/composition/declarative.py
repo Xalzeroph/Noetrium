@@ -93,14 +93,26 @@ class TaskFieldProjection:
             "constants": self.constants,
         })
 
+    @staticmethod
+    def _resolve(task: ExperimentTaskSpec, source_path: str) -> JsonValue:
+        root_name, *parts = source_path.split(".")
+        if not hasattr(task, root_name):
+            raise ValueError(f"ExperimentTaskSpec has no field {root_name!r}")
+        value: object = getattr(task, root_name)
+        for part in parts:
+            if not isinstance(value, Mapping) or part not in value:
+                raise KeyError(
+                    f"task projection source path is missing: {source_path}"
+                )
+            value = value[part]
+        return freeze_json(value)
+
     def project(self, task: ExperimentTaskSpec) -> JsonObject:
         if not isinstance(task, ExperimentTaskSpec):
             raise TypeError("task projection requires ExperimentTaskSpec")
         value: dict[str, JsonValue] = dict(self.constants)
         for output_name, source_name in self.fields:
-            if not hasattr(task, source_name):
-                raise ValueError(f"ExperimentTaskSpec has no field {source_name!r}")
-            value[output_name] = getattr(task, source_name)
+            value[output_name] = self._resolve(task, source_name)
         frozen = freeze_json(value)
         if not isinstance(frozen, Mapping):
             raise TypeError("task projection must freeze to a JSON object")

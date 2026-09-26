@@ -3,6 +3,8 @@ from __future__ import annotations
 from dataclasses import dataclass
 import math
 
+from noetrium_platform.foundation.kernel.kernel import JsonValue, freeze_json
+
 
 @dataclass(frozen=True, slots=True)
 class ExperimentTaskSpec:
@@ -17,12 +19,14 @@ class ExperimentTaskSpec:
     retry_of_task_id: str | None = None
     max_steps: int = 12
     max_seconds: float = 180.0
+    payload: JsonValue = None
 
     def __post_init__(self) -> None:
         if not self.task_id.strip() or not self.family.strip() or not self.objective.strip():
             raise ValueError("experiment task identity, family and objective are required")
         if not self.lineage_id.strip():
             object.__setattr__(self, "lineage_id", self.task_id)
+        object.__setattr__(self, "payload", freeze_json(self.payload))
         if isinstance(self.max_steps, bool) or not isinstance(self.max_steps, int) or self.max_steps <= 0:
             raise ValueError("experiment task max_steps must be a positive integer")
         if (

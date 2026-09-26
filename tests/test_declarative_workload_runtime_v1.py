@@ -310,3 +310,30 @@ def test_declarative_result_adapter_exports_only_declared_method_result_paths() 
     )
     assert evaluation.success
     assert evaluation.exports == {"answer": "question"}
+
+
+def test_task_field_projection_reads_nested_payload_paths() -> None:
+    task = ExperimentTaskSpec(
+        "task-payload",
+        "qa",
+        "solve",
+        payload={"question": "What is 2+2?", "metadata": {"difficulty": 1}},
+    )
+    projected = TaskFieldProjection(
+        fields=(
+            ("task_id", "task_id"),
+            ("question", "payload.question"),
+            ("difficulty", "payload.metadata.difficulty"),
+        ),
+    ).project(task)
+    assert projected == {
+        "task_id": "task-payload",
+        "question": "What is 2+2?",
+        "difficulty": 1,
+    }
+
+
+def test_task_field_projection_rejects_missing_nested_payload_path() -> None:
+    task = ExperimentTaskSpec("task-payload", "qa", "solve", payload={})
+    with pytest.raises(KeyError, match="payload.question"):
+        TaskFieldProjection(fields=(("question", "payload.question"),)).project(task)
