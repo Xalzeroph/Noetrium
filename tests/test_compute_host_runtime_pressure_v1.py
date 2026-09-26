@@ -109,6 +109,25 @@ def test_explicit_cpu_load_ceiling_remains_enforceable() -> None:
     assert scheduler.candidates(requirement, scope=_scope()) == ()
 
 
+def test_explicit_cpu_load_ceiling_uses_projected_new_allocation() -> None:
+    scheduler = compute_scheduler(
+        _inventory(),
+        host_runtime_observer=_HostObserver(
+            _status("node-a", load=6.0, memory_gib=40),
+            _status("node-b", load=6.0, memory_gib=40),
+        ),
+    )
+    requirement = ComputeRequirement(
+        cpu_cores=4,
+        memory_bytes=1024,
+        require_host_runtime=True,
+        max_cpu_load_ratio=0.5,
+    )
+    # Current load is only 37.5%, but admitting four more cores projects
+    # 62.5%, which must be fenced before the work becomes observable.
+    assert scheduler.candidates(requirement, scope=_scope()) == ()
+
+
 def test_explicit_cpu_headroom_remains_enforceable() -> None:
     scheduler = compute_scheduler(
         _inventory(),

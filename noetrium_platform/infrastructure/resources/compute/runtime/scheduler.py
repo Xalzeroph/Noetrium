@@ -345,9 +345,12 @@ def _placement_score(
         if effective_cpu <= 0:
             return None
         projected_unbound_cpu = usage.unbound_cpu_cores
-        cpu_load_ratio = (
-            live.cpu_load_1m + projected_unbound_cpu
-        ) / effective_cpu
+        projected_cpu_load = (
+            live.cpu_load_1m
+            + projected_unbound_cpu
+            + requirement.cpu_cores
+        )
+        cpu_load_ratio = projected_cpu_load / effective_cpu
         if (
             requirement.max_cpu_load_ratio is not None
             and cpu_load_ratio > requirement.max_cpu_load_ratio
