@@ -9,7 +9,6 @@ from noetrium_platform.research.execution.policy.api import (
     AdmissionBudget,
     AdmissionIdentity,
     AdmissionIntent,
-    AdmissionMode,
     AdmissionRejected,
     AdmissionTopologySnapshot,
     GroupAdmissionSnapshot,
@@ -356,8 +355,14 @@ class HierarchicalAdmissionAuthority:
             raise ValueError("timer scheduler does not consume execution admission")
         if lane_kind not in self._lane_limits:
             raise ValueError(f"unsupported admission lane: {lane_kind}")
+        wait_started_monotonic = time.monotonic()
         with self._condition:
             self._identity(group_id)
+            intent = self._group_intents[group_id]
+            deadline = intent.constrain_wait_deadline(
+                deadline,
+                started_monotonic=wait_started_monotonic,
+            )
             if not self._can_ever_admit(group_id, lane_kind, permit_count):
                 raise AdmissionRejected(
                     "execution admission batch exceeds configured capacity: "
@@ -372,7 +377,7 @@ class HierarchicalAdmissionAuthority:
                 self._timed_out_total += permit_count
                 raise TimeoutError("execution admission deadline expired")
 
-            if self._group_intents[group_id].mode is AdmissionMode.REJECT:
+            if intent.reject_if_wait_required:
                 if (
                     self._can_admit(group_id, lane_kind, permit_count)
                     and self._selected_waiter() is None

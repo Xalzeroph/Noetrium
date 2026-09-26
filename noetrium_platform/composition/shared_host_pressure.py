@@ -23,7 +23,6 @@ from noetrium_platform.infrastructure.resources.compute.api import (
 from noetrium_platform.research.execution.policy.api import (
     AdmissionIdentity,
     AdmissionIntent,
-    AdmissionMode,
     AdmissionRejected,
     AdmissionTopologySnapshot,
     ExecutionAdmissionPort,
@@ -405,8 +404,10 @@ class ResourceCompetitionPolicy:
     Noetrium yield. Admission stops only at explicit hard residual-capacity
     reserves such as memory, PID, FD, storage bytes, and storage inodes.
     Callers may opt into soft-pressure throttling by setting a threshold below
-    100 percent. CRITICAL control/recovery groups always bypass this workload
-    gate so fencing, lease renewal, checkpointing, and teardown cannot starve.
+    100 percent. CRITICAL zero-demand control/recovery groups bypass workload
+    pressure so fencing, lease renewal, checkpointing, and teardown cannot starve.
+    CRITICAL work that declares physical demand still obeys hard residual-capacity
+    fences, while bypassing soft contention thresholds.
     External processes are never signalled, reniced, deleted, or otherwise
     mutated by this policy.
     """
@@ -781,13 +782,33 @@ class ResourceCompetitionAdmissionGate(ExecutionAdmissionPort):
         intent = self._intents.get(group_id)
         if intent is None:
             raise KeyError(f"execution group is not registered with resource competition gate: {group_id}")
-        if intent.priority is ExecutionPriority.CRITICAL:
-            return None
         demand = self._effective_demand(
             self._demands.get(group_id, ResourceCompetitionDemand()),
             lane_kind,
         )
+        critical = intent.priority is ExecutionPriority.CRITICAL
+        zero_incremental_demand = (
+            demand.memory_bytes_per_permit == 0
+            and demand.pids_per_permit == 0
+            and demand.fds_per_permit == 0
+            and demand.storage_bytes_per_permit == 0
+            and demand.storage_inodes_per_permit == 0
+        )
         reserved = self._reserved_demand()
+
+        # Critical control-plane work (lease renewal, checkpoint, teardown) must
+        # remain runnable under pressure when it adds no physical demand. A
+        # critical workload that does consume resources is still fenced by hard
+        # residual-capacity checks below; priority only bypasses soft contention.
+        if critical and zero_incremental_demand:
+            status = self._status()
+            if (
+                status is not None
+                and lane_kind is ExecutionLaneKind.CPU
+                and status.effective_cpu_cores <= 0
+            ):
+                return "cpu-capacity"
+            return None
 
         status = self._status()
         if status is None:
@@ -819,32 +840,34 @@ class ResourceCompetitionAdmissionGate(ExecutionAdmissionPort):
             + demand.pids_per_permit * permit_count
         ):
             return "pid-headroom"
-        if status.memory_pressure_some_avg10_percent is None:
-            if (
-                self._policy.fail_closed_when_runtime_unavailable
-                and self._policy.max_memory_pressure_some_avg10_percent < 100.0
+        if not critical:
+            if status.memory_pressure_some_avg10_percent is None:
+                if (
+                    self._policy.fail_closed_when_runtime_unavailable
+                    and self._policy.max_memory_pressure_some_avg10_percent < 100.0
+                ):
+                    return "memory-pressure-runtime-unavailable"
+            elif (
+                status.memory_pressure_some_avg10_percent
+                > self._policy.max_memory_pressure_some_avg10_percent
             ):
-                return "memory-pressure-runtime-unavailable"
-        elif (
-            status.memory_pressure_some_avg10_percent
-            > self._policy.max_memory_pressure_some_avg10_percent
-        ):
-            return "memory-pressure"
+                return "memory-pressure"
 
         if lane_kind is ExecutionLaneKind.CPU:
             if status.effective_cpu_cores <= 0:
                 return "cpu-capacity"
-            if status.cpu_pressure_some_avg10_percent is None:
-                if (
-                    self._policy.fail_closed_when_runtime_unavailable
-                    and self._policy.max_cpu_pressure_some_avg10_percent < 100.0
+            if not critical:
+                if status.cpu_pressure_some_avg10_percent is None:
+                    if (
+                        self._policy.fail_closed_when_runtime_unavailable
+                        and self._policy.max_cpu_pressure_some_avg10_percent < 100.0
+                    ):
+                        return "cpu-pressure-runtime-unavailable"
+                elif (
+                    status.cpu_pressure_some_avg10_percent
+                    > self._policy.max_cpu_pressure_some_avg10_percent
                 ):
-                    return "cpu-pressure-runtime-unavailable"
-            elif (
-                status.cpu_pressure_some_avg10_percent
-                > self._policy.max_cpu_pressure_some_avg10_percent
-            ):
-                return "cpu-pressure"
+                    return "cpu-pressure"
 
         if lane_kind in {ExecutionLaneKind.BLOCKING_IO, ExecutionLaneKind.ASYNC_IO}:
             storage = self._storage_status(demand.storage_path)
@@ -880,7 +903,8 @@ class ResourceCompetitionAdmissionGate(ExecutionAdmissionPort):
                     ):
                         return "storage-inode-headroom"
             if (
-                self._network_observer is not None
+                not critical
+                and self._network_observer is not None
                 and self._policy.max_network_utilization_percent < 100.0
             ):
                 network = self._network_status()
@@ -911,17 +935,18 @@ class ResourceCompetitionAdmissionGate(ExecutionAdmissionPort):
                 + demand.fds_per_permit * permit_count
             ):
                 return "fd-headroom"
-            if status.io_pressure_some_avg10_percent is None:
-                if (
-                    self._policy.fail_closed_when_runtime_unavailable
-                    and self._policy.max_io_pressure_some_avg10_percent < 100.0
+            if not critical:
+                if status.io_pressure_some_avg10_percent is None:
+                    if (
+                        self._policy.fail_closed_when_runtime_unavailable
+                        and self._policy.max_io_pressure_some_avg10_percent < 100.0
+                    ):
+                        return "io-pressure-runtime-unavailable"
+                elif (
+                    status.io_pressure_some_avg10_percent
+                    > self._policy.max_io_pressure_some_avg10_percent
                 ):
-                    return "io-pressure-runtime-unavailable"
-            elif (
-                status.io_pressure_some_avg10_percent
-                > self._policy.max_io_pressure_some_avg10_percent
-            ):
-                return "io-pressure"
+                    return "io-pressure"
 
         return None
 
@@ -972,7 +997,7 @@ class ResourceCompetitionAdmissionGate(ExecutionAdmissionPort):
             reason = decision.reason
             if reason is None:
                 return
-            if intent.mode is AdmissionMode.REJECT:
+            if intent.reject_if_wait_required:
                 raise AdmissionRejected(
                     "resource competition rejected execution admission: "
                     f"group={group_id} lane={lane_kind.value} "
@@ -1049,6 +1074,11 @@ class ResourceCompetitionAdmissionGate(ExecutionAdmissionPort):
                 "execution group is not registered with resource competition gate: "
                 f"{group_id}"
             )
+        wait_started_monotonic = time.monotonic()
+        deadline = intent.constrain_wait_deadline(
+            deadline,
+            started_monotonic=wait_started_monotonic,
+        )
 
         while True:
             self._wait_for_pressure_clearance(
@@ -1123,7 +1153,7 @@ class ResourceCompetitionAdmissionGate(ExecutionAdmissionPort):
                 )
 
             self._release_delegate_leases(leases)
-            if intent.mode is AdmissionMode.REJECT:
+            if intent.reject_if_wait_required:
                 raise AdmissionRejected(
                     "resource competition rejected execution admission after "
                     "provisional grant: "

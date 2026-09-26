@@ -5,7 +5,7 @@ import time
 
 import pytest
 
-from noetrium_platform.research.execution.policy.api import AdmissionBudget, AdmissionMode, AdmissionRejected
+from noetrium_platform.research.execution.policy.api import AdmissionBudget, AdmissionRejected
 from noetrium_platform.research.execution.policy.api import ExecutionPriority
 from noetrium_platform.composition.concurrency import build_execution_concurrency_runtime
 from noetrium_platform.foundation.kernel.concurrency.api import (
@@ -58,12 +58,13 @@ def test_global_backpressure_enforces_runtime_and_group_budgets_atomically() -> 
             max_total_in_flight=2,
             max_in_flight_per_group=1,
             max_blocking_io_in_flight=2,
+            max_cpu_in_flight=1,
         ),
     )
     group_a = runtime.open_task_group(
         "bp-a",
         failure_policy=TaskFailurePolicy.COLLECT_ALL,
-        admission_mode=AdmissionMode.REJECT,
+        admission_queue_wait_timeout_seconds=0.0,
     )
     group_b = runtime.open_task_group("bp-b", failure_policy=TaskFailurePolicy.COLLECT_ALL)
     release = Event()
@@ -114,6 +115,7 @@ def test_serial_backpressure_does_not_hoard_global_permit_while_mailbox_is_full(
             max_in_flight_per_group=3,
             max_blocking_io_in_flight=1,
             max_serial_in_flight=3,
+            max_cpu_in_flight=1,
         ),
     )
     serial_group = runtime.open_task_group("serial-pressure", failure_policy=TaskFailurePolicy.COLLECT_ALL)
@@ -173,6 +175,7 @@ def test_global_backpressure_skips_group_blocked_waiter_without_head_of_line_sta
             max_total_in_flight=2,
             max_in_flight_per_group=1,
             max_blocking_io_in_flight=2,
+            max_cpu_in_flight=1,
         ),
     )
     group_a = runtime.open_task_group("fair-a", failure_policy=TaskFailurePolicy.COLLECT_ALL)
@@ -232,12 +235,13 @@ def test_lane_backpressure_prevents_blocking_pool_queue_from_hoarding_global_cap
             max_in_flight_per_group=2,
             max_blocking_io_in_flight=1,
             max_async_io_in_flight=2,
+            max_cpu_in_flight=1,
         ),
     )
     blocking_group = runtime.open_task_group(
         "lane-blocking",
         failure_policy=TaskFailurePolicy.COLLECT_ALL,
-        admission_mode=AdmissionMode.REJECT,
+        admission_queue_wait_timeout_seconds=0.0,
     )
     async_group = runtime.open_task_group("lane-async", failure_policy=TaskFailurePolicy.COLLECT_ALL)
     release = Event()
@@ -292,6 +296,7 @@ def test_hierarchical_backpressure_enforces_tenant_and_resource_quotas() -> None
             max_in_flight_per_tenant=1,
             max_in_flight_per_resource=1,
             max_blocking_io_in_flight=4,
+            max_cpu_in_flight=1,
         ),
     )
     tenant_a_one = runtime.open_task_group("tenant-a-one", tenant_id="tenant-a", resource_id="gpu-0")
@@ -299,7 +304,7 @@ def test_hierarchical_backpressure_enforces_tenant_and_resource_quotas() -> None
         "tenant-a-two",
         tenant_id="tenant-a",
         resource_id="gpu-1",
-        admission_mode=AdmissionMode.REJECT,
+        admission_queue_wait_timeout_seconds=0.0,
     )
     tenant_b_same_resource_name = runtime.open_task_group(
         "tenant-b-one", tenant_id="tenant-b", resource_id="gpu-0"
@@ -355,6 +360,7 @@ def test_priority_scheduler_runs_higher_priority_waiter_before_earlier_low_prior
             max_total_in_flight=1,
             max_in_flight_per_group=1,
             max_blocking_io_in_flight=1,
+            max_cpu_in_flight=1,
         ),
         priority_aging_seconds=5.0,
     )
@@ -422,6 +428,7 @@ def test_same_priority_waiters_are_fair_across_groups_not_just_fifo_by_task() ->
             max_total_in_flight=1,
             max_in_flight_per_group=1,
             max_blocking_io_in_flight=1,
+            max_cpu_in_flight=1,
         ),
     )
     group_a = runtime.open_task_group("rr-a")
@@ -478,7 +485,9 @@ def test_serial_mailbox_coalescing_shares_one_physical_permit_and_survives_watch
         admission_budget=AdmissionBudget(
             max_total_in_flight=2,
             max_in_flight_per_group=2,
+            max_blocking_io_in_flight=1,
             max_serial_in_flight=2,
+            max_cpu_in_flight=1,
         ),
     )
     group = runtime.open_task_group("coalesce", failure_policy=TaskFailurePolicy.COLLECT_ALL)

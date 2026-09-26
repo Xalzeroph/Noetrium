@@ -27,7 +27,6 @@ from noetrium_platform.research.execution.policy.api import (
     AdmissionBudget,
     AdmissionIdentity,
     AdmissionIntent,
-    AdmissionMode,
     AdmissionRejected,
 )
 from noetrium_platform.research.execution.policy.composition import (
@@ -85,7 +84,7 @@ def _gate(storage: _StorageObserver) -> ResourceCompetitionAdmissionGate:
     gate.register_group(
         "work",
         identity=AdmissionIdentity(),
-        intent=AdmissionIntent(mode=AdmissionMode.REJECT),
+        intent=AdmissionIntent(queue_wait_timeout_seconds=0.0),
     )
     return gate
 
@@ -208,7 +207,7 @@ def test_scoped_storage_pressure_does_not_freeze_unrelated_filesystem(
         gate.register_group(
             group,
             identity=AdmissionIdentity(),
-            intent=AdmissionIntent(mode=AdmissionMode.REJECT),
+            intent=AdmissionIntent(queue_wait_timeout_seconds=0.0),
         )
         gate.set_group_demand(
             group,
@@ -262,7 +261,7 @@ def test_scoped_storage_reservations_compete_only_on_same_filesystem(
         gate.register_group(
             group,
             identity=AdmissionIdentity(),
-            intent=AdmissionIntent(mode=AdmissionMode.REJECT),
+            intent=AdmissionIntent(queue_wait_timeout_seconds=0.0),
         )
         gate.set_group_demand(
             group,
@@ -315,7 +314,14 @@ def test_directory_usage_exposes_user_available_inode_headroom(
     layout = standard_local_directory_layout(tmp_path)
     authorities = build_local_directory_authorities(layout)
 
-    fake = SimpleNamespace(f_files=1000, f_favail=123)
+    fake = SimpleNamespace(
+        f_blocks=1000,
+        f_bfree=500,
+        f_bavail=400,
+        f_frsize=4096,
+        f_files=1000,
+        f_favail=123,
+    )
     monkeypatch.setattr(
         "noetrium_platform.infrastructure.resources.directory.runtime.inspection.os.statvfs",
         lambda _path: fake,

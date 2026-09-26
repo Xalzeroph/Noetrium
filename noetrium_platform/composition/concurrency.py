@@ -6,7 +6,6 @@ from noetrium_platform.research.execution.policy.api import (
     AdmissionBudget,
     AdmissionIdentity,
     AdmissionIntent,
-    AdmissionMode,
     AdmissionTopologySnapshot,
     ExecutionAdmissionPort,
 )
@@ -63,7 +62,7 @@ class ExecutionConcurrencyAuthorities:
         tenant_id: str | None = None,
         resource_id: str | None = None,
         priority: ExecutionPriority = ExecutionPriority.NORMAL,
-        admission_mode: AdmissionMode = AdmissionMode.BLOCK,
+        admission_queue_wait_timeout_seconds: float | None = None,
         resource_demand: ResourceCompetitionDemand | None = None,
     ) -> TaskGroupPort:
         # Register policy identity before exposing the task group. If platform
@@ -76,7 +75,10 @@ class ExecutionConcurrencyAuthorities:
         self.admission.register_group(
             group_id,
             identity=AdmissionIdentity(tenant_id=tenant_id, resource_id=resource_id),
-            intent=AdmissionIntent(priority=priority, mode=admission_mode),
+            intent=AdmissionIntent(
+                priority=priority,
+                queue_wait_timeout_seconds=admission_queue_wait_timeout_seconds,
+            ),
         )
         try:
             if resource_demand is not None:

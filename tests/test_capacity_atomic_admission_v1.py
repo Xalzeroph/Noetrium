@@ -7,7 +7,6 @@ from noetrium_platform.research.execution.policy.api import (
     AdmissionBudget,
     AdmissionIdentity,
     AdmissionIntent,
-    AdmissionMode,
     AdmissionRejected,
 )
 from noetrium_platform.research.execution.policy.composition import (
@@ -16,7 +15,7 @@ from noetrium_platform.research.execution.policy.composition import (
 )
 
 
-def _authority(*, mode: AdmissionMode = AdmissionMode.REJECT):
+def _authority(*, queue_wait_timeout_seconds: float | None = 0.0):
     authority = build_execution_admission(
         budget=AdmissionBudget(
             max_total_in_flight=4,
@@ -36,7 +35,7 @@ def _authority(*, mode: AdmissionMode = AdmissionMode.REJECT):
             tenant_id="tenant-a",
             resource_id="resource-a",
         ),
-        intent=AdmissionIntent(mode=mode),
+        intent=AdmissionIntent(queue_wait_timeout_seconds=queue_wait_timeout_seconds),
     )
     return authority
 
@@ -91,7 +90,7 @@ def test_atomic_batch_admission_never_partially_grants_on_rejection() -> None:
 
 
 def test_atomic_batch_larger_than_static_scope_capacity_fails_immediately() -> None:
-    authority = _authority(mode=AdmissionMode.BLOCK)
+    authority = _authority(queue_wait_timeout_seconds=None)
 
     with pytest.raises(
         AdmissionRejected,
