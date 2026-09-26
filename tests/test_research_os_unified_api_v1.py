@@ -159,15 +159,22 @@ def test_noetrium_api_exposes_only_research_os_product_surface() -> None:
         "ResearchPortfolioBuilder",
         "ResearchPortfolioDependency",
         "ResearchNodeRef",
+        "MethodProgram",
+        "MethodProgramBuilder",
+        "CapabilityRequest",
+        "ProjectModelBinding",
+        "MethodAgentLoopPort",
+        "TrialProviderPort",
+        "TrialTaskProjectionPort",
+        "TrialMeasurementProjectionPort",
+        "WorkloadCutExecutionPort",
+        "CutWorkloadTrialProvider",
+        "SequentialWorkloadCutBinding",
     }
     assert expected <= set(api.__all__)
 
     retired = {
-        "MethodProgram",
-        "MethodProgramBuilder",
-        "CapabilityRequest",
         "EnvironmentProviderPort",
-        "ProjectModelBinding",
         "StudyExecutionPlan",
         "ResearchCampaignPlan",
         "bind_research_campaign",
@@ -177,6 +184,11 @@ def test_noetrium_api_exposes_only_research_os_product_surface() -> None:
         "RunRuntimePort",
         "ExperimentComponentBindingPort",
         "ExperimentTrialCycleExecutorPort",
+        "ChildResearchHostRegistry",
+        "ResearchOSExperimentTrialProviderRegistry",
+        "ResearchOSExperimentReconciliationRegistry",
+        "MethodRuntimePortInventory",
+        "ResearchExecutionAuthorities",
     }
     assert retired.isdisjoint(api.__all__)
     for name in retired:

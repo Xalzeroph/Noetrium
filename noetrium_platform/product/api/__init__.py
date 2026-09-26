@@ -180,6 +180,9 @@ from ..research_authoring import (
     thaw_json,
 )
 
+from ..execution_authoring import *  # noqa: F401,F403
+from ..execution_authoring import __all__ as _execution_authoring_all
+
 from ..research_os import (
     ResearchBranch,
     ResearchControlAction,
@@ -416,3 +419,5 @@ __all__ = [
     "require_sha256",
     "thaw_json",
 ]
+
+__all__ += list(_execution_authoring_all)
