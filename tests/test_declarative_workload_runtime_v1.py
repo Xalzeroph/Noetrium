@@ -24,7 +24,7 @@ from noetrium_platform.research.execution.workflow.api import (
 from noetrium_platform.research.execution.workflow.composition import (
     MethodAgentLoopRouter,
     MethodRuntimePortInventory,
-    StructuredViewChatRequestFactory,
+    MethodViewChatRequestFactory,
 )
 from noetrium_platform.research.execution.workflow.runtime import UniversalMethodMachine
 from noetrium_platform.research.experimentation.lifecycle.api import ExperimentTaskSpec
@@ -68,7 +68,7 @@ def _request(agent_id: str, view) -> MethodAgentRequest:
 
 
 def test_structured_view_factory_is_deterministic_and_keeps_generation_options() -> None:
-    factory = StructuredViewChatRequestFactory(
+    factory = MethodViewChatRequestFactory(
         "qwen",
         {"temperature": 0, "max_tokens": 128},
         system_instruction="Follow the method phase exactly.",

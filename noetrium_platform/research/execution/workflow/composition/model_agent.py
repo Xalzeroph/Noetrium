@@ -36,59 +36,17 @@ class MethodAgentRequestFactoryPort(Protocol):
 
     def compiled_prompt_text(self, request: MethodAgentRequest) -> str: ...
 
-
-@dataclass(frozen=True, slots=True)
-class PromptViewChatRequestFactory:
-    """Generic chat request factory for method views exposing a compiled prompt."""
-
-    served_model_name: str
-    generation_options: JsonObject
-
-    def __post_init__(self) -> None:
-        if not isinstance(self.served_model_name, str) or not self.served_model_name.strip():
-            raise ValueError("served model name is required")
-        if not isinstance(self.generation_options, Mapping):
-            raise TypeError("generation_options must be a mapping")
-        object.__setattr__(self, "generation_options", freeze_json(self.generation_options))
-        forbidden = {"model", "messages"} & set(self.generation_options)
-        if forbidden:
-            raise ValueError(
-                "generation_options must not override model/messages: "
-                + ", ".join(sorted(forbidden))
-            )
-
-    @property
-    def digest(self) -> str:
-        return canonical_digest(
-            {
-                "factory": "prompt-view-chat.v1",
-                "served_model_name": self.served_model_name,
-                "generation_options": self.generation_options,
-            }
-        )
-
-    def compiled_prompt_text(self, request: MethodAgentRequest) -> str:
-        prompt = request.view.get("prompt")
-        if not isinstance(prompt, str) or not prompt.strip():
-            raise ValueError("method model request view requires non-empty prompt")
-        return prompt
-
-    def build(self, request: MethodAgentRequest) -> JsonObject:
-        return {
-            "model": self.served_model_name,
-            "messages": ({"role": "user", "content": self.compiled_prompt_text(request)},),
-            **dict(self.generation_options),
-        }
+    def prompt_identity(self, request: MethodAgentRequest) -> tuple[str, str, str]: ...
 
 
 @dataclass(frozen=True, slots=True)
-class StructuredViewChatRequestFactory:
-    """Deterministically compile a generic Method agent view into one chat prompt.
+class MethodViewChatRequestFactory:
+    """Compile one Method agent view into the exact model-visible chat request.
 
-    This is intentionally paper-agnostic. Paper-specific prompt semantics should
-    still supply an explicit PromptViewChatRequestFactory instead. The structured
-    factory is for generic phase/workflow methods whose MethodProgram already
-    exposes the exact model-visible instruction/input/state view.
+    An explicit non-empty ``view["prompt"]`` is authoritative and is sent
+    verbatim. Otherwise the same factory deterministically compiles the generic
+    structured Method view. This keeps one request compilation machine while
+    preserving paper-owned prompts when they exist.
     """
 
     served_model_name: str
@@ -116,13 +74,16 @@ class StructuredViewChatRequestFactory:
     @property
     def digest(self) -> str:
         return canonical_digest({
-            "factory": "structured-method-view-chat.v1",
+            "factory": "method-view-chat.v1",
             "served_model_name": self.served_model_name,
             "generation_options": self.generation_options,
             "system_instruction": self.system_instruction,
         })
 
     def compiled_prompt_text(self, request: MethodAgentRequest) -> str:
+        prompt = request.view.get("prompt")
+        if isinstance(prompt, str) and prompt.strip():
+            return prompt
         view = json.loads(canonical_bytes(request.view))
         instruction = view.pop("instruction", None) if isinstance(view, dict) else None
         sections: list[str] = []
@@ -136,6 +97,27 @@ class StructuredViewChatRequestFactory:
         )
         return "\n\n".join(sections)
 
+    def prompt_identity(self, request: MethodAgentRequest) -> tuple[str, str, str]:
+        view = request.view
+        generation = view.get("prompt_generation_id", view.get("prompt_bundle"))
+        prompt_id = view.get("prompt_id", view.get("prompt_bundle"))
+        prompt_digest = view.get("prompt_digest")
+        if generation is None:
+            generation = f"method-view:{request.agent_id}"
+        if prompt_id is None:
+            prompt_id = generation
+        if not isinstance(generation, str) or not generation.strip():
+            raise ValueError("method view prompt_generation_id must be non-empty text")
+        if not isinstance(prompt_id, str) or not prompt_id.strip():
+            raise ValueError("method view prompt_id must be non-empty text")
+        if prompt_digest is None:
+            prompt_digest = canonical_digest({
+                "compiled_prompt_text": self.compiled_prompt_text(request),
+            })
+        else:
+            require_sha256(prompt_digest, "method view prompt_digest")
+        return generation, prompt_id, prompt_digest
+
     def build(self, request: MethodAgentRequest) -> JsonObject:
         return {
             "model": self.served_model_name,
@@ -146,32 +128,24 @@ class StructuredViewChatRequestFactory:
 
 @dataclass(frozen=True, slots=True)
 class MethodModelEndpointBinding:
-    """Exact model/prompt/deployment identity for one method-agent target."""
+    """Actual immutable model binding for one Method agent identity."""
 
     agent_id: str
     role: str
     model: ImmutableModelIdentity
-    prompt_generation_id: str
-    prompt_id: str
-    prompt_digest: str
     request_factory_digest: str
 
     def __post_init__(self) -> None:
-        for name in (
-            "agent_id",
-            "role",
-            "prompt_generation_id",
-            "prompt_id",
-            "prompt_digest",
-            "request_factory_digest",
-        ):
+        for name in ("agent_id", "role", "request_factory_digest"):
             value = getattr(self, name)
             if not isinstance(value, str) or not value.strip():
                 raise ValueError(f"method model binding {name} is required")
         if not isinstance(self.model, ImmutableModelIdentity):
             raise TypeError("method model binding model must be ImmutableModelIdentity")
-        if len(self.prompt_digest) != 64 or len(self.request_factory_digest) != 64:
-            raise ValueError("method model binding digests must be SHA-256 hex")
+        require_sha256(
+            self.request_factory_digest,
+            "method model binding request_factory_digest",
+        )
 
     @property
     def digest(self) -> str:
@@ -180,9 +154,6 @@ class MethodModelEndpointBinding:
                 "agent_id": self.agent_id,
                 "role": self.role,
                 "model": self.model,
-                "prompt_generation_id": self.prompt_generation_id,
-                "prompt_id": self.prompt_id,
-                "prompt_digest": self.prompt_digest,
                 "request_factory_digest": self.request_factory_digest,
             }
         )
@@ -249,14 +220,17 @@ class EndpointBackedMethodAgentLoop:
             )
         )
         compiled_prompt_text = self.request_factory.compiled_prompt_text(request)
+        prompt_generation_id, prompt_id, prompt_digest = (
+            self.request_factory.prompt_identity(request)
+        )
         envelope = self.recorder.record(
             request_id=request_id,
             context=request.context,
             role=self.binding.role,
             model=self.binding.model,
-            prompt_generation_id=self.binding.prompt_generation_id,
-            prompt_id=self.binding.prompt_id,
-            prompt_digest=self.binding.prompt_digest,
+            prompt_generation_id=prompt_generation_id,
+            prompt_id=prompt_id,
+            prompt_digest=prompt_digest,
             request_body=body,
             compiled_prompt_text=compiled_prompt_text,
         )
@@ -288,6 +262,9 @@ class EndpointBackedMethodAgentLoop:
                 "model_revision": self.binding.model.revision,
                 "engine": self.binding.model.engine,
                 "engine_version": self.binding.model.engine_version,
+                "prompt_generation_id": envelope.prompt_generation_id,
+                "prompt_id": envelope.prompt_id,
+                "prompt_digest": envelope.prompt_digest,
                 "finish_reason": response.finish_reason,
                 "input_tokens": response.input_tokens,
                 "output_tokens": response.output_tokens,
@@ -369,14 +346,17 @@ class DispatchPoolBackedMethodAgentLoop:
             })
         )
         compiled_prompt_text = self.request_factory.compiled_prompt_text(request)
+        prompt_generation_id, prompt_id, prompt_digest = (
+            self.request_factory.prompt_identity(request)
+        )
         envelope = self.recorder.record(
             request_id=request_id,
             context=request.context,
             role=self.binding.role,
             model=self.binding.model,
-            prompt_generation_id=self.binding.prompt_generation_id,
-            prompt_id=self.binding.prompt_id,
-            prompt_digest=self.binding.prompt_digest,
+            prompt_generation_id=prompt_generation_id,
+            prompt_id=prompt_id,
+            prompt_digest=prompt_digest,
             request_body=body,
             compiled_prompt_text=compiled_prompt_text,
         )
@@ -411,6 +391,9 @@ class DispatchPoolBackedMethodAgentLoop:
                 "model_revision": self.binding.model.revision,
                 "engine": self.binding.model.engine,
                 "engine_version": self.binding.model.engine_version,
+                "prompt_generation_id": envelope.prompt_generation_id,
+                "prompt_id": envelope.prompt_id,
+                "prompt_digest": envelope.prompt_digest,
                 "finish_reason": response.finish_reason,
                 "input_tokens": response.input_tokens,
                 "output_tokens": response.output_tokens,
@@ -477,6 +460,5 @@ __all__ = [
     "MethodAgentLoopRouter",
     "MethodAgentRequestFactoryPort",
     "MethodModelEndpointBinding",
-    "PromptViewChatRequestFactory",
-    "StructuredViewChatRequestFactory",
+    "MethodViewChatRequestFactory",
 ]

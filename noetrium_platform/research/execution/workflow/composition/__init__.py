@@ -7,8 +7,7 @@ from .model_agent import (
     MethodAgentLoopRouter,
     MethodAgentRequestFactoryPort,
     MethodModelEndpointBinding,
-    PromptViewChatRequestFactory,
-    StructuredViewChatRequestFactory,
+    MethodViewChatRequestFactory,
 )
 
 __all__ = [
@@ -17,8 +16,7 @@ __all__ = [
     "MethodAgentLoopRouter",
     "MethodAgentRequestFactoryPort",
     "MethodModelEndpointBinding",
-    "PromptViewChatRequestFactory",
-    "StructuredViewChatRequestFactory",
+    "MethodViewChatRequestFactory",
     "MachineMethodRuntimeBinder",
     "MethodRuntimeBindingPlan",
     "MethodRuntimePortInventory",

@@ -48,7 +48,7 @@ from noetrium_platform.research.execution.workflow.composition import (
     MethodAgentLoopRouter,
     MethodModelEndpointBinding,
     MethodRuntimePortInventory,
-    StructuredViewChatRequestFactory,
+    MethodViewChatRequestFactory,
 )
 from noetrium_platform.research.execution.workflow.runtime import UniversalMethodMachine
 from noetrium_platform.research.experimentation.lifecycle.api import ExperimentTaskSpec
@@ -163,7 +163,7 @@ def _run_episode(
 ) -> dict:
     output = output_root / package / f"rep-{repetition:02d}"
     output.mkdir(parents=True, exist_ok=True)
-    factory = StructuredViewChatRequestFactory(
+    factory = MethodViewChatRequestFactory(
         inventory.served_model_name,
         {
             "temperature": args.temperature,
@@ -180,19 +180,10 @@ def _run_episode(
     loops = {}
     prompt_bindings = {}
     for agent_id in _agent_ids(program):
-        prompt_digest = canonical_digest({
-            "lane": "platform-pressure",
-            "program_digest": program.program_digest,
-            "agent_id": agent_id,
-            "request_factory_digest": factory.digest,
-        })
         binding = MethodModelEndpointBinding(
             agent_id=agent_id,
             role=agent_id,
             model=inventory.model,
-            prompt_generation_id=f"platform-pressure:{package}:{agent_id}:v1",
-            prompt_id=f"platform-pressure:{package}:{agent_id}",
-            prompt_digest=prompt_digest,
             request_factory_digest=factory.digest,
         )
         loops[agent_id] = DispatchPoolBackedMethodAgentLoop(

@@ -22,7 +22,7 @@ from noetrium_platform.research.execution.workflow.composition import (
     DispatchPoolBackedMethodAgentLoop,
     EndpointBackedMethodAgentLoop,
     MethodModelEndpointBinding,
-    PromptViewChatRequestFactory,
+    MethodViewChatRequestFactory,
 )
 
 
@@ -83,7 +83,7 @@ def _request() -> MethodAgentRequest:
 
 
 def test_endpoint_backed_method_agent_records_request_usage_and_effect(tmp_path) -> None:
-    factory = PromptViewChatRequestFactory(
+    factory = MethodViewChatRequestFactory(
         "qwen",
         {
             "temperature": 0,
@@ -95,9 +95,6 @@ def test_endpoint_backed_method_agent_records_request_usage_and_effect(tmp_path)
         agent_id="cot.reasoner",
         role="reasoner",
         model=_model(),
-        prompt_generation_id="cot.gsm8k.neurips2022.appendix-table20",
-        prompt_id="cot.gsm8k.neurips2022.appendix-table20",
-        prompt_digest="b" * 64,
         request_factory_digest=factory.digest,
     )
     endpoint = _Endpoint()
@@ -151,7 +148,7 @@ def test_endpoint_agent_closes_machine_journal_and_method_evidence(tmp_path) -> 
         chain_of_thought_gsm8k_initial_state,
     )
 
-    factory = PromptViewChatRequestFactory(
+    factory = MethodViewChatRequestFactory(
         "qwen",
         {"temperature": 0, "max_tokens": 512},
     )
@@ -159,9 +156,6 @@ def test_endpoint_agent_closes_machine_journal_and_method_evidence(tmp_path) -> 
         agent_id="cot.reasoner",
         role="reasoner",
         model=_model(),
-        prompt_generation_id=COT_GSM8K_PROMPT_BUNDLE_ID,
-        prompt_id=COT_GSM8K_PROMPT_BUNDLE_ID,
-        prompt_digest=COT_GSM8K_PROMPT_DIGEST,
         request_factory_digest=factory.digest,
     )
     loop = EndpointBackedMethodAgentLoop(
@@ -246,7 +240,7 @@ class _Pool:
 
 
 def test_dispatch_pool_backed_method_agent_records_selected_replica(tmp_path) -> None:
-    factory = PromptViewChatRequestFactory(
+    factory = MethodViewChatRequestFactory(
         "qwen",
         {"temperature": 0, "max_tokens": 64},
     )
@@ -254,9 +248,6 @@ def test_dispatch_pool_backed_method_agent_records_selected_replica(tmp_path) ->
         agent_id="cot.reasoner",
         role="reasoner",
         model=_model(),
-        prompt_generation_id="pooled-pressure-v1",
-        prompt_id="pooled-pressure",
-        prompt_digest="c" * 64,
         request_factory_digest=factory.digest,
     )
     pool = _Pool()
