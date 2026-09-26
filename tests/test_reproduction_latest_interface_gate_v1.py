@@ -91,11 +91,28 @@ def test_reproduction_packages_use_only_public_noetrium_surface() -> None:
                 modules = (() if node.module is None else (node.module,))
             else:
                 continue
-            if any(
-                module == "noetrium_platform"
-                or module.startswith("noetrium_platform.")
-                for module in modules
-            ):
+            forbidden = False
+            if isinstance(node, ast.ImportFrom) and node.module == "noetrium":
+                forbidden = any(alias.name != "api" for alias in node.names)
+            for module in modules:
+                if module in {
+                    "components",
+                    "orchestration",
+                    "noetrium_platform",
+                }:
+                    forbidden = True
+                elif module.startswith(
+                    ("components.", "orchestration.", "noetrium_platform.")
+                ):
+                    forbidden = True
+                elif module == "noetrium":
+                    forbidden = forbidden or isinstance(node, ast.Import)
+                elif (
+                    module.startswith("noetrium.")
+                    and module != "noetrium.api"
+                ):
+                    forbidden = True
+            if forbidden:
                 violations.append(path.relative_to(_root()).as_posix())
                 break
     assert violations == []
