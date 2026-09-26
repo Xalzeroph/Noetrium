@@ -21,7 +21,7 @@
 
 <!-- readme-locale:en -->
 
-<!-- readme-source-sha256:3084c87ff449568db2edb72def63c940178729c8acb944e6564103e874c1144e -->
+<!-- readme-source-sha256:0235721302c5fc3ab743f8b5a7058c09d7adedc7a107237fbc64b73a0b28a094 -->
 
 <p align="center">
   <strong>Research infrastructure for attributable, recoverable, evidence-preserving AI-agent experiments.</strong><br>
@@ -550,7 +550,7 @@ When the Platform template changes:
 noetrium project sync --project .
 ~~~
 
-Sync regenerates Platform-owned shell/test files only. It intentionally does not parse or rewrite <code>core.py</code>.
+Sync regenerates Platform-owned shell/test files and, when the installed qualified Platform artifact changes, rebinds only the manifest's Platform provenance while preserving every project/scientific manifest facet. It intentionally does not parse or rewrite <code>core.py</code>.
 
 Run:
 
