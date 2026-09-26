@@ -74,22 +74,6 @@ def _server_platform_meta_root(
     return base / "server-management" / identity[:24]
 
 
-def _server_platform_meta_root(
-    server_id: str,
-    environ: Mapping[str, str],
-) -> Path:
-    configured = str(environ.get("NOETRIUM_DEPLOYMENT_STATE_ROOT", "")).strip()
-    base = (
-        Path(configured).expanduser().absolute()
-        if configured
-        else Path(__file__).resolve().parents[1] / ".noetrium" / "deployment"
-    )
-    identity = canonical_digest(
-        {"schema": "noetrium.server-platform-meta.v1", "server_id": server_id}
-    )
-    return base / "server-management" / identity[:24]
-
-
 @dataclass(frozen=True, slots=True)
 class ServerOperatorSessionComposition:
     """Shared entrypoint composition for the profile-bound operator session."""
