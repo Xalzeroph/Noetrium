@@ -1,5 +1,8 @@
 from __future__ import annotations
 
+from noetrium_platform.composition.method_model_runtime import (
+    compose_operational_model_method_runtime,
+)
 from noetrium_platform.composition.method_runtime import (
     standard_method_evidence_factory,
     standard_method_runtime_binder,
@@ -43,13 +46,6 @@ from noetrium_platform.foundation.kernel.kernel import (
 )
 from noetrium_platform.foundation.kernel.kernel.durability import atomic_replace_bytes
 from noetrium_platform.research.execution.workflow.api import MethodNodeKind, MethodProgram
-from noetrium_platform.research.execution.workflow.composition import (
-    DispatchPoolBackedMethodAgentLoop,
-    MethodAgentLoopRouter,
-    MethodModelEndpointBinding,
-    MethodRuntimePortInventory,
-    MethodViewChatRequestFactory,
-)
 from noetrium_platform.research.execution.workflow.runtime import UniversalMethodMachine
 from noetrium_platform.research.experimentation.lifecycle.api import ExperimentTaskSpec
 from noetrium_platform.research.experimentation.workload.composition import (
@@ -124,19 +120,6 @@ def discover() -> tuple[tuple[str, MethodProgram], ...]:
     return tuple(rows)
 
 
-def _agent_ids(program: MethodProgram) -> tuple[str, ...]:
-    ids: set[str] = set()
-    for node in program.graph.nodes:
-        if node.kind is not MethodNodeKind.AGENT:
-            continue
-        if node.agent_id is not None:
-            ids.add(node.agent_id)
-        ids.update(node.agent_targets)
-    if not ids:
-        raise ValueError("phase pressure program has no agent nodes")
-    return tuple(sorted(ids))
-
-
 def _objective(package: str, program: MethodProgram) -> str:
     config = dict(program.configuration)
     protocol = config.get("protocol")
@@ -163,37 +146,21 @@ def _run_episode(
 ) -> dict:
     output = output_root / package / f"rep-{repetition:02d}"
     output.mkdir(parents=True, exist_ok=True)
-    factory = MethodViewChatRequestFactory(
-        inventory.served_model_name,
-        {
+    recorder = build_directory_model_request_recorder(output / "model-requests")
+    runtime_inventory = compose_operational_model_method_runtime(
+        (program,),
+        inventory,
+        pool=pool,
+        recorder=recorder,
+        generation_options={
             "temperature": args.temperature,
             "max_tokens": args.max_tokens,
             "chat_template_kwargs": {"enable_thinking": False},
         },
-        system_instruction=(
-            "This is a platform pressure lane, not a matched paper reproduction. "
-            "Follow the current Method phase instruction exactly and do not invent "
-            "external environment observations."
-        ),
     )
-    recorder = build_directory_model_request_recorder(output / "model-requests")
-    loops = {}
-    prompt_bindings = {}
-    for agent_id in _agent_ids(program):
-        binding = MethodModelEndpointBinding(
-            agent_id=agent_id,
-            role=agent_id,
-            model=inventory.model,
-            request_factory_digest=factory.digest,
-        )
-        loops[agent_id] = DispatchPoolBackedMethodAgentLoop(
-            binding=binding,
-            pool=pool,
-            recorder=recorder,
-            request_factory=factory,
-        )
-        prompt_bindings[agent_id] = binding.digest
-    router = MethodAgentLoopRouter(loops)
+    router = runtime_inventory.agent_loop
+    if router is None:
+        raise RuntimeError("phase pressure MethodProgram requires model agent loop")
     task = ExperimentTaskSpec(
         task_id=f"pressure:{package}:{repetition}",
         family="platform-phase-pressure",
@@ -207,7 +174,7 @@ def _run_episode(
     )
     runtime = compose_method_runtime_bindings(
         program,
-        MethodRuntimePortInventory(agent_loop=router),
+        runtime_inventory,
         runtime_binder=standard_method_runtime_binder(),
         evidence_factory=standard_method_evidence_factory(),
         state_root=output / "state",
@@ -220,7 +187,7 @@ def _run_episode(
             f"trace:{source_sha[:16]}",
             "root",
             study_id="platform-phase-pressure",
-            condition_id="operational-substitute",
+            condition_id="platform-pressure",
             platform_generation=source_sha,
         ),
     )
@@ -236,7 +203,7 @@ def _run_episode(
         resume=invocation.resume,
     )
     record = {
-        "schema": "noetrium.phase-pressure-result.v2",
+        "schema": "noetrium.phase-pressure-result.v3",
         "lane": "platform-pressure",
         "matched_reproduction": False,
         "claim_ready": False,
@@ -251,7 +218,7 @@ def _run_episode(
         "compiler_digest": compiler.digest,
         "runtime_binding_digest": invocation.runtime.effective_runtime_binding_digest,
         "agent_router_digest": router.identity_digest,
-        "prompt_binding_digests": prompt_bindings,
+        "method_runtime_inventory_digest": runtime_inventory.identity_digest,
         "model_identity_digest": canonical_digest(inventory.model),
         "serving_inventory_digest": inventory.identity_digest,
         "replica_set_digest": inventory.replica_set.replica_set_digest,
@@ -299,7 +266,7 @@ def _failed_record(
     output = output_root / package / f"rep-{repetition:02d}"
     output.mkdir(parents=True, exist_ok=True)
     record = {
-        "schema": "noetrium.phase-pressure-result.v2",
+        "schema": "noetrium.phase-pressure-result.v3",
         "lane": "platform-pressure",
         "matched_reproduction": False,
         "claim_ready": False,
@@ -343,7 +310,7 @@ def _load_resumable_record(
     if not isinstance(record, dict):
         return None
     expected = {
-        "schema": "noetrium.phase-pressure-result.v2",
+        "schema": "noetrium.phase-pressure-result.v3",
         "lane": "platform-pressure",
         "package": package,
         "repetition": repetition,
@@ -507,7 +474,7 @@ def run(args: argparse.Namespace) -> dict:
 
     records.sort(key=lambda row: (str(row["package"]), int(row["repetition"])))
     summary = {
-        "schema": "noetrium.phase-pressure-summary.v2",
+        "schema": "noetrium.phase-pressure-summary.v3",
         "lane": "platform-pressure",
         "matched_reproduction": False,
         "claim_ready": False,

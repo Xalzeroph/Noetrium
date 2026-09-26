@@ -67,29 +67,58 @@ def _request(agent_id: str, view) -> MethodAgentRequest:
     )
 
 
-def test_structured_view_factory_is_deterministic_and_keeps_generation_options() -> None:
+def test_method_view_factory_requires_downstream_prompt() -> None:
     factory = MethodViewChatRequestFactory(
         "qwen",
         {"temperature": 0, "max_tokens": 128},
-        system_instruction="Follow the method phase exactly.",
+     )
+    request = _request(
+        "agent-a",
+        {
+            "instruction": "platform must not synthesize this into a prompt",
+            "input": {"task_id": "t1", "objective": "solve"},
+        },
+    )
+    with pytest.raises(ValueError, match="must provide non-empty model-visible prompt"):
+        factory.build(request)
+
+
+def test_method_view_factory_applies_only_explicit_model_generation_namespace() -> None:
+    factory = MethodViewChatRequestFactory(
+        "qwen",
+        {"temperature": 0, "max_tokens": 128},
     )
     request = _request(
         "agent-a",
         {
-            "instruction": "Inspect the task and propose one action.",
-            "input": {"task_id": "t1", "objective": "solve"},
-            "state": {"turn": 0},
+            "prompt": "Solve exactly.",
+            "temperature": 0.99,
+            "top_k": 999,
+            "model_generation": {
+                "temperature": 0.7,
+                "top_k": 40,
+                "max_tokens": 256,
+            },
         },
     )
-    first = factory.build(request)
-    second = factory.build(request)
-    assert first == second
-    prompt = first["messages"][0]["content"]
-    assert "Follow the method phase exactly." in prompt
-    assert "Inspect the task and propose one action." in prompt
-    assert '"task_id":"t1"' in prompt
-    assert first["temperature"] == 0
-    assert len(factory.digest) == 64
+    body = factory.build(request)
+    assert body["temperature"] == 0.7
+    assert body["top_k"] == 40
+    assert body["max_tokens"] == 256
+    assert body["messages"][0]["content"] == "Solve exactly."
+
+
+def test_method_view_factory_rejects_transport_identity_override() -> None:
+    factory = MethodViewChatRequestFactory("qwen", {"temperature": 0})
+    request = _request(
+        "agent-a",
+        {
+            "prompt": "x",
+            "model_generation": {"model": "different-model"},
+        },
+    )
+    with pytest.raises(ValueError, match="must not override model/messages"):
+        factory.build(request)
 
 
 def test_method_agent_router_routes_exact_identity_and_fails_closed() -> None:

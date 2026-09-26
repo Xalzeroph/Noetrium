@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 from collections.abc import Mapping
-import json
 from dataclasses import dataclass
 from typing import Protocol, runtime_checkable
 
@@ -18,7 +17,6 @@ from noetrium_platform.foundation.kernel.kernel import (
     ImmutableModelIdentity,
     JsonInput,
     JsonObject,
-    canonical_bytes,
     canonical_digest,
     freeze_json,
     require_sha256,
@@ -41,17 +39,14 @@ class MethodAgentRequestFactoryPort(Protocol):
 
 @dataclass(frozen=True, slots=True)
 class MethodViewChatRequestFactory:
-    """Compile one Method agent view into the exact model-visible chat request.
+    """Compile one downstream-owned Method prompt into a model request.
 
-    An explicit non-empty ``view["prompt"]`` is authoritative and is sent
-    verbatim. Otherwise the same factory deterministically compiles the generic
-    structured Method view. This keeps one request compilation machine while
-    preserving paper-owned prompts when they exist.
+    MethodProgram owns the model-visible prompt. The platform may bind endpoint
+    identity and execution limits, but it never synthesizes paper prompt text.
     """
 
     served_model_name: str
     generation_options: JsonObject
-    system_instruction: str | None = None
 
     def __post_init__(self) -> None:
         if not isinstance(self.served_model_name, str) or not self.served_model_name.strip():
@@ -65,11 +60,6 @@ class MethodViewChatRequestFactory:
                 "generation_options must not override model/messages: "
                 + ", ".join(sorted(forbidden))
             )
-        if self.system_instruction is not None and (
-            not isinstance(self.system_instruction, str)
-            or not self.system_instruction.strip()
-        ):
-            raise ValueError("system_instruction must be non-empty or None")
 
     @property
     def digest(self) -> str:
@@ -77,25 +67,15 @@ class MethodViewChatRequestFactory:
             "factory": "method-view-chat.v1",
             "served_model_name": self.served_model_name,
             "generation_options": self.generation_options,
-            "system_instruction": self.system_instruction,
         })
 
     def compiled_prompt_text(self, request: MethodAgentRequest) -> str:
         prompt = request.view.get("prompt")
-        if isinstance(prompt, str) and prompt.strip():
-            return prompt
-        view = json.loads(canonical_bytes(request.view))
-        instruction = view.pop("instruction", None) if isinstance(view, dict) else None
-        sections: list[str] = []
-        if self.system_instruction is not None:
-            sections.append(self.system_instruction.strip())
-        if isinstance(instruction, str) and instruction.strip():
-            sections.append(instruction.strip())
-        sections.append(
-            "Method context (canonical JSON):\n"
-            + json.dumps(view, ensure_ascii=False, sort_keys=True, separators=(",", ":"))
-        )
-        return "\n\n".join(sections)
+        if not isinstance(prompt, str) or not prompt.strip():
+            raise ValueError(
+                "MethodProgram agent view must provide non-empty model-visible prompt"
+            )
+        return prompt
 
     def prompt_identity(self, request: MethodAgentRequest) -> tuple[str, str, str]:
         view = request.view
@@ -119,10 +99,22 @@ class MethodViewChatRequestFactory:
         return generation, prompt_id, prompt_digest
 
     def build(self, request: MethodAgentRequest) -> JsonObject:
+        options = dict(self.generation_options)
+        dynamic = request.view.get("model_generation")
+        if dynamic is not None:
+            if not isinstance(dynamic, Mapping):
+                raise TypeError("method view model_generation must be a mapping")
+            forbidden = {"model", "messages"} & set(dynamic)
+            if forbidden:
+                raise ValueError(
+                    "method view model_generation must not override model/messages: "
+                    + ", ".join(sorted(forbidden))
+                )
+            options.update(dict(dynamic))
         return {
             "model": self.served_model_name,
             "messages": ({"role": "user", "content": self.compiled_prompt_text(request)},),
-            **dict(self.generation_options),
+            **options,
         }
 
 
