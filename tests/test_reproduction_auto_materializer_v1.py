@@ -6,9 +6,11 @@ from noetrium import api
 from noetrium_platform.foundation.governance.architecture.api import CompositionSubject
 from noetrium_platform.foundation.governance.system_registry.api import SystemIdentity
 from noetrium_platform.research.experimentation.api import ResearchParticipantRequirement
+from noetrium_platform.composition.research_method_participant_binding import (
+    method_implementation_identity,
+)
 from research.reproductions.auto_materializer import (
     _auto_method_participant_resolution,
-    _method_implementation_identity,
     _method_programs,
     _method_requirement_implementation_digest,
 )
@@ -18,19 +20,14 @@ from research.reproductions.chain_of_thought_gsm8k.program import (
 
 
 def _lane():
-    implementation = api.ResearchMethodProgramImplementation.from_symbol(
+    builder = api.ResearchProgramBuilder("auto-materializer-test")
+    builder.method_program(
         "method",
         module="research.reproductions.chain_of_thought_gsm8k.program",
         qualname="CHAIN_OF_THOUGHT_GSM8K_METHOD_PROGRAM",
     )
-    definition = api.ResearchDefinition(
-        "method",
-        api.ResearchDefinitionKind.METHOD,
-        implementation,
-    )
-    return SimpleNamespace(
-        program=SimpleNamespace(definitions=(definition,))
-    )
+    builder.method_node("run", definitions=("method",))
+    return SimpleNamespace(program=builder.freeze())
 
 
 def _requirement() -> ResearchParticipantRequirement:
@@ -76,12 +73,12 @@ def test_auto_manifest_method_digest_matches_participant_implementation() -> Non
 
     actual = _method_requirement_implementation_digest(
         study,
-        programs,
+        lane.program,
         method_id=requirement.method_id,
         treatment_id=requirement.treatment_id,
         program_digest="f" * 64,
     )
-    expected = _method_implementation_identity(
+    expected = method_implementation_identity(
         program,
         requirement.participant_kind,
     ).digest()
