@@ -55,6 +55,7 @@ from noetrium_platform.foundation.portfolio.api import (
 )
 from noetrium_platform.research.experimentation.api import (
     ResearchManifestRequirementsUnresolved,
+    compile_research_plan,
     resolve_research_requirements,
 )
 from research.reproductions.fleet import _research_binding_gap
@@ -336,25 +337,32 @@ class _UnavailableModels(_Models):
         return (BindingResolution.diagnosed((diagnostic,)),)
 
 
-def test_research_binding_authority_preserves_blocking_owner_diagnostics() -> None:
+def test_research_binding_authority_projects_model_diagnostic_to_assurance_gap() -> None:
     authority = ResearchBindingAuthority(
         _Manifests(),
         _Capabilities(),
         _Participants(),
         _UnavailableModels(),
     )
+    definition = _definition()
 
-    with pytest.raises(ResearchBindingAuthorityError) as captured:
-        authority.resolve(_definition())
+    _resolution, contribution = authority.resolve(definition)
 
-    error = captured.value
-    assert error.stage == "model"
-    assert error.requirement_id == "solver"
-    assert tuple(row.code.value for row in error.diagnostics) == (
-        "model.unavailable",
-    )
-    assert len(error.error_digest) == 64
+    requirement = definition.binding_requirements.model_role("solver")
+    assert contribution.model_role_bindings == ()
+    assert contribution.binding_assurance_complete is False
+    assert len(contribution.assurance_gaps) == 1
+    gap = contribution.assurance_gaps[0]
+    assert gap.domain == "model"
+    assert gap.requirement_key == "solver"
+    assert gap.requirement_digest == requirement.requirement_digest
+    assert len(gap.diagnostic_digests) == 1
+    assert len(gap.gap_digest) == 64
 
+    plan = compile_research_plan(definition, _resolution, contribution)
+    assert plan.binding_assurance_complete is False
+    assert plan.binding_assurance_gaps == contribution.assurance_gaps
+    assert plan.binding_assurance_gaps[0].gap_digest == gap.gap_digest
 
 
 def test_project_manifest_registry_resolves_exact_study_coverage() -> None:
@@ -485,7 +493,7 @@ def test_fleet_gap_classifies_missing_manifest_by_canonical_requirement() -> Non
     assert len(gap.gap_digest) == 64
 
 
-def test_fleet_gap_preserves_structured_model_owner_diagnostics() -> None:
+def test_model_assurance_gap_preserves_structured_owner_diagnostics() -> None:
     authority = ResearchBindingAuthority(
         _Manifests(),
         _Capabilities(),
@@ -493,19 +501,15 @@ def test_fleet_gap_preserves_structured_model_owner_diagnostics() -> None:
         _UnavailableModels(),
     )
     definition = _definition()
-    with pytest.raises(ResearchBindingAuthorityError) as captured:
-        authority.resolve(definition)
 
-    gap = _research_binding_gap(definition, captured.value)
+    _resolution, contribution = authority.resolve(definition)
+    gap = contribution.assurance_gaps[0]
     model_requirement = definition.binding_requirements.model_role("solver")
 
-    assert gap.stage == "model"
+    assert gap.domain == "model"
     assert gap.requirement_key == "solver"
     assert gap.requirement_digest == model_requirement.requirement_digest
-    assert gap.error_type == "ResearchBindingAuthorityError"
-    assert gap.diagnostics == tuple(
-        row.machine_digest for row in captured.value.diagnostics
-    )
+    assert len(gap.diagnostic_digests) == 1
     assert len(gap.gap_digest) == 64
 
 

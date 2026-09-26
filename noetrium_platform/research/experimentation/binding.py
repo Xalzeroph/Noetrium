@@ -315,11 +315,42 @@ class ResearchModelRoleBinding:
 
 
 @dataclass(frozen=True, slots=True)
+class ResearchBindingAssuranceGap:
+    """Proof gap that limits scientific assurance without defining execution mode."""
+
+    domain: str
+    requirement_key: str
+    requirement_digest: str
+    diagnostic_digests: tuple[str, ...] = ()
+    gap_digest: str = field(init=False)
+
+    def __post_init__(self) -> None:
+        _text(self.domain, "binding assurance gap domain")
+        _text(self.requirement_key, "binding assurance gap requirement_key")
+        _sha(self.requirement_digest, "binding assurance gap requirement_digest")
+        if type(self.diagnostic_digests) is not tuple:
+            raise TypeError("binding assurance gap diagnostic_digests must be tuple")
+        for digest in self.diagnostic_digests:
+            _sha(digest, "binding assurance gap diagnostic digest")
+        ordered = tuple(sorted(self.diagnostic_digests))
+        if len(ordered) != len(set(ordered)):
+            raise ValueError("binding assurance gap diagnostics must be unique")
+        object.__setattr__(self, "diagnostic_digests", ordered)
+        object.__setattr__(self, "gap_digest", canonical_digest({
+            "domain": self.domain,
+            "requirement_key": self.requirement_key,
+            "requirement_digest": self.requirement_digest,
+            "diagnostic_digests": ordered,
+        }))
+
+
+@dataclass(frozen=True, slots=True)
 class ResearchBindingContribution:
     requirement_resolution_digest: str
     capability_bindings: tuple[ResearchCapabilityBinding, ...]
     participant_bindings: tuple[ResearchParticipantBinding, ...] = ()
     model_role_bindings: tuple[ResearchModelRoleBinding, ...] = ()
+    assurance_gaps: tuple[ResearchBindingAssuranceGap, ...] = ()
     contribution_digest: str = field(init=False)
 
     def __post_init__(self) -> None:
@@ -349,13 +380,38 @@ class ResearchBindingContribution:
         member_keys = tuple((row.role, row.member_index) for row in ordered_model_role_bindings)
         if len(member_keys) != len(set(member_keys)):
             raise ValueError("binding contribution model role members must be unique")
+        if type(self.assurance_gaps) is not tuple or any(
+            not isinstance(row, ResearchBindingAssuranceGap)
+            for row in self.assurance_gaps
+        ):
+            raise TypeError("binding contribution assurance_gaps must be typed")
+        ordered_gaps = tuple(sorted(self.assurance_gaps, key=lambda row: row.gap_digest))
+        if len({row.gap_digest for row in ordered_gaps}) != len(ordered_gaps):
+            raise ValueError("binding contribution assurance gaps must be unique")
+        object.__setattr__(self, "assurance_gaps", ordered_gaps)
 
         object.__setattr__(self, "contribution_digest", canonical_digest({
             "requirement_resolution_digest": self.requirement_resolution_digest,
             "capability_bindings": tuple(row.binding_digest for row in self.capability_bindings),
             "participant_bindings": tuple(row.binding_digest for row in self.participant_bindings),
             "model_role_bindings": tuple(row.binding_digest for row in ordered_model_role_bindings),
+            "assurance_gaps": tuple(row.gap_digest for row in ordered_gaps),
         }))
+
+    @property
+    def binding_assurance_complete(self) -> bool:
+        return not self.assurance_gaps
+
+    def assurance_gaps_for(
+        self, *, domain: str, requirement_digest: str
+    ) -> tuple[ResearchBindingAssuranceGap, ...]:
+        _text(domain, "binding assurance gap domain lookup")
+        _sha(requirement_digest, "binding assurance gap requirement lookup")
+        return tuple(
+            row
+            for row in self.assurance_gaps
+            if row.domain == domain and row.requirement_digest == requirement_digest
+        )
 
     def model_role_bindings_for(self, role: str) -> tuple[ResearchModelRoleBinding, ...]:
         _text(role, "model role binding lookup")
@@ -378,6 +434,7 @@ class ResearchBindingContribution:
 
 
 __all__ = [
+    "ResearchBindingAssuranceGap",
     "ResearchBindingContribution",
     "ResearchBindingRequirements",
     "ResearchCapabilityBinding",

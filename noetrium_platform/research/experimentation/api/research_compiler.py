@@ -16,7 +16,11 @@ from noetrium_platform.research.experimentation.identity import OptionalIdentity
 from noetrium_platform.foundation.kernel.kernel import canonical_digest
 from noetrium_platform.research.execution.api import ProjectManifest, ProjectRequirementCardinality
 
-from noetrium_platform.research.experimentation.binding import ResearchBindingContribution, ResearchRequirementResolution
+from noetrium_platform.research.experimentation.binding import (
+    ResearchBindingAssuranceGap,
+    ResearchBindingContribution,
+    ResearchRequirementResolution,
+)
 from noetrium_platform.research.experimentation.lifecycle.api import StudyAssignment, StudyProtocol, StudyVariantSpec, VariantKind
 from noetrium_platform.research.experimentation.lifecycle.api import (
     FactorSelection,
@@ -282,6 +286,7 @@ class CompiledResearchPlan:
     binding_requirement_digest: str
     requirement_resolution_digest: str
     binding_digest: str
+    binding_assurance_gaps: tuple[ResearchBindingAssuranceGap, ...]
     method_implementation_digest: str
     execution_policy_digest: str
     benchmark_cut_digest: str
@@ -323,6 +328,24 @@ class CompiledResearchPlan:
             raise ValueError(
                 "compiled research plan assignment workload references unknown task"
             )
+        if type(self.binding_assurance_gaps) is not tuple or any(
+            not isinstance(row, ResearchBindingAssuranceGap)
+            for row in self.binding_assurance_gaps
+        ):
+            raise TypeError(
+                "compiled research plan binding_assurance_gaps must be typed"
+            )
+        ordered_gaps = tuple(
+            sorted(self.binding_assurance_gaps, key=lambda row: row.gap_digest)
+        )
+        if ordered_gaps != self.binding_assurance_gaps:
+            raise ValueError(
+                "compiled research plan binding assurance gaps must be canonical"
+            )
+        if len({row.gap_digest for row in ordered_gaps}) != len(ordered_gaps):
+            raise ValueError(
+                "compiled research plan binding assurance gaps must be unique"
+            )
         expected = canonical_digest({
             "definition_digest": self.definition_digest,
             "scientific_design_digest": self.scientific_design_digest,
@@ -330,6 +353,9 @@ class CompiledResearchPlan:
             "binding_requirement_digest": self.binding_requirement_digest,
             "requirement_resolution_digest": self.requirement_resolution_digest,
             "binding_digest": self.binding_digest,
+            "binding_assurance_gaps": tuple(
+                row.gap_digest for row in self.binding_assurance_gaps
+            ),
             "method_implementation_digest": self.method_implementation_digest,
             "execution_policy_digest": self.execution_policy_digest,
             "benchmark_cut_digest": self.benchmark_cut_digest,
@@ -342,6 +368,10 @@ class CompiledResearchPlan:
             raise ValueError("compiled research plan digest is not authoritative")
         if self.research_semantics.research_plan_digest != self.research_plan_digest:
             raise ValueError("compiled research semantics do not bind the research plan")
+
+    @property
+    def binding_assurance_complete(self) -> bool:
+        return not self.binding_assurance_gaps
 
     def task_for(self, task_id: str) -> TaskDefinition:
         matches = tuple(
@@ -561,15 +591,34 @@ def _revision_facet(definition: ResearchStudyDefinition) -> OptionalIdentityFace
 
 
 def _validate_capability_bindings(
+    definition: ResearchStudyDefinition,
     resolution: ResearchRequirementResolution,
     binding: ResearchBindingContribution,
 ) -> None:
     provided_ids = {row.requirement_id for row in binding.capability_bindings}
     expected_ids = set(resolution.capability_requirement_ids)
-    if provided_ids != expected_ids:
+    if not provided_ids <= expected_ids:
+        raise ValueError("binding contribution has undeclared capability proofs")
+
+    model_requirements = {
+        row.requirement_id: row
+        for row in definition.binding_requirements.model_roles
+    }
+    allowed_missing: set[str] = set()
+    for requirement_id, model_requirement in model_requirements.items():
+        gaps = binding.assurance_gaps_for(
+            domain="model",
+            requirement_digest=model_requirement.requirement_digest,
+        )
+        if gaps:
+            allowed_missing.add(requirement_id)
+    if expected_ids - provided_ids - allowed_missing:
         raise ValueError("binding contribution capability coverage drifted")
+
     for requirement in resolution.capability_requirements:
         rows = binding.capability_bindings_for(requirement.requirement_id)
+        if not rows and requirement.requirement_id in allowed_missing:
+            continue
         if requirement.cardinality is ProjectRequirementCardinality.EXACTLY_ONE:
             if len(rows) != 1:
                 raise ValueError("exactly-one capability requires exactly one producer proof")
@@ -630,10 +679,36 @@ def _validate_model_role_bindings(
             f"binding contribution has undeclared model roles: {sorted(unknown_roles)}"
         )
 
+    known_requirement_digests = {row.requirement_digest for row in requirements}
+    for gap in binding.assurance_gaps:
+        if (
+            gap.domain != "model"
+            or gap.requirement_digest not in known_requirement_digests
+        ):
+            raise ValueError(
+                "binding contribution contains an unsupported assurance gap"
+            )
+
     for requirement in requirements:
         rows = binding.model_role_bindings_for(requirement.role)
+        gaps = binding.assurance_gaps_for(
+            domain="model",
+            requirement_digest=requirement.requirement_digest,
+        )
+        if rows and gaps:
+            raise ValueError(
+                f"model role {requirement.role} cannot be both bound and unresolved"
+            )
         if requirement.required and not rows:
-            raise ValueError(f"required model role is unbound: {requirement.role}")
+            if len(gaps) != 1:
+                raise ValueError(
+                    f"required model role lacks binding assurance evidence: {requirement.role}"
+                )
+            continue
+        if not requirement.required and gaps:
+            raise ValueError(
+                f"optional model role must not create assurance gap: {requirement.role}"
+            )
         if requirement.max_bindings is not None and len(rows) > requirement.max_bindings:
             raise ValueError(
                 f"model role {requirement.role} exceeds max_bindings={requirement.max_bindings}"
@@ -675,7 +750,7 @@ def _validate_binding_contribution(
         raise ValueError("requirement resolution does not bind the author definition")
     if binding.requirement_resolution_digest != resolution.resolution_digest:
         raise ValueError("binding contribution does not bind requirement resolution")
-    _validate_capability_bindings(resolution, binding)
+    _validate_capability_bindings(definition, resolution, binding)
     trial_requirement = definition.binding_requirements.trial_provider_requirement_id
     if len(binding.capability_bindings_for(trial_requirement)) != 1:
         raise ValueError("compiled Trial requires exactly one trial provider proof")
@@ -735,6 +810,9 @@ def compile_research_plan(
         "binding_requirement_digest": definition.binding_requirement_digest,
         "requirement_resolution_digest": resolution.resolution_digest,
         "binding_digest": binding.contribution_digest,
+        "binding_assurance_gaps": tuple(
+            row.gap_digest for row in binding.assurance_gaps
+        ),
         "method_implementation_digest": method_implementation_digest,
         "execution_policy_digest": definition.execution_policy_digest,
         "benchmark_cut_digest": definition.benchmark.cut_digest,
@@ -762,6 +840,7 @@ def compile_research_plan(
         binding_requirement_digest=definition.binding_requirement_digest,
         requirement_resolution_digest=resolution.resolution_digest,
         binding_digest=binding.contribution_digest,
+        binding_assurance_gaps=binding.assurance_gaps,
         method_implementation_digest=method_implementation_digest,
         execution_policy_digest=definition.execution_policy_digest,
         benchmark_cut_digest=definition.benchmark.cut_digest,

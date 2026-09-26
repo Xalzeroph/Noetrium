@@ -2,7 +2,7 @@ from noetrium_platform.foundation.kernel.kernel import MachineCut
 from .catalog import ExperimentationCatalogPort
 from noetrium_platform.research.experimentation.identity import ModelRoleUsage, ReplayLevel
 from noetrium_platform.research.experimentation.binding import (
-    ResearchBindingContribution, ResearchBindingRequirements, ResearchCapabilityBinding,
+    ResearchBindingAssuranceGap, ResearchBindingContribution, ResearchBindingRequirements, ResearchCapabilityBinding,
     ResearchModelRoleBinding, ResearchModelRoleRequirement, ResearchParticipantBinding,
     ResearchParticipantRequirement, ResearchRequirementResolution,
 )
@@ -53,6 +53,7 @@ from .construction import (
 
 __all__ = [
     "MachineCut",
+    "ResearchBindingAssuranceGap",
     "ResearchBindingContribution",
     "ResearchCapabilityBinding",
     "ResearchModelRoleBinding",
