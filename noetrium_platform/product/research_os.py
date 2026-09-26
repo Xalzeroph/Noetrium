@@ -52,6 +52,7 @@ class ResearchDefinitionKind(StrEnum):
     PARTICIPANT = "participant"
     PROTOCOL = "protocol"
     RESOURCE_POLICY = "resource-policy"
+    CHILD_MACHINE = "child-machine"
     CUSTOM = "custom"
 
 
@@ -586,6 +587,12 @@ class ResearchDefinition:
             raise ValueError(
                 "ResearchProgram implementation cannot back METHOD definitions"
             )
+        if self.kind is ResearchDefinitionKind.CHILD_MACHINE and type(
+            self.implementation
+        ) is not ResearchMachineProgramImplementation:
+            raise ValueError(
+                "CHILD_MACHINE definitions require an exact ResearchProgram implementation"
+            )
         config = freeze_json(self.config)
         object.__setattr__(self, "config", config)
         object.__setattr__(
@@ -783,8 +790,23 @@ class ResearchProgram:
         known_definitions = set(definition_ids)
         known_nodes = set(node_ids)
         by_node = {row.node_id: row for row in nodes}
+        child_definition_ids = {
+            row.definition_id
+            for row in definitions
+            if row.kind is ResearchDefinitionKind.CHILD_MACHINE
+        }
 
         for node in nodes:
+            child_refs = tuple(
+                value for value in node.definition_ids
+                if value in child_definition_ids
+            )
+            if child_refs:
+                raise ValueError(
+                    "CHILD_MACHINE definitions are Program-scoped auxiliary "
+                    f"runtime declarations and cannot be consumed by node {node.node_id!r}: "
+                    f"{child_refs}"
+                )
             unknown = tuple(
                 value for value in node.definition_ids
                 if value not in known_definitions
@@ -1796,11 +1818,44 @@ class ResearchProgramBuilder:
 
         if kind is ResearchDefinitionKind.METHOD:
             raise ValueError("Method semantics must use method_program")
+        if kind is ResearchDefinitionKind.CHILD_MACHINE:
+            raise ValueError(
+                "nested Machine semantics must use child_machine_program"
+            )
         return self.definition(
             definition_id,
             kind=kind,
             implementation=ResearchMachineProgramImplementation.from_symbols(
                 definition_id,
+                program_module=program_module,
+                program_qualname=program_qualname,
+                operations_module=operations_module,
+                operations_qualname=operations_qualname,
+            ),
+            config=config,
+        )
+
+    def child_machine_program(
+        self,
+        host_id: str,
+        *,
+        program_module: str,
+        program_qualname: str,
+        operations_module: str,
+        operations_qualname: str,
+        config: JsonInput = None,
+    ) -> "ResearchProgramBuilder":
+        """Declare one Program-scoped nested ResearchMachine host.
+
+        The host is auxiliary runtime authority for MethodPrograms in this
+        ResearchProgram. It is never a top-level ResearchGraph node.
+        """
+
+        return self.definition(
+            host_id,
+            kind=ResearchDefinitionKind.CHILD_MACHINE,
+            implementation=ResearchMachineProgramImplementation.from_symbols(
+                host_id,
                 program_module=program_module,
                 program_qualname=program_qualname,
                 operations_module=operations_module,
