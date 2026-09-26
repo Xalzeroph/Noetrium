@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from noetrium.api import MethodRuntimePort
+from noetrium.api import MethodRuntimePort
 from noetrium_platform.foundation.kernel.kernel import (
     MachineKind,
     canonical_digest,
@@ -20,6 +22,10 @@ from research.reproductions.flash_vstream_memory.memory import (
     FLASH_VSTREAM_MEMORY_PROGRAM,
     flash_vstream_memory_operations,
 )
+from research.reproductions.flash_vstream_memory.program import (
+    FLASH_VSTREAM_METHOD_PROGRAM,
+)
+from research.reproductions.flash_vstream_memory.program import FLASH_VSTREAM_METHOD_PROGRAM
 from research.reproductions.flash_vstream_memory.study import (
     build_flash_vstream_egoschema_public_study,
     flash_vstream_egoschema_trial_protocol,
@@ -144,3 +150,45 @@ def test_flash_vstream_egoschema_study_binds_dual_memory_protocol() -> None:
         "multiple_choice_accuracy",
     }
     assert study.execution_policy.trial_budget.max_model_calls == 1
+
+
+def test_flash_vstream_method_program_uses_one_memory_to_model_path() -> None:
+    program = FLASH_VSTREAM_METHOD_PROGRAM
+    assert tuple(node.node_id for node in program.graph.nodes) == (
+        "compose_memory",
+        "answer",
+        "return",
+    )
+    assert program.required_runtime_ports == (MethodRuntimePort.CHILD_MACHINES,)
+    assert program.required_capabilities == ("model.multimodal.generate",)
+    configuration = thaw_json(program.configuration)
+    assert configuration["memory_program_digest"] == (
+        FLASH_VSTREAM_MEMORY_PROGRAM.program_digest
+    )
+    assert configuration["response_contract"] == (
+        "flash-vstream.egoschema.structured-choice.v1"
+    )
+    assert configuration["raw_text_parser"] is None
+    assert "flash-vstream.memory-child-cut" in program.evidence_obligations
+    assert "multiple_choice_accuracy" in program.metric_names
+
+
+def test_flash_vstream_method_program_uses_one_memory_to_model_path() -> None:
+    program = FLASH_VSTREAM_METHOD_PROGRAM
+    assert tuple(node.node_id for node in program.graph.nodes) == (
+        "compose_memory",
+        "answer",
+        "return",
+    )
+    assert program.required_runtime_ports == (MethodRuntimePort.CHILD_MACHINES,)
+    assert program.required_capabilities == ("model.multimodal.generate",)
+    configuration = thaw_json(program.configuration)
+    assert configuration["memory_program_digest"] == (
+        FLASH_VSTREAM_MEMORY_PROGRAM.program_digest
+    )
+    assert configuration["response_contract"] == (
+        "flash-vstream.egoschema.structured-choice.v1"
+    )
+    assert configuration["raw_text_parser"] is None
+    assert "flash-vstream.memory-child-cut" in program.evidence_obligations
+    assert "multiple_choice_accuracy" in program.metric_names

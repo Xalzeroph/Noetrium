@@ -2,8 +2,8 @@
   "schema": "noetrium.reproduction.projection.v10",
   "authority": "generated_from_typed_definition_and_source",
   "package": "flash_vstream_memory",
-  "package_digest": "9622f24c035dd1704aaac15ba70e43b64bc7b3aae49eb2161469c2aade39c6ea",
-  "definition_digest": "ae792891cd86db373c5b133c1f788309e4fc0b53eb61e56184fee7d403fcf865",
+  "package_digest": "c31d8976f4d8fcd8369556e1c7eff3fa4ccd3606c8b19dda95925123504d7d20",
+  "definition_digest": "6f70aeb092934ebc9f9088a759d2c847d17d047ed3481e22f0ff61cbf1c5124b",
   "source_registry_digest": "7d6fdeedd563fb8fff5cec18bda0051a643425a48a5a9943c6d5cddb34c9f8a9",
   "lifecycle": "protocol_bound",
   "identity": {
@@ -47,6 +47,7 @@
     ],
     "platform_owned": [
       "MemoryMachine journal authority",
+      "MethodProgram and child-memory-machine composition",
       "benchmark cut identity",
       "immutable tensor content references",
       "multimodal model transport",
@@ -58,7 +59,7 @@
     "reference_publications": [
       "https://openaccess.thecvf.com/content/ICCV2025/html/Zhang_Flash-VStream_Efficient_Real-Time_Understanding_for_Long_Video_Streams_ICCV_2025_paper.html"
     ],
-    "catalog_digest": "d01bdfc6a1dc35bb7b7d139201ff8d2544cfe3db05ba2234ae263119518810b0"
+    "catalog_digest": "1e48ca7829c209b6f84eef1ecc6498b626ec5408efe9c0d2a4496905dfd09485"
   },
   "source_lanes": [
     {
@@ -114,6 +115,12 @@
       "content_sha256": "629d4a0849fed5eed20eed0796e5f4e53f31e3d34d8a1fdd128a0aec06cd4523"
     },
     {
+      "kind": "method_program",
+      "path": "research/reproductions/flash_vstream_memory/program.py",
+      "declaration_digest": "5e7d40b13a3ac4411ea8069d4ef5671c9d854104209db99a602fa9900526c84b",
+      "content_sha256": "c5c1c0bb2bb48556a1e26175be21d8e77c480020a4202767e23f5c6ae21b5488"
+    },
+    {
       "kind": "research_program",
       "path": "research/reproductions/flash_vstream_memory/memory.py",
       "declaration_digest": "4cc0d6c059c38bfc51f087f2df258e590a2376083839516743b790413a7e335e",
@@ -132,7 +139,7 @@
       "content_sha256": "aa8251db6ad93e3c9d36dc8ceb1428aa2327ce6362fed777ac16a57537314014"
     }
   ],
-  "primary_executable": "research/reproductions/flash_vstream_memory/memory.py",
+  "primary_executable": "research/reproductions/flash_vstream_memory/program.py",
   "reported_results": [
     {
       "claim_id": "flash_vstream_egoschema_main",
@@ -196,20 +203,20 @@
   "blockers": [
     "Matched numerical execution requires content-addressed EgoSchema video bytes plus exact released Qwen2-VL/Flash-VStream checkpoint assets.",
     "The paper also reports MLVU, LVBench, MVBench and Video-MME; those additional benchmark authorities remain to be bound.",
-    "A full end-to-end inference MethodProgram remains to be separated from the already bound dual Flash MemoryProgram."
+    "The public source audit does not establish a canonical raw-text-to-A-E parser contract; measured execution therefore requires the bound model provider to return the structured choice index with its raw output."
   ],
   "evidence_refs": [],
   "scientific_tests": [
     {
       "path": "tests/test_scientific_flash_vstream_memory_v1.py",
-      "content_sha256": "a41aef0de191acd264f657370090119a89ffe1434ffe21bc013be8ce474658f5"
+      "content_sha256": "227ac69d76b40d08d2d0f737e547eeb7a13146130283d5402ee416b7ca6188b2"
     }
   ],
   "research_os": {
     "surface": "noetrium.api",
     "execution_state": "benchmark_authority_required",
     "program_id": "flash_vstream_memory",
-    "program_digest": "db4b3fc8a3d1c18feb9bf2fda199308bf60e390e1be59d493cf473ca6d6ad9f8",
+    "program_digest": "5d865ea9b382f704db9be0059076ff269bcc37412ede7297890c7d2f27766bcc",
     "benchmark_authority": {
       "state": "required",
       "selection_digests": [],
