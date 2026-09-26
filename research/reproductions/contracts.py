@@ -147,6 +147,83 @@ class ReproductionMethodProgramFactoryBinding:
         return not self.unresolved_parameters
 
 
+def _projection_pairs(
+    value: object,
+    field_name: str,
+    *,
+    result_paths: bool = False,
+) -> tuple[tuple[str, str], ...]:
+    if type(value) is not tuple:
+        raise TypeError(f"{field_name} must be a tuple")
+    rows: list[tuple[str, str]] = []
+    for row in value:
+        if type(row) is not tuple or len(row) != 2:
+            raise TypeError(f"{field_name} must contain (output, path) pairs")
+        output = _text(row[0], f"{field_name} output")
+        source = _text(row[1], f"{field_name} path")
+        if any(not part for part in source.split(".")):
+            raise ValueError(f"{field_name} path must be canonical dotted text")
+        if result_paths and source.split(".", 1)[0] not in {
+            "value", "state", "diagnostics"
+        }:
+            raise ValueError(
+                f"{field_name} result paths must start with value, state or diagnostics"
+            )
+        rows.append((output, source))
+    outputs = tuple(row[0] for row in rows)
+    if len(outputs) != len(set(outputs)):
+        raise ValueError(f"{field_name} output names must be unique")
+    return tuple(rows)
+
+
+@dataclass(frozen=True, slots=True)
+class ReproductionMethodWorkloadBinding:
+    """Data-only binding from one benchmark task to one MethodProgram invocation.
+
+    The binding declares field projection only. Paper logic, prompt construction,
+    environment interaction and result semantics remain inside the downstream
+    MethodProgram and benchmark/verifier definitions.
+    """
+
+    input_fields: tuple[tuple[str, str], ...] = ()
+    initial_state_fields: tuple[tuple[str, str], ...] = ()
+    result_fields: tuple[tuple[str, str], ...] = ()
+    binding_digest: str = field(init=False)
+
+    def __post_init__(self) -> None:
+        input_fields = _projection_pairs(
+            self.input_fields, "reproduction workload input_fields"
+        )
+        initial_state_fields = _projection_pairs(
+            self.initial_state_fields,
+            "reproduction workload initial_state_fields",
+        )
+        result_fields = _projection_pairs(
+            self.result_fields,
+            "reproduction workload result_fields",
+            result_paths=True,
+        )
+        if not input_fields and not initial_state_fields:
+            raise ValueError(
+                "reproduction Method workload binding requires task input or initial state"
+            )
+        object.__setattr__(self, "input_fields", input_fields)
+        object.__setattr__(self, "initial_state_fields", initial_state_fields)
+        object.__setattr__(self, "result_fields", result_fields)
+        object.__setattr__(
+            self,
+            "binding_digest",
+            canonical_digest(
+                {
+                    "schema": "noetrium.reproduction-method-workload-binding.v1",
+                    "input_fields": input_fields,
+                    "initial_state_fields": initial_state_fields,
+                    "result_fields": result_fields,
+                }
+            ),
+        )
+
+
 class ReproductionDeltaKind(StrEnum):
     SUBSTITUTION = "substitution"
     UNRESOLVED = "unresolved"
@@ -622,6 +699,7 @@ class ReproductionDefinition:
     assets: tuple[ReproductionAssetRef, ...]
     primary_executable: str | None = None
     method_program_factory: ReproductionMethodProgramFactoryBinding | None = None
+    workload_binding: ReproductionMethodWorkloadBinding | None = None
     reported_results: tuple[ReportedResult, ...] = ()
     reference_baselines: tuple[ReferenceBaseline, ...] = ()
     deltas: tuple[ReproductionDelta, ...] = ()
@@ -677,6 +755,17 @@ class ReproductionDefinition:
             primary_executable,
         )
         method_program_factory = self.method_program_factory
+        workload_binding = self.workload_binding
+        if workload_binding is not None:
+            if type(workload_binding) is not ReproductionMethodWorkloadBinding:
+                raise TypeError("reproduction workload_binding must be typed")
+            if not any(
+                row.kind is ReproductionAssetKind.METHOD_PROGRAM
+                for row in executable_assets
+            ):
+                raise ValueError(
+                    "reproduction workload binding requires a MethodProgram executable asset"
+                )
         if method_program_factory is not None:
             if type(method_program_factory) is not ReproductionMethodProgramFactoryBinding:
                 raise TypeError(
@@ -788,6 +877,11 @@ class ReproductionDefinition:
                         if method_program_factory is None
                         else method_program_factory.binding_digest
                     ),
+                    "workload_binding": (
+                        None
+                        if workload_binding is None
+                        else workload_binding.binding_digest
+                    ),
                     "reported_results": tuple(row.claim_digest for row in self.reported_results),
                     "reference_baselines": tuple(
                         row.baseline_digest for row in self.reference_baselines
@@ -818,6 +912,7 @@ __all__ = [
     "ReproductionMatchCriterion",
     "ReproductionMatchCriterionStatus",
     "ReproductionMethodProgramFactoryBinding",
+    "ReproductionMethodWorkloadBinding",
     "REPRODUCTION_MATCH_REQUIRED_CRITERIA",
     "ReproductionIdentity",
     "ReproductionLifecycle",

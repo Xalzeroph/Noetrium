@@ -11,6 +11,7 @@ from research.reproductions.contracts import (
     ReproductionDeltaKind,
     ReproductionIdentity,
     ReproductionLifecycle,
+    ReproductionMethodWorkloadBinding,
 )
 
 REPRODUCTION = ReproductionDefinition(
@@ -60,6 +61,13 @@ REPRODUCTION = ReproductionDefinition(
             kind=ReproductionAssetKind("study"),
             path="research/reproductions/chain_of_thought_gsm8k/study.py",
         ),
+    ),
+    workload_binding=ReproductionMethodWorkloadBinding(
+        initial_state_fields=(
+            ("task_id", "task_id"),
+            ("question", "payload.question"),
+        ),
+        result_fields=(("completion", "value.completion"),),
     ),
     reported_results=(
         ReportedResult(

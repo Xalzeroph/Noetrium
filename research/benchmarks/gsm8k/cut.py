@@ -9,6 +9,7 @@ from noetrium_platform.research.experimentation.lifecycle.api import (
     BenchmarkSourceKind,
     BenchmarkSourceSpec,
     BenchmarkTaskSet,
+    TaskArtifactSpec,
     TaskDefinition,
     TaskPackageSpec,
     TaskSetSplit,
@@ -142,6 +143,9 @@ def build_gsm8k_task_set(
                 environment_requirement_id=None,
                 verifier_requirement_id="benchmark.gsm8k.exact-numeric.verifier",
                 verifier_isolation=TaskVerifierIsolation.SEPARATE,
+                artifacts=(
+                    TaskArtifactSpec("completion", "completion.json"),
+                ),
             ),
         )
         for row in ordered
