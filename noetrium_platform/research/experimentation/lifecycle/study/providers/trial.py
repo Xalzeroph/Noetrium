@@ -42,12 +42,13 @@ class StandardWorkloadMeasurementProjection:
         "steps",
         "duration_seconds",
         "blocked",
+        "resource_usage",
     })
 
     @property
     def identity_digest(self) -> str:
         return canonical_digest({
-            "projection": "standard-workload-measurements.v1",
+            "projection": "standard-workload-measurements.v2",
             "semantic_kinds": tuple(sorted(self._SUPPORTED)),
         })
 
@@ -95,6 +96,20 @@ class StandardWorkloadMeasurementProjection:
                 MeasurementValueKind.BOOLEAN,
                 boolean=any(row.blocked for row in rows),
             )
+        elif semantic == "resource_usage" and definition.value_kind is MeasurementValueKind.SCALAR:
+            values = tuple(row.diagnostics.get(definition.measurement_id) for row in rows)
+            if any(
+                isinstance(value, bool) or not isinstance(value, (int, float))
+                for value in values
+            ):
+                raise KeyError(
+                    "workload result has no numeric resource-usage diagnostic "
+                    f"{definition.measurement_id!r}"
+                )
+            return MeasurementValue(
+                MeasurementValueKind.SCALAR,
+                scalar=sum(float(value) for value in values),
+            )
         raise ValueError(
             "standard workload measurement projection cannot represent "
             f"semantic_kind={semantic!r} as value_kind={definition.value_kind.value!r}"
@@ -114,13 +129,22 @@ class StandardWorkloadMeasurementProjection:
             )
         protocol = request.measurement_protocol
         producer_revision = self.identity_digest
+        verifier_required = any(
+            definition.package is not None
+            and definition.package.verifier_requirement_id is not None
+            for definition in request.task_definitions
+        )
+        verifier_owned = frozenset({"task_success", "utility"})
         rows: list[MeasurementRecord] = []
         for definition in protocol.definitions:
             if definition.semantic_kind not in self._SUPPORTED:
-                raise ValueError(
-                    "standard workload measurement projection has no semantic mapping for "
-                    f"{definition.semantic_kind!r}; provide a project measurement projector"
-                )
+                continue
+            if verifier_required and definition.semantic_kind in verifier_owned:
+                continue
+            try:
+                value = self._value(definition, result)
+            except KeyError:
+                continue
             rows.append(MeasurementRecord(
                 project_id=request.project_id,
                 study_id=request.assignment.study_id,
@@ -133,7 +157,7 @@ class StandardWorkloadMeasurementProjection:
                 schema_id=definition.schema_id,
                 measurement_semantic_digest=definition.semantic_contract_digest,
                 measurement_protocol_semantic_digest=protocol.semantic_digest,
-                value=self._value(definition, result),
+                value=value,
                 logical_time=(
                     f"assignment:{request.assignment.repetition}:"
                     f"{request.assignment.seed}:{definition.measurement_id}"
@@ -296,6 +320,7 @@ class VerifierStageWorkloadTrialProvider:
         protocol_identity: object,
         workload: WorkloadTaskExecutionPort,
         task_projection: TrialTaskProjectionPort,
+        measurement_projection: TrialMeasurementProjectionPort,
         artifact_publisher: TrialVerifierArtifactPublisherPort,
     ) -> None:
         digest = getattr(protocol_identity, "digest", None)
@@ -317,6 +342,13 @@ class VerifierStageWorkloadTrialProvider:
                 "verifier-stage workload provider requires TrialTaskProjectionPort"
             )
         if not isinstance(
+            measurement_projection,
+            TrialMeasurementProjectionPort,
+        ):
+            raise TypeError(
+                "verifier-stage workload provider requires TrialMeasurementProjectionPort"
+            )
+        if not isinstance(
             artifact_publisher,
             TrialVerifierArtifactPublisherPort,
         ):
@@ -333,12 +365,14 @@ class VerifierStageWorkloadTrialProvider:
         self.protocol_identity = protocol_identity
         self._workload = workload
         self._task_projection = task_projection
+        self._measurement_projection = measurement_projection
         self._artifact_publisher = artifact_publisher
         self.identity_digest = canonical_digest(
             {
                 "provider": "verifier-stage-workload-trial-provider.v1",
                 "protocol_identity": protocol_digest,
                 "task_projection": task_projection.identity_digest,
+                "measurement_projection": measurement_projection.identity_digest,
                 "artifact_publisher": artifact_publisher.identity_digest,
             }
         )
@@ -427,10 +461,13 @@ class VerifierStageWorkloadTrialProvider:
             if declaration.artifact_id in exported
         )
         references = tuple(row.reference for row in verifier_artifacts)
+        measurements = self._measurement_projection.project(request, result)
+        for row in measurements:
+            row.validate_against(request.measurement_protocol)
         return TrialExecutionStageReceipt(
             request_digest=request.request_digest,
             assignment_digest=request.assignment.assignment_digest,
-            measurements=(),
+            measurements=measurements,
             verifier_artifacts=verifier_artifacts,
             evidence_refs=references,
         )
@@ -475,10 +512,16 @@ def _require_measurements(
             != request.measurement_protocol.protocol_digest
         ):
             raise ValueError("verifier receipt measurement protocol drifted")
-        if verifier.measurements != receipt.measurements:
-            raise ValueError(
-                "trial measurements must be exactly the verifier measurements"
-            )
+        final_by_id = {
+            row.measurement_id: row for row in receipt.measurements
+        }
+        if len(final_by_id) != len(receipt.measurements):
+            raise ValueError("trial measurements contain duplicate identities")
+        for row in verifier.measurements:
+            if final_by_id.get(row.measurement_id) != row:
+                raise ValueError(
+                    "verifier measurement is not preserved exactly in final receipt"
+                )
     elif receipt.verifier_receipt is not None:
         raise ValueError(
             "trial receipt cannot attach verifier evidence when task declares none"
@@ -563,10 +606,6 @@ class TrialVerifierOrchestrator:
             raise ValueError(
                 "task-declared verifier requires an execution-stage receipt"
             )
-        if provider_receipt.measurements:
-            raise ValueError(
-                "task-declared verifier forbids provider-produced final measurements"
-            )
         if verifier is None:
             raise ValueError("task-declared verifier requires TaskVerifierPort")
 
@@ -580,6 +619,28 @@ class TrialVerifierOrchestrator:
         if verifier_receipt.request != verifier_request:
             raise ValueError("task verifier receipt does not bind the exact handoff")
 
+        stage_by_id = {
+            row.measurement_id: row for row in provider_receipt.measurements
+        }
+        verifier_by_id = {
+            row.measurement_id: row for row in verifier_receipt.measurements
+        }
+        if len(stage_by_id) != len(provider_receipt.measurements):
+            raise ValueError("execution stage produced duplicate measurement identities")
+        if len(verifier_by_id) != len(verifier_receipt.measurements):
+            raise ValueError("verifier produced duplicate measurement identities")
+        overlap = tuple(sorted(set(stage_by_id) & set(verifier_by_id)))
+        if overlap:
+            raise ValueError(
+                "execution stage and verifier both own measurements: "
+                + ", ".join(overlap)
+            )
+        combined = {**stage_by_id, **verifier_by_id}
+        measurements = tuple(
+            combined[definition.measurement_id]
+            for definition in request.measurement_protocol.definitions
+            if definition.measurement_id in combined
+        )
         evidence_refs = tuple(
             dict.fromkeys(
                 provider_receipt.evidence_refs + verifier_receipt.evidence_refs
@@ -588,7 +649,7 @@ class TrialVerifierOrchestrator:
         return TrialExecutionReceipt(
             request_digest=request.request_digest,
             assignment_digest=request.assignment.assignment_digest,
-            measurements=verifier_receipt.measurements,
+            measurements=measurements,
             evidence_refs=evidence_refs,
             verifier_receipt=verifier_receipt,
         )

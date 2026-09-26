@@ -470,7 +470,7 @@ def test_workload_trial_bridge_projects_executes_and_emits_typed_measurements() 
         row.validate_against(protocol)
 
 
-def test_standard_measurement_projection_refuses_unknown_benchmark_semantics() -> None:
+def test_standard_measurement_projection_leaves_unknown_semantics_unclaimed() -> None:
     protocol = _protocol(
         MeasurementDefinition.scalar(
             "bleu",
@@ -479,8 +479,8 @@ def test_standard_measurement_projection_refuses_unknown_benchmark_semantics() -
         )
     )
     provider = _provider(protocol, _Workload(_result()))
-    with pytest.raises(ValueError, match="provide a project measurement projector"):
-        provider.run_trial(_request(protocol))
+    receipt = provider.run_trial(_request(protocol))
+    assert receipt.measurements == ()
 
 
 def test_workload_trial_bridge_never_bypasses_declared_verifier_boundary() -> None:
@@ -534,7 +534,7 @@ class _VerifierArtifactPublisher:
 
 
 def test_verifier_stage_workload_exports_only_declared_artifacts() -> None:
-    protocol = _protocol(_success_definition())
+    protocol = _protocol(_success_definition(), _steps_definition())
     result = WorkloadTaskResult(
         task_id="task-1",
         family="family",
@@ -554,10 +554,12 @@ def test_verifier_stage_workload_exports_only_declared_artifacts() -> None:
         task_projection=StaticExperimentTaskProjection(
             (ExperimentTaskSpec("task-1", "family", "solve"),)
         ),
+        measurement_projection=StandardWorkloadMeasurementProjection(),
         artifact_publisher=_VerifierArtifactPublisher(),
     )
     stage = provider.run_trial(_request(protocol, verifier=True))
-    assert stage.measurements == ()
+    assert tuple(row.measurement_id for row in stage.measurements) == ("steps",)
+    assert stage.measurements[0].value.scalar == 1.0
     assert tuple(
         row.declaration.artifact_id for row in stage.verifier_artifacts
     ) == ("answer",)
@@ -587,6 +589,7 @@ def test_verifier_stage_workload_rejects_undeclared_exports() -> None:
         task_projection=StaticExperimentTaskProjection(
             (ExperimentTaskSpec("task-1", "family", "solve"),)
         ),
+        measurement_projection=StandardWorkloadMeasurementProjection(),
         artifact_publisher=_VerifierArtifactPublisher(),
     )
     with pytest.raises(ValueError, match="undeclared"):

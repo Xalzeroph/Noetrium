@@ -18,7 +18,10 @@ from noetrium_platform.foundation.kernel.kernel import (
 from noetrium_platform.research.execution.workflow.api import (
     MethodAgentRequest,
     MethodAgentResult,
+    MethodEvent,
     MethodNodeResult,
+    MethodRunResult,
+    MethodRunStatus,
     MethodProgramBuilder,
 )
 from noetrium_platform.research.execution.workflow.composition import (
@@ -366,3 +369,22 @@ def test_task_field_projection_rejects_missing_nested_payload_path() -> None:
     task = ExperimentTaskSpec("task-payload", "qa", "solve", payload={})
     with pytest.raises(KeyError, match="payload.question"):
         TaskFieldProjection(fields=(("question", "payload.question"),)).project(task)
+
+
+def test_declarative_result_adapter_counts_authoritative_model_invocation_events() -> None:
+    result = MethodRunResult(
+        MethodRunStatus.SUCCEEDED,
+        "run-model-count",
+        "a" * 64,
+        value={"answer": "42"},
+        events=(
+            MethodEvent("model.invocation", {"request_id": "r1"}),
+            MethodEvent("method.other", {}),
+            MethodEvent("model.invocation", {"request_id": "r2"}),
+        ),
+    )
+    evaluation = DeclarativeExecutionResultAdapter().evaluate(
+        ExperimentTaskSpec("task-model-count", "qa", "question"),
+        result,
+    )
+    assert evaluation.diagnostics["model_call_count"] == 2

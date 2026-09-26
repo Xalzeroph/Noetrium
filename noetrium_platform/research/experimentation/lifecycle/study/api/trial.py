@@ -188,12 +188,19 @@ class TaskVerifierRequest:
     ) -> "TaskVerifierRequest":
         if type(trial_request) is not TrialExecutionRequest:
             raise TypeError("verifier handoff requires TrialExecutionRequest")
-        task = trial_request.task
-        if task is None:
-            raise ValueError("verifier handoff requires a frozen task")
+        verifier_tasks = tuple(
+            task
+            for task in trial_request.task_definitions
+            if task.package is not None
+            and task.package.verifier_requirement_id is not None
+        )
+        if len(verifier_tasks) != 1:
+            raise ValueError(
+                "verifier handoff requires exactly one verifier-backed frozen task"
+            )
+        task = verifier_tasks[0]
         package = task.package
-        if package is None or package.verifier_requirement_id is None:
-            raise ValueError("task package does not declare a verifier")
+        assert package is not None and package.verifier_requirement_id is not None
         if type(artifacts) is not tuple or any(
             type(row) is not TaskVerifierArtifact for row in artifacts
         ):
@@ -396,8 +403,8 @@ class TrialExecutionRequest:
 class TrialExecutionStageReceipt:
     """Provider output before any task-declared verifier is allowed to run.
 
-    For verifier-backed tasks the core requires measurements to be empty and
-    transfers only the declared verifier artifacts across the boundary.
+    Execution-owned measurements may accompany the explicitly declared verifier
+    artifacts. The verifier owns only its disjoint measurement identities.
     """
 
     request_digest: str
@@ -468,6 +475,11 @@ class TrialExecutionReceipt:
             raise TypeError(
                 "trial receipt measurements must contain MeasurementRecord"
             )
+        measurement_by_id = {
+            row.measurement_id: row for row in self.measurements
+        }
+        if len(measurement_by_id) != len(self.measurements):
+            raise ValueError("trial receipt measurement identities must be unique")
         if type(self.evidence_refs) is not tuple or any(
             type(row) is not ArtifactReference for row in self.evidence_refs
         ):
@@ -486,10 +498,11 @@ class TrialExecutionReceipt:
                 != self.request_digest
             ):
                 raise ValueError("trial receipt verifier does not bind the trial request")
-            if self.verifier_receipt.measurements != self.measurements:
-                raise ValueError(
-                    "trial receipt measurements must equal verifier measurements"
-                )
+            for row in self.verifier_receipt.measurements:
+                if measurement_by_id.get(row.measurement_id) != row:
+                    raise ValueError(
+                        "trial receipt must preserve verifier measurements exactly"
+                    )
         object.__setattr__(
             self,
             "receipt_digest",

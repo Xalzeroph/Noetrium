@@ -271,6 +271,9 @@ class DeclarativeExecutionResultAdapter:
             diagnostics={
                 "method_run_digest": result.run_digest,
                 "method_status": result.status.value,
+                "model_call_count": sum(
+                    1 for event in result.events if event.kind == "model.invocation"
+                ),
             },
             exports=(
                 self.export_projection.project(result)
