@@ -16,11 +16,14 @@ from noetrium_platform.research.experimentation.lifecycle.api import (
 from noetrium_platform.research.experimentation.lifecycle.study.api import (
     BenchmarkResolutionRegistration,
 )
+from research.benchmarks.contracts import RepositoryBenchmarkTaskProjectionSpec
 
 from .cut import (
     GSM8K_ARCHIVED_COMMIT,
+    GSM8K_BENCHMARK_ID,
     GSM8K_FINAL_ANSWER_MARKER,
     GSM8K_SPLIT_COUNTS,
+    GSM8K_TASK_SCHEMA_ID,
     GSM8KTaskRecord,
     build_gsm8k_source,
     build_gsm8k_task_set,
@@ -227,6 +230,19 @@ def materialize_archived_gsm8k_test(path: str | Path) -> GSM8KMaterialization:
     )
 
 
+def repository_task_projection_spec() -> RepositoryBenchmarkTaskProjectionSpec:
+    return RepositoryBenchmarkTaskProjectionSpec(
+        benchmark_id=GSM8K_BENCHMARK_ID,
+        task_schema_id=GSM8K_TASK_SCHEMA_ID,
+        objective_path="question",
+        payload_fields=(
+            ("question", "question"),
+            ("split_id", "split_id"),
+            ("index", "index"),
+        ),
+    )
+
+
 def materialize_repository_benchmark_authority(
     authority_inputs: tuple[tuple[str, str], ...],
     *,
@@ -307,4 +323,5 @@ __all__ = [
     "materialize_gsm8k_jsonl_bytes",
     "materialize_repository_benchmark_authority",
     "register_gsm8k_materialization",
+    "repository_task_projection_spec",
 ]
