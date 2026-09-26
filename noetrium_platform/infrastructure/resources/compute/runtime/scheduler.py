@@ -83,7 +83,7 @@ class _HostUsage:
     unbound_memory_bytes: int = 0
     gpu_allocation_counts: dict[str, int] = field(default_factory=dict)
     gpu_exclusive_counts: dict[str, int] = field(default_factory=dict)
-    unbound_gpu_memory_bytes: dict[str, int] = field(default_factory=dict)
+    gpu_memory_reservation_bytes: dict[str, int] = field(default_factory=dict)
 
 
 def _increment_count(values: dict[str, int], key: str) -> dict[str, int]:
@@ -110,20 +110,19 @@ def _add_allocation_usage(
 ) -> _HostUsage:
     allocation_counts = dict(usage.gpu_allocation_counts)
     exclusive_counts = dict(usage.gpu_exclusive_counts)
-    unbound_gpu_memory = dict(usage.unbound_gpu_memory_bytes)
+    gpu_memory_reservations = dict(usage.gpu_memory_reservation_bytes)
     for index, gpu_id in enumerate(allocation.gpu_ids):
         allocation_counts = _increment_count(allocation_counts, gpu_id)
         if allocation.gpu_sharing_mode is GpuSharingMode.IDLE_ONLY:
             exclusive_counts = _increment_count(exclusive_counts, gpu_id)
-        if not allocation.is_bound:
-            reserved = (
-                0
-                if not allocation.gpu_memory_reservation_bytes
-                else allocation.gpu_memory_reservation_bytes[index]
-            )
-            unbound_gpu_memory[gpu_id] = (
-                unbound_gpu_memory.get(gpu_id, 0) + reserved
-            )
+        reserved = (
+            0
+            if not allocation.gpu_memory_reservation_bytes
+            else allocation.gpu_memory_reservation_bytes[index]
+        )
+        gpu_memory_reservations[gpu_id] = (
+            gpu_memory_reservations.get(gpu_id, 0) + reserved
+        )
     return _HostUsage(
         cpu_cores=usage.cpu_cores + allocation.cpu_cores,
         memory_bytes=usage.memory_bytes + allocation.memory_bytes,
@@ -137,7 +136,7 @@ def _add_allocation_usage(
         ),
         gpu_allocation_counts=allocation_counts,
         gpu_exclusive_counts=exclusive_counts,
-        unbound_gpu_memory_bytes=unbound_gpu_memory,
+        gpu_memory_reservation_bytes=gpu_memory_reservations,
     )
 
 
@@ -248,7 +247,7 @@ def _runtime_rank(
     requirement: ComputeRequirement,
     runtime_index: _GpuRuntimeIndex | None,
     *,
-    unbound_reserved_bytes: int = 0,
+    logical_reserved_bytes: int = 0,
 ):
     if runtime_index is None:
         # GPU placement always depends on live external usage facts.
@@ -261,10 +260,15 @@ def _runtime_rank(
         requirement,
         device,
     )
-    free_bytes = max(
-        0,
-        device.memory_free_mb * 1024 * 1024 - unbound_reserved_bytes,
-    )
+    runtime_total_bytes = device.memory_total_mb * 1024 * 1024
+    physical_free_bytes = max(0, device.memory_free_mb * 1024 * 1024)
+    logical_total_bytes = min(gpu.memory_bytes, runtime_total_bytes)
+    observable_free_bytes = min(physical_free_bytes, logical_total_bytes)
+    # A live allocation owns its declared VRAM reservation until release, even
+    # after binding. Runtime telemetry may lag behind a newly bound process, so
+    # subtracting only from logical total can temporarily reuse capacity already
+    # promised by another allocation. The durable reservation is authoritative.
+    free_bytes = max(0, observable_free_bytes - logical_reserved_bytes)
     if free_bytes < required_free_bytes:
         return None
     if device.utilization_percent > requirement.max_gpu_utilization_percent:
@@ -309,7 +313,7 @@ def _eligible_gpus(
             gpu,
             requirement,
             runtime_index,
-            unbound_reserved_bytes=usage.unbound_gpu_memory_bytes.get(
+            logical_reserved_bytes=usage.gpu_memory_reservation_bytes.get(
                 gpu.gpu_id,
                 0,
             ),
