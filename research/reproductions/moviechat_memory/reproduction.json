@@ -2,7 +2,7 @@
   "schema": "noetrium.reproduction.projection.v10",
   "authority": "generated_from_typed_definition_and_source",
   "package": "moviechat_memory",
-  "package_digest": "6575e570cbe10d5160f7557cc2a583b67f680ae3ad9e65c5f50c9c8d45092b95",
+  "package_digest": "17a7d01eb7f5541d39009d2ecdba15797968a2aafef0e92008203d5ec56b82e5",
   "definition_digest": "866e3fd622f501c3f9086956fbc189285777133db76bdda212503dcf35c8af91",
   "source_registry_digest": "2cef17c8d328384849759d7e5d19d69f4b2d8cee4baf1d186f767e439b1fd60c",
   "lifecycle": "protocol_bound",
@@ -210,7 +210,7 @@
     "surface": "noetrium.api",
     "execution_state": "benchmark_authority_required",
     "program_id": "moviechat_memory",
-    "program_digest": "534538e4e5d67e8777e762469fd6b6e1ba5e26eda7bfa19717aab9315632d916",
+    "program_digest": "5b467a400812bf03bfe7565443fd2ca122815d958660ed4fbac9a9a0fed28641",
     "benchmark_authority": {
       "state": "required",
       "selection_digests": [],

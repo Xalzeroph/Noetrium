@@ -2,7 +2,7 @@
   "schema": "noetrium.reproduction.projection.v10",
   "authority": "generated_from_typed_definition_and_source",
   "package": "flow_modularized_agentic_workflow",
-  "package_digest": "32a09bc9a31c0c62898edf7026c2155250e6d39258982f90793b47edea7faffe",
+  "package_digest": "e1be9c93fdfb57794750e07091a34f9baac10e99533d441b9027006d0cb300b8",
   "definition_digest": "c0df097174fd40ce218adc9f396a11ad78c05b08fd6b8b3219e047b249be0bee",
   "source_registry_digest": "871ee9bf57337e607fa5a5ed65434e3cc122df43f3db5d6cca12cb61261175b4",
   "lifecycle": "protocol_bound",
@@ -107,7 +107,7 @@
       "kind": "method_program",
       "path": "research/reproductions/flow_modularized_agentic_workflow/program.py",
       "declaration_digest": "b23853deec72c22470ffc8faa73752f14810502848becd42856eae3632e7b79c",
-      "content_sha256": "4de77301bbfa3741f8fc6cb04441642a190366dab1ca15f750ac4c380c3dd535"
+      "content_sha256": "805a5c5708a875808bdef577efd9f5790509e2b48aec4c085db7836dec80431b"
     },
     {
       "kind": "research_program",
@@ -221,7 +221,7 @@
     "surface": "noetrium.api",
     "execution_state": "benchmark_authority_required",
     "program_id": "flow_modularized_agentic_workflow",
-    "program_digest": "728dc6f6cb3a948a2cf3cfecde8a52ae24f483e820d171927724a47470b9172a",
+    "program_digest": "334e6b7925cfd5118cfd12f833bac5ff541a40282eacec5ea546ac411a732d06",
     "benchmark_authority": {
       "state": "required",
       "selection_digests": [],

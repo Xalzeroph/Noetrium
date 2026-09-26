@@ -2,7 +2,7 @@
   "schema": "noetrium.reproduction.projection.v10",
   "authority": "generated_from_typed_definition_and_source",
   "package": "adas_meta_agent_search",
-  "package_digest": "88275db14fe2555a7c32ff55ffd8c23e4404d2879d8c7bb3ee1b32324a6b3963",
+  "package_digest": "870509b1f25479871eb09eaefe09f14ac432508b1191a6aacfea48dedff4779b",
   "definition_digest": "914a44cfe1ea062d50779b6fa128f01c541b813e976801cda570819c57fcd17e",
   "source_registry_digest": "0c0b03477d5254347c34f420f4354bb8acbacc56f34dd4a40275e1d128b71eef",
   "lifecycle": "protocol_bound",
@@ -85,7 +85,7 @@
       "kind": "study",
       "path": "research/reproductions/adas_meta_agent_search/study.py",
       "declaration_digest": "88045ec7767c8d4c6bb0dbc97645bc9eef81135024246b6049a9ba139ef8427e",
-      "content_sha256": "7dd0a9fa624089bca68f8fa57e048ee71b7d3e7852818e5de69cc85893f5c6eb"
+      "content_sha256": "3c5f4ee405c5b55df6c961626a317979b5676fd30505fe582ac75ef4b502415f"
     }
   ],
   "primary_executable": "research/reproductions/adas_meta_agent_search/program.py",
@@ -132,7 +132,7 @@
     },
     {
       "path": "tests/test_scientific_adas_mgsm_study_v1.py",
-      "content_sha256": "401202f4106088716210a93be04545575bfbae56309f4f47ba14eb6dab38c0da"
+      "content_sha256": "012fd986c72a70fc2497f37253633981ba8813520adc79d04d149e92ab1fc4ad"
     },
     {
       "path": "tests/test_scientific_self_evolution_fidelity_v1.py",
@@ -143,7 +143,7 @@
     "surface": "noetrium.api",
     "execution_state": "benchmark_authority_required",
     "program_id": "adas_meta_agent_search",
-    "program_digest": "cf35b036a70e74c0a60f5b73568b2af0e7c5ec63943d475cf08499b51b90540b",
+    "program_digest": "cdb2210364d388552315faef52f9de9e0a4fa65f1beddc5ce5200d15ebf974d5",
     "benchmark_authority": {
       "state": "required",
       "selection_digests": [],

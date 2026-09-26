@@ -2,7 +2,7 @@
   "schema": "noetrium.reproduction.projection.v10",
   "authority": "generated_from_typed_definition_and_source",
   "package": "echotrail_gui_cvprf2026",
-  "package_digest": "4880c88af0194eeb459724e9d65b3efb68353baaaa55e461387d44ccbc8fd25f",
+  "package_digest": "e36b6e890309930c26d8bc376dc09dbfb070a403e3c02614b18c1d90f3522f3b",
   "definition_digest": "a416b11ff97033d65e18fcf6dca7379a84003038f816bf609c572e989cf77086",
   "source_registry_digest": "f56a51b136c7de6c02f262d8367ce2fb13744bd3104f62e22dd9a2e05e14c6ce",
   "lifecycle": "protocol_bound",
@@ -123,7 +123,7 @@
     "surface": "noetrium.api",
     "execution_state": "benchmark_authority_required",
     "program_id": "echotrail_gui_cvprf2026",
-    "program_digest": "b373d0c368cb70c8a99bc05100cbede037d54fa9fb0125f902347d67fa2d878f",
+    "program_digest": "18b11805f187342f7437375468978451db75079b74af29924b2c9cb61c9fc742",
     "benchmark_authority": {
       "state": "required",
       "selection_digests": [],

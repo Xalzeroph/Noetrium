@@ -2,7 +2,7 @@
   "schema": "noetrium.reproduction.projection.v10",
   "authority": "generated_from_typed_definition_and_source",
   "package": "lits_math500",
-  "package_digest": "e1afd3b9f23eacad52695c7dc8ad60abe5a912c011a06d7efc3a945c38d79c80",
+  "package_digest": "1103cb8162541098a8c36ed32a9a3a9c7751bace88aa8ea49b096772939c2471",
   "definition_digest": "2f7e988e92fc57d18678a1c4de309a653ad54a451aa0ddedb84dead3ca826e7a",
   "source_registry_digest": "a7690832f13476ee4b23d5467a46ea3041e9a9bc011a9268b12aee7a7ade8709",
   "lifecycle": "protocol_bound",
@@ -114,7 +114,7 @@
     "surface": "noetrium.api",
     "execution_state": "benchmark_authority_required",
     "program_id": "lits_math500",
-    "program_digest": "b5098d27e6b7d8f858d24b57c921b87cc079cb946d4a8fabb1722ca0a56bdb42",
+    "program_digest": "0e3b1e22336d2c76af8096449bf5309cd8cbe40f91dc6abf9f651cdd8716a612",
     "benchmark_authority": {
       "state": "required",
       "selection_digests": [],

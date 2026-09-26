@@ -2,7 +2,7 @@
   "schema": "noetrium.reproduction.projection.v10",
   "authority": "generated_from_typed_definition_and_source",
   "package": "agent_q_surrogate",
-  "package_digest": "0630c0a3bdb6a67741eb650139f984f6494434b3e7b5a49051b15f0ea8b042a4",
+  "package_digest": "978db7938c261278c5b7c64eb2dc01fac6c713f652a5d326458797927adfd288",
   "definition_digest": "108cda23e8a1d41749477e818aa8298c7431a9ab24a22ab69348f22fb79f123b",
   "source_registry_digest": "8bdcaf30e155f5233d8316f881d65c740a1d1e5122830c07c1a8978485beadb5",
   "lifecycle": "protocol_bound",
@@ -138,7 +138,7 @@
     "surface": "noetrium.api",
     "execution_state": "benchmark_authority_required",
     "program_id": "agent_q_surrogate",
-    "program_digest": "329a63291f3ac6bf6c063da22222c49541f9e24358b45602588100d7de074558",
+    "program_digest": "cbec550dd93549b236a5a703bbf472dd409f4b89d58e18667ce4dbf57339bb13",
     "benchmark_authority": {
       "state": "required",
       "selection_digests": [],

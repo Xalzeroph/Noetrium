@@ -2,7 +2,7 @@
   "schema": "noetrium.reproduction.projection.v10",
   "authority": "generated_from_typed_definition_and_source",
   "package": "qlass_alfworld",
-  "package_digest": "68e6a177651603a4f28413f4aeb44909c563f54b8ea2f5754e6f0eaea6a77ef9",
+  "package_digest": "c0301545a66be6d5b34c1b0d79e8553cbc041e2d314bd8836fa7025df2564951",
   "definition_digest": "6c1ca24aa65adba5bd222ebed3ed260aa2f051c62dadbec51751e6cf4c03efb3",
   "source_registry_digest": "819fd0e885a29c9300eee6b6c1b86d1cea8854f8e10d988bf56fb3022f71ed29",
   "lifecycle": "protocol_bound",
@@ -98,7 +98,7 @@
       "kind": "study",
       "path": "research/reproductions/qlass_alfworld/study.py",
       "declaration_digest": "6db408004daff0eeefcbfdec27dd76481084f3594c37d35dec94880b018a4027",
-      "content_sha256": "efb60c16952923eaba2d4fe36b98f9a45e2bd8a0c1105e6e8c51accfd787d79e"
+      "content_sha256": "54d93d76d18fdbdc86ff912bf458f062ed503f8906c79ba338541a5f37a3d61c"
     },
     {
       "kind": "support",
@@ -190,12 +190,12 @@
     "surface": "noetrium.api",
     "execution_state": "benchmark_authority_required",
     "program_id": "qlass_alfworld",
-    "program_digest": "10db5e9ccca62b8abbfd42fef1b164fc5bd8d341efd5113c51047d76eadc4b19",
+    "program_digest": "642df4518bacdb1451e9bd985c6e2fd7a31d87e7dfe8925fd00d2d2230d012a8",
     "benchmark_authority": {
       "state": "required",
       "selection_digests": [],
       "blockers": [
-        "ReproductionResearchOSCompileError:benchmark 'alfworld' has no exact repository or materialized authority"
+        "ReproductionResearchOSCompileError:benchmark 'alfworld' has no exact repository or materialized authority matching revision='qlass@df8e6a3b840d1ea994114f13fc2d5ccd63b7a8e9:alfworld-dev' splits=('eval_in_distribution',)"
       ]
     },
     "benchmark_split_axis": {

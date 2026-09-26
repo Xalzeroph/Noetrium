@@ -2,7 +2,7 @@
   "schema": "noetrium.reproduction.projection.v10",
   "authority": "generated_from_typed_definition_and_source",
   "package": "astranav_memory_cvpr2026",
-  "package_digest": "ede0df15df40e4eeaaa2180ac836d0c5f0e7fd38b87211a513225ad3e0bf3c88",
+  "package_digest": "2e169d7668463661b63ed4f051ef99dcf46f810e27173ee5ece55457558fde06",
   "definition_digest": "481b9e05da672245ec2a806d72b1a13530b67ed5ea12a05e2855a28bf8225b4f",
   "source_registry_digest": "304c7c3d5dc3e52eeb337cb48eef06780d286e226a126bd447de218cc3d11aae",
   "lifecycle": "protocol_bound",
@@ -165,7 +165,7 @@
     "surface": "noetrium.api",
     "execution_state": "benchmark_authority_required",
     "program_id": "astranav_memory_cvpr2026",
-    "program_digest": "34ee8fc9f34dbaa24d64c717a6e7b18bd298a292839ea19b4a11c39b2f5f220d",
+    "program_digest": "2a36f0ccb2933ffba76bc31ab0fb30b01864871ddda77f2cbd3268a43a054456",
     "benchmark_authority": {
       "state": "required",
       "selection_digests": [],

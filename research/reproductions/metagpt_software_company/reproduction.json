@@ -2,7 +2,7 @@
   "schema": "noetrium.reproduction.projection.v10",
   "authority": "generated_from_typed_definition_and_source",
   "package": "metagpt_software_company",
-  "package_digest": "28dca1ccbb52b4b3c4d10f7ac305f3d193a9bb9f3e2ea747fe098cdb74b7befc",
+  "package_digest": "7530b99cdfc66f3b6d2f567b0d008b15a9a7f05d9e7460cf87afb0493192ec91",
   "definition_digest": "d0f862bc522c6e4fd2d5a5647b6cdb65cdd1f64cf91919c6ead7a801c443e990",
   "source_registry_digest": "1ce38ee388bf0eb998ce4109eafce04c083c168dbd6b10ee369a739c76c06ae8",
   "lifecycle": "protocol_bound",
@@ -144,7 +144,7 @@
     "surface": "noetrium.api",
     "execution_state": "benchmark_authority_required",
     "program_id": "metagpt_software_company",
-    "program_digest": "41dccf6e16e8757360f2977fe28b4dedd63750366cd23f8aeb15b899c4b0cde3",
+    "program_digest": "527c91775abfb74f7ae21b812b0cf32c5af93045b158a6472424c2ffef39cfca",
     "benchmark_authority": {
       "state": "required",
       "selection_digests": [],

@@ -2,7 +2,7 @@
   "schema": "noetrium.reproduction.projection.v10",
   "authority": "generated_from_typed_definition_and_source",
   "package": "embodied_videoagent_iccv2025",
-  "package_digest": "9a047718a03ce66b75b90a01fdebb3fed38fc5f123a76c232dc3a210e8446fd5",
+  "package_digest": "53502c5c13aefe0c58790a1c96e6b9885f38bb2349fc80252358290a09291378",
   "definition_digest": "acac825e01b68f68aa50634cb0146cc694556b4af078498edfdb26d9976c9604",
   "source_registry_digest": "02d0e0637b0b444d9c44e4be5e0d96c4e51df06bfe95c4adec1184fc215fecb6",
   "lifecycle": "protocol_bound",
@@ -154,7 +154,7 @@
     "surface": "noetrium.api",
     "execution_state": "benchmark_authority_required",
     "program_id": "embodied_videoagent_iccv2025",
-    "program_digest": "17b9d21abcf2ca9e1c61c2b0cb22fdbeff003d2d9b439ba8aa062d8e43cf1462",
+    "program_digest": "8c49e5a61c0735aedb4026640d5b528bed6d8a436f0086b1b4060e7e10ac8f2e",
     "benchmark_authority": {
       "state": "required",
       "selection_digests": [],

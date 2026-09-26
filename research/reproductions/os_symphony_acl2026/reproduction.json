@@ -2,7 +2,7 @@
   "schema": "noetrium.reproduction.projection.v10",
   "authority": "generated_from_typed_definition_and_source",
   "package": "os_symphony_acl2026",
-  "package_digest": "c4f592d2ec86972a35970cfdfafa71ecfc4568e75458f3e37a5823adf1c90cd1",
+  "package_digest": "3235dc8fd251c07301f0dde8c0523e978a5f5894b6a8e634cc872d02116cb047",
   "definition_digest": "7fa399213644ed7f7edcf9afcd794b2f1cc649d74c1f376e348d8063473eb2be",
   "source_registry_digest": "fc096b46d72730d9dfe7cca9c304958c130cbd6207015f6b6fd8d51ca25b7584",
   "lifecycle": "protocol_bound",
@@ -147,7 +147,7 @@
     "surface": "noetrium.api",
     "execution_state": "benchmark_authority_required",
     "program_id": "os_symphony_acl2026",
-    "program_digest": "b8ea69c60fb28178df1a92c5c254e25ea1b111b50d3eba95c9504de96cc91d92",
+    "program_digest": "a829a926b77813783738fafa5cabaf36fef1c1880d7d95a0fa3c6ada6b33a1df",
     "benchmark_authority": {
       "state": "required",
       "selection_digests": [],

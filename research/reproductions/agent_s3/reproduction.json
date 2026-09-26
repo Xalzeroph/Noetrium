@@ -2,7 +2,7 @@
   "schema": "noetrium.reproduction.projection.v10",
   "authority": "generated_from_typed_definition_and_source",
   "package": "agent_s3",
-  "package_digest": "a9e23854020f6565987e56bee1d971a2e2f273d660eeff54e92169f2c4337e76",
+  "package_digest": "f2ea202d09ca70454d49e46cc4bbe7ef47c55cca418310b92f7b79ae135599dd",
   "definition_digest": "571e956debc7d55aba3299a6eef84c393f939187368bbb799bd269b9ce0ee48d",
   "source_registry_digest": "c13f9d1d0cdabb811ceddbaa18dcef0668ca95280ab0012b6a463d39844c7a34",
   "lifecycle": "protocol_bound",
@@ -109,7 +109,7 @@
     "surface": "noetrium.api",
     "execution_state": "benchmark_authority_required",
     "program_id": "agent_s3",
-    "program_digest": "31e8ce9c22615fc3c3bfb4c1ef135c41eaf598541ed84627da31778f985d889e",
+    "program_digest": "b364560d8d137bc2eca6a3bd0cd3de172d65fe5c52206b7809daf3e7318edf35",
     "benchmark_authority": {
       "state": "required",
       "selection_digests": [],

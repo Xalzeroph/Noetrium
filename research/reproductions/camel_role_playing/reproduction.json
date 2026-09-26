@@ -2,7 +2,7 @@
   "schema": "noetrium.reproduction.projection.v10",
   "authority": "generated_from_typed_definition_and_source",
   "package": "camel_role_playing",
-  "package_digest": "6def2091d5e6717e0c12fadfc8588ab16cc29ee6835e64f60781b00e105040fb",
+  "package_digest": "a6056b484d77640700b224bf2dac8dbef7692b8565df14a90329e2f223bdbcc3",
   "definition_digest": "fce235dd82ef0a923481fb22c65aa4cfe1c680a4fcf2cd9f9e69e2eb1464ec37",
   "source_registry_digest": "75df2f5db5dfa002ca6fa39a6e7e1d816a138c100af3b04dd7f85c03a55f1a46",
   "lifecycle": "protocol_bound",
@@ -178,7 +178,7 @@
     "surface": "noetrium.api",
     "execution_state": "benchmark_authority_required",
     "program_id": "camel_role_playing",
-    "program_digest": "d68a209ebe0853f895daeb2d8a1b62e183f4790da60e5409fcf99441601fb278",
+    "program_digest": "25ae090468e38789e4a8b611efe8b116b69ed491bef933f867f849ec2370372f",
     "benchmark_authority": {
       "state": "required",
       "selection_digests": [],

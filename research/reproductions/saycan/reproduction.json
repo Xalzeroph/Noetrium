@@ -2,7 +2,7 @@
   "schema": "noetrium.reproduction.projection.v10",
   "authority": "generated_from_typed_definition_and_source",
   "package": "saycan",
-  "package_digest": "ad2e11de7c4e85ce2b167247e1e77a5dab67df43037a8aa173d110f9b93168b1",
+  "package_digest": "d8052f704721de21dabd8646f0037f64004196baad5662dcaae08a1818a3e0a8",
   "definition_digest": "71dd04b1dc76f1794093ba5e23730308c091ad738dcc6d559210d69307e401a7",
   "source_registry_digest": "358acfb9456c29c701634acb64fbce6b2a866522c9060ca11b081e7effdeec4f",
   "lifecycle": "protocol_bound",
@@ -184,7 +184,7 @@
     "surface": "noetrium.api",
     "execution_state": "benchmark_authority_required",
     "program_id": "saycan",
-    "program_digest": "1e3111be8e6840cdfa680310569b1fed3097001fc129a01204f7220d7f37d9af",
+    "program_digest": "32b0784dd80166b7227106b2154b5d12314ae72604a5116be12767a23aad77ec",
     "benchmark_authority": {
       "state": "required",
       "selection_digests": [],

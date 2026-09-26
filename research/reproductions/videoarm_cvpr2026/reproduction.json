@@ -2,7 +2,7 @@
   "schema": "noetrium.reproduction.projection.v10",
   "authority": "generated_from_typed_definition_and_source",
   "package": "videoarm_cvpr2026",
-  "package_digest": "46eb22bbe5233009f7eba90b1d8f58ea4f3e28f0fdbe751f09193ad025ce3d29",
+  "package_digest": "74dba069fe6c2bc32aaa17b689e9d74ede3c41424c09ff78a528843078c05e4a",
   "definition_digest": "16d76a6bf1558096961fdef74089e3c536dd3d43fc991582c6b0c7d603c7d01a",
   "source_registry_digest": "dd8526fc8b15cc760274353f8a4c7bb10778f7149004af924220d6a2edcdd77e",
   "lifecycle": "protocol_bound",
@@ -159,7 +159,7 @@
     "surface": "noetrium.api",
     "execution_state": "benchmark_authority_required",
     "program_id": "videoarm_cvpr2026",
-    "program_digest": "fff22652932e88ecda3809c00fa8045269414f409d065275ada914f9be0b0b2e",
+    "program_digest": "075ff3d817c78d87ff74a9f965896cd119592902306fa1e705bb7eac70784438",
     "benchmark_authority": {
       "state": "required",
       "selection_digests": [],

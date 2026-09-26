@@ -2,7 +2,7 @@
   "schema": "noetrium.reproduction.projection.v10",
   "authority": "generated_from_typed_definition_and_source",
   "package": "seeclick",
-  "package_digest": "7ebd89170530acc8a5d1574be680042a07a3062969428d411e20a33fac779ca0",
+  "package_digest": "b7a67c96b5c82b6dc1f16af76b4adf1c4a1c6b938d79e35d1e2406e7739ad87b",
   "definition_digest": "a7dc27f765e0cd9d6f6ef4fb784124a06d339ec5aaf3c43a239cdda32ae071a1",
   "source_registry_digest": "703701aa516e21be3cdc470ed08bd842843e88a39dbdeba1a063fc280cf96439",
   "lifecycle": "protocol_bound",
@@ -203,7 +203,7 @@
     "surface": "noetrium.api",
     "execution_state": "benchmark_authority_required",
     "program_id": "seeclick",
-    "program_digest": "68c422d8021a89689b1fd22f8eccc17f0e5751f12dde10320ed3323358c62224",
+    "program_digest": "0699b568206deb3ad025c995d2738a006e8263c01842a5bd4a80a63cbf1efafa",
     "benchmark_authority": {
       "state": "required",
       "selection_digests": [],

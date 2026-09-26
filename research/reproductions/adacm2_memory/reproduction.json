@@ -2,7 +2,7 @@
   "schema": "noetrium.reproduction.projection.v10",
   "authority": "generated_from_typed_definition_and_source",
   "package": "adacm2_memory",
-  "package_digest": "70c8c708ba71d36c59ae1c91a6c2338bb4134206cdedabd730ccc2fb35ef8507",
+  "package_digest": "e19ab91d5ae3137117faf4b86a23f8e7d750c603c70c45cdf40c193593d51231",
   "definition_digest": "6a69a2d164b86b3534e4982d84e8ef08626548335af759a36096b8135e4d3ccb",
   "source_registry_digest": "d46d92fc46eb723b8905ef27d3104b049b7b560c6b2946d3ad5e25a04645996a",
   "lifecycle": "protocol_bound",
@@ -171,7 +171,7 @@
     "surface": "noetrium.api",
     "execution_state": "benchmark_authority_required",
     "program_id": "adacm2_memory",
-    "program_digest": "a0c9e18145ab4ea46cd77d05918b40ed5d5c962ad1eeb6e7d95a743bacbd4fc1",
+    "program_digest": "699b0adef0a678986f21489c99ebe1f13066684ef54113922587cb897d0dcad8",
     "benchmark_authority": {
       "state": "required",
       "selection_digests": [],

@@ -2,7 +2,7 @@
   "schema": "noetrium.reproduction.projection.v10",
   "authority": "generated_from_typed_definition_and_source",
   "package": "vca_video",
-  "package_digest": "344ec6f50ce9faafb4edfe91968cac6e4626438fcb6b7eb9fcb5ed3fda40f9b2",
+  "package_digest": "6b8ca6f2115b89e2a528f27c189c5cde8dda305e2cc888b6b1b7c637fa423c8c",
   "definition_digest": "475825bad1ef41fa8e9bc3bec73c0374d2425e0cd6019f7b44b79ffa9d2dd184",
   "source_registry_digest": "993b22ccf2d2e42518ffca18ac76bb9e7465b2b1dfd22cf2c63ca2867c6a8a4b",
   "lifecycle": "protocol_bound",
@@ -195,7 +195,7 @@
     "surface": "noetrium.api",
     "execution_state": "benchmark_authority_required",
     "program_id": "vca_video",
-    "program_digest": "3c79a606d39bc5ba967f1420f67198e2588e99fb27138e47c772b61ad8d3b6ab",
+    "program_digest": "676a13d588b79dbb06102f8f7ce10d2ab160faae129e94176780393b2a34e767",
     "benchmark_authority": {
       "state": "required",
       "selection_digests": [],

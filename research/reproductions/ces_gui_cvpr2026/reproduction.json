@@ -2,7 +2,7 @@
   "schema": "noetrium.reproduction.projection.v10",
   "authority": "generated_from_typed_definition_and_source",
   "package": "ces_gui_cvpr2026",
-  "package_digest": "4c81100dc7d11cd970831ce3769d7ad48cb20906cf2d05243faa64b3fb01f4fd",
+  "package_digest": "b11497dd79066f11b691f84f1023bcc90b4d64a7ddeab3b315584a4bb12c8386",
   "definition_digest": "a107308919879400a2faa321adadac511e19a659c7ebb5b9cd858bec7e28f0b2",
   "source_registry_digest": "1b552ecdc0428896fe2cf149d77fc3b56180a74bb3f4927581ca6073ca28a4df",
   "lifecycle": "protocol_bound",
@@ -151,7 +151,7 @@
     "surface": "noetrium.api",
     "execution_state": "benchmark_authority_required",
     "program_id": "ces_gui_cvpr2026",
-    "program_digest": "76b2a4d0e09da826327a2e1051c6cc56195e7212cee2a85c50d434a90648faab",
+    "program_digest": "bcd883e990cdade3b31de760343c6c21d0a9f462817eb56cc5f94685319c83e8",
     "benchmark_authority": {
       "state": "required",
       "selection_digests": [],

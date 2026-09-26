@@ -2,7 +2,7 @@
   "schema": "noetrium.reproduction.projection.v10",
   "authority": "generated_from_typed_definition_and_source",
   "package": "voyager_minecraft",
-  "package_digest": "e95db497db675159c9018e2de3fd83d1001d447340c7b7d8828eecc6fbe2f8cc",
+  "package_digest": "e13ce84a195f1170d03bcab6b9a1bd80a9ac713d9f72d8438360d61629273b26",
   "definition_digest": "7f10f0fdefdeb4cac0a428085c8ff847a63cf7407bdfdfb3398b428001692c44",
   "source_registry_digest": "f1ab1828eec1ae53b63ea726f5a6a82721010fa6108cb609089c7bb1b4d5420b",
   "lifecycle": "protocol_bound",
@@ -255,11 +255,11 @@
     "surface": "noetrium.api",
     "execution_state": "execution_authority_required",
     "program_id": "voyager_minecraft",
-    "program_digest": "ccc9eb46c8c12a127ca080e7d0305b18ea4bc94620793aca1971f15df97a229f",
+    "program_digest": "699a863a3509aa47ab85b66ffe49c827b1ca2bffc837383317b36ebac5d59a33",
     "benchmark_authority": {
       "state": "closed",
       "selection_digests": [
-        "b030849b41612394d474220b2ca9a6a6572ef5997eb66729e59fcac019d6f708"
+        "54d6e905a4a570d6dd24a69b9a9bec09687c32cb6b95f0d7e08069e5efc8b80a"
       ],
       "blockers": []
     },

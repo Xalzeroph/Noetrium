@@ -2,7 +2,7 @@
   "schema": "noetrium.reproduction.projection.v10",
   "authority": "generated_from_typed_definition_and_source",
   "package": "videollamb_memory",
-  "package_digest": "784ab549b4e5c71157a5687a5490a89c4e5a40bc8e2f62c1f442bf9fdcc53226",
+  "package_digest": "50d25929ccec821b9414cb1a388fc7ebc94644414cce9b9e12457e2d2645a740",
   "definition_digest": "42a30c2635f4d6f36393e0c3a88bb81b6d814281cc4bfc4f78d4b752084dc7f0",
   "source_registry_digest": "c17becefb55b8781ad39e27af3679464881cd5acc66fa8fc09bb257204f8f639",
   "lifecycle": "protocol_bound",
@@ -184,7 +184,7 @@
     "surface": "noetrium.api",
     "execution_state": "benchmark_authority_required",
     "program_id": "videollamb_memory",
-    "program_digest": "80f2b5ca3c89cd57a916b766f5b9775d1e9e2c769772f12c74dfdbd7a22a3fd4",
+    "program_digest": "7f9db84e48e2d9bcd6eeac910f76c9e472f3c0245aea99232d6fb6da8d5c37a4",
     "benchmark_authority": {
       "state": "required",
       "selection_digests": [],

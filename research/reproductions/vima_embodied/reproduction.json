@@ -2,7 +2,7 @@
   "schema": "noetrium.reproduction.projection.v10",
   "authority": "generated_from_typed_definition_and_source",
   "package": "vima_embodied",
-  "package_digest": "1358dcd67381c4202a2f7d357b09781fa26df4240f1daa6b1c5ab886d0013f9c",
+  "package_digest": "86643f512a98705891c58718060ea2c33600d667f05b2655f69a606c3835e366",
   "definition_digest": "ab6c0f217b76235521106482bd1e85e19f3ca8b77921e08fde38740ba431ed4d",
   "source_registry_digest": "bf35b8c87b325e6a50b501d4e2671f6c130a246df6340370de02382c8a31c33b",
   "lifecycle": "protocol_bound",
@@ -221,11 +221,11 @@
     "surface": "noetrium.api",
     "execution_state": "execution_authority_required",
     "program_id": "vima_embodied",
-    "program_digest": "ba0a1e7c09d29e8c46795c35b7d975cc662724766867fe103680f517cb291393",
+    "program_digest": "e7559cd0814e2eea7ae50acddd34b28e12112daeda73fe8023ba9f195f434fc2",
     "benchmark_authority": {
       "state": "closed",
       "selection_digests": [
-        "a90293ec811827f02d346aa4b864d0dc46cb2cf7cc8644864519e53ad4600c1c"
+        "9ca97c5fa84545b3b3e75d0f9cc7bb312a0c23483974ba02760ff8e39b232ab8"
       ],
       "blockers": []
     },

@@ -2,7 +2,7 @@
   "schema": "noetrium.reproduction.projection.v10",
   "authority": "generated_from_typed_definition_and_source",
   "package": "vilomem_cvpr2026",
-  "package_digest": "edfba0d4e3374fdb0ac129e1534cb64a873a4f63bfd99432140f539be2762a4f",
+  "package_digest": "66d9836e0d3af857a11bca55f1667475215c3108b7b14d6e368a8fa40b249133",
   "definition_digest": "d6b6820150436f699bd1dc43ee5cf54d80c9215f8950d081381007c7683fc905",
   "source_registry_digest": "5800084d54705cb425925baff25d1b4265d9ff1079e122cdf75b3705ff0ca64c",
   "lifecycle": "protocol_bound",
@@ -223,7 +223,7 @@
     "surface": "noetrium.api",
     "execution_state": "benchmark_authority_required",
     "program_id": "vilomem_cvpr2026",
-    "program_digest": "b2f93f4aaa88eb273bc39a35188617681ea3d06c78300043a3c62b837189f4db",
+    "program_digest": "6ba4c569460e6c511c9b0281fb5512a5ecb8ea377e1abebb7f4b9566e8aa567d",
     "benchmark_authority": {
       "state": "required",
       "selection_digests": [],

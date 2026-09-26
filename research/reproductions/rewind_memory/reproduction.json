@@ -2,7 +2,7 @@
   "schema": "noetrium.reproduction.projection.v10",
   "authority": "generated_from_typed_definition_and_source",
   "package": "rewind_memory",
-  "package_digest": "662bded303b42c796291f9e68132fce304ac13ca1af01a2fbccca1f682ac3580",
+  "package_digest": "c6276e70fb2286f41b81ffe9da5a2b2066c9966e79f38e38f23a5a616d6fa206",
   "definition_digest": "2505e0ddfe3973e23ea352c3d354a1e4d37a6fcdf1b6b0b6caa9a947814ef8f5",
   "source_registry_digest": "fdb866db6a3c5cbcf051cd40e55caf5bb510d3af332ad4d5f61455c3af25568c",
   "lifecycle": "protocol_bound",
@@ -173,7 +173,7 @@
     "surface": "noetrium.api",
     "execution_state": "benchmark_authority_required",
     "program_id": "rewind_memory",
-    "program_digest": "e8bd11f4a35558e876d7055f24db3b2ad2c788323c229c99dc68ebce6537aa34",
+    "program_digest": "78c2fa9b26ed96d0c6e0d21d120af0ca54ffcf0df4f262d79f7c1353a3db9d78",
     "benchmark_authority": {
       "state": "required",
       "selection_digests": [],

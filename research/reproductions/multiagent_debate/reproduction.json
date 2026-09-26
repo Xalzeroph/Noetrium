@@ -2,7 +2,7 @@
   "schema": "noetrium.reproduction.projection.v10",
   "authority": "generated_from_typed_definition_and_source",
   "package": "multiagent_debate",
-  "package_digest": "12b2ed6ce6cb43af0e75afa8afc90b98e26374aea1a3331fd924b6c30b067b61",
+  "package_digest": "dcae557f6d3c637f7eebb82fc40831322bbb387010ad188e169fc082834e013a",
   "definition_digest": "3646b03d0929cb39dee125528cbdcd03a7c4848104073744a950f77e9862b8d7",
   "source_registry_digest": "a444ca49adcadedba1e4bd45f955f057c6810af68c62d3b7782fe033e2d6882a",
   "lifecycle": "protocol_bound",
@@ -99,7 +99,7 @@
     "surface": "noetrium.api",
     "execution_state": "benchmark_authority_required",
     "program_id": "multiagent_debate",
-    "program_digest": "ebfce1966bfc6a632c05d44603908ff0a7453df727993b3a6bdcba4200a75c16",
+    "program_digest": "31d0abb6e98ba4a5a9cff6c5be6333625050dd72779579500945b5924081042f",
     "benchmark_authority": {
       "state": "required",
       "selection_digests": [],

@@ -2,7 +2,7 @@
   "schema": "noetrium.reproduction.projection.v10",
   "authority": "generated_from_typed_definition_and_source",
   "package": "lats_webshop",
-  "package_digest": "3d3c9128e66d99a24763de513fb8da3da875d9e5d7febb09d1c8e71972ccc636",
+  "package_digest": "5d8630ab9c1fcbd4cc672b7d6571dacaf91f965c90d181edb3eba588275dbd02",
   "definition_digest": "404faa0212523d5ab11e9a57c0479ab0ca187d904630c80d7db37f83f5d760ef",
   "source_registry_digest": "c61cf5118ecb4fb8570883fd539c09106e2fb2499028b48e830237203981d344",
   "lifecycle": "protocol_bound",
@@ -163,7 +163,7 @@
     "surface": "noetrium.api",
     "execution_state": "benchmark_authority_required",
     "program_id": "lats_webshop",
-    "program_digest": "203a7d05f3054d168c58d20c8afe6686d96f39dba729574af8c4f7ae5d66cca2",
+    "program_digest": "8d7b5750db06e31bec12619624f38677a223ccfc4ff90b5b7dfad371ff8bb4db",
     "benchmark_authority": {
       "state": "required",
       "selection_digests": [],

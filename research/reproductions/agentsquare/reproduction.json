@@ -2,7 +2,7 @@
   "schema": "noetrium.reproduction.projection.v10",
   "authority": "generated_from_typed_definition_and_source",
   "package": "agentsquare",
-  "package_digest": "cca10c3b4be0a4d71d97895ee73923507d922f2b85f5e43ffe0642a9e3780f63",
+  "package_digest": "978b0af8802cb621ce0f78b4dfd573bfd92708e16cf1e9054ee42c7265b28ce9",
   "definition_digest": "46c6a3eb2e9766ebece78a50993e51e4aa6ab2f4436694766edab5f793e3bbb4",
   "source_registry_digest": "7b145319e1ac2f8a0a7f4f82a53ec059ffbca8e90126ab15ca7742977508805d",
   "lifecycle": "protocol_bound",
@@ -110,7 +110,7 @@
       "kind": "study",
       "path": "research/reproductions/agentsquare/study.py",
       "declaration_digest": "2b561627a5beec587556ec385b02d5d0e19720549040513ef468a6894701cb01",
-      "content_sha256": "332466095416284579b8989ecde72cdd74a472702ecc96cd072ded7ae1b9b292"
+      "content_sha256": "9ff9b8cbb07c3b1d12c9fe62f99fd7835a9fcd2bf40a5d2b682da86471a186a7"
     }
   ],
   "primary_executable": "research/reproductions/agentsquare/program.py",
@@ -232,12 +232,12 @@
     "surface": "noetrium.api",
     "execution_state": "benchmark_authority_required",
     "program_id": "agentsquare",
-    "program_digest": "f25dccd045b864277dc435461e82c9d0bf8118844769169bd9ca8436598074b7",
+    "program_digest": "7b04b469b7dab3e408b847956a0f4617b6664735c2c1119817e2b5f5607ec1d1",
     "benchmark_authority": {
       "state": "required",
       "selection_digests": [],
       "blockers": [
-        "ReproductionResearchOSCompileError:benchmark 'agentboard-pddl' has no exact repository or materialized authority"
+        "ReproductionResearchOSCompileError:benchmark 'agentboard-pddl' has no exact repository or materialized authority matching revision='agentsquare@8f5b3fe5d8a32f9b59d20370823bef2a2c86928c:agentboard-pddl' splits=('released_eval_60',)"
       ]
     },
     "benchmark_split_axis": {

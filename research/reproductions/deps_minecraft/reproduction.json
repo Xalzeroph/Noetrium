@@ -2,7 +2,7 @@
   "schema": "noetrium.reproduction.projection.v10",
   "authority": "generated_from_typed_definition_and_source",
   "package": "deps_minecraft",
-  "package_digest": "c204e34f1c821f7481bd5d9ccc4a7e77dcd400db96c74bbb1a274bc9692de460",
+  "package_digest": "19c8a06f087d6733aee5ca03451906873d012e9253a4fe3a77b4335f20883887",
   "definition_digest": "dfd76e1e43edd424426db654c8291f1984f6b6f4f4368f6906645298dc042218",
   "source_registry_digest": "b34ac82a645a66821c20029f19473c146715222483bfaf316120b963fd884a90",
   "lifecycle": "protocol_bound",
@@ -187,11 +187,11 @@
     "surface": "noetrium.api",
     "execution_state": "execution_authority_required",
     "program_id": "deps_minecraft",
-    "program_digest": "707506f34646907dcc6f451e18e3319fce90cf817f39152b0705a87b7ce1c1f9",
+    "program_digest": "fb65daa787227f1ee9f6d5e7609228fa3892a7d95023a9b86fdc2d06d29123e7",
     "benchmark_authority": {
       "state": "closed",
       "selection_digests": [
-        "aa3677e7c8aed01d4c2eb46e8bfb658bc54b5c809c93ec39c54aa25f403427ef"
+        "4f5f9a3f8e4adb05194658dfe7b29da3e9669efb5a92ad7b7a5703657dd81cf1"
       ],
       "blockers": []
     },

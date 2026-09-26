@@ -2,7 +2,7 @@
   "schema": "noetrium.reproduction.projection.v10",
   "authority": "generated_from_typed_definition_and_source",
   "package": "agentless_swebench",
-  "package_digest": "9968ffaf4fd29af323a2392c5a521698a1104d53c3ae7021a36e6efe6ca0a574",
+  "package_digest": "1e214dd8c52b12421896b368aebfacebb7297c06f57ac7a2c5eb52a39650169f",
   "definition_digest": "a524a3b376569393b5288022c9b83d133898b4316cb95a6c86c17792d2fbbcb8",
   "source_registry_digest": "6c3f3a35e76b0138dfbc16be29a802509c86aa537b696a15da6f10d9b8a8dedf",
   "lifecycle": "protocol_bound",
@@ -152,7 +152,7 @@
     "surface": "noetrium.api",
     "execution_state": "benchmark_authority_required",
     "program_id": "agentless_swebench",
-    "program_digest": "4fb32133f5798f0a3dc2cd41cd77acf9d62253f20ebc9d9681e2caf99cd79fe2",
+    "program_digest": "a8e9a62ab0a48bfb6a66681b50a07ff02bfe052f5b47b8c4ffd32d1acc9f428a",
     "benchmark_authority": {
       "state": "required",
       "selection_digests": [],

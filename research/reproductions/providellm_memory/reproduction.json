@@ -2,7 +2,7 @@
   "schema": "noetrium.reproduction.projection.v10",
   "authority": "generated_from_typed_definition_and_source",
   "package": "providellm_memory",
-  "package_digest": "ba91a0f37fa479a2d61a5531215c7ec38ed7913f14b0de067599490978b0e776",
+  "package_digest": "acd7ee85f453c066a6b914ce190592e72c76323c52c7756edf3557d756a5fb63",
   "definition_digest": "a996e7348737dcf563b34e86f150b0cae75235c6c3da5dbf2dd98f14987854f0",
   "source_registry_digest": "9e2a5d1186f95a8f45699ceebf02fe6c91c0af32ce912a7e1d4f40d4192a3979",
   "lifecycle": "protocol_bound",
@@ -242,7 +242,7 @@
     "surface": "noetrium.api",
     "execution_state": "benchmark_authority_required",
     "program_id": "providellm_memory",
-    "program_digest": "2a3e2265f561db1e9db0af56629cd5c812389b7422b827b8c6dbb8632a263124",
+    "program_digest": "07d351c7bdd1c08e649715fbdafd70b0fb9d7c5951027bd8d2e44ace4a75679e",
     "benchmark_authority": {
       "state": "required",
       "selection_digests": [],

@@ -2,7 +2,7 @@
   "schema": "noetrium.reproduction.projection.v10",
   "authority": "generated_from_typed_definition_and_source",
   "package": "crossha_cvpr2026",
-  "package_digest": "d7edd682e4efe752e4fdeeb8f5338ead1ef87edfbcd396df973541cc728371c0",
+  "package_digest": "9650756a89ba38fe3b6a02838c7b2d516179053f63740b07ea2df34669b19595",
   "definition_digest": "0dbd527b8a5223d3511d230e426f1b7d740cab26e48f781a7be0b08873e32655",
   "source_registry_digest": "5a145e097816c7349d69d888b911b46ce88155c5829bc4dcc9d1017335ead762",
   "lifecycle": "protocol_bound",
@@ -179,7 +179,7 @@
     "surface": "noetrium.api",
     "execution_state": "benchmark_authority_required",
     "program_id": "crossha_cvpr2026",
-    "program_digest": "73392aeaad928544764d91737e70c7054d073be64e8bd77394279090ed5a13ef",
+    "program_digest": "fd8c31d3bbd86acb008e6794f08ea8f287f99bf4020789227bdc9a915460cfd9",
     "benchmark_authority": {
       "state": "required",
       "selection_digests": [],

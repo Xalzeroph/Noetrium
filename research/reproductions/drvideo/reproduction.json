@@ -2,7 +2,7 @@
   "schema": "noetrium.reproduction.projection.v10",
   "authority": "generated_from_typed_definition_and_source",
   "package": "drvideo",
-  "package_digest": "015beccd4262cde19e9d0498f8eb74f6a9ce568147975a56f6440e21f7744b15",
+  "package_digest": "7d84c960731cb1446e38adb15d51d6c44bd926fb46fa26ed90f21f1d138dee8b",
   "definition_digest": "44d9e76f1ec1e05d74601acc31536b1076bf4a32724990913f969d334996d904",
   "source_registry_digest": "7fefca6637ec616d0b9bca8e3d69771815436472b8f69bb31f15efe37cd0d68c",
   "lifecycle": "protocol_bound",
@@ -250,7 +250,7 @@
     "surface": "noetrium.api",
     "execution_state": "benchmark_authority_required",
     "program_id": "drvideo",
-    "program_digest": "481e2208f0bd729a7ef4c338aa6ae49124fbd9d5205359bbdd82ea4c0a150499",
+    "program_digest": "ece5097a5b943e14ad3c48839ff7d91b655847dfac4fd6b8a75298da50601b37",
     "benchmark_authority": {
       "state": "required",
       "selection_digests": [],

@@ -2,7 +2,7 @@
   "schema": "noetrium.reproduction.projection.v10",
   "authority": "generated_from_typed_definition_and_source",
   "package": "code_as_policies",
-  "package_digest": "8bc37bcc6109f7f6d3593e515bcfe4d71cf8523d893119fcd8752ae724f636df",
+  "package_digest": "beb58ddd78d57c578549db387b677b81d7e07058d1735b5f48b24b88dfbffbdd",
   "definition_digest": "5530735edb89956345e7651c7c7e7328f4ae400791789f5a58f1ec30833ec13c",
   "source_registry_digest": "e1872de17b63bc7ff35434899df6e865b802ced52f48f4b8b3757d34b8c9f15d",
   "lifecycle": "protocol_bound",
@@ -266,11 +266,11 @@
     "surface": "noetrium.api",
     "execution_state": "execution_authority_required",
     "program_id": "code_as_policies",
-    "program_digest": "dd15e10086514286a6eaecd8048c802a0cfeb99fb25033397eb54744c64e1c1d",
+    "program_digest": "7f52cb6da6c7ef5153a7cd780e4e1904e4311a8eb228186429197640a7daa8a1",
     "benchmark_authority": {
       "state": "closed",
       "selection_digests": [
-        "d3d3f242141520fbbf1be94138f702c566e10e7d238130aacd21030306ef0444"
+        "99b236c0fecd15e3c4d15a84df0362352c14b12f784de7b72c67ffa1fc2e2774"
       ],
       "blockers": []
     },

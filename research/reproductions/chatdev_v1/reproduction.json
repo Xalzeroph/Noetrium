@@ -2,7 +2,7 @@
   "schema": "noetrium.reproduction.projection.v10",
   "authority": "generated_from_typed_definition_and_source",
   "package": "chatdev_v1",
-  "package_digest": "6891a14aa4180708b59db24e3b7e42872ed8f0b27febe05d310a146fa0e6c7bb",
+  "package_digest": "b55a0d9d123f78d9d04e8b1b8340bfaefeb0d1b004fbe3a2c626e8f03de002be",
   "definition_digest": "596185b0e8a4c8ff69611e15bb9504734d6d7575f0a187ab1214d235499e61d2",
   "source_registry_digest": "ef8ddd9ce1f6e9a889a6c727ad6145b62925d7559d7022c815721004d1c57702",
   "lifecycle": "protocol_bound",
@@ -179,7 +179,7 @@
     "surface": "noetrium.api",
     "execution_state": "benchmark_authority_required",
     "program_id": "chatdev_v1",
-    "program_digest": "001e150a6f5b263ab66509d8ec4d28eccd55b8573437faaaba61ae6a2c421964",
+    "program_digest": "dd61d94246538e435b145a49cc01bc3c1714d0fd41ad780345ec06621fb512db",
     "benchmark_authority": {
       "state": "required",
       "selection_digests": [],
