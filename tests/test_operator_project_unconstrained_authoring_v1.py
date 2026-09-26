@@ -2,6 +2,8 @@ from __future__ import annotations
 
 from pathlib import Path
 
+from noetrium import api
+
 from noetrium_platform.composition.operator.project import project_scaffold
 from noetrium_platform.composition.operator.project.project_platform_identity import (
     InstalledPlatformIdentity,
@@ -111,17 +113,67 @@ __all__ = ["build_research"]
             "paper-b::consume",
         }
         consume = graph.node("paper-b::consume")
-        assert consume.node.depends_on == (
-            api.ResearchDependency(
-                api.ResearchNodeRef("paper-a", "source"),
-                (
-                    api.ResearchInputBinding(
-                        "upstream",
-                        "data",
-                        api.ResearchValueKind.DATA,
-                    ),
-                ),
+        assert consume.upstream_refs == (
+            api.ResearchNodeRef("paper-a", "source"),
+        )
+        assert len(consume.incoming_edges) == 1
+        assert consume.incoming_edges[0].bindings == (
+            api.ResearchInputBinding(
+                "upstream",
+                "data",
+                api.ResearchValueKind.DATA,
             ),
+        )
+    finally:
+        loaded.close()
+
+
+def test_generated_project_preserves_public_study_experiment_authoring(
+    tmp_path: Path,
+    monkeypatch,
+) -> None:
+    root = tmp_path / "study-paper"
+    monkeypatch.setattr(
+        project_scaffold,
+        "installed_platform_identity",
+        lambda: _FIXED_PLATFORM,
+    )
+    project_scaffold.create_project(
+        ProjectCreateRequest("study-paper", "0.1.0", root)
+    )
+
+    core = root / "src" / "study_paper" / "core.py"
+    core.write_text(
+        '''from noetrium import api
+
+
+def build_study():
+    raise AssertionError("study factory must not execute while loading authoring IR")
+
+
+def build_research() -> api.ResearchPortfolio:
+    research = api.ResearchProgramBuilder("study-paper")
+    research.study_protocol("study", implementation=build_study)
+    research.experiment("experiment", definitions=("study",))
+    return api.ResearchPortfolio("study-paper", (research.freeze(),))
+
+
+__all__ = ["build_research"]
+''',
+        encoding="utf-8",
+    )
+
+    project_scaffold.sync_project(root)
+    loaded = load_project_research_os(root)
+    try:
+        program = loaded.portfolio.programs[0]
+        assert any(
+            definition.kind is api.ResearchDefinitionKind.PROTOCOL
+            for definition in program.definitions
+        )
+        assert any(
+            node.kind is api.ResearchNodeKind.EXPERIMENT
+            for node in program.nodes
         )
     finally:
         loaded.close()

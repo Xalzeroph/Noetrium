@@ -7,7 +7,7 @@ import re
 from typing import Protocol
 
 
-PROJECT_TEMPLATE_REVISION = "noetrium.project-template.v11"
+PROJECT_TEMPLATE_REVISION = "noetrium.project-template.v12"
 _PROJECT_TOKEN = re.compile(r"[a-z][a-z0-9_.-]*")
 _PROJECT_VERSION = re.compile(r"[0-9A-Za-z][0-9A-Za-z._+-]*")
 

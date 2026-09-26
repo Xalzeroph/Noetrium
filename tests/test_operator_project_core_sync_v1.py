@@ -149,6 +149,7 @@ def test_doctor_rejects_hand_edited_generated_shell(
     report = project_doctor.doctor_project(
         root,
         boundary_auditor=audit_downstream_project_imports,
+        command_runner=_COMMAND_RUNNER,
     )
     checks = {row.check_id: row.disposition.value for row in report.checks}
     assert not report.ready
@@ -222,12 +223,16 @@ __all__ = ["build_research"]
     report = project_doctor.doctor_project(
         root,
         boundary_auditor=audit_downstream_project_imports,
+        command_runner=_COMMAND_RUNNER,
     )
     checks = {row.check_id: row.disposition.value for row in report.checks}
     assert report.ready
     assert checks["public_import_boundary"] == "pass"
     assert checks["standard_bindings"] == "pass"
-    assert project_testing.test_project(root).passed
+    assert project_testing.test_project(
+        root,
+        command_runner=_COMMAND_RUNNER,
+    ).passed
 
 
 
@@ -274,4 +279,7 @@ __all__ = ["build_research"]
     project_scaffold.sync_project(root)
 
     assert shell_path.read_bytes() == original_shell
-    assert project_testing.test_project(root).passed
+    assert project_testing.test_project(
+        root,
+        command_runner=_COMMAND_RUNNER,
+    ).passed

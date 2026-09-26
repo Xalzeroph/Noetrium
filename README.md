@@ -21,7 +21,7 @@
 
 <!-- readme-locale:en -->
 
-<!-- readme-source-sha256:10e078ab7c0d7b721c7f86c0e3ed5ea154f01f672f2645a18eca660d278e1df0 -->
+<!-- readme-source-sha256:3084c87ff449568db2edb72def63c940178729c8acb944e6564103e874c1144e -->
 
 <p align="center">
   <strong>Research infrastructure for attributable, recoverable, evidence-preserving AI-agent experiments.</strong><br>
@@ -480,46 +480,49 @@ my-paper/
 The only required user-owned entrypoint is:
 
 ~~~text
-src/<package>/core.py::build_program()
+src/<package>/core.py::build_research()
 ~~~
 
-It returns a `noetrium.api.MethodProgram`. The downstream author writes the real
-method/agent semantics: Program nodes, rules, policies, handlers, memory semantics
-or package-local sub-IR. No ResearchPortfolio, Study, ProjectManifest, provider map,
-GPU request, Docker declaration or scheduler declaration is required.
+It returns a `noetrium.api.ResearchPortfolio`, the highest public Research OS
+authoring object. This preserves the full public semantic surface: one or many
+ResearchPrograms, arbitrary intra-program and cross-program DAGs, Method/Memory/
+Participant/Runtime/Environment/Evaluation/Optimization/Experiment/Research Run
+semantics, Studies, analyses, and explicit cross-program data dependencies. The
+project scaffold does not prescribe scientific topology or source layout.
 
 A minimal core is:
 
 ~~~python
 from noetrium import api
 
-def _finish(request):
-    return api.MethodNodeResult(value=request.input_value)
+def _bootstrap():
+    return None
 
-def build_program() -> api.MethodProgram:
-    identity = api.MethodProgramIdentity(
-        api.MethodIdentity(
-            "my-paper",
-            "1",
-            "noetrium.method-machine.v1",
-            "1",
-        )
+def build_research() -> api.ResearchPortfolio:
+    program = api.ResearchProgramBuilder("my-paper")
+    program.definition(
+        "bootstrap",
+        kind=api.ResearchDefinitionKind.CUSTOM,
+        implementation=_bootstrap,
     )
-    return (
-        api.MethodProgramBuilder(identity, entrypoint="finish")
-        .return_node("finish", "my-paper.finish", _finish)
-        .build()
+    program.node(
+        "root",
+        kind=api.ResearchNodeKind.CUSTOM,
+        definitions=("bootstrap",),
     )
+    return api.ResearchPortfolio("my-paper", (program.freeze(),))
 ~~~
 
-Replace that semantics-neutral Program with the real paper method. You may split
-the implementation across arbitrary package-local modules. The generated
-`research.py` automatically lifts the Program into Noetrium's internal
-ResearchProgram/ResearchPortfolio graph for scheduling, revisioning and control.
+Replace the semantics-neutral body with the real research core. You may keep a
+simple paper in one ResearchProgram or compose many programs and dependencies in the
+same portfolio. The generated `research.py` only validates the portfolio identity
+and exposes it to the Research OS; it never rewrites or lowers scientific topology.
 
-ResearchPortfolio, Study, binding requirements and authority manifests are
-Platform IR. They may be generated or inspected internally, but they are not a
-second authoring contract that downstream researchers must maintain.
+ProjectManifest, binding manifests, machine-local provider composition, GPU/Docker/
+port/resource mechanics, scheduling, checkpointing, evidence, recovery, and operator
+plumbing remain Platform-owned. The scientific core may use any public
+`noetrium.api` authoring object needed to construct the portfolio; there is no
+second generated scientific contract.
 
 ### 4. Decide where scientific semantics belong
 
@@ -931,7 +934,7 @@ Do not add a second durable history, scheduler, lease registry, checkpoint autho
 Complete canonical paths today:
 
 ~~~text
-project create (Program-first downstream scaffold)
+project create (unconstrained ResearchPortfolio downstream scaffold)
 project sync
 project doctor
 project test

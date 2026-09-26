@@ -213,7 +213,9 @@ def test_project_doctor_validates_one_compile_surface_and_public_boundary(
         encoding="utf-8",
     )
     drifted = project_doctor.doctor_project(
-        root, boundary_auditor=audit_downstream_project_imports
+        root,
+        boundary_auditor=audit_downstream_project_imports,
+        command_runner=_COMMAND_RUNNER,
     )
     assert _checks(drifted)["public_import_boundary"] is ProjectDoctorDisposition.BLOCKED
 
@@ -232,7 +234,9 @@ def test_project_doctor_rejects_unknown_manifest_template(
         )
     )
     report = project_doctor.doctor_project(
-        root, boundary_auditor=audit_downstream_project_imports
+        root,
+        boundary_auditor=audit_downstream_project_imports,
+        command_runner=_COMMAND_RUNNER,
     )
     checks = _checks(report)
     assert checks["project_manifest"] is ProjectDoctorDisposition.PASS
