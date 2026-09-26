@@ -11,6 +11,7 @@ from scripts.run_reproduction_fleet import build_plan
 from research.reproductions.research_os import (
     ReproductionResearchOSCompileError,
     bind_reproduction_execution,
+    bound_reproduction_program_id,
     compile_bound_reproduction_research_program,
     compile_repository_reproduction_portfolio,
     compile_reproduction_research_program,
@@ -194,10 +195,11 @@ def test_bound_reproduction_lanes_compile_as_distinct_product_programs() -> None
         compile_bound_reproduction_research_program(TOOLFORMER, toolformer),
     )
     assert tuple(program.program_id for program in programs) == (
-        "adacm2_memory.lvu-eq6",
-        "adacm2_memory.lvu-eq8",
-        "toolformer.paper-eval",
+        bound_reproduction_program_id(ADACM2, eq6),
+        bound_reproduction_program_id(ADACM2, eq8),
+        bound_reproduction_program_id(TOOLFORMER, toolformer),
     )
+    assert all(len(program.program_id.rsplit(".", 1)[-1]) == 24 for program in programs)
     assert len({program.program_digest for program in programs}) == 3
 
     portfolio = api.ResearchPortfolio("bound-reproduction-lanes", programs)
