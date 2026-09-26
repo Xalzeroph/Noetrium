@@ -16,6 +16,7 @@ from noetrium_platform.research.experimentation.api import (
 )
 from noetrium_platform.research.experimentation.lifecycle.api import ExperimentTrialProtocolIdentity
 from noetrium_platform.research.experimentation.lifecycle.api import (
+    BenchmarkAssignmentMode,
     BenchmarkTaskSet,
     FactorLevelSpec,
     MeasurementDefinition,
@@ -256,6 +257,17 @@ def test_compiler_expands_factor_seed_repetition_task_matrix_and_schedule() -> N
     assert plan.research_semantics.measurement_protocol_digest == plan.measurement_protocol.semantic_digest
     assert plan.research_semantics.participant_schedule.applicable is True
     assert plan.trial_protocol_identity == ExperimentTrialProtocolIdentity("trial.agent", CFG)
+
+
+def test_compiler_preserves_frozen_task_cut_for_cut_level_assignments() -> None:
+    definition = replace(
+        _definition(seeds=("seed-a",)),
+        benchmark_assignment_mode=BenchmarkAssignmentMode.CUT,
+    )
+    plan = _compile(definition)
+    assert len(plan.experiment_plan.assignments) == 8
+    assert all(row.task_id is None for row in plan.experiment_plan.assignments)
+    assert tuple(row.task_id for row in plan.task_definitions) == ("task-1",)
 
 
 def test_compiler_accepts_non_scalar_measurements_without_fake_numeric_metric() -> None:

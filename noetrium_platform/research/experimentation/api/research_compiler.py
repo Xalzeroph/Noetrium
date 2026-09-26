@@ -312,9 +312,23 @@ class CompiledResearchPlan:
             for row in self.experiment_plan.assignments
             if row.task_id is not None
         }
-        if assignment_task_ids != set(task_ids):
+        has_task_assignments = any(
+            row.task_id is not None for row in self.experiment_plan.assignments
+        )
+        has_cut_assignments = any(
+            row.task_id is None for row in self.experiment_plan.assignments
+        )
+        if has_task_assignments and has_cut_assignments:
             raise ValueError(
-                "compiled research plan task cut does not cover assignment tasks"
+                "compiled research plan cannot mix task-level and cut-level assignments"
+            )
+        if has_task_assignments and assignment_task_ids != set(task_ids):
+            raise ValueError(
+                "compiled research plan task assignments do not cover the frozen task cut"
+            )
+        if has_cut_assignments and not task_ids:
+            raise ValueError(
+                "compiled research plan cut-level assignments require a non-empty frozen task cut"
             )
         expected = canonical_digest({
             "definition_digest": self.definition_digest,
