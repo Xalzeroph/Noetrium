@@ -207,6 +207,7 @@ _CONTEXT_FIELDS = (
     "parent_span_id",
     "study_id",
     "condition_id",
+    "condition_selections",
     "lifetime_id",
     "branch_id",
     "task_id",
@@ -237,10 +238,11 @@ def execution_context_from_payload(value: JsonObject) -> ExecutionContext:
     unknown = set(decoded) - set(_CONTEXT_FIELDS)
     if unknown:
         raise ValueError(f"environment context payload has unknown fields: {sorted(unknown)}")
-    generations = decoded.get("participant_generations", ())
-    if not isinstance(generations, (tuple, list)):
-        raise TypeError("participant_generations must be a sequence")
-    decoded["participant_generations"] = tuple(tuple(row) for row in generations)
+    for field_name in ("condition_selections", "participant_generations"):
+        rows = decoded.get(field_name, ())
+        if not isinstance(rows, (tuple, list)):
+            raise TypeError(f"{field_name} must be a sequence")
+        decoded[field_name] = tuple(tuple(row) for row in rows)
     return ExecutionContext(**decoded)
 
 

@@ -454,6 +454,10 @@ def test_workload_trial_bridge_projects_executes_and_emits_typed_measurements() 
     assert context.run_id == request.run_id
     assert context.study_id == request.assignment.study_id
     assert context.condition_id == request.assignment.variant_id
+    assert context.condition_selections == tuple(
+        (row.factor_id, row.level_id)
+        for row in request.intervention_spec.selections
+    )
     assert context.task_id == "task-1"
     assert context.lifetime_id == request.assignment.assignment_digest
     assert context.operation_id.endswith(":task:0000")

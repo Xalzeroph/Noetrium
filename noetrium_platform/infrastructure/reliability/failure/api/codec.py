@@ -21,7 +21,10 @@ def failure_from_dict(data: dict[str, object]) -> FailureEnvelope:
     """Decode the current FailureEnvelope schema independently of storage backend."""
 
     raw = dict(data)
-    raw["context"] = ExecutionContext(**dict(raw["context"]))  # type: ignore[arg-type]
+    context = dict(raw["context"])  # type: ignore[arg-type]
+    for name in ("condition_selections", "participant_generations"):
+        context[name] = tuple(tuple(row) for row in context.get(name, ()))
+    raw["context"] = ExecutionContext(**context)  # type: ignore[arg-type]
     for name in _TUPLE_FIELDS:
         raw[name] = tuple(raw[name])  # type: ignore[arg-type]
     raw["data_integrity_risk"] = RiskLevel(raw["data_integrity_risk"])

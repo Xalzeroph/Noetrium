@@ -11,6 +11,7 @@ class ExecutionContext:
     parent_span_id: str | None = None
     study_id: str | None = None
     condition_id: str | None = None
+    condition_selections: tuple[tuple[str, str], ...] = ()
     lifetime_id: str | None = None
     branch_id: str | None = None
     task_id: str | None = None
@@ -22,6 +23,26 @@ class ExecutionContext:
     platform_generation: str | None = None
 
     def __post_init__(self) -> None:
+        if type(self.condition_selections) is not tuple or any(
+            type(row) is not tuple
+            or len(row) != 2
+            or any(type(value) is not str or not value.strip() for value in row)
+            for row in self.condition_selections
+        ):
+            raise TypeError(
+                "ExecutionContext condition selections must be "
+                "(condition, selection) text pairs"
+            )
+        condition_ids = tuple(row[0] for row in self.condition_selections)
+        if len(condition_ids) != len(set(condition_ids)):
+            raise ValueError(
+                "ExecutionContext condition selection identities must be unique"
+            )
+        canonical_conditions = tuple(sorted(self.condition_selections))
+        if canonical_conditions != self.condition_selections:
+            object.__setattr__(
+                self, "condition_selections", canonical_conditions
+            )
         roles = [role for role, _ in self.participant_generations]
         if len(roles) != len(set(roles)):
             raise ValueError("ExecutionContext participant generation roles must be unique")

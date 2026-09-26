@@ -29,7 +29,7 @@ _ENVELOPE_FIELDS = frozenset({
 _CONTENT_REF_FIELDS = frozenset({"content_sha256", "size_bytes", "media_type"})
 _CONTEXT_FIELDS = frozenset({
     "run_id", "trace_id", "span_id", "parent_span_id", "study_id", "condition_id",
-    "lifetime_id", "branch_id", "task_id", "decision_cycle_id", "checkpoint_id",
+    "condition_selections", "lifetime_id", "branch_id", "task_id", "decision_cycle_id", "checkpoint_id",
     "operation_id", "component_id", "participant_generations", "platform_generation",
 })
 _MODEL_FIELDS = frozenset({
@@ -96,6 +96,9 @@ class DirectoryModelRequestLedger:
             parent_span_id=optional_text(data["parent_span_id"], field="context.parent_span_id"),
             study_id=optional_text(data["study_id"], field="context.study_id"),
             condition_id=optional_text(data["condition_id"], field="context.condition_id"),
+            condition_selections=text_pairs(
+                data["condition_selections"], field="context.condition_selections"
+            ),
             lifetime_id=optional_text(data["lifetime_id"], field="context.lifetime_id"),
             branch_id=optional_text(data["branch_id"], field="context.branch_id"),
             task_id=optional_text(data["task_id"], field="context.task_id"),

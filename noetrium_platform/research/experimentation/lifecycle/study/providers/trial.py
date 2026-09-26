@@ -235,6 +235,10 @@ class WorkloadTrialProvider:
             span_id=f"trial:{request.assignment.assignment_digest[:16]}",
             study_id=request.assignment.study_id,
             condition_id=request.assignment.variant_id,
+            condition_selections=tuple(
+                (row.factor_id, row.level_id)
+                for row in request.intervention_spec.selections
+            ),
             lifetime_id=request.assignment.assignment_digest,
             task_id=None,
             operation_id=request.request_digest,
@@ -374,6 +378,10 @@ class VerifierStageWorkloadTrialProvider:
             span_id=f"trial:{request.assignment.assignment_digest[:16]}",
             study_id=request.assignment.study_id,
             condition_id=request.assignment.variant_id,
+            condition_selections=tuple(
+                (row.factor_id, row.level_id)
+                for row in request.intervention_spec.selections
+            ),
             task_id=task_id,
             operation_id=request.request_digest,
             component_id="verifier-stage-workload-trial-provider",
