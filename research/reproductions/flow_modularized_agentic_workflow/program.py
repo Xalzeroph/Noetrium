@@ -329,7 +329,7 @@ def _execute_ready_set(request: MethodNodeRequest) -> MethodNodeResult:
         parent_machine_id=request.parent_machine_id,
         selection_digest=selection_digest,
         items=tuple(items),
-        require_concurrent=True,
+        dispatch_parallelism=len(items),
     )
     batch = request.child_machines.execute_batch(batch_request)
 
@@ -373,7 +373,7 @@ def _execute_ready_set(request: MethodNodeRequest) -> MethodNodeResult:
         "selection_digest": selection_digest,
         "batch_request_digest": batch_request.request_digest,
         "batch_execution_digest": batch.execution_digest,
-        "mode": batch.mode.value,
+        "dispatch_parallelism": batch.dispatch_parallelism,
         "mechanics_evidence_digests": batch.evidence_digests,
         "child_machine_ids": tuple(
             row.child_machine_id for row in batch.links
@@ -384,7 +384,7 @@ def _execute_ready_set(request: MethodNodeRequest) -> MethodNodeResult:
             "ready_task_ids": ready,
             "completed_count": completed,
             "batch_execution_digest": batch.execution_digest,
-            "mode": batch.mode.value,
+            "dispatch_parallelism": batch.dispatch_parallelism,
         },
         state_update={
             "workflow": updated_workflow,
@@ -411,7 +411,7 @@ def _execute_ready_set(request: MethodNodeRequest) -> MethodNodeResult:
                     "ready_task_ids": ready,
                     "selection_digest": selection_digest,
                     "batch_execution_digest": batch.execution_digest,
-                    "mode": batch.mode.value,
+                    "dispatch_parallelism": batch.dispatch_parallelism,
                     "mechanics_evidence_digests": batch.evidence_digests,
                 },
             ),

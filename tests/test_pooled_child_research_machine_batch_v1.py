@@ -14,7 +14,6 @@ from noetrium_platform.foundation.kernel.kernel import (
 )
 from noetrium_platform.research.execution.machines import (
     BatchCapableRegisteredChildResearchMachineExecutor,
-    ChildBatchExecutionMode,
     ChildResearchHostRegistry,
     ChildResearchMachineBatchItem,
     ChildResearchMachineBatchRequest,
@@ -83,7 +82,7 @@ def _executor(*, max_children: int):
     )
 
 
-def _request(count: int, *, require_concurrent: bool = True):
+def _request(count: int, *, dispatch_parallelism: int | None = None):
     parent = "method:pooled-parent"
     items = tuple(
         ChildResearchMachineBatchItem(
@@ -106,7 +105,7 @@ def _request(count: int, *, require_concurrent: bool = True):
             "ready_set": tuple(row.participant_id for row in items),
         }),
         items=items,
-        require_concurrent=require_concurrent,
+        dispatch_parallelism=(count if dispatch_parallelism is None else dispatch_parallelism),
     )
 
 
@@ -115,10 +114,10 @@ def test_pooled_child_batch_produces_authority_bound_concurrency_evidence() -> N
     try:
         batch = executor.execute_batch(_request(2))
 
-        assert batch.mode is ChildBatchExecutionMode.CONCURRENT
+        assert batch.dispatch_parallelism == 2
         assert len(batch.evidence_digests) == 1
-        assert batch.receipt["worker_count"] == 2
-        assert batch.receipt["atomic_ready_set"] is True
+        assert batch.receipt["dispatch_parallelism"] == 2
+        assert batch.receipt["atomic_wave_dispatch"] is True
         assert (
             batch.receipt["resource_authority"]
             == "research-execution-pool/experiment"
@@ -151,9 +150,19 @@ def test_pooled_child_batch_fails_closed_without_partial_child_execution() -> No
         pool.close()
 
 
-def test_concurrent_batch_identity_rejects_singleton_ready_set() -> None:
-    with pytest.raises(
-        ValueError,
-        match="requires at least two items",
-    ):
-        _request(1, require_concurrent=True)
+def test_batch_identity_rejects_parallelism_above_ready_set_cardinality() -> None:
+    with pytest.raises(ValueError, match="cannot exceed item count"):
+        _request(1, dispatch_parallelism=2)
+
+
+def test_pooled_child_batch_runs_larger_ready_set_in_bounded_waves() -> None:
+    executor, journal, pool = _executor(max_children=2)
+    try:
+        batch = executor.execute_batch(_request(4, dispatch_parallelism=2))
+        assert batch.dispatch_parallelism == 2
+        assert batch.receipt["wave_count"] == 2
+        assert batch.receipt["dispatch_parallelism"] == 2
+        assert len(batch.executions) == 4
+        assert all(len(journal.commits(f"participant:pooled:{index}")) == 2 for index in range(4))
+    finally:
+        pool.close()

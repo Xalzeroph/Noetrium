@@ -108,7 +108,6 @@ from .context_program import (
 )
 from .child_machine_batch import (
     BatchCapableRegisteredChildResearchMachineExecutor,
-    ChildBatchExecutionMode,
     ChildResearchMachineBatchExecution,
     ChildResearchMachineBatchExecutor,
     ChildResearchMachineBatchItem,
@@ -116,7 +115,6 @@ from .child_machine_batch import (
     ChildResearchMachineBatchMechanicsPort,
     ChildResearchMachineBatchMechanicsResult,
     ChildResearchMachineBatchRequest,
-    RegisteredSerialChildResearchBatchMechanics,
 
 )
 from .child_machine import (
@@ -352,7 +350,6 @@ __all__ = [
     "ChildResearchMachineExecutor",
     "ChildResearchMachineExecution",
     "BatchCapableRegisteredChildResearchMachineExecutor",
-    "ChildBatchExecutionMode",
     "ChildResearchMachineBatchExecution",
     "ChildResearchMachineBatchExecutor",
     "ChildResearchMachineBatchItem",
@@ -360,7 +357,6 @@ __all__ = [
     "ChildResearchMachineBatchMechanicsPort",
     "ChildResearchMachineBatchMechanicsResult",
     "ChildResearchMachineBatchRequest",
-    "RegisteredSerialChildResearchBatchMechanics",
 
     "ChildFailurePolicy",
     "RuntimeProgramComposer",

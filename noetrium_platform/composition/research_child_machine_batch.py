@@ -12,7 +12,6 @@ from noetrium_platform.research.execution.machines.child_machine import (
     RegisteredChildResearchMachineExecutor,
 )
 from noetrium_platform.research.execution.machines.child_machine_batch import (
-    ChildBatchExecutionMode,
     ChildResearchMachineBatchItem,
     ChildResearchMachineBatchMechanicsPort,
     ChildResearchMachineBatchMechanicsResult,
@@ -78,25 +77,11 @@ class PooledChildResearchBatchMechanics(
                 "pooled child batch mechanics requires typed batch request"
             )
         item_count = len(request.items)
-        if item_count == 1:
-            execution = self._executor.execute(request.items[0].request)
-            return ChildResearchMachineBatchMechanicsResult(
-                request_digest=request.request_digest,
-                mode=ChildBatchExecutionMode.SERIAL,
-                executions=(execution,),
-                receipt={
-                    "mechanics": "pooled-child-research-batch",
-                    "resource_authority": "research-execution-pool/experiment",
-                    "atomic_ready_set": False,
-                    "items": 1,
-                },
-            )
-
         group = self._pool.open_experiment_group(
             f"child-batch:{request.request_digest}",
             resource_id=f"child-machine-parent:{request.parent_machine_id}",
         )
-        rows = None
+        rows = []
         execution_failure: BaseException | None = None
 
         def pair(index: int, item: ChildResearchMachineBatchItem):
@@ -129,14 +114,15 @@ class PooledChildResearchBatchMechanics(
             )
 
         try:
-            handles = group.submit_atomic_batch(
-                tuple(
-                    pair(index, item)
-                    for index, item in enumerate(request.items)
+            width = request.dispatch_parallelism
+            for start in range(0, item_count, width):
+                wave = tuple(
+                    pair(index, request.items[index])
+                    for index in range(start, min(start + width, item_count))
                 )
-            )
-            rows = tuple(handle.result() for handle in handles)
-            group.assert_healthy()
+                handles = group.submit_atomic_batch(wave)
+                rows.extend(handle.result() for handle in handles)
+                group.assert_healthy()
         except BaseException as exc:
             execution_failure = exc
 
@@ -158,33 +144,32 @@ class PooledChildResearchBatchMechanics(
             raise execution_failure
         if close_failure is not None:
             raise close_failure
-        if rows is None:
-            raise RuntimeError("child batch completed without execution rows")
-
         ordered = tuple(sorted(rows, key=lambda row: row[0]))
         executions = tuple(row[1] for row in ordered)
         intervals = tuple(row[2] for row in ordered)
         evidence = (
             canonical_digest({
-                "schema": "noetrium.child-batch-concurrency-evidence.v1",
+                "schema": "noetrium.child-batch-dispatch-evidence.v2",
                 "request_digest": request.request_digest,
                 "mechanics_identity_digest": self.identity_digest,
                 "resource_authority": "research-execution-pool/experiment",
-                "atomic_ready_set": True,
-                "worker_count": item_count,
+                "atomic_wave_dispatch": True,
+                "dispatch_parallelism": request.dispatch_parallelism,
+                "wave_count": (item_count + request.dispatch_parallelism - 1) // request.dispatch_parallelism,
                 "intervals": intervals,
             }),
         )
         return ChildResearchMachineBatchMechanicsResult(
             request_digest=request.request_digest,
-            mode=ChildBatchExecutionMode.CONCURRENT,
+            dispatch_parallelism=request.dispatch_parallelism,
             executions=executions,
             evidence_digests=evidence,
             receipt={
                 "mechanics": "pooled-child-research-batch",
                 "resource_authority": "research-execution-pool/experiment",
-                "atomic_ready_set": True,
-                "worker_count": item_count,
+                "atomic_wave_dispatch": True,
+                "dispatch_parallelism": request.dispatch_parallelism,
+                "wave_count": (item_count + request.dispatch_parallelism - 1) // request.dispatch_parallelism,
                 "items": item_count,
                 "intervals": intervals,
             },

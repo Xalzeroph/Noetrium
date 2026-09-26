@@ -64,7 +64,6 @@ from ..program_host import (
 )
 from ..child_machine_batch import (
     BatchCapableRegisteredChildResearchMachineExecutor,
-    ChildBatchExecutionMode,
     ChildResearchMachineBatchExecution,
     ChildResearchMachineBatchExecutor,
     ChildResearchMachineBatchItem,
@@ -72,7 +71,6 @@ from ..child_machine_batch import (
     ChildResearchMachineBatchMechanicsPort,
     ChildResearchMachineBatchMechanicsResult,
     ChildResearchMachineBatchRequest,
-    RegisteredSerialChildResearchBatchMechanics,
 
 )
 from ..child_machine import (
@@ -259,7 +257,6 @@ __all__ = [
     "CapabilityRuleProgram",
     "CapabilityRuntimeBinding",
     "BatchCapableRegisteredChildResearchMachineExecutor",
-    "ChildBatchExecutionMode",
     "ChildResearchMachineBatchExecution",
     "ChildResearchMachineBatchExecutor",
     "ChildResearchMachineBatchItem",
@@ -267,7 +264,6 @@ __all__ = [
     "ChildResearchMachineBatchMechanicsPort",
     "ChildResearchMachineBatchMechanicsResult",
     "ChildResearchMachineBatchRequest",
-    "RegisteredSerialChildResearchBatchMechanics",
 
     "ChildFailurePolicy",
     "ChildResearchBindingFactory",
