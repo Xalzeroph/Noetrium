@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-from noetrium.api import MethodRuntimePort
-from noetrium.api import MethodRuntimePort
+from noetrium_platform.research.execution.api import MethodRuntimePort
+from noetrium_platform.research.execution.api import MethodRuntimePort
 from noetrium_platform.foundation.kernel.kernel import (
     MachineKind,
     canonical_digest,

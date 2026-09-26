@@ -1,17 +1,5 @@
 from __future__ import annotations
-
-from noetrium.api import canonical_digest
-from noetrium.api import ExperimentTrialProtocolIdentity
-from noetrium.api import (
-    BenchmarkTaskSet,
-    MeasurementDefinition,
-    ReplayLevel,
-    ResearchStudyDefinition,
-    Study,
-    StudyModel,
-    StudyParticipant,
-    TrialBudget,
-)
+from research.reproductions import _support as _rs
 from research.benchmarks.visualwebarena import (
     VISUALWEBARENA_BENCHMARK_ID,
     visualwebarena_site_split_id,
@@ -19,9 +7,9 @@ from research.benchmarks.visualwebarena import (
 
 from .fidelity import EXACT_VWA_FIDELITY
 
-EXACT_VWA_TRIAL_PROTOCOL = ExperimentTrialProtocolIdentity(
+EXACT_VWA_TRIAL_PROTOCOL = _rs.study_protocol(
     "exact.vwa-classifieds.released.v1",
-    canonical_digest(
+    _rs.canonical_digest(
         {
             "agent_type": EXACT_VWA_FIDELITY.agent_type,
             "policy_model": EXACT_VWA_FIDELITY.policy_model,
@@ -47,17 +35,17 @@ EXACT_VWA_TRIAL_PROTOCOL = ExperimentTrialProtocolIdentity(
 )
 
 
-def build_exact_vwa_classifieds_study(benchmark: BenchmarkTaskSet) -> ResearchStudyDefinition:
+@_rs.study_factory('benchmark')
+def build_exact_vwa_classifieds_study(benchmark):
     if benchmark.benchmark_id != VISUALWEBARENA_BENCHMARK_ID:
         raise ValueError("ExACT study requires a VisualWebArena benchmark cut")
     split_id = visualwebarena_site_split_id("classifieds")
     benchmark.selected_tasks(split_id)
-    return Study(
-        project_id="exact-vwa-reproduction",
+    return _rs.study_spec(project_id="exact-vwa-reproduction",
         study_id="exact-vwa-classifieds-released",
         benchmark=benchmark,
         benchmark_split_id=split_id,
-        method=StudyParticipant(
+        method=_rs.study_participant(
             role="agent",
             kind="agent",
             implementation="exact",
@@ -73,22 +61,22 @@ def build_exact_vwa_classifieds_study(benchmark: BenchmarkTaskSet) -> ResearchSt
             ),
         ),
         models={
-            "policy": StudyModel(
+            "policy": _rs.study_model(
                 "model.exact.policy",
                 prompt="exact.vwa.policy-prompt",
             ),
-            "value": StudyModel(
+            "value": _rs.study_model(
                 "model.exact.value",
                 prompt="exact.vwa.value-prompt",
             ),
-            "reflection": StudyModel(
+            "reflection": _rs.study_model(
                 "model.exact.reflection",
                 prompt="exact.vwa.reflection-prompt",
             ),
             "embedding": "model.exact.embedding",
         },
         measurements=(
-            MeasurementDefinition.scalar(
+            _rs.scalar_measurement(
                 "task_success",
                 schema_id="noetrium.measurement.binary-scalar.v1",
                 unit="ratio",
@@ -96,7 +84,7 @@ def build_exact_vwa_classifieds_study(benchmark: BenchmarkTaskSet) -> ResearchSt
                 scale="binary",
                 domain="visualwebarena",
             ),
-            MeasurementDefinition.scalar(
+            _rs.scalar_measurement(
                 "environment_steps",
                 schema_id="noetrium.measurement.count.v1",
                 unit="step",
@@ -108,7 +96,7 @@ def build_exact_vwa_classifieds_study(benchmark: BenchmarkTaskSet) -> ResearchSt
         trial=EXACT_VWA_TRIAL_PROTOCOL,
         repetitions=1,
         seeds=("released-default",),
-        limits=TrialBudget(
+        limits=_rs.trial_budget(
             "exact-vwa-5-env-steps",
             max_steps=EXACT_VWA_FIDELITY.max_environment_steps,
             max_seconds=(
@@ -117,8 +105,8 @@ def build_exact_vwa_classifieds_study(benchmark: BenchmarkTaskSet) -> ResearchSt
                 * 60.0
             ),
         ),
-        replay_level=ReplayLevel.OBSERVATIONAL,
-    ).build()
+        replay_level='observational',
+    )
 
 
 

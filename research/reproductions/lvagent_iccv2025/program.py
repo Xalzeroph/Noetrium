@@ -1,28 +1,50 @@
 from __future__ import annotations
-from noetrium.api import AgentMethodSpec, AgentPhaseSpec
+
 from .fidelity import LVAGENT_FIDELITY
 
 LVAGENT_PHASES = (
-    AgentPhaseSpec("select_team", "lvagent.select", "Select a complementary MLLM agent team for the current long-video task."),
-    AgentPhaseSpec("perceive", "lvagent.perceive", "Retrieve critical temporal segments while controlling video-context cost."),
-    AgentPhaseSpec("discuss", "lvagent.discuss", "Have agents answer and exchange reasons for the current question."),
-    AgentPhaseSpec("reflect", "lvagent.reflect", "Evaluate per-agent behavior and update the collaboration configuration."),
-    AgentPhaseSpec("consensus", "lvagent.consensus", "Aggregate the final answer after multi-round collaboration."),
+    {
+        "phase_id": 'select_team',
+        "role": 'lvagent.select',
+        "instruction": 'Select a complementary MLLM agent team for the current long-video task.',
+    },
+    {
+        "phase_id": 'perceive',
+        "role": 'lvagent.perceive',
+        "instruction": 'Retrieve critical temporal segments while controlling video-context cost.',
+    },
+    {
+        "phase_id": 'discuss',
+        "role": 'lvagent.discuss',
+        "instruction": 'Have agents answer and exchange reasons for the current question.',
+    },
+    {
+        "phase_id": 'reflect',
+        "role": 'lvagent.reflect',
+        "instruction": 'Evaluate per-agent behavior and update the collaboration configuration.',
+    },
+    {
+        "phase_id": 'consensus',
+        "role": 'lvagent.consensus',
+        "instruction": 'Aggregate the final answer after multi-round collaboration.',
+    },
 )
 
-LVAGENT_METHOD_PROGRAM = AgentMethodSpec(
-    method_id="lvagent",
-    implementation_version="2025-paper-protocol",
-    schema_version="lvagent.phase-workflow.v1",
-    phases=LVAGENT_PHASES,
-    configuration={
-        "paper_uri": LVAGENT_FIDELITY.paper_uri,
-        "venue": LVAGENT_FIDELITY.venue,
-        "year": LVAGENT_FIDELITY.year,
-        "benchmark_ids": LVAGENT_FIDELITY.benchmark_ids,
-    },
-    evidence_obligations=("lvagent.phase-transcript", "lvagent.model-receipts"),
-    metric_names=("task_success", "agent_phase_count"),
-    artifact_kinds=("lvagent_trajectory",),
-).compile()
-__all__ = ["LVAGENT_METHOD_PROGRAM", "LVAGENT_PHASES"]
+METHOD_SPEC = {
+    "method_id": 'lvagent',
+    "version": '2025-paper-protocol',
+    "semantic_contract": 'lvagent.phase-workflow.v1',
+    "entrypoint": LVAGENT_PHASES[0]["phase_id"],
+}
+
+def configure_method(method):
+    method.configure({'paper_uri': LVAGENT_FIDELITY.paper_uri, 'venue': LVAGENT_FIDELITY.venue, 'year': LVAGENT_FIDELITY.year, 'benchmark_ids': LVAGENT_FIDELITY.benchmark_ids})
+    method.policy(evidence=('lvagent.phase-transcript', 'lvagent.model-receipts'), metrics=('task_success', 'agent_phase_count'), artifacts=('lvagent_trajectory',))
+    method.phases(LVAGENT_PHASES, max_cycles=None)
+
+METHOD_CONFIGURER = configure_method
+METHOD_ENTRYPOINT = METHOD_SPEC["entrypoint"]
+METHOD_CONFIGURER_ARGS = ()
+METHOD_CONFIGURER_KWARGS = {}
+
+__all__ = ["METHOD_SPEC", "configure_method", "METHOD_CONFIGURER", "METHOD_ENTRYPOINT", "METHOD_CONFIGURER_ARGS", "METHOD_CONFIGURER_KWARGS", 'LVAGENT_PHASES']

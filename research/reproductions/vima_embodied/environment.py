@@ -1,10 +1,11 @@
 from __future__ import annotations
+from research.reproductions._support import JsonObject, canonical_digest, require_sha256, thaw_json
 
 from collections.abc import Mapping
 from dataclasses import dataclass
 from typing import Protocol, runtime_checkable
 
-from noetrium.api import (
+from noetrium.api.research_authoring import (
     ActionKind,
     ActionSpec,
     EmbodimentKind,
@@ -12,16 +13,12 @@ from noetrium.api import (
     EmbodiedSimulatorBackendPort,
     EpisodeSpec,
     ExecutionContext,
-    JsonObject,
     SensorModality,
     SensorSpec,
     SimulatorObservation,
     SimulatorStep,
     TensorContentRef,
-    canonical_digest,
-    require_sha256,
-    thaw_json,
-)
+    )
 from research.benchmarks.vima_bench import (
     VIMA_CAMERA_READY_EXECUTABLE_SEED,
     VIMA_PARTITION_TASKS,

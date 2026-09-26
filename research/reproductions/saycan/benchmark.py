@@ -1,6 +1,4 @@
 from __future__ import annotations
-
-from noetrium.api import BenchmarkTaskSet
 from research.benchmarks.saycan_101 import (
     SAYCAN_ALL_SPLIT,
     SAYCAN_BENCHMARK_ID,
@@ -13,7 +11,7 @@ from research.benchmarks.saycan_101 import (
 
 def build_saycan_101_benchmark(
     records: tuple[SayCanTaskRecord, ...],
-) -> BenchmarkTaskSet:
+):
     benchmark = bind_saycan_v0(records).task_set
     if benchmark.benchmark_id != SAYCAN_BENCHMARK_ID:
         raise ValueError("SayCan benchmark authority drifted")
@@ -22,7 +20,7 @@ def build_saycan_101_benchmark(
     return benchmark
 
 
-def build_saycan_101_benchmark_from_tsv(text: str) -> BenchmarkTaskSet:
+def build_saycan_101_benchmark_from_tsv(text: str):
     benchmark = bind_saycan_v0_tsv(text).task_set
     if len(benchmark.selected_tasks(SAYCAN_ALL_SPLIT)) != SAYCAN_TASK_COUNT:
         raise ValueError("SayCan evaluation TSV must contain 101 tasks")

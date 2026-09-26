@@ -17,19 +17,19 @@ def _bootstrap():
     return None
 
 
-def _portfolio() -> api.ResearchPortfolio:
-    builder = api.ResearchProgramBuilder("paper")
+def _portfolio() -> api.research_os.ResearchPortfolio:
+    builder = api.research_os.ResearchProgramBuilder("paper")
     builder.definition(
         "bootstrap",
-        kind=api.ResearchDefinitionKind.CUSTOM,
+        kind=api.research_os.ResearchDefinitionKind.CUSTOM,
         implementation=_bootstrap,
     )
     builder.node(
         "root",
-        kind=api.ResearchNodeKind.CUSTOM,
+        kind=api.research_os.ResearchNodeKind.CUSTOM,
         definitions=("bootstrap",),
     )
-    return api.ResearchPortfolio("paper", (builder.freeze(),))
+    return api.research_os.ResearchPortfolio("paper", (builder.freeze(),))
 
 
 def test_single_program_and_multi_program_use_cardinality_agnostic_execution(
@@ -80,23 +80,23 @@ def _second_bootstrap():
     return None
 
 
-def _program(program_id: str, implementation) -> api.ResearchProgram:
-    builder = api.ResearchProgramBuilder(program_id)
+def _program(program_id: str, implementation) -> api.research_os.ResearchProgram:
+    builder = api.research_os.ResearchProgramBuilder(program_id)
     builder.definition(
         "bootstrap",
-        kind=api.ResearchDefinitionKind.CUSTOM,
+        kind=api.research_os.ResearchDefinitionKind.CUSTOM,
         implementation=implementation,
     )
     builder.node(
         "root",
-        kind=api.ResearchNodeKind.CUSTOM,
+        kind=api.research_os.ResearchNodeKind.CUSTOM,
         definitions=("bootstrap",),
     )
     return builder.freeze()
 
 
 def test_multiple_programs_use_the_same_portfolio_executor(tmp_path: Path) -> None:
-    portfolio = api.ResearchPortfolio(
+    portfolio = api.research_os.ResearchPortfolio(
         "many",
         (
             _program("p1", _bootstrap),
@@ -129,7 +129,7 @@ def test_generic_materializer_loader_is_cardinality_agnostic(
 
     class _Materializer:
         def materialize(self, portfolio):
-            assert type(portfolio) is api.ResearchPortfolio
+            assert type(portfolio) is api.research_os.ResearchPortfolio
             return ResearchExecutionAuthorities.provider_neutral()
 
     module_name = "_noetrium_test_research_execution_materializer"

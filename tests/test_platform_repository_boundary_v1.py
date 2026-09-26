@@ -140,12 +140,12 @@ def test_minimal_downstream_project_uses_one_noetrium_api(tmp_path: Path) -> Non
     package = root / "src" / "example_project"
     package.mkdir(parents=True)
     (package / "app.py").write_text(
-        "from noetrium.api import ProjectManifest, ResearchApplicationPort\n",
+        "from noetrium.api import research_os\n",
         encoding="utf-8",
     )
     (package / "provider.py").write_text(
         "from noetrium import api\n"
-        "EnvironmentSpec = api.EnvironmentSpec\n",
+        "ResearchProgramBuilder = api.research_os.ResearchProgramBuilder\n",
         encoding="utf-8",
     )
     report = audit_downstream_project_imports(root)

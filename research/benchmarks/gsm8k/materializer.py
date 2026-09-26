@@ -12,11 +12,14 @@ from noetrium_platform.foundation.kernel.kernel import canonical_bytes, canonica
 from noetrium_platform.foundation.scope.api import ScopeIdentity, ScopeKind
 from noetrium_platform.research.experimentation.lifecycle.api import (
     BenchmarkSourceResolution,
+    ResearchStudyDefinition,
 )
 from noetrium_platform.research.experimentation.lifecycle.study.api import (
     BenchmarkResolutionRegistration,
 )
 from research.benchmarks.contracts import RepositoryBenchmarkTaskProjectionSpec
+
+from .verifier import GSM8KTaskVerifier
 
 from .cut import (
     GSM8K_ARCHIVED_COMMIT,
@@ -243,6 +246,16 @@ def repository_task_projection_spec() -> RepositoryBenchmarkTaskProjectionSpec:
     )
 
 
+def materialize_repository_task_verifier(
+    study: ResearchStudyDefinition,
+    *,
+    content: ResearchExecutionContentAuthorities,
+) -> GSM8KTaskVerifier:
+    """Bind the benchmark-owned artifact-only verifier to one exact Study."""
+
+    return GSM8KTaskVerifier.from_study(study, content=content)
+
+
 def materialize_repository_benchmark_authority(
     authority_inputs: tuple[tuple[str, str], ...],
     *,
@@ -322,6 +335,7 @@ __all__ = [
     "materialize_gsm8k_jsonl",
     "materialize_gsm8k_jsonl_bytes",
     "materialize_repository_benchmark_authority",
+    "materialize_repository_task_verifier",
     "register_gsm8k_materialization",
     "repository_task_projection_spec",
 ]

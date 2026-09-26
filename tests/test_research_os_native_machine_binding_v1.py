@@ -5,6 +5,9 @@ from pathlib import Path
 import pytest
 
 from noetrium import api
+import noetrium_platform.research.execution.api as execution_api
+import noetrium_platform.product.research_os as product_api
+import noetrium_platform.foundation.kernel.kernel as kernel_api
 from noetrium_platform.composition.research_execution_pool import ResearchExecutionPool
 from noetrium_platform.composition.research_os import bind_portfolio_research_os
 from noetrium_platform.composition.research_os_execution import StrictResearchOSControl
@@ -21,17 +24,17 @@ from noetrium_platform.research.execution.graph.providers import (
 _CALLS: list[str] = []
 
 
-def _first(request: api.ProgramNodeRequest, _binding: object) -> api.ProgramNodeResult:
+def _first(request: execution_api.ProgramNodeRequest, _binding: object) -> execution_api.ProgramNodeResult:
     _CALLS.append("first")
-    return api.ProgramNodeResult(
+    return execution_api.ProgramNodeResult(
         value={"stage": 1},
         state_update={"stage": 1},
     )
 
 
-def _second(request: api.ProgramNodeRequest, _binding: object) -> api.ProgramNodeResult:
+def _second(request: execution_api.ProgramNodeRequest, _binding: object) -> execution_api.ProgramNodeResult:
     _CALLS.append("second")
-    return api.ProgramNodeResult(
+    return execution_api.ProgramNodeResult(
         value={
             "stage": 2,
             "previous": request.previous_value,
@@ -41,9 +44,9 @@ def _second(request: api.ProgramNodeRequest, _binding: object) -> api.ProgramNod
 
 
 NATIVE_RUNTIME_PROGRAM = (
-    api.MachineResearchProgramBuilder(
+    execution_api.MachineResearchProgramBuilder(
         program_id="test.native-runtime",
-        kind=api.MachineKind.RUNTIME,
+        kind=kernel_api.MachineKind.RUNTIME,
         version="1",
         state_schema="json",
         entrypoint="first",
@@ -54,25 +57,25 @@ NATIVE_RUNTIME_PROGRAM = (
 )
 
 
-def native_runtime_operations() -> tuple[api.ResearchHostOperation, ...]:
+def native_runtime_operations() -> tuple[execution_api.ResearchHostOperation, ...]:
     return (
-        api.ResearchHostOperation(
+        execution_api.ResearchHostOperation(
             "test.native.first",
             _first,
-            api.canonical_digest({"operation": "test.native.first", "revision": 1}),
+            kernel_api.canonical_digest({"operation": "test.native.first", "revision": 1}),
         ),
-        api.ResearchHostOperation(
+        execution_api.ResearchHostOperation(
             "test.native.second",
             _second,
-            api.canonical_digest({"operation": "test.native.second", "revision": 1}),
+            kernel_api.canonical_digest({"operation": "test.native.second", "revision": 1}),
         ),
     )
 
 
 NATIVE_ANALYSIS_PROGRAM = (
-    api.MachineResearchProgramBuilder(
+    execution_api.MachineResearchProgramBuilder(
         program_id="test.native-analysis",
-        kind=api.MachineKind.ANALYSIS,
+        kind=kernel_api.MachineKind.ANALYSIS,
         version="1",
         state_schema="json",
         entrypoint="analyze",
@@ -82,12 +85,12 @@ NATIVE_ANALYSIS_PROGRAM = (
 )
 
 
-def native_analysis_operations() -> tuple[api.ResearchHostOperation, ...]:
+def native_analysis_operations() -> tuple[execution_api.ResearchHostOperation, ...]:
     return (
-        api.ResearchHostOperation(
+        execution_api.ResearchHostOperation(
             "test.native.analysis",
             _second,
-            api.canonical_digest({"operation": "test.native.analysis", "revision": 1}),
+            kernel_api.canonical_digest({"operation": "test.native.analysis", "revision": 1}),
         ),
     )
 
@@ -124,7 +127,7 @@ def test_native_machine_program_executes_exact_multi_operation_ir(
     tmp_path: Path,
 ) -> None:
     _CALLS.clear()
-    builder = api.ResearchProgramBuilder("paper")
+    builder = product_api.ResearchProgramBuilder("paper")
     builder.machine_program(
         "native",
         program_module=__name__,
@@ -134,15 +137,15 @@ def test_native_machine_program_executes_exact_multi_operation_ir(
     )
     builder.node(
         "run",
-        kind=api.ResearchNodeKind.CUSTOM,
+        kind=product_api.ResearchNodeKind.CUSTOM,
         definitions=("native",),
     )
-    portfolio = api.ResearchPortfolio("native-machine-suite", (builder.freeze(),))
+    portfolio = product_api.ResearchPortfolio("native-machine-suite", (builder.freeze(),))
 
     graph, pool, research_os = _bound(tmp_path)
     try:
         revision = research_os.commit(portfolio, message="native machine")
-        target = api.ResearchExecutionTarget("native-machine", revision)
+        target = product_api.ResearchExecutionTarget("native-machine", revision)
         receipt = research_os.run(target)
 
         assert receipt.state == "succeeded"
@@ -158,7 +161,7 @@ def test_native_machine_program_executes_exact_multi_operation_ir(
 def test_native_machine_kind_mismatch_fails_before_durable_cut(
     tmp_path: Path,
 ) -> None:
-    builder = api.ResearchProgramBuilder("paper")
+    builder = product_api.ResearchProgramBuilder("paper")
     builder.machine_program(
         "native",
         program_module=__name__,
@@ -168,15 +171,15 @@ def test_native_machine_kind_mismatch_fails_before_durable_cut(
     )
     builder.node(
         "run",
-        kind=api.ResearchNodeKind.CUSTOM,
+        kind=product_api.ResearchNodeKind.CUSTOM,
         definitions=("native",),
     )
-    portfolio = api.ResearchPortfolio("native-machine-mismatch", (builder.freeze(),))
+    portfolio = product_api.ResearchPortfolio("native-machine-mismatch", (builder.freeze(),))
 
     graph, pool, research_os = _bound(tmp_path)
     try:
         revision = research_os.commit(portfolio, message="kind mismatch")
-        target = api.ResearchExecutionTarget("native-machine-mismatch", revision)
+        target = product_api.ResearchExecutionTarget("native-machine-mismatch", revision)
         with pytest.raises(ValueError, match="machine program kind does not match node target"):
             research_os.run(target)
         assert graph.active_cut(target.execution_id) is None

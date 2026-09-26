@@ -71,13 +71,13 @@ def _pool() -> ResearchExecutionPool:
     )
 
 
-def _portfolio() -> api.ResearchPortfolio:
-    builder = api.ResearchProgramBuilder("paper")
+def _portfolio() -> api.research_os.ResearchPortfolio:
+    builder = api.research_os.ResearchProgramBuilder("paper")
     builder.node(
         "task",
-        kind=api.ResearchNodeKind.CUSTOM,
+        kind=api.research_os.ResearchNodeKind.CUSTOM,
     )
-    return api.ResearchPortfolio("retry-pause", (builder.freeze(),))
+    return api.research_os.ResearchPortfolio("retry-pause", (builder.freeze(),))
 
 
 def test_retry_respects_local_pause_until_explicit_resume(tmp_path: Path) -> None:
@@ -97,7 +97,7 @@ def test_retry_respects_local_pause_until_explicit_resume(tmp_path: Path) -> Non
     try:
         portfolio = _portfolio()
         revision = research_os.commit(portfolio, message="retry pause")
-        target = api.ResearchExecutionTarget("retry-pause-execution", revision)
+        target = api.research_os.ResearchExecutionTarget("retry-pause-execution", revision)
         node_target = target.for_node("paper", "task")
 
         first = research_os.run(node_target)

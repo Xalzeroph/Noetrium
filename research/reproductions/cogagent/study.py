@@ -1,27 +1,13 @@
 from __future__ import annotations
-
-from noetrium.api import canonical_digest
-from noetrium.api import (
-    ExperimentTrialProtocolIdentity,
-)
-from noetrium.api import (
-    BenchmarkTaskSet,
-    MeasurementDefinition,
-    ReplayLevel,
-    ResearchStudyDefinition,
-    Study,
-    StudyModel,
-    StudyParticipant,
-    TrialBudget,
-)
+from research.reproductions import _support as _rs
 from research.benchmarks.mind2web import MIND2WEB_BENCHMARK_ID
 
 from .fidelity import COGAGENT_FIDELITY
 from .program import COGAGENT_METHOD_PROGRAM
 
-COGAGENT_MIND2WEB_TRIAL_PROTOCOL = ExperimentTrialProtocolIdentity(
+COGAGENT_MIND2WEB_TRIAL_PROTOCOL = _rs.study_protocol(
     "cogagent.cvpr2024.mind2web.v1",
-    canonical_digest({
+    _rs.canonical_digest({
         "program_digest": COGAGENT_METHOD_PROGRAM.program_digest,
         "paper_input_resolution": COGAGENT_FIDELITY.input_resolution,
         "input_representation": COGAGENT_FIDELITY.gui_input_representation,
@@ -31,21 +17,21 @@ COGAGENT_MIND2WEB_TRIAL_PROTOCOL = ExperimentTrialProtocolIdentity(
 )
 
 
+@_rs.study_factory('benchmark')
 def build_cogagent_mind2web_study(
-    benchmark: BenchmarkTaskSet,
+    benchmark,
     *,
     split_id: str,
-) -> ResearchStudyDefinition:
+):
     if benchmark.benchmark_id != MIND2WEB_BENCHMARK_ID:
         raise ValueError("CogAgent study requires Mind2Web")
     if not benchmark.selected_tasks(split_id):
         raise ValueError("CogAgent Mind2Web study requires a non-empty split")
-    return Study(
-        project_id="cogagent-cvpr2024-reproduction",
+    return _rs.study_spec(project_id="cogagent-cvpr2024-reproduction",
         study_id=f"cogagent-mind2web-{split_id}",
         benchmark=benchmark,
         benchmark_split_id=split_id,
-        method=StudyParticipant(
+        method=_rs.study_participant(
             role="cogagent",
             kind="visual_gui_agent",
             implementation="cogagent-18b-paper-era",
@@ -53,13 +39,13 @@ def build_cogagent_mind2web_study(
             configurations=("cogagent.cvpr2024.gui-policy",),
         ),
         models={
-            "cogagent": StudyModel(
+            "cogagent": _rs.study_model(
                 "model.cogagent-18b",
                 prompt="cogagent.mind2web.paper-era",
             ),
         },
         measurements=(
-            MeasurementDefinition.scalar(
+            _rs.scalar_measurement(
                 "step_success_rate",
                 schema_id="noetrium.measurement.scalar.v1",
                 unit="ratio",
@@ -67,7 +53,7 @@ def build_cogagent_mind2web_study(
                 scale="ratio",
                 domain="mind2web",
             ),
-            MeasurementDefinition.scalar(
+            _rs.scalar_measurement(
                 "model_call_count",
                 schema_id="noetrium.measurement.count.v1",
                 unit="model_call",
@@ -79,14 +65,14 @@ def build_cogagent_mind2web_study(
         trial=COGAGENT_MIND2WEB_TRIAL_PROTOCOL,
         repetitions=1,
         seeds=("0",),
-        limits=TrialBudget(
+        limits=_rs.trial_budget(
             "cogagent-mind2web",
             max_steps=4,
             max_model_calls=1,
             max_working_seconds=300.0,
         ),
-        replay_level=ReplayLevel.OBSERVATIONAL,
-    ).build()
+        replay_level='observational',
+    )
 
 
 __all__ = [

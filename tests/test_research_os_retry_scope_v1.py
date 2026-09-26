@@ -63,13 +63,13 @@ class _FailOnceRuntime:
         return None
 
 
-def _portfolio() -> api.ResearchPortfolio:
-    builder = api.ResearchProgramBuilder("paper")
-    builder.node("root", kind=api.ResearchNodeKind.CUSTOM)
-    builder.node("child", kind=api.ResearchNodeKind.CUSTOM)
-    builder.node("unrelated", kind=api.ResearchNodeKind.CUSTOM)
+def _portfolio() -> api.research_os.ResearchPortfolio:
+    builder = api.research_os.ResearchProgramBuilder("paper")
+    builder.node("root", kind=api.research_os.ResearchNodeKind.CUSTOM)
+    builder.node("child", kind=api.research_os.ResearchNodeKind.CUSTOM)
+    builder.node("unrelated", kind=api.research_os.ResearchNodeKind.CUSTOM)
     builder.depends("child", "root")
-    return api.ResearchPortfolio("retry-scope", (builder.freeze(),))
+    return api.research_os.ResearchPortfolio("retry-scope", (builder.freeze(),))
 
 
 def _pool() -> ResearchExecutionPool:
@@ -102,7 +102,7 @@ def _bound(tmp_path: Path):
 def _fail_root_once(graph, runtime, research_os):
     portfolio = _portfolio()
     revision = research_os.commit(portfolio, message="retry scope")
-    target = api.ResearchExecutionTarget("retry-execution", revision)
+    target = api.research_os.ResearchExecutionTarget("retry-execution", revision)
     research_os.run(target.for_node("paper", "root"))
     active = graph.active_cut(target.execution_id)
     assert active is not None

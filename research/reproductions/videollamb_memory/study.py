@@ -1,19 +1,5 @@
 from __future__ import annotations
-
-from noetrium.api import canonical_digest
-from noetrium.api import (
-    ExperimentTrialProtocolIdentity,
-)
-from noetrium.api import (
-    BenchmarkTaskSet,
-    MeasurementDefinition,
-    ReplayLevel,
-    ResearchStudyDefinition,
-    Study,
-    StudyModel,
-    StudyParticipant,
-    TrialBudget,
-)
+from research.reproductions import _support as _rs
 from research.benchmarks.egoschema import (
     EGOSCHEMA_BENCHMARK_ID,
     EGOSCHEMA_PUBLIC_COUNT,
@@ -30,17 +16,17 @@ VIDEOLLAMB_EGOSCHEMA_NUM_FRAMES = 16
 
 
 def videollamb_egoschema_trial_protocol(
-    benchmark: BenchmarkTaskSet,
-) -> ExperimentTrialProtocolIdentity:
+    benchmark,
+):
     if benchmark.benchmark_id != EGOSCHEMA_BENCHMARK_ID:
         raise ValueError("VideoLLaMB study requires EgoSchema")
     selected = benchmark.selected_tasks(EGOSCHEMA_PUBLIC_SPLIT)
     if len(selected) != EGOSCHEMA_PUBLIC_COUNT:
         raise ValueError("VideoLLaMB requires the 500-task EgoSchema public cut")
     fidelity = VIDEOLLAMB_REFERENCE_FIDELITY
-    return ExperimentTrialProtocolIdentity(
+    return _rs.study_protocol(
         "videollamb.iccv2025.egoschema-public.paper-era.v1",
-        canonical_digest({
+        _rs.canonical_digest({
             "source_commit": VIDEOLLAMB_PAPER_ERA_COMMIT,
             "memory_program_digest": VIDEOLLAMB_MEMORY_PROGRAM.program_digest,
             "benchmark_cut_digest": benchmark.cut_digest,
@@ -59,17 +45,17 @@ def videollamb_egoschema_trial_protocol(
     )
 
 
+@_rs.study_factory('benchmark')
 def build_videollamb_egoschema_public_study(
-    benchmark: BenchmarkTaskSet,
-) -> ResearchStudyDefinition:
+    benchmark,
+):
     fidelity = VIDEOLLAMB_REFERENCE_FIDELITY
     protocol = videollamb_egoschema_trial_protocol(benchmark)
-    return Study(
-        project_id="videollamb-iccv-2025-reproduction",
+    return _rs.study_spec(project_id="videollamb-iccv-2025-reproduction",
         study_id="videollamb-iccv-2025-egoschema-public",
         benchmark=benchmark,
         benchmark_split_id=EGOSCHEMA_PUBLIC_SPLIT,
-        method=StudyParticipant(
+        method=_rs.study_participant(
             role="recurrent_multimodal_memory_model",
             kind="method",
             implementation="videollamb",
@@ -87,13 +73,13 @@ def build_videollamb_egoschema_public_study(
             ),
         ),
         models={
-            "multimodal": StudyModel(
+            "multimodal": _rs.study_model(
                 "model.videollamb.llava15-7b-rmt1x",
                 prompt="videollamb.egoschema.zero-shot-mcq",
             ),
         },
         measurements=(
-            MeasurementDefinition.scalar(
+            _rs.scalar_measurement(
                 "multiple_choice_accuracy",
                 schema_id="noetrium.measurement.ratio.v1",
                 unit="ratio",
@@ -101,7 +87,7 @@ def build_videollamb_egoschema_public_study(
                 scale="continuous",
                 domain="egoschema",
             ),
-            MeasurementDefinition.scalar(
+            _rs.scalar_measurement(
                 "processed_segment_count",
                 schema_id="noetrium.measurement.count.v1",
                 unit="segment",
@@ -109,7 +95,7 @@ def build_videollamb_egoschema_public_study(
                 scale="count",
                 domain="videollamb",
             ),
-            MeasurementDefinition.scalar(
+            _rs.scalar_measurement(
                 "memory_cache_size",
                 schema_id="noetrium.measurement.count.v1",
                 unit="memory_state",
@@ -121,16 +107,16 @@ def build_videollamb_egoschema_public_study(
         trial=protocol,
         repetitions=1,
         seeds=("paper-evaluation-default",),
-        limits=TrialBudget(
+        limits=_rs.trial_budget(
             "videollamb-iccv2025-egoschema-public-budget",
             max_steps=512,
             max_turns=64,
             max_model_calls=1,
             max_working_seconds=3600.0,
         ),
-        replay_level=ReplayLevel.OBSERVATIONAL,
+        replay_level='observational',
         repetition_timeout_seconds=3600.0,
-    ).build()
+    )
 
 
 __all__ = [

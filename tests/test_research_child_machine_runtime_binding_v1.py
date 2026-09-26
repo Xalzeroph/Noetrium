@@ -3,6 +3,9 @@ from __future__ import annotations
 from pathlib import Path
 
 from noetrium import api
+import noetrium_platform.research.execution.api as execution_api
+import noetrium_platform.product.research_os as product_api
+import noetrium_platform.foundation.kernel.kernel as kernel_api
 from noetrium_platform.composition.research_os_graph import (
     compile_research_portfolio_graph,
 )
@@ -13,20 +16,20 @@ _CHILD_CALLS: list[str] = []
 
 
 def _child_dispatch(
-    request: api.ProgramNodeRequest,
+    request: execution_api.ProgramNodeRequest,
     binding: object,
-) -> api.ProgramNodeResult:
+) -> execution_api.ProgramNodeResult:
     del binding
     _CHILD_CALLS.append(str(request.payload))
-    return api.ProgramNodeResult(
+    return execution_api.ProgramNodeResult(
         value={"child": "ok", "payload": request.payload},
         state_update={"called": True},
-        status=api.MachineStatus.COMPLETED,
+        status=kernel_api.MachineStatus.COMPLETED,
     )
 
 
 CHILD_PROGRAM = (
-    api.MemoryProgramBuilder.create(
+    execution_api.MemoryProgramBuilder.create(
         program_id="test.child-memory",
         version="1",
         state_schema="test.child-memory.state.v1",
@@ -41,12 +44,12 @@ CHILD_PROGRAM = (
 )
 
 
-def child_operations() -> tuple[api.ResearchHostOperation, ...]:
+def child_operations() -> tuple[execution_api.ResearchHostOperation, ...]:
     return (
-        api.ResearchHostOperation(
+        execution_api.ResearchHostOperation(
             "test.child.dispatch",
             _child_dispatch,
-            api.canonical_digest(
+            kernel_api.canonical_digest(
                 {
                     "operation": "test.child.dispatch",
                     "implementation_revision": 1,
@@ -56,11 +59,11 @@ def child_operations() -> tuple[api.ResearchHostOperation, ...]:
     )
 
 
-def _invoke_child(request: api.MethodNodeRequest) -> api.MethodNodeResult:
+def _invoke_child(request: execution_api.MethodNodeRequest) -> execution_api.MethodNodeResult:
     if request.child_machines is None or request.parent_machine_id is None:
         raise RuntimeError("declared child runtime was not injected")
     child = request.child_machines.execute(
-        api.ChildResearchMachineRequest(
+        execution_api.ChildResearchMachineRequest(
             host_id="test.child-memory",
             parent_machine_id=request.parent_machine_id,
             child_machine_id="memory:test-child:1",
@@ -69,24 +72,24 @@ def _invoke_child(request: api.MethodNodeRequest) -> api.MethodNodeResult:
             payload={"event": "ping"},
         )
     )
-    if not isinstance(child, api.ChildResearchMachineExecution):
+    if not isinstance(child, execution_api.ChildResearchMachineExecution):
         raise TypeError("child execution result is invalid")
-    if child.status is not api.MachineStatus.COMPLETED:
+    if child.status is not kernel_api.MachineStatus.COMPLETED:
         raise RuntimeError(f"child did not complete: {child.status}")
-    return api.MethodNodeResult(
+    return execution_api.MethodNodeResult(
         value=child.result,
         child_links=(child.link,),
     )
 
 
-def _return_parent(request: api.MethodNodeRequest) -> api.MethodNodeResult:
+def _return_parent(request: execution_api.MethodNodeRequest) -> execution_api.MethodNodeResult:
     del request
-    return api.MethodNodeResult(value=None)
+    return execution_api.MethodNodeResult(value=None)
 
 
-def build_parent_method() -> api.MethodProgram:
-    identity = api.MethodProgramIdentity(
-        api.MethodIdentity(
+def build_parent_method() -> execution_api.MethodProgram:
+    identity = execution_api.MethodProgramIdentity(
+        execution_api.MethodIdentity(
             "test.parent-method",
             "1",
             "method-runtime.v1",
@@ -94,7 +97,7 @@ def build_parent_method() -> api.MethodProgram:
         )
     )
     return (
-        api.MethodProgramBuilder(identity, entrypoint="invoke-child")
+        execution_api.MethodProgramBuilder(identity, entrypoint="invoke-child")
         .compute(
             "invoke-child",
             "test.parent.invoke-child",
@@ -107,14 +110,14 @@ def build_parent_method() -> api.MethodProgram:
             _return_parent,
         )
         .build(
-            required_runtime_ports=(api.MethodRuntimePort.CHILD_MACHINES,),
+            required_runtime_ports=(execution_api.MethodRuntimePort.CHILD_MACHINES,),
         )
     )
 
 
-def _portfolio(*, child_revision: int) -> api.ResearchPortfolio:
-    builder = api.ResearchProgramBuilder("paper")
-    builder.method_program_factory(
+def _portfolio(*, child_revision: int) -> product_api.ResearchPortfolio:
+    builder = product_api.ResearchProgramBuilder("paper")
+    builder.method_configurer(
         "parent-method",
         module=__name__,
         qualname="build_parent_method",
@@ -131,11 +134,11 @@ def _portfolio(*, child_revision: int) -> api.ResearchPortfolio:
         "run",
         definitions=("parent-method",),
     )
-    return api.ResearchPortfolio("child-runtime-suite", (builder.freeze(),))
+    return product_api.ResearchPortfolio("child-runtime-suite", (builder.freeze(),))
 
 
-def _revision(portfolio: api.ResearchPortfolio, message: str) -> api.ResearchGraphRevision:
-    return api.ResearchGraphRevision(
+def _revision(portfolio: product_api.ResearchPortfolio, message: str) -> product_api.ResearchGraphRevision:
+    return product_api.ResearchGraphRevision(
         portfolio.portfolio_id,
         portfolio.portfolio_digest,
         (),
@@ -168,7 +171,7 @@ def test_canonical_runtime_auto_binds_program_scoped_child_machine(
             message="declared child runtime",
         )
         receipt = composition.research_os.run(
-            api.ResearchExecutionTarget("child-runtime", revision)
+            product_api.ResearchExecutionTarget("child-runtime", revision)
         )
 
         assert receipt.state == "succeeded", receipt.payload

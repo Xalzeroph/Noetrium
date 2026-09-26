@@ -1,17 +1,16 @@
 from __future__ import annotations
+from research.reproductions._support import JsonObject, JsonValue, canonical_digest, freeze_json, require_sha256, thaw_json
 
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass, field
 from typing import Protocol, runtime_checkable
 
-from noetrium.api import (
+from noetrium.api.research_authoring import (
     ArtifactBlobRef,
     ChildFailurePolicy,
     ChildResearchMachineExecution,
     ChildResearchMachineRequest,
     ExecutionContext,
-    JsonObject,
-    JsonValue,
     MethodAgentRequest,
     MethodAgentResult,
     MethodEvent,
@@ -23,11 +22,7 @@ from noetrium.api import (
     MethodProgramBuilder,
     MethodProgramIdentity,
     MethodRuntimePort,
-    canonical_digest,
-    freeze_json,
-    require_sha256,
-    thaw_json,
-)
+    )
 
 from .fidelity import VIDEOAGENT_REFERENCE_FIDELITY
 from .memory import (

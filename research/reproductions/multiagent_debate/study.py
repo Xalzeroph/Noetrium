@@ -1,17 +1,5 @@
 from __future__ import annotations
-
-from noetrium.api import canonical_digest
-from noetrium.api import (
-    BenchmarkTaskSet,
-    ExperimentTrialProtocolIdentity,
-    MeasurementDefinition,
-    ReplayLevel,
-    ResearchStudyDefinition,
-    Study,
-    StudyModel,
-    StudyParticipant,
-    TrialBudget,
-)
+from research.reproductions import _support as _rs
 from research.benchmarks.gsm8k import (
     GSM8K_BENCHMARK_ID,
     GSM8K_SPLIT_COUNTS,
@@ -25,8 +13,8 @@ _GSM8K_SPLIT = "test"
 
 
 def multiagent_debate_gsm8k_trial_protocol(
-    benchmark: BenchmarkTaskSet,
-) -> ExperimentTrialProtocolIdentity:
+    benchmark,
+):
     f = MULTIAGENT_DEBATE_FIDELITY
     if benchmark.benchmark_id != GSM8K_BENCHMARK_ID:
         raise ValueError("multi-agent debate study requires GSM8K")
@@ -35,9 +23,9 @@ def multiagent_debate_gsm8k_trial_protocol(
         raise ValueError(
             "multi-agent debate GSM8K lane requires the complete test split"
         )
-    return ExperimentTrialProtocolIdentity(
+    return _rs.study_protocol(
         "multiagent-debate.gsm8k.paper-era.v1",
-        canonical_digest(
+        _rs.canonical_digest(
             {
                 "program_digest": MULTIAGENT_DEBATE_METHOD_PROGRAM.program_digest,
                 "benchmark_cut_digest": benchmark.cut_digest,
@@ -57,18 +45,18 @@ def multiagent_debate_gsm8k_trial_protocol(
     )
 
 
+@_rs.study_factory('benchmark')
 def build_multiagent_debate_gsm8k_study(
-    benchmark: BenchmarkTaskSet,
-) -> ResearchStudyDefinition:
+    benchmark,
+):
     f = MULTIAGENT_DEBATE_FIDELITY
     protocol = multiagent_debate_gsm8k_trial_protocol(benchmark)
     model_id = "model.multiagent-debate.gpt-3.5-turbo-0301"
-    return Study(
-        project_id="multiagent-debate-reproduction",
+    return _rs.study_spec(project_id="multiagent-debate-reproduction",
         study_id="multiagent-debate-gsm8k-3-agent-2-round",
         benchmark=benchmark,
         benchmark_split_id=_GSM8K_SPLIT,
-        method=StudyParticipant(
+        method=_rs.study_participant(
             role="debate",
             kind="multi_agent_method",
             implementation="multiagent-debate",
@@ -81,21 +69,21 @@ def build_multiagent_debate_gsm8k_study(
             ),
         ),
         models={
-            "multiagent-debate.agent-0": StudyModel(
+            "multiagent-debate.agent-0": _rs.study_model(
                 model_id,
                 prompt="multiagent-debate.gsm8k.paper-era",
             ),
-            "multiagent-debate.agent-1": StudyModel(
+            "multiagent-debate.agent-1": _rs.study_model(
                 model_id,
                 prompt="multiagent-debate.gsm8k.paper-era",
             ),
-            "multiagent-debate.agent-2": StudyModel(
+            "multiagent-debate.agent-2": _rs.study_model(
                 model_id,
                 prompt="multiagent-debate.gsm8k.paper-era",
             ),
         },
         measurements=(
-            MeasurementDefinition.scalar(
+            _rs.scalar_measurement(
                 "task_success",
                 schema_id="noetrium.measurement.binary-scalar.v1",
                 unit="ratio",
@@ -103,7 +91,7 @@ def build_multiagent_debate_gsm8k_study(
                 scale="binary",
                 domain="gsm8k",
             ),
-            MeasurementDefinition.scalar(
+            _rs.scalar_measurement(
                 "model_call_count",
                 schema_id="noetrium.measurement.count.v1",
                 unit="call",
@@ -111,7 +99,7 @@ def build_multiagent_debate_gsm8k_study(
                 scale="count",
                 domain="multiagent_debate",
             ),
-            MeasurementDefinition.scalar(
+            _rs.scalar_measurement(
                 "debate_round_count",
                 schema_id="noetrium.measurement.count.v1",
                 unit="round",
@@ -123,15 +111,15 @@ def build_multiagent_debate_gsm8k_study(
         trial=protocol,
         repetitions=1,
         seeds=("paper-era",),
-        limits=TrialBudget(
+        limits=_rs.trial_budget(
             "multiagent-debate-3x2",
             max_steps=20,
             max_turns=6,
             max_model_calls=6,
             max_working_seconds=600.0,
         ),
-        replay_level=ReplayLevel.OBSERVATIONAL,
-    ).build()
+        replay_level='observational',
+    )
 
 
 __all__ = [

@@ -1,28 +1,50 @@
 from __future__ import annotations
-from noetrium.api import AgentMethodSpec, AgentPhaseSpec
+
 from .fidelity import DARS_FIDELITY
 
 DARS_PHASES = (
-    AgentPhaseSpec("rollout", "dars.rollout", "Execute a coding-agent trajectory until success or a recoverable sub-optimal decision."),
-    AgentPhaseSpec("branch", "dars.branch", "Identify a prior decision point using execution history and feedback."),
-    AgentPhaseSpec("resample", "dars.resample", "Sample an alternative action conditioned on history and execution feedback."),
-    AgentPhaseSpec("replay", "dars.replay", "Traverse the alternative software-agent branch from the selected decision point."),
-    AgentPhaseSpec("select", "dars.select", "Aggregate branch outcomes and select the best repair trajectory."),
+    {
+        "phase_id": 'rollout',
+        "role": 'dars.rollout',
+        "instruction": 'Execute a coding-agent trajectory until success or a recoverable sub-optimal decision.',
+    },
+    {
+        "phase_id": 'branch',
+        "role": 'dars.branch',
+        "instruction": 'Identify a prior decision point using execution history and feedback.',
+    },
+    {
+        "phase_id": 'resample',
+        "role": 'dars.resample',
+        "instruction": 'Sample an alternative action conditioned on history and execution feedback.',
+    },
+    {
+        "phase_id": 'replay',
+        "role": 'dars.replay',
+        "instruction": 'Traverse the alternative software-agent branch from the selected decision point.',
+    },
+    {
+        "phase_id": 'select',
+        "role": 'dars.select',
+        "instruction": 'Aggregate branch outcomes and select the best repair trajectory.',
+    },
 )
 
-DARS_METHOD_PROGRAM = AgentMethodSpec(
-    method_id="dars",
-    implementation_version="2025-paper-protocol",
-    schema_version="dars.phase-workflow.v1",
-    phases=DARS_PHASES,
-    configuration={
-        "paper_uri": DARS_FIDELITY.paper_uri,
-        "venue": DARS_FIDELITY.venue,
-        "year": DARS_FIDELITY.year,
-        "benchmark_ids": DARS_FIDELITY.benchmark_ids,
-    },
-    evidence_obligations=("dars.phase-transcript", "dars.model-receipts"),
-    metric_names=("task_success", "agent_phase_count"),
-    artifact_kinds=("dars_trajectory",),
-).compile()
-__all__ = ["DARS_METHOD_PROGRAM", "DARS_PHASES"]
+METHOD_SPEC = {
+    "method_id": 'dars',
+    "version": '2025-paper-protocol',
+    "semantic_contract": 'dars.phase-workflow.v1',
+    "entrypoint": DARS_PHASES[0]["phase_id"],
+}
+
+def configure_method(method):
+    method.configure({'paper_uri': DARS_FIDELITY.paper_uri, 'venue': DARS_FIDELITY.venue, 'year': DARS_FIDELITY.year, 'benchmark_ids': DARS_FIDELITY.benchmark_ids})
+    method.policy(evidence=('dars.phase-transcript', 'dars.model-receipts'), metrics=('task_success', 'agent_phase_count'), artifacts=('dars_trajectory',))
+    method.phases(DARS_PHASES, max_cycles=None)
+
+METHOD_CONFIGURER = configure_method
+METHOD_ENTRYPOINT = METHOD_SPEC["entrypoint"]
+METHOD_CONFIGURER_ARGS = ()
+METHOD_CONFIGURER_KWARGS = {}
+
+__all__ = ["METHOD_SPEC", "configure_method", "METHOD_CONFIGURER", "METHOD_ENTRYPOINT", "METHOD_CONFIGURER_ARGS", "METHOD_CONFIGURER_KWARGS", 'DARS_PHASES']

@@ -22,6 +22,7 @@ from noetrium_platform.foundation.kernel.kernel import JsonValue, freeze_json
 from noetrium_platform.research.experimentation.lifecycle.api import (
     ExperimentTaskSpec,
     ResearchStudyDefinition,
+    TaskVerifierPort,
 )
 from noetrium_platform.research.experimentation.lifecycle.study.api import (
     BenchmarkResolutionRegistration,
@@ -34,6 +35,7 @@ from research.benchmarks.contracts import RepositoryBenchmarkTaskProjectionSpec
 
 _ENTRYPOINT = "materialize_repository_benchmark_authority"
 _PROJECTION_ENTRYPOINT = "repository_task_projection_spec"
+_VERIFIER_ENTRYPOINT = "materialize_repository_task_verifier"
 
 
 def _benchmark_materializer_modules() -> tuple[object, ...]:
@@ -173,6 +175,77 @@ def materialize_repository_trial_task_projection(
     return StaticExperimentTaskProjection(tuple(projected))
 
 
+def materialize_repository_task_verifier(
+    study: ResearchStudyDefinition,
+    *,
+    content: ResearchExecutionContentAuthorities,
+) -> TaskVerifierPort | None:
+    """Resolve one benchmark-owned verifier through the repository convention."""
+
+    if type(study) is not ResearchStudyDefinition:
+        raise TypeError("repository task verifier requires ResearchStudyDefinition")
+    if type(content) is not ResearchExecutionContentAuthorities:
+        raise TypeError(
+            "repository task verifier requires ResearchExecutionContentAuthorities"
+        )
+    verifier_ids = tuple(sorted({
+        package.verifier_requirement_id
+        for task in study.benchmark.selected_tasks(study.benchmark_split_id)
+        if (package := task.package) is not None
+        and package.verifier_requirement_id is not None
+    }))
+    if not verifier_ids:
+        return None
+    if len(verifier_ids) != 1:
+        raise ValueError(
+            "one Study cut must select exactly one benchmark verifier authority"
+        )
+
+    modules: list[object] = []
+    for module in _benchmark_materializer_modules():
+        projection_factory = getattr(module, _PROJECTION_ENTRYPOINT, None)
+        if projection_factory is None:
+            continue
+        if not callable(projection_factory):
+            raise TypeError(
+                f"{module.__name__}.{_PROJECTION_ENTRYPOINT} must be callable"
+            )
+        spec = projection_factory()
+        if type(spec) is not RepositoryBenchmarkTaskProjectionSpec:
+            raise TypeError(
+                f"{module.__name__}.{_PROJECTION_ENTRYPOINT} returned invalid spec"
+            )
+        if (
+            spec.benchmark_id == study.benchmark.benchmark_id
+            and spec.task_schema_id == study.benchmark.task_schema_id
+        ):
+            modules.append(module)
+    if len(modules) != 1:
+        raise LookupError(
+            "no unique repository benchmark module for verifier "
+            f"{study.benchmark.benchmark_id}:{study.benchmark.task_schema_id}"
+        )
+    module = modules[0]
+    factory = getattr(module, _VERIFIER_ENTRYPOINT, None)
+    if not callable(factory):
+        raise LookupError(
+            f"{module.__name__} does not materialize its declared task verifier"
+        )
+    verifier = factory(study, content=content)
+    if not callable(getattr(verifier, "verify", None)):
+        raise TypeError(
+            f"{module.__name__}.{_VERIFIER_ENTRYPOINT} must return TaskVerifierPort"
+        )
+    identity = getattr(verifier, "identity_digest", None)
+    if (
+        type(identity) is not str
+        or len(identity) != 64
+        or any(ch not in "0123456789abcdef" for ch in identity)
+    ):
+        raise TypeError("repository task verifier identity_digest must be SHA-256")
+    return verifier
+
+
 def materialize_repository_benchmark_inputs(
     authority_inputs: tuple[tuple[str, str], ...],
     *,
@@ -214,6 +287,7 @@ def materialize_repository_benchmark_inputs(
 
 __all__ = [
     "materialize_repository_benchmark_inputs",
+    "materialize_repository_task_verifier",
     "materialize_repository_trial_task_projection",
     "repository_benchmark_task_projection_specs",
 ]

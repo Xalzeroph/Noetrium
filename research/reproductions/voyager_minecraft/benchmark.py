@@ -1,6 +1,4 @@
 from __future__ import annotations
-
-from noetrium.api import BenchmarkTaskSet
 from research.benchmarks.voyager_minecraft import (
     VOYAGER_MINECRAFT_BENCHMARK_ID,
     VOYAGER_MINECRAFT_LIFELONG_SPLIT,
@@ -9,7 +7,7 @@ from research.benchmarks.voyager_minecraft import (
 )
 
 
-def build_voyager_tmlr2024_benchmark() -> BenchmarkTaskSet:
+def build_voyager_tmlr2024_benchmark():
     task_set = build_voyager_minecraft_lifelong_cut()
     if task_set.benchmark_id != VOYAGER_MINECRAFT_BENCHMARK_ID:
         raise ValueError("Voyager benchmark authority drifted")

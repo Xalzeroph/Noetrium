@@ -11,7 +11,7 @@ from research.reproductions.contracts import (
     ReproductionDeltaKind,
     ReproductionIdentity,
     ReproductionLifecycle,
-    ReproductionMethodProgramFactoryBinding,
+    ReproductionMethodConfigurerBinding,
 )
 
 REPRODUCTION = ReproductionDefinition(
@@ -55,7 +55,7 @@ REPRODUCTION = ReproductionDefinition(
             path='research/reproductions/toolllm_toolbench/selection.py',
         ),
     ),
-    method_program_factory=ReproductionMethodProgramFactoryBinding(
+    method_configurer=ReproductionMethodConfigurerBinding(
         qualname="build_toolllm_toolbench_method_program",
         kwargs={"retrieval_mode": "oracle"},
         unresolved_parameters=("capability_ids",),

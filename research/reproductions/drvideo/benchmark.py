@@ -1,6 +1,4 @@
 from __future__ import annotations
-
-from noetrium.api import BenchmarkTaskSet
 from research.benchmarks.egoschema import (
     EGOSCHEMA_BENCHMARK_ID,
     EGOSCHEMA_PUBLIC_COUNT,
@@ -15,7 +13,7 @@ def build_drvideo_egoschema_public_cut(
     *,
     questions_content_sha256: str,
     public_answers_content_sha256: str,
-) -> BenchmarkTaskSet:
+):
     task_set = bind_egoschema_public_500(
         records,
         questions_content_sha256=questions_content_sha256,

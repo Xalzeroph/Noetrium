@@ -1,5 +1,9 @@
 from __future__ import annotations
 
+from tests.resource_endpoint_support import TestEndpointAllocator
+
+from tests.resource_lease_support import TestResourceLeaseRegistry
+
 import pytest
 
 from noetrium_platform.foundation.scope.api import ScopeIdentity, ScopeKind
@@ -12,10 +16,8 @@ from noetrium_platform.infrastructure.resources.allocation.api import (
 )
 from noetrium_platform.infrastructure.resources.allocation.runtime import (
     AtomicEndpointAllocator,
-    InMemoryEndpointAllocator,
 )
 from noetrium_platform.infrastructure.resources.lease.runtime import (
-    InMemoryResourceLeaseRegistry,
     ManualLeaseClock,
 )
 from noetrium_platform.infrastructure.resources.providers import (
@@ -71,8 +73,8 @@ def test_exact_binder_release_ignores_foreign_listener_reoccupation(
             lease_ttl_seconds=30.0,
         )
     else:
-        resources = InMemoryResourceLeaseRegistry(clock=clock)
-        allocator = InMemoryEndpointAllocator(
+        resources = TestResourceLeaseRegistry(clock=clock)
+        allocator = TestEndpointAllocator(
             ownership=resources,
             leases=resources,
             probe=probe,

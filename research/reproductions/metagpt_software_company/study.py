@@ -1,19 +1,5 @@
 from __future__ import annotations
-
-from noetrium.api import canonical_digest
-from noetrium.api import (
-    ExperimentTrialProtocolIdentity,
-)
-from noetrium.api import (
-    BenchmarkTaskSet,
-    MeasurementDefinition,
-    ReplayLevel,
-    ResearchStudyDefinition,
-    Study,
-    StudyModel,
-    StudyParticipant,
-    TrialBudget,
-)
+from research.reproductions import _support as _rs
 from research.benchmarks.humaneval import (
     HUMANEVAL_BENCHMARK_ID,
     HUMANEVAL_SPLIT_ID,
@@ -26,10 +12,10 @@ _ARTIFACT_CAPABILITY = "artifact.publish"
 
 
 def metagpt_humaneval_trial_protocol(
-    benchmark: BenchmarkTaskSet,
+    benchmark,
     *,
     use_code_review: bool,
-) -> ExperimentTrialProtocolIdentity:
+):
     if benchmark.benchmark_id != HUMANEVAL_BENCHMARK_ID:
         raise ValueError("MetaGPT formal coding protocol requires HumanEval")
     selected = benchmark.selected_tasks(HUMANEVAL_SPLIT_ID)
@@ -38,13 +24,13 @@ def metagpt_humaneval_trial_protocol(
     program = build_metagpt_software_company_method_program(
         use_code_review=use_code_review,
     )
-    return ExperimentTrialProtocolIdentity(
+    return _rs.study_protocol(
         (
             "metagpt.iclr-2024.humaneval.code-review.v1"
             if use_code_review
             else "metagpt.iclr-2024.humaneval.core-sop.v1"
         ),
-        canonical_digest(
+        _rs.canonical_digest(
             {
                 "program_digest": program.program_digest,
                 "source_commit": METAGPT_SOFTWARE_COMPANY_FIDELITY.audited_commit,
@@ -59,18 +45,19 @@ def metagpt_humaneval_trial_protocol(
     )
 
 
+@_rs.study_factory('benchmark')
 def build_metagpt_humaneval_study(
-    benchmark: BenchmarkTaskSet,
+    benchmark,
     *,
     use_code_review: bool = False,
-) -> ResearchStudyDefinition:
+):
     protocol = metagpt_humaneval_trial_protocol(
         benchmark,
         use_code_review=use_code_review,
     )
     treatment = "paper-era-sop+code-review" if use_code_review else "paper-era-sop"
     participants = (
-        StudyParticipant(
+        _rs.study_participant(
             role="metagpt.product-manager",
             kind="agent",
             implementation="metagpt-product-manager-paper-era",
@@ -78,7 +65,7 @@ def build_metagpt_humaneval_study(
             configurations=("metagpt.write-prd",),
             depends_on=("software_company",),
         ),
-        StudyParticipant(
+        _rs.study_participant(
             role="metagpt.architect",
             kind="agent",
             implementation="metagpt-architect-paper-era",
@@ -86,7 +73,7 @@ def build_metagpt_humaneval_study(
             configurations=("metagpt.write-design",),
             depends_on=("metagpt.product-manager",),
         ),
-        StudyParticipant(
+        _rs.study_participant(
             role="metagpt.project-manager",
             kind="agent",
             implementation="metagpt-project-manager-paper-era",
@@ -94,7 +81,7 @@ def build_metagpt_humaneval_study(
             configurations=("metagpt.write-tasks",),
             depends_on=("metagpt.architect",),
         ),
-        StudyParticipant(
+        _rs.study_participant(
             role="metagpt.engineer",
             kind="agent",
             implementation="metagpt-engineer-paper-era",
@@ -108,7 +95,7 @@ def build_metagpt_humaneval_study(
         ),
     )
     models = {
-        role: StudyModel(
+        role: _rs.study_model(
             f"model.{role}",
             prompt=f"{role}.{treatment}.prompt",
         )
@@ -120,12 +107,11 @@ def build_metagpt_humaneval_study(
         )
     }
 
-    return Study(
-        project_id="metagpt-iclr-2024-reproduction",
+    return _rs.study_spec(project_id="metagpt-iclr-2024-reproduction",
         study_id=f"metagpt-human-eval-{treatment}",
         benchmark=benchmark,
         benchmark_split_id=HUMANEVAL_SPLIT_ID,
-        method=StudyParticipant(
+        method=_rs.study_participant(
             role="software_company",
             kind="method",
             implementation="metagpt-software-company-paper-era",
@@ -136,7 +122,7 @@ def build_metagpt_humaneval_study(
         participants=participants,
         models=models,
         measurements=(
-            MeasurementDefinition.scalar(
+            _rs.scalar_measurement(
                 "task_success",
                 schema_id="noetrium.measurement.binary-scalar.v1",
                 unit="ratio",
@@ -144,7 +130,7 @@ def build_metagpt_humaneval_study(
                 scale="binary",
                 domain="humaneval",
             ),
-            MeasurementDefinition.scalar(
+            _rs.scalar_measurement(
                 "artifact_count",
                 schema_id="noetrium.measurement.count.v1",
                 unit="artifact",
@@ -152,7 +138,7 @@ def build_metagpt_humaneval_study(
                 scale="count",
                 domain="metagpt",
             ),
-            MeasurementDefinition.scalar(
+            _rs.scalar_measurement(
                 "model_call_count",
                 schema_id="noetrium.measurement.count.v1",
                 unit="model_call",
@@ -164,15 +150,15 @@ def build_metagpt_humaneval_study(
         trial=protocol,
         repetitions=1,
         seeds=("0",),
-        limits=TrialBudget(
+        limits=_rs.trial_budget(
             f"metagpt-human-eval-{treatment}",
             max_steps=64,
             max_turns=5 if use_code_review else 4,
             max_model_calls=5 if use_code_review else 4,
             max_working_seconds=3600.0,
         ),
-        replay_level=ReplayLevel.OBSERVATIONAL,
-    ).build()
+        replay_level='observational',
+    )
 
 
 __all__ = [

@@ -610,3 +610,30 @@ __all__ = tuple(__all__) + (
     "SoftwareActionTimeoutError",
     "SoftwareWorldPort",
 )
+
+# Canonical Method aggregate. Agent-loop and all harness components are owned here.
+from noetrium_platform.research.execution.method import (
+    ResearchComponent,
+    ResearchComponentBuilder,
+    ResearchComponentCall,
+    ResearchComponentResult,
+    ResearchComponentTransition,
+    ResearchEvent,
+    ResearchMethod,
+    ResearchMethodBuilder,
+    ResearchMethodCall,
+    ResearchMethodTransition,
+)
+
+__all__ = tuple(__all__) + (
+    "ResearchComponent",
+    "ResearchComponentBuilder",
+    "ResearchComponentCall",
+    "ResearchComponentResult",
+    "ResearchComponentTransition",
+    "ResearchEvent",
+    "ResearchMethod",
+    "ResearchMethodBuilder",
+    "ResearchMethodCall",
+    "ResearchMethodTransition",
+)

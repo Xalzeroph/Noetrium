@@ -1,28 +1,24 @@
 from __future__ import annotations
+from research.reproductions._support import JsonObject, canonical_digest, require_sha256, thaw_json
 
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass, field
 import math
 
-from noetrium.api import (
+from noetrium.api.research_authoring import (
     TensorContentRef,
     TensorContentStorePort,
 )
-from noetrium.api import (
-    JsonObject,
+from noetrium.api.research_authoring import (
     MachineJournalPort,
     MachineSnapshotStorePort,
-    canonical_digest,
-    require_sha256,
-    thaw_json,
-)
-from noetrium.api import (
+    )
+from noetrium.api.research_authoring import (
     MemoryConcern,
     MemoryProgramBuilder,
     ProgramNodeRequest,
     ProgramNodeResult,
     ResearchHostOperation,
-    ResearchProgram,
     ResearchProgramHost,
 )
 
@@ -925,7 +921,7 @@ def _dispatch(
     )
 
 
-def build_ma_lmm_memory_program() -> ResearchProgram:
+def build_ma_lmm_memory_program():
     return (
         MemoryProgramBuilder.create(
             program_id="ma-lmm.multimodal-memory",
@@ -979,7 +975,7 @@ def ma_lmm_memory_host(
     *,
     journal: MachineJournalPort,
     snapshot_store: MachineSnapshotStorePort | None = None,
-) -> ResearchProgramHost:
+):
     return ResearchProgramHost(
         host_id="ma-lmm.multimodal-memory",
         program=MA_LMM_MEMORY_PROGRAM,

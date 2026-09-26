@@ -1,19 +1,5 @@
 from __future__ import annotations
-
-from noetrium.api import canonical_digest
-from noetrium.api import (
-    ExperimentTrialProtocolIdentity,
-)
-from noetrium.api import (
-    BenchmarkTaskSet,
-    MeasurementDefinition,
-    ReplayLevel,
-    ResearchStudyDefinition,
-    Study,
-    StudyModel,
-    StudyParticipant,
-    TrialBudget,
-)
+from research.reproductions import _support as _rs
 from research.benchmarks.hugginggpt_paper_tasks import HUGGINGGPT_BENCHMARK_ID
 
 from .fidelity import HUGGINGGPT_FIDELITY
@@ -22,11 +8,11 @@ from .program import build_hugginggpt_method_program
 
 def hugginggpt_trial_protocol(
     expert_capability_ids: tuple[str, ...],
-) -> ExperimentTrialProtocolIdentity:
+):
     program = build_hugginggpt_method_program(expert_capability_ids)
-    return ExperimentTrialProtocolIdentity(
+    return _rs.study_protocol(
         "hugginggpt.neurips2023.paper-tasks.v1",
-        canonical_digest({
+        _rs.canonical_digest({
             "program_digest": program.program_digest,
             "source_commit": HUGGINGGPT_FIDELITY.source_commit,
             "stages": tuple(stage.value for stage in HUGGINGGPT_FIDELITY.stages),
@@ -36,22 +22,22 @@ def hugginggpt_trial_protocol(
     )
 
 
+@_rs.study_factory('benchmark')
 def build_hugginggpt_study(
-    benchmark: BenchmarkTaskSet,
+    benchmark,
     *,
     split_id: str,
     expert_capability_ids: tuple[str, ...],
-) -> ResearchStudyDefinition:
+):
     if benchmark.benchmark_id != HUGGINGGPT_BENCHMARK_ID:
         raise ValueError("HuggingGPT study requires paper-era task cut")
     if not benchmark.selected_tasks(split_id):
         raise ValueError("HuggingGPT study requires a non-empty split")
-    return Study(
-        project_id="hugginggpt-neurips2023-reproduction",
+    return _rs.study_spec(project_id="hugginggpt-neurips2023-reproduction",
         study_id=f"hugginggpt-paper-tasks-{split_id}",
         benchmark=benchmark,
         benchmark_split_id=split_id,
-        method=StudyParticipant(
+        method=_rs.study_participant(
             role="hugginggpt",
             kind="agent_method",
             implementation="hugginggpt-paper-era",
@@ -60,21 +46,21 @@ def build_hugginggpt_study(
             configurations=("hugginggpt.task-model-execution-response",),
         ),
         models={
-            "planner": StudyModel(
+            "planner": _rs.study_model(
                 "model.hugginggpt.controller.plan",
                 prompt="hugginggpt.task-planning.paper-era",
             ),
-            "selector": StudyModel(
+            "selector": _rs.study_model(
                 "model.hugginggpt.controller.select-model",
                 prompt="hugginggpt.model-selection.paper-era",
             ),
-            "aggregator": StudyModel(
+            "aggregator": _rs.study_model(
                 "model.hugginggpt.controller.aggregate",
                 prompt="hugginggpt.response-generation.paper-era",
             ),
         },
         measurements=(
-            MeasurementDefinition.scalar(
+            _rs.scalar_measurement(
                 "task_success",
                 schema_id="noetrium.measurement.binary-scalar.v1",
                 unit="ratio",
@@ -82,7 +68,7 @@ def build_hugginggpt_study(
                 scale="binary",
                 domain="hugginggpt",
             ),
-            MeasurementDefinition.scalar(
+            _rs.scalar_measurement(
                 "subtask_count",
                 schema_id="noetrium.measurement.count.v1",
                 unit="subtask",
@@ -90,7 +76,7 @@ def build_hugginggpt_study(
                 scale="count",
                 domain="hugginggpt",
             ),
-            MeasurementDefinition.scalar(
+            _rs.scalar_measurement(
                 "expert_call_count",
                 schema_id="noetrium.measurement.count.v1",
                 unit="expert_call",
@@ -98,7 +84,7 @@ def build_hugginggpt_study(
                 scale="count",
                 domain="hugginggpt",
             ),
-            MeasurementDefinition.scalar(
+            _rs.scalar_measurement(
                 "model_call_count",
                 schema_id="noetrium.measurement.count.v1",
                 unit="model_call",
@@ -110,14 +96,14 @@ def build_hugginggpt_study(
         trial=hugginggpt_trial_protocol(expert_capability_ids),
         repetitions=1,
         seeds=("0",),
-        limits=TrialBudget(
+        limits=_rs.trial_budget(
             "hugginggpt-paper-era",
             max_steps=4096,
             max_model_calls=4096,
             max_working_seconds=3600.0,
         ),
-        replay_level=ReplayLevel.OBSERVATIONAL,
-    ).build()
+        replay_level='observational',
+    )
 
 
 __all__ = ["build_hugginggpt_study", "hugginggpt_trial_protocol"]

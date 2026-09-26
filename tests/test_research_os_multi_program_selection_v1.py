@@ -32,8 +32,8 @@ from noetrium_platform.research.execution.graph.providers import (
 @dataclass
 class _DataAuthority:
     authority_id: str = "data.authority"
-    supported_kinds: frozenset[api.ResearchValueKind] = frozenset(
-        {api.ResearchValueKind.DATA}
+    supported_kinds: frozenset[api.research_os.ResearchValueKind] = frozenset(
+        {api.research_os.ResearchValueKind.DATA}
     )
     rows: dict[str, JsonValue] = field(default_factory=dict)
 
@@ -115,36 +115,36 @@ class _Runtime:
         raise AssertionError(node.graph_node_id)
 
 
-def _portfolio() -> api.ResearchPortfolio:
-    paper_a = api.ResearchProgramBuilder("paper-a")
+def _portfolio() -> api.research_os.ResearchPortfolio:
+    paper_a = api.research_os.ResearchProgramBuilder("paper-a")
     paper_a.node(
         "source",
-        kind=api.ResearchNodeKind.CUSTOM,
-        outputs=(api.ResearchOutputSpec("data", api.ResearchValueKind.DATA),),
+        kind=api.research_os.ResearchNodeKind.CUSTOM,
+        outputs=(api.research_os.ResearchOutputSpec("data", api.research_os.ResearchValueKind.DATA),),
     )
 
-    paper_b = api.ResearchProgramBuilder("paper-b")
+    paper_b = api.research_os.ResearchProgramBuilder("paper-b")
     paper_b.node(
         "middle",
-        kind=api.ResearchNodeKind.CUSTOM,
-        outputs=(api.ResearchOutputSpec("data", api.ResearchValueKind.DATA),),
+        kind=api.research_os.ResearchNodeKind.CUSTOM,
+        outputs=(api.research_os.ResearchOutputSpec("data", api.research_os.ResearchValueKind.DATA),),
     )
 
-    paper_c = api.ResearchProgramBuilder("paper-c")
+    paper_c = api.research_os.ResearchProgramBuilder("paper-c")
     paper_c.node(
         "target",
-        kind=api.ResearchNodeKind.CUSTOM,
-        outputs=(api.ResearchOutputSpec("data", api.ResearchValueKind.DATA),),
+        kind=api.research_os.ResearchNodeKind.CUSTOM,
+        outputs=(api.research_os.ResearchOutputSpec("data", api.research_os.ResearchValueKind.DATA),),
     )
 
-    paper_d = api.ResearchProgramBuilder("paper-d")
+    paper_d = api.research_os.ResearchProgramBuilder("paper-d")
     paper_d.node(
         "unrelated",
-        kind=api.ResearchNodeKind.CUSTOM,
-        outputs=(api.ResearchOutputSpec("data", api.ResearchValueKind.DATA),),
+        kind=api.research_os.ResearchNodeKind.CUSTOM,
+        outputs=(api.research_os.ResearchOutputSpec("data", api.research_os.ResearchValueKind.DATA),),
     )
 
-    return api.ResearchPortfolio(
+    return api.research_os.ResearchPortfolio(
         "multi-paper",
         (
             paper_a.freeze(),
@@ -153,25 +153,25 @@ def _portfolio() -> api.ResearchPortfolio:
             paper_d.freeze(),
         ),
         (
-            api.ResearchPortfolioDependency(
-                api.ResearchNodeRef("paper-a", "source"),
-                api.ResearchNodeRef("paper-b", "middle"),
+            api.research_os.ResearchPortfolioDependency(
+                api.research_os.ResearchNodeRef("paper-a", "source"),
+                api.research_os.ResearchNodeRef("paper-b", "middle"),
                 (
-                    api.ResearchInputBinding(
+                    api.research_os.ResearchInputBinding(
                         "source",
                         "data",
-                        api.ResearchValueKind.DATA,
+                        api.research_os.ResearchValueKind.DATA,
                     ),
                 ),
             ),
-            api.ResearchPortfolioDependency(
-                api.ResearchNodeRef("paper-b", "middle"),
-                api.ResearchNodeRef("paper-c", "target"),
+            api.research_os.ResearchPortfolioDependency(
+                api.research_os.ResearchNodeRef("paper-b", "middle"),
+                api.research_os.ResearchNodeRef("paper-c", "target"),
                 (
-                    api.ResearchInputBinding(
+                    api.research_os.ResearchInputBinding(
                         "middle",
                         "data",
-                        api.ResearchValueKind.DATA,
+                        api.research_os.ResearchValueKind.DATA,
                     ),
                 ),
             ),
@@ -208,7 +208,7 @@ def test_node_scoped_run_closes_transitive_cross_program_dependencies_only(
     try:
         portfolio = _portfolio()
         revision = research_os.commit(portfolio, message="cross-program selection")
-        target = api.ResearchExecutionTarget("multi-paper-execution", revision)
+        target = api.research_os.ResearchExecutionTarget("multi-paper-execution", revision)
 
         receipt = research_os.run(target.for_node("paper-c", "target"))
 

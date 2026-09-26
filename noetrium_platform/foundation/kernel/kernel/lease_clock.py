@@ -44,12 +44,9 @@ class LeaseClockReading:
             raise ValueError(
                 "lease clock elapsed_seconds must be finite and non-negative"
             )
-        if (
-            not math.isfinite(float(self.wall_epoch_seconds))
-            or self.wall_epoch_seconds <= 0
-        ):
+        if not math.isfinite(float(self.wall_epoch_seconds)):
             raise ValueError(
-                "lease clock wall_epoch_seconds must be finite and positive"
+                "lease clock wall_epoch_seconds must be finite"
             )
 
 

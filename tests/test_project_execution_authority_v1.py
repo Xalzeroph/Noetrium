@@ -33,14 +33,14 @@ class _BindingAuthority:
 
 
 def test_study_protocol_factory_is_frozen_and_resolved_from_experiment_node() -> None:
-    builder = api.ResearchProgramBuilder("fixture-program")
+    builder = api.research_os.ResearchProgramBuilder("fixture-program")
     builder.study_protocol("study", implementation=build_study)
     builder.experiment("experiment", definitions=("study",))
-    portfolio = api.ResearchPortfolio(
+    portfolio = api.research_os.ResearchPortfolio(
         "fixture-portfolio",
         (builder.freeze(),),
     )
-    revision = api.ResearchGraphRevision(
+    revision = api.research_os.ResearchGraphRevision(
         portfolio.portfolio_id,
         portfolio.portfolio_digest,
         (),
@@ -58,14 +58,14 @@ def test_study_protocol_factory_is_frozen_and_resolved_from_experiment_node() ->
 
 
 def test_study_protocol_factory_requires_exactly_one_implemented_protocol() -> None:
-    builder = api.ResearchProgramBuilder("fixture-program")
+    builder = api.research_os.ResearchProgramBuilder("fixture-program")
     builder.protocol("unresolved")
     builder.experiment("experiment", definitions=("unresolved",))
-    portfolio = api.ResearchPortfolio(
+    portfolio = api.research_os.ResearchPortfolio(
         "fixture-portfolio",
         (builder.freeze(),),
     )
-    revision = api.ResearchGraphRevision(
+    revision = api.research_os.ResearchGraphRevision(
         portfolio.portfolio_id,
         portfolio.portfolio_digest,
         (),
@@ -137,7 +137,7 @@ def test_project_config_materializes_through_generic_portfolio_seam(
 ) -> None:
     class _Materializer:
         def materialize(self, portfolio):
-            assert type(portfolio) is api.ResearchPortfolio
+            assert type(portfolio) is api.research_os.ResearchPortfolio
             return ResearchExecutionAuthorities.provider_neutral()
 
     module_name = "_noetrium_test_project_materializer"
@@ -152,18 +152,18 @@ def test_project_config_materializes_through_generic_portfolio_seam(
     module.build = build
     monkeypatch.setitem(sys.modules, module_name, module)
 
-    builder = api.ResearchProgramBuilder("paper")
+    builder = api.research_os.ResearchProgramBuilder("paper")
     builder.definition(
         "bootstrap",
-        kind=api.ResearchDefinitionKind.CUSTOM,
+        kind=api.research_os.ResearchDefinitionKind.CUSTOM,
         config={"kind": "test"},
     )
     builder.node(
         "root",
-        kind=api.ResearchNodeKind.CUSTOM,
+        kind=api.research_os.ResearchNodeKind.CUSTOM,
         definitions=("bootstrap",),
     )
-    portfolio = api.ResearchPortfolio("paper", (builder.freeze(),))
+    portfolio = api.research_os.ResearchPortfolio("paper", (builder.freeze(),))
     context = ResearchExecutionContext(
         tmp_path,
         object.__new__(ManagedResearchRuntime),

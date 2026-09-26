@@ -1,27 +1,21 @@
 from __future__ import annotations
+from research.reproductions._support import JsonObject, JsonValue, canonical_digest, freeze_json, require_sha256, thaw_json
 
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass, field
 import math
 from typing import Protocol, runtime_checkable
 
-from noetrium.api import (
-    JsonObject,
-    JsonValue,
+from noetrium.api.research_authoring import (
     MachineJournalPort,
     MachineStatus,
-    canonical_digest,
-    freeze_json,
-    require_sha256,
-    thaw_json,
-)
-from noetrium.api import (
+    )
+from noetrium.api.research_authoring import (
     OptimizationConcern,
     OptimizationProgramBuilder,
     ProgramNodeRequest,
     ProgramNodeResult,
     ResearchHostOperation,
-    ResearchProgram,
     ResearchProgramHost,
 )
 
@@ -901,7 +895,7 @@ def _finalize(
     )
 
 
-def build_aflow_humaneval_optimization_program() -> ResearchProgram:
+def build_aflow_humaneval_optimization_program():
     builder = OptimizationProgramBuilder.create(
         program_id="aflow.humaneval.paper-era",
         version="1",
@@ -988,7 +982,7 @@ def aflow_humaneval_operations() -> tuple[ResearchHostOperation, ...]:
 
 def aflow_humaneval_host(
     journal: MachineJournalPort,
-) -> ResearchProgramHost:
+):
     return ResearchProgramHost(
         host_id="aflow.humaneval.optimization",
         program=AFLOW_HUMANEVAL_OPTIMIZATION_PROGRAM,

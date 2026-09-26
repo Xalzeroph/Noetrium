@@ -78,9 +78,9 @@ def test_every_executable_study_reproduction_compiles_to_current_research_os() -
         assert len(program.nodes) == 1
         node = program.nodes[0]
         assert node.node_id == "reproduction"
-        assert node.kind is api.ResearchNodeKind.EXPERIMENT
+        assert node.kind is api.research_os.ResearchNodeKind.EXPERIMENT
         assert node.outputs == (
-            api.ResearchOutputSpec("report", api.ResearchValueKind.ARTIFACT),
+            api.research_os.ResearchOutputSpec("report", api.research_os.ResearchValueKind.ARTIFACT),
         )
 
         if ReproductionAssetKind.METHOD_PROGRAM in kinds:
@@ -90,7 +90,7 @@ def test_every_executable_study_reproduction_compiles_to_current_research_os() -
             )
             if binding.exact:
                 assert type(method_definition.implementation) is (
-                    api.ResearchMethodProgramImplementation
+                    api.research_os.ResearchMethodProgramImplementation
                 )
                 assert method_definition.implementation.program_digest == (
                     binding.program_digest
@@ -115,11 +115,11 @@ def test_every_executable_study_reproduction_compiles_to_current_research_os() -
             )
             assert len(machine_definitions) == len(machine_bindings)
 
-        portfolio = api.ResearchPortfolio(
+        portfolio = api.research_os.ResearchPortfolio(
             f"{definition.package}.migration-gate",
             (program,),
         )
-        revision = api.ResearchGraphRevision(
+        revision = api.research_os.ResearchGraphRevision(
             portfolio.portfolio_id,
             portfolio.portfolio_digest,
             (),
@@ -147,7 +147,7 @@ def test_all_protocol_bound_reproductions_compile_as_one_multi_paper_portfolio()
         definitions,
     )
     assert len(portfolio.programs) == len(definitions)
-    revision = api.ResearchGraphRevision(
+    revision = api.research_os.ResearchGraphRevision(
         portfolio.portfolio_id,
         portfolio.portfolio_digest,
         (),
@@ -157,7 +157,7 @@ def test_all_protocol_bound_reproductions_compile_as_one_multi_paper_portfolio()
     assert len(graph.nodes) == len(definitions)
     assert {node.node.node_id for node in graph.nodes} == {"reproduction"}
     assert {node.node.kind for node in graph.nodes} == {
-        api.ResearchNodeKind.EXPERIMENT
+        api.research_os.ResearchNodeKind.EXPERIMENT
     }
 
 def test_method_program_bindings_lower_only_when_exact() -> None:
@@ -179,7 +179,7 @@ def test_method_program_bindings_lower_only_when_exact() -> None:
             assert binding.factory.unresolved_parameters
             continue
 
-        builder = api.ResearchProgramBuilder(definition.package)
+        builder = api.research_os.ResearchProgramBuilder(definition.package)
         if binding.binding_kind == "symbol":
             builder.method_program(
                 "method",
@@ -188,7 +188,7 @@ def test_method_program_bindings_lower_only_when_exact() -> None:
             )
         else:
             assert binding.factory is not None
-            builder.method_program_factory(
+            builder.method_configurer(
                 "method",
                 module=binding.module,
                 qualname=binding.qualname,
@@ -197,11 +197,11 @@ def test_method_program_bindings_lower_only_when_exact() -> None:
             )
         builder.method_node("method", definitions=("method",))
         program = builder.freeze()
-        portfolio = api.ResearchPortfolio(
+        portfolio = api.research_os.ResearchPortfolio(
             f"{definition.package}.method-gate",
             (program,),
         )
-        revision = api.ResearchGraphRevision(
+        revision = api.research_os.ResearchGraphRevision(
             portfolio.portfolio_id,
             portfolio.portfolio_digest,
             (),

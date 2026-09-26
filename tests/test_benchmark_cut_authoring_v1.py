@@ -3,6 +3,8 @@ from __future__ import annotations
 import pytest
 
 from noetrium import api
+import noetrium_platform.research.experimentation.api as experimentation_api
+import noetrium_platform.foundation.kernel.kernel as kernel_api
 from research.benchmarks.alfworld import (
     ALFWORLD_BENCHMARK_ID,
     ALFWORLD_PAPER_EVAL_REVISION,
@@ -18,13 +20,13 @@ from research.reproductions.research_os import resolve_study_factory_bindings
 
 
 def test_public_api_exposes_exact_benchmark_cut_authoring() -> None:
-    assert api.BenchmarkCutRequirement.__name__ == "BenchmarkCutRequirement"
-    assert callable(api.requires_benchmark_cut)
-    assert callable(api.benchmark_cut_requirements)
+    assert experimentation_api.BenchmarkCutRequirement.__name__ == "BenchmarkCutRequirement"
+    assert callable(experimentation_api.requires_benchmark_cut)
+    assert callable(experimentation_api.benchmark_cut_requirements)
 
 
 def test_benchmark_cut_requirement_is_canonical_and_checks_revision_split() -> None:
-    requirement = api.BenchmarkCutRequirement(
+    requirement = experimentation_api.BenchmarkCutRequirement(
         "fixture",
         "revision-2",
         ("test", "dev"),
@@ -32,47 +34,47 @@ def test_benchmark_cut_requirement_is_canonical_and_checks_revision_split() -> N
     assert requirement.required_split_ids == ("dev", "test")
     assert len(requirement.requirement_digest) == 64
 
-    source_digest = api.canonical_digest({"fixture": "revision-2"})
+    source_digest = kernel_api.canonical_digest({"fixture": "revision-2"})
     tasks = (
-        api.TaskDefinition(
+        experimentation_api.TaskDefinition(
             "dev-task",
             "revision-2",
             "fixture",
             "fixture.task.v1",
-            api.canonical_digest({"task": "dev"}),
+            kernel_api.canonical_digest({"task": "dev"}),
         ),
-        api.TaskDefinition(
+        experimentation_api.TaskDefinition(
             "test-task",
             "revision-2",
             "fixture",
             "fixture.task.v1",
-            api.canonical_digest({"task": "test"}),
+            kernel_api.canonical_digest({"task": "test"}),
         ),
     )
-    benchmark = api.BenchmarkTaskSet(
+    benchmark = experimentation_api.BenchmarkTaskSet(
         benchmark_id="fixture",
         revision_id="revision-2",
         source_digest=source_digest,
         task_schema_id="fixture.task.v1",
         tasks=tasks,
         splits=(
-            api.TaskSetSplit("dev", ("dev-task",)),
-            api.TaskSetSplit("test", ("test-task",)),
+            experimentation_api.TaskSetSplit("dev", ("dev-task",)),
+            experimentation_api.TaskSetSplit("test", ("test-task",)),
         ),
     )
     assert requirement.matches(benchmark)
-    assert not api.BenchmarkCutRequirement("fixture", "revision-1").matches(
+    assert not experimentation_api.BenchmarkCutRequirement("fixture", "revision-1").matches(
         benchmark
     )
 
 
 def test_benchmark_cut_decorator_rejects_two_revisions_for_same_benchmark() -> None:
-    @api.requires_benchmark_cut("fixture", "r1")
+    @experimentation_api.requires_benchmark_cut("fixture", "r1")
     def factory(benchmark):
         return benchmark
 
     with pytest.raises(ValueError, match="multiple exact cuts"):
-        api.requires_benchmark_cut("fixture", "r2")(factory)
+        experimentation_api.requires_benchmark_cut("fixture", "r2")(factory)
 
 
 def test_alfworld_papers_expose_their_exact_cut_requirements() -> None:

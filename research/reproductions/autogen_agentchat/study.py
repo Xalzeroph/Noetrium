@@ -1,19 +1,5 @@
 from __future__ import annotations
-
-from noetrium.api import canonical_digest
-from noetrium.api import (
-    ExperimentTrialProtocolIdentity,
-)
-from noetrium.api import (
-    BenchmarkTaskSet,
-    MeasurementDefinition,
-    ReplayLevel,
-    ResearchStudyDefinition,
-    Study,
-    StudyModel,
-    StudyParticipant,
-    TrialBudget,
-)
+from research.reproductions import _support as _rs
 from research.benchmarks.multiagentbench import MULTIAGENTBENCH_BENCHMARK_ID
 
 from .fidelity import AUTOGEN_AGENTCHAT_FIDELITY
@@ -22,11 +8,11 @@ from .program import build_autogen_groupchat_method_program
 
 def autogen_multiagentbench_trial_protocol(
     participant_ids: tuple[str, ...],
-) -> ExperimentTrialProtocolIdentity:
+):
     program = build_autogen_groupchat_method_program(participant_ids)
-    return ExperimentTrialProtocolIdentity(
+    return _rs.study_protocol(
         "autogen.paper-era.multiagentbench.v1",
-        canonical_digest(
+        _rs.canonical_digest(
             {
                 "program_digest": program.program_digest,
                 "source_commit": AUTOGEN_AGENTCHAT_FIDELITY.audited_commit,
@@ -44,12 +30,13 @@ def autogen_multiagentbench_trial_protocol(
     )
 
 
+@_rs.study_factory('benchmark')
 def build_autogen_multiagentbench_study(
-    benchmark: BenchmarkTaskSet,
+    benchmark,
     *,
     split_id: str,
     participant_ids: tuple[str, ...] = ("agent1", "agent2", "user_proxy"),
-) -> ResearchStudyDefinition:
+):
     program = build_autogen_groupchat_method_program(participant_ids)
     if benchmark.benchmark_id != MULTIAGENTBENCH_BENCHMARK_ID:
         raise ValueError("AutoGen GroupChat study requires MultiAgentBench")
@@ -58,7 +45,7 @@ def build_autogen_multiagentbench_study(
         raise ValueError("AutoGen MultiAgentBench study requires a non-empty split")
 
     participants = tuple(
-        StudyParticipant(
+        _rs.study_participant(
             role=participant_id,
             kind="human_proxy" if participant_id == "user_proxy" else "agent",
             implementation=(
@@ -77,26 +64,25 @@ def build_autogen_multiagentbench_study(
         )
         for participant_id in participant_ids
     )
-    models: dict[str, StudyModel] = {
-        "manager": StudyModel(
+    models: dict[str, object] = {
+        "manager": _rs.study_model(
             "model.autogen.speaker-selector",
             prompt="autogen.groupchat.manager.prompt",
         )
     }
     for participant_id in participant_ids:
-        models[participant_id] = StudyModel(
+        models[participant_id] = _rs.study_model(
             f"model.autogen.{participant_id}",
             prompt=f"autogen.{participant_id}.prompt",
             required=participant_id != "user_proxy",
             max_bindings=1,
         )
 
-    return Study(
-        project_id="autogen-paper-era-reproduction",
+    return _rs.study_spec(project_id="autogen-paper-era-reproduction",
         study_id=f"autogen-paper-era-multiagentbench-{split_id}",
         benchmark=benchmark,
         benchmark_split_id=split_id,
-        method=StudyParticipant(
+        method=_rs.study_participant(
             role="manager",
             kind="coordinator",
             implementation="autogen-paper-era-groupchat",
@@ -106,7 +92,7 @@ def build_autogen_multiagentbench_study(
         participants=participants,
         models=models,
         measurements=(
-            MeasurementDefinition.scalar(
+            _rs.scalar_measurement(
                 "task_success",
                 schema_id="noetrium.measurement.binary-scalar.v1",
                 unit="ratio",
@@ -114,7 +100,7 @@ def build_autogen_multiagentbench_study(
                 scale="binary",
                 domain="multiagentbench",
             ),
-            MeasurementDefinition.scalar(
+            _rs.scalar_measurement(
                 "round_count",
                 schema_id="noetrium.measurement.count.v1",
                 unit="round",
@@ -122,7 +108,7 @@ def build_autogen_multiagentbench_study(
                 scale="count",
                 domain="multiagentbench",
             ),
-            MeasurementDefinition.scalar(
+            _rs.scalar_measurement(
                 "message_count",
                 schema_id="noetrium.measurement.count.v1",
                 unit="message",
@@ -130,7 +116,7 @@ def build_autogen_multiagentbench_study(
                 scale="count",
                 domain="multiagentbench",
             ),
-            MeasurementDefinition.scalar(
+            _rs.scalar_measurement(
                 "speaker_fallback_count",
                 schema_id="noetrium.measurement.count.v1",
                 unit="fallback",
@@ -138,7 +124,7 @@ def build_autogen_multiagentbench_study(
                 scale="count",
                 domain="multiagentbench",
             ),
-            MeasurementDefinition.scalar(
+            _rs.scalar_measurement(
                 "interrupt_count",
                 schema_id="noetrium.measurement.count.v1",
                 unit="interrupt",
@@ -150,7 +136,7 @@ def build_autogen_multiagentbench_study(
         trial=autogen_multiagentbench_trial_protocol(participant_ids),
         repetitions=1,
         seeds=("0",),
-        limits=TrialBudget(
+        limits=_rs.trial_budget(
             "autogen-paper-era-groupchat",
             max_steps=256,
             max_turns=AUTOGEN_AGENTCHAT_FIDELITY.groupchat_default_max_round,
@@ -158,8 +144,8 @@ def build_autogen_multiagentbench_study(
             max_model_calls=AUTOGEN_AGENTCHAT_FIDELITY.groupchat_default_max_round * 2,
             max_working_seconds=3600.0,
         ),
-        replay_level=ReplayLevel.OBSERVATIONAL,
-    ).build()
+        replay_level='observational',
+    )
 
 
 __all__ = [

@@ -1,24 +1,22 @@
 from __future__ import annotations
 
-from collections.abc import Mapping
-
-from noetrium.api import (
-    MethodIdentity,
-    MethodProgramIdentity,
-)
-from noetrium.api import (
-    EffectClass,
+from research.reproductions._support import (
     JsonObject,
     JsonValue,
+    MethodCall,
     canonical_digest,
+    freeze_json,
+    method_event,
+    require_sha256,
+    thaw_json,
 )
-from noetrium.api import (
-    MethodExecutionClass,
-    MethodNodeRequest,
-    MethodNodeResult,
-    MethodProgram,
-    MethodProgramBuilder,
-)
+from research.reproductions._support import JsonObject, JsonValue, canonical_digest
+
+from collections.abc import Mapping
+
+
+
+
 
 from .fidelity import METAGPT_SOFTWARE_COMPANY_FIDELITY
 
@@ -58,7 +56,7 @@ def _agent_text(value: JsonValue, field: str) -> str:
     raise TypeError(f"MetaGPT agent result must contain {field} text")
 
 
-def _product_view(request: MethodNodeRequest) -> JsonObject:
+def _product_view(request: MethodCall) -> JsonObject:
     return {
         "role": "ProductManager",
         "action": "WritePRD",
@@ -68,9 +66,9 @@ def _product_view(request: MethodNodeRequest) -> JsonObject:
     }
 
 
-def _record_prd(request: MethodNodeRequest) -> MethodNodeResult:
+def _record_prd(request: MethodCall) -> MethodNodeResult:
     prd = _agent_text(request.previous_value, "prd")
-    return MethodNodeResult(
+    return dict(
         value={
             "artifact_type": "software.prd",
             "media_type": "text/plain",
@@ -80,7 +78,7 @@ def _record_prd(request: MethodNodeRequest) -> MethodNodeResult:
     )
 
 
-def _architect_view(request: MethodNodeRequest) -> JsonObject:
+def _architect_view(request: MethodCall) -> JsonObject:
     return {
         "role": "Architect",
         "action": "WriteDesign",
@@ -90,9 +88,9 @@ def _architect_view(request: MethodNodeRequest) -> JsonObject:
     }
 
 
-def _record_design(request: MethodNodeRequest) -> MethodNodeResult:
+def _record_design(request: MethodCall) -> MethodNodeResult:
     design = _agent_text(request.previous_value, "design")
-    return MethodNodeResult(
+    return dict(
         value={
             "artifact_type": "software.design",
             "media_type": "text/plain",
@@ -102,7 +100,7 @@ def _record_design(request: MethodNodeRequest) -> MethodNodeResult:
     )
 
 
-def _project_manager_view(request: MethodNodeRequest) -> JsonObject:
+def _project_manager_view(request: MethodCall) -> JsonObject:
     return {
         "role": "ProjectManager",
         "action": "WriteTasks",
@@ -113,9 +111,9 @@ def _project_manager_view(request: MethodNodeRequest) -> JsonObject:
     }
 
 
-def _record_tasks(request: MethodNodeRequest) -> MethodNodeResult:
+def _record_tasks(request: MethodCall) -> MethodNodeResult:
     tasks = _agent_text(request.previous_value, "tasks")
-    return MethodNodeResult(
+    return dict(
         value={
             "artifact_type": "software.tasks",
             "media_type": "text/plain",
@@ -125,7 +123,7 @@ def _record_tasks(request: MethodNodeRequest) -> MethodNodeResult:
     )
 
 
-def _engineer_view(request: MethodNodeRequest) -> JsonObject:
+def _engineer_view(request: MethodCall) -> JsonObject:
     return {
         "role": "Engineer",
         "action": "WriteCode",
@@ -137,25 +135,25 @@ def _engineer_view(request: MethodNodeRequest) -> JsonObject:
     }
 
 
-def _record_code_to_publish(request: MethodNodeRequest) -> MethodNodeResult:
+def _record_code_to_publish(request: MethodCall) -> MethodNodeResult:
     code = _agent_text(request.previous_value, "code")
-    return MethodNodeResult(
+    return dict(
         value={"code": code},
         state_update={"code": code},
         next_node="prepare_code_publish",
     )
 
 
-def _record_code_to_review(request: MethodNodeRequest) -> MethodNodeResult:
+def _record_code_to_review(request: MethodCall) -> MethodNodeResult:
     code = _agent_text(request.previous_value, "code")
-    return MethodNodeResult(
+    return dict(
         value={"code": code},
         state_update={"code": code},
         next_node="review",
     )
 
 
-def _review_view(request: MethodNodeRequest) -> JsonObject:
+def _review_view(request: MethodCall) -> JsonObject:
     return {
         "role": "Engineer",
         "action": "WriteCodeReview",
@@ -173,17 +171,17 @@ def _review_view(request: MethodNodeRequest) -> JsonObject:
     }
 
 
-def _record_review(request: MethodNodeRequest) -> MethodNodeResult:
+def _record_review(request: MethodCall) -> MethodNodeResult:
     code = _agent_text(request.previous_value, "code")
-    return MethodNodeResult(
+    return dict(
         value={"code": code},
         state_update={"code": code},
         next_node="prepare_code_publish",
     )
 
 
-def _prepare_code_publish(request: MethodNodeRequest) -> MethodNodeResult:
-    return MethodNodeResult(
+def _prepare_code_publish(request: MethodCall) -> MethodNodeResult:
+    return dict(
         value={
             "artifact_type": "software.code",
             "media_type": "text/plain",
@@ -192,7 +190,7 @@ def _prepare_code_publish(request: MethodNodeRequest) -> MethodNodeResult:
     )
 
 
-def _record_artifact(request: MethodNodeRequest) -> MethodNodeResult:
+def _record_artifact(request: MethodCall) -> MethodNodeResult:
     value = request.previous_value
     if not isinstance(value, Mapping):
         raise TypeError("MetaGPT artifact publication receipt must be a mapping")
@@ -207,7 +205,7 @@ def _record_artifact(request: MethodNodeRequest) -> MethodNodeResult:
         "content_sha256": content_sha256,
     }
     artifacts = (*request.state.get("artifacts", ()), row)
-    return MethodNodeResult(
+    return dict(
         value=row,
         state_update={"artifacts": artifacts},
         checkpoint=True,
@@ -215,8 +213,8 @@ def _record_artifact(request: MethodNodeRequest) -> MethodNodeResult:
     )
 
 
-def _return_result(request: MethodNodeRequest) -> MethodNodeResult:
-    return MethodNodeResult(
+def _return_result(request: MethodCall) -> MethodNodeResult:
+    return dict(
         value={
             "task_id": request.state["task_id"],
             "code": request.state["code"],
@@ -226,10 +224,10 @@ def _return_result(request: MethodNodeRequest) -> MethodNodeResult:
     )
 
 
-def build_metagpt_software_company_method_program(
+def build_metagpt_software_company_method_program(method,
     *,
     use_code_review: bool = False,
-) -> MethodProgram:
+) -> None:
     if type(use_code_review) is not bool:
         raise TypeError("MetaGPT use_code_review must be boolean")
     fidelity = METAGPT_SOFTWARE_COMPANY_FIDELITY
@@ -241,22 +239,14 @@ def build_metagpt_software_company_method_program(
         "default_round_budget": fidelity.default_round_budget,
         "use_code_review": use_code_review,
     }
-    identity = MethodProgramIdentity(
-        MethodIdentity(
-            method_id="metagpt",
-            implementation_version=fidelity.audited_commit[:12],
-            abi_version="noetrium.method-machine.v1",
-            schema_version="metagpt.software-company.sop.v1",
-        ),
-        configuration_digest=canonical_digest(configuration),
-    )
-    builder = MethodProgramBuilder(identity, entrypoint="product_manager")
+
+    builder = method
     builder.agent(
         "product_manager",
         "metagpt.sop.write-prd",
         _PRODUCT_MANAGER,
         ("prepare_prd",),
-        view_handler=_product_view,
+        view=_product_view,
     )
     builder.compute(
         "prepare_prd",
@@ -269,7 +259,7 @@ def build_metagpt_software_company_method_program(
         "metagpt.artifact.publish-prd",
         _ARTIFACT_CAPABILITY,
         ("record_prd_artifact",),
-        effect_class=EffectClass.IDEMPOTENT,
+        effect='idempotent',
     )
     builder.compute(
         "record_prd_artifact",
@@ -282,7 +272,7 @@ def build_metagpt_software_company_method_program(
         "metagpt.sop.write-design",
         _ARCHITECT,
         ("prepare_design",),
-        view_handler=_architect_view,
+        view=_architect_view,
     )
     builder.compute(
         "prepare_design",
@@ -295,7 +285,7 @@ def build_metagpt_software_company_method_program(
         "metagpt.artifact.publish-design",
         _ARTIFACT_CAPABILITY,
         ("record_design_artifact",),
-        effect_class=EffectClass.IDEMPOTENT,
+        effect='idempotent',
     )
     builder.compute(
         "record_design_artifact",
@@ -308,7 +298,7 @@ def build_metagpt_software_company_method_program(
         "metagpt.sop.write-tasks",
         _PROJECT_MANAGER,
         ("prepare_tasks",),
-        view_handler=_project_manager_view,
+        view=_project_manager_view,
     )
     builder.compute(
         "prepare_tasks",
@@ -321,7 +311,7 @@ def build_metagpt_software_company_method_program(
         "metagpt.artifact.publish-tasks",
         _ARTIFACT_CAPABILITY,
         ("record_tasks_artifact",),
-        effect_class=EffectClass.IDEMPOTENT,
+        effect='idempotent',
     )
     builder.compute(
         "record_tasks_artifact",
@@ -334,7 +324,7 @@ def build_metagpt_software_company_method_program(
         "metagpt.sop.write-code",
         _ENGINEER,
         ("record_code",),
-        view_handler=_engineer_view,
+        view=_engineer_view,
     )
     if use_code_review:
         builder.route(
@@ -350,7 +340,7 @@ def build_metagpt_software_company_method_program(
             "metagpt.sop.write-code-review",
             _ENGINEER,
             ("record_review",),
-            view_handler=_review_view,
+            view=_review_view,
         )
         builder.route(
             "record_review",
@@ -377,7 +367,7 @@ def build_metagpt_software_company_method_program(
         "metagpt.artifact.publish-code",
         _ARTIFACT_CAPABILITY,
         ("record_code_artifact",),
-        effect_class=EffectClass.IDEMPOTENT,
+        effect='idempotent',
     )
     builder.compute(
         "record_code_artifact",
@@ -386,25 +376,35 @@ def build_metagpt_software_company_method_program(
         ("return",),
     )
     builder.return_node("return", "metagpt.result", _return_result)
-    return builder.build(
-        configuration=configuration,
-        required_capabilities=(_ARTIFACT_CAPABILITY,),
-        execution_class=MethodExecutionClass.EFFECT_RECORDED,
-        evidence_obligations=(
+    builder.configure(configuration)
+    builder.requires(*(_ARTIFACT_CAPABILITY,))
+    builder.policy(
+        execution='effect_recorded',
+        evidence=(
             "metagpt.sop-trajectory",
             "metagpt.artifact-lineage",
         ),
-        metric_names=("task_success", "artifact_count", "model_call_count"),
-        artifact_kinds=(
+        metrics=("task_success", "artifact_count", "model_call_count"),
+        artifacts=(
             "software.prd",
             "software.design",
             "software.tasks",
             "software.code",
         ),
     )
+    return builder
 
+
+METHOD_CONFIGURER = build_metagpt_software_company_method_program
+METHOD_ENTRYPOINT = "product_manager"
+METHOD_CONFIGURER_ARGS = ()
+METHOD_CONFIGURER_KWARGS = {}
 
 __all__ = [
-    "build_metagpt_software_company_method_program",
-    "metagpt_initial_state",
+    'build_metagpt_software_company_method_program',
+    'metagpt_initial_state',
+    'METHOD_CONFIGURER',
+    'METHOD_ENTRYPOINT',
+    'METHOD_CONFIGURER_ARGS',
+    'METHOD_CONFIGURER_KWARGS',
 ]

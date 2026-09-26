@@ -1,26 +1,20 @@
 from __future__ import annotations
+from research.reproductions._support import JsonObject, JsonValue, canonical_digest, freeze_json, require_sha256, thaw_json
 
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass, field
 from typing import Protocol, runtime_checkable
 
-from noetrium.api import (
-    JsonObject,
-    JsonValue,
+from noetrium.api.research_authoring import (
     MachineJournalPort,
     MachineStatus,
-    canonical_digest,
-    freeze_json,
-    require_sha256,
-    thaw_json,
-)
-from noetrium.api import (
+    )
+from noetrium.api.research_authoring import (
     ParticipantConcern,
     ParticipantProgramBuilder,
     ProgramNodeRequest,
     ProgramNodeResult,
     ResearchHostOperation,
-    ResearchProgram,
     ResearchProgramHost,
 )
 
@@ -190,7 +184,7 @@ def flow_subtask_initial_data(
     }
 
 
-def build_flow_subtask_program() -> ResearchProgram:
+def build_flow_subtask_program():
     return (
         ParticipantProgramBuilder.create(
             program_id="flow.subtask",
@@ -398,7 +392,7 @@ def flow_subtask_operations() -> tuple[ResearchHostOperation, ...]:
 def flow_subtask_host(
     *,
     journal: MachineJournalPort,
-) -> ResearchProgramHost:
+):
     return ResearchProgramHost(
         host_id="flow.subtask",
         program=FLOW_SUBTASK_PROGRAM,

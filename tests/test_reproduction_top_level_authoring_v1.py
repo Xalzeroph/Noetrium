@@ -16,10 +16,10 @@ from research.reproductions.research_os import (
 def test_repository_reproductions_use_same_top_level_authoring_contract_as_projects() -> None:
     portfolio = build_research()
 
-    assert isinstance(portfolio, api.ResearchPortfolio)
+    assert isinstance(portfolio, api.research_os.ResearchPortfolio)
     assert portfolio.portfolio_id == "repository-reproductions.current-research-os"
     assert portfolio.programs
-    assert all(isinstance(program, api.ResearchProgram) for program in portfolio.programs)
+    assert all(isinstance(program, api.research_os.ResearchProgram) for program in portfolio.programs)
 
     executable = executable_reproduction_definitions()
     assert tuple(program.program_id for program in portfolio.programs) == tuple(
@@ -49,7 +49,7 @@ def test_non_executable_catalog_entries_are_never_silently_promoted() -> None:
 
 def test_top_level_reproduction_portfolio_compiles_as_one_current_research_graph() -> None:
     portfolio = build_research()
-    revision = api.ResearchGraphRevision(
+    revision = api.research_os.ResearchGraphRevision(
         portfolio.portfolio_id,
         portfolio.portfolio_digest,
         (),

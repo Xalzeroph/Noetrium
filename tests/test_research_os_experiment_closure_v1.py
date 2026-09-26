@@ -116,11 +116,11 @@ def _validate_experiment_report(payload):
 
 
 def _compiled_graph():
-    builder = api.ResearchProgramBuilder("paper")
+    builder = api.research_os.ResearchProgramBuilder("paper")
     builder.protocol("study", config={"authority": "experimentation"})
     builder.experiment("main", definitions=("study",))
-    portfolio = api.ResearchPortfolio("suite", (builder.freeze(),))
-    revision = api.ResearchGraphRevision(
+    portfolio = api.research_os.ResearchPortfolio("suite", (builder.freeze(),))
+    revision = api.research_os.ResearchGraphRevision(
         portfolio.portfolio_id,
         portfolio.portfolio_digest,
         (),
@@ -504,10 +504,10 @@ def test_experiment_artifact_store_binding_is_execution_cut_local(tmp_path) -> N
 def test_public_research_os_runs_exact_experiment_program_with_durable_machine_journal(
     tmp_path,
 ) -> None:
-    builder = api.ResearchProgramBuilder("paper")
+    builder = api.research_os.ResearchProgramBuilder("paper")
     builder.protocol("study", config={"authority": "experimentation"})
     builder.experiment("main", definitions=("study",))
-    portfolio = api.ResearchPortfolio("suite", (builder.freeze(),))
+    portfolio = api.research_os.ResearchPortfolio("suite", (builder.freeze(),))
 
     definition = _study_definition()
     resolution, binding = _resolution_and_binding(definition)
@@ -552,7 +552,7 @@ def test_public_research_os_runs_exact_experiment_program_with_durable_machine_j
     try:
         revision = research_os.commit(portfolio, message="exact experiment")
         receipt = research_os.run(
-            api.ResearchExecutionTarget("experiment-execution", revision)
+            api.research_os.ResearchExecutionTarget("experiment-execution", revision)
         )
         assert receipt.state == "succeeded"
         assert (tmp_path / "machine-state" / "program-journal" / "machines").is_dir()
@@ -604,19 +604,19 @@ def test_experiment_runtime_binding_drift_fails_closed() -> None:
 def test_experiment_report_output_is_only_verified_artifact_reference_manifest(
     tmp_path,
 ) -> None:
-    builder = api.ResearchProgramBuilder("paper")
+    builder = api.research_os.ResearchProgramBuilder("paper")
     builder.protocol("study", config={"authority": "experimentation"})
     builder.experiment(
         "main",
         definitions=("study",),
         outputs=(
-            api.ResearchOutputSpec(
+            api.research_os.ResearchOutputSpec(
                 "report",
-                api.ResearchValueKind.ARTIFACT,
+                api.research_os.ResearchValueKind.ARTIFACT,
             ),
         ),
     )
-    portfolio = api.ResearchPortfolio("suite", (builder.freeze(),))
+    portfolio = api.research_os.ResearchPortfolio("suite", (builder.freeze(),))
     definition = _study_definition()
     resolution, binding = _resolution_and_binding(definition)
 
@@ -667,7 +667,7 @@ def test_experiment_report_output_is_only_verified_artifact_reference_manifest(
     try:
         revision = research_os.commit(portfolio, message="artifact report")
         receipt = research_os.run(
-            api.ResearchExecutionTarget("experiment-output", revision)
+            api.research_os.ResearchExecutionTarget("experiment-output", revision)
         )
         assert receipt.state == "succeeded"
         compilation_cut = graph.active_cut("experiment-output")
@@ -677,7 +677,7 @@ def test_experiment_report_output_is_only_verified_artifact_reference_manifest(
             compilation_cut.cut_id,
             "paper::main",
             "report",
-            api.ResearchValueKind.ARTIFACT,
+            api.research_os.ResearchValueKind.ARTIFACT,
             graph.snapshot(compilation_cut.cut_id).node("paper::main").semantic_digest,
         )
         value_reference = authority.lookup(subject)
@@ -690,7 +690,7 @@ def test_experiment_report_output_is_only_verified_artifact_reference_manifest(
         # Same immutable execution is replay/recovery-safe: sealed report files
         # are accepted only after exact content verification.
         second = research_os.run(
-            api.ResearchExecutionTarget("experiment-output", revision)
+            api.research_os.ResearchExecutionTarget("experiment-output", revision)
         )
         assert second.state == "succeeded"
         assert authority.resolve(authority.lookup(subject)) == report_ref
@@ -702,16 +702,16 @@ def test_experiment_report_output_is_only_verified_artifact_reference_manifest(
 def test_experiment_artifact_edge_feeds_evaluation_through_authority_resolution(
     tmp_path,
 ) -> None:
-    builder = api.ResearchProgramBuilder("paper")
+    builder = api.research_os.ResearchProgramBuilder("paper")
     builder.protocol("study", config={"authority": "experimentation"})
     builder.metric("validate-report", implementation=_validate_experiment_report)
     builder.experiment(
         "main",
         definitions=("study",),
         outputs=(
-            api.ResearchOutputSpec(
+            api.research_os.ResearchOutputSpec(
                 "report",
-                api.ResearchValueKind.ARTIFACT,
+                api.research_os.ResearchValueKind.ARTIFACT,
             ),
         ),
     )
@@ -723,14 +723,14 @@ def test_experiment_artifact_edge_feeds_evaluation_through_authority_resolution(
         "evaluate",
         "main",
         bindings=(
-            api.ResearchInputBinding(
+            api.research_os.ResearchInputBinding(
                 "report",
                 "report",
-                api.ResearchValueKind.ARTIFACT,
+                api.research_os.ResearchValueKind.ARTIFACT,
             ),
         ),
     )
-    portfolio = api.ResearchPortfolio("suite", (builder.freeze(),))
+    portfolio = api.research_os.ResearchPortfolio("suite", (builder.freeze(),))
     definition = _study_definition()
     resolution, binding = _resolution_and_binding(definition)
 
@@ -782,7 +782,7 @@ def test_experiment_artifact_edge_feeds_evaluation_through_authority_resolution(
             message="experiment to evaluation artifact edge",
         )
         receipt = research_os.run(
-            api.ResearchExecutionTarget(
+            api.research_os.ResearchExecutionTarget(
                 "experiment-evaluation",
                 revision,
             )

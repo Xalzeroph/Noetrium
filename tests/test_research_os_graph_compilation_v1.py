@@ -15,16 +15,16 @@ def _method(payload=None):
     return payload
 
 
-def _search_program() -> api.ResearchProgram:
-    builder = api.ResearchProgramBuilder("search-paper")
+def _search_program() -> api.research_os.ResearchProgram:
+    builder = api.research_os.ResearchProgramBuilder("search-paper")
     builder.method("method", implementation=_method)
     builder.experiment(
         "explore",
         definitions=("method",),
         outputs=(
-            api.ResearchOutputSpec(
+            api.research_os.ResearchOutputSpec(
                 "candidates",
-                api.ResearchValueKind.ARTIFACT,
+                api.research_os.ResearchValueKind.ARTIFACT,
             ),
         ),
     )
@@ -32,17 +32,17 @@ def _search_program() -> api.ResearchProgram:
         "select",
         depends_on=("explore",),
         outputs=(
-            api.ResearchOutputSpec(
+            api.research_os.ResearchOutputSpec(
                 "best",
-                api.ResearchValueKind.SELECTION,
+                api.research_os.ResearchValueKind.SELECTION,
             ),
         ),
     )
     return builder.freeze()
 
 
-def _confirm_program() -> api.ResearchProgram:
-    builder = api.ResearchProgramBuilder("confirm-paper")
+def _confirm_program() -> api.research_os.ResearchProgram:
+    builder = api.research_os.ResearchProgramBuilder("confirm-paper")
     builder.environment(
         "environment",
         config={"family": "minecraft"},
@@ -54,8 +54,8 @@ def _confirm_program() -> api.ResearchProgram:
     return builder.freeze()
 
 
-def _portfolio(input_name: str = "candidate") -> api.ResearchPortfolio:
-    builder = api.ResearchPortfolioBuilder("suite")
+def _portfolio(input_name: str = "candidate") -> api.research_os.ResearchPortfolio:
+    builder = api.research_os.ResearchPortfolioBuilder("suite")
     builder.program(_search_program())
     builder.program(_confirm_program())
     builder.depends(
@@ -64,18 +64,18 @@ def _portfolio(input_name: str = "candidate") -> api.ResearchPortfolio:
         downstream_program_id="confirm-paper",
         downstream_node_id="confirm",
         bindings=(
-            api.ResearchInputBinding(
+            api.research_os.ResearchInputBinding(
                 input_name,
                 "best",
-                api.ResearchValueKind.SELECTION,
+                api.research_os.ResearchValueKind.SELECTION,
             ),
         ),
     )
     return builder.freeze()
 
 
-def _revision(portfolio: api.ResearchPortfolio) -> api.ResearchGraphRevision:
-    return api.ResearchGraphRevision(
+def _revision(portfolio: api.research_os.ResearchPortfolio) -> api.research_os.ResearchGraphRevision:
+    return api.research_os.ResearchGraphRevision(
         portfolio.portfolio_id,
         portfolio.portfolio_digest,
         (),
@@ -85,7 +85,7 @@ def _revision(portfolio: api.ResearchPortfolio) -> api.ResearchGraphRevision:
 
 class _Execution:
     def __init__(self) -> None:
-        self.order: list[api.ResearchNodeRef] = []
+        self.order: list[api.research_os.ResearchNodeRef] = []
         self._lock = RLock()
 
     def execute(self, context, node, *, deadline) -> None:
@@ -125,18 +125,18 @@ def test_portfolio_compiles_same_and_cross_paper_dependencies_into_one_graph() -
         "search-paper::select",
     )
     confirm = compilation.node("confirm-paper::confirm")
-    assert confirm.ref == api.ResearchNodeRef("confirm-paper", "confirm")
+    assert confirm.ref == api.research_os.ResearchNodeRef("confirm-paper", "confirm")
     assert confirm.definitions[0].definition_id == "environment"
     assert confirm.definitions[0].platform_resolved
 
     assert len(confirm.incoming_edges) == 1
     edge = confirm.incoming_edges[0]
-    assert edge.upstream == api.ResearchNodeRef("search-paper", "select")
+    assert edge.upstream == api.research_os.ResearchNodeRef("search-paper", "select")
     assert tuple(
         (binding.input_name, binding.output_name, binding.kind)
         for binding in edge.bindings
     ) == (
-        ("candidate", "best", api.ResearchValueKind.SELECTION),
+        ("candidate", "best", api.research_os.ResearchValueKind.SELECTION),
     )
     assert confirm.upstream_refs == (edge.upstream,)
     assert confirm.incoming_dependency_digests == (edge.dependency_digest,)
@@ -183,9 +183,9 @@ def test_compiled_portfolio_runs_through_the_same_research_graph_scheduler() -> 
         "search-paper::select",
     }
     positions = {ref: index for index, ref in enumerate(execution.order)}
-    assert positions[api.ResearchNodeRef("search-paper", "explore")] < positions[
-        api.ResearchNodeRef("search-paper", "select")
+    assert positions[api.research_os.ResearchNodeRef("search-paper", "explore")] < positions[
+        api.research_os.ResearchNodeRef("search-paper", "select")
     ]
-    assert positions[api.ResearchNodeRef("search-paper", "select")] < positions[
-        api.ResearchNodeRef("confirm-paper", "confirm")
+    assert positions[api.research_os.ResearchNodeRef("search-paper", "select")] < positions[
+        api.research_os.ResearchNodeRef("confirm-paper", "confirm")
     ]

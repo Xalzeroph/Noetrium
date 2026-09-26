@@ -15,6 +15,7 @@ from noetrium_platform.research.experimentation.lifecycle.study.api import (
     MaterializedTaskVerifierArchive,
     TaskVerifierArchiveMaterializationPort,
     AgentStudySpec,
+    materialize_research_study_spec,
     Study,
     AssignmentWorkload,
     DEFAULT_STUDY_AGGREGATION_REQUIREMENT_ID,
@@ -402,3 +403,5 @@ __all__ = [
     "failure_scope_rank",
     "validate_task_graph",
 ]
+
+__all__ = tuple(__all__) + ("materialize_research_study_spec",)

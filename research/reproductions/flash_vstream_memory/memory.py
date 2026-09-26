@@ -1,31 +1,25 @@
 from __future__ import annotations
+from research.reproductions._support import JsonObject, JsonValue, canonical_digest, freeze_json, require_sha256, thaw_json
 
 import math
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass, field
 from typing import Protocol, runtime_checkable
 
-from noetrium.api import (
+from noetrium.api.research_authoring import (
     TensorContentRef,
     TensorContentStorePort,
 )
-from noetrium.api import (
-    JsonObject,
-    JsonValue,
+from noetrium.api.research_authoring import (
     MachineJournalPort,
     MachineSnapshotStorePort,
-    canonical_digest,
-    freeze_json,
-    require_sha256,
-    thaw_json,
-)
-from noetrium.api import (
+    )
+from noetrium.api.research_authoring import (
     MemoryConcern,
     MemoryProgramBuilder,
     ProgramNodeRequest,
     ProgramNodeResult,
     ResearchHostOperation,
-    ResearchProgram,
     ResearchProgramHost,
 )
 
@@ -969,7 +963,7 @@ def _compose(
     )
 
 
-def build_flash_vstream_memory_program() -> ResearchProgram:
+def build_flash_vstream_memory_program():
     fidelity = FLASH_VSTREAM_REFERENCE_FIDELITY
     return (
         MemoryProgramBuilder.create(
@@ -1058,7 +1052,7 @@ def flash_vstream_memory_host(
     *,
     journal: MachineJournalPort,
     snapshot_store: MachineSnapshotStorePort | None = None,
-) -> ResearchProgramHost:
+):
     fidelity = FLASH_VSTREAM_REFERENCE_FIDELITY
     return ResearchProgramHost(
         host_id="flash-vstream.dual-flash-memory",

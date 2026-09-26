@@ -99,7 +99,7 @@ def test_project_sync_never_parses_or_rewrites_user_core(
 
     core_path = root / "src" / "paper" / "core.py"
     custom = '''"""arbitrary user semantics"""
-from noetrium import api
+from noetrium.api import research_os as api
 
 
 def build_research() -> api.ResearchPortfolio:
@@ -258,7 +258,7 @@ def test_user_core_may_delegate_to_arbitrary_project_modules(
 
     package_root = root / "src" / "modular_paper"
     (package_root / "semantics.py").write_text(
-        '''from noetrium import api
+        '''from noetrium.api import research_os as api
 
 
 def make_portfolio() -> api.ResearchPortfolio:
@@ -274,7 +274,7 @@ def make_portfolio() -> api.ResearchPortfolio:
         encoding="utf-8",
     )
     (package_root / "core.py").write_text(
-        '''from noetrium import api
+        '''from noetrium.api import research_os as api
 from .semantics import make_portfolio
 
 
@@ -317,7 +317,7 @@ def test_generated_shell_is_independent_of_scientific_topology(
 
     core_path = root / "src" / "topology_independent" / "core.py"
     core_path.write_text(
-        '''from noetrium import api
+        '''from noetrium.api import research_os as api
 
 
 def build_research() -> api.ResearchPortfolio:

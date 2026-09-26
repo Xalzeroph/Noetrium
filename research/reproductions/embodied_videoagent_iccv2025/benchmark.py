@@ -1,9 +1,8 @@
 from __future__ import annotations
-from noetrium.api import BenchmarkTaskSet
 
 BENCHMARK_IDS = ("open-eqa", "envqa", "ego4d-vq3d")
 
-def require_embodied_videoagent_benchmark(benchmark: BenchmarkTaskSet, *, split_id: str) -> tuple:
+def require_embodied_videoagent_benchmark(benchmark, *, split_id: str) -> tuple:
     if benchmark.benchmark_id not in BENCHMARK_IDS:
         raise ValueError("embodied-videoagent benchmark identity is outside the paper protocol")
     selected = benchmark.selected_tasks(split_id)

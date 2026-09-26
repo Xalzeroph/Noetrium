@@ -1,20 +1,20 @@
 from __future__ import annotations
+from research.reproductions._support import canonical_digest, require_sha256
 
 from dataclasses import dataclass
 
-from noetrium.api import (
+from noetrium.api.research_authoring import (
     CapabilityDescriptor,
     CapabilityPort,
     CapabilitySelectionReference,
     CapabilitySelectionView,
     materialize_capability_selection_view,
 )
-from noetrium.api import SemanticProjectionSnapshot
-from noetrium.api import (
+from noetrium.api.research_authoring import SemanticProjectionSnapshot
+from noetrium.api.research_authoring import (
     SemanticSimilarityQuery,
     SemanticSimilarityQueryPort,
 )
-from noetrium.api import canonical_digest, require_sha256
 
 
 @dataclass(frozen=True, slots=True)

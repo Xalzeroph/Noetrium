@@ -36,7 +36,7 @@ A generated project separates user scientific semantics from platform shell.
 editing. It exports one function:
 
 ```python
-from noetrium import api
+from noetrium.api import research_os as api
 
 
 def build_research() -> api.ResearchPortfolio:
@@ -52,7 +52,7 @@ The only top-level contract is that `build_research()` returns a valid
 implementation may use `ResearchProgramBuilder`, direct immutable Product
 contracts, custom nodes, Machine-backed semantics, helper modules, generated
 domain code, or any other Python organization that stays behind
-`noetrium.api`.
+`noetrium.api.research_os`.
 
 The generated `src/<package>/research.py` shell calls `build_research()`,
 checks only that top-level contract, and exposes `PORTFOLIO` plus `PROGRAMS`.

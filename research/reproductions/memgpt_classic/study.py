@@ -1,27 +1,13 @@
 from __future__ import annotations
-
-from noetrium.api import canonical_digest
-from noetrium.api import (
-    ExperimentTrialProtocolIdentity,
-)
-from noetrium.api import (
-    BenchmarkTaskSet,
-    MeasurementDefinition,
-    ReplayLevel,
-    ResearchStudyDefinition,
-    Study,
-    StudyModel,
-    StudyParticipant,
-    TrialBudget,
-)
+from research.reproductions import _support as _rs
 from research.benchmarks.memoryarena import MEMORYARENA_BENCHMARK_ID
 
 from .fidelity import MEMGPT_CLASSIC_FIDELITY
 from .program import MEMGPT_CLASSIC_METHOD_PROGRAM
 
-MEMGPT_MEMORYARENA_TRIAL_PROTOCOL = ExperimentTrialProtocolIdentity(
+MEMGPT_MEMORYARENA_TRIAL_PROTOCOL = _rs.study_protocol(
     "memgpt.classic.memoryarena.v1",
-    canonical_digest(
+    _rs.canonical_digest(
         {
             "program_digest": MEMGPT_CLASSIC_METHOD_PROGRAM.program_digest,
             "paper_era_anchor": MEMGPT_CLASSIC_FIDELITY.audited_anchor_commit,
@@ -34,11 +20,12 @@ MEMGPT_MEMORYARENA_TRIAL_PROTOCOL = ExperimentTrialProtocolIdentity(
 )
 
 
+@_rs.study_factory('benchmark')
 def build_memgpt_memoryarena_study(
-    benchmark: BenchmarkTaskSet,
+    benchmark,
     *,
     split_id: str,
-) -> ResearchStudyDefinition:
+):
     """Build a native pressure-study protocol for classic MemGPT on MemoryArena."""
 
     if benchmark.benchmark_id != MEMORYARENA_BENCHMARK_ID:
@@ -47,12 +34,11 @@ def build_memgpt_memoryarena_study(
     if not selected:
         raise ValueError("classic MemGPT MemoryArena study requires a non-empty split")
 
-    return Study(
-        project_id="memgpt-classic-reproduction",
+    return _rs.study_spec(project_id="memgpt-classic-reproduction",
         study_id=f"memgpt-classic-memoryarena-{split_id}",
         benchmark=benchmark,
         benchmark_split_id=split_id,
-        method=StudyParticipant(
+        method=_rs.study_participant(
             role="agent",
             kind="agent",
             implementation="memgpt-classic",
@@ -65,17 +51,17 @@ def build_memgpt_memoryarena_study(
             configurations=("memgpt.classic.prompt",),
         ),
         models={
-            "agent": StudyModel(
+            "agent": _rs.study_model(
                 "model.memgpt.agent",
                 prompt="memgpt.classic.prompt",
             ),
-            "summarizer": StudyModel(
+            "summarizer": _rs.study_model(
                 "model.memgpt.summarizer",
                 prompt="memgpt.classic.summary",
             ),
         },
         measurements=(
-            MeasurementDefinition.scalar(
+            _rs.scalar_measurement(
                 "task_success",
                 schema_id="noetrium.measurement.binary-scalar.v1",
                 unit="ratio",
@@ -83,7 +69,7 @@ def build_memgpt_memoryarena_study(
                 scale="binary",
                 domain="memoryarena",
             ),
-            MeasurementDefinition.scalar(
+            _rs.scalar_measurement(
                 "agent_turn_count",
                 schema_id="noetrium.measurement.count.v1",
                 unit="turn",
@@ -91,7 +77,7 @@ def build_memgpt_memoryarena_study(
                 scale="count",
                 domain="memoryarena",
             ),
-            MeasurementDefinition.scalar(
+            _rs.scalar_measurement(
                 "memory_query_count",
                 schema_id="noetrium.measurement.count.v1",
                 unit="query",
@@ -99,7 +85,7 @@ def build_memgpt_memoryarena_study(
                 scale="count",
                 domain="memoryarena",
             ),
-            MeasurementDefinition.scalar(
+            _rs.scalar_measurement(
                 "memory_write_count",
                 schema_id="noetrium.measurement.count.v1",
                 unit="write",
@@ -107,7 +93,7 @@ def build_memgpt_memoryarena_study(
                 scale="count",
                 domain="memoryarena",
             ),
-            MeasurementDefinition.scalar(
+            _rs.scalar_measurement(
                 "summary_count",
                 schema_id="noetrium.measurement.count.v1",
                 unit="summary",
@@ -119,14 +105,14 @@ def build_memgpt_memoryarena_study(
         trial=MEMGPT_MEMORYARENA_TRIAL_PROTOCOL,
         repetitions=1,
         seeds=("0",),
-        limits=TrialBudget(
+        limits=_rs.trial_budget(
             "memgpt-classic-memoryarena-budget",
             max_steps=1024,
             max_turns=128,
             max_model_calls=160,
         ),
-        replay_level=ReplayLevel.OBSERVATIONAL,
-    ).build()
+        replay_level='observational',
+    )
 
 
 __all__ = [

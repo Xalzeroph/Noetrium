@@ -3,8 +3,9 @@ from __future__ import annotations
 from noetrium_platform.product.research_os import (
     ResearchDefinitionKind,
 )
-from noetrium_platform.research.experimentation.lifecycle.study.api import (
+from noetrium_platform.research.experimentation.api import (
     ResearchStudyDefinition,
+    materialize_research_study_spec,
 )
 
 from .research_binding_authority import (
@@ -66,12 +67,13 @@ class ResearchStudyProtocolClosureProvider:
                 "Research Study protocol factory failed: "
                 f"{resolved.declared.module}:{resolved.declared.qualname}"
             ) from exc
-        if type(study) is not ResearchStudyDefinition:
-            raise TypeError(
-                "Research Study protocol factory must return "
-                "ResearchStudyDefinition"
-            )
-        return study
+        if type(study) is ResearchStudyDefinition:
+            return study
+        if isinstance(study, dict):
+            return materialize_research_study_spec(study)
+        raise TypeError(
+            "Research Study protocol factory must return a top-level Study mapping"
+        )
 
     def resolve(
         self,

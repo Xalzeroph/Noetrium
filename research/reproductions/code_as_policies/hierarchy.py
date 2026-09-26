@@ -1,4 +1,5 @@
 from __future__ import annotations
+from research.reproductions._support import AgentLoopResult, JsonObject, JsonValue, canonical_digest, freeze_json, require_sha256, thaw_json
 
 import ast
 from collections import OrderedDict
@@ -7,19 +8,6 @@ from dataclasses import dataclass, field
 from enum import StrEnum
 from typing import Protocol, runtime_checkable
 
-from noetrium.api import (
-    ExecutionContext,
-    JsonObject,
-    JsonValue,
-    canonical_digest,
-    freeze_json,
-    require_sha256,
-    thaw_json,
-)
-from noetrium.api import (
-    MethodAgentRequest,
-    MethodAgentResult,
-)
 
 from .source import CODE_AS_POLICIES_AUDITED_COMMIT
 
@@ -257,7 +245,7 @@ class CodeAsPoliciesGeneratorPort(Protocol):
     def generate(
         self,
         request: CodeAsPoliciesGenerationRequest,
-        context: ExecutionContext,
+        context: object,
     ) -> CodeAsPoliciesGeneration: ...
 
 
@@ -439,7 +427,7 @@ class CodeAsPoliciesHierarchicalSynthesisAgentLoop:
             "implementation_revision": 1,
         })
 
-    def run(self, request: MethodAgentRequest) -> MethodAgentResult:
+    def run(self, request: object) -> AgentLoopResult:
         if request.agent_id != SYNTHESIS_AGENT_ID:
             raise ValueError(
                 f"unexpected Code as Policies agent id: {request.agent_id}"
@@ -557,7 +545,7 @@ class CodeAsPoliciesHierarchicalSynthesisAgentLoop:
             helper_sources=tuple(helpers.values()),
             generation_receipts=tuple(receipts),
         )
-        return MethodAgentResult(
+        return AgentLoopResult(
             value=bundle.payload(),
             state_update={
                 "policy_source": bundle.policy_source,

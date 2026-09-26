@@ -1,13 +1,12 @@
 from __future__ import annotations
+from research.reproductions._support import JsonObject, JsonValue, canonical_digest, freeze_json, require_sha256, thaw_json
 
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass, field
 from typing import Protocol, runtime_checkable
 
-from noetrium.api import (
+from noetrium.api.research_authoring import (
     ArtifactBlobRef,
-    JsonObject,
-    JsonValue,
     MachineJournalPort,
     MachineSnapshotStorePort,
     MemoryConcern,
@@ -15,13 +14,8 @@ from noetrium.api import (
     ProgramNodeRequest,
     ProgramNodeResult,
     ResearchHostOperation,
-    ResearchProgram,
     ResearchProgramHost,
-    canonical_digest,
-    freeze_json,
-    require_sha256,
-    thaw_json,
-)
+    )
 
 from .fidelity import VIDEOAGENT_REFERENCE_FIDELITY
 from .source import VIDEOAGENT_AUDITED_COMMIT
@@ -554,7 +548,7 @@ def _dispatch(
     )
 
 
-def build_videoagent_memory_program() -> ResearchProgram:
+def build_videoagent_memory_program():
     return (
         MemoryProgramBuilder.create(
             program_id="videoagent.structured-video-memory",
@@ -613,7 +607,7 @@ def videoagent_memory_host(
     *,
     journal: MachineJournalPort,
     snapshot_store: MachineSnapshotStorePort | None = None,
-) -> ResearchProgramHost:
+):
     return ResearchProgramHost(
         host_id="videoagent.structured-video-memory",
         program=VIDEOAGENT_MEMORY_PROGRAM,

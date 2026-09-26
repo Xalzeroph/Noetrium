@@ -1,19 +1,5 @@
 from __future__ import annotations
-
-from noetrium.api import canonical_digest
-from noetrium.api import (
-    ExperimentTrialProtocolIdentity,
-)
-from noetrium.api import (
-    BenchmarkTaskSet,
-    MeasurementDefinition,
-    ReplayLevel,
-    ResearchStudyDefinition,
-    Study,
-    StudyModel,
-    StudyParticipant,
-    TrialBudget,
-)
+from research.reproductions import _support as _rs
 from research.benchmarks.moviechat_1k import (
     MOVIECHAT_1K_BENCHMARK_ID,
     MOVIECHAT_1K_TEST_SPLIT,
@@ -25,8 +11,8 @@ from .memory import REWIND_MEMORY_PROGRAM
 
 
 def rewind_cvpr2025_trial_protocol(
-    benchmark: BenchmarkTaskSet,
-) -> ExperimentTrialProtocolIdentity:
+    benchmark,
+):
     if benchmark.benchmark_id != MOVIECHAT_1K_BENCHMARK_ID:
         raise ValueError(
             "ReWind CVPR 2025 protocol requires MovieChat-1K"
@@ -37,9 +23,9 @@ def rewind_cvpr2025_trial_protocol(
             "ReWind CVPR 2025 protocol requires 1000-video test cut"
         )
     fidelity = REWIND_REFERENCE_FIDELITY
-    return ExperimentTrialProtocolIdentity(
+    return _rs.study_protocol(
         "rewind.cvpr2025.moviechat-1k.v1",
-        canonical_digest({
+        _rs.canonical_digest({
             "memory_program_digest": REWIND_MEMORY_PROGRAM.program_digest,
             "publication_revision": fidelity.source_revision,
             "benchmark_cut_digest": benchmark.cut_digest,
@@ -66,17 +52,17 @@ def rewind_cvpr2025_trial_protocol(
     )
 
 
+@_rs.study_factory('benchmark')
 def build_rewind_cvpr2025_study(
-    benchmark: BenchmarkTaskSet,
-) -> ResearchStudyDefinition:
+    benchmark,
+):
     fidelity = REWIND_REFERENCE_FIDELITY
     protocol = rewind_cvpr2025_trial_protocol(benchmark)
-    return Study(
-        project_id="rewind-cvpr-2025-reproduction",
+    return _rs.study_spec(project_id="rewind-cvpr-2025-reproduction",
         study_id="rewind-cvpr-2025-moviechat-1k",
         benchmark=benchmark,
         benchmark_split_id=MOVIECHAT_1K_TEST_SPLIT,
-        method=StudyParticipant(
+        method=_rs.study_participant(
             role="instructed_multimodal_memory_model",
             kind="method",
             implementation="rewind",
@@ -96,17 +82,17 @@ def build_rewind_cvpr2025_study(
             ),
         ),
         models={
-            "multimodal": StudyModel(
+            "multimodal": _rs.study_model(
                 "model.rewind.llama2-7b-paper-described",
                 prompt="rewind.long-video-qa.prompt",
             ),
-            "judge": StudyModel(
+            "judge": _rs.study_model(
                 "model.moviechat.paper-era-qa-judge",
                 prompt="moviechat.qa-evaluation.prompt",
             ),
         },
         measurements=(
-            MeasurementDefinition.scalar(
+            _rs.scalar_measurement(
                 "global_accuracy",
                 schema_id="noetrium.measurement.ratio.v1",
                 unit="ratio",
@@ -114,7 +100,7 @@ def build_rewind_cvpr2025_study(
                 scale="continuous",
                 domain="moviechat_global",
             ),
-            MeasurementDefinition.scalar(
+            _rs.scalar_measurement(
                 "breakpoint_accuracy",
                 schema_id="noetrium.measurement.ratio.v1",
                 unit="ratio",
@@ -122,7 +108,7 @@ def build_rewind_cvpr2025_study(
                 scale="continuous",
                 domain="moviechat_breakpoint",
             ),
-            MeasurementDefinition.scalar(
+            _rs.scalar_measurement(
                 "global_semantic_score",
                 schema_id="noetrium.measurement.score.v1",
                 unit="score_0_to_5",
@@ -130,7 +116,7 @@ def build_rewind_cvpr2025_study(
                 scale="continuous",
                 domain="moviechat_global",
             ),
-            MeasurementDefinition.scalar(
+            _rs.scalar_measurement(
                 "breakpoint_semantic_score",
                 schema_id="noetrium.measurement.score.v1",
                 unit="score_0_to_5",
@@ -138,7 +124,7 @@ def build_rewind_cvpr2025_study(
                 scale="continuous",
                 domain="moviechat_breakpoint",
             ),
-            MeasurementDefinition.scalar(
+            _rs.scalar_measurement(
                 "memory_tokens_per_frame",
                 schema_id="noetrium.measurement.count.v1",
                 unit="token",
@@ -146,7 +132,7 @@ def build_rewind_cvpr2025_study(
                 scale="count",
                 domain="rewind",
             ),
-            MeasurementDefinition.scalar(
+            _rs.scalar_measurement(
                 "dfs_selected_frame_count",
                 schema_id="noetrium.measurement.count.v1",
                 unit="frame",
@@ -158,16 +144,16 @@ def build_rewind_cvpr2025_study(
         trial=protocol,
         repetitions=1,
         seeds=("paper-described-evaluation",),
-        limits=TrialBudget(
+        limits=_rs.trial_budget(
             "rewind-cvpr2025-moviechat-1k-budget",
             max_steps=4096,
             max_turns=32,
             max_model_calls=64,
             max_working_seconds=3600.0,
         ),
-        replay_level=ReplayLevel.OBSERVATIONAL,
+        replay_level='observational',
         repetition_timeout_seconds=3600.0,
-    ).build()
+    )
 
 
 __all__ = [

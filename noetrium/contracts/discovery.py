@@ -113,6 +113,9 @@ def validate_downstream_interface_schema(
         "generator",
         "topology_digest",
         "interface_schema",
+        "authoring_inspection",
+        "public_api",
+        "reachable_dsl",
         "systems",
         "interface_digest",
     }
@@ -136,6 +139,56 @@ def validate_downstream_interface_schema(
         raise DownstreamCatalogIntegrityError(
             "downstream interface schema does not match capability catalog topology"
         )
+    inspection = document["authoring_inspection"]
+    public_api = document["public_api"]
+    reachable_dsl = document["reachable_dsl"]
+    if not isinstance(inspection, Mapping):
+        raise DownstreamCatalogIntegrityError("invalid downstream authoring inspection descriptor")
+    if not isinstance(public_api, Mapping) or set(public_api) != {
+        "module", "source", "symbols", "symbol_schemas"
+    }:
+        raise DownstreamCatalogIntegrityError("invalid root public API descriptor")
+    if public_api.get("module") != catalog.entrypoint:
+        raise DownstreamCatalogIntegrityError("root public API entrypoint drifted")
+    public_symbols = _require_string_tuple(public_api.get("symbols"), "public_api.symbols")
+    schemas = public_api.get("symbol_schemas")
+    if not isinstance(schemas, list):
+        raise DownstreamCatalogIntegrityError("public_api.symbol_schemas must be a list")
+    schema_names = tuple(
+        schema.get("name") if isinstance(schema, Mapping) else None
+        for schema in schemas
+    )
+    if schema_names != public_symbols:
+        raise DownstreamCatalogIntegrityError("root public API schema symbols drifted")
+    if inspection.get("entrypoint") != catalog.entrypoint:
+        raise DownstreamCatalogIntegrityError("downstream authoring inspection entrypoint drifted")
+    inspection_roots = _require_string_tuple(
+        inspection.get("public_roots"),
+        "authoring_inspection.public_roots",
+    )
+    if inspection_roots != public_symbols:
+        raise DownstreamCatalogIntegrityError("authoring inspection roots drifted")
+    for field in ("authoring_root", "portfolio_type", "runtime_root", "project_opener"):
+        value = inspection.get(field)
+        if not isinstance(value, str) or value not in public_symbols:
+            raise DownstreamCatalogIntegrityError(
+                f"authoring inspection {field} is not a root public symbol"
+            )
+    if not isinstance(reachable_dsl, Mapping) or set(reachable_dsl) != {
+        "program", "method", "memory", "runtime"
+    }:
+        raise DownstreamCatalogIntegrityError("invalid reachable DSL schema set")
+    for name, schema in reachable_dsl.items():
+        if (
+            not isinstance(schema, Mapping)
+            or schema.get("schema_id") != "noetrium.interface-schema"
+            or schema.get("schema_version") != "1"
+            or schema.get("kind") != "class"
+        ):
+            raise DownstreamCatalogIntegrityError(
+                f"invalid reachable DSL schema: {name}"
+            )
+
     descriptor = document["interface_schema"]
     if (
         not isinstance(descriptor, Mapping)
@@ -237,6 +290,11 @@ def find_downstream_symbol_schema(
 ) -> dict[str, Any]:
     """Find one public symbol schema without importing implementation modules."""
     document = load_downstream_interface_schema()
+    if module == "noetrium.api":
+        for schema in document["public_api"]["symbol_schemas"]:
+            if schema["name"] == symbol:
+                return schema
+        raise KeyError(f"unknown public symbol schema: {module}.{symbol}")
     for system in document["systems"]:
         if system["system_key"] != system_key:
             continue

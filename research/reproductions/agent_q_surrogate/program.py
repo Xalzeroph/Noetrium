@@ -1,24 +1,22 @@
 from __future__ import annotations
 
-from collections.abc import Mapping, Sequence
-
-from noetrium.api import (
-    MethodIdentity,
-    MethodProgramIdentity,
-)
-from noetrium.api import (
-    EffectClass,
+from research.reproductions._support import (
     JsonObject,
     JsonValue,
+    MethodCall,
     canonical_digest,
+    freeze_json,
+    method_event,
+    require_sha256,
+    thaw_json,
 )
-from noetrium.api import (
-    MethodExecutionClass,
-    MethodNodeRequest,
-    MethodNodeResult,
-    MethodProgram,
-    MethodProgramBuilder,
-)
+from research.reproductions._support import JsonObject, JsonValue, canonical_digest
+
+from collections.abc import Mapping, Sequence
+
+
+
+
 
 from .fidelity import AGENT_Q_SURROGATE_FIDELITY
 
@@ -78,11 +76,11 @@ def agent_q_surrogate_initial_state(
     }
 
 
-def _prepare_iteration(request: MethodNodeRequest) -> MethodNodeResult:
+def _prepare_iteration(request: MethodCall) -> MethodNodeResult:
     iteration = _integer(request.state.get("iteration", 0), "iteration")
     if iteration >= AGENT_Q_SURROGATE_FIDELITY.browser_invocation_iterations:
         raise ValueError("Agent Q surrogate cannot start an iteration beyond its MCTS budget")
-    return MethodNodeResult(
+    return dict(
         value={
             "action": "navigate",
             "url": _text(request.state.get("start_url"), "start_url"),
@@ -98,14 +96,14 @@ def _prepare_iteration(request: MethodNodeRequest) -> MethodNodeResult:
     )
 
 
-def _record_iteration_reset(request: MethodNodeRequest) -> MethodNodeResult:
-    return MethodNodeResult(
+def _record_iteration_reset(request: MethodCall) -> MethodNodeResult:
+    return dict(
         value=request.previous_value,
         state_update={"observation": request.previous_value},
     )
 
 
-def _actor_view(request: MethodNodeRequest) -> JsonObject:
+def _actor_view(request: MethodCall) -> JsonObject:
     return {
         "task": _text(request.state.get("task"), "task"),
         "start_url": _text(request.state.get("start_url"), "start_url"),
@@ -117,7 +115,7 @@ def _actor_view(request: MethodNodeRequest) -> JsonObject:
     }
 
 
-def _prepare_action(request: MethodNodeRequest) -> MethodNodeResult:
+def _prepare_action(request: MethodCall) -> MethodNodeResult:
     value = request.previous_value
     if isinstance(value, str):
         action = _text(value, "actor action").strip()
@@ -136,7 +134,7 @@ def _prepare_action(request: MethodNodeRequest) -> MethodNodeResult:
         )
     else:
         raise TypeError("Agent Q surrogate actor result must be text or mapping")
-    return MethodNodeResult(
+    return dict(
         value={"action": action},
         state_update={
             "pending_action": action,
@@ -145,7 +143,7 @@ def _prepare_action(request: MethodNodeRequest) -> MethodNodeResult:
     )
 
 
-def _record_environment(request: MethodNodeRequest) -> MethodNodeResult:
+def _record_environment(request: MethodCall) -> MethodNodeResult:
     action = _text(request.state.get("pending_action"), "pending_action")
     depth = _integer(request.state.get("depth", 0), "depth") + 1
     trajectory = list(_rows(request.state.get("trajectory", ()), "trajectory"))
@@ -157,7 +155,7 @@ def _record_environment(request: MethodNodeRequest) -> MethodNodeResult:
             "siblings": request.state.get("pending_siblings", ()),
         }
     )
-    return MethodNodeResult(
+    return dict(
         value={"depth": depth, "observation": request.previous_value},
         state_update={
             "depth": depth,
@@ -167,7 +165,7 @@ def _record_environment(request: MethodNodeRequest) -> MethodNodeResult:
     )
 
 
-def _critic_view(request: MethodNodeRequest) -> JsonObject:
+def _critic_view(request: MethodCall) -> JsonObject:
     return {
         "task": _text(request.state.get("task"), "task"),
         "iteration": _integer(request.state.get("iteration", 0), "iteration"),
@@ -180,7 +178,7 @@ def _critic_view(request: MethodNodeRequest) -> JsonObject:
     }
 
 
-def _record_critic(request: MethodNodeRequest) -> MethodNodeResult:
+def _record_critic(request: MethodCall) -> MethodNodeResult:
     value = request.previous_value
     if isinstance(value, Mapping):
         raw_score = value.get("score", value.get("value"))
@@ -201,7 +199,7 @@ def _record_critic(request: MethodNodeRequest) -> MethodNodeResult:
     if score > best_reward:
         best_reward = score
         best_trajectory = request.state.get("trajectory", ())
-    return MethodNodeResult(
+    return dict(
         value={"score": score},
         state_update={
             "search_history": tuple(history),
@@ -211,7 +209,7 @@ def _record_critic(request: MethodNodeRequest) -> MethodNodeResult:
     )
 
 
-def _judge_view(request: MethodNodeRequest) -> JsonObject:
+def _judge_view(request: MethodCall) -> JsonObject:
     return {
         "task": _text(request.state.get("task"), "task"),
         "trajectory": request.state.get("trajectory", ()),
@@ -220,7 +218,7 @@ def _judge_view(request: MethodNodeRequest) -> JsonObject:
     }
 
 
-def _route_after_judge(request: MethodNodeRequest) -> MethodNodeResult:
+def _route_after_judge(request: MethodCall) -> MethodNodeResult:
     value = request.previous_value
     if isinstance(value, Mapping):
         success = value.get("success", value.get("terminal", False))
@@ -232,7 +230,7 @@ def _route_after_judge(request: MethodNodeRequest) -> MethodNodeResult:
     depth = _integer(request.state.get("depth", 0), "depth")
     iteration = _integer(request.state.get("iteration", 0), "iteration")
     if success:
-        return MethodNodeResult(
+        return dict(
             value={"success": True, "iteration": iteration, "depth": depth},
             state_update={
                 "terminal_success": True,
@@ -242,14 +240,14 @@ def _route_after_judge(request: MethodNodeRequest) -> MethodNodeResult:
             next_node="extract_preferences",
         )
     if depth < AGENT_Q_SURROGATE_FIDELITY.browser_invocation_depth:
-        return MethodNodeResult(
+        return dict(
             value={"success": False, "continue_depth": True},
             next_node="actor",
         )
 
     next_iteration = iteration + 1
     if next_iteration < AGENT_Q_SURROGATE_FIDELITY.browser_invocation_iterations:
-        return MethodNodeResult(
+        return dict(
             value={"success": False, "next_iteration": next_iteration},
             state_update={"iteration": next_iteration},
             next_node="prepare_iteration",
@@ -259,13 +257,13 @@ def _route_after_judge(request: MethodNodeRequest) -> MethodNodeResult:
                 "best_reward": request.state.get("best_reward"),
             },
         )
-    return MethodNodeResult(
+    return dict(
         value={"success": False, "search_exhausted": True},
         next_node="extract_preferences",
     )
 
 
-def _extract_preferences(request: MethodNodeRequest) -> MethodNodeResult:
+def _extract_preferences(request: MethodCall) -> MethodNodeResult:
     trajectory = _rows(
         request.state.get("best_trajectory", request.state.get("trajectory", ())),
         "best_trajectory",
@@ -292,14 +290,14 @@ def _extract_preferences(request: MethodNodeRequest) -> MethodNodeResult:
                         "rejected": rejected,
                     }
                 )
-    return MethodNodeResult(
+    return dict(
         value={"generated_dpo_pairs": tuple(pairs)},
         state_update={"generated_dpo_pairs": tuple(pairs)},
     )
 
 
-def _return_result(request: MethodNodeRequest) -> MethodNodeResult:
-    return MethodNodeResult(
+def _return_result(request: MethodCall) -> MethodNodeResult:
+    return dict(
         value={
             "terminal_judge_success": request.state.get("terminal_success") is True,
             "mcts_iterations": _integer(request.state.get("iteration", 0), "iteration") + 1,
@@ -313,7 +311,7 @@ def _return_result(request: MethodNodeRequest) -> MethodNodeResult:
     )
 
 
-def build_agent_q_surrogate_method_program() -> MethodProgram:
+def build_agent_q_surrogate_method_program(method, ) -> None:
     fidelity = AGENT_Q_SURROGATE_FIDELITY
     configuration: JsonObject = {
         "source_repository": fidelity.source.repository,
@@ -333,20 +331,12 @@ def build_agent_q_surrogate_method_program() -> MethodProgram:
         "dpo_pair_policy": fidelity.dpo_pair_policy,
         "dpo_state_dom_character_limit": fidelity.dpo_state_dom_character_limit,
     }
-    identity = MethodProgramIdentity(
-        MethodIdentity(
-            method_id="agent-q-surrogate",
-            implementation_version=fidelity.source.commit[:12],
-            abi_version="noetrium.method-machine.v1",
-            schema_version="agent-q.surrogate.method.v1",
-        ),
-        configuration_digest=canonical_digest(configuration),
-    )
+
     max_steps = (
         fidelity.browser_invocation_iterations
         * fidelity.browser_invocation_depth
     )
-    builder = MethodProgramBuilder(identity, entrypoint="prepare_iteration")
+    builder = method
     builder.compute(
         "prepare_iteration",
         "agent-q.iteration.prepare",
@@ -359,9 +349,9 @@ def build_agent_q_surrogate_method_program() -> MethodProgram:
         "agent-q.environment.home",
         _ENVIRONMENT_CAPABILITY_ID,
         ("record_reset",),
-        effect_class=EffectClass.IDEMPOTENT,
+        effect='idempotent',
         max_visits=fidelity.browser_invocation_iterations,
-        evidence_obligations=("environment.effect",),
+        evidence=("environment.effect",),
     )
     builder.compute(
         "record_reset",
@@ -375,7 +365,7 @@ def build_agent_q_surrogate_method_program() -> MethodProgram:
         "agent-q.actor.propose",
         _ACTOR_AGENT_ID,
         ("prepare_action",),
-        view_handler=_actor_view,
+        view=_actor_view,
         max_visits=max_steps,
     )
     builder.compute(
@@ -390,9 +380,9 @@ def build_agent_q_surrogate_method_program() -> MethodProgram:
         "agent-q.environment.act",
         _ENVIRONMENT_CAPABILITY_ID,
         ("record_environment",),
-        effect_class=EffectClass.RECONCILABLE,
+        effect='reconcilable',
         max_visits=max_steps,
-        evidence_obligations=("environment.effect",),
+        evidence=("environment.effect",),
     )
     builder.compute(
         "record_environment",
@@ -406,7 +396,7 @@ def build_agent_q_surrogate_method_program() -> MethodProgram:
         "agent-q.critic.evaluate",
         _CRITIC_AGENT_ID,
         ("record_critic",),
-        view_handler=_critic_view,
+        view=_critic_view,
         max_visits=max_steps,
     )
     builder.compute(
@@ -421,7 +411,7 @@ def build_agent_q_surrogate_method_program() -> MethodProgram:
         "agent-q.terminal-judge",
         _JUDGE_AGENT_ID,
         ("route",),
-        view_handler=_judge_view,
+        view=_judge_view,
         max_visits=max_steps,
     )
     builder.route(
@@ -438,30 +428,37 @@ def build_agent_q_surrogate_method_program() -> MethodProgram:
         ("return",),
     )
     builder.return_node("return", "agent-q.result", _return_result)
-    return builder.build(
-        configuration=configuration,
-        required_capabilities=(_ENVIRONMENT_CAPABILITY_ID,),
-        execution_class=MethodExecutionClass.EFFECT_RECORDED,
-        evidence_obligations=(
+    builder.configure(configuration)
+    builder.requires(*(_ENVIRONMENT_CAPABILITY_ID,))
+    builder.policy(
+        execution='effect_recorded',
+        evidence=(
             "agent-q.search-history",
             "agent-q.preference-pairs",
             "environment.effect",
             "model.invocation",
         ),
-        metric_names=(
+        metrics=(
             "terminal_judge_success",
             "mcts_iterations",
             "generated_dpo_pairs",
         ),
-        artifact_kinds=("agent_q_search_trace", "agent_q_dpo_pairs"),
+        artifacts=("agent_q_search_trace", "agent_q_dpo_pairs"),
     )
+    return builder
 
 
-AGENT_Q_SURROGATE_METHOD_PROGRAM = build_agent_q_surrogate_method_program()
+METHOD_CONFIGURER = build_agent_q_surrogate_method_program
+METHOD_ENTRYPOINT = "prepare_iteration"
+METHOD_CONFIGURER_ARGS = ()
+METHOD_CONFIGURER_KWARGS = {}
 
 
 __all__ = [
-    "AGENT_Q_SURROGATE_METHOD_PROGRAM",
-    "agent_q_surrogate_initial_state",
-    "build_agent_q_surrogate_method_program",
+    'agent_q_surrogate_initial_state',
+    'build_agent_q_surrogate_method_program',
+    'METHOD_CONFIGURER',
+    'METHOD_ENTRYPOINT',
+    'METHOD_CONFIGURER_ARGS',
+    'METHOD_CONFIGURER_KWARGS',
 ]

@@ -1,19 +1,5 @@
 from __future__ import annotations
-
-from noetrium.api import canonical_digest
-from noetrium.api import (
-    ExperimentTrialProtocolIdentity,
-)
-from noetrium.api import (
-    BenchmarkTaskSet,
-    MeasurementDefinition,
-    ReplayLevel,
-    ResearchStudyDefinition,
-    Study,
-    StudyModel,
-    StudyParticipant,
-    TrialBudget,
-)
+from research.reproductions import _support as _rs
 from research.benchmarks.egoschema import (
     EGOSCHEMA_BENCHMARK_ID,
     EGOSCHEMA_PUBLIC_COUNT,
@@ -25,10 +11,10 @@ from .program import VCA_EXECUTION_SAFETY_ROUNDS, VCA_METHOD_PROGRAM
 
 
 def vca_egoschema_trial_protocol(
-    benchmark: BenchmarkTaskSet,
+    benchmark,
     *,
     sampling_frame_number: int,
-) -> ExperimentTrialProtocolIdentity:
+):
     if benchmark.benchmark_id != EGOSCHEMA_BENCHMARK_ID:
         raise ValueError("VCA study requires EgoSchema")
     selected = benchmark.selected_tasks(EGOSCHEMA_PUBLIC_SPLIT)
@@ -36,9 +22,9 @@ def vca_egoschema_trial_protocol(
         raise ValueError("VCA EgoSchema reproduction requires the 500-task public cut")
     if type(sampling_frame_number) is not int or sampling_frame_number < 1:
         raise ValueError("VCA sampling_frame_number must be positive")
-    return ExperimentTrialProtocolIdentity(
+    return _rs.study_protocol(
         "vca.iccv2025.egoschema-public.paper-authoritative.v1",
-        canonical_digest(
+        _rs.canonical_digest(
             {
                 "method_program_digest": VCA_METHOD_PROGRAM.program_digest,
                 "benchmark_cut_digest": benchmark.cut_digest,
@@ -57,12 +43,13 @@ def vca_egoschema_trial_protocol(
     )
 
 
+@_rs.study_factory('benchmark')
 def build_vca_egoschema_public_study(
-    benchmark: BenchmarkTaskSet,
+    benchmark,
     *,
     sampling_frame_number: int = VCA_REFERENCE_FIDELITY.egoschema_memory_frames,
     max_rounds: int = 32,
-) -> ResearchStudyDefinition:
+):
     if type(max_rounds) is not int or not 1 <= max_rounds <= VCA_EXECUTION_SAFETY_ROUNDS:
         raise ValueError("VCA max_rounds is outside the reproduction safety ceiling")
     protocol = vca_egoschema_trial_protocol(
@@ -70,12 +57,11 @@ def build_vca_egoschema_public_study(
         sampling_frame_number=sampling_frame_number,
     )
     shared_requirement = "model.vca.gpt4o-august-2024"
-    return Study(
-        project_id="vca-iccv-2025-reproduction",
+    return _rs.study_spec(project_id="vca-iccv-2025-reproduction",
         study_id="vca-iccv-2025-egoschema-public",
         benchmark=benchmark,
         benchmark_split_id=EGOSCHEMA_PUBLIC_SPLIT,
-        method=StudyParticipant(
+        method=_rs.study_participant(
             role="curiosity_driven_video_agent",
             kind="agent_method",
             implementation="vca-video-curious-agent",
@@ -88,17 +74,17 @@ def build_vca_egoschema_public_study(
             ),
         ),
         models={
-            "vca.shared-vlm.reward": StudyModel(
+            "vca.shared-vlm.reward": _rs.study_model(
                 shared_requirement,
                 prompt="vca.iccv2025.reward-prompt",
             ),
-            "vca.shared-vlm.exploration": StudyModel(
+            "vca.shared-vlm.exploration": _rs.study_model(
                 shared_requirement,
                 prompt="vca.iccv2025.exploration-prompt",
             ),
         },
         measurements=(
-            MeasurementDefinition.scalar(
+            _rs.scalar_measurement(
                 "multiple_choice_accuracy",
                 schema_id="noetrium.measurement.ratio.v1",
                 unit="ratio",
@@ -106,7 +92,7 @@ def build_vca_egoschema_public_study(
                 scale="continuous",
                 domain="egoschema",
             ),
-            MeasurementDefinition.scalar(
+            _rs.scalar_measurement(
                 "observed_frame_count",
                 schema_id="noetrium.measurement.count.v1",
                 unit="frame",
@@ -114,7 +100,7 @@ def build_vca_egoschema_public_study(
                 scale="count",
                 domain="vca",
             ),
-            MeasurementDefinition.scalar(
+            _rs.scalar_measurement(
                 "exploration_rounds",
                 schema_id="noetrium.measurement.count.v1",
                 unit="round",
@@ -126,16 +112,16 @@ def build_vca_egoschema_public_study(
         trial=protocol,
         repetitions=1,
         seeds=("paper-service-default",),
-        limits=TrialBudget(
+        limits=_rs.trial_budget(
             "vca-egoschema-paper-authoritative-safety",
             max_steps=VCA_EXECUTION_SAFETY_ROUNDS * 8 + 1,
             max_turns=max_rounds * 2,
             max_model_calls=max_rounds * 2,
             max_working_seconds=3600.0,
         ),
-        replay_level=ReplayLevel.OBSERVATIONAL,
+        replay_level='observational',
         repetition_timeout_seconds=3600.0,
-    ).build()
+    )
 
 
 __all__ = [

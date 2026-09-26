@@ -16,8 +16,8 @@ from research.reproductions.chain_of_thought_gsm8k.program import (
 )
 
 
-def _portfolio() -> api.ResearchPortfolio:
-    builder = api.ResearchProgramBuilder("chain-of-thought")
+def _portfolio() -> api.research_os.ResearchPortfolio:
+    builder = api.research_os.ResearchProgramBuilder("chain-of-thought")
     builder.method_program(
         "method",
         module="research.reproductions.chain_of_thought_gsm8k.program",
@@ -28,7 +28,7 @@ def _portfolio() -> api.ResearchPortfolio:
         "method",
         definitions=("method",),
     )
-    return api.ResearchPortfolio("chain-of-thought-reproduction", (builder.freeze(),))
+    return api.research_os.ResearchPortfolio("chain-of-thought-reproduction", (builder.freeze(),))
 
 
 def test_method_program_symbol_round_trips_through_portfolio_v2_and_lowering() -> None:
@@ -39,10 +39,10 @@ def test_method_program_symbol_round_trips_through_portfolio_v2_and_lowering() -
 
     assert decoded == portfolio
     implementation = decoded.programs[0].definitions[0].implementation
-    assert type(implementation) is api.ResearchMethodProgramImplementation
+    assert type(implementation) is api.research_os.ResearchMethodProgramImplementation
     assert implementation.program_digest == CHAIN_OF_THOUGHT_GSM8K_METHOD_PROGRAM.program_digest
 
-    revision = api.ResearchGraphRevision(
+    revision = api.research_os.ResearchGraphRevision(
         decoded.portfolio_id,
         decoded.portfolio_digest,
         (),

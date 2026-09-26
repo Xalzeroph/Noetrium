@@ -46,7 +46,7 @@ class _Control:
 
     def control(self, request, portfolio):
         self.calls.append((request, portfolio))
-        return api.ResearchControlReceipt(
+        return api.research_os.ResearchControlReceipt(
             request.action,
             request.target,
             "accepted",
@@ -55,8 +55,8 @@ class _Control:
         )
 
 
-def _paper_a(method) -> api.ResearchProgram:
-    builder = api.ResearchProgramBuilder("paper-a")
+def _paper_a(method) -> api.research_os.ResearchProgram:
+    builder = api.research_os.ResearchProgramBuilder("paper-a")
     builder.method("method", implementation=method)
     builder.benchmark("benchmark", implementation=_benchmark)
     builder.metric("metric", implementation=_metric)
@@ -64,9 +64,9 @@ def _paper_a(method) -> api.ResearchProgram:
         "main",
         definitions=("method", "benchmark"),
         outputs=(
-            api.ResearchOutputSpec(
+            api.research_os.ResearchOutputSpec(
                 "trajectory",
-                api.ResearchValueKind.ARTIFACT,
+                api.research_os.ResearchValueKind.ARTIFACT,
             ),
         ),
     )
@@ -75,9 +75,9 @@ def _paper_a(method) -> api.ResearchProgram:
         definitions=("metric",),
         depends_on=("main",),
         outputs=(
-            api.ResearchOutputSpec(
+            api.research_os.ResearchOutputSpec(
                 "score",
-                api.ResearchValueKind.METRIC,
+                api.research_os.ResearchValueKind.METRIC,
             ),
         ),
     )
@@ -85,15 +85,15 @@ def _paper_a(method) -> api.ResearchProgram:
     return builder.freeze()
 
 
-def _paper_b() -> api.ResearchProgram:
-    builder = api.ResearchProgramBuilder("paper-b")
+def _paper_b() -> api.research_os.ResearchProgram:
+    builder = api.research_os.ResearchProgramBuilder("paper-b")
     builder.method("method", implementation=_other_method)
     builder.experiment("main", definitions=("method",))
     return builder.freeze()
 
 
-def _portfolio(method) -> api.ResearchPortfolio:
-    return api.ResearchPortfolio(
+def _portfolio(method) -> api.research_os.ResearchPortfolio:
+    return api.research_os.ResearchPortfolio(
         "suite",
         (_paper_a(method), _paper_b()),
     )
@@ -140,17 +140,17 @@ def test_durable_research_os_reopens_revision_graph_and_minimally_invalidates(
         (row.program_id, row.node_id): row.state
         for row in diff.impacts
     }
-    assert impacts[("paper-a", "main")] is api.ResearchImpactState.INVALIDATED
-    assert impacts[("paper-a", "evaluate")] is api.ResearchImpactState.STALE
-    assert impacts[("paper-a", "analysis")] is api.ResearchImpactState.STALE
-    assert impacts[("paper-b", "main")] is api.ResearchImpactState.REUSABLE
+    assert impacts[("paper-a", "main")] is api.research_os.ResearchImpactState.INVALIDATED
+    assert impacts[("paper-a", "evaluate")] is api.research_os.ResearchImpactState.STALE
+    assert impacts[("paper-a", "analysis")] is api.research_os.ResearchImpactState.STALE
+    assert impacts[("paper-b", "main")] is api.research_os.ResearchImpactState.REUSABLE
 
-    execution = api.ResearchExecutionTarget(
+    execution = api.research_os.ResearchExecutionTarget(
         "suite-confirmatory",
         second,
     ).for_node("paper-a", "main")
     resumed = reopened.resume(execution)
-    assert resumed.action is api.ResearchControlAction.RESUME
+    assert resumed.action is api.research_os.ResearchControlAction.RESUME
     assert resumed.target == execution
     assert len(reopened_control.calls) == 1
     control_request, control_portfolio = reopened_control.calls[0]
@@ -210,20 +210,20 @@ def test_portfolio_backed_port_fails_closed_without_runtime_control(
         DirectoryArtifactBlobStore(tmp_path / "blobs"),
     )
     bound = bind_research_os(port)
-    revision = api.ResearchGraphRevision(
+    revision = api.research_os.ResearchGraphRevision(
         "anything",
         "a" * 64,
         (),
         "unbound control test",
     )
-    target = api.ResearchExecutionTarget("anything", revision)
+    target = api.research_os.ResearchExecutionTarget("anything", revision)
     with pytest.raises(RuntimeError, match="control is not bound"):
         bound.run(target)
 
 def test_platform_resolved_requirements_round_trip_through_artifact_cas(
     tmp_path: Path,
 ) -> None:
-    builder = api.ResearchProgramBuilder("declarative")
+    builder = api.research_os.ResearchProgramBuilder("declarative")
     builder.model("planner", config={"role": "planner", "context": 8192})
     builder.environment("world", config={"family": "minecraft"})
     builder.dataset("tasks", config={"split": "test"})
@@ -233,7 +233,7 @@ def test_platform_resolved_requirements_round_trip_through_artifact_cas(
         "main",
         definitions=("planner", "world", "tasks", "protocol", "resources"),
     )
-    portfolio = api.ResearchPortfolio("declarative-suite", (builder.freeze(),))
+    portfolio = api.research_os.ResearchPortfolio("declarative-suite", (builder.freeze(),))
 
     _, _, _, _, research_os = _binding(tmp_path)
     revision = research_os.commit(portfolio, message="declarative cut")
@@ -241,7 +241,7 @@ def test_platform_resolved_requirements_round_trip_through_artifact_cas(
     _, _, _, _, reopened = _binding(tmp_path)
     diff = reopened.diff(revision, revision)
     assert tuple(row.state for row in diff.impacts) == (
-        api.ResearchImpactState.UNCHANGED,
+        api.research_os.ResearchImpactState.UNCHANGED,
     )
 
 def test_top_level_portfolio_compiles_into_one_multi_paper_execution_graph(
@@ -249,11 +249,11 @@ def test_top_level_portfolio_compiles_into_one_multi_paper_execution_graph(
 ) -> None:
     paper_a = _paper_a(_method_v1)
     paper_b = _paper_b()
-    cross = api.ResearchPortfolioDependency(
-        api.ResearchNodeRef("paper-a", "analysis"),
-        api.ResearchNodeRef("paper-b", "main"),
+    cross = api.research_os.ResearchPortfolioDependency(
+        api.research_os.ResearchNodeRef("paper-a", "analysis"),
+        api.research_os.ResearchNodeRef("paper-b", "main"),
     )
-    portfolio = api.ResearchPortfolio(
+    portfolio = api.research_os.ResearchPortfolio(
         "multi-paper",
         (paper_a, paper_b),
         (cross,),

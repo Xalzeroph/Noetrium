@@ -1,17 +1,6 @@
 from __future__ import annotations
+from research.reproductions import _support as _rs
 
-from noetrium import api
-
-canonical_digest = api.canonical_digest
-ExperimentTrialProtocolIdentity = api.ExperimentTrialProtocolIdentity
-BenchmarkTaskSet = api.BenchmarkTaskSet
-MeasurementDefinition = api.MeasurementDefinition
-ReplayLevel = api.ReplayLevel
-ResearchStudyDefinition = api.ResearchStudyDefinition
-Study = api.Study
-StudyModel = api.StudyModel
-StudyParticipant = api.StudyParticipant
-TrialBudget = api.TrialBudget
 
 
 from research.benchmarks.lvu import LVU_BENCHMARK_ID
@@ -25,10 +14,10 @@ from .memory import ADACM2_MEMORY_PROGRAM, AdaCM2ReductionSpec
 
 
 def adacm2_lvu_trial_protocol(
-    benchmark: BenchmarkTaskSet,
+    benchmark,
     *,
     interpretation: AdaCM2PartitionInterpretation,
-) -> ExperimentTrialProtocolIdentity:
+):
     if benchmark.benchmark_id != LVU_BENCHMARK_ID:
         raise ValueError("AdaCM2 formal protocol requires LVU")
     selected = benchmark.selected_tasks(ADACM2_LVU_TEST_SPLIT)
@@ -44,9 +33,9 @@ def adacm2_lvu_trial_protocol(
         alpha=ADACM2_REFERENCE_FIDELITY.alpha,
         beta=ADACM2_REFERENCE_FIDELITY.beta,
     )
-    return ExperimentTrialProtocolIdentity(
+    return _rs.study_protocol(
         f"adacm2.cvpr2025.lvu.{interpretation.value}.v1",
-        canonical_digest({
+        _rs.canonical_digest({
             "memory_program_digest": ADACM2_MEMORY_PROGRAM.program_digest,
             "publication_revision": (
                 ADACM2_REFERENCE_FIDELITY.source_revision
@@ -78,11 +67,12 @@ def adacm2_lvu_trial_protocol(
     )
 
 
+@_rs.study_factory('benchmark')
 def build_adacm2_lvu_study(
-    benchmark: BenchmarkTaskSet,
+    benchmark,
     *,
     interpretation: AdaCM2PartitionInterpretation,
-) -> ResearchStudyDefinition:
+):
     spec = AdaCM2ReductionSpec(
         interpretation=interpretation,
         alpha=ADACM2_REFERENCE_FIDELITY.alpha,
@@ -92,15 +82,14 @@ def build_adacm2_lvu_study(
         benchmark,
         interpretation=interpretation,
     )
-    return Study(
-        project_id="adacm2-cvpr-2025-reproduction",
+    return _rs.study_spec(project_id="adacm2-cvpr-2025-reproduction",
         study_id=(
             "adacm2-cvpr-2025-lvu-"
             f"{interpretation.value}"
         ),
         benchmark=benchmark,
         benchmark_split_id=ADACM2_LVU_TEST_SPLIT,
-        method=StudyParticipant(
+        method=_rs.study_participant(
             role="adaptive_cross_modal_memory_model",
             kind="method",
             implementation="adacm2",
@@ -120,13 +109,13 @@ def build_adacm2_lvu_study(
             ),
         ),
         models={
-            "multimodal": StudyModel(
+            "multimodal": _rs.study_model(
                 "model.adacm2.vicuna7b-v1.1-paper-described",
                 prompt="adacm2.lvu.question-template",
             ),
         },
         measurements=(
-            MeasurementDefinition.scalar(
+            _rs.scalar_measurement(
                 "task_accuracy",
                 schema_id="noetrium.measurement.ratio.v1",
                 unit="ratio",
@@ -134,7 +123,7 @@ def build_adacm2_lvu_study(
                 scale="continuous",
                 domain="lvu",
             ),
-            MeasurementDefinition.scalar(
+            _rs.scalar_measurement(
                 "peak_cache_length",
                 schema_id="noetrium.measurement.count.v1",
                 unit="visual_token",
@@ -142,7 +131,7 @@ def build_adacm2_lvu_study(
                 scale="count",
                 domain="adacm2",
             ),
-            MeasurementDefinition.scalar(
+            _rs.scalar_measurement(
                 "cache_retention_ratio",
                 schema_id="noetrium.measurement.ratio.v1",
                 unit="ratio",
@@ -150,7 +139,7 @@ def build_adacm2_lvu_study(
                 scale="continuous",
                 domain="adacm2",
             ),
-            MeasurementDefinition.scalar(
+            _rs.scalar_measurement(
                 "paper_stated_retention_factor",
                 schema_id="noetrium.measurement.ratio.v1",
                 unit="ratio",
@@ -162,39 +151,42 @@ def build_adacm2_lvu_study(
         trial=protocol,
         repetitions=1,
         seeds=("paper-described-evaluation",),
-        limits=TrialBudget(
+        limits=_rs.trial_budget(
             f"adacm2-cvpr2025-lvu-{interpretation.value}-budget",
             max_steps=16384,
             max_turns=1,
             max_model_calls=16384,
             max_working_seconds=3600.0,
         ),
-        replay_level=ReplayLevel.OBSERVATIONAL,
+        replay_level='observational',
         repetition_timeout_seconds=3600.0,
-    ).build()
+    )
 
 
+@_rs.study_factory('benchmark')
 def build_adacm2_lvu_eq6_literal_study(
-    benchmark: BenchmarkTaskSet,
-) -> ResearchStudyDefinition:
+    benchmark,
+):
     return build_adacm2_lvu_study(
         benchmark,
         interpretation=AdaCM2PartitionInterpretation.EQ6_LITERAL,
     )
 
 
+@_rs.study_factory('benchmark')
 def build_adacm2_lvu_eq8_consistent_study(
-    benchmark: BenchmarkTaskSet,
-) -> ResearchStudyDefinition:
+    benchmark,
+):
     return build_adacm2_lvu_study(
         benchmark,
         interpretation=AdaCM2PartitionInterpretation.EQ8_CONSISTENT,
     )
 
 
+@_rs.study_factory('benchmark')
 def build_adacm2_lvu_ambiguity_studies(
-    benchmark: BenchmarkTaskSet,
-) -> tuple[ResearchStudyDefinition, ResearchStudyDefinition]:
+    benchmark,
+):
     return (
         build_adacm2_lvu_eq6_literal_study(benchmark),
         build_adacm2_lvu_eq8_consistent_study(benchmark),

@@ -35,7 +35,7 @@ def test_every_execution_bearing_reproduction_compiles_to_current_research_os() 
     executable = executable_reproduction_definitions()
     assert executable
     failures: list[tuple[str, str]] = []
-    programs: list[api.ResearchProgram] = []
+    programs: list[api.research_os.ResearchProgram] = []
     for definition in executable:
         try:
             program = compile_reproduction_research_program(definition)
@@ -202,7 +202,7 @@ def test_bound_reproduction_lanes_compile_as_distinct_product_programs() -> None
     assert all(len(program.program_id.rsplit(".", 1)[-1]) == 24 for program in programs)
     assert len({program.program_digest for program in programs}) == 3
 
-    portfolio = api.ResearchPortfolio("bound-reproduction-lanes", programs)
+    portfolio = api.research_os.ResearchPortfolio("bound-reproduction-lanes", programs)
     assert len(portfolio.programs) == 3
     assert len(portfolio.portfolio_digest) == 64
 

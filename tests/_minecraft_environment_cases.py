@@ -552,6 +552,14 @@ def test_minecraft_session_persists_state_projection_and_validates_before_bridge
     )
     context = ExecutionContext("run", "trace", "span", task_id="task")
 
+    descriptor = session.capability_descriptors()[0]
+    assert descriptor.action_types == tuple(
+        contract.action_type for contract in minecraft_action_catalog()
+    )
+    assert descriptor.metadata["action_contracts"] == [
+        contract.as_payload() for contract in minecraft_action_catalog()
+    ]
+
     observed = session.observe(context)
     assert observed.payload["state"]["position"] == {"x": 1.0, "y": 2.0, "z": 3.0}
     assert observed.payload["state"]["inventory"] == {"oak_log": 2}

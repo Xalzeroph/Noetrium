@@ -11,7 +11,7 @@ from research.reproductions.contracts import (
     ReproductionDeltaKind,
     ReproductionIdentity,
     ReproductionLifecycle,
-    ReproductionMethodProgramFactoryBinding,
+    ReproductionMethodConfigurerBinding,
 )
 
 REPRODUCTION = ReproductionDefinition(
@@ -73,7 +73,7 @@ REPRODUCTION = ReproductionDefinition(
             path="research/reproductions/toolformer/study.py",
         ),
     ),
-    method_program_factory=ReproductionMethodProgramFactoryBinding(
+    method_configurer=ReproductionMethodConfigurerBinding(
         qualname="build_toolformer_method_program",
         kwargs={"tools_enabled": True},
     ),

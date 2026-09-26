@@ -1,4 +1,4 @@
-from .authoring import AgentStudySpec, Study, StudyModel, StudyParticipant
+from .authoring import AgentStudySpec, Study, StudyModel, StudyParticipant, materialize_research_study_spec, materialize_research_study_spec
 from .evaluation import PostHocEvaluationDefinition, PostHocEvaluationResult
 from .contracts import (
     AssignmentWorkload,
@@ -59,6 +59,7 @@ from .plan import (
 )
 
 __all__ = [
+    "materialize_research_study_spec",
     "AgentStudySpec",
     "Study",
     "AssignmentWorkload",

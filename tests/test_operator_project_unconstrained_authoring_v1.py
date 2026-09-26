@@ -35,7 +35,7 @@ def test_generated_project_shell_accepts_arbitrary_multi_program_research_core(
     )
 
     core = root / "src" / "paper" / "core.py"
-    authored = '''from noetrium import api
+    authored = '''from noetrium.api import research_os as api
 
 
 def source():
@@ -114,14 +114,14 @@ __all__ = ["build_research"]
         }
         consume = graph.node("paper-b::consume")
         assert consume.upstream_refs == (
-            api.ResearchNodeRef("paper-a", "source"),
+            api.research_os.ResearchNodeRef("paper-a", "source"),
         )
         assert len(consume.incoming_edges) == 1
         assert consume.incoming_edges[0].bindings == (
-            api.ResearchInputBinding(
+            api.research_os.ResearchInputBinding(
                 "upstream",
                 "data",
-                api.ResearchValueKind.DATA,
+                api.research_os.ResearchValueKind.DATA,
             ),
         )
     finally:
@@ -144,7 +144,7 @@ def test_generated_project_preserves_public_study_experiment_authoring(
 
     core = root / "src" / "study_paper" / "core.py"
     core.write_text(
-        '''from noetrium import api
+        '''from noetrium.api import research_os as api
 
 
 def build_study():
@@ -168,11 +168,11 @@ __all__ = ["build_research"]
     try:
         program = loaded.portfolio.programs[0]
         assert any(
-            definition.kind is api.ResearchDefinitionKind.PROTOCOL
+            definition.kind is api.research_os.ResearchDefinitionKind.PROTOCOL
             for definition in program.definitions
         )
         assert any(
-            node.kind is api.ResearchNodeKind.EXPERIMENT
+            node.kind is api.research_os.ResearchNodeKind.EXPERIMENT
             for node in program.nodes
         )
     finally:

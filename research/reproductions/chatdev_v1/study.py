@@ -1,18 +1,5 @@
 from __future__ import annotations
-
-from noetrium.api import canonical_digest
-from noetrium.api import (
-    ExperimentTrialProtocolIdentity,
-)
-from noetrium.api import (
-    BenchmarkTaskSet,
-    MeasurementDefinition,
-    ReplayLevel,
-    ResearchStudyDefinition,
-    Study,
-    StudyParticipant,
-    TrialBudget,
-)
+from research.reproductions import _support as _rs
 from research.benchmarks.srdd import (
     SRDD_BENCHMARK_ID,
     SRDD_SPLIT_ID,
@@ -24,17 +11,17 @@ from .program import CHATDEV_V1_CHAIN_DIGEST, CHATDEV_V1_METHOD_PROGRAM
 
 
 def chatdev_acl2024_srdd_trial_protocol(
-    benchmark: BenchmarkTaskSet,
-) -> ExperimentTrialProtocolIdentity:
+    benchmark,
+):
     if benchmark.benchmark_id != SRDD_BENCHMARK_ID:
         raise ValueError("ChatDev v1 protocol requires SRDD")
     selected = benchmark.selected_tasks(SRDD_SPLIT_ID)
     if len(selected) != SRDD_TASK_COUNT:
         raise ValueError("ChatDev v1 SRDD protocol requires 1200 tasks")
     fidelity = CHATDEV_V1_REFERENCE_FIDELITY
-    return ExperimentTrialProtocolIdentity(
+    return _rs.study_protocol(
         "chatdev.acl2024.srdd.v1.0.0.protocol-bound.v1",
-        canonical_digest(
+        _rs.canonical_digest(
             {
                 "source_commit": fidelity.audited_commit,
                 "method_program_digest": CHATDEV_V1_METHOD_PROGRAM.program_digest,
@@ -56,16 +43,16 @@ def chatdev_acl2024_srdd_trial_protocol(
     )
 
 
+@_rs.study_factory('benchmark')
 def build_chatdev_acl2024_srdd_study(
-    benchmark: BenchmarkTaskSet,
-) -> ResearchStudyDefinition:
+    benchmark,
+):
     protocol = chatdev_acl2024_srdd_trial_protocol(benchmark)
-    return Study(
-        project_id="chatdev-acl-2024-reproduction",
+    return _rs.study_spec(project_id="chatdev-acl-2024-reproduction",
         study_id="chatdev-acl-2024-srdd-v1.0.0",
         benchmark=benchmark,
         benchmark_split_id=SRDD_SPLIT_ID,
-        method=StudyParticipant(
+        method=_rs.study_participant(
             role="communicative_software_company",
             kind="multi_agent_method",
             implementation="chatdev-v1.0.0",
@@ -80,7 +67,7 @@ def build_chatdev_acl2024_srdd_study(
         ),
         models={},
         measurements=(
-            MeasurementDefinition.scalar(
+            _rs.scalar_measurement(
                 "completeness",
                 schema_id="noetrium.measurement.scalar.v1",
                 unit="score",
@@ -88,7 +75,7 @@ def build_chatdev_acl2024_srdd_study(
                 scale="continuous",
                 domain="srdd",
             ),
-            MeasurementDefinition.scalar(
+            _rs.scalar_measurement(
                 "executability",
                 schema_id="noetrium.measurement.scalar.v1",
                 unit="score",
@@ -96,7 +83,7 @@ def build_chatdev_acl2024_srdd_study(
                 scale="continuous",
                 domain="srdd",
             ),
-            MeasurementDefinition.scalar(
+            _rs.scalar_measurement(
                 "consistency",
                 schema_id="noetrium.measurement.scalar.v1",
                 unit="score",
@@ -104,7 +91,7 @@ def build_chatdev_acl2024_srdd_study(
                 scale="continuous",
                 domain="srdd",
             ),
-            MeasurementDefinition.scalar(
+            _rs.scalar_measurement(
                 "quality",
                 schema_id="noetrium.measurement.scalar.v1",
                 unit="score",
@@ -116,16 +103,16 @@ def build_chatdev_acl2024_srdd_study(
         trial=protocol,
         repetitions=1,
         seeds=("paper-service-default",),
-        limits=TrialBudget(
+        limits=_rs.trial_budget(
             "chatdev-acl2024-srdd-safety",
             max_steps=1024,
             max_turns=512,
             max_model_calls=1024,
             max_working_seconds=7200.0,
         ),
-        replay_level=ReplayLevel.OBSERVATIONAL,
+        replay_level='observational',
         repetition_timeout_seconds=7200.0,
-    ).build()
+    )
 
 
 __all__ = [

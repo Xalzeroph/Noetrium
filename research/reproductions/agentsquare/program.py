@@ -1,27 +1,21 @@
 from __future__ import annotations
+from research.reproductions._support import JsonObject, JsonValue, canonical_digest, freeze_json, require_sha256, thaw_json
 
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass, field
 import math
 from typing import Protocol, runtime_checkable
 
-from noetrium.api import (
-    JsonObject,
-    JsonValue,
+from noetrium.api.research_authoring import (
     MachineJournalPort,
     MachineStatus,
-    canonical_digest,
-    freeze_json,
-    require_sha256,
-    thaw_json,
-)
-from noetrium.api import (
+    )
+from noetrium.api.research_authoring import (
     OptimizationConcern,
     OptimizationProgramBuilder,
     ProgramNodeRequest,
     ProgramNodeResult,
     ResearchHostOperation,
-    ResearchProgram,
     ResearchProgramHost,
 )
 
@@ -800,7 +794,7 @@ def _finalize(request: ProgramNodeRequest, binding: object) -> ProgramNodeResult
     )
 
 
-def build_agentsquare_optimization_program() -> ResearchProgram:
+def build_agentsquare_optimization_program():
     """Build the benchmark-neutral AgentSquare modular-search program graph."""
 
     builder = OptimizationProgramBuilder.create(
@@ -859,7 +853,7 @@ def build_agentsquare_optimization_program() -> ResearchProgram:
     return builder.build()
 
 
-def build_agentsquare_alfworld_optimization_program() -> ResearchProgram:
+def build_agentsquare_alfworld_optimization_program():
     """Build the generic graph used by the ALFWorld executable profile."""
 
     return build_agentsquare_optimization_program()
@@ -903,7 +897,7 @@ def agentsquare_host(
     journal: MachineJournalPort,
     *,
     profile: AgentSquareSearchProfile,
-) -> ResearchProgramHost:
+):
     if not isinstance(profile, AgentSquareSearchProfile):
         raise TypeError("AgentSquare host requires search profile")
     return ResearchProgramHost(
@@ -922,7 +916,7 @@ def agentsquare_host(
     )
 
 
-def agentsquare_alfworld_host(journal: MachineJournalPort) -> ResearchProgramHost:
+def agentsquare_alfworld_host(journal: MachineJournalPort):
     return agentsquare_host(
         journal,
         profile=AGENTSQUARE_ALFWORLD_LATER_OFFICIAL_SEARCH_PROFILE,

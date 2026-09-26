@@ -1,17 +1,11 @@
 from __future__ import annotations
+from research.reproductions._support import JsonObject, JsonValue, canonical_digest, freeze_json, require_sha256
 
 from dataclasses import dataclass, field
 import math
 from typing import Protocol, runtime_checkable
 
-from noetrium.api import TensorContentRef
-from noetrium.api import (
-    JsonObject,
-    JsonValue,
-    canonical_digest,
-    freeze_json,
-    require_sha256,
-)
+from noetrium.api.research_authoring import TensorContentRef
 
 from .fidelity import (
     MINECLIP_VARIANTS,

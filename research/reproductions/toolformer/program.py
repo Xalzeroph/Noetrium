@@ -1,25 +1,22 @@
 from __future__ import annotations
 
-from collections.abc import Mapping, Sequence
-
-from noetrium.api import (
-    MethodIdentity,
-    MethodProgramIdentity,
-)
-from noetrium.api import (
-    EffectClass,
+from research.reproductions._support import (
     JsonObject,
     JsonValue,
+    MethodCall,
     canonical_digest,
+    freeze_json,
+    method_event,
+    require_sha256,
     thaw_json,
 )
-from noetrium.api import (
-    MethodExecutionClass,
-    MethodNodeRequest,
-    MethodNodeResult,
-    MethodProgram,
-    MethodProgramBuilder,
-)
+from research.reproductions._support import JsonObject, JsonValue, canonical_digest, thaw_json
+
+from collections.abc import Mapping, Sequence
+
+
+
+
 
 from .fidelity import TOOLFORMER_FIDELITY
 
@@ -52,7 +49,7 @@ def toolformer_initial_state(*, instruction: str) -> JsonObject:
     }
 
 
-def _model_view(request: MethodNodeRequest) -> JsonObject:
+def _model_view(request: MethodCall) -> JsonObject:
     return {
         "instruction": request.state.get("instruction"),
         "generated_text": request.state.get("generated_text", ""),
@@ -108,7 +105,7 @@ def _record_model(
 ):
     allowed = set(allowed_capabilities)
 
-    def record(request: MethodNodeRequest) -> MethodNodeResult:
+    def record(request: MethodCall) -> MethodNodeResult:
         text, api_call, final = _parse_model_output(request.previous_value)
         count = request.state.get("model_call_count", 0)
         if type(count) is not int or count < 0:
@@ -117,7 +114,7 @@ def _record_model(
 
         if not tools_enabled or api_call is None:
             answer = text if final is None else final
-            return MethodNodeResult(
+            return dict(
                 value={"final_answer": answer},
                 state_update={
                     "generated_text": text,
@@ -141,7 +138,7 @@ def _record_model(
         if type(tool_calls) is not int or tool_calls < 0:
             raise ValueError("Toolformer tool_call_count must be non-negative")
         if tool_calls >= TOOLFORMER_FIDELITY.evaluation_max_api_calls_per_input:
-            return MethodNodeResult(
+            return dict(
                 value={"final_answer": text},
                 state_update={
                     "generated_text": text,
@@ -152,7 +149,7 @@ def _record_model(
                 },
                 next_node="return",
             )
-        return MethodNodeResult(
+        return dict(
             value={"api_call": api_call},
             state_update={
                 "generated_text": text,
@@ -166,7 +163,7 @@ def _record_model(
     return record
 
 
-def _prepare_tool(request: MethodNodeRequest) -> MethodNodeResult:
+def _prepare_tool(request: MethodCall) -> MethodNodeResult:
     capability_id = _text(
         request.state.get("pending_capability_id"),
         "pending capability_id",
@@ -174,7 +171,7 @@ def _prepare_tool(request: MethodNodeRequest) -> MethodNodeResult:
     arguments = request.state.get("pending_arguments", {})
     if not isinstance(arguments, Mapping):
         raise TypeError("Toolformer pending_arguments must be an object")
-    return MethodNodeResult(
+    return dict(
         value={
             "capability_id": capability_id,
             "arguments": dict(arguments),
@@ -182,14 +179,14 @@ def _prepare_tool(request: MethodNodeRequest) -> MethodNodeResult:
     )
 
 
-def _tool_target(request: MethodNodeRequest) -> str:
+def _tool_target(request: MethodCall) -> str:
     return _text(
         request.state.get("pending_capability_id"),
         "pending capability_id",
     )
 
 
-def _record_tool(request: MethodNodeRequest) -> MethodNodeResult:
+def _record_tool(request: MethodCall) -> MethodNodeResult:
     capability_id = _tool_target(request)
     trace = request.state.get("tool_trace", ())
     if isinstance(trace, (str, bytes, bytearray)) or not isinstance(trace, Sequence):
@@ -203,7 +200,7 @@ def _record_tool(request: MethodNodeRequest) -> MethodNodeResult:
         "arguments": request.state.get("pending_arguments", {}),
         "result": tool_result,
     }
-    return MethodNodeResult(
+    return dict(
         value=row,
         state_update={
             "tool_trace": (*tuple(trace), row),
@@ -220,8 +217,8 @@ def _record_tool(request: MethodNodeRequest) -> MethodNodeResult:
     )
 
 
-def _return_result(request: MethodNodeRequest) -> MethodNodeResult:
-    return MethodNodeResult(
+def _return_result(request: MethodCall) -> MethodNodeResult:
+    return dict(
         value={
             "final_answer": request.state.get("final_answer", ""),
             "generated_text": request.state.get("generated_text", ""),
@@ -232,11 +229,11 @@ def _return_result(request: MethodNodeRequest) -> MethodNodeResult:
     )
 
 
-def build_toolformer_method_program(
+def build_toolformer_method_program(method,
     tool_capability_ids: Sequence[str] = TOOLFORMER_PAPER_CAPABILITY_IDS,
     *,
     tools_enabled: bool = True,
-) -> MethodProgram:
+) -> None:
     if type(tools_enabled) is not bool:
         raise TypeError("Toolformer tools_enabled must be boolean")
     if isinstance(tool_capability_ids, (str, bytes, bytearray)) or not isinstance(
@@ -266,22 +263,14 @@ def build_toolformer_method_program(
             TOOLFORMER_FIDELITY.evaluation_max_api_calls_per_input
         ),
     }
-    identity = MethodProgramIdentity(
-        MethodIdentity(
-            method_id="toolformer",
-            implementation_version="neurips-2023-final",
-            abi_version="noetrium.method-machine.v1",
-            schema_version="toolformer.inference.method.v1",
-        ),
-        configuration_digest=canonical_digest(configuration),
-    )
-    builder = MethodProgramBuilder(identity, entrypoint="model")
+
+    builder = method
     builder.agent(
         "model",
         "toolformer.decode",
         _MODEL_AGENT,
         ("record_model",),
-        view_handler=_model_view,
+        view=_model_view,
         max_visits=2,
     )
     builder.route(
@@ -305,9 +294,9 @@ def build_toolformer_method_program(
             tool_capability_ids,
             _tool_target,
             ("record_tool",),
-            effect_class=EffectClass.RECONCILABLE,
+            effect='reconcilable',
             max_visits=1,
-            evidence_obligations=("toolformer.api-effect",),
+            evidence=("toolformer.api-effect",),
         )
         builder.compute(
             "record_tool",
@@ -317,12 +306,11 @@ def build_toolformer_method_program(
             max_visits=1,
         )
     builder.return_node("return", "toolformer.result", _return_result)
-    return builder.build(
-        configuration=configuration,
-        required_capabilities=tool_capability_ids if tools_enabled else (),
-        execution_class=MethodExecutionClass.CHECKPOINTABLE,
-        evidence_obligations=(
-            (
+    builder.configure(configuration)
+    builder.requires(*tool_capability_ids if tools_enabled else ())
+    builder.policy(
+        execution='checkpointable',
+        evidence=(
                 "toolformer.model-decode",
                 "toolformer.api-decision",
                 "toolformer.api-effect",
@@ -331,19 +319,28 @@ def build_toolformer_method_program(
             else (
                 "toolformer.model-decode",
                 "toolformer.api-decision",
-            )
-        ),
-        metric_names=(
+            ),
+        metrics=(
             "task_success",
             "tool_call_count",
             "model_call_count",
         ),
-        artifact_kinds=("toolformer_tool_trace",),
+        artifacts=("toolformer_tool_trace",),
     )
+    return builder
 
+
+METHOD_CONFIGURER = build_toolformer_method_program
+METHOD_ENTRYPOINT = "model"
+METHOD_CONFIGURER_ARGS = ()
+METHOD_CONFIGURER_KWARGS = {}
 
 __all__ = [
-    "TOOLFORMER_PAPER_CAPABILITY_IDS",
-    "build_toolformer_method_program",
-    "toolformer_initial_state",
+    'TOOLFORMER_PAPER_CAPABILITY_IDS',
+    'build_toolformer_method_program',
+    'toolformer_initial_state',
+    'METHOD_CONFIGURER',
+    'METHOD_ENTRYPOINT',
+    'METHOD_CONFIGURER_ARGS',
+    'METHOD_CONFIGURER_KWARGS',
 ]

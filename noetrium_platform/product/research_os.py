@@ -24,6 +24,20 @@ from noetrium_platform.foundation.kernel.kernel import (
     thaw_json,
 )
 
+from noetrium_platform.research.experimentation.api import (
+    ResearchComponent,
+    ResearchComponentBuilder,
+    ResearchComponentCall,
+    ResearchComponentResult,
+    ResearchComponentTransition,
+    ResearchEvent,
+    ResearchMethod,
+    ResearchMethodBuilder,
+    ResearchMethodCall,
+    ResearchMethodTransition,
+)
+
+
 _TOKEN = re.compile(r"[a-z][a-z0-9_.-]*")
 
 
@@ -51,6 +65,7 @@ class ResearchDefinitionKind(StrEnum):
     ENVIRONMENT = "environment"
     PARTICIPANT = "participant"
     PROTOCOL = "protocol"
+    TRIAL_PROVIDER = "trial-provider"
     RESOURCE_POLICY = "resource-policy"
     CHILD_MACHINE = "child-machine"
     CUSTOM = "custom"
@@ -84,185 +99,175 @@ class ResearchValueKind(StrEnum):
     DATA = "data"
 
 
-class ResearchMethodProgramBindingKind(StrEnum):
-    SYMBOL = "symbol"
-    FACTORY = "factory"
-
-
 @dataclass(frozen=True, slots=True)
-class ResearchMethodProgramImplementation:
-    """Import-resolvable immutable MethodProgram identity.
-
-    A declaration may bind either a module-level MethodProgram symbol or a pure
-    module-level factory plus canonical JSON arguments.  In both cases authoring
-    resolves the exact MethodProgram immediately and freezes its program_digest;
-    lowering reconstructs the same value and fails closed on any identity drift.
-    There is still only one execution path: resolved MethodProgram -> Method Machine.
-    """
+class ResearchMethodImplementation:
+    """Frozen identity of a top-level Method configurator."""
 
     implementation_id: str
+    method_id: str
     module: str
     qualname: str
-    program_digest: str
-    binding_kind: ResearchMethodProgramBindingKind = (
-        ResearchMethodProgramBindingKind.SYMBOL
-    )
-    factory_args: tuple[JsonValue, ...] = ()
-    factory_kwargs: JsonValue = None
+    source_digest: str
+    method_digest: str
+    entrypoint: str
+    version: str = "1"
+    semantic_contract: str = "research.method.v1"
+    method_configuration: JsonValue = None
+    execution: str = "effect_recorded"
+    evidence: tuple[str, ...] = ()
+    metrics: tuple[str, ...] = ()
+    artifacts: tuple[str, ...] = ()
+    state_schema: str = "json"
+    input_schema: str = "json"
+    output_schema: str = "json"
+    configurer_args: tuple[JsonValue, ...] = ()
+    configurer_kwargs: JsonValue = None
     implementation_digest: str = field(init=False)
 
     def __post_init__(self) -> None:
-        _token(self.implementation_id, "research method-program implementation_id")
-        if type(self.module) is not str or not self.module.strip():
-            raise ValueError("research method-program module must be non-empty")
-        if type(self.qualname) is not str or not self.qualname.strip():
-            raise ValueError("research method-program qualname must be non-empty")
-        if "<locals>" in self.qualname or "<lambda>" in self.qualname:
-            raise ValueError(
-                "research method-program must be a module-resolvable named symbol"
-            )
-        require_sha256(
-            self.program_digest,
-            "research method-program program_digest",
-        )
-        if not isinstance(self.binding_kind, ResearchMethodProgramBindingKind):
-            raise TypeError("research method-program binding_kind must be typed")
-        if type(self.factory_args) is not tuple:
-            raise TypeError("research method-program factory_args must be tuple")
-        frozen_args = freeze_json(self.factory_args)
-        if type(frozen_args) is not tuple:
-            raise TypeError("research method-program factory_args must remain tuple")
-        frozen_kwargs = freeze_json(
-            {} if self.factory_kwargs is None else self.factory_kwargs
-        )
-        if not isinstance(frozen_kwargs, Mapping):
-            raise TypeError(
-                "research method-program factory_kwargs must be a JSON object"
-            )
-        if (
-            self.binding_kind is ResearchMethodProgramBindingKind.SYMBOL
-            and (frozen_args or frozen_kwargs)
+        _token(self.implementation_id, "research method implementation_id")
+        _token(self.method_id, "research method method_id")
+        for field_name, value in (
+            ("module", self.module), ("qualname", self.qualname),
+            ("entrypoint", self.entrypoint), ("version", self.version),
+            ("semantic_contract", self.semantic_contract),
+            ("execution", self.execution), ("state_schema", self.state_schema),
+            ("input_schema", self.input_schema), ("output_schema", self.output_schema),
         ):
-            raise ValueError(
-                "symbol MethodProgram binding cannot carry factory arguments"
-            )
-        module = self.module.strip()
-        qualname = self.qualname.strip()
-        object.__setattr__(self, "module", module)
-        object.__setattr__(self, "qualname", qualname)
-        object.__setattr__(self, "factory_args", frozen_args)
-        object.__setattr__(self, "factory_kwargs", frozen_kwargs)
-        object.__setattr__(
-            self,
-            "implementation_digest",
-            canonical_digest(
-                {
-                    "implementation_type": "method_program",
-                    "implementation_id": self.implementation_id,
-                    "module": module,
-                    "qualname": qualname,
-                    "program_digest": self.program_digest,
-                    "binding_kind": self.binding_kind.value,
-                    "factory_args": frozen_args,
-                    "factory_kwargs": frozen_kwargs,
-                }
-            ),
-        )
+            if type(value) is not str or not value.strip():
+                raise ValueError(f"research method {field_name} must be non-empty")
+        if "<locals>" in self.qualname or "<lambda>" in self.qualname:
+            raise ValueError("research method configurator must be module-resolvable")
+        require_sha256(self.source_digest, "research method source_digest")
+        require_sha256(self.method_digest, "research method artifact digest")
+        method_configuration = freeze_json({} if self.method_configuration is None else self.method_configuration)
+        args = freeze_json(self.configurer_args)
+        kwargs = freeze_json({} if self.configurer_kwargs is None else self.configurer_kwargs)
+        if not isinstance(method_configuration, Mapping):
+            raise TypeError("research method configuration must be an object")
+        if type(args) is not tuple:
+            raise TypeError("research method configurer_args must remain tuple")
+        if not isinstance(kwargs, Mapping):
+            raise TypeError("research method configurer_kwargs must be an object")
+        for field_name in ("evidence", "metrics", "artifacts"):
+            value = getattr(self, field_name)
+            if type(value) is not tuple or any(type(row) is not str or not row.strip() for row in value):
+                raise TypeError(f"research method {field_name} must be a text tuple")
+        object.__setattr__(self, "module", self.module.strip())
+        object.__setattr__(self, "qualname", self.qualname.strip())
+        object.__setattr__(self, "entrypoint", self.entrypoint.strip())
+        object.__setattr__(self, "version", self.version.strip())
+        object.__setattr__(self, "semantic_contract", self.semantic_contract.strip())
+        object.__setattr__(self, "execution", self.execution.strip())
+        object.__setattr__(self, "state_schema", self.state_schema.strip())
+        object.__setattr__(self, "input_schema", self.input_schema.strip())
+        object.__setattr__(self, "output_schema", self.output_schema.strip())
+        object.__setattr__(self, "method_configuration", method_configuration)
+        object.__setattr__(self, "configurer_args", args)
+        object.__setattr__(self, "configurer_kwargs", kwargs)
+        object.__setattr__(self, "implementation_digest", canonical_digest({
+            "implementation_type": "method", "implementation_id": self.implementation_id,
+            "method_id": self.method_id, "module": self.module, "qualname": self.qualname, "source_digest": self.source_digest,
+            "method_digest": self.method_digest, "entrypoint": self.entrypoint,
+            "version": self.version, "semantic_contract": self.semantic_contract,
+            "method_configuration": method_configuration, "execution": self.execution,
+            "evidence": self.evidence, "metrics": self.metrics, "artifacts": self.artifacts,
+            "state_schema": self.state_schema, "input_schema": self.input_schema,
+            "output_schema": self.output_schema, "configurer_args": args,
+            "configurer_kwargs": kwargs,
+        }))
+    @staticmethod
+    def _source_digest(configurer: Callable[..., object]) -> str:
+        try:
+            source = inspect.getsource(configurer)
+        except (OSError, TypeError) as exc:
+            raise ValueError("research method configurator source cannot be resolved") from exc
+        normalized = source.replace("\r\n", "\n").replace("\r", "\n")
+        return hashlib.sha256(normalized.encode("utf-8")).hexdigest()
 
     @staticmethod
     def _import(module: str, qualname: str) -> object:
-        if type(module) is not str or not module.strip():
-            raise ValueError("research method-program module must be non-empty")
-        if type(qualname) is not str or not qualname.strip():
-            raise ValueError("research method-program qualname must be non-empty")
         try:
-            value: object = importlib.import_module(module.strip())
-            for part in qualname.strip().split("."):
+            value: object = importlib.import_module(module)
+            for part in qualname.split("."):
                 value = getattr(value, part)
         except (ImportError, AttributeError) as exc:
-            raise ValueError(
-                "research method-program binding cannot be imported: "
-                f"{module}:{qualname}"
-            ) from exc
+            raise ValueError(f"research method configurator cannot be imported: {module}:{qualname}") from exc
         return value
 
-    @classmethod
-    def from_symbol(
-        cls,
-        implementation_id: str,
-        *,
-        module: str,
-        qualname: str,
-    ) -> "ResearchMethodProgramImplementation":
-        value = cls._import(module, qualname)
-        program_digest = getattr(value, "program_digest", None)
-        if type(program_digest) is not str:
-            raise TypeError(
-                "research method-program symbol does not expose program_digest"
-            )
-        require_sha256(
-            program_digest,
-            "research method-program symbol program_digest",
+    @staticmethod
+    def _materialize(*, method_id: str, configurer: Callable[..., object],
+        entrypoint: str, version: str, semantic_contract: str,
+        method_configuration: JsonValue, execution: str, evidence: tuple[str, ...],
+        metrics: tuple[str, ...], artifacts: tuple[str, ...], state_schema: str,
+        input_schema: str, output_schema: str, args: tuple[JsonValue, ...],
+        kwargs: JsonValue) -> ResearchMethod:
+        builder = ResearchMethodBuilder(method_id, entrypoint=entrypoint,
+            version=version, semantic_contract=semantic_contract,
+            configuration=dict(thaw_json(method_configuration)))
+        builder.policy(
+            execution=execution,
+            evidence=evidence,
+            metrics=metrics,
+            artifacts=artifacts,
+            state_schema=state_schema,
+            input_schema=input_schema,
+            output_schema=output_schema,
         )
-        return cls(
-            implementation_id,
-            module.strip(),
-            qualname.strip(),
-            program_digest,
-            ResearchMethodProgramBindingKind.SYMBOL,
-        )
+        result = configurer(builder, *(thaw_json(row) for row in args), **dict(thaw_json(kwargs)))
+        if result is not None and result is not builder:
+            raise TypeError("research method configurator must return None or the same builder")
+        return builder.build()
 
     @classmethod
-    def from_factory(
-        cls,
-        implementation_id: str,
-        *,
-        module: str,
-        qualname: str,
-        args: tuple[JsonValue, ...] = (),
-        kwargs: JsonInput = None,
-    ) -> "ResearchMethodProgramImplementation":
-        if type(args) is not tuple:
-            raise TypeError("research method-program factory args must be tuple")
+    def from_configurer(cls, implementation_id: str, configurer: Callable[..., object], *,
+        method_id: str | None = None,
+        entrypoint: str, version: str = "1", semantic_contract: str = "research.method.v1",
+        method_configuration: JsonInput = None, execution: str = "effect_recorded",
+        evidence: tuple[str, ...] = (), metrics: tuple[str, ...] = (),
+        artifacts: tuple[str, ...] = (), state_schema: str = "json",
+        input_schema: str = "json", output_schema: str = "json",
+        args: tuple[JsonValue, ...] = (), kwargs: JsonInput = None) -> "ResearchMethodImplementation":
+        if not callable(configurer):
+            raise TypeError("research method configurator must be callable")
+        module = getattr(configurer, "__module__", None)
+        qualname = getattr(configurer, "__qualname__", None)
+        if type(module) is not str or not module.strip() or module == "__main__":
+            raise ValueError("research method configurator must live in an importable module")
+        if type(qualname) is not str or not qualname.strip() or "<locals>" in qualname or "<lambda>" in qualname:
+            raise ValueError("research method configurator must be module-level and named")
+        frozen_configuration = freeze_json({} if method_configuration is None else method_configuration)
         frozen_args = freeze_json(args)
         frozen_kwargs = freeze_json({} if kwargs is None else kwargs)
-        if not isinstance(frozen_kwargs, Mapping):
-            raise TypeError(
-                "research method-program factory kwargs must be a JSON object"
-            )
-        factory = cls._import(module, qualname)
-        if not callable(factory):
-            raise TypeError(
-                "research method-program factory binding must resolve to callable"
-            )
-        try:
-            value = factory(
-                *(thaw_json(row) for row in frozen_args),
-                **dict(thaw_json(frozen_kwargs)),
-            )
-        except Exception as exc:
-            raise ValueError(
-                "research method-program factory could not materialize canonical IR: "
-                f"{module}:{qualname}"
-            ) from exc
-        program_digest = getattr(value, "program_digest", None)
-        if type(program_digest) is not str:
-            raise TypeError(
-                "research method-program factory result has no program_digest"
-            )
-        require_sha256(
-            program_digest,
-            "research method-program factory result program_digest",
-        )
-        return cls(
-            implementation_id,
-            module.strip(),
-            qualname.strip(),
-            program_digest,
-            ResearchMethodProgramBindingKind.FACTORY,
-            frozen_args,
-            frozen_kwargs,
-        )
+        resolved_method_id = implementation_id if method_id is None else method_id
+        _token(resolved_method_id, "research method method_id")
+        method = cls._materialize(method_id=resolved_method_id, configurer=configurer,
+            entrypoint=entrypoint, version=version, semantic_contract=semantic_contract,
+            method_configuration=frozen_configuration, execution=execution,
+            evidence=evidence, metrics=metrics, artifacts=artifacts,
+            state_schema=state_schema, input_schema=input_schema, output_schema=output_schema,
+            args=frozen_args, kwargs=frozen_kwargs)
+        return cls(implementation_id, resolved_method_id, module.strip(), qualname.strip(), cls._source_digest(configurer),
+            method.artifact_digest, entrypoint, version, semantic_contract,
+            frozen_configuration, execution, evidence, metrics, artifacts,
+            state_schema, input_schema, output_schema, frozen_args, frozen_kwargs)
+
+    def resolve(self) -> ResearchMethod:
+        configurer = self._import(self.module, self.qualname)
+        if not callable(configurer):
+            raise TypeError("frozen research method binding no longer resolves to callable")
+        if self._source_digest(configurer) != self.source_digest:
+            raise ValueError("research method configurator source drifted from frozen revision")
+        method = self._materialize(method_id=self.method_id,
+            configurer=configurer, entrypoint=self.entrypoint, version=self.version,
+            semantic_contract=self.semantic_contract, method_configuration=self.method_configuration,
+            execution=self.execution, evidence=self.evidence, metrics=self.metrics,
+            artifacts=self.artifacts, state_schema=self.state_schema,
+            input_schema=self.input_schema, output_schema=self.output_schema,
+            args=self.configurer_args, kwargs=self.configurer_kwargs)
+        if method.artifact_digest != self.method_digest:
+            raise ValueError("research method artifact drifted from frozen revision")
+        return method
 
 
 @dataclass(frozen=True, slots=True)
@@ -553,7 +558,7 @@ class ResearchDefinition:
     kind: ResearchDefinitionKind
     implementation: (
         ResearchImplementation
-        | ResearchMethodProgramImplementation
+        | ResearchMethodImplementation
         | ResearchMachineProgramImplementation
         | None
     ) = None
@@ -566,7 +571,7 @@ class ResearchDefinition:
             raise TypeError("research definition kind must be typed")
         if self.implementation is not None and type(self.implementation) not in {
             ResearchImplementation,
-            ResearchMethodProgramImplementation,
+            ResearchMethodImplementation,
             ResearchMachineProgramImplementation,
         }:
             raise TypeError(
@@ -574,11 +579,17 @@ class ResearchDefinition:
                 "implementation or None"
             )
         if (
-            type(self.implementation) is ResearchMethodProgramImplementation
+            type(self.implementation) is ResearchMethodImplementation
             and self.kind is not ResearchDefinitionKind.METHOD
         ):
             raise ValueError(
-                "MethodProgram implementation may only back METHOD definitions"
+                "Method implementation may only back METHOD definitions"
+            )
+        if self.kind is ResearchDefinitionKind.METHOD and type(
+            self.implementation
+        ) is not ResearchMethodImplementation:
+            raise ValueError(
+                "METHOD definitions require ResearchMethodImplementation"
             )
         if (
             type(self.implementation) is ResearchMachineProgramImplementation
@@ -651,6 +662,43 @@ class ResearchInputBinding:
         _token(self.output_name, "research output name")
         if not isinstance(self.kind, ResearchValueKind):
             raise TypeError("research input kind must be typed")
+
+
+def _research_input_bindings(
+    values: tuple[object, ...],
+) -> tuple[ResearchInputBinding, ...]:
+    if type(values) is not tuple:
+        raise TypeError("research dependency bindings must be a tuple")
+    rows: list[ResearchInputBinding] = []
+    for value in values:
+        if type(value) is ResearchInputBinding:
+            rows.append(value)
+            continue
+        if type(value) is tuple and len(value) in {2, 3}:
+            input_name, output_name = value[:2]
+            kind = "artifact" if len(value) == 2 else value[2]
+            rows.append(
+                ResearchInputBinding(
+                    str(input_name),
+                    str(output_name),
+                    ResearchValueKind(str(kind)),
+                )
+            )
+            continue
+        if isinstance(value, Mapping):
+            rows.append(
+                ResearchInputBinding(
+                    str(value["input_name"]),
+                    str(value["output_name"]),
+                    ResearchValueKind(str(value.get("kind", "artifact"))),
+                )
+            )
+            continue
+        raise TypeError(
+            "research dependency binding must be an internal binding, "
+            "(input, output[, kind]) tuple, or mapping"
+        )
+    return tuple(rows)
 
 
 @dataclass(frozen=True, slots=True)
@@ -962,7 +1010,11 @@ def _research_binding_document(binding: ResearchInputBinding) -> dict[str, objec
 
 
 def _research_implementation_document(
-    implementation: ResearchImplementation | ResearchMethodProgramImplementation,
+    implementation: (
+        ResearchImplementation
+        | ResearchMethodImplementation
+        | ResearchMachineProgramImplementation
+    ),
 ) -> dict[str, object]:
     if type(implementation) is ResearchImplementation:
         return {
@@ -973,16 +1025,27 @@ def _research_implementation_document(
             "source_digest": implementation.source_digest,
             "implementation_digest": implementation.implementation_digest,
         }
-    if type(implementation) is ResearchMethodProgramImplementation:
+    if type(implementation) is ResearchMethodImplementation:
         return {
-            "implementation_type": "method_program",
+            "implementation_type": "method",
             "implementation_id": implementation.implementation_id,
             "module": implementation.module,
             "qualname": implementation.qualname,
-            "program_digest": implementation.program_digest,
-            "binding_kind": implementation.binding_kind.value,
-            "factory_args": implementation.factory_args,
-            "factory_kwargs": implementation.factory_kwargs,
+            "source_digest": implementation.source_digest,
+            "method_digest": implementation.method_digest,
+            "entrypoint": implementation.entrypoint,
+            "version": implementation.version,
+            "semantic_contract": implementation.semantic_contract,
+            "method_configuration": implementation.method_configuration,
+            "execution": implementation.execution,
+            "evidence": implementation.evidence,
+            "metrics": implementation.metrics,
+            "artifacts": implementation.artifacts,
+            "state_schema": implementation.state_schema,
+            "input_schema": implementation.input_schema,
+            "output_schema": implementation.output_schema,
+            "configurer_args": implementation.configurer_args,
+            "configurer_kwargs": implementation.configurer_kwargs,
             "implementation_digest": implementation.implementation_digest,
         }
     if type(implementation) is ResearchMachineProgramImplementation:
@@ -1231,18 +1294,16 @@ class ResearchPortfolioBuilder:
     def __init__(self, portfolio_id: str) -> None:
         _token(portfolio_id, "research portfolio_id")
         self._portfolio_id = portfolio_id
-        self._programs: dict[str, ResearchProgram] = {}
+        self._programs: dict[str, ResearchProgramBuilder] = {}
         self._dependencies: list[ResearchPortfolioDependency] = []
 
-    def program(self, program: ResearchProgram) -> "ResearchPortfolioBuilder":
-        if type(program) is not ResearchProgram:
-            raise TypeError("portfolio builder requires ResearchProgram")
-        if program.program_id in self._programs:
-            raise ValueError(
-                f"duplicate research program: {program.program_id}"
-            )
-        self._programs[program.program_id] = program
-        return self
+    def program(self, program_id: str) -> "ResearchProgramBuilder":
+        _token(program_id, "research program_id")
+        if program_id in self._programs:
+            raise ValueError(f"duplicate research program: {program_id}")
+        builder = ResearchProgramBuilder(program_id)
+        self._programs[program_id] = builder
+        return builder
 
     def depends(
         self,
@@ -1257,7 +1318,7 @@ class ResearchPortfolioBuilder:
             ResearchPortfolioDependency(
                 ResearchNodeRef(upstream_program_id, upstream_node_id),
                 ResearchNodeRef(downstream_program_id, downstream_node_id),
-                bindings,
+                _research_input_bindings(bindings),
             )
         )
         return self
@@ -1265,7 +1326,7 @@ class ResearchPortfolioBuilder:
     def freeze(self) -> ResearchPortfolio:
         return ResearchPortfolio(
             self._portfolio_id,
-            tuple(self._programs.values()),
+            tuple(builder.freeze() for builder in self._programs.values()),
             tuple(self._dependencies),
         )
 
@@ -1708,7 +1769,7 @@ class ResearchProgramBuilder:
         kind: ResearchDefinitionKind,
         implementation: (
             ResearchImplementation
-            | ResearchMethodProgramImplementation
+            | ResearchMethodImplementation
             | ResearchMachineProgramImplementation
             | Callable[..., object]
             | None
@@ -1723,7 +1784,7 @@ class ResearchProgramBuilder:
                 if type(implementation)
                 in {
                     ResearchImplementation,
-                    ResearchMethodProgramImplementation,
+                    ResearchMethodImplementation,
                     ResearchMachineProgramImplementation,
                 }
                 else ResearchImplementation.from_callable(
@@ -1746,57 +1807,53 @@ class ResearchProgramBuilder:
     def method(
         self,
         definition_id: str,
+        configure: Callable[..., object] | None = None,
         *,
-        implementation: ResearchImplementation | Callable[..., object],
-        config: JsonInput = None,
-    ) -> "ResearchProgramBuilder":
-        return self.definition(
-            definition_id,
-            kind=ResearchDefinitionKind.METHOD,
-            implementation=implementation,
-            config=config,
-        )
-
-    def method_program(
-        self,
-        definition_id: str,
-        *,
-        module: str,
-        qualname: str,
-        config: JsonInput = None,
-    ) -> "ResearchProgramBuilder":
-        """Bind an existing immutable MethodProgram as METHOD semantics."""
-
-        return self.definition(
-            definition_id,
-            kind=ResearchDefinitionKind.METHOD,
-            implementation=ResearchMethodProgramImplementation.from_symbol(
-                definition_id,
-                module=module,
-                qualname=qualname,
-            ),
-            config=config,
-        )
-
-    def method_program_factory(
-        self,
-        definition_id: str,
-        *,
-        module: str,
-        qualname: str,
+        method_id: str | None = None,
+        entrypoint: str | None = None,
+        version: str = "1",
+        semantic_contract: str = "research.method.v1",
+        method_configuration: JsonInput = None,
+        execution: str = "effect_recorded",
+        evidence: tuple[str, ...] = (),
+        metrics: tuple[str, ...] = (),
+        artifacts: tuple[str, ...] = (),
+        state_schema: str = "json",
+        input_schema: str = "json",
+        output_schema: str = "json",
         args: tuple[JsonValue, ...] = (),
         kwargs: JsonInput = None,
         config: JsonInput = None,
     ) -> "ResearchProgramBuilder":
-        """Bind a pure MethodProgram factory with explicit canonical arguments."""
-
+        """Declare one Method or one unresolved Method requirement."""
+        if configure is None:
+            if entrypoint is not None:
+                raise ValueError("unresolved Method must not claim an entrypoint")
+            return self.definition(
+                definition_id,
+                kind=ResearchDefinitionKind.METHOD,
+                config=config,
+            )
+        if type(entrypoint) is not str or not entrypoint.strip():
+            raise ValueError("implemented Method requires a non-empty entrypoint")
         return self.definition(
             definition_id,
             kind=ResearchDefinitionKind.METHOD,
-            implementation=ResearchMethodProgramImplementation.from_factory(
+            implementation=ResearchMethodImplementation.from_configurer(
                 definition_id,
-                module=module,
-                qualname=qualname,
+                configure,
+                method_id=method_id,
+                entrypoint=entrypoint,
+                version=version,
+                semantic_contract=semantic_contract,
+                method_configuration=method_configuration,
+                execution=execution,
+                evidence=evidence,
+                metrics=metrics,
+                artifacts=artifacts,
+                state_schema=state_schema,
+                input_schema=input_schema,
+                output_schema=output_schema,
                 args=args,
                 kwargs=kwargs,
             ),
@@ -1817,7 +1874,7 @@ class ResearchProgramBuilder:
         """Bind an exact arbitrary non-Method ResearchProgram + operation set."""
 
         if kind is ResearchDefinitionKind.METHOD:
-            raise ValueError("Method semantics must use method_program")
+            raise ValueError("Method semantics must use method()")
         if kind is ResearchDefinitionKind.CHILD_MACHINE:
             raise ValueError(
                 "nested Machine semantics must use child_machine_program"
@@ -1962,6 +2019,26 @@ class ResearchProgramBuilder:
             config=config,
         )
 
+    def trial_provider(
+        self,
+        definition_id: str,
+        *,
+        implementation: ResearchImplementation | Callable[..., object],
+        config: JsonInput = None,
+    ) -> "ResearchProgramBuilder":
+        """Declare paper-owned TrialProvider factory semantics.
+
+        Runtime composition injects the generic workload execution port; the
+        paper factory owns only task/result/measurement semantics.
+        """
+
+        return self.definition(
+            definition_id,
+            kind=ResearchDefinitionKind.TRIAL_PROVIDER,
+            implementation=implementation,
+            config=config,
+        )
+
     def study_protocol(
         self,
         definition_id: str,
@@ -2011,6 +2088,19 @@ class ResearchProgramBuilder:
             config=config,
         )
 
+    def custom_requirement(
+        self,
+        definition_id: str,
+        *,
+        config: JsonInput = None,
+    ) -> "ResearchProgramBuilder":
+        """Declare one unresolved custom research requirement."""
+        return self.definition(
+            definition_id,
+            kind=ResearchDefinitionKind.CUSTOM,
+            config=config,
+        )
+
     def node(
         self,
         node_id: str,
@@ -2021,11 +2111,39 @@ class ResearchProgramBuilder:
         depends_on: tuple[str, ...] = (),
         config: JsonInput = None,
     ) -> "ResearchProgramBuilder":
+        resolved_outputs: list[ResearchOutputSpec] = []
+        for output in outputs:
+            if type(output) is ResearchOutputSpec:
+                resolved_outputs.append(output)
+            elif type(output) is str:
+                resolved_outputs.append(
+                    ResearchOutputSpec(output, ResearchValueKind.ARTIFACT)
+                )
+            elif (
+                type(output) is tuple
+                and len(output) == 2
+                and type(output[0]) is str
+                and type(output[1]) is str
+            ):
+                resolved_outputs.append(
+                    ResearchOutputSpec(output[0], ResearchValueKind(output[1]))
+                )
+            elif isinstance(output, Mapping):
+                resolved_outputs.append(
+                    ResearchOutputSpec(
+                        str(output["name"]),
+                        ResearchValueKind(str(output.get("kind", "artifact"))),
+                    )
+                )
+            else:
+                raise TypeError(
+                    "research outputs must be names, (name, kind), mappings, or output specs"
+                )
         row = ResearchNode(
             node_id,
             kind,
             definitions,
-            outputs,
+            tuple(resolved_outputs),
             freeze_json(config),
         )
         if row.node_id in self._nodes:
@@ -2336,7 +2454,7 @@ class ResearchProgramBuilder:
             ResearchDependency(
                 upstream_node_id,
                 downstream_node_id,
-                bindings,
+                _research_input_bindings(bindings),
             )
         )
         return self
@@ -2351,32 +2469,6 @@ class ResearchProgramBuilder:
 
 
 __all__ = [
-    "ResearchBranch",
-    "ResearchControlAction",
-    "ResearchControlReceipt",
-    "ResearchControlRequest",
-    "ResearchDefinition",
-    "ResearchDefinitionKind",
-    "ResearchDependency",
-    "ResearchExecutionTarget",
-    "ResearchGraphRevision",
-    "ResearchImpactState",
-    "ResearchImplementation",
-    "ResearchMethodProgramBindingKind",
-    "ResearchMethodProgramImplementation",
-    "ResearchInputBinding",
-    "ResearchNode",
-    "ResearchNodeImpact",
-    "ResearchNodeKind",
-    "ResearchPortfolioDependency",
     "ResearchPortfolioBuilder",
-    "ResearchNodeRef",
-    "ResearchOS",
-    "ResearchOutputSpec",
     "ResearchPortfolio",
-    "ResearchProgram",
-    "ResearchProgramBuilder",
-    "ResearchRevisionDiff",
-    "ResearchTag",
-    "ResearchValueKind",
 ]

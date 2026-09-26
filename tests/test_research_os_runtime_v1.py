@@ -6,6 +6,9 @@ from pathlib import Path
 import pytest
 
 from noetrium import api
+import noetrium_platform.research.execution.api as execution_api
+import noetrium_platform.product.research_os as product_api
+import noetrium_platform.foundation.kernel.kernel as kernel_api
 from noetrium_platform.composition.research_execution_pool import ResearchExecutionPool
 from noetrium_platform.composition.research_os import bind_portfolio_research_os
 from noetrium_platform.composition.research_os_checkpoint_store import (
@@ -61,28 +64,28 @@ def _stable():
     return {"stable": 1}
 
 
-def _capability_return(request: api.MethodNodeRequest) -> api.MethodNodeResult:
-    return api.MethodNodeResult(value=None)
+def _capability_return(request: execution_api.MethodNodeRequest) -> execution_api.MethodNodeResult:
+    return execution_api.MethodNodeResult(value=None)
 
 
-def _capability_program_factory() -> api.MethodProgram:
-    identity = api.MethodProgramIdentity(
-        api.MethodIdentity("test.capability-method", "1", "1", "1"),
+def _capability_program_factory() -> execution_api.MethodProgram:
+    identity = execution_api.MethodProgramIdentity(
+        execution_api.MethodIdentity("test.capability-method", "1", "1", "1"),
         canonical_digest({"capability": "test.echo"}),
     )
     return (
-        api.MethodProgramBuilder(identity, entrypoint="invoke")
+        execution_api.MethodProgramBuilder(identity, entrypoint="invoke")
         .capability(
             "invoke",
             "test.capability.invoke",
             "test.echo",
             ("return",),
-            effect_class=api.EffectClass.PURE,
+            effect_class=kernel_api.EffectClass.PURE,
         )
         .return_node("return", "test.capability.return", _capability_return)
         .build(
             required_capabilities=("test.echo",),
-            required_runtime_ports=(api.MethodRuntimePort.CAPABILITIES,),
+            required_runtime_ports=(execution_api.MethodRuntimePort.CAPABILITIES,),
         )
     )
 
@@ -95,30 +98,30 @@ class _EchoCapability:
     def identity_digest(self) -> str:
         return canonical_digest({"provider": "test.echo", "version": 1})
 
-    def describe(self, capability_id: str) -> api.CapabilityDescriptor:
+    def describe(self, capability_id: str) -> execution_api.CapabilityDescriptor:
         if capability_id != "test.echo":
             raise KeyError(capability_id)
-        return api.CapabilityDescriptor(
+        return execution_api.CapabilityDescriptor(
             "test.echo",
             "1",
             "json",
             "json",
-            effect_class=api.EffectClass.PURE,
+            effect_class=kernel_api.EffectClass.PURE,
             deterministic=True,
         )
 
-    def invoke(self, request: api.CapabilityRequest) -> api.CapabilityResult:
+    def invoke(self, request: execution_api.CapabilityRequest) -> execution_api.CapabilityResult:
         if request.capability_id != "test.echo":
             raise KeyError(request.capability_id)
         self.calls += 1
-        return api.CapabilityResult("test.echo", {"ok": True, "calls": self.calls})
+        return execution_api.CapabilityResult("test.echo", {"ok": True, "calls": self.calls})
 
 
 @dataclass
 class _DataAuthority:
     authority_id: str = "data.authority"
-    supported_kinds: frozenset[api.ResearchValueKind] = frozenset(
-        {api.ResearchValueKind.DATA}
+    supported_kinds: frozenset[product_api.ResearchValueKind] = frozenset(
+        {product_api.ResearchValueKind.DATA}
     )
     rows: dict[str, JsonValue] = field(default_factory=dict)
 
@@ -173,42 +176,42 @@ def _pool() -> ResearchExecutionPool:
     )
 
 
-def _portfolio() -> api.ResearchPortfolio:
-    builder = api.ResearchProgramBuilder("paper")
+def _portfolio() -> product_api.ResearchPortfolio:
+    builder = product_api.ResearchProgramBuilder("paper")
     builder.method("source-method", implementation=_source)
     builder.metric("metric", implementation=_metric)
     builder.node(
         "source",
-        kind=api.ResearchNodeKind.METHOD,
+        kind=product_api.ResearchNodeKind.METHOD,
         definitions=("source-method",),
         outputs=(
-            api.ResearchOutputSpec("data", api.ResearchValueKind.DATA),
+            product_api.ResearchOutputSpec("data", product_api.ResearchValueKind.DATA),
         ),
     )
     builder.evaluation(
         "evaluate",
         definitions=("metric",),
         outputs=(
-            api.ResearchOutputSpec("result", api.ResearchValueKind.DATA),
+            product_api.ResearchOutputSpec("result", product_api.ResearchValueKind.DATA),
         ),
     )
     builder.depends(
         "evaluate",
         "source",
         bindings=(
-            api.ResearchInputBinding(
+            product_api.ResearchInputBinding(
                 "source",
                 "data",
-                api.ResearchValueKind.DATA,
+                product_api.ResearchValueKind.DATA,
             ),
         ),
     )
-    return api.ResearchPortfolio("suite", (builder.freeze(),))
+    return product_api.ResearchPortfolio("suite", (builder.freeze(),))
 
 
-def _capability_portfolio() -> api.ResearchPortfolio:
-    builder = api.ResearchProgramBuilder("capability-paper")
-    builder.method_program_factory(
+def _capability_portfolio() -> product_api.ResearchPortfolio:
+    builder = product_api.ResearchProgramBuilder("capability-paper")
+    builder.method_configurer(
         "capability-method",
         module=__name__,
         qualname="_capability_program_factory",
@@ -217,7 +220,7 @@ def _capability_portfolio() -> api.ResearchPortfolio:
         "run",
         definitions=("capability-method",),
     )
-    return api.ResearchPortfolio("capability-suite", (builder.freeze(),))
+    return product_api.ResearchPortfolio("capability-suite", (builder.freeze(),))
 
 
 def test_canonical_runtime_executes_method_and_evaluation_through_machine_journals(
@@ -243,7 +246,7 @@ def test_canonical_runtime_executes_method_and_evaluation_through_machine_journa
         portfolio = _portfolio()
         revision = research_os.commit(portfolio, message="canonical runtime")
         receipt = research_os.run(
-            api.ResearchExecutionTarget("canonical-execution", revision)
+            product_api.ResearchExecutionTarget("canonical-execution", revision)
         )
         assert receipt.state == "succeeded"
         assert (tmp_path / "machine-state" / "program-journal" / "machines").is_dir()
@@ -260,7 +263,7 @@ def test_canonical_runtime_rejects_missing_method_capability_inventory(
     )
 
     portfolio = _capability_portfolio()
-    revision = api.ResearchGraphRevision(
+    revision = product_api.ResearchGraphRevision(
         portfolio.portfolio_id,
         portfolio.portfolio_digest,
         (),
@@ -271,7 +274,7 @@ def test_canonical_runtime_rejects_missing_method_capability_inventory(
         match="canonical Method runtime binding is incomplete",
     ):
         prepare_research_os_execution(
-            api.ResearchExecutionTarget("missing-capability", revision),
+            product_api.ResearchExecutionTarget("missing-capability", revision),
             portfolio,
             CanonicalResearchOSNodeRuntime(tmp_path / "machine-state"),
             ResearchOSValueRouter(()),
@@ -305,7 +308,7 @@ def test_canonical_runtime_injects_explicit_method_capability_inventory(
     try:
         portfolio = _capability_portfolio()
         revision = research_os.commit(portfolio, message="capability runtime")
-        target = api.ResearchExecutionTarget("capability-runtime", revision)
+        target = product_api.ResearchExecutionTarget("capability-runtime", revision)
         receipt = research_os.run(target)
         if receipt.state != "succeeded":
             print("CAPABILITY_FAILURE_INSPECT", research_os.inspect(target).payload)
@@ -346,7 +349,7 @@ def test_canonical_runtime_checkpoint_binds_real_machine_journal_heads(
     try:
         portfolio = _portfolio()
         revision = research_os.commit(portfolio, message="checkpoint proof")
-        target = api.ResearchExecutionTarget("canonical-checkpoint", revision)
+        target = product_api.ResearchExecutionTarget("canonical-checkpoint", revision)
         assert research_os.run(target).state == "succeeded"
         checkpoint = research_os.checkpoint(target)
         assert checkpoint.state == "checkpointed"
@@ -381,11 +384,11 @@ def test_canonical_runtime_checkpoint_binds_real_machine_journal_heads(
 def test_canonical_runtime_rejects_experiment_family_until_experiment_lowering_exists(
     tmp_path: Path,
 ) -> None:
-    builder = api.ResearchProgramBuilder("paper")
+    builder = product_api.ResearchProgramBuilder("paper")
     builder.benchmark("benchmark", implementation=_benchmark)
     builder.experiment("main", definitions=("benchmark",))
-    portfolio = api.ResearchPortfolio("suite", (builder.freeze(),))
-    revision = api.ResearchGraphRevision(
+    portfolio = product_api.ResearchPortfolio("suite", (builder.freeze(),))
+    revision = product_api.ResearchGraphRevision(
         portfolio.portfolio_id,
         portfolio.portfolio_digest,
         (),
@@ -402,7 +405,7 @@ def test_canonical_runtime_rejects_experiment_family_until_experiment_lowering_e
         match="explicit canonical experiment closure provider",
     ):
         prepare_research_os_execution(
-            api.ResearchExecutionTarget("experiment", revision),
+            product_api.ResearchExecutionTarget("experiment", revision),
             portfolio,
             runtime,
             ResearchOSValueRouter(()),
@@ -412,15 +415,15 @@ def test_canonical_runtime_rejects_experiment_family_until_experiment_lowering_e
 def test_canonical_runtime_rejects_unresolved_platform_requirements(
     tmp_path: Path,
 ) -> None:
-    builder = api.ResearchProgramBuilder("paper")
+    builder = product_api.ResearchProgramBuilder("paper")
     builder.model("planner", config={"role": "planner"})
     builder.node(
         "run",
-        kind=api.ResearchNodeKind.RUN,
+        kind=product_api.ResearchNodeKind.RUN,
         definitions=("planner",),
     )
-    portfolio = api.ResearchPortfolio("suite", (builder.freeze(),))
-    revision = api.ResearchGraphRevision(
+    portfolio = product_api.ResearchPortfolio("suite", (builder.freeze(),))
+    revision = product_api.ResearchGraphRevision(
         portfolio.portfolio_id,
         portfolio.portfolio_digest,
         (),
@@ -436,45 +439,45 @@ def test_canonical_runtime_rejects_unresolved_platform_requirements(
         match="unresolved platform requirements",
     ):
         prepare_research_os_execution(
-            api.ResearchExecutionTarget("requirements", revision),
+            product_api.ResearchExecutionTarget("requirements", revision),
             portfolio,
             CanonicalResearchOSNodeRuntime(tmp_path / "machine-state"),
             ResearchOSValueRouter(()),
         )
 
 
-def _migration_portfolio(source_impl) -> api.ResearchPortfolio:
-    first = api.ResearchProgramBuilder("paper-a")
+def _migration_portfolio(source_impl) -> product_api.ResearchPortfolio:
+    first = product_api.ResearchProgramBuilder("paper-a")
     first.method("source-method", implementation=source_impl)
     first.metric("metric", implementation=_metric)
     first.node(
         "source",
-        kind=api.ResearchNodeKind.METHOD,
+        kind=product_api.ResearchNodeKind.METHOD,
         definitions=("source-method",),
-        outputs=(api.ResearchOutputSpec("data", api.ResearchValueKind.DATA),),
+        outputs=(product_api.ResearchOutputSpec("data", product_api.ResearchValueKind.DATA),),
     )
     first.evaluation(
         "evaluate",
         definitions=("metric",),
-        outputs=(api.ResearchOutputSpec("result", api.ResearchValueKind.DATA),),
+        outputs=(product_api.ResearchOutputSpec("result", product_api.ResearchValueKind.DATA),),
     )
     first.depends(
         "evaluate",
         "source",
         bindings=(
-            api.ResearchInputBinding("source", "data", api.ResearchValueKind.DATA),
+            product_api.ResearchInputBinding("source", "data", product_api.ResearchValueKind.DATA),
         ),
     )
 
-    second = api.ResearchProgramBuilder("paper-b")
+    second = product_api.ResearchProgramBuilder("paper-b")
     second.method("stable-method", implementation=_stable)
     second.node(
         "stable",
-        kind=api.ResearchNodeKind.METHOD,
+        kind=product_api.ResearchNodeKind.METHOD,
         definitions=("stable-method",),
-        outputs=(api.ResearchOutputSpec("data", api.ResearchValueKind.DATA),),
+        outputs=(product_api.ResearchOutputSpec("data", product_api.ResearchValueKind.DATA),),
     )
-    return api.ResearchPortfolio("migration-suite", (first.freeze(), second.freeze()))
+    return product_api.ResearchPortfolio("migration-suite", (first.freeze(), second.freeze()))
 
 
 def test_live_revision_migration_reuses_only_proven_unchanged_nodes(
@@ -499,7 +502,7 @@ def test_live_revision_migration_reuses_only_proven_unchanged_nodes(
     try:
         first_portfolio = _migration_portfolio(_source)
         first_revision = research_os.commit(first_portfolio, message="r1")
-        first_target = api.ResearchExecutionTarget("live-migration", first_revision)
+        first_target = product_api.ResearchExecutionTarget("live-migration", first_revision)
         assert research_os.run(first_target).state == "succeeded"
         assert research_os.pause(first_target).state == "paused"
 
@@ -509,7 +512,7 @@ def test_live_revision_migration_reuses_only_proven_unchanged_nodes(
             parents=(first_revision,),
             message="r2",
         )
-        second_target = api.ResearchExecutionTarget("live-migration", second_revision)
+        second_target = product_api.ResearchExecutionTarget("live-migration", second_revision)
         migrated = research_os.migrate(second_target)
         assert migrated.state == "paused"
         assert tuple(migrated.payload["reused_node_ids"]) == ("paper-b::stable",)

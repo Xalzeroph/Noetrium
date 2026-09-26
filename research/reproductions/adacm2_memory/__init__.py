@@ -24,6 +24,11 @@ from .memory import (
     build_adacm2_memory_program,
     reduce_adacm2_cache,
 )
+from .program import (
+    ADACM2_METHOD_PROGRAM,
+    adacm2_method_initial_state,
+    build_adacm2_method_program,
+)
 from .source import ADACM2_CVPR_2025, SOURCES
 from .study import (
     adacm2_lvu_trial_protocol,
@@ -37,6 +42,7 @@ __all__ = [
     "ADACM2_LVU_PROTOCOL",
     "ADACM2_LVU_TEST_SPLIT",
     "ADACM2_MEMORY_PROGRAM",
+    "ADACM2_METHOD_PROGRAM",
     "ADACM2_REFERENCE_FIDELITY",
     "REPRODUCTION",
     "SOURCES",
@@ -49,6 +55,7 @@ __all__ = [
     "AdaCM2ReductionSpec",
     "AdaCM2ReferenceFidelity",
     "adacm2_lvu_trial_protocol",
+    "adacm2_method_initial_state",
     "adacm2_memory_host",
     "adacm2_memory_initial_data",
     "adacm2_memory_operations",
@@ -58,5 +65,6 @@ __all__ = [
     "build_adacm2_lvu_eq6_literal_study",
     "build_adacm2_lvu_eq8_consistent_study",
     "build_adacm2_memory_program",
+    "build_adacm2_method_program",
     "reduce_adacm2_cache",
 ]

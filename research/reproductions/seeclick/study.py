@@ -1,27 +1,13 @@
 from __future__ import annotations
-
-from noetrium.api import canonical_digest
-from noetrium.api import (
-    ExperimentTrialProtocolIdentity,
-)
-from noetrium.api import (
-    BenchmarkTaskSet,
-    MeasurementDefinition,
-    ReplayLevel,
-    ResearchStudyDefinition,
-    Study,
-    StudyModel,
-    StudyParticipant,
-    TrialBudget,
-)
+from research.reproductions import _support as _rs
 from research.benchmarks.screenspot import SCREENSPOT_BENCHMARK_ID
 
 from .fidelity import SEECLICK_FIDELITY
 from .program import SEECLICK_METHOD_PROGRAM
 
-SEECLICK_SCREENSPOT_TRIAL_PROTOCOL = ExperimentTrialProtocolIdentity(
+SEECLICK_SCREENSPOT_TRIAL_PROTOCOL = _rs.study_protocol(
     "seeclick.acl2024.screenspot.v1",
-    canonical_digest({
+    _rs.canonical_digest({
         "program_digest": SEECLICK_METHOD_PROGRAM.program_digest,
         "base_model": SEECLICK_FIDELITY.base_model,
         "coordinate_range": (
@@ -36,21 +22,21 @@ SEECLICK_SCREENSPOT_TRIAL_PROTOCOL = ExperimentTrialProtocolIdentity(
 )
 
 
+@_rs.study_factory('benchmark')
 def build_seeclick_screenspot_study(
-    benchmark: BenchmarkTaskSet,
+    benchmark,
     *,
     split_id: str,
-) -> ResearchStudyDefinition:
+):
     if benchmark.benchmark_id != SCREENSPOT_BENCHMARK_ID:
         raise ValueError("SeeClick study requires ScreenSpot")
     if not benchmark.selected_tasks(split_id):
         raise ValueError("SeeClick ScreenSpot study requires a non-empty split")
-    return Study(
-        project_id="seeclick-acl2024-reproduction",
+    return _rs.study_spec(project_id="seeclick-acl2024-reproduction",
         study_id=f"seeclick-screenspot-{split_id}",
         benchmark=benchmark,
         benchmark_split_id=split_id,
-        method=StudyParticipant(
+        method=_rs.study_participant(
             role="seeclick",
             kind="visual_gui_grounder",
             implementation="seeclick-paper-era",
@@ -58,13 +44,13 @@ def build_seeclick_screenspot_study(
             configurations=("seeclick.text-to-point",),
         ),
         models={
-            "seeclick": StudyModel(
+            "seeclick": _rs.study_model(
                 "model.seeclick-qwen-vl-chat",
                 prompt="seeclick.screenspot.paper-era",
             ),
         },
         measurements=(
-            MeasurementDefinition.scalar(
+            _rs.scalar_measurement(
                 "grounding_accuracy",
                 schema_id="noetrium.measurement.scalar.v1",
                 unit="ratio",
@@ -72,7 +58,7 @@ def build_seeclick_screenspot_study(
                 scale="ratio",
                 domain="screenspot",
             ),
-            MeasurementDefinition.scalar(
+            _rs.scalar_measurement(
                 "model_call_count",
                 schema_id="noetrium.measurement.count.v1",
                 unit="model_call",
@@ -84,14 +70,14 @@ def build_seeclick_screenspot_study(
         trial=SEECLICK_SCREENSPOT_TRIAL_PROTOCOL,
         repetitions=1,
         seeds=("0",),
-        limits=TrialBudget(
+        limits=_rs.trial_budget(
             "seeclick-screenspot",
             max_steps=4,
             max_model_calls=1,
             max_working_seconds=300.0,
         ),
-        replay_level=ReplayLevel.OBSERVATIONAL,
-    ).build()
+        replay_level='observational',
+    )
 
 
 __all__ = [

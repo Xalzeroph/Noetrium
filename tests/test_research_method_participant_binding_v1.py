@@ -3,6 +3,9 @@ from __future__ import annotations
 import pytest
 
 from noetrium import api
+import noetrium_platform.research.execution.api as execution_api
+import noetrium_platform.product.research_os as product_api
+import noetrium_platform.foundation.kernel.kernel as kernel_api
 from noetrium_platform.composition.research_method_participant_binding import (
     exact_method_programs,
     exact_method_requirement_implementation_digest,
@@ -12,42 +15,42 @@ from noetrium_platform.foundation.governance.architecture.api import Composition
 from noetrium_platform.research.experimentation.api import ResearchParticipantRequirement
 
 
-def _return(request: api.MethodNodeRequest) -> api.MethodNodeResult:
-    return api.MethodNodeResult(value={"ok": True})
+def _return(request: execution_api.MethodNodeRequest) -> execution_api.MethodNodeResult:
+    return execution_api.MethodNodeResult(value={"ok": True})
 
 
-def build_method_v1() -> api.MethodProgram:
-    identity = api.MethodProgramIdentity(
-        api.MethodIdentity("shared-method", "1", "method-runtime.v1", "schema.v1")
+def build_method_v1() -> execution_api.MethodProgram:
+    identity = execution_api.MethodProgramIdentity(
+        execution_api.MethodIdentity("shared-method", "1", "method-runtime.v1", "schema.v1")
     )
     return (
-        api.MethodProgramBuilder(identity, entrypoint="return")
+        execution_api.MethodProgramBuilder(identity, entrypoint="return")
         .return_node("return", "test.return", _return)
         .build()
     )
 
 
-def build_method_v2() -> api.MethodProgram:
-    identity = api.MethodProgramIdentity(
-        api.MethodIdentity("shared-method", "2", "method-runtime.v1", "schema.v1")
+def build_method_v2() -> execution_api.MethodProgram:
+    identity = execution_api.MethodProgramIdentity(
+        execution_api.MethodIdentity("shared-method", "2", "method-runtime.v1", "schema.v1")
     )
     return (
-        api.MethodProgramBuilder(identity, entrypoint="return")
+        execution_api.MethodProgramBuilder(identity, entrypoint="return")
         .return_node("return", "test.return", _return)
         .build()
     )
 
 
-def _program(*, duplicate: bool = False) -> api.ResearchProgram:
-    builder = api.ResearchProgramBuilder("paper")
-    builder.method_program_factory(
+def _program(*, duplicate: bool = False) -> product_api.ResearchProgram:
+    builder = product_api.ResearchProgramBuilder("paper")
+    builder.method_configurer(
         "method-v1",
         module=__name__,
         qualname="build_method_v1",
     )
     builder.method_node("run-v1", definitions=("method-v1",))
     if duplicate:
-        builder.method_program_factory(
+        builder.method_configurer(
             "method-v2",
             module=__name__,
             qualname="build_method_v2",
@@ -102,15 +105,15 @@ def test_duplicate_method_id_with_different_program_ir_fails_closed() -> None:
 
 
 def test_missing_exact_method_returns_blocking_diagnostic() -> None:
-    builder = api.ResearchProgramBuilder("paper")
+    builder = product_api.ResearchProgramBuilder("paper")
     builder.definition(
         "noop",
-        kind=api.ResearchDefinitionKind.CUSTOM,
+        kind=product_api.ResearchDefinitionKind.CUSTOM,
         config={"kind": "noop"},
     )
     builder.node(
         "root",
-        kind=api.ResearchNodeKind.CUSTOM,
+        kind=product_api.ResearchNodeKind.CUSTOM,
         definitions=("noop",),
     )
     program = builder.freeze()

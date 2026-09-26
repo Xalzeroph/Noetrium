@@ -35,18 +35,11 @@ def _bootstrap():
 
 def build_research() -> api.ResearchPortfolio:
     # Executable semantics-neutral bootstrap only. Replace this entire body.
-    program = api.ResearchProgramBuilder({project_id!r})
-    program.definition(
-        "bootstrap",
-        kind=api.ResearchDefinitionKind.CUSTOM,
-        implementation=_bootstrap,
-    )
-    program.node(
-        "root",
-        kind=api.ResearchNodeKind.CUSTOM,
-        definitions=("bootstrap",),
-    )
-    return api.ResearchPortfolio({project_id!r}, (program.freeze(),))
+    portfolio = api.ResearchPortfolioBuilder({project_id!r})
+    program = portfolio.program({project_id!r})
+    program.custom_definition("bootstrap", implementation=_bootstrap)
+    program.custom_node("root", definitions=("bootstrap",))
+    return portfolio.freeze()
 
 
 __all__ = ["build_research"]
@@ -95,9 +88,7 @@ class GeneratedProjectTests(unittest.TestCase):
 
     def test_scaffold_does_not_impose_scientific_topology(self):
         self.assertTrue(PROGRAMS)
-        self.assertTrue(
-            all(isinstance(program, api.ResearchProgram) for program in PROGRAMS)
-        )
+        self.assertEqual(tuple(program.program_id for program in PROGRAMS), ({project_id!r},))
 
 
 if __name__ == "__main__":

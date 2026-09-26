@@ -378,7 +378,7 @@ class RepositoryFleetAuthorityMaterializer:
             models,
         )
 
-        revision = api.ResearchGraphRevision(
+        revision = api.research_os.ResearchGraphRevision(
             fleet.portfolio.portfolio_id,
             fleet.portfolio.portfolio_digest,
             (),

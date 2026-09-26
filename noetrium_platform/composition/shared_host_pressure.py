@@ -5,9 +5,25 @@ from enum import StrEnum
 import math
 import os
 from pathlib import Path
-from threading import Lock, RLock
+from tempfile import gettempdir
+from threading import Lock, RLock, local
 import time
+from uuid import uuid4
 from typing import Callable, Protocol
+
+from noetrium_platform.foundation.kernel.kernel.canonical import (
+    canonical_bytes,
+    canonical_digest,
+    strict_json_loads,
+)
+from noetrium_platform.foundation.kernel.kernel.durability.durable_file import (
+    atomic_replace_bytes,
+)
+from noetrium_platform.foundation.kernel.kernel.durability.file_lock import (
+    InterprocessFileLock,
+    InterprocessLockBusy,
+)
+from noetrium_platform.foundation.kernel.kernel.lease_clock import LocalLeaseClock
 
 from noetrium_platform.foundation.kernel.concurrency.api import (
     CancellationTokenPort,
@@ -523,16 +539,94 @@ class ResourceCompetitionPolicy:
             raise TypeError("shared-host runtime availability policy must be boolean")
 
 
-class ResourceCompetitionReservationLedger:
-    """One process-wide logical reservation authority for competing workload gates.
+class _ResourceCompetitionReservationLock:
+    """Reusable local + interprocess transaction boundary for host reservations."""
 
-    Live host facts lag process/thread/container launch. This ledger fences the
-    interval between admission and those facts becoming observable. Storage is
-    accounted by physical filesystem capacity_id, never by textual path.
+    def __init__(self, ledger: "ResourceCompetitionReservationLedger") -> None:
+        self._ledger = ledger
+
+    def __enter__(self) -> "_ResourceCompetitionReservationLock":
+        self._ledger._enter_transaction()
+        return self
+
+    def __exit__(self, exc_type, exc, traceback) -> None:
+        self._ledger._exit_transaction(exc_type, exc, traceback)
+
+
+def _resource_competition_user_namespace() -> str:
+    getuid = getattr(os, "getuid", None)
+    if callable(getuid):
+        return f"uid-{int(getuid())}"
+    raw = (
+        os.environ.get("USERNAME")
+        or os.environ.get("USER")
+        or os.environ.get("LOGNAME")
+        or "unknown-user"
+    )
+    return "user-" + canonical_digest(raw)[:16]
+
+
+def _default_resource_competition_directory() -> Path:
+    reading = LocalLeaseClock().read()
+    return (
+        Path(gettempdir()).absolute()
+        / "noetrium-resource-competition"
+        / _resource_competition_user_namespace()
+        / reading.host_identity_digest
+        / reading.boot_identity_digest
+    )
+
+
+class ResourceCompetitionReservationLedger:
+    """Host-scoped launch-window reservation authority.
+
+    Live host facts lag process/thread/container launch. Admission therefore
+    publishes logical capacity commitments before leaving the physical safety
+    critical section. Commitments from every live Noetrium process in the same
+    user/host/boot authority domain are aggregated.
+
+    Each owner publishes canonical state while holding a unique kernel-backed
+    owner lock. SIGKILL/process exit releases that lock automatically; the next
+    admission transaction prunes the stale state before evaluating capacity.
+    Foreign OS users are still accounted through live host facts, while this
+    authority closes the same-user Noetrium launch visibility race.
     """
 
-    def __init__(self) -> None:
-        self._lock = RLock()
+    _SCHEMA = "noetrium.resource-competition-reservation.v1"
+
+    def __init__(self, directory: Path | None = None) -> None:
+        self._directory = (
+            _default_resource_competition_directory()
+            if directory is None
+            else Path(directory).absolute()
+        )
+        self._directory.mkdir(parents=True, exist_ok=True)
+        if os.name != "nt":
+            try:
+                self._directory.chmod(0o700)
+            except OSError:
+                pass
+
+        reading = LocalLeaseClock().read()
+        self._host_identity_digest = reading.host_identity_digest
+        self._boot_identity_digest = reading.boot_identity_digest
+        self._owner_id = canonical_digest(
+            {
+                "schema": "noetrium.resource-competition-owner.v1",
+                "pid": os.getpid(),
+                "nonce": uuid4().hex,
+                "host_identity_digest": self._host_identity_digest,
+                "boot_identity_digest": self._boot_identity_digest,
+            }
+        )
+        self._local_lock = RLock()
+        self._thread_state = local()
+        self._global_guard = InterprocessFileLock(
+            self._directory / "reservation-authority.lock"
+        )
+        self._transaction_lock = _ResourceCompetitionReservationLock(self)
+        self._owner_lock: InterprocessFileLock | None = None
+
         self._reserved_memory_bytes = 0
         self._reserved_pids = 0
         self._reserved_fds = 0
@@ -540,25 +634,251 @@ class ResourceCompetitionReservationLedger:
         self._reserved_storage_inodes: dict[str, int] = {}
 
     @property
-    def lock(self) -> RLock:
-        return self._lock
+    def lock(self) -> _ResourceCompetitionReservationLock:
+        return self._transaction_lock
+
+    def _state_path(self, owner_id: str) -> Path:
+        return self._directory / f"owner-{owner_id}.json"
+
+    def _owner_lock_path(self, owner_id: str) -> Path:
+        return self._directory / f"owner-{owner_id}.lock"
+
+    def _enter_transaction(self) -> None:
+        self._local_lock.acquire()
+        depth = int(getattr(self._thread_state, "depth", 0))
+        if depth:
+            self._thread_state.depth = depth + 1
+            return
+        try:
+            self._global_guard.__enter__()
+            self._thread_state.depth = 1
+            self._prune_stale_states_locked()
+        except BaseException:
+            self._thread_state.depth = 0
+            try:
+                self._global_guard.__exit__(None, None, None)
+            except BaseException:
+                pass
+            self._local_lock.release()
+            raise
+
+    def _exit_transaction(self, exc_type, exc, traceback) -> None:
+        depth = int(getattr(self._thread_state, "depth", 0))
+        if depth <= 0:
+            self._local_lock.release()
+            raise RuntimeError("resource reservation transaction underflow")
+        if depth > 1:
+            self._thread_state.depth = depth - 1
+            self._local_lock.release()
+            return
+        self._thread_state.depth = 0
+        try:
+            self._global_guard.__exit__(exc_type, exc, traceback)
+        finally:
+            self._local_lock.release()
+
+    def _ensure_owner_lock_locked(self) -> None:
+        if self._owner_lock is not None:
+            return
+        lock = InterprocessFileLock(self._owner_lock_path(self._owner_id))
+        lock.__enter__()
+        self._owner_lock = lock
+
+    def _release_owner_lock_locked(self) -> None:
+        lock = self._owner_lock
+        if lock is None:
+            return
+        self._owner_lock = None
+        lock.__exit__(None, None, None)
+
+    def _local_is_zero_locked(self) -> bool:
+        return (
+            self._reserved_memory_bytes == 0
+            and self._reserved_pids == 0
+            and self._reserved_fds == 0
+            and not self._reserved_storage_bytes
+            and not self._reserved_storage_inodes
+        )
+
+    def _encode_local_state_locked(self) -> bytes:
+        storage_ids = sorted(
+            set(self._reserved_storage_bytes)
+            | set(self._reserved_storage_inodes)
+        )
+        return canonical_bytes(
+            {
+                "schema": self._SCHEMA,
+                "owner_id": self._owner_id,
+                "host_identity_digest": self._host_identity_digest,
+                "boot_identity_digest": self._boot_identity_digest,
+                "memory_bytes": self._reserved_memory_bytes,
+                "pids": self._reserved_pids,
+                "fds": self._reserved_fds,
+                "storage": {
+                    capacity_id: {
+                        "bytes": self._reserved_storage_bytes.get(
+                            capacity_id, 0
+                        ),
+                        "inodes": self._reserved_storage_inodes.get(
+                            capacity_id, 0
+                        ),
+                    }
+                    for capacity_id in storage_ids
+                },
+            }
+        )
+
+    def _publish_local_state_locked(self) -> None:
+        state_path = self._state_path(self._owner_id)
+        if self._local_is_zero_locked():
+            try:
+                state_path.unlink()
+            except FileNotFoundError:
+                pass
+            self._release_owner_lock_locked()
+            return
+        self._ensure_owner_lock_locked()
+        atomic_replace_bytes(
+            state_path,
+            self._encode_local_state_locked(),
+        )
+
+    def _owner_is_live_locked(self, owner_id: str) -> bool:
+        if owner_id == self._owner_id and self._owner_lock is not None:
+            return True
+        probe = InterprocessFileLock(
+            self._owner_lock_path(owner_id),
+            blocking=False,
+        )
+        try:
+            probe.__enter__()
+        except InterprocessLockBusy:
+            return True
+        else:
+            probe.__exit__(None, None, None)
+            return False
+
+    def _prune_stale_states_locked(self) -> None:
+        for path in tuple(self._directory.glob("owner-*.json")):
+            name = path.name
+            owner_id = name[len("owner-") : -len(".json")]
+            if (
+                len(owner_id) != 64
+                or any(ch not in "0123456789abcdef" for ch in owner_id)
+            ):
+                raise RuntimeError(
+                    f"invalid resource reservation owner state: {name}"
+                )
+            if self._owner_is_live_locked(owner_id):
+                continue
+            try:
+                path.unlink()
+            except FileNotFoundError:
+                pass
+            lock_path = self._owner_lock_path(owner_id)
+            try:
+                lock_path.unlink()
+            except FileNotFoundError:
+                pass
+
+    def _decode_state_locked(self, path: Path) -> dict[str, object]:
+        encoded = path.read_bytes()
+        raw = strict_json_loads(encoded)
+        if not isinstance(raw, dict):
+            raise RuntimeError("resource reservation state must be an object")
+        if canonical_bytes(raw) != encoded:
+            raise RuntimeError(
+                "resource reservation state is not canonical"
+            )
+        expected = {
+            "schema",
+            "owner_id",
+            "host_identity_digest",
+            "boot_identity_digest",
+            "memory_bytes",
+            "pids",
+            "fds",
+            "storage",
+        }
+        if set(raw) != expected or raw.get("schema") != self._SCHEMA:
+            raise RuntimeError("resource reservation state schema drifted")
+        owner_id = raw.get("owner_id")
+        if (
+            type(owner_id) is not str
+            or path != self._state_path(owner_id)
+        ):
+            raise RuntimeError("resource reservation owner identity drifted")
+        if (
+            raw.get("host_identity_digest") != self._host_identity_digest
+            or raw.get("boot_identity_digest") != self._boot_identity_digest
+        ):
+            raise RuntimeError(
+                "resource reservation state belongs to another host/boot"
+            )
+        for key in ("memory_bytes", "pids", "fds"):
+            value = raw.get(key)
+            if type(value) is not int or value < 0:
+                raise RuntimeError(
+                    f"resource reservation {key} is invalid"
+                )
+        storage = raw.get("storage")
+        if not isinstance(storage, dict):
+            raise RuntimeError("resource reservation storage is invalid")
+        for capacity_id, row in storage.items():
+            if (
+                type(capacity_id) is not str
+                or not capacity_id.strip()
+                or not isinstance(row, dict)
+                or set(row) != {"bytes", "inodes"}
+            ):
+                raise RuntimeError(
+                    "resource reservation storage row is invalid"
+                )
+            for key in ("bytes", "inodes"):
+                value = row.get(key)
+                if type(value) is not int or value < 0:
+                    raise RuntimeError(
+                        "resource reservation storage value is invalid"
+                    )
+        return raw
+
+    def _live_states_locked(self) -> tuple[dict[str, object], ...]:
+        self._prune_stale_states_locked()
+        rows: list[dict[str, object]] = []
+        for path in sorted(self._directory.glob("owner-*.json")):
+            owner_id = path.name[len("owner-") : -len(".json")]
+            if not self._owner_is_live_locked(owner_id):
+                continue
+            rows.append(self._decode_state_locked(path))
+        return tuple(rows)
 
     def reserved_demand(self) -> ResourceCompetitionDemand:
-        with self._lock:
+        with self.lock:
+            rows = self._live_states_locked()
             return ResourceCompetitionDemand(
-                memory_bytes_per_permit=self._reserved_memory_bytes,
-                pids_per_permit=self._reserved_pids,
-                fds_per_permit=self._reserved_fds,
+                memory_bytes_per_permit=sum(
+                    int(row["memory_bytes"]) for row in rows
+                ),
+                pids_per_permit=sum(int(row["pids"]) for row in rows),
+                fds_per_permit=sum(int(row["fds"]) for row in rows),
             )
 
     def reserved_storage_for(self, capacity_id: str) -> tuple[int, int]:
         if type(capacity_id) is not str or not capacity_id.strip():
             raise ValueError("storage reservation capacity_id is required")
-        with self._lock:
-            return (
-                self._reserved_storage_bytes.get(capacity_id, 0),
-                self._reserved_storage_inodes.get(capacity_id, 0),
-            )
+        with self.lock:
+            reserved_bytes = 0
+            reserved_inodes = 0
+            for row in self._live_states_locked():
+                storage = row["storage"]
+                assert isinstance(storage, dict)
+                value = storage.get(capacity_id)
+                if value is None:
+                    continue
+                assert isinstance(value, dict)
+                reserved_bytes += int(value["bytes"])
+                reserved_inodes += int(value["inodes"])
+            return reserved_bytes, reserved_inodes
 
     def reserve(
         self,
@@ -568,10 +888,12 @@ class ResourceCompetitionReservationLedger:
         storage: tuple[_StorageReservation, ...],
     ) -> tuple[_StorageReservation, ...]:
         if type(permit_count) is not int or permit_count <= 0:
-            raise ValueError("resource reservation permit_count must be positive")
+            raise ValueError(
+                "resource reservation permit_count must be positive"
+            )
         if type(storage) is not tuple:
             raise TypeError("storage reservations must be tuple")
-        with self._lock:
+        with self.lock:
             self._reserved_memory_bytes += (
                 demand.memory_bytes_per_permit * permit_count
             )
@@ -587,9 +909,12 @@ class ResourceCompetitionReservationLedger:
                     )
                 if row.inodes_per_permit:
                     self._reserved_storage_inodes[row.capacity_id] = (
-                        self._reserved_storage_inodes.get(row.capacity_id, 0)
+                        self._reserved_storage_inodes.get(
+                            row.capacity_id, 0
+                        )
                         + row.inodes_per_permit * permit_count
                     )
+            self._publish_local_state_locked()
             return storage
 
     def release_one(
@@ -598,9 +923,10 @@ class ResourceCompetitionReservationLedger:
         *,
         storage: tuple[_StorageReservation, ...],
     ) -> None:
-        with self._lock:
+        with self.lock:
             next_memory = (
-                self._reserved_memory_bytes - demand.memory_bytes_per_permit
+                self._reserved_memory_bytes
+                - demand.memory_bytes_per_permit
             )
             next_pids = self._reserved_pids - demand.pids_per_permit
             next_fds = self._reserved_fds - demand.fds_per_permit
@@ -627,7 +953,9 @@ class ResourceCompetitionReservationLedger:
                 ):
                     if amount <= 0:
                         continue
-                    remaining = reservations.get(row.capacity_id, 0) - amount
+                    remaining = (
+                        reservations.get(row.capacity_id, 0) - amount
+                    )
                     if remaining < 0:
                         raise RuntimeError(
                             "resource competition "
@@ -637,6 +965,7 @@ class ResourceCompetitionReservationLedger:
                         reservations[row.capacity_id] = remaining
                     else:
                         reservations.pop(row.capacity_id, None)
+            self._publish_local_state_locked()
 
 
 class _ResourceCompetitionLease:

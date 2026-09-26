@@ -1,28 +1,22 @@
 from __future__ import annotations
+from research.reproductions._support import JsonObject, JsonValue, canonical_digest, freeze_json, require_sha256, thaw_json
 
 from collections.abc import Mapping
 from dataclasses import dataclass, field
 from enum import StrEnum
 from typing import Protocol, runtime_checkable
 
-from noetrium.api import (
-    JsonObject,
-    JsonValue,
+from noetrium.api.research_authoring import (
     MachineJournalPort,
     MachineSnapshotStorePort,
     MachineStatus,
-    canonical_digest,
-    freeze_json,
-    require_sha256,
-    thaw_json,
-)
-from noetrium.api import (
+    )
+from noetrium.api.research_authoring import (
     EnvironmentConcern,
     EnvironmentProgramBuilder,
     ProgramNodeRequest,
     ProgramNodeResult,
     ResearchHostOperation,
-    ResearchProgram,
     ResearchProgramHost,
 )
 
@@ -538,7 +532,7 @@ def _apply(
     )
 
 
-def build_chatdev_v1_environment_program() -> ResearchProgram:
+def build_chatdev_v1_environment_program():
     return (
         EnvironmentProgramBuilder.create(
             program_id="chatdev.v1.software-environment",
@@ -606,7 +600,7 @@ def chatdev_v1_environment_host(
     *,
     journal: MachineJournalPort,
     snapshot_store: MachineSnapshotStorePort | None = None,
-) -> ResearchProgramHost:
+):
     return ResearchProgramHost(
         host_id="chatdev.v1.software-environment",
         program=CHATDEV_V1_ENVIRONMENT_PROGRAM,

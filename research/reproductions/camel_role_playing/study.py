@@ -1,20 +1,5 @@
 from __future__ import annotations
-
-from noetrium.api import canonical_digest
-from noetrium.api import (
-    ExperimentTrialProtocolIdentity,
-)
-from noetrium.api import ModelRoleUsage, ReplayLevel
-from noetrium.api import (
-    BenchmarkTaskSet,
-    MeasurementDefinition,
-    MeasurementValueKind,
-    ResearchStudyDefinition,
-    Study,
-    StudyModel,
-    StudyParticipant,
-    TrialBudget,
-)
+from research.reproductions import _support as _rs
 from research.benchmarks.camel_ai_society import (
     CAMEL_AI_SOCIETY_BENCHMARK_ID,
     CAMEL_AI_SOCIETY_EVALUATION_SIZE,
@@ -26,8 +11,8 @@ from .program import CAMEL_AI_SOCIETY_METHOD_PROGRAM
 
 
 def camel_ai_society_trial_protocol(
-    benchmark: BenchmarkTaskSet,
-) -> ExperimentTrialProtocolIdentity:
+    benchmark,
+):
     f = CAMEL_ROLE_PLAYING_FIDELITY
     if benchmark.benchmark_id != CAMEL_AI_SOCIETY_BENCHMARK_ID:
         raise ValueError("CAMEL Study requires the paper-native AI Society benchmark")
@@ -37,9 +22,9 @@ def camel_ai_society_trial_protocol(
             "CAMEL paper agent evaluation requires exactly "
             f"{CAMEL_AI_SOCIETY_EVALUATION_SIZE} tasks"
         )
-    return ExperimentTrialProtocolIdentity(
+    return _rs.study_protocol(
         "camel.neurips-2023.ai-society.agent-eval.v1",
-        canonical_digest(
+        _rs.canonical_digest(
             {
                 "program_digest": CAMEL_AI_SOCIETY_METHOD_PROGRAM.program_digest,
                 "benchmark_cut_digest": benchmark.cut_digest,
@@ -75,11 +60,11 @@ def _categorical(
     *,
     semantic_kind: str,
     domain: str,
-) -> MeasurementDefinition:
-    return MeasurementDefinition(
+):
+    return _rs.measurement(
         measurement_id=measurement_id,
         schema_id="noetrium.measurement.categorical.v1",
-        value_kind=MeasurementValueKind.CATEGORICAL,
+        value_kind='categorical',
         semantic_kind=semantic_kind,
         scale="nominal",
         domain=domain,
@@ -91,29 +76,29 @@ def _boolean(
     *,
     semantic_kind: str,
     domain: str,
-) -> MeasurementDefinition:
-    return MeasurementDefinition(
+):
+    return _rs.measurement(
         measurement_id=measurement_id,
         schema_id="noetrium.measurement.boolean.v1",
-        value_kind=MeasurementValueKind.BOOLEAN,
+        value_kind='boolean',
         semantic_kind=semantic_kind,
         scale="binary",
         domain=domain,
     )
 
 
+@_rs.study_factory('benchmark')
 def build_camel_ai_society_study(
-    benchmark: BenchmarkTaskSet,
-) -> ResearchStudyDefinition:
+    benchmark,
+):
     f = CAMEL_ROLE_PLAYING_FIDELITY
     protocol = camel_ai_society_trial_protocol(benchmark)
     shared_model = "model.camel.gpt-3.5-turbo.paper-era"
-    return Study(
-        project_id="camel-neurips-2023-reproduction",
+    return _rs.study_spec(project_id="camel-neurips-2023-reproduction",
         study_id="camel-ai-society-agent-eval-100",
         benchmark=benchmark,
         benchmark_split_id=CAMEL_AI_SOCIETY_SPLIT_ID,
-        method=StudyParticipant(
+        method=_rs.study_participant(
             role="camel_role_play",
             kind="multi_agent_method",
             implementation="camel",
@@ -125,30 +110,30 @@ def build_camel_ai_society_study(
             ),
         ),
         models={
-            "camel.task-specifier": StudyModel(
+            "camel.task-specifier": _rs.study_model(
                 shared_model,
                 prompt="camel.ai-society.task-specify",
             ),
-            "camel.task-planner": StudyModel(
+            "camel.task-planner": _rs.study_model(
                 shared_model,
                 prompt="camel.ai-society.task-plan",
             ),
-            "camel.assistant-agent": StudyModel(
+            "camel.assistant-agent": _rs.study_model(
                 shared_model,
                 prompt="camel.ai-society.assistant-role",
             ),
-            "camel.user-agent": StudyModel(
+            "camel.user-agent": _rs.study_model(
                 shared_model,
                 prompt="camel.ai-society.user-role",
             ),
-            "camel.gpt4-judge": StudyModel(
+            "camel.gpt4-judge": _rs.study_model(
                 "model.camel.gpt-4.paper-evaluator",
                 prompt="camel.ai-society.pairwise-judge",
-                usage=ModelRoleUsage.EVALUATION,
+                usage='evaluation',
             ),
         },
         measurements=(
-            MeasurementDefinition.scalar(
+            _rs.scalar_measurement(
                 "num_messages",
                 schema_id="noetrium.measurement.count.v1",
                 unit="message",
@@ -166,7 +151,7 @@ def build_camel_ai_society_study(
                 semantic_kind="conversation_termination_reason",
                 domain="camel_ai_society",
             ),
-            MeasurementDefinition.scalar(
+            _rs.scalar_measurement(
                 "repeat_threshold_hits",
                 schema_id="noetrium.measurement.count.v1",
                 unit="hit",
@@ -188,15 +173,15 @@ def build_camel_ai_society_study(
         trial=protocol,
         repetitions=1,
         seeds=("paper-sample",),
-        limits=TrialBudget(
+        limits=_rs.trial_budget(
             "camel-ai-society-40-message",
             max_steps=256,
             max_turns=f.max_saved_messages + 3,
             max_model_calls=f.max_saved_messages + 3,
             max_working_seconds=3600.0,
         ),
-        replay_level=ReplayLevel.OBSERVATIONAL,
-    ).build()
+        replay_level='observational',
+    )
 
 
 __all__ = [

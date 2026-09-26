@@ -1,17 +1,5 @@
 from __future__ import annotations
-
-from noetrium.api import canonical_digest
-from noetrium.api import ExperimentTrialProtocolIdentity
-from noetrium.api import (
-    BenchmarkTaskSet,
-    MeasurementDefinition,
-    ReplayLevel,
-    ResearchStudyDefinition,
-    Study,
-    StudyModel,
-    StudyParticipant,
-    TrialBudget,
-)
+from research.reproductions import _support as _rs
 from research.benchmarks.webvoyager import (
     WEBVOYAGER_AGENT_Q_SURROGATE_REVISION,
     WEBVOYAGER_AGENT_Q_SURROGATE_SPLIT,
@@ -21,9 +9,9 @@ from research.benchmarks.webvoyager import (
 
 from .fidelity import AGENT_Q_SURROGATE_FIDELITY
 
-AGENT_Q_SURROGATE_TRIAL_PROTOCOL = ExperimentTrialProtocolIdentity(
+AGENT_Q_SURROGATE_TRIAL_PROTOCOL = _rs.study_protocol(
     "agent-q.surrogate.webvoyager.browser-mcts.v1",
-    canonical_digest({
+    _rs.canonical_digest({
         "benchmark_revision": WEBVOYAGER_AGENT_Q_SURROGATE_REVISION,
         "mcts": {
             "iterations": AGENT_Q_SURROGATE_FIDELITY.browser_invocation_iterations,
@@ -43,7 +31,8 @@ AGENT_Q_SURROGATE_TRIAL_PROTOCOL = ExperimentTrialProtocolIdentity(
     }),
 )
 
-def build_agent_q_surrogate_webvoyager_study(benchmark: BenchmarkTaskSet) -> ResearchStudyDefinition:
+@_rs.study_factory('benchmark')
+def build_agent_q_surrogate_webvoyager_study(benchmark):
     if benchmark.benchmark_id != WEBVOYAGER_BENCHMARK_ID:
         raise ValueError("Agent Q surrogate study requires WebVoyager")
     if benchmark.revision_id != WEBVOYAGER_AGENT_Q_SURROGATE_REVISION:
@@ -51,12 +40,11 @@ def build_agent_q_surrogate_webvoyager_study(benchmark: BenchmarkTaskSet) -> Res
     if len(benchmark.selected_tasks(WEBVOYAGER_AGENT_Q_SURROGATE_SPLIT)) != WEBVOYAGER_AGENT_Q_SURROGATE_TASK_COUNT:
         raise ValueError("Agent Q surrogate WebVoyager lane requires all 643 tasks")
 
-    return Study(
-        project_id="agent-q-surrogate-reproduction",
+    return _rs.study_spec(project_id="agent-q-surrogate-reproduction",
         study_id="agent-q-surrogate-webvoyager-browser-mcts",
         benchmark=benchmark,
         benchmark_split_id=WEBVOYAGER_AGENT_Q_SURROGATE_SPLIT,
-        method=StudyParticipant(
+        method=_rs.study_participant(
             role="browser_agent",
             kind="agent",
             implementation="agent-q",
@@ -75,7 +63,7 @@ def build_agent_q_surrogate_webvoyager_study(benchmark: BenchmarkTaskSet) -> Res
             "vision_judge": "model.agent-q-surrogate.vision-judge",
         },
         measurements=(
-            MeasurementDefinition.scalar(
+            _rs.scalar_measurement(
                 "terminal_judge_success",
                 schema_id="noetrium.measurement.binary-scalar.v1",
                 unit="ratio",
@@ -83,7 +71,7 @@ def build_agent_q_surrogate_webvoyager_study(benchmark: BenchmarkTaskSet) -> Res
                 scale="binary",
                 domain="webvoyager",
             ),
-            MeasurementDefinition.scalar(
+            _rs.scalar_measurement(
                 "mcts_iterations",
                 schema_id="noetrium.measurement.count.v1",
                 unit="iteration",
@@ -91,7 +79,7 @@ def build_agent_q_surrogate_webvoyager_study(benchmark: BenchmarkTaskSet) -> Res
                 scale="count",
                 domain="webvoyager",
             ),
-            MeasurementDefinition.scalar(
+            _rs.scalar_measurement(
                 "generated_dpo_pairs",
                 schema_id="noetrium.measurement.count.v1",
                 unit="pair",
@@ -103,11 +91,11 @@ def build_agent_q_surrogate_webvoyager_study(benchmark: BenchmarkTaskSet) -> Res
         trial=AGENT_Q_SURROGATE_TRIAL_PROTOCOL,
         repetitions=1,
         seeds=("surrogate-default",),
-        limits=TrialBudget(
+        limits=_rs.trial_budget(
             "agent-q-surrogate-browser-depth-6",
             max_steps=AGENT_Q_SURROGATE_FIDELITY.browser_invocation_depth,
         ),
-        replay_level=ReplayLevel.OBSERVATIONAL,
-    ).build()
+        replay_level='observational',
+    )
 
 __all__ = ["AGENT_Q_SURROGATE_TRIAL_PROTOCOL", "build_agent_q_surrogate_webvoyager_study"]

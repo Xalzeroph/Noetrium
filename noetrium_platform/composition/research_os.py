@@ -29,8 +29,7 @@ from noetrium_platform.product.research_os import (
     ResearchImpactState,
     ResearchImplementation,
     ResearchMachineProgramImplementation,
-    ResearchMethodProgramBindingKind,
-    ResearchMethodProgramImplementation,
+    ResearchMethodImplementation,
     ResearchInputBinding,
     ResearchNode,
     ResearchNodeImpact,
@@ -90,7 +89,7 @@ def _decode_implementation(
     field: str,
 ) -> (
     ResearchImplementation
-    | ResearchMethodProgramImplementation
+    | ResearchMethodImplementation
     | ResearchMachineProgramImplementation
 ):
     row = _object(value, field)
@@ -115,7 +114,7 @@ def _decode_implementation(
         )
         implementation: (
             ResearchImplementation
-            | ResearchMethodProgramImplementation
+            | ResearchMethodImplementation
             | ResearchMachineProgramImplementation
         ) = ResearchImplementation(
             _text(row["implementation_id"], field + ".implementation_id"),
@@ -123,36 +122,36 @@ def _decode_implementation(
             _text(row["qualname"], field + ".qualname"),
             _text(row["source_digest"], field + ".source_digest"),
         )
-    elif implementation_type == "method_program":
-        _exact(
-            row,
-            frozenset(
-                {
-                    "implementation_type",
-                    "implementation_id",
-                    "module",
-                    "qualname",
-                    "program_digest",
-                    "binding_kind",
-                    "factory_args",
-                    "factory_kwargs",
-                    "implementation_digest",
-                }
-            ),
-            field,
-        )
-        implementation = ResearchMethodProgramImplementation(
+    elif implementation_type == "method":
+        fields = frozenset({
+            "implementation_type", "implementation_id", "method_id", "module", "qualname",
+            "source_digest", "method_digest", "entrypoint", "version",
+            "semantic_contract", "method_configuration", "execution",
+            "evidence", "metrics", "artifacts", "state_schema",
+            "input_schema", "output_schema", "configurer_args",
+            "configurer_kwargs", "implementation_digest",
+        })
+        _exact(row, fields, field)
+        implementation = ResearchMethodImplementation(
             _text(row["implementation_id"], field + ".implementation_id"),
+            _text(row["method_id"], field + ".method_id"),
             _text(row["module"], field + ".module"),
             _text(row["qualname"], field + ".qualname"),
-            _text(row["program_digest"], field + ".program_digest"),
-            ResearchMethodProgramBindingKind(
-                _text(row["binding_kind"], field + ".binding_kind")
-            ),
-            tuple(
-                _array(row["factory_args"], field + ".factory_args")
-            ),
-            _object(row["factory_kwargs"], field + ".factory_kwargs"),
+            _text(row["source_digest"], field + ".source_digest"),
+            _text(row["method_digest"], field + ".method_digest"),
+            _text(row["entrypoint"], field + ".entrypoint"),
+            _text(row["version"], field + ".version"),
+            _text(row["semantic_contract"], field + ".semantic_contract"),
+            _object(row["method_configuration"], field + ".method_configuration"),
+            _text(row["execution"], field + ".execution"),
+            tuple(_array(row["evidence"], field + ".evidence")),
+            tuple(_array(row["metrics"], field + ".metrics")),
+            tuple(_array(row["artifacts"], field + ".artifacts")),
+            _text(row["state_schema"], field + ".state_schema"),
+            _text(row["input_schema"], field + ".input_schema"),
+            _text(row["output_schema"], field + ".output_schema"),
+            tuple(_array(row["configurer_args"], field + ".configurer_args")),
+            _object(row["configurer_kwargs"], field + ".configurer_kwargs"),
         )
     elif implementation_type == "research_machine_program":
         _exact(

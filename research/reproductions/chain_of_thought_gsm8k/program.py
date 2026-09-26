@@ -1,24 +1,21 @@
 from __future__ import annotations
 
-from collections.abc import Mapping
-
-from noetrium.api import (
-    MethodIdentity,
-    MethodProgramIdentity,
-)
-from noetrium.api import (
+from research.reproductions._support import (
     JsonObject,
     JsonValue,
+    MethodCall,
     canonical_digest,
+    freeze_json,
+    method_event,
+    require_sha256,
+    thaw_json,
 )
-from noetrium.api import (
-    MethodEvent,
-    MethodExecutionClass,
-    MethodNodeRequest,
-    MethodNodeResult,
-    MethodProgram,
-    MethodProgramBuilder,
-)
+from research.reproductions._support import JsonObject, JsonValue, canonical_digest
+
+from collections.abc import Mapping
+
+
+
 
 from .fidelity import CHAIN_OF_THOUGHT_GSM8K_FIDELITY
 from .prompt import (
@@ -42,7 +39,7 @@ def chain_of_thought_gsm8k_initial_state(*, task_id: str, question: str) -> Json
     }
 
 
-def _reasoner_view(request: MethodNodeRequest) -> JsonObject:
+def _reasoner_view(request: MethodCall) -> JsonObject:
     f = CHAIN_OF_THOUGHT_GSM8K_FIDELITY
     question = request.state.get("question")
     if not isinstance(question, str) or not question.strip():
@@ -71,13 +68,13 @@ def _completion(value: JsonValue) -> str:
     raise TypeError("CoT reasoner result must contain non-empty completion text")
 
 
-def _record_completion(request: MethodNodeRequest) -> MethodNodeResult:
+def _record_completion(request: MethodCall) -> MethodNodeResult:
     text = _completion(request.previous_value)
-    return MethodNodeResult(
+    return dict(
         value={"completion": text},
         state_update={"completion": text},
         events=(
-            MethodEvent(
+            method_event(
                 "cot.reasoning-completion",
                 {"completion_digest": canonical_digest(text)},
             ),
@@ -86,11 +83,11 @@ def _record_completion(request: MethodNodeRequest) -> MethodNodeResult:
     )
 
 
-def _return_result(request: MethodNodeRequest) -> MethodNodeResult:
+def _return_result(request: MethodCall) -> MethodNodeResult:
     completion = request.state.get("completion")
     if not isinstance(completion, str) or not completion.strip():
         raise ValueError("CoT completion is missing")
-    return MethodNodeResult(
+    return dict(
         value={
             "task_id": request.state.get("task_id"),
             "completion": completion,
@@ -99,7 +96,7 @@ def _return_result(request: MethodNodeRequest) -> MethodNodeResult:
     )
 
 
-def build_chain_of_thought_gsm8k_method_program() -> MethodProgram:
+def build_chain_of_thought_gsm8k_method_program(method, ) -> None:
     f = CHAIN_OF_THOUGHT_GSM8K_FIDELITY
     configuration: JsonObject = {
         "publication_lane_digest": f.publication.lane_digest,
@@ -114,22 +111,14 @@ def build_chain_of_thought_gsm8k_method_program() -> MethodProgram:
         "samples_per_task": f.samples_per_task,
         "calculator_enabled": f.calculator_enabled,
     }
-    identity = MethodProgramIdentity(
-        MethodIdentity(
-            method_id="chain-of-thought",
-            implementation_version="neurips-2022-final",
-            abi_version="noetrium.method-machine.v1",
-            schema_version="chain-of-thought.gsm8k.method.v1",
-        ),
-        configuration_digest=canonical_digest(configuration),
-    )
-    builder = MethodProgramBuilder(identity, entrypoint="reason")
+
+    builder = method
     builder.agent(
         "reason",
         "cot.gsm8k.reason",
         _REASONER,
         ("record",),
-        view_handler=_reasoner_view,
+        view=_reasoner_view,
     )
     builder.compute(
         "record",
@@ -138,19 +127,26 @@ def build_chain_of_thought_gsm8k_method_program() -> MethodProgram:
         ("return",),
     )
     builder.return_node("return", "cot.gsm8k.result", _return_result)
-    return builder.build(
-        configuration=configuration,
-        execution_class=MethodExecutionClass.EFFECT_RECORDED,
-        evidence_obligations=("cot.reasoning-completion", "model.invocation"),
-        metric_names=("task_success", "model_call_count"),
-        artifact_kinds=("cot_completion",),
+    builder.configure(configuration)
+    builder.policy(
+        execution='effect_recorded',
+        evidence=("cot.reasoning-completion", "model.invocation"),
+        metrics=("task_success", "model_call_count"),
+        artifacts=("cot_completion",),
     )
+    return builder
 
 
-CHAIN_OF_THOUGHT_GSM8K_METHOD_PROGRAM = build_chain_of_thought_gsm8k_method_program()
+METHOD_CONFIGURER = build_chain_of_thought_gsm8k_method_program
+METHOD_ENTRYPOINT = "reason"
+METHOD_CONFIGURER_ARGS = ()
+METHOD_CONFIGURER_KWARGS = {}
 
 __all__ = [
-    "CHAIN_OF_THOUGHT_GSM8K_METHOD_PROGRAM",
-    "build_chain_of_thought_gsm8k_method_program",
-    "chain_of_thought_gsm8k_initial_state",
+    'build_chain_of_thought_gsm8k_method_program',
+    'chain_of_thought_gsm8k_initial_state',
+    'METHOD_CONFIGURER',
+    'METHOD_ENTRYPOINT',
+    'METHOD_CONFIGURER_ARGS',
+    'METHOD_CONFIGURER_KWARGS',
 ]

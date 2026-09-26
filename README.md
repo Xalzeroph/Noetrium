@@ -21,7 +21,7 @@
 
 <!-- readme-locale:en -->
 
-<!-- readme-source-sha256:a94797782703a78499eb126d05d464360e94db5af138e93a7c6d5d038444dd30 -->
+<!-- readme-source-sha256:a72c2a84278eb563d068aa3ae44adae02da5fce6b30deffc3aaea198319a6e57 -->
 
 <p align="center">
   <strong>Research infrastructure for attributable, recoverable, evidence-preserving AI-agent experiments.</strong><br>
@@ -71,7 +71,7 @@ The dependency direction is one-way:
 
 Noetrium owns the reusable research substrate: canonical identities, revision/binding truth, durable machine transitions, recovery boundaries, resource admission, effect certainty, artifacts, evidence, provenance, observability and governance. Downstream projects own the scientific novelty: methods, prompts, benchmark semantics, task policies, experiment hypotheses, statistical interpretation and claims.
 
-A downstream paper should normally change a <code>MethodProgram</code>, <code>ResearchProgram</code>, rule set, policy, sub-IR, operation handler or provider binding — <strong>not the Noetrium kernel</strong>.
+A downstream paper should normally change only the top-level ResearchPortfolio/ResearchProgram declaration and its Method configuration, Study/Experiment specification, prompts, policies, or paper-owned handlers — <strong>not Noetrium internals</strong>. Lower execution, capability, runtime, resource, and infrastructure interfaces are consumed only by their adjacent Noetrium layer rather than by downstream research code.
 
 <!-- readme-section:why -->
 
@@ -99,7 +99,7 @@ Existing orchestration frameworks can be used inside a downstream method or prov
 
 - <strong>One public authoring surface</strong> — downstream code enters through <code>noetrium.api</code>; lower packages remain implementation and composition authorities rather than accidental extension APIs.
 - <strong>Research OS composition</strong> — portfolios, research graphs, revisions, experiments, research runs and machine targets can be authored and controlled from one product-level surface without moving lower-domain truth upward.
-- <strong>Universal research programming</strong> — Method uses <code>MethodProgram</code> + UMM; Runtime, Participant, Environment, Memory, Evaluation, Optimization, Experiment and Research Run converge on the shared <code>ResearchProgram</code> host/interpreter substrate.
+- <strong>Universal Method aggregate</strong> — Method is the Agent Harness boundary. Agent loop, Memory, Context, Communication, Model Invocation, Tool/Capability mediation, Environment interaction, logical scheduling, synchronization, recovery, intervention, checkpointing, and related harness semantics are Method-owned components/programs executed by one shared Machine kernel rather than peer public APIs or independent runtimes.
 - <strong>Nested Machines</strong> — one research computation can invoke another through explicit child-machine linkage instead of paper-local runners or hidden callback stacks.
 - <strong>Single scientific execution truth</strong> — accepted Machine transitions are committed by <code>MachineExecutor</code> into the Machine Journal. Checkpoints and snapshots accelerate recovery; they are not parallel histories.
 - <strong>Durable interruption and recovery</strong> — pause, resume, retry, reconcile and revision-aware continuation operate against accepted cuts and frozen identities rather than arbitrary in-memory state.
@@ -115,7 +115,7 @@ Existing orchestration frameworks can be used inside a downstream method or prov
 
 Noetrium exposes one high-level Research OS API. Registered lower systems remain internal composition authorities and are listed here only as architecture metadata.
 
-- 31 registered system surfaces; 1 public API modules; 224 public symbols.
+- 31 registered system surfaces; 1 public API module; 4 public root symbols.
 - Full machine-readable catalog: noetrium/contracts/downstream_capability_catalog.json
 - Full human-readable catalog: docs/architecture/DOWNSTREAM_CAPABILITY_CATALOG.md
 - Import rule: downstream code uses only noetrium.api; lower system facades are internal registry material.
@@ -143,8 +143,9 @@ Noetrium exposes one high-level Research OS API. Registered lower systems remain
 Author and control research through the same top-level API:
 
     from noetrium import api
-    program = api.ResearchProgramBuilder("paper")
-    research_os = api.ResearchOS(port)
+    portfolio = api.ResearchPortfolioBuilder("paper")
+    program = portfolio.program("paper")
+    research_os = api.open_project(".")
 
 After changing a registry descriptor or public API export, run python scripts/update_generated_docs.py; CI fails on generated-surface or README drift.
 <!-- noetrium-interface-catalog:end -->
@@ -175,45 +176,49 @@ flowchart LR
 The current end-state hierarchy is:
 
 <pre>
-noetrium.api
+downstream
     │
     ▼
-Research OS
-Product / Authoring Surface
-    │
+noetrium.api
+    ├── ResearchPortfolioBuilder
     ├── ResearchPortfolio
-    ├── ResearchGraph + Revision / Control
-    └── Experimentation / Research Run
-                │
-                ▼
-        Research Program Layer
-                │
-      ┌─────────┴──────────────────────────────┐
-      │                                        │
-MethodProgram + UMM              ResearchProgram family
-                                 Runtime / Participant /
-                                 Environment / Memory /
-                                 Evaluation / Optimization /
-                                 Experiment / Research Run
-      │                                        │
-      └────────────────────┬───────────────────┘
-                           ▼
-                    MachineExecutor
-                           │
-                           ▼
-                    Machine Journal
-              scientific execution truth
-                           │
-          ┌────────────────┼────────────────┐
-          ▼                ▼                ▼
-      Operation          Effect       Artifact / Data /
-      authority        authority      Evidence authorities
-          └────────────────┬────────────────┘
-                           ▼
-              providers / infrastructure
-          model / environment / resource /
-          compute / lifecycle / storage
+    ├── ResearchOS
+    └── open_project
+    │
+    ▼
+Product / Research OS
+ResearchPortfolio → ResearchProgram
+    │
+    ▼
+Experimentation
+Study / Experiment / Measurement / Trial semantics
+    │
+    ▼
+Execution
+Method aggregate
+    ├── Method graph / control flow
+    ├── Agent / multi-agent orchestration
+    ├── Context
+    ├── Memory
+    ├── Communication
+    ├── Model invocation
+    ├── Tool / Capability mediation
+    ├── Environment interaction
+    ├── Logical scheduling / synchronization
+    ├── Recovery / intervention
+    └── Checkpoint / evidence / visibility
+    │
+    ▼
+Agent loop / shared Machine kernel
+    │
+    ▼
+Capability
+    │
+    ▼
+Foundation → Infrastructure → Substrate
 </pre>
+
+The dependency rule is strict: <strong>every layer may consume only the adjacent lower-layer facade</strong>. Lower-layer interfaces are internal Noetrium contracts, not downstream APIs. Product cannot reach through Experimentation into Execution or Capability; Experimentation cannot reach around Execution; Method-owned components do not become peer top-level systems merely because they are complex.
 
 ### Authority model
 
@@ -230,21 +235,25 @@ Noetrium is <strong>authority-shaped</strong>, not directory-shaped. A package i
 | Composition | wiring and provider selection | durable state owner |
 | Observability / forensics | projections, diagnostics and evidence materialization | command authority |
 
-### Programmable Machine family
+### Method aggregate and the shared Machine kernel
 
-| Domain | Canonical program model |
+Noetrium does not create one independent runtime for every Agent Harness concern. It uses one shared Machine execution kernel and one Method aggregate. Method-owned components may have their own programs, state and scientific semantics, but they execute through the same lifecycle, journal, checkpoint, effect, recovery and evidence machinery.
+
+| Method-owned concern | Role |
 | --- | --- |
-| Method | <code>MethodProgram</code> + Universal Method Machine |
-| Runtime | <code>ResearchProgram</code> with composable Runtime modules/sub-IR |
-| Participant | <code>ResearchProgram</code> |
-| Environment | <code>ResearchProgram</code> |
-| Memory | <code>ResearchProgram</code> |
-| Evaluation | <code>ResearchProgram</code> |
-| Optimization | <code>ResearchProgram</code> |
-| Experiment | <code>ResearchProgram</code> |
-| Research Run | <code>ResearchProgram</code> |
+| Method graph / control flow | paper algorithm, routing and node semantics |
+| Agent / multi-agent topology | roles, orchestration and collaboration structure |
+| Context | prompt/context construction and transformation |
+| Memory | recall, write, consolidation, evolution and memory lifecycle |
+| Communication | messages and paper-level coordination semantics |
+| Model invocation | when/how a role invokes a model; physical serving remains below |
+| Tool / Capability mediation | scientific use of tools/capabilities |
+| Environment interaction | paper-level action/observation semantics |
+| Scheduling / synchronization | logical order, barriers and quorum semantics |
+| Recovery / intervention | method-level recovery and human/control semantics |
+| Checkpoint / evidence / visibility | method-level scientific state and evidence obligations |
 
-A new paper-variable concern should first be represented as a Program, module, rule set, pure sub-IR, policy or injected operation handler. A new Machine domain is justified only when it needs independent durable scientific identity and transition history.
+A complex component may compile to a child program, but that does not create a second execution engine or a peer downstream API. Physical Docker/process/GPU/port/model-serving/environment-instance lifecycle remains below Method in adjacent platform layers.
 
 ### Canonical execution path
 
@@ -324,58 +333,50 @@ Do not substitute one path for the other. <code>project create</code> is the can
 ### 1. Architecture you must preserve
 
 ~~~text
-downstream scientific intent
-        |
-        v
+downstream paper
+      |
+      v
 noetrium.api
-        |
-        v
-ResearchPortfolio
-        |
-        v
-ResearchProgram / ResearchGraph revision
-        |
-        +-------------------------------+
-        |                               |
-        v                               v
-MethodProgram + UMM            programmable Research Machines
-                               Runtime / Participant /
-                               Environment / Memory /
-                               Evaluation / Optimization /
-                               Experiment / Research Run
-        |                               |
-        +---------------+---------------+
-                        v
-                 MachineExecutor
-                        |
-                        v
-                  Machine Journal
-             scientific execution truth
-                        |
-        +---------------+------------------+
-        |               |                  |
-        v               v                  v
-    Operation         Effect         Artifact / Data /
-    authority       authority        Evidence authorities
-        |               |                  |
-        +---------------+------------------+
-                        v
-          provider / physical infrastructure
-      model / environment / Docker / process /
-      endpoint / CPU / GPU / RAM / storage
+      |
+      v
+ResearchPortfolio / ResearchOS
+      |
+      v
+ResearchProgram
+      |
+      v
+Experiment / Study
+      |
+      v
+Method
+  +---+-------------------------------+
+  | Agent loop / graph               |
+  | Memory / Context / Communication |
+  | Model / Tool / Environment use   |
+  | Scheduling / Recovery / Evidence |
+  +---+-------------------------------+
+      |
+      v
+shared Machine kernel
+      |
+      v
+Capability
+      |
+      v
+Foundation -> Infrastructure -> Substrate
 ~~~
 
 The rules behind that diagram are strict:
 
-1. Downstream code imports only <code>noetrium.api</code>. <code>noetrium_platform</code> is internal implementation.
-2. Programs own paper-variable scientific semantics.
-3. MachineExecutor plus Machine Journal own accepted scientific transition history.
-4. Checkpoints and caches accelerate recovery; they do not replace journal truth.
-5. Model, Environment, Resource, Artifact, Effect, Experimentation and other authorities keep their own truth. Research OS composes them without absorbing them.
-6. Logical research scheduling may be paper semantics. Physical CPU/GPU/process/port placement is infrastructure.
-7. Providers perform external mechanics and return typed evidence/receipts. Provider-local state does not silently become scientific truth.
-8. External-effect uncertainty remains UNKNOWN until reconciled.
-9. Do not create paper-local runners, checkpoint ledgers, Docker owners, GPU allocators or port allocators when the Platform already owns those mechanisms.
+1. Downstream code imports only <code>noetrium.api</code>.
+2. The only public root symbols are <code>ResearchPortfolioBuilder</code>, <code>ResearchPortfolio</code>, <code>ResearchOS</code>, and <code>open_project</code>.
+3. A lower layer exposes interfaces only to its adjacent upper layer; those interfaces are not downstream APIs.
+4. ResearchPortfolio/ResearchOS is the top-level research machine: it can express many papers, methods, Studies, Experiments, dependencies and revisions without making downstream code learn lower Noetrium contracts.
+5. Method is the Agent Harness aggregate. Memory, Context, Communication, Model invocation, Tool use, Environment interaction, logical scheduling, synchronization, recovery, intervention and checkpoint semantics are Method-owned components rather than peer public systems.
+6. All Method components execute on the shared Machine kernel. Do not create parallel journals, checkpoint engines, schedulers or component-specific runtimes.
+7. Model/environment/resource/runtime physical mechanics stay below Method and are reached through adjacent platform layers.
+8. Machine Journal remains the accepted scientific execution truth; checkpoints/caches accelerate recovery but do not replace it.
+9. Logical research scheduling may be scientific semantics. CPU/GPU/process/port placement is infrastructure.
 10. No compatibility shadow path is required during end-state convergence.
 
 The live top-level ownership map is:
@@ -484,33 +485,29 @@ src/<package>/core.py::build_research()
 ~~~
 
 It returns a `noetrium.api.ResearchPortfolio`, the highest public Research OS
-authoring object. This preserves the full public semantic surface: one or many
-ResearchPrograms, arbitrary intra-program and cross-program DAGs, Method/Memory/
-Participant/Runtime/Environment/Evaluation/Optimization/Experiment/Research Run
-semantics, Studies, analyses, and explicit cross-program data dependencies. The
-project scaffold does not prescribe scientific topology or source layout.
+authoring object. Authors start from `ResearchPortfolioBuilder` and descend through
+objects returned by that root; they do not import lower builders or internal
+Noetrium layers. One portfolio can contain one paper or many papers, arbitrary
+ResearchPrograms, cross-program DAGs, Methods, Studies, Experiments, analyses and
+explicit dependencies. Method internally absorbs Agent Harness concerns such as
+Memory, Context, Model/Tool/Environment interaction, logical scheduling and recovery.
 
 A minimal core is:
 
 ~~~python
 from noetrium import api
 
+
 def _bootstrap():
     return None
 
+
 def build_research() -> api.ResearchPortfolio:
-    program = api.ResearchProgramBuilder("my-paper")
-    program.definition(
-        "bootstrap",
-        kind=api.ResearchDefinitionKind.CUSTOM,
-        implementation=_bootstrap,
-    )
-    program.node(
-        "root",
-        kind=api.ResearchNodeKind.CUSTOM,
-        definitions=("bootstrap",),
-    )
-    return api.ResearchPortfolio("my-paper", (program.freeze(),))
+    portfolio = api.ResearchPortfolioBuilder("my-paper")
+    program = portfolio.program("my-paper")
+    program.custom_definition("bootstrap", implementation=_bootstrap)
+    program.custom_node("root", definitions=("bootstrap",))
+    return portfolio.freeze()
 ~~~
 
 Replace the semantics-neutral body with the real research core. You may keep a
@@ -520,27 +517,32 @@ and exposes it to the Research OS; it never rewrites or lowers scientific topolo
 
 ProjectManifest, binding manifests, machine-local provider composition, GPU/Docker/
 port/resource mechanics, scheduling, checkpointing, evidence, recovery, and operator
-plumbing remain Platform-owned. The scientific core may use any public
-`noetrium.api` authoring object needed to construct the portfolio; there is no
+plumbing remain Platform-owned. The scientific core begins at the four root symbols in `noetrium.api` and uses
+the DSL objects returned by those roots. Internal builders and lower-layer
+interfaces are intentionally not separately importable public APIs; there is no
 second generated scientific contract.
 
 ### 4. Decide where scientific semantics belong
 
 | Concern | Canonical home |
 | --- | --- |
-| paper method/control algorithm | MethodProgram or downstream method module |
-| paper-variable runtime semantics | Runtime program/module |
-| agent, simulated user, judge, teammate | Participant program |
-| paper-defined world transition | Environment program |
-| paper-defined memory evolution | Memory program |
-| stateful/interactive evaluation | Evaluation program |
-| search/evolution over research designs | Optimization program |
-| adaptive scientific protocol | Experiment program |
-| run-level paper lifecycle semantics | Research Run program |
-| benchmark tasks/worlds/datasets/prompts/claims | downstream assets and definitions |
-| Docker/process/GPU/port/storage mechanics | Platform provider/authority |
+| multi-paper / multi-method / multi-experiment composition | ResearchPortfolio / ResearchOS |
+| paper-level Study / Experiment protocol | ResearchProgram → Experimentation |
+| paper method/control algorithm | Method |
+| agent loop / multi-agent topology | Method |
+| paper-defined memory evolution | Method-owned Memory component |
+| context / communication / tool policy | Method-owned component |
+| model invocation semantics | Method; serving/deployment remains below |
+| environment interaction semantics | Method; environment instance/provider remains below |
+| logical scheduling / synchronization | Method; physical scheduling remains infrastructure |
+| recovery / intervention / checkpoint semantics | Method, executed by shared Machine kernel |
+| benchmark tasks/worlds/datasets/prompts/claims | Study/Experiment declarations and downstream assets |
+| Docker/process/GPU/port/storage mechanics | Platform infrastructure/resource/runtime authorities |
 
-A concern does not become a new Machine merely because it is complicated. Prefer a Program, RuntimeModule, rule set, pure sub-IR, policy or operation handler unless the concern genuinely needs independent durable scientific identity and transition history.
+A concern does not become a new Machine merely because it is complicated. Prefer
+a Method-owned component/program executed by the shared Machine kernel. Create a
+separate authority only when the concern truly owns independent canonical truth
+that cannot belong to Method or another existing adjacent-layer authority.
 
 ### 5. Sync, doctor and test a downstream project
 
@@ -617,7 +619,7 @@ Run it with:
 noetrium run --project . --config ./execution.json
 ~~~
 
-The factory receives a Platform-owned execution context containing the one <code>ManagedResearchRuntime</code>, shared execution pool, Model/Environment/Resource authorities, immutable content authority, and any explicit <code>authority_inputs</code> from the execution config. Use those inputs only for machine-local facts that cannot be uniquely inferred—for example the path to a qualified model closure, a private benchmark asset root, or an exact world snapshot. The factory must validate those references and return <code>ResearchExecutionAuthorities</code>. Experiment execution may bind a generic Study closure plus exact Experiment runtime components; direct MethodPrograms may bind a <code>MethodRuntimePortInventory</code>. Both routes reuse the same physical authorities.
+The factory receives a Platform-owned execution context containing the one <code>ManagedResearchRuntime</code>, shared execution pool, Model/Environment/Resource authorities, immutable content authority, and any explicit <code>authority_inputs</code> from the execution config. Use those inputs only for machine-local facts that cannot be uniquely inferred—for example the path to a qualified model closure, a private benchmark asset root, or an exact world snapshot. The factory must validate those references and return <code>ResearchExecutionAuthorities</code>. Experiment execution binds Study/Experiment closure and the Method aggregate through platform-owned adjacent-layer composition. Downstream scientific code does not construct Method runtime inventories, Docker/GPU/port authorities, model endpoints, or environment-instance owners. All routes reuse the same physical authorities.
 
 The authority factory is deployment/composition code, not scientific method semantics. Keep it outside the generated scientific <code>core.py</code>; do not work around the boundary by importing <code>noetrium_platform</code> from downstream scientific source or by constructing shadow Docker, endpoint, compute, model or journal authorities.
 

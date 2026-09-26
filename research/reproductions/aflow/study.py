@@ -1,19 +1,5 @@
 from __future__ import annotations
-
-from noetrium.api import canonical_digest
-from noetrium.api import (
-    ExperimentTrialProtocolIdentity,
-)
-from noetrium.api import (
-    BenchmarkTaskSet,
-    MeasurementDefinition,
-    ReplayLevel,
-    ResearchStudyDefinition,
-    Study,
-    StudyModel,
-    StudyParticipant,
-    TrialBudget,
-)
+from research.reproductions import _support as _rs
 from research.benchmarks.humaneval import (
     HUMANEVAL_BENCHMARK_ID,
     HUMANEVAL_SPLIT_ID,
@@ -25,16 +11,16 @@ from .program import AFLOW_HUMANEVAL_OPTIMIZATION_PROGRAM
 
 
 def aflow_iclr2025_humaneval_trial_protocol(
-    benchmark: BenchmarkTaskSet,
-) -> ExperimentTrialProtocolIdentity:
+    benchmark,
+):
     if benchmark.benchmark_id != HUMANEVAL_BENCHMARK_ID:
         raise ValueError("AFlow protocol requires HumanEval")
     selected = benchmark.selected_tasks(HUMANEVAL_SPLIT_ID)
     if len(selected) != HUMANEVAL_TASK_COUNT:
         raise ValueError("AFlow HumanEval protocol requires the 164-task cut")
-    return ExperimentTrialProtocolIdentity(
+    return _rs.study_protocol(
         "aflow.iclr2025.humaneval.protocol-bound.v1",
-        canonical_digest(
+        _rs.canonical_digest(
             {
                 "source_commit": AFLOW_FIDELITY.audited_commit,
                 "program_digest": AFLOW_HUMANEVAL_OPTIMIZATION_PROGRAM.program_digest,
@@ -59,16 +45,16 @@ def aflow_iclr2025_humaneval_trial_protocol(
     )
 
 
+@_rs.study_factory('benchmark')
 def build_aflow_iclr2025_humaneval_study(
-    benchmark: BenchmarkTaskSet,
-) -> ResearchStudyDefinition:
+    benchmark,
+):
     protocol = aflow_iclr2025_humaneval_trial_protocol(benchmark)
-    return Study(
-        project_id="aflow-iclr-2025-reproduction",
+    return _rs.study_spec(project_id="aflow-iclr-2025-reproduction",
         study_id="aflow-iclr-2025-humaneval-protocol-bound",
         benchmark=benchmark,
         benchmark_split_id=HUMANEVAL_SPLIT_ID,
-        method=StudyParticipant(
+        method=_rs.study_participant(
             role="agentic_workflow_optimizer",
             kind="optimization_method",
             implementation="aflow-paper-era",
@@ -81,17 +67,17 @@ def build_aflow_iclr2025_humaneval_study(
             ),
         ),
         models={
-            "optimizer": StudyModel(
+            "optimizer": _rs.study_model(
                 f"model.{AFLOW_FIDELITY.optimizer_model}",
                 prompt="aflow.optimizer.paper-era",
             ),
-            "executor": StudyModel(
+            "executor": _rs.study_model(
                 f"model.{AFLOW_FIDELITY.execution_model}",
                 prompt="aflow.workflow-execution.paper-era",
             ),
         },
         measurements=(
-            MeasurementDefinition.scalar(
+            _rs.scalar_measurement(
                 "best_validation_score",
                 schema_id="noetrium.measurement.scalar.v1",
                 unit="score",
@@ -99,7 +85,7 @@ def build_aflow_iclr2025_humaneval_study(
                 scale="continuous",
                 domain="aflow",
             ),
-            MeasurementDefinition.scalar(
+            _rs.scalar_measurement(
                 "workflow_candidates",
                 schema_id="noetrium.measurement.count.v1",
                 unit="workflow",
@@ -107,7 +93,7 @@ def build_aflow_iclr2025_humaneval_study(
                 scale="count",
                 domain="aflow",
             ),
-            MeasurementDefinition.scalar(
+            _rs.scalar_measurement(
                 "optimization_rounds",
                 schema_id="noetrium.measurement.count.v1",
                 unit="round",
@@ -115,7 +101,7 @@ def build_aflow_iclr2025_humaneval_study(
                 scale="count",
                 domain="aflow",
             ),
-            MeasurementDefinition.scalar(
+            _rs.scalar_measurement(
                 "test_score",
                 schema_id="noetrium.measurement.scalar.v1",
                 unit="score",
@@ -127,16 +113,16 @@ def build_aflow_iclr2025_humaneval_study(
         trial=protocol,
         repetitions=1,
         seeds=("paper-rng-ambient-unpinned",),
-        limits=TrialBudget(
+        limits=_rs.trial_budget(
             "aflow-iclr2025-humaneval-safety",
             max_steps=256,
             max_turns=128,
             max_model_calls=512,
             max_working_seconds=7200.0,
         ),
-        replay_level=ReplayLevel.OBSERVATIONAL,
+        replay_level='observational',
         repetition_timeout_seconds=7200.0,
-    ).build()
+    )
 
 
 __all__ = [

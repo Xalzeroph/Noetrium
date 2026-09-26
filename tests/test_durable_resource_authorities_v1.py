@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from noetrium_platform.infrastructure.resources.lease.runtime import ResourceLeaseRegistry
+
 from tests_support import model_role_for_test
 
 from pathlib import Path
@@ -35,7 +37,6 @@ from noetrium_platform.infrastructure.resources.lease.api import (
     ResourceOwner,
     ResourceOwnership,
 )
-from noetrium_platform.infrastructure.resources.providers import SQLiteResourceLeaseRegistry
 from noetrium_platform.infrastructure.resources.lease.runtime import ResourceLeaseConflict
 from noetrium_platform.foundation.scope.api import PLATFORM_SCOPE, ScopeIdentity, ScopeKind
 from noetrium_platform.foundation.scope.providers import SQLiteScopeRegistry
@@ -91,14 +92,14 @@ class DurableResourceAuthoritiesTests(TestCase):
             resource = ResourceIdentity(ResourceKind.COMPUTE, "host-1")
             scopes = SQLiteScopeRegistry(database)
             scopes.register(workspace, PLATFORM_SCOPE)
-            owners = SQLiteResourceLeaseRegistry(database)
+            owners = ResourceLeaseRegistry(database)
             owner = ResourceOwner(resource, PLATFORM_SCOPE, ResourceOwnership.PLATFORM_MANAGED)
             owners.register_owner(owner)
             lease = ResourceLease("lease-1", resource, workspace, "test allocation")
             granted = owners.acquire(lease)
 
             restored_scopes = SQLiteScopeRegistry(database)
-            restored_owners = SQLiteResourceLeaseRegistry(database)
+            restored_owners = ResourceLeaseRegistry(database)
             self.assertEqual(restored_scopes.ancestry(workspace), (workspace, PLATFORM_SCOPE))
             self.assertEqual(restored_owners.get("lease-1"), granted)
             with self.assertRaises(ResourceLeaseConflict):
@@ -110,7 +111,7 @@ class DurableResourceAuthoritiesTests(TestCase):
             workspace = ScopeIdentity(ScopeKind.WORKSPACE, "workspace")
             scopes = SQLiteScopeRegistry(database)
             scopes.register(workspace, PLATFORM_SCOPE)
-            leases = SQLiteResourceLeaseRegistry(database)
+            leases = ResourceLeaseRegistry(database)
             store = SQLiteEndpointAllocationStore(database)
             allocator = AtomicEndpointAllocator(
                 reservations=store,
@@ -692,11 +693,8 @@ def test_resource_lease_reconcile_can_be_scoped_to_one_resource_kind(tmp_path) -
         ResourceOwner,
     )
     from noetrium_platform.foundation.scope.api import PLATFORM_SCOPE
-    from noetrium_platform.infrastructure.resources.providers import (
-        SQLiteResourceLeaseRegistry,
-    )
 
-    registry = SQLiteResourceLeaseRegistry(tmp_path / "lease-kind.sqlite")
+    registry = ResourceLeaseRegistry(tmp_path / "lease-kind.sqlite")
     endpoint = ResourceIdentity(ResourceKind.NETWORK_ENDPOINT, "endpoint-a")
     container = ResourceIdentity(ResourceKind.CONTAINER, "container-a")
     for resource in (endpoint, container):

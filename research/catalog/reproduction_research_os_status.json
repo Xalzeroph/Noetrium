@@ -17,7 +17,7 @@
       "lifecycle": "protocol_bound",
       "execution_state": "benchmark_authority_required",
       "program_id": "adacm2_memory",
-      "program_digest": "a0c9e18145ab4ea46cd77d05918b40ed5d5c962ad1eeb6e7d95a743bacbd4fc1",
+      "program_digest": "699b0adef0a678986f21489c99ebe1f13066684ef54113922587cb897d0dcad8",
       "benchmark_ids": [
         "lvu"
       ],
@@ -42,7 +42,7 @@
       "lifecycle": "protocol_bound",
       "execution_state": "benchmark_authority_required",
       "program_id": "adaptagent_acl2025",
-      "program_digest": "b4dfa2bf54eff2f92871b7570e5a7a91e54471ecb789675ca02888776c603683",
+      "program_digest": "33abde696f106cc21a83368733b1cce30eaa91ded153ba77f45a60d084da53d7",
       "benchmark_ids": [
         "mind2web",
         "visualwebarena"
@@ -70,7 +70,7 @@
       "lifecycle": "protocol_bound",
       "execution_state": "benchmark_authority_required",
       "program_id": "adas_meta_agent_search",
-      "program_digest": "cf35b036a70e74c0a60f5b73568b2af0e7c5ec63943d475cf08499b51b90540b",
+      "program_digest": "cdb2210364d388552315faef52f9de9e0a4fa65f1beddc5ce5200d15ebf974d5",
       "benchmark_ids": [
         "mgsm"
       ],
@@ -95,7 +95,7 @@
       "lifecycle": "protocol_bound",
       "execution_state": "benchmark_authority_required",
       "program_id": "aflow",
-      "program_digest": "c875e41d17d6a143ed5f2bfc21ad1747a5d448cb463949bc8a62a4d14a75ad55",
+      "program_digest": "6b0d91d8fc48231378f33cf58c4e252b8b916ba161102e0e2291849f99cc9548",
       "benchmark_ids": [
         "humaneval"
       ],
@@ -120,7 +120,7 @@
       "lifecycle": "protocol_bound",
       "execution_state": "benchmark_authority_required",
       "program_id": "agemem_acl2026",
-      "program_digest": "6479b01f49d26b110a37f56f952d2704696deb917d7ead60400a742406448228",
+      "program_digest": "41fd80571a4e328842394ee6b11bdbd7b84187d1c42f07ede388d44bcb64411f",
       "benchmark_ids": [
         "agentboard-pddl",
         "alfworld",
@@ -151,7 +151,7 @@
       "lifecycle": "protocol_bound",
       "execution_state": "benchmark_authority_required",
       "program_id": "agent_q_surrogate",
-      "program_digest": "329a63291f3ac6bf6c063da22222c49541f9e24358b45602588100d7de074558",
+      "program_digest": "cbec550dd93549b236a5a703bbf472dd409f4b89d58e18667ce4dbf57339bb13",
       "benchmark_ids": [
         "webshop",
         "webvoyager"
@@ -177,7 +177,7 @@
       "lifecycle": "protocol_bound",
       "execution_state": "benchmark_authority_required",
       "program_id": "agent_s3",
-      "program_digest": "31e8ce9c22615fc3c3bfb4c1ef135c41eaf598541ed84627da31778f985d889e",
+      "program_digest": "b364560d8d137bc2eca6a3bd0cd3de172d65fe5c52206b7809daf3e7318edf35",
       "benchmark_ids": [
         "osworld"
       ],
@@ -204,7 +204,7 @@
       "lifecycle": "protocol_bound",
       "execution_state": "benchmark_authority_required",
       "program_id": "agentless_swebench",
-      "program_digest": "4fb32133f5798f0a3dc2cd41cd77acf9d62253f20ebc9d9681e2caf99cd79fe2",
+      "program_digest": "a8e9a62ab0a48bfb6a66681b50a07ff02bfe052f5b47b8c4ffd32d1acc9f428a",
       "benchmark_ids": [
         "swe-bench"
       ],
@@ -231,7 +231,7 @@
       "lifecycle": "protocol_bound",
       "execution_state": "benchmark_authority_required",
       "program_id": "agentsquare",
-      "program_digest": "f25dccd045b864277dc435461e82c9d0bf8118844769169bd9ca8436598074b7",
+      "program_digest": "7b04b469b7dab3e408b847956a0f4617b6664735c2c1119817e2b5f5607ec1d1",
       "benchmark_ids": [
         "agentboard-pddl",
         "alfworld",
@@ -244,7 +244,7 @@
         "state": "required",
         "selection_digests": [],
         "blockers": [
-          "ReproductionResearchOSCompileError:benchmark 'agentboard-pddl' has no exact repository or materialized authority"
+          "ReproductionResearchOSCompileError:benchmark 'agentboard-pddl' has no exact repository or materialized authority matching revision='agentsquare@8f5b3fe5d8a32f9b59d20370823bef2a2c86928c:agentboard-pddl' splits=('released_eval_60',)"
         ]
       },
       "benchmark_split_axis": {
@@ -303,7 +303,7 @@
       "lifecycle": "protocol_bound",
       "execution_state": "benchmark_authority_required",
       "program_id": "astranav_memory_cvpr2026",
-      "program_digest": "34ee8fc9f34dbaa24d64c717a6e7b18bd298a292839ea19b4a11c39b2f5f220d",
+      "program_digest": "2a36f0ccb2933ffba76bc31ab0fb30b01864871ddda77f2cbd3268a43a054456",
       "benchmark_ids": [
         "goat-bench",
         "hm3d-ovon"
@@ -331,7 +331,7 @@
       "lifecycle": "protocol_bound",
       "execution_state": "benchmark_authority_required",
       "program_id": "autogen_agentchat",
-      "program_digest": "fe33b44dadaf7921e345d9e2bb865a07988172a6f89895e870617024b9310496",
+      "program_digest": "967076a6d317a2657731e21ee200e2a53e5630a5c35cdd5f2a98c1bc69c873c8",
       "benchmark_ids": [
         "multiagentbench"
       ],
@@ -358,7 +358,7 @@
       "lifecycle": "protocol_bound",
       "execution_state": "benchmark_authority_required",
       "program_id": "camel_role_playing",
-      "program_digest": "d68a209ebe0853f895daeb2d8a1b62e183f4790da60e5409fcf99441601fb278",
+      "program_digest": "25ae090468e38789e4a8b611efe8b116b69ed491bef933f867f849ec2370372f",
       "benchmark_ids": [
         "camel-ai-society"
       ],
@@ -383,7 +383,7 @@
       "lifecycle": "protocol_bound",
       "execution_state": "benchmark_authority_required",
       "program_id": "cer_acl2025",
-      "program_digest": "8ebfc988f65a4c7c013fcd5a228dd2b8cf9ec6f85399f4b80513350e061d5c6b",
+      "program_digest": "d19c10cfc3435d73faf06e8c9d253524404b3915545c3d5938a3df659c6880e9",
       "benchmark_ids": [
         "visualwebarena",
         "webarena"
@@ -411,7 +411,7 @@
       "lifecycle": "protocol_bound",
       "execution_state": "benchmark_authority_required",
       "program_id": "ces_gui_cvpr2026",
-      "program_digest": "76b2a4d0e09da826327a2e1051c6cc56195e7212cee2a85c50d434a90648faab",
+      "program_digest": "bcd883e990cdade3b31de760343c6c21d0a9f462817eb56cc5f94685319c83e8",
       "benchmark_ids": [
         "aitz",
         "amex",
@@ -440,7 +440,7 @@
       "lifecycle": "protocol_bound",
       "execution_state": "benchmark_authority_required",
       "program_id": "chain_of_thought_gsm8k",
-      "program_digest": "5558d77b82cb846d396e41d006c431b10f88a375a405bdcfb7337a87220c4808",
+      "program_digest": "627201c50f2ee111f963f3c89839022a3bd49debe9a0dc70ab2fc4abcddcc710",
       "benchmark_ids": [
         "gsm8k"
       ],
@@ -465,7 +465,7 @@
       "lifecycle": "protocol_bound",
       "execution_state": "benchmark_authority_required",
       "program_id": "chatdev_v1",
-      "program_digest": "001e150a6f5b263ab66509d8ec4d28eccd55b8573437faaaba61ae6a2c421964",
+      "program_digest": "dd61d94246538e435b145a49cc01bc3c1714d0fd41ad780345ec06621fb512db",
       "benchmark_ids": [
         "srdd"
       ],
@@ -490,14 +490,14 @@
       "lifecycle": "protocol_bound",
       "execution_state": "execution_authority_required",
       "program_id": "code_as_policies",
-      "program_digest": "dd15e10086514286a6eaecd8048c802a0cfeb99fb25033397eb54744c64e1c1d",
+      "program_digest": "7f52cb6da6c7ef5153a7cd780e4e1904e4311a8eb228186429197640a7daa8a1",
       "benchmark_ids": [
         "robocodegen-37"
       ],
       "benchmark_authority": {
         "state": "closed",
         "selection_digests": [
-          "d3d3f242141520fbbf1be94138f702c566e10e7d238130aacd21030306ef0444"
+          "99b236c0fecd15e3c4d15a84df0362352c14b12f784de7b72c67ffa1fc2e2774"
         ],
         "blockers": []
       },
@@ -515,7 +515,7 @@
       "lifecycle": "protocol_bound",
       "execution_state": "benchmark_authority_required",
       "program_id": "cogagent",
-      "program_digest": "f5f69ab33d1dc2a5aa88c7e6a54b77117b5fb4bb2d8f01d4cd94387a57563f38",
+      "program_digest": "a8023cd5ad1ff6970175d583667cc0ea500ea9faaf30390b9dba0f03f5c528d7",
       "benchmark_ids": [
         "mind2web"
       ],
@@ -542,7 +542,7 @@
       "lifecycle": "protocol_bound",
       "execution_state": "benchmark_authority_required",
       "program_id": "crossha_cvpr2026",
-      "program_digest": "73392aeaad928544764d91737e70c7054d073be64e8bd77394279090ed5a13ef",
+      "program_digest": "fd8c31d3bbd86acb008e6794f08ea8f287f99bf4020789227bdc9a915460cfd9",
       "benchmark_ids": [
         "minecraft-openha"
       ],
@@ -569,7 +569,7 @@
       "lifecycle": "protocol_bound",
       "execution_state": "benchmark_authority_required",
       "program_id": "d3d_vlp_cvpr2026",
-      "program_digest": "ebebaa864234a467d88e8b6a923993174d1b664b4dbd359ccc62d12fb6cec244",
+      "program_digest": "5b8788cc6eecf0156c67acfacab54fe10289d6231c416150a44fd633d1a54481",
       "benchmark_ids": [
         "hm3d-ovon",
         "navrag-ce",
@@ -600,7 +600,7 @@
       "lifecycle": "protocol_bound",
       "execution_state": "benchmark_authority_required",
       "program_id": "dars_acl2025",
-      "program_digest": "ee4bf7a68f005ecced139dd388e203a140f049d95245b04537b31d7d9d6cf1c6",
+      "program_digest": "b9483b5421c8ed932afe3c20f8713f3f2ff294a21d1726a84379fc8a292a452c",
       "benchmark_ids": [
         "swe-bench"
       ],
@@ -627,7 +627,7 @@
       "lifecycle": "protocol_bound",
       "execution_state": "benchmark_authority_required",
       "program_id": "dejavu_cvpr2026",
-      "program_digest": "87ce0781da7dd54d1ffd42386834bbefd15fd70b4db8d55a5da8b57f17d5cb02",
+      "program_digest": "c3421b9f2058b660ca8457f6a5514f67b5ce65ebfedabf65d91f0eece3364cf7",
       "benchmark_ids": [
         "libero"
       ],
@@ -654,14 +654,14 @@
       "lifecycle": "protocol_bound",
       "execution_state": "execution_authority_required",
       "program_id": "deps_minecraft",
-      "program_digest": "707506f34646907dcc6f451e18e3319fce90cf817f39152b0705a87b7ce1c1f9",
+      "program_digest": "fb65daa787227f1ee9f6d5e7609228fa3892a7d95023a9b86fdc2d06d29123e7",
       "benchmark_ids": [
         "deps-minecraft-70"
       ],
       "benchmark_authority": {
         "state": "closed",
         "selection_digests": [
-          "aa3677e7c8aed01d4c2eb46e8bfb658bc54b5c809c93ec39c54aa25f403427ef"
+          "4f5f9a3f8e4adb05194658dfe7b29da3e9669efb5a92ad7b7a5703657dd81cf1"
         ],
         "blockers": []
       },
@@ -679,7 +679,7 @@
       "lifecycle": "protocol_bound",
       "execution_state": "benchmark_authority_required",
       "program_id": "drvideo",
-      "program_digest": "481e2208f0bd729a7ef4c338aa6ae49124fbd9d5205359bbdd82ea4c0a150499",
+      "program_digest": "ece5097a5b943e14ad3c48839ff7d91b655847dfac4fd6b8a75298da50601b37",
       "benchmark_ids": [
         "egoschema"
       ],
@@ -704,7 +704,7 @@
       "lifecycle": "protocol_bound",
       "execution_state": "benchmark_authority_required",
       "program_id": "eaglet_acl2026",
-      "program_digest": "a8cd3879be7693e70196ca689f656e06a6302eb444684a58e9715d48763ce591",
+      "program_digest": "5c36f95f1a9f1f6b6f21d8fdd17f4eb44ae4cb72ffcf885f52a1cf7c5ebb422f",
       "benchmark_ids": [
         "alfworld",
         "scienceworld",
@@ -733,7 +733,7 @@
       "lifecycle": "protocol_bound",
       "execution_state": "benchmark_authority_required",
       "program_id": "echotrail_gui_cvprf2026",
-      "program_digest": "b373d0c368cb70c8a99bc05100cbede037d54fa9fb0125f902347d67fa2d878f",
+      "program_digest": "18b11805f187342f7437375468978451db75079b74af29924b2c9cb61c9fc742",
       "benchmark_ids": [
         "androidlab",
         "androidworld"
@@ -761,7 +761,7 @@
       "lifecycle": "protocol_bound",
       "execution_state": "benchmark_authority_required",
       "program_id": "ego2web_cvpr2026",
-      "program_digest": "68adbfbe735bccb0a94b2e212184afa063e2991bc8a2a6caca0a5cc5a0adc803",
+      "program_digest": "39cc2f49daaf363704d2dca4294def64ccf9e053ba9deaaff002f73f1c81b5e4",
       "benchmark_ids": [
         "ego2web"
       ],
@@ -788,7 +788,7 @@
       "lifecycle": "protocol_bound",
       "execution_state": "benchmark_authority_required",
       "program_id": "embodied_videoagent_iccv2025",
-      "program_digest": "17b9d21abcf2ca9e1c61c2b0cb22fdbeff003d2d9b439ba8aa062d8e43cf1462",
+      "program_digest": "8c49e5a61c0735aedb4026640d5b528bed6d8a436f0086b1b4060e7e10ac8f2e",
       "benchmark_ids": [
         "ego4d-vq3d",
         "envqa",
@@ -817,7 +817,7 @@
       "lifecycle": "protocol_bound",
       "execution_state": "benchmark_authority_required",
       "program_id": "exact_vwa",
-      "program_digest": "44ae76151d89782c0a7399500bf203a40411e74b902d72f5155c4c6ff3918cb3",
+      "program_digest": "121ee2c55ec49df5cc41b3da29f9fa895b663f9c5ced5d96478357d36f81aab2",
       "benchmark_ids": [
         "osworld",
         "visualwebarena"
@@ -843,7 +843,7 @@
       "lifecycle": "protocol_bound",
       "execution_state": "benchmark_authority_required",
       "program_id": "flash_vstream_memory",
-      "program_digest": "db4b3fc8a3d1c18feb9bf2fda199308bf60e390e1be59d493cf473ca6d6ad9f8",
+      "program_digest": "5d865ea9b382f704db9be0059076ff269bcc37412ede7297890c7d2f27766bcc",
       "benchmark_ids": [
         "egoschema"
       ],
@@ -868,7 +868,7 @@
       "lifecycle": "protocol_bound",
       "execution_state": "benchmark_authority_required",
       "program_id": "flow_modularized_agentic_workflow",
-      "program_digest": "728dc6f6cb3a948a2cf3cfecde8a52ae24f483e820d171927724a47470b9172a",
+      "program_digest": "334e6b7925cfd5118cfd12f833bac5ff541a40282eacec5ea546ac411a732d06",
       "benchmark_ids": [
         "flow-practical-tasks"
       ],
@@ -893,7 +893,7 @@
       "lifecycle": "protocol_bound",
       "execution_state": "benchmark_authority_required",
       "program_id": "foreact_cvpr2026",
-      "program_digest": "0bcd82980326e78a34c4df7bbabff3496533bed75e5ad585f53d24bfd22e7dd1",
+      "program_digest": "b11442304a1bbaaf4fcfaa6d3ba6612a8c1fa86946debf7eda49639e1d4820be",
       "benchmark_ids": [
         "foreact-real11"
       ],
@@ -920,7 +920,7 @@
       "lifecycle": "protocol_bound",
       "execution_state": "benchmark_authority_required",
       "program_id": "gats",
-      "program_digest": "43d1362a434dd035086812c7454c237a455bf812d8b048e94c16e578cf67c79a",
+      "program_digest": "ac1e562e0baa9db54d0baacacdb109919aedc6d232cf13459ce7810ff7794772",
       "benchmark_ids": [
         "gats-synthetic"
       ],
@@ -945,7 +945,7 @@
       "lifecycle": "protocol_bound",
       "execution_state": "benchmark_authority_required",
       "program_id": "generative_agents_memory",
-      "program_digest": "fa678ee040ee291772fc45702d6b68e7a5b4023ff9575138c58d7b9dd274997f",
+      "program_digest": "c10636b8930191c9c37fa14907c39638644ebb9b7f9ceaa5af58f31c7b35f7f0",
       "benchmark_ids": [
         "generative-agents-smallville"
       ],
@@ -991,7 +991,7 @@
       "lifecycle": "protocol_bound",
       "execution_state": "benchmark_authority_required",
       "program_id": "hats_cvpr2026",
-      "program_digest": "00233cd8ea8275a6c5ea97d170928af607121c462ac9a8ebf069f7e1b055d1f5",
+      "program_digest": "c18579ef259c970d3bf12b57ab7cf8383a6dec750999734ed065ec9cf495e737",
       "benchmark_ids": [
         "androidworld",
         "webarena"
@@ -1019,7 +1019,7 @@
       "lifecycle": "protocol_bound",
       "execution_state": "benchmark_authority_required",
       "program_id": "hugginggpt",
-      "program_digest": "b74dd49a9f096097924e4ee5a2c404404ecefb58f03ef1cf4704e2dfa8094310",
+      "program_digest": "2cb8af58dbd8dc86f52fa61733be7889a0d39e4d6accb90398b131a1b9921952",
       "benchmark_ids": [
         "hugginggpt-paper-tasks"
       ],
@@ -1056,7 +1056,7 @@
       "lifecycle": "protocol_bound",
       "execution_state": "benchmark_authority_required",
       "program_id": "implement_acl2026",
-      "program_digest": "8bf8f01fe419f8660bea9aec3f078b4b53ebef23579627e6d5443f332a9d037f",
+      "program_digest": "72e4d41bf238bf15ce1d8ef986fb71fc930739c2431ae460e36f80395288851b",
       "benchmark_ids": [
         "alfworld"
       ],
@@ -1083,7 +1083,7 @@
       "lifecycle": "protocol_bound",
       "execution_state": "benchmark_authority_required",
       "program_id": "ishift_cvpr2026",
-      "program_digest": "b3bd8993b02155dc5cb3b4095953e054d93ee2453717b1c5958fcd4df54dde8c",
+      "program_digest": "796ac4251c31f5a02a6a8ff787650ff361724af5baf77f27c5e836a48946c151",
       "benchmark_ids": [
         "aitw",
         "androidcontrol",
@@ -1113,14 +1113,14 @@
       "lifecycle": "protocol_bound",
       "execution_state": "execution_authority_required",
       "program_id": "jarvis1_minecraft",
-      "program_digest": "bd05d081096e521fe2f6e178e47f369a7b08aa316a44c45a41eff3df23af7264",
+      "program_digest": "e1bd6bf4ae8c2f657a8f1710d2181e397cda0d2341ec86fbe18232b58dc1b08f",
       "benchmark_ids": [
         "jarvis1-offline-185"
       ],
       "benchmark_authority": {
         "state": "closed",
         "selection_digests": [
-          "453fbdb926610f3fe4b10b44ff029f3cda92f68f6c77e4799c35771568063434"
+          "f65479d7540ca5a0e58df0d9ce2766727911ea302b2c11a6d8361822ae199491"
         ],
         "blockers": []
       },
@@ -1138,7 +1138,7 @@
       "lifecycle": "protocol_bound",
       "execution_state": "benchmark_authority_required",
       "program_id": "lats_webshop",
-      "program_digest": "203a7d05f3054d168c58d20c8afe6686d96f39dba729574af8c4f7ae5d66cca2",
+      "program_digest": "8d7b5750db06e31bec12619624f38677a223ccfc4ff90b5b7dfad371ff8bb4db",
       "benchmark_ids": [
         "webshop"
       ],
@@ -1163,7 +1163,7 @@
       "lifecycle": "protocol_bound",
       "execution_state": "benchmark_authority_required",
       "program_id": "lits_math500",
-      "program_digest": "b5098d27e6b7d8f858d24b57c921b87cc079cb946d4a8fabb1722ca0a56bdb42",
+      "program_digest": "0e3b1e22336d2c76af8096449bf5309cd8cbe40f91dc6abf9f651cdd8716a612",
       "benchmark_ids": [
         "math500"
       ],
@@ -1188,7 +1188,7 @@
       "lifecycle": "protocol_bound",
       "execution_state": "benchmark_authority_required",
       "program_id": "live_swe_agent",
-      "program_digest": "540ea04fbb0a6961a2828350577834a460cc99b35ba0438025e59e701cc4b7d1",
+      "program_digest": "ab28a08055d810df7d2e2537d73c9f8ad56dccfabbab8db3712ead64ed90d9c1",
       "benchmark_ids": [
         "swe-bench"
       ],
@@ -1215,7 +1215,7 @@
       "lifecycle": "protocol_bound",
       "execution_state": "benchmark_authority_required",
       "program_id": "lmee_cvpr2026",
-      "program_digest": "56af943331571951c7be5af30341e9288dcb65e65a89a37aede1dfcdaedf7dc7",
+      "program_digest": "b3a02bc43cf6ab5e206aa45348611f6feab4a6db073544deafb36799930261cb",
       "benchmark_ids": [
         "lmee-bench"
       ],
@@ -1242,7 +1242,7 @@
       "lifecycle": "protocol_bound",
       "execution_state": "benchmark_authority_required",
       "program_id": "lvagent_iccv2025",
-      "program_digest": "7b90a8ba499f088f28143ab38b235084fefa966443f7f1ae3264a98fdc4b2e4a",
+      "program_digest": "cf45ff3c2294717e793429ab61e9eb40f3390baefbd2f6aad1ba9a644df6c873",
       "benchmark_ids": [
         "egoschema"
       ],
@@ -1269,7 +1269,7 @@
       "lifecycle": "protocol_bound",
       "execution_state": "benchmark_authority_required",
       "program_id": "ma_lmm_memory",
-      "program_digest": "41140ec744986d38e9a6e998b6c7e4352f5889acea9d669ed2643f963224f1e3",
+      "program_digest": "844b71d3a4460ef36ebceb730a413c7059559665dd49f27843c85c2fcdacec1a",
       "benchmark_ids": [
         "lvu"
       ],
@@ -1317,7 +1317,7 @@
       "lifecycle": "protocol_bound",
       "execution_state": "benchmark_authority_required",
       "program_id": "mem_gallery_acl2026",
-      "program_digest": "814bfd588c81175fea63bd1759b1c1ee49ae71779a800055ee941d99261aa168",
+      "program_digest": "2f7102de47edbbcd481932fb263ff1c8b0a36bb8b6da50e7abc4ee4b3c72de00",
       "benchmark_ids": [
         "mem-gallery"
       ],
@@ -1344,7 +1344,7 @@
       "lifecycle": "protocol_bound",
       "execution_state": "benchmark_authority_required",
       "program_id": "memevolve",
-      "program_digest": "6274d764a4a63301f5a9c0cc5b861fac56b62c315079a8adcebda68eb075070a",
+      "program_digest": "e719aa0d2723a96892fdb4871ce32107b7a0a3d16d6013c76d291bb1f32fa98f",
       "benchmark_ids": [
         "evomembench",
         "memoryarena"
@@ -1372,7 +1372,7 @@
       "lifecycle": "protocol_bound",
       "execution_state": "benchmark_authority_required",
       "program_id": "memgpt_classic",
-      "program_digest": "b870ad5f6585fb7e22d49de60104f490a5fadd73695f26c6249de2e7a5503e9c",
+      "program_digest": "df62f18ca7f9b48e824c9015a29e3daf9f71fcf41894ae4c69da9e85dd7cbb6a",
       "benchmark_ids": [
         "memoryarena"
       ],
@@ -1399,7 +1399,7 @@
       "lifecycle": "protocol_bound",
       "execution_state": "benchmark_authority_required",
       "program_id": "metagpt_software_company",
-      "program_digest": "41dccf6e16e8757360f2977fe28b4dedd63750366cd23f8aeb15b899c4b0cde3",
+      "program_digest": "527c91775abfb74f7ae21b812b0cf32c5af93045b158a6472424c2ffef39cfca",
       "benchmark_ids": [
         "humaneval"
       ],
@@ -1424,7 +1424,7 @@
       "lifecycle": "protocol_bound",
       "execution_state": "benchmark_authority_required",
       "program_id": "minedojo",
-      "program_digest": "0b6ea403d57b97c00b92175804b721f2e5757f13589f46c5051ff8637d1ac6b8",
+      "program_digest": "a7dc5389b1bf5bc6c86be9124e4de3bb480ac04dccf624a2d355e111b23915cb",
       "benchmark_ids": [
         "minedojo"
       ],
@@ -1449,7 +1449,7 @@
       "lifecycle": "protocol_bound",
       "execution_state": "benchmark_authority_required",
       "program_id": "mm_mem_acl2026",
-      "program_digest": "86305140193d6349bf323bd96de5cc308a94178334c2d8416f59a0b3dd6fd344",
+      "program_digest": "68a0bb50b58d359e10da62d3835e70ee703e7866b00bdc9425933e26975efc45",
       "benchmark_ids": [
         "hd-epic",
         "mlvu",
@@ -1479,7 +1479,7 @@
       "lifecycle": "protocol_bound",
       "execution_state": "benchmark_authority_required",
       "program_id": "mmbench_gui_cvpr2026",
-      "program_digest": "116617a0797dd937b5363e7ff0e7986c0b6055bcfbbbcca248a013acfb8d9410",
+      "program_digest": "e4ffd52e7317838fde1fe2e5829ca62d5a55dfa56b8f2cf36f4e80840b32bffb",
       "benchmark_ids": [
         "mmbench-gui"
       ],
@@ -1506,7 +1506,7 @@
       "lifecycle": "protocol_bound",
       "execution_state": "benchmark_authority_required",
       "program_id": "motus_cvpr2026",
-      "program_digest": "b947f3a6b8d82d2297866b2e091ce4fa6f75b57a5932dde394d4223b09da5009",
+      "program_digest": "8bcbcfff859f23118516477bb32574607bb18297aca09eeccccf125067af3ec4",
       "benchmark_ids": [
         "motus-realworld",
         "robotwin2"
@@ -1534,7 +1534,7 @@
       "lifecycle": "protocol_bound",
       "execution_state": "benchmark_authority_required",
       "program_id": "moviechat_memory",
-      "program_digest": "534538e4e5d67e8777e762469fd6b6e1ba5e26eda7bfa19717aab9315632d916",
+      "program_digest": "5b467a400812bf03bfe7565443fd2ca122815d958660ed4fbac9a9a0fed28641",
       "benchmark_ids": [
         "moviechat-1k"
       ],
@@ -1559,7 +1559,7 @@
       "lifecycle": "protocol_bound",
       "execution_state": "benchmark_authority_required",
       "program_id": "multiagent_debate",
-      "program_digest": "ebfce1966bfc6a632c05d44603908ff0a7453df727993b3a6bdcba4200a75c16",
+      "program_digest": "31d0abb6e98ba4a5a9cff6c5be6333625050dd72779579500945b5924081042f",
       "benchmark_ids": [
         "gsm8k"
       ],
@@ -1584,7 +1584,7 @@
       "lifecycle": "protocol_bound",
       "execution_state": "benchmark_authority_required",
       "program_id": "openwebvoyager_acl2025",
-      "program_digest": "997ac2ce5f24c16756ac2354a94841cfe71200561d392d4fd5e88edb1dbce364",
+      "program_digest": "34958f1b53c1511ab063f62a154ac4bb726cf6113a24cc9a9644ecf3c1157e8f",
       "benchmark_ids": [
         "mind2web",
         "webvoyager"
@@ -1612,14 +1612,14 @@
       "lifecycle": "protocol_bound",
       "execution_state": "execution_authority_required",
       "program_id": "optimus1_minecraft",
-      "program_digest": "331088f1e05bfd018f9e567e55c900fa21c34eb350551d01bb2c89f10bac43c2",
+      "program_digest": "11c28f41e12ce172c7c0697d5a7d269a67306c6ee3b5dac8471ace17517bea59",
       "benchmark_ids": [
         "minecraft-long-horizon-67"
       ],
       "benchmark_authority": {
         "state": "closed",
         "selection_digests": [
-          "d81d4132870d47205869ebcfb5eace837c4eb49cf0df3afd9487c6c8f27ed6d0"
+          "24ebbef80c32f6bdfa244eb21cb25130ba8b38b8691674fb248d17e9aea9261a"
         ],
         "blockers": []
       },
@@ -1637,14 +1637,14 @@
       "lifecycle": "protocol_bound",
       "execution_state": "execution_authority_required",
       "program_id": "optimus2_minecraft",
-      "program_digest": "82ff7207440219b9ed042d43bb8d539be73efea3491d4a8196bbd14b01b61c30",
+      "program_digest": "a248be6f24e78225dd47160560114fabb4629eed2c59a328389df81ac5aea8e9",
       "benchmark_ids": [
         "minecraft-long-horizon-67"
       ],
       "benchmark_authority": {
         "state": "closed",
         "selection_digests": [
-          "830dba0339c384410800761c3d19e392ec5f4c0d3d00917c41f9bb2244c47cf3"
+          "7fdd09d94651a2f6c497b6d7e1bf9132cda44dc98fca2c78bd03ffd043ed5c4c"
         ],
         "blockers": []
       },
@@ -1662,7 +1662,7 @@
       "lifecycle": "protocol_bound",
       "execution_state": "benchmark_authority_required",
       "program_id": "optimusvla_cvpr2026",
-      "program_digest": "c3b1e54ed980c6918de8b69a87206434c48b95da37fa8c5d8ac31a6dbec71fa9",
+      "program_digest": "b6a4e7f5e3c614b5b49865f93dbf387a14c574f4e531404a21f649a6c36b57a8",
       "benchmark_ids": [
         "calvin",
         "libero",
@@ -1691,7 +1691,7 @@
       "lifecycle": "protocol_bound",
       "execution_state": "benchmark_authority_required",
       "program_id": "orbit_acl2026",
-      "program_digest": "53092527c1c4e408c8697c35305c9a78491340ef96db46d5268801666eda01ec",
+      "program_digest": "9a3a334a9958febc282ab36c49686233817284999fc8831d028e7b9fad1956ec",
       "benchmark_ids": [
         "embodiedbench"
       ],
@@ -1718,7 +1718,7 @@
       "lifecycle": "protocol_bound",
       "execution_state": "benchmark_authority_required",
       "program_id": "os_symphony_acl2026",
-      "program_digest": "b8ea69c60fb28178df1a92c5c254e25ea1b111b50d3eba95c9504de96cc91d92",
+      "program_digest": "a829a926b77813783738fafa5cabaf36fef1c1880d7d95a0fa3c6ada6b33a1df",
       "benchmark_ids": [
         "macosarena",
         "osworld-verified",
@@ -1768,7 +1768,7 @@
       "lifecycle": "protocol_bound",
       "execution_state": "benchmark_authority_required",
       "program_id": "providellm_memory",
-      "program_digest": "2a3e2265f561db1e9db0af56629cd5c812389b7422b827b8c6dbb8632a263124",
+      "program_digest": "07d351c7bdd1c08e649715fbdafd70b0fb9d7c5951027bd8d2e44ace4a75679e",
       "benchmark_ids": [
         "ego4d-goalstep"
       ],
@@ -1793,7 +1793,7 @@
       "lifecycle": "protocol_bound",
       "execution_state": "benchmark_authority_required",
       "program_id": "qlass_alfworld",
-      "program_digest": "10db5e9ccca62b8abbfd42fef1b164fc5bd8d341efd5113c51047d76eadc4b19",
+      "program_digest": "642df4518bacdb1451e9bd985c6e2fd7a31d87e7dfe8925fd00d2d2230d012a8",
       "benchmark_ids": [
         "alfworld",
         "webshop"
@@ -1802,7 +1802,7 @@
         "state": "required",
         "selection_digests": [],
         "blockers": [
-          "ReproductionResearchOSCompileError:benchmark 'alfworld' has no exact repository or materialized authority"
+          "ReproductionResearchOSCompileError:benchmark 'alfworld' has no exact repository or materialized authority matching revision='qlass@df8e6a3b840d1ea994114f13fc2d5ccd63b7a8e9:alfworld-dev' splits=('eval_in_distribution',)"
         ]
       },
       "benchmark_split_axis": {
@@ -1819,7 +1819,7 @@
       "lifecycle": "protocol_bound",
       "execution_state": "benchmark_authority_required",
       "program_id": "r2d2_acl2025",
-      "program_digest": "0b9dbaeb49f6ce024abbd30555b6f2ac3267a195c53146fc18e0803e9f025dfa",
+      "program_digest": "8e22d156ccf2691a962f1f81c550d73ca428c2f730c65fd653308a3e83246465",
       "benchmark_ids": [
         "webarena"
       ],
@@ -1846,7 +1846,7 @@
       "lifecycle": "protocol_bound",
       "execution_state": "benchmark_authority_required",
       "program_id": "rap_reasoning",
-      "program_digest": "792acb6fdd56a3d9b2cc13f30036f3815644aa5cbf3605de31250e54713e4871",
+      "program_digest": "cfe95aa25d330be21ffbba9689ce52436538687a4e49d32bd9155205f10e5662",
       "benchmark_ids": [
         "blocksworld"
       ],
@@ -1871,7 +1871,7 @@
       "lifecycle": "protocol_bound",
       "execution_state": "benchmark_authority_required",
       "program_id": "react_alfworld",
-      "program_digest": "af725426a190ed100ed007d9421fed39b0af03a7288818e60f81fcbf432beaed",
+      "program_digest": "bce9aefaf135d7d123e62dd9460da81f526701581d67f3436e7f674c987449d6",
       "benchmark_ids": [
         "alfworld",
         "webshop"
@@ -1880,7 +1880,7 @@
         "state": "required",
         "selection_digests": [],
         "blockers": [
-          "ReproductionResearchOSCompileError:benchmark 'alfworld' has no exact repository or materialized authority"
+          "ReproductionResearchOSCompileError:benchmark 'alfworld' has no exact repository or materialized authority matching revision='json_2.1.1' splits=('eval_out_of_distribution',)"
         ]
       },
       "benchmark_split_axis": {
@@ -1897,7 +1897,7 @@
       "lifecycle": "protocol_bound",
       "execution_state": "benchmark_authority_required",
       "program_id": "refact_cvpr2026",
-      "program_digest": "3e00ae4a8065304a137c7861a466511570d3a7678f8173440eac4db4f01da1ef",
+      "program_digest": "ea2ea9f24104025068d2797010838713218480e87e0781eb0cceb87aa0cf1485",
       "benchmark_ids": [
         "groundedvqa"
       ],
@@ -1924,7 +1924,7 @@
       "lifecycle": "protocol_bound",
       "execution_state": "benchmark_authority_required",
       "program_id": "reflexion_alfworld",
-      "program_digest": "0ae6a8f4653099d5cf6c639e10171f9a57cd6d49cef0fd1cb18c0b3f43892c44",
+      "program_digest": "e1932f4dd05b595ee18ad31b548b74e6626fc041db8b7076068a86f740366780",
       "benchmark_ids": [
         "alfworld"
       ],
@@ -1932,7 +1932,7 @@
         "state": "required",
         "selection_digests": [],
         "blockers": [
-          "ReproductionResearchOSCompileError:benchmark 'alfworld' has no exact repository or materialized authority"
+          "ReproductionResearchOSCompileError:benchmark 'alfworld' has no exact repository or materialized authority matching revision='json_2.1.1' splits=('eval_out_of_distribution',)"
         ]
       },
       "benchmark_split_axis": {
@@ -1949,7 +1949,7 @@
       "lifecycle": "protocol_bound",
       "execution_state": "benchmark_authority_required",
       "program_id": "rewind_memory",
-      "program_digest": "e8bd11f4a35558e876d7055f24db3b2ad2c788323c229c99dc68ebce6537aa34",
+      "program_digest": "78c2fa9b26ed96d0c6e0d21d120af0ca54ffcf0df4f262d79f7c1353a3db9d78",
       "benchmark_ids": [
         "moviechat-1k"
       ],
@@ -1974,7 +1974,7 @@
       "lifecycle": "protocol_bound",
       "execution_state": "benchmark_authority_required",
       "program_id": "roboagent_cvpr2026",
-      "program_digest": "61781f097f34409ff72babf1833023b50dc56ff4e05098b14b06d414e55f44b6",
+      "program_digest": "87cc944b202f0805b0e36e4de25e537339dad1600072906c6a168ab9f64bac3d",
       "benchmark_ids": [
         "alfworld",
         "embodiedbench"
@@ -2002,7 +2002,7 @@
       "lifecycle": "protocol_bound",
       "execution_state": "benchmark_authority_required",
       "program_id": "saycan",
-      "program_digest": "1e3111be8e6840cdfa680310569b1fed3097001fc129a01204f7220d7f37d9af",
+      "program_digest": "32b0784dd80166b7227106b2154b5d12314ae72604a5116be12767a23aad77ec",
       "benchmark_ids": [
         "saycan-101"
       ],
@@ -2027,7 +2027,7 @@
       "lifecycle": "protocol_bound",
       "execution_state": "benchmark_authority_required",
       "program_id": "seeclick",
-      "program_digest": "68c422d8021a89689b1fd22f8eccc17f0e5751f12dde10320ed3323358c62224",
+      "program_digest": "0699b568206deb3ad025c995d2738a006e8263c01842a5bd4a80a63cbf1efafa",
       "benchmark_ids": [
         "screenspot"
       ],
@@ -2054,7 +2054,7 @@
       "lifecycle": "protocol_bound",
       "execution_state": "benchmark_authority_required",
       "program_id": "self_consistency_gsm8k",
-      "program_digest": "7d0c19734b87a0dd8e64809db280a29a52523160fb3fd81ce7fade3ca77eea6e",
+      "program_digest": "681c10ab2e3265fa4919e4e8f826d3fc70a08ab98bb88d98e1a6dbb935547799",
       "benchmark_ids": [
         "gsm8k"
       ],
@@ -2079,7 +2079,7 @@
       "lifecycle": "protocol_bound",
       "execution_state": "benchmark_authority_required",
       "program_id": "self_refine",
-      "program_digest": "37e7e8c481e9f9f44247dafb87021e827058eb29cb32e535178a4bac3752c74b",
+      "program_digest": "819e1426f2f8ad67756acf2e9b04c965a1969ef453559124c2d152cd277be8a1",
       "benchmark_ids": [
         "commongen"
       ],
@@ -2106,7 +2106,7 @@
       "lifecycle": "protocol_bound",
       "execution_state": "benchmark_authority_required",
       "program_id": "star_toggle_cvpr2026",
-      "program_digest": "88274af24f47c5292e7a9b1a580d00203d6c8b736524359f03dbd685e18315fa",
+      "program_digest": "c58887bdf9eecd6a1a1daf38116bc050e180c65731f651d510a723db12f5a527",
       "benchmark_ids": [
         "state-control-benchmark"
       ],
@@ -2133,14 +2133,14 @@
       "lifecycle": "protocol_bound",
       "execution_state": "execution_authority_required",
       "program_id": "steve1_minecraft",
-      "program_digest": "b69b84e4ab2a9c7741ca819074db63776d2988599e029a0582f0e8805938975e",
+      "program_digest": "9d25efca5667d4dadae0f9999882c6c07c6fb9fc37a9bece624542d52f1b1e0a",
       "benchmark_ids": [
         "steve1-paper-prompts"
       ],
       "benchmark_authority": {
         "state": "closed",
         "selection_digests": [
-          "7b12e188906f8aab4ede599a4454bdffb1097acbcf6481f749f43f389891e77d"
+          "3442106af05268206a00a12f05247fa3978e1660723716c7c3cc740a59786dce"
         ],
         "blockers": []
       },
@@ -2158,7 +2158,7 @@
       "lifecycle": "protocol_bound",
       "execution_state": "benchmark_authority_required",
       "program_id": "storm_wiki",
-      "program_digest": "a9dd0a6e2f0faf7239fe98136ca3ba37db96d1529e3c4e41528a0d4044814f25",
+      "program_digest": "73ed180e58a6417e5b4e30663f3ac7a2fd2b5e4d2a4f115a4d4eb12f5ca68234",
       "benchmark_ids": [
         "freshwiki"
       ],
@@ -2194,7 +2194,7 @@
       "lifecycle": "protocol_bound",
       "execution_state": "benchmark_authority_required",
       "program_id": "swe_agent_swebench",
-      "program_digest": "f3fd4fe910399a52fee901c523cc911f6ef69cc7e11048ef9468ec5d531a1c4f",
+      "program_digest": "07a98a00a3bc4b02c2f3913af1aceeb839aca4d1efe97b6a0f2ab98c099b78ac",
       "benchmark_ids": [
         "swe-bench"
       ],
@@ -2221,7 +2221,7 @@
       "lifecycle": "protocol_bound",
       "execution_state": "benchmark_authority_required",
       "program_id": "toolformer",
-      "program_digest": "d1c53ab9d41bb698b7a90509d92d24eb6eb214ba9b82c3c63096360efaa18ad1",
+      "program_digest": "5da9abf666c381b0381a7cd24f2e105fd8cae477b335d21332ab9cf2d104e4fb",
       "benchmark_ids": [
         "toolformer-eval"
       ],
@@ -2248,7 +2248,7 @@
       "lifecycle": "protocol_bound",
       "execution_state": "benchmark_authority_required",
       "program_id": "toolllm_toolbench",
-      "program_digest": "edaa479449c168a42d0d2ab3ec287c666da860ab71209a8f5b9d02f2e4643470",
+      "program_digest": "48156833c681f70ea1b95e27fe5c757690d26cbcb5fef10f05f547297a445d34",
       "benchmark_ids": [
         "toolbench"
       ],
@@ -2285,7 +2285,7 @@
       "lifecycle": "protocol_bound",
       "execution_state": "benchmark_authority_required",
       "program_id": "tree_of_thoughts",
-      "program_digest": "ddf1eadaa7460952fa6140b845ee739fb26a5c463450549897e0ada242a124c1",
+      "program_digest": "34e22d364228b0613a965c9a8ae8d3af29043980ae3d120a950bb293e0919b6f",
       "benchmark_ids": [
         "game24"
       ],
@@ -2310,7 +2310,7 @@
       "lifecycle": "protocol_bound",
       "execution_state": "benchmark_authority_required",
       "program_id": "tree_search_language_model_agents",
-      "program_digest": "c128710d2dddc1fe3dd5ecfe8695e37ca7282952d5873374cc88b49fb03f2fc3",
+      "program_digest": "8d75c0b213ce1f27dd3c59b031a888306568be54d5d04e99d168340cea846b98",
       "benchmark_ids": [
         "visualwebarena",
         "webarena"
@@ -2336,7 +2336,7 @@
       "lifecycle": "protocol_bound",
       "execution_state": "benchmark_authority_required",
       "program_id": "ui_agile_cvprf2026",
-      "program_digest": "209ad95381ad60ad840c93130bb53abdd5285f78aad8e27fbe3f6bf2b143c298",
+      "program_digest": "afffaec331dd484bc1b4a74500dc3618e56301a6721adaa7f33a49b4ac702735",
       "benchmark_ids": [
         "androidcontrol",
         "screenspot-pro",
@@ -2365,7 +2365,7 @@
       "lifecycle": "protocol_bound",
       "execution_state": "benchmark_authority_required",
       "program_id": "ui_tars_desktop_v001",
-      "program_digest": "b83b11a9b627ca228fb2bafbca98b517c09e0641e9653ac5418596caedd6d576",
+      "program_digest": "706a2914b2e3d8c3250de719497ce28235ebcabf79424424cf217632b18d22ea",
       "benchmark_ids": [
         "osworld"
       ],
@@ -2392,7 +2392,7 @@
       "lifecycle": "protocol_bound",
       "execution_state": "benchmark_authority_required",
       "program_id": "vca_video",
-      "program_digest": "3c79a606d39bc5ba967f1420f67198e2588e99fb27138e47c772b61ad8d3b6ab",
+      "program_digest": "676a13d588b79dbb06102f8f7ce10d2ab160faae129e94176780393b2a34e767",
       "benchmark_ids": [
         "egoschema"
       ],
@@ -2417,7 +2417,7 @@
       "lifecycle": "protocol_bound",
       "execution_state": "benchmark_authority_required",
       "program_id": "videoagent_memory",
-      "program_digest": "3290f872b44e13a9fed33eb9647b13309d9ae63f6e12a3d31db9d56b8c48994e",
+      "program_digest": "e64096bb6ec9612b7fcb3625cde7e8c923ec262a54b58149007916746d2c0223",
       "benchmark_ids": [
         "egoschema"
       ],
@@ -2442,7 +2442,7 @@
       "lifecycle": "protocol_bound",
       "execution_state": "benchmark_authority_required",
       "program_id": "videoarm_cvpr2026",
-      "program_digest": "fff22652932e88ecda3809c00fa8045269414f409d065275ada914f9be0b0b2e",
+      "program_digest": "075ff3d817c78d87ff74a9f965896cd119592902306fa1e705bb7eac70784438",
       "benchmark_ids": [
         "egoschema"
       ],
@@ -2469,7 +2469,7 @@
       "lifecycle": "protocol_bound",
       "execution_state": "benchmark_authority_required",
       "program_id": "videollamb_memory",
-      "program_digest": "80f2b5ca3c89cd57a916b766f5b9775d1e9e2c769772f12c74dfdbd7a22a3fd4",
+      "program_digest": "7f9db84e48e2d9bcd6eeac910f76c9e472f3c0245aea99232d6fb6da8d5c37a4",
       "benchmark_ids": [
         "egoschema"
       ],
@@ -2494,7 +2494,7 @@
       "lifecycle": "protocol_bound",
       "execution_state": "benchmark_authority_required",
       "program_id": "vilomem_cvpr2026",
-      "program_digest": "b2f93f4aaa88eb273bc39a35188617681ea3d06c78300043a3c62b837189f4db",
+      "program_digest": "6ba4c569460e6c511c9b0281fb5512a5ecb8ea377e1abebb7f4b9566e8aa567d",
       "benchmark_ids": [
         "hallusionbench",
         "mathvision",
@@ -2526,14 +2526,14 @@
       "lifecycle": "protocol_bound",
       "execution_state": "execution_authority_required",
       "program_id": "vima_embodied",
-      "program_digest": "ba0a1e7c09d29e8c46795c35b7d975cc662724766867fe103680f517cb291393",
+      "program_digest": "e7559cd0814e2eea7ae50acddd34b28e12112daeda73fe8023ba9f195f434fc2",
       "benchmark_ids": [
         "vima-bench"
       ],
       "benchmark_authority": {
         "state": "closed",
         "selection_digests": [
-          "a90293ec811827f02d346aa4b864d0dc46cb2cf7cc8644864519e53ad4600c1c"
+          "9ca97c5fa84545b3b3e75d0f9cc7bb312a0c23483974ba02760ff8e39b232ab8"
         ],
         "blockers": []
       },
@@ -2551,14 +2551,14 @@
       "lifecycle": "protocol_bound",
       "execution_state": "execution_authority_required",
       "program_id": "voyager_minecraft",
-      "program_digest": "ccc9eb46c8c12a127ca080e7d0305b18ea4bc94620793aca1971f15df97a229f",
+      "program_digest": "699a863a3509aa47ab85b66ffe49c827b1ca2bffc837383317b36ebac5d59a33",
       "benchmark_ids": [
         "voyager-minecraft"
       ],
       "benchmark_authority": {
         "state": "closed",
         "selection_digests": [
-          "b030849b41612394d474220b2ca9a6a6572ef5997eb66729e59fcac019d6f708"
+          "54d6e905a4a570d6dd24a69b9a9bec09687c32cb6b95f0d7e08069e5efc8b80a"
         ],
         "blockers": []
       },
@@ -2576,7 +2576,7 @@
       "lifecycle": "protocol_bound",
       "execution_state": "benchmark_authority_required",
       "program_id": "watch_learn_cvpr2026",
-      "program_digest": "f82edfa5184a31613143de7b69f86477dd3dc1be376940c506a8e164dc5e5fd6",
+      "program_digest": "ace244e67218bdfead9747f765a031fe80b3e23e1693af29b83fd73e1e10fcd8",
       "benchmark_ids": [
         "osworld"
       ],
@@ -2603,7 +2603,7 @@
       "lifecycle": "protocol_bound",
       "execution_state": "benchmark_authority_required",
       "program_id": "webagent_r1_emnlp2025",
-      "program_digest": "4be7ab399e0ce55f83c30ee2bb6832eff771e54c880efb3632cc617819a0cd96",
+      "program_digest": "a6b839dfcb23c51e79efa57a61c499e0d486af242ce6e7a6f59aa73a0c8f0a10",
       "benchmark_ids": [
         "webarena"
       ],
@@ -2630,7 +2630,7 @@
       "lifecycle": "protocol_bound",
       "execution_state": "benchmark_authority_required",
       "program_id": "webvoyager",
-      "program_digest": "6af022cad8657774f755301888528e141ab92f6a25bdf81401ab890b1aae0ac9",
+      "program_digest": "bf5a071a8be4bd5d7e3a12ab45e1b1898fecc4da4206fbc4c1568a5397a4b7f9",
       "benchmark_ids": [
         "webvoyager"
       ],
@@ -2655,7 +2655,7 @@
       "lifecycle": "protocol_bound",
       "execution_state": "benchmark_authority_required",
       "program_id": "worldmm_memory",
-      "program_digest": "10b3ef727c3218eaa685fdf7edcbe4bca2b3fc064258ab1c73cf8d8792a5e8f5",
+      "program_digest": "0f1f589a6ff84670afa427dbddafe26f39252b7e691398135fabe784257b089d",
       "benchmark_ids": [
         "egolifeqa"
       ],
@@ -2676,5 +2676,5 @@
       "execution_requirements": []
     }
   ],
-  "status_digest": "e83d4312f94fa56c0081275b79118b5351a137c7f65b712085b49d8538589ec8"
+  "status_digest": "ca626ed0c17b7c852094a47ba3036fb4349e4dcfc2e0a00a0fbdfee971e89cfb"
 }

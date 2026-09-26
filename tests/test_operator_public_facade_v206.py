@@ -65,7 +65,7 @@ def test_facade_rejects_application_result_identity_drift():
 
 def test_research_parser_exposes_canonical_research_os_control_surface():
     parser = build_research_parser()
-    commands = tuple(action.value for action in api.ResearchControlAction)
+    commands = tuple(action.value for action in api.research_os.ResearchControlAction)
     assert commands == (
         "run",
         "inspect",
@@ -116,7 +116,7 @@ class _LoadedResearchOS:
     def __init__(self, research_os) -> None:
         self.research_os = research_os
         self.default_execution_id = "project-default"
-        self.revision = api.ResearchGraphRevision(
+        self.revision = api.research_os.ResearchGraphRevision(
             "paper",
             "a" * 64,
             (),
@@ -159,7 +159,7 @@ def test_lifecycle_cli_routes_directly_through_project_research_os(capsys):
     }
     action, target, payload = research_os.calls[0]
     assert action == "run"
-    assert target.node == api.ResearchNodeRef("paper", "source")
+    assert target.node == api.research_os.ResearchNodeRef("paper", "source")
     assert payload["seed"] == 7
     assert loaded.closed is True
 

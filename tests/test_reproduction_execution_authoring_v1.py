@@ -56,7 +56,7 @@ def test_top_level_execution_request_preserves_exact_benchmark_split_selection()
 
     portfolio = build_execution_research((request,))
 
-    assert isinstance(portfolio, api.ResearchPortfolio)
+    assert isinstance(portfolio, api.research_os.ResearchPortfolio)
     assert portfolio.portfolio_id == "repository-reproductions.execution-research"
     assert len(portfolio.programs) == 1
     assert all(
@@ -65,7 +65,7 @@ def test_top_level_execution_request_preserves_exact_benchmark_split_selection()
     )
     assert len({program.program_id for program in portfolio.programs}) == 1
 
-    revision = api.ResearchGraphRevision(
+    revision = api.research_os.ResearchGraphRevision(
         portfolio.portfolio_id,
         portfolio.portfolio_digest,
         (),

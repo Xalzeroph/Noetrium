@@ -1,18 +1,5 @@
 from __future__ import annotations
-
-from noetrium.api import canonical_digest
-from noetrium.api import (
-    ExperimentTrialProtocolIdentity,
-)
-from noetrium.api import (
-    BenchmarkTaskSet,
-    MeasurementDefinition,
-    ReplayLevel,
-    ResearchStudyDefinition,
-    Study,
-    StudyParticipant,
-    TrialBudget,
-)
+from research.reproductions import _support as _rs
 from research.benchmarks.jarvis1_offline import (
     JARVIS1_ALL_SPLIT,
     JARVIS1_OFFLINE_BENCHMARK_ID,
@@ -31,8 +18,8 @@ JARVIS1_PUBLIC_MAX_ENVIRONMENT_STEP = (
 
 
 def jarvis1_tpami2025_public_offline_trial_protocol(
-    benchmark: BenchmarkTaskSet,
-) -> ExperimentTrialProtocolIdentity:
+    benchmark,
+):
     if benchmark.benchmark_id != JARVIS1_OFFLINE_BENCHMARK_ID:
         raise ValueError(
             "JARVIS-1 public protocol requires official offline benchmark"
@@ -40,9 +27,9 @@ def jarvis1_tpami2025_public_offline_trial_protocol(
     selected = benchmark.selected_tasks(JARVIS1_ALL_SPLIT)
     if len(selected) != JARVIS1_TASK_COUNT:
         raise ValueError("JARVIS-1 public protocol requires 185 source rows")
-    return ExperimentTrialProtocolIdentity(
+    return _rs.study_protocol(
         "jarvis1.tpami2025.public-fixed-memory-offline.v1",
-        canonical_digest({
+        _rs.canonical_digest({
             "source_commit": JARVIS1_OFFLINE_COMMIT,
             "tasks_blob_sha": JARVIS1_TASKS_BLOB_SHA,
             "benchmark_cut_digest": benchmark.cut_digest,
@@ -67,16 +54,16 @@ def jarvis1_tpami2025_public_offline_trial_protocol(
     )
 
 
+@_rs.study_factory('benchmark')
 def build_jarvis1_tpami2025_public_offline_study(
-    benchmark: BenchmarkTaskSet,
-) -> ResearchStudyDefinition:
+    benchmark,
+):
     protocol = jarvis1_tpami2025_public_offline_trial_protocol(benchmark)
-    return Study(
-        project_id="jarvis1-tpami-2025-reproduction",
+    return _rs.study_spec(project_id="jarvis1-tpami-2025-reproduction",
         study_id="jarvis1-tpami-2025-public-fixed-memory-offline",
         benchmark=benchmark,
         benchmark_split_id=JARVIS1_ALL_SPLIT,
-        method=StudyParticipant(
+        method=_rs.study_participant(
             role="minecraft_fixed_memory_planner",
             kind="method",
             implementation="jarvis1-public-memory",
@@ -95,7 +82,7 @@ def build_jarvis1_tpami2025_public_offline_study(
         ),
         models={},
         measurements=(
-            MeasurementDefinition.scalar(
+            _rs.scalar_measurement(
                 "fixed_memory_hit",
                 schema_id="noetrium.measurement.ratio.v1",
                 unit="ratio",
@@ -103,7 +90,7 @@ def build_jarvis1_tpami2025_public_offline_study(
                 scale="binary",
                 domain="jarvis1_public_memory",
             ),
-            MeasurementDefinition.scalar(
+            _rs.scalar_measurement(
                 "retrieved_plan_step_count",
                 schema_id="noetrium.measurement.count.v1",
                 unit="plan_step",
@@ -111,7 +98,7 @@ def build_jarvis1_tpami2025_public_offline_study(
                 scale="count",
                 domain="jarvis1_public_memory",
             ),
-            MeasurementDefinition.scalar(
+            _rs.scalar_measurement(
                 "offline_task_success",
                 schema_id="noetrium.measurement.ratio.v1",
                 unit="ratio",
@@ -119,7 +106,7 @@ def build_jarvis1_tpami2025_public_offline_study(
                 scale="binary",
                 domain="jarvis1_offline",
             ),
-            MeasurementDefinition.scalar(
+            _rs.scalar_measurement(
                 "offline_environment_steps",
                 schema_id="noetrium.measurement.count.v1",
                 unit="environment_step",
@@ -131,16 +118,16 @@ def build_jarvis1_tpami2025_public_offline_study(
         trial=protocol,
         repetitions=1,
         seeds=("public-offline-environment-unpinned",),
-        limits=TrialBudget(
+        limits=_rs.trial_budget(
             "jarvis1-tpami2025-public-offline-budget",
             max_steps=12000,
             max_turns=2048,
             max_model_calls=1,
             max_working_seconds=600.0,
         ),
-        replay_level=ReplayLevel.OBSERVATIONAL,
+        replay_level='observational',
         repetition_timeout_seconds=600.0,
-    ).build()
+    )
 
 
 __all__ = [

@@ -1,18 +1,16 @@
 from __future__ import annotations
+from research.reproductions._support import JsonObject, canonical_digest, thaw_json
 
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
 import math
 from typing import Protocol, runtime_checkable
 
-from noetrium.api import TensorContentRef
-from noetrium.api import (
+from noetrium.api.research_authoring import TensorContentRef
+from noetrium.api.research_authoring import (
     ExecutionContext,
-    JsonObject,
-    canonical_digest,
-    thaw_json,
-)
-from noetrium.api import (
+    )
+from noetrium.api.research_authoring import (
     MethodAgentRequest,
     MethodAgentResult,
 )

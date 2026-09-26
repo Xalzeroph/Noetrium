@@ -1,19 +1,5 @@
 from __future__ import annotations
-
-from noetrium.api import canonical_digest
-from noetrium.api import (
-    ExperimentTrialProtocolIdentity,
-)
-from noetrium.api import (
-    BenchmarkTaskSet,
-    MeasurementDefinition,
-    ReplayLevel,
-    ResearchStudyDefinition,
-    Study,
-    StudyModel,
-    StudyParticipant,
-    TrialBudget,
-)
+from research.reproductions import _support as _rs
 from research.benchmarks.voyager_minecraft import (
     VOYAGER_MINECRAFT_BENCHMARK_ID,
     VOYAGER_MINECRAFT_LIFELONG_SPLIT,
@@ -29,17 +15,17 @@ from .skill_memory import VOYAGER_SKILL_MEMORY_PROGRAM
 
 
 def voyager_tmlr2024_trial_protocol(
-    benchmark: BenchmarkTaskSet,
-) -> ExperimentTrialProtocolIdentity:
+    benchmark,
+):
     if benchmark.benchmark_id != VOYAGER_MINECRAFT_BENCHMARK_ID:
         raise ValueError("Voyager protocol requires voyager-minecraft benchmark")
     selected = benchmark.selected_tasks(VOYAGER_MINECRAFT_LIFELONG_SPLIT)
     if len(selected) != VOYAGER_MINECRAFT_TRIAL_COUNT:
         raise ValueError("Voyager protocol requires exactly three paper trials")
     fidelity = VOYAGER_MINECRAFT_FIDELITY
-    return ExperimentTrialProtocolIdentity(
+    return _rs.study_protocol(
         "voyager.tmlr2024.open-world-lifelong.v1",
-        canonical_digest({
+        _rs.canonical_digest({
             "source_commit": VOYAGER_AUDITED_COMMIT,
             "benchmark_cut_digest": benchmark.cut_digest,
             "benchmark_split_id": VOYAGER_MINECRAFT_LIFELONG_SPLIT,
@@ -73,16 +59,16 @@ def voyager_tmlr2024_trial_protocol(
     )
 
 
+@_rs.study_factory('benchmark')
 def build_voyager_tmlr2024_study(
-    benchmark: BenchmarkTaskSet,
-) -> ResearchStudyDefinition:
+    benchmark,
+):
     protocol = voyager_tmlr2024_trial_protocol(benchmark)
-    return Study(
-        project_id="voyager-tmlr-2024-reproduction",
+    return _rs.study_spec(project_id="voyager-tmlr-2024-reproduction",
         study_id="voyager-tmlr-2024-open-world-lifelong",
         benchmark=benchmark,
         benchmark_split_id=VOYAGER_MINECRAFT_LIFELONG_SPLIT,
-        method=StudyParticipant(
+        method=_rs.study_participant(
             role="embodied_lifelong_agent",
             kind="method",
             implementation="voyager",
@@ -103,25 +89,25 @@ def build_voyager_tmlr2024_study(
             ),
         ),
         models={
-            "curriculum": StudyModel(
+            "curriculum": _rs.study_model(
                 "model.voyager.paper-era-gpt4",
                 prompt="voyager.curriculum.prompt",
             ),
-            "action": StudyModel(
+            "action": _rs.study_model(
                 "model.voyager.paper-era-gpt4",
                 prompt="voyager.action.prompt",
             ),
-            "critic": StudyModel(
+            "critic": _rs.study_model(
                 "model.voyager.paper-era-gpt4",
                 prompt="voyager.critic.prompt",
             ),
-            "skill_description": StudyModel(
+            "skill_description": _rs.study_model(
                 "model.voyager.paper-era-gpt35",
                 prompt="voyager.skill-description.prompt",
             ),
         },
         measurements=(
-            MeasurementDefinition.scalar(
+            _rs.scalar_measurement(
                 "unique_item_count",
                 schema_id="noetrium.measurement.count.v1",
                 unit="item_type",
@@ -129,7 +115,7 @@ def build_voyager_tmlr2024_study(
                 scale="count",
                 domain="voyager_open_world",
             ),
-            MeasurementDefinition.scalar(
+            _rs.scalar_measurement(
                 "wooden_tool_unlock_iteration",
                 schema_id="noetrium.measurement.count.v1",
                 unit="prompting_iteration",
@@ -137,7 +123,7 @@ def build_voyager_tmlr2024_study(
                 scale="count",
                 domain="wooden_tool",
             ),
-            MeasurementDefinition.scalar(
+            _rs.scalar_measurement(
                 "stone_tool_unlock_iteration",
                 schema_id="noetrium.measurement.count.v1",
                 unit="prompting_iteration",
@@ -145,7 +131,7 @@ def build_voyager_tmlr2024_study(
                 scale="count",
                 domain="stone_tool",
             ),
-            MeasurementDefinition.scalar(
+            _rs.scalar_measurement(
                 "iron_tool_unlock_iteration",
                 schema_id="noetrium.measurement.count.v1",
                 unit="prompting_iteration",
@@ -153,7 +139,7 @@ def build_voyager_tmlr2024_study(
                 scale="count",
                 domain="iron_tool",
             ),
-            MeasurementDefinition.scalar(
+            _rs.scalar_measurement(
                 "diamond_tool_unlock_iteration",
                 schema_id="noetrium.measurement.count.v1",
                 unit="prompting_iteration",
@@ -161,7 +147,7 @@ def build_voyager_tmlr2024_study(
                 scale="count",
                 domain="diamond_tool",
             ),
-            MeasurementDefinition.scalar(
+            _rs.scalar_measurement(
                 "travel_distance_blocks",
                 schema_id="noetrium.measurement.distance.v1",
                 unit="minecraft_block",
@@ -169,7 +155,7 @@ def build_voyager_tmlr2024_study(
                 scale="continuous",
                 domain="voyager_open_world",
             ),
-            MeasurementDefinition.scalar(
+            _rs.scalar_measurement(
                 "learned_skill_count",
                 schema_id="noetrium.measurement.count.v1",
                 unit="skill",
@@ -181,16 +167,16 @@ def build_voyager_tmlr2024_study(
         trial=protocol,
         repetitions=1,
         seeds=("paper-world-seeds-unpublished",),
-        limits=TrialBudget(
+        limits=_rs.trial_budget(
             "voyager-tmlr2024-open-world-budget",
             max_steps=8192,
             max_turns=VOYAGER_MINECRAFT_MAX_PROMPTING_ITERATIONS,
             max_model_calls=4096,
             max_working_seconds=86400.0,
         ),
-        replay_level=ReplayLevel.OBSERVATIONAL,
+        replay_level='observational',
         repetition_timeout_seconds=86400.0,
-    ).build()
+    )
 
 
 __all__ = [

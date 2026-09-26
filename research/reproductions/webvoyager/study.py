@@ -1,19 +1,5 @@
 from __future__ import annotations
-
-from noetrium.api import canonical_digest
-from noetrium.api import (
-    ExperimentTrialProtocolIdentity,
-)
-from noetrium.api import (
-    BenchmarkTaskSet,
-    MeasurementDefinition,
-    ReplayLevel,
-    ResearchStudyDefinition,
-    Study,
-    StudyModel,
-    StudyParticipant,
-    TrialBudget,
-)
+from research.reproductions import _support as _rs
 from research.benchmarks.webvoyager import (
     WEBVOYAGER_BENCHMARK_ID,
     WEBVOYAGER_OFFICIAL_SPLIT,
@@ -24,9 +10,9 @@ from .fidelity import WEBVOYAGER_FIDELITY
 from .program import WEBVOYAGER_METHOD_PROGRAM
 
 
-WEBVOYAGER_ACL2024_TRIAL_PROTOCOL = ExperimentTrialProtocolIdentity(
+WEBVOYAGER_ACL2024_TRIAL_PROTOCOL = _rs.study_protocol(
     "webvoyager.acl2024.official-643.v1",
-    canonical_digest({
+    _rs.canonical_digest({
         "program_digest": WEBVOYAGER_METHOD_PROGRAM.program_digest,
         "source_commit": WEBVOYAGER_FIDELITY.audited_commit,
         "task_count": WEBVOYAGER_OFFICIAL_TASK_COUNT,
@@ -40,20 +26,20 @@ WEBVOYAGER_ACL2024_TRIAL_PROTOCOL = ExperimentTrialProtocolIdentity(
 )
 
 
+@_rs.study_factory('benchmark')
 def build_webvoyager_official_study(
-    benchmark: BenchmarkTaskSet,
-) -> ResearchStudyDefinition:
+    benchmark,
+):
     if benchmark.benchmark_id != WEBVOYAGER_BENCHMARK_ID:
         raise ValueError("WebVoyager study requires official WebVoyager cut")
     selected = benchmark.selected_tasks(WEBVOYAGER_OFFICIAL_SPLIT)
     if len(selected) != WEBVOYAGER_OFFICIAL_TASK_COUNT:
         raise ValueError("WebVoyager official study requires exactly 643 tasks")
-    return Study(
-        project_id="webvoyager-acl2024-reproduction",
+    return _rs.study_spec(project_id="webvoyager-acl2024-reproduction",
         study_id="webvoyager-official-643",
         benchmark=benchmark,
         benchmark_split_id=WEBVOYAGER_OFFICIAL_SPLIT,
-        method=StudyParticipant(
+        method=_rs.study_participant(
             role="agent",
             kind="multimodal_web_agent",
             implementation="webvoyager-paper-era",
@@ -65,13 +51,13 @@ def build_webvoyager_official_study(
             ),
         ),
         models={
-            "policy": StudyModel(
+            "policy": _rs.study_model(
                 "model.webvoyager.policy",
                 prompt="webvoyager.acl2024.prompt",
             ),
         },
         measurements=(
-            MeasurementDefinition.scalar(
+            _rs.scalar_measurement(
                 "task_success",
                 schema_id="noetrium.measurement.binary-scalar.v1",
                 unit="ratio",
@@ -79,7 +65,7 @@ def build_webvoyager_official_study(
                 scale="binary",
                 domain="webvoyager",
             ),
-            MeasurementDefinition.scalar(
+            _rs.scalar_measurement(
                 "step_count",
                 schema_id="noetrium.measurement.count.v1",
                 unit="step",
@@ -87,7 +73,7 @@ def build_webvoyager_official_study(
                 scale="count",
                 domain="webvoyager",
             ),
-            MeasurementDefinition.scalar(
+            _rs.scalar_measurement(
                 "model_call_count",
                 schema_id="noetrium.measurement.count.v1",
                 unit="model_call",
@@ -99,15 +85,15 @@ def build_webvoyager_official_study(
         trial=WEBVOYAGER_ACL2024_TRIAL_PROTOCOL,
         repetitions=1,
         seeds=(str(WEBVOYAGER_FIDELITY.model_seed),),
-        limits=TrialBudget(
+        limits=_rs.trial_budget(
             "webvoyager-acl2024-15-step",
             max_steps=WEBVOYAGER_FIDELITY.max_iterations,
             max_turns=WEBVOYAGER_FIDELITY.max_iterations,
             max_model_calls=WEBVOYAGER_FIDELITY.max_iterations,
             max_working_seconds=3600.0,
         ),
-        replay_level=ReplayLevel.OBSERVATIONAL,
-    ).build()
+        replay_level='observational',
+    )
 
 
 __all__ = [

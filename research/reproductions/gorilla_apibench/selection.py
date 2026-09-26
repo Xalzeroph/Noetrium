@@ -5,12 +5,12 @@ from enum import StrEnum
 
 from noetrium import api
 
-CapabilityPort = api.CapabilityPort
-CapabilitySelectionReference = api.CapabilitySelectionReference
-CapabilitySelectionView = api.CapabilitySelectionView
-canonical_digest = api.canonical_digest
-materialize_capability_selection_view = api.materialize_capability_selection_view
-require_sha256 = api.require_sha256
+CapabilityPort = api.research_authoring.CapabilityPort
+CapabilitySelectionReference = api.research_authoring.CapabilitySelectionReference
+CapabilitySelectionView = api.research_authoring.CapabilitySelectionView
+canonical_digest = api.research_authoring.canonical_digest
+materialize_capability_selection_view = api.research_authoring.materialize_capability_selection_view
+require_sha256 = api.research_authoring.require_sha256
 
 
 class GorillaRetrieverMode(StrEnum):

@@ -1,28 +1,14 @@
 from __future__ import annotations
-
-from noetrium.api import canonical_digest
-from noetrium.api import (
-    ExperimentTrialProtocolIdentity,
-)
-from noetrium.api import (
-    BenchmarkTaskSet,
-    MeasurementDefinition,
-    ReplayLevel,
-    ResearchStudyDefinition,
-    Study,
-    StudyModel,
-    StudyParticipant,
-    TrialBudget,
-)
+from research.reproductions import _support as _rs
 from research.benchmarks.swe_bench import SWEBENCH_BENCHMARK_ID
 
 from .fidelity import AGENTLESS_FIDELITY
 from .program import AGENTLESS_METHOD_PROGRAM
 
 
-AGENTLESS_SWEBENCH_LITE_TRIAL_PROTOCOL = ExperimentTrialProtocolIdentity(
+AGENTLESS_SWEBENCH_LITE_TRIAL_PROTOCOL = _rs.study_protocol(
     "agentless.fse2025.swe-bench-lite.v1",
-    canonical_digest({
+    _rs.canonical_digest({
         "program_digest": AGENTLESS_METHOD_PROGRAM.program_digest,
         "source_commit": AGENTLESS_FIDELITY.audited_commit,
         "release": AGENTLESS_FIDELITY.release,
@@ -35,22 +21,22 @@ AGENTLESS_SWEBENCH_LITE_TRIAL_PROTOCOL = ExperimentTrialProtocolIdentity(
 )
 
 
+@_rs.study_factory('benchmark')
 def build_agentless_swebench_lite_study(
-    benchmark: BenchmarkTaskSet,
+    benchmark,
     *,
     split_id: str,
-) -> ResearchStudyDefinition:
+):
     if benchmark.benchmark_id != SWEBENCH_BENCHMARK_ID:
         raise ValueError("Agentless study requires SWE-bench")
     selected = benchmark.selected_tasks(split_id)
     if not selected:
         raise ValueError("Agentless study requires a non-empty SWE-bench split")
-    return Study(
-        project_id="agentless-fse2025-reproduction",
+    return _rs.study_spec(project_id="agentless-fse2025-reproduction",
         study_id=f"agentless-swe-bench-lite-{split_id}",
         benchmark=benchmark,
         benchmark_split_id=split_id,
-        method=StudyParticipant(
+        method=_rs.study_participant(
             role="workflow",
             kind="software_repair_method",
             implementation="agentless-v1.5.0",
@@ -63,33 +49,33 @@ def build_agentless_swebench_lite_study(
             ),
         ),
         models={
-            "file_localizer": StudyModel(
+            "file_localizer": _rs.study_model(
                 "model.agentless.file-localizer",
                 prompt="agentless.localization.files",
             ),
-            "symbol_localizer": StudyModel(
+            "symbol_localizer": _rs.study_model(
                 "model.agentless.symbol-localizer",
                 prompt="agentless.localization.symbols",
             ),
-            "edit_localizer": StudyModel(
+            "edit_localizer": _rs.study_model(
                 "model.agentless.edit-localizer",
                 prompt="agentless.localization.edits",
             ),
-            "repair": StudyModel(
+            "repair": _rs.study_model(
                 "model.agentless.repair",
                 prompt="agentless.repair",
             ),
-            "validation": StudyModel(
+            "validation": _rs.study_model(
                 "model.agentless.validation",
                 prompt="agentless.validation",
             ),
-            "rerank": StudyModel(
+            "rerank": _rs.study_model(
                 "model.agentless.rerank",
                 prompt="agentless.rerank",
             ),
         },
         measurements=(
-            MeasurementDefinition.scalar(
+            _rs.scalar_measurement(
                 "task_resolved",
                 schema_id="noetrium.measurement.binary-scalar.v1",
                 unit="ratio",
@@ -97,7 +83,7 @@ def build_agentless_swebench_lite_study(
                 scale="binary",
                 domain="swe-bench",
             ),
-            MeasurementDefinition.scalar(
+            _rs.scalar_measurement(
                 "model_call_count",
                 schema_id="noetrium.measurement.count.v1",
                 unit="model_call",
@@ -105,7 +91,7 @@ def build_agentless_swebench_lite_study(
                 scale="count",
                 domain="agentless",
             ),
-            MeasurementDefinition.scalar(
+            _rs.scalar_measurement(
                 "validation_count",
                 schema_id="noetrium.measurement.count.v1",
                 unit="validation_batch",
@@ -117,14 +103,14 @@ def build_agentless_swebench_lite_study(
         trial=AGENTLESS_SWEBENCH_LITE_TRIAL_PROTOCOL,
         repetitions=1,
         seeds=("0",),
-        limits=TrialBudget(
+        limits=_rs.trial_budget(
             "agentless-fse2025",
             max_steps=32,
             max_model_calls=16,
             max_working_seconds=3600.0,
         ),
-        replay_level=ReplayLevel.OBSERVATIONAL,
-    ).build()
+        replay_level='observational',
+    )
 
 
 __all__ = [

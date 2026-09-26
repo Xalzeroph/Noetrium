@@ -2,13 +2,13 @@ from __future__ import annotations
 
 from noetrium import api
 
-ActionKind = api.ActionKind
-ActionSpec = api.ActionSpec
-EmbodiedActionCommand = api.EmbodiedActionCommand
-EmbodimentKind = api.EmbodimentKind
-EmbodimentSpec = api.EmbodimentSpec
-SensorModality = api.SensorModality
-SensorSpec = api.SensorSpec
+ActionKind = api.research_authoring.ActionKind
+ActionSpec = api.research_authoring.ActionSpec
+EmbodiedActionCommand = api.research_authoring.EmbodiedActionCommand
+EmbodimentKind = api.research_authoring.EmbodimentKind
+EmbodimentSpec = api.research_authoring.EmbodimentSpec
+SensorModality = api.research_authoring.SensorModality
+SensorSpec = api.research_authoring.SensorSpec
 
 from collections.abc import Sequence
 import json

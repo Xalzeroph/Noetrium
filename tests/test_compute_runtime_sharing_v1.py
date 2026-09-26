@@ -1,8 +1,10 @@
 from __future__ import annotations
 
+import pytest
+
 from noetrium_platform.foundation.scope.api import ScopeIdentity, ScopeKind
 from noetrium_platform.infrastructure.resources.compute.api import (
-    ComputeGPU, ComputeHost, ComputeRequirement, GpuDeviceStatus,
+    ComputeBindingProof, ComputeGPU, ComputeHost, ComputeRequirement, GpuDeviceStatus,
     GpuProcessStatus, GpuRuntimeSnapshot, GpuSharingMode,
 )
 from noetrium_platform.infrastructure.resources.compute.runtime import ComputeScheduler
@@ -141,6 +143,62 @@ def test_shared_noetrium_allocations_pack_same_gpu_by_unbound_vram_reservation()
     else:
         raise AssertionError(
             "third shared allocation reused VRAM already reserved by unbound launches"
+        )
+
+
+def test_bound_shared_gpu_keeps_logical_vram_reservation_until_release(tmp_path) -> None:
+    # Simulate telemetry lag: after binding, nvidia-smi still reports the same
+    # pre-bind free VRAM. Logical capacity commitments must remain authoritative.
+    observer = _Observer(_single_gpu_snapshot(free_gib=70))
+    clock = ManualLeaseClock(
+        elapsed_seconds=1.0,
+        wall_epoch_seconds=100.0,
+    )
+    database = tmp_path / "bound-shared-gpu.sqlite"
+    requirement = ComputeRequirement(
+        cpu_cores=2,
+        memory_bytes=4 * 1024**3,
+        gpu_count=1,
+        required_gpu_free_memory_bytes=48 * 1024**3,
+        gpu_sharing_mode=GpuSharingMode.PREFER_IDLE_ALLOW_SHARED,
+    )
+    scheduler = ComputeScheduler(
+        database,
+        _single_gpu_inventory(),
+        clock=clock,
+        gpu_runtime_observer=observer,
+    )
+    first = scheduler.allocate(
+        "bound-a",
+        _scope(),
+        requirement,
+        ttl_seconds=60,
+    )
+    bound = scheduler.confirm_bound(
+        ComputeBindingProof(
+            allocation_id=first.allocation_id,
+            host_id=first.host_id,
+            gpu_ids=first.gpu_ids,
+            lease_fencing_token=first.lease_fencing_token,
+            binder_identity_digest="a" * 64,
+            observed_at_epoch_s=101.0,
+            evidence_ref="gpu-binding:bound-a",
+        )
+    )
+    assert bound.is_bound
+
+    rebuilt = ComputeScheduler(
+        database,
+        _single_gpu_inventory(),
+        clock=clock,
+        gpu_runtime_observer=observer,
+    )
+    with pytest.raises(RuntimeError, match="no compute host"):
+        rebuilt.allocate(
+            "bound-b",
+            _scope(),
+            requirement,
+            ttl_seconds=60,
         )
 
 

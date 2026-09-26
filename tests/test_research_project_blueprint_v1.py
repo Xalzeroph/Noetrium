@@ -12,31 +12,31 @@ from noetrium_platform.composition.operator.project.research_project_codegen imp
 
 
 def _blueprint() -> api.ResearchProjectBlueprint:
-    a = api.ResearchProgramBuilder("paper-a")
+    a = api.research_os.ResearchProgramBuilder("paper-a")
     a.definition(
         "method",
-        kind=api.ResearchDefinitionKind.METHOD,
+        kind=api.research_os.ResearchDefinitionKind.METHOD,
     )
     a.node(
         "source",
-        kind=api.ResearchNodeKind.METHOD,
+        kind=api.research_os.ResearchNodeKind.METHOD,
         definitions=("method",),
-        outputs=(api.ResearchOutputSpec("data", api.ResearchValueKind.DATA),),
+        outputs=(api.research_os.ResearchOutputSpec("data", api.research_os.ResearchValueKind.DATA),),
     )
 
-    b = api.ResearchProgramBuilder("paper-b")
+    b = api.research_os.ResearchProgramBuilder("paper-b")
     b.definition(
         "metric",
-        kind=api.ResearchDefinitionKind.METRIC,
+        kind=api.research_os.ResearchDefinitionKind.METRIC,
     )
     b.node(
         "evaluate",
-        kind=api.ResearchNodeKind.EVALUATION,
+        kind=api.research_os.ResearchNodeKind.EVALUATION,
         definitions=("metric",),
-        outputs=(api.ResearchOutputSpec("score", api.ResearchValueKind.METRIC),),
+        outputs=(api.research_os.ResearchOutputSpec("score", api.research_os.ResearchValueKind.METRIC),),
     )
 
-    portfolio = api.ResearchPortfolioBuilder("suite")
+    portfolio = api.research_os.ResearchPortfolioBuilder("suite")
     portfolio.program(a.freeze())
     portfolio.program(b.freeze())
     portfolio.depends(
@@ -45,10 +45,10 @@ def _blueprint() -> api.ResearchProjectBlueprint:
         upstream_program_id="paper-a",
         upstream_node_id="source",
         bindings=(
-            api.ResearchInputBinding(
+            api.research_os.ResearchInputBinding(
                 "source",
                 "data",
-                api.ResearchValueKind.DATA,
+                api.research_os.ResearchValueKind.DATA,
             ),
         ),
     )
@@ -76,11 +76,11 @@ def test_blueprint_round_trip_is_canonical_and_preserves_cross_program_graph() -
         "paper-a",
         "paper-b",
     )
-    assert decoded.portfolio.dependencies[0].upstream == api.ResearchNodeRef(
+    assert decoded.portfolio.dependencies[0].upstream == api.research_os.ResearchNodeRef(
         "paper-a",
         "source",
     )
-    assert decoded.portfolio.dependencies[0].downstream == api.ResearchNodeRef(
+    assert decoded.portfolio.dependencies[0].downstream == api.research_os.ResearchNodeRef(
         "paper-b",
         "evaluate",
     )
@@ -109,35 +109,35 @@ def _bound_method(payload=None):
 
 
 def test_blueprint_rejects_bound_implementation_truth() -> None:
-    builder = api.ResearchProgramBuilder("paper")
+    builder = api.research_os.ResearchProgramBuilder("paper")
     builder.method("method", implementation=_bound_method)
     builder.node(
         "run",
-        kind=api.ResearchNodeKind.METHOD,
+        kind=api.research_os.ResearchNodeKind.METHOD,
         definitions=("method",),
     )
 
     with pytest.raises(ValueError, match="implementation-free"):
         api.ResearchProjectBlueprint(
-            api.ResearchPortfolio("suite", (builder.freeze(),)),
+            api.research_os.ResearchPortfolio("suite", (builder.freeze(),)),
             (),
         )
 
 
 def test_blueprint_rejects_unknown_fill_slot() -> None:
-    builder = api.ResearchProgramBuilder("paper")
+    builder = api.research_os.ResearchProgramBuilder("paper")
     builder.definition(
         "method",
-        kind=api.ResearchDefinitionKind.METHOD,
+        kind=api.research_os.ResearchDefinitionKind.METHOD,
     )
     builder.node(
         "run",
-        kind=api.ResearchNodeKind.METHOD,
+        kind=api.research_os.ResearchNodeKind.METHOD,
         definitions=("method",),
     )
 
     with pytest.raises(ValueError, match="unknown definitions"):
         api.ResearchProjectBlueprint(
-            api.ResearchPortfolio("suite", (builder.freeze(),)),
+            api.research_os.ResearchPortfolio("suite", (builder.freeze(),)),
             (api.ResearchDefinitionRef("paper", "missing"),),
         )

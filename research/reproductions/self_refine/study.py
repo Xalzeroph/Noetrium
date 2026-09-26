@@ -1,19 +1,5 @@
 from __future__ import annotations
-
-from noetrium.api import canonical_digest
-from noetrium.api import (
-    ExperimentTrialProtocolIdentity,
-)
-from noetrium.api import (
-    BenchmarkTaskSet,
-    MeasurementDefinition,
-    ReplayLevel,
-    ResearchStudyDefinition,
-    Study,
-    StudyModel,
-    StudyParticipant,
-    TrialBudget,
-)
+from research.reproductions import _support as _rs
 from research.benchmarks.commongen import COMMONGEN_BENCHMARK_ID
 
 from .fidelity import SELF_REFINE_FIDELITY
@@ -21,18 +7,18 @@ from .program import SELF_REFINE_COMMONGEN_METHOD_PROGRAM
 
 
 def self_refine_commongen_trial_protocol(
-    benchmark: BenchmarkTaskSet,
+    benchmark,
     *,
     split_id: str,
-) -> ExperimentTrialProtocolIdentity:
+):
     if benchmark.benchmark_id != COMMONGEN_BENCHMARK_ID:
         raise ValueError("Self-Refine CommonGen study requires CommonGen benchmark")
     selected = benchmark.selected_tasks(split_id)
     if not selected:
         raise ValueError("Self-Refine CommonGen study requires a non-empty split")
-    return ExperimentTrialProtocolIdentity(
+    return _rs.study_protocol(
         "self-refine.commongen.paper-era.v1",
-        canonical_digest(
+        _rs.canonical_digest(
             {
                 "program_digest": SELF_REFINE_COMMONGEN_METHOD_PROGRAM.program_digest,
                 "benchmark_cut_digest": benchmark.cut_digest,
@@ -54,17 +40,18 @@ def self_refine_commongen_trial_protocol(
     )
 
 
+@_rs.study_factory('benchmark')
 def build_self_refine_commongen_study(
-    benchmark: BenchmarkTaskSet,
+    benchmark,
     *,
     split_id: str,
-) -> ResearchStudyDefinition:
+):
     protocol = self_refine_commongen_trial_protocol(
         benchmark,
         split_id=split_id,
     )
     measurements = (
-        MeasurementDefinition.scalar(
+        _rs.scalar_measurement(
             "direct_concept_success",
             schema_id="noetrium.measurement.binary-scalar.v1",
             unit="ratio",
@@ -72,7 +59,7 @@ def build_self_refine_commongen_study(
             scale="binary",
             domain="commongen",
         ),
-        MeasurementDefinition.scalar(
+        _rs.scalar_measurement(
             "direct_commonsense_success",
             schema_id="noetrium.measurement.binary-scalar.v1",
             unit="ratio",
@@ -80,7 +67,7 @@ def build_self_refine_commongen_study(
             scale="binary",
             domain="commongen",
         ),
-        MeasurementDefinition.scalar(
+        _rs.scalar_measurement(
             "direct_success",
             schema_id="noetrium.measurement.binary-scalar.v1",
             unit="ratio",
@@ -88,7 +75,7 @@ def build_self_refine_commongen_study(
             scale="binary",
             domain="commongen",
         ),
-        MeasurementDefinition.scalar(
+        _rs.scalar_measurement(
             "iter_concept_success",
             schema_id="noetrium.measurement.binary-scalar.v1",
             unit="ratio",
@@ -96,7 +83,7 @@ def build_self_refine_commongen_study(
             scale="binary",
             domain="commongen",
         ),
-        MeasurementDefinition.scalar(
+        _rs.scalar_measurement(
             "iter_commonsense_success",
             schema_id="noetrium.measurement.binary-scalar.v1",
             unit="ratio",
@@ -104,7 +91,7 @@ def build_self_refine_commongen_study(
             scale="binary",
             domain="commongen",
         ),
-        MeasurementDefinition.scalar(
+        _rs.scalar_measurement(
             "iter_success",
             schema_id="noetrium.measurement.binary-scalar.v1",
             unit="ratio",
@@ -112,7 +99,7 @@ def build_self_refine_commongen_study(
             scale="binary",
             domain="commongen",
         ),
-        MeasurementDefinition.scalar(
+        _rs.scalar_measurement(
             "attempt_count",
             schema_id="noetrium.measurement.count.v1",
             unit="attempt",
@@ -121,12 +108,11 @@ def build_self_refine_commongen_study(
             domain="self_refine",
         ),
     )
-    return Study(
-        project_id="self-refine-neurips-2023-reproduction",
+    return _rs.study_spec(project_id="self-refine-neurips-2023-reproduction",
         study_id=f"self-refine-commongen-{split_id}",
         benchmark=benchmark,
         benchmark_split_id=split_id,
-        method=StudyParticipant(
+        method=_rs.study_participant(
             role="self_refine",
             kind="agent_method",
             implementation="self-refine",
@@ -140,7 +126,7 @@ def build_self_refine_commongen_study(
         models={
             # One role and one binding intentionally serve init, feedback and
             # iterate, preserving the paper's same-model reuse constraint.
-            "self-refine.model": StudyModel(
+            "self-refine.model": _rs.study_model(
                 "model.self-refine.shared",
                 prompt="self-refine.commongen.paper-era-prompts",
             ),
@@ -149,15 +135,15 @@ def build_self_refine_commongen_study(
         trial=protocol,
         repetitions=1,
         seeds=("0",),
-        limits=TrialBudget(
+        limits=_rs.trial_budget(
             "self-refine-commongen-4-attempts",
             max_steps=64,
             max_turns=SELF_REFINE_FIDELITY.commongen_max_attempts * 2,
             max_model_calls=SELF_REFINE_FIDELITY.commongen_max_attempts * 2,
             max_working_seconds=1800.0,
         ),
-        replay_level=ReplayLevel.OBSERVATIONAL,
-    ).build()
+        replay_level='observational',
+    )
 
 
 __all__ = [

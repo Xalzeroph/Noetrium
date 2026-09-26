@@ -309,11 +309,11 @@ def _lane(definition, benchmark_authority: RepositoryBenchmarkAuthority) -> Lane
             row.program_digest for row in machines
         )
 
-        portfolio = api.ResearchPortfolio(
+        portfolio = api.research_os.ResearchPortfolio(
             definition.package + ".current-research-os",
             (program,),
         )
-        revision = api.ResearchGraphRevision(
+        revision = api.research_os.ResearchGraphRevision(
             portfolio.portfolio_id,
             portfolio.portfolio_digest,
             (),
@@ -412,7 +412,7 @@ def build_plan() -> dict:
                 "top-level reproduction ResearchPortfolio drifted from executable "
                 "reproduction authority"
             )
-        revision = api.ResearchGraphRevision(
+        revision = api.research_os.ResearchGraphRevision(
             portfolio.portfolio_id,
             portfolio.portfolio_digest,
             (),

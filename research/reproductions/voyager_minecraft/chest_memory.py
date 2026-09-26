@@ -1,24 +1,19 @@
 from __future__ import annotations
+from research.reproductions._support import JsonObject, JsonValue, canonical_digest, freeze_json, thaw_json
 
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass, field
 
-from noetrium.api import (
-    JsonObject,
-    JsonValue,
+from noetrium.api.research_authoring import (
     MachineJournalPort,
     MachineSnapshotStorePort,
-    canonical_digest,
-    freeze_json,
-    thaw_json,
-)
-from noetrium.api import (
+    )
+from noetrium.api.research_authoring import (
     MemoryConcern,
     MemoryProgramBuilder,
     ProgramNodeRequest,
     ProgramNodeResult,
     ResearchHostOperation,
-    ResearchProgram,
     ResearchProgramHost,
 )
 
@@ -222,7 +217,7 @@ def _dispatch(
     raise ValueError(f"unsupported Voyager chest-memory event: {kind}")
 
 
-def build_voyager_chest_memory_program() -> ResearchProgram:
+def build_voyager_chest_memory_program():
     return (
         MemoryProgramBuilder.create(
             program_id="voyager.chest-memory",
@@ -268,7 +263,7 @@ def voyager_chest_memory_host(
     *,
     journal: MachineJournalPort,
     snapshot_store: MachineSnapshotStorePort | None = None,
-) -> ResearchProgramHost:
+):
     return ResearchProgramHost(
         host_id="voyager.chest-memory",
         program=VOYAGER_CHEST_MEMORY_PROGRAM,

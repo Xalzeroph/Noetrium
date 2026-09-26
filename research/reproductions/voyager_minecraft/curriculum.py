@@ -1,9 +1,8 @@
 from __future__ import annotations
+from research.reproductions._support import JsonObject, JsonValue, canonical_digest, freeze_json
 
 from collections.abc import Mapping, Sequence
 import re
-
-from noetrium.api import JsonObject, JsonValue, canonical_digest, freeze_json
 
 
 VOYAGER_CURRICULUM_OBSERVATION_ORDER = (

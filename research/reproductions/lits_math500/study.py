@@ -1,17 +1,5 @@
 from __future__ import annotations
-
-from noetrium.api import canonical_digest
-from noetrium.api import ExperimentTrialProtocolIdentity
-from noetrium.api import (
-    BenchmarkTaskSet,
-    MeasurementDefinition,
-    ReplayLevel,
-    ResearchStudyDefinition,
-    Study,
-    StudyModel,
-    StudyParticipant,
-    TrialBudget,
-)
+from research.reproductions import _support as _rs
 from research.benchmarks.math500 import (
     MATH500_BENCHMARK_ID,
     MATH500_EXPECTED_TASK_COUNT,
@@ -21,9 +9,9 @@ from research.benchmarks.math500 import (
 
 from .fidelity import LITS_MATH500_RELEASE_FIDELITY
 
-LITS_MATH500_RELEASE_TRIAL_PROTOCOL = ExperimentTrialProtocolIdentity(
+LITS_MATH500_RELEASE_TRIAL_PROTOCOL = _rs.study_protocol(
     "lits.math500.paper-era-release.v2",
-    canonical_digest(
+    _rs.canonical_digest(
         {
             "benchmark_revision": MATH500_LITS_REVISION,
             "search_algorithm": LITS_MATH500_RELEASE_FIDELITY.search_algorithm,
@@ -41,7 +29,8 @@ LITS_MATH500_RELEASE_TRIAL_PROTOCOL = ExperimentTrialProtocolIdentity(
 )
 
 
-def build_lits_math500_release_study(benchmark: BenchmarkTaskSet) -> ResearchStudyDefinition:
+@_rs.study_factory('benchmark')
+def build_lits_math500_release_study(benchmark):
     """Compile the source-bound LiTS MATH500 released-code lane.
 
     This is not labelled a matched paper experiment because the release example
@@ -53,12 +42,11 @@ def build_lits_math500_release_study(benchmark: BenchmarkTaskSet) -> ResearchStu
     if len(benchmark.selected_tasks(MATH500_TEST_SPLIT)) != MATH500_EXPECTED_TASK_COUNT:
         raise ValueError("LiTS MATH500 lane requires all 500 test tasks")
 
-    return Study(
-        project_id="lits-reproduction",
+    return _rs.study_spec(project_id="lits-reproduction",
         study_id="lits-math500-paper-era-release",
         benchmark=benchmark,
         benchmark_split_id=MATH500_TEST_SPLIT,
-        method=StudyParticipant(
+        method=_rs.study_participant(
             role="reasoner",
             kind="agent",
             implementation="lits",
@@ -75,7 +63,7 @@ def build_lits_math500_release_study(benchmark: BenchmarkTaskSet) -> ResearchStu
             "reward": "model.lits.reward",
         },
         measurements=(
-            MeasurementDefinition.scalar(
+            _rs.scalar_measurement(
                 "task_accuracy",
                 schema_id="noetrium.measurement.binary-scalar.v1",
                 unit="ratio",
@@ -83,7 +71,7 @@ def build_lits_math500_release_study(benchmark: BenchmarkTaskSet) -> ResearchStu
                 scale="binary",
                 domain="math500",
             ),
-            MeasurementDefinition.scalar(
+            _rs.scalar_measurement(
                 "search_iterations",
                 schema_id="noetrium.measurement.count.v1",
                 unit="iteration",
@@ -91,7 +79,7 @@ def build_lits_math500_release_study(benchmark: BenchmarkTaskSet) -> ResearchStu
                 scale="count",
                 domain="math500",
             ),
-            MeasurementDefinition.scalar(
+            _rs.scalar_measurement(
                 "model_call_count",
                 schema_id="noetrium.measurement.count.v1",
                 unit="call",
@@ -103,11 +91,11 @@ def build_lits_math500_release_study(benchmark: BenchmarkTaskSet) -> ResearchStu
         trial=LITS_MATH500_RELEASE_TRIAL_PROTOCOL,
         repetitions=1,
         seeds=("paper-era-release-default",),
-        limits=TrialBudget(
+        limits=_rs.trial_budget(
             "lits-math500-max-depth-10",
             max_steps=LITS_MATH500_RELEASE_FIDELITY.max_steps,
         ),
-        replay_level=ReplayLevel.OBSERVATIONAL,
-    ).build()
+        replay_level='observational',
+    )
 
 __all__ = ["LITS_MATH500_RELEASE_TRIAL_PROTOCOL", "build_lits_math500_release_study"]

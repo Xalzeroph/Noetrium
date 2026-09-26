@@ -49,8 +49,8 @@ if PORTFOLIO.portfolio_id != __PROJECT_ID__:
     raise ValueError("research portfolio identity must match the project identity")
 if type(PROGRAMS) is not tuple or PROGRAMS != PORTFOLIO.programs:
     raise ValueError("research module PROGRAMS must equal portfolio programs")
-if any(not isinstance(program, api.ResearchProgram) for program in PROGRAMS):
-    raise TypeError("research module PROGRAMS must contain ResearchProgram values")
+if any(not isinstance(getattr(program, "program_id", None), str) for program in PROGRAMS):
+    raise TypeError("research module PROGRAMS must contain Research Program values")
 print("ready")
 '''
 

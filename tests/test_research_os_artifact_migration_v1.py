@@ -51,35 +51,35 @@ def _stable_artifact():
     return {"artifact": "stable-paper", "revision": 1}
 
 
-def _portfolio(changed_impl) -> api.ResearchPortfolio:
-    changed = api.ResearchProgramBuilder("paper-a")
+def _portfolio(changed_impl) -> api.research_os.ResearchPortfolio:
+    changed = api.research_os.ResearchProgramBuilder("paper-a")
     changed.method("artifact-method", implementation=changed_impl)
     changed.node(
         "source",
-        kind=api.ResearchNodeKind.METHOD,
+        kind=api.research_os.ResearchNodeKind.METHOD,
         definitions=("artifact-method",),
         outputs=(
-            api.ResearchOutputSpec(
+            api.research_os.ResearchOutputSpec(
                 "artifact",
-                api.ResearchValueKind.ARTIFACT,
+                api.research_os.ResearchValueKind.ARTIFACT,
             ),
         ),
     )
 
-    stable = api.ResearchProgramBuilder("paper-b")
+    stable = api.research_os.ResearchProgramBuilder("paper-b")
     stable.method("stable-method", implementation=_stable_artifact)
     stable.node(
         "stable",
-        kind=api.ResearchNodeKind.METHOD,
+        kind=api.research_os.ResearchNodeKind.METHOD,
         definitions=("stable-method",),
         outputs=(
-            api.ResearchOutputSpec(
+            api.research_os.ResearchOutputSpec(
                 "artifact",
-                api.ResearchValueKind.ARTIFACT,
+                api.research_os.ResearchValueKind.ARTIFACT,
             ),
         ),
     )
-    return api.ResearchPortfolio(
+    return api.research_os.ResearchPortfolio(
         "artifact-migration-suite",
         (changed.freeze(), stable.freeze()),
     )
@@ -123,7 +123,7 @@ def test_live_revision_migration_rebinds_artifact_and_records_reuse_lineage(
     try:
         first_portfolio = _portfolio(_artifact_v1)
         first_revision = research_os.commit(first_portfolio, message="r1")
-        first_target = api.ResearchExecutionTarget(
+        first_target = api.research_os.ResearchExecutionTarget(
             "artifact-live-migration",
             first_revision,
         )
@@ -142,7 +142,7 @@ def test_live_revision_migration_rebinds_artifact_and_records_reuse_lineage(
                 source_cut.cut_id,
                 first_stable.graph_node_id,
                 "artifact",
-                api.ResearchValueKind.ARTIFACT,
+                api.research_os.ResearchValueKind.ARTIFACT,
                 first_stable.semantic_digest,
             )
         )
@@ -154,7 +154,7 @@ def test_live_revision_migration_rebinds_artifact_and_records_reuse_lineage(
             parents=(first_revision,),
             message="r2",
         )
-        second_target = api.ResearchExecutionTarget(
+        second_target = api.research_os.ResearchExecutionTarget(
             first_target.execution_id,
             second_revision,
         )
@@ -175,7 +175,7 @@ def test_live_revision_migration_rebinds_artifact_and_records_reuse_lineage(
                 migrated.payload["target_cut_id"],
                 second_stable.graph_node_id,
                 "artifact",
-                api.ResearchValueKind.ARTIFACT,
+                api.research_os.ResearchValueKind.ARTIFACT,
                 second_stable.semantic_digest,
             )
         )

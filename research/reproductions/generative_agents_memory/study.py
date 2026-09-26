@@ -1,19 +1,5 @@
 from __future__ import annotations
-
-from noetrium.api import canonical_digest
-from noetrium.api import (
-    ExperimentTrialProtocolIdentity,
-)
-from noetrium.api import (
-    BenchmarkTaskSet,
-    MeasurementDefinition,
-    ReplayLevel,
-    ResearchStudyDefinition,
-    Study,
-    StudyModel,
-    StudyParticipant,
-    TrialBudget,
-)
+from research.reproductions import _support as _rs
 from research.benchmarks.generative_agents_smallville import (
     GENERATIVE_AGENTS_BENCHMARK_ID,
     GENERATIVE_AGENTS_SPLIT_ID,
@@ -28,14 +14,14 @@ def generative_agents_trial_protocol(
     *,
     enable_reflection: bool,
     enable_planning: bool,
-) -> ExperimentTrialProtocolIdentity:
+):
     program = build_generative_agents_method_program(
         enable_reflection=enable_reflection,
         enable_planning=enable_planning,
     )
-    return ExperimentTrialProtocolIdentity(
+    return _rs.study_protocol(
         "generative-agents.uist2023.smallville.v1",
-        canonical_digest({
+        _rs.canonical_digest({
             "program_digest": program.program_digest,
             "source_commit": GENERATIVE_AGENTS_AUDITED_COMMIT,
             "reflection": enable_reflection,
@@ -45,12 +31,13 @@ def generative_agents_trial_protocol(
     )
 
 
+@_rs.study_factory('benchmark')
 def build_generative_agents_smallville_study(
-    benchmark: BenchmarkTaskSet | None = None,
+    benchmark = None,
     *,
     enable_reflection: bool = True,
     enable_planning: bool = True,
-) -> ResearchStudyDefinition:
+):
     benchmark = benchmark or build_generative_agents_smallville_cut()
     if benchmark.benchmark_id != GENERATIVE_AGENTS_BENCHMARK_ID:
         raise ValueError("Generative Agents study requires Smallville protocol cut")
@@ -63,12 +50,11 @@ def build_generative_agents_smallville_study(
         if enable_reflection and not enable_planning
         else "memory-only"
     )
-    return Study(
-        project_id="generative-agents-uist2023-reproduction",
+    return _rs.study_spec(project_id="generative-agents-uist2023-reproduction",
         study_id=f"generative-agents-smallville-{treatment}",
         benchmark=benchmark,
         benchmark_split_id=GENERATIVE_AGENTS_SPLIT_ID,
-        method=StudyParticipant(
+        method=_rs.study_participant(
             role="generative-agents",
             kind="agent_method",
             implementation="generative-agents-paper-era",
@@ -76,23 +62,23 @@ def build_generative_agents_smallville_study(
             configurations=("generative-agents.memory-reflection-planning",),
         ),
         models={
-            "reflection": StudyModel(
+            "reflection": _rs.study_model(
                 "model.generative-agents.reflection",
                 prompt="generative-agents.reflection.paper-era",
                 required=enable_reflection,
             ),
-            "planning": StudyModel(
+            "planning": _rs.study_model(
                 "model.generative-agents.planning",
                 prompt="generative-agents.planning.paper-era",
                 required=enable_planning,
             ),
-            "behavior": StudyModel(
+            "behavior": _rs.study_model(
                 "model.generative-agents.behavior",
                 prompt="generative-agents.behavior.paper-era",
             ),
         },
         measurements=(
-            MeasurementDefinition.scalar(
+            _rs.scalar_measurement(
                 "believability_score",
                 schema_id="noetrium.measurement.scalar.v1",
                 unit="score",
@@ -100,7 +86,7 @@ def build_generative_agents_smallville_study(
                 scale="interval",
                 domain="generative-agents",
             ),
-            MeasurementDefinition.scalar(
+            _rs.scalar_measurement(
                 "reflection_count",
                 schema_id="noetrium.measurement.count.v1",
                 unit="reflection",
@@ -108,7 +94,7 @@ def build_generative_agents_smallville_study(
                 scale="count",
                 domain="generative-agents",
             ),
-            MeasurementDefinition.scalar(
+            _rs.scalar_measurement(
                 "model_call_count",
                 schema_id="noetrium.measurement.count.v1",
                 unit="model_call",
@@ -123,14 +109,14 @@ def build_generative_agents_smallville_study(
         ),
         repetitions=1,
         seeds=("0",),
-        limits=TrialBudget(
+        limits=_rs.trial_budget(
             f"generative-agents-smallville-{treatment}",
             max_steps=4096,
             max_model_calls=4096,
             max_working_seconds=86400.0,
         ),
-        replay_level=ReplayLevel.OBSERVATIONAL,
-    ).build()
+        replay_level='observational',
+    )
 
 
 __all__ = [

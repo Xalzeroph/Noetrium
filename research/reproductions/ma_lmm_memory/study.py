@@ -1,19 +1,5 @@
 from __future__ import annotations
-
-from noetrium.api import canonical_digest
-from noetrium.api import (
-    ExperimentTrialProtocolIdentity,
-)
-from noetrium.api import (
-    BenchmarkTaskSet,
-    MeasurementDefinition,
-    ReplayLevel,
-    ResearchStudyDefinition,
-    Study,
-    StudyModel,
-    StudyParticipant,
-    TrialBudget,
-)
+from research.reproductions import _support as _rs
 from research.benchmarks.lvu import LVU_BENCHMARK_ID, MA_LMM_LVU_PROTOCOL
 
 from .benchmark import MA_LMM_LVU_TEST_SPLIT
@@ -23,8 +9,8 @@ from .source import MALMM_AUDITED_COMMIT
 
 
 def ma_lmm_lvu_trial_protocol(
-    benchmark: BenchmarkTaskSet,
-) -> ExperimentTrialProtocolIdentity:
+    benchmark,
+):
     if benchmark.benchmark_id != LVU_BENCHMARK_ID:
         raise ValueError("MA-LMM formal LVU protocol requires LVU benchmark")
     selected = benchmark.selected_tasks(MA_LMM_LVU_TEST_SPLIT)
@@ -38,9 +24,9 @@ def ma_lmm_lvu_trial_protocol(
     if not expected_families.issubset(present_families):
         raise ValueError("MA-LMM LVU test split does not cover all seven tasks")
 
-    return ExperimentTrialProtocolIdentity(
+    return _rs.study_protocol(
         "ma-lmm.cvpr2024.lvu.v1",
-        canonical_digest({
+        _rs.canonical_digest({
             "memory_program_digest": MA_LMM_MEMORY_PROGRAM.program_digest,
             "source_commit": MALMM_AUDITED_COMMIT,
             "benchmark_cut_digest": benchmark.cut_digest,
@@ -62,16 +48,16 @@ def ma_lmm_lvu_trial_protocol(
     )
 
 
+@_rs.study_factory('benchmark')
 def build_ma_lmm_lvu_study(
-    benchmark: BenchmarkTaskSet,
-) -> ResearchStudyDefinition:
+    benchmark,
+):
     protocol = ma_lmm_lvu_trial_protocol(benchmark)
-    return Study(
-        project_id="ma-lmm-cvpr-2024-reproduction",
+    return _rs.study_spec(project_id="ma-lmm-cvpr-2024-reproduction",
         study_id="ma-lmm-cvpr-2024-lvu",
         benchmark=benchmark,
         benchmark_split_id=MA_LMM_LVU_TEST_SPLIT,
-        method=StudyParticipant(
+        method=_rs.study_participant(
             role="multimodal_memory_model",
             kind="method",
             implementation="ma-lmm",
@@ -88,13 +74,13 @@ def build_ma_lmm_lvu_study(
             ),
         ),
         models={
-            "multimodal": StudyModel(
+            "multimodal": _rs.study_model(
                 "model.ma-lmm.instructblip-vicuna7b",
                 prompt="ma-lmm.lvu.question-template",
             ),
         },
         measurements=(
-            MeasurementDefinition.scalar(
+            _rs.scalar_measurement(
                 "task_accuracy",
                 schema_id="noetrium.measurement.ratio.v1",
                 unit="ratio",
@@ -102,7 +88,7 @@ def build_ma_lmm_lvu_study(
                 scale="continuous",
                 domain="lvu",
             ),
-            MeasurementDefinition.scalar(
+            _rs.scalar_measurement(
                 "peak_memory_bank_length",
                 schema_id="noetrium.measurement.count.v1",
                 unit="temporal_slot",
@@ -110,7 +96,7 @@ def build_ma_lmm_lvu_study(
                 scale="count",
                 domain="ma-lmm",
             ),
-            MeasurementDefinition.scalar(
+            _rs.scalar_measurement(
                 "memory_compression_count",
                 schema_id="noetrium.measurement.count.v1",
                 unit="compression",
@@ -122,16 +108,16 @@ def build_ma_lmm_lvu_study(
         trial=protocol,
         repetitions=1,
         seeds=("42",),
-        limits=TrialBudget(
+        limits=_rs.trial_budget(
             "ma-lmm-cvpr2024-lvu-budget",
             max_steps=512,
             max_turns=1,
             max_model_calls=1,
             max_working_seconds=1800.0,
         ),
-        replay_level=ReplayLevel.OBSERVATIONAL,
+        replay_level='observational',
         repetition_timeout_seconds=1800.0,
-    ).build()
+    )
 
 
 __all__ = [

@@ -1,24 +1,12 @@
 from __future__ import annotations
-
-from noetrium.api import canonical_digest
-from noetrium.api import ExperimentTrialProtocolIdentity
-from noetrium.api import (
-    BenchmarkTaskSet,
-    MeasurementDefinition,
-    ReplayLevel,
-    ResearchStudyDefinition,
-    Study,
-    StudyModel,
-    StudyParticipant,
-    TrialBudget,
-)
+from research.reproductions import _support as _rs
 from research.benchmarks.webshop import LATS_WEBSHOP_SPLIT, WEBSHOP_BENCHMARK_ID
 
 from .fidelity import LATS_WEBSHOP_FIDELITY
 
-LATS_WEBSHOP_RELEASED_TRIAL_PROTOCOL = ExperimentTrialProtocolIdentity(
+LATS_WEBSHOP_RELEASED_TRIAL_PROTOCOL = _rs.study_protocol(
     "lats.webshop.released.v1",
-    canonical_digest(
+    _rs.canonical_digest(
         {
             "model": LATS_WEBSHOP_FIDELITY.reference_model,
             "temperature": LATS_WEBSHOP_FIDELITY.temperature,
@@ -33,16 +21,16 @@ LATS_WEBSHOP_RELEASED_TRIAL_PROTOCOL = ExperimentTrialProtocolIdentity(
 )
 
 
-def build_lats_webshop_released_study(benchmark: BenchmarkTaskSet) -> ResearchStudyDefinition:
+@_rs.study_factory('benchmark')
+def build_lats_webshop_released_study(benchmark):
     if benchmark.benchmark_id != WEBSHOP_BENCHMARK_ID:
         raise ValueError("LATS study requires the released WebShop benchmark cut")
     benchmark.selected_tasks(LATS_WEBSHOP_SPLIT)
-    return Study(
-        project_id="lats-webshop-reproduction",
+    return _rs.study_spec(project_id="lats-webshop-reproduction",
         study_id="lats-webshop-released",
         benchmark=benchmark,
         benchmark_split_id=LATS_WEBSHOP_SPLIT,
-        method=StudyParticipant(
+        method=_rs.study_participant(
             role="agent",
             kind="agent",
             implementation="lats",
@@ -57,21 +45,21 @@ def build_lats_webshop_released_study(benchmark: BenchmarkTaskSet) -> ResearchSt
             ),
         ),
         models={
-            "policy": StudyModel(
+            "policy": _rs.study_model(
                 "model.lats.agent",
                 prompt="lats.webshop.prompt",
             ),
-            "value": StudyModel(
+            "value": _rs.study_model(
                 "model.lats.value",
                 prompt="lats.webshop.value-prompt",
             ),
-            "reflection": StudyModel(
+            "reflection": _rs.study_model(
                 "model.lats.reflection",
                 prompt="lats.webshop.reflection-prompt",
             ),
         },
         measurements=(
-            MeasurementDefinition.scalar(
+            _rs.scalar_measurement(
                 "reward",
                 schema_id="noetrium.measurement.scalar.v1",
                 unit="score",
@@ -79,7 +67,7 @@ def build_lats_webshop_released_study(benchmark: BenchmarkTaskSet) -> ResearchSt
                 scale="continuous",
                 domain="webshop",
             ),
-            MeasurementDefinition.scalar(
+            _rs.scalar_measurement(
                 "task_success",
                 schema_id="noetrium.measurement.binary-scalar.v1",
                 unit="ratio",
@@ -87,7 +75,7 @@ def build_lats_webshop_released_study(benchmark: BenchmarkTaskSet) -> ResearchSt
                 scale="binary",
                 domain="webshop",
             ),
-            MeasurementDefinition.scalar(
+            _rs.scalar_measurement(
                 "iteration_count",
                 schema_id="noetrium.measurement.count.v1",
                 unit="iteration",
@@ -99,14 +87,14 @@ def build_lats_webshop_released_study(benchmark: BenchmarkTaskSet) -> ResearchSt
         trial=LATS_WEBSHOP_RELEASED_TRIAL_PROTOCOL,
         repetitions=1,
         seeds=("paper-default",),
-        limits=TrialBudget(
+        limits=_rs.trial_budget(
             "lats-webshop-30-iterations",
             max_steps=25000,
             max_turns=LATS_WEBSHOP_FIDELITY.max_iterations,
             max_model_calls=5000,
         ),
-        replay_level=ReplayLevel.OBSERVATIONAL,
-    ).build()
+        replay_level='observational',
+    )
 
 
 

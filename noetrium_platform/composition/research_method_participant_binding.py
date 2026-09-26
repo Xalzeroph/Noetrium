@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-"""Canonical exact MethodProgram -> participant binding composition."""
+"""Canonical ResearchMethod -> participant binding composition."""
 
 from noetrium_platform.capabilities.participant.api import (
     ParticipantImplementationIdentity,
@@ -12,7 +12,7 @@ from noetrium_platform.capabilities.participant.api import (
 )
 from noetrium_platform.composition.method_runtime import standard_method_runtime_binder
 from noetrium_platform.composition.research_os_lowering import (
-    resolve_method_program_implementation,
+    resolve_research_method_implementation,
 )
 from noetrium_platform.foundation.governance.architecture.api import (
     BindingDiagnostic,
@@ -27,7 +27,7 @@ from noetrium_platform.foundation.governance.system_registry.api import SystemId
 from noetrium_platform.foundation.kernel.kernel import Sha256Digest, canonical_digest
 from noetrium_platform.product.research_os import (
     ResearchDefinitionKind,
-    ResearchMethodProgramImplementation,
+    ResearchMethodImplementation,
     ResearchProgram,
 )
 from noetrium_platform.research.execution.workflow.runtime import METHOD_MACHINE_IDENTITY
@@ -38,7 +38,7 @@ _METHOD_PROVIDER_ID = "noetrium.method-runtime"
 
 
 def exact_method_programs(program: ResearchProgram) -> dict[str, object]:
-    """Resolve every exact MethodProgram declared by one frozen ResearchProgram."""
+    """Resolve every canonical Method owned by one frozen ResearchProgram."""
 
     if type(program) is not ResearchProgram:
         raise TypeError("exact method participant binding requires ResearchProgram")
@@ -46,10 +46,10 @@ def exact_method_programs(program: ResearchProgram) -> dict[str, object]:
     for definition in program.definitions:
         if definition.kind is not ResearchDefinitionKind.METHOD:
             continue
-        if type(definition.implementation) is not ResearchMethodProgramImplementation:
+        if type(definition.implementation) is not ResearchMethodImplementation:
             continue
-        resolved = resolve_method_program_implementation(definition)
-        method_program = resolved.program
+        resolved = resolve_research_method_implementation(definition)
+        method_program = resolved.method.program
         method_id = method_program.program_identity.implementation.method_id
         previous = rows.get(method_id)
         if (

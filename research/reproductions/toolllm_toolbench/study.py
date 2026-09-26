@@ -1,19 +1,5 @@
 from __future__ import annotations
-
-from noetrium.api import canonical_digest
-from noetrium.api import (
-    ExperimentTrialProtocolIdentity,
-)
-from noetrium.api import (
-    BenchmarkTaskSet,
-    MeasurementDefinition,
-    ReplayLevel,
-    ResearchStudyDefinition,
-    Study,
-    StudyModel,
-    StudyParticipant,
-    TrialBudget,
-)
+from research.reproductions import _support as _rs
 from research.benchmarks.toolbench import (
     TOOLBENCH_BENCHMARK_ID,
     TOOLBENCH_PAPER_CODE_COMMIT,
@@ -28,14 +14,14 @@ def toolllm_toolbench_trial_protocol(
     capability_ids: tuple[str, ...],
     *,
     retrieval_mode: str,
-) -> ExperimentTrialProtocolIdentity:
+):
     program = build_toolllm_toolbench_method_program(
         capability_ids,
         retrieval_mode=retrieval_mode,
     )
-    return ExperimentTrialProtocolIdentity(
+    return _rs.study_protocol(
         f"toolllm.toolbench.{retrieval_mode}.v1",
-        canonical_digest(
+        _rs.canonical_digest(
             {
                 "program_digest": program.program_digest,
                 "source_commit": TOOLLLM_TOOLBENCH_REFERENCE_FIDELITY.audited_commit,
@@ -58,13 +44,14 @@ def toolllm_toolbench_trial_protocol(
     )
 
 
+@_rs.study_factory('benchmark')
 def build_toolllm_toolbench_study(
-    benchmark: BenchmarkTaskSet,
+    benchmark,
     *,
     split_id: str,
     capability_ids: tuple[str, ...],
     retrieval_mode: str = "oracle",
-) -> ResearchStudyDefinition:
+):
     if benchmark.benchmark_id != TOOLBENCH_BENCHMARK_ID:
         raise ValueError("ToolLLM study requires ToolBench")
     selected = benchmark.selected_tasks(split_id)
@@ -81,12 +68,11 @@ def build_toolllm_toolbench_study(
     )
     method_capabilities = (*semantic_capabilities, *capability_ids)
 
-    return Study(
-        project_id="toolllm-iclr-reproduction",
+    return _rs.study_spec(project_id="toolllm-iclr-reproduction",
         study_id=f"toolllm-toolbench-{split_id}-{retrieval_mode}",
         benchmark=benchmark,
         benchmark_split_id=split_id,
-        method=StudyParticipant(
+        method=_rs.study_participant(
             role="toolllm",
             kind="agent_method",
             implementation="toolllm-paper-era-dfsdt",
@@ -98,13 +84,13 @@ def build_toolllm_toolbench_study(
             ),
         ),
         models={
-            "toolllm.dfsdt-policy": StudyModel(
+            "toolllm.dfsdt-policy": _rs.study_model(
                 "model.toolllm.policy",
                 prompt="toolllm.dfsdt.function-calling.prompt",
             ),
         },
         measurements=(
-            MeasurementDefinition.scalar(
+            _rs.scalar_measurement(
                 "task_success",
                 schema_id="noetrium.measurement.binary-scalar.v1",
                 unit="ratio",
@@ -112,7 +98,7 @@ def build_toolllm_toolbench_study(
                 scale="binary",
                 domain="toolbench",
             ),
-            MeasurementDefinition.scalar(
+            _rs.scalar_measurement(
                 "tool_eval_win",
                 schema_id="noetrium.measurement.scalar.v1",
                 unit="ratio",
@@ -120,7 +106,7 @@ def build_toolllm_toolbench_study(
                 scale="ratio",
                 domain="toolbench",
             ),
-            MeasurementDefinition.scalar(
+            _rs.scalar_measurement(
                 "query_count",
                 schema_id="noetrium.measurement.count.v1",
                 unit="model_call",
@@ -128,7 +114,7 @@ def build_toolllm_toolbench_study(
                 scale="count",
                 domain="toolbench",
             ),
-            MeasurementDefinition.scalar(
+            _rs.scalar_measurement(
                 "tool_call_count",
                 schema_id="noetrium.measurement.count.v1",
                 unit="tool_call",
@@ -136,7 +122,7 @@ def build_toolllm_toolbench_study(
                 scale="count",
                 domain="toolbench",
             ),
-            MeasurementDefinition.scalar(
+            _rs.scalar_measurement(
                 "give_up_count",
                 schema_id="noetrium.measurement.count.v1",
                 unit="restart",
@@ -151,14 +137,14 @@ def build_toolllm_toolbench_study(
         ),
         repetitions=1,
         seeds=("0",),
-        limits=TrialBudget(
+        limits=_rs.trial_budget(
             f"toolllm-paper-era-{retrieval_mode}",
             max_steps=4096,
             max_model_calls=TOOLLLM_TOOLBENCH_REFERENCE_FIDELITY.max_query_count,
             max_working_seconds=3600.0,
         ),
-        replay_level=ReplayLevel.OBSERVATIONAL,
-    ).build()
+        replay_level='observational',
+    )
 
 
 __all__ = [

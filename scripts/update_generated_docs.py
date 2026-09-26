@@ -12,6 +12,7 @@ if str(SCRIPT_DIR) not in sys.path:
 from generate_authority_disposition_matrix import generate as generate_authority_disposition_matrix
 from generate_downstream_contracts import generate
 from generate_interface_schemas import generate as generate_interface_schemas
+from generate_public_api_hierarchy import generate as generate_public_api_hierarchy
 from sync_leaf_contract_metadata import sync_leaf_contract_metadata
 from sync_registered_system_shapes import sync_registered_system_shapes
 from audit_registered_system_surfaces import audit as audit_registered_system_surfaces
@@ -77,6 +78,9 @@ def update(root: Path) -> int:
         return 1
     if generate_authority_disposition_matrix(root, check=False) != 0:
         return 1
+    result = generate_public_api_hierarchy(root, check=False)
+    if result != 0:
+        return result
     result = generate(root, check=False)
     if result != 0:
         return result
@@ -114,6 +118,8 @@ def check(root: Path) -> int:
     if not _sync_capability_index(root, check=True):
         return 1
     if generate_authority_disposition_matrix(root, check=True) != 0:
+        return 1
+    if generate_public_api_hierarchy(root, check=True) != 0:
         return 1
     if generate(root, check=True) != 0:
         return 1

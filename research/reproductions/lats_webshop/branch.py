@@ -4,7 +4,7 @@ from collections.abc import Callable
 from dataclasses import dataclass
 from typing import Generic, TypeVar
 
-from noetrium.api import (
+from noetrium.api.research_authoring import (
     EnvironmentForkReceipt,
     EnvironmentSession,
     EnvironmentSessionOpener,

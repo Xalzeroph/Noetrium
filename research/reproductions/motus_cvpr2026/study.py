@@ -1,9 +1,5 @@
 from __future__ import annotations
-
-from noetrium.api import (
-    BenchmarkTaskSet,
-    ResearchStudyDefinition,
-)
+from research.reproductions import _support as _rs
 from research.authoring.frontier_2026.study import PaperStudySpec
 
 from .program import (
@@ -29,8 +25,9 @@ SPEC = PaperStudySpec(
 )
 
 
+@_rs.study_factory('benchmark')
 def build_study(
-    benchmark: BenchmarkTaskSet,
+    benchmark,
     *,
     benchmark_split_id: str,
     treatment: str = "full",
@@ -40,7 +37,7 @@ def build_study(
     max_steps: int = 4096,
     max_model_calls: int = 4096,
     max_working_seconds: float = 14400.0,
-) -> ResearchStudyDefinition:
+):
     """Compile this paper's protocol through the canonical Study authority."""
 
     return SPEC.study(
@@ -56,13 +53,14 @@ def build_study(
     )
 
 
+@_rs.study_factory('benchmark')
 def build_ablation_matrix(
-    benchmark: BenchmarkTaskSet,
+    benchmark,
     *,
     benchmark_split_id: str,
     model_binding: str = "model.paper-authoritative",
     repetitions: int = 1,
-) -> tuple[ResearchStudyDefinition, ...]:
+):
     return SPEC.ablation_matrix(
         benchmark,
         benchmark_split_id=benchmark_split_id,

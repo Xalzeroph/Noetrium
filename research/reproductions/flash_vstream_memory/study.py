@@ -1,19 +1,5 @@
 from __future__ import annotations
-
-from noetrium.api import canonical_digest
-from noetrium.api import (
-    ExperimentTrialProtocolIdentity,
-)
-from noetrium.api import (
-    BenchmarkTaskSet,
-    MeasurementDefinition,
-    ReplayLevel,
-    ResearchStudyDefinition,
-    Study,
-    StudyModel,
-    StudyParticipant,
-    TrialBudget,
-)
+from research.reproductions import _support as _rs
 from research.benchmarks.egoschema import (
     EGOSCHEMA_BENCHMARK_ID,
     EGOSCHEMA_FULL_COUNT,
@@ -28,10 +14,10 @@ from .source import FLASH_VSTREAM_QWEN_ICCV_COMMIT
 
 
 def flash_vstream_egoschema_trial_protocol(
-    benchmark: BenchmarkTaskSet,
+    benchmark,
     *,
     split_id: str,
-) -> ExperimentTrialProtocolIdentity:
+):
     if benchmark.benchmark_id != EGOSCHEMA_BENCHMARK_ID:
         raise ValueError("Flash-VStream study requires EgoSchema")
     expected = {
@@ -46,9 +32,9 @@ def flash_vstream_egoschema_trial_protocol(
             f"Flash-VStream EgoSchema {split_id} requires {expected} tasks"
         )
     f = FLASH_VSTREAM_REFERENCE_FIDELITY
-    return ExperimentTrialProtocolIdentity(
+    return _rs.study_protocol(
         f"flash-vstream.iccv2025.egoschema.{split_id}.v1",
-        canonical_digest(
+        _rs.canonical_digest(
             {
                 "source_commit": FLASH_VSTREAM_QWEN_ICCV_COMMIT,
                 "memory_program_digest": FLASH_VSTREAM_MEMORY_PROGRAM.program_digest,
@@ -81,20 +67,20 @@ def flash_vstream_egoschema_trial_protocol(
     )
 
 
+@_rs.study_factory('benchmark')
 def _build_study(
-    benchmark: BenchmarkTaskSet,
+    benchmark,
     *,
     split_id: str,
-) -> ResearchStudyDefinition:
+):
     protocol = flash_vstream_egoschema_trial_protocol(
         benchmark, split_id=split_id
     )
-    return Study(
-        project_id="flash-vstream-iccv-2025-reproduction",
+    return _rs.study_spec(project_id="flash-vstream-iccv-2025-reproduction",
         study_id=f"flash-vstream-iccv-2025-egoschema-{split_id}",
         benchmark=benchmark,
         benchmark_split_id=split_id,
-        method=StudyParticipant(
+        method=_rs.study_participant(
             role="streaming_multimodal_memory_model",
             kind="method",
             implementation="flash-vstream",
@@ -112,13 +98,13 @@ def _build_study(
             ),
         ),
         models={
-            "multimodal": StudyModel(
+            "multimodal": _rs.study_model(
                 "model.flash-vstream.qwen2-vl-7b-paper-era",
                 prompt="flash-vstream.egoschema.multiple-choice",
             ),
         },
         measurements=(
-            MeasurementDefinition.scalar(
+            _rs.scalar_measurement(
                 "multiple_choice_accuracy",
                 schema_id="noetrium.measurement.ratio.v1",
                 unit="ratio",
@@ -126,7 +112,7 @@ def _build_study(
                 scale="continuous",
                 domain="egoschema",
             ),
-            MeasurementDefinition.scalar(
+            _rs.scalar_measurement(
                 "context_memory_slot_count",
                 schema_id="noetrium.measurement.count.v1",
                 unit="slot",
@@ -134,7 +120,7 @@ def _build_study(
                 scale="count",
                 domain="flash-vstream",
             ),
-            MeasurementDefinition.scalar(
+            _rs.scalar_measurement(
                 "augmentation_memory_slot_count",
                 schema_id="noetrium.measurement.count.v1",
                 unit="slot",
@@ -146,27 +132,29 @@ def _build_study(
         trial=protocol,
         repetitions=1,
         seeds=("paper-evaluation-default",),
-        limits=TrialBudget(
+        limits=_rs.trial_budget(
             f"flash-vstream-iccv2025-egoschema-{split_id}-budget",
             max_steps=512,
             max_turns=64,
             max_model_calls=1,
             max_working_seconds=3600.0,
         ),
-        replay_level=ReplayLevel.OBSERVATIONAL,
+        replay_level='observational',
         repetition_timeout_seconds=3600.0,
-    ).build()
+    )
 
 
+@_rs.study_factory('benchmark')
 def build_flash_vstream_egoschema_public_study(
-    benchmark: BenchmarkTaskSet,
-) -> ResearchStudyDefinition:
+    benchmark,
+):
     return _build_study(benchmark, split_id=EGOSCHEMA_PUBLIC_SPLIT)
 
 
+@_rs.study_factory('benchmark')
 def build_flash_vstream_egoschema_full_study(
-    benchmark: BenchmarkTaskSet,
-) -> ResearchStudyDefinition:
+    benchmark,
+):
     return _build_study(benchmark, split_id=EGOSCHEMA_FULL_SPLIT)
 
 

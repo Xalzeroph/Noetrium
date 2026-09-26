@@ -1,19 +1,5 @@
 from __future__ import annotations
-
-from noetrium.api import canonical_digest
-from noetrium.api import (
-    ExperimentTrialProtocolIdentity,
-)
-from noetrium.api import (
-    BenchmarkTaskSet,
-    MeasurementDefinition,
-    ReplayLevel,
-    ResearchStudyDefinition,
-    Study,
-    StudyModel,
-    StudyParticipant,
-    TrialBudget,
-)
+from research.reproductions import _support as _rs
 from research.benchmarks.moviechat_1k import (
     MOVIECHAT_1K_BENCHMARK_ID,
     MOVIECHAT_1K_BREAKPOINT_QA_PER_VIDEO,
@@ -28,8 +14,8 @@ from .source import MOVIECHAT_AUDITED_COMMIT
 
 
 def moviechat_cvpr2024_trial_protocol(
-    benchmark: BenchmarkTaskSet,
-) -> ExperimentTrialProtocolIdentity:
+    benchmark,
+):
     if benchmark.benchmark_id != MOVIECHAT_1K_BENCHMARK_ID:
         raise ValueError(
             "MovieChat CVPR 2024 protocol requires MovieChat-1K"
@@ -41,9 +27,9 @@ def moviechat_cvpr2024_trial_protocol(
         )
 
     fidelity = MOVIECHAT_REFERENCE_FIDELITY
-    return ExperimentTrialProtocolIdentity(
+    return _rs.study_protocol(
         "moviechat.cvpr2024.moviechat-1k.v1",
-        canonical_digest({
+        _rs.canonical_digest({
             "memory_program_digest": MOVIECHAT_MEMORY_PROGRAM.program_digest,
             "source_commit": MOVIECHAT_AUDITED_COMMIT,
             "benchmark_cut_digest": benchmark.cut_digest,
@@ -85,18 +71,18 @@ def moviechat_cvpr2024_trial_protocol(
     )
 
 
+@_rs.study_factory('benchmark')
 def build_moviechat_cvpr2024_study(
-    benchmark: BenchmarkTaskSet,
-) -> ResearchStudyDefinition:
+    benchmark,
+):
     fidelity = MOVIECHAT_REFERENCE_FIDELITY
     protocol = moviechat_cvpr2024_trial_protocol(benchmark)
 
-    return Study(
-        project_id="moviechat-cvpr-2024-reproduction",
+    return _rs.study_spec(project_id="moviechat-cvpr-2024-reproduction",
         study_id="moviechat-cvpr-2024-moviechat-1k",
         benchmark=benchmark,
         benchmark_split_id=MOVIECHAT_1K_TEST_SPLIT,
-        method=StudyParticipant(
+        method=_rs.study_participant(
             role="multimodal_memory_model",
             kind="method",
             implementation="moviechat",
@@ -115,17 +101,17 @@ def build_moviechat_cvpr2024_study(
             ),
         ),
         models={
-            "multimodal": StudyModel(
+            "multimodal": _rs.study_model(
                 "model.moviechat.vicuna7b",
                 prompt="moviechat.long-video-qa.prompt",
             ),
-            "judge": StudyModel(
+            "judge": _rs.study_model(
                 "model.moviechat.paper-era-qa-judge",
                 prompt="moviechat.qa-evaluation.prompt",
             ),
         },
         measurements=(
-            MeasurementDefinition.scalar(
+            _rs.scalar_measurement(
                 "global_accuracy",
                 schema_id="noetrium.measurement.ratio.v1",
                 unit="ratio",
@@ -133,7 +119,7 @@ def build_moviechat_cvpr2024_study(
                 scale="continuous",
                 domain="moviechat_global",
             ),
-            MeasurementDefinition.scalar(
+            _rs.scalar_measurement(
                 "breakpoint_accuracy",
                 schema_id="noetrium.measurement.ratio.v1",
                 unit="ratio",
@@ -141,7 +127,7 @@ def build_moviechat_cvpr2024_study(
                 scale="continuous",
                 domain="moviechat_breakpoint",
             ),
-            MeasurementDefinition.scalar(
+            _rs.scalar_measurement(
                 "global_semantic_score",
                 schema_id="noetrium.measurement.score.v1",
                 unit="score_0_to_5",
@@ -149,7 +135,7 @@ def build_moviechat_cvpr2024_study(
                 scale="continuous",
                 domain="moviechat_global",
             ),
-            MeasurementDefinition.scalar(
+            _rs.scalar_measurement(
                 "breakpoint_semantic_score",
                 schema_id="noetrium.measurement.score.v1",
                 unit="score_0_to_5",
@@ -157,7 +143,7 @@ def build_moviechat_cvpr2024_study(
                 scale="continuous",
                 domain="moviechat_breakpoint",
             ),
-            MeasurementDefinition.scalar(
+            _rs.scalar_measurement(
                 "peak_long_memory_length",
                 schema_id="noetrium.measurement.count.v1",
                 unit="frame_embedding",
@@ -169,7 +155,7 @@ def build_moviechat_cvpr2024_study(
         trial=protocol,
         repetitions=1,
         seeds=(str(fidelity.evaluation_seed),),
-        limits=TrialBudget(
+        limits=_rs.trial_budget(
             "moviechat-cvpr2024-moviechat-1k-budget",
             max_steps=1024,
             max_turns=(
@@ -185,9 +171,9 @@ def build_moviechat_cvpr2024_study(
             ),
             max_working_seconds=3600.0,
         ),
-        replay_level=ReplayLevel.OBSERVATIONAL,
+        replay_level='observational',
         repetition_timeout_seconds=3600.0,
-    ).build()
+    )
 
 
 __all__ = [

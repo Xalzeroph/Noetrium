@@ -3,15 +3,18 @@ from __future__ import annotations
 import pytest
 
 from noetrium import api
+import noetrium_platform.research.execution.api as execution_api
+import noetrium_platform.product.research_os as product_api
+import noetrium_platform.foundation.kernel.kernel as kernel_api
 
 
-def _child_dispatch(request: api.ProgramNodeRequest, binding: object) -> api.ProgramNodeResult:
+def _child_dispatch(request: execution_api.ProgramNodeRequest, binding: object) -> execution_api.ProgramNodeResult:
     del binding
-    return api.ProgramNodeResult(value={"ok": True})
+    return execution_api.ProgramNodeResult(value={"ok": True})
 
 
 CHILD_PROGRAM = (
-    api.MemoryProgramBuilder.create(
+    execution_api.MemoryProgramBuilder.create(
         program_id="test.child-memory",
         version="1",
         state_schema="test.child-memory.state.v1",
@@ -27,12 +30,12 @@ CHILD_PROGRAM = (
 )
 
 
-def child_operations() -> tuple[api.ResearchHostOperation, ...]:
+def child_operations() -> tuple[execution_api.ResearchHostOperation, ...]:
     return (
-        api.ResearchHostOperation(
+        execution_api.ResearchHostOperation(
             "test.child.dispatch",
             _child_dispatch,
-            api.canonical_digest(
+            kernel_api.canonical_digest(
                 {
                     "operation": "test.child.dispatch",
                     "implementation_revision": 1,
@@ -42,16 +45,16 @@ def child_operations() -> tuple[api.ResearchHostOperation, ...]:
     )
 
 
-def _parent_builder() -> api.ResearchProgramBuilder:
-    builder = api.ResearchProgramBuilder("paper")
+def _parent_builder() -> product_api.ResearchProgramBuilder:
+    builder = product_api.ResearchProgramBuilder("paper")
     builder.definition(
         "root-definition",
-        kind=api.ResearchDefinitionKind.CUSTOM,
+        kind=product_api.ResearchDefinitionKind.CUSTOM,
         config={"kind": "root"},
     )
     builder.node(
         "root",
-        kind=api.ResearchNodeKind.CUSTOM,
+        kind=product_api.ResearchNodeKind.CUSTOM,
         definitions=("root-definition",),
     )
     return builder
@@ -73,8 +76,8 @@ def test_child_machine_program_is_explicit_program_scoped_authoring() -> None:
         for row in program.definitions
         if row.definition_id == "test.child-memory"
     )
-    assert child.kind is api.ResearchDefinitionKind.CHILD_MACHINE
-    assert isinstance(child.implementation, api.ResearchMachineProgramImplementation)
+    assert child.kind is product_api.ResearchDefinitionKind.CHILD_MACHINE
+    assert isinstance(child.implementation, product_api.ResearchMachineProgramImplementation)
     assert child.implementation.program_digest == CHILD_PROGRAM.program_digest
     assert all(
         "test.child-memory" not in node.definition_ids
@@ -93,7 +96,7 @@ def test_child_machine_definition_cannot_be_consumed_by_top_level_node() -> None
     )
     builder.node(
         "invalid-child-node",
-        kind=api.ResearchNodeKind.CUSTOM,
+        kind=product_api.ResearchNodeKind.CUSTOM,
         definitions=("test.child-memory",),
     )
 
@@ -103,9 +106,9 @@ def test_child_machine_definition_cannot_be_consumed_by_top_level_node() -> None
 
 def test_child_machine_kind_requires_exact_machine_program_implementation() -> None:
     with pytest.raises(ValueError, match="require an exact ResearchProgram"):
-        api.ResearchDefinition(
+        product_api.ResearchDefinition(
             "test.child-memory",
-            api.ResearchDefinitionKind.CHILD_MACHINE,
+            product_api.ResearchDefinitionKind.CHILD_MACHINE,
             None,
         )
 
@@ -119,5 +122,5 @@ def test_generic_machine_program_cannot_bypass_child_machine_authoring() -> None
             program_qualname="CHILD_PROGRAM",
             operations_module=__name__,
             operations_qualname="child_operations",
-            kind=api.ResearchDefinitionKind.CHILD_MACHINE,
+            kind=product_api.ResearchDefinitionKind.CHILD_MACHINE,
         )

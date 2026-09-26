@@ -19,16 +19,24 @@ from noetrium_platform.research.experimentation.lifecycle.experiment.api import 
 )
 from noetrium_platform.research.experimentation.identity import ModelRoleUsage, ReplayLevel
 
-from .benchmark import BenchmarkTaskSet, TrialBudget
+from .benchmark import (
+    BenchmarkTaskSet,
+    TaskDefinition,
+    TaskGraph,
+    TaskGraphEdge,
+    TaskGraphRelation,
+    TrialBudget,
+)
 from .design import (
     DEFAULT_STUDY_AGGREGATION_REQUIREMENT_ID,
+    FactorLevelSpec,
     ResearchRevision,
     ResearchStudyDefinition,
     StudyExecutionPolicy,
     StudyFactorSpec,
 )
 from .contracts import AssignmentWorkload, StudyConcurrencyPolicy
-from .measurement import MeasurementDefinition, MeasurementProtocol
+from .measurement import MeasurementDefinition, MeasurementProtocol, MeasurementValueKind
 
 
 def _text(value: object, field: str) -> str:
@@ -284,6 +292,268 @@ class Study:
 
     def build(self) -> ResearchStudyDefinition:
         return self._definition
+
+
+def _study_spec_mapping(value: object, field: str) -> Mapping[str, object]:
+    if not isinstance(value, Mapping):
+        raise TypeError(f"{field} must be a mapping")
+    return value
+
+
+def _study_spec_participant(value: object) -> StudyParticipant:
+    row = _study_spec_mapping(value, "study participant spec")
+    return StudyParticipant(
+        role=str(row["role"]),
+        kind=str(row["kind"]),
+        implementation=str(row["implementation"]),
+        treatment=str(row["treatment"]),
+        capabilities=tuple(row.get("capabilities", ())),
+        configurations=tuple(row.get("configurations", ())),
+        depends_on=tuple(row.get("depends_on", ())),
+    )
+
+
+def _study_spec_model(value: object) -> str | StudyModel:
+    if isinstance(value, str):
+        return value
+    row = _study_spec_mapping(value, "study model spec")
+    usage = row.get("usage", ModelRoleUsage.EXECUTION.value)
+    return StudyModel(
+        requirement=str(row["requirement"]),
+        prompt=None if row.get("prompt") is None else str(row["prompt"]),
+        usage=ModelRoleUsage(str(usage)),
+        required=bool(row.get("required", True)),
+        max_bindings=row.get("max_bindings", 1),
+    )
+
+
+def _study_spec_measurement(value: object) -> MeasurementDefinition:
+    row = _study_spec_mapping(value, "study measurement spec")
+    kind = str(row.get("value_kind", "scalar"))
+    common = dict(
+        measurement_id=str(row["measurement_id"]),
+        schema_id=str(row["schema_id"]),
+        unit=row.get("unit"),
+        description=str(row.get("description", "")),
+        semantic_kind=str(row.get("semantic_kind", "measurement")),
+        scale=row.get("scale"),
+        domain=row.get("domain"),
+    )
+    if kind == "scalar":
+        return MeasurementDefinition.scalar(**common)
+    return MeasurementDefinition(
+        value_kind=MeasurementValueKind(kind),
+        **common,
+    )
+
+
+def _study_spec_factor(value: object) -> StudyFactorSpec:
+    row = _study_spec_mapping(value, "study factor spec")
+    levels = tuple(
+        FactorLevelSpec(
+            str(level["level_id"]),
+            level.get("value"),
+            bool(level.get("control", False)),
+        )
+        for level in (
+            _study_spec_mapping(item, "study factor level spec")
+            for item in row["levels"]
+        )
+    )
+    return StudyFactorSpec(str(row["factor_id"]), levels)
+
+
+def _study_spec_task_graph(value: object) -> TaskGraph:
+    if value is None:
+        return TaskGraph()
+    row = _study_spec_mapping(value, "task graph spec")
+    edges = []
+    for raw in row.get("edges", ()):
+        edge = _study_spec_mapping(raw, "task graph edge spec")
+        edges.append(
+            TaskGraphEdge(
+                str(edge["source_task_id"]),
+                str(edge["target_task_id"]),
+                TaskGraphRelation(str(edge.get("relation", "prerequisite"))),
+            )
+        )
+    return TaskGraph(tuple(sorted(edges)))
+
+
+def _study_spec_benchmark(value: object) -> BenchmarkTaskSet:
+    if isinstance(value, BenchmarkTaskSet):
+        return value
+    row = _study_spec_mapping(value, "research study benchmark")
+    revision_id = str(row["revision_id"])
+    schema_id = str(row["task_schema_id"])
+    tasks = []
+    for raw in row["tasks"]:
+        task = _study_spec_mapping(raw, "benchmark task spec")
+        tasks.append(
+            TaskDefinition(
+                task_id=str(task["task_id"]),
+                revision_id=str(task.get("revision_id", revision_id)),
+                family=str(task["family"]),
+                schema_id=str(task.get("schema_id", schema_id)),
+                content_digest=str(task["content_digest"]),
+                lineage_refs=tuple(task.get("lineage_refs", ())),
+            )
+        )
+    return BenchmarkTaskSet(
+        benchmark_id=str(row["benchmark_id"]),
+        revision_id=revision_id,
+        source_digest=str(row["source_digest"]),
+        task_schema_id=schema_id,
+        tasks=tuple(sorted(tasks, key=lambda item: item.task_id)),
+        task_graph=_study_spec_task_graph(row.get("task_graph")),
+    )
+
+
+def materialize_research_study_spec(value: object) -> ResearchStudyDefinition:
+    """Lower one top-level mapping Study spec into the canonical typed definition."""
+
+    row = _study_spec_mapping(value, "research study spec")
+    benchmark = _study_spec_benchmark(row.get("benchmark"))
+
+    method = _study_spec_participant(row["method"])
+    participants = tuple(
+        _study_spec_participant(item)
+        for item in row.get("participants", ())
+    )
+    models_raw = _study_spec_mapping(row["models"], "research study models")
+    models = {
+        str(role): _study_spec_model(spec)
+        for role, spec in models_raw.items()
+    }
+    measurements = tuple(
+        _study_spec_measurement(item)
+        for item in row["measurements"]
+    )
+    trial_row = _study_spec_mapping(row["trial"], "research study trial")
+    trial = ExperimentTrialProtocolIdentity(
+        str(trial_row["protocol_id"]),
+        str(
+            trial_row.get(
+                "configuration_digest",
+                trial_row.get("protocol_digest"),
+            )
+        ),
+    )
+    limits_row = _study_spec_mapping(row["limits"], "research study limits")
+    limits = TrialBudget(
+        budget_id=str(limits_row["budget_id"]),
+        max_steps=limits_row.get("max_steps"),
+        max_seconds=limits_row.get("max_seconds"),
+        max_tokens=limits_row.get("max_tokens"),
+        resource_budget_digest=limits_row.get("resource_budget_digest"),
+        max_turns=limits_row.get("max_turns"),
+        max_messages=limits_row.get("max_messages"),
+        max_model_calls=limits_row.get("max_model_calls"),
+        max_working_seconds=limits_row.get("max_working_seconds"),
+        max_cost_usd=limits_row.get("max_cost_usd"),
+    )
+
+    workloads_raw = row.get("assignment_workloads")
+    if workloads_raw is None:
+        workloads = None
+    else:
+        workloads = tuple(
+            AssignmentWorkload(
+                tuple(
+                    _study_spec_mapping(item, "assignment workload spec")["task_ids"]
+                ),
+                _study_spec_task_graph(
+                    _study_spec_mapping(item, "assignment workload spec").get(
+                        "task_graph"
+                    )
+                ),
+            )
+            for item in workloads_raw
+        )
+
+    factors = tuple(
+        _study_spec_factor(item)
+        for item in row.get("factors", ())
+    )
+    revision_raw = row.get("revision")
+    revision = None
+    if revision_raw is not None:
+        revision_row = _study_spec_mapping(revision_raw, "research revision spec")
+        revision = ResearchRevision(
+            str(revision_row["revision_id"]),
+            str(revision_row["change_digest"]),
+            revision_row.get("parent_revision_digest"),
+        )
+
+    concurrency_raw = row.get("concurrency_policy")
+    concurrency = None
+    if concurrency_raw is not None:
+        concurrency_row = _study_spec_mapping(
+            concurrency_raw,
+            "study concurrency policy spec",
+        )
+        concurrency = StudyConcurrencyPolicy(
+            max_parallel_repetitions=int(
+                concurrency_row["max_parallel_repetitions"]
+            ),
+            parallel_assignments=bool(
+                concurrency_row["parallel_assignments"]
+            ),
+            cpu_isolation=str(concurrency_row["cpu_isolation"]),
+            gpu_isolation=str(concurrency_row["gpu_isolation"]),
+            environment_isolation=str(
+                concurrency_row["environment_isolation"]
+            ),
+            model_admission_policy=str(
+                concurrency_row["model_admission_policy"]
+            ),
+            scheduler_policy=str(concurrency_row["scheduler_policy"]),
+            repetition_timeout_seconds=float(
+                concurrency_row["repetition_timeout_seconds"]
+            ),
+            max_parallel_assignments=int(
+                concurrency_row["max_parallel_assignments"]
+            ),
+        )
+
+    return Study(
+        project_id=str(row["project_id"]),
+        study_id=str(row["study_id"]),
+        benchmark=benchmark,
+        benchmark_split_id=row.get("benchmark_split_id"),
+        method=method,
+        models=models,
+        measurements=measurements,
+        trial=trial,
+        repetitions=int(row["repetitions"]),
+        seeds=tuple(row["seeds"]),
+        limits=limits,
+        assignment_workloads=workloads,
+        aggregation_requirement_id=str(
+            row.get(
+                "aggregation_requirement_id",
+                DEFAULT_STUDY_AGGREGATION_REQUIREMENT_ID,
+            )
+        ),
+        experiment_id=row.get("experiment_id"),
+        workload_id=str(row.get("workload_id", "method-program")),
+        trial_provider_requirement_id=str(
+            row.get(
+                "trial_provider_requirement_id",
+                "trial.method-program",
+            )
+        ),
+        replay_level=ReplayLevel(
+            str(row.get("replay_level", ReplayLevel.OBSERVATIONAL.value))
+        ),
+        repetition_timeout_seconds=float(
+            row.get("repetition_timeout_seconds", 3600.0)
+        ),
+        concurrency_policy=concurrency,
+        factors=factors,
+        participants=participants,
+        revision=revision,
+    ).build()
 
 
 @dataclass(frozen=True, slots=True)
@@ -544,4 +814,4 @@ class AgentStudySpec:
 
 
 
-__all__ = ["AgentStudySpec", "Study", "StudyModel", "StudyParticipant"]
+__all__ = ["AgentStudySpec", "Study", "StudyModel", "StudyParticipant", "materialize_research_study_spec"]

@@ -1,24 +1,21 @@
 from __future__ import annotations
 
-from collections.abc import Mapping, Sequence
-
-from noetrium.api import (
-    MethodIdentity,
-    MethodProgramIdentity,
-)
-from noetrium.api import (
+from research.reproductions._support import (
     JsonObject,
     JsonValue,
+    MethodCall,
     canonical_digest,
     freeze_json,
+    method_event,
+    require_sha256,
+    thaw_json,
 )
-from noetrium.api import (
-    MethodExecutionClass,
-    MethodNodeRequest,
-    MethodNodeResult,
-    MethodProgram,
-    MethodProgramBuilder,
-)
+from research.reproductions._support import JsonObject, JsonValue, canonical_digest, freeze_json
+
+from collections.abc import Mapping, Sequence
+
+
+
 
 from .fidelity import AUTOGEN_AGENTCHAT_FIDELITY
 
@@ -93,7 +90,7 @@ def autogen_groupchat_initial_state(
     }
 
 
-def _manager_view(request: MethodNodeRequest) -> JsonObject:
+def _manager_view(request: MethodCall) -> JsonObject:
     return {
         "task_instruction": _text(
             request.state.get("task_instruction"),
@@ -110,7 +107,7 @@ def _manager_view(request: MethodNodeRequest) -> JsonObject:
     }
 
 
-def _participant_view(request: MethodNodeRequest) -> JsonObject:
+def _participant_view(request: MethodCall) -> JsonObject:
     speaker = _text(request.state.get("current_speaker"), "current speaker")
     return {
         "participant_id": speaker,
@@ -123,7 +120,7 @@ def _participant_view(request: MethodNodeRequest) -> JsonObject:
     }
 
 
-def _current_speaker_target(request: MethodNodeRequest) -> str:
+def _current_speaker_target(request: MethodCall) -> str:
     return _text(request.state.get("current_speaker"), "current speaker")
 
 
@@ -155,12 +152,12 @@ def _participant_output(value: JsonValue) -> tuple[str, bool, bool]:
     return content, terminate, admin_interrupt
 
 
-def _return_result(request: MethodNodeRequest) -> MethodNodeResult:
+def _return_result(request: MethodCall) -> MethodNodeResult:
     transcript = _transcript(request.state.get("transcript", ()))
     round_count = request.state.get("round", 0)
     if type(round_count) is not int or round_count < 0:
         raise ValueError("AutoGen round must be non-negative")
-    return MethodNodeResult(
+    return dict(
         value={
             "terminated": request.state.get("terminated") is True,
             "round_count": round_count,
@@ -176,21 +173,21 @@ def _return_result(request: MethodNodeRequest) -> MethodNodeResult:
     )
 
 
-def build_autogen_groupchat_method_program(
+def build_autogen_groupchat_method_program(method,
     participant_ids: tuple[str, ...],
-) -> MethodProgram:
+) -> None:
     participants = _agent_ids(participant_ids)
     fidelity = AUTOGEN_AGENTCHAT_FIDELITY
 
-    def validate_topology(request: MethodNodeRequest) -> MethodNodeResult:
+    def validate_topology(request: MethodCall) -> MethodNodeResult:
         state_participants = _agent_ids(request.state.get("participants"))
         if state_participants != participants:
             raise ValueError(
                 "AutoGen initial participant topology does not match program closure"
             )
-        return MethodNodeResult(value={"participants": participants})
+        return dict(value={"participants": participants})
 
-    def resolve_speaker(request: MethodNodeRequest) -> MethodNodeResult:
+    def resolve_speaker(request: MethodCall) -> MethodNodeResult:
         state_participants = _agent_ids(request.state.get("participants"))
         if state_participants != participants:
             raise ValueError("AutoGen participant topology drift")
@@ -210,7 +207,7 @@ def build_autogen_groupchat_method_program(
         fallback_count = request.state.get("speaker_fallback_count", 0)
         if type(fallback_count) is not int or fallback_count < 0:
             raise ValueError("AutoGen speaker_fallback_count must be non-negative")
-        return MethodNodeResult(
+        return dict(
             value={
                 "speaker": selected,
                 "fallback": fallback,
@@ -221,7 +218,7 @@ def build_autogen_groupchat_method_program(
             },
         )
 
-    def record_message(request: MethodNodeRequest) -> MethodNodeResult:
+    def record_message(request: MethodCall) -> MethodNodeResult:
         speaker = _text(request.state.get("current_speaker"), "current speaker")
         if speaker not in participants:
             raise ValueError("AutoGen current speaker escaped participant closure")
@@ -251,7 +248,7 @@ def build_autogen_groupchat_method_program(
             if admin_interrupt
             else "manager"
         )
-        return MethodNodeResult(
+        return dict(
             value={
                 "speaker": speaker,
                 "recipients": recipients,
@@ -289,17 +286,9 @@ def build_autogen_groupchat_method_program(
         "admin_can_take_over_on_interrupt": fidelity.admin_can_take_over_on_interrupt,
         "user_proxy_default_human_input_mode": fidelity.user_proxy_default_human_input_mode,
     }
-    identity = MethodProgramIdentity(
-        MethodIdentity(
-            method_id="autogen-paper-era-groupchat",
-            implementation_version=fidelity.audited_commit[:12],
-            abi_version="noetrium.method-machine.v1",
-            schema_version="autogen-paper-era-groupchat.method.v1",
-        ),
-        configuration_digest=canonical_digest(configuration),
-    )
+
     max_round = fidelity.groupchat_default_max_round
-    builder = MethodProgramBuilder(identity, entrypoint="validate_topology")
+    builder = method
     builder.compute(
         "validate_topology",
         "autogen.groupchat.topology.validate",
@@ -311,7 +300,7 @@ def build_autogen_groupchat_method_program(
         "autogen.groupchat.select-speaker",
         _MANAGER_AGENT_ID,
         ("resolve_speaker",),
-        view_handler=_manager_view,
+        view=_manager_view,
         max_visits=max_round,
     )
     builder.compute(
@@ -327,7 +316,7 @@ def build_autogen_groupchat_method_program(
         participants,
         _current_speaker_target,
         ("record_message",),
-        view_handler=_participant_view,
+        view=_participant_view,
         max_visits=max_round,
     )
     builder.compute(
@@ -343,32 +332,37 @@ def build_autogen_groupchat_method_program(
         max_visits=max_round,
     )
     builder.return_node("return", "autogen.groupchat.result", _return_result)
-    return builder.build(
-        configuration=configuration,
-        execution_class=MethodExecutionClass.CHECKPOINTABLE,
-        evidence_obligations=(
+    builder.configure(configuration)
+    builder.policy(
+        execution='checkpointable',
+        evidence=(
             "autogen.groupchat.transcript",
             "autogen.groupchat.delivery",
             "autogen.groupchat.interrupt",
         ),
-        metric_names=(
+        metrics=(
             "task_success",
             "round_count",
             "message_count",
             "speaker_fallback_count",
             "interrupt_count",
         ),
-        artifact_kinds=("groupchat_transcript",),
+        artifacts=("groupchat_transcript",),
     )
+    return builder
 
 
-AUTOGEN_REFERENCE_GROUPCHAT_PROGRAM = build_autogen_groupchat_method_program(
-    ("agent1", "agent2", "user_proxy")
-)
+METHOD_CONFIGURER = build_autogen_groupchat_method_program
+METHOD_ENTRYPOINT = "validate_topology"
+METHOD_CONFIGURER_ARGS = (("agent1", "agent2", "user_proxy"),)
+METHOD_CONFIGURER_KWARGS = {}
 
 
 __all__ = [
-    "AUTOGEN_REFERENCE_GROUPCHAT_PROGRAM",
-    "autogen_groupchat_initial_state",
-    "build_autogen_groupchat_method_program",
+    'autogen_groupchat_initial_state',
+    'build_autogen_groupchat_method_program',
+    'METHOD_CONFIGURER',
+    'METHOD_ENTRYPOINT',
+    'METHOD_CONFIGURER_ARGS',
+    'METHOD_CONFIGURER_KWARGS',
 ]

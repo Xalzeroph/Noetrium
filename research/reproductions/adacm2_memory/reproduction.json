@@ -2,8 +2,8 @@
   "schema": "noetrium.reproduction.projection.v10",
   "authority": "generated_from_typed_definition_and_source",
   "package": "adacm2_memory",
-  "package_digest": "e19ab91d5ae3137117faf4b86a23f8e7d750c603c70c45cdf40c193593d51231",
-  "definition_digest": "6a69a2d164b86b3534e4982d84e8ef08626548335af759a36096b8135e4d3ccb",
+  "package_digest": "4b62acc9bc6165de80de531216306ebd714f098f9740fd76b3b14bcdac41148b",
+  "definition_digest": "f2233e694901e3d36298496c26fdf4003827446e2d93751624bfb4ce33fc142f",
   "source_registry_digest": "d46d92fc46eb723b8905ef27d3104b049b7b560c6b2946d3ad5e25a04645996a",
   "lifecycle": "protocol_bound",
   "identity": {
@@ -49,6 +49,7 @@
     "platform_owned": [
       "LVU full-video benchmark projection",
       "MemoryMachine journal authority",
+      "MethodProgram and child-memory-machine composition",
       "cross-modal scorer implementation identity",
       "multimodal tensor content identity",
       "study and evaluation orchestration"
@@ -57,7 +58,7 @@
     "reference_publications": [
       "https://openaccess.thecvf.com/content/CVPR2025/html/Man_AdaCM2_On_Understanding_Extremely_Long-Term_Video_with_Adaptive_Cross-Modality_Memory_CVPR_2025_paper.html"
     ],
-    "catalog_digest": "692a0a25fab58258e3513aa9753f912756bdee555b40fee5e644d5ab5bb833bb"
+    "catalog_digest": "42ab43f8da8da16b26ddaa8ec64f43bf397d2563e5b6c4f309085ae7f8d77a3b"
   },
   "source_lanes": [
     {
@@ -86,6 +87,12 @@
       "content_sha256": "e62e52b00b67c6233e2f9a5d955f00616aa479dabdffb538a0312a13dd27a793"
     },
     {
+      "kind": "method_program",
+      "path": "research/reproductions/adacm2_memory/program.py",
+      "declaration_digest": "62774a42b84766e23e5a3a89a8d6de2fb1b0e130b00e7e7c57fa04cf78f02b32",
+      "content_sha256": "775110b0e0d91d1d87ce7fba288fa9052830b4aba4be57b714190c199b1aaa51"
+    },
+    {
       "kind": "research_program",
       "path": "research/reproductions/adacm2_memory/memory.py",
       "declaration_digest": "7a7851a5cf76d1973f349d89d9ce251ad1a651f81a7cf3fd410c3676ee0b4df3",
@@ -104,7 +111,7 @@
       "content_sha256": "e4497295e8450ecb6f9309fdc74720ba54cc096ec5dd79840589ffd0ddf19ffe"
     }
   ],
-  "primary_executable": "research/reproductions/adacm2_memory/memory.py",
+  "primary_executable": "research/reproductions/adacm2_memory/program.py",
   "reported_results": [
     {
       "claim_id": "adacm2_lvu_average_improvement",
@@ -164,14 +171,14 @@
   "scientific_tests": [
     {
       "path": "tests/test_scientific_adacm2_memory_v1.py",
-      "content_sha256": "4b220581d65fea4c342b18f1e961a0346e633ca0485af4f5b3055b1abf27d162"
+      "content_sha256": "cdea81401bda16fe2e1e59c86594fff3fc3e07fb6b5ec53a2c530510abd35f45"
     }
   ],
   "research_os": {
     "surface": "noetrium.api",
     "execution_state": "benchmark_authority_required",
     "program_id": "adacm2_memory",
-    "program_digest": "699b0adef0a678986f21489c99ebe1f13066684ef54113922587cb897d0dcad8",
+    "program_digest": "ae8e4eeb8aada20c2f42cb67216f27fb56ed2585fa710033bcd3a6cb86e9b8ec",
     "benchmark_authority": {
       "state": "required",
       "selection_digests": [],

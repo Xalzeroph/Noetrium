@@ -36,10 +36,8 @@ from noetrium_platform.infrastructure.resources.allocation.providers import (
     LocalEndpointCandidateSource,
     SocketEndpointProbe,
 )
-from noetrium_platform.infrastructure.resources.providers import (
-    SQLiteEndpointAllocationStore,
-    SQLiteResourceLeaseRegistry,
-)
+from noetrium_platform.infrastructure.resources.providers import SQLiteEndpointAllocationStore
+from noetrium_platform.infrastructure.resources.lease.runtime import ResourceLeaseRegistry
 from noetrium_platform.foundation.kernel.kernel.durability.sqlite import (
     durable_sqlite_connection,
 )
@@ -108,7 +106,7 @@ def build_platform_meta(
     evolution = RegistryDrivenEvolutionController(systems, store=evolution_store)
     experimentation = SQLiteExperimentationCatalog(root / "platform-experimentation.sqlite", scopes)
     lease_clock = LocalLeaseClock()
-    resources = SQLiteResourceLeaseRegistry(database, clock=lease_clock)
+    resources = ResourceLeaseRegistry(database, clock=lease_clock)
     environments = SQLiteExecutionEnvironmentCatalog(
         root / "platform-environments.sqlite",
         scopes,

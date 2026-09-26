@@ -20,7 +20,7 @@ from research.reproductions.chain_of_thought_gsm8k.program import (
 
 
 def _lane():
-    builder = api.ResearchProgramBuilder("auto-materializer-test")
+    builder = api.research_os.ResearchProgramBuilder("auto-materializer-test")
     builder.method_program(
         "method",
         module="research.reproductions.chain_of_thought_gsm8k.program",

@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from noetrium.api import (
+from noetrium.api.research_authoring import (
     ActionRequest,
     EnvironmentReplayReceipt,
     EnvironmentSession,

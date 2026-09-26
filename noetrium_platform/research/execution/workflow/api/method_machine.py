@@ -389,6 +389,10 @@ class MethodSchemaPort(Protocol):
 def _callable_digest(handler: Callable[..., object] | None) -> str:
     if handler is None:
         return canonical_digest({"callable": None})
+    frozen = getattr(handler, "__noetrium_handler_digest__", None)
+    if type(frozen) is str:
+        require_sha256(frozen, "method handler frozen digest")
+        return frozen
     try:
         source = inspect.getsource(handler)
     except (OSError, TypeError):

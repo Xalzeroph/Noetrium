@@ -44,7 +44,7 @@ from noetrium_platform.foundation.kernel.concurrency.api import (
 from noetrium_platform.foundation.kernel.concurrency.composition import (
     build_cpu_worker_pool_provider,
 )
-from noetrium_platform.research.execution.policy.api import AdmissionBudget, AdmissionMode
+from noetrium_platform.research.execution.policy.api import AdmissionBudget
 from noetrium_platform.research.execution.policy.api import ExecutionPriority
 
 from .concurrency import build_execution_concurrency_runtime
@@ -284,7 +284,7 @@ class ResearchExecutionPool:
         tenant_id: str | None = None,
         resource_id: str | None = None,
         priority: ExecutionPriority = ExecutionPriority.NORMAL,
-        admission_mode: AdmissionMode = AdmissionMode.BLOCK,
+        admission_queue_wait_timeout_seconds: float | None = None,
         resource_demand: ResourceCompetitionDemand | None = None,
         deadline: Deadline | None = None,
         failure_policy: TaskFailurePolicy = TaskFailurePolicy.FAIL_FAST,
@@ -298,7 +298,7 @@ class ResearchExecutionPool:
             tenant_id=tenant_id,
             resource_id=resource_id,
             priority=priority,
-            admission_mode=admission_mode,
+            admission_queue_wait_timeout_seconds=admission_queue_wait_timeout_seconds,
             resource_demand=resource_demand,
             deadline=deadline,
             failure_policy=failure_policy,
@@ -320,7 +320,7 @@ class ResearchExecutionPool:
         tenant_id: str | None = None,
         resource_id: str | None = None,
         priority: ExecutionPriority = ExecutionPriority.CRITICAL,
-        admission_mode: AdmissionMode = AdmissionMode.BLOCK,
+        admission_queue_wait_timeout_seconds: float | None = None,
         deadline: Deadline | None = None,
         failure_policy: TaskFailurePolicy = TaskFailurePolicy.FAIL_FAST,
     ) -> TaskGroupPort:
@@ -334,7 +334,7 @@ class ResearchExecutionPool:
             tenant_id=tenant_id,
             resource_id=resource_id,
             priority=priority,
-            admission_mode=admission_mode,
+            admission_queue_wait_timeout_seconds=admission_queue_wait_timeout_seconds,
             deadline=deadline,
             failure_policy=failure_policy,
         )
@@ -346,7 +346,7 @@ class ResearchExecutionPool:
         tenant_id: str | None = None,
         resource_id: str | None = None,
         priority: ExecutionPriority = ExecutionPriority.NORMAL,
-        admission_mode: AdmissionMode = AdmissionMode.BLOCK,
+        admission_queue_wait_timeout_seconds: float | None = None,
         resource_demand: ResourceCompetitionDemand | None = None,
         deadline: Deadline | None = None,
         failure_policy: TaskFailurePolicy = TaskFailurePolicy.FAIL_FAST,
@@ -357,7 +357,7 @@ class ResearchExecutionPool:
             tenant_id=tenant_id,
             resource_id=resource_id,
             priority=priority,
-            admission_mode=admission_mode,
+            admission_queue_wait_timeout_seconds=admission_queue_wait_timeout_seconds,
             resource_demand=resource_demand,
             deadline=deadline,
             failure_policy=failure_policy,
@@ -378,7 +378,6 @@ class ResearchExecutionPool:
                 f"research-compute-leases:{uuid4().hex}",
                 resource_id="compute-lease-heartbeats",
                 priority=ExecutionPriority.CRITICAL,
-                admission_mode=AdmissionMode.BLOCK,
                 failure_policy=TaskFailurePolicy.FAIL_FAST,
             )
         return ComputeLeaseHeartbeatFactory(
@@ -405,7 +404,6 @@ class ResearchExecutionPool:
                 f"research-endpoint-leases:{uuid4().hex}",
                 resource_id="endpoint-lease-heartbeats",
                 priority=ExecutionPriority.CRITICAL,
-                admission_mode=AdmissionMode.BLOCK,
                 failure_policy=TaskFailurePolicy.FAIL_FAST,
             )
         return EndpointLeaseHeartbeatFactory(
@@ -432,7 +430,6 @@ class ResearchExecutionPool:
                 f"research-environment-leases:{uuid4().hex}",
                 resource_id="environment-instance-lease-heartbeats",
                 priority=ExecutionPriority.CRITICAL,
-                admission_mode=AdmissionMode.BLOCK,
                 failure_policy=TaskFailurePolicy.FAIL_FAST,
             )
         return EnvironmentInstanceLeaseHeartbeatFactory(
@@ -459,7 +456,6 @@ class ResearchExecutionPool:
                 f"research-container-leases:{uuid4().hex}",
                 resource_id="docker-container-lease-heartbeats",
                 priority=ExecutionPriority.CRITICAL,
-                admission_mode=AdmissionMode.BLOCK,
                 failure_policy=TaskFailurePolicy.FAIL_FAST,
             )
         return DockerContainerLeaseHeartbeatFactory(
@@ -477,7 +473,7 @@ class ResearchExecutionPool:
         *,
         tenant_id: str | None = None,
         priority: ExecutionPriority = ExecutionPriority.NORMAL,
-        admission_mode: AdmissionMode = AdmissionMode.BLOCK,
+        admission_queue_wait_timeout_seconds: float | None = None,
         resource_demand: ResourceCompetitionDemand | None = None,
         deadline: Deadline | None = None,
         failure_policy: TaskFailurePolicy = TaskFailurePolicy.FAIL_FAST,
@@ -487,7 +483,7 @@ class ResearchExecutionPool:
             group_id,
             tenant_id=tenant_id,
             priority=priority,
-            admission_mode=admission_mode,
+            admission_queue_wait_timeout_seconds=admission_queue_wait_timeout_seconds,
             resource_demand=resource_demand,
             deadline=deadline,
             failure_policy=failure_policy,

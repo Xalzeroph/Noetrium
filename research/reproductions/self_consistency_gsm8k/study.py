@@ -1,19 +1,5 @@
 from __future__ import annotations
-
-from noetrium.api import canonical_digest
-from noetrium.api import (
-    ExperimentTrialProtocolIdentity,
-)
-from noetrium.api import (
-    BenchmarkTaskSet,
-    MeasurementDefinition,
-    ReplayLevel,
-    ResearchStudyDefinition,
-    Study,
-    StudyModel,
-    StudyParticipant,
-    TrialBudget,
-)
+from research.reproductions import _support as _rs
 from research.benchmarks.gsm8k import (
     GSM8K_BENCHMARK_ID,
     GSM8K_SPLIT_COUNTS,
@@ -24,8 +10,8 @@ from .program import SELF_CONSISTENCY_GSM8K_METHOD_PROGRAM
 
 
 def self_consistency_gsm8k_trial_protocol(
-    benchmark: BenchmarkTaskSet,
-) -> ExperimentTrialProtocolIdentity:
+    benchmark,
+):
     f = SELF_CONSISTENCY_GSM8K_FIDELITY
     if benchmark.benchmark_id != GSM8K_BENCHMARK_ID:
         raise ValueError("Self-Consistency study requires GSM8K benchmark")
@@ -34,9 +20,9 @@ def self_consistency_gsm8k_trial_protocol(
         raise ValueError(
             "Self-Consistency GSM8K paper lane requires the full 1319-task test split"
         )
-    return ExperimentTrialProtocolIdentity(
+    return _rs.study_protocol(
         "self-consistency.iclr-2023.gsm8k.palm540b.v1",
-        canonical_digest(
+        _rs.canonical_digest(
             {
                 "program_digest": SELF_CONSISTENCY_GSM8K_METHOD_PROGRAM.program_digest,
                 "benchmark_cut_digest": benchmark.cut_digest,
@@ -55,17 +41,17 @@ def self_consistency_gsm8k_trial_protocol(
     )
 
 
+@_rs.study_factory('benchmark')
 def build_self_consistency_gsm8k_study(
-    benchmark: BenchmarkTaskSet,
-) -> ResearchStudyDefinition:
+    benchmark,
+):
     f = SELF_CONSISTENCY_GSM8K_FIDELITY
     protocol = self_consistency_gsm8k_trial_protocol(benchmark)
-    return Study(
-        project_id="self-consistency-iclr-2023-reproduction",
+    return _rs.study_spec(project_id="self-consistency-iclr-2023-reproduction",
         study_id="self-consistency-gsm8k-palm540b-40path",
         benchmark=benchmark,
         benchmark_split_id=f.benchmark_split,
-        method=StudyParticipant(
+        method=_rs.study_participant(
             role="reasoner",
             kind="agent_method",
             implementation="self-consistency",
@@ -76,13 +62,13 @@ def build_self_consistency_gsm8k_study(
             ),
         ),
         models={
-            "self-consistency.reasoner": StudyModel(
+            "self-consistency.reasoner": _rs.study_model(
                 "model.palm-540b.paper-reference",
                 prompt="cot.gsm8k.neurips2022.appendix-table20",
             ),
         },
         measurements=(
-            MeasurementDefinition.scalar(
+            _rs.scalar_measurement(
                 "task_success",
                 schema_id="noetrium.measurement.binary-scalar.v1",
                 unit="ratio",
@@ -90,7 +76,7 @@ def build_self_consistency_gsm8k_study(
                 scale="binary",
                 domain="gsm8k",
             ),
-            MeasurementDefinition.scalar(
+            _rs.scalar_measurement(
                 "model_call_count",
                 schema_id="noetrium.measurement.count.v1",
                 unit="call",
@@ -98,7 +84,7 @@ def build_self_consistency_gsm8k_study(
                 scale="count",
                 domain="self_consistency",
             ),
-            MeasurementDefinition.scalar(
+            _rs.scalar_measurement(
                 "selected_vote_count",
                 schema_id="noetrium.measurement.count.v1",
                 unit="vote",
@@ -110,14 +96,14 @@ def build_self_consistency_gsm8k_study(
         trial=protocol,
         repetitions=f.paper_repetitions,
         seeds=("paper-sampling",),
-        limits=TrialBudget(
+        limits=_rs.trial_budget(
             "self-consistency-gsm8k-40-paths",
             max_steps=128,
             max_turns=f.reasoning_path_count,
             max_model_calls=f.reasoning_path_count,
         ),
-        replay_level=ReplayLevel.OBSERVATIONAL,
-    ).build()
+        replay_level='observational',
+    )
 
 
 __all__ = [

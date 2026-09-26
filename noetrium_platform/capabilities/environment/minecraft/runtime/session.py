@@ -397,6 +397,10 @@ class MinecraftEnvironmentSession(EnvironmentSession):
                     "bridge": "replaceable",
                     "max_entities": self.implementation.spec.max_entities,
                     "state_digest": self._state.snapshot_digest(),
+                    "action_contracts": tuple(
+                        contract.as_payload()
+                        for contract in minecraft_action_catalog()
+                    ),
                 },
             ),
         )

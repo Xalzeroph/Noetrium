@@ -1,19 +1,5 @@
 from __future__ import annotations
-
-from noetrium.api import canonical_digest
-from noetrium.api import (
-    ExperimentTrialProtocolIdentity,
-)
-from noetrium.api import (
-    BenchmarkTaskSet,
-    MeasurementDefinition,
-    ReplayLevel,
-    ResearchStudyDefinition,
-    Study,
-    StudyModel,
-    StudyParticipant,
-    TrialBudget,
-)
+from research.reproductions import _support as _rs
 from research.benchmarks.egoschema import (
     EGOSCHEMA_BENCHMARK_ID,
     EGOSCHEMA_PUBLIC_COUNT,
@@ -31,8 +17,8 @@ DRVIDEO_EGOSCHEMA_SAMPLING_FPS = 0.5
 
 
 def drvideo_egoschema_trial_protocol(
-    benchmark: BenchmarkTaskSet,
-) -> ExperimentTrialProtocolIdentity:
+    benchmark,
+):
     if benchmark.benchmark_id != EGOSCHEMA_BENCHMARK_ID:
         raise ValueError("DrVideo study requires EgoSchema")
     selected = benchmark.selected_tasks(EGOSCHEMA_PUBLIC_SPLIT)
@@ -40,9 +26,9 @@ def drvideo_egoschema_trial_protocol(
         raise ValueError("DrVideo requires the 500-task EgoSchema public cut")
 
     fidelity = DRVIDEO_REFERENCE_FIDELITY
-    return ExperimentTrialProtocolIdentity(
+    return _rs.study_protocol(
         "drvideo.cvpr2025.egoschema-public.paper-authoritative.v1",
-        canonical_digest(
+        _rs.canonical_digest(
             {
                 "source_commit": DRVIDEO_OFFICIAL_COMMIT,
                 "method_program_digest": DRVIDEO_METHOD_PROGRAM.program_digest,
@@ -65,17 +51,17 @@ def drvideo_egoschema_trial_protocol(
     )
 
 
+@_rs.study_factory('benchmark')
 def build_drvideo_egoschema_public_study(
-    benchmark: BenchmarkTaskSet,
-) -> ResearchStudyDefinition:
+    benchmark,
+):
     fidelity = DRVIDEO_REFERENCE_FIDELITY
     protocol = drvideo_egoschema_trial_protocol(benchmark)
-    return Study(
-        project_id="drvideo-cvpr-2025-reproduction",
+    return _rs.study_spec(project_id="drvideo-cvpr-2025-reproduction",
         study_id="drvideo-cvpr-2025-egoschema-public",
         benchmark=benchmark,
         benchmark_split_id=EGOSCHEMA_PUBLIC_SPLIT,
-        method=StudyParticipant(
+        method=_rs.study_participant(
             role="document_retrieval_video_agent",
             kind="agent_method",
             implementation="drvideo",
@@ -93,17 +79,17 @@ def build_drvideo_egoschema_public_study(
             ),
         ),
         models={
-            "captioner": StudyModel(
+            "captioner": _rs.study_model(
                 "model.lavila.egoschema-captioner",
                 prompt="drvideo.egoschema.coarse-document",
             ),
-            "agent": StudyModel(
+            "agent": _rs.study_model(
                 "model.openai.gpt-4-1106-preview",
                 prompt="drvideo.cvpr2025.agent-prompts",
             ),
         },
         measurements=(
-            MeasurementDefinition.scalar(
+            _rs.scalar_measurement(
                 "multiple_choice_accuracy",
                 schema_id="noetrium.measurement.ratio.v1",
                 unit="ratio",
@@ -111,7 +97,7 @@ def build_drvideo_egoschema_public_study(
                 scale="continuous",
                 domain="egoschema",
             ),
-            MeasurementDefinition.scalar(
+            _rs.scalar_measurement(
                 "retrieved_frame_count",
                 schema_id="noetrium.measurement.count.v1",
                 unit="frame",
@@ -119,7 +105,7 @@ def build_drvideo_egoschema_public_study(
                 scale="count",
                 domain="drvideo",
             ),
-            MeasurementDefinition.scalar(
+            _rs.scalar_measurement(
                 "augmented_frame_count",
                 schema_id="noetrium.measurement.count.v1",
                 unit="frame",
@@ -127,7 +113,7 @@ def build_drvideo_egoschema_public_study(
                 scale="count",
                 domain="drvideo",
             ),
-            MeasurementDefinition.scalar(
+            _rs.scalar_measurement(
                 "interaction_rounds",
                 schema_id="noetrium.measurement.count.v1",
                 unit="round",
@@ -139,16 +125,16 @@ def build_drvideo_egoschema_public_study(
         trial=protocol,
         repetitions=1,
         seeds=("paper-service-default",),
-        limits=TrialBudget(
+        limits=_rs.trial_budget(
             "drvideo-cvpr2025-egoschema-public-safety",
             max_steps=96,
             max_turns=16,
             max_model_calls=8,
             max_working_seconds=3600.0,
         ),
-        replay_level=ReplayLevel.OBSERVATIONAL,
+        replay_level='observational',
         repetition_timeout_seconds=3600.0,
-    ).build()
+    )
 
 
 __all__ = [

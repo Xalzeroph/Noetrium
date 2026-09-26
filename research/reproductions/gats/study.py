@@ -1,17 +1,5 @@
 from __future__ import annotations
-
-from noetrium.api import canonical_digest
-from noetrium.api import ExperimentTrialProtocolIdentity
-from noetrium.api import (
-    BenchmarkTaskSet,
-    MeasurementDefinition,
-    ReplayLevel,
-    ResearchStudyDefinition,
-    Study,
-    StudyModel,
-    StudyParticipant,
-    TrialBudget,
-)
+from research.reproductions import _support as _rs
 from research.benchmarks.gats_synthetic import (
     GATS_STRESS_REVISION,
     GATS_STRESS_SPLIT,
@@ -21,9 +9,9 @@ from research.benchmarks.gats_synthetic import (
 
 from .fidelity import GATS_REPRODUCIBILITY_FIDELITY
 
-GATS_STRESS_B20_TRIAL_PROTOCOL = ExperimentTrialProtocolIdentity(
+GATS_STRESS_B20_TRIAL_PROTOCOL = _rs.study_protocol(
     "gats.stress-12x10.b20.pre-arxiv-source.v1",
-    canonical_digest({
+    _rs.canonical_digest({
         "benchmark_revision": GATS_STRESS_REVISION,
         "search_budget": 20,
         "c_puct": GATS_REPRODUCIBILITY_FIDELITY.stress_c_puct,
@@ -33,17 +21,17 @@ GATS_STRESS_B20_TRIAL_PROTOCOL = ExperimentTrialProtocolIdentity(
     }),
 )
 
-def build_gats_stress_b20_study(benchmark: BenchmarkTaskSet) -> ResearchStudyDefinition:
+@_rs.study_factory('benchmark')
+def build_gats_stress_b20_study(benchmark):
     if benchmark.benchmark_id != GATS_SYNTHETIC_BENCHMARK_ID or benchmark.revision_id != GATS_STRESS_REVISION:
         raise ValueError("GATS stress study requires the frozen 12x10 synthetic cut")
     if len(benchmark.selected_tasks(GATS_STRESS_SPLIT)) != GATS_STRESS_TASK_COUNT:
         raise ValueError("GATS stress b=20 study requires all 120 tasks")
-    return Study(
-        project_id="gats-reproduction",
+    return _rs.study_spec(project_id="gats-reproduction",
         study_id="gats-stress-b20-source-cut",
         benchmark=benchmark,
         benchmark_split_id=GATS_STRESS_SPLIT,
-        method=StudyParticipant(
+        method=_rs.study_participant(
             role="planner",
             kind="agent",
             implementation="gats",
@@ -55,7 +43,7 @@ def build_gats_stress_b20_study(benchmark: BenchmarkTaskSet) -> ResearchStudyDef
         ),
         models={},
         measurements=(
-            MeasurementDefinition.scalar(
+            _rs.scalar_measurement(
                 "task_success",
                 schema_id="noetrium.measurement.binary-scalar.v1",
                 unit="ratio",
@@ -63,7 +51,7 @@ def build_gats_stress_b20_study(benchmark: BenchmarkTaskSet) -> ResearchStudyDef
                 scale="binary",
                 domain="gats-synthetic",
             ),
-            MeasurementDefinition.scalar(
+            _rs.scalar_measurement(
                 "search_nodes",
                 schema_id="noetrium.measurement.count.v1",
                 unit="node",
@@ -71,7 +59,7 @@ def build_gats_stress_b20_study(benchmark: BenchmarkTaskSet) -> ResearchStudyDef
                 scale="count",
                 domain="gats-synthetic",
             ),
-            MeasurementDefinition.scalar(
+            _rs.scalar_measurement(
                 "plan_cost",
                 schema_id="noetrium.measurement.scalar.v1",
                 unit="cost",
@@ -83,11 +71,11 @@ def build_gats_stress_b20_study(benchmark: BenchmarkTaskSet) -> ResearchStudyDef
         trial=GATS_STRESS_B20_TRIAL_PROTOCOL,
         repetitions=1,
         seeds=tuple(str(seed) for seed in GATS_REPRODUCIBILITY_FIDELITY.stress_seeds),
-        limits=TrialBudget(
+        limits=_rs.trial_budget(
             "gats-stress-max-steps-35",
             max_steps=GATS_REPRODUCIBILITY_FIDELITY.stress_max_steps,
         ),
-        replay_level=ReplayLevel.OBSERVATIONAL,
-    ).build()
+        replay_level='observational',
+    )
 
 __all__ = ["GATS_STRESS_B20_TRIAL_PROTOCOL", "build_gats_stress_b20_study"]

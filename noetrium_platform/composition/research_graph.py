@@ -43,7 +43,6 @@ from noetrium_platform.research.execution.graph.api import (
     ResearchGraphReconciliationRequired,
 )
 from noetrium_platform.research.execution.policy.api import (
-    AdmissionMode,
     ExecutionPriority,
 )
 
@@ -1032,7 +1031,6 @@ class ResearchGraphScheduler:
             tenant_id=self._tenant_id,
             resource_id=f"research-graph:{self._plan.graph_id}",
             priority=self._priority,
-            admission_mode=AdmissionMode.BLOCK,
             deadline=deadline,
             failure_policy=TaskFailurePolicy.COLLECT_ALL,
         )
@@ -1042,7 +1040,7 @@ class ResearchGraphScheduler:
                 tenant_id=self._tenant_id,
                 resource_id=f"research-graph:{self._plan.graph_id}",
                 priority=self._priority,
-                admission_mode=AdmissionMode.REJECT,
+                admission_queue_wait_timeout_seconds=0.0,
                 deadline=deadline,
                 failure_policy=TaskFailurePolicy.COLLECT_ALL,
             )
@@ -1067,8 +1065,7 @@ class ResearchGraphScheduler:
                 tenant_id=self._tenant_id,
                 resource_id=f"research-graph-lease:{self._plan.graph_id}",
                 priority=ExecutionPriority.CRITICAL,
-                admission_mode=AdmissionMode.BLOCK,
-                deadline=deadline,
+                    deadline=deadline,
                 failure_policy=TaskFailurePolicy.FAIL_FAST,
             )
         except BaseException:

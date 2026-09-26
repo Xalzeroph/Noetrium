@@ -1,17 +1,5 @@
 from __future__ import annotations
-
-from noetrium.api import canonical_digest
-from noetrium.api import ExperimentTrialProtocolIdentity
-from noetrium.api import (
-    BenchmarkTaskSet,
-    MeasurementDefinition,
-    ReplayLevel,
-    ResearchStudyDefinition,
-    Study,
-    StudyModel,
-    StudyParticipant,
-    TrialBudget,
-)
+from research.reproductions import _support as _rs
 from research.benchmarks.visualwebarena import (
     VISUALWEBARENA_BENCHMARK_ID,
     VISUALWEBARENA_SITE_TASK_COUNTS,
@@ -22,9 +10,9 @@ from .fidelity import TREE_SEARCH_VWA_FIDELITY
 
 TREE_SEARCH_VWA_SHOPPING_SPLIT = visualwebarena_site_split_id("shopping")
 
-TREE_SEARCH_VWA_RELEASED_TRIAL_PROTOCOL = ExperimentTrialProtocolIdentity(
+TREE_SEARCH_VWA_RELEASED_TRIAL_PROTOCOL = _rs.study_protocol(
     "tree-search-language-model-agents.vwa-shopping.released.v1",
-    canonical_digest(
+    _rs.canonical_digest(
         {
             "launcher_path": TREE_SEARCH_VWA_FIDELITY.launcher_path,
             "runner_path": TREE_SEARCH_VWA_FIDELITY.runner_path,
@@ -51,21 +39,21 @@ TREE_SEARCH_VWA_RELEASED_TRIAL_PROTOCOL = ExperimentTrialProtocolIdentity(
 )
 
 
+@_rs.study_factory('benchmark')
 def build_tree_search_vwa_shopping_released_study(
-    benchmark: BenchmarkTaskSet,
-) -> ResearchStudyDefinition:
+    benchmark,
+):
     if benchmark.benchmark_id != VISUALWEBARENA_BENCHMARK_ID:
         raise ValueError("Tree Search study requires a VisualWebArena benchmark cut")
     selected = benchmark.selected_tasks(TREE_SEARCH_VWA_SHOPPING_SPLIT)
     if len(selected) != VISUALWEBARENA_SITE_TASK_COUNTS["shopping"]:
         raise ValueError("Tree Search released shopping lane requires all 466 VWA shopping tasks")
 
-    return Study(
-        project_id="tree-search-language-model-agents-reproduction",
+    return _rs.study_spec(project_id="tree-search-language-model-agents-reproduction",
         study_id="tree-search-vwa-shopping-released",
         benchmark=benchmark,
         benchmark_split_id=TREE_SEARCH_VWA_SHOPPING_SPLIT,
-        method=StudyParticipant(
+        method=_rs.study_participant(
             role="agent",
             kind="agent",
             implementation="tree-search-language-model-agents",
@@ -79,7 +67,7 @@ def build_tree_search_vwa_shopping_released_study(
             ),
         ),
         models={
-            "policy": StudyModel(
+            "policy": _rs.study_model(
                 "model.tree-search.policy",
                 prompt="tree-search.vwa-shopping.prompt",
             ),
@@ -87,7 +75,7 @@ def build_tree_search_vwa_shopping_released_study(
             "evaluation_captioner": "model.visualwebarena.evaluation-captioner",
         },
         measurements=(
-            MeasurementDefinition.scalar(
+            _rs.scalar_measurement(
                 "task_score",
                 schema_id="noetrium.measurement.scalar.v1",
                 unit="score",
@@ -95,7 +83,7 @@ def build_tree_search_vwa_shopping_released_study(
                 scale="continuous",
                 domain="visualwebarena",
             ),
-            MeasurementDefinition.scalar(
+            _rs.scalar_measurement(
                 "task_success",
                 schema_id="noetrium.measurement.binary-scalar.v1",
                 unit="ratio",
@@ -103,7 +91,7 @@ def build_tree_search_vwa_shopping_released_study(
                 scale="binary",
                 domain="visualwebarena",
             ),
-            MeasurementDefinition.scalar(
+            _rs.scalar_measurement(
                 "committed_steps",
                 schema_id="noetrium.measurement.count.v1",
                 unit="step",
@@ -111,7 +99,7 @@ def build_tree_search_vwa_shopping_released_study(
                 scale="count",
                 domain="visualwebarena",
             ),
-            MeasurementDefinition.scalar(
+            _rs.scalar_measurement(
                 "value_evaluations",
                 schema_id="noetrium.measurement.count.v1",
                 unit="evaluation",
@@ -123,12 +111,12 @@ def build_tree_search_vwa_shopping_released_study(
         trial=TREE_SEARCH_VWA_RELEASED_TRIAL_PROTOCOL,
         repetitions=1,
         seeds=("paper-default",),
-        limits=TrialBudget(
+        limits=_rs.trial_budget(
             "tree-search-vwa-shopping-5-committed-steps",
             max_steps=TREE_SEARCH_VWA_FIDELITY.max_steps,
         ),
-        replay_level=ReplayLevel.OBSERVATIONAL,
-    ).build()
+        replay_level='observational',
+    )
 
 __all__ = [
     "TREE_SEARCH_VWA_RELEASED_TRIAL_PROTOCOL",

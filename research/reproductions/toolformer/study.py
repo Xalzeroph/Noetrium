@@ -1,19 +1,5 @@
 from __future__ import annotations
-
-from noetrium.api import canonical_digest
-from noetrium.api import (
-    ExperimentTrialProtocolIdentity,
-)
-from noetrium.api import (
-    BenchmarkTaskSet,
-    MeasurementDefinition,
-    ReplayLevel,
-    ResearchStudyDefinition,
-    Study,
-    StudyModel,
-    StudyParticipant,
-    TrialBudget,
-)
+from research.reproductions import _support as _rs
 from research.benchmarks.toolformer_eval import TOOLFORMER_BENCHMARK_ID
 
 from .fidelity import TOOLFORMER_FIDELITY
@@ -27,18 +13,18 @@ def toolformer_trial_protocol(
     tool_capability_ids: tuple[str, ...],
     *,
     tools_enabled: bool,
-) -> ExperimentTrialProtocolIdentity:
+):
     program = build_toolformer_method_program(
         tool_capability_ids,
         tools_enabled=tools_enabled,
     )
-    return ExperimentTrialProtocolIdentity(
+    return _rs.study_protocol(
         (
             "toolformer.neurips2023.tools-enabled.v1"
             if tools_enabled
             else "toolformer.neurips2023.tools-disabled.v1"
         ),
-        canonical_digest({
+        _rs.canonical_digest({
             "program_digest": program.program_digest,
             "publication_id": TOOLFORMER_FIDELITY.publication_id,
             "tools_enabled": tools_enabled,
@@ -53,13 +39,14 @@ def toolformer_trial_protocol(
     )
 
 
+@_rs.study_factory('benchmark')
 def build_toolformer_study(
-    benchmark: BenchmarkTaskSet,
+    benchmark,
     *,
     split_id: str,
     tool_capability_ids: tuple[str, ...] = TOOLFORMER_PAPER_CAPABILITY_IDS,
     tools_enabled: bool = True,
-) -> ResearchStudyDefinition:
+):
     if benchmark.benchmark_id != TOOLFORMER_BENCHMARK_ID:
         raise ValueError("Toolformer study requires toolformer-eval")
     if not benchmark.selected_tasks(split_id):
@@ -69,12 +56,11 @@ def build_toolformer_study(
         tools_enabled=tools_enabled,
     )
     treatment = "toolformer" if tools_enabled else "toolformer-disabled"
-    return Study(
-        project_id="toolformer-neurips2023-reproduction",
+    return _rs.study_spec(project_id="toolformer-neurips2023-reproduction",
         study_id=f"toolformer-{split_id}-{treatment}",
         benchmark=benchmark,
         benchmark_split_id=split_id,
-        method=StudyParticipant(
+        method=_rs.study_participant(
             role="toolformer",
             kind="agent_method",
             implementation="toolformer-paper-era",
@@ -88,13 +74,13 @@ def build_toolformer_study(
             ),
         ),
         models={
-            "toolformer": StudyModel(
+            "toolformer": _rs.study_model(
                 "model.toolformer.gpt-j",
                 prompt="toolformer.zero-shot.paper-era",
             ),
         },
         measurements=(
-            MeasurementDefinition.scalar(
+            _rs.scalar_measurement(
                 "task_success",
                 schema_id="noetrium.measurement.binary-scalar.v1",
                 unit="ratio",
@@ -102,7 +88,7 @@ def build_toolformer_study(
                 scale="binary",
                 domain="toolformer",
             ),
-            MeasurementDefinition.scalar(
+            _rs.scalar_measurement(
                 "tool_call_count",
                 schema_id="noetrium.measurement.count.v1",
                 unit="tool_call",
@@ -110,7 +96,7 @@ def build_toolformer_study(
                 scale="count",
                 domain="toolformer",
             ),
-            MeasurementDefinition.scalar(
+            _rs.scalar_measurement(
                 "model_call_count",
                 schema_id="noetrium.measurement.count.v1",
                 unit="model_call",
@@ -125,14 +111,14 @@ def build_toolformer_study(
         ),
         repetitions=1,
         seeds=("0",),
-        limits=TrialBudget(
+        limits=_rs.trial_budget(
             f"toolformer-{treatment}",
             max_steps=8,
             max_model_calls=2 if tools_enabled else 1,
             max_working_seconds=300.0,
         ),
-        replay_level=ReplayLevel.OBSERVATIONAL,
-    ).build()
+        replay_level='observational',
+    )
 
 
 __all__ = ["build_toolformer_study", "toolformer_trial_protocol"]

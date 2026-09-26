@@ -1,15 +1,14 @@
 from __future__ import annotations
+from research.reproductions._support import JsonObject, JsonValue, canonical_digest, thaw_json
 
 from collections.abc import Mapping, Sequence
 
-from noetrium.api import (
+from noetrium.api.research_authoring import (
     CapabilityRequest,
     CapabilityResult,
     ChildFailurePolicy,
     ChildResearchMachineExecution,
     ChildResearchMachineRequest,
-    JsonObject,
-    JsonValue,
     MethodEvent,
     MethodExecutionClass,
     MethodIdentity,
@@ -19,9 +18,7 @@ from noetrium.api import (
     MethodProgramBuilder,
     MethodProgramIdentity,
     MethodRuntimePort,
-    canonical_digest,
-    thaw_json,
-)
+    )
 
 from .fidelity import FLASH_VSTREAM_REFERENCE_FIDELITY
 from .memory import (

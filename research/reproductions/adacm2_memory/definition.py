@@ -59,6 +59,7 @@ REPRODUCTION = ReproductionDefinition(
         ),
         platform_owned=(
             "MemoryMachine journal authority",
+            "MethodProgram and child-memory-machine composition",
             "multimodal tensor content identity",
             "cross-modal scorer implementation identity",
             "LVU full-video benchmark projection",
@@ -75,6 +76,10 @@ REPRODUCTION = ReproductionDefinition(
             path="research/reproductions/adacm2_memory/memory.py",
         ),
         ReproductionAssetRef(
+            kind=ReproductionAssetKind("method_program"),
+            path="research/reproductions/adacm2_memory/program.py",
+        ),
+        ReproductionAssetRef(
             kind=ReproductionAssetKind("benchmark"),
             path="research/reproductions/adacm2_memory/benchmark.py",
         ),
@@ -87,7 +92,7 @@ REPRODUCTION = ReproductionDefinition(
             path="research/reproductions/adacm2_memory/source.py",
         ),
     ),
-    primary_executable="research/reproductions/adacm2_memory/memory.py",
+    primary_executable="research/reproductions/adacm2_memory/program.py",
     reported_results=(
         ReportedResult(
             claim_id="adacm2_lvu_average_improvement",

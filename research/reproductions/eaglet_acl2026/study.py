@@ -1,6 +1,5 @@
 from __future__ import annotations
-
-from noetrium.api import BenchmarkTaskSet, ResearchStudyDefinition
+from research.reproductions import _support as _rs
 from research.authoring.frontier_2026.study import (
     PaperStudySpec,
     build_ablation_matrix_from_spec,
@@ -21,14 +20,15 @@ SPEC = PaperStudySpec(
 )
 
 
+@_rs.study_factory('benchmark')
 def build_study(
-    benchmark: BenchmarkTaskSet,
+    benchmark,
     *,
     benchmark_split_id: str,
     treatment: str = "full",
     model_binding: str = "model.paper-authoritative",
     repetitions: int = 1,
-) -> ResearchStudyDefinition:
+):
     require_paper_benchmark(benchmark.benchmark_id)
     return build_study_from_spec(
         SPEC,
@@ -40,13 +40,14 @@ def build_study(
     )
 
 
+@_rs.study_factory('benchmark')
 def build_ablation_matrix(
-    benchmark: BenchmarkTaskSet,
+    benchmark,
     *,
     benchmark_split_id: str,
     model_binding: str = "model.paper-authoritative",
     repetitions: int = 1,
-) -> tuple[ResearchStudyDefinition, ...]:
+):
     require_paper_benchmark(benchmark.benchmark_id)
     return build_ablation_matrix_from_spec(
         SPEC,

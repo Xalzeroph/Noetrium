@@ -1,19 +1,5 @@
 from __future__ import annotations
-
-from noetrium.api import canonical_digest
-from noetrium.api import (
-    ExperimentTrialProtocolIdentity,
-)
-from noetrium.api import (
-    BenchmarkTaskSet,
-    MeasurementDefinition,
-    ReplayLevel,
-    ResearchStudyDefinition,
-    Study,
-    StudyModel,
-    StudyParticipant,
-    TrialBudget,
-)
+from research.reproductions import _support as _rs
 from research.benchmarks.minecraft_long_horizon_67 import (
     MINECRAFT_LONG_HORIZON_67_ALL_SPLIT,
     MINECRAFT_LONG_HORIZON_67_BENCHMARK_ID,
@@ -27,16 +13,16 @@ from .source import OPTIMUS1_PAPER_ERA_COMMIT
 
 
 def optimus1_neurips2024_long_horizon_trial_protocol(
-    benchmark: BenchmarkTaskSet,
-) -> ExperimentTrialProtocolIdentity:
+    benchmark,
+):
     if benchmark.benchmark_id != MINECRAFT_LONG_HORIZON_67_BENCHMARK_ID:
         raise ValueError("Optimus-1 study requires Minecraft Long-Horizon 67")
     selected = benchmark.selected_tasks(MINECRAFT_LONG_HORIZON_67_ALL_SPLIT)
     if len(selected) != MINECRAFT_LONG_HORIZON_67_TASK_COUNT:
         raise ValueError("Optimus-1 study requires the 67-task paper cut")
-    return ExperimentTrialProtocolIdentity(
+    return _rs.study_protocol(
         "optimus1.neurips2024.minecraft-long-horizon-67.v1",
-        canonical_digest(
+        _rs.canonical_digest(
             {
                 "source_commit": OPTIMUS1_PAPER_ERA_COMMIT,
                 "method_program_digest": OPTIMUS1_METHOD_PROGRAM.program_digest,
@@ -60,16 +46,16 @@ def optimus1_neurips2024_long_horizon_trial_protocol(
     )
 
 
+@_rs.study_factory('benchmark')
 def build_optimus1_neurips2024_long_horizon_study(
-    benchmark: BenchmarkTaskSet,
-) -> ResearchStudyDefinition:
+    benchmark,
+):
     protocol = optimus1_neurips2024_long_horizon_trial_protocol(benchmark)
-    return Study(
-        project_id="optimus1-neurips-2024-reproduction",
+    return _rs.study_spec(project_id="optimus1-neurips-2024-reproduction",
         study_id="optimus1-neurips-2024-minecraft-long-horizon-67",
         benchmark=benchmark,
         benchmark_split_id=MINECRAFT_LONG_HORIZON_67_ALL_SPLIT,
-        method=StudyParticipant(
+        method=_rs.study_participant(
             role="hybrid_multimodal_minecraft_agent",
             kind="agent_method",
             implementation="optimus1",
@@ -88,17 +74,17 @@ def build_optimus1_neurips2024_long_horizon_study(
             ),
         ),
         models={
-            "planner": StudyModel(
+            "planner": _rs.study_model(
                 "model.openai.gpt-4o-paper-era-release",
                 prompt="optimus1.planner.paper-era",
             ),
-            "controller": StudyModel(
+            "controller": _rs.study_model(
                 "model.steve1.paper-era-checkpoint",
                 prompt="optimus1.controller.goal-conditioned",
             ),
         },
         measurements=(
-            MeasurementDefinition.scalar(
+            _rs.scalar_measurement(
                 "task_success",
                 schema_id="noetrium.measurement.ratio.v1",
                 unit="ratio",
@@ -106,7 +92,7 @@ def build_optimus1_neurips2024_long_horizon_study(
                 scale="binary",
                 domain="minecraft_long_horizon_67",
             ),
-            MeasurementDefinition.scalar(
+            _rs.scalar_measurement(
                 "environment_steps",
                 schema_id="noetrium.measurement.count.v1",
                 unit="environment_step",
@@ -114,7 +100,7 @@ def build_optimus1_neurips2024_long_horizon_study(
                 scale="count",
                 domain="minecraft_long_horizon_67",
             ),
-            MeasurementDefinition.scalar(
+            _rs.scalar_measurement(
                 "wall_time_seconds",
                 schema_id="noetrium.measurement.duration.v1",
                 unit="second",
@@ -126,16 +112,16 @@ def build_optimus1_neurips2024_long_horizon_study(
         trial=protocol,
         repetitions=1,
         seeds=("paper-world-seed-unpublished",),
-        limits=TrialBudget(
+        limits=_rs.trial_budget(
             "optimus1-neurips2024-long-horizon-67-safety",
             max_steps=36000,
             max_turns=4096,
             max_model_calls=2048,
             max_working_seconds=1800.0,
         ),
-        replay_level=ReplayLevel.OBSERVATIONAL,
+        replay_level='observational',
         repetition_timeout_seconds=1800.0,
-    ).build()
+    )
 
 
 __all__ = [

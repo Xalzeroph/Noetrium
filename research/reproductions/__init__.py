@@ -13,7 +13,7 @@ from __future__ import annotations
 from noetrium import api
 
 
-def build_research() -> api.ResearchPortfolio:
+def build_research() -> api.research_os.ResearchPortfolio:
     """Compile every executable reproduction into one current Research OS portfolio."""
     from .research_os import compile_repository_reproduction_portfolio
 
@@ -53,7 +53,7 @@ def build_execution_research(
     requests: tuple[object, ...],
     *,
     capability_resolver: object | None = None,
-) -> api.ResearchPortfolio:
+) -> api.research_os.ResearchPortfolio:
     """Compile scientific lane requests into a fully bound ResearchPortfolio.
 
     Benchmark split expansion, typed paper-option expansion, capability closure
@@ -86,7 +86,7 @@ def build_execution_research(
     )
 
 
-def build_bound_research(bindings: tuple[object, ...]) -> api.ResearchPortfolio:
+def build_bound_research(bindings: tuple[object, ...]) -> api.research_os.ResearchPortfolio:
     """Compile exact paper-owned execution bindings into one runnable portfolio.
 
     The caller supplies only scientific closure values. Study/Method/ResearchMachine

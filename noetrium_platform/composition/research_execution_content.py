@@ -256,11 +256,8 @@ class ResearchExecutionVerifierArtifactPublisher:
                 "noetrium.verifier-stage-workload-provider"
             ),
             metadata={
-                "task_id": (
-                    ""
-                    if request.assignment.task_id is None
-                    else request.assignment.task_id
-                ),
+                "workload_task_ids": request.assignment.workload.task_ids,
+                "workload_digest": request.assignment.workload.workload_digest,
                 "artifact_id": declaration.artifact_id,
                 "assignment_digest": (
                     request.assignment.assignment_digest

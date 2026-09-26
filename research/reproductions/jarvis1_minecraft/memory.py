@@ -1,27 +1,21 @@
 from __future__ import annotations
+from research.reproductions._support import JsonObject, JsonValue, canonical_digest, freeze_json, require_sha256, thaw_json
 
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass, field
 import math
 from typing import Protocol, runtime_checkable
 
-from noetrium.api import (
-    JsonObject,
-    JsonValue,
+from noetrium.api.research_authoring import (
     MachineJournalPort,
     MachineSnapshotStorePort,
-    canonical_digest,
-    freeze_json,
-    require_sha256,
-    thaw_json,
-)
-from noetrium.api import (
+    )
+from noetrium.api.research_authoring import (
     MemoryConcern,
     MemoryProgramBuilder,
     ProgramNodeRequest,
     ProgramNodeResult,
     ResearchHostOperation,
-    ResearchProgram,
     ResearchProgramHost,
 )
 
@@ -597,7 +591,7 @@ def _dispatch(
     )
 
 
-def build_jarvis1_memory_program() -> ResearchProgram:
+def build_jarvis1_memory_program():
     return (
         MemoryProgramBuilder.create(
             program_id="jarvis1.multimodal-memory",
@@ -650,7 +644,7 @@ def jarvis1_memory_host(
     *,
     journal: MachineJournalPort,
     snapshot_store: MachineSnapshotStorePort | None = None,
-) -> ResearchProgramHost:
+):
     return ResearchProgramHost(
         host_id="jarvis1.multimodal-memory",
         program=JARVIS1_MEMORY_PROGRAM,

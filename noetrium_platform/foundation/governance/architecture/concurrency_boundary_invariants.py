@@ -31,7 +31,6 @@ _CONCURRENCY_FORBIDDEN_POLICY_IDENTIFIERS = frozenset(
         "AdmissionBudget",
         "AdmissionIdentity",
         "AdmissionIntent",
-        "AdmissionMode",
         "AdmissionRejected",
         "ExecutionPriority",
         "SchedulingCandidate",

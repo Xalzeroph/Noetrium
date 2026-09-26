@@ -379,7 +379,7 @@ def test_project_sync_regenerates_shell_without_touching_user_core(
     generated_test = root / "tests" / "test_generated_project.py"
 
     user_core = core.read_text(encoding="utf-8").replace(
-        'program.node("root", kind=api.ResearchNodeKind.CUSTOM)',
+        'program.node("root", kind=api.research_os.ResearchNodeKind.CUSTOM)',
         'program.node("novel-core", kind=api.ResearchNodeKind.CUSTOM)',
     )
     core.write_text(user_core, encoding="utf-8")

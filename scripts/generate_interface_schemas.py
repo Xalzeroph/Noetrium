@@ -125,10 +125,34 @@ def _class(node: ast.ClassDef) -> dict[str, Any]:
     }
 
 
-def _symbols(path: Path, names: tuple[str, ...]) -> tuple[dict[str, Any], ...]:
+def _reexport_source(root: Path, source: Path, module: str) -> Path | None:
+    if module.startswith("."):
+        level = len(module) - len(module.lstrip("."))
+        suffix = module[level:]
+        base = source.parent
+        for _ in range(level - 1):
+            base = base.parent
+        target = base.joinpath(*suffix.split(".")) if suffix else base
+    else:
+        target = root.joinpath(*module.split("."))
+    file_path = target.with_suffix(".py")
+    if file_path.is_file():
+        return file_path
+    init_path = target / "__init__.py"
+    return init_path if init_path.is_file() else None
+
+
+def _symbols(
+    root: Path,
+    path: Path,
+    names: tuple[str, ...],
+    *,
+    seen: frozenset[tuple[Path, str]] = frozenset(),
+) -> tuple[dict[str, Any], ...]:
     tree = ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
     definitions: dict[str, ast.AST] = {}
     reexports: dict[str, tuple[str, str]] = {}
+    star_reexports: list[str] = []
     for node in tree.body:
         if isinstance(node, (ast.ClassDef, ast.FunctionDef, ast.AsyncFunctionDef)):
             definitions[node.name] = node
@@ -140,7 +164,9 @@ def _symbols(path: Path, names: tuple[str, ...]) -> tuple[dict[str, Any], ...]:
         elif isinstance(node, ast.ImportFrom):
             module = "." * node.level + (node.module or "")
             for alias in node.names:
-                if alias.name != "*":
+                if alias.name == "*":
+                    star_reexports.append(module)
+                else:
                     reexports[alias.asname or alias.name] = (module, alias.name)
 
     result: list[dict[str, Any]] = []
@@ -162,7 +188,7 @@ def _symbols(path: Path, names: tuple[str, ...]) -> tuple[dict[str, Any], ...]:
             })
         elif name in reexports:
             module, origin_name = reexports[name]
-            result.append({
+            row: dict[str, Any] = {
                 "schema_id": INTERFACE_SCHEMA_ID,
                 "schema_version": INTERFACE_SCHEMA_VERSION,
                 "name": name,
@@ -170,16 +196,71 @@ def _symbols(path: Path, names: tuple[str, ...]) -> tuple[dict[str, Any], ...]:
                 "origin_module": module,
                 "origin_name": origin_name,
                 "doc": None,
-            })
+            }
+            source = _reexport_source(root, path, module)
+            key = (source.resolve(), origin_name) if source is not None else None
+            if source is not None and key not in seen:
+                row["resolved_schema"] = _symbols(
+                    root,
+                    source,
+                    (origin_name,),
+                    seen=seen | {key},
+                )[0]
+            result.append(row)
         else:
-            result.append({
-                "schema_id": INTERFACE_SCHEMA_ID,
-                "schema_version": INTERFACE_SCHEMA_VERSION,
-                "name": name,
-                "kind": "unknown",
-                "doc": None,
-            })
+            resolved_star: dict[str, Any] | None = None
+            for module in star_reexports:
+                source = _reexport_source(root, path, module)
+                key = (
+                    (source.resolve(), name)
+                    if source is not None
+                    else None
+                )
+                if source is None or key in seen:
+                    continue
+                candidate = _symbols(
+                    root,
+                    source,
+                    (name,),
+                    seen=seen | {key},
+                )[0]
+                if candidate.get("kind") != "unknown":
+                    resolved_star = {
+                        "schema_id": INTERFACE_SCHEMA_ID,
+                        "schema_version": INTERFACE_SCHEMA_VERSION,
+                        "name": name,
+                        "kind": "reexport",
+                        "origin_module": module,
+                        "origin_name": name,
+                        "resolved_schema": candidate,
+                        "doc": None,
+                    }
+                    break
+            if resolved_star is not None:
+                result.append(resolved_star)
+            else:
+                result.append({
+                    "schema_id": INTERFACE_SCHEMA_ID,
+                    "schema_version": INTERFACE_SCHEMA_VERSION,
+                    "name": name,
+                    "kind": "unknown",
+                    "doc": None,
+                })
     return tuple(result)
+
+
+def _literal_all(path: Path) -> tuple[str, ...]:
+    tree = ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
+    for node in tree.body:
+        if not isinstance(node, ast.Assign):
+            continue
+        if not any(isinstance(target, ast.Name) and target.id == "__all__" for target in node.targets):
+            continue
+        raw = ast.literal_eval(node.value)
+        if not isinstance(raw, (tuple, list)) or any(not isinstance(item, str) for item in raw):
+            raise RuntimeError(f"{path}: __all__ must be a literal string sequence")
+        return tuple(raw)
+    raise RuntimeError(f"{path}: missing literal __all__")
 
 
 def _digest(value: object) -> str:
@@ -201,7 +282,7 @@ def build_document(root: Path) -> dict[str, Any]:
                 "module": api.module,
                 "source": api.source,
                 "symbols": list(api.symbols),
-                "symbol_schemas": list(_symbols(source, api.symbols)),
+                "symbol_schemas": list(_symbols(root, source, api.symbols)),
             })
         systems.append({
             "system_key": surface.system_key,
@@ -209,6 +290,25 @@ def build_document(root: Path) -> dict[str, Any]:
             "facade_module": surface.facade_module,
             "api_modules": modules,
         })
+    public_source = root / "noetrium/api/__init__.py"
+    public_symbols = _literal_all(public_source)
+    public_api = {
+        "module": "noetrium.api",
+        "source": public_source.relative_to(root).as_posix(),
+        "symbols": list(public_symbols),
+        "symbol_schemas": list(_symbols(root, public_source, public_symbols)),
+    }
+
+    product_source = root / "noetrium_platform/product/research_os.py"
+    method_source = root / "noetrium_platform/research/execution/method/authoring.py"
+    runtime_source = root / "noetrium/_research_os_runtime.py"
+    reachable_dsl = {
+        "program": _symbols(root, product_source, ("ResearchProgramBuilder",))[0],
+        "method": _symbols(root, method_source, ("ResearchMethodBuilder",))[0],
+        "memory": _symbols(root, method_source, ("ResearchMemoryBuilder",))[0],
+        "runtime": _symbols(root, runtime_source, ("ResearchOS",))[0],
+    }
+
     document = {
         "schema": SCHEMA,
         "generator": "scripts/generate_interface_schemas.py",
@@ -216,7 +316,29 @@ def build_document(root: Path) -> dict[str, Any]:
         "interface_schema": {
             "schema_id": INTERFACE_SCHEMA_ID,
             "schema_version": INTERFACE_SCHEMA_VERSION,
-            "description": "Generated signatures, annotations, class members, decorators, docs and re-export provenance for every public API symbol.",
+            "description": (
+                "The single downstream Research Portfolio / Research OS API plus "
+                "schema-only DSL types reachable from those roots."
+            ),
+        },
+        "public_api": public_api,
+        "reachable_dsl": reachable_dsl,
+        "authoring_inspection": {
+            "entrypoint": "noetrium.api",
+            "public_roots": list(public_symbols),
+            "authoring_root": "ResearchPortfolioBuilder",
+            "portfolio_type": "ResearchPortfolio",
+            "program_dsl": "ResearchPortfolioBuilder.program -> ResearchProgramBuilder",
+            "method_dsl": "ResearchProgramBuilder.method(configure) -> ResearchMethodBuilder callback",
+            "memory_dsl": "ResearchMethodBuilder.memory -> ResearchMemoryBuilder",
+            "runtime_root": "ResearchOS",
+            "project_opener": "open_project",
+            "boundary": (
+                "Only noetrium.api is downstream-importable. Program/Method/Memory "
+                "DSL types are schema-reachable implementation contracts; provider "
+                "selection, deployment, resources, Docker, model/environment lifecycle "
+                "and recovery remain platform-owned."
+            ),
         },
         "systems": systems,
     }

@@ -1,6 +1,4 @@
 from __future__ import annotations
-
-from noetrium.api import BenchmarkTaskSet
 from research.benchmarks.vima_bench import (
     VIMA_BENCHMARK_ID,
     VIMA_PARTITION_TASKS,
@@ -8,7 +6,7 @@ from research.benchmarks.vima_bench import (
 )
 
 
-def build_vima_icml2023_benchmark() -> BenchmarkTaskSet:
+def build_vima_icml2023_benchmark():
     benchmark = build_vima_bench_camera_ready_cut()
     if benchmark.benchmark_id != VIMA_BENCHMARK_ID:
         raise ValueError("VIMA-Bench authority drifted")

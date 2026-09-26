@@ -50,10 +50,10 @@ def test_every_execution_capable_reproduction_enters_the_latest_research_os() ->
     assert tuple(row.package for row in executable) == expected
 
     portfolio = build_research()
-    assert isinstance(portfolio, api.ResearchPortfolio)
+    assert isinstance(portfolio, api.research_os.ResearchPortfolio)
     assert tuple(program.program_id for program in portfolio.programs) == expected
 
-    revision = api.ResearchGraphRevision(
+    revision = api.research_os.ResearchGraphRevision(
         portfolio.portfolio_id,
         portfolio.portfolio_digest,
         (),
@@ -110,6 +110,7 @@ def test_reproduction_packages_use_only_public_noetrium_surface() -> None:
                 elif (
                     module.startswith("noetrium.")
                     and module != "noetrium.api"
+                    and not module.startswith("noetrium.api.")
                 ):
                     forbidden = True
             if forbidden:

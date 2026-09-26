@@ -46,28 +46,28 @@ def _pool() -> ResearchExecutionPool:
     )
 
 
-def _portfolio(revision: int) -> api.ResearchPortfolio:
-    builder = api.ResearchProgramBuilder("paper")
+def _portfolio(revision: int) -> api.research_os.ResearchPortfolio:
+    builder = api.research_os.ResearchProgramBuilder("paper")
     builder.node(
         "a",
-        kind=api.ResearchNodeKind.CUSTOM,
+        kind=api.research_os.ResearchNodeKind.CUSTOM,
         config={"revision": revision},
     )
     builder.node(
         "b",
-        kind=api.ResearchNodeKind.CUSTOM,
+        kind=api.research_os.ResearchNodeKind.CUSTOM,
     )
     builder.depends("b", "a")
-    return api.ResearchPortfolio("migration-control", (builder.freeze(),))
+    return api.research_os.ResearchPortfolio("migration-control", (builder.freeze(),))
 
 
 def _revision(
-    portfolio: api.ResearchPortfolio,
+    portfolio: api.research_os.ResearchPortfolio,
     *,
-    parent: api.ResearchGraphRevision | None = None,
+    parent: api.research_os.ResearchGraphRevision | None = None,
     message: str,
-) -> api.ResearchGraphRevision:
-    return api.ResearchGraphRevision(
+) -> api.research_os.ResearchGraphRevision:
+    return api.research_os.ResearchGraphRevision(
         portfolio.portfolio_id,
         portfolio.portfolio_digest,
         () if parent is None else (parent.revision_digest,),

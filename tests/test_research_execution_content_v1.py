@@ -34,18 +34,18 @@ def test_research_execution_content_survives_reopen_and_is_shared_with_research_
     assert reopened.references.resolve(reference.reference_id, scope) == reference
     assert reopened.read(reference) == payload
 
-    builder = api.ResearchProgramBuilder("fixture")
+    builder = api.research_os.ResearchProgramBuilder("fixture")
     builder.definition(
         "bootstrap",
-        kind=api.ResearchDefinitionKind.CUSTOM,
+        kind=api.research_os.ResearchDefinitionKind.CUSTOM,
         implementation=_bootstrap,
     )
     builder.node(
         "root",
-        kind=api.ResearchNodeKind.CUSTOM,
+        kind=api.research_os.ResearchNodeKind.CUSTOM,
         definitions=("bootstrap",),
     )
-    portfolio = api.ResearchPortfolio("fixture", (builder.freeze(),))
+    portfolio = api.research_os.ResearchPortfolio("fixture", (builder.freeze(),))
 
     composition = compose_local_research_os(
         tmp_path / "research-os",

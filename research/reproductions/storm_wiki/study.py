@@ -1,19 +1,5 @@
 from __future__ import annotations
-
-from noetrium.api import canonical_digest
-from noetrium.api import (
-    ExperimentTrialProtocolIdentity,
-)
-from noetrium.api import (
-    BenchmarkTaskSet,
-    MeasurementDefinition,
-    ReplayLevel,
-    ResearchStudyDefinition,
-    Study,
-    StudyModel,
-    StudyParticipant,
-    TrialBudget,
-)
+from research.reproductions import _support as _rs
 from research.benchmarks.freshwiki import FRESHWIKI_BENCHMARK_ID
 
 from .fidelity import STORM_WIKI_REFERENCE_FIDELITY
@@ -23,14 +9,14 @@ from .program import build_storm_wiki_method_program
 def storm_freshwiki_trial_protocol(
     *,
     search_capability_id: str,
-) -> ExperimentTrialProtocolIdentity:
+):
     program = build_storm_wiki_method_program(
         search_capability_id=search_capability_id,
     )
     fidelity = STORM_WIKI_REFERENCE_FIDELITY
-    return ExperimentTrialProtocolIdentity(
+    return _rs.study_protocol(
         "storm.naacl2024.freshwiki.v1",
-        canonical_digest({
+        _rs.canonical_digest({
             "program_digest": program.program_digest,
             "source_commit": fidelity.audited_commit,
             "stage_order": fidelity.stage_order,
@@ -42,23 +28,23 @@ def storm_freshwiki_trial_protocol(
     )
 
 
+@_rs.study_factory('benchmark')
 def build_storm_freshwiki_study(
-    benchmark: BenchmarkTaskSet,
+    benchmark,
     *,
     split_id: str,
     search_capability_id: str,
-) -> ResearchStudyDefinition:
+):
     if benchmark.benchmark_id != FRESHWIKI_BENCHMARK_ID:
         raise ValueError("STORM study requires FreshWiki")
     if not benchmark.selected_tasks(split_id):
         raise ValueError("STORM FreshWiki study requires a non-empty split")
     fidelity = STORM_WIKI_REFERENCE_FIDELITY
-    return Study(
-        project_id="storm-naacl2024-reproduction",
+    return _rs.study_spec(project_id="storm-naacl2024-reproduction",
         study_id=f"storm-freshwiki-{split_id}",
         benchmark=benchmark,
         benchmark_split_id=split_id,
-        method=StudyParticipant(
+        method=_rs.study_participant(
             role="storm",
             kind="research_agent",
             implementation="storm-wiki-paper-era",
@@ -67,33 +53,33 @@ def build_storm_freshwiki_study(
             configurations=("storm.naacl2024.wiki-pipeline",),
         ),
         models={
-            "perspective": StudyModel(
+            "perspective": _rs.study_model(
                 "model.storm.perspective",
                 prompt="storm.perspective.paper-era",
             ),
-            "question": StudyModel(
+            "question": _rs.study_model(
                 "model.storm.question",
                 prompt="storm.question.paper-era",
             ),
-            "expert": StudyModel(
+            "expert": _rs.study_model(
                 "model.storm.expert",
                 prompt="storm.expert.paper-era",
             ),
-            "outline": StudyModel(
+            "outline": _rs.study_model(
                 "model.storm.outline",
                 prompt="storm.outline.paper-era",
             ),
-            "article": StudyModel(
+            "article": _rs.study_model(
                 "model.storm.article",
                 prompt="storm.article.paper-era",
             ),
-            "polish": StudyModel(
+            "polish": _rs.study_model(
                 "model.storm.polish",
                 prompt="storm.polish.paper-era",
             ),
         },
         measurements=(
-            MeasurementDefinition.scalar(
+            _rs.scalar_measurement(
                 "heading_soft_recall",
                 schema_id="noetrium.measurement.scalar.v1",
                 unit="ratio",
@@ -101,7 +87,7 @@ def build_storm_freshwiki_study(
                 scale="continuous",
                 domain="freshwiki",
             ),
-            MeasurementDefinition.scalar(
+            _rs.scalar_measurement(
                 "heading_entity_recall",
                 schema_id="noetrium.measurement.scalar.v1",
                 unit="ratio",
@@ -109,7 +95,7 @@ def build_storm_freshwiki_study(
                 scale="continuous",
                 domain="freshwiki",
             ),
-            MeasurementDefinition.scalar(
+            _rs.scalar_measurement(
                 "rouge",
                 schema_id="noetrium.measurement.scalar.v1",
                 unit="score",
@@ -117,7 +103,7 @@ def build_storm_freshwiki_study(
                 scale="continuous",
                 domain="freshwiki",
             ),
-            MeasurementDefinition.scalar(
+            _rs.scalar_measurement(
                 "entity_recall",
                 schema_id="noetrium.measurement.scalar.v1",
                 unit="ratio",
@@ -125,7 +111,7 @@ def build_storm_freshwiki_study(
                 scale="continuous",
                 domain="freshwiki",
             ),
-            MeasurementDefinition.scalar(
+            _rs.scalar_measurement(
                 "rubric_score",
                 schema_id="noetrium.measurement.scalar.v1",
                 unit="score",
@@ -133,7 +119,7 @@ def build_storm_freshwiki_study(
                 scale="continuous",
                 domain="freshwiki",
             ),
-            MeasurementDefinition.scalar(
+            _rs.scalar_measurement(
                 "model_call_count",
                 schema_id="noetrium.measurement.count.v1",
                 unit="model_call",
@@ -141,7 +127,7 @@ def build_storm_freshwiki_study(
                 scale="count",
                 domain="freshwiki",
             ),
-            MeasurementDefinition.scalar(
+            _rs.scalar_measurement(
                 "search_call_count",
                 schema_id="noetrium.measurement.count.v1",
                 unit="search_call",
@@ -155,7 +141,7 @@ def build_storm_freshwiki_study(
         ),
         repetitions=1,
         seeds=("0",),
-        limits=TrialBudget(
+        limits=_rs.trial_budget(
             "storm-freshwiki-paper-era",
             max_steps=256,
             max_model_calls=(
@@ -167,8 +153,8 @@ def build_storm_freshwiki_study(
             ),
             max_working_seconds=3600.0,
         ),
-        replay_level=ReplayLevel.OBSERVATIONAL,
-    ).build()
+        replay_level='observational',
+    )
 
 
 __all__ = [

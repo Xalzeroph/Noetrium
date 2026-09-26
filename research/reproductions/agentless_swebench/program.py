@@ -1,25 +1,22 @@
 from __future__ import annotations
 
-from collections.abc import Mapping, Sequence
-
-from noetrium.api import (
-    MethodIdentity,
-    MethodProgramIdentity,
-)
-from noetrium.api import (
-    EffectClass,
+from research.reproductions._support import (
     JsonObject,
     JsonValue,
+    MethodCall,
     canonical_digest,
+    freeze_json,
+    method_event,
+    require_sha256,
     thaw_json,
 )
-from noetrium.api import (
-    MethodExecutionClass,
-    MethodNodeRequest,
-    MethodNodeResult,
-    MethodProgram,
-    MethodProgramBuilder,
-)
+from research.reproductions._support import JsonObject, JsonValue, canonical_digest, thaw_json
+
+from collections.abc import Mapping, Sequence
+
+
+
+
 
 from .fidelity import AGENTLESS_FIDELITY
 
@@ -75,14 +72,14 @@ def agentless_initial_state(
     }
 
 
-def _model_count(request: MethodNodeRequest) -> int:
+def _model_count(request: MethodCall) -> int:
     value = request.state.get("model_call_count", 0)
     if type(value) is not int or value < 0:
         raise ValueError("Agentless model_call_count must be non-negative")
     return value
 
 
-def _files_view(request: MethodNodeRequest) -> JsonObject:
+def _files_view(request: MethodCall) -> JsonObject:
     return {
         "instance_id": request.state.get("instance_id"),
         "issue": request.state.get("issue"),
@@ -92,13 +89,13 @@ def _files_view(request: MethodNodeRequest) -> JsonObject:
     }
 
 
-def _record_files(request: MethodNodeRequest) -> MethodNodeResult:
+def _record_files(request: MethodCall) -> MethodNodeResult:
     value = request.previous_value
     raw = value.get("files", ()) if isinstance(value, Mapping) else value
     files = tuple(_text(row, "localized file") for row in _sequence(raw, "files"))
     if not files:
         raise ValueError("Agentless file localization returned no files")
-    return MethodNodeResult(
+    return dict(
         value={"files": files},
         state_update={
             "localized_files": files,
@@ -107,7 +104,7 @@ def _record_files(request: MethodNodeRequest) -> MethodNodeResult:
     )
 
 
-def _symbols_view(request: MethodNodeRequest) -> JsonObject:
+def _symbols_view(request: MethodCall) -> JsonObject:
     return {
         "issue": request.state.get("issue"),
         "localized_files": request.state.get("localized_files", ()),
@@ -117,13 +114,13 @@ def _symbols_view(request: MethodNodeRequest) -> JsonObject:
     }
 
 
-def _record_symbols(request: MethodNodeRequest) -> MethodNodeResult:
+def _record_symbols(request: MethodCall) -> MethodNodeResult:
     value = request.previous_value
     raw = value.get("symbols", ()) if isinstance(value, Mapping) else value
     symbols = tuple(_text(row, "localized symbol") for row in _sequence(raw, "symbols"))
     if not symbols:
         raise ValueError("Agentless symbol localization returned no symbols")
-    return MethodNodeResult(
+    return dict(
         value={"symbols": symbols},
         state_update={
             "localized_symbols": symbols,
@@ -132,7 +129,7 @@ def _record_symbols(request: MethodNodeRequest) -> MethodNodeResult:
     )
 
 
-def _edits_view(request: MethodNodeRequest) -> JsonObject:
+def _edits_view(request: MethodCall) -> JsonObject:
     return {
         "issue": request.state.get("issue"),
         "localized_files": request.state.get("localized_files", ()),
@@ -142,13 +139,13 @@ def _edits_view(request: MethodNodeRequest) -> JsonObject:
     }
 
 
-def _record_edits(request: MethodNodeRequest) -> MethodNodeResult:
+def _record_edits(request: MethodCall) -> MethodNodeResult:
     value = request.previous_value
     raw = value.get("edit_locations", ()) if isinstance(value, Mapping) else value
     edits = tuple(_text(row, "edit location") for row in _sequence(raw, "edit locations"))
     if not edits:
         raise ValueError("Agentless edit localization returned no locations")
-    return MethodNodeResult(
+    return dict(
         value={"edit_locations": edits},
         state_update={
             "edit_locations": edits,
@@ -157,7 +154,7 @@ def _record_edits(request: MethodNodeRequest) -> MethodNodeResult:
     )
 
 
-def _repair_view(request: MethodNodeRequest) -> JsonObject:
+def _repair_view(request: MethodCall) -> JsonObject:
     return {
         "instance_id": request.state.get("instance_id"),
         "issue": request.state.get("issue"),
@@ -169,13 +166,13 @@ def _repair_view(request: MethodNodeRequest) -> JsonObject:
     }
 
 
-def _record_repairs(request: MethodNodeRequest) -> MethodNodeResult:
+def _record_repairs(request: MethodCall) -> MethodNodeResult:
     value = request.previous_value
     raw = value.get("candidate_patches", ()) if isinstance(value, Mapping) else value
     patches = tuple(_text(row, "candidate patch") for row in _sequence(raw, "candidate patches"))
     if not patches:
         raise ValueError("Agentless repair returned no candidate patches")
-    return MethodNodeResult(
+    return dict(
         value={"candidate_patches": patches},
         state_update={
             "candidate_patches": patches,
@@ -184,7 +181,7 @@ def _record_repairs(request: MethodNodeRequest) -> MethodNodeResult:
     )
 
 
-def _validation_view(request: MethodNodeRequest) -> JsonObject:
+def _validation_view(request: MethodCall) -> JsonObject:
     return {
         "instance_id": request.state.get("instance_id"),
         "issue": request.state.get("issue"),
@@ -201,14 +198,14 @@ def _validation_view(request: MethodNodeRequest) -> JsonObject:
     }
 
 
-def _prepare_validation(request: MethodNodeRequest) -> MethodNodeResult:
+def _prepare_validation(request: MethodCall) -> MethodNodeResult:
     plan = _mapping(request.previous_value, "validation plan")
     commands = _sequence(plan.get("commands", ()), "validation commands")
     if not commands:
         raise ValueError("Agentless validation plan requires commands")
     for command in commands:
         _text(command, "validation command")
-    return MethodNodeResult(
+    return dict(
         value={
             "commands": commands,
             "reproduction_test": plan.get("reproduction_test", ""),
@@ -222,12 +219,12 @@ def _prepare_validation(request: MethodNodeRequest) -> MethodNodeResult:
     )
 
 
-def _record_validation(request: MethodNodeRequest) -> MethodNodeResult:
+def _record_validation(request: MethodCall) -> MethodNodeResult:
     result = _mapping(request.previous_value, "validation result")
     count = request.state.get("validation_count", 0)
     if type(count) is not int or count < 0:
         raise ValueError("Agentless validation_count must be non-negative")
-    return MethodNodeResult(
+    return dict(
         value=result,
         state_update={
             "validation_result": result,
@@ -236,7 +233,7 @@ def _record_validation(request: MethodNodeRequest) -> MethodNodeResult:
     )
 
 
-def _rerank_view(request: MethodNodeRequest) -> JsonObject:
+def _rerank_view(request: MethodCall) -> JsonObject:
     return {
         "issue": request.state.get("issue"),
         "candidate_patches": request.state.get("candidate_patches", ()),
@@ -246,7 +243,7 @@ def _rerank_view(request: MethodNodeRequest) -> JsonObject:
     }
 
 
-def _record_selection(request: MethodNodeRequest) -> MethodNodeResult:
+def _record_selection(request: MethodCall) -> MethodNodeResult:
     value = request.previous_value
     if isinstance(value, str):
         patch = value
@@ -255,7 +252,7 @@ def _record_selection(request: MethodNodeRequest) -> MethodNodeResult:
     else:
         raise TypeError("Agentless rerank output must be text or object")
     patch = _text(patch, "selected patch")
-    return MethodNodeResult(
+    return dict(
         value={"selected_patch": patch},
         state_update={
             "selected_patch": patch,
@@ -270,9 +267,9 @@ def _record_selection(request: MethodNodeRequest) -> MethodNodeResult:
     )
 
 
-def _return_result(request: MethodNodeRequest) -> MethodNodeResult:
+def _return_result(request: MethodCall) -> MethodNodeResult:
     patch = _text(request.state.get("selected_patch"), "selected patch")
-    return MethodNodeResult(
+    return dict(
         value={
             "instance_id": request.state.get("instance_id"),
             "selected_patch": patch,
@@ -291,7 +288,7 @@ def _return_result(request: MethodNodeRequest) -> MethodNodeResult:
     )
 
 
-def build_agentless_method_program() -> MethodProgram:
+def build_agentless_method_program(method, ) -> None:
     f = AGENTLESS_FIDELITY
     configuration: JsonObject = {
         "source_commit": f.audited_commit,
@@ -305,22 +302,14 @@ def build_agentless_method_program() -> MethodProgram:
         "generates_reproduction_tests": f.generates_reproduction_tests,
         "reranks_with_validation_results": f.reranks_with_validation_results,
     }
-    identity = MethodProgramIdentity(
-        MethodIdentity(
-            method_id="agentless",
-            implementation_version=f.audited_commit[:12],
-            abi_version="noetrium.method-machine.v1",
-            schema_version="agentless.fse2025.method.v1",
-        ),
-        configuration_digest=canonical_digest(configuration),
-    )
-    builder = MethodProgramBuilder(identity, entrypoint="localize_files")
+
+    builder = method
     builder.agent(
         "localize_files",
         "agentless.localization.files",
         _FILE_LOCALIZER,
         ("record_files",),
-        view_handler=_files_view,
+        view=_files_view,
     )
     builder.compute(
         "record_files",
@@ -333,7 +322,7 @@ def build_agentless_method_program() -> MethodProgram:
         "agentless.localization.symbols",
         _SYMBOL_LOCALIZER,
         ("record_symbols",),
-        view_handler=_symbols_view,
+        view=_symbols_view,
     )
     builder.compute(
         "record_symbols",
@@ -346,7 +335,7 @@ def build_agentless_method_program() -> MethodProgram:
         "agentless.localization.edits",
         _EDIT_LOCALIZER,
         ("record_edits",),
-        view_handler=_edits_view,
+        view=_edits_view,
     )
     builder.compute(
         "record_edits",
@@ -359,7 +348,7 @@ def build_agentless_method_program() -> MethodProgram:
         "agentless.repair.sample",
         _REPAIR_MODEL,
         ("record_repairs",),
-        view_handler=_repair_view,
+        view=_repair_view,
     )
     builder.compute(
         "record_repairs",
@@ -372,7 +361,7 @@ def build_agentless_method_program() -> MethodProgram:
         "agentless.validation.plan",
         _VALIDATION_PLANNER,
         ("prepare_validation",),
-        view_handler=_validation_view,
+        view=_validation_view,
     )
     builder.compute(
         "prepare_validation",
@@ -385,8 +374,8 @@ def build_agentless_method_program() -> MethodProgram:
         "agentless.validation.execute",
         _SOFTWARE_COMMAND_CAPABILITY,
         ("record_validation",),
-        effect_class=EffectClass.RECONCILABLE,
-        evidence_obligations=("agentless.validation-effect",),
+        effect='reconcilable',
+        evidence=("agentless.validation-effect",),
     )
     builder.compute(
         "record_validation",
@@ -399,7 +388,7 @@ def build_agentless_method_program() -> MethodProgram:
         "agentless.validation.rerank",
         _RERANK_MODEL,
         ("record_selection",),
-        view_handler=_rerank_view,
+        view=_rerank_view,
     )
     builder.compute(
         "record_selection",
@@ -408,33 +397,40 @@ def build_agentless_method_program() -> MethodProgram:
         ("return",),
     )
     builder.return_node("return", "agentless.result", _return_result)
-    return builder.build(
-        configuration=configuration,
-        required_capabilities=(_SOFTWARE_COMMAND_CAPABILITY,),
-        execution_class=MethodExecutionClass.EFFECT_RECORDED,
-        evidence_obligations=(
+    builder.configure(configuration)
+    builder.requires(*(_SOFTWARE_COMMAND_CAPABILITY,))
+    builder.policy(
+        execution='effect_recorded',
+        evidence=(
             "agentless.localization",
             "agentless.candidate-patches",
             "agentless.validation-effect",
             "agentless.patch-selection",
         ),
-        metric_names=(
+        metrics=(
             "task_resolved",
             "model_call_count",
             "validation_count",
         ),
-        artifact_kinds=(
+        artifacts=(
             "prediction.patch",
             "agentless_localization",
             "agentless_validation",
         ),
     )
+    return builder
 
 
-AGENTLESS_METHOD_PROGRAM = build_agentless_method_program()
+METHOD_CONFIGURER = build_agentless_method_program
+METHOD_ENTRYPOINT = "localize_files"
+METHOD_CONFIGURER_ARGS = ()
+METHOD_CONFIGURER_KWARGS = {}
 
 __all__ = [
-    "AGENTLESS_METHOD_PROGRAM",
-    "agentless_initial_state",
-    "build_agentless_method_program",
+    'agentless_initial_state',
+    'build_agentless_method_program',
+    'METHOD_CONFIGURER',
+    'METHOD_ENTRYPOINT',
+    'METHOD_CONFIGURER_ARGS',
+    'METHOD_CONFIGURER_KWARGS',
 ]

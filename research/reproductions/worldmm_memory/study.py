@@ -1,19 +1,5 @@
 from __future__ import annotations
-
-from noetrium.api import canonical_digest
-from noetrium.api import (
-    ExperimentTrialProtocolIdentity,
-)
-from noetrium.api import (
-    BenchmarkTaskSet,
-    MeasurementDefinition,
-    ReplayLevel,
-    ResearchStudyDefinition,
-    Study,
-    StudyModel,
-    StudyParticipant,
-    TrialBudget,
-)
+from research.reproductions import _support as _rs
 from research.benchmarks.egolifeqa import EGOLIFEQA_BENCHMARK_ID
 
 from .fidelity import WORLDMM_REFERENCE_FIDELITY
@@ -23,10 +9,10 @@ from .source import WORLDMM_INITIAL_RELEASE_COMMIT
 
 
 def worldmm_egolifeqa_trial_protocol(
-    benchmark: BenchmarkTaskSet,
+    benchmark,
     *,
     subject_id: str = "A1_JAKE",
-) -> ExperimentTrialProtocolIdentity:
+):
     if benchmark.benchmark_id != EGOLIFEQA_BENCHMARK_ID:
         raise ValueError("WorldMM study requires EgoLifeQA")
     split_id = f"subject:{subject_id}"
@@ -36,9 +22,9 @@ def worldmm_egolifeqa_trial_protocol(
             f"WorldMM EgoLifeQA split has no tasks: {split_id}"
         )
     f = WORLDMM_REFERENCE_FIDELITY
-    return ExperimentTrialProtocolIdentity(
+    return _rs.study_protocol(
         f"worldmm.cvpr2026.egolifeqa.{subject_id}.v1",
-        canonical_digest({
+        _rs.canonical_digest({
             "source_commit": WORLDMM_INITIAL_RELEASE_COMMIT,
             "method_program_digest": WORLDMM_METHOD_PROGRAM.program_digest,
             "memory_program_digest": WORLDMM_MEMORY_PROGRAM.program_digest,
@@ -63,23 +49,23 @@ def worldmm_egolifeqa_trial_protocol(
     )
 
 
+@_rs.study_factory('benchmark')
 def build_worldmm_egolifeqa_study(
-    benchmark: BenchmarkTaskSet,
+    benchmark,
     *,
     subject_id: str = "A1_JAKE",
-) -> ResearchStudyDefinition:
+):
     f = WORLDMM_REFERENCE_FIDELITY
     split_id = f"subject:{subject_id}"
     trial = worldmm_egolifeqa_trial_protocol(
         benchmark,
         subject_id=subject_id,
     )
-    return Study(
-        project_id="worldmm-cvpr-2026-reproduction",
+    return _rs.study_spec(project_id="worldmm-cvpr-2026-reproduction",
         study_id=f"worldmm-cvpr-2026-egolifeqa-{subject_id}",
         benchmark=benchmark,
         benchmark_split_id=split_id,
-        method=StudyParticipant(
+        method=_rs.study_participant(
             role="dynamic_multimodal_memory_agent",
             kind="method",
             implementation="worldmm-memory",
@@ -99,17 +85,17 @@ def build_worldmm_egolifeqa_study(
             ),
         ),
         models={
-            "retriever": StudyModel(
+            "retriever": _rs.study_model(
                 "model.worldmm.gpt-5-mini",
                 prompt="worldmm.memory-reasoning.prompt",
             ),
-            "responder": StudyModel(
+            "responder": _rs.study_model(
                 "model.worldmm.gpt-5",
                 prompt="worldmm.qa-egolife.prompt",
             ),
         },
         measurements=(
-            MeasurementDefinition.scalar(
+            _rs.scalar_measurement(
                 "multiple_choice_accuracy",
                 schema_id="noetrium.measurement.ratio.v1",
                 unit="ratio",
@@ -117,7 +103,7 @@ def build_worldmm_egolifeqa_study(
                 scale="continuous",
                 domain="egolifeqa",
             ),
-            MeasurementDefinition.scalar(
+            _rs.scalar_measurement(
                 "retrieval_rounds",
                 schema_id="noetrium.measurement.count.v1",
                 unit="round",
@@ -125,7 +111,7 @@ def build_worldmm_egolifeqa_study(
                 scale="count",
                 domain="worldmm",
             ),
-            MeasurementDefinition.scalar(
+            _rs.scalar_measurement(
                 "reasoning_errors",
                 schema_id="noetrium.measurement.count.v1",
                 unit="error",
@@ -133,7 +119,7 @@ def build_worldmm_egolifeqa_study(
                 scale="count",
                 domain="worldmm",
             ),
-            MeasurementDefinition.scalar(
+            _rs.scalar_measurement(
                 "retrieved_item_count",
                 schema_id="noetrium.measurement.count.v1",
                 unit="item",
@@ -145,16 +131,16 @@ def build_worldmm_egolifeqa_study(
         trial=trial,
         repetitions=1,
         seeds=("paper-default",),
-        limits=TrialBudget(
+        limits=_rs.trial_budget(
             f"worldmm-cvpr2026-egolifeqa-{subject_id}-budget",
             max_steps=64,
             max_turns=f.max_retrieval_rounds,
             max_model_calls=128,
             max_working_seconds=3600.0,
         ),
-        replay_level=ReplayLevel.OBSERVATIONAL,
+        replay_level='observational',
         repetition_timeout_seconds=3600.0,
-    ).build()
+    )
 
 
 __all__ = [

@@ -39,7 +39,7 @@ def test_generated_project_runs_directly_through_canonical_research_os(
     try:
         assert loaded.portfolio.portfolio_id == "paper"
         assert loaded.revision.portfolio_digest == loaded.portfolio.portfolio_digest
-        target = api.ResearchExecutionTarget(
+        target = api.research_os.ResearchExecutionTarget(
             loaded.default_execution_id,
             loaded.revision,
         )
@@ -61,7 +61,7 @@ def test_project_source_edit_auto_parents_active_revision_without_runtime_glue(
 
     first = load_project_research_os(root)
     try:
-        target = api.ResearchExecutionTarget(
+        target = api.research_os.ResearchExecutionTarget(
             first.default_execution_id,
             first.revision,
         )
@@ -72,7 +72,7 @@ def test_project_source_edit_auto_parents_active_revision_without_runtime_glue(
 
     core = root / "src" / "paper" / "core.py"
     core.write_text(
-        '''from noetrium import api
+        '''from noetrium.api import research_os as api
 
 
 def changed():

@@ -1,19 +1,5 @@
 from __future__ import annotations
-
-from noetrium.api import canonical_digest
-from noetrium.api import (
-    ExperimentTrialProtocolIdentity,
-)
-from noetrium.api import (
-    BenchmarkTaskSet,
-    MeasurementDefinition,
-    ReplayLevel,
-    ResearchStudyDefinition,
-    Study,
-    StudyModel,
-    StudyParticipant,
-    TrialBudget,
-)
+from research.reproductions import _support as _rs
 from research.benchmarks.egoschema import (
     EGOSCHEMA_BENCHMARK_ID,
     EGOSCHEMA_FULL_COUNT,
@@ -29,10 +15,10 @@ from .source import VIDEOAGENT_AUDITED_COMMIT
 
 
 def videoagent_egoschema_trial_protocol(
-    benchmark: BenchmarkTaskSet,
+    benchmark,
     *,
     split_id: str,
-) -> ExperimentTrialProtocolIdentity:
+):
     if benchmark.benchmark_id != EGOSCHEMA_BENCHMARK_ID:
         raise ValueError("VideoAgent study requires EgoSchema")
     expected = {
@@ -47,9 +33,9 @@ def videoagent_egoschema_trial_protocol(
             f"VideoAgent EgoSchema {split_id} requires {expected} tasks"
         )
     f = VIDEOAGENT_REFERENCE_FIDELITY
-    return ExperimentTrialProtocolIdentity(
+    return _rs.study_protocol(
         f"videoagent.eccv2024.egoschema.{split_id}.v1",
-        canonical_digest({
+        _rs.canonical_digest({
             "source_commit": VIDEOAGENT_AUDITED_COMMIT,
             "method_program_digest": VIDEOAGENT_METHOD_PROGRAM.program_digest,
             "memory_program_digest": VIDEOAGENT_MEMORY_PROGRAM.program_digest,
@@ -93,22 +79,22 @@ def videoagent_egoschema_trial_protocol(
     )
 
 
+@_rs.study_factory('benchmark')
 def _build_study(
-    benchmark: BenchmarkTaskSet,
+    benchmark,
     *,
     split_id: str,
-) -> ResearchStudyDefinition:
+):
     f = VIDEOAGENT_REFERENCE_FIDELITY
     trial = videoagent_egoschema_trial_protocol(
         benchmark,
         split_id=split_id,
     )
-    return Study(
-        project_id="videoagent-eccv-2024-reproduction",
+    return _rs.study_spec(project_id="videoagent-eccv-2024-reproduction",
         study_id=f"videoagent-eccv-2024-egoschema-{split_id}",
         benchmark=benchmark,
         benchmark_split_id=split_id,
-        method=StudyParticipant(
+        method=_rs.study_participant(
             role="multimodal_memory_agent",
             kind="method",
             implementation="videoagent-memory",
@@ -129,21 +115,21 @@ def _build_study(
             ),
         ),
         models={
-            "reasoner": StudyModel(
+            "reasoner": _rs.study_model(
                 "model.videoagent.gpt4-paper-era",
                 prompt="videoagent.main-react.prompt",
             ),
-            "object_reasoner": StudyModel(
+            "object_reasoner": _rs.study_model(
                 "model.videoagent.gpt4-object-memory-paper-era",
                 prompt="videoagent.object-memory-react.prompt",
             ),
-            "vqa": StudyModel(
+            "vqa": _rs.study_model(
                 "model.videoagent.videollava-paper-era",
                 prompt="videoagent.vqa.prompt",
             ),
         },
         measurements=(
-            MeasurementDefinition.scalar(
+            _rs.scalar_measurement(
                 "multiple_choice_accuracy",
                 schema_id="noetrium.measurement.ratio.v1",
                 unit="ratio",
@@ -151,7 +137,7 @@ def _build_study(
                 scale="continuous",
                 domain="egoschema",
             ),
-            MeasurementDefinition.scalar(
+            _rs.scalar_measurement(
                 "agent_tool_iterations",
                 schema_id="noetrium.measurement.count.v1",
                 unit="iteration",
@@ -159,7 +145,7 @@ def _build_study(
                 scale="count",
                 domain="videoagent",
             ),
-            MeasurementDefinition.scalar(
+            _rs.scalar_measurement(
                 "memory_query_count",
                 schema_id="noetrium.measurement.count.v1",
                 unit="query",
@@ -171,7 +157,7 @@ def _build_study(
         trial=trial,
         repetitions=1,
         seeds=("paper-default",),
-        limits=TrialBudget(
+        limits=_rs.trial_budget(
             f"videoagent-eccv2024-egoschema-{split_id}-budget",
             max_steps=1024,
             max_turns=f.agent_executor_max_iterations,
@@ -185,23 +171,25 @@ def _build_study(
             ),
             max_working_seconds=3600.0,
         ),
-        replay_level=ReplayLevel.OBSERVATIONAL,
+        replay_level='observational',
         repetition_timeout_seconds=3600.0,
-    ).build()
+    )
 
 
+@_rs.study_factory('benchmark')
 def build_videoagent_egoschema_public_study(
-    benchmark: BenchmarkTaskSet,
-) -> ResearchStudyDefinition:
+    benchmark,
+):
     return _build_study(
         benchmark,
         split_id=EGOSCHEMA_PUBLIC_SPLIT,
     )
 
 
+@_rs.study_factory('benchmark')
 def build_videoagent_egoschema_full_study(
-    benchmark: BenchmarkTaskSet,
-) -> ResearchStudyDefinition:
+    benchmark,
+):
     return _build_study(
         benchmark,
         split_id=EGOSCHEMA_FULL_SPLIT,

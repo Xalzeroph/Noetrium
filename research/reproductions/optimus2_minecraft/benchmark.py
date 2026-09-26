@@ -1,6 +1,4 @@
 from __future__ import annotations
-
-from noetrium.api import BenchmarkTaskSet
 from research.benchmarks.minecraft_long_horizon_67 import (
     MINECRAFT_LONG_HORIZON_67_ALL_SPLIT,
     MINECRAFT_LONG_HORIZON_67_BENCHMARK_ID,
@@ -9,7 +7,7 @@ from research.benchmarks.minecraft_long_horizon_67 import (
 )
 
 
-def build_optimus2_long_horizon_67_cut() -> BenchmarkTaskSet:
+def build_optimus2_long_horizon_67_cut():
     task_set = build_minecraft_long_horizon_67_cut()
     if task_set.benchmark_id != MINECRAFT_LONG_HORIZON_67_BENCHMARK_ID:
         raise ValueError("optimus2 benchmark authority drifted")

@@ -7,7 +7,7 @@ from noetrium_platform.research.experimentation.binding import (
     ResearchParticipantRequirement, ResearchRequirementResolution,
 )
 from noetrium_platform.research.experimentation.lifecycle.api import (
-    AgentStudySpec, AnalysisDefinition, AnalysisResult, AssignmentWorkload, BenchmarkCutRequirement, BenchmarkCutSpec, BenchmarkTaskSet, benchmark_cut_requirements, requires_benchmark_cut, BenchmarkSourceKind, BenchmarkSourcePort, BenchmarkSourceResolution, BenchmarkSourceSpec, InMemoryBenchmarkSource, FactorLevelSpec, FactorSelection, MeasurementContentReference, MeasurementCut, MeasurementDefinition, MeasurementProtocol,
+    materialize_research_study_spec, AgentStudySpec, AnalysisDefinition, AnalysisResult, AssignmentWorkload, BenchmarkCutRequirement, BenchmarkCutSpec, BenchmarkTaskSet, benchmark_cut_requirements, requires_benchmark_cut, BenchmarkSourceKind, BenchmarkSourcePort, BenchmarkSourceResolution, BenchmarkSourceSpec, InMemoryBenchmarkSource, FactorLevelSpec, FactorSelection, MeasurementContentReference, MeasurementCut, MeasurementDefinition, MeasurementProtocol,
     PostHocEvaluationDefinition, PostHocEvaluationResult, Study, StudyModel, StudyParticipant,
     MeasurementRecord, MeasurementValue, MeasurementValueKind, ParticipantSchedule, ResearchRevision, ResearchStudyDefinition, StudyExecutionPolicy, StudyFactorSpec, StudyIntervention,
     TaskArtifactSpec, TaskDefinition, TaskPackageSpec, TaskVerifierIsolation,
@@ -619,3 +619,32 @@ from noetrium_platform.research.experimentation.workbench.api import (
     candidate_program_capability_payload,
 )
 __all__ = tuple(__all__) + ("candidate_program_capability_payload",)
+
+# Adjacent Execution-layer Method aggregate absorbed by Experimentation.
+from noetrium_platform.research.execution.api import (
+    ResearchComponent,
+    ResearchComponentBuilder,
+    ResearchComponentCall,
+    ResearchComponentResult,
+    ResearchComponentTransition,
+    ResearchEvent,
+    ResearchMethod,
+    ResearchMethodBuilder,
+    ResearchMethodCall,
+    ResearchMethodTransition,
+)
+
+__all__ = tuple(__all__) + (
+    "ResearchComponent",
+    "ResearchComponentBuilder",
+    "ResearchComponentCall",
+    "ResearchComponentResult",
+    "ResearchComponentTransition",
+    "ResearchEvent",
+    "ResearchMethod",
+    "ResearchMethodBuilder",
+    "ResearchMethodCall",
+    "ResearchMethodTransition",
+)
+
+__all__ = tuple(__all__) + ("materialize_research_study_spec",)

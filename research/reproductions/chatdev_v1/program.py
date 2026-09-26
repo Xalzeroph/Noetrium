@@ -1,23 +1,21 @@
 from __future__ import annotations
+from research.reproductions._support import JsonObject, JsonValue, canonical_digest
 
 from collections.abc import Mapping
 
-from noetrium.api import (
+from noetrium.api.research_authoring import (
     MethodIdentity,
     MethodProgramIdentity,
 )
-from noetrium.api import (
+from noetrium.api.research_authoring import (
     ChildMachineLink,
-    JsonObject,
-    JsonValue,
-    canonical_digest,
-)
-from noetrium.api import (
+    )
+from noetrium.api.research_authoring import (
     ChildFailurePolicy,
     ChildResearchMachineExecution,
     ChildResearchMachineRequest,
 )
-from noetrium.api import (
+from noetrium.api.research_authoring import (
     MethodEvent,
     MethodExecutionClass,
     MethodNodeRequest,

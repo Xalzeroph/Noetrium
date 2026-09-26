@@ -1,19 +1,5 @@
 from __future__ import annotations
-
-from noetrium.api import canonical_digest
-from noetrium.api import (
-    ExperimentTrialProtocolIdentity,
-)
-from noetrium.api import (
-    BenchmarkTaskSet,
-    MeasurementDefinition,
-    ReplayLevel,
-    ResearchStudyDefinition,
-    Study,
-    StudyModel,
-    StudyParticipant,
-    TrialBudget,
-)
+from research.reproductions import _support as _rs
 from research.benchmarks.ego4d_goalstep import EGO4D_GOALSTEP_BENCHMARK_ID
 
 from .fidelity import PROVIDELLM_REFERENCE_FIDELITY
@@ -22,17 +8,17 @@ from .source import PROVIDELLM_PAPER_ERA_COMMIT
 
 
 def providellm_goalstep_trial_protocol(
-    benchmark: BenchmarkTaskSet,
-) -> ExperimentTrialProtocolIdentity:
+    benchmark,
+):
     if benchmark.benchmark_id != EGO4D_GOALSTEP_BENCHMARK_ID:
         raise ValueError("ProVideLLM study requires Ego4D Goal-Step")
     selected = benchmark.selected_tasks("val")
     if not selected:
         raise ValueError("ProVideLLM study requires a non-empty GoalStep val cut")
     f = PROVIDELLM_REFERENCE_FIDELITY
-    return ExperimentTrialProtocolIdentity(
+    return _rs.study_protocol(
         "providellm.iccv2025.ego4d-goalstep-val.v1",
-        canonical_digest(
+        _rs.canonical_digest(
             {
                 "source_commit": PROVIDELLM_PAPER_ERA_COMMIT,
                 "memory_program_digest": PROVIDELLM_MEMORY_PROGRAM.program_digest,
@@ -50,16 +36,16 @@ def providellm_goalstep_trial_protocol(
     )
 
 
+@_rs.study_factory('benchmark')
 def build_providellm_goalstep_val_study(
-    benchmark: BenchmarkTaskSet,
-) -> ResearchStudyDefinition:
+    benchmark,
+):
     protocol = providellm_goalstep_trial_protocol(benchmark)
-    return Study(
-        project_id="providellm-iccv-2025-reproduction",
+    return _rs.study_spec(project_id="providellm-iccv-2025-reproduction",
         study_id="providellm-iccv-2025-ego4d-goalstep-val",
         benchmark=benchmark,
         benchmark_split_id="val",
-        method=StudyParticipant(
+        method=_rs.study_participant(
             role="streaming_procedural_video_model",
             kind="method",
             implementation="providellm",
@@ -77,13 +63,13 @@ def build_providellm_goalstep_val_study(
             ),
         ),
         models={
-            "multimodal": StudyModel(
+            "multimodal": _rs.study_model(
                 "model.providellm.1b-5-paper-era",
                 prompt="providellm.online-step-detection",
             ),
         },
         measurements=(
-            MeasurementDefinition.scalar(
+            _rs.scalar_measurement(
                 "per_frame_map",
                 schema_id="noetrium.measurement.ratio.v1",
                 unit="ratio",
@@ -91,7 +77,7 @@ def build_providellm_goalstep_val_study(
                 scale="continuous",
                 domain="ego4d-goalstep",
             ),
-            MeasurementDefinition.scalar(
+            _rs.scalar_measurement(
                 "streaming_fps",
                 schema_id="noetrium.measurement.rate.v1",
                 unit="frame_per_second",
@@ -99,7 +85,7 @@ def build_providellm_goalstep_val_study(
                 scale="continuous",
                 domain="providellm",
             ),
-            MeasurementDefinition.scalar(
+            _rs.scalar_measurement(
                 "gpu_memory_gb",
                 schema_id="noetrium.measurement.memory.v1",
                 unit="gigabyte",
@@ -111,16 +97,16 @@ def build_providellm_goalstep_val_study(
         trial=protocol,
         repetitions=1,
         seeds=("paper-evaluation-default",),
-        limits=TrialBudget(
+        limits=_rs.trial_budget(
             "providellm-iccv2025-goalstep-val-budget",
             max_steps=32768,
             max_turns=32768,
             max_model_calls=32768,
             max_working_seconds=7200.0,
         ),
-        replay_level=ReplayLevel.OBSERVATIONAL,
+        replay_level='observational',
         repetition_timeout_seconds=7200.0,
-    ).build()
+    )
 
 
 __all__ = [

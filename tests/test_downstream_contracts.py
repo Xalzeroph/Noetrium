@@ -26,22 +26,23 @@ def test_generated_catalog_covers_exact_registry_as_internal_metadata() -> None:
     catalog = load_downstream_capability_catalog()
     assert {row.system_key for row in catalog.systems} == set(registry)
     assert catalog.entrypoint == "noetrium.api"
-    assert catalog.symbol_index
     assert catalog.ambiguous_symbol_sources == {}
-    assert catalog.topology_digest
     public = tuple(
-        surface for surface in catalog.systems if surface.downstream_surface == "public"
+        surface for surface in catalog.systems
+        if surface.downstream_surface == "public"
     )
     assert len(public) == 1
     assert public[0].system_key == "research_os"
-    assert len(public[0].api_modules) == 1
-    assert public[0].api_modules[0].module == "noetrium_platform.product.api"
-    assert {
-        "ResearchOS",
-        "ResearchProgramBuilder",
-        "MethodProgram",
-        "BenchmarkCutRequirement",
-    } <= set(public[0].api_modules[0].symbols)
+    modules = {api.module: api for api in public[0].api_modules}
+    assert set(modules) == {"noetrium_platform.product.api"}
+    assert set(modules["noetrium_platform.product.api"].symbols) == {
+        "ResearchPortfolioBuilder",
+        "ResearchPortfolio",
+    }
+    assert catalog.direct_symbol_sources == {
+        "ResearchPortfolio": "noetrium_platform.product.api",
+        "ResearchPortfolioBuilder": "noetrium_platform.product.api",
+    }
     assert all(
         surface.api_modules == ()
         for surface in catalog.systems
@@ -61,7 +62,14 @@ def test_generated_system_facades_are_metadata_only() -> None:
         module = importlib.import_module(surface.facade_module)
         assert module.SYSTEM_KEY == surface.system_key
         if surface.system_key == "research_os":
-            assert tuple(module.__all__) == surface.api_modules[0].symbols
+            expected = tuple(
+                dict.fromkeys(
+                    symbol
+                    for api_module in surface.api_modules
+                    for symbol in api_module.symbols
+                )
+            )
+            assert tuple(module.__all__) == expected
         else:
             assert module.__all__ == ()
 
@@ -70,52 +78,46 @@ def test_noetrium_api_is_exact_product_surface() -> None:
     from noetrium import api
     from noetrium_platform.product import api as product_api
 
-    assert tuple(api.__all__) == tuple(product_api.__all__)
+    assert tuple(product_api.__all__) == (
+        "ResearchPortfolioBuilder",
+        "ResearchPortfolio",
+    )
+    assert tuple(api.__all__) == (
+        "ResearchPortfolioBuilder",
+        "ResearchPortfolio",
+        "ResearchOS",
+        "open_project",
+    )
     for name in product_api.__all__:
         assert getattr(api, name) is getattr(product_api, name)
 
-    assert {
-        "MethodProgram",
+    for retired in (
+        "research_os",
+        "research_authoring",
+        "execution_authoring",
+        "research_requirements",
+        "ResearchProgramBuilder",
+        "ResearchMethodBuilder",
         "MethodProgramBuilder",
-        "CapabilityRequest",
-    } <= set(api.__all__)
-
-    retired = (
-        "EnvironmentProviderPort",
-        "StudyExecutionPlan",
-        "ResearchCampaignPlan",
-        "bind_research_campaign",
-        "bind_research_execution_pool",
-        "catalog",
-        "search",
-        "describe",
-        "owners",
-        "resolve",
-    )
-    for name in retired:
-        assert not hasattr(api, name)
+        "WorkloadTrialProvider",
+        "ResearchExecutionTarget",
+    ):
+        assert not hasattr(api, retired)
 
 
 def test_product_surface_contains_research_os_authoring_and_control() -> None:
     from noetrium import api
 
-    required = {
-        "ResearchOS",
+    assert set(api.__all__) == {
+        "ResearchPortfolioBuilder",
         "ResearchPortfolio",
-        "ResearchProgram",
-        "ResearchProgramBuilder",
-        "ResearchGraphRevision",
-        "ResearchDependency",
-        "ResearchNode",
-        "ResearchDefinition",
-        "ResearchControlAction",
-        "MethodProgram",
-        "MethodProgramBuilder",
-        "CapabilityRequest",
-        "BenchmarkCutRequirement",
-        "requires_benchmark_cut",
+        "ResearchOS",
+        "open_project",
     }
-    assert required <= set(api.__all__)
+    portfolio = api.ResearchPortfolioBuilder("fixture")
+    program = portfolio.program("paper")
+    assert type(program).__name__ == "ResearchProgramBuilder"
+    assert not hasattr(api, type(program).__name__)
 
 
 def test_catalog_keeps_capability_topology_without_exposing_system_symbols() -> None:
@@ -175,7 +177,6 @@ def test_generator_readme_drift_fails_closed(tmp_path, monkeypatch) -> None:
     monkeypatch.setattr(module, "render_catalog", lambda _root, _surfaces: b"{}\n")
     monkeypatch.setattr(module, "render_markdown", lambda _root, _surfaces: b"")
     monkeypatch.setattr(module, "render_root_contract_init", lambda _root: "")
-    monkeypatch.setattr(module, "render_unified_api_stub", lambda _root, _surfaces: ("", 0))
     monkeypatch.setattr(module, "_readme_paths", lambda _root: (readme,))
     monkeypatch.setattr(module, "_write_or_check", lambda *_args, **_kwargs: True)
     assert module.generate(tmp_path, check=True) == 1

@@ -1,25 +1,13 @@
 from __future__ import annotations
-
-from noetrium.api import canonical_digest
-from noetrium.api import ExperimentTrialProtocolIdentity
-from noetrium.api import (
-    BenchmarkTaskSet,
-    MeasurementDefinition,
-    ReplayLevel,
-    ResearchStudyDefinition,
-    Study,
-    StudyModel,
-    StudyParticipant,
-    TrialBudget,
-)
+from research.reproductions import _support as _rs
 from research.benchmarks.game24 import GAME24_BENCHMARK_ID, GAME24_PAPER_SPLIT
 
 from .fidelity import TREE_OF_THOUGHTS_GAME24_FIDELITY, TREE_OF_THOUGHTS_REFERENCE_FIDELITY
 
 
-TOT_GAME24_RELEASED_TRIAL_PROTOCOL = ExperimentTrialProtocolIdentity(
+TOT_GAME24_RELEASED_TRIAL_PROTOCOL = _rs.study_protocol(
     "tree-of-thoughts.game24.released-bfs.v1",
-    canonical_digest(
+    _rs.canonical_digest(
         {
             "task_range": [
                 TREE_OF_THOUGHTS_GAME24_FIDELITY.task_start_index,
@@ -39,16 +27,16 @@ TOT_GAME24_RELEASED_TRIAL_PROTOCOL = ExperimentTrialProtocolIdentity(
 )
 
 
-def build_tot_game24_released_study(benchmark: BenchmarkTaskSet) -> ResearchStudyDefinition:
+@_rs.study_factory('benchmark')
+def build_tot_game24_released_study(benchmark):
     if benchmark.benchmark_id != GAME24_BENCHMARK_ID:
         raise ValueError("Tree of Thoughts study requires the Game24 benchmark cut")
     benchmark.selected_tasks(GAME24_PAPER_SPLIT)
-    return Study(
-        project_id="tree-of-thoughts-reproduction",
+    return _rs.study_spec(project_id="tree-of-thoughts-reproduction",
         study_id="tot-game24-released-bfs",
         benchmark=benchmark,
         benchmark_split_id=GAME24_PAPER_SPLIT,
-        method=StudyParticipant(
+        method=_rs.study_participant(
             role="reasoner",
             kind="agent",
             implementation="tree-of-thoughts",
@@ -56,13 +44,13 @@ def build_tot_game24_released_study(benchmark: BenchmarkTaskSet) -> ResearchStud
             configurations=("tot.game24.bfs", "tot.game24.prompt"),
         ),
         models={
-            "reasoner": StudyModel(
+            "reasoner": _rs.study_model(
                 "model.tot.reasoner",
                 prompt="tot.game24.prompt",
             ),
         },
         measurements=(
-            MeasurementDefinition.scalar(
+            _rs.scalar_measurement(
                 "task_success",
                 schema_id="noetrium.measurement.binary-scalar.v1",
                 unit="ratio",
@@ -70,7 +58,7 @@ def build_tot_game24_released_study(benchmark: BenchmarkTaskSet) -> ResearchStud
                 scale="binary",
                 domain="game24",
             ),
-            MeasurementDefinition.scalar(
+            _rs.scalar_measurement(
                 "model_call_count",
                 schema_id="noetrium.measurement.count.v1",
                 unit="call",
@@ -82,12 +70,12 @@ def build_tot_game24_released_study(benchmark: BenchmarkTaskSet) -> ResearchStud
         trial=TOT_GAME24_RELEASED_TRIAL_PROTOCOL,
         repetitions=1,
         seeds=("paper-default",),
-        limits=TrialBudget(
+        limits=_rs.trial_budget(
             "tot-game24-four-search-steps",
             max_steps=TREE_OF_THOUGHTS_GAME24_FIDELITY.search_steps,
         ),
-        replay_level=ReplayLevel.OBSERVATIONAL,
-    ).build()
+        replay_level='observational',
+    )
 
 
 

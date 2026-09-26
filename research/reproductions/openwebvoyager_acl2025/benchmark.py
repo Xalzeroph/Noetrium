@@ -1,9 +1,8 @@
 from __future__ import annotations
-from noetrium.api import BenchmarkTaskSet
 
 BENCHMARK_IDS = ("mind2web", "webvoyager")
 
-def require_openwebvoyager_benchmark(benchmark: BenchmarkTaskSet, *, split_id: str) -> tuple:
+def require_openwebvoyager_benchmark(benchmark, *, split_id: str) -> tuple:
     if benchmark.benchmark_id not in BENCHMARK_IDS:
         raise ValueError("openwebvoyager benchmark identity is outside the paper protocol")
     selected = benchmark.selected_tasks(split_id)

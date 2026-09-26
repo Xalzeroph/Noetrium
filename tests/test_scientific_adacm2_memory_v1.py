@@ -4,19 +4,33 @@ from pathlib import Path
 
 import pytest
 
+from noetrium import api
+import noetrium_platform.research.execution.api as execution_api
+import noetrium_platform.product.research_os as product_api
+import noetrium_platform.foundation.kernel.kernel as kernel_api
+from noetrium import api
+import noetrium_platform.research.execution.api as execution_api
+import noetrium_platform.product.research_os as product_api
+import noetrium_platform.foundation.kernel.kernel as kernel_api
 from noetrium_platform.evidence.artifact.content.providers import (
     CanonicalJsonTensorContentStore,
     DirectoryArtifactBlobStore,
 )
+from noetrium_platform.research.execution.machines import ChildResearchHostRegistry
+from noetrium_platform.research.execution.machines import ChildResearchHostRegistry
 from noetrium_platform.foundation.kernel.kernel import (
     InMemoryMachineJournal,
     MachineStatus,
     canonical_digest,
 )
 from research.benchmarks.lvu import LVU_BENCHMARK_ID, LVUVideoRecord
+from tests._canonical_method_execution import execute_method_program_canonically
+from tests._canonical_method_execution import execute_method_program_canonically
 from research.reproductions.adacm2_memory import (
     ADACM2_LVU_PROTOCOL,
     ADACM2_MEMORY_PROGRAM,
+    ADACM2_METHOD_PROGRAM,
+    ADACM2_METHOD_PROGRAM,
     ADACM2_REFERENCE_FIDELITY,
     AdaCM2AttentionRequest,
     AdaCM2AttentionScores,
@@ -24,6 +38,8 @@ from research.reproductions.adacm2_memory import (
     AdaCM2PartitionInterpretation,
     AdaCM2ReductionSpec,
     adacm2_memory_host,
+    adacm2_method_initial_state,
+    adacm2_method_initial_state,
     adacm2_memory_initial_data,
     build_adacm2_lvu_ambiguity_studies,
     build_adacm2_lvu_cut,
@@ -362,3 +378,157 @@ def test_adacm2_lvu_uses_full_video_projection_and_two_ambiguity_studies() -> No
         "cache_retention_ratio",
         "paper_stated_retention_factor",
     }.issubset(names)
+
+
+class _AdaCM2InferenceCapability:
+    def __init__(self) -> None:
+        self.requests: list[execution_api.CapabilityRequest] = []
+
+    def describe(self, capability_id: str) -> execution_api.CapabilityDescriptor:
+        assert capability_id == "model.multimodal.generate"
+        return execution_api.CapabilityDescriptor(
+            capability_id,
+            "1",
+            "adacm2.lvu.inference.v1",
+            "adacm2.lvu.structured-prediction.v1",
+            kernel_api.EffectClass.PURE,
+            True,
+        )
+
+    def invoke(self, request: execution_api.CapabilityRequest) -> execution_api.CapabilityResult:
+        assert request.capability_id == "model.multimodal.generate"
+        self.requests.append(request)
+        cache = request.payload["compressed_kv_cache"]
+        assert isinstance(cache, tuple) and len(cache) == 1
+        return execution_api.CapabilityResult(
+            request.capability_id,
+            {
+                "prediction": f"fixture:{request.payload['task_family']}",
+                "raw_output": "fixture-structured-prediction",
+            },
+            generation="fixture-adacm2-model-v1",
+        )
+
+
+class _AdaCM2InferenceCapability:
+    def __init__(self) -> None:
+        self.requests: list[execution_api.CapabilityRequest] = []
+
+    def describe(self, capability_id: str) -> execution_api.CapabilityDescriptor:
+        assert capability_id == "model.multimodal.generate"
+        return execution_api.CapabilityDescriptor(
+            capability_id,
+            "1",
+            "adacm2.lvu.inference.v1",
+            "adacm2.lvu.structured-prediction.v1",
+            kernel_api.EffectClass.PURE,
+            True,
+        )
+
+    def invoke(self, request: execution_api.CapabilityRequest) -> execution_api.CapabilityResult:
+        assert request.capability_id == "model.multimodal.generate"
+        self.requests.append(request)
+        cache = request.payload["compressed_kv_cache"]
+        assert isinstance(cache, tuple) and len(cache) == 1
+        return execution_api.CapabilityResult(
+            request.capability_id,
+            {
+                "prediction": f"fixture:{request.payload['task_family']}",
+                "raw_output": "fixture-structured-prediction",
+            },
+            generation="fixture-adacm2-model-v1",
+        )
+
+
+def _adacm2_child_executor(store, attention, journal):
+    registry = ChildResearchHostRegistry()
+    host = adacm2_memory_host(journal=journal)
+
+    def binding_factory(request):
+        interpretation = AdaCM2PartitionInterpretation(
+            request.initial_data["interpretation"]
+        )
+        return AdaCM2MemoryBinding(
+            tensor_store=store,
+            attention=attention,
+            spec=AdaCM2ReductionSpec(interpretation),
+        )
+
+    registry.register(
+        host,
+        binding_factory,
+        binding_factory_digest=canonical_digest({
+            "binding_factory": "adacm2-scientific-fixture",
+            "memory_program_digest": ADACM2_MEMORY_PROGRAM.program_digest,
+        }),
+    )
+    return registry.executor()
+
+
+def test_adacm2_one_method_program_executes_both_partition_treatments(
+    tmp_path: Path,
+) -> None:
+    store = _store(tmp_path / "method")
+    query_ref = store.put(
+        ((1.0, 0.0), (0.0, 1.0)),
+        schema_id=_QUERY_SCHEMA,
+    )
+    frame_update = {
+        "layer_id": "qformer.layer.0",
+        "key_ref": _frame_ref(
+            store,
+            schema_id=_FRAME_KEY_SCHEMA,
+            offset=0,
+        ),
+        "value_ref": _frame_ref(
+            store,
+            schema_id=_FRAME_VALUE_SCHEMA,
+            offset=1000,
+        ),
+    }
+    program_digest = ADACM2_METHOD_PROGRAM.program_digest
+    observed = {}
+    for interpretation, expected_peak in (
+        (AdaCM2PartitionInterpretation.EQ6_LITERAL, 91),
+        (AdaCM2PartitionInterpretation.EQ8_CONSISTENT, 19),
+    ):
+        attention = _Attention()
+        journal = InMemoryMachineJournal()
+        children = _adacm2_child_executor(store, attention, journal)
+        capability = _AdaCM2InferenceCapability()
+        initial_state = adacm2_method_initial_state(
+            task_id=f"fixture:{interpretation.value}",
+            task_family="lvu_relationship",
+            interpretation=interpretation,
+            query_text_ref=query_ref,
+            frame_updates=(frame_update,),
+            inference_payload={"instruction": "predict the LVU label"},
+        )
+        result = execute_method_program_canonically(
+            ADACM2_METHOD_PROGRAM,
+            runtime=execution_api.MethodRuntimeContext(
+                execution_api.ExecutionContext(
+                    f"adacm2-{interpretation.value}",
+                    "trace",
+                    "span",
+                    task_id=f"fixture:{interpretation.value}",
+                ),
+                capabilities=capability,
+                child_machines=children,
+            ),
+            initial_state=initial_state,
+            state_root=tmp_path / f"state-{interpretation.value}",
+        )
+        assert result.status is execution_api.MethodRunStatus.SUCCEEDED
+        assert result.value["interpretation"] == interpretation.value
+        assert result.value["peak_cache_length"] == expected_peak
+        assert result.value["prediction"] == "fixture:lvu_relationship"
+        assert len(capability.requests) == 1
+        assert capability.requests[0].payload["interpretation"] == interpretation.value
+        observed[interpretation.value] = result.value["peak_cache_length"]
+
+    assert ADACM2_METHOD_PROGRAM.program_digest == program_digest
+    assert observed == {
+        "eq6_literal": 91,
+        "eq8_consistent": 19,
+    }
