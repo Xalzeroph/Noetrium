@@ -1,8 +1,7 @@
 from __future__ import annotations
 
 from noetrium_platform.composition.platform_meta import (
-    build_durable_platform_meta,
-    build_in_memory_platform_meta,
+    build_platform_meta,
 )
 from noetrium_platform.evidence.data.fact.api import (
     DurableFact,
@@ -23,8 +22,8 @@ def _fact() -> DurableFact:
     )
 
 
-def test_in_memory_platform_meta_owns_fact_and_cross_query_authorities() -> None:
-    meta = build_in_memory_platform_meta()
+def test_platform_meta_owns_fact_and_cross_query_authorities(tmp_path) -> None:
+    meta = build_platform_meta(tmp_path / "meta")
     fact = _fact()
     receipt = meta.facts.append(fact)
 
@@ -41,11 +40,11 @@ def test_in_memory_platform_meta_owns_fact_and_cross_query_authorities() -> None
 
 
 def test_durable_platform_meta_fact_authority_survives_rebuild(tmp_path) -> None:
-    first = build_durable_platform_meta(tmp_path)
+    first = build_platform_meta(tmp_path)
     fact = _fact()
     first.facts.append(fact)
 
-    second = build_durable_platform_meta(tmp_path)
+    second = build_platform_meta(tmp_path)
     assert second.facts.get(fact.fact_id) == fact
     assert second.facts.count() == 1
     assert second.research_results.query().records == ()

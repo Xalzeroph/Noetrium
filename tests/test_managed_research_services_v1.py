@@ -5,7 +5,7 @@ from pathlib import Path
 from noetrium_platform.composition.managed_research_services import (
     build_managed_research_services,
 )
-from noetrium_platform.composition.platform_meta import build_durable_platform_meta
+from noetrium_platform.composition.platform_meta import build_platform_meta
 from noetrium_platform.evidence.data.fact.api import (
     DurableFact,
     FactCriticality,
@@ -17,7 +17,7 @@ from noetrium_platform.capabilities.environment.category.api import EnvironmentC
 def test_managed_research_services_bind_default_durable_authorities(
     tmp_path: Path,
 ) -> None:
-    meta = build_durable_platform_meta(tmp_path / "meta")
+    meta = build_platform_meta(tmp_path / "meta")
     services = build_managed_research_services(
         tmp_path / "services",
         meta=meta,
@@ -55,7 +55,7 @@ def test_managed_research_services_bind_default_durable_authorities(
 def test_managed_research_services_supply_workload_and_evaluation_binding(
     tmp_path: Path,
 ) -> None:
-    meta = build_durable_platform_meta(tmp_path / "meta")
+    meta = build_platform_meta(tmp_path / "meta")
     services = build_managed_research_services(
         tmp_path / "services",
         meta=meta,
@@ -89,7 +89,7 @@ def test_managed_research_services_supply_workload_and_evaluation_binding(
 def test_managed_research_services_cross_query_is_platform_owned(
     tmp_path: Path,
 ) -> None:
-    meta = build_durable_platform_meta(tmp_path / "meta")
+    meta = build_platform_meta(tmp_path / "meta")
     services = build_managed_research_services(
         tmp_path / "services",
         meta=meta,

@@ -97,7 +97,7 @@ def test_registry_bound_raw_log_sink_mirrors_semantic_log() -> None:
     )
     from noetrium_platform.evidence.observability.logging.record.api import LogLevel
     from noetrium_platform.foundation.kernel.kernel import canonical_digest
-    from noetrium_platform.composition.platform_meta import build_in_memory_platform_meta
+    from noetrium_platform.composition.platform_meta import build_platform_meta
     from noetrium_platform.evidence.observability.logging.context.api import DiagnosticAddress
     from noetrium_platform.foundation.scope.api import PLATFORM_SCOPE
 
@@ -110,7 +110,7 @@ def test_registry_bound_raw_log_sink_mirrors_semantic_log() -> None:
             composition = compose_logging_system(
                 sink=LogSinkBinding(store, "test-store", canonical_digest("store")),
                 query=LogQueryBinding(store, "test-store", canonical_digest("store")),
-                planner=build_in_memory_platform_meta().capability_composition,
+                planner=build_platform_meta(Path(td) / "meta").capability_composition,
                 systems=meta,
                 raw_gateway=gateway,
             )

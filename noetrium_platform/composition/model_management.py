@@ -77,7 +77,7 @@ from noetrium_platform.infrastructure.lifecycle.host.composition import HostComp
 from noetrium_platform.composition.research_execution_pool import ResearchExecutionPool
 from noetrium_platform.composition.platform_meta import (
     PlatformMetaAuthorities,
-    build_durable_platform_meta,
+    build_platform_meta,
 )
 from noetrium_platform.infrastructure.resources.compute.composition import (
     discover_local_compute_host,
@@ -173,7 +173,7 @@ def build_local_management_plane(
     host_runtime = LocalHostRuntimeObserver()
     directories = build_local_directory_authorities(layout)
     directory_layout = directories.layout
-    meta = build_durable_platform_meta(
+    meta = build_platform_meta(
         directory_layout.layout.state / "platform-meta",
         gpu_runtime_observer=gpu_runtime,
         host_runtime_observer=host_runtime,

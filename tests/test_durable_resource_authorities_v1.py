@@ -11,7 +11,7 @@ from noetrium_platform.foundation.kernel.kernel import (
     DurableCarrierReferenceClosure,
 )
 
-from noetrium_platform.composition.platform_meta import build_durable_platform_meta
+from noetrium_platform.composition.platform_meta import build_platform_meta
 from noetrium_platform.infrastructure.resources.allocation.api import EndpointAllocationRequest, EndpointProbeResult, NetworkEndpoint
 from noetrium_platform.infrastructure.resources.compute.api import ComputeHost, ComputeRequirement
 from noetrium_platform.capabilities.environment.catalog.api import (
@@ -136,17 +136,17 @@ class DurableResourceAuthoritiesTests(TestCase):
     def test_durable_platform_meta_uses_one_authority_database(self) -> None:
         with TemporaryDirectory() as directory:
             root = Path(directory)
-            first = build_durable_platform_meta(root)
+            first = build_platform_meta(root)
             workspace = ScopeIdentity(ScopeKind.WORKSPACE, "workspace")
             first.scopes.register(workspace, PLATFORM_SCOPE)
-            second = build_durable_platform_meta(root)
+            second = build_platform_meta(root)
             self.assertTrue(second.scopes.contains(workspace))
             self.assertEqual((root / "platform-meta.sqlite").is_file(), True)
 
     def test_durable_portfolio_survives_rebuild_with_canonical_manifest(self) -> None:
         with TemporaryDirectory() as directory:
             root = Path(directory)
-            first = build_durable_platform_meta(root)
+            first = build_platform_meta(root)
             first.portfolio.register_workspace(WorkspaceSpec("workspace", "Workspace"))
             first.portfolio.register_program(ProgramSpec("program", "workspace", "Program"))
             manifest = ProjectManifest(
@@ -156,7 +156,7 @@ class DurableResourceAuthoritiesTests(TestCase):
             )
             first.portfolio.register_project(manifest)
 
-            second = build_durable_platform_meta(root)
+            second = build_platform_meta(root)
             self.assertEqual(second.portfolio.workspace("workspace").name, "Workspace")
             self.assertEqual(second.portfolio.program("program").workspace_id, "workspace")
             self.assertEqual(second.portfolio.project("project"), manifest)
@@ -165,7 +165,7 @@ class DurableResourceAuthoritiesTests(TestCase):
     def test_durable_experimentation_survives_rebuild(self) -> None:
         with TemporaryDirectory() as directory:
             root = Path(directory)
-            first = build_durable_platform_meta(root)
+            first = build_platform_meta(root)
             first.portfolio.register_workspace(WorkspaceSpec("workspace", "Workspace"))
             first.portfolio.register_program(ProgramSpec("program", "workspace", "Program"))
             manifest = ProjectManifest(
@@ -184,7 +184,7 @@ class DurableResourceAuthoritiesTests(TestCase):
             first.experimentation.register_experiment(experiment)
             run = RunIdentity("run", "session", "trace")
             first.experimentation.register_run("experiment", run)
-            second = build_durable_platform_meta(root)
+            second = build_platform_meta(root)
             self.assertEqual(second.experimentation.study("study").name, "Study")
             self.assertEqual(second.experimentation.experiment("experiment"), experiment)
             self.assertEqual(second.experimentation.experiments(study_id="study"), (experiment,))
@@ -193,14 +193,14 @@ class DurableResourceAuthoritiesTests(TestCase):
         with TemporaryDirectory() as directory:
             root = Path(directory)
             scope = ScopeIdentity(ScopeKind.WORKSPACE, "workspace")
-            first = build_durable_platform_meta(root)
+            first = build_platform_meta(root)
             first.scopes.register(scope, PLATFORM_SCOPE)
             first.compute_inventory.register_host(
                 ComputeHost("host-1", scope, 8, 1024)
             )
             requirement = ComputeRequirement(cpu_cores=2, memory_bytes=256)
             allocation = first.compute_scheduler.allocate("compute-1", scope, requirement)
-            second = build_durable_platform_meta(root)
+            second = build_platform_meta(root)
             self.assertEqual(second.compute_inventory.host("host-1").cpu_cores, 8)
             self.assertEqual(second.compute_scheduler.allocations(), (allocation,))
             second.compute_scheduler.release(allocation)
@@ -210,7 +210,7 @@ class DurableResourceAuthoritiesTests(TestCase):
         with TemporaryDirectory() as directory:
             root = Path(directory)
             scope = ScopeIdentity(ScopeKind.WORKSPACE, "workspace")
-            meta = build_durable_platform_meta(root)
+            meta = build_platform_meta(root)
             meta.scopes.register(scope, PLATFORM_SCOPE)
             revision = "a" * 64
             runtime_digest = "d" * 64
@@ -270,7 +270,7 @@ class DurableResourceAuthoritiesTests(TestCase):
                 ),
                 (),
             )
-            restored_acquired = build_durable_platform_meta(root)
+            restored_acquired = build_platform_meta(root)
             self.assertEqual(
                 restored_acquired.environments.binding("runner", scope),
                 binding,
@@ -362,7 +362,7 @@ class DurableResourceAuthoritiesTests(TestCase):
             )
             self.assertFalse(recovery.eligible)
 
-            restored = build_durable_platform_meta(root)
+            restored = build_platform_meta(root)
             restored_unproven = restored.environments.assess_profile_gc(
                 "web-default",
                 revision,
@@ -380,7 +380,7 @@ class DurableResourceAuthoritiesTests(TestCase):
         with TemporaryDirectory() as directory:
             root = Path(directory)
             scope = ScopeIdentity(ScopeKind.WORKSPACE, "workspace")
-            meta = build_durable_platform_meta(root)
+            meta = build_platform_meta(root)
             meta.scopes.register(scope, PLATFORM_SCOPE)
             revision = "a" * 64
             runtime_a = "b" * 64
@@ -440,7 +440,7 @@ class DurableResourceAuthoritiesTests(TestCase):
             )
             self.assertFalse(whole_profile.eligible)
 
-            restored = build_durable_platform_meta(root)
+            restored = build_platform_meta(root)
             restored_exact_a = restored.environments.assess_runtime_gc(
                 "web-multi-runtime",
                 revision,
@@ -463,7 +463,7 @@ class DurableResourceAuthoritiesTests(TestCase):
             root = Path(directory)
             scope = ScopeIdentity(ScopeKind.WORKSPACE, "workspace")
             other_scope = ScopeIdentity(ScopeKind.WORKSPACE, "other-workspace")
-            meta = build_durable_platform_meta(root)
+            meta = build_platform_meta(root)
             meta.scopes.register(scope, PLATFORM_SCOPE)
             meta.scopes.register(other_scope, PLATFORM_SCOPE)
             revision = "4" * 64
@@ -562,7 +562,7 @@ class DurableResourceAuthoritiesTests(TestCase):
             )
             self.assertEqual(recovered.instance.generation, 1)
 
-            restored_pinned = build_durable_platform_meta(root)
+            restored_pinned = build_platform_meta(root)
             self.assertEqual(
                 restored_pinned.environments.binding("runner", scope),
                 recovered.binding,
@@ -629,7 +629,7 @@ class DurableResourceAuthoritiesTests(TestCase):
                     EnvironmentProfileLifecycle.ACTIVE,
                 )
 
-            restored = build_durable_platform_meta(root)
+            restored = build_platform_meta(root)
             restored_profile = restored.environments.profile_revision(
                 profile.profile_id,
                 profile.profile_revision,
@@ -644,7 +644,7 @@ class DurableResourceAuthoritiesTests(TestCase):
         with TemporaryDirectory() as directory:
             root = Path(directory)
             scope = ScopeIdentity(ScopeKind.WORKSPACE, "workspace")
-            first = build_durable_platform_meta(root)
+            first = build_platform_meta(root)
             first.scopes.register(scope, PLATFORM_SCOPE)
             spec = EnvironmentSpec(
                 "python-base", ExecutionEnvironmentKind.PYTHON, scope,
@@ -674,7 +674,7 @@ class DurableResourceAuthoritiesTests(TestCase):
             first.environments.register_instance(instance)
             binding = EnvironmentBinding("binding-1", scope, "runner", "env-1")
             first.environments.bind(binding)
-            second = build_durable_platform_meta(root)
+            second = build_platform_meta(root)
             resolved = second.environments.resolve("default", scope)
             self.assertEqual(resolved.requirements, (("python", "3.12"),))
             self.assertEqual(second.environments.binding("runner", scope), binding)
