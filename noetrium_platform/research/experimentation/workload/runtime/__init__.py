@@ -1,4 +1,4 @@
-from .cut import SequentialWorkloadCutBinding
+from .graph import WorkloadGraphBinding
 from .operation import WorkloadMethodBinding
 
-__all__ = ["SequentialWorkloadCutBinding", "WorkloadMethodBinding"]
+__all__ = ["WorkloadGraphBinding", "WorkloadMethodBinding"]

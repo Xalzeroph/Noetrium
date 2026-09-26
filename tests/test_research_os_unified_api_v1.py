@@ -167,9 +167,9 @@ def test_noetrium_api_exposes_only_research_os_product_surface() -> None:
         "TrialProviderPort",
         "TrialTaskProjectionPort",
         "TrialMeasurementProjectionPort",
-        "WorkloadCutExecutionPort",
-        "CutWorkloadTrialProvider",
-        "SequentialWorkloadCutBinding",
+        "WorkloadGraphExecutionPort",
+        "WorkloadGraphBinding",
+        "WorkloadTrialProvider",
     }
     assert expected <= set(api.__all__)
 

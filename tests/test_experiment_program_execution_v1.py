@@ -13,6 +13,7 @@ from noetrium_platform.foundation.kernel.concurrency.composition import (
     build_concurrency_runtime,
 )
 from noetrium_platform.research.experimentation.lifecycle.api import (
+    AssignmentWorkload,
     StudyExecutionPlan,
     StudyConcurrencyPolicy,
     StudyMetricObservation,
@@ -47,6 +48,7 @@ def _protocol(
         "c" * 64,
         ("score",),
         "d" * 64,
+        (AssignmentWorkload(("task-1",)),),
         ("standard",),
         concurrency_policy or StudyConcurrencyPolicy.serial_shared_v1(
             repetition_timeout_seconds=3600.0

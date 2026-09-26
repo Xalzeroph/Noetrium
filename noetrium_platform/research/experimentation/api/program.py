@@ -40,9 +40,13 @@ from noetrium_platform.research.execution.api import (
     core_program_handlers,
 )
 from noetrium_platform.research.experimentation.lifecycle.api import (
+    AssignmentWorkload,
     BoundStudyExecutionPort,
     StudyExecutionPlan,
     StudyAssignment,
+    TaskGraph,
+    TaskGraphEdge,
+    TaskGraphRelation,
     StudyExecutionUnit,
     StudyMatrixExecutionReport,
     StudyMetricAggregate,
@@ -236,7 +240,18 @@ def _observation_json(observation: StudyMetricObservation) -> JsonObject:
         "variant_id": assignment.variant_id,
         "repetition": assignment.repetition,
         "seed": assignment.seed,
-        "task_id": assignment.task_id,
+        "workload": {
+            "task_ids": assignment.workload.task_ids,
+            "task_graph_edges": tuple(
+                (
+                    edge.source_task_id,
+                    edge.target_task_id,
+                    edge.relation.value,
+                )
+                for edge in assignment.workload.task_graph.edges
+            ),
+            "workload_digest": assignment.workload.workload_digest,
+        },
         "assignment_digest": assignment.assignment_digest,
         "metrics": tuple((name, float(value)) for name, value in observation.metrics),
     }
@@ -245,12 +260,42 @@ def _observation_json(observation: StudyMetricObservation) -> JsonObject:
 def _observation_from_json(value: object) -> StudyMetricObservation:
     if not isinstance(value, Mapping):
         raise TypeError("experiment observation state row must be an object")
+    workload_value = value.get("workload")
+    if not isinstance(workload_value, Mapping):
+        raise TypeError("experiment observation workload must be an object")
+    task_ids_value = workload_value.get("task_ids")
+    if not isinstance(task_ids_value, (tuple, list)):
+        raise TypeError("experiment observation workload task_ids must be a sequence")
+    edges_value = workload_value.get("task_graph_edges", ())
+    if not isinstance(edges_value, (tuple, list)):
+        raise TypeError(
+            "experiment observation workload task_graph_edges must be a sequence"
+        )
+    workload = AssignmentWorkload(
+        tuple(str(task_id) for task_id in task_ids_value),
+        TaskGraph(
+            tuple(
+                sorted(
+                    (
+                        TaskGraphEdge(
+                            str(row[0]),
+                            str(row[1]),
+                            TaskGraphRelation(str(row[2])),
+                        )
+                        for row in edges_value
+                    )
+                )
+            )
+        ),
+    )
+    if workload.workload_digest != workload_value.get("workload_digest"):
+        raise ValueError("experiment observation workload digest mismatch")
     assignment = StudyAssignment(
         study_id=value["study_id"],
         variant_id=value["variant_id"],
         repetition=value["repetition"],
         seed=value["seed"],
-        task_id=value.get("task_id"),
+        workload=workload,
     )
     if assignment.assignment_digest != value.get("assignment_digest"):
         raise ValueError("experiment observation assignment digest mismatch")

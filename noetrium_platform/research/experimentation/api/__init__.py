@@ -7,7 +7,7 @@ from noetrium_platform.research.experimentation.binding import (
     ResearchParticipantRequirement, ResearchRequirementResolution,
 )
 from noetrium_platform.research.experimentation.lifecycle.api import (
-    AgentStudySpec, AnalysisDefinition, AnalysisResult, BenchmarkAssignmentMode, BenchmarkCutRequirement, BenchmarkCutSpec, BenchmarkTaskSet, benchmark_cut_requirements, requires_benchmark_cut, BenchmarkSourceKind, BenchmarkSourcePort, BenchmarkSourceResolution, BenchmarkSourceSpec, InMemoryBenchmarkSource, FactorLevelSpec, FactorSelection, MeasurementContentReference, MeasurementCut, MeasurementDefinition, MeasurementProtocol,
+    AgentStudySpec, AnalysisDefinition, AnalysisResult, AssignmentWorkload, BenchmarkCutRequirement, BenchmarkCutSpec, BenchmarkTaskSet, benchmark_cut_requirements, requires_benchmark_cut, BenchmarkSourceKind, BenchmarkSourcePort, BenchmarkSourceResolution, BenchmarkSourceSpec, InMemoryBenchmarkSource, FactorLevelSpec, FactorSelection, MeasurementContentReference, MeasurementCut, MeasurementDefinition, MeasurementProtocol,
     PostHocEvaluationDefinition, PostHocEvaluationResult, Study, StudyModel, StudyParticipant,
     MeasurementRecord, MeasurementValue, MeasurementValueKind, ParticipantSchedule, ResearchRevision, ResearchStudyDefinition, StudyExecutionPolicy, StudyFactorSpec, StudyIntervention,
     TaskArtifactSpec, TaskDefinition, TaskPackageSpec, TaskVerifierIsolation,
@@ -83,7 +83,7 @@ __all__ = [
     "Study",
     "StudyModel",
     "StudyParticipant",
-    "BenchmarkAssignmentMode",
+    "AssignmentWorkload",
     "BenchmarkCutRequirement",
     "BenchmarkCutRequirement",
     "BenchmarkCutSpec",
@@ -273,7 +273,7 @@ __all__ = [
     'Study',
     'StudyModel',
     'StudyParticipant',
-    'BenchmarkAssignmentMode',
+    'AssignmentWorkload',
     'BenchmarkCutRequirement',
     'BenchmarkCutRequirement',
     'BenchmarkCutSpec',

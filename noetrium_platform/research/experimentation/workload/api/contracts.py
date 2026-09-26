@@ -8,6 +8,8 @@ from noetrium_platform.research.experimentation.lifecycle.api import (
     ExperimentTaskSpec,
     ExperimentWorkloadFailure,
     FailureScope,
+    TaskDefinition,
+    TrialExecutionRequest,
 )
 from noetrium_platform.research.execution.api import MethodProgram, MethodRuntimeContext
 from noetrium_platform.foundation.kernel.kernel import (
@@ -152,18 +154,18 @@ class WorkloadTaskResult:
 
 
 @dataclass(frozen=True, slots=True)
-class WorkloadCutResult:
+class WorkloadGraphResult:
     task_results: tuple[WorkloadTaskResult, ...]
     result_digest: str = field(init=False)
 
     def __post_init__(self) -> None:
         if type(self.task_results) is not tuple or not self.task_results:
-            raise TypeError("workload cut result requires a non-empty task tuple")
+            raise TypeError("workload graph result requires a non-empty task tuple")
         if any(not isinstance(row, WorkloadTaskResult) for row in self.task_results):
-            raise TypeError("workload cut result must contain WorkloadTaskResult")
+            raise TypeError("workload graph result must contain WorkloadTaskResult")
         task_ids = tuple(row.task_id for row in self.task_results)
         if len(task_ids) != len(set(task_ids)):
-            raise ValueError("workload cut result task ids must be unique")
+            raise ValueError("workload graph result task ids must be unique")
         object.__setattr__(
             self,
             "result_digest",
@@ -205,9 +207,22 @@ class StaticExperimentTaskProjection:
             "tasks": self.tasks,
         })
 
-    def task(self, task_id: str) -> ExperimentTaskSpec:
-        if type(task_id) is not str or not task_id.strip():
-            raise ValueError("static task projection task_id must be non-empty")
+    def task(
+        self,
+        request: TrialExecutionRequest,
+        definition: TaskDefinition,
+    ) -> ExperimentTaskSpec:
+        if not isinstance(request, TrialExecutionRequest):
+            raise TypeError(
+                "static task projection requires TrialExecutionRequest"
+            )
+        if not isinstance(definition, TaskDefinition):
+            raise TypeError("static task projection requires TaskDefinition")
+        if definition not in request.task_definitions:
+            raise ValueError(
+                "static task projection definition is outside assignment workload"
+            )
+        task_id = definition.task_id
         matches = tuple(row for row in self.tasks if row.task_id == task_id)
         if len(matches) != 1:
             raise KeyError(f"static task projection has no unique task {task_id!r}")
@@ -222,7 +237,7 @@ class WorkloadTaskRunError(ExperimentWorkloadFailure):
 __all__ = [
     "WorkloadCompletionReceipt",
     "StaticExperimentTaskProjection",
-    "WorkloadCutResult",
+    "WorkloadGraphResult",
     "WorkloadEvaluation", "WorkloadMethodInvocation", "WorkloadMethodReceipt",
     "WorkloadTaskResult", "WorkloadTaskRunError",
 ]

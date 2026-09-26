@@ -1,15 +1,15 @@
 from .contracts import (
     StaticExperimentTaskProjection,
     WorkloadCompletionReceipt,
-    WorkloadCutResult,
     WorkloadEvaluation,
+    WorkloadGraphResult,
     WorkloadMethodInvocation,
     WorkloadMethodReceipt,
     WorkloadTaskResult,
     WorkloadTaskRunError,
 )
 from .ports import (
-    WorkloadCutExecutionPort,
+    WorkloadGraphExecutionPort,
     WorkloadMethodCompilerPort,
     WorkloadMethodResultAdapterPort,
     WorkloadTaskExecutionPort,
@@ -18,9 +18,9 @@ from .ports import (
 __all__ = [
     "StaticExperimentTaskProjection",
     "WorkloadCompletionReceipt",
-    "WorkloadCutExecutionPort",
-    "WorkloadCutResult",
     "WorkloadEvaluation",
+    "WorkloadGraphExecutionPort",
+    "WorkloadGraphResult",
     "WorkloadMethodCompilerPort",
     "WorkloadMethodInvocation",
     "WorkloadMethodReceipt",

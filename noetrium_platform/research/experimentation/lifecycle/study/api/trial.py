@@ -309,7 +309,7 @@ class TrialExecutionRequest:
     binding: VariantBinding
     measurement_protocol: MeasurementProtocol
     protocol_identity: ExperimentTrialProtocolIdentity
-    task_cut: tuple[TaskDefinition, ...]
+    task_definitions: tuple[TaskDefinition, ...]
     request_digest: str = field(init=False)
 
     def __post_init__(self) -> None:
@@ -344,20 +344,21 @@ class TrialExecutionRequest:
             raise TypeError(
                 "trial request protocol_identity must be ExperimentTrialProtocolIdentity"
             )
-        if type(self.task_cut) is not tuple or not self.task_cut or any(
-            type(row) is not TaskDefinition for row in self.task_cut
+        if (
+            type(self.task_definitions) is not tuple
+            or not self.task_definitions
+            or any(type(row) is not TaskDefinition for row in self.task_definitions)
         ):
             raise TypeError(
-                "trial request task_cut must be a non-empty tuple of TaskDefinition"
+                "trial request task_definitions must be a non-empty tuple "
+                "of TaskDefinition"
             )
-        task_ids = tuple(row.task_id for row in self.task_cut)
+        task_ids = tuple(row.task_id for row in self.task_definitions)
         if len(task_ids) != len(set(task_ids)):
-            raise ValueError("trial request task_cut task ids must be unique")
-        if self.assignment.task_id is None:
-            pass
-        elif len(self.task_cut) != 1 or task_ids != (self.assignment.task_id,):
+            raise ValueError("trial request task definition ids must be unique")
+        if task_ids != self.assignment.workload.task_ids:
             raise ValueError(
-                "task-level trial request must contain exactly its assigned task"
+                "trial request task definitions do not match assignment workload"
             )
         object.__setattr__(
             self,
@@ -378,8 +379,8 @@ class TrialExecutionRequest:
                         self.measurement_protocol.protocol_digest
                     ),
                     "protocol_identity_digest": self.protocol_identity.digest(),
-                    "task_cut_digests": tuple(
-                        row.task_digest for row in self.task_cut
+                    "task_definition_digests": tuple(
+                        row.task_digest for row in self.task_definitions
                     ),
                 }
             ),
@@ -389,11 +390,6 @@ class TrialExecutionRequest:
     def intervention(self) -> OptionalIdentityFacet:
         return OptionalIdentityFacet(self.intervention_spec.intervention_digest)
 
-    @property
-    def task(self) -> TaskDefinition | None:
-        if self.assignment.task_id is None:
-            return None
-        return self.task_cut[0]
 
 
 @dataclass(frozen=True, slots=True)
@@ -522,7 +518,11 @@ class TrialTaskProjectionPort(Protocol):
     @property
     def identity_digest(self) -> str: ...
 
-    def task(self, task_id: str) -> object: ...
+    def task(
+        self,
+        request: TrialExecutionRequest,
+        definition: TaskDefinition,
+    ) -> object: ...
 
 
 @runtime_checkable

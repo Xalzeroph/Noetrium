@@ -27,9 +27,8 @@ from noetrium_platform.research.experimentation.api.research_compiler import (
     CompiledResearchPlan,
 )
 from noetrium_platform.research.experimentation.workload.api import (
-    WorkloadCutExecutionPort,
-    WorkloadCutResult,
-    WorkloadTaskExecutionPort,
+    WorkloadGraphExecutionPort,
+    WorkloadGraphResult,
     WorkloadTaskResult,
 )
 
@@ -53,30 +52,49 @@ class StandardWorkloadMeasurementProjection:
         })
 
     @staticmethod
-    def _value(definition, result: WorkloadTaskResult) -> MeasurementValue:
+    def _value(
+        definition,
+        result: WorkloadTaskResult | WorkloadGraphResult,
+    ) -> MeasurementValue:
+        rows = (
+            result.task_results
+            if isinstance(result, WorkloadGraphResult)
+            else (result,)
+        )
         semantic = definition.semantic_kind
         if semantic == "task_success":
             if definition.value_kind is MeasurementValueKind.BOOLEAN:
                 return MeasurementValue(
                     MeasurementValueKind.BOOLEAN,
-                    boolean=result.success,
+                    boolean=all(row.success for row in rows),
                 )
             if definition.value_kind is MeasurementValueKind.SCALAR:
                 return MeasurementValue(
                     MeasurementValueKind.SCALAR,
-                    scalar=1.0 if result.success else 0.0,
+                    scalar=(
+                        sum(1.0 for row in rows if row.success) / len(rows)
+                    ),
                 )
         elif semantic == "utility" and definition.value_kind is MeasurementValueKind.SCALAR:
-            return MeasurementValue(MeasurementValueKind.SCALAR, scalar=float(result.utility))
+            return MeasurementValue(
+                MeasurementValueKind.SCALAR,
+                scalar=sum(float(row.utility) for row in rows) / len(rows),
+            )
         elif semantic == "steps" and definition.value_kind is MeasurementValueKind.SCALAR:
-            return MeasurementValue(MeasurementValueKind.SCALAR, scalar=float(result.steps))
+            return MeasurementValue(
+                MeasurementValueKind.SCALAR,
+                scalar=float(sum(row.steps for row in rows)),
+            )
         elif semantic == "duration_seconds" and definition.value_kind is MeasurementValueKind.SCALAR:
             return MeasurementValue(
                 MeasurementValueKind.SCALAR,
-                scalar=float(result.duration_s),
+                scalar=float(sum(row.duration_s for row in rows)),
             )
         elif semantic == "blocked" and definition.value_kind is MeasurementValueKind.BOOLEAN:
-            return MeasurementValue(MeasurementValueKind.BOOLEAN, boolean=result.blocked)
+            return MeasurementValue(
+                MeasurementValueKind.BOOLEAN,
+                boolean=any(row.blocked for row in rows),
+            )
         raise ValueError(
             "standard workload measurement projection cannot represent "
             f"semantic_kind={semantic!r} as value_kind={definition.value_kind.value!r}"
@@ -89,8 +107,11 @@ class StandardWorkloadMeasurementProjection:
     ) -> tuple[MeasurementRecord, ...]:
         if not isinstance(request, TrialExecutionRequest):
             raise TypeError("measurement projection requires TrialExecutionRequest")
-        if not isinstance(result, WorkloadTaskResult):
-            raise TypeError("measurement projection requires WorkloadTaskResult")
+        if not isinstance(result, (WorkloadTaskResult, WorkloadGraphResult)):
+            raise TypeError(
+                "measurement projection requires WorkloadTaskResult "
+                "or WorkloadGraphResult"
+            )
         protocol = request.measurement_protocol
         producer_revision = self.identity_digest
         rows: list[MeasurementRecord] = []
@@ -124,28 +145,37 @@ class StandardWorkloadMeasurementProjection:
 
 
 class WorkloadTrialProvider:
-    """Study-owned bridge from a frozen Trial request to generic Workload execution."""
+    """Execute every assignment through the universal workload graph runtime."""
 
     def __init__(
         self,
         *,
         protocol_identity: object,
-        workload: WorkloadTaskExecutionPort,
+        workload: WorkloadGraphExecutionPort,
         task_projection: TrialTaskProjectionPort,
         measurement_projection: TrialMeasurementProjectionPort,
     ) -> None:
         digest = getattr(protocol_identity, "digest", None)
         if not callable(digest):
             raise TypeError("workload trial provider requires protocol identity")
-        canonical_digest_value = digest()
-        if type(canonical_digest_value) is not str or len(canonical_digest_value) != 64:
+        protocol_digest = digest()
+        if type(protocol_digest) is not str or len(protocol_digest) != 64:
             raise TypeError("workload trial protocol identity digest is invalid")
+        if not callable(getattr(workload, "execute_graph", None)):
+            raise TypeError(
+                "workload trial provider requires WorkloadGraphExecutionPort"
+            )
         if not isinstance(task_projection, TrialTaskProjectionPort):
-            raise TypeError("workload trial provider requires TrialTaskProjectionPort")
-        if not isinstance(measurement_projection, TrialMeasurementProjectionPort):
-            raise TypeError("workload trial provider requires TrialMeasurementProjectionPort")
-        if not callable(getattr(workload, "execute_one", None)):
-            raise TypeError("workload trial provider requires WorkloadTaskExecutionPort")
+            raise TypeError(
+                "workload trial provider requires TrialTaskProjectionPort"
+            )
+        if not isinstance(
+            measurement_projection,
+            TrialMeasurementProjectionPort,
+        ):
+            raise TypeError(
+                "workload trial provider requires TrialMeasurementProjectionPort"
+            )
         for field_name, value in (
             ("task projection", task_projection.identity_digest),
             ("measurement projection", measurement_projection.identity_digest),
@@ -156,112 +186,49 @@ class WorkloadTrialProvider:
         self._workload = workload
         self._task_projection = task_projection
         self._measurement_projection = measurement_projection
-        self.identity_digest = canonical_digest({
-            "provider": "workload-trial-provider.v1",
-            "protocol_identity": canonical_digest_value,
-            "task_projection": task_projection.identity_digest,
-            "measurement_projection": measurement_projection.identity_digest,
-        })
-
-    def run_trial(self, request: TrialExecutionRequest) -> TrialExecutionReceipt:
-        if not isinstance(request, TrialExecutionRequest):
-            raise TypeError("workload trial provider requires TrialExecutionRequest")
-        if request.protocol_identity != self.protocol_identity:
-            raise ValueError("trial request protocol identity drift")
-        if (
-            request.task is not None
-            and request.task.package is not None
-            and request.task.package.verifier_requirement_id is not None
-        ):
-            raise RuntimeError(
-                "verifier-backed benchmark tasks require an explicit verifier-stage "
-                "trial provider; workload trial provider will not bypass verifier isolation"
-            )
-        task_id = request.assignment.task_id
-        if task_id is None:
-            raise ValueError("workload trial provider requires task-level assignment")
-        task = self._task_projection.task(task_id)
-        if getattr(task, "task_id", None) != task_id:
-            raise ValueError("projected workload task identity drift")
-        context = ExecutionContext(
-            run_id=request.run_id,
-            trace_id=request.request_digest,
-            span_id=f"trial:{request.assignment.assignment_digest[:16]}",
-            study_id=request.assignment.study_id,
-            condition_id=request.assignment.variant_id,
-            task_id=task_id,
-            operation_id=request.request_digest,
-            component_id="workload-trial-provider",
-        )
-        result = self._workload.execute_one(task, context)
-        if not isinstance(result, WorkloadTaskResult):
-            raise TypeError("workload trial provider requires WorkloadTaskResult")
-        if result.task_id != task_id:
-            raise ValueError("workload result task identity drift")
-        measurements = self._measurement_projection.project(request, result)
-        for row in measurements:
-            row.validate_against(request.measurement_protocol)
-        return TrialExecutionReceipt(
-            request_digest=request.request_digest,
-            assignment_digest=request.assignment.assignment_digest,
-            measurements=measurements,
+        self.identity_digest = canonical_digest(
+            {
+                "provider": "workload-trial-provider.v2",
+                "protocol_identity": protocol_digest,
+                "task_projection": task_projection.identity_digest,
+                "measurement_projection": measurement_projection.identity_digest,
+            }
         )
 
-
-class CutWorkloadTrialProvider:
-    """Execute one frozen ordered task cut inside one assignment lifetime."""
-
-    def __init__(
+    def run_trial(
         self,
-        *,
-        protocol_identity: object,
-        workload: WorkloadCutExecutionPort,
-        task_projection: TrialTaskProjectionPort,
-        measurement_projection: TrialMeasurementProjectionPort,
-    ) -> None:
-        digest = getattr(protocol_identity, "digest", None)
-        if not callable(digest):
-            raise TypeError("cut workload trial provider requires protocol identity")
-        protocol_digest = digest()
-        if type(protocol_digest) is not str or len(protocol_digest) != 64:
-            raise TypeError("cut workload trial protocol identity digest is invalid")
-        if not callable(getattr(workload, "execute_cut", None)):
-            raise TypeError("cut workload trial provider requires WorkloadCutExecutionPort")
-        if not isinstance(task_projection, TrialTaskProjectionPort):
-            raise TypeError("cut workload provider requires TrialTaskProjectionPort")
-        if not isinstance(measurement_projection, TrialMeasurementProjectionPort):
-            raise TypeError("cut workload provider requires TrialMeasurementProjectionPort")
-        self.protocol_identity = protocol_identity
-        self._workload = workload
-        self._task_projection = task_projection
-        self._measurement_projection = measurement_projection
-        self.identity_digest = canonical_digest({
-            "provider": "cut-workload-trial-provider.v1",
-            "protocol_identity": protocol_digest,
-            "task_projection": task_projection.identity_digest,
-            "measurement_projection": measurement_projection.identity_digest,
-        })
-
-    def run_trial(self, request: TrialExecutionRequest) -> TrialExecutionReceipt:
+        request: TrialExecutionRequest,
+    ) -> TrialExecutionReceipt:
         if not isinstance(request, TrialExecutionRequest):
-            raise TypeError("cut workload provider requires TrialExecutionRequest")
+            raise TypeError(
+                "workload trial provider requires TrialExecutionRequest"
+            )
         if request.protocol_identity != self.protocol_identity:
             raise ValueError("trial request protocol identity drift")
-        if request.assignment.task_id is not None:
-            raise ValueError("cut workload provider requires cut-level assignment")
         if any(
-            row.package is not None and row.package.verifier_requirement_id is not None
-            for row in request.task_cut
+            definition.package is not None
+            and definition.package.verifier_requirement_id is not None
+            for definition in request.task_definitions
         ):
             raise RuntimeError(
-                "cut workload provider does not bypass task-declared verifier isolation"
+                "verifier-backed benchmark tasks require verifier isolation; "
+                "the universal workload provider will not bypass that boundary"
             )
+
         tasks = tuple(
-            self._task_projection.task(row.task_id) for row in request.task_cut
+            self._task_projection.task(request, definition)
+            for definition in request.task_definitions
         )
-        expected_ids = tuple(row.task_id for row in request.task_cut)
-        if tuple(getattr(row, "task_id", None) for row in tasks) != expected_ids:
-            raise ValueError("projected cut workload task identity/order drift")
+        expected_ids = request.assignment.workload.task_ids
+        actual_ids = tuple(
+            getattr(task, "task_id", None)
+            for task in tasks
+        )
+        if actual_ids != expected_ids:
+            raise ValueError(
+                "projected workload graph task identity/order drift"
+            )
+
         context = ExecutionContext(
             run_id=request.run_id,
             trace_id=request.request_digest,
@@ -271,14 +238,26 @@ class CutWorkloadTrialProvider:
             lifetime_id=request.assignment.assignment_digest,
             task_id=None,
             operation_id=request.request_digest,
-            component_id="cut-workload-trial-provider",
+            component_id="workload-trial-provider",
         )
-        result = self._workload.execute_cut(tasks, context)
-        if not isinstance(result, WorkloadCutResult):
-            raise TypeError("cut workload provider requires WorkloadCutResult")
+        result = self._workload.execute_graph(
+            tasks,
+            request.assignment.workload,
+            context,
+        )
+        if not isinstance(result, WorkloadGraphResult):
+            raise TypeError(
+                "workload trial provider requires WorkloadGraphResult"
+            )
         if result.task_ids != expected_ids:
-            raise ValueError("cut workload result task identity/order drift")
-        measurements = self._measurement_projection.project(request, result)
+            raise ValueError(
+                "workload graph result task identity/order drift"
+            )
+
+        measurements = self._measurement_projection.project(
+            request,
+            result,
+        )
         for row in measurements:
             row.validate_against(request.measurement_protocol)
         return TrialExecutionReceipt(
@@ -370,22 +349,23 @@ class VerifierStageWorkloadTrialProvider:
             )
         if request.protocol_identity != self.protocol_identity:
             raise ValueError("trial request protocol identity drift")
-        task_definition = request.task
-        package = None if task_definition is None else task_definition.package
-        if (
-            task_definition is None
-            or package is None
-            or package.verifier_requirement_id is None
-        ):
+        if len(request.task_definitions) != 1:
+            raise ValueError(
+                "verifier-stage workload provider currently requires a "
+                "single-node assignment workload"
+            )
+        task_definition = request.task_definitions[0]
+        package = task_definition.package
+        if package is None or package.verifier_requirement_id is None:
             raise ValueError(
                 "verifier-stage workload provider requires task-declared verifier"
             )
-        task_id = request.assignment.task_id
-        if task_id is None or task_id != task_definition.task_id:
+        task_id = task_definition.task_id
+        if request.assignment.workload.task_ids != (task_id,):
             raise ValueError(
-                "verifier-stage workload provider requires exact task assignment"
+                "verifier-stage workload provider assignment workload drifted"
             )
-        task = self._task_projection.task(task_id)
+        task = self._task_projection.task(request, task_definition)
         if getattr(task, "task_id", None) != task_id:
             raise ValueError("projected workload task identity drift")
         context = ExecutionContext(
@@ -458,9 +438,20 @@ def _require_measurements(
     if receipt.assignment_digest != request.assignment.assignment_digest:
         raise ValueError("trial receipt does not bind the assignment")
 
-    task = request.task
+    verifier_tasks = tuple(
+        definition
+        for definition in request.task_definitions
+        if definition.package is not None
+        and definition.package.verifier_requirement_id is not None
+    )
+    if len(verifier_tasks) > 1:
+        raise ValueError(
+            "trial receipt verifier validation requires per-node verifier receipts "
+            "for multi-verifier workload graphs"
+        )
+    task = verifier_tasks[0] if verifier_tasks else None
     package = None if task is None else task.package
-    verifier_required = package is not None and package.verifier_requirement_id is not None
+    verifier_required = task is not None
     if verifier_required:
         verifier = receipt.verifier_receipt
         if verifier is None:
@@ -532,11 +523,20 @@ class TrialVerifierOrchestrator:
         if provider_receipt.assignment_digest != request.assignment.assignment_digest:
             raise ValueError("trial provider receipt does not bind the assignment")
 
-        task = request.task
-        package = None if task is None else task.package
-        verifier_required = (
-            package is not None and package.verifier_requirement_id is not None
+        verifier_tasks = tuple(
+            definition
+            for definition in request.task_definitions
+            if definition.package is not None
+            and definition.package.verifier_requirement_id is not None
         )
+        if len(verifier_tasks) > 1:
+            raise ValueError(
+                "trial verifier orchestration requires per-node verifier "
+                "receipts for multi-verifier workload graphs"
+            )
+        task = verifier_tasks[0] if verifier_tasks else None
+        package = None if task is None else task.package
+        verifier_required = task is not None
         if not verifier_required:
             if type(provider_receipt) is TrialExecutionReceipt:
                 return provider_receipt
@@ -587,7 +587,6 @@ class TrialVerifierOrchestrator:
 
 
 __all__ = [
-    "CutWorkloadTrialProvider",
     "StandardWorkloadMeasurementProjection",
     "TrialVerifierArtifactPublisherPort",
     "TrialVerifierOrchestrator",

@@ -1,12 +1,6 @@
 from __future__ import annotations
 
-"""Public execution-authoring ABI for downstream Research OS projects.
-
-Scientific declarations stay in :mod:`research_authoring`.  This module exposes
-only typed execution contracts and generic composition helpers that downstream
-projects may implement or instantiate without importing internal Noetrium
-composition registries.
-"""
+"""Public execution-authoring ABI for downstream Research OS projects."""
 
 from noetrium_platform.capabilities.model.api import (
     ModelProviderProfile,
@@ -29,15 +23,14 @@ from noetrium_platform.research.experimentation.lifecycle.api import (
     TrialTaskProjectionPort,
 )
 from noetrium_platform.research.experimentation.lifecycle.study.providers.trial import (
-    CutWorkloadTrialProvider,
     StandardWorkloadMeasurementProjection,
     WorkloadTrialProvider,
 )
 from noetrium_platform.research.experimentation.workload.api import (
     WorkloadCompletionReceipt,
-    WorkloadCutExecutionPort,
-    WorkloadCutResult,
     WorkloadEvaluation,
+    WorkloadGraphExecutionPort,
+    WorkloadGraphResult,
     WorkloadMethodCompilerPort,
     WorkloadMethodInvocation,
     WorkloadMethodReceipt,
@@ -46,13 +39,12 @@ from noetrium_platform.research.experimentation.workload.api import (
     WorkloadTaskResult,
 )
 from noetrium_platform.research.experimentation.workload.runtime import (
-    SequentialWorkloadCutBinding,
+    WorkloadGraphBinding,
 )
 
 
 __all__ = [
     "AsyncMethodAgentLoopPort",
-    "CutWorkloadTrialProvider",
     "ExperimentTaskSpec",
     "MeasurementRecord",
     "MeasurementValue",
@@ -60,7 +52,6 @@ __all__ = [
     "ModelProviderProfile",
     "ProjectModelBinding",
     "ProjectModelBindingSet",
-    "SequentialWorkloadCutBinding",
     "StandardWorkloadMeasurementProjection",
     "TrialExecutionReceipt",
     "TrialExecutionRequest",
@@ -69,9 +60,10 @@ __all__ = [
     "TrialProviderPort",
     "TrialTaskProjectionPort",
     "WorkloadCompletionReceipt",
-    "WorkloadCutExecutionPort",
-    "WorkloadCutResult",
     "WorkloadEvaluation",
+    "WorkloadGraphBinding",
+    "WorkloadGraphExecutionPort",
+    "WorkloadGraphResult",
     "WorkloadMethodCompilerPort",
     "WorkloadMethodInvocation",
     "WorkloadMethodReceipt",

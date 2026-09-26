@@ -1,14 +1,15 @@
 from __future__ import annotations
 
+from noetrium_platform.foundation.kernel.concurrency.api import TaskGroupPort
 from noetrium_platform.research.execution.api import MethodMachinePort
 
 from ..api import (
-    WorkloadCutExecutionPort,
+    WorkloadGraphExecutionPort,
     WorkloadMethodCompilerPort,
     WorkloadMethodResultAdapterPort,
     WorkloadTaskExecutionPort,
 )
-from ..runtime import SequentialWorkloadCutBinding, WorkloadMethodBinding
+from ..runtime import WorkloadGraphBinding, WorkloadMethodBinding
 
 
 def bind_method_workload(
@@ -26,10 +27,15 @@ def bind_method_workload(
     )
 
 
-def bind_sequential_workload_cut(
+def bind_workload_graph(
     workload: WorkloadTaskExecutionPort,
-) -> WorkloadCutExecutionPort:
-    return SequentialWorkloadCutBinding(workload)
+    *,
+    task_group: TaskGroupPort | None = None,
+) -> WorkloadGraphExecutionPort:
+    return WorkloadGraphBinding(
+        workload,
+        task_group=task_group,
+    )
 
 
-__all__ = ["bind_method_workload", "bind_sequential_workload_cut"]
+__all__ = ["bind_method_workload", "bind_workload_graph"]

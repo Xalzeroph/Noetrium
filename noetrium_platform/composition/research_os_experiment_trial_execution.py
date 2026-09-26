@@ -301,10 +301,9 @@ class _TrialBoundStudyExecution(BoundStudyExecutionPort):
             raise ValueError(
                 "Trial Study assignment has no matching intervention identity"
             )
-        task_cut = (
-            plan.task_definitions
-            if assignment.task_id is None
-            else (plan.task_for(assignment.task_id),)
+        task_definitions = tuple(
+            plan.task_for(task_id)
+            for task_id in assignment.workload.task_ids
         )
         return TrialExecutionRequest(
             project_id=self._closure.definition.project_id,
@@ -317,7 +316,7 @@ class _TrialBoundStudyExecution(BoundStudyExecutionPort):
             binding=binding,
             measurement_protocol=plan.measurement_protocol,
             protocol_identity=plan.trial_protocol_identity,
-            task_cut=task_cut,
+            task_definitions=task_definitions,
         )
 
     def _observation(

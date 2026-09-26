@@ -7,6 +7,8 @@ from typing import Self
 
 from noetrium_platform.foundation.kernel.kernel import canonical_digest, require_sha256
 
+from .benchmark import TaskGraph, TaskGraphRelation
+
 
 def _require_non_empty_string(value: object, field: str) -> str:
     if type(value) is not str:
@@ -241,6 +243,7 @@ class StudyProtocol:
     seed_schedule_digest: str
     metric_names: tuple[str, ...]
     task_manifest_digest: str
+    assignment_workloads: tuple["AssignmentWorkload", ...]
     budget_tiers: tuple[str, ...]
     concurrency_policy: StudyConcurrencyPolicy
     protocol_digest: str = field(init=False)
@@ -256,6 +259,7 @@ class StudyProtocol:
         seed_schedule: object,
         metric_names: tuple[str, ...],
         task_manifest: object,
+        assignment_workloads: tuple["AssignmentWorkload", ...],
         budget_tiers: tuple[str, ...],
         concurrency_policy: StudyConcurrencyPolicy,
     ) -> Self:
@@ -267,6 +271,7 @@ class StudyProtocol:
             seed_schedule_digest=canonical_digest(seed_schedule),
             metric_names=metric_names,
             task_manifest_digest=canonical_digest(task_manifest),
+            assignment_workloads=assignment_workloads,
             budget_tiers=budget_tiers,
             concurrency_policy=concurrency_policy,
         )
@@ -282,6 +287,22 @@ class StudyProtocol:
         )
         del metric_names
         _require_sha256(self.task_manifest_digest, "study protocol task_manifest_digest")
+        if type(self.assignment_workloads) is not tuple or not self.assignment_workloads:
+            raise TypeError(
+                "study protocol assignment_workloads must be a non-empty tuple"
+            )
+        if any(
+            type(row) is not AssignmentWorkload
+            for row in self.assignment_workloads
+        ):
+            raise TypeError(
+                "study protocol assignment_workloads must contain AssignmentWorkload"
+            )
+        workload_digests = tuple(
+            row.workload_digest for row in self.assignment_workloads
+        )
+        if len(workload_digests) != len(set(workload_digests)):
+            raise ValueError("study protocol assignment workloads must be unique")
         budget_tiers = _require_string_tuple(
             self.budget_tiers, "study protocol budget_tiers", non_empty=True, unique=True
         )
@@ -295,9 +316,105 @@ class StudyProtocol:
             "seed_schedule_digest": self.seed_schedule_digest,
             "metric_names": self.metric_names,
             "task_manifest_digest": self.task_manifest_digest,
+            "assignment_workloads": tuple(
+                row.workload_digest for row in self.assignment_workloads
+            ),
             "budget_tiers": self.budget_tiers,
             "concurrency_policy": self.concurrency_policy,
         }))
+
+
+@dataclass(frozen=True, slots=True)
+class AssignmentWorkload:
+    """One immutable task graph executed inside a single assignment lifetime."""
+
+    task_ids: tuple[str, ...]
+    task_graph: TaskGraph = field(default_factory=TaskGraph)
+    workload_digest: str = field(init=False)
+
+    def __post_init__(self) -> None:
+        task_ids = _require_string_tuple(
+            self.task_ids,
+            "assignment workload task_ids",
+            non_empty=True,
+            unique=True,
+        )
+        ordered = task_ids
+        object.__setattr__(self, "task_ids", ordered)
+        if type(self.task_graph) is not TaskGraph:
+            raise TypeError("assignment workload task_graph must be TaskGraph")
+        known = set(ordered)
+        for edge in self.task_graph.edges:
+            if edge.source_task_id not in known or edge.target_task_id not in known:
+                raise ValueError(
+                    "assignment workload graph references task outside workload"
+                )
+        dependencies = {
+            task_id: set()
+            for task_id in ordered
+        }
+        for edge in self.task_graph.edges:
+            if edge.relation in {
+                TaskGraphRelation.PREREQUISITE,
+                TaskGraphRelation.RETRY_OF,
+            }:
+                dependencies[edge.target_task_id].add(edge.source_task_id)
+        remaining = {task_id: set(rows) for task_id, rows in dependencies.items()}
+        order_index = {
+            task_id: index
+            for index, task_id in enumerate(ordered)
+        }
+        ready = [
+            task_id
+            for task_id in ordered
+            if not remaining[task_id]
+        ]
+        visited: list[str] = []
+        while ready:
+            task_id = ready.pop(0)
+            visited.append(task_id)
+            for target_id in ordered:
+                if task_id not in remaining[target_id]:
+                    continue
+                remaining[target_id].remove(task_id)
+                if (
+                    not remaining[target_id]
+                    and target_id not in visited
+                    and target_id not in ready
+                ):
+                    ready.append(target_id)
+                    ready.sort(key=order_index.__getitem__)
+        if len(visited) != len(ordered):
+            raise ValueError("assignment workload dependency graph must be acyclic")
+        object.__setattr__(
+            self,
+            "workload_digest",
+            canonical_digest(
+                {
+                    "task_ids": ordered,
+                    "task_graph_digest": self.task_graph.graph_digest,
+                }
+            ),
+        )
+
+    def dependencies_for(self, task_id: str) -> tuple[str, ...]:
+        if task_id not in self.task_ids:
+            raise KeyError(f"assignment workload has no task {task_id!r}")
+        dependency_ids = {
+            edge.source_task_id
+            for edge in self.task_graph.edges
+            if edge.target_task_id == task_id
+            and edge.relation
+            in {
+                TaskGraphRelation.PREREQUISITE,
+                TaskGraphRelation.RETRY_OF,
+            }
+        }
+        return tuple(
+            candidate
+            for candidate in self.task_ids
+            if candidate in dependency_ids
+        )
 
 
 @dataclass(frozen=True, slots=True)
@@ -306,7 +423,7 @@ class StudyAssignment:
     variant_id: str
     repetition: int
     seed: str
-    task_id: str | None = None
+    workload: AssignmentWorkload
     assignment_digest: str = field(init=False)
 
     def __post_init__(self) -> None:
@@ -314,14 +431,16 @@ class StudyAssignment:
         _require_non_empty_string(self.variant_id, "study assignment variant_id")
         _require_nonnegative_int(self.repetition, "study assignment repetition")
         _require_non_empty_string(self.seed, "study assignment seed")
-        if self.task_id is not None:
-            _require_non_empty_string(self.task_id, "study assignment task_id")
+        if type(self.workload) is not AssignmentWorkload:
+            raise TypeError(
+                "study assignment workload must be AssignmentWorkload"
+            )
         object.__setattr__(self, "assignment_digest", canonical_digest({
             "study_id": self.study_id,
             "variant_id": self.variant_id,
             "repetition": self.repetition,
             "seed": self.seed,
-            "task_id": self.task_id,
+            "workload_digest": self.workload.workload_digest,
         }))
 
 
@@ -454,6 +573,7 @@ class StudyMetricAggregate:
 
 
 __all__ = [
+    "AssignmentWorkload",
     "StudyConcurrencyPolicy",
     "StudyAssignment",
     "StudyExecutionUnit",

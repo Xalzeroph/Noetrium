@@ -1,6 +1,7 @@
 from .authoring import AgentStudySpec, Study, StudyModel, StudyParticipant
 from .evaluation import PostHocEvaluationDefinition, PostHocEvaluationResult
 from .contracts import (
+    AssignmentWorkload,
     StudyConcurrencyPolicy,
     StudyAssignment,
     StudyExecutionUnit,
@@ -24,7 +25,6 @@ from .benchmark import (
     TrialBudget,
 )
 from .design import (
-    BenchmarkAssignmentMode,
     DEFAULT_STUDY_AGGREGATION_REQUIREMENT_ID,
     FactorLevelSpec, FactorSelection,
     ParticipantSchedule, ResearchRevision, ResearchStudyDefinition,
@@ -61,7 +61,7 @@ from .plan import (
 __all__ = [
     "AgentStudySpec",
     "Study",
-    "BenchmarkAssignmentMode",
+    "AssignmentWorkload",
     "DEFAULT_STUDY_AGGREGATION_REQUIREMENT_ID",
     "StudyModel",
     "StudyParticipant",

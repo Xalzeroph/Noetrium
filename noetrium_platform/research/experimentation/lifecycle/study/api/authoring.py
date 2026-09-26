@@ -21,14 +21,13 @@ from noetrium_platform.research.experimentation.identity import ModelRoleUsage, 
 
 from .benchmark import BenchmarkTaskSet, TrialBudget
 from .design import (
-    BenchmarkAssignmentMode,
     DEFAULT_STUDY_AGGREGATION_REQUIREMENT_ID,
     ResearchRevision,
     ResearchStudyDefinition,
     StudyExecutionPolicy,
     StudyFactorSpec,
 )
-from .contracts import StudyConcurrencyPolicy
+from .contracts import AssignmentWorkload, StudyConcurrencyPolicy
 from .measurement import MeasurementDefinition, MeasurementProtocol
 
 
@@ -150,7 +149,7 @@ class Study:
         seeds: tuple[str, ...],
         limits: TrialBudget,
         benchmark_split_id: str | None = None,
-        benchmark_assignment_mode: BenchmarkAssignmentMode = BenchmarkAssignmentMode.TASK,
+        assignment_workloads: tuple[AssignmentWorkload, ...] | None = None,
         aggregation_requirement_id: str = DEFAULT_STUDY_AGGREGATION_REQUIREMENT_ID,
         experiment_id: str | None = None,
         workload_id: str = "method-program",
@@ -240,6 +239,26 @@ class Study:
             ),
             model_roles=tuple(sorted(model_rows, key=lambda row: row.role)),
         )
+        selected_tasks = benchmark.selected_tasks(benchmark_split_id)
+        if assignment_workloads is None:
+            resolved_assignment_workloads = tuple(
+                AssignmentWorkload((task.task_id,))
+                for task in selected_tasks
+            )
+        else:
+            if type(assignment_workloads) is not tuple or not assignment_workloads:
+                raise TypeError(
+                    "Study assignment_workloads must be a non-empty tuple or None"
+                )
+            if any(
+                type(row) is not AssignmentWorkload
+                for row in assignment_workloads
+            ):
+                raise TypeError(
+                    "Study assignment_workloads must contain AssignmentWorkload"
+                )
+            resolved_assignment_workloads = assignment_workloads
+
         self._definition = ResearchStudyDefinition(
             project_id=project_id,
             experiment_id=experiment_id or study_id,
@@ -251,11 +270,11 @@ class Study:
             measurement_protocol=measurement_protocol,
             benchmark=benchmark,
             benchmark_split_id=benchmark_split_id,
+            assignment_workloads=resolved_assignment_workloads,
             binding_requirements=requirements,
             trial_protocol_identity=trial,
             revision=revision,
             execution_policy=policy,
-            benchmark_assignment_mode=benchmark_assignment_mode,
             aggregation_requirement_id=aggregation_requirement_id,
         )
 
@@ -293,7 +312,7 @@ class AgentStudySpec:
     limits: TrialBudget | None = None
     repetitions: int = 1
     seeds: tuple[str, ...] | None = None
-    benchmark_assignment_mode: BenchmarkAssignmentMode = BenchmarkAssignmentMode.TASK
+    assignment_workloads: tuple[AssignmentWorkload, ...] | None = None
     aggregation_requirement_id: str = DEFAULT_STUDY_AGGREGATION_REQUIREMENT_ID
     experiment_id: str | None = None
     workload_id: str = "method-program"
@@ -352,8 +371,18 @@ class AgentStudySpec:
             raise ValueError("agent study repetitions must be positive")
         if self.seeds is not None:
             object.__setattr__(self, "seeds", _tokens(self.seeds, "agent study seeds"))
-        if not isinstance(self.benchmark_assignment_mode, BenchmarkAssignmentMode):
-            raise TypeError("agent study benchmark_assignment_mode must be BenchmarkAssignmentMode")
+        if self.assignment_workloads is not None:
+            if type(self.assignment_workloads) is not tuple or not self.assignment_workloads:
+                raise TypeError(
+                    "agent study assignment_workloads must be a non-empty tuple or None"
+                )
+            if any(
+                type(row) is not AssignmentWorkload
+                for row in self.assignment_workloads
+            ):
+                raise TypeError(
+                    "agent study assignment_workloads must contain AssignmentWorkload"
+                )
         _text(self.aggregation_requirement_id, "agent study aggregation_requirement_id")
         if self.experiment_id is not None:
             _text(self.experiment_id, "agent study experiment_id")
@@ -398,7 +427,7 @@ class AgentStudySpec:
         benchmark_split_id: str | None = None,
         repetitions: int | None = None,
         seeds: tuple[str, ...] | None = None,
-        benchmark_assignment_mode: BenchmarkAssignmentMode | None = None,
+        assignment_workloads: tuple[AssignmentWorkload, ...] | None = None,
         aggregation_requirement_id: str | None = None,
         experiment_id: str | None = None,
         workload_id: str | None = None,
@@ -449,10 +478,10 @@ class AgentStudySpec:
             if benchmark_split_id is None
             else benchmark_split_id
         )
-        resolved_assignment_mode = (
-            self.benchmark_assignment_mode
-            if benchmark_assignment_mode is None
-            else benchmark_assignment_mode
+        resolved_assignment_workloads = (
+            self.assignment_workloads
+            if assignment_workloads is None
+            else assignment_workloads
         )
         resolved_aggregation_requirement_id = (
             self.aggregation_requirement_id
@@ -501,7 +530,7 @@ class AgentStudySpec:
             repetitions=resolved_repetitions,
             seeds=resolved_seeds,
             limits=resolved_limits,
-            benchmark_assignment_mode=resolved_assignment_mode,
+            assignment_workloads=resolved_assignment_workloads,
             aggregation_requirement_id=resolved_aggregation_requirement_id,
             experiment_id=resolved_experiment_id,
             workload_id=resolved_workload_id,

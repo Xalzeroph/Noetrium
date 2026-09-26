@@ -36,7 +36,7 @@ class StudyObservationTableAdapter:
             DataColumn("variant_id", "text", False),
             DataColumn("repetition", "int", False),
             DataColumn("seed", "text", False),
-            DataColumn("task_id", "text", True),
+            DataColumn("workload_task_ids", "text", False),
             DataColumn("assignment_digest", "text", False),
         ) + tuple(DataColumn(name, "float", True) for name in metric_names)
         rows = tuple(
@@ -45,7 +45,7 @@ class StudyObservationTableAdapter:
                 observation.assignment.variant_id,
                 observation.assignment.repetition,
                 observation.assignment.seed,
-                observation.assignment.task_id,
+                "|".join(observation.assignment.workload.task_ids),
                 observation.assignment.assignment_digest,
             ) + tuple(metric_by_observation[index].get(name) for name in metric_names)
             for index, observation in enumerate(observations)

@@ -5,7 +5,7 @@ from noetrium.api import (
     ExperimentTrialProtocolIdentity,
 )
 from noetrium.api import (
-    BenchmarkAssignmentMode,
+    AssignmentWorkload,
     BenchmarkTaskSet,
     MeasurementDefinition,
     ReplayLevel,
@@ -28,6 +28,15 @@ from .program import ADAS_MGSM_METHOD_PROGRAM
 _CANDIDATE_EXECUTION_CAPABILITY = "workbench.candidate-program.execute"
 
 
+def _validation_workload(
+    benchmark: BenchmarkTaskSet,
+) -> AssignmentWorkload:
+    validation = benchmark.selected_tasks(MGSM_ADAS_VALID_SPLIT)
+    if not validation:
+        raise ValueError("ADAS validation workload cannot be empty")
+    return AssignmentWorkload(tuple(row.task_id for row in validation))
+
+
 def adas_mgsm_search_trial_protocol(
     benchmark: BenchmarkTaskSet,
 ) -> ExperimentTrialProtocolIdentity:
@@ -48,6 +57,7 @@ def adas_mgsm_search_trial_protocol(
             "ADAS MGSM test split cardinality drifted: "
             f"expected={fidelity.test_size} actual={len(test)}"
         )
+    workload = _validation_workload(benchmark)
     return ExperimentTrialProtocolIdentity(
         "adas.meta-agent-search.mgsm.validation.v1",
         canonical_digest(
@@ -61,7 +71,7 @@ def adas_mgsm_search_trial_protocol(
                 "validation_task_ids": tuple(row.task_id for row in validation),
                 "test_split_id": MGSM_ADAS_TEST_SPLIT,
                 "test_task_ids": tuple(row.task_id for row in test),
-                "benchmark_assignment_mode": BenchmarkAssignmentMode.CUT.value,
+                "assignment_workload_digest": workload.workload_digest,
                 "generation_budget": fidelity.generation_budget,
                 "reflection_passes": fidelity.reflection_passes_per_generation,
                 "candidate_execution_attempt_budget": (
@@ -84,6 +94,7 @@ def build_adas_mgsm_search_study(
     benchmark: BenchmarkTaskSet,
 ) -> ResearchStudyDefinition:
     fidelity = ADAS_META_AGENT_SEARCH_FIDELITY
+    workload = _validation_workload(benchmark)
     protocol = adas_mgsm_search_trial_protocol(benchmark)
 
     return Study(
@@ -91,7 +102,7 @@ def build_adas_mgsm_search_study(
         study_id="adas-iclr-2025-mgsm-meta-agent-search",
         benchmark=benchmark,
         benchmark_split_id=MGSM_ADAS_VALID_SPLIT,
-        benchmark_assignment_mode=BenchmarkAssignmentMode.CUT,
+        assignment_workloads=(workload,),
         method=StudyParticipant(
             role="meta_search",
             kind="method",

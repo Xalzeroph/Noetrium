@@ -3,7 +3,6 @@ from __future__ import annotations
 from noetrium_platform.foundation.kernel.kernel import canonical_digest
 from noetrium_platform.research.experimentation.api.research_compiler import _assignments
 from noetrium_platform.research.experimentation.lifecycle.api import (
-    BenchmarkAssignmentMode,
     BenchmarkTaskSet,
     StudyVariantSpec,
     TaskDefinition,
@@ -69,14 +68,20 @@ def test_adas_study_runs_one_outer_assignment_over_whole_validation_cut() -> Non
     benchmark = _benchmark()
     definition = build_adas_mgsm_search_study(benchmark)
 
-    assert definition.benchmark_assignment_mode is BenchmarkAssignmentMode.CUT
     assert definition.benchmark_split_id == MGSM_ADAS_VALID_SPLIT
+    assert len(definition.assignment_workloads) == 1
     assert len(definition.benchmark.selected_tasks(MGSM_ADAS_VALID_SPLIT)) == 128
     assert len(definition.benchmark.selected_tasks(MGSM_ADAS_TEST_SPLIT)) == 800
 
+    workload = definition.assignment_workloads[0]
+    assert workload.task_ids == tuple(
+        task.task_id
+        for task in definition.benchmark.selected_tasks(MGSM_ADAS_VALID_SPLIT)
+    )
+
     assignments = _assignments(definition, (_variant(),))
     assert len(assignments) == 1
-    assert assignments[0].task_id is None
+    assert assignments[0].workload == workload
 
     meta_search = next(
         row

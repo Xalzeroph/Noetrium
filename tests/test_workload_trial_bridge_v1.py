@@ -3,14 +3,16 @@ from __future__ import annotations
 import pytest
 
 from noetrium_platform.foundation.governance.api import PLATFORM_SCOPE
-from noetrium_platform.foundation.kernel.kernel import ExecutionContext, canonical_digest
-from noetrium_platform.research.execution.api import ArtifactReference
-from noetrium_platform.research.experimentation.lifecycle.api import (
-    ExperimentTaskSpec,
-    ExperimentTrialProtocolIdentity,
+from noetrium_platform.foundation.kernel.kernel import (
+    ExecutionContext,
+    canonical_digest,
 )
+from noetrium_platform.research.execution.api import ArtifactReference
 from noetrium_platform.research.experimentation.identity import OptionalIdentityFacet
 from noetrium_platform.research.experimentation.lifecycle.api import (
+    AssignmentWorkload,
+    ExperimentTaskSpec,
+    ExperimentTrialProtocolIdentity,
     FactorSelection,
     MeasurementDefinition,
     MeasurementProtocol,
@@ -22,28 +24,28 @@ from noetrium_platform.research.experimentation.lifecycle.api import (
     StudyVariantSpec,
     TaskArtifactSpec,
     TaskDefinition,
+    TaskGraph,
+    TaskGraphEdge,
+    TaskGraphRelation,
     TaskPackageSpec,
     TaskVerifierIsolation,
     TrialExecutionRequest,
     VariantBinding,
     VariantKind,
 )
-from noetrium_platform.research.experimentation.workload.api import (
-    WorkloadMethodReceipt,
-    WorkloadTaskResult,
-    WorkloadTaskRunError,
-)
-from noetrium_platform.research.experimentation.workload.composition import (
-    bind_sequential_workload_cut,
-)
 from noetrium_platform.research.experimentation.lifecycle.study.providers.trial import (
-    CutWorkloadTrialProvider,
     StandardWorkloadMeasurementProjection,
     VerifierStageWorkloadTrialProvider,
     WorkloadTrialProvider,
 )
 from noetrium_platform.research.experimentation.workload.api import (
     StaticExperimentTaskProjection,
+    WorkloadMethodReceipt,
+    WorkloadTaskResult,
+    WorkloadTaskRunError,
+)
+from noetrium_platform.research.experimentation.workload.runtime import (
+    WorkloadGraphBinding,
 )
 
 
@@ -78,11 +80,11 @@ class _SequencedWorkload:
         )
 
 
-class _CutMeasurementProjection:
-    identity_digest = canonical_digest({"projection": "cut-test.v1"})
+class _GraphMeasurementProjection:
+    identity_digest = canonical_digest({"projection": "graph-test.v1"})
 
     def project(self, request, result):
-        definition = request.measurement_protocol.definition("cut_success_rate")
+        definition = request.measurement_protocol.definition("success_rate")
         successes = sum(1 for row in result.task_results if row.success)
         value = MeasurementValue(
             MeasurementValueKind.SCALAR,
@@ -95,14 +97,14 @@ class _CutMeasurementProjection:
                 run_id=request.run_id,
                 assignment_digest=request.assignment.assignment_digest,
                 variant_id=request.assignment.variant_id,
-                producer_id="test.cut-projection",
+                producer_id="test.graph-projection",
                 producer_revision_digest=self.identity_digest,
                 measurement_id=definition.measurement_id,
                 schema_id=definition.schema_id,
                 measurement_semantic_digest=definition.semantic_contract_digest,
                 measurement_protocol_semantic_digest=request.measurement_protocol.semantic_digest,
                 value=value,
-                logical_time="cut:complete",
+                logical_time="graph:complete",
                 intervention=request.intervention,
                 revision=request.revision,
             ),
@@ -174,7 +176,14 @@ def _request(
     verifier: bool = False,
 ) -> TrialExecutionRequest:
     task = _task_definition(verifier=verifier)
-    assignment = StudyAssignment("study", "control", 0, "seed", task.task_id)
+    workload = AssignmentWorkload((task.task_id,))
+    assignment = StudyAssignment(
+        "study",
+        "control",
+        0,
+        "seed",
+        workload,
+    )
     intervention = StudyIntervention("control", ())
     variant = StudyVariantSpec(
         "control",
@@ -199,12 +208,13 @@ def _request(
         assignment,
         binding,
         protocol,
-        protocol_identity or ExperimentTrialProtocolIdentity("trial.workload", "7" * 64),
+        protocol_identity
+        or ExperimentTrialProtocolIdentity("trial.workload", "7" * 64),
         (task,),
     )
 
 
-def _cut_request(protocol: MeasurementProtocol) -> TrialExecutionRequest:
+def _graph_request(protocol: MeasurementProtocol) -> TrialExecutionRequest:
     first = _task_definition()
     second = TaskDefinition(
         "task-2",
@@ -213,13 +223,31 @@ def _cut_request(protocol: MeasurementProtocol) -> TrialExecutionRequest:
         "task.v1",
         "8" * 64,
     )
+    workload = AssignmentWorkload(
+        ("task-1", "task-2"),
+        TaskGraph(
+            (
+                TaskGraphEdge(
+                    "task-1",
+                    "task-2",
+                    TaskGraphRelation.PREREQUISITE,
+                ),
+            )
+        ),
+    )
     selection = FactorSelection(
         "memory_treatment",
         "sem",
         "9" * 64,
     )
     intervention = StudyIntervention("sem-variant", (selection,))
-    assignment = StudyAssignment("study", "sem-variant", 0, "seed", None)
+    assignment = StudyAssignment(
+        "study",
+        "sem-variant",
+        0,
+        "seed",
+        workload,
+    )
     variant = StudyVariantSpec(
         "sem-variant",
         VariantKind.TREATMENT,
@@ -243,19 +271,22 @@ def _cut_request(protocol: MeasurementProtocol) -> TrialExecutionRequest:
         assignment,
         binding,
         protocol,
-        ExperimentTrialProtocolIdentity("trial.cut", "7" * 64),
+        ExperimentTrialProtocolIdentity("trial.graph", "7" * 64),
         (first, second),
     )
 
 
-def test_cut_trial_request_preserves_exact_intervention_and_ordered_task_cut() -> None:
-    request = _cut_request(_protocol(_success_definition()))
+def test_trial_request_preserves_exact_intervention_and_assignment_workload() -> None:
+    request = _graph_request(_protocol(_success_definition()))
     selection = request.intervention_spec.selections[0]
     assert selection.factor_id == "memory_treatment"
     assert selection.level_id == "sem"
     assert request.intervention.digest == request.intervention_spec.intervention_digest
-    assert request.task is None
-    assert tuple(row.task_id for row in request.task_cut) == ("task-1", "task-2")
+    assert request.assignment.workload.task_ids == ("task-1", "task-2")
+    assert tuple(row.task_id for row in request.task_definitions) == (
+        "task-1",
+        "task-2",
+    )
 
 
 def _result() -> WorkloadTaskResult:
@@ -278,53 +309,86 @@ def _result() -> WorkloadTaskResult:
     )
 
 
-def _provider(protocol: MeasurementProtocol, workload: _Workload) -> WorkloadTrialProvider:
+def _provider(
+    protocol: MeasurementProtocol,
+    workload: _Workload,
+) -> WorkloadTrialProvider:
     return WorkloadTrialProvider(
-        protocol_identity=ExperimentTrialProtocolIdentity("trial.workload", "7" * 64),
-        workload=workload,
-        task_projection=StaticExperimentTaskProjection((
-            ExperimentTaskSpec(
-                "task-1",
-                "family",
-                "Solve the frozen task.",
-                context="benchmark-visible context",
-                max_steps=8,
-                max_seconds=30,
-            ),
-        )),
+        protocol_identity=ExperimentTrialProtocolIdentity(
+            "trial.workload",
+            "7" * 64,
+        ),
+        workload=WorkloadGraphBinding(workload),
+        task_projection=StaticExperimentTaskProjection(
+            (
+                ExperimentTaskSpec(
+                    "task-1",
+                    "family",
+                    "Solve the frozen task.",
+                    context="benchmark-visible context",
+                    max_steps=8,
+                    max_seconds=30,
+                ),
+            )
+        ),
         measurement_projection=StandardWorkloadMeasurementProjection(),
     )
 
 
-def _cut_tasks() -> tuple[ExperimentTaskSpec, ...]:
+def _graph_tasks() -> tuple[ExperimentTaskSpec, ...]:
     return (
         ExperimentTaskSpec("task-1", "family", "First task."),
         ExperimentTaskSpec("task-2", "family", "Second task."),
     )
 
 
-def test_sequential_cut_execution_preserves_assignment_lifetime_and_order() -> None:
+def _chain_workload() -> AssignmentWorkload:
+    return AssignmentWorkload(
+        ("task-1", "task-2"),
+        TaskGraph(
+            (
+                TaskGraphEdge(
+                    "task-1",
+                    "task-2",
+                    TaskGraphRelation.PREREQUISITE,
+                ),
+            )
+        ),
+    )
+
+
+def test_graph_execution_preserves_assignment_lifetime_and_dependency_order() -> None:
     workload = _SequencedWorkload()
-    cut = bind_sequential_workload_cut(workload)
+    graph = WorkloadGraphBinding(workload)
     context = ExecutionContext(
         run_id="run",
         trace_id="trace",
         span_id="assignment",
         lifetime_id="assignment-lifetime",
     )
-    result = cut.execute_cut(_cut_tasks(), context)
+    result = graph.execute_graph(
+        _graph_tasks(),
+        _chain_workload(),
+        context,
+    )
     assert result.task_ids == ("task-1", "task-2")
     assert result.steps_total == 2
     assert result.duration_s_total == pytest.approx(0.2)
-    assert tuple(row[1].task_id for row in workload.calls) == ("task-1", "task-2")
+    assert tuple(row[1].task_id for row in workload.calls) == (
+        "task-1",
+        "task-2",
+    )
     assert all(row[1].run_id == "run" for row in workload.calls)
     assert all(row[1].trace_id == "trace" for row in workload.calls)
-    assert all(row[1].lifetime_id == "assignment-lifetime" for row in workload.calls)
+    assert all(
+        row[1].lifetime_id == "assignment-lifetime"
+        for row in workload.calls
+    )
 
 
-def test_sequential_cut_execution_escalates_wider_scope_failure() -> None:
+def test_graph_execution_escalates_wider_scope_failure() -> None:
     workload = _SequencedWorkload(second_failure_scope="branch")
-    cut = bind_sequential_workload_cut(workload)
+    graph = WorkloadGraphBinding(workload)
     context = ExecutionContext(
         run_id="run",
         trace_id="trace",
@@ -332,37 +396,44 @@ def test_sequential_cut_execution_escalates_wider_scope_failure() -> None:
         lifetime_id="assignment-lifetime",
     )
     with pytest.raises(WorkloadTaskRunError, match="scope=branch"):
-        cut.execute_cut(_cut_tasks(), context)
+        graph.execute_graph(
+            _graph_tasks(),
+            _chain_workload(),
+            context,
+        )
 
 
-def test_cut_trial_provider_executes_frozen_cut_and_projects_cut_measurement() -> None:
+def test_universal_trial_provider_executes_multi_task_graph() -> None:
     protocol = _protocol(
         MeasurementDefinition.scalar(
-            "cut_success_rate",
+            "success_rate",
             schema_id="scalar.v1",
-            semantic_kind="cut_success_rate",
+            semantic_kind="graph_success_rate",
         )
     )
-    request = _cut_request(protocol)
+    request = _graph_request(protocol)
     workload = _SequencedWorkload()
-    provider = CutWorkloadTrialProvider(
+    provider = WorkloadTrialProvider(
         protocol_identity=request.protocol_identity,
-        workload=bind_sequential_workload_cut(workload),
-        task_projection=StaticExperimentTaskProjection(_cut_tasks()),
-        measurement_projection=_CutMeasurementProjection(),
+        workload=WorkloadGraphBinding(workload),
+        task_projection=StaticExperimentTaskProjection(_graph_tasks()),
+        measurement_projection=_GraphMeasurementProjection(),
     )
     receipt = provider.run_trial(request)
     assert receipt.request_digest == request.request_digest
     assert receipt.assignment_digest == request.assignment.assignment_digest
     assert receipt.measurements[0].value.scalar == pytest.approx(0.5)
-    assert tuple(row[1].task_id for row in workload.calls) == ("task-1", "task-2")
+    assert tuple(row[1].task_id for row in workload.calls) == (
+        "task-1",
+        "task-2",
+    )
     assert all(
         row[1].lifetime_id == request.assignment.assignment_digest
         for row in workload.calls
     )
 
 
-def test_workload_trial_bridge_projects_task_executes_and_emits_typed_measurements() -> None:
+def test_workload_trial_bridge_projects_executes_and_emits_typed_measurements() -> None:
     protocol = _protocol(
         _success_definition(),
         _utility_definition(),
@@ -383,8 +454,9 @@ def test_workload_trial_bridge_projects_task_executes_and_emits_typed_measuremen
     assert context.run_id == request.run_id
     assert context.study_id == request.assignment.study_id
     assert context.condition_id == request.assignment.variant_id
-    assert context.task_id == request.assignment.task_id
-    assert context.operation_id == request.request_digest
+    assert context.task_id == "task-1"
+    assert context.lifetime_id == request.assignment.assignment_digest
+    assert context.operation_id.endswith(":task:0000")
     by_id = {row.measurement_id: row for row in receipt.measurements}
     assert by_id["success"].value.boolean is True
     assert by_id["utility"].value.scalar == 0.75
@@ -410,7 +482,7 @@ def test_standard_measurement_projection_refuses_unknown_benchmark_semantics() -
 def test_workload_trial_bridge_never_bypasses_declared_verifier_boundary() -> None:
     protocol = _protocol(_success_definition())
     provider = _provider(protocol, _Workload(_result()))
-    with pytest.raises(RuntimeError, match="verifier-backed"):
+    with pytest.raises(RuntimeError, match="verifier"):
         provider.run_trial(_request(protocol, verifier=True))
 
 
@@ -419,7 +491,10 @@ def test_workload_trial_bridge_fails_closed_on_protocol_identity_drift() -> None
     provider = _provider(protocol, _Workload(_result()))
     request = _request(
         protocol,
-        protocol_identity=ExperimentTrialProtocolIdentity("trial.other", "a" * 64),
+        protocol_identity=ExperimentTrialProtocolIdentity(
+            "trial.other",
+            "a" * 64,
+        ),
     )
     with pytest.raises(ValueError, match="protocol identity drift"):
         provider.run_trial(request)
@@ -427,12 +502,12 @@ def test_workload_trial_bridge_fails_closed_on_protocol_identity_drift() -> None
 
 def test_static_task_projection_fails_closed_on_unknown_task() -> None:
     protocol = _protocol(_success_definition())
-    projection = StaticExperimentTaskProjection((
-        ExperimentTaskSpec("other", "family", "Other task."),
-    ))
+    projection = StaticExperimentTaskProjection(
+        (ExperimentTaskSpec("other", "family", "Other task."),)
+    )
     request = _request(protocol)
     with pytest.raises(KeyError, match="no unique task"):
-        projection.task(request.assignment.task_id)
+        projection.task(request, request.task_definitions[0])
 
 
 class _VerifierArtifactPublisher:
@@ -468,7 +543,8 @@ def test_verifier_stage_workload_exports_only_declared_artifacts() -> None:
     )
     provider = VerifierStageWorkloadTrialProvider(
         protocol_identity=ExperimentTrialProtocolIdentity(
-            "trial.workload", "7" * 64
+            "trial.workload",
+            "7" * 64,
         ),
         workload=_Workload(result),
         task_projection=StaticExperimentTaskProjection(
@@ -500,7 +576,8 @@ def test_verifier_stage_workload_rejects_undeclared_exports() -> None:
     )
     provider = VerifierStageWorkloadTrialProvider(
         protocol_identity=ExperimentTrialProtocolIdentity(
-            "trial.workload", "7" * 64
+            "trial.workload",
+            "7" * 64,
         ),
         workload=_Workload(result),
         task_projection=StaticExperimentTaskProjection(

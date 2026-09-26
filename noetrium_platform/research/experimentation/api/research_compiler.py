@@ -19,7 +19,6 @@ from noetrium_platform.research.execution.api import ProjectManifest, ProjectReq
 from noetrium_platform.research.experimentation.binding import ResearchBindingContribution, ResearchRequirementResolution
 from noetrium_platform.research.experimentation.lifecycle.api import StudyAssignment, StudyProtocol, StudyVariantSpec, VariantKind
 from noetrium_platform.research.experimentation.lifecycle.api import (
-    BenchmarkAssignmentMode,
     FactorSelection,
     ParticipantSchedule,
     ResearchStudyDefinition,
@@ -308,27 +307,21 @@ class CompiledResearchPlan:
         if len(task_ids) != len(set(task_ids)):
             raise ValueError("compiled research plan task ids must be unique")
         assignment_task_ids = {
-            row.task_id
+            task_id
             for row in self.experiment_plan.assignments
-            if row.task_id is not None
+            for task_id in row.workload.task_ids
         }
-        has_task_assignments = any(
-            row.task_id is not None for row in self.experiment_plan.assignments
-        )
-        has_cut_assignments = any(
-            row.task_id is None for row in self.experiment_plan.assignments
-        )
-        if has_task_assignments and has_cut_assignments:
+        if assignment_task_ids != set(task_ids):
             raise ValueError(
-                "compiled research plan cannot mix task-level and cut-level assignments"
+                "compiled research plan assignment workloads do not cover the frozen task cut"
             )
-        if has_task_assignments and assignment_task_ids != set(task_ids):
+        if any(
+            task_id not in set(task_ids)
+            for row in self.experiment_plan.assignments
+            for task_id in row.workload.task_ids
+        ):
             raise ValueError(
-                "compiled research plan task assignments do not cover the frozen task cut"
-            )
-        if has_cut_assignments and not task_ids:
-            raise ValueError(
-                "compiled research plan cut-level assignments require a non-empty frozen task cut"
+                "compiled research plan assignment workload references unknown task"
             )
         expected = canonical_digest({
             "definition_digest": self.definition_digest,
@@ -416,37 +409,21 @@ def _assignments(
     definition: ResearchStudyDefinition,
     variants: tuple[StudyVariantSpec, ...],
 ) -> tuple[StudyAssignment, ...]:
-    """Expand the exact author-declared benchmark assignment granularity."""
-    tasks = definition.benchmark.selected_tasks(definition.benchmark_split_id)
-    if definition.benchmark_assignment_mode is BenchmarkAssignmentMode.CUT:
-        if not tasks:
-            raise ValueError("cut-level Study assignment requires a non-empty benchmark cut")
-        return tuple(
-            StudyAssignment(
-                definition.study_id,
-                variant.variant_id,
-                repetition,
-                seed,
-                None,
-            )
-            for repetition, variant, seed in product(
-                range(definition.repetitions), variants, definition.seeds
-            )
-        )
-    if definition.benchmark_assignment_mode is not BenchmarkAssignmentMode.TASK:
-        raise ValueError(
-            f"unsupported benchmark assignment mode: {definition.benchmark_assignment_mode!r}"
-        )
+    """Expand one universal assignment matrix over explicit workload graphs."""
+
     return tuple(
         StudyAssignment(
             definition.study_id,
             variant.variant_id,
             repetition,
             seed,
-            task.task_id,
+            workload,
         )
-        for repetition, variant, seed, task in product(
-            range(definition.repetitions), variants, definition.seeds, tasks
+        for repetition, variant, seed, workload in product(
+            range(definition.repetitions),
+            variants,
+            definition.seeds,
+            definition.assignment_workloads,
         )
     )
 
@@ -477,6 +454,7 @@ def _protocol(
         seed_schedule_digest,
         _scalar_measurement_names(definition.measurement_protocol),
         definition.benchmark.cut_digest,
+        definition.assignment_workloads,
         (definition.execution_policy.trial_budget.budget_id,),
         definition.execution_policy.concurrency_policy,
     )

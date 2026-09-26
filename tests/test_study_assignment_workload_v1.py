@@ -3,16 +3,17 @@ from __future__ import annotations
 from noetrium_platform.foundation.kernel.kernel import canonical_digest
 from noetrium_platform.research.experimentation.api.research_compiler import _assignments
 from noetrium_platform.research.experimentation.lifecycle.api import (
-    ExperimentTrialProtocolIdentity,
-)
-from noetrium_platform.research.experimentation.lifecycle.api import (
-    BenchmarkAssignmentMode,
+    AssignmentWorkload,
     BenchmarkTaskSet,
+    ExperimentTrialProtocolIdentity,
     MeasurementDefinition,
     Study,
     StudyParticipant,
     StudyVariantSpec,
     TaskDefinition,
+    TaskGraph,
+    TaskGraphEdge,
+    TaskGraphRelation,
     TaskSetSplit,
     TrialBudget,
     VariantKind,
@@ -20,7 +21,7 @@ from noetrium_platform.research.experimentation.lifecycle.api import (
 
 
 def _benchmark() -> BenchmarkTaskSet:
-    revision = "benchmark-cut-v1"
+    revision = "benchmark-workload-v1"
     tasks = (
         TaskDefinition(
             "task:a",
@@ -48,13 +49,15 @@ def _benchmark() -> BenchmarkTaskSet:
     )
 
 
-def _study(mode: BenchmarkAssignmentMode):
+def _study(
+    assignment_workloads: tuple[AssignmentWorkload, ...] | None = None,
+):
     return Study(
         project_id="project",
-        study_id=f"study-{mode.value}",
+        study_id="study",
         benchmark=_benchmark(),
         benchmark_split_id="test",
-        benchmark_assignment_mode=mode,
+        assignment_workloads=assignment_workloads,
         method=StudyParticipant(
             role="agent",
             kind="agent",
@@ -73,12 +76,12 @@ def _study(mode: BenchmarkAssignmentMode):
             ),
         ),
         trial=ExperimentTrialProtocolIdentity(
-            f"trial-{mode.value}",
-            canonical_digest({"mode": mode.value}),
+            "trial",
+            canonical_digest({"trial": "universal-workload"}),
         ),
         repetitions=1,
         seeds=("seed",),
-        limits=TrialBudget(f"budget-{mode.value}", max_steps=1),
+        limits=TrialBudget("budget", max_steps=1),
     ).build()
 
 
@@ -91,19 +94,36 @@ def _variant() -> StudyVariantSpec:
     )
 
 
-def test_task_assignment_mode_preserves_existing_per_task_expansion() -> None:
-    definition = _study(BenchmarkAssignmentMode.TASK)
-    rows = _assignments(definition, (_variant(),))
-    assert tuple(row.task_id for row in rows) == ("task:a", "task:b")
+def test_default_authoring_lowers_each_task_to_one_node_workload() -> None:
+    definition = _study()
+    assert tuple(
+        workload.task_ids for workload in definition.assignment_workloads
+    ) == (("task:a",), ("task:b",))
 
-
-def test_cut_assignment_mode_runs_one_assignment_over_the_frozen_cut() -> None:
-    definition = _study(BenchmarkAssignmentMode.CUT)
     rows = _assignments(definition, (_variant(),))
-    assert len(rows) == 1
-    assert rows[0].task_id is None
-    assert definition.benchmark_assignment_mode is BenchmarkAssignmentMode.CUT
-    assert tuple(task.task_id for task in definition.benchmark.selected_tasks("test")) == (
-        "task:a",
-        "task:b",
+    assert tuple(row.workload.task_ids for row in rows) == (
+        ("task:a",),
+        ("task:b",),
     )
+
+
+def test_multi_task_chain_is_the_same_assignment_machine() -> None:
+    workload = AssignmentWorkload(
+        ("task:a", "task:b"),
+        TaskGraph(
+            (
+                TaskGraphEdge(
+                    "task:a",
+                    "task:b",
+                    TaskGraphRelation.PREREQUISITE,
+                ),
+            )
+        ),
+    )
+    definition = _study((workload,))
+    rows = _assignments(definition, (_variant(),))
+
+    assert len(rows) == 1
+    assert rows[0].workload == workload
+    assert rows[0].workload.dependencies_for("task:a") == ()
+    assert rows[0].workload.dependencies_for("task:b") == ("task:a",)

@@ -54,6 +54,9 @@ from noetrium_platform.evidence.artifact.catalog.providers import (
 from noetrium_platform.evidence.artifact.content.providers import (
     DirectoryArtifactBlobStore,
 )
+from noetrium_platform.evidence.artifact.retention.providers import (
+    SQLiteArtifactRetentionStore,
+)
 from noetrium_platform.foundation.portfolio.api import (
     ProjectCapabilityRequirement,
     ProjectIdentity,
@@ -72,6 +75,7 @@ from noetrium_platform.research.experimentation.api import (
     resolve_research_requirements,
 )
 from noetrium_platform.research.experimentation.lifecycle.api import (
+    AssignmentWorkload,
     BenchmarkTaskSet,
     ExperimentTrialProtocolIdentity,
     MeasurementDefinition,
@@ -154,6 +158,7 @@ def _study_definition(*, seeds=("seed-1",)) -> ResearchStudyDefinition:
         measurements,
         benchmark,
         None,
+        (AssignmentWorkload(("task-1",)),),
         ResearchBindingRequirements("trial-provider"),
         ExperimentTrialProtocolIdentity("trial.test", "c" * 64),
         ResearchRevision("research-os-revision", "d" * 64),
@@ -636,6 +641,9 @@ def test_experiment_report_output_is_only_verified_artifact_reference_manifest(
     authority = ResearchOSImmutableValueAuthority(
         artifact_blobs,
         artifact_registry,
+        SQLiteArtifactRetentionStore(
+            tmp_path / "value-retention.sqlite3"
+        ),
     )
     research_os = bind_portfolio_research_os(
         SQLitePortfolioRevisionStore(tmp_path / "portfolio.sqlite3"),
@@ -745,6 +753,9 @@ def test_experiment_artifact_edge_feeds_evaluation_through_authority_resolution(
     value_authority = ResearchOSImmutableValueAuthority(
         DirectoryArtifactBlobStore(tmp_path / "value-blobs"),
         SQLiteArtifactRegistry(tmp_path / "value-artifacts.sqlite3"),
+        SQLiteArtifactRetentionStore(
+            tmp_path / "value-retention.sqlite3"
+        ),
     )
     research_os = bind_portfolio_research_os(
         SQLitePortfolioRevisionStore(tmp_path / "portfolio.sqlite3"),
@@ -837,7 +848,6 @@ class _TrialProviderResolver:
         self.last_request = None
 
     def resolve(self, closure):
-        del closure
         self.provider.owner = self
         provider_identity = next(
             iter({
@@ -933,8 +943,9 @@ def test_trial_provider_bridge_uses_execution_cut_as_trial_run_identity() -> Non
     assert providers.last_request.research_plan_digest == (
         closure.research_plan.research_plan_digest
     )
-    assert providers.last_request.task == closure.research_plan.task_for(
-        assignment.task_id
+    assert providers.last_request.task_definitions == tuple(
+        closure.research_plan.task_for(task_id)
+        for task_id in assignment.workload.task_ids
     )
     assert observation.assignment == assignment
     assert observation.metrics == (("score", 1.0),)
