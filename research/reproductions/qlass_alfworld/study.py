@@ -8,6 +8,7 @@ from noetrium.api import (
     ReplayLevel,
     ResearchStudyDefinition,
     Study,
+    requires_benchmark_cut,
     StudyModel,
     StudyParticipant,
     TrialBudget,
@@ -46,6 +47,11 @@ QLASS_ALFWORLD_RELEASED_TRIAL_PROTOCOL = ExperimentTrialProtocolIdentity(
 )
 
 
+@requires_benchmark_cut(
+    ALFWORLD_BENCHMARK_ID,
+    ALFWORLD_QLASS_DEV_REVISION,
+    split_ids=(ALFWORLD_QLASS_DEV_SPLIT,),
+)
 def build_qlass_alfworld_later_released_study(
     benchmark: BenchmarkTaskSet,
 ) -> ResearchStudyDefinition:

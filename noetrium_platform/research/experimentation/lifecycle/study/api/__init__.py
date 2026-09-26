@@ -15,7 +15,8 @@ from noetrium_platform.research.experimentation.identity import ReplayLevel
 from .analysis import AnalysisDefinition, AnalysisResult, MeasurementCut
 from .benchmark import (
     BenchmarkSourceKind, BenchmarkSourcePort, BenchmarkSourceResolution,
-    BenchmarkCutSpec, BenchmarkSourceSpec, BenchmarkTaskSet,
+    BenchmarkCutRequirement, BenchmarkCutSpec, BenchmarkSourceSpec, BenchmarkTaskSet,
+    benchmark_cut_requirements, requires_benchmark_cut,
     BenchmarkResolutionRegistration, BenchmarkResolutionRegistry,
     InMemoryBenchmarkSource,
     TaskArtifactSpec, TaskDefinition, TaskPackageSpec, TaskVerifierIsolation,
@@ -83,7 +84,13 @@ __all__ = [
     "AnalysisDefinition",
     "AnalysisResult",
     "MeasurementCut",
+    "BenchmarkCutRequirement",
+    "BenchmarkCutRequirement",
     "BenchmarkCutSpec",
+    "benchmark_cut_requirements",
+    "requires_benchmark_cut",
+    "benchmark_cut_requirements",
+    "requires_benchmark_cut",
     "BenchmarkTaskSet",
     "BenchmarkSourceKind",
     "BenchmarkSourcePort",

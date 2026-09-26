@@ -21,7 +21,7 @@
 
 <!-- readme-locale:en -->
 
-<!-- readme-source-sha256:963bbb91c132979a1ccbaff8e855355537b24b4c01bb0ba6fe82784c8f951305 -->
+<!-- readme-source-sha256:a94797782703a78499eb126d05d464360e94db5af138e93a7c6d5d038444dd30 -->
 
 <p align="center">
   <strong>Research infrastructure for attributable, recoverable, evidence-preserving AI-agent experiments.</strong><br>
@@ -115,7 +115,7 @@ Existing orchestration frameworks can be used inside a downstream method or prov
 
 Noetrium exposes one high-level Research OS API. Registered lower systems remain internal composition authorities and are listed here only as architecture metadata.
 
-- 31 registered system surfaces; 1 public API modules; 157 public symbols.
+- 31 registered system surfaces; 1 public API modules; 224 public symbols.
 - Full machine-readable catalog: noetrium/contracts/downstream_capability_catalog.json
 - Full human-readable catalog: docs/architecture/DOWNSTREAM_CAPABILITY_CATALOG.md
 - Import rule: downstream code uses only noetrium.api; lower system facades are internal registry material.

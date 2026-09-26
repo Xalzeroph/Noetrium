@@ -26,11 +26,27 @@ def test_generated_catalog_covers_exact_registry_as_internal_metadata() -> None:
     catalog = load_downstream_capability_catalog()
     assert {row.system_key for row in catalog.systems} == set(registry)
     assert catalog.entrypoint == "noetrium.api"
-    assert catalog.symbol_index == {}
+    assert catalog.symbol_index
     assert catalog.ambiguous_symbol_sources == {}
     assert catalog.topology_digest
-    assert all(surface.downstream_surface == "metadata_only" for surface in catalog.systems)
-    assert all(surface.api_modules == () for surface in catalog.systems)
+    public = tuple(
+        surface for surface in catalog.systems if surface.downstream_surface == "public"
+    )
+    assert len(public) == 1
+    assert public[0].system_key == "research_os"
+    assert len(public[0].api_modules) == 1
+    assert public[0].api_modules[0].module == "noetrium_platform.product.api"
+    assert {
+        "ResearchOS",
+        "ResearchProgramBuilder",
+        "MethodProgram",
+        "BenchmarkCutRequirement",
+    } <= set(public[0].api_modules[0].symbols)
+    assert all(
+        surface.api_modules == ()
+        for surface in catalog.systems
+        if surface.system_key != "research_os"
+    )
     assert (
         ROOT / "docs/architecture/VNEXT_SYSTEM_CATALOG.json"
     ).read_bytes() == (
@@ -44,7 +60,10 @@ def test_generated_system_facades_are_metadata_only() -> None:
         assert surface.facade_module is not None
         module = importlib.import_module(surface.facade_module)
         assert module.SYSTEM_KEY == surface.system_key
-        assert module.__all__ == ()
+        if surface.system_key == "research_os":
+            assert tuple(module.__all__) == surface.api_modules[0].symbols
+        else:
+            assert module.__all__ == ()
 
 
 def test_noetrium_api_is_exact_product_surface() -> None:
@@ -55,10 +74,13 @@ def test_noetrium_api_is_exact_product_surface() -> None:
     for name in product_api.__all__:
         assert getattr(api, name) is getattr(product_api, name)
 
-    retired = (
+    assert {
         "MethodProgram",
         "MethodProgramBuilder",
         "CapabilityRequest",
+    } <= set(api.__all__)
+
+    retired = (
         "EnvironmentProviderPort",
         "StudyExecutionPlan",
         "ResearchCampaignPlan",
@@ -79,7 +101,6 @@ def test_product_surface_contains_research_os_authoring_and_control() -> None:
 
     required = {
         "ResearchOS",
-        "ResearchOSPort",
         "ResearchPortfolio",
         "ResearchProgram",
         "ResearchProgramBuilder",
@@ -88,6 +109,11 @@ def test_product_surface_contains_research_os_authoring_and_control() -> None:
         "ResearchNode",
         "ResearchDefinition",
         "ResearchControlAction",
+        "MethodProgram",
+        "MethodProgramBuilder",
+        "CapabilityRequest",
+        "BenchmarkCutRequirement",
+        "requires_benchmark_cut",
     }
     assert required <= set(api.__all__)
 

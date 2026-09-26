@@ -1,6 +1,6 @@
 {
   "generator": "scripts/generate_interface_schemas.py",
-  "interface_digest": "f0c3f6208e86e33d44ebf17350b12a3d4d381685936f6eb575d663a230f36b13",
+  "interface_digest": "5331e426b372effaadf5faa553c1a3539bccd73bae942377779d3b1a36b56f22",
   "interface_schema": {
     "description": "Generated signatures, annotations, class members, decorators, docs and re-export provenance for every public API symbol.",
     "schema_id": "noetrium.interface-schema",
@@ -479,6 +479,150 @@
             {
               "doc": null,
               "kind": "reexport",
+              "name": "VersionedMemoryGraph",
+              "origin_module": "..research_authoring",
+              "origin_name": "VersionedMemoryGraph",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "reexport",
+              "name": "MemoryNodeRecord",
+              "origin_module": "..research_authoring",
+              "origin_name": "MemoryNodeRecord",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "reexport",
+              "name": "MemoryGraphTransaction",
+              "origin_module": "..research_authoring",
+              "origin_name": "MemoryGraphTransaction",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "reexport",
+              "name": "MemoryGraphSnapshot",
+              "origin_module": "..research_authoring",
+              "origin_name": "MemoryGraphSnapshot",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "reexport",
+              "name": "MemoryGraphPort",
+              "origin_module": "..research_authoring",
+              "origin_name": "MemoryGraphPort",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "reexport",
+              "name": "MemoryGraphOperation",
+              "origin_module": "..research_authoring",
+              "origin_name": "MemoryGraphOperation",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "reexport",
+              "name": "MemoryGraphLedgerEntry",
+              "origin_module": "..research_authoring",
+              "origin_name": "MemoryGraphLedgerEntry",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "reexport",
+              "name": "MemoryGraphIntegrityError",
+              "origin_module": "..research_authoring",
+              "origin_name": "MemoryGraphIntegrityError",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "reexport",
+              "name": "MemoryGraphConflict",
+              "origin_module": "..research_authoring",
+              "origin_name": "MemoryGraphConflict",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "reexport",
+              "name": "MemoryEdgeRecord",
+              "origin_module": "..research_authoring",
+              "origin_name": "MemoryEdgeRecord",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "reexport",
+              "name": "RecallResult",
+              "origin_module": "..research_authoring",
+              "origin_name": "RecallResult",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "reexport",
+              "name": "RecallRequest",
+              "origin_module": "..research_authoring",
+              "origin_name": "RecallRequest",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "reexport",
+              "name": "MethodTaskOutcome",
+              "origin_module": "..research_authoring",
+              "origin_name": "MethodTaskOutcome",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "reexport",
+              "name": "MethodTaskCompletionReceipt",
+              "origin_module": "..research_authoring",
+              "origin_name": "MethodTaskCompletionReceipt",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "reexport",
+              "name": "MethodSnapshot",
+              "origin_module": "..research_authoring",
+              "origin_name": "MethodSnapshot",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "reexport",
+              "name": "AgentGoal",
+              "origin_module": "..research_authoring",
+              "origin_name": "AgentGoal",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "reexport",
               "name": "ActionRequest",
               "origin_module": "..research_authoring",
               "origin_name": "ActionRequest",
@@ -533,9 +677,36 @@
             {
               "doc": null,
               "kind": "reexport",
+              "name": "BenchmarkCutRequirement",
+              "origin_module": "..research_authoring",
+              "origin_name": "BenchmarkCutRequirement",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "reexport",
               "name": "BenchmarkTaskSet",
               "origin_module": "..research_authoring",
               "origin_name": "BenchmarkTaskSet",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "reexport",
+              "name": "benchmark_cut_requirements",
+              "origin_module": "..research_authoring",
+              "origin_name": "benchmark_cut_requirements",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "reexport",
+              "name": "requires_benchmark_cut",
+              "origin_module": "..research_authoring",
+              "origin_name": "requires_benchmark_cut",
               "schema_id": "noetrium.interface-schema",
               "schema_version": "1"
             },
@@ -977,6 +1148,114 @@
               "name": "MeasurementDefinition",
               "origin_module": "..research_authoring",
               "origin_name": "MeasurementDefinition",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "reexport",
+              "name": "ResearchParticipantRequirement",
+              "origin_module": "..research_authoring",
+              "origin_name": "ResearchParticipantRequirement",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "reexport",
+              "name": "ResearchModelRoleRequirement",
+              "origin_module": "..research_authoring",
+              "origin_name": "ResearchModelRoleRequirement",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "reexport",
+              "name": "StudyIntervention",
+              "origin_module": "..research_authoring",
+              "origin_name": "StudyIntervention",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "reexport",
+              "name": "StudyFactorSpec",
+              "origin_module": "..research_authoring",
+              "origin_name": "StudyFactorSpec",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "reexport",
+              "name": "FactorSelection",
+              "origin_module": "..research_authoring",
+              "origin_name": "FactorSelection",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "reexport",
+              "name": "FactorLevelSpec",
+              "origin_module": "..research_authoring",
+              "origin_name": "FactorLevelSpec",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "reexport",
+              "name": "ResearchCapabilityBinding",
+              "origin_module": "..research_authoring",
+              "origin_name": "ResearchCapabilityBinding",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "reexport",
+              "name": "ResearchBindingContribution",
+              "origin_module": "..research_authoring",
+              "origin_name": "ResearchBindingContribution",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "reexport",
+              "name": "ResearchBindingRequirements",
+              "origin_module": "..research_authoring",
+              "origin_name": "ResearchBindingRequirements",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "reexport",
+              "name": "ResearchRevision",
+              "origin_module": "..research_authoring",
+              "origin_name": "ResearchRevision",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "reexport",
+              "name": "StudyExecutionPolicy",
+              "origin_module": "..research_authoring",
+              "origin_name": "StudyExecutionPolicy",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "reexport",
+              "name": "MeasurementProtocol",
+              "origin_module": "..research_authoring",
+              "origin_name": "MeasurementProtocol",
               "schema_id": "noetrium.interface-schema",
               "schema_version": "1"
             },
@@ -1469,6 +1748,78 @@
             {
               "doc": null,
               "kind": "reexport",
+              "name": "TaskArtifactSpec",
+              "origin_module": "..research_authoring",
+              "origin_name": "TaskArtifactSpec",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "reexport",
+              "name": "TaskDefinition",
+              "origin_module": "..research_authoring",
+              "origin_name": "TaskDefinition",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "reexport",
+              "name": "TaskGraph",
+              "origin_module": "..research_authoring",
+              "origin_name": "TaskGraph",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "reexport",
+              "name": "TaskGraphEdge",
+              "origin_module": "..research_authoring",
+              "origin_name": "TaskGraphEdge",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "reexport",
+              "name": "TaskGraphRelation",
+              "origin_module": "..research_authoring",
+              "origin_name": "TaskGraphRelation",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "reexport",
+              "name": "TaskPackageSpec",
+              "origin_module": "..research_authoring",
+              "origin_name": "TaskPackageSpec",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "reexport",
+              "name": "TaskSetSplit",
+              "origin_module": "..research_authoring",
+              "origin_name": "TaskSetSplit",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "reexport",
+              "name": "TaskVerifierIsolation",
+              "origin_module": "..research_authoring",
+              "origin_name": "TaskVerifierIsolation",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "reexport",
               "name": "TrialBudget",
               "origin_module": "..research_authoring",
               "origin_name": "TrialBudget",
@@ -1582,6 +1933,202 @@
               "origin_name": "program_execution_capability_payload",
               "schema_id": "noetrium.interface-schema",
               "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "unknown",
+              "name": "AsyncMethodAgentLoopPort",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "unknown",
+              "name": "CutWorkloadTrialProvider",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "unknown",
+              "name": "ExperimentTaskSpec",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "unknown",
+              "name": "MeasurementRecord",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "unknown",
+              "name": "MeasurementValue",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "unknown",
+              "name": "MethodAgentLoopPort",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "unknown",
+              "name": "ModelProviderProfile",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "unknown",
+              "name": "ProjectModelBinding",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "unknown",
+              "name": "ProjectModelBindingSet",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "unknown",
+              "name": "SequentialWorkloadCutBinding",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "unknown",
+              "name": "StandardWorkloadMeasurementProjection",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "unknown",
+              "name": "TrialExecutionReceipt",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "unknown",
+              "name": "TrialExecutionRequest",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "unknown",
+              "name": "TrialExecutionStageReceipt",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "unknown",
+              "name": "TrialMeasurementProjectionPort",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "unknown",
+              "name": "TrialProviderPort",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "unknown",
+              "name": "TrialTaskProjectionPort",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "unknown",
+              "name": "WorkloadCompletionReceipt",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "unknown",
+              "name": "WorkloadCutExecutionPort",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "unknown",
+              "name": "WorkloadCutResult",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "unknown",
+              "name": "WorkloadEvaluation",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "unknown",
+              "name": "WorkloadMethodCompilerPort",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "unknown",
+              "name": "WorkloadMethodInvocation",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "unknown",
+              "name": "WorkloadMethodReceipt",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "unknown",
+              "name": "WorkloadMethodResultAdapterPort",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "unknown",
+              "name": "WorkloadTaskExecutionPort",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "unknown",
+              "name": "WorkloadTaskResult",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
+            },
+            {
+              "doc": null,
+              "kind": "unknown",
+              "name": "WorkloadTrialProvider",
+              "schema_id": "noetrium.interface-schema",
+              "schema_version": "1"
             }
           ],
           "symbols": [
@@ -1619,13 +2166,32 @@
             "ResearchTag",
             "ResearchValueKind",
             "ActionKind",
+            "VersionedMemoryGraph",
+            "MemoryNodeRecord",
+            "MemoryGraphTransaction",
+            "MemoryGraphSnapshot",
+            "MemoryGraphPort",
+            "MemoryGraphOperation",
+            "MemoryGraphLedgerEntry",
+            "MemoryGraphIntegrityError",
+            "MemoryGraphConflict",
+            "MemoryEdgeRecord",
+            "RecallResult",
+            "RecallRequest",
+            "MethodTaskOutcome",
+            "MethodTaskCompletionReceipt",
+            "MethodSnapshot",
+            "AgentGoal",
             "ActionRequest",
             "ActionResult",
             "ActionSpec",
             "AgentMethodSpec",
             "AgentPhaseSpec",
             "BenchmarkAssignmentMode",
+            "BenchmarkCutRequirement",
             "BenchmarkTaskSet",
+            "benchmark_cut_requirements",
+            "requires_benchmark_cut",
             "CapabilityDescriptor",
             "CapabilityPort",
             "CapabilityRequest",
@@ -1675,6 +2241,18 @@
             "MachineSnapshotStorePort",
             "MachineStatus",
             "MeasurementDefinition",
+            "ResearchParticipantRequirement",
+            "ResearchModelRoleRequirement",
+            "StudyIntervention",
+            "StudyFactorSpec",
+            "FactorSelection",
+            "FactorLevelSpec",
+            "ResearchCapabilityBinding",
+            "ResearchBindingContribution",
+            "ResearchBindingRequirements",
+            "ResearchRevision",
+            "StudyExecutionPolicy",
+            "MeasurementProtocol",
             "MeasurementValueKind",
             "MemoryConcern",
             "MemoryProgramBuilder",
@@ -1729,6 +2307,14 @@
             "StudyParticipant",
             "TensorContentRef",
             "TensorContentStorePort",
+            "TaskArtifactSpec",
+            "TaskDefinition",
+            "TaskGraph",
+            "TaskGraphEdge",
+            "TaskGraphRelation",
+            "TaskPackageSpec",
+            "TaskSetSplit",
+            "TaskVerifierIsolation",
             "TrialBudget",
             "candidate_program_capability_payload",
             "bind_execution_fork",
@@ -1741,7 +2327,35 @@
             "environment_replay_action_payload",
             "environment_reset_capability_payload",
             "materialize_capability_selection_view",
-            "program_execution_capability_payload"
+            "program_execution_capability_payload",
+            "AsyncMethodAgentLoopPort",
+            "CutWorkloadTrialProvider",
+            "ExperimentTaskSpec",
+            "MeasurementRecord",
+            "MeasurementValue",
+            "MethodAgentLoopPort",
+            "ModelProviderProfile",
+            "ProjectModelBinding",
+            "ProjectModelBindingSet",
+            "SequentialWorkloadCutBinding",
+            "StandardWorkloadMeasurementProjection",
+            "TrialExecutionReceipt",
+            "TrialExecutionRequest",
+            "TrialExecutionStageReceipt",
+            "TrialMeasurementProjectionPort",
+            "TrialProviderPort",
+            "TrialTaskProjectionPort",
+            "WorkloadCompletionReceipt",
+            "WorkloadCutExecutionPort",
+            "WorkloadCutResult",
+            "WorkloadEvaluation",
+            "WorkloadMethodCompilerPort",
+            "WorkloadMethodInvocation",
+            "WorkloadMethodReceipt",
+            "WorkloadMethodResultAdapterPort",
+            "WorkloadTaskExecutionPort",
+            "WorkloadTaskResult",
+            "WorkloadTrialProvider"
           ]
         }
       ],

@@ -8,11 +8,16 @@ from noetrium.api import (
     ReplayLevel,
     ResearchStudyDefinition,
     Study,
+    requires_benchmark_cut,
     StudyModel,
     StudyParticipant,
     TrialBudget,
 )
-from research.benchmarks.alfworld import ALFWORLD_BENCHMARK_ID, ALFWORLD_PAPER_EVAL_SPLIT
+from research.benchmarks.alfworld import (
+    ALFWORLD_BENCHMARK_ID,
+    ALFWORLD_PAPER_EVAL_REVISION,
+    ALFWORLD_PAPER_EVAL_SPLIT,
+)
 
 from .fidelity import REFLEXION_ALFWORLD_FIDELITY
 
@@ -31,6 +36,11 @@ REFLEXION_ALFWORLD_TRIAL_PROTOCOL = ExperimentTrialProtocolIdentity(
 )
 
 
+@requires_benchmark_cut(
+    ALFWORLD_BENCHMARK_ID,
+    ALFWORLD_PAPER_EVAL_REVISION,
+    split_ids=(ALFWORLD_PAPER_EVAL_SPLIT,),
+)
 def build_reflexion_alfworld_study(benchmark: BenchmarkTaskSet) -> ResearchStudyDefinition:
     """Freeze one per-task Reflexion campaign; the ten learning trials stay method-owned."""
 

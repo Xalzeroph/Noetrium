@@ -380,6 +380,111 @@ class BenchmarkTaskSet:
         return tuple(by_id[task_id] for task_id in matches[0].task_ids)
 
 
+_BENCHMARK_CUT_REQUIREMENT_ATTR = "__noetrium_benchmark_cut_requirements__"
+
+
+@dataclass(frozen=True, slots=True)
+class BenchmarkCutRequirement:
+    """Exact scientific Benchmark cut required by one Study authoring surface."""
+
+    benchmark_id: str
+    revision_id: str
+    required_split_ids: tuple[str, ...] = ()
+    cut_digest: str | None = None
+    requirement_digest: str = field(init=False)
+
+    def __post_init__(self) -> None:
+        _text(self.benchmark_id, "benchmark cut requirement benchmark_id")
+        _text(self.revision_id, "benchmark cut requirement revision_id")
+        split_ids = _ids(
+            self.required_split_ids,
+            "benchmark cut requirement required_split_ids",
+            allow_empty=True,
+        )
+        ordered = tuple(sorted(split_ids))
+        object.__setattr__(self, "required_split_ids", ordered)
+        if self.cut_digest is not None:
+            _sha(self.cut_digest, "benchmark cut requirement cut_digest")
+        object.__setattr__(
+            self,
+            "requirement_digest",
+            canonical_digest(
+                {
+                    "schema": "noetrium.benchmark-cut-requirement.v1",
+                    "benchmark_id": self.benchmark_id,
+                    "revision_id": self.revision_id,
+                    "required_split_ids": ordered,
+                    "cut_digest": self.cut_digest,
+                }
+            ),
+        )
+
+    def matches(self, benchmark: BenchmarkTaskSet) -> bool:
+        if type(benchmark) is not BenchmarkTaskSet:
+            raise TypeError(
+                "benchmark cut requirement matches requires BenchmarkTaskSet"
+            )
+        if (
+            benchmark.benchmark_id != self.benchmark_id
+            or benchmark.revision_id != self.revision_id
+        ):
+            return False
+        if self.cut_digest is not None and benchmark.cut_digest != self.cut_digest:
+            return False
+        available = {row.split_id for row in benchmark.splits}
+        return all(split_id in available for split_id in self.required_split_ids)
+
+
+def benchmark_cut_requirements(factory: object) -> tuple[BenchmarkCutRequirement, ...]:
+    """Read immutable exact-cut declarations attached to one Study factory."""
+
+    rows = getattr(factory, _BENCHMARK_CUT_REQUIREMENT_ATTR, ())
+    if type(rows) is not tuple or any(
+        type(row) is not BenchmarkCutRequirement for row in rows
+    ):
+        raise TypeError(
+            "Study benchmark cut requirements must be a typed immutable tuple"
+        )
+    return rows
+
+
+def requires_benchmark_cut(
+    benchmark_id: str,
+    revision_id: str,
+    *,
+    split_ids: tuple[str, ...] = (),
+    cut_digest: str | None = None,
+):
+    """Declare the exact Benchmark identity a Study factory is allowed to consume."""
+
+    requirement = BenchmarkCutRequirement(
+        benchmark_id,
+        revision_id,
+        split_ids,
+        cut_digest,
+    )
+
+    def decorate(factory):
+        if not callable(factory):
+            raise TypeError("benchmark cut requirement can decorate only callables")
+        existing = benchmark_cut_requirements(factory)
+        if any(row.benchmark_id == requirement.benchmark_id for row in existing):
+            raise ValueError(
+                "Study factory declares multiple exact cuts for benchmark "
+                f"{requirement.benchmark_id!r}"
+            )
+        ordered = tuple(
+            sorted(
+                (*existing, requirement),
+                key=lambda row: (row.benchmark_id, row.requirement_digest),
+            )
+        )
+        setattr(factory, _BENCHMARK_CUT_REQUIREMENT_ATTR, ordered)
+        return factory
+
+    return decorate
+
+
 @dataclass(frozen=True, slots=True)
 class BenchmarkCutSpec:
     """Low-friction compiler for one immutable benchmark cut.
@@ -451,7 +556,7 @@ class BenchmarkCutSpec:
 
 
 __all__ = [
-    "BenchmarkCutSpec", "BenchmarkTaskSet", "BenchmarkResolutionRegistration", "BenchmarkResolutionRegistry", "TaskDefinition", "TaskPackageSpec", "TaskArtifactSpec",
+    "BenchmarkCutRequirement", "BenchmarkCutSpec", "BenchmarkTaskSet", "BenchmarkResolutionRegistration", "BenchmarkResolutionRegistry", "benchmark_cut_requirements", "requires_benchmark_cut", "TaskDefinition", "TaskPackageSpec", "TaskArtifactSpec",
     "TaskVerifierIsolation", "TaskGraph", "TaskGraphEdge",
     "TaskGraphRelation", "TaskSetSplit", "TrialBudget", "BenchmarkSourceKind",
     "BenchmarkSourceSpec", "BenchmarkSourceResolution", "BenchmarkSourcePort",

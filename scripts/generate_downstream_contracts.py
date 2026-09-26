@@ -158,7 +158,27 @@ def _string_sequence(
     raise ValueError("unsupported __all__ expression")
 
 
-def _declared_all(tree: ast.Module) -> tuple[str, ...] | None:
+def _relative_import_path(source_path: Path, node: ast.ImportFrom) -> Path | None:
+    if node.level <= 0:
+        return None
+    base = source_path.parent
+    for _ in range(node.level - 1):
+        base = base.parent
+    if node.module:
+        base = base.joinpath(*node.module.split("."))
+    file_path = base.with_suffix(".py")
+    if file_path.is_file():
+        return file_path
+    init_path = base / "__init__.py"
+    return init_path if init_path.is_file() else None
+
+
+def _declared_all(
+    tree: ast.Module,
+    *,
+    source_path: Path | None = None,
+    seen_paths: frozenset[Path] = frozenset(),
+) -> tuple[str, ...] | None:
     """Resolve declarative ``__all__`` updates without importing project code."""
     sequences: dict[str, tuple[str, ...]] = {}
     scope_names: list[str] = []
@@ -179,9 +199,32 @@ def _declared_all(tree: ast.Module) -> tuple[str, ...] | None:
         if isinstance(node, ast.ImportFrom):
             if node.module == "__future__":
                 continue
+            imported_all: tuple[str, ...] | None = None
+            imported_path = (
+                None
+                if source_path is None
+                else _relative_import_path(source_path, node)
+            )
+            if imported_path is not None and imported_path not in seen_paths:
+                try:
+                    imported_tree = ast.parse(
+                        imported_path.read_text(encoding="utf-8"),
+                        filename=str(imported_path),
+                    )
+                    imported_all = _declared_all(
+                        imported_tree,
+                        source_path=imported_path,
+                        seen_paths=seen_paths | {source_path},
+                    )
+                except (OSError, UnicodeError, SyntaxError, RuntimeError):
+                    imported_all = None
             for alias in node.names:
-                if alias.name != "*":
-                    remember(_scope_name_from_alias(alias))
+                if alias.name == "*":
+                    continue
+                local_name = _scope_name_from_alias(alias)
+                remember(local_name)
+                if alias.name == "__all__" and imported_all is not None:
+                    sequences[local_name] = imported_all
             continue
         if isinstance(node, ast.Assign):
             simple_targets = [target.id for target in node.targets if isinstance(target, ast.Name)]
@@ -248,7 +291,7 @@ def _declared_all(tree: ast.Module) -> tuple[str, ...] | None:
 def _public_symbols(path: Path) -> tuple[str, ...]:
     tree = ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
     try:
-        declared = _declared_all(tree)
+        declared = _declared_all(tree, source_path=path, seen_paths=frozenset({path}))
     except RuntimeError as exc:
         raise RuntimeError(f"{path}: {exc}") from exc
     if declared is not None:

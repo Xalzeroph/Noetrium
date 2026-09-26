@@ -8,12 +8,14 @@ from noetrium.api import (
     ReplayLevel,
     ResearchStudyDefinition,
     Study,
+    requires_benchmark_cut,
     StudyModel,
     StudyParticipant,
     TrialBudget,
 )
 from research.benchmarks.alfworld import (
     ALFWORLD_BENCHMARK_ID,
+    ALFWORLD_PAPER_EVAL_REVISION,
     ALFWORLD_PAPER_EVAL_SPLIT,
 )
 
@@ -35,6 +37,11 @@ REACT_ALFWORLD_RELEASED_TRIAL_PROTOCOL = ExperimentTrialProtocolIdentity(
 )
 
 
+@requires_benchmark_cut(
+    ALFWORLD_BENCHMARK_ID,
+    ALFWORLD_PAPER_EVAL_REVISION,
+    split_ids=(ALFWORLD_PAPER_EVAL_SPLIT,),
+)
 def build_react_alfworld_released_study(benchmark: BenchmarkTaskSet) -> ResearchStudyDefinition:
     """Author the released-code ReAct ALFWorld sweep through the generic Study compiler."""
 

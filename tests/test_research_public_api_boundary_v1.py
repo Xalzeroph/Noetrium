@@ -57,4 +57,6 @@ def test_unified_api_is_exactly_the_product_research_os_surface() -> None:
     assert "ResearchOS" in api.__all__
     assert "ResearchProgramBuilder" in api.__all__
     assert not hasattr(api, "catalog")
-    assert not hasattr(api, "MethodProgram")
+    assert hasattr(api, "MethodProgram")
+    assert hasattr(api, "BenchmarkCutRequirement")
+    assert hasattr(api, "requires_benchmark_cut")

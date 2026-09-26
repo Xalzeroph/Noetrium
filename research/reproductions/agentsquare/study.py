@@ -16,6 +16,7 @@ from noetrium.api import (
     StudyModel,
     StudyParticipant,
     TrialBudget,
+    requires_benchmark_cut,
 )
 
 from .fidelity import AGENTSQUARE_FIDELITY
@@ -188,6 +189,18 @@ def build_agentsquare_evaluation_study(
             repetition_timeout_seconds=14400.0,
         ),
     ).build()
+
+
+for _benchmark_profile in sorted(
+    AGENTSQUARE_BENCHMARK_PROFILE_BY_ID.values(),
+    key=lambda row: row.benchmark_id,
+):
+    build_agentsquare_evaluation_study = requires_benchmark_cut(
+        _benchmark_profile.benchmark_id,
+        _benchmark_profile.revision_id,
+        split_ids=(_benchmark_profile.evaluation_split_id,),
+    )(build_agentsquare_evaluation_study)
+del _benchmark_profile
 
 
 def build_agentsquare_ablation_matrix(

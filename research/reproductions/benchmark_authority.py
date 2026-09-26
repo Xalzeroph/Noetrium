@@ -19,6 +19,7 @@ from noetrium_platform.research.experimentation.lifecycle.api import (
     BenchmarkSourceResolution,
 )
 from noetrium_platform.research.experimentation.lifecycle.study.api import (
+    BenchmarkCutRequirement,
     BenchmarkResolutionRegistry,
 )
 
@@ -368,6 +369,7 @@ class RepositoryBenchmarkAuthority:
     def _resolution(
         self,
         benchmark_id: str,
+        requirement: BenchmarkCutRequirement | None = None,
     ) -> tuple[BenchmarkSourceResolution, tuple[str, ...]]:
         source_rows = tuple(
             row for row in self._bindings if row.benchmark_id == benchmark_id
@@ -388,15 +390,49 @@ class RepositoryBenchmarkAuthority:
             )
             entry[1].append(row.registration_digest)
 
+        if requirement is not None:
+            if type(requirement) is not BenchmarkCutRequirement:
+                raise TypeError(
+                    "repository benchmark resolution requirement must be "
+                    "BenchmarkCutRequirement"
+                )
+            if requirement.benchmark_id != benchmark_id:
+                raise ValueError(
+                    "repository benchmark requirement identity drifted from "
+                    f"benchmark {benchmark_id!r}"
+                )
+            candidates = {
+                digest: value
+                for digest, value in candidates.items()
+                if requirement.matches(value[0].task_set)
+            }
+
         if not candidates:
+            requirement_suffix = (
+                ""
+                if requirement is None
+                else (
+                    f" matching revision={requirement.revision_id!r} "
+                    f"splits={requirement.required_split_ids!r}"
+                )
+            )
             raise ReproductionResearchOSCompileError(
                 f"benchmark {benchmark_id!r} has no exact repository or "
-                "materialized authority"
+                f"materialized authority{requirement_suffix}"
             )
         if len(candidates) != 1:
+            identities = tuple(
+                sorted(
+                    (
+                        value[0].task_set.revision_id,
+                        value[0].task_set.cut_digest,
+                    )
+                    for value in candidates.values()
+                )
+            )
             raise ReproductionResearchOSCompileError(
                 f"benchmark {benchmark_id!r} has ambiguous exact cuts: "
-                f"{tuple(sorted(candidates))}"
+                f"{identities}"
             )
         resolution, proofs = next(iter(candidates.values()))
         return resolution, tuple(sorted(set(proofs)))
@@ -442,28 +478,43 @@ class RepositoryBenchmarkAuthority:
 
         selections: list[ReproductionBenchmarkSelection] = []
         for benchmark_id in benchmark_ids:
-            resolution, authority_proofs = self._resolution(benchmark_id)
+            requirement = study_factory.benchmark_requirement(benchmark_id)
+            resolution, authority_proofs = self._resolution(
+                benchmark_id,
+                requirement,
+            )
             task_set = resolution.task_set
             if split_aware:
-                if len(task_set.splits) != 1:
-                    raise ReproductionResearchOSCompileError(
-                        f"{definition.package} Study {study_factory.qualname} "
-                        f"requires paper-owned split selection for benchmark "
-                        f"{benchmark_id!r}; available="
-                        f"{tuple(row.split_id for row in task_set.splits)}"
-                    )
-                split_ids = (task_set.splits[0].split_id,)
+                if (
+                    requirement is not None
+                    and requirement.required_split_ids
+                ):
+                    split_ids = requirement.required_split_ids
+                else:
+                    if len(task_set.splits) != 1:
+                        raise ReproductionResearchOSCompileError(
+                            f"{definition.package} Study {study_factory.qualname} "
+                            f"requires paper-owned split selection for benchmark "
+                            f"{benchmark_id!r}; available="
+                            f"{tuple(row.split_id for row in task_set.splits)}"
+                        )
+                    split_ids = (task_set.splits[0].split_id,)
             else:
                 split_ids = ()
 
             proof_digest = canonical_digest(
                 {
-                    "schema": "noetrium.repository-benchmark-selection-proof.v1",
+                    "schema": "noetrium.repository-benchmark-selection-proof.v2",
                     "authority_digest": self._authority_digest,
                     "authority_proof_digests": authority_proofs,
                     "resolution_digest": resolution.resolution_digest,
                     "benchmark_cut_digest": task_set.cut_digest,
                     "benchmark_split_ids": split_ids,
+                    "benchmark_requirement_digest": (
+                        None
+                        if requirement is None
+                        else requirement.requirement_digest
+                    ),
                     "reproduction_definition_digest": definition.definition_digest,
                     "study_factory_binding_digest": study_factory.binding_digest,
                 }

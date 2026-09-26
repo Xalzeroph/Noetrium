@@ -476,6 +476,7 @@ class ReproductionStudyFactoryBinding:
     benchmark_parameter: str
     parameter_names: tuple[str, ...]
     required_parameters: tuple[str, ...]
+    benchmark_requirements: tuple[api.BenchmarkCutRequirement, ...]
     binding_digest: str
 
     def __post_init__(self) -> None:
@@ -489,8 +490,38 @@ class ReproductionStudyFactoryBinding:
             raise ValueError("reproduction Study factory parameters must be unique")
         if any(name not in self.parameter_names for name in self.required_parameters):
             raise ValueError("reproduction Study factory required parameters drifted")
+        if type(self.benchmark_requirements) is not tuple or any(
+            type(row) is not api.BenchmarkCutRequirement
+            for row in self.benchmark_requirements
+        ):
+            raise TypeError(
+                "reproduction Study factory benchmark requirements must be typed tuple"
+            )
+        benchmark_requirement_ids = tuple(
+            row.benchmark_id for row in self.benchmark_requirements
+        )
+        if len(benchmark_requirement_ids) != len(set(benchmark_requirement_ids)):
+            raise ValueError(
+                "reproduction Study factory benchmark requirements must be unique"
+            )
         if len(self.binding_digest) != 64:
             raise ValueError("reproduction Study factory digest must be SHA-256 text")
+
+    def benchmark_requirement(
+        self,
+        benchmark_id: str,
+    ) -> api.BenchmarkCutRequirement | None:
+        matches = tuple(
+            row
+            for row in self.benchmark_requirements
+            if row.benchmark_id == benchmark_id
+        )
+        if len(matches) > 1:
+            raise ReproductionResearchOSCompileError(
+                f"{self.package} Study factory {self.qualname} declares multiple "
+                f"benchmark cut requirements for {benchmark_id!r}"
+            )
+        return None if not matches else matches[0]
 
     @property
     def benchmark_split_parameter(self) -> str | None:
@@ -662,6 +693,21 @@ def resolve_study_factory_bindings(
                 inspect.Parameter.VAR_KEYWORD,
             }
         )
+        benchmark_requirements = api.benchmark_cut_requirements(value)
+        unknown_benchmarks = tuple(
+            sorted(
+                {
+                    row.benchmark_id
+                    for row in benchmark_requirements
+                    if row.benchmark_id not in definition.catalog.benchmark_ids
+                }
+            )
+        )
+        if unknown_benchmarks:
+            raise ReproductionResearchOSCompileError(
+                f"{definition.package} Study factory {name} declares benchmark "
+                f"requirements outside its catalog: {unknown_benchmarks}"
+            )
         binding_digest = canonical_digest(
             {
                 "package": definition.package,
@@ -671,6 +717,9 @@ def resolve_study_factory_bindings(
                 "benchmark_parameter": benchmark_parameters[0],
                 "parameter_names": parameter_names,
                 "required_parameters": required_parameters,
+                "benchmark_requirement_digests": tuple(
+                    row.requirement_digest for row in benchmark_requirements
+                ),
             }
         )
         bindings.append(
@@ -682,6 +731,7 @@ def resolve_study_factory_bindings(
                 benchmark_parameters[0],
                 parameter_names,
                 required_parameters,
+                benchmark_requirements,
                 binding_digest,
             )
         )

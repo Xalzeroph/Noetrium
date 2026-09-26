@@ -1,15 +1,18 @@
 {
   "ambiguous_symbol_sources": {},
-  "catalog_digest": "fbf930ebc8ac1cd31df69dcd429ffbec1d829fc4c1be0d275af04fd818191a4c",
+  "catalog_digest": "956627a308cdcc92ac1e26fcfc944c2eb227ca76c4770b61f4cd6826c5c42a4f",
   "direct_symbol_sources": {
     "ActionKind": "noetrium_platform.product.api",
     "ActionRequest": "noetrium_platform.product.api",
     "ActionResult": "noetrium_platform.product.api",
     "ActionSpec": "noetrium_platform.product.api",
+    "AgentGoal": "noetrium_platform.product.api",
     "AgentMethodSpec": "noetrium_platform.product.api",
     "AgentPhaseSpec": "noetrium_platform.product.api",
     "ArtifactBlobRef": "noetrium_platform.product.api",
+    "AsyncMethodAgentLoopPort": "noetrium_platform.product.api",
     "BenchmarkAssignmentMode": "noetrium_platform.product.api",
+    "BenchmarkCutRequirement": "noetrium_platform.product.api",
     "BenchmarkTaskSet": "noetrium_platform.product.api",
     "CapabilityDescriptor": "noetrium_platform.product.api",
     "CapabilityPort": "noetrium_platform.product.api",
@@ -24,6 +27,7 @@
     "ChildResearchMachineBatchRequest": "noetrium_platform.product.api",
     "ChildResearchMachineExecution": "noetrium_platform.product.api",
     "ChildResearchMachineRequest": "noetrium_platform.product.api",
+    "CutWorkloadTrialProvider": "noetrium_platform.product.api",
     "DomainProgramBuilder": "noetrium_platform.product.api",
     "EffectCertainty": "noetrium_platform.product.api",
     "EffectClass": "noetrium_platform.product.api",
@@ -51,7 +55,10 @@
     "ExecutionStateAnchor": "noetrium_platform.product.api",
     "ExperimentConcern": "noetrium_platform.product.api",
     "ExperimentProgramBuilder": "noetrium_platform.product.api",
+    "ExperimentTaskSpec": "noetrium_platform.product.api",
     "ExperimentTrialProtocolIdentity": "noetrium_platform.product.api",
+    "FactorLevelSpec": "noetrium_platform.product.api",
+    "FactorSelection": "noetrium_platform.product.api",
     "GuardDecision": "noetrium_platform.product.api",
     "GuardVerdict": "noetrium_platform.product.api",
     "MachineJournalPort": "noetrium_platform.product.api",
@@ -61,9 +68,22 @@
     "MachineSnapshotStorePort": "noetrium_platform.product.api",
     "MachineStatus": "noetrium_platform.product.api",
     "MeasurementDefinition": "noetrium_platform.product.api",
+    "MeasurementProtocol": "noetrium_platform.product.api",
+    "MeasurementRecord": "noetrium_platform.product.api",
+    "MeasurementValue": "noetrium_platform.product.api",
     "MeasurementValueKind": "noetrium_platform.product.api",
     "MemoryConcern": "noetrium_platform.product.api",
+    "MemoryEdgeRecord": "noetrium_platform.product.api",
+    "MemoryGraphConflict": "noetrium_platform.product.api",
+    "MemoryGraphIntegrityError": "noetrium_platform.product.api",
+    "MemoryGraphLedgerEntry": "noetrium_platform.product.api",
+    "MemoryGraphOperation": "noetrium_platform.product.api",
+    "MemoryGraphPort": "noetrium_platform.product.api",
+    "MemoryGraphSnapshot": "noetrium_platform.product.api",
+    "MemoryGraphTransaction": "noetrium_platform.product.api",
+    "MemoryNodeRecord": "noetrium_platform.product.api",
     "MemoryProgramBuilder": "noetrium_platform.product.api",
+    "MethodAgentLoopPort": "noetrium_platform.product.api",
     "MethodAgentRequest": "noetrium_platform.product.api",
     "MethodAgentResult": "noetrium_platform.product.api",
     "MethodEvent": "noetrium_platform.product.api",
@@ -80,7 +100,11 @@
     "MethodRunStatus": "noetrium_platform.product.api",
     "MethodRuntimeContext": "noetrium_platform.product.api",
     "MethodRuntimePort": "noetrium_platform.product.api",
+    "MethodSnapshot": "noetrium_platform.product.api",
+    "MethodTaskCompletionReceipt": "noetrium_platform.product.api",
+    "MethodTaskOutcome": "noetrium_platform.product.api",
     "MethodWorkflow": "noetrium_platform.product.api",
+    "ModelProviderProfile": "noetrium_platform.product.api",
     "ModelRoleUsage": "noetrium_platform.product.api",
     "OptimizationConcern": "noetrium_platform.product.api",
     "OptimizationProgramBuilder": "noetrium_platform.product.api",
@@ -91,8 +115,15 @@
     "ProgramNodeResult": "noetrium_platform.product.api",
     "ProgramRule": "noetrium_platform.product.api",
     "ProgramRuleSet": "noetrium_platform.product.api",
+    "ProjectModelBinding": "noetrium_platform.product.api",
+    "ProjectModelBindingSet": "noetrium_platform.product.api",
+    "RecallRequest": "noetrium_platform.product.api",
+    "RecallResult": "noetrium_platform.product.api",
     "ReplayLevel": "noetrium_platform.product.api",
+    "ResearchBindingContribution": "noetrium_platform.product.api",
+    "ResearchBindingRequirements": "noetrium_platform.product.api",
     "ResearchBranch": "noetrium_platform.product.api",
+    "ResearchCapabilityBinding": "noetrium_platform.product.api",
     "ResearchControlAction": "noetrium_platform.product.api",
     "ResearchControlReceipt": "noetrium_platform.product.api",
     "ResearchControlRequest": "noetrium_platform.product.api",
@@ -108,18 +139,21 @@
     "ResearchMachineProgramImplementation": "noetrium_platform.product.api",
     "ResearchMethodProgramBindingKind": "noetrium_platform.product.api",
     "ResearchMethodProgramImplementation": "noetrium_platform.product.api",
+    "ResearchModelRoleRequirement": "noetrium_platform.product.api",
     "ResearchNode": "noetrium_platform.product.api",
     "ResearchNodeImpact": "noetrium_platform.product.api",
     "ResearchNodeKind": "noetrium_platform.product.api",
     "ResearchNodeRef": "noetrium_platform.product.api",
     "ResearchOS": "noetrium_platform.product.api",
     "ResearchOutputSpec": "noetrium_platform.product.api",
+    "ResearchParticipantRequirement": "noetrium_platform.product.api",
     "ResearchPortfolio": "noetrium_platform.product.api",
     "ResearchPortfolioBuilder": "noetrium_platform.product.api",
     "ResearchPortfolioDependency": "noetrium_platform.product.api",
     "ResearchProgram": "noetrium_platform.product.api",
     "ResearchProgramBuilder": "noetrium_platform.product.api",
     "ResearchProgramHost": "noetrium_platform.product.api",
+    "ResearchRevision": "noetrium_platform.product.api",
     "ResearchRevisionDiff": "noetrium_platform.product.api",
     "ResearchRunProgramBuilder": "noetrium_platform.product.api",
     "ResearchStudyDefinition": "noetrium_platform.product.api",
@@ -135,18 +169,50 @@
     "SemanticSimilarityQueryPort": "noetrium_platform.product.api",
     "SensorModality": "noetrium_platform.product.api",
     "SensorSpec": "noetrium_platform.product.api",
+    "SequentialWorkloadCutBinding": "noetrium_platform.product.api",
     "SimulatorObservation": "noetrium_platform.product.api",
     "SimulatorStep": "noetrium_platform.product.api",
     "SoftwareActionKind": "noetrium_platform.product.api",
     "SoftwareActionTimeoutError": "noetrium_platform.product.api",
     "SoftwareWorldPort": "noetrium_platform.product.api",
+    "StandardWorkloadMeasurementProjection": "noetrium_platform.product.api",
     "Study": "noetrium_platform.product.api",
     "StudyConcurrencyPolicy": "noetrium_platform.product.api",
+    "StudyExecutionPolicy": "noetrium_platform.product.api",
+    "StudyFactorSpec": "noetrium_platform.product.api",
+    "StudyIntervention": "noetrium_platform.product.api",
     "StudyModel": "noetrium_platform.product.api",
     "StudyParticipant": "noetrium_platform.product.api",
+    "TaskArtifactSpec": "noetrium_platform.product.api",
+    "TaskDefinition": "noetrium_platform.product.api",
+    "TaskGraph": "noetrium_platform.product.api",
+    "TaskGraphEdge": "noetrium_platform.product.api",
+    "TaskGraphRelation": "noetrium_platform.product.api",
+    "TaskPackageSpec": "noetrium_platform.product.api",
+    "TaskSetSplit": "noetrium_platform.product.api",
+    "TaskVerifierIsolation": "noetrium_platform.product.api",
     "TensorContentRef": "noetrium_platform.product.api",
     "TensorContentStorePort": "noetrium_platform.product.api",
     "TrialBudget": "noetrium_platform.product.api",
+    "TrialExecutionReceipt": "noetrium_platform.product.api",
+    "TrialExecutionRequest": "noetrium_platform.product.api",
+    "TrialExecutionStageReceipt": "noetrium_platform.product.api",
+    "TrialMeasurementProjectionPort": "noetrium_platform.product.api",
+    "TrialProviderPort": "noetrium_platform.product.api",
+    "TrialTaskProjectionPort": "noetrium_platform.product.api",
+    "VersionedMemoryGraph": "noetrium_platform.product.api",
+    "WorkloadCompletionReceipt": "noetrium_platform.product.api",
+    "WorkloadCutExecutionPort": "noetrium_platform.product.api",
+    "WorkloadCutResult": "noetrium_platform.product.api",
+    "WorkloadEvaluation": "noetrium_platform.product.api",
+    "WorkloadMethodCompilerPort": "noetrium_platform.product.api",
+    "WorkloadMethodInvocation": "noetrium_platform.product.api",
+    "WorkloadMethodReceipt": "noetrium_platform.product.api",
+    "WorkloadMethodResultAdapterPort": "noetrium_platform.product.api",
+    "WorkloadTaskExecutionPort": "noetrium_platform.product.api",
+    "WorkloadTaskResult": "noetrium_platform.product.api",
+    "WorkloadTrialProvider": "noetrium_platform.product.api",
+    "benchmark_cut_requirements": "noetrium_platform.product.api",
     "bind_execution_fork": "noetrium_platform.product.api",
     "candidate_program_capability_payload": "noetrium_platform.product.api",
     "environment_action_capability_payload": "noetrium_platform.product.api",
@@ -158,7 +224,8 @@
     "fork_environment_session": "noetrium_platform.product.api",
     "materialize_capability_selection_view": "noetrium_platform.product.api",
     "program_execution_capability_payload": "noetrium_platform.product.api",
-    "replay_environment_prefix": "noetrium_platform.product.api"
+    "replay_environment_prefix": "noetrium_platform.product.api",
+    "requires_benchmark_cut": "noetrium_platform.product.api"
   },
   "entrypoint": "noetrium.api",
   "generator": "scripts/generate_downstream_contracts.py",
@@ -176,6 +243,9 @@
     "ActionSpec": [
       "research_os"
     ],
+    "AgentGoal": [
+      "research_os"
+    ],
     "AgentMethodSpec": [
       "research_os"
     ],
@@ -185,7 +255,13 @@
     "ArtifactBlobRef": [
       "research_os"
     ],
+    "AsyncMethodAgentLoopPort": [
+      "research_os"
+    ],
     "BenchmarkAssignmentMode": [
+      "research_os"
+    ],
+    "BenchmarkCutRequirement": [
       "research_os"
     ],
     "BenchmarkTaskSet": [
@@ -228,6 +304,9 @@
       "research_os"
     ],
     "ChildResearchMachineRequest": [
+      "research_os"
+    ],
+    "CutWorkloadTrialProvider": [
       "research_os"
     ],
     "DomainProgramBuilder": [
@@ -311,7 +390,16 @@
     "ExperimentProgramBuilder": [
       "research_os"
     ],
+    "ExperimentTaskSpec": [
+      "research_os"
+    ],
     "ExperimentTrialProtocolIdentity": [
+      "research_os"
+    ],
+    "FactorLevelSpec": [
+      "research_os"
+    ],
+    "FactorSelection": [
       "research_os"
     ],
     "GuardDecision": [
@@ -341,13 +429,52 @@
     "MeasurementDefinition": [
       "research_os"
     ],
+    "MeasurementProtocol": [
+      "research_os"
+    ],
+    "MeasurementRecord": [
+      "research_os"
+    ],
+    "MeasurementValue": [
+      "research_os"
+    ],
     "MeasurementValueKind": [
       "research_os"
     ],
     "MemoryConcern": [
       "research_os"
     ],
+    "MemoryEdgeRecord": [
+      "research_os"
+    ],
+    "MemoryGraphConflict": [
+      "research_os"
+    ],
+    "MemoryGraphIntegrityError": [
+      "research_os"
+    ],
+    "MemoryGraphLedgerEntry": [
+      "research_os"
+    ],
+    "MemoryGraphOperation": [
+      "research_os"
+    ],
+    "MemoryGraphPort": [
+      "research_os"
+    ],
+    "MemoryGraphSnapshot": [
+      "research_os"
+    ],
+    "MemoryGraphTransaction": [
+      "research_os"
+    ],
+    "MemoryNodeRecord": [
+      "research_os"
+    ],
     "MemoryProgramBuilder": [
+      "research_os"
+    ],
+    "MethodAgentLoopPort": [
       "research_os"
     ],
     "MethodAgentRequest": [
@@ -398,7 +525,19 @@
     "MethodRuntimePort": [
       "research_os"
     ],
+    "MethodSnapshot": [
+      "research_os"
+    ],
+    "MethodTaskCompletionReceipt": [
+      "research_os"
+    ],
+    "MethodTaskOutcome": [
+      "research_os"
+    ],
     "MethodWorkflow": [
+      "research_os"
+    ],
+    "ModelProviderProfile": [
       "research_os"
     ],
     "ModelRoleUsage": [
@@ -431,10 +570,31 @@
     "ProgramRuleSet": [
       "research_os"
     ],
+    "ProjectModelBinding": [
+      "research_os"
+    ],
+    "ProjectModelBindingSet": [
+      "research_os"
+    ],
+    "RecallRequest": [
+      "research_os"
+    ],
+    "RecallResult": [
+      "research_os"
+    ],
     "ReplayLevel": [
       "research_os"
     ],
+    "ResearchBindingContribution": [
+      "research_os"
+    ],
+    "ResearchBindingRequirements": [
+      "research_os"
+    ],
     "ResearchBranch": [
+      "research_os"
+    ],
+    "ResearchCapabilityBinding": [
       "research_os"
     ],
     "ResearchControlAction": [
@@ -482,6 +642,9 @@
     "ResearchMethodProgramImplementation": [
       "research_os"
     ],
+    "ResearchModelRoleRequirement": [
+      "research_os"
+    ],
     "ResearchNode": [
       "research_os"
     ],
@@ -500,6 +663,9 @@
     "ResearchOutputSpec": [
       "research_os"
     ],
+    "ResearchParticipantRequirement": [
+      "research_os"
+    ],
     "ResearchPortfolio": [
       "research_os"
     ],
@@ -516,6 +682,9 @@
       "research_os"
     ],
     "ResearchProgramHost": [
+      "research_os"
+    ],
+    "ResearchRevision": [
       "research_os"
     ],
     "ResearchRevisionDiff": [
@@ -563,6 +732,9 @@
     "SensorSpec": [
       "research_os"
     ],
+    "SequentialWorkloadCutBinding": [
+      "research_os"
+    ],
     "SimulatorObservation": [
       "research_os"
     ],
@@ -578,16 +750,52 @@
     "SoftwareWorldPort": [
       "research_os"
     ],
+    "StandardWorkloadMeasurementProjection": [
+      "research_os"
+    ],
     "Study": [
       "research_os"
     ],
     "StudyConcurrencyPolicy": [
       "research_os"
     ],
+    "StudyExecutionPolicy": [
+      "research_os"
+    ],
+    "StudyFactorSpec": [
+      "research_os"
+    ],
+    "StudyIntervention": [
+      "research_os"
+    ],
     "StudyModel": [
       "research_os"
     ],
     "StudyParticipant": [
+      "research_os"
+    ],
+    "TaskArtifactSpec": [
+      "research_os"
+    ],
+    "TaskDefinition": [
+      "research_os"
+    ],
+    "TaskGraph": [
+      "research_os"
+    ],
+    "TaskGraphEdge": [
+      "research_os"
+    ],
+    "TaskGraphRelation": [
+      "research_os"
+    ],
+    "TaskPackageSpec": [
+      "research_os"
+    ],
+    "TaskSetSplit": [
+      "research_os"
+    ],
+    "TaskVerifierIsolation": [
       "research_os"
     ],
     "TensorContentRef": [
@@ -597,6 +805,63 @@
       "research_os"
     ],
     "TrialBudget": [
+      "research_os"
+    ],
+    "TrialExecutionReceipt": [
+      "research_os"
+    ],
+    "TrialExecutionRequest": [
+      "research_os"
+    ],
+    "TrialExecutionStageReceipt": [
+      "research_os"
+    ],
+    "TrialMeasurementProjectionPort": [
+      "research_os"
+    ],
+    "TrialProviderPort": [
+      "research_os"
+    ],
+    "TrialTaskProjectionPort": [
+      "research_os"
+    ],
+    "VersionedMemoryGraph": [
+      "research_os"
+    ],
+    "WorkloadCompletionReceipt": [
+      "research_os"
+    ],
+    "WorkloadCutExecutionPort": [
+      "research_os"
+    ],
+    "WorkloadCutResult": [
+      "research_os"
+    ],
+    "WorkloadEvaluation": [
+      "research_os"
+    ],
+    "WorkloadMethodCompilerPort": [
+      "research_os"
+    ],
+    "WorkloadMethodInvocation": [
+      "research_os"
+    ],
+    "WorkloadMethodReceipt": [
+      "research_os"
+    ],
+    "WorkloadMethodResultAdapterPort": [
+      "research_os"
+    ],
+    "WorkloadTaskExecutionPort": [
+      "research_os"
+    ],
+    "WorkloadTaskResult": [
+      "research_os"
+    ],
+    "WorkloadTrialProvider": [
+      "research_os"
+    ],
+    "benchmark_cut_requirements": [
       "research_os"
     ],
     "bind_execution_fork": [
@@ -633,6 +898,9 @@
       "research_os"
     ],
     "replay_environment_prefix": [
+      "research_os"
+    ],
+    "requires_benchmark_cut": [
       "research_os"
     ]
   },
@@ -1244,13 +1512,32 @@
             "ResearchTag",
             "ResearchValueKind",
             "ActionKind",
+            "VersionedMemoryGraph",
+            "MemoryNodeRecord",
+            "MemoryGraphTransaction",
+            "MemoryGraphSnapshot",
+            "MemoryGraphPort",
+            "MemoryGraphOperation",
+            "MemoryGraphLedgerEntry",
+            "MemoryGraphIntegrityError",
+            "MemoryGraphConflict",
+            "MemoryEdgeRecord",
+            "RecallResult",
+            "RecallRequest",
+            "MethodTaskOutcome",
+            "MethodTaskCompletionReceipt",
+            "MethodSnapshot",
+            "AgentGoal",
             "ActionRequest",
             "ActionResult",
             "ActionSpec",
             "AgentMethodSpec",
             "AgentPhaseSpec",
             "BenchmarkAssignmentMode",
+            "BenchmarkCutRequirement",
             "BenchmarkTaskSet",
+            "benchmark_cut_requirements",
+            "requires_benchmark_cut",
             "CapabilityDescriptor",
             "CapabilityPort",
             "CapabilityRequest",
@@ -1300,6 +1587,18 @@
             "MachineSnapshotStorePort",
             "MachineStatus",
             "MeasurementDefinition",
+            "ResearchParticipantRequirement",
+            "ResearchModelRoleRequirement",
+            "StudyIntervention",
+            "StudyFactorSpec",
+            "FactorSelection",
+            "FactorLevelSpec",
+            "ResearchCapabilityBinding",
+            "ResearchBindingContribution",
+            "ResearchBindingRequirements",
+            "ResearchRevision",
+            "StudyExecutionPolicy",
+            "MeasurementProtocol",
             "MeasurementValueKind",
             "MemoryConcern",
             "MemoryProgramBuilder",
@@ -1354,6 +1653,14 @@
             "StudyParticipant",
             "TensorContentRef",
             "TensorContentStorePort",
+            "TaskArtifactSpec",
+            "TaskDefinition",
+            "TaskGraph",
+            "TaskGraphEdge",
+            "TaskGraphRelation",
+            "TaskPackageSpec",
+            "TaskSetSplit",
+            "TaskVerifierIsolation",
             "TrialBudget",
             "candidate_program_capability_payload",
             "bind_execution_fork",
@@ -1366,7 +1673,35 @@
             "environment_replay_action_payload",
             "environment_reset_capability_payload",
             "materialize_capability_selection_view",
-            "program_execution_capability_payload"
+            "program_execution_capability_payload",
+            "AsyncMethodAgentLoopPort",
+            "CutWorkloadTrialProvider",
+            "ExperimentTaskSpec",
+            "MeasurementRecord",
+            "MeasurementValue",
+            "MethodAgentLoopPort",
+            "ModelProviderProfile",
+            "ProjectModelBinding",
+            "ProjectModelBindingSet",
+            "SequentialWorkloadCutBinding",
+            "StandardWorkloadMeasurementProjection",
+            "TrialExecutionReceipt",
+            "TrialExecutionRequest",
+            "TrialExecutionStageReceipt",
+            "TrialMeasurementProjectionPort",
+            "TrialProviderPort",
+            "TrialTaskProjectionPort",
+            "WorkloadCompletionReceipt",
+            "WorkloadCutExecutionPort",
+            "WorkloadCutResult",
+            "WorkloadEvaluation",
+            "WorkloadMethodCompilerPort",
+            "WorkloadMethodInvocation",
+            "WorkloadMethodReceipt",
+            "WorkloadMethodResultAdapterPort",
+            "WorkloadTaskExecutionPort",
+            "WorkloadTaskResult",
+            "WorkloadTrialProvider"
           ]
         }
       ],
@@ -1374,7 +1709,7 @@
       "canonical_authority": null,
       "downstream_surface": "public",
       "facade_module": "noetrium.contracts.systems.research_os",
-      "interface_digest": "73f1953fc2063df06a6e2147770850da003c86b4c5637f05b5bf1590ae1ee990",
+      "interface_digest": "85399b76130cf163cebc358bacaa6c9355f844558ebfc544f711223cb0d3111b",
       "must_not_own": "domain authority, scientific execution truth, provider state or duplicated evidence",
       "node_kind": "product_surface",
       "owns": "single downstream research authoring, revision, graph-control and live-intervention product surface",

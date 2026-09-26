@@ -38,26 +38,31 @@ def test_generated_interface_schema_covers_every_public_export() -> None:
             )
 
 
-def test_generated_interface_schema_exposes_protocol_methods_and_reexports() -> None:
-    # Minecraft is now a metadata-only provider facet; validate schema richness on
-    # a genuinely public downstream surface instead of reaching into provider internals.
-    module = "noetrium_platform.infrastructure.resources.compute.api.ports"
-    schema = find_downstream_symbol_schema(
-        "resource",
+def test_generated_interface_schema_exposes_unified_product_reexports() -> None:
+    module = "noetrium_platform.product.api"
+    research_os = find_downstream_symbol_schema(
+        "research_os",
         module,
-        "ComputeSchedulerPort",
+        "ResearchOS",
     )
-    assert schema["kind"] == "class"
-    assert any(method["name"] == "allocate" for method in schema["methods"])
-    assert any(method["name"] == "release" for method in schema["methods"])
+    assert research_os["kind"] == "reexport"
+    assert research_os["origin_name"] == "ResearchOS"
 
-    reexport = find_downstream_symbol_schema(
-        "resource",
-        "noetrium_platform.infrastructure.resources.compute.api",
-        "ComputeSchedulerPort",
+    exact_cut = find_downstream_symbol_schema(
+        "research_os",
+        module,
+        "BenchmarkCutRequirement",
     )
-    assert reexport["kind"] == "reexport"
-    assert reexport["origin_name"] == "ComputeSchedulerPort"
+    assert exact_cut["kind"] == "reexport"
+    assert exact_cut["origin_name"] == "BenchmarkCutRequirement"
+
+    decorator = find_downstream_symbol_schema(
+        "research_os",
+        module,
+        "requires_benchmark_cut",
+    )
+    assert decorator["kind"] == "reexport"
+    assert decorator["origin_name"] == "requires_benchmark_cut"
 
 
 def test_interface_schema_validation_rejects_tampered_digest() -> None:

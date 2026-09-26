@@ -15,7 +15,7 @@ from generate_interface_schemas import generate as generate_interface_schemas
 from sync_leaf_contract_metadata import sync_leaf_contract_metadata
 from sync_registered_system_shapes import sync_registered_system_shapes
 from audit_registered_system_surfaces import audit as audit_registered_system_surfaces
-from readme_i18n import load_languages, mark_current, sync_navigation
+from readme_i18n import load_languages, mark_current, sync_navigation, translation_status
 from check_readme_i18n import validate_root
 from noetrium_platform.foundation.governance.architecture.capability_index import (
     build_capability_index,
@@ -23,6 +23,23 @@ from noetrium_platform.foundation.governance.architecture.capability_index impor
 from noetrium_platform.foundation.kernel.kernel.canonical import canonical_bytes
 
 _CAPABILITY_INDEX = Path("docs/architecture/CAPABILITY_INDEX.json")
+
+
+def _readme_locales_to_restamp(root: Path) -> tuple[str, ...]:
+    """Preserve translation freshness across generated-only README mutations.
+
+    The updater owns generated blocks/navigation, not translation semantics. A
+    translation that was stale before generation must therefore remain stale.
+    """
+
+    manifest = load_languages(root)
+    source_locale = str(manifest["default"])
+    current_translations = tuple(
+        locale
+        for locale, status, _stamp in translation_status(root)
+        if status == "CURRENT"
+    )
+    return tuple(dict.fromkeys((source_locale, *current_translations)))
 
 
 def _sync_capability_index(root: Path, *, check: bool) -> bool:
@@ -45,6 +62,7 @@ def _sync_capability_index(root: Path, *, check: bool) -> bool:
 
 
 def update(root: Path) -> int:
+    locales_to_restamp = _readme_locales_to_restamp(root)
     findings = sync_registered_system_shapes(root, check=False)
     if findings:
         for finding in findings:
@@ -76,8 +94,7 @@ def update(root: Path) -> int:
             print(f"- {finding.code}: {finding.system_key}: {finding.detail}")
         return 1
     sync_navigation(root)
-    locales = tuple(row["locale"] for row in load_languages(root)["languages"])
-    mark_current(locales, root)
+    mark_current(locales_to_restamp, root)
     return 0
 
 
