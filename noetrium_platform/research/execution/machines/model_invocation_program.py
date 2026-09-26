@@ -14,7 +14,6 @@ from __future__ import annotations
 
 from collections.abc import Callable
 from dataclasses import dataclass, field, replace
-from enum import StrEnum
 import json
 from threading import RLock
 from typing import Protocol, runtime_checkable
@@ -48,11 +47,6 @@ from .program_host import ResearchHostOperation, ResearchProgramHost
 from .runtime_module import RuntimeModule, RuntimeModuleBuilder, RuntimeProgramComposer
 
 
-class ModelInvocationMode(StrEnum):
-    SINGLE = "single"
-    PANEL = "panel"
-
-
 @dataclass(frozen=True, slots=True)
 class ModelInvocationCandidate:
     binding_digest: str
@@ -73,10 +67,10 @@ class ModelInvocationCandidate:
 class ModelInvocationProgram:
     program_id: str
     version: str
-    mode: ModelInvocationMode
     candidates: tuple[ModelInvocationCandidate, ...]
     selector: str | None = None
     minimum_successes: int = 1
+    target_successes: int | None = None
     program_digest: str = field(init=False)
 
     def __post_init__(self) -> None:
@@ -87,8 +81,6 @@ class ModelInvocationProgram:
             if type(value) is not str or not value.strip():
                 raise ValueError(f"model invocation {name} is required")
             object.__setattr__(self, name, value.strip())
-        if not isinstance(self.mode, ModelInvocationMode):
-            raise TypeError("model invocation mode must be ModelInvocationMode")
         if type(self.candidates) is not tuple or not self.candidates:
             raise ValueError("model invocation program requires candidates")
         if any(
@@ -101,23 +93,37 @@ class ModelInvocationProgram:
         digests = tuple(candidate.binding_digest for candidate in self.candidates)
         if len(digests) != len(set(digests)):
             raise ValueError("model invocation candidates must be unique")
-        if self.mode is ModelInvocationMode.SINGLE and len(self.candidates) != 1:
-            raise ValueError("single model invocation requires exactly one candidate")
         if type(self.minimum_successes) is not int or self.minimum_successes < 1:
             raise ValueError("model invocation minimum_successes must be positive")
-        if self.minimum_successes > len(self.candidates):
+        candidate_count = len(self.candidates)
+        if self.minimum_successes > candidate_count:
             raise ValueError("model invocation minimum_successes exceeds candidates")
-        if self.mode is ModelInvocationMode.PANEL:
-            if self.minimum_successes != len(self.candidates):
-                raise ValueError("panel invocation is fail-closed and requires every candidate to succeed")
+        target_successes = (
+            candidate_count
+            if self.target_successes is None
+            else self.target_successes
+        )
+        if type(target_successes) is not int or target_successes < 1:
+            raise ValueError("model invocation target_successes must be positive")
+        if target_successes > candidate_count:
+            raise ValueError("model invocation target_successes exceeds candidates")
+        if target_successes < self.minimum_successes:
+            raise ValueError(
+                "model invocation target_successes cannot be below minimum_successes"
+            )
+        object.__setattr__(self, "target_successes", target_successes)
+        if self.selector is not None:
             if type(self.selector) is not str or not self.selector.strip():
-                raise ValueError("panel model invocation requires selector")
+                raise ValueError("model invocation selector must be non-empty")
             object.__setattr__(self, "selector", self.selector.strip())
-        else:
-            if self.minimum_successes != 1:
-                raise ValueError("single invocation requires minimum_successes=1")
-            if self.selector is not None:
-                raise ValueError("single invocation must not declare selector")
+        if target_successes > 1 and self.selector is None:
+            raise ValueError(
+                "model invocation collecting multiple successes requires selector"
+            )
+        if target_successes == 1 and self.selector is not None:
+            raise ValueError(
+                "model invocation selector is redundant when target_successes=1"
+            )
 
         object.__setattr__(
             self,
@@ -125,13 +131,13 @@ class ModelInvocationProgram:
             canonical_digest({
                 "program_id": self.program_id,
                 "version": self.version,
-                "mode": self.mode.value,
                 "candidates": tuple({
                     "binding_digest": candidate.binding_digest,
                     "reason_code": candidate.reason_code,
                 } for candidate in self.candidates),
                 "selector": self.selector,
                 "minimum_successes": self.minimum_successes,
+                "target_successes": self.target_successes,
             }),
         )
 
@@ -458,14 +464,19 @@ class ModelInvocationRuntimeBinding:
             raise ValueError(
                 "model invocation program references binding outside admitted set"
             )
-        if self.program.mode is ModelInvocationMode.PANEL:
+        if self.program.selector is not None:
             if self.selectors is None:
-                raise ValueError("panel model invocation requires selector registry")
+                raise ValueError("model invocation selector requires selector registry")
             if not isinstance(self.selectors, ModelResponseSelectorRegistryPort):
                 raise TypeError("model selector registry is invalid")
             require_sha256(
                 self.selectors.identity_digest,
                 "model selector registry identity_digest",
+            )
+            self.selectors.resolve(self.program.selector)
+        elif self.selectors is not None:
+            raise ValueError(
+                "model invocation selector registry is unused without selector"
             )
 
     @property
@@ -650,9 +661,23 @@ def _attempt(
         row["failure_type"] = failure_type
         row["failure_digest"] = failure_digest
         rows.append(row)
-        can_continue = False
-        status = MachineStatus.FAILED
-        next_node = None
+        success_count = len(_successful_responses(binding, rows))
+        remaining = len(binding.program.candidates) - len(rows)
+        can_still_satisfy = (
+            success_count + remaining >= binding.program.minimum_successes
+        )
+        if not can_still_satisfy:
+            next_node = None
+            status = MachineStatus.FAILED
+            failure_reason = "insufficient_successes"
+        elif success_count >= binding.program.target_successes or remaining == 0:
+            next_node = "select"
+            status = None
+            failure_reason = None
+        else:
+            next_node = "attempt"
+            status = None
+            failure_reason = None
         return ProgramNodeResult(
             value={
                 "attempt_index": attempt_index,
@@ -662,9 +687,7 @@ def _attempt(
             },
             state_update={
                 "model_attempts": tuple(rows),
-                "model_invocation_failure": (
-                    None if can_continue else "provider_attempt_failed"
-                ),
+                "model_invocation_failure": failure_reason,
             },
             next_node=next_node,
             status=status,
@@ -674,7 +697,9 @@ def _attempt(
                 "binding_digest": candidate.binding_digest,
                 "failure_type": failure_type,
                 "failure_digest": failure_digest,
-                "continuing": can_continue,
+                "continuing": next_node == "attempt",
+                "success_count": success_count,
+                "remaining_candidate_count": remaining,
             },),
         )
 
@@ -696,14 +721,13 @@ def _attempt(
     row["response_ref"] = _blob_ref_payload(ref)
     rows.append(row)
 
-    if binding.program.mode is ModelInvocationMode.SINGLE:
-        next_node = "select"
-    else:
-        next_node = (
-            "attempt"
-            if attempt_index < len(binding.program.candidates)
-            else "select"
-        )
+    success_count = len(_successful_responses(binding, rows))
+    remaining = len(binding.program.candidates) - len(rows)
+    next_node = (
+        "select"
+        if success_count >= binding.program.target_successes or remaining == 0
+        else "attempt"
+    )
     return ProgramNodeResult(
         value={
             "attempt_index": attempt_index,
@@ -753,11 +777,15 @@ def _select(
             },),
         )
 
-    if binding.program.mode is ModelInvocationMode.SINGLE:
+    if binding.program.selector is None:
+        if len(responses) != 1:
+            raise RuntimeError(
+                "model invocation without selector must yield exactly one response"
+            )
         selected = responses[0]
     else:
-        if binding.selectors is None or binding.program.selector is None:
-            raise RuntimeError("panel invocation selector is unavailable")
+        if binding.selectors is None:
+            raise RuntimeError("model invocation selector registry is unavailable")
         selected = binding.selectors.resolve(binding.program.selector)(
             ModelSelectionRequest(
                 binding.program,
@@ -771,7 +799,7 @@ def _select(
             )
         if selected not in responses:
             raise ValueError(
-                "model response selector returned response outside panel"
+                "model response selector returned response outside successful set"
             )
 
     failed = tuple(
@@ -832,7 +860,8 @@ def model_invocation_runtime_module(
                 "model_invocation_program_id": program.program_id,
                 "model_invocation_program_version": program.version,
                 "model_invocation_program_digest": program.program_digest,
-                "mode": program.mode.value,
+                "minimum_successes": program.minimum_successes,
+                "target_successes": program.target_successes,
             },
         )
         .node(
@@ -1019,7 +1048,6 @@ class ModelInvocationRuntime:
 
 __all__ = [
     "ModelInvocationCandidate",
-    "ModelInvocationMode",
     "ModelInvocationOutcome",
     "FunctionalModelInvocationRequestFactory",
     "ModelInvocationProgram",

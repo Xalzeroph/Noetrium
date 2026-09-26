@@ -26,7 +26,6 @@ from noetrium_platform.foundation.kernel.kernel import (
 from noetrium_platform.research.execution.machines import (
     FunctionalModelInvocationRequestFactory,
     ModelInvocationCandidate,
-    ModelInvocationMode,
     ModelInvocationProgram,
     ModelInvocationRuntime,
     ModelResponseSelectorRegistry,
@@ -189,13 +188,13 @@ def test_panel_fails_closed_on_first_provider_failure(
     program = ModelInvocationProgram(
         "paper.model-panel-fail-closed",
         "1",
-        ModelInvocationMode.PANEL,
         (
             ModelInvocationCandidate(first.digest(), "panel-member"),
             ModelInvocationCandidate(second.digest(), "panel-member"),
         ),
         selector="first",
         minimum_successes=2,
+        target_successes=2,
     )
     journal = InMemoryMachineJournal()
     run_id = "run:model-panel-fail-closed"
@@ -255,13 +254,13 @@ def test_panel_selector_is_programmable_runtime_semantics(
     program = ModelInvocationProgram(
         "paper.model-panel",
         "1",
-        ModelInvocationMode.PANEL,
         (
             ModelInvocationCandidate(short.digest(), "panel-member"),
             ModelInvocationCandidate(long.digest(), "panel-member"),
         ),
         selector="longest",
         minimum_successes=2,
+        target_successes=2,
     )
     journal = InMemoryMachineJournal()
     run_id = "run:model-panel"
@@ -280,21 +279,42 @@ def test_panel_selector_is_programmable_runtime_semantics(
     assert tuple(client.calls for client in clients) == (1, 1)
 
 
-def test_panel_rejects_partial_success_threshold() -> None:
-    good = _binding("good", "3")
-    failing = _binding("failing", "b")
-    with pytest.raises(ValueError, match="fail-closed"):
-        ModelInvocationProgram(
-            "paper.partial-panel",
-            "1",
-            ModelInvocationMode.PANEL,
-            (
-                ModelInvocationCandidate(good.digest(), "panel-member"),
-                ModelInvocationCandidate(failing.digest(), "panel-member"),
-            ),
-            selector="first",
-            minimum_successes=1,
-        )
+def test_partial_success_threshold_continues_when_success_is_still_possible(
+    tmp_path: Path,
+) -> None:
+    failing = _binding("failing", "3")
+    good = _binding("good", "b")
+    admitted = ProjectModelBindingSet((failing, good))
+    clients = (_Client(failing, "unused", fail=True), _Client(good, "recovered"))
+    selectors = ModelResponseSelectorRegistry()
+    selectors.register(
+        "first",
+        lambda request: request.responses[0],
+        implementation_digest="e" * 64,
+    )
+    program = ModelInvocationProgram(
+        "paper.partial-panel",
+        "1",
+        (
+            ModelInvocationCandidate(failing.digest(), "panel-member"),
+            ModelInvocationCandidate(good.digest(), "panel-member"),
+        ),
+        selector="first",
+        minimum_successes=1,
+        target_successes=2,
+    )
+    outcome = _runtime(tmp_path, program, InMemoryMachineJournal()).invoke(
+        run_id="run:partial-success",
+        invocation_id="partial:1",
+        binding_set=admitted,
+        clients=clients,
+        input_digest=canonical_digest({"question": "partial"}),
+        request_factory=_request_factory(tmp_path, run_id="run:partial-success"),
+        selectors=selectors,
+    )
+    assert outcome.selected.text == "recovered"
+    assert outcome.failed_binding_digests == (failing.digest(),)
+    assert tuple(client.calls for client in clients) == (1, 1)
 
 
 def test_completed_model_invocation_reopens_without_provider_reexecution(
@@ -306,7 +326,6 @@ def test_completed_model_invocation_reopens_without_provider_reexecution(
     program = ModelInvocationProgram(
         "paper.single-model",
         "1",
-        ModelInvocationMode.SINGLE,
         (ModelInvocationCandidate(binding.digest()),),
     )
     journal = InMemoryMachineJournal()
@@ -336,3 +355,37 @@ def test_completed_model_invocation_reopens_without_provider_reexecution(
     assert client.calls == 1
     assert second.outcome_digest == first.outcome_digest
     assert second.selected.text == "stable answer"
+
+
+def test_ordered_failover_stops_after_first_success(tmp_path: Path) -> None:
+    first = _binding("fallback-first", "3")
+    second = _binding("fallback-second", "b")
+    third = _binding("fallback-third", "c")
+    admitted = ProjectModelBindingSet((first, second, third))
+    clients = (
+        _Client(first, "unused", fail=True),
+        _Client(second, "recovered"),
+        _Client(third, "must-not-run"),
+    )
+    program = ModelInvocationProgram(
+        "paper.ordered-failover",
+        "1",
+        (
+            ModelInvocationCandidate(first.digest(), "fallback"),
+            ModelInvocationCandidate(second.digest(), "fallback"),
+            ModelInvocationCandidate(third.digest(), "fallback"),
+        ),
+        minimum_successes=1,
+        target_successes=1,
+    )
+    outcome = _runtime(tmp_path, program, InMemoryMachineJournal()).invoke(
+        run_id="run:ordered-failover",
+        invocation_id="fallback:1",
+        binding_set=admitted,
+        clients=clients,
+        input_digest=canonical_digest({"question": "fallback"}),
+        request_factory=_request_factory(tmp_path, run_id="run:ordered-failover"),
+    )
+    assert outcome.selected.text == "recovered"
+    assert outcome.failed_binding_digests == (first.digest(),)
+    assert tuple(client.calls for client in clients) == (1, 1, 0)

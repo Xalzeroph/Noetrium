@@ -61,7 +61,6 @@ from .logical_scheduling_program import (
 from .model_invocation_program import (
     FunctionalModelInvocationRequestFactory,
     ModelInvocationCandidate,
-    ModelInvocationMode,
     ModelInvocationOutcome,
     ModelInvocationProgram,
     ModelInvocationRequestFactoryPort,
@@ -311,7 +310,6 @@ __all__ = [
     "ModelInvocationRuntime",
     "ModelInvocationProgram",
     "ModelInvocationOutcome",
-    "ModelInvocationMode",
     "ModelInvocationCandidate",
     "capability_runtime_operations",
     "capability_runtime_module",

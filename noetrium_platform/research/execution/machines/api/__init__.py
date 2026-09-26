@@ -124,7 +124,6 @@ from ..capability_program import (
 from ..model_invocation_program import (
     FunctionalModelInvocationRequestFactory,
     ModelInvocationCandidate,
-    ModelInvocationMode,
     ModelInvocationOutcome,
     ModelInvocationProgram,
     ModelInvocationRequestFactoryPort,
@@ -323,7 +322,6 @@ __all__ = [
     "MemoryProgramBuilder",
     "MemoryRecord",
     "ModelInvocationCandidate",
-    "ModelInvocationMode",
     "ModelInvocationOutcome",
     "ModelInvocationProgram",
     "ModelInvocationRequestFactoryPort",
