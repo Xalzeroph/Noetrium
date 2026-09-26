@@ -44,6 +44,7 @@ from noetrium_platform.infrastructure.lifecycle.python.api import PythonEnvironm
 from noetrium_platform.capabilities.environment.catalog.api import ExecutionEnvironmentCatalogPort
 from noetrium_platform.infrastructure.resources.container.providers import (
     DockerCliManagedContainerProvider,
+    discover_docker_root,
 )
 from noetrium_platform.infrastructure.resources.container.runtime import (
     DockerContainerLeaseAuthority,
@@ -159,6 +160,20 @@ class LocalModelServiceRuntimeFactory:
         return value.replace("/", "_").replace("\\", "_")
 
 
+
+def discover_local_docker_root(
+    task_group: TaskGroupPort,
+    *,
+    docker_executable: str = "docker",
+) -> Path | None:
+    """Discover Docker storage through the structured control command runner."""
+
+    return discover_docker_root(
+        build_local_command_runner(task_group),
+        docker_executable=docker_executable,
+    )
+
+
 def build_local_management_plane(
     layout: DirectoryLayout,
     *,
@@ -167,8 +182,10 @@ def build_local_management_plane(
     huggingface_cli: str = "hf",
     model_storage_pools: Mapping[str, Path] | None = None,
     task_group: TaskGroupPort,
+    docker_task_group: TaskGroupPort,
 ) -> ManagementPlaneAuthorities:
     local_commands = build_local_command_runner(task_group)
+    docker_commands = build_local_command_runner(docker_task_group)
     gpu_runtime = NvidiaSmiGpuRuntimeObserver(LocalCommandResourceProbe(local_commands))
     host_runtime = LocalHostRuntimeObserver()
     directories = build_local_directory_authorities(layout)
@@ -195,7 +212,7 @@ def build_local_management_plane(
         ownership=meta.resource_ownership,
         leases=meta.resource_leases,
         runtime=DockerCliManagedContainerProvider(
-            local_commands,
+            docker_commands,
             authority_id=docker_authority_id,
         ),
         authority_id=docker_authority_id,
@@ -330,4 +347,10 @@ def bind_local_model_replica_pool(
     )
 
 
-__all__ = ["LocalModelServiceRuntimeFactory", "ManagementPlaneAuthorities", "bind_local_model_replica_pool", "build_local_management_plane"]
+__all__ = [
+    "LocalModelServiceRuntimeFactory",
+    "ManagementPlaneAuthorities",
+    "bind_local_model_replica_pool",
+    "build_local_management_plane",
+    "discover_local_docker_root",
+]

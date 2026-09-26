@@ -55,6 +55,7 @@ class Group:
 class Pool:
     def __init__(self):
         self.group_closed = False
+        self.closed_groups = []
         self.closed = False
         self.workloads_quiesced = False
         self.quiesce_error = None
@@ -66,6 +67,7 @@ class Pool:
 
     def close_orchestration_group(self, group, *, cancel_pending=False, deadline=None):
         self.group_closed = True
+        self.closed_groups.append(group)
         group.closed = True
 
     def close(self, *, deadline=None):
@@ -147,6 +149,7 @@ class RecoveryExecution:
 def runtime():
     pool = Pool()
     group = Group()
+    docker_group = Group()
     controller = Controller()
     fleet = Fleet()
     resource_controller = ResourceController()
@@ -159,6 +162,7 @@ def runtime():
         recovery_execution=RecoveryExecution(),
         services=object(),
         _orchestration_group=group,
+        _docker_group=docker_group,
         _stop=Event(),
         resources=resource_controller,
         _runtime_lock=runtime_lock,
@@ -176,7 +180,10 @@ def runtime():
 
 def test_managed_runtime_owns_background_controller_lifecycle() -> None:
     managed, pool, group, controller, resource_controller, fleet, runtime_lock = runtime()
-    managed.start_background_controllers(model_reconcile_interval_seconds=0.01)
+    managed.start_background_controllers(
+        model_reconcile_interval_seconds=0.01,
+        resource_reconcile_interval_seconds=0.01,
+    )
     assert controller.started.wait(1.0)
     assert resource_controller.started.wait(1.0)
     managed.start_background_controllers(
@@ -194,6 +201,7 @@ def test_managed_runtime_owns_background_controller_lifecycle() -> None:
 
     assert pool.workloads_quiesced is True
     assert pool.group_closed is True
+    assert len(pool.closed_groups) == 2
     assert pool.closed is True
     assert group.closed is True
     assert managed.observability.closed is True

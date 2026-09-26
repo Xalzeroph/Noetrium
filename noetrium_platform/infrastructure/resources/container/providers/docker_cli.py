@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+from pathlib import Path
 from time import monotonic
 
 from noetrium_platform.foundation.kernel.kernel.retry import blocking_wait
@@ -12,6 +13,38 @@ from noetrium_platform.infrastructure.resources.container.api import (
     MANAGED_CONTAINER_LABEL,
     MANAGED_CONTAINER_LABEL_VALUE,
 )
+
+
+def discover_docker_root(
+    runner: DockerCommandRunnerPort,
+    *,
+    docker_executable: str = "docker",
+    command_timeout_seconds: float = 15.0,
+) -> Path | None:
+    """Best-effort discovery of the physical filesystem backing Docker state."""
+
+    if not docker_executable.strip():
+        raise ValueError("Docker executable is required")
+    if command_timeout_seconds <= 0:
+        raise ValueError("Docker command timeout must be positive")
+    result = runner.run(
+        (
+            docker_executable,
+            "info",
+            "--format",
+            "{{.DockerRootDir}}",
+        ),
+        timeout_seconds=float(command_timeout_seconds),
+    )
+    if result.returncode != 0:
+        return None
+    raw = result.stdout.strip()
+    if not raw:
+        return None
+    path = Path(raw).expanduser()
+    if not path.is_absolute():
+        return None
+    return path.absolute()
 
 
 class DockerContainerRuntimeError(RuntimeError):
@@ -175,4 +208,5 @@ class DockerCliManagedContainerProvider(DockerManagedContainerPort):
 __all__ = [
     "DockerCliManagedContainerProvider",
     "DockerContainerRuntimeError",
+    "discover_docker_root",
 ]

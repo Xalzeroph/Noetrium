@@ -16,6 +16,7 @@ from noetrium_platform.foundation.kernel.concurrency.api import (
     ExecutionLaneKind,
     ExecutionSpec,
     TaskHandlePort,
+    TaskGroupPort,
 )
 from noetrium_platform.foundation.kernel.kernel.durability.file_lock import (
     InterprocessFileLock,
@@ -43,12 +44,14 @@ from .model_management import (
     ManagementPlaneAuthorities,
     bind_local_model_replica_pool,
     build_local_management_plane,
+    discover_local_docker_root,
 )
 from .research_execution_pool import ResearchExecutionPool
 from .resource_lifecycle import ManagedResourceReconciler
 from .shared_host_pressure import (
     LocalSharedNetworkPressureObserver,
     LocalSharedStoragePressureObserver,
+    ResourceCompetitionDemand,
     ResourceCompetitionPolicy,
 )
 
@@ -88,7 +91,8 @@ class ManagedResearchRuntime:
     observability: ManagedObservability
     recovery_execution: RecoveryExecutionFactoryPort
     services: ManagedResearchServices
-    _orchestration_group: object
+    _orchestration_group: TaskGroupPort
+    _docker_group: TaskGroupPort
     _stop: Event
     resources: ManagedResourceReconciler
     _runtime_lock: InterprocessFileLock
@@ -103,6 +107,7 @@ class ManagedResearchRuntime:
     _models_stopped: bool = False
     _resources_cleaned: bool = False
     _observability_closed: bool = False
+    _docker_group_closed: bool = False
     _orchestration_closed: bool = False
     _pool_closed: bool = False
     _lock_released: bool = False
@@ -184,6 +189,7 @@ class ManagedResearchRuntime:
         if self._closing:
             raise RuntimeError("managed research runtime is closing")
         self._orchestration_group.assert_healthy()
+        self._docker_group.assert_healthy()
         for controller in (self._model_controller, self._resource_controller):
             if controller is not None and controller.done():
                 controller.result()
@@ -292,6 +298,16 @@ class ManagedResearchRuntime:
                 raise self._close_stage_error("observability shutdown", exc)
             self._observability_closed = True
 
+        if not self._docker_group_closed:
+            try:
+                self.execution_pool.close_orchestration_group(
+                    self._docker_group,
+                    cancel_pending=True,
+                )
+            except BaseException as exc:
+                raise self._close_stage_error("Docker I/O group shutdown", exc)
+            self._docker_group_closed = True
+
         if not self._orchestration_closed:
             try:
                 self.execution_pool.close_orchestration_group(
@@ -377,6 +393,17 @@ def build_local_managed_research_runtime(
             resource_id="platform-runtime-controller",
             priority=ExecutionPriority.CRITICAL,
         )
+        docker_root = discover_local_docker_root(group)
+        docker_group = pool.open_orchestration_group(
+            "managed-research-runtime-docker-io",
+            resource_id="docker-management-io",
+            priority=ExecutionPriority.NORMAL,
+            resource_demand=(
+                ResourceCompetitionDemand(storage_path=docker_root)
+                if docker_root is not None
+                else ResourceCompetitionDemand()
+            ),
+        )
         try:
             management = build_local_management_plane(
                 layout,
@@ -385,6 +412,7 @@ def build_local_managed_research_runtime(
                 huggingface_cli=huggingface_cli,
                 model_storage_pools=model_storage_pools,
                 task_group=group,
+                docker_task_group=docker_group,
             )
             # Startup reconciliation is synchronous and fail-closed. No new
             # workload is admitted until physical owners are converged and then
@@ -398,6 +426,7 @@ def build_local_managed_research_runtime(
             _reconcile_startup_ownership(management, resources)
             model_replica_pool = bind_local_model_replica_pool(management, pool)
         except BaseException:
+            pool.close_orchestration_group(docker_group, cancel_pending=True)
             pool.close_orchestration_group(group, cancel_pending=True)
             raise
         observability = build_managed_observability(
@@ -426,6 +455,7 @@ def build_local_managed_research_runtime(
             recovery_execution=recovery_execution,
             services=services,
             _orchestration_group=group,
+            _docker_group=docker_group,
             _stop=Event(),
             resources=resources,
             _runtime_lock=runtime_lock,

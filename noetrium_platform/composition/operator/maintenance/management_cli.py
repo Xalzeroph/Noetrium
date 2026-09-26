@@ -6,9 +6,19 @@ from pathlib import Path
 import sys
 
 from noetrium_platform.infrastructure.lifecycle.python.api import EnvironmentCommandResult
-from noetrium_platform.composition.model_management import build_local_management_plane
+from noetrium_platform.composition.model_management import (
+    build_local_management_plane,
+    discover_local_docker_root,
+)
 from noetrium_platform.foundation.kernel.concurrency.api import TaskFailurePolicy, TaskGroupPort
-from noetrium_platform.composition.concurrency import build_execution_concurrency_runtime
+from noetrium_platform.research.execution.policy.api import ExecutionPriority
+from noetrium_platform.infrastructure.resources.compute.providers import LocalHostRuntimeObserver
+from noetrium_platform.composition.research_execution_pool import ResearchExecutionPool
+from noetrium_platform.composition.shared_host_pressure import (
+    LocalSharedNetworkPressureObserver,
+    LocalSharedStoragePressureObserver,
+    ResourceCompetitionDemand,
+)
 from noetrium_platform.infrastructure.resources.directory.api import DirectoryLayout
 from noetrium_platform.foundation.kernel.kernel.errors import describe_exception
 from noetrium_platform.foundation.kernel.kernel.durability.file_lock import (
@@ -38,6 +48,7 @@ def _load_context(
     data: dict,
     layout: DirectoryLayout,
     task_group: TaskGroupPort,
+    docker_task_group: TaskGroupPort,
 ) -> ManagementCommandContext:
     base_environment = tuple(sorted((str(k), str(v)) for k, v in data.get("service_environment", {}).items()))
     source_config = data.get("model_sources", {})
@@ -55,6 +66,7 @@ def _load_context(
         huggingface_cli=str(source_config.get("huggingface_cli", "hf")),
         model_storage_pools=storage_pools,
         task_group=task_group,
+        docker_task_group=docker_task_group,
     )
     return ManagementCommandContext(
         plane.scopes,
@@ -89,8 +101,9 @@ def _require_command_success(result):
 def main(argv: list[str] | None = None) -> int:
     args = _build_parser().parse_args(argv)
     runtime_lock: InterprocessFileLock | None = None
-    concurrency_runtime = None
-    task_group = None
+    execution_pool: ResearchExecutionPool | None = None
+    task_group: TaskGroupPort | None = None
+    docker_task_group: TaskGroupPort | None = None
     lock_acquired = False
     try:
         try:
@@ -106,12 +119,38 @@ def main(argv: list[str] | None = None) -> int:
             runtime_lock.__enter__()
             lock_acquired = True
 
-            concurrency_runtime = build_execution_concurrency_runtime()
-            task_group = concurrency_runtime.open_task_group(
+            execution_pool = ResearchExecutionPool(
+                host_runtime_observer=LocalHostRuntimeObserver(),
+                storage_pressure_observer=LocalSharedStoragePressureObserver(
+                    tuple(path for _kind, path in layout.entries())
+                ),
+                network_pressure_observer=LocalSharedNetworkPressureObserver(),
+                exclusive_owner_generation=True,
+            )
+            task_group = execution_pool.open_orchestration_group(
                 "management-cli",
+                resource_id="management-cli-control",
+                priority=ExecutionPriority.CRITICAL,
                 failure_policy=TaskFailurePolicy.COLLECT_ALL,
             )
-            context = _load_context(data, layout, task_group)
+            docker_root = discover_local_docker_root(task_group)
+            docker_task_group = execution_pool.open_orchestration_group(
+                "management-cli-docker-io",
+                resource_id="docker-management-io",
+                priority=ExecutionPriority.NORMAL,
+                resource_demand=(
+                    ResourceCompetitionDemand(storage_path=docker_root)
+                    if docker_root is not None
+                    else ResourceCompetitionDemand()
+                ),
+                failure_policy=TaskFailurePolicy.COLLECT_ALL,
+            )
+            context = _load_context(
+                data,
+                layout,
+                task_group,
+                docker_task_group,
+            )
             result = _require_command_success(DISPATCH[args.group](args, context))
         except (
             KeyError,
@@ -136,10 +175,18 @@ def main(argv: list[str] | None = None) -> int:
     finally:
         # Keep exclusive authority through child/controller convergence. The
         # kernel lock is always the final lifetime object released.
-        if task_group is not None:
-            task_group.close()
-        if concurrency_runtime is not None:
-            concurrency_runtime.close()
+        if execution_pool is not None:
+            if docker_task_group is not None:
+                execution_pool.close_orchestration_group(
+                    docker_task_group,
+                    cancel_pending=True,
+                )
+            if task_group is not None:
+                execution_pool.close_orchestration_group(
+                    task_group,
+                    cancel_pending=True,
+                )
+            execution_pool.close()
         if lock_acquired and runtime_lock is not None:
             runtime_lock.__exit__(None, None, None)
 

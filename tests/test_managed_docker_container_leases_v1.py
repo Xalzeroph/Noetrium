@@ -3,6 +3,7 @@ from __future__ import annotations
 from tests.resource_lease_support import TestResourceLeaseRegistry
 
 import json
+from pathlib import Path
 import pytest
 
 from noetrium_platform.infrastructure.resources.container.api import (
@@ -19,6 +20,7 @@ from noetrium_platform.infrastructure.resources.container.runtime import (
 from noetrium_platform.infrastructure.resources.container.providers import (
     DockerCliManagedContainerProvider,
     DockerContainerRuntimeError,
+    discover_docker_root,
 )
 from noetrium_platform.foundation.scope.api import PLATFORM_SCOPE
 from noetrium_platform.infrastructure.resources.lease.api import (
@@ -574,3 +576,36 @@ def test_managed_docker_daemon_restart_during_reconcile_preserves_lease_authorit
     current = resources.get(handle.lease.lease_id)
     assert current.state is LeaseState.ACTIVE
     assert current.fencing_token == handle.lease.fencing_token
+
+
+class _DockerInfoRunner:
+    def __init__(self, *, returncode: int = 0, stdout: str = "/var/lib/docker\n") -> None:
+        self.returncode = returncode
+        self.stdout = stdout
+        self.calls: list[tuple[tuple[str, ...], float]] = []
+
+    def run(self, argv: tuple[str, ...], *, timeout_seconds: float):
+        from types import SimpleNamespace
+
+        self.calls.append((argv, timeout_seconds))
+        return SimpleNamespace(
+            returncode=self.returncode,
+            stdout=self.stdout,
+            stderr="",
+        )
+
+
+def test_discover_docker_root_uses_runtime_authority_path() -> None:
+    runner = _DockerInfoRunner()
+    assert discover_docker_root(runner) == Path("/var/lib/docker")
+    assert runner.calls == [
+        (("docker", "info", "--format", "{{.DockerRootDir}}"), 15.0)
+    ]
+
+
+def test_discover_docker_root_is_best_effort_for_unavailable_daemon() -> None:
+    assert discover_docker_root(_DockerInfoRunner(returncode=1)) is None
+
+
+def test_discover_docker_root_rejects_non_absolute_daemon_path() -> None:
+    assert discover_docker_root(_DockerInfoRunner(stdout="relative/docker\n")) is None
