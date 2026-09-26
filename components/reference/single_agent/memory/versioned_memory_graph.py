@@ -91,6 +91,11 @@ class VersionedMemoryGraph:
                     dict(payload.get("transform", {})),
                     dict(payload.get("maintenance_contract", {})),
                     dict(payload.get("provenance", {})),
+                    (
+                        None
+                        if payload.get("selector") is None
+                        else dict(payload["selector"])
+                    ),
                 )
             elif operation.operation == "update_node":
                 current = nodes.get(operation.target_id)
@@ -115,6 +120,15 @@ class VersionedMemoryGraph:
                     dict(payload.get("transform", current.transform)),
                     dict(payload.get("maintenance_contract", current.maintenance_contract)),
                     dict(payload.get("provenance", current.provenance)),
+                    (
+                        current.selector
+                        if "selector" not in payload
+                        else (
+                            None
+                            if payload["selector"] is None
+                            else dict(payload["selector"])
+                        )
+                    ),
                 )
             elif operation.operation == "retire_node":
                 current = nodes.get(operation.target_id)
@@ -138,6 +152,7 @@ class VersionedMemoryGraph:
                     current.transform,
                     current.maintenance_contract,
                     current.provenance,
+                    current.selector,
                 )
             elif operation.operation == "create_edge":
                 source_id = str(operation.payload.get("source_id", ""))

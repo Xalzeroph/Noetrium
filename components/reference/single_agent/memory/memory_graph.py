@@ -35,6 +35,7 @@ class MemoryNodeRecord:
     transform: Mapping[str, JsonValue] = field(default_factory=dict)
     maintenance_contract: Mapping[str, JsonValue] = field(default_factory=dict)
     provenance: Mapping[str, JsonValue] = field(default_factory=dict)
+    selector: Mapping[str, JsonValue] | None = None
 
     def __post_init__(self) -> None:
         for name in ("node_id", "kind", "label", "content", "generation"):
@@ -52,6 +53,8 @@ class MemoryNodeRecord:
         for name in ("schema", "transform", "maintenance_contract", "provenance"):
             if not isinstance(getattr(self, name), Mapping):
                 raise TypeError(f"memory node {name} must be a mapping")
+        if self.selector is not None and not isinstance(self.selector, Mapping):
+            raise TypeError("memory node selector must be a mapping or None")
         for name in ("access", "sources"):
             values = getattr(self, name)
             if any(not isinstance(value, str) or not value.strip() for value in values):
