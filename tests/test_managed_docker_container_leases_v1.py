@@ -201,6 +201,38 @@ def test_managed_docker_release_ignores_reused_name_when_exact_generation_was_re
     assert runtime.events == [f"remove:{observed.container_id}"]
 
 
+def test_managed_docker_confirmed_disappearance_releases_lease_and_advances_fence() -> None:
+    resources = TestResourceLeaseRegistry()
+    runtime = FakeDockerRuntime()
+    authority = _authority(resources, runtime)
+    first = _reserve(authority)
+    observed = runtime.start(first)
+    authority.confirm_running(first)
+    runtime.rows.pop(observed.container_id)
+
+    report = authority.reconcile()
+
+    assert report.removed_container_ids == ()
+    assert report.released_lease_ids == (first.lease.lease_id,)
+    assert resources.get(first.lease.lease_id).state is LeaseState.RELEASED
+
+    second = _reserve(authority)
+    assert second.lease.fencing_token > first.lease.fencing_token
+    assert second.container_name != first.container_name
+
+
+def test_managed_docker_prestart_lease_is_not_released_by_reconcile() -> None:
+    resources = TestResourceLeaseRegistry()
+    runtime = FakeDockerRuntime()
+    authority = _authority(resources, runtime)
+    handle = _reserve(authority)
+
+    report = authority.reconcile()
+
+    assert report.released_lease_ids == ()
+    assert resources.get(handle.lease.lease_id).state is LeaseState.ACTIVE
+
+
 def test_managed_docker_crash_expiry_removes_orphan_on_reconcile() -> None:
     clock = ManualLeaseClock(
         elapsed_seconds=1.0,
