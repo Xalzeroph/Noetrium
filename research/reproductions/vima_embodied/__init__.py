@@ -1,8 +1,4 @@
-from .environment import VimaBenchDriverPort, VimaBenchReset, VimaBenchSimulatorBackend, VimaBenchStep, VimaBenchmarkTaskIdentity, VimaCameraReadyFrontendPort, VimaObservationEncoding, VimaPromptEncoding, parse_vima_benchmark_task_id, vima_bench_embodiment_spec, vima_bench_episode, vima_initial_state_from_reset_observation
-from .benchmark import build_vima_icml2023_benchmark
-from .study import build_vima_icml2023_study, vima_icml2023_trial_protocol
-from .fidelity import VIMA_EVAL_PARTITIONS, VIMA_REFERENCE_FIDELITY, VIMA_TASKS, VimaReferenceFidelity
-from .policy import VIMA_POLICY_AGENT_ID, VimaActionBounds, VimaContinuousAction, VimaDiscreteAction, VimaPolicyAgentLoop, VimaPolicyModelPort, VimaPolicyPrediction, VimaPolicyRequest, de_discretize_vima_action
-from .program import vima_initial_state, METHOD_SPEC, METHOD_CONFIGURER, METHOD_ENTRYPOINT, METHOD_CONFIGURER_ARGS, METHOD_CONFIGURER_KWARGS, configure_method
-from .source import SOURCES, VIMA_BENCH_AUDITED_COMMIT, VIMA_BENCH_EXECUTABLE, VIMA_ICML_2023, VIMA_POLICY_AUDITED_COMMIT, VIMA_POLICY_EXECUTABLE
-__all__ = ['VimaBenchDriverPort', 'VimaBenchReset', 'VimaBenchSimulatorBackend', 'VimaBenchStep', 'VimaBenchmarkTaskIdentity', 'VimaCameraReadyFrontendPort', 'VimaObservationEncoding', 'VimaPromptEncoding', 'parse_vima_benchmark_task_id', 'vima_bench_embodiment_spec', 'vima_bench_episode', 'vima_initial_state_from_reset_observation', 'build_vima_icml2023_benchmark', 'build_vima_icml2023_study', 'vima_icml2023_trial_protocol', 'SOURCES', 'VIMA_BENCH_AUDITED_COMMIT', 'VIMA_BENCH_EXECUTABLE', 'VIMA_EVAL_PARTITIONS', 'VIMA_ICML_2023', 'VIMA_POLICY_AGENT_ID', 'VIMA_POLICY_AUDITED_COMMIT', 'VIMA_POLICY_EXECUTABLE', 'VIMA_REFERENCE_FIDELITY', 'VIMA_TASKS', 'VimaActionBounds', 'VimaContinuousAction', 'VimaDiscreteAction', 'VimaPolicyAgentLoop', 'VimaPolicyModelPort', 'VimaPolicyPrediction', 'VimaPolicyRequest', 'VimaReferenceFidelity', 'de_discretize_vima_action', 'vima_initial_state', 'METHOD_SPEC', 'METHOD_CONFIGURER', 'METHOD_ENTRYPOINT', 'METHOD_CONFIGURER_ARGS', 'METHOD_CONFIGURER_KWARGS', 'configure_method']
+"""Paper-local reproduction package; composed only through Research OS."""
+from .definition import REPRODUCTION
+
+__all__ = ("REPRODUCTION",)

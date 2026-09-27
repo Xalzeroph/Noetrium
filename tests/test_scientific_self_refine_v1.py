@@ -1,6 +1,8 @@
 from __future__ import annotations
 
-from research.reproductions.self_refine import SELF_REFINE_FIDELITY
+from research.reproductions.self_refine.fidelity import (
+    SELF_REFINE_FIDELITY,
+)
 
 
 def test_self_refine_mechanism_fidelity_is_frozen() -> None:

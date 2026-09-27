@@ -2,10 +2,14 @@ from __future__ import annotations
 
 import pytest
 
-from research.reproductions.reflexion_alfworld import (
+from research.reproductions.reflexion_alfworld.fidelity import (
     REFLEXION_ALFWORLD_FIDELITY,
-    ReflexionSemanticsError,
+)
+from research.reproductions.reflexion_alfworld.memory import (
     ReflexionTaskState,
+)
+from research.reproductions.reflexion_alfworld.semantics import (
+    ReflexionSemanticsError,
     accept_action_candidate,
     extract_failed_scenario,
     render_reflection_prompt,

@@ -2,8 +2,8 @@
   "schema": "noetrium.reproduction.projection.v10",
   "authority": "generated_from_typed_definition_and_source",
   "package": "agemem_acl2026",
-  "package_digest": "5da115e17e103ee48d623ed9f844d1b69d0077dcf0c3ad801314a3269837b9f8",
-  "definition_digest": "4656452218c3b431bcec6dc8eb8bfad7766146bd8697f2d65a8bd6f41e2d2b14",
+  "package_digest": "7fb56b8f49f97fa5cae17e77eabed422cdf886df90a1218ea9cbf0dbaf3b1913",
+  "definition_digest": "219fe4301eb27246d18e0407181ad1dba31bed0f890805ee90a6fe38384de433",
   "source_registry_digest": "1362c5849fb9e462bb866792b448a978e8f703e4240025eb73a0a8ca00c034c6",
   "lifecycle": "protocol_bound",
   "identity": {
@@ -85,13 +85,13 @@
       "kind": "method_program",
       "path": "research/reproductions/agemem_acl2026/program.py",
       "declaration_digest": "0a96fe07011c7e1cb95fa8a85667e2793e408fd37751b237921ae91572e2d576",
-      "content_sha256": "bb91a4b1a1e76373c7f3b985dcc4f6f5b3cb0978a4b9d291e8284692ae7b0372"
+      "content_sha256": "b59ad1b3b1d004eceb7a7228e2175ad0110843ba308bec6590d95cbebfd5f9c5"
     },
     {
       "kind": "study",
       "path": "research/reproductions/agemem_acl2026/study.py",
       "declaration_digest": "a68e7264467f3972e00c58784cb74949ecf0896b852c12bc8e6759d7fe9b2993",
-      "content_sha256": "471d73fdd58744341366fa7a868c660dbb1b5eb9f29e768bab76a44de99a44c9"
+      "content_sha256": "8203bc339fd2987d2dbaa96d2f1eccd75b835db8c3f5c6c1f9bcb31c43ab7213"
     }
   ],
   "primary_executable": "research/reproductions/agemem_acl2026/program.py",
@@ -171,17 +171,18 @@
     "surface": "noetrium.api",
     "execution_state": "benchmark_authority_required",
     "program_id": "agemem_acl2026",
-    "program_digest": "41fd80571a4e328842394ee6b11bdbd7b84187d1c42f07ede388d44bcb64411f",
+    "program_digest": "81841ffd0f46272c61fd51bd1ab9014757cb8b51cd84903975f87d0243e89245",
     "benchmark_authority": {
       "state": "required",
       "selection_digests": [],
       "blockers": [
-        "ReproductionResearchOSCompileError:benchmark 'agentboard-pddl' has no exact repository or materialized authority"
+        "ReproductionResearchOSCompileError:agemem_acl2026 has multiple Study factories and multiple benchmarks; exact Study-to-benchmark ownership must be paper-owned"
       ]
     },
     "benchmark_split_axis": {
       "required": true,
       "consumers": [
+        "study:build_ablation_matrix",
         "study:build_study"
       ]
     },

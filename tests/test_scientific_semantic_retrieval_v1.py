@@ -14,7 +14,7 @@ from noetrium_platform.evidence.data.query.api import (
     SemanticSimilarityQuery,
 )
 from noetrium_platform.evidence.data.query.runtime import SemanticRetrievalEngine
-from research.reproductions.generative_agents_memory import (
+from research.reproductions.generative_agents_memory.retrieval import (
     GenerativeMemoryNode,
     score_memories,
 )

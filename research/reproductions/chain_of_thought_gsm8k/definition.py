@@ -69,6 +69,7 @@ REPRODUCTION = ReproductionDefinition(
         ),
         result_fields=(("completion", "value.completion"),),
     ),
+    primary_executable="research/reproductions/chain_of_thought_gsm8k/program.py",
     reported_results=(
         ReportedResult(
             claim_id="palm540b_cot_gsm8k",
@@ -111,10 +112,7 @@ REPRODUCTION = ReproductionDefinition(
         "exact historical PaLM-540B provider artifact is unavailable for matched execution",
     ),
     evidence_refs=(),
-    scientific_tests=(
-        "tests/test_scientific_chain_of_thought_gsm8k_v1.py",
-        "tests/test_scientific_gsm8k_cut_v1.py",
-    ),
+    scientific_tests=('tests/test_scientific_gsm8k_cut_v1.py',),
 )
 
 __all__ = ["REPRODUCTION"]

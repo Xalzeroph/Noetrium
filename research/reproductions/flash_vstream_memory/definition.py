@@ -59,8 +59,8 @@ REPRODUCTION = ReproductionDefinition(
             "augmentation-before-context memory composition",
         ),
         platform_owned=(
-            "MemoryMachine journal authority",
-            "MethodProgram and child-memory-machine composition",
+            "Method-owned memory component on the shared Machine journal",
+            "Method aggregate and Method-owned memory-component composition",
             "immutable tensor content references",
             "multimodal model transport",
             "benchmark cut identity",
@@ -71,10 +71,6 @@ REPRODUCTION = ReproductionDefinition(
         ReproductionAssetRef(
             kind=ReproductionAssetKind.FIDELITY,
             path="research/reproductions/flash_vstream_memory/fidelity.py",
-        ),
-        ReproductionAssetRef(
-            kind=ReproductionAssetKind.RESEARCH_PROGRAM,
-            path="research/reproductions/flash_vstream_memory/memory.py",
         ),
         ReproductionAssetRef(
             kind=ReproductionAssetKind.METHOD_PROGRAM,
@@ -167,7 +163,7 @@ REPRODUCTION = ReproductionDefinition(
         "provider to return the structured choice index with its raw output.",
     ),
     evidence_refs=(),
-    scientific_tests=("tests/test_scientific_flash_vstream_memory_v1.py",),
+    scientific_tests=('tests/test_scientific_reproduction_current_surface_v1.py',),
 )
 
 

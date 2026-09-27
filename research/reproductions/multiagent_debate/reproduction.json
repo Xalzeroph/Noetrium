@@ -2,8 +2,8 @@
   "schema": "noetrium.reproduction.projection.v10",
   "authority": "generated_from_typed_definition_and_source",
   "package": "multiagent_debate",
-  "package_digest": "dcae557f6d3c637f7eebb82fc40831322bbb387010ad188e169fc082834e013a",
-  "definition_digest": "3646b03d0929cb39dee125528cbdcd03a7c4848104073744a950f77e9862b8d7",
+  "package_digest": "ad2d32defa31f354973720f873adb8fe0664705efd39d00b368a37af2b19e5c9",
+  "definition_digest": "54c3d55aec2fe17190d87a6602532c5780f698025b0d62e2b60897a6b534f2ea",
   "source_registry_digest": "a444ca49adcadedba1e4bd45f955f057c6810af68c62d3b7782fe033e2d6882a",
   "lifecycle": "protocol_bound",
   "identity": {
@@ -74,13 +74,13 @@
       "kind": "method_program",
       "path": "research/reproductions/multiagent_debate/program.py",
       "declaration_digest": "f85c38f4641b883dd69da42a8615659c398e18cb07111dc7b7011f0f212552cb",
-      "content_sha256": "44a75312407b38801e48252b65d3a65b4a7c6a15b9ed33328f1a26ce10827aad"
+      "content_sha256": "d442d12e691322cad93bca159d35c5737a9fbead5ea25535579f9ead2ad7105a"
     },
     {
       "kind": "study",
       "path": "research/reproductions/multiagent_debate/study.py",
       "declaration_digest": "ce0a875bc86905ad695681b3e2587f10730cfc2d558f55c2d29331f30d376b4c",
-      "content_sha256": "a5d44d771f6f09d0528b7605dd947aafb256ba6f4e3ed36c2dc8217733302166"
+      "content_sha256": "c8dc5ad5dee67ced6b5d1f30ab7e9069c18ed87f689ba6ff08d22ad2a0b5ba5b"
     }
   ],
   "primary_executable": "research/reproductions/multiagent_debate/program.py",
@@ -91,15 +91,15 @@
   "evidence_refs": [],
   "scientific_tests": [
     {
-      "path": "tests/test_scientific_multiagent_debate_fidelity_v1.py",
-      "content_sha256": "ae917370eef786dba485ceaae9f88f6213a54ebb8407410ee367df6d43673d5c"
+      "path": "tests/test_scientific_reproduction_current_surface_v1.py",
+      "content_sha256": "5cae8776ad9aa1c8ae953ba5c3a39ef41dca692a1bcd9c0bd4f173b43e0719db"
     }
   ],
   "research_os": {
     "surface": "noetrium.api",
     "execution_state": "benchmark_authority_required",
     "program_id": "multiagent_debate",
-    "program_digest": "31d0abb6e98ba4a5a9cff6c5be6333625050dd72779579500945b5924081042f",
+    "program_digest": "14a206ee577ca199c07c8209ef3370868ebebf37cb99723ff4f397edbb847ba5",
     "benchmark_authority": {
       "state": "required",
       "selection_digests": [],

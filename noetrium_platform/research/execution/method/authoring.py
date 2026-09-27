@@ -580,6 +580,24 @@ def _adapt_view(
     return wrapped
 
 
+def _adapt_target(
+    handler: Callable[[ResearchMethodCall], str],
+) -> Callable[[MethodNodeRequest], str]:
+    if not callable(handler):
+        raise TypeError("research method target handler must be callable")
+
+    def wrapped(request: MethodNodeRequest) -> str:
+        value = handler(ResearchMethodCall._from_internal(request))
+        if type(value) is not str or not value.strip():
+            raise TypeError("research method dynamic target must be non-empty text")
+        return value
+
+    frozen = getattr(handler, "__noetrium_handler_digest__", None)
+    if type(frozen) is str:
+        setattr(wrapped, "__noetrium_handler_digest__", frozen)
+    return wrapped
+
+
 class ResearchMethodBuilder:
     """Research-OS-owned method authoring surface.
 
@@ -799,6 +817,37 @@ class ResearchMethodBuilder:
         )
         return self
 
+    def dynamic_capability(
+        self,
+        node_id: str,
+        operation: str,
+        capability_ids: tuple[str, ...],
+        target: Callable[[ResearchMethodCall], str],
+        next_nodes: tuple[str, ...] = (),
+        *,
+        effect: str = "non_idempotent",
+        max_visits: int = 1,
+        evidence: tuple[str, ...] = (),
+    ) -> "ResearchMethodBuilder":
+        if type(capability_ids) is not tuple or not capability_ids or any(
+            type(row) is not str or not row.strip() for row in capability_ids
+        ):
+            raise ValueError("research method dynamic capability closure must be non-empty text tuple")
+        if len(capability_ids) != len(set(capability_ids)):
+            raise ValueError("research method dynamic capability closure must be unique")
+        try:
+            effect_class = EffectClass(effect)
+        except ValueError as exc:
+            raise ValueError(f"unknown research method effect policy: {effect!r}") from exc
+        self._runtime_ports.add(MethodRuntimePort.CAPABILITIES)
+        self._capabilities.update(capability_ids)
+        self._builder.dynamic_capability(
+            node_id, operation, capability_ids, _adapt_target(target), next_nodes,
+            effect_class=effect_class, max_visits=max_visits,
+            evidence_obligations=evidence,
+        )
+        return self
+
     def agent(
         self,
         node_id: str,
@@ -818,6 +867,32 @@ class ResearchMethodBuilder:
             next_nodes,
             view_handler=_adapt_view(view),
             max_visits=max_visits,
+            evidence_obligations=evidence,
+        )
+        return self
+
+    def dynamic_agent(
+        self,
+        node_id: str,
+        operation: str,
+        agent_ids: tuple[str, ...],
+        target: Callable[[ResearchMethodCall], str],
+        next_nodes: tuple[str, ...] = (),
+        *,
+        view: Callable[[ResearchMethodCall], Mapping[str, JsonValue]],
+        max_visits: int = 1,
+        evidence: tuple[str, ...] = (),
+    ) -> "ResearchMethodBuilder":
+        if type(agent_ids) is not tuple or not agent_ids or any(
+            type(row) is not str or not row.strip() for row in agent_ids
+        ):
+            raise ValueError("research method dynamic agent closure must be non-empty text tuple")
+        if len(agent_ids) != len(set(agent_ids)):
+            raise ValueError("research method dynamic agent closure must be unique")
+        self._runtime_ports.add(MethodRuntimePort.AGENT_LOOP)
+        self._builder.dynamic_agent(
+            node_id, operation, agent_ids, _adapt_target(target), next_nodes,
+            view_handler=_adapt_view(view), max_visits=max_visits,
             evidence_obligations=evidence,
         )
         return self

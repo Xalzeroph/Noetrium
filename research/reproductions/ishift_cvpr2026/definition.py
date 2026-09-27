@@ -20,6 +20,6 @@ REPRODUCTION=ReproductionDefinition(
         ReferenceBaseline(baseline_id="baseline_05",description="SeeClick"),
         ReferenceBaseline(baseline_id="baseline_06",description="Aguvis"),
     ),
-    blockers=("Matched reproduction requires the pinned iSHIFT code/checkpoint, DINOv2/SAM/base-model revisions and exact benchmark preprocessing.", "Efficiency claims require matched hardware, token accounting and inference traces."),evidence_refs=(),scientific_tests=("tests/test_scientific_frontier_2026_wave_02.py",),
+    blockers=("Matched reproduction requires the pinned iSHIFT code/checkpoint, DINOv2/SAM/base-model revisions and exact benchmark preprocessing.", "Efficiency claims require matched hardware, token accounting and inference traces."),evidence_refs=(),scientific_tests=('tests/test_scientific_reproduction_current_surface_v1.py',),
 )
 __all__=["REPRODUCTION"]

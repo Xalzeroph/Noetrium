@@ -199,7 +199,7 @@ REPRODUCTION = ReproductionDefinition(
         "dependencies and benchmark media under artifact authority.",
     ),
     evidence_refs=(),
-    scientific_tests=("tests/test_scientific_drvideo_v1.py",),
+    scientific_tests=('tests/test_scientific_reproduction_current_surface_v1.py',),
 )
 
 

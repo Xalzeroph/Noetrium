@@ -1,4 +1,6 @@
-from research.reproductions.metagpt_software_company import METAGPT_SOFTWARE_COMPANY_FIDELITY
+from research.reproductions.metagpt_software_company.fidelity import (
+    METAGPT_SOFTWARE_COMPANY_FIDELITY,
+)
 
 
 def test_metagpt_preserves_role_specialized_software_company_sop() -> None:

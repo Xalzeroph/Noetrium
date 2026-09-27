@@ -854,15 +854,14 @@ def build_toolllm_toolbench_method_program(method,
     }
 
 
-    entrypoint = "prepare_retrieval" if retrieval_mode == "retrieved-top5" else "policy"
     builder = method
+    builder.route(
+        "prepare_retrieval",
+        "toolllm.api-retriever.prepare",
+        _prepare_retrieval,
+        ("retrieve", "policy") if retrieval_mode == "retrieved-top5" else ("policy",),
+    )
     if retrieval_mode == "retrieved-top5":
-        builder.route(
-            "prepare_retrieval",
-            "toolllm.api-retriever.prepare",
-            _prepare_retrieval,
-            ("retrieve", "policy"),
-        )
         builder.capability(
             "retrieve",
             "toolllm.api-retriever.query",
@@ -962,7 +961,7 @@ def build_toolllm_toolbench_method_program(method,
 
 
 METHOD_CONFIGURER = build_toolllm_toolbench_method_program
-METHOD_ENTRYPOINT = entrypoint
+METHOD_ENTRYPOINT = "prepare_retrieval"
 METHOD_CONFIGURER_ARGS = ()
 METHOD_CONFIGURER_KWARGS = {}
 
@@ -974,3 +973,7 @@ __all__ = [
     'METHOD_CONFIGURER_ARGS',
     'METHOD_CONFIGURER_KWARGS',
 ]
+
+METHOD_SPEC = {"method_id": 'toolllm', "version": "paper-protocol", "semantic_contract": 'toolllm' + ".method.v2", "entrypoint": METHOD_ENTRYPOINT}
+
+__all__ = tuple(dict.fromkeys((*__all__, "METHOD_SPEC")))

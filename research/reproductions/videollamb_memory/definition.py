@@ -57,7 +57,7 @@ REPRODUCTION = ReproductionDefinition(
             "streaming semantic-segment recurrence",
         ),
         platform_owned=(
-            "MemoryMachine journal authority",
+            "Method-owned memory component on the shared Machine journal",
             "immutable multimodal content identity",
             "model execution and transport",
             "benchmark cut identity",
@@ -67,12 +67,12 @@ REPRODUCTION = ReproductionDefinition(
     ),
     assets=(
         ReproductionAssetRef(
-            kind=ReproductionAssetKind("fidelity"),
-            path="research/reproductions/videollamb_memory/fidelity.py",
+            kind=ReproductionAssetKind("method_program"),
+            path="research/reproductions/videollamb_memory/program.py",
         ),
         ReproductionAssetRef(
-            kind=ReproductionAssetKind("research_program"),
-            path="research/reproductions/videollamb_memory/memory.py",
+            kind=ReproductionAssetKind("fidelity"),
+            path="research/reproductions/videollamb_memory/fidelity.py",
         ),
         ReproductionAssetRef(
             kind=ReproductionAssetKind("benchmark"),
@@ -87,7 +87,7 @@ REPRODUCTION = ReproductionDefinition(
             path="research/reproductions/videollamb_memory/source.py",
         ),
     ),
-    primary_executable="research/reproductions/videollamb_memory/memory.py",
+    primary_executable="research/reproductions/videollamb_memory/program.py",
     reported_results=(
         ReportedResult(
             claim_id="videollamb_videoqa_gain",
@@ -136,7 +136,7 @@ REPRODUCTION = ReproductionDefinition(
         "and exact video assets in content-addressed authority.",
     ),
     evidence_refs=(),
-    scientific_tests=("tests/test_scientific_videollamb_memory_v1.py",),
+    scientific_tests=('tests/test_scientific_reproduction_current_surface_v1.py',),
 )
 
 

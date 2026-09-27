@@ -15,6 +15,6 @@ REPRODUCTION=ReproductionDefinition(
         ReferenceBaseline(baseline_id="baseline_02",description="short-context visual policy"),
         ReferenceBaseline(baseline_id="baseline_03",description="paper lifelong navigation baselines"),
     ),
-    blockers=("Matched reproduction requires the pinned AstraNav checkpoints/training code and exact GOAT-Bench/HM3D-OVON releases.", "Navigation-efficiency claims require closed-loop simulator execution and path-metric receipts."),evidence_refs=(),scientific_tests=("tests/test_scientific_frontier_2026_wave_02.py",),
+    blockers=("Matched reproduction requires the pinned AstraNav checkpoints/training code and exact GOAT-Bench/HM3D-OVON releases.", "Navigation-efficiency claims require closed-loop simulator execution and path-metric receipts."),evidence_refs=(),scientific_tests=('tests/test_scientific_reproduction_current_surface_v1.py',),
 )
 __all__=["REPRODUCTION"]

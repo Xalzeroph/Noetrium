@@ -3,6 +3,7 @@ from __future__ import annotations
 from types import SimpleNamespace
 
 from noetrium import api
+from noetrium_platform.product import research_os as product_research_os
 from noetrium_platform.foundation.governance.architecture.api import CompositionSubject
 from noetrium_platform.foundation.governance.system_registry.api import SystemIdentity
 from noetrium_platform.research.experimentation.api import ResearchParticipantRequirement
@@ -15,26 +16,26 @@ from research.reproductions.auto_materializer import (
     _method_requirement_implementation_digest,
 )
 from research.reproductions.chain_of_thought_gsm8k.program import (
-    CHAIN_OF_THOUGHT_GSM8K_METHOD_PROGRAM,
+    METHOD_CONFIGURER, METHOD_ENTRYPOINT, METHOD_SPEC,
 )
 
 
 def _lane():
-    builder = api.research_os.ResearchProgramBuilder("auto-materializer-test")
-    builder.method_program(
-        "method",
-        module="research.reproductions.chain_of_thought_gsm8k.program",
-        qualname="CHAIN_OF_THOUGHT_GSM8K_METHOD_PROGRAM",
+    root = api.ResearchPortfolioBuilder("auto-materializer-test")
+    builder = root.program("auto-materializer-test")
+    builder.method(
+        "method", METHOD_CONFIGURER,
+        method_id=METHOD_SPEC["method_id"],
+        entrypoint=METHOD_ENTRYPOINT,
+        version=METHOD_SPEC["version"],
+        semantic_contract=METHOD_SPEC["semantic_contract"],
     )
     builder.method_node("run", definitions=("method",))
-    return SimpleNamespace(program=builder.freeze())
+    return SimpleNamespace(program=root.freeze().programs[0])
 
 
 def _requirement() -> ResearchParticipantRequirement:
-    method_id = (
-        CHAIN_OF_THOUGHT_GSM8K_METHOD_PROGRAM
-        .program_identity.implementation.method_id
-    )
+    method_id = METHOD_SPEC["method_id"]
     return ResearchParticipantRequirement(
         role="reasoner",
         participant_kind="agent_method",

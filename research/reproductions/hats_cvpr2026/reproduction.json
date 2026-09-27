@@ -2,8 +2,8 @@
   "schema": "noetrium.reproduction.projection.v10",
   "authority": "generated_from_typed_definition_and_source",
   "package": "hats_cvpr2026",
-  "package_digest": "38e254b22ac85273f8b8d1c06c0ab82ff08dfafea7b1e830f474d7eb680800b0",
-  "definition_digest": "730c6c09f3a04599fa35dfaf6f0b5d3f9b95fbe38d58eeca34eee1070af35ba2",
+  "package_digest": "991c1d53bd1ca47f366af6c876ea59ec298766c2ac6586fc6fd0d0e051bcee5b",
+  "definition_digest": "f120592c80f93c13af033f437bcde2e548626655cb914c781a53aa9da67c2b85",
   "source_registry_digest": "6ded210c5feb62419b23855eed7f730eaf0c375454a28473e6137c2d262643f8",
   "lifecycle": "protocol_bound",
   "identity": {
@@ -97,13 +97,13 @@
       "kind": "method_program",
       "path": "research/reproductions/hats_cvpr2026/program.py",
       "declaration_digest": "e8e706dd6a22a3c752a21313cb51491c514e1fc17b116bf2098e3649a65ecec3",
-      "content_sha256": "f47242c538d30795c56a745c0372926b79993f0c2485a714361fb6eaa52fca51"
+      "content_sha256": "36251239e3b962c4cc3f7da8178a508c5a06805c2e70df69acd54dc8a47242bc"
     },
     {
       "kind": "study",
       "path": "research/reproductions/hats_cvpr2026/study.py",
       "declaration_digest": "3127b63ac482d8354cb6268a0d3d0e0f3d36e632d8e0249d042d67212aed7d29",
-      "content_sha256": "54d72d3fdcc14e17d72b6595d051e1611e4d7ce52a5c1d733d5b072d9c034af7"
+      "content_sha256": "cc6204277e67308ce26b15705397c688d720456637f6f7ab474b7a5d2a100699"
     }
   ],
   "primary_executable": "research/reproductions/hats_cvpr2026/program.py",
@@ -157,25 +157,26 @@
   "evidence_refs": [],
   "scientific_tests": [
     {
-      "path": "tests/test_scientific_frontier_2026_wave_02.py",
-      "content_sha256": "24b94183020cd24bd2b462fe8dc339d108dd405ec2a878c89bbfc4163f912a32"
+      "path": "tests/test_scientific_reproduction_current_surface_v1.py",
+      "content_sha256": "5cae8776ad9aa1c8ae953ba5c3a39ef41dca692a1bcd9c0bd4f173b43e0719db"
     }
   ],
   "research_os": {
     "surface": "noetrium.api",
     "execution_state": "benchmark_authority_required",
     "program_id": "hats_cvpr2026",
-    "program_digest": "c18579ef259c970d3bf12b57ab7cf8383a6dec750999734ed065ec9cf495e737",
+    "program_digest": "7840b4c145ff9e08b0391e4443405efa7e9cb3c4fdc0f678bf7a3ca2d0a82df8",
     "benchmark_authority": {
       "state": "required",
       "selection_digests": [],
       "blockers": [
-        "ReproductionResearchOSCompileError:benchmark 'androidworld' has no exact repository or materialized authority"
+        "ReproductionResearchOSCompileError:hats_cvpr2026 has multiple Study factories and multiple benchmarks; exact Study-to-benchmark ownership must be paper-owned"
       ]
     },
     "benchmark_split_axis": {
       "required": true,
       "consumers": [
+        "study:build_ablation_matrix",
         "study:build_study"
       ]
     },

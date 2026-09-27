@@ -2,8 +2,8 @@
   "schema": "noetrium.reproduction.projection.v10",
   "authority": "generated_from_typed_definition_and_source",
   "package": "agentless_swebench",
-  "package_digest": "1e214dd8c52b12421896b368aebfacebb7297c06f57ac7a2c5eb52a39650169f",
-  "definition_digest": "a524a3b376569393b5288022c9b83d133898b4316cb95a6c86c17792d2fbbcb8",
+  "package_digest": "d59e8c7cc2b3f6d318b9505e984d2352491196e92e33d5233e7bf9c333f3ea91",
+  "definition_digest": "cc8b3dcfc678d308565fca021c0216bef8e58cff6be125684e2cab444c823488",
   "source_registry_digest": "6c3f3a35e76b0138dfbc16be29a802509c86aa537b696a15da6f10d9b8a8dedf",
   "lifecycle": "protocol_bound",
   "identity": {
@@ -96,13 +96,13 @@
       "kind": "method_program",
       "path": "research/reproductions/agentless_swebench/program.py",
       "declaration_digest": "376923edfcaced9dfbd6cd1f5220bd98bdaacc41d57934c4bff7e32458cb537b",
-      "content_sha256": "2e5f33c0671954d52f07cab799c059cc158d2646e7eda3c57c373af2f577955d"
+      "content_sha256": "f71cd302061a376710b5743d5561346cf2b806b5d430f1647c67f05a5d2d796b"
     },
     {
       "kind": "study",
       "path": "research/reproductions/agentless_swebench/study.py",
       "declaration_digest": "7a13492a0a96db23163b6a3816773ae352ec79bfcb180a0ec880214e6ca9c479",
-      "content_sha256": "564ce6e133f91d0bdb105768f2e8b707ae4b4ba35a0d72a1269161571012bf32"
+      "content_sha256": "c7da7c1a1f7e03fe8456fd9195575522f6bbe8ebe500437a209d114136a9ccb5"
     }
   ],
   "primary_executable": "research/reproductions/agentless_swebench/program.py",
@@ -144,15 +144,15 @@
   "evidence_refs": [],
   "scientific_tests": [
     {
-      "path": "tests/test_scientific_agentless_method_program_v1.py",
-      "content_sha256": "cd45ccf54064c74f844926d7f7352ad6edcfe91ca74b104f50f671404f3f5bf0"
+      "path": "tests/test_scientific_reproduction_current_surface_v1.py",
+      "content_sha256": "5cae8776ad9aa1c8ae953ba5c3a39ef41dca692a1bcd9c0bd4f173b43e0719db"
     }
   ],
   "research_os": {
     "surface": "noetrium.api",
     "execution_state": "benchmark_authority_required",
     "program_id": "agentless_swebench",
-    "program_digest": "a8e9a62ab0a48bfb6a66681b50a07ff02bfe052f5b47b8c4ffd32d1acc9f428a",
+    "program_digest": "69dc836622e742d19f63decfa26e1b66ebc6ae3007bf4ba66eb7b84d8a8fc73f",
     "benchmark_authority": {
       "state": "required",
       "selection_digests": [],

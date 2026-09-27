@@ -34,10 +34,6 @@ REPRODUCTION = ReproductionDefinition(
     ),
     assets=(
         ReproductionAssetRef(
-            kind=ReproductionAssetKind('support'),
-            path='research/reproductions/qlass_alfworld/branch.py',
-        ),
-        ReproductionAssetRef(
             kind=ReproductionAssetKind('fidelity'),
             path='research/reproductions/qlass_alfworld/fidelity.py',
         ),
@@ -50,6 +46,7 @@ REPRODUCTION = ReproductionDefinition(
             path='research/reproductions/qlass_alfworld/study.py',
         ),
     ),
+    primary_executable="research/reproductions/qlass_alfworld/program.py",
     reported_results=(
         ReportedResult(
             claim_id="qlass_alfworld_seen_reward",
@@ -109,7 +106,7 @@ REPRODUCTION = ReproductionDefinition(
     ),
     blockers=('paper-era source cut contains no executable training/evaluation implementation', 'released policy and Q-Net model artifact revisions are not yet content-addressed in Noetrium', 'matched ALFWorld dev deployment remains to be bound', 'released launcher references undefined explore_model_name when passing --model_name', 'released four-slice evaluator maps CUDA devices to 1,2,3,4 while the documented four-GPU server allocation is 0,1,2,3'),
     evidence_refs=(),
-    scientific_tests=('tests/test_scientific_qlass_alfworld_v1.py', 'tests/test_scientific_qlass_method_program_v1.py'),
+    scientific_tests=('tests/test_scientific_reproduction_current_surface_v1.py',),
 )
 
 __all__ = ["REPRODUCTION"]

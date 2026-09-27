@@ -2,8 +2,8 @@
   "schema": "noetrium.reproduction.projection.v10",
   "authority": "generated_from_typed_definition_and_source",
   "package": "self_consistency_gsm8k",
-  "package_digest": "311f3794691edc25fc87bc1c79fb170f11b39fd34adbfa803f435f9ecc6af983",
-  "definition_digest": "9eed35b1b81187543f3b15179b22f4154694fa7e5c06a4a6d0853bd335e6e9a6",
+  "package_digest": "b29502a0173a9992662786ea0fcf76cc412c2c65d8a47a5e6861d34a674d7615",
+  "definition_digest": "e419d65e5791838150ec857f367e92366f9059dd86a090c2f63adf8838144921",
   "source_registry_digest": "72ea8a4a07d5b07a444cd7d422268751cc97e457ce8b1d3bf424098892c6205f",
   "lifecycle": "protocol_bound",
   "identity": {
@@ -80,13 +80,13 @@
       "kind": "method_program",
       "path": "research/reproductions/self_consistency_gsm8k/program.py",
       "declaration_digest": "8a0e0c3a859b215fb5d93cb3d5325d7145a18e1851f027e74f2c78c4db032ced",
-      "content_sha256": "e9b4e334bb0a4335d0ceaf06c15ae06aae4490f05e14857b03de4a7fd50e24d7"
+      "content_sha256": "34722de39d7aed361bdb5c2620907e4b7bd3cacc9637657328623cad4e032f05"
     },
     {
       "kind": "study",
       "path": "research/reproductions/self_consistency_gsm8k/study.py",
       "declaration_digest": "d366ae76f9b5a81557b8b9ab0368a4f7fc77f4605eeeb7d7c31f7a57b46b474f",
-      "content_sha256": "c068508bbf26e3d9e024fa7aa4639c3212b2e0c01b60a4f1087536f4c241f870"
+      "content_sha256": "1a332f39f4502e33f11ebbf60a13edca6dcc8db9e3977e66c575b702683700ea"
     }
   ],
   "primary_executable": "research/reproductions/self_consistency_gsm8k/program.py",
@@ -148,17 +148,13 @@
     {
       "path": "tests/test_scientific_gsm8k_cut_v1.py",
       "content_sha256": "2eb8c88dd0cfa686ed3b0ad005f034dd3f26d557b322394c57f611847335297c"
-    },
-    {
-      "path": "tests/test_scientific_self_consistency_gsm8k_v1.py",
-      "content_sha256": "d6cc6e3617bc3696609c5dce02f75b5638e3d8140b5f2365a9a2ca234181a0f8"
     }
   ],
   "research_os": {
     "surface": "noetrium.api",
     "execution_state": "benchmark_authority_required",
     "program_id": "self_consistency_gsm8k",
-    "program_digest": "681c10ab2e3265fa4919e4e8f826d3fc70a08ab98bb88d98e1a6dbb935547799",
+    "program_digest": "1244238d295b0d0849af2aacf88cf49e59f296e1646062a02f8cc306384b131e",
     "benchmark_authority": {
       "state": "required",
       "selection_digests": [],

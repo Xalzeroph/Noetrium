@@ -1,5 +1,4 @@
+"""Paper-local reproduction package; composed only through Research OS."""
 from .definition import REPRODUCTION
-from .fidelity import DEPS_MINECRAFT_FIDELITY, DEPSMinecraftFidelity
-from .program import DEPSGoal, DEPSGoalSelection, DEPSPlannerAgentLoop, DEPSPlannerMode, DEPSPlannerPort, DEPSPlannerRequest, DEPSPlannerResponse, DEPSSelectorAgentLoop, DEPSSelectorPort, DEPSSelectorRequest, deps_minecraft_initial_state, deps_should_replan, METHOD_SPEC, METHOD_CONFIGURER, METHOD_ENTRYPOINT, METHOD_CONFIGURER_ARGS, METHOD_CONFIGURER_KWARGS, configure_method
-from .source import DEPS_NEURIPS_2023, DEPS_OFFICIAL_EXECUTABLE, DEPS_RELEASE_COMMIT, DEPS_REPLAN_SEMANTICS, DEPS_REPLAN_SEMANTICS_COMMIT, SOURCES
-__all__ = ['DEPSGoal', 'DEPSGoalSelection', 'DEPSMinecraftFidelity', 'DEPSPlannerAgentLoop', 'DEPSPlannerMode', 'DEPSPlannerPort', 'DEPSPlannerRequest', 'DEPSPlannerResponse', 'DEPSSelectorAgentLoop', 'DEPSSelectorPort', 'DEPSSelectorRequest', 'DEPS_MINECRAFT_FIDELITY', 'DEPS_NEURIPS_2023', 'DEPS_OFFICIAL_EXECUTABLE', 'DEPS_RELEASE_COMMIT', 'DEPS_REPLAN_SEMANTICS', 'DEPS_REPLAN_SEMANTICS_COMMIT', 'REPRODUCTION', 'SOURCES', 'deps_minecraft_initial_state', 'deps_should_replan', 'METHOD_SPEC', 'METHOD_CONFIGURER', 'METHOD_ENTRYPOINT', 'METHOD_CONFIGURER_ARGS', 'METHOD_CONFIGURER_KWARGS', 'configure_method']
+
+__all__ = ("REPRODUCTION",)

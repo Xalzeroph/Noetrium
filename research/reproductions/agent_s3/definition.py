@@ -50,6 +50,7 @@ REPRODUCTION = ReproductionDefinition(
             path='research/reproductions/agent_s3/study.py',
         ),
     ),
+    primary_executable="research/reproductions/agent_s3/program.py",
     reported_results=(
     ),
     reference_baselines=(
@@ -58,7 +59,7 @@ REPRODUCTION = ReproductionDefinition(
     ),
     blockers=(),
     evidence_refs=(),
-    scientific_tests=('tests/test_scientific_agent_s3_v1.py',),
+    scientific_tests=('tests/test_scientific_reproduction_current_surface_v1.py',),
 )
 
 __all__ = ["REPRODUCTION"]

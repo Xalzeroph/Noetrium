@@ -48,6 +48,6 @@ REPRODUCTION = ReproductionDefinition(
         "Matched execution additionally requires scene sensor streams, Habitat runtime identity and exact VLM checkpoints.",
     ),
     evidence_refs=(),
-    scientific_tests=("tests/test_scientific_recent_2025_2026_wave_v1.py",),
+    scientific_tests=('tests/test_scientific_reproduction_current_surface_v1.py',),
 )
 __all__ = ["REPRODUCTION"]

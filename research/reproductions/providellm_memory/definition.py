@@ -53,7 +53,7 @@ REPRODUCTION = ReproductionDefinition(
             "tau-window duplicate suppression for verbalized observations",
         ),
         platform_owned=(
-            "MemoryMachine journal authority",
+            "Method-owned memory component on the shared Machine journal",
             "multimodal provider execution",
             "artifact and evidence identity",
             "benchmark cut identity",
@@ -62,12 +62,12 @@ REPRODUCTION = ReproductionDefinition(
     ),
     assets=(
         ReproductionAssetRef(
-            kind=ReproductionAssetKind.FIDELITY,
-            path="research/reproductions/providellm_memory/fidelity.py",
+            kind=ReproductionAssetKind("method_program"),
+            path="research/reproductions/providellm_memory/program.py",
         ),
         ReproductionAssetRef(
-            kind=ReproductionAssetKind.RESEARCH_PROGRAM,
-            path="research/reproductions/providellm_memory/memory.py",
+            kind=ReproductionAssetKind.FIDELITY,
+            path="research/reproductions/providellm_memory/fidelity.py",
         ),
         ReproductionAssetRef(
             kind=ReproductionAssetKind.BENCHMARK,
@@ -82,7 +82,7 @@ REPRODUCTION = ReproductionDefinition(
             path="research/reproductions/providellm_memory/source.py",
         ),
     ),
-    primary_executable="research/reproductions/providellm_memory/memory.py",
+    primary_executable="research/reproductions/providellm_memory/program.py",
     reported_results=(
         ReportedResult(
             claim_id="providellm_goalstep_val_map",
@@ -201,7 +201,7 @@ REPRODUCTION = ReproductionDefinition(
         "additional dataset/task authorities remain to be bound.",
     ),
     evidence_refs=(),
-    scientific_tests=("tests/test_scientific_providellm_memory_v1.py",),
+    scientific_tests=('tests/test_scientific_reproduction_current_surface_v1.py',),
 )
 
 

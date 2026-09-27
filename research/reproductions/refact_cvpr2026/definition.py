@@ -13,6 +13,6 @@ REPRODUCTION=ReproductionDefinition(
         ReferenceBaseline(baseline_id="baseline_01",description="base multimodal web-search agent"),
         ReferenceBaseline(baseline_id="baseline_02",description="final-paper web-agent baselines"),
     ),
-    blockers=("Matched execution requires the released GroundedVQA cut, reproducible web state, prompts/model snapshot and grounding implementation.", "Final quantitative claims require paper-table extraction plus real multimodal web execution receipts."),evidence_refs=(),scientific_tests=("tests/test_scientific_frontier_2026_wave_01.py",),
+    blockers=("Matched execution requires the released GroundedVQA cut, reproducible web state, prompts/model snapshot and grounding implementation.", "Final quantitative claims require paper-table extraction plus real multimodal web execution receipts."),evidence_refs=(),scientific_tests=('tests/test_scientific_frontier_2026_wave_01.py',),
 )
 __all__=["REPRODUCTION"]

@@ -2,8 +2,8 @@
   "schema": "noetrium.reproduction.projection.v10",
   "authority": "generated_from_typed_definition_and_source",
   "package": "ai_scientist_v2",
-  "package_digest": "736a00ffbae9d461165fa8d08b5df3b43461d025a0c6753c443177ac21ab0986",
-  "definition_digest": "1bfcc745714aaf65b59fe3d433b1cdd9a6dcf89f650074569ac8004bff6bf05a",
+  "package_digest": "af0f970bfccf19a01e3262d9c414f94a4de3d3115496eeee9ab014042a81f567",
+  "definition_digest": "84f5f115f0090276c3f0757aefdecfc42407a33429e351afd2e0e7ad9fec07a9",
   "source_registry_digest": "0ba41ff21396466d2e103ece37338556348fc01042d19e30880251b518d9bea2",
   "lifecycle": "catalogued",
   "identity": {
@@ -87,7 +87,7 @@
   "scientific_tests": [
     {
       "path": "tests/test_scientific_ai_scientist_family_v1.py",
-      "content_sha256": "b1d58e81f16a1126e1b3d9c7a473b3f23b28837cb68ef4f83434e1241487bf88"
+      "content_sha256": "35113267b75a45d15734e401f0164cc3c71716b6ee730ac62e3770a12d43e117"
     }
   ],
   "research_os": {

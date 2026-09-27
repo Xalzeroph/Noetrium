@@ -2,8 +2,8 @@
   "schema": "noetrium.reproduction.projection.v10",
   "authority": "generated_from_typed_definition_and_source",
   "package": "ui_tars_desktop_v001",
-  "package_digest": "ec3ee28eecb4efa8307c45104f2c2304fbb8d25d151d9979862d8477c3274256",
-  "definition_digest": "b727da12acd74c46bfc6227a712a2b0ec9e1315c89e10ebf370bbbf9aa7aee77",
+  "package_digest": "3c988bd7e280cf128db4ce1cc733e21c87a11c97926de7e6ac9675fd3873f9db",
+  "definition_digest": "684fd40ca6452dc836264343c11dd029d322ab2193a2cffaf415542d66d9a724",
   "source_registry_digest": "c7505a81ddcc5278a50aea896538f01d33110fb19d48872fa2f45a553c1a3768",
   "lifecycle": "protocol_bound",
   "identity": {
@@ -76,13 +76,13 @@
       "kind": "method_program",
       "path": "research/reproductions/ui_tars_desktop_v001/program.py",
       "declaration_digest": "b9ed650c5dc288b474f47fab64f94534faa29f417cb4ac4ed4c6f2d8edbdc1d0",
-      "content_sha256": "95b6e6282c45b5d2f55fb5a9f66206d495127d1bcfb9d8f9d02d939762876d0b"
+      "content_sha256": "33383d00b44cce49c493a789a159dac5c45523bc311b07d78e2b82a10980a2bf"
     },
     {
       "kind": "study",
       "path": "research/reproductions/ui_tars_desktop_v001/study.py",
       "declaration_digest": "9fd2b6c8975087479d4bdc333f3b7abb89192d6724346fb8a4b9884b087ea626",
-      "content_sha256": "d64989d5d28105d3822ad0ca8a806ce1a5ec1d47eee69c390a378917abe317da"
+      "content_sha256": "07b201b579988992fc57622ba193c8069bead088a42e23d6dadf0b44b7173347"
     },
     {
       "kind": "support",
@@ -102,18 +102,14 @@
   "scientific_tests": [
     {
       "path": "tests/test_scientific_ui_tars_desktop_v001.py",
-      "content_sha256": "08ffe3c3e48b30318e8f70e2fa8af41f8f4698505a67c6c0eeb502fd5d140167"
-    },
-    {
-      "path": "tests/test_scientific_ui_tars_method_program_v1.py",
-      "content_sha256": "598b7260d6a1d5daedf7e50459061756db632a5481a9f38416765096e76fb197"
+      "content_sha256": "9519247a3a7f485d8d5f58acc2032dcb22cc90e5932d2cd053f920dfceb7c29d"
     }
   ],
   "research_os": {
     "surface": "noetrium.api",
     "execution_state": "benchmark_authority_required",
     "program_id": "ui_tars_desktop_v001",
-    "program_digest": "706a2914b2e3d8c3250de719497ce28235ebcabf79424424cf217632b18d22ea",
+    "program_digest": "255868b8c6fe0634c563fd7030e803fdb63fb402d51040ab131fbf28627e7ab9",
     "benchmark_authority": {
       "state": "required",
       "selection_digests": [],

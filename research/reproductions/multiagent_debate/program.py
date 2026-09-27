@@ -249,3 +249,7 @@ __all__ = [
     'METHOD_CONFIGURER_ARGS',
     'METHOD_CONFIGURER_KWARGS',
 ]
+
+METHOD_SPEC = {"method_id": 'multiagent-debate', "version": "paper-protocol", "semantic_contract": 'multiagent-debate' + ".method.v2", "entrypoint": METHOD_ENTRYPOINT}
+
+__all__ = tuple(dict.fromkeys((*__all__, 'METHOD_SPEC')))

@@ -2,8 +2,8 @@
   "schema": "noetrium.reproduction.projection.v10",
   "authority": "generated_from_typed_definition_and_source",
   "package": "minedojo",
-  "package_digest": "7b76d5148b794529bae414a2afe5720bb396da736d2537bbf6b7d17e71ca1969",
-  "definition_digest": "859f1c1220814ec7377557548db8c0a5703d0ebd323a8be89adff59072207a5e",
+  "package_digest": "8c2dd2ba4e8e354d8d4fa1c3c980fb4eff60eec193d6d52636f6359fbdca458f",
+  "definition_digest": "2833346b16fba44a9a8dfe5b5e3cfdf2c72021abc8d1cae868b7ee9526ddbea8",
   "source_registry_digest": "4e2bb1c63f4746aac56e56ee71551b01971ab4476cff7f802b1806783b01b3b1",
   "lifecycle": "protocol_bound",
   "identity": {
@@ -122,19 +122,13 @@
       "kind": "method_program",
       "path": "research/reproductions/minedojo/program.py",
       "declaration_digest": "421ce9ae94216aa14c9a506f46af015655f801c606d339cec0175fcdff47196c",
-      "content_sha256": "c35fbb733ec9571fb63a271e2358073c50175e0329b542ea163d7d84a300a047"
-    },
-    {
-      "kind": "semantics",
-      "path": "research/reproductions/minedojo/reward.py",
-      "declaration_digest": "20371c53cce7dd83428151834edcd26bd86599fc9fb48098d566094ea52d8086",
-      "content_sha256": "dadb54fc5e9f5df79223ec88c3ce1d010545cee47329b3e86cfa857583532b06"
+      "content_sha256": "813a8f356b2ef538ed24b617c0e47f4171fcda384f6c29b3c9109e51af8619f3"
     },
     {
       "kind": "study",
       "path": "research/reproductions/minedojo/study.py",
       "declaration_digest": "33ff80cc5a2d51de0beeacbf583c12052d3eb088fe8ca396055b5237e4979985",
-      "content_sha256": "a307f69f7a1d995e715336e01c9b0fae0fe41012f84eaeedd342a3925811ab03"
+      "content_sha256": "050db3fb4cdf74145d70c36a110290e6c6f8d652693f768095cf85afcd808444"
     },
     {
       "kind": "support",
@@ -231,17 +225,13 @@
     {
       "path": "tests/test_scientific_minedojo_materializer_v1.py",
       "content_sha256": "e35127fe5d4da2bab478c62edd34465f49c906b0236f8cc9828d5224db110d26"
-    },
-    {
-      "path": "tests/test_scientific_minedojo_v1.py",
-      "content_sha256": "0cc87f33026046a48ca939e5bc39f6a80e81eb7fed29a5819d6e86832ca5b1ec"
     }
   ],
   "research_os": {
     "surface": "noetrium.api",
     "execution_state": "benchmark_authority_required",
     "program_id": "minedojo",
-    "program_digest": "a7dc5389b1bf5bc6c86be9124e4de3bb480ac04dccf624a2d355e111b23915cb",
+    "program_digest": "3fd722a72b37480d757db4f2aa31733f2fee575ca1c0b039589077e6c893b101",
     "benchmark_authority": {
       "state": "required",
       "selection_digests": [],

@@ -46,6 +46,7 @@ REPRODUCTION = ReproductionDefinition(
             path='research/reproductions/agent_q_surrogate/study.py',
         ),
     ),
+    primary_executable="research/reproductions/agent_q_surrogate/program.py",
     reported_results=(
     ),
     reference_baselines=(
@@ -70,7 +71,7 @@ REPRODUCTION = ReproductionDefinition(
     ),
     blockers=('author-official Agent Q executable source remains unresolved', 'paper WebShop benchmark source revision and exact 11000/1087 split cut are not yet source-bound in Noetrium', 'surrogate actor and critic immutable model revisions are not frozen', 'live WebVoyager websites and manual task semantics can drift over time'),
     evidence_refs=(),
-    scientific_tests=('tests/test_scientific_agent_q_surrogate_v1.py',),
+    scientific_tests=('tests/test_scientific_reproduction_current_surface_v1.py',),
 )
 
 __all__ = ["REPRODUCTION"]

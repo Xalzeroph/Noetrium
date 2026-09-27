@@ -70,14 +70,6 @@ REPRODUCTION = ReproductionDefinition(
             path="research/reproductions/chatdev_v1/fidelity.py",
         ),
         ReproductionAssetRef(
-            kind=ReproductionAssetKind("research_program"),
-            path="research/reproductions/chatdev_v1/runtime.py",
-        ),
-        ReproductionAssetRef(
-            kind=ReproductionAssetKind("research_program"),
-            path="research/reproductions/chatdev_v1/environment.py",
-        ),
-        ReproductionAssetRef(
             kind=ReproductionAssetKind("method_program"),
             path="research/reproductions/chatdev_v1/program.py",
         ),
@@ -88,10 +80,6 @@ REPRODUCTION = ReproductionDefinition(
         ReproductionAssetRef(
             kind=ReproductionAssetKind("support"),
             path="research/reproductions/chatdev_v1/source.py",
-        ),
-        ReproductionAssetRef(
-            kind=ReproductionAssetKind("support"),
-            path="research/reproductions/chatdev_v1/workspace.py",
         ),
     ),
     primary_executable="research/reproductions/chatdev_v1/program.py",
@@ -119,12 +107,7 @@ REPRODUCTION = ReproductionDefinition(
         "claim-ready runs still need the paper-metric evaluator.",
     ),
     evidence_refs=(),
-    scientific_tests=(
-        "tests/test_scientific_chatdev_v1.py",
-        "tests/test_scientific_chatdev_phase_runtime_v1.py",
-        "tests/test_scientific_chatdev_method_program_v1.py",
-        "tests/test_scientific_chatdev_workspace_v1.py",
-    ),
+    scientific_tests=('tests/test_scientific_chatdev_v1.py',),
 )
 
 __all__ = ["REPRODUCTION"]

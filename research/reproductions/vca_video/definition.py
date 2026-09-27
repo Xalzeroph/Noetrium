@@ -159,7 +159,7 @@ REPRODUCTION = ReproductionDefinition(
         "model/provider binding and exact video assets.",
     ),
     evidence_refs=(),
-    scientific_tests=("tests/test_scientific_vca_video_v1.py",),
+    scientific_tests=('tests/test_scientific_vca_video_v1.py',),
 )
 
 

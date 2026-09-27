@@ -2,8 +2,8 @@
   "schema": "noetrium.reproduction.projection.v10",
   "authority": "generated_from_typed_definition_and_source",
   "package": "cer_acl2025",
-  "package_digest": "9bcb155c15751a9e536802d0411a370dc720a29653b03a92764e2676c811ff45",
-  "definition_digest": "dd4af1d7fba356b29624f0f156d1186474752ad680144b3be74b1009ebf998b8",
+  "package_digest": "9cb32f94869cb8c088c7d44d902447e512cf17482d09faa91d479afda24a0826",
+  "definition_digest": "2a16f5c0e763cf594566794d5ba8c140904f4071d6bff0ad061f700e73dbb001",
   "source_registry_digest": "96352d53ebea45f8a23d9d69fe9493442324bc24a3360e4efc379537ef4c2923",
   "lifecycle": "protocol_bound",
   "identity": {
@@ -73,7 +73,7 @@
       "kind": "benchmark",
       "path": "research/reproductions/cer_acl2025/benchmark.py",
       "declaration_digest": "95f7bfe625f13733aed877dd20a65818bc92ec9cb27e4f7b37617d0b365d4e36",
-      "content_sha256": "98fc3975ab0f30482128655fb9cd2256640f0c492018bd0b9df4c49215beec84"
+      "content_sha256": "f0d39220797b4ffd580d0e835c7b0f0aab5ca9d1f982c58966684141cf22bb57"
     },
     {
       "kind": "fidelity",
@@ -85,13 +85,13 @@
       "kind": "method_program",
       "path": "research/reproductions/cer_acl2025/program.py",
       "declaration_digest": "ac613af9498fbd3bbdb9f1d490d26905691abda59a4f90567c71761c17b4b2c8",
-      "content_sha256": "705714791e0f79c74bc3d5cc1b14415ef7790392a9c27f84bf6e8c5a705a8d14"
+      "content_sha256": "14ff9e41929bbaef9622d36e6602aea64a309d58245b0db1e9c85d0cc7d638a0"
     },
     {
       "kind": "study",
       "path": "research/reproductions/cer_acl2025/study.py",
       "declaration_digest": "01361abb24ebbaf0a97c4e3005b7c9fde8301ceb7df35bcda67ddd2c9f6f4127",
-      "content_sha256": "3c7194d62aa6f29b7e5414d87847b9864901a7218fa025e43df38ae4a93084c4"
+      "content_sha256": "4c4b62c94af9497fb551efbc944b26c8470ec77f96108cee7d2f6c61c5f46cf0"
     }
   ],
   "primary_executable": "research/reproductions/cer_acl2025/program.py",
@@ -146,15 +146,15 @@
   "evidence_refs": [],
   "scientific_tests": [
     {
-      "path": "tests/test_scientific_recent_2025_2026_wave_v1.py",
-      "content_sha256": "11a5279b71d1113921dcaf67f385ea09612451fe35e356b9efbb782921b4b5a7"
+      "path": "tests/test_scientific_reproduction_current_surface_v1.py",
+      "content_sha256": "5cae8776ad9aa1c8ae953ba5c3a39ef41dca692a1bcd9c0bd4f173b43e0719db"
     }
   ],
   "research_os": {
     "surface": "noetrium.api",
     "execution_state": "benchmark_authority_required",
     "program_id": "cer_acl2025",
-    "program_digest": "d19c10cfc3435d73faf06e8c9d253524404b3915545c3d5938a3df659c6880e9",
+    "program_digest": "f79a23e27e25991f5a9e6bd3d6a67d4068c84cfc27bb1ddaeba396dbd6d8233c",
     "benchmark_authority": {
       "state": "required",
       "selection_digests": [],

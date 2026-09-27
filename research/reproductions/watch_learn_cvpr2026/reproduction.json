@@ -2,8 +2,8 @@
   "schema": "noetrium.reproduction.projection.v10",
   "authority": "generated_from_typed_definition_and_source",
   "package": "watch_learn_cvpr2026",
-  "package_digest": "30ac48931c3275d57f7dd3fff68e085ed74f3d297196b1e53111c12519abeadf",
-  "definition_digest": "81ae65ddce2774738456d379be9109762b1d9b75df7365efccfbbe271f332b22",
+  "package_digest": "9e57191fe14369f93756b868a3520f5d0b26329f84b753123ef6ee0aba81fbd9",
+  "definition_digest": "966b7a96479a804c9dfa0d0524ee01aede975fb33431d943eee5b67e5db3e593",
   "source_registry_digest": "9377a15bf9b58f568842cac30b7cb6e1418ed33e0be6323790688bf0eebdb8e8",
   "lifecycle": "protocol_bound",
   "identity": {
@@ -72,7 +72,7 @@
       "kind": "benchmark",
       "path": "research/reproductions/watch_learn_cvpr2026/benchmark.py",
       "declaration_digest": "12c94534dbbfeba25a555783b606d1c2ff620cde9036a01b1dea787743b65417",
-      "content_sha256": "6bf9a6a4da8c377389dc77e358c1ccf540810948980ae5f028414a09e9d04d0d"
+      "content_sha256": "a1fab9399225fd31213e911e6ece62ae978d28891cbfaca97198c260230801a7"
     },
     {
       "kind": "fidelity",
@@ -84,13 +84,13 @@
       "kind": "method_program",
       "path": "research/reproductions/watch_learn_cvpr2026/program.py",
       "declaration_digest": "55133fdaddd3954322bb8a3224af6f2edde6ded144f4a0f234b33103e5cca96a",
-      "content_sha256": "02510e3bc69678022ea6371492b379c4a14f26da5471f44fffefa06f6f511404"
+      "content_sha256": "a5fa9152202912dc9753fcdb12d3b4024560788a1427604005aa68969082b5c9"
     },
     {
       "kind": "study",
       "path": "research/reproductions/watch_learn_cvpr2026/study.py",
       "declaration_digest": "a02c8b8e80449c8759bcf1f8aa7441d51febee4ee1e40548e5cde4bb90c03553",
-      "content_sha256": "354159b331857d83d80613f1c94db3fc685bb3ff72c56962df7a2be284025cda"
+      "content_sha256": "74cdb4389892fc93067cf8fd4d1cd93d84ab591af32a1f937a98dc272478cba7"
     }
   ],
   "primary_executable": "research/reproductions/watch_learn_cvpr2026/program.py",
@@ -136,15 +136,15 @@
   "evidence_refs": [],
   "scientific_tests": [
     {
-      "path": "tests/test_scientific_recent_2025_2026_wave_v1.py",
-      "content_sha256": "11a5279b71d1113921dcaf67f385ea09612451fe35e356b9efbb782921b4b5a7"
+      "path": "tests/test_scientific_reproduction_current_surface_v1.py",
+      "content_sha256": "5cae8776ad9aa1c8ae953ba5c3a39ef41dca692a1bcd9c0bd4f173b43e0719db"
     }
   ],
   "research_os": {
     "surface": "noetrium.api",
     "execution_state": "benchmark_authority_required",
     "program_id": "watch_learn_cvpr2026",
-    "program_digest": "ace244e67218bdfead9747f765a031fe80b3e23e1693af29b83fd73e1e10fcd8",
+    "program_digest": "b3ab25d107afc03b190a84389306c3b10701a36f2c67bb5ddec25a63e7d0caaa",
     "benchmark_authority": {
       "state": "required",
       "selection_digests": [],

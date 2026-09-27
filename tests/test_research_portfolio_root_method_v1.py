@@ -28,4 +28,37 @@ def test_root_program_method_absorbs_lower_method_types() -> None:
     assert method is not None
     resolved = method.resolve()
     assert resolved.program.graph.entrypoint == "finish"
-    assert resolved.memories == ()
+    assert resolved.components == ()
+
+
+def _select_dynamic_agent(call):
+    return "agent.a"
+
+def _select_dynamic_capability(call):
+    return "tool.b"
+
+def _dynamic_agent_view(call):
+    return {"input": call.input_value, "state": call.state}
+
+def _configure_dynamic_method(method):
+    method.dynamic_agent(
+        "delegate", "fixture.delegate", ("agent.a", "agent.b"),
+        _select_dynamic_agent, ("tool",), view=_dynamic_agent_view,
+    )
+    method.dynamic_capability(
+        "tool", "fixture.tool", ("tool.a", "tool.b"),
+        _select_dynamic_capability, ("finish",), effect="reconcilable",
+    )
+    method.return_node("finish", "fixture.finish", _finish)
+
+def test_root_method_preserves_dynamic_agent_and_capability_closures() -> None:
+    root = ResearchPortfolioBuilder("dynamic-root-method-fixture")
+    paper = root.program("paper")
+    paper.method("method", _configure_dynamic_method, entrypoint="delegate")
+    paper.method_node("run", definitions=("method",))
+    resolved = paper.freeze().definitions[0].implementation.resolve()
+    nodes = {node.node_id: node for node in resolved.program.graph.nodes}
+    assert nodes["delegate"].agent_targets == ("agent.a", "agent.b")
+    assert nodes["tool"].capability_targets == ("tool.a", "tool.b")
+    assert resolved.program.required_capabilities == ("tool.a", "tool.b")
+    assert {port.value for port in resolved.program.required_runtime_ports} >= {"agent_loop", "capabilities"}

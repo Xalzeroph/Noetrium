@@ -14,6 +14,6 @@ REPRODUCTION=ReproductionDefinition(
         ReferenceBaseline(baseline_id="baseline_02",description="retrieval-only explorer"),
         ReferenceBaseline(baseline_id="baseline_03",description="paper embodied exploration baselines"),
     ),
-    blockers=("Matched reproduction requires the released LMEE-Bench data, HM3D-Sem environment cut, MemoryExplorer checkpoint and training configuration.", "Training and interactive navigation claims require GPU/environment receipts and benchmark evaluator artifacts."),evidence_refs=(),scientific_tests=("tests/test_scientific_frontier_2026_wave_02.py",),
+    blockers=("Matched reproduction requires the released LMEE-Bench data, HM3D-Sem environment cut, MemoryExplorer checkpoint and training configuration.", "Training and interactive navigation claims require GPU/environment receipts and benchmark evaluator artifacts."),evidence_refs=(),scientific_tests=('tests/test_scientific_reproduction_current_surface_v1.py',),
 )
 __all__=["REPRODUCTION"]

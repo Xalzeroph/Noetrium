@@ -56,7 +56,7 @@ REPRODUCTION = ReproductionDefinition(
             "compression-size-weighted memory consolidation",
         ),
         platform_owned=(
-            "MemoryMachine journal authority",
+            "Method-owned memory component on the shared Machine journal",
             "multimodal content identity and transport",
             "model execution",
             "artifact/evidence lineage",
@@ -65,12 +65,12 @@ REPRODUCTION = ReproductionDefinition(
     ),
     assets=(
         ReproductionAssetRef(
-            kind=ReproductionAssetKind("fidelity"),
-            path="research/reproductions/ma_lmm_memory/fidelity.py",
+            kind=ReproductionAssetKind("method_program"),
+            path="research/reproductions/ma_lmm_memory/program.py",
         ),
         ReproductionAssetRef(
-            kind=ReproductionAssetKind("research_program"),
-            path="research/reproductions/ma_lmm_memory/memory.py",
+            kind=ReproductionAssetKind("fidelity"),
+            path="research/reproductions/ma_lmm_memory/fidelity.py",
         ),
         ReproductionAssetRef(
             kind=ReproductionAssetKind("benchmark"),
@@ -85,6 +85,7 @@ REPRODUCTION = ReproductionDefinition(
             path="research/reproductions/ma_lmm_memory/source.py",
         ),
     ),
+    primary_executable="research/reproductions/ma_lmm_memory/program.py",
     reported_results=(
         ReportedResult(
             claim_id="ma_lmm_lvu_average_top1",
@@ -134,9 +135,7 @@ REPRODUCTION = ReproductionDefinition(
         "algorithm from the surrounding LAVIS/Vicuna tensor stack.",
     ),
     evidence_refs=(),
-    scientific_tests=(
-        "tests/test_scientific_ma_lmm_memory_v1.py",
-    ),
+    scientific_tests=('tests/test_scientific_reproduction_current_surface_v1.py',),
 )
 
 

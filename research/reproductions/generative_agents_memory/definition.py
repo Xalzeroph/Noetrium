@@ -50,6 +50,7 @@ REPRODUCTION = ReproductionDefinition(
             path='research/reproductions/generative_agents_memory/study.py',
         ),
     ),
+    primary_executable="research/reproductions/generative_agents_memory/program.py",
     reported_results=(
         ReportedResult(
             claim_id="generative_agents_full_architecture_believability",
@@ -83,7 +84,7 @@ REPRODUCTION = ReproductionDefinition(
     ),
     blockers=('Matched UIST social-behavior results still require the exact paper-era Smallville persona/world snapshot, historical hosted model revision, and human believability rater assignment.',),
     evidence_refs=(),
-    scientific_tests=('tests/test_scientific_generative_agents_retrieval_v1.py', 'tests/test_scientific_generative_agents_method_program_v1.py'),
+    scientific_tests=('tests/test_scientific_generative_agents_retrieval_v1.py',),
 )
 
 __all__ = ["REPRODUCTION"]

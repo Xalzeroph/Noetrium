@@ -20,6 +20,6 @@ REPRODUCTION=ReproductionDefinition(
         ReferenceBaseline(baseline_id="baseline_03",description="Dynamic-Cheatsheet"),
         ReferenceBaseline(baseline_id="baseline_04",description="attention-augmented variants"),
     ),
-    blockers=("Matched reproduction requires the paper-ready ViLoMem source cut, exact VLMEvalKit dataset revisions, model-provider snapshots and attention-map configuration.", "Cross-benchmark/cross-model transfer claims require immutable memory-schema artifacts and source-run lineage rather than reusing opaque mutable memory directories."),evidence_refs=(),scientific_tests=("tests/test_scientific_frontier_2026_wave_03.py",),
+    blockers=("Matched reproduction requires the paper-ready ViLoMem source cut, exact VLMEvalKit dataset revisions, model-provider snapshots and attention-map configuration.", "Cross-benchmark/cross-model transfer claims require immutable memory-schema artifacts and source-run lineage rather than reusing opaque mutable memory directories."),evidence_refs=(),scientific_tests=('tests/test_scientific_reproduction_current_surface_v1.py',),
 )
 __all__=["REPRODUCTION"]

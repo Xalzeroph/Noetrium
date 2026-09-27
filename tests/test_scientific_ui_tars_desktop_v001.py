@@ -1,8 +1,10 @@
 from __future__ import annotations
 
-from research.reproductions.ui_tars_desktop_v001 import (
+from research.reproductions.ui_tars_desktop_v001.fidelity import (
     UI_TARS_DESKTOP_V001_AUDITED_COMMIT,
     UI_TARS_DESKTOP_V001_FIDELITY,
+)
+from research.reproductions.ui_tars_desktop_v001.scaffold import (
     UiTarsDesktopV001Conversation,
     UiTarsDesktopV001LoopState,
     UiTarsDesktopV001Status,

@@ -78,10 +78,6 @@ REPRODUCTION = ReproductionDefinition(
             path="research/reproductions/flow_modularized_agentic_workflow/program.py",
         ),
         ReproductionAssetRef(
-            kind=ReproductionAssetKind("research_program"),
-            path="research/reproductions/flow_modularized_agentic_workflow/subtask.py",
-        ),
-        ReproductionAssetRef(
             kind=ReproductionAssetKind("study"),
             path="research/reproductions/flow_modularized_agentic_workflow/study.py",
         ),
@@ -157,9 +153,7 @@ REPRODUCTION = ReproductionDefinition(
         "no matched ICLR three-task execution evidence has yet been produced",
     ),
     evidence_refs=(),
-    scientific_tests=(
-        "tests/test_scientific_flow_modularized_workflow_v1.py",
-    ),
+    scientific_tests=('tests/test_scientific_reproduction_current_surface_v1.py',),
 )
 
 __all__ = ["REPRODUCTION"]

@@ -50,7 +50,7 @@ REPRODUCTION = ReproductionDefinition(
     ),
     blockers=("Matched benchmarking requires the pinned Mem-Gallery dataset/scoring revision and model revisions.", "Multimodal inference results require real model receipts and retained media assets."),
     evidence_refs=(),
-    scientific_tests=("tests/test_scientific_frontier_2026_wave_01.py",),
+    scientific_tests=('tests/test_scientific_frontier_2026_wave_01.py',),
 )
 
 __all__ = ["REPRODUCTION"]

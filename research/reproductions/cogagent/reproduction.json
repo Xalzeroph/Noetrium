@@ -2,8 +2,8 @@
   "schema": "noetrium.reproduction.projection.v10",
   "authority": "generated_from_typed_definition_and_source",
   "package": "cogagent",
-  "package_digest": "c86db0552fd37872e2dc6f9cb48992c079e3e3455c211d987aa8d28a0f8f4ecf",
-  "definition_digest": "c8962c16f82b0a2b81c8ad00588563fa8b7aeb8bef391899f6bf7893867b5a00",
+  "package_digest": "8a2ce554b1c60a09fe7fc5d3479064a3945d6f29fd125181d58110e324dc4afc",
+  "definition_digest": "7e6332ed04e353997ee69be8ba694327f0305c39c29bc3d785741fa8d722b018",
   "source_registry_digest": "98cd238a80201177669fbbf1b36bc4033d8d0220869f0f27a93b8ff6efb05cb3",
   "lifecycle": "protocol_bound",
   "identity": {
@@ -75,13 +75,13 @@
       "kind": "method_program",
       "path": "research/reproductions/cogagent/program.py",
       "declaration_digest": "bfbe83628d54bad8b28b0e557cbde7885969ed8b7cbf78aeb2e19ccbfe15e9f9",
-      "content_sha256": "f4090c55c4def1dec4aacf7994c64b1985e82994cd008dfa959c627ecb36aa07"
+      "content_sha256": "f25f3f5e5eaf51470ed122529e98568fac993d5baaaac50c6789034f6db10f31"
     },
     {
       "kind": "study",
       "path": "research/reproductions/cogagent/study.py",
       "declaration_digest": "1a29e55934234270552cb80f38086aa4060b2c714948bcbe287a3e368afa997e",
-      "content_sha256": "55eade91b8d1870f8ac9454c0d473f521a60d658a8d81a03d07becf8debd166a"
+      "content_sha256": "792b484fbb3f5103c6640ce42cace3a5de5d5a483a18112e4b3596a3d43b7663"
     }
   ],
   "primary_executable": "research/reproductions/cogagent/program.py",
@@ -164,15 +164,15 @@
   "evidence_refs": [],
   "scientific_tests": [
     {
-      "path": "tests/test_scientific_cogagent_v1.py",
-      "content_sha256": "8f2385b239f1ef56ef5633aa54e5917ed4e63ee228aa33ae524ce655d7a443c4"
+      "path": "tests/test_scientific_reproduction_current_surface_v1.py",
+      "content_sha256": "5cae8776ad9aa1c8ae953ba5c3a39ef41dca692a1bcd9c0bd4f173b43e0719db"
     }
   ],
   "research_os": {
     "surface": "noetrium.api",
     "execution_state": "benchmark_authority_required",
     "program_id": "cogagent",
-    "program_digest": "a8023cd5ad1ff6970175d583667cc0ea500ea9faaf30390b9dba0f03f5c528d7",
+    "program_digest": "e45136d2ac26b5f2bfd05e209823cd6e9837938041506bfdc2145b87b075ec9e",
     "benchmark_authority": {
       "state": "required",
       "selection_digests": [],

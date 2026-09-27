@@ -2,8 +2,8 @@
   "schema": "noetrium.reproduction.projection.v10",
   "authority": "generated_from_typed_definition_and_source",
   "package": "toolllm_toolbench",
-  "package_digest": "0f13e66a05b4ca68d1412d4ccb1a55c553aa4fe1fa17c9023e5a92b161760e6e",
-  "definition_digest": "c0fa5ef40151d3008d2c62449c48af0768b8e5896be45afaf33d45c003a7a30a",
+  "package_digest": "839bfb17190a07fc9707c275322273aaded3323f6eee92e2bf6e5cd71348c24f",
+  "definition_digest": "62e8203ef132650443320b54e2e44f5b032914b4bfc4944ac373a44106bc320d",
   "source_registry_digest": "87536d5be60f9ec27323a2924c41fbf0380a3f575e43cc044fc3f39779050898",
   "lifecycle": "protocol_bound",
   "identity": {
@@ -75,25 +75,19 @@
       "kind": "method_program",
       "path": "research/reproductions/toolllm_toolbench/program.py",
       "declaration_digest": "37e587bfd408792ccc099909c55511f3f7fbe9e99a39bfae597d84fbe35a24ee",
-      "content_sha256": "9572ff84816e7d9be22d1fe9633d3e83c50bac236bf3619c43a51834c20c8926"
+      "content_sha256": "2e20930447054d89adcfe8e01e5fea0611542f0220b063ade6946f4b91525fe1"
     },
     {
       "kind": "study",
       "path": "research/reproductions/toolllm_toolbench/study.py",
       "declaration_digest": "40bee46f7346bc4a89b2e46685bb484bad8464acc0853b4c7c3ad198413dd197",
-      "content_sha256": "5156fabadf3552028fb36ebbbecb27fc7164c36a711b4461763a50d1216ef805"
+      "content_sha256": "e13796c83ff9112a20ab0cd46bc00f26b318d48eb5dc2768114c536b95d37ffb"
     },
     {
       "kind": "support",
       "path": "research/reproductions/toolllm_toolbench/search.py",
       "declaration_digest": "22da07a7b7e73f6f4da05cb64b60eaf9c8c34a68de9efede95112b1eaa7f30d9",
       "content_sha256": "a98204fcc18d89759c206e9dac237a3a4149e89592ad461d9cd5488a811934c7"
-    },
-    {
-      "kind": "support",
-      "path": "research/reproductions/toolllm_toolbench/selection.py",
-      "declaration_digest": "889769fa29c3e8b6a2c880bde89de159a2f9e4864a10bb36e37ea31818ea261f",
-      "content_sha256": "ad439ad5553f525dd8011e2253cd40391a334667ba69ea11c2563096c3746fc1"
     }
   ],
   "primary_executable": "research/reproductions/toolllm_toolbench/program.py",
@@ -209,25 +203,13 @@
     {
       "path": "tests/test_scientific_toolllm_dfsdt_v1.py",
       "content_sha256": "b52ad76fad333ebf26ba3d4ce20770c9e6c8d954a6a50044229ed86547b85a7f"
-    },
-    {
-      "path": "tests/test_scientific_toolllm_method_program_v1.py",
-      "content_sha256": "552cb9d33cf67e38fee5f89c63efa85d7c9309228eab4003026cde9ba60ef6fc"
-    },
-    {
-      "path": "tests/test_scientific_toolllm_study_v1.py",
-      "content_sha256": "66adf152411b3a3162151105aaf1e2d5669d4dd8e4119d651ddb67b9ae900417"
-    },
-    {
-      "path": "tests/test_scientific_toolllm_toolbench_v1.py",
-      "content_sha256": "28cbc0c336c8b9f1dc99163dffd077ee469f1591e8cc9580d84178cd50ec9eb2"
     }
   ],
   "research_os": {
     "surface": "noetrium.api",
     "execution_state": "benchmark_authority_required",
     "program_id": "toolllm_toolbench",
-    "program_digest": "48156833c681f70ea1b95e27fe5c757690d26cbcb5fef10f05f547297a445d34",
+    "program_digest": "ca33cda38bfaa33c7c2881fe8cefdf4e601a69d797839cbfdf1f762255592496",
     "benchmark_authority": {
       "state": "required",
       "selection_digests": [],

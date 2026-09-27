@@ -2,8 +2,8 @@
   "schema": "noetrium.reproduction.projection.v10",
   "authority": "generated_from_typed_definition_and_source",
   "package": "orbit_acl2026",
-  "package_digest": "257f85bdc9507e2b046f60a4add3386fbaa9e8ad5d5f6edb4ddeeba504284d41",
-  "definition_digest": "31d3ffd5d1c98ec9762c689dc037d3e0dcbb141348d839a062dc163e62aefebd",
+  "package_digest": "15195ab9aee2109521225d72af49558c4b5f1f165031db3ac409b8bb3bfc4179",
+  "definition_digest": "6254987184330ab66719da00d4eb95b94ec5816c5215668b9c3e9db9775e4b04",
   "source_registry_digest": "f4d993f22dde65b3c172032c7553b1c4cd9fa0d2095143a46cca690494315612",
   "lifecycle": "protocol_bound",
   "identity": {
@@ -93,13 +93,13 @@
       "kind": "method_program",
       "path": "research/reproductions/orbit_acl2026/program.py",
       "declaration_digest": "d5d45ecb5d4a12b130f2129e021ead131a1b853d8bf716a332993108d4ff34eb",
-      "content_sha256": "463bf034d94d2158f8d3ef07c67b56a377f7f63d5ec8e128df895aa6c23ed4f5"
+      "content_sha256": "13a12c7c843440692fbec67f32aacee3c3ebed90581a9cb363b1b46935926844"
     },
     {
       "kind": "study",
       "path": "research/reproductions/orbit_acl2026/study.py",
       "declaration_digest": "3fb0074e72a6ab1772be78865ff4c5db2f103e11246e8bd150b23d66c6cff284",
-      "content_sha256": "bae5e920401f8a1f5a1b4b4d90fffc5db90055c929b2127557498dcd0bbcc9ce"
+      "content_sha256": "5338ce9d04fa07f75bd53f76a57192463faa5db583f3eb0a059b6537dfbf49a6"
     }
   ],
   "primary_executable": "research/reproductions/orbit_acl2026/program.py",
@@ -175,7 +175,7 @@
     "surface": "noetrium.api",
     "execution_state": "benchmark_authority_required",
     "program_id": "orbit_acl2026",
-    "program_digest": "9a3a334a9958febc282ab36c49686233817284999fc8831d028e7b9fad1956ec",
+    "program_digest": "de9b87e8af64e5125c650b0420c2bd34990936bf843b7259a79e6fac8147cd76",
     "benchmark_authority": {
       "state": "required",
       "selection_digests": [],
@@ -186,6 +186,7 @@
     "benchmark_split_axis": {
       "required": true,
       "consumers": [
+        "study:build_ablation_matrix",
         "study:build_study"
       ]
     },

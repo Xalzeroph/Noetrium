@@ -2,8 +2,8 @@
   "schema": "noetrium.reproduction.projection.v10",
   "authority": "generated_from_typed_definition_and_source",
   "package": "videoagent_memory",
-  "package_digest": "03f272ab5f96a17d54788c6a75124dc31542860192d166b8cef70949fdcc9103",
-  "definition_digest": "b6a07d721d7dd58c2212cbab3afce909293e26aeebaaafddd8228fe68fdf8381",
+  "package_digest": "ef1f44a0da892d978734fbc6427aff1c69ba4d70e880b2ef0f2a02f656dd06c8",
+  "definition_digest": "3868af9959cd4df7578c2b719cc5de8810a0b827ff5ff1f0314f10ec01d9fcef",
   "source_registry_digest": "2c4ad0c7f51054bfd49d84df431ced1c43641a42cd98243c8343899ebc7ce56e",
   "lifecycle": "protocol_bound",
   "identity": {
@@ -47,7 +47,7 @@
       "two-second temporal segment memory"
     ],
     "platform_owned": [
-      "MemoryMachine journal authority",
+      "Method-owned memory component on the shared Machine journal",
       "MethodProgram host and child-machine links",
       "benchmark cut authority",
       "content-addressed video/memory artifacts",
@@ -60,7 +60,7 @@
     "reference_publications": [
       "https://www.ecva.net/papers/eccv_2024/papers_ECCV/html/3241_ECCV_2024_paper.php"
     ],
-    "catalog_digest": "9ef42cddfd13a75892b71fac1721ec5dd0f2b7e0577ffb79ab70fff0ad64432a"
+    "catalog_digest": "e6af5b2a553294f34d22ba5d5ce515976b357170de67f2ca1f4ed9a6159b74fd"
   },
   "source_lanes": [
     {
@@ -125,7 +125,7 @@
       "kind": "benchmark",
       "path": "research/reproductions/videoagent_memory/benchmark.py",
       "declaration_digest": "3532fc85c6b33131c7e3d9ec79a9f95a6c8393ff1d9e65d0f1721c0ffc834e16",
-      "content_sha256": "a48c687b4d69748bbc566c8c4c240b46d91058b0c04f8e1f7fdc164026c0d904"
+      "content_sha256": "19d328cc9eae94eba5273d402f756231c22a15a6fbf05ac4848ed633ba92f2a6"
     },
     {
       "kind": "fidelity",
@@ -137,19 +137,13 @@
       "kind": "method_program",
       "path": "research/reproductions/videoagent_memory/program.py",
       "declaration_digest": "7bbf279e6c62f1cea91e90c38ba30f7749a13cb185ab54fd015247a1524d3067",
-      "content_sha256": "41bfef9d38e8e5580d4e7cc6383fb91768011b8f6f9f4f260b34f34d39c549d3"
-    },
-    {
-      "kind": "research_program",
-      "path": "research/reproductions/videoagent_memory/memory.py",
-      "declaration_digest": "2c2806369379898635c6a1bde4d8c1535d25f50c66678cfa326ab5565c577eed",
-      "content_sha256": "5da06afa304a4fca738fb685342565d65c9d1b34798bdd9414043bcc9303612c"
+      "content_sha256": "f1149d9e263a629681159bf5e72cfc2c465f021e618d5e7e80e94131e27ef189"
     },
     {
       "kind": "study",
       "path": "research/reproductions/videoagent_memory/study.py",
       "declaration_digest": "07181cc47ffd0d86afee8c7b883d640f92b0805040c0103284f5296f747bf31b",
-      "content_sha256": "10df1d998e65a06a1ffacf5839d0e1dd0b1bc4bc5465deb8010135027db65e44"
+      "content_sha256": "e49ec5b33e87f02f960dc1a38d1472e6f725de744b8c451553d7b1f77978a440"
     },
     {
       "kind": "support",
@@ -208,19 +202,15 @@
   "evidence_refs": [],
   "scientific_tests": [
     {
-      "path": "tests/test_scientific_videoagent_egoschema_v1.py",
-      "content_sha256": "2e9530d4474411c19a69e7cd8874af3f84303569f78c67fac5e88a46a3813626"
-    },
-    {
-      "path": "tests/test_scientific_videoagent_memory_v1.py",
-      "content_sha256": "776b6f6664331b182e2a08d2269b5dfb508b1589d8a56a785dc4dc8775c4e44d"
+      "path": "tests/test_scientific_reproduction_current_surface_v1.py",
+      "content_sha256": "5cae8776ad9aa1c8ae953ba5c3a39ef41dca692a1bcd9c0bd4f173b43e0719db"
     }
   ],
   "research_os": {
     "surface": "noetrium.api",
     "execution_state": "benchmark_authority_required",
     "program_id": "videoagent_memory",
-    "program_digest": "e64096bb6ec9612b7fcb3625cde7e8c923ec262a54b58149007916746d2c0223",
+    "program_digest": "6c65d75b200f5cc9eae107d8614c14ac1725fe7f431e3fb5279466b64c39ed8e",
     "benchmark_authority": {
       "state": "required",
       "selection_digests": [],

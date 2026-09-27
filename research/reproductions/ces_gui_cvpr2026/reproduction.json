@@ -2,8 +2,8 @@
   "schema": "noetrium.reproduction.projection.v10",
   "authority": "generated_from_typed_definition_and_source",
   "package": "ces_gui_cvpr2026",
-  "package_digest": "b11497dd79066f11b691f84f1023bcc90b4d64a7ddeab3b315584a4bb12c8386",
-  "definition_digest": "a107308919879400a2faa321adadac511e19a659c7ebb5b9cd858bec7e28f0b2",
+  "package_digest": "4afc1ecb5d8a9d31f9e386b965644f7126a04f0e8f7fb777d65090f487aec118",
+  "definition_digest": "e1aa5fb1c1e1dcdbfa829cd0f722e3ab58b2cf845ff905ce2552ec1c583af211",
   "source_registry_digest": "1b552ecdc0428896fe2cf149d77fc3b56180a74bb3f4927581ca6073ca28a4df",
   "lifecycle": "protocol_bound",
   "identity": {
@@ -98,13 +98,13 @@
       "kind": "method_program",
       "path": "research/reproductions/ces_gui_cvpr2026/program.py",
       "declaration_digest": "f2a298a1793831a7480aa614623a78294b736336702f050a99950b66d201c812",
-      "content_sha256": "a34ae06107020f3eda673c476dfdaf73e18a84328ee32e0e06a9c2800da93e1b"
+      "content_sha256": "84175f4a15ff3ff0aeef970ffff5021740b51686c8c9e785120599f78c094c96"
     },
     {
       "kind": "study",
       "path": "research/reproductions/ces_gui_cvpr2026/study.py",
       "declaration_digest": "12e27290de29a996b9960f441f3f3181a46c6c84e067caf599dd15a6a2930215",
-      "content_sha256": "54d72d3fdcc14e17d72b6595d051e1611e4d7ce52a5c1d733d5b072d9c034af7"
+      "content_sha256": "cc6204277e67308ce26b15705397c688d720456637f6f7ab474b7a5d2a100699"
     }
   ],
   "primary_executable": "research/reproductions/ces_gui_cvpr2026/program.py",
@@ -143,25 +143,26 @@
   "evidence_refs": [],
   "scientific_tests": [
     {
-      "path": "tests/test_scientific_frontier_2026_wave_02.py",
-      "content_sha256": "24b94183020cd24bd2b462fe8dc339d108dd405ec2a878c89bbfc4163f912a32"
+      "path": "tests/test_scientific_reproduction_current_surface_v1.py",
+      "content_sha256": "5cae8776ad9aa1c8ae953ba5c3a39ef41dca692a1bcd9c0bd4f173b43e0719db"
     }
   ],
   "research_os": {
     "surface": "noetrium.api",
     "execution_state": "benchmark_authority_required",
     "program_id": "ces_gui_cvpr2026",
-    "program_digest": "bcd883e990cdade3b31de760343c6c21d0a9f462817eb56cc5f94685319c83e8",
+    "program_digest": "0fbb38b4cf037b90f01e10434f9df7ae708c9d1e6fbb48d003144296d9b10cee",
     "benchmark_authority": {
       "state": "required",
       "selection_digests": [],
       "blockers": [
-        "ReproductionResearchOSCompileError:benchmark 'aitz' has no exact repository or materialized authority"
+        "ReproductionResearchOSCompileError:ces_gui_cvpr2026 has multiple Study factories and multiple benchmarks; exact Study-to-benchmark ownership must be paper-owned"
       ]
     },
     "benchmark_split_axis": {
       "required": true,
       "consumers": [
+        "study:build_ablation_matrix",
         "study:build_study"
       ]
     },

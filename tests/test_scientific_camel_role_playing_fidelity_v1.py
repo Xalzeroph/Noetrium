@@ -1,4 +1,6 @@
-from research.reproductions.camel_role_playing import CAMEL_ROLE_PLAYING_FIDELITY
+from research.reproductions.camel_role_playing.fidelity import (
+    CAMEL_ROLE_PLAYING_FIDELITY,
+)
 
 
 def test_paper_era_camel_separates_constructor_defaults_from_ai_society_protocol() -> None:

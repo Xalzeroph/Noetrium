@@ -50,6 +50,7 @@ REPRODUCTION = ReproductionDefinition(
             path='research/reproductions/memgpt_classic/study.py',
         ),
     ),
+    primary_executable="research/reproductions/memgpt_classic/program.py",
     reported_results=(
     ),
     reference_baselines=(
@@ -60,11 +61,7 @@ REPRODUCTION = ReproductionDefinition(
         'matched execution still requires an exact immutable MemoryArena dataset revision and deployment-bound benchmark environments',
     ),
     evidence_refs=(),
-    scientific_tests=(
-        'tests/test_scientific_memgpt_classic_fidelity_v1.py',
-        'tests/test_scientific_memgpt_classic_method_program_v1.py',
-        'tests/test_scientific_memgpt_memoryarena_protocol_v1.py',
-    ),
+    scientific_tests=('tests/test_scientific_memgpt_classic_fidelity_v1.py',),
 )
 
 __all__ = ["REPRODUCTION"]

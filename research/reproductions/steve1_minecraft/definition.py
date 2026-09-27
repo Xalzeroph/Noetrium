@@ -123,10 +123,7 @@ REPRODUCTION = ReproductionDefinition(
         "suite; that numerical claim remains unmatched rather than fabricated.",
     ),
     evidence_refs=(),
-    scientific_tests=(
-        "tests/test_scientific_steve1_minecraft_v1.py",
-        "tests/test_scientific_steve1_benchmark_study_v1.py",
-    ),
+    scientific_tests=('tests/test_scientific_reproduction_current_surface_v1.py',),
 )
 
 __all__ = ["REPRODUCTION"]

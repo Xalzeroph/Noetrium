@@ -209,10 +209,7 @@ REPRODUCTION = ReproductionDefinition(
         "under immutable content identity.",
     ),
     evidence_refs=(),
-    scientific_tests=(
-        "tests/test_scientific_code_as_policies_v1.py",
-        "tests/test_scientific_code_as_policies_robocodegen_v1.py",
-    ),
+    scientific_tests=('tests/test_scientific_reproduction_current_surface_v1.py',),
 )
 
 __all__ = ["REPRODUCTION"]

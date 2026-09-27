@@ -3,8 +3,10 @@ from __future__ import annotations
 import math
 import pytest
 
-from research.reproductions.lats_webshop import (
+from research.reproductions.lats_webshop.fidelity import (
     LATS_WEBSHOP_FIDELITY,
+)
+from research.reproductions.lats_webshop.tree import (
     LatsBranchState,
     backpropagated_mean,
     is_successful_terminal,

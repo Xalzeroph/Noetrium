@@ -67,10 +67,6 @@ REPRODUCTION = ReproductionDefinition(
             path="research/reproductions/vima_embodied/fidelity.py",
         ),
         ReproductionAssetRef(
-            kind=ReproductionAssetKind("support"),
-            path="research/reproductions/vima_embodied/environment.py",
-        ),
-        ReproductionAssetRef(
             kind=ReproductionAssetKind("benchmark"),
             path="research/reproductions/vima_embodied/benchmark.py",
         ),
@@ -91,6 +87,7 @@ REPRODUCTION = ReproductionDefinition(
             path="research/reproductions/vima_embodied/source.py",
         ),
     ),
+    primary_executable="research/reproductions/vima_embodied/program.py",
     reported_results=(
         ReportedResult(
             claim_id="vima_hardest_zero_shot_multiplier",
@@ -145,11 +142,7 @@ REPRODUCTION = ReproductionDefinition(
         "policy checkpoints and the camera-ready observation/prompt frontend.",
     ),
     evidence_refs=(),
-    scientific_tests=(
-        "tests/test_scientific_vima_embodied_v1.py",
-        "tests/test_scientific_vima_benchmark_study_v1.py",
-        "tests/test_scientific_vima_environment_adapter_v1.py",
-    ),
+    scientific_tests=('tests/test_scientific_reproduction_current_surface_v1.py',),
 )
 
 

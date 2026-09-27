@@ -9,6 +9,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 from noetrium import api
+from noetrium_platform.product import research_os as product_research_os
 from noetrium_platform.composition.research_binding_authority import (
     ResearchBindingAuthority,
     ResearchBindingResolutionContext,
@@ -378,7 +379,7 @@ class RepositoryFleetAuthorityMaterializer:
             models,
         )
 
-        revision = api.research_os.ResearchGraphRevision(
+        revision = product_research_os.ResearchGraphRevision(
             fleet.portfolio.portfolio_id,
             fleet.portfolio.portfolio_digest,
             (),

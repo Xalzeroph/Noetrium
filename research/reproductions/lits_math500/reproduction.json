@@ -2,8 +2,8 @@
   "schema": "noetrium.reproduction.projection.v10",
   "authority": "generated_from_typed_definition_and_source",
   "package": "lits_math500",
-  "package_digest": "1103cb8162541098a8c36ed32a9a3a9c7751bace88aa8ea49b096772939c2471",
-  "definition_digest": "2f7e988e92fc57d18678a1c4de309a653ad54a451aa0ddedb84dead3ca826e7a",
+  "package_digest": "1dba8f2982a62ed97ce6549f66af4fb2622f4f2414aa29443a06e6140c4a6f89",
+  "definition_digest": "51c9153cde8ace573c3c495a1b1dbc40ebd742e53ae0ed3cdcc50b0d55a7ee38",
   "source_registry_digest": "a7690832f13476ee4b23d5467a46ea3041e9a9bc011a9268b12aee7a7ade8709",
   "lifecycle": "protocol_bound",
   "identity": {
@@ -81,13 +81,13 @@
       "kind": "method_program",
       "path": "research/reproductions/lits_math500/program.py",
       "declaration_digest": "cd98e4e187fea750ec6aeceac755f6eaec676105cb9644ac1662decc7045b38e",
-      "content_sha256": "5a7cf2252f760f0e3c76f9ee0fd6d25a614923b5fd62c4eda653f8e5a468162b"
+      "content_sha256": "68207fb588a3e9351d1a4c08ebe69d83f6918b610d4c0df8ec800df5a42e86ec"
     },
     {
       "kind": "study",
       "path": "research/reproductions/lits_math500/study.py",
       "declaration_digest": "d8ff589b2c868062190b411a48aee1cb05922ba1ab2484091dc81782bfe0934f",
-      "content_sha256": "0a44b7b7d438ed8d46f5180c43c671317366c38731008b8391d5960f2e42cc5f"
+      "content_sha256": "9639a01644c098db10489c9286a5a7024aba95be5e40dc64fbb8b78e514e4104"
     }
   ],
   "primary_executable": "research/reproductions/lits_math500/program.py",
@@ -106,15 +106,15 @@
   "evidence_refs": [],
   "scientific_tests": [
     {
-      "path": "tests/test_scientific_lits_math500_v1.py",
-      "content_sha256": "7a78619b6fbbd90c40b34b45fe3289c837285dc69310f42d0249488bfe0a55f4"
+      "path": "tests/test_scientific_reproduction_current_surface_v1.py",
+      "content_sha256": "5cae8776ad9aa1c8ae953ba5c3a39ef41dca692a1bcd9c0bd4f173b43e0719db"
     }
   ],
   "research_os": {
     "surface": "noetrium.api",
     "execution_state": "benchmark_authority_required",
     "program_id": "lits_math500",
-    "program_digest": "0e3b1e22336d2c76af8096449bf5309cd8cbe40f91dc6abf9f651cdd8716a612",
+    "program_digest": "2ea49cfb3bc957de03e1f5e24cd7b9e1145bd50da6cf9e0fc0eebb2b3f332c7e",
     "benchmark_authority": {
       "state": "required",
       "selection_digests": [],

@@ -58,8 +58,8 @@ REPRODUCTION = ReproductionDefinition(
             "alpha/beta cache partition and retention semantics",
         ),
         platform_owned=(
-            "MemoryMachine journal authority",
-            "MethodProgram and child-memory-machine composition",
+            "Method-owned memory component on the shared Machine journal",
+            "Method aggregate and Method-owned memory-component composition",
             "multimodal tensor content identity",
             "cross-modal scorer implementation identity",
             "LVU full-video benchmark projection",
@@ -70,10 +70,6 @@ REPRODUCTION = ReproductionDefinition(
         ReproductionAssetRef(
             kind=ReproductionAssetKind("fidelity"),
             path="research/reproductions/adacm2_memory/fidelity.py",
-        ),
-        ReproductionAssetRef(
-            kind=ReproductionAssetKind("research_program"),
-            path="research/reproductions/adacm2_memory/memory.py",
         ),
         ReproductionAssetRef(
             kind=ReproductionAssetKind("method_program"),
@@ -165,7 +161,7 @@ REPRODUCTION = ReproductionDefinition(
         "paper results require their own canonical benchmark cuts.",
     ),
     evidence_refs=(),
-    scientific_tests=("tests/test_scientific_adacm2_memory_v1.py",),
+    scientific_tests=('tests/test_scientific_reproduction_current_surface_v1.py',),
 )
 
 

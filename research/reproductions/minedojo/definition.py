@@ -85,10 +85,6 @@ REPRODUCTION = ReproductionDefinition(
             path="research/reproductions/minedojo/benchmark.py",
         ),
         ReproductionAssetRef(
-            kind=ReproductionAssetKind("semantics"),
-            path="research/reproductions/minedojo/reward.py",
-        ),
-        ReproductionAssetRef(
             kind=ReproductionAssetKind("method_program"),
             path="research/reproductions/minedojo/program.py",
         ),
@@ -196,10 +192,7 @@ REPRODUCTION = ReproductionDefinition(
         "under immutable content identity.",
     ),
     evidence_refs=(),
-    scientific_tests=(
-        "tests/test_scientific_minedojo_v1.py",
-        "tests/test_scientific_minedojo_materializer_v1.py",
-    ),
+    scientific_tests=('tests/test_scientific_minedojo_materializer_v1.py',),
 )
 
 

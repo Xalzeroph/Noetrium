@@ -2,8 +2,8 @@
   "schema": "noetrium.reproduction.projection.v10",
   "authority": "generated_from_typed_definition_and_source",
   "package": "swe_agent_swebench",
-  "package_digest": "a1ee063424cf729c378381f43b10cadf02d532ea2756f12e6aa47e06619ab816",
-  "definition_digest": "a9381873b0de38b4299667de23e06251da7abd0ae6c0d9c8cf364756402632f8",
+  "package_digest": "780a95d2fb1cc3891ad80d6dca0df6894cab13c8a567ff6d981f4a48b6e0dc78",
+  "definition_digest": "ff2a1d2d1225b725121057c73d7165fe5abf6536f700754bb524d966956389de",
   "source_registry_digest": "00d44a186c1cdf9c7c0a7a546005f4f887b308f8096c14115aa63208447f17d3",
   "lifecycle": "protocol_bound",
   "identity": {
@@ -72,25 +72,25 @@
       "kind": "method_program",
       "path": "research/reproductions/swe_agent_swebench/program.py",
       "declaration_digest": "c1d5d1b489e68ab5cbce2fb68daf39ef4d5d5c1c6c3c9d8fb27d547cf80b9eca",
-      "content_sha256": "d4c8a72a2123e18f85fd2e73befe4565edd1fdb140988350d707dc836a3bb027"
+      "content_sha256": "91444d9f7b6401a5c8cf7d8c9b2063b96dcb3e5c4a21dc4b9a69d7be3c3e0a3e"
     },
     {
       "kind": "study",
       "path": "research/reproductions/swe_agent_swebench/study.py",
       "declaration_digest": "e4af5af79b89b46ce7ca389081d802b5ca6db16b5252122612ddc62b51ee8940",
-      "content_sha256": "8083ffd50ed74d71c82190bef9a3aba9c639a8dd1b1dd1770bc94ee52d2b0e37"
+      "content_sha256": "006af56946b33d849ead3d6a5089305ce5a1af9c309332af475c743af1a13fdc"
     },
     {
       "kind": "support",
       "path": "research/reproductions/swe_agent_swebench/aci.py",
       "declaration_digest": "36b1f3f4f57f2e7b9785de4c1df3450ad2f8657b342a4b62663db047cefc25f3",
-      "content_sha256": "cea96ed86163426d3e8d65279a04cf072cf930823c2f5e6fcf82866de904d2b9"
+      "content_sha256": "72a4d917a759e574cab615c49c608ab3c010e28c1bbab2c68ff0694b430295e1"
     },
     {
       "kind": "support",
       "path": "research/reproductions/swe_agent_swebench/history.py",
       "declaration_digest": "cb18aa7a2bae3b15be951c2930e8f7aab642429be5dc1e81f5d32db6c053278e",
-      "content_sha256": "0bc7c934ee878e1839c8dd2ec41563402426d8156a5559e6481863862056968e"
+      "content_sha256": "166a680e99dd7c3dbef92b77f5a969b6834f27d17766f25991bd4c09d6e8ddaa"
     }
   ],
   "primary_executable": "research/reproductions/swe_agent_swebench/program.py",
@@ -123,23 +123,15 @@
   "evidence_refs": [],
   "scientific_tests": [
     {
-      "path": "tests/test_scientific_swe_agent_07_v1.py",
-      "content_sha256": "b24dcee0c051f5070dfacb6fca4f4a2441b37edd8ce7c9c827ba0693238ac985"
-    },
-    {
-      "path": "tests/test_scientific_swe_agent_method_program_v1.py",
-      "content_sha256": "c707428dbd01b8097f72319691332f085a75d8318d932e184b5b1cb0275db58b"
-    },
-    {
-      "path": "tests/test_scientific_swe_agent_swebench_fidelity_v1.py",
-      "content_sha256": "82150b65e2b6e40f7137d2186425c9bfc80b04c05c292aea55b469b9aac42a5c"
+      "path": "tests/test_scientific_reproduction_current_surface_v1.py",
+      "content_sha256": "5cae8776ad9aa1c8ae953ba5c3a39ef41dca692a1bcd9c0bd4f173b43e0719db"
     }
   ],
   "research_os": {
     "surface": "noetrium.api",
     "execution_state": "benchmark_authority_required",
     "program_id": "swe_agent_swebench",
-    "program_digest": "07a98a00a3bc4b02c2f3913af1aceeb839aca4d1efe97b6a0f2ab98c099b78ac",
+    "program_digest": "3e31086d959ad93e8701edf173b54f1b6f32c492527a19ba10ee460e1cecf9b7",
     "benchmark_authority": {
       "state": "required",
       "selection_digests": [],

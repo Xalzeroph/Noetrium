@@ -9,7 +9,7 @@
       "reproductions": [
         {
           "package": "react_alfworld",
-          "package_digest": "6d015027f43987b60b0aad5f43faadb11f998738d55b661f28e3b0883d48dc95",
+          "package_digest": "3b9939ad630025dc81dd70ec9a14ce37e2f7f88b0954ee0fa02358d9c34feede",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "alfworld",
@@ -32,7 +32,7 @@
             {
               "kind": "method_program",
               "path": "research/reproductions/react_alfworld/program.py",
-              "content_sha256": "79f0428dd63bc86b5a2ad93a810d8ef805487b29ab5eddef6113c4944902472d"
+              "content_sha256": "e88d6dbb3d7c0daf30615e959233dc2f79d9bb0186f3714ce3d6140551b63633"
             },
             {
               "kind": "semantics",
@@ -42,7 +42,7 @@
             {
               "kind": "study",
               "path": "research/reproductions/react_alfworld/study.py",
-              "content_sha256": "2e1aacb6e20fac43e0f9e358aec0e7689626eb7a2e5570776db076b17f10de82"
+              "content_sha256": "8b807e974654bf827a4447302827789c3aa58ac8f6358f7bc390605d7a2ed395"
             },
             {
               "kind": "support",
@@ -61,14 +61,6 @@
           "fidelity_delta_count": 2,
           "scientific_tests": [
             {
-              "path": "tests/test_scientific_react_alfworld_fidelity_v1.py",
-              "content_sha256": "4bf82d92de46a99d791786f8ae2d99b4d1c272334f1a4852d50c5243c5f3fa2a"
-            },
-            {
-              "path": "tests/test_scientific_react_alfworld_method_program_v1.py",
-              "content_sha256": "dc5e549d5e7ba08e9a77ff127fbcc4a203b262858c6fe0ae859505674e097f61"
-            },
-            {
               "path": "tests/test_scientific_react_alfworld_protocol_v1.py",
               "content_sha256": "841786650b37e1806f9353fdbf156dd09b22122f87df8bb6ae572cc75708df6a"
             }
@@ -81,7 +73,7 @@
       "reproductions": [
         {
           "package": "self_refine",
-          "package_digest": "1374d96768005230f6515ebc23924036d4678913b7279f5474711862bef2a767",
+          "package_digest": "96973f7b1ebb0cc9a9fba3db89e05acd262a51395f59d2ca2bc4ded677f707bb",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "commongen"
@@ -103,12 +95,12 @@
             {
               "kind": "method_program",
               "path": "research/reproductions/self_refine/program.py",
-              "content_sha256": "3ce36bfed3eeb87af19bc668878c56efb331174062205ad85bc40658b72e41ce"
+              "content_sha256": "cf55cad13ffd89de66e50e16f99fb4651723c18d1ca483376824e102df516c89"
             },
             {
               "kind": "study",
               "path": "research/reproductions/self_refine/study.py",
-              "content_sha256": "70c3d3040baaca70f5335e487160c97ec1fa469e8468de2f8b1c9efbb7637463"
+              "content_sha256": "ded05bed6cf7351b2a3067122d2a57061faada0687142397fcb056a1e1f35823"
             }
           ],
           "blockers": [
@@ -121,20 +113,12 @@
           "fidelity_delta_count": 0,
           "scientific_tests": [
             {
-              "path": "tests/test_scientific_commongen_benchmark_v1.py",
-              "content_sha256": "2115c10c95ed2d95ae3a48c8f592e0eba6b78c3d32262c041cf2c990d5c95b06"
-            },
-            {
               "path": "tests/test_scientific_reference_self_refine.py",
               "content_sha256": "e24a1340878831aea12bfb5f845ba68f285f581c7ef26a943a6f048aae2ea557"
             },
             {
-              "path": "tests/test_scientific_self_refine_commongen_method_program_v1.py",
-              "content_sha256": "8168268016f0497db05db1c0ea34a1ccfaf7bdacbcdbad036d5d942ad8daea3d"
-            },
-            {
               "path": "tests/test_scientific_self_refine_v1.py",
-              "content_sha256": "15f3f855f5fbdedc4e26c6804c9c58f8d3f2eaccf6f6aa5618a9ed6950c1b94e"
+              "content_sha256": "84764a74e831d52abc8d62cdf61bc247ab1eb629148d971c39150ca6f7bbf462"
             }
           ]
         }
@@ -145,7 +129,7 @@
       "reproductions": [
         {
           "package": "reflexion_alfworld",
-          "package_digest": "443a0e0acb3ea117fa0629af70845495ba90d6c7f735b7255bce41adc8df9847",
+          "package_digest": "91f008b5484ce87ab013ee51c917095cf8d10363c74b5e198ebc267826958ebe",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "alfworld"
@@ -167,7 +151,7 @@
             {
               "kind": "method_program",
               "path": "research/reproductions/reflexion_alfworld/program.py",
-              "content_sha256": "eba6422ee80a5ec97f6213f87fb19f5a2db7790b792c0118089b194272a9f4a6"
+              "content_sha256": "8c0ef520d96845cf82c296dc31f5a7d7c556b3c95b713c5c06e3ce9352113268"
             },
             {
               "kind": "semantics",
@@ -177,7 +161,7 @@
             {
               "kind": "study",
               "path": "research/reproductions/reflexion_alfworld/study.py",
-              "content_sha256": "37984a310c6217c408d0b9d5ea36ddae642574540109d3efe360c90f6b0fe59f"
+              "content_sha256": "b32530c015bce78a6f7cca7336e18bcbd41665baa9076ae14de8daa83e07ed37"
             },
             {
               "kind": "support",
@@ -196,15 +180,11 @@
           "scientific_tests": [
             {
               "path": "tests/test_scientific_reflexion_alfworld_fidelity_v1.py",
-              "content_sha256": "452d9eb5a9eaf777040a518c30cc5450a42d16b846a42393c2deb311b0b23002"
+              "content_sha256": "3702b4ef23122b8747678c1c95161106d72c8a2d403fcae40bfff64bf02ce1d6"
             },
             {
               "path": "tests/test_scientific_reflexion_alfworld_v1.py",
-              "content_sha256": "a4c6801fe9fdead18548efcf3e8df52705e6f085ab8a385f55c6341ba190014d"
-            },
-            {
-              "path": "tests/test_scientific_reflexion_method_program_v1.py",
-              "content_sha256": "e632745dc937d79b0b140b502dc45d6cb0393073b6369fbb2ed65ee2945acc47"
+              "content_sha256": "15d27326c40fcb498a724841a3d7a66d63ea9c8963c1d53ff330950613d18bdc"
             }
           ]
         }
@@ -215,7 +195,7 @@
       "reproductions": [
         {
           "package": "tree_of_thoughts",
-          "package_digest": "41b32829d4ce55e542b77a93253eb3f8454ca0bd25fbefba13f218cd1bc86d4c",
+          "package_digest": "5b9d506777adcfe86d22e756542cc3a17603c6b89fb76593feba994b7b7c85ce",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "game24"
@@ -237,12 +217,12 @@
             {
               "kind": "method_program",
               "path": "research/reproductions/tree_of_thoughts/program.py",
-              "content_sha256": "c758f6be1d39be27014bb5894ee56c237a27741fadfd878775e4aa9dfa852f21"
+              "content_sha256": "2130c5a00f27750ce13cab0fd751f00f8d593cac63f614ee4e71e047ca5e2029"
             },
             {
               "kind": "study",
               "path": "research/reproductions/tree_of_thoughts/study.py",
-              "content_sha256": "22c94c937a30c1fad331ee23c0b475d8fa55d2a7824d83c31d7a4db787d5686a"
+              "content_sha256": "a53ecf7a46a1a2209f20e360b189aac3adbd1fc62ba25ca641b40b0d732fe545"
             },
             {
               "kind": "support",
@@ -260,11 +240,7 @@
           "scientific_tests": [
             {
               "path": "tests/test_scientific_tree_of_thoughts_fidelity_v1.py",
-              "content_sha256": "e1ab3150bd2c7ac2bf59119fcb2addc4e9b19272e4e05a27526cb7367bc63b11"
-            },
-            {
-              "path": "tests/test_scientific_tree_of_thoughts_method_program_v1.py",
-              "content_sha256": "4fe1f6a22d6d34458f14a7355ee069c0ce8395b9627a7d2918c045d87242c8a1"
+              "content_sha256": "93c40f8d1eff792797bee942d45a03b240a868ec235dcace81e3888bed6dc692"
             }
           ]
         }
@@ -275,7 +251,7 @@
       "reproductions": [
         {
           "package": "rap_reasoning",
-          "package_digest": "0fa0696811325eda6f9d13051fc87d5b4dc1355b88aeb6fa965db8c320e86925",
+          "package_digest": "a08307c5081db133bb732cb13a2dc48fcc6d0fe50399bc7bfde60ea3324aa2b7",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "blocksworld"
@@ -297,12 +273,12 @@
             {
               "kind": "method_program",
               "path": "research/reproductions/rap_reasoning/program.py",
-              "content_sha256": "9b67472754370bbab5133a1a5610df039075232ab7115e94cacef6fb89328f54"
+              "content_sha256": "d1c5412cfbb330b503a6a555bf7cc3a53fe192d00afdb46e586db651862b1b06"
             },
             {
               "kind": "study",
               "path": "research/reproductions/rap_reasoning/study.py",
-              "content_sha256": "01d1baf2f33751280c35b02e1b6cfdd49f1fe4dc48a514ae2ad1ec7dc2d0b097"
+              "content_sha256": "61ed0dadcdeeb9167a0e1620357c44bc0c0c51cf26f785ecf99ee0ec807b019e"
             },
             {
               "kind": "support",
@@ -319,12 +295,8 @@
           "fidelity_delta_count": 1,
           "scientific_tests": [
             {
-              "path": "tests/test_scientific_rap_method_program_v1.py",
-              "content_sha256": "a08f96f0eddd3fa395f38a0f3589cddcfe61ca04f5ede8641fc492ac1a717813"
-            },
-            {
               "path": "tests/test_scientific_rap_reproduction_v1.py",
-              "content_sha256": "521174c2b202e1c3382af7d3962ff49b700b92d7c1676f0686d6543539e408b9"
+              "content_sha256": "dcf8e0f2bcc9598c9fa41eb935b5e58ee4f78d4e985ff89f3363c31dbd80391b"
             }
           ]
         }
@@ -335,7 +307,7 @@
       "reproductions": [
         {
           "package": "lats_webshop",
-          "package_digest": "3d3c9128e66d99a24763de513fb8da3da875d9e5d7febb09d1c8e71972ccc636",
+          "package_digest": "34d9ef7df6d8d03beb936a0f10c45035981e2cd1c167f9f6e4d4cb888588c96d",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "webshop"
@@ -357,17 +329,12 @@
             {
               "kind": "method_program",
               "path": "research/reproductions/lats_webshop/program.py",
-              "content_sha256": "910430aa011b87a0d8afc1f2312c1adb3be64375902f88f68202fd0908ce8f57"
+              "content_sha256": "27ecbf1f1d97fa02f6daf36355b8682ac35c5a6db0407b3b9da89f586f24fde9"
             },
             {
               "kind": "study",
               "path": "research/reproductions/lats_webshop/study.py",
-              "content_sha256": "7a7b8739982c9082c07a8bc6ea93173c734bb4e027fa92f8b4e9738ff593c4e2"
-            },
-            {
-              "kind": "support",
-              "path": "research/reproductions/lats_webshop/branch.py",
-              "content_sha256": "570e71367e437469af8a6ad9ee60ff81e2f9d64584b5ef056aefc42282b1f1e4"
+              "content_sha256": "95d5bfe093fde8ff58826adcf53d5050943990ac5df3d79253233653934e8f2b"
             },
             {
               "kind": "support",
@@ -391,16 +358,8 @@
           "fidelity_delta_count": 1,
           "scientific_tests": [
             {
-              "path": "tests/test_scientific_lats_method_program_v1.py",
-              "content_sha256": "fda65f91329b8ea7e1b0b3f76e90da6864ceaddd97b601d0d59a4a6d27b70857"
-            },
-            {
               "path": "tests/test_scientific_lats_webshop_v1.py",
-              "content_sha256": "1b503f696c3c692981f2c54c59a8b7e03a5774e5ed5d30c50e0cb433476c013a"
-            },
-            {
-              "path": "tests/test_scientific_parallel_lineage_wave1_v1.py",
-              "content_sha256": "3c869099f90c10f1cb72424126db54cbf21eddb613b5ff1084b7312ed7c4ad17"
+              "content_sha256": "837c3fd80b0224e8d931f74a9481bab2a7c6c13675552a7df1860bac670e587f"
             }
           ]
         }
@@ -411,7 +370,7 @@
       "reproductions": [
         {
           "package": "qlass_alfworld",
-          "package_digest": "68e6a177651603a4f28413f4aeb44909c563f54b8ea2f5754e6f0eaea6a77ef9",
+          "package_digest": "49f17bf9d864a5e9b729f1b4d053141a0edb29fb0b67ed76ebca5eb5279da204",
           "lifecycle": "protocol_bound",
           "benchmark_ids": [
             "alfworld",
@@ -440,17 +399,12 @@
             {
               "kind": "method_program",
               "path": "research/reproductions/qlass_alfworld/program.py",
-              "content_sha256": "4ecdb0987bd330f43a84a3208ccafd85d642a42d3e4d86373bac46cd5f6a0757"
+              "content_sha256": "dd55f2f1c6d99ef380087f74572a8b871b60735503fefc9a4c4e48464ccdf8c1"
             },
             {
               "kind": "study",
               "path": "research/reproductions/qlass_alfworld/study.py",
-              "content_sha256": "efb60c16952923eaba2d4fe36b98f9a45e2bd8a0c1105e6e8c51accfd787d79e"
-            },
-            {
-              "kind": "support",
-              "path": "research/reproductions/qlass_alfworld/branch.py",
-              "content_sha256": "b37aea7a563e4f48e55f1c97cc980e52757972150be17b0e3644ea557487c1c0"
+              "content_sha256": "f9caa4980499b80832a7bedc2e5ef484db4e97546261fe2e54da00a38e5c4742"
             }
           ],
           "blockers": [
@@ -466,17 +420,13 @@
           "fidelity_delta_count": 2,
           "scientific_tests": [
             {
-              "path": "tests/test_scientific_qlass_alfworld_v1.py",
-              "content_sha256": "8d89aba3aca5cf6de612658e7f4249452b86622d196ad1b99b25b70b306d994e"
-            },
-            {
-              "path": "tests/test_scientific_qlass_method_program_v1.py",
-              "content_sha256": "272e4fa33cdaeea5193dbbd843816249c9d4dff215b32d4035d5fd6321cbf0fe"
+              "path": "tests/test_scientific_reproduction_current_surface_v1.py",
+              "content_sha256": "5cae8776ad9aa1c8ae953ba5c3a39ef41dca692a1bcd9c0bd4f173b43e0719db"
             }
           ]
         }
       ]
     }
   ],
-  "projection_digest": "d13af0c80580b2b2d32c13f5bd8f5a14b75ec6f2bf941f9592d1211108fba16d"
+  "projection_digest": "b0c728085219188bb02cbce1c0216bf0cc9421369c731b218cc683bad53df6f5"
 }

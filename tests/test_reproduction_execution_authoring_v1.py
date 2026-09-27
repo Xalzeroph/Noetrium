@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from noetrium import api
+from noetrium_platform.product import research_os as product_research_os
 from noetrium_platform.composition.research_os_graph import (
     compile_research_portfolio_graph,
 )
@@ -56,7 +57,7 @@ def test_top_level_execution_request_preserves_exact_benchmark_split_selection()
 
     portfolio = build_execution_research((request,))
 
-    assert isinstance(portfolio, api.research_os.ResearchPortfolio)
+    assert isinstance(portfolio, product_research_os.ResearchPortfolio)
     assert portfolio.portfolio_id == "repository-reproductions.execution-research"
     assert len(portfolio.programs) == 1
     assert all(
@@ -65,7 +66,7 @@ def test_top_level_execution_request_preserves_exact_benchmark_split_selection()
     )
     assert len({program.program_id for program in portfolio.programs}) == 1
 
-    revision = api.research_os.ResearchGraphRevision(
+    revision = product_research_os.ResearchGraphRevision(
         portfolio.portfolio_id,
         portfolio.portfolio_digest,
         (),

@@ -63,6 +63,7 @@ REPRODUCTION = ReproductionDefinition(
             path="research/reproductions/cogagent/study.py",
         ),
     ),
+    primary_executable="research/reproductions/cogagent/program.py",
     reported_results=(
         ReportedResult(
             claim_id="cogagent_mind2web_cross_task",
@@ -142,7 +143,7 @@ REPRODUCTION = ReproductionDefinition(
         "no matched CVPR execution evidence has yet been produced",
     ),
     evidence_refs=(),
-    scientific_tests=("tests/test_scientific_cogagent_v1.py",),
+    scientific_tests=('tests/test_scientific_reproduction_current_surface_v1.py',),
 )
 
 __all__ = ["REPRODUCTION"]

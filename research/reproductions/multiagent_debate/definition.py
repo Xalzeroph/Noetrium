@@ -46,6 +46,7 @@ REPRODUCTION = ReproductionDefinition(
             path='research/reproductions/multiagent_debate/study.py',
         ),
     ),
+    primary_executable="research/reproductions/multiagent_debate/program.py",
     reported_results=(
     ),
     reference_baselines=(
@@ -54,7 +55,7 @@ REPRODUCTION = ReproductionDefinition(
     ),
     blockers=(),
     evidence_refs=(),
-    scientific_tests=('tests/test_scientific_multiagent_debate_fidelity_v1.py',),
+    scientific_tests=('tests/test_scientific_reproduction_current_surface_v1.py',),
 )
 
 __all__ = ["REPRODUCTION"]

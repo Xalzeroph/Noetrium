@@ -29,15 +29,18 @@ def _text(value: object, field: str, *, allow_empty: bool = False) -> str:
 
 
 def _agent_ids(value: object) -> tuple[str, ...]:
-    if type(value) is not tuple or len(value) < 2:
+    if isinstance(value, (str, bytes, bytearray)) or not isinstance(value, Sequence):
+        raise ValueError("AutoGen GroupChat requires a participant sequence")
+    participants = tuple(value)
+    if len(participants) < 2:
         raise ValueError("AutoGen GroupChat requires at least two participant ids")
-    if any(type(row) is not str or not row.strip() for row in value):
+    if any(type(row) is not str or not row.strip() for row in participants):
         raise ValueError("AutoGen participant ids must be canonical non-empty text")
-    if len(value) != len(set(value)):
+    if len(participants) != len(set(participants)):
         raise ValueError("AutoGen participant ids must be unique")
-    if _MANAGER_AGENT_ID in value:
+    if _MANAGER_AGENT_ID in participants:
         raise ValueError("AutoGen participant id collides with group manager")
-    return value
+    return participants
 
 
 def _transcript(value: object) -> tuple[JsonObject, ...]:
@@ -366,3 +369,7 @@ __all__ = [
     'METHOD_CONFIGURER_ARGS',
     'METHOD_CONFIGURER_KWARGS',
 ]
+
+METHOD_SPEC = {"method_id": 'autogen', "version": "paper-protocol", "semantic_contract": 'autogen' + ".method.v2", "entrypoint": METHOD_ENTRYPOINT}
+
+__all__ = tuple(dict.fromkeys((*__all__, 'METHOD_SPEC')))

@@ -16,6 +16,6 @@ REPRODUCTION=ReproductionDefinition(
         ReferenceBaseline(baseline_id="baseline_02",description="pi_0.5"),
         ReferenceBaseline(baseline_id="baseline_03",description="paper world-model/VLA baselines"),
     ),
-    blockers=("Matched reproduction requires the pinned Motus training code/checkpoints, six-layer data pyramid and RoboTwin 2.0 multi-task dataset cut.", "Real-world claims require exact robot hardware/task protocol and synchronized generated-video/action execution evidence."),evidence_refs=(),scientific_tests=("tests/test_scientific_frontier_2026_wave_03.py",),
+    blockers=("Matched reproduction requires the pinned Motus training code/checkpoints, six-layer data pyramid and RoboTwin 2.0 multi-task dataset cut.", "Real-world claims require exact robot hardware/task protocol and synchronized generated-video/action execution evidence."),evidence_refs=(),scientific_tests=('tests/test_scientific_reproduction_current_surface_v1.py',),
 )
 __all__=["REPRODUCTION"]

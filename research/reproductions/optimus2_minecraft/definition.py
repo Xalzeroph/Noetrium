@@ -169,10 +169,7 @@ REPRODUCTION = ReproductionDefinition(
         "Matched paper-result execution is therefore not claim-ready.",
     ),
     evidence_refs=(),
-    scientific_tests=(
-        "tests/test_scientific_optimus2_minecraft_v1.py",
-        "tests/test_scientific_optimus_long_horizon_67_v1.py",
-    ),
+    scientific_tests=('tests/test_scientific_reproduction_current_surface_v1.py',),
 )
 
 

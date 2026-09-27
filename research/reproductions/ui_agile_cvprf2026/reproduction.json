@@ -2,8 +2,8 @@
   "schema": "noetrium.reproduction.projection.v10",
   "authority": "generated_from_typed_definition_and_source",
   "package": "ui_agile_cvprf2026",
-  "package_digest": "9081321250381a7f47a0d7bfce04104bdb1e319dc97433742d001ccc1c75b76c",
-  "definition_digest": "b37f7e58d6b9ecd223386f2c25b165c779a3aee07580cd88adeb85f8965b6330",
+  "package_digest": "81e25f4690ae441035beacc96788367c801caa553fd7d3b7e79e442570d4ed5b",
+  "definition_digest": "61bab8a2e49a06655411d327efb388607369e7dfcd858e014c568d2317b04902",
   "source_registry_digest": "5cef7fdf56a74ea0ec0a9ac1e0ec2a3bf5f5059a5d320f51b85b563711af9a3a",
   "lifecycle": "protocol_bound",
   "identity": {
@@ -96,13 +96,13 @@
       "kind": "method_program",
       "path": "research/reproductions/ui_agile_cvprf2026/program.py",
       "declaration_digest": "675b188259d7f4b75c0729451d08d45ca4e058b8936c078015221033e8312d77",
-      "content_sha256": "6b930a95defe852c9398d3337c6276d17e5cd33018f60c48c4925d9704c5ca9c"
+      "content_sha256": "6ea622b60565c089d35d6668046e129095db6a626c19d2fa0caf52b09b1f5f58"
     },
     {
       "kind": "study",
       "path": "research/reproductions/ui_agile_cvprf2026/study.py",
       "declaration_digest": "ba4750ce17e6d75f8edc8d64e75b3bbe60fdc6a2051f9d54d385d61d19f08854",
-      "content_sha256": "54d72d3fdcc14e17d72b6595d051e1611e4d7ce52a5c1d733d5b072d9c034af7"
+      "content_sha256": "cc6204277e67308ce26b15705397c688d720456637f6f7ab474b7a5d2a100699"
     }
   ],
   "primary_executable": "research/reproductions/ui_agile_cvprf2026/program.py",
@@ -193,25 +193,26 @@
   "evidence_refs": [],
   "scientific_tests": [
     {
-      "path": "tests/test_scientific_frontier_2026_wave_02.py",
-      "content_sha256": "24b94183020cd24bd2b462fe8dc339d108dd405ec2a878c89bbfc4163f912a32"
+      "path": "tests/test_scientific_reproduction_current_surface_v1.py",
+      "content_sha256": "5cae8776ad9aa1c8ae953ba5c3a39ef41dca692a1bcd9c0bd4f173b43e0719db"
     }
   ],
   "research_os": {
     "surface": "noetrium.api",
     "execution_state": "benchmark_authority_required",
     "program_id": "ui_agile_cvprf2026",
-    "program_digest": "afffaec331dd484bc1b4a74500dc3618e56301a6721adaa7f33a49b4ac702735",
+    "program_digest": "0066af7f536ee07e6f3b329006745f228f14dd000c5d9fd27fc1e85f65650572",
     "benchmark_authority": {
       "state": "required",
       "selection_digests": [],
       "blockers": [
-        "ReproductionResearchOSCompileError:benchmark 'androidcontrol' has no exact repository or materialized authority"
+        "ReproductionResearchOSCompileError:ui_agile_cvprf2026 has multiple Study factories and multiple benchmarks; exact Study-to-benchmark ownership must be paper-owned"
       ]
     },
     "benchmark_split_axis": {
       "required": true,
       "consumers": [
+        "study:build_ablation_matrix",
         "study:build_study"
       ]
     },

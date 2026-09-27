@@ -2,8 +2,8 @@
   "schema": "noetrium.reproduction.projection.v10",
   "authority": "generated_from_typed_definition_and_source",
   "package": "r2d2_acl2025",
-  "package_digest": "ca8e5e441818d09d4702944b2f5cc28b1c37d98da0089a970807b026b2343cd6",
-  "definition_digest": "bbe3561172dcb641e719208eea8385c919e49942e5c4ddf12c29f60c539bc9e4",
+  "package_digest": "d8fdcd828141db3ee9e4d9b5f4725b800ea967ceb334e73b0002488f91bb6277",
+  "definition_digest": "c5824f51140ddfb8109e24159ca41556830476c765bd48feae666e8e0c72af76",
   "source_registry_digest": "8d79934f44114bad0dcb49471b4eb91eb57933384e01bad96921f469dc20e06b",
   "lifecycle": "protocol_bound",
   "identity": {
@@ -72,7 +72,7 @@
       "kind": "benchmark",
       "path": "research/reproductions/r2d2_acl2025/benchmark.py",
       "declaration_digest": "44e7f11702267565d31cd0eabe9fe117beec214f60946dce7a2930ea0b668770",
-      "content_sha256": "3c12822e5b7d438ab25fd520da4d3e2c522484bd20100ed0ada8c432f1973f99"
+      "content_sha256": "934d0a1273a548999a8aa454446b3d0dcefa7c7563e8406f999afcab0bb48c9d"
     },
     {
       "kind": "fidelity",
@@ -84,13 +84,13 @@
       "kind": "method_program",
       "path": "research/reproductions/r2d2_acl2025/program.py",
       "declaration_digest": "46b5d810a45795c657bde411ac7557ed03f247d044f183b167276b95f2bb1005",
-      "content_sha256": "6cbde2ca32a17f842aa82fd7da15ec3a26d255d304bcca44b9f8fa0a3454f98c"
+      "content_sha256": "2a504951110150d9d2ea499b9d6609e960eff5f74fcd1ba152220f247d950a60"
     },
     {
       "kind": "study",
       "path": "research/reproductions/r2d2_acl2025/study.py",
       "declaration_digest": "29cf48064a8a9a40604703d9afc1d553b73305249c58b61666f41c065f4bd05e",
-      "content_sha256": "7a0a5c6277be60580ee685d29bb3dc78c239fe1418f9db5fd07de8497ec8f8b6"
+      "content_sha256": "521e0b9285781643a1ac17d6b312b45e06a65d7661e414c45806c558879a447d"
     }
   ],
   "primary_executable": "research/reproductions/r2d2_acl2025/program.py",
@@ -134,15 +134,15 @@
   "evidence_refs": [],
   "scientific_tests": [
     {
-      "path": "tests/test_scientific_recent_2025_2026_wave_v1.py",
-      "content_sha256": "11a5279b71d1113921dcaf67f385ea09612451fe35e356b9efbb782921b4b5a7"
+      "path": "tests/test_scientific_reproduction_current_surface_v1.py",
+      "content_sha256": "5cae8776ad9aa1c8ae953ba5c3a39ef41dca692a1bcd9c0bd4f173b43e0719db"
     }
   ],
   "research_os": {
     "surface": "noetrium.api",
     "execution_state": "benchmark_authority_required",
     "program_id": "r2d2_acl2025",
-    "program_digest": "8e22d156ccf2691a962f1f81c550d73ca428c2f730c65fd653308a3e83246465",
+    "program_digest": "217c5312ddc32edc844d2b8c9ad74aaacf7c1cf949470e23b29bae33c09ee392",
     "benchmark_authority": {
       "state": "required",
       "selection_digests": [],

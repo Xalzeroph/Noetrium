@@ -54,7 +54,7 @@ REPRODUCTION = ReproductionDefinition(
     ),
     blockers=("Matched execution requires the pinned MM-Mem code/checkpoint and exact four benchmark media cuts.", "Long-video claims require GPU inference receipts and benchmark evaluator artifacts."),
     evidence_refs=(),
-    scientific_tests=("tests/test_scientific_frontier_2026_wave_01.py",),
+    scientific_tests=('tests/test_scientific_frontier_2026_wave_01.py',),
 )
 
 __all__ = ["REPRODUCTION"]

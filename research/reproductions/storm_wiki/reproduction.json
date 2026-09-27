@@ -2,8 +2,8 @@
   "schema": "noetrium.reproduction.projection.v10",
   "authority": "generated_from_typed_definition_and_source",
   "package": "storm_wiki",
-  "package_digest": "4a463e1dbca2c24839a7ff2736b2c1787905b0b696a1fb1ec1583040cf958236",
-  "definition_digest": "6984850bbaaa1139acee2db5aee2b4bfbeb80ccd94ddd7f49c298c04d45bc06d",
+  "package_digest": "fcb9f6666201e3d7064ddda2f134b3411741ad2779cbd0a59151e09d92d77e61",
+  "definition_digest": "817a5c4c030cd6df45e3dda16d9d44e1fa31a7936e1b408033cc0344ed13122d",
   "source_registry_digest": "a81615aa99cc6d96340bca8447ebe87504c9bdb0bcc0f961f51286299458a9b0",
   "lifecycle": "protocol_bound",
   "identity": {
@@ -96,19 +96,19 @@
       "kind": "method_program",
       "path": "research/reproductions/storm_wiki/program.py",
       "declaration_digest": "4379726c42ff8db6190cb47dd44230d7b3e17aaca7c16787e5b10bcf47bd3acd",
-      "content_sha256": "ac52ea50baac059daba9b304fb8c7dce197ff28b986a7130dc923f060b610598"
+      "content_sha256": "0e37927f0ba6eb92feb2739f5cd290272aa25f436211b93a3f2575583a3d57d5"
     },
     {
       "kind": "study",
       "path": "research/reproductions/storm_wiki/study.py",
       "declaration_digest": "4141ae8f24e3a995b5d418446f42488eb924974525e0bc8eb81a66ebe477e9f1",
-      "content_sha256": "aab75853c518941226a28069685e8dd5adfdf054dda7f3a90dcf771b69d1cbe3"
+      "content_sha256": "8aaa0e0cce661116e0d2de023e2516bf89281b9eab2fb33bb62b5f9c5e0e6837"
     },
     {
       "kind": "support",
       "path": "research/reproductions/storm_wiki/pipeline.py",
       "declaration_digest": "f40fb7c1b9f90211b6f540a520c1f188d25dc986573732374cc9f7c1c69eba08",
-      "content_sha256": "225662fbe33f945370fe5faea2816e664d9dad90d5f7514943fe1d6dd279f30f"
+      "content_sha256": "fce68d9c8cc9099b2e192f3203ad3f977417876fbd3c326fb66898ff3f089b4f"
     }
   ],
   "primary_executable": "research/reproductions/storm_wiki/program.py",
@@ -156,19 +156,15 @@
   "evidence_refs": [],
   "scientific_tests": [
     {
-      "path": "tests/test_scientific_storm_method_program_v1.py",
-      "content_sha256": "07fe4d3e60f72d1f3ddc33b943fd8cb34a7c976fae9784f0b6a78bf65a105455"
-    },
-    {
       "path": "tests/test_scientific_storm_wiki_v1.py",
-      "content_sha256": "1f3205677e20c3a12ea58a1ca38f15ac216b78dd0786d4c3d1e0b5f596f72163"
+      "content_sha256": "9f5c4d871501875ba380818d3da5e0d7ddb829b26c21b2db1fa736c6ed437cd8"
     }
   ],
   "research_os": {
     "surface": "noetrium.api",
     "execution_state": "benchmark_authority_required",
     "program_id": "storm_wiki",
-    "program_digest": "73ed180e58a6417e5b4e30663f3ac7a2fd2b5e4d2a4f115a4d4eb12f5ca68234",
+    "program_digest": "c61982fd6fb420dca88d05986f5eb354fbbe1658627db5c6094b9068e7f59479",
     "benchmark_authority": {
       "state": "required",
       "selection_digests": [],

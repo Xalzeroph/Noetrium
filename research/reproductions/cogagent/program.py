@@ -159,3 +159,7 @@ __all__ = [
     'METHOD_CONFIGURER_ARGS',
     'METHOD_CONFIGURER_KWARGS',
 ]
+
+METHOD_SPEC = {"method_id": 'cogagent', "version": "paper-protocol", "semantic_contract": 'cogagent' + ".method.v2", "entrypoint": METHOD_ENTRYPOINT}
+
+__all__ = tuple(dict.fromkeys((*__all__, 'METHOD_SPEC')))

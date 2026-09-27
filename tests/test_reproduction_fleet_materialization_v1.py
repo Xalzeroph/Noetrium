@@ -173,7 +173,10 @@ def test_materialized_fleet_compiles_exact_study_and_bound_program(monkeypatch) 
     assert lane.program.program_id == (
         "adaptagent_acl2025." + lane.binding.binding_digest[:24]
     )
-    assert lane.program == materialized.portfolio.programs[0]
+    assert lane.program in materialized.portfolio.programs
+    assert {row.program_id for row in materialized.portfolio.programs} == {
+        row.program.program_id for row in materialized.lanes
+    }
     assert len(lane.lane_digest) == 64
     assert len(materialized.materialization_digest) == 64
 

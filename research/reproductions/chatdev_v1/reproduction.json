@@ -2,8 +2,8 @@
   "schema": "noetrium.reproduction.projection.v10",
   "authority": "generated_from_typed_definition_and_source",
   "package": "chatdev_v1",
-  "package_digest": "b55a0d9d123f78d9d04e8b1b8340bfaefeb0d1b004fbe3a2c626e8f03de002be",
-  "definition_digest": "596185b0e8a4c8ff69611e15bb9504734d6d7575f0a187ab1214d235499e61d2",
+  "package_digest": "edae84c5aea34e43ce27503b0383a1e569bc62c25ed8f2d571251eceeb2de20c",
+  "definition_digest": "f8a4fe52e1a749d9463eca4522fb0dfd6443b816d1df571dbb5766100647b5ca",
   "source_registry_digest": "ef8ddd9ce1f6e9a889a6c727ad6145b62925d7559d7022c815721004d1c57702",
   "lifecycle": "protocol_bound",
   "identity": {
@@ -102,43 +102,25 @@
       "kind": "method_program",
       "path": "research/reproductions/chatdev_v1/program.py",
       "declaration_digest": "48f8fe7c09d9686c1e7b154acc7738b706846aba9ef263c81d1b5e286e396242",
-      "content_sha256": "b0bc4bbfdd87cbb3a36735e5747fbd8077c2a68e74f143bcd17146da0dfe7358"
-    },
-    {
-      "kind": "research_program",
-      "path": "research/reproductions/chatdev_v1/environment.py",
-      "declaration_digest": "979fd03cda20203ba96dcafcf2acd8b142e065b9ab9a4d005ffbbd5cc2ad4fc0",
-      "content_sha256": "805400d61a3a45ef3042e01e678849ebb651efe54afaef8de25ff38adadd67af"
-    },
-    {
-      "kind": "research_program",
-      "path": "research/reproductions/chatdev_v1/runtime.py",
-      "declaration_digest": "a6680fb41432d2bfbf309ddd761e50d1a5e1936b237d49cd9fc5fe02459d2207",
-      "content_sha256": "56ae40d7b2816ad7e0949761d21741c8866f3892098b2905330a3850f6b6e10a"
+      "content_sha256": "dbd93af96bae4fd4d3264f97d234a441b49cb31b897844851d7af069f309805b"
     },
     {
       "kind": "study",
       "path": "research/reproductions/chatdev_v1/study.py",
       "declaration_digest": "37320fc0759d79f291c09466826f67cb178053bd988fd206ee61719771a71d2e",
-      "content_sha256": "805bb44f98b244168f2619faef00986617dd5bb18ebf57a605634bb0ca0bd437"
+      "content_sha256": "90ac14122f2817e1128e4671db403614fa8312c887fa00c17fc8784d2ff207d2"
     },
     {
       "kind": "support",
       "path": "research/reproductions/chatdev_v1/chain.py",
       "declaration_digest": "dd4eff6ffe9ca6910735ba81eb63a06398477470ff9787e97f3191d1deb9094a",
-      "content_sha256": "e2785b8c68fc3f57a4f874183fa04c0f4e4063878757c925567f2249355b7825"
+      "content_sha256": "b65f43b8cbd6b8914989cf15a58d867e7e451782145a04dae5b717900433ec4c"
     },
     {
       "kind": "support",
       "path": "research/reproductions/chatdev_v1/source.py",
       "declaration_digest": "9b74f142c3e86ffd0d3493b0e1252a5373febd70008e52e29f32128558bca331",
       "content_sha256": "7eef78e11eb13bb9293b8dfa78167a26bdac69b224dfb68ce5823f79d0b49c4f"
-    },
-    {
-      "kind": "support",
-      "path": "research/reproductions/chatdev_v1/workspace.py",
-      "declaration_digest": "0fb1c120c0ff5aed5f21e8dff64efb60f85fca967b987a09590615066bffca5f",
-      "content_sha256": "ef5b6fd7444ed5a48a2670a2e29a5d9d243d24f43861d30c10d245c1e5a98f51"
     }
   ],
   "primary_executable": "research/reproductions/chatdev_v1/program.py",
@@ -159,27 +141,15 @@
   "evidence_refs": [],
   "scientific_tests": [
     {
-      "path": "tests/test_scientific_chatdev_method_program_v1.py",
-      "content_sha256": "a1b489988d8436ec6525da319bd623e3e556f5058c214035021e0393de1dac76"
-    },
-    {
-      "path": "tests/test_scientific_chatdev_phase_runtime_v1.py",
-      "content_sha256": "009653c7b0a0a46940c27b23eaf5fc578baf57f1030647e6a483f7c6d8265e0b"
-    },
-    {
       "path": "tests/test_scientific_chatdev_v1.py",
-      "content_sha256": "5398fdfaab5e6cd061feca923032a6305eb873b254a0bacb55a3664bca9abad7"
-    },
-    {
-      "path": "tests/test_scientific_chatdev_workspace_v1.py",
-      "content_sha256": "b74082d7a182d9b2ba687ddc7a070826fe6dccadc87bc0e1595911a6526891c8"
+      "content_sha256": "9daad80de9ab7de0537e5588d13ed2481a3fa37223d86d8966415e5c43ff5bf2"
     }
   ],
   "research_os": {
     "surface": "noetrium.api",
     "execution_state": "benchmark_authority_required",
     "program_id": "chatdev_v1",
-    "program_digest": "dd61d94246538e435b145a49cc01bc3c1714d0fd41ad780345ec06621fb512db",
+    "program_digest": "a50779dd74723e8f3d5a1b8414459d6221c8ee91a95c3737758df968dd92e0ae",
     "benchmark_authority": {
       "state": "required",
       "selection_digests": [],

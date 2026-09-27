@@ -1,5 +1,9 @@
-from research.reproductions.voyager_minecraft import VOYAGER_MINECRAFT_FIDELITY
-from research.reproductions.webvoyager import WEBVOYAGER_FIDELITY
+from research.reproductions.voyager_minecraft.fidelity import (
+    VOYAGER_MINECRAFT_FIDELITY,
+)
+from research.reproductions.webvoyager.fidelity import (
+    WEBVOYAGER_FIDELITY,
+)
 
 
 def test_webvoyager_preserves_labeled_multimodal_observation_and_action_grammar() -> None:

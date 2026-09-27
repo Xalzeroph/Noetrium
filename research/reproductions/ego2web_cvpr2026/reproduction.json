@@ -2,8 +2,8 @@
   "schema": "noetrium.reproduction.projection.v10",
   "authority": "generated_from_typed_definition_and_source",
   "package": "ego2web_cvpr2026",
-  "package_digest": "d84bc087606189aad8bef31a52a7c4e55764ea508e989837118d87c07b96d5c8",
-  "definition_digest": "89411309c7bc897f299342ade600214d7d7a0ca85ded070e416e9b13cf15d2f5",
+  "package_digest": "6d0425003e2782dae3ef6d6d2011f493cc0cfd3f3d7d51e1d673597d7043fb2b",
+  "definition_digest": "451ef22fe0979d55030cddd4afb0a9f004eb0873f93e2817d20efe641a9a6d32",
   "source_registry_digest": "84b00b2edc21f7c1d1c11ea0e7d13884aa5ff6e9ae5b535407b5f2014d87c39d",
   "lifecycle": "protocol_bound",
   "identity": {
@@ -81,13 +81,13 @@
       "kind": "method_program",
       "path": "research/reproductions/ego2web_cvpr2026/program.py",
       "declaration_digest": "d1a77cb8a457b2a5c216e7edb32c155b4e0c5d0ca17ec7aa16c80301e66d6757",
-      "content_sha256": "2de6c77fb4d432c422d4d465e717b09839b3733b7a7c0cd966dd39af8c6de88b"
+      "content_sha256": "8148d1cca9b81379a4ebde32c11e50d297d992807a83264b4e5a4931d36d2ec6"
     },
     {
       "kind": "study",
       "path": "research/reproductions/ego2web_cvpr2026/study.py",
       "declaration_digest": "4d000f9dfc2a6bfe21b797431914ea4bad712b966d30ce66c6bb1085aa484ff7",
-      "content_sha256": "16649a1cfb22b0016a2167b09f19246c32dd29621112d5435db9f89fad6af954"
+      "content_sha256": "834ec0bf482d61db9f10f902781b99890629b473ba0d2e6ffdefc68dad1e5a9e"
     }
   ],
   "primary_executable": "research/reproductions/ego2web_cvpr2026/program.py",
@@ -140,7 +140,7 @@
     "surface": "noetrium.api",
     "execution_state": "benchmark_authority_required",
     "program_id": "ego2web_cvpr2026",
-    "program_digest": "39cc2f49daaf363704d2dca4294def64ccf9e053ba9deaaff002f73f1c81b5e4",
+    "program_digest": "bfcee0714817fdd44d13c23874be8337a7e1feb082d11cf5aa7b8acf3fea3158",
     "benchmark_authority": {
       "state": "required",
       "selection_digests": [],
@@ -151,6 +151,7 @@
     "benchmark_split_axis": {
       "required": true,
       "consumers": [
+        "study:build_ablation_matrix",
         "study:build_study"
       ]
     },

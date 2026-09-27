@@ -2,8 +2,8 @@
   "schema": "noetrium.reproduction.projection.v10",
   "authority": "generated_from_typed_definition_and_source",
   "package": "providellm_memory",
-  "package_digest": "acd7ee85f453c066a6b914ce190592e72c76323c52c7756edf3557d756a5fb63",
-  "definition_digest": "a996e7348737dcf563b34e86f150b0cae75235c6c3da5dbf2dd98f14987854f0",
+  "package_digest": "a20e77df427760d0b3bc590d901a10f9fb81b52e8a983f6808cedd641f14620d",
+  "definition_digest": "913c88150507dcce4b71960d7dc55b629ae27a17c151792c3df0efb2d74fbd8b",
   "source_registry_digest": "9e2a5d1186f95a8f45699ceebf02fe6c91c0af32ce912a7e1d4f40d4192a3979",
   "lifecycle": "protocol_bound",
   "identity": {
@@ -46,7 +46,7 @@
       "verbalized long-term text memory"
     ],
     "platform_owned": [
-      "MemoryMachine journal authority",
+      "Method-owned memory component on the shared Machine journal",
       "artifact and evidence identity",
       "benchmark cut identity",
       "multimodal provider execution",
@@ -58,7 +58,7 @@
     "reference_publications": [
       "https://openaccess.thecvf.com/content/ICCV2025/html/Chatterjee_Streaming_VideoLLMs_for_Real-Time_Procedural_Video_Understanding_ICCV_2025_paper.html"
     ],
-    "catalog_digest": "a9b5c3253f9d995a1dad8b3b6a25e6238f7c6b03d6b90fa8a416aae970c48359"
+    "catalog_digest": "41497460b235359171abf93ffbaa84de8c86021f4b10b40ed872128b03904e1d"
   },
   "source_lanes": [
     {
@@ -92,7 +92,7 @@
       "kind": "benchmark",
       "path": "research/reproductions/providellm_memory/benchmark.py",
       "declaration_digest": "e9907ce9ef38fea0675b2746fdf345cecf79e0421b5e2ea6c9c5ef6107fdd496",
-      "content_sha256": "be437e0a9dd831e3a2a4c3c35248dad64abfafaef4e2dc325b874cf6204d76d1"
+      "content_sha256": "0fc8b26cb74f2062b1efab3e83710533df35a7982b1032ecd3c8710c66bdbd3f"
     },
     {
       "kind": "fidelity",
@@ -101,16 +101,16 @@
       "content_sha256": "6a774161525ca409e528019e9c4499693c40d0f7b696bdb0f055b9d74748a720"
     },
     {
-      "kind": "research_program",
-      "path": "research/reproductions/providellm_memory/memory.py",
-      "declaration_digest": "bd8af3b23a07f48e04cf30cfe795cb0d517d4323b46bfa688f336041f404d323",
-      "content_sha256": "73d87f15b2ca7b35c61869b21ee525f32bf1f18e983cd7598f84f2759c8e274c"
+      "kind": "method_program",
+      "path": "research/reproductions/providellm_memory/program.py",
+      "declaration_digest": "1a1e08baed7310f295b0cbe7f156859bdd880cfc6678bf06aa532bb294d0b4de",
+      "content_sha256": "50331b7f1f7a86eb7a6bc4d6b198a67429195df4220ad033beaca2909a35c012"
     },
     {
       "kind": "study",
       "path": "research/reproductions/providellm_memory/study.py",
       "declaration_digest": "ee7ebcf23658701fd3688bded57b5056227e038ac7d39b2c2d090b5ccbb59b00",
-      "content_sha256": "198de0293f1114569a4a28f5cbb70c20d27bdff15f61c1f593235c93f8afbe77"
+      "content_sha256": "f34083a5ab014baae635d6f5d5820b4aebbe717395f73de2c5334744de0a0b6d"
     },
     {
       "kind": "support",
@@ -119,7 +119,7 @@
       "content_sha256": "686473e8a51f54125653129816e2ff3a976db73bcb326498b3bf949bca602cc7"
     }
   ],
-  "primary_executable": "research/reproductions/providellm_memory/memory.py",
+  "primary_executable": "research/reproductions/providellm_memory/program.py",
   "reported_results": [
     {
       "claim_id": "providellm_goalstep_val_map",
@@ -234,15 +234,15 @@
   "evidence_refs": [],
   "scientific_tests": [
     {
-      "path": "tests/test_scientific_providellm_memory_v1.py",
-      "content_sha256": "356442bfd2e2710922970a21d861b65f316b3408aad67c1d8814c1d47b3ea083"
+      "path": "tests/test_scientific_reproduction_current_surface_v1.py",
+      "content_sha256": "5cae8776ad9aa1c8ae953ba5c3a39ef41dca692a1bcd9c0bd4f173b43e0719db"
     }
   ],
   "research_os": {
     "surface": "noetrium.api",
     "execution_state": "benchmark_authority_required",
     "program_id": "providellm_memory",
-    "program_digest": "07d351c7bdd1c08e649715fbdafd70b0fb9d7c5951027bd8d2e44ace4a75679e",
+    "program_digest": "4fdca378fd15898543b20d03a548b8fe4233f3e500882b507a278eadb40bde13",
     "benchmark_authority": {
       "state": "required",
       "selection_digests": [],

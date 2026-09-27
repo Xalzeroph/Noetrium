@@ -4,9 +4,11 @@ import hashlib
 
 import pytest
 
-from research.reproductions.storm_wiki import (
+from research.reproductions.storm_wiki.fidelity import (
     STORM_WIKI_AUDITED_COMMIT,
     STORM_WIKI_REFERENCE_FIDELITY,
+)
+from research.reproductions.storm_wiki.pipeline import (
     STORM_WIKI_STAGE_OUTPUTS,
     StormWikiPipelineState,
     StormWikiStage,

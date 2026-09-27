@@ -55,7 +55,7 @@ REPRODUCTION = ReproductionDefinition(
             "memory plus high-resolution frame LLM input ordering",
         ),
         platform_owned=(
-            "MemoryMachine journal authority",
+            "Method-owned memory component on the shared Machine journal",
             "multimodal tensor content identity",
             "learned operator/model binding identity",
             "benchmark materialization",
@@ -64,12 +64,12 @@ REPRODUCTION = ReproductionDefinition(
     ),
     assets=(
         ReproductionAssetRef(
-            kind=ReproductionAssetKind("fidelity"),
-            path="research/reproductions/rewind_memory/fidelity.py",
+            kind=ReproductionAssetKind("method_program"),
+            path="research/reproductions/rewind_memory/program.py",
         ),
         ReproductionAssetRef(
-            kind=ReproductionAssetKind("research_program"),
-            path="research/reproductions/rewind_memory/memory.py",
+            kind=ReproductionAssetKind("fidelity"),
+            path="research/reproductions/rewind_memory/fidelity.py",
         ),
         ReproductionAssetRef(
             kind=ReproductionAssetKind("benchmark"),
@@ -84,7 +84,7 @@ REPRODUCTION = ReproductionDefinition(
             path="research/reproductions/rewind_memory/source.py",
         ),
     ),
-    primary_executable="research/reproductions/rewind_memory/memory.py",
+    primary_executable="research/reproductions/rewind_memory/program.py",
     reported_results=(
         ReportedResult(
             claim_id="rewind_moviechat_score_gain",
@@ -149,7 +149,7 @@ REPRODUCTION = ReproductionDefinition(
         "canonical Charades-STA benchmark cut and the paper fine-tuning assets.",
     ),
     evidence_refs=(),
-    scientific_tests=("tests/test_scientific_rewind_memory_v1.py",),
+    scientific_tests=('tests/test_scientific_reproduction_current_surface_v1.py',),
 )
 
 

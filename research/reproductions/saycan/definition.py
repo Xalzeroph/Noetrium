@@ -131,10 +131,7 @@ REPRODUCTION = ReproductionDefinition(
         'evaluation provider for plan/execution judgments.',
     ),
     evidence_refs=(),
-    scientific_tests=(
-        'tests/test_scientific_saycan_v1.py',
-        'tests/test_scientific_saycan_benchmark_study_v1.py',
-    ),
+    scientific_tests=('tests/test_scientific_reproduction_current_surface_v1.py',),
 )
 
 __all__ = ["REPRODUCTION"]

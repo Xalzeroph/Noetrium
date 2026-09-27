@@ -12,6 +12,7 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 from noetrium import api
+from noetrium_platform.product import research_os as product_research_os
 from noetrium_platform.composition.research_authority_inputs import (
     normalize_authority_inputs,
 )
@@ -56,7 +57,7 @@ from research.reproductions.research_os import (
     materialize_reproduction_study,
     resolve_benchmark_split_consumers,
     resolve_execution_requirements,
-    resolve_method_program_binding,
+    resolve_method_binding,
     resolve_research_program_bindings,
     resolve_study_factory_bindings,
 )
@@ -302,18 +303,18 @@ def _lane(definition, benchmark_authority: RepositoryBenchmarkAuthority) -> Lane
             if row.kind is ReproductionAssetKind.METHOD_PROGRAM
         )
         if method_assets:
-            method = resolve_method_program_binding(definition)
-            method_program_digest = method.program_digest
+            method = resolve_method_binding(definition)
+            method_program_digest = method.method_digest
         machines = resolve_research_program_bindings(definition)
         machine_program_digests = tuple(
             row.program_digest for row in machines
         )
 
-        portfolio = api.research_os.ResearchPortfolio(
+        portfolio = product_research_os.ResearchPortfolio(
             definition.package + ".current-research-os",
             (program,),
         )
-        revision = api.research_os.ResearchGraphRevision(
+        revision = product_research_os.ResearchGraphRevision(
             portfolio.portfolio_id,
             portfolio.portfolio_digest,
             (),
@@ -412,7 +413,7 @@ def build_plan() -> dict:
                 "top-level reproduction ResearchPortfolio drifted from executable "
                 "reproduction authority"
             )
-        revision = api.research_os.ResearchGraphRevision(
+        revision = product_research_os.ResearchGraphRevision(
             portfolio.portfolio_id,
             portfolio.portfolio_digest,
             (),

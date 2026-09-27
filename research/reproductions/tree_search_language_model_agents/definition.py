@@ -38,10 +38,6 @@ REPRODUCTION = ReproductionDefinition(
             path='research/reproductions/tree_search_language_model_agents/program.py',
         ),
         ReproductionAssetRef(
-            kind=ReproductionAssetKind('support'),
-            path='research/reproductions/tree_search_language_model_agents/branch.py',
-        ),
-        ReproductionAssetRef(
             kind=ReproductionAssetKind('fidelity'),
             path='research/reproductions/tree_search_language_model_agents/fidelity.py',
         ),
@@ -68,7 +64,7 @@ REPRODUCTION = ReproductionDefinition(
     ),
     blockers=('exact hosted GPT-4o deployment snapshots are not fully content-addressed', 'matched browser service/config deployment remains to be bound'),
     evidence_refs=(),
-    scientific_tests=('tests/test_scientific_tree_search_language_model_agents_v1.py',),
+    scientific_tests=('tests/test_scientific_reproduction_current_surface_v1.py',),
 )
 
 __all__ = ["REPRODUCTION"]

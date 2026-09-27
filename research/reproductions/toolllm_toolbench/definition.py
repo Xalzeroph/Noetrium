@@ -50,16 +50,13 @@ REPRODUCTION = ReproductionDefinition(
             kind=ReproductionAssetKind('support'),
             path='research/reproductions/toolllm_toolbench/search.py',
         ),
-        ReproductionAssetRef(
-            kind=ReproductionAssetKind('support'),
-            path='research/reproductions/toolllm_toolbench/selection.py',
-        ),
     ),
     method_configurer=ReproductionMethodConfigurerBinding(
         qualname="build_toolllm_toolbench_method_program",
         kwargs={"retrieval_mode": "oracle"},
         unresolved_parameters=("capability_ids",),
     ),
+    primary_executable="research/reproductions/toolllm_toolbench/program.py",
     reported_results=(
         ReportedResult(
             claim_id="toolllama_dfsdt_average_pass",
@@ -130,7 +127,7 @@ REPRODUCTION = ReproductionDefinition(
         "prompt/service revisions under immutable authority",
     ),
     evidence_refs=(),
-    scientific_tests=('tests/test_scientific_toolllm_dfsdt_v1.py', 'tests/test_scientific_toolllm_toolbench_v1.py', 'tests/test_scientific_toolllm_method_program_v1.py', 'tests/test_scientific_toolbench_cut_v1.py', 'tests/test_scientific_toolllm_study_v1.py'),
+    scientific_tests=('tests/test_scientific_toolllm_dfsdt_v1.py', 'tests/test_scientific_toolbench_cut_v1.py'),
 )
 
 __all__ = ["REPRODUCTION"]

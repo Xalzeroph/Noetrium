@@ -2,8 +2,8 @@
   "schema": "noetrium.reproduction.projection.v10",
   "authority": "generated_from_typed_definition_and_source",
   "package": "qlass_alfworld",
-  "package_digest": "c0301545a66be6d5b34c1b0d79e8553cbc041e2d314bd8836fa7025df2564951",
-  "definition_digest": "6c1ca24aa65adba5bd222ebed3ed260aa2f051c62dadbec51751e6cf4c03efb3",
+  "package_digest": "49f17bf9d864a5e9b729f1b4d053141a0edb29fb0b67ed76ebca5eb5279da204",
+  "definition_digest": "5e124397bfa0dcb8e0da9736488be3e1f4f130a6db68ea7eae0f98ed148f1269",
   "source_registry_digest": "819fd0e885a29c9300eee6b6c1b86d1cea8854f8e10d988bf56fb3022f71ed29",
   "lifecycle": "protocol_bound",
   "identity": {
@@ -92,19 +92,13 @@
       "kind": "method_program",
       "path": "research/reproductions/qlass_alfworld/program.py",
       "declaration_digest": "e4522932c78db1d96a6a71e417332c218b46e1b501328a14347dc56281c04680",
-      "content_sha256": "4ecdb0987bd330f43a84a3208ccafd85d642a42d3e4d86373bac46cd5f6a0757"
+      "content_sha256": "dd55f2f1c6d99ef380087f74572a8b871b60735503fefc9a4c4e48464ccdf8c1"
     },
     {
       "kind": "study",
       "path": "research/reproductions/qlass_alfworld/study.py",
       "declaration_digest": "6db408004daff0eeefcbfdec27dd76481084f3594c37d35dec94880b018a4027",
-      "content_sha256": "54d93d76d18fdbdc86ff912bf458f062ed503f8906c79ba338541a5f37a3d61c"
-    },
-    {
-      "kind": "support",
-      "path": "research/reproductions/qlass_alfworld/branch.py",
-      "declaration_digest": "8237e2be878a95ecb8a917e4e02b8fc5b2f53b906e8a974e55794b3a76fa1559",
-      "content_sha256": "b37aea7a563e4f48e55f1c97cc980e52757972150be17b0e3644ea557487c1c0"
+      "content_sha256": "f9caa4980499b80832a7bedc2e5ef484db4e97546261fe2e54da00a38e5c4742"
     }
   ],
   "primary_executable": "research/reproductions/qlass_alfworld/program.py",
@@ -178,19 +172,15 @@
   "evidence_refs": [],
   "scientific_tests": [
     {
-      "path": "tests/test_scientific_qlass_alfworld_v1.py",
-      "content_sha256": "8d89aba3aca5cf6de612658e7f4249452b86622d196ad1b99b25b70b306d994e"
-    },
-    {
-      "path": "tests/test_scientific_qlass_method_program_v1.py",
-      "content_sha256": "272e4fa33cdaeea5193dbbd843816249c9d4dff215b32d4035d5fd6321cbf0fe"
+      "path": "tests/test_scientific_reproduction_current_surface_v1.py",
+      "content_sha256": "5cae8776ad9aa1c8ae953ba5c3a39ef41dca692a1bcd9c0bd4f173b43e0719db"
     }
   ],
   "research_os": {
     "surface": "noetrium.api",
     "execution_state": "benchmark_authority_required",
     "program_id": "qlass_alfworld",
-    "program_digest": "642df4518bacdb1451e9bd985c6e2fd7a31d87e7dfe8925fd00d2d2230d012a8",
+    "program_digest": "1f4ae6a9a7ddc6c1a9b0bc0b5b3b911d2a15c7ac90d4b942f57a0b84d0851736",
     "benchmark_authority": {
       "state": "required",
       "selection_digests": [],

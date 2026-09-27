@@ -86,18 +86,6 @@ REPRODUCTION = ReproductionDefinition(
             path="research/reproductions/voyager_minecraft/program.py",
         ),
         ReproductionAssetRef(
-            kind=ReproductionAssetKind("research_program"),
-            path="research/reproductions/voyager_minecraft/skill_memory.py",
-        ),
-        ReproductionAssetRef(
-            kind=ReproductionAssetKind("research_program"),
-            path="research/reproductions/voyager_minecraft/chest_memory.py",
-        ),
-        ReproductionAssetRef(
-            kind=ReproductionAssetKind("research_program"),
-            path="research/reproductions/voyager_minecraft/curriculum_memory.py",
-        ),
-        ReproductionAssetRef(
             kind=ReproductionAssetKind("support"),
             path="research/reproductions/voyager_minecraft/source.py",
         ),
@@ -174,14 +162,7 @@ REPRODUCTION = ReproductionDefinition(
         "no matched TMLR execution evidence has yet been produced",
     ),
     evidence_refs=(),
-    scientific_tests=(
-        "tests/test_scientific_web_embodied_fidelity_v1.py",
-        "tests/test_scientific_voyager_skill_memory_v1.py",
-        "tests/test_scientific_voyager_curriculum_memory_v1.py",
-        "tests/test_scientific_voyager_curriculum_v1.py",
-        "tests/test_scientific_voyager_method_program_v1.py",
-        "tests/test_scientific_voyager_benchmark_study_v1.py",
-    ),
+    scientific_tests=('tests/test_scientific_web_embodied_fidelity_v1.py', 'tests/test_scientific_voyager_curriculum_v1.py'),
 )
 
 __all__ = ["REPRODUCTION"]

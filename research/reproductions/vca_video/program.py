@@ -510,3 +510,7 @@ __all__ = [
     'METHOD_CONFIGURER_ARGS',
     'METHOD_CONFIGURER_KWARGS',
 ]
+
+METHOD_SPEC = {"method_id": 'vca-video', "version": "paper-protocol", "semantic_contract": 'vca-video' + ".method.v2", "entrypoint": METHOD_ENTRYPOINT}
+
+__all__ = tuple(dict.fromkeys((*__all__, 'METHOD_SPEC')))

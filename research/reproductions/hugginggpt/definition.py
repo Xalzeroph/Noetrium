@@ -55,6 +55,7 @@ REPRODUCTION = ReproductionDefinition(
         qualname="build_hugginggpt_method_program",
         unresolved_parameters=("expert_capability_ids",),
     ),
+    primary_executable="research/reproductions/hugginggpt/program.py",
     reported_results=(
         ReportedResult(
             claim_id="hugginggpt_gpt35_task_planning_passing",
@@ -161,7 +162,7 @@ REPRODUCTION = ReproductionDefinition(
         "physical concurrent dispatch of one dependency-ready set is not yet expressed by MethodProgram",
     ),
     evidence_refs=(),
-    scientific_tests=('tests/test_scientific_hugginggpt_v1.py', 'tests/test_scientific_hugginggpt_method_program_v1.py'),
+    scientific_tests=('tests/test_scientific_hugginggpt_v1.py',),
 )
 
 __all__ = ["REPRODUCTION"]

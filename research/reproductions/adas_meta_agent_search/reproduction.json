@@ -2,8 +2,8 @@
   "schema": "noetrium.reproduction.projection.v10",
   "authority": "generated_from_typed_definition_and_source",
   "package": "adas_meta_agent_search",
-  "package_digest": "870509b1f25479871eb09eaefe09f14ac432508b1191a6aacfea48dedff4779b",
-  "definition_digest": "914a44cfe1ea062d50779b6fa128f01c541b813e976801cda570819c57fcd17e",
+  "package_digest": "7da43343c08f3f008f40f3e083259b71a917f1c754e4523246f18729ae460ebf",
+  "definition_digest": "2766beefae9555414cf0c3ab3539668f2fe9d3e9f9a929fa2f7cc7e4fb5668e4",
   "source_registry_digest": "0c0b03477d5254347c34f420f4354bb8acbacc56f34dd4a40275e1d128b71eef",
   "lifecycle": "protocol_bound",
   "identity": {
@@ -79,13 +79,13 @@
       "kind": "method_program",
       "path": "research/reproductions/adas_meta_agent_search/program.py",
       "declaration_digest": "ebeae2fe01ef278506a93a321f22cf9b51b3b5a0cf9d1812ed994150ca010bb4",
-      "content_sha256": "b7bc5689162ab478e8c9734b97182463a374cae17f0a71abd1c34fa053168fe8"
+      "content_sha256": "efe66028adcc6b2b9a88c2dd82319bb9a4bf73f468e16ed58367c38c29bd8401"
     },
     {
       "kind": "study",
       "path": "research/reproductions/adas_meta_agent_search/study.py",
       "declaration_digest": "88045ec7767c8d4c6bb0dbc97645bc9eef81135024246b6049a9ba139ef8427e",
-      "content_sha256": "3c5f4ee405c5b55df6c961626a317979b5676fd30505fe582ac75ef4b502415f"
+      "content_sha256": "1a896f24f5a74d8e87bb548d06b04d27450d7d46a6b6ff9f5136aba6f1fa97d4"
     }
   ],
   "primary_executable": "research/reproductions/adas_meta_agent_search/program.py",
@@ -127,23 +127,15 @@
   "evidence_refs": [],
   "scientific_tests": [
     {
-      "path": "tests/test_scientific_adas_method_program_v1.py",
-      "content_sha256": "31fce73ca8e6d372bd428c0dd43ee442928f655dfacc4d06f1427f5ce5886cad"
-    },
-    {
-      "path": "tests/test_scientific_adas_mgsm_study_v1.py",
-      "content_sha256": "012fd986c72a70fc2497f37253633981ba8813520adc79d04d149e92ab1fc4ad"
-    },
-    {
-      "path": "tests/test_scientific_self_evolution_fidelity_v1.py",
-      "content_sha256": "776012157c13e91becddeeccb7c2cd0d9d1ed771f3a6991173b19959fbc8945d"
+      "path": "tests/test_scientific_reproduction_current_surface_v1.py",
+      "content_sha256": "5cae8776ad9aa1c8ae953ba5c3a39ef41dca692a1bcd9c0bd4f173b43e0719db"
     }
   ],
   "research_os": {
     "surface": "noetrium.api",
     "execution_state": "benchmark_authority_required",
     "program_id": "adas_meta_agent_search",
-    "program_digest": "cdb2210364d388552315faef52f9de9e0a4fa65f1beddc5ce5200d15ebf974d5",
+    "program_digest": "66b00ade80bccebfdfb958066bb7010fbde7a8ba7b6a17644feda332f403f215",
     "benchmark_authority": {
       "state": "required",
       "selection_digests": [],

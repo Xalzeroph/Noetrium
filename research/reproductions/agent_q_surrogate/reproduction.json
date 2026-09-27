@@ -2,8 +2,8 @@
   "schema": "noetrium.reproduction.projection.v10",
   "authority": "generated_from_typed_definition_and_source",
   "package": "agent_q_surrogate",
-  "package_digest": "978db7938c261278c5b7c64eb2dc01fac6c713f652a5d326458797927adfd288",
-  "definition_digest": "108cda23e8a1d41749477e818aa8298c7431a9ab24a22ab69348f22fb79f123b",
+  "package_digest": "d02875e57c7d11ae4b31c8d709853206e44e1e0dfd5b7082f613e577a3319cc7",
+  "definition_digest": "179f3a1b90d49b0d3d6dcef163cf5a8607df1f70f2c6439c576e90cfe1165adb",
   "source_registry_digest": "8bdcaf30e155f5233d8316f881d65c740a1d1e5122830c07c1a8978485beadb5",
   "lifecycle": "protocol_bound",
   "identity": {
@@ -87,13 +87,13 @@
       "kind": "method_program",
       "path": "research/reproductions/agent_q_surrogate/program.py",
       "declaration_digest": "8775f5648e7cf212c29699e9be8c3fdcd2e2d631c6427214ae0d48b01e709ef3",
-      "content_sha256": "ea37ade244a3bf0fbc4c66ea45e5aa813b226f7a5289b8fb63a59fb9c1ba8837"
+      "content_sha256": "dd21d668563b03af457806515b3399943fada94103a3fd8830a49608a6a2c428"
     },
     {
       "kind": "study",
       "path": "research/reproductions/agent_q_surrogate/study.py",
       "declaration_digest": "76c02b2c601d914d74d7a324b1547b768cc9924636c13307b08ea02bca686872",
-      "content_sha256": "42f28deb036dbd0548cb5a2be4fa11bb955a28c9ba9ebd1d13b8893a3ac1381c"
+      "content_sha256": "6e9ce71a2282e026ee62f8d7058a23dd511efb85fc2b3af3d4e9ddc02d51fcee"
     }
   ],
   "primary_executable": "research/reproductions/agent_q_surrogate/program.py",
@@ -130,15 +130,15 @@
   "evidence_refs": [],
   "scientific_tests": [
     {
-      "path": "tests/test_scientific_agent_q_surrogate_v1.py",
-      "content_sha256": "cb19f186e021694f5e6fc67b104e060c460fb48ffb394ce4d39d34606b1fc595"
+      "path": "tests/test_scientific_reproduction_current_surface_v1.py",
+      "content_sha256": "5cae8776ad9aa1c8ae953ba5c3a39ef41dca692a1bcd9c0bd4f173b43e0719db"
     }
   ],
   "research_os": {
     "surface": "noetrium.api",
     "execution_state": "benchmark_authority_required",
     "program_id": "agent_q_surrogate",
-    "program_digest": "cbec550dd93549b236a5a703bbf472dd409f4b89d58e18667ce4dbf57339bb13",
+    "program_digest": "0996759a0ea3cdf4dc0af04c7b27b9be1c4f6060c75612251760cc5b3ca31dd4",
     "benchmark_authority": {
       "state": "required",
       "selection_digests": [],

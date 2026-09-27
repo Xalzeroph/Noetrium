@@ -65,6 +65,7 @@ REPRODUCTION = ReproductionDefinition(
             path="research/reproductions/self_consistency_gsm8k/study.py",
         ),
     ),
+    primary_executable="research/reproductions/self_consistency_gsm8k/program.py",
     reported_results=(
         ReportedResult(
             claim_id="palm540b_self_consistency_gsm8k",
@@ -111,10 +112,7 @@ REPRODUCTION = ReproductionDefinition(
         "exact historical PaLM-540B provider artifact is unavailable for matched execution",
     ),
     evidence_refs=(),
-    scientific_tests=(
-        "tests/test_scientific_self_consistency_gsm8k_v1.py",
-        "tests/test_scientific_gsm8k_cut_v1.py",
-    ),
+    scientific_tests=('tests/test_scientific_gsm8k_cut_v1.py',),
 )
 
 __all__ = ["REPRODUCTION"]

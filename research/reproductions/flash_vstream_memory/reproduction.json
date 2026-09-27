@@ -2,8 +2,8 @@
   "schema": "noetrium.reproduction.projection.v10",
   "authority": "generated_from_typed_definition_and_source",
   "package": "flash_vstream_memory",
-  "package_digest": "c31d8976f4d8fcd8369556e1c7eff3fa4ccd3606c8b19dda95925123504d7d20",
-  "definition_digest": "6f70aeb092934ebc9f9088a759d2c847d17d047ed3481e22f0ff61cbf1c5124b",
+  "package_digest": "e3dd7afac23c68a4811ced3d4a1095c4a3bb7bb21c8095f1508d329dc02ec4ab",
+  "definition_digest": "73fffba0f4ca47a1a0ffebc47d118fd8fa270bab13ec903457253771ce7e41f0",
   "source_registry_digest": "7d6fdeedd563fb8fff5cec18bda0051a643425a48a5a9943c6d5cddb34c9f8a9",
   "lifecycle": "protocol_bound",
   "identity": {
@@ -46,8 +46,8 @@
       "memory-aware rotary-position semantics"
     ],
     "platform_owned": [
-      "MemoryMachine journal authority",
-      "MethodProgram and child-memory-machine composition",
+      "Method aggregate and Method-owned memory-component composition",
+      "Method-owned memory component on the shared Machine journal",
       "benchmark cut identity",
       "immutable tensor content references",
       "multimodal model transport",
@@ -59,7 +59,7 @@
     "reference_publications": [
       "https://openaccess.thecvf.com/content/ICCV2025/html/Zhang_Flash-VStream_Efficient_Real-Time_Understanding_for_Long_Video_Streams_ICCV_2025_paper.html"
     ],
-    "catalog_digest": "1e48ca7829c209b6f84eef1ecc6498b626ec5408efe9c0d2a4496905dfd09485"
+    "catalog_digest": "db3e4289432b0c318cf43c3904cfec6470486a1aa31602705c863bce557399eb"
   },
   "source_lanes": [
     {
@@ -106,7 +106,7 @@
       "kind": "benchmark",
       "path": "research/reproductions/flash_vstream_memory/benchmark.py",
       "declaration_digest": "cab3cebd7c4a1539af696eebbc83db225b48d34325b8f3e2c65c74adcb19a8d6",
-      "content_sha256": "5267c578b67cfce7ac870e7d210319719f0ba2f300d5d1d2b5257fb02aa4002a"
+      "content_sha256": "fb7636e3a59acdcc021c31e13b7eb61dee170ae2baf5c08d6d811a63f32c468e"
     },
     {
       "kind": "fidelity",
@@ -118,19 +118,13 @@
       "kind": "method_program",
       "path": "research/reproductions/flash_vstream_memory/program.py",
       "declaration_digest": "5e7d40b13a3ac4411ea8069d4ef5671c9d854104209db99a602fa9900526c84b",
-      "content_sha256": "c5c1c0bb2bb48556a1e26175be21d8e77c480020a4202767e23f5c6ae21b5488"
-    },
-    {
-      "kind": "research_program",
-      "path": "research/reproductions/flash_vstream_memory/memory.py",
-      "declaration_digest": "4cc0d6c059c38bfc51f087f2df258e590a2376083839516743b790413a7e335e",
-      "content_sha256": "c7117585d6285172387208fcd17eb245018cfbd5c30377a2221b0b9c4c2388f1"
+      "content_sha256": "f481627c60d696bd883da20d573b9e37a19e8d1b0b92019483376f9009bc1b55"
     },
     {
       "kind": "study",
       "path": "research/reproductions/flash_vstream_memory/study.py",
       "declaration_digest": "7e49631c462841adedd1d11c3ffff5f218bb68a4eb38cfb7241ab9c6b228a21f",
-      "content_sha256": "e8b9314d5258e8a84b64156a8be3228812c28e439552d6576514ccf19e9a0949"
+      "content_sha256": "0d9566e41a22892244fa6a435a09cda15d117977a62c7a5d88d262cf63c8983f"
     },
     {
       "kind": "support",
@@ -208,15 +202,15 @@
   "evidence_refs": [],
   "scientific_tests": [
     {
-      "path": "tests/test_scientific_flash_vstream_memory_v1.py",
-      "content_sha256": "227ac69d76b40d08d2d0f737e547eeb7a13146130283d5402ee416b7ca6188b2"
+      "path": "tests/test_scientific_reproduction_current_surface_v1.py",
+      "content_sha256": "5cae8776ad9aa1c8ae953ba5c3a39ef41dca692a1bcd9c0bd4f173b43e0719db"
     }
   ],
   "research_os": {
     "surface": "noetrium.api",
     "execution_state": "benchmark_authority_required",
     "program_id": "flash_vstream_memory",
-    "program_digest": "5d865ea9b382f704db9be0059076ff269bcc37412ede7297890c7d2f27766bcc",
+    "program_digest": "efab89feedfba49e7295a0a14f9d2b4ec078b1c5b842305c9ce061b6f186d93e",
     "benchmark_authority": {
       "state": "required",
       "selection_digests": [],

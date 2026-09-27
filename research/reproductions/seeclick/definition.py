@@ -65,6 +65,7 @@ REPRODUCTION = ReproductionDefinition(
             path="research/reproductions/seeclick/study.py",
         ),
     ),
+    primary_executable="research/reproductions/seeclick/program.py",
     reported_results=(
         ReportedResult(
             claim_id="seeclick_screenspot_average",
@@ -133,7 +134,7 @@ REPRODUCTION = ReproductionDefinition(
         "matched downstream Mind2Web/AITW/MiniWob agent evaluation has not yet been bound",
     ),
     evidence_refs=(),
-    scientific_tests=("tests/test_scientific_seeclick_v1.py",),
+    scientific_tests=('tests/test_scientific_reproduction_current_surface_v1.py',),
 )
 
 __all__ = ["REPRODUCTION"]

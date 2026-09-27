@@ -59,7 +59,7 @@ REPRODUCTION = ReproductionDefinition(
             "lifelong experience accumulation semantics",
         ),
         platform_owned=(
-            "MemoryMachine journal authority",
+            "Method-owned memory component on the shared Machine journal",
             "MethodProgram and child-machine composition",
             "Minecraft/embodied environment execution",
             "controller capability execution",
@@ -83,10 +83,6 @@ REPRODUCTION = ReproductionDefinition(
         ReproductionAssetRef(
             kind=ReproductionAssetKind.METHOD_PROGRAM,
             path="research/reproductions/jarvis1_minecraft/program.py",
-        ),
-        ReproductionAssetRef(
-            kind=ReproductionAssetKind.RESEARCH_PROGRAM,
-            path="research/reproductions/jarvis1_minecraft/memory.py",
         ),
         ReproductionAssetRef(
             kind=ReproductionAssetKind.SUPPORT,
@@ -137,11 +133,7 @@ REPRODUCTION = ReproductionDefinition(
         "retrieval or online lifelong-learning path into matched evidence.",
     ),
     evidence_refs=(),
-    scientific_tests=(
-        "tests/test_scientific_jarvis1_memory_v1.py",
-        "tests/test_scientific_jarvis1_method_program_v1.py",
-        "tests/test_scientific_jarvis1_benchmark_study_v1.py",
-    ),
+    scientific_tests=('tests/test_scientific_reproduction_current_surface_v1.py',),
 )
 
 __all__ = ["REPRODUCTION"]

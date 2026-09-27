@@ -2,8 +2,10 @@ from __future__ import annotations
 
 import pytest
 
-from research.reproductions.tree_of_thoughts import (
+from research.reproductions.tree_of_thoughts.fidelity import (
     TREE_OF_THOUGHTS_REFERENCE_FIDELITY,
+)
+from research.reproductions.tree_of_thoughts.search import (
     ThoughtCandidate,
     TreeSearchFrontier,
     assign_duplicate_zero_values,

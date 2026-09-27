@@ -20,7 +20,7 @@ class AgentLoopResult:
     state_update: Mapping[str, Any] = field(default_factory=dict)
 
 
-_SHA256_RE = re.compile(r"[0-9a-f]{64}\\Z")
+_SHA256_RE = re.compile(r"[0-9a-f]{64}\Z")
 
 
 def _normalize(value: object, active: set[int]) -> object:

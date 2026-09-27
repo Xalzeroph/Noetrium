@@ -2,8 +2,8 @@
   "schema": "noetrium.reproduction.projection.v10",
   "authority": "generated_from_typed_definition_and_source",
   "package": "rap_reasoning",
-  "package_digest": "e1f739382f9509985739bef74bcd67eae34605501815f3d15652c53a347597ca",
-  "definition_digest": "3de23b790a18d3bd15b16ce34f0a87cb7e95fa74b9b4c06fde9cfa49bba55e61",
+  "package_digest": "a08307c5081db133bb732cb13a2dc48fcc6d0fe50399bc7bfde60ea3324aa2b7",
+  "definition_digest": "952e4cdf234a0cc9f872b78506e49e70cc6dd17fafa8ddf34256ccf4ced74209",
   "source_registry_digest": "ced15295ec849f883db78704fb7a1e4351e59bd9ff1229c652b243f23abfdff2",
   "lifecycle": "protocol_bound",
   "identity": {
@@ -77,13 +77,13 @@
       "kind": "method_program",
       "path": "research/reproductions/rap_reasoning/program.py",
       "declaration_digest": "16761ca8e2a1fa885e92e661eb17bb9f3c2406bf53af198549ea98348a34fcde",
-      "content_sha256": "9b67472754370bbab5133a1a5610df039075232ab7115e94cacef6fb89328f54"
+      "content_sha256": "d1c5412cfbb330b503a6a555bf7cc3a53fe192d00afdb46e586db651862b1b06"
     },
     {
       "kind": "study",
       "path": "research/reproductions/rap_reasoning/study.py",
       "declaration_digest": "d969ffcb041c8fd22dd72b0f9e6a5e0a0979f20b350bf3167bf058a346656136",
-      "content_sha256": "01d1baf2f33751280c35b02e1b6cfdd49f1fe4dc48a514ae2ad1ec7dc2d0b097"
+      "content_sha256": "61ed0dadcdeeb9167a0e1620357c44bc0c0c51cf26f785ecf99ee0ec807b019e"
     },
     {
       "kind": "support",
@@ -130,19 +130,15 @@
   "evidence_refs": [],
   "scientific_tests": [
     {
-      "path": "tests/test_scientific_rap_method_program_v1.py",
-      "content_sha256": "a08f96f0eddd3fa395f38a0f3589cddcfe61ca04f5ede8641fc492ac1a717813"
-    },
-    {
       "path": "tests/test_scientific_rap_reproduction_v1.py",
-      "content_sha256": "521174c2b202e1c3382af7d3962ff49b700b92d7c1676f0686d6543539e408b9"
+      "content_sha256": "dcf8e0f2bcc9598c9fa41eb935b5e58ee4f78d4e985ff89f3363c31dbd80391b"
     }
   ],
   "research_os": {
     "surface": "noetrium.api",
     "execution_state": "benchmark_authority_required",
     "program_id": "rap_reasoning",
-    "program_digest": "cfe95aa25d330be21ffbba9689ce52436538687a4e49d32bd9155205f10e5662",
+    "program_digest": "9fa45098543ac2906a2ba85f6c7dbb30747b6f515cc13ae9a300c07d56d54575",
     "benchmark_authority": {
       "state": "required",
       "selection_digests": [],

@@ -2,8 +2,8 @@
   "schema": "noetrium.reproduction.projection.v10",
   "authority": "generated_from_typed_definition_and_source",
   "package": "aflow",
-  "package_digest": "1ec7c3922ea5e323ba5b500ddcad2fafc617aa9fbad5ebcac26d1f0e9daece74",
-  "definition_digest": "32fd6b066d9ecf013bf733c377c0ee289207ed5817e65f3170c676e502c4f006",
+  "package_digest": "1631eca6779250bad720b34de3871b3631f16bcbdc508b2faba20d03eec10b1b",
+  "definition_digest": "553597d3ffcb512e652e94113f7bbba0f261b26a16484a714f28eb2ca1bb146a",
   "source_registry_digest": "21252fdb46d581a1b68a681b0c99494769cc12a9e32a963ecd017bb06a0133b7",
   "lifecycle": "protocol_bound",
   "identity": {
@@ -44,8 +44,8 @@
       "validation-repeated workflow evaluation"
     ],
     "platform_owned": [
-      "OptimizationMachine journal authority",
-      "ResearchProgram hosting",
+      "Method-owned component hosting",
+      "Method-owned optimization component on the shared Machine journal",
       "immutable executable-source provenance",
       "isolated generated-code execution",
       "measurement and artifact lineage",
@@ -58,7 +58,7 @@
     "reference_publications": [
       "https://proceedings.iclr.cc/paper_files/paper/2025/hash/5492ecbce4439401798dcd2c90be94cd-Abstract-Conference.html"
     ],
-    "catalog_digest": "eafc83fd7d5756fdc1caed554f4afa764e88caed72bb59331cf8bdda99457612"
+    "catalog_digest": "5e39b40343ac05c6a02887b8d111348f4ec556941741f892792a383b93e131fd"
   },
   "source_lanes": [
     {
@@ -126,19 +126,19 @@
       "kind": "fidelity",
       "path": "research/reproductions/aflow/fidelity.py",
       "declaration_digest": "194e079c7dd87f7fa610d97fde471fbed1ec8f9a7f5706d5afd5c55bc5a08add",
-      "content_sha256": "7b8e5bec5804cbc0ddd5978527a23f4121bd02c26e868eee670add688561d75f"
+      "content_sha256": "a833b8a67b7d10e18c4b1c8534db029d2ba2e26e7957853e2d7801d377008bdf"
     },
     {
-      "kind": "research_program",
+      "kind": "method_program",
       "path": "research/reproductions/aflow/program.py",
-      "declaration_digest": "ea704281ad3bc71ee7d8b78eb2611781f0c3c9d1c8338306eba3df129e9911c9",
-      "content_sha256": "9afff6d20d3efe68a23b7f2b5a9ec14aa661a4ea03b088f4eea3c0d255168a85"
+      "declaration_digest": "292a8d0c593d7feee321b99eb028b81a57f86f0779ff718e04ae80d008e26567",
+      "content_sha256": "57738899d1aea3caf3b3020d0cd0952c12f5a2e5f8d4d75b368f40180bb62afc"
     },
     {
       "kind": "study",
       "path": "research/reproductions/aflow/study.py",
       "declaration_digest": "61e7467b44960b0cef7ff6dc3fa2df1e12ccf3e5611e850ff155526d1ec3f379",
-      "content_sha256": "24d1c3cd79585236e51ea520bc9ca5896ed1d9cd41aecc0bd766bbfc89fccfc9"
+      "content_sha256": "136f34d9b65ce187f9ee519135e28c32dcee4e45412a335eed570aaafd3d6542"
     }
   ],
   "primary_executable": "research/reproductions/aflow/program.py",
@@ -209,18 +209,14 @@
   "scientific_tests": [
     {
       "path": "tests/test_scientific_aflow_fidelity_v1.py",
-      "content_sha256": "43032779f2861ba9402e63653c0a8844ab1e5713ba8e920ddd1e4a3e1639c9ef"
-    },
-    {
-      "path": "tests/test_scientific_aflow_optimization_program_v1.py",
-      "content_sha256": "be8255061ef140f0e6580567c164e043f80fdbbb7140bd3a018e14e979874dca"
+      "content_sha256": "5110733e27d8823f06fdbdd07944d6a802514b473b749dd83173cc095601c28a"
     }
   ],
   "research_os": {
     "surface": "noetrium.api",
     "execution_state": "benchmark_authority_required",
     "program_id": "aflow",
-    "program_digest": "6b0d91d8fc48231378f33cf58c4e252b8b916ba161102e0e2291849f99cc9548",
+    "program_digest": "4e041504e2a95c00f93a31c4807ccde2e0e1e1cbeeca26dfc931fb1073a83db2",
     "benchmark_authority": {
       "state": "required",
       "selection_digests": [],

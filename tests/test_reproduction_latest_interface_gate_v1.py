@@ -4,6 +4,7 @@ import ast
 from pathlib import Path
 
 from noetrium import api
+from noetrium_platform.product import research_os as product_research_os
 from noetrium_platform.composition.research_os_graph import (
     compile_research_portfolio_graph,
 )
@@ -50,10 +51,10 @@ def test_every_execution_capable_reproduction_enters_the_latest_research_os() ->
     assert tuple(row.package for row in executable) == expected
 
     portfolio = build_research()
-    assert isinstance(portfolio, api.research_os.ResearchPortfolio)
+    assert isinstance(portfolio, product_research_os.ResearchPortfolio)
     assert tuple(program.program_id for program in portfolio.programs) == expected
 
-    revision = api.research_os.ResearchGraphRevision(
+    revision = product_research_os.ResearchGraphRevision(
         portfolio.portfolio_id,
         portfolio.portfolio_digest,
         (),

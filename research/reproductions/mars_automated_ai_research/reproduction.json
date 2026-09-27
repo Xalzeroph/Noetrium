@@ -2,8 +2,8 @@
   "schema": "noetrium.reproduction.projection.v10",
   "authority": "generated_from_typed_definition_and_source",
   "package": "mars_automated_ai_research",
-  "package_digest": "28550ae01e05809e9b52672ba52e1636d1a4f4897160458d61305ff6e8e18838",
-  "definition_digest": "29237b3baf6000ab63d5856cf1216b7f3ddbe89e923c34274b13130c413b9586",
+  "package_digest": "2a48010bcd9ff0e9f3a80d597fe2c4375d7dfb885d374ded6dbdb5bb238f6ecd",
+  "definition_digest": "66861c910d3a6c9a5ecf9a446a983cbdf3e6e6d8e9eb4f242946a85621cf147e",
   "source_registry_digest": "5c4a7eeaf260528c2d32423f029e4420611ba8a29b54a0794f2d546645010ccd",
   "lifecycle": "artifact_only",
   "identity": {
@@ -268,7 +268,7 @@
   "scientific_tests": [
     {
       "path": "tests/test_scientific_mars_artifact_v1.py",
-      "content_sha256": "f23af17336623318869169bc31bcd8bde1685d12d4bb5e2bf5d5f1517871c9b5"
+      "content_sha256": "0a668bef28417fd34cbc01a72dd9f3c7982ee16d4c56c676144ded897a19b448"
     }
   ],
   "research_os": {

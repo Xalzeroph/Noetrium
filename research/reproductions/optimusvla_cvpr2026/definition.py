@@ -17,6 +17,6 @@ REPRODUCTION=ReproductionDefinition(
         ReferenceBaseline(baseline_id="baseline_02",description="paper VLA baselines"),
         ReferenceBaseline(baseline_id="baseline_03",description="single-memory ablations"),
     ),
-    blockers=("Matched reproduction requires the pinned OptimusVLA code/checkpoints plus exact LIBERO, CALVIN and RoboTwin 2.0 cuts.", "Real-world long-horizon claims require the GALAXEA robot protocol and physical execution receipts."),evidence_refs=(),scientific_tests=("tests/test_scientific_frontier_2026_wave_02.py",),
+    blockers=("Matched reproduction requires the pinned OptimusVLA code/checkpoints plus exact LIBERO, CALVIN and RoboTwin 2.0 cuts.", "Real-world long-horizon claims require the GALAXEA robot protocol and physical execution receipts."),evidence_refs=(),scientific_tests=('tests/test_scientific_reproduction_current_surface_v1.py',),
 )
 __all__=["REPRODUCTION"]

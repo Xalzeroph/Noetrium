@@ -53,8 +53,8 @@ REPRODUCTION = ReproductionDefinition(
             "top-k convergence policy",
         ),
         platform_owned=(
-            "OptimizationMachine journal authority",
-            "ResearchProgram hosting",
+            "Method-owned optimization component on the shared Machine journal",
+            "Method-owned component hosting",
             "immutable executable-source provenance",
             "isolated generated-code execution",
             "random-decision evidence receipts",
@@ -63,18 +63,19 @@ REPRODUCTION = ReproductionDefinition(
     ),
     assets=(
         ReproductionAssetRef(
-            kind=ReproductionAssetKind("fidelity"),
-            path="research/reproductions/aflow/fidelity.py",
+            kind=ReproductionAssetKind("method_program"),
+            path="research/reproductions/aflow/program.py",
         ),
         ReproductionAssetRef(
-            kind=ReproductionAssetKind("research_program"),
-            path="research/reproductions/aflow/program.py",
+            kind=ReproductionAssetKind("fidelity"),
+            path="research/reproductions/aflow/fidelity.py",
         ),
         ReproductionAssetRef(
             kind=ReproductionAssetKind("study"),
             path="research/reproductions/aflow/study.py",
         ),
     ),
+    primary_executable="research/reproductions/aflow/program.py",
     reported_results=(
         ReportedResult(
             claim_id="aflow_average_sota_gain",
@@ -133,10 +134,7 @@ REPRODUCTION = ReproductionDefinition(
         "no matched AFlow execution evidence has yet been produced",
     ),
     evidence_refs=(),
-    scientific_tests=(
-        "tests/test_scientific_aflow_fidelity_v1.py",
-        "tests/test_scientific_aflow_optimization_program_v1.py",
-    ),
+    scientific_tests=('tests/test_scientific_aflow_fidelity_v1.py',),
 )
 
 __all__ = ["REPRODUCTION"]

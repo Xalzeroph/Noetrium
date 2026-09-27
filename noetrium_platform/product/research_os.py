@@ -585,7 +585,7 @@ class ResearchDefinition:
             raise ValueError(
                 "Method implementation may only back METHOD definitions"
             )
-        if self.kind is ResearchDefinitionKind.METHOD and type(
+        if self.kind is ResearchDefinitionKind.METHOD and self.implementation is not None and type(
             self.implementation
         ) is not ResearchMethodImplementation:
             raise ValueError(
@@ -1029,6 +1029,7 @@ def _research_implementation_document(
         return {
             "implementation_type": "method",
             "implementation_id": implementation.implementation_id,
+            "method_id": implementation.method_id,
             "module": implementation.module,
             "qualname": implementation.qualname,
             "source_digest": implementation.source_digest,

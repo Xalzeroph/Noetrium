@@ -17,6 +17,6 @@ REPRODUCTION=ReproductionDefinition(
         ReferenceBaseline(baseline_id="baseline_04",description="JARVIS-VLA"),
         ReferenceBaseline(baseline_id="baseline_05",description="Game-TARS"),
     ),
-    blockers=("Matched reproduction requires the pinned OpenHA/CrossAgent code, model/data revisions, MineStudio/Minecraft 1.16.5 runtime and exact 800+ task manifest.", "Multi-turn GRPO claims require rollout groups, reward traces, action-space selections and training receipts."),evidence_refs=(),scientific_tests=("tests/test_scientific_frontier_2026_wave_02.py",),
+    blockers=("Matched reproduction requires the pinned OpenHA/CrossAgent code, model/data revisions, MineStudio/Minecraft 1.16.5 runtime and exact 800+ task manifest.", "Multi-turn GRPO claims require rollout groups, reward traces, action-space selections and training receipts."),evidence_refs=(),scientific_tests=('tests/test_scientific_reproduction_current_surface_v1.py',),
 )
 __all__=["REPRODUCTION"]

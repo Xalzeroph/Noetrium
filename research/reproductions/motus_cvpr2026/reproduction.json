@@ -2,8 +2,8 @@
   "schema": "noetrium.reproduction.projection.v10",
   "authority": "generated_from_typed_definition_and_source",
   "package": "motus_cvpr2026",
-  "package_digest": "9131c218728e58413136a6f62f4babf7046547c168d31e896654607a35485f4b",
-  "definition_digest": "8b41ad74c2412a23a30b4715772cd57a332afa98886eadb6c19a612d13edeaf8",
+  "package_digest": "465be3c058a93f7d3f539097fe5dfdf1177e2c024f0d9152757c96fdf2d659ec",
+  "definition_digest": "30dedd29281eff8facea8dc5bdfdeaba71dec9b7d67d2db1366d44cc9016c4b2",
   "source_registry_digest": "858a852bf2df784905dba0b3f7ee4b9fb68c96935b35d787eaf3f9097ac4ebcc",
   "lifecycle": "protocol_bound",
   "identity": {
@@ -99,13 +99,13 @@
       "kind": "method_program",
       "path": "research/reproductions/motus_cvpr2026/program.py",
       "declaration_digest": "556348a5204593d28c36f572f4ba6012d748274dfd0c0e9f4a9fed8b154ec157",
-      "content_sha256": "3615d605ba3c872dd0171796b4deb1e0d1bdff7fa382007265488d6acd910b78"
+      "content_sha256": "155c4378a5c28827e095e7624966dfebb9a8228647a0fd5073d8287ec2d30f09"
     },
     {
       "kind": "study",
       "path": "research/reproductions/motus_cvpr2026/study.py",
       "declaration_digest": "a3e96dbe32da2733309f7dd75d4150bcae2349d2e9e8a3e7b72f83507e7a2649",
-      "content_sha256": "54d72d3fdcc14e17d72b6595d051e1611e4d7ce52a5c1d733d5b072d9c034af7"
+      "content_sha256": "cc6204277e67308ce26b15705397c688d720456637f6f7ab474b7a5d2a100699"
     }
   ],
   "primary_executable": "research/reproductions/motus_cvpr2026/program.py",
@@ -169,25 +169,26 @@
   "evidence_refs": [],
   "scientific_tests": [
     {
-      "path": "tests/test_scientific_frontier_2026_wave_03.py",
-      "content_sha256": "971be29ebf3ea8ac09c22786005adf4709e023b582f3fe3ff5ac05184ea32d1d"
+      "path": "tests/test_scientific_reproduction_current_surface_v1.py",
+      "content_sha256": "5cae8776ad9aa1c8ae953ba5c3a39ef41dca692a1bcd9c0bd4f173b43e0719db"
     }
   ],
   "research_os": {
     "surface": "noetrium.api",
     "execution_state": "benchmark_authority_required",
     "program_id": "motus_cvpr2026",
-    "program_digest": "8bcbcfff859f23118516477bb32574607bb18297aca09eeccccf125067af3ec4",
+    "program_digest": "c8f343b02449fe4817f4738428061b9622ff7e11d76bb9f636ddd153918178ed",
     "benchmark_authority": {
       "state": "required",
       "selection_digests": [],
       "blockers": [
-        "ReproductionResearchOSCompileError:benchmark 'motus-realworld' has no exact repository or materialized authority"
+        "ReproductionResearchOSCompileError:motus_cvpr2026 has multiple Study factories and multiple benchmarks; exact Study-to-benchmark ownership must be paper-owned"
       ]
     },
     "benchmark_split_axis": {
       "required": true,
       "consumers": [
+        "study:build_ablation_matrix",
         "study:build_study"
       ]
     },

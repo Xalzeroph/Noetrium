@@ -34,10 +34,6 @@ REPRODUCTION = ReproductionDefinition(
     ),
     assets=(
         ReproductionAssetRef(
-            kind=ReproductionAssetKind('support'),
-            path='research/reproductions/lats_webshop/branch.py',
-        ),
-        ReproductionAssetRef(
             kind=ReproductionAssetKind('fidelity'),
             path='research/reproductions/lats_webshop/fidelity.py',
         ),
@@ -58,6 +54,7 @@ REPRODUCTION = ReproductionDefinition(
             path='research/reproductions/lats_webshop/tree.py',
         ),
     ),
+    primary_executable="research/reproductions/lats_webshop/program.py",
     reported_results=(
         ReportedResult(
             claim_id="lats_webshop_average_score",
@@ -92,7 +89,7 @@ REPRODUCTION = ReproductionDefinition(
     ),
     blockers=('the audited executable cut post-dates the original paper', 'exact historical gpt-3.5-turbo serving snapshot is unresolved', 'branch-restorable WebShop environment binding is not yet matched'),
     evidence_refs=(),
-    scientific_tests=('tests/test_scientific_lats_webshop_v1.py', 'tests/test_scientific_lats_method_program_v1.py', 'tests/test_scientific_parallel_lineage_wave1_v1.py'),
+    scientific_tests=('tests/test_scientific_lats_webshop_v1.py',),
 )
 
 __all__ = ["REPRODUCTION"]

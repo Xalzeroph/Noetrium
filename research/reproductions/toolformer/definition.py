@@ -77,6 +77,7 @@ REPRODUCTION = ReproductionDefinition(
         qualname="build_toolformer_method_program",
         kwargs={"tools_enabled": True},
     ),
+    primary_executable="research/reproductions/toolformer/program.py",
     reported_results=(
         ReportedResult(
             claim_id="toolformer_asdiv",
@@ -138,9 +139,7 @@ REPRODUCTION = ReproductionDefinition(
         "historical Atlas, KILT Wikipedia, NLLB/fastText and calendar provider cuts must be frozen for matched execution",
     ),
     evidence_refs=(),
-    scientific_tests=(
-        "tests/test_scientific_toolformer_v1.py",
-    ),
+    scientific_tests=('tests/test_scientific_reproduction_current_surface_v1.py',),
 )
 
 __all__ = ["REPRODUCTION"]

@@ -1,8 +1,4 @@
-from .branch import LATSBranchExecution, execute_candidate_from_parent
-from .fidelity import LATS_WEBSHOP_FIDELITY, LATSWebShopFidelity, LatsWebshopFidelity
-from .reflection import FailedTrajectory, should_refresh_reflections, unique_failed_trajectories
-from .study import LATS_WEBSHOP_RELEASED_TRIAL_PROTOCOL, build_lats_webshop_released_study
-from .tree import LATSNode, LatsBranchState, backpropagate, backpropagated_mean, best_nonterminal_child, descend_best_nonterminal, is_successful_terminal, uct_score
-__all__ = ['FailedTrajectory', 'LATSBranchExecution', 'LATSNode', 'LATSWebShopFidelity', 'LATS_WEBSHOP_FIDELITY', 'LATS_WEBSHOP_RELEASED_TRIAL_PROTOCOL', 'LatsBranchState', 'LatsWebshopFidelity', 'backpropagate', 'backpropagated_mean', 'best_nonterminal_child', 'build_lats_webshop_released_study', 'descend_best_nonterminal', 'execute_candidate_from_parent', 'is_successful_terminal', 'should_refresh_reflections', 'uct_score', 'unique_failed_trajectories', 'METHOD_SPEC', 'METHOD_CONFIGURER', 'METHOD_ENTRYPOINT', 'METHOD_CONFIGURER_ARGS', 'METHOD_CONFIGURER_KWARGS', 'configure_method']
-from .program import lats_webshop_initial_state, METHOD_SPEC, METHOD_CONFIGURER, METHOD_ENTRYPOINT, METHOD_CONFIGURER_ARGS, METHOD_CONFIGURER_KWARGS, configure_method
-__all__ = ['METHOD_SPEC', 'METHOD_CONFIGURER', 'METHOD_ENTRYPOINT', 'METHOD_CONFIGURER_ARGS', 'METHOD_CONFIGURER_KWARGS', 'configure_method']
+"""Paper-local reproduction package; composed only through Research OS."""
+from .definition import REPRODUCTION
+
+__all__ = ("REPRODUCTION",)

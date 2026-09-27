@@ -42,8 +42,8 @@
       ],
       "platform_owned": [
         "LVU full-video benchmark projection",
-        "MemoryMachine journal authority",
-        "MethodProgram and child-memory-machine composition",
+        "Method aggregate and Method-owned memory-component composition",
+        "Method-owned memory component on the shared Machine journal",
         "cross-modal scorer implementation identity",
         "multimodal tensor content identity",
         "study and evaluation orchestration"
@@ -180,8 +180,8 @@
         "validation-repeated workflow evaluation"
       ],
       "platform_owned": [
-        "OptimizationMachine journal authority",
-        "ResearchProgram hosting",
+        "Method-owned component hosting",
+        "Method-owned optimization component on the shared Machine journal",
         "immutable executable-source provenance",
         "isolated generated-code execution",
         "measurement and artifact lineage",
@@ -423,8 +423,8 @@
         "module recombination"
       ],
       "platform_owned": [
-        "OptimizationMachine journal authority",
-        "ResearchProgram hosting",
+        "Method-owned component hosting",
+        "Method-owned optimization component on the shared Machine journal",
         "candidate execution/evaluation binding",
         "checkpoint and replay",
         "evidence and artifact lineage"
@@ -1514,8 +1514,8 @@
         "memory-aware rotary-position semantics"
       ],
       "platform_owned": [
-        "MemoryMachine journal authority",
-        "MethodProgram and child-memory-machine composition",
+        "Method aggregate and Method-owned memory-component composition",
+        "Method-owned memory component on the shared Machine journal",
         "benchmark cut identity",
         "immutable tensor content references",
         "multimodal model transport",
@@ -1995,7 +1995,7 @@
         "skill selection from agent state"
       ],
       "platform_owned": [
-        "MemoryMachine journal authority",
+        "Method-owned memory component on the shared Machine journal",
         "MethodProgram and child-machine composition",
         "Minecraft/embodied environment execution",
         "content-addressed multimodal artifacts",
@@ -2268,7 +2268,7 @@
         "query-memory attention history semantics"
       ],
       "platform_owned": [
-        "MemoryMachine journal authority",
+        "Method-owned memory component on the shared Machine journal",
         "artifact/evidence lineage",
         "model execution",
         "multimodal content identity and transport",
@@ -2740,7 +2740,7 @@
         "source-faithful direct-LTM consolidation quirk"
       ],
       "platform_owned": [
-        "MemoryMachine journal authority",
+        "Method-owned memory component on the shared Machine journal",
         "artifact/evidence lineage",
         "benchmark materialization",
         "model execution",
@@ -3167,7 +3167,7 @@
         "verbalized long-term text memory"
       ],
       "platform_owned": [
-        "MemoryMachine journal authority",
+        "Method-owned memory component on the shared Machine journal",
         "artifact and evidence identity",
         "benchmark cut identity",
         "multimodal provider execution",
@@ -3475,7 +3475,7 @@
         "two-token-per-frame temporal memory"
       ],
       "platform_owned": [
-        "MemoryMachine journal authority",
+        "Method-owned memory component on the shared Machine journal",
         "benchmark materialization",
         "learned operator/model binding identity",
         "multimodal tensor content identity",
@@ -4246,7 +4246,7 @@
         "two-second temporal segment memory"
       ],
       "platform_owned": [
-        "MemoryMachine journal authority",
+        "Method-owned memory component on the shared Machine journal",
         "MethodProgram host and child-machine links",
         "benchmark cut authority",
         "content-addressed video/memory artifacts",
@@ -4338,7 +4338,7 @@
         "streaming semantic-segment recurrence"
       ],
       "platform_owned": [
-        "MemoryMachine journal authority",
+        "Method-owned memory component on the shared Machine journal",
         "artifact/evidence lineage",
         "benchmark cut identity",
         "immutable multimodal content identity",

@@ -2,8 +2,8 @@
   "schema": "noetrium.reproduction.projection.v10",
   "authority": "generated_from_typed_definition_and_source",
   "package": "ishift_cvpr2026",
-  "package_digest": "b6cb0064937eeea7b5a9b30be9534787b81bb47810845a7bb33f890db05a30f0",
-  "definition_digest": "71014d59993c0d6760c4e4084123323967e87540a3a576fb5641ec3efb47b4dd",
+  "package_digest": "e1d392c0989998ee980c6a30988bdd002ded357d7ad6fea41d9e9ad433016be8",
+  "definition_digest": "5f926a8c005c0037c54c19c26f1a96096fe7ec720f7fddbd7692ae8f5a82ae92",
   "source_registry_digest": "cba20db8cc89fd106370867aad306e63553e71b3d7f65bf597a47c087dc83dda",
   "lifecycle": "protocol_bound",
   "identity": {
@@ -98,13 +98,13 @@
       "kind": "method_program",
       "path": "research/reproductions/ishift_cvpr2026/program.py",
       "declaration_digest": "284e64d2710d08cf36e3a9a59cd68538e024d6b62355acd1b7f84915d30c696b",
-      "content_sha256": "076a2c2c170cd4e95054567d8bfbff1b514ee141e5afa822fd103bf19929ab40"
+      "content_sha256": "2a5d22cef9bdc1287cd8462da3dd04b6645b60165281e8393d41c6235b148908"
     },
     {
       "kind": "study",
       "path": "research/reproductions/ishift_cvpr2026/study.py",
       "declaration_digest": "047085be4689066e9accbeee202f12a839a627b3b74584efd41c382a113ba59d",
-      "content_sha256": "54d72d3fdcc14e17d72b6595d051e1611e4d7ce52a5c1d733d5b072d9c034af7"
+      "content_sha256": "cc6204277e67308ce26b15705397c688d720456637f6f7ab474b7a5d2a100699"
     }
   ],
   "primary_executable": "research/reproductions/ishift_cvpr2026/program.py",
@@ -197,25 +197,26 @@
   "evidence_refs": [],
   "scientific_tests": [
     {
-      "path": "tests/test_scientific_frontier_2026_wave_02.py",
-      "content_sha256": "24b94183020cd24bd2b462fe8dc339d108dd405ec2a878c89bbfc4163f912a32"
+      "path": "tests/test_scientific_reproduction_current_surface_v1.py",
+      "content_sha256": "5cae8776ad9aa1c8ae953ba5c3a39ef41dca692a1bcd9c0bd4f173b43e0719db"
     }
   ],
   "research_os": {
     "surface": "noetrium.api",
     "execution_state": "benchmark_authority_required",
     "program_id": "ishift_cvpr2026",
-    "program_digest": "796ac4251c31f5a02a6a8ff787650ff361724af5baf77f27c5e836a48946c151",
+    "program_digest": "46738efc86e42f0a14bcb18ab8727e10845b6e4fd15bc08590a41c7e779114c9",
     "benchmark_authority": {
       "state": "required",
       "selection_digests": [],
       "blockers": [
-        "ReproductionResearchOSCompileError:benchmark 'aitw' has no exact repository or materialized authority"
+        "ReproductionResearchOSCompileError:ishift_cvpr2026 has multiple Study factories and multiple benchmarks; exact Study-to-benchmark ownership must be paper-owned"
       ]
     },
     "benchmark_split_axis": {
       "required": true,
       "consumers": [
+        "study:build_ablation_matrix",
         "study:build_study"
       ]
     },

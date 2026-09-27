@@ -2,8 +2,8 @@
   "schema": "noetrium.reproduction.projection.v10",
   "authority": "generated_from_typed_definition_and_source",
   "package": "reflexion_alfworld",
-  "package_digest": "08ebdda0688bd43cf22d566debe9598e25c675c00f19e0c3874252482dfd555f",
-  "definition_digest": "ca97cfa0e2748d1a84ca6b3838480956a5d000d003ac6fb4dfd80cd643bff54a",
+  "package_digest": "91f008b5484ce87ab013ee51c917095cf8d10363c74b5e198ebc267826958ebe",
+  "definition_digest": "25a79b8cabe28bb411b5222b9e3c68a3303f0cabfdc45d8f09d2e6e83ee91c2b",
   "source_registry_digest": "1ba271f6cca205054b041cb9ec92d5169ccecee597816374a82a9a19a1b0c81e",
   "lifecycle": "protocol_bound",
   "identity": {
@@ -79,7 +79,7 @@
       "kind": "method_program",
       "path": "research/reproductions/reflexion_alfworld/program.py",
       "declaration_digest": "10ab90a13e79996c32bdc9c51139c9e164c1ea9a1137f3b0855076494703fd5f",
-      "content_sha256": "eba6422ee80a5ec97f6213f87fb19f5a2db7790b792c0118089b194272a9f4a6"
+      "content_sha256": "8c0ef520d96845cf82c296dc31f5a7d7c556b3c95b713c5c06e3ce9352113268"
     },
     {
       "kind": "semantics",
@@ -91,7 +91,7 @@
       "kind": "study",
       "path": "research/reproductions/reflexion_alfworld/study.py",
       "declaration_digest": "91d7b3166188dbd63760882f4468e02cdd5c1ec5ef1710ca8a685397195f4651",
-      "content_sha256": "e9dd252f95cdd3c3f526de3c9d24ab711701188a697f0b5b1ac3af8f1fdbb021"
+      "content_sha256": "b32530c015bce78a6f7cca7336e18bcbd41665baa9076ae14de8daa83e07ed37"
     },
     {
       "kind": "support",
@@ -151,22 +151,18 @@
   "scientific_tests": [
     {
       "path": "tests/test_scientific_reflexion_alfworld_fidelity_v1.py",
-      "content_sha256": "452d9eb5a9eaf777040a518c30cc5450a42d16b846a42393c2deb311b0b23002"
+      "content_sha256": "3702b4ef23122b8747678c1c95161106d72c8a2d403fcae40bfff64bf02ce1d6"
     },
     {
       "path": "tests/test_scientific_reflexion_alfworld_v1.py",
-      "content_sha256": "a4c6801fe9fdead18548efcf3e8df52705e6f085ab8a385f55c6341ba190014d"
-    },
-    {
-      "path": "tests/test_scientific_reflexion_method_program_v1.py",
-      "content_sha256": "e632745dc937d79b0b140b502dc45d6cb0393073b6369fbb2ed65ee2945acc47"
+      "content_sha256": "15d27326c40fcb498a724841a3d7a66d63ea9c8963c1d53ff330950613d18bdc"
     }
   ],
   "research_os": {
     "surface": "noetrium.api",
     "execution_state": "benchmark_authority_required",
     "program_id": "reflexion_alfworld",
-    "program_digest": "e1932f4dd05b595ee18ad31b548b74e6626fc041db8b7076068a86f740366780",
+    "program_digest": "d59a695ceb728ca018dea3d7076478cd624b0b0752fc37b60737d797ce327ec7",
     "benchmark_authority": {
       "state": "required",
       "selection_digests": [],

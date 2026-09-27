@@ -2,8 +2,8 @@
   "schema": "noetrium.reproduction.projection.v10",
   "authority": "generated_from_typed_definition_and_source",
   "package": "eaglet_acl2026",
-  "package_digest": "b48cc4c7766502a3f87dae8f9d6132761a989d7bbd81c5125b0fb2bf2a1dbc07",
-  "definition_digest": "f63bbc43510fe9211823c526a76fad6cfd47b777cbd11b8a2e53af1a56b56086",
+  "package_digest": "d7f50b1e5af64471e73aa312b44c464903c636907184ceeb74a1386c23573971",
+  "definition_digest": "ebcd9bce720720a44160238184317d1cc026b51fd1b6fa992b0306d9875da544",
   "source_registry_digest": "95a8891d6c68ac7e536b45a44f88468adc4588fb5fe74c25b93d0ab18721b5b9",
   "lifecycle": "protocol_bound",
   "identity": {
@@ -83,13 +83,13 @@
       "kind": "method_program",
       "path": "research/reproductions/eaglet_acl2026/program.py",
       "declaration_digest": "48087575b1da6f98275bedc3017755a7fb8f8da0a78b4a4dd8f589a9f7fd9e0d",
-      "content_sha256": "afef88717903aaa6479be727626cf5e89818ce5d004d19c71b0d0e70f74f673e"
+      "content_sha256": "3b9d4a57218c934f18f34d44d5012a6eabd0079b8da04bd9519ab6780a271180"
     },
     {
       "kind": "study",
       "path": "research/reproductions/eaglet_acl2026/study.py",
       "declaration_digest": "b6e86453bb48795b7a6054d98cbd11dea4a575f2c014d6048493370eb79437ad",
-      "content_sha256": "e93b98671ccd30f2f0464c903f5bc6f4821e2189ef8f435c19900169c7db146c"
+      "content_sha256": "7e6e417e421fd35cbf25a68b2d7564283040899f39b2c148908f67a60b0e4593"
     }
   ],
   "primary_executable": "research/reproductions/eaglet_acl2026/program.py",
@@ -173,17 +173,18 @@
     "surface": "noetrium.api",
     "execution_state": "benchmark_authority_required",
     "program_id": "eaglet_acl2026",
-    "program_digest": "5c36f95f1a9f1f6b6f21d8fdd17f4eb44ae4cb72ffcf885f52a1cf7c5ebb422f",
+    "program_digest": "95fbbdc9a87844fd96f30950c8c3213a5ca87f0b694925407b1caf5d5e2a4e75",
     "benchmark_authority": {
       "state": "required",
       "selection_digests": [],
       "blockers": [
-        "ReproductionResearchOSCompileError:benchmark 'alfworld' has no exact repository or materialized authority"
+        "ReproductionResearchOSCompileError:eaglet_acl2026 has multiple Study factories and multiple benchmarks; exact Study-to-benchmark ownership must be paper-owned"
       ]
     },
     "benchmark_split_axis": {
       "required": true,
       "consumers": [
+        "study:build_ablation_matrix",
         "study:build_study"
       ]
     },

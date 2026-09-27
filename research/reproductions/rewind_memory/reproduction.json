@@ -2,8 +2,8 @@
   "schema": "noetrium.reproduction.projection.v10",
   "authority": "generated_from_typed_definition_and_source",
   "package": "rewind_memory",
-  "package_digest": "c6276e70fb2286f41b81ffe9da5a2b2066c9966e79f38e38f23a5a616d6fa206",
-  "definition_digest": "2505e0ddfe3973e23ea352c3d354a1e4d37a6fcdf1b6b0b6caa9a947814ef8f5",
+  "package_digest": "0f28acf4c4b8e4db756fec53304e123a1c847bc86220b0a7152290ba5f55b5b0",
+  "definition_digest": "d184681679f68431ca820f3e79ab04e607e359c9fe027ae1ce96275cc8e3f1f6",
   "source_registry_digest": "fdb866db6a3c5cbcf051cd40e55caf5bb510d3af332ad4d5f61455c3af25568c",
   "lifecycle": "protocol_bound",
   "identity": {
@@ -47,7 +47,7 @@
       "two-token-per-frame temporal memory"
     ],
     "platform_owned": [
-      "MemoryMachine journal authority",
+      "Method-owned memory component on the shared Machine journal",
       "benchmark materialization",
       "learned operator/model binding identity",
       "multimodal tensor content identity",
@@ -57,7 +57,7 @@
     "reference_publications": [
       "https://openaccess.thecvf.com/content/CVPR2025/html/Diko_ReWind_Understanding_Long_Videos_with_Instructed_Learnable_Memory_CVPR_2025_paper.html"
     ],
-    "catalog_digest": "90c808ab4b982d7fe757e33b7ea485e71f3e79afcfd80640992f73910cc969dd"
+    "catalog_digest": "12351d3b556898e0c3c5d9d86ef6baee5e0c83fd481a7b282fcea820fb31fa77"
   },
   "source_lanes": [
     {
@@ -77,7 +77,7 @@
       "kind": "benchmark",
       "path": "research/reproductions/rewind_memory/benchmark.py",
       "declaration_digest": "3c6b9afffd97aac83b82a48e3af3684655f024d3825e1db74088fb5ba01b1795",
-      "content_sha256": "44d6e04fd9bf6f2ece629f99acfc08c065a87c0a29aca46485f04b5ee9229940"
+      "content_sha256": "6410e179bfcc481cee5f5d64ea027f54e9f4e1d52db2b5ee4073db38c2069683"
     },
     {
       "kind": "fidelity",
@@ -86,16 +86,16 @@
       "content_sha256": "7b9106862a5bb273baa3adefff2dc6620a0345f68d095f80219c9d5b93ee524d"
     },
     {
-      "kind": "research_program",
-      "path": "research/reproductions/rewind_memory/memory.py",
-      "declaration_digest": "f0ab32b07b3593c7abc1ed87d6807b23c9d04ba27f527b6967e6d025340ab9ac",
-      "content_sha256": "32ecb1fdacc4c4c007eebad3af92b6251318a66269182e8095fa1aadc165c74a"
+      "kind": "method_program",
+      "path": "research/reproductions/rewind_memory/program.py",
+      "declaration_digest": "9da4f6f0386b54913dbc57f78eb124c84c95a2c2dc28eb0aa53280e08b5951de",
+      "content_sha256": "725a90ca634a1b986b7e9421e91792c576004c3acdcbd26ae98ec7b9960d0108"
     },
     {
       "kind": "study",
       "path": "research/reproductions/rewind_memory/study.py",
       "declaration_digest": "ac80fc79a75ebeda18fda9188eac518d77f8ecdec92a2c8281608691862b533c",
-      "content_sha256": "0bb480fcd193f0f467a907afa7052f0106afa89dc0a23254cabbf8760dc50312"
+      "content_sha256": "8e2c614885c4715dbf3bce3e65b6a05fc619567809676a7fda5cd5272e382a6e"
     },
     {
       "kind": "support",
@@ -104,7 +104,7 @@
       "content_sha256": "ce659b9f369bd32229c2c3cdf25297c464e8f6eef3c1a3ae0819257ca4984e19"
     }
   ],
-  "primary_executable": "research/reproductions/rewind_memory/memory.py",
+  "primary_executable": "research/reproductions/rewind_memory/program.py",
   "reported_results": [
     {
       "claim_id": "rewind_moviechat_score_gain",
@@ -165,15 +165,15 @@
   "evidence_refs": [],
   "scientific_tests": [
     {
-      "path": "tests/test_scientific_rewind_memory_v1.py",
-      "content_sha256": "377140d0390c992c3e175e903f9f265b1fbff1748ca08cf07abe2dc8435041de"
+      "path": "tests/test_scientific_reproduction_current_surface_v1.py",
+      "content_sha256": "5cae8776ad9aa1c8ae953ba5c3a39ef41dca692a1bcd9c0bd4f173b43e0719db"
     }
   ],
   "research_os": {
     "surface": "noetrium.api",
     "execution_state": "benchmark_authority_required",
     "program_id": "rewind_memory",
-    "program_digest": "78c2fa9b26ed96d0c6e0d21d120af0ca54ffcf0df4f262d79f7c1353a3db9d78",
+    "program_digest": "9bc2d2b3bb2cab419ba30996117c707ea4cdc3c61cfe87eb35a220716cd82041",
     "benchmark_authority": {
       "state": "required",
       "selection_digests": [],

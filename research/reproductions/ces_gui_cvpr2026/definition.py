@@ -15,6 +15,6 @@ REPRODUCTION=ReproductionDefinition(
         ReferenceBaseline(baseline_id="baseline_03",description="zero-shot Qwen2.5-VL"),
         ReferenceBaseline(baseline_id="baseline_04",description="SFT-only scheduler"),
     ),
-    blockers=("Matched reproduction requires the pinned CES model/data revisions, exact AITZ/AMEX/GUI-Odyssey cuts and frozen Executor identity.", "Staged-RL claims require Coordinator and State-Tracker optimization receipts plus execution-feedback trajectories."),evidence_refs=(),scientific_tests=("tests/test_scientific_frontier_2026_wave_02.py",),
+    blockers=("Matched reproduction requires the pinned CES model/data revisions, exact AITZ/AMEX/GUI-Odyssey cuts and frozen Executor identity.", "Staged-RL claims require Coordinator and State-Tracker optimization receipts plus execution-feedback trajectories."),evidence_refs=(),scientific_tests=('tests/test_scientific_reproduction_current_surface_v1.py',),
 )
 __all__=["REPRODUCTION"]

@@ -2192,7 +2192,7 @@ def executable_reproduction_definitions() -> tuple[ReproductionDefinition, ...]:
 
 def compile_repository_reproduction_portfolio(
     portfolio_id: str = "repository-reproductions",
-) -> api.research_os.ResearchPortfolio:
+) -> api.ResearchPortfolio:
     """Compile every existing executable reproduction onto the latest Research OS."""
 
     return compile_reproduction_portfolio(
@@ -2206,7 +2206,7 @@ def compile_resolved_reproduction_portfolio(
     requests: tuple[ReproductionExecutionRequest, ...],
     *,
     capability_resolver: ReproductionCapabilityRequirementResolverPort | None = None,
-) -> api.research_os.ResearchPortfolio:
+) -> api.ResearchPortfolio:
     """Compile top-level lane requests without caller-authored execution bindings."""
 
     if type(requests) is not tuple or not requests:
@@ -2265,7 +2265,7 @@ def compile_resolved_reproduction_portfolio(
 def compile_bound_reproduction_portfolio(
     portfolio_id: str,
     bindings: tuple[ReproductionExecutionBinding, ...],
-) -> api.research_os.ResearchPortfolio:
+) -> api.ResearchPortfolio:
     """Compile many exact execution lanes, including multiple lanes per paper."""
 
     if type(bindings) is not tuple or not bindings:
@@ -2306,12 +2306,12 @@ def compile_bound_reproduction_portfolio(
         raise ReproductionResearchOSCompileError(
             "bound reproduction portfolio produced duplicate program identities"
         )
-    return api.research_os.ResearchPortfolio(portfolio_id, programs)
+    return api.ResearchPortfolio(portfolio_id, programs)
 
 def compile_reproduction_portfolio(
     portfolio_id: str,
     definitions: tuple[ReproductionDefinition, ...],
-) -> api.research_os.ResearchPortfolio:
+) -> api.ResearchPortfolio:
     """Compile many independent paper reproductions into one schedulable portfolio."""
 
     if type(definitions) is not tuple or not definitions:
@@ -2325,7 +2325,7 @@ def compile_reproduction_portfolio(
         compile_reproduction_research_program(row)
         for row in sorted(definitions, key=lambda row: row.package)
     )
-    return api.research_os.ResearchPortfolio(portfolio_id, programs)
+    return api.ResearchPortfolio(portfolio_id, programs)
 
 
 __all__ = [

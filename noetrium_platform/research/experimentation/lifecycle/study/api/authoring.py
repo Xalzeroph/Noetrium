@@ -25,6 +25,7 @@ from .benchmark import (
     TaskGraph,
     TaskGraphEdge,
     TaskGraphRelation,
+    TaskSetSplit,
     TrialBudget,
 )
 from .design import (
@@ -399,6 +400,18 @@ def _study_spec_benchmark(value: object) -> BenchmarkTaskSet:
                 lineage_refs=tuple(task.get("lineage_refs", ())),
             )
         )
+    splits = tuple(
+        sorted(
+            (
+                TaskSetSplit(
+                    str(_study_spec_mapping(raw, "benchmark split spec")["split_id"]),
+                    tuple(_study_spec_mapping(raw, "benchmark split spec")["task_ids"]),
+                )
+                for raw in row.get("splits", ())
+            ),
+            key=lambda item: item.split_id,
+        )
+    )
     return BenchmarkTaskSet(
         benchmark_id=str(row["benchmark_id"]),
         revision_id=revision_id,
@@ -406,6 +419,7 @@ def _study_spec_benchmark(value: object) -> BenchmarkTaskSet:
         task_schema_id=schema_id,
         tasks=tuple(sorted(tasks, key=lambda item: item.task_id)),
         task_graph=_study_spec_task_graph(row.get("task_graph")),
+        splits=splits,
     )
 
 

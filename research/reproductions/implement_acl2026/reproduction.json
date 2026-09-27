@@ -2,8 +2,8 @@
   "schema": "noetrium.reproduction.projection.v10",
   "authority": "generated_from_typed_definition_and_source",
   "package": "implement_acl2026",
-  "package_digest": "42729cea8630c5f766d2897c7ffd55876a11899039325bf3a63872060f25d49c",
-  "definition_digest": "5bdaedd930762f9be7b32f9da0ecd5c227d805303b8b3b5e6d473f5dc963512d",
+  "package_digest": "48172a02aceea6eb5c60e9de62af34ccead6bf0d9847187d5c63e21a53ca5d46",
+  "definition_digest": "0eadc629db6a7483a6c0efa6b0a0db8b46f1ed5d3e2fbd97163e7e7f7af7fd7e",
   "source_registry_digest": "764630eb6f61e32075615209950579afc67c89224820b6983da5640c0bea8440",
   "lifecycle": "protocol_bound",
   "identity": {
@@ -82,13 +82,13 @@
       "kind": "method_program",
       "path": "research/reproductions/implement_acl2026/program.py",
       "declaration_digest": "cb80e18cd37cc0982c0cd4e044a283845e0a65dcd4629be8ff2876f03cc1e0d3",
-      "content_sha256": "da03369bab3e4183578959a12ce8815846171fe9001d01ffff65304668c50b3f"
+      "content_sha256": "034ada8265d653c1c2e665db2c686bc148d4923b00f1f14557a882d4fbf258ce"
     },
     {
       "kind": "study",
       "path": "research/reproductions/implement_acl2026/study.py",
       "declaration_digest": "ee882f4dbd63fbb4f8eb31bb089f7e7e2c00fd7c4c5ac77616ed78438509453e",
-      "content_sha256": "2f589c3b1aaf52efd696f2fcb4d77107f09fa2d702efd04c0330cadbeb3a6c52"
+      "content_sha256": "0c601e2ad05f071906905b8eef174e32d464dc5f25963ff10aba374a27a15bbb"
     }
   ],
   "primary_executable": "research/reproductions/implement_acl2026/program.py",
@@ -141,7 +141,7 @@
     "surface": "noetrium.api",
     "execution_state": "benchmark_authority_required",
     "program_id": "implement_acl2026",
-    "program_digest": "72e4d41bf238bf15ce1d8ef986fb71fc930739c2431ae460e36f80395288851b",
+    "program_digest": "07cc8a04d6cf663fc2b9962965c4f663e5553e5e88863e7e2ee0617aac054830",
     "benchmark_authority": {
       "state": "required",
       "selection_digests": [],
@@ -152,6 +152,7 @@
     "benchmark_split_axis": {
       "required": true,
       "consumers": [
+        "study:build_ablation_matrix",
         "study:build_study"
       ]
     },

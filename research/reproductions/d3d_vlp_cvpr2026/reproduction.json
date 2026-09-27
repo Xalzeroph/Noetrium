@@ -2,8 +2,8 @@
   "schema": "noetrium.reproduction.projection.v10",
   "authority": "generated_from_typed_definition_and_source",
   "package": "d3d_vlp_cvpr2026",
-  "package_digest": "f60b54ada7b4d3b78fb782d56925c3b3a35a3347cf67307f50dcc0b8e4703861",
-  "definition_digest": "826cbc66bb82023852c07b6f2b9035bfbeb20d4d0f0d674660824ada0e451f4b",
+  "package_digest": "474c7f4bbe854bbf1c3942c1303d4ede78dd4407b09b76fc3ca9e55296d43cad",
+  "definition_digest": "fdd50fe67cb0260a2f9d0578e18bbc63a1e4fcdb5d1d58df0f8b85c505475af7",
   "source_registry_digest": "2cdeb4231d82b4960adc04b241fa45eae325f9b560c0d815e9fa4a73b8b941ac",
   "lifecycle": "protocol_bound",
   "identity": {
@@ -102,13 +102,13 @@
       "kind": "method_program",
       "path": "research/reproductions/d3d_vlp_cvpr2026/program.py",
       "declaration_digest": "6e8d42811ee41f4da49620fc7eff7d750783ec8f44fbc972b59d47e880bb6fea",
-      "content_sha256": "b3e0c68d101d20a0fb529c1eea1575dd01fcfa816c98578435f116c3a39d0d29"
+      "content_sha256": "c1042d66ee47e198e2254c27baaeb62c7101f123c53c01c7921e754ba29d09ef"
     },
     {
       "kind": "study",
       "path": "research/reproductions/d3d_vlp_cvpr2026/study.py",
       "declaration_digest": "7bd973d5bdd22e503bf96d30e622e379f148247ebbab146c58f41317c0d646ec",
-      "content_sha256": "54d72d3fdcc14e17d72b6595d051e1611e4d7ce52a5c1d733d5b072d9c034af7"
+      "content_sha256": "cc6204277e67308ce26b15705397c688d720456637f6f7ab474b7a5d2a100699"
     }
   ],
   "primary_executable": "research/reproductions/d3d_vlp_cvpr2026/program.py",
@@ -169,25 +169,26 @@
   "evidence_refs": [],
   "scientific_tests": [
     {
-      "path": "tests/test_scientific_frontier_2026_wave_02.py",
-      "content_sha256": "24b94183020cd24bd2b462fe8dc339d108dd405ec2a878c89bbfc4163f912a32"
+      "path": "tests/test_scientific_reproduction_current_surface_v1.py",
+      "content_sha256": "5cae8776ad9aa1c8ae953ba5c3a39ef41dca692a1bcd9c0bd4f173b43e0719db"
     }
   ],
   "research_os": {
     "surface": "noetrium.api",
     "execution_state": "benchmark_authority_required",
     "program_id": "d3d_vlp_cvpr2026",
-    "program_digest": "5b8788cc6eecf0156c67acfacab54fe10289d6231c416150a44fd633d1a54481",
+    "program_digest": "e8ca50bb692797ae1acd0aaa2fc58e8212b97adada1f50eaeff70ed8fae09ff8",
     "benchmark_authority": {
       "state": "required",
       "selection_digests": [],
       "blockers": [
-        "ReproductionResearchOSCompileError:benchmark 'hm3d-ovon' has no exact repository or materialized authority"
+        "ReproductionResearchOSCompileError:d3d_vlp_cvpr2026 has multiple Study factories and multiple benchmarks; exact Study-to-benchmark ownership must be paper-owned"
       ]
     },
     "benchmark_split_axis": {
       "required": true,
       "consumers": [
+        "study:build_ablation_matrix",
         "study:build_study"
       ]
     },

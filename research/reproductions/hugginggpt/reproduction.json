@@ -2,8 +2,8 @@
   "schema": "noetrium.reproduction.projection.v10",
   "authority": "generated_from_typed_definition_and_source",
   "package": "hugginggpt",
-  "package_digest": "aaf4e069cc2e6068f1cbccd7937ce9ff66498114cb5fe791d080a467150b4971",
-  "definition_digest": "2e0b013dd19a762c3afd8eda0a66bf0d9878f7b35aedb4659f5c9ea7f7be8afc",
+  "package_digest": "e47f61110e1b3f099c743d6376225e29a2a9599540c46949ab7ae291f4249b88",
+  "definition_digest": "614a1bc9707e8004a9143347eed8f46fa6a05d4a192483d0c5b25d8279c26f60",
   "source_registry_digest": "694e1acf36f5bdc067e93ab86f80e49a41f98113ac5297bc5380a4dc00ad4428",
   "lifecycle": "protocol_bound",
   "identity": {
@@ -78,13 +78,13 @@
       "kind": "method_program",
       "path": "research/reproductions/hugginggpt/program.py",
       "declaration_digest": "fd8bdd512084088eb4035a3e0188a2e02d0e839b5db732cd115c07c282a5a0b6",
-      "content_sha256": "88446edd8902da4f810ad6947e90b3af745f127778b798b058c3bccfcf7e1ca9"
+      "content_sha256": "d09b50d800dee2088338770b1662d8c39e516bfb211c5c604183467dd7b4a669"
     },
     {
       "kind": "study",
       "path": "research/reproductions/hugginggpt/study.py",
       "declaration_digest": "ecd6a486a16df6a678ae3b81a5e038253805d211354b3a5c0e29bfd349a9d496",
-      "content_sha256": "5542a7f435c2fb3490fc64bba6d43bdb10b5676c6e147f495c80b071f750dbd5"
+      "content_sha256": "0918a43b2bb724066c6ace4a77b2e554e3f252cd687619682a2342abab2b1833"
     },
     {
       "kind": "support",
@@ -198,19 +198,15 @@
   "evidence_refs": [],
   "scientific_tests": [
     {
-      "path": "tests/test_scientific_hugginggpt_method_program_v1.py",
-      "content_sha256": "3ff00881e7e4cbab775dd0591e0339cb340ab3774471c22fa9dc1273d09e4f73"
-    },
-    {
       "path": "tests/test_scientific_hugginggpt_v1.py",
-      "content_sha256": "691ba0972a070cf0f00e03ca50ea1fe078fd2bb21c4e5a8625dda5da1beef070"
+      "content_sha256": "0eeab6ec93d73c22dea855f227e38facd98e82853ba2bc07f94fc93c00a32e2a"
     }
   ],
   "research_os": {
     "surface": "noetrium.api",
     "execution_state": "benchmark_authority_required",
     "program_id": "hugginggpt",
-    "program_digest": "2cb8af58dbd8dc86f52fa61733be7889a0d39e4d6accb90398b131a1b9921952",
+    "program_digest": "b9b6834aec74b74f388a26444b35da2caf11d8910da09aab6d0f94d34580d2fc",
     "benchmark_authority": {
       "state": "required",
       "selection_digests": [],

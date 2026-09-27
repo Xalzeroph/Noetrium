@@ -6,6 +6,7 @@ from pathlib import Path
 import pytest
 
 from noetrium import api
+from noetrium_platform.product import research_os as product_research_os
 from scripts.run_reproduction_fleet import build_plan
 
 from research.reproductions.research_os import (
@@ -18,10 +19,10 @@ from research.reproductions.research_os import (
     discover_reproduction_definitions,
     executable_reproduction_definitions,
     is_research_os_executable,
-    materialize_reproduction_method_program,
+    materialize_reproduction_method,
     resolve_benchmark_split_consumers,
     resolve_execution_requirements,
-    resolve_method_program_binding,
+    resolve_method_binding,
 )
 
 
@@ -35,7 +36,7 @@ def test_every_execution_bearing_reproduction_compiles_to_current_research_os() 
     executable = executable_reproduction_definitions()
     assert executable
     failures: list[tuple[str, str]] = []
-    programs: list[api.research_os.ResearchProgram] = []
+    programs: list[product_research_os.ResearchProgram] = []
     for definition in executable:
         try:
             program = compile_reproduction_research_program(definition)
@@ -110,13 +111,13 @@ def test_toolformer_execution_binding_uses_only_paper_owned_capability_closure()
         benchmark_split_id="paper-eval",
         values={},
     )
-    implementation = materialize_reproduction_method_program(
+    implementation = materialize_reproduction_method(
         REPRODUCTION,
         binding,
     )
     assert implementation is not None
-    assert implementation.program_digest == (
-        resolve_method_program_binding(REPRODUCTION).program_digest
+    assert implementation.method_digest == (
+        resolve_method_binding(REPRODUCTION).method_digest
     )
 
     with pytest.raises(
@@ -202,7 +203,7 @@ def test_bound_reproduction_lanes_compile_as_distinct_product_programs() -> None
     assert all(len(program.program_id.rsplit(".", 1)[-1]) == 24 for program in programs)
     assert len({program.program_digest for program in programs}) == 3
 
-    portfolio = api.research_os.ResearchPortfolio("bound-reproduction-lanes", programs)
+    portfolio = product_research_os.ResearchPortfolio("bound-reproduction-lanes", programs)
     assert len(portfolio.programs) == 3
     assert len(portfolio.portfolio_digest) == 64
 

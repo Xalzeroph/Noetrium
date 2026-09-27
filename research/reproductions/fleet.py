@@ -10,6 +10,7 @@ from pathlib import Path
 from typing import Protocol, runtime_checkable
 
 from noetrium import api
+from noetrium_platform.product import research_os as product_research_os
 from noetrium_platform.composition.research_binding_authority import (
     ResearchBindingAuthorityError,
     ResearchBindingAuthorityPort,
@@ -164,7 +165,7 @@ class ReproductionFleetLane:
             raise TypeError("fleet lane requires ReproductionExecutionBinding")
         if type(self.study) is not ResearchStudyDefinition:
             raise TypeError("fleet lane requires ResearchStudyDefinition")
-        if type(self.program) is not api.research_os.ResearchProgram:
+        if type(self.program) is not product_research_os.ResearchProgram:
             raise TypeError("fleet lane requires ResearchProgram")
         if (
             self.definition.package != self.request.package
@@ -207,7 +208,7 @@ class ReproductionFleetLane:
 class ReproductionFleetMaterialization:
     requests: tuple[ReproductionExecutionRequest, ...]
     lanes: tuple[ReproductionFleetLane, ...]
-    portfolio: api.research_os.ResearchPortfolio
+    portfolio: product_research_os.ResearchPortfolio
     materialization_digest: str = field(init=False)
 
     def __post_init__(self) -> None:
@@ -219,7 +220,7 @@ class ReproductionFleetMaterialization:
             raise ValueError("fleet materialization requires lanes")
         if any(type(row) is not ReproductionFleetLane for row in self.lanes):
             raise TypeError("fleet materialization lanes must be typed")
-        if type(self.portfolio) is not api.research_os.ResearchPortfolio:
+        if type(self.portfolio) is not product_research_os.ResearchPortfolio:
             raise TypeError("fleet materialization requires ResearchPortfolio")
 
         request_digests = tuple(row.request_digest for row in self.requests)
@@ -592,7 +593,7 @@ def materialize_runnable_repository_execution_fleet(
         materialization = ReproductionFleetMaterialization(
             ordered_requests,
             ordered_lanes,
-            api.research_os.ResearchPortfolio(
+            product_research_os.ResearchPortfolio(
                 portfolio_id,
                 tuple(row.program for row in ordered_lanes),
             ),
@@ -665,7 +666,7 @@ def materialize_repository_execution_fleet(
     ordered_lanes = tuple(
         sorted(lanes, key=lambda row: row.program.program_id)
     )
-    portfolio = api.research_os.ResearchPortfolio(
+    portfolio = product_research_os.ResearchPortfolio(
         portfolio_id,
         tuple(row.program for row in ordered_lanes),
     )
@@ -1079,7 +1080,7 @@ def audit_materialized_reproduction_fleet_authorities(
         "fleet authority audit authority_manifest_digest",
     )
 
-    revision = api.research_os.ResearchGraphRevision(
+    revision = product_research_os.ResearchGraphRevision(
         fleet.portfolio.portfolio_id,
         fleet.portfolio.portfolio_digest,
         (),
@@ -1455,7 +1456,7 @@ class ReproductionFleetExecutionResult:
     """Materialization + canonical Research OS control receipt."""
 
     materialization: ReproductionFleetMaterialization
-    receipt: api.research_os.ResearchControlReceipt
+    receipt: product_research_os.ResearchControlReceipt
     authority_manifest_digest: str
     execution_digest: str = field(init=False)
 
@@ -1464,7 +1465,7 @@ class ReproductionFleetExecutionResult:
             raise TypeError(
                 "fleet execution result requires ReproductionFleetMaterialization"
             )
-        if type(self.receipt) is not api.research_os.ResearchControlReceipt:
+        if type(self.receipt) is not product_research_os.ResearchControlReceipt:
             raise TypeError(
                 "fleet execution result requires ResearchControlReceipt"
             )
@@ -1693,7 +1694,7 @@ def select_execution_authority_closed_fleet(
     return ReproductionFleetMaterialization(
         requests,
         lanes,
-        api.research_os.ResearchPortfolio(
+        product_research_os.ResearchPortfolio(
             portfolio_id,
             tuple(row.program for row in lanes),
         ),
