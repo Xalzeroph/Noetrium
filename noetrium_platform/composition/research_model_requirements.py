@@ -65,9 +65,10 @@ def research_model_requirement_semantics(
     if not isinstance(model_definition.config, Mapping):
         raise TypeError("Research Model definition config must be an object")
     model_config = dict(model_definition.config)
-    if model_config.get("role") != requirement.role:
-        raise ValueError("Research Model definition role drifted from Study role")
 
+    # Functional Study roles belong to ResearchModelRoleRequirement. The Model
+    # definition owns the scientific model/panel identity and may be reused by
+    # multiple roles with different prompt configurations.
     single = model_config.get("required_model")
     panel = model_config.get("required_models")
     if single is not None and panel is not None:
