@@ -109,7 +109,6 @@ def verify_installed_artifact(artifact: Path) -> InstalledArtifactReceipt:
                     "install",
                     "--disable-pip-version-check",
                     "--no-input",
-                    "--no-deps",
                     str(artifact),
                 ],
                 cwd=work,

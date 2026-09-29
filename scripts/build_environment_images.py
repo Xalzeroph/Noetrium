@@ -831,7 +831,19 @@ def build_environment_images(
     _run(("docker", "compose", "version"))
 
     work_root = work_root.resolve()
-    scratch_root = work_root / "build"
+    # Deployment state is durable and may intentionally live under the checkout
+    # (for example .noetrium/deployment), but release-distribution staging must
+    # never be inside the source tree. Keep build scratch in the bootstrap
+    # container's temporary filesystem, keyed by exact source identity, while
+    # runtime/registry state remains rooted at work_root.
+    scratch_identity = hashlib.sha256(
+        f"{ROOT.resolve()}:{source_sha}".encode("utf-8")
+    ).hexdigest()[:24]
+    scratch_root = (
+        Path(tempfile.gettempdir()).resolve()
+        / "noetrium-environment-image-builds"
+        / scratch_identity
+    )
     runtime_root = work_root / "runtime"
     shared_root = runtime_root / "shared"
     instances_root = runtime_root / "instances"
@@ -865,24 +877,13 @@ def build_environment_images(
             shutil.rmtree(scratch_root)
         distribution = scratch_root / "distribution"
         context = scratch_root / "container-context"
-        tooling_venv = scratch_root / "tooling-venv"
         scratch_root.mkdir(parents=True, exist_ok=True)
 
-        _run((sys.executable, "-m", "venv", str(tooling_venv)))
-        tool_python = (
-            tooling_venv / ("Scripts/python.exe" if os.name == "nt" else "bin/python")
-        )
-        _run(
-            (
-                str(tool_python),
-                "-m",
-                "pip",
-                "install",
-                "--upgrade",
-                "pip",
-                "build>=1.2,<2",
-            )
-        )
+        # Environment builds already execute inside the qualified Docker-first
+        # bootstrap image.  That image owns build-system/project/release tooling,
+        # so creating a second venv in the host-mounted durable work root adds a
+        # cross-filesystem interpreter lifetime and duplicates dependency state.
+        tool_python = Path(sys.executable).resolve()
         _run(
             (
                 str(tool_python),
