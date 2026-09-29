@@ -268,6 +268,10 @@ class ResearchExecutionPool:
             self._model_io_resources: list[object] = []
             self._model_io_resource_ids: set[int] = set()
             self._model_io_resources_closed = False
+            self._model_lifecycle_resource_lock = Lock()
+            self._model_lifecycle_resources: list[object] = []
+            self._model_lifecycle_resource_ids: set[int] = set()
+            self._model_lifecycle_resources_closed = False
             self._model_http_transport_lock = Lock()
             self._model_http_transport_owner: PooledModelHttpTransportOwner | None = None
             self._model_json_http_client_lock = Lock()
@@ -393,13 +397,12 @@ class ResearchExecutionPool:
             if owner is not None:
                 return owner.transport
 
-            # The shared transport is a physical model-I/O resource owner, but
-            # its terminal close must remain executable after model-I/O workload
-            # quiescence.  Bind the owner's close authority to the control domain,
-            # which intentionally outlives every workload domain.
-            group = self._control.open_task_group(
+            # HTTPX async connection pools are event-loop owned.  Bind both
+            # requests and transport teardown to the model-I/O runtime; workload
+            # quiescence closes registered request resources before sealing this
+            # domain, while physical model-service owners survive separately.
+            group = self._model_io.open_task_group(
                 f"research-model-http-transport:{self._owner_generation_id}",
-                resource_id="shared-model-http-transport-owner",
                 priority=ExecutionPriority.CRITICAL,
                 failure_policy=TaskFailurePolicy.FAIL_FAST,
             )
@@ -787,6 +790,41 @@ class ResearchExecutionPool:
             self._model_io_resources_closed=True
         return None
 
+    def register_model_lifecycle_resource(self, resource: object) -> None:
+        """Bind a physical model owner that must survive workload I/O quiescence."""
+        self._require_workloads_open()
+        closer = getattr(resource, "close", None)
+        if not callable(closer):
+            raise TypeError("model lifecycle resource must expose close()")
+        identity = id(resource)
+        with self._model_lifecycle_resource_lock:
+            if self._model_lifecycle_resources_closed:
+                raise RuntimeError("model lifecycle resources are already closed")
+            if identity in self._model_lifecycle_resource_ids:
+                return
+            self._model_lifecycle_resources.append(resource)
+            self._model_lifecycle_resource_ids.add(identity)
+
+    def _close_model_lifecycle_resources(self) -> BaseException | None:
+        with self._model_lifecycle_resource_lock:
+            if self._model_lifecycle_resources_closed:
+                return None
+            resources = tuple(reversed(self._model_lifecycle_resources))
+        errors: list[BaseException] = []
+        for resource in resources:
+            try:
+                resource.close()
+            except BaseException as exc:
+                errors.append(exc)
+        if errors:
+            return BaseExceptionGroup(
+                "model physical lifecycle resource shutdown failed",
+                errors,
+            )
+        with self._model_lifecycle_resource_lock:
+            self._model_lifecycle_resources_closed = True
+        return None
+
     def open_capability_io_group(
         self,
         group_id: str,
@@ -975,18 +1013,20 @@ class ResearchExecutionPool:
         )
         if capability_io_error is not None:
             errors.append(capability_io_error)
-        # Model-I/O owned resources include physical service-runtime owners and
-        # their renewable lease guards.  Workload quiescence must seal/join the
-        # model-I/O task domain without closing those owners: ManagedResearchRuntime
-        # retires model replicas and stops physical services before execution-pool
-        # shutdown.  Closing resources here cancels lease heartbeats too early and
-        # makes exact teardown attempt to re-register a lifetime-unique heartbeat.
-        model_io_error = self._close_domain_for_physical_convergence(
-            self._model_io,
-            deadline=deadline,
-        )
-        if model_io_error is not None:
-            errors.append(model_io_error)
+        # Request-side HTTP/client/recorder resources are event-loop owned and
+        # must close while model-I/O is still alive.  Physical model-service
+        # lifecycle owners are registered separately and intentionally survive
+        # quiescence until terminal runtime teardown.
+        model_resource_error = self._close_model_io_resources()
+        if model_resource_error is not None:
+            errors.append(model_resource_error)
+        else:
+            model_io_error = self._close_domain_for_physical_convergence(
+                self._model_io,
+                deadline=deadline,
+            )
+            if model_io_error is not None:
+                errors.append(model_io_error)
         if errors:
             raise BaseExceptionGroup(
                 "research execution workload quiesce failed",
@@ -1045,12 +1085,16 @@ class ResearchExecutionPool:
             if model_io_error is not None:
                 errors.append(model_io_error)
 
-        orchestration_error = self._close_domain_for_physical_convergence(
-            self._orchestration,
-            deadline=deadline,
-        )
-        if orchestration_error is not None:
-            errors.append(orchestration_error)
+        lifecycle_error = self._close_model_lifecycle_resources()
+        if lifecycle_error is not None:
+            errors.append(lifecycle_error)
+        else:
+            orchestration_error = self._close_domain_for_physical_convergence(
+                self._orchestration,
+                deadline=deadline,
+            )
+            if orchestration_error is not None:
+                errors.append(orchestration_error)
 
         workload_runtimes = (
             self._experiments,

@@ -401,7 +401,7 @@ def build_local_management_plane(
         ),
         task_group=task_group,
     )
-    execution_pool.register_model_io_resource(service_factory)
+    execution_pool.register_model_lifecycle_resource(service_factory)
     materializer = ModelLaunchMaterializer(
         assets,
         gpu_runtime_observer=gpu_runtime,

@@ -9,6 +9,11 @@ from noetrium_platform.capabilities.model.serving.endpoint.api import (
     OperationalModelEndpointReplica,
 )
 from noetrium_platform.composition.research_execution_pool import ResearchExecutionPool
+from noetrium_platform.foundation.kernel.concurrency.api import (
+    ExecutionLaneKind,
+    ExecutionSpec,
+    TaskFailureScope,
+)
 from noetrium_platform.infrastructure.resources.compute.providers import (
     LocalHostRuntimeObserver,
 )
@@ -105,16 +110,31 @@ def test_base_exception_model_resource_close_is_preserved_for_retry():
     assert pool._model_io.topology_snapshot().closed is True
 
 
-def test_quiesce_preserves_model_io_owned_resources_until_terminal_close():
+def test_quiesce_closes_request_model_io_resources_before_domain():
     pool = _pool()
     resource = _ObservedResource(pool)
     pool.register_model_io_resource(resource)
 
     pool.quiesce_workloads()
 
-    assert resource.close_calls == 0
+    assert resource.close_calls == 1
+    assert resource.model_domain_closed_during_close == [False]
     assert pool._model_io.topology_snapshot().closed is True
     assert pool._model_io.topology_snapshot().converged is True
+
+    pool.close()
+    assert resource.close_calls == 1
+
+
+def test_physical_model_lifecycle_resource_survives_quiesce_until_terminal_close():
+    pool = _pool()
+    resource = _ObservedResource(pool)
+    pool.register_model_lifecycle_resource(resource)
+
+    pool.quiesce_workloads()
+
+    assert resource.close_calls == 0
+    assert pool._model_io.topology_snapshot().closed is True
 
     pool.close()
 
@@ -150,18 +170,34 @@ def test_research_execution_pool_reuses_one_model_http_transport_and_closes_it_l
     assert borrower.owner_closed_during_close == [False]
     assert owner.closed is True
 
-def test_shared_model_http_transport_closes_after_model_io_quiescence():
+def test_shared_model_http_transport_closes_on_its_bound_model_io_loop():
     pool = _pool()
-    pool.model_http_transport
+    transport = pool.model_http_transport
     owner = pool._model_http_transport_owner
     assert owner is not None
+    borrower = pool.open_model_io_group("bind-shared-http-loop")
+
+    async def bind(context):
+        context.checkpoint()
+        transport._bind_loop()
+        context.checkpoint()
+
+    handle = borrower.submit(
+        ExecutionSpec(
+            task_id="bind-shared-http-loop",
+            lane_kind=ExecutionLaneKind.ASYNC_IO,
+            failure_scope=TaskFailureScope.CALLER,
+        ),
+        bind,
+    )
+    handle.result(timeout=5.0)
 
     pool.quiesce_workloads()
 
-    assert pool._model_io.topology_snapshot().closed is True
-    assert owner.closed is False
-    pool.close()
     assert owner.closed is True
+    assert pool._model_io.topology_snapshot().closed is True
+    assert pool._model_io.topology_snapshot().converged is True
+    pool.close()
 
 
 def test_research_execution_pool_reuses_exact_model_endpoint_pool_across_trials():
