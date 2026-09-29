@@ -17,6 +17,16 @@ from noetrium_platform.capabilities.environment.category.api import (
 from noetrium_platform.capabilities.environment.category.composition import (
     default_environment_category_catalog,
 )
+from noetrium_platform.capabilities.environment.minecraft.composition import (
+    compose_official_minecraft_server_artifacts,
+)
+from noetrium_platform.foundation.governance.api import PLATFORM_SCOPE
+from noetrium_platform.evidence.artifact.content.composition import (
+    compose_artifact_acquisition,
+)
+from noetrium_platform.evidence.artifact.content.providers.download import (
+    open_artifact_http,
+)
 from noetrium_platform.foundation.kernel.kernel import (
     ComponentIdentity,
     DirectoryMachineJournal,
@@ -300,6 +310,46 @@ def _environment_implementation(
     return config, implementation.implementation_id, category_id
 
 
+def _materialize_minecraft_server_asset(
+    *,
+    context,
+    program: ResearchProgram,
+    definition: ResearchDefinition,
+    version: str,
+    asset_root: Path,
+) -> Path:
+    asset_root.mkdir(parents=True, exist_ok=True)
+    destination = asset_root / "server.jar"
+    acquisition = compose_artifact_acquisition()
+    provider = compose_official_minecraft_server_artifacts(
+        acquisition=acquisition.acquirer,
+        metadata_opener=open_artifact_http,
+    ).provider
+    operation_id = canonical_digest(
+        {
+            "schema": "noetrium.minecraft-server-asset-materialization.v1",
+            "program_id": program.program_id,
+            "definition_digest": definition.definition_digest,
+            "minecraft_version": version,
+        }
+    )
+    result = provider.acquire(
+        version,
+        destination=str(destination),
+        scope=PLATFORM_SCOPE,
+        producer_operation_id=operation_id,
+    )
+    content = context.content
+    if content is None:
+        raise RuntimeError("Minecraft server asset materialization requires content authority")
+    registered = content.artifacts.put(result.record)
+    if registered.digest != result.record.digest:
+        raise RuntimeError("Minecraft server artifact registry digest drift")
+    if not destination.is_file():
+        raise RuntimeError("Minecraft server artifact acquisition did not publish server.jar")
+    return destination
+
+
 def _compose_program_environment_runtime(
     program: ResearchProgram,
     definition: ResearchDefinition,
@@ -353,16 +403,24 @@ def _compose_program_environment_runtime(
     environment_instances = (
         context.runtime.management.platform_meta.environment_instance_leases
     )
+    asset_root = (
+        context.state_root
+        / "authorities"
+        / "environments"
+        / ("minecraft-" + version)
+        / "assets"
+    )
+    _materialize_minecraft_server_asset(
+        context=context,
+        program=program,
+        definition=definition,
+        version=version,
+        asset_root=asset_root,
+    )
     lifetime_authority = LocalMinecraftLifetimeSessionAuthority(
         environment_config=config,
         state_root=program_root,
-        asset_root=(
-            context.state_root
-            / "authorities"
-            / "environments"
-            / ("minecraft-" + version)
-            / "assets"
-        ),
+        asset_root=asset_root,
         endpoint_allocations=endpoint_allocations,
         endpoint_lease_guard_factory=(
             context.execution_pool.endpoint_lease_guard_factory(endpoint_allocations)
