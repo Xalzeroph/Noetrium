@@ -137,9 +137,12 @@ class LoadedProjectResearchOS:
             state_root = self.project_root / _STATE_DIRECTORY
             managed_runtime = build_local_managed_research_runtime(
                 standard_local_directory_layout(state_root / "platform-runtime"),
-                start_background_controllers=(
-                    self._execution_config.start_background_controllers
-                ),
+                # Initial execution-authority materialization is the sole owner
+                # of model/resource convergence. Background reconcilers attach
+                # only after that synchronous closure is complete, otherwise
+                # they can race the bootstrap fleet over the same desired
+                # deployment generation.
+                start_background_controllers=False,
             )
             replacement: LocalResearchOSComposition | None = None
             try:
@@ -167,6 +170,8 @@ class LoadedProjectResearchOS:
                     ),
                     content_authorities=context.content,
                 )
+                if self._execution_config.start_background_controllers:
+                    managed_runtime.start_background_controllers()
             except BaseException as primary:
                 try:
                     managed_runtime.close()

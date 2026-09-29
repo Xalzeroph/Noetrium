@@ -318,7 +318,12 @@ def build_local_management_plane(
         ownership=meta.resource_ownership,
         leases=meta.resource_leases,
         runtime=DockerCliManagedContainerProvider(
-            local_commands,
+            # Docker observation/recovery may be called synchronously from an
+            # orchestration ASYNC_IO task (for example service readiness).
+            # Keeping Docker control commands in the independent control-plane
+            # task group prevents the event loop from synchronously waiting on
+            # a child task submitted back to itself.
+            docker_commands,
             docker_commands,
             authority_id=docker_authority_id,
         ),
@@ -391,6 +396,7 @@ def build_local_management_plane(
     execution_pool.register_model_io_resource(service_factory)
     materializer = ModelLaunchMaterializer(
         assets,
+        gpu_runtime_observer=gpu_runtime,
         base_environment=base_service_environment,
     )
     deployment_runtime = ModelDeploymentRuntime(

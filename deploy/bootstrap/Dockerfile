@@ -15,7 +15,10 @@ COPY --from=docker-cli /usr/local/libexec/docker/cli-plugins/docker-buildx /usr/
 COPY --from=docker-cli /usr/local/libexec/docker/cli-plugins/docker-compose /usr/local/libexec/docker/cli-plugins/docker-compose
 
 COPY pyproject.toml /tmp/noetrium-pyproject.toml
-RUN python3 -c 'import pathlib, subprocess, sys, tomllib; p=tomllib.loads(pathlib.Path("/tmp/noetrium-pyproject.toml").read_text()); deps=p["project"].get("dependencies", []); subprocess.check_call([sys.executable, "-m", "pip", "install", *deps])'     && rm -f /tmp/noetrium-pyproject.toml
+RUN python3 -c 'import pathlib, subprocess, sys, tomllib; p=tomllib.loads(pathlib.Path("/tmp/noetrium-pyproject.toml").read_text()); build=p.get("build-system", {}).get("requires", []); deps=p["project"].get("dependencies", []); subprocess.check_call([sys.executable, "-m", "pip", "install", *build, *deps])'     && rm -f /tmp/noetrium-pyproject.toml
+
+COPY . /tmp/noetrium-source
+RUN python3 -m pip install --no-deps --no-build-isolation /tmp/noetrium-source     && rm -rf /tmp/noetrium-source
 
 ENV PYTHONUNBUFFERED=1     PIP_DISABLE_PIP_VERSION_CHECK=1     PIP_NO_CACHE_DIR=1
 

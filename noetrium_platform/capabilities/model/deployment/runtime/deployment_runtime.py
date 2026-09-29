@@ -150,9 +150,13 @@ class ModelDeploymentRuntime:
                 desired_before.deployment_id,
                 ModelDesiredState.RUNNING,
             )
-            desired_contract, desired_environment = self._materializer.materialize(spec)
 
             if applied is not None:
+                self._materializer.validate_materialization_inputs(spec)
+                same_materialization = (
+                    canonical_digest(spec) == canonical_digest(applied.spec)
+                    and self._materializer.matches_applied(spec, applied.contract)
+                )
                 runtime = self._service_factory.open(
                     applied.spec,
                     applied.contract,
@@ -168,10 +172,7 @@ class ModelDeploymentRuntime:
                         "model applied process generation drifted before replacement: "
                         f"{spec.deployment_id}"
                     )
-                if (
-                    observation.process == applied.process
-                    and applied.contract.digest() == desired_contract.digest()
-                ):
+                if observation.process == applied.process and same_materialization:
                     return ModelDeploymentStatus(
                         spec.deployment_id,
                         spec.service_id,
@@ -201,6 +202,7 @@ class ModelDeploymentRuntime:
                     expected_runtime_digest=applied.runtime_digest,
                 )
 
+            desired_contract, desired_environment = self._materializer.materialize(spec)
             runtime = self._service_factory.open(
                 spec,
                 desired_contract,
@@ -306,7 +308,14 @@ class ModelDeploymentRuntime:
                     "applied-process-generation-drift",
                 )
             try:
-                desired_contract, _ = self._materializer.materialize(desired)
+                self._materializer.validate_materialization_inputs(desired)
+                pending = (
+                    canonical_digest(desired) != canonical_digest(applied.spec)
+                    or not self._materializer.matches_applied(
+                        desired,
+                        applied.contract,
+                    )
+                )
             except (FileNotFoundError, KeyError) as exc:
                 return ModelDeploymentStatus(
                     desired.deployment_id,
@@ -316,7 +325,6 @@ class ModelDeploymentRuntime:
                     observation.process.pid,
                     f"desired-resource-missing:{type(exc).__name__}",
                 )
-            pending = applied.contract.digest() != desired_contract.digest()
             return ModelDeploymentStatus(
                 desired.deployment_id,
                 desired.service_id,

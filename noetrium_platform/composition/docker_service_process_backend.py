@@ -37,6 +37,17 @@ from noetrium_platform.infrastructure.lifecycle.service.runtime.process_contract
 
 _DOCKER_PREPARED_START_SCHEMA = "noetrium.docker-service-start.v1"
 
+def _docker_gpu_device_request(gpu_devices: tuple[str, ...]) -> str:
+    """Encode an exact Docker --gpus device request.
+
+    Docker's --gpus flag is parsed as CSV. A multi-device value therefore
+    needs an embedded quoted CSV field; passing device=GPU-a,GPU-b as one
+    argv token is still split by Docker into two request fields.
+    """
+    if not gpu_devices or any(type(value) is not str or not value.strip() for value in gpu_devices):
+        raise ValueError("Docker GPU device request requires non-empty device identities")
+    return '"device=' + ",".join(gpu_devices) + '"'
+
 
 @dataclass(frozen=True, slots=True)
 class DockerServiceBindMount:
@@ -356,7 +367,7 @@ class DockerContainerProcessBackend:
             argv.extend(
                 (
                     "--gpus",
-                    "device=" + ",".join(self._configuration.gpu_devices),
+                    _docker_gpu_device_request(self._configuration.gpu_devices),
                 )
             )
         argv.extend(self._mount_args(captures))
@@ -364,6 +375,10 @@ class DockerContainerProcessBackend:
 
         environment_values = dict(environment.variables)
         environment_values.setdefault("HOME", "/tmp")
+        if self._configuration.user_uid is not None:
+            numeric_user = str(self._configuration.user_uid)
+            environment_values.setdefault("USER", numeric_user)
+            environment_values.setdefault("LOGNAME", numeric_user)
         for key, value in sorted(environment_values.items()):
             argv.extend(("-e", f"{key}={value}"))
 

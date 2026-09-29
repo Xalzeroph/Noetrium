@@ -25,7 +25,6 @@ from noetrium_platform.substrate.api import (
 )
 from noetrium_platform.foundation.kernel.kernel import JsonValue, canonical_digest
 from noetrium_platform.foundation.kernel.concurrency.api import (
-    Deadline,
     ExecutionLaneKind,
     ExecutionSpec,
     TaskFailureScope,
@@ -97,7 +96,6 @@ class MinecraftTcpReadinessProbe:
         with self._sequence_lock:
             self._sequence += 1
             sequence = self._sequence
-        deadline = Deadline.after(contract.readiness_timeout_s)
         readiness_identity = canonical_digest(
             {
                 "service_id": contract.service_id,
@@ -118,15 +116,8 @@ class MinecraftTcpReadinessProbe:
             process,
             contract,
             backend,
-            deadline=deadline,
         )
-        try:
-            return handle.result(timeout=max(0.001, deadline.remaining_seconds))
-        except TimeoutError as exc:
-            handle.cancel()
-            raise MinecraftServerServiceError(
-                f"Minecraft server TCP readiness timed out for {self.host}:{self.port}"
-            ) from exc
+        return handle.result()
 
 
 class MinecraftServerReadinessProbe:
@@ -192,11 +183,6 @@ class MinecraftServerReadinessProbe:
                 context.checkpoint()
             if context.wait(delay):
                 context.checkpoint()
-            if context.remaining_seconds is not None and context.remaining_seconds <= 0:
-                context.checkpoint()
-                raise MinecraftServerServiceError(
-                    f"Minecraft RCON readiness timed out: {last_error}"
-                )
 
     def wait_ready(
         self,
@@ -208,7 +194,6 @@ class MinecraftServerReadinessProbe:
         with self._sequence_lock:
             self._sequence += 1
             sequence = self._sequence
-        deadline = Deadline.after(contract.readiness_timeout_s)
         readiness_identity = canonical_digest(
             {
                 "service_id": contract.service_id,
@@ -229,15 +214,8 @@ class MinecraftServerReadinessProbe:
             contract,
             backend,
             tcp_evidence,
-            deadline=deadline,
         )
-        try:
-            return handle.result(timeout=max(0.001, deadline.remaining_seconds))
-        except TimeoutError as exc:
-            handle.cancel()
-            raise MinecraftServerServiceError(
-                f"Minecraft RCON readiness timed out: {self.rcon_command}"
-            ) from exc
+        return handle.result()
 
 
 def build_server_service_contract(

@@ -73,22 +73,53 @@ def test_failed_model_resource_close_preserves_model_io_for_retry():
     assert second.converged is True
 
 
-def test_quiesce_failure_preserves_model_io_for_retry():
+
+class _BaseExceptionOnceResource(_ObservedResource):
+    def close(self) -> None:
+        self.close_calls += 1
+        self.model_domain_closed_during_close.append(
+            self.pool._model_io.topology_snapshot().closed
+        )
+        if self.close_calls == 1:
+            raise KeyboardInterrupt("synthetic base-exception close failure")
+
+
+def test_base_exception_model_resource_close_is_preserved_for_retry():
     pool = _pool()
-    resource = _ObservedResource(pool, fail_first=True)
+    resource = _BaseExceptionOnceResource(pool)
     pool.register_model_io_resource(resource)
 
-    with pytest.raises(ExceptionGroup, match="workload quiesce failed"):
-        pool.quiesce_workloads()
+    with pytest.raises(
+        BaseExceptionGroup,
+        match="research execution pool close failed",
+    ) as captured:
+        pool.close()
 
+    assert "KeyboardInterrupt" in repr(captured.value)
     assert resource.close_calls == 1
     assert pool._model_io.topology_snapshot().closed is False
 
-    pool.quiesce_workloads()
+    pool.close()
 
     assert resource.close_calls == 2
     assert pool._model_io.topology_snapshot().closed is True
+
+
+def test_quiesce_preserves_model_io_owned_resources_until_terminal_close():
+    pool = _pool()
+    resource = _ObservedResource(pool)
+    pool.register_model_io_resource(resource)
+
+    pool.quiesce_workloads()
+
+    assert resource.close_calls == 0
+    assert pool._model_io.topology_snapshot().closed is True
+    assert pool._model_io.topology_snapshot().converged is True
+
     pool.close()
+
+    assert resource.close_calls == 1
+    assert resource.model_domain_closed_during_close == [True]
 
 
 class _SharedTransportObserver:

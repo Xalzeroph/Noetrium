@@ -894,8 +894,6 @@ def test_auto_model_replica_pool_launches_frozen_vllm_engine_args(
     stack = replace(
         _vllm_stack(
             engine_args=(
-                "--gpu-memory-utilization",
-                "0.97",
                 "--max-num-seqs",
                 "64",
             )
@@ -925,7 +923,7 @@ def test_auto_model_replica_pool_launches_frozen_vllm_engine_args(
         )
     )
     argv = lease.report.placements[0].deployment.argv
-    assert argv[argv.index("--gpu-memory-utilization") + 1] == "0.97"
+    assert "--gpu-memory-utilization" not in argv
     assert argv[argv.index("--max-num-seqs") + 1] == "64"
     assert "--enable-prefix-caching" in argv
     assert argv[argv.index("--prefix-caching-hash-algo") + 1] == "sha256"
@@ -952,7 +950,6 @@ def test_frozen_vllm_stack_drives_physical_vram_and_cpu_offload_reservation(
     )
     stack = _vllm_stack(
         engine_args=(
-            "--gpu-memory-utilization=0.75",
             "--cpu-offload-gb",
             "2.5",
         )
@@ -977,7 +974,7 @@ def test_frozen_vllm_stack_drives_physical_vram_and_cpu_offload_reservation(
     )
 
     effective = scheduler.requirements[0]
-    assert effective.required_gpu_memory_fraction == 0.75
+    assert effective.required_gpu_memory_fraction is None
     assert effective.memory_bytes == base_memory + int(2.5 * 1024**3)
     assert lease.report.placements[0].compute.memory_bytes == effective.memory_bytes
     lease.close()

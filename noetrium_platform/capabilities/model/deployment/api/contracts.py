@@ -42,6 +42,7 @@ class ModelDeploymentSpec:
     argv: tuple[str, ...]
     cwd: Path
     gpu_devices: tuple[str, ...] = ()
+    gpu_memory_reservation_bytes: tuple[int, ...] = ()
     environment: tuple[tuple[str, str], ...] = ()
     readiness_url: str | None = None
     readiness_timeout_s: float = 120.0
@@ -58,6 +59,22 @@ class ModelDeploymentSpec:
         ):
             raise ValueError(
                 "model deployment container_digest must be lowercase SHA-256"
+            )
+        if (
+            not isinstance(self.gpu_memory_reservation_bytes, tuple)
+            or any(
+                type(value) is not int or value < 0
+                for value in self.gpu_memory_reservation_bytes
+            )
+        ):
+            raise ValueError(
+                "model deployment GPU memory reservations must be non-negative integers"
+            )
+        if self.gpu_memory_reservation_bytes and (
+            len(self.gpu_memory_reservation_bytes) != len(self.gpu_devices)
+        ):
+            raise ValueError(
+                "model deployment GPU memory reservations must align with gpu_devices"
             )
         for field in ("readiness_timeout_s", "stop_timeout_s", "heartbeat_interval_s"):
             value = getattr(self, field)

@@ -595,7 +595,7 @@ def bootstrap_required_qualified_model_runtime(
                     row.deployment_id: (
                         "static-qualification:sha256:"
                         + certificate.evidence_digest,
-                        materialized.fingerprint_ref,
+                        "model-stack-fingerprint:sha256:" + canonical_digest(materialized.fingerprint_ref),
                     ),
                 },
             )

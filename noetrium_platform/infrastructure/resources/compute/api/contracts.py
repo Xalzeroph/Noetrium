@@ -94,6 +94,7 @@ class ComputeRequirement:
     minimum_gpu_memory_bytes: int = 0
     required_gpu_free_memory_bytes: int = 0
     required_gpu_memory_fraction: float | None = None
+    gpu_admission_headroom_fraction: float = 0.0
     max_gpu_utilization_percent: int = 100
     cpu_headroom_cores: int = 0
     memory_headroom_bytes: int = 0
@@ -121,6 +122,15 @@ class ComputeRequirement:
         ):
             raise ValueError(
                 "compute required_gpu_memory_fraction must be finite in (0, 1]"
+            )
+        if (
+            isinstance(self.gpu_admission_headroom_fraction, bool)
+            or not isinstance(self.gpu_admission_headroom_fraction, (int, float))
+            or not math.isfinite(float(self.gpu_admission_headroom_fraction))
+            or not 0.0 <= float(self.gpu_admission_headroom_fraction) < 1.0
+        ):
+            raise ValueError(
+                "compute GPU admission headroom fraction must be finite in [0, 1)"
             )
         if not 0 <= self.max_gpu_utilization_percent <= 100:
             raise ValueError("compute GPU utilization ceiling must be between 0 and 100")

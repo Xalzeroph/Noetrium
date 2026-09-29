@@ -70,7 +70,11 @@ def test_vllm_typed_stack_fields_render_to_exact_process_settings() -> None:
     settings = model_stack_launch_settings(stack)
 
     assert settings.environment == (("VLLM_ATTENTION_BACKEND", "FLASH_ATTN"),)
-    assert settings.engine_args[:9] == (
+    assert settings.engine_args == (
+        "--max-model-len",
+        "32768",
+        "--dtype",
+        "bfloat16",
         "--enable-reasoning",
         "--reasoning-parser",
         "qwen3",
@@ -80,8 +84,6 @@ def test_vllm_typed_stack_fields_render_to_exact_process_settings() -> None:
         "--kv-cache-dtype",
         "fp8",
         "--scheduling-policy",
-    )
-    assert settings.engine_args[9:] == (
         "priority",
         "--enable-prefix-caching",
         "--prefix-caching-hash-algo",

@@ -700,6 +700,21 @@ class ManagementTests(unittest.TestCase):
             port=30001,
             tensor_parallel=4,
         )
+        with self.assertRaisesRegex(
+            ValueError,
+            "platform-owned: --gpu-memory-utilization",
+        ):
+            vllm_deployment(
+                deployment_id="vl-invalid-memory",
+                scope=PLATFORM_SCOPE,
+                model_id="m",
+                container_digest="d" * 64,
+                cwd=root,
+                port=8001,
+                tensor_parallel=4,
+                gpu_devices=("GPU-0", "GPU-1", "GPU-2", "GPU-3"),
+                extra_args=("--gpu-memory-utilization", "0.97"),
+            )
         v = vllm_deployment(
             deployment_id="vl",
             scope=PLATFORM_SCOPE,
@@ -709,21 +724,12 @@ class ManagementTests(unittest.TestCase):
             port=8001,
             tensor_parallel=4,
             gpu_devices=("GPU-0", "GPU-1", "GPU-2", "GPU-3"),
-            extra_args=(
-                "--gpu-memory-utilization",
-                "0.97",
-                "--max-num-seqs",
-                "64",
-            ),
+            extra_args=("--max-num-seqs", "64"),
         )
         self.assertEqual(s.engine, "sglang")
         self.assertEqual(v.engine, "vllm")
         self.assertIn("--tp-size", s.argv)
         self.assertIn("--tensor-parallel-size", v.argv)
-        self.assertEqual(
-            v.argv[v.argv.index("--gpu-memory-utilization") + 1],
-            "0.97",
-        )
         self.assertEqual(v.argv[v.argv.index("--max-num-seqs") + 1], "64")
         self.assertEqual(
             v.gpu_devices,

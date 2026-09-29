@@ -17,6 +17,7 @@ def sglang_deployment(
     host: str = "127.0.0.1",
     tensor_parallel: int = 1,
     gpu_devices: tuple[str, ...] = (),
+    gpu_memory_reservation_bytes: tuple[int, ...] = (),
     extra_args: tuple[str, ...] = (),
 ) -> ModelDeploymentSpec:
     if type(port) is not int or not 1 <= port <= 65535:
@@ -45,6 +46,7 @@ def sglang_deployment(
         ),
         cwd=cwd,
         gpu_devices=gpu_devices,
+        gpu_memory_reservation_bytes=gpu_memory_reservation_bytes,
         readiness_url=f"http://{host}:{port}/health",
     )
 
@@ -63,6 +65,7 @@ def vllm_deployment(
     pipeline_parallel: int = 1,
     data_parallel_rpc_port: int | None = None,
     gpu_devices: tuple[str, ...] = (),
+    gpu_memory_reservation_bytes: tuple[int, ...] = (),
     extra_args: tuple[str, ...] = (),
 ) -> ModelDeploymentSpec:
     if type(port) is not int or not 1 <= port <= 65535:
@@ -106,6 +109,8 @@ def vllm_deployment(
         "-dpp",
         "--device-ids",
         "--served-model-name",
+        "--gpu-memory-utilization",
+        "--device-memory-utilization",
     )
     for argument in extra_args:
         if any(
@@ -157,6 +162,7 @@ def vllm_deployment(
         ),
         cwd=cwd,
         gpu_devices=gpu_devices,
+        gpu_memory_reservation_bytes=gpu_memory_reservation_bytes,
         readiness_url=f"http://{host}:{port}/health",
     )
 

@@ -749,6 +749,7 @@ class LocalModelReplicaPoolRuntime:
             port=endpoint.endpoint.port,
             tensor_parallel=tensor_parallel,
             gpu_devices=compute.gpu_ids,
+            gpu_memory_reservation_bytes=compute.gpu_memory_reservation_bytes,
             extra_args=engine_args,
         )
         if request.engine == "vllm":

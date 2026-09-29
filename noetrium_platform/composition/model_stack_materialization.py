@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 import json
+import math
 import re
 from pathlib import Path
 
@@ -14,6 +15,7 @@ from noetrium_platform.capabilities.model.deployment.runtime.vllm_resources impo
     reconcile_vllm_compute_requirement,
 )
 from noetrium_platform.capabilities.model.stack.api import (
+    MAX_VLLM_GPU_MEMORY_UTILIZATION,
     ModelServingPolicy,
     ModelStackSpec,
     RuntimeBuildIdentity,
@@ -39,6 +41,139 @@ _GIB = 1024 ** 3
 _VLLM_REPOSITORY = "vllm/vllm-openai"
 _RUNTIME_FINGERPRINT_SCHEMA = "noetrium.docker-model-runtime-fingerprint.v1"
 _VERSION_RE = re.compile(r"^v?(\d+(?:\.\d+){1,3})(?:[-+].*)?$")
+
+
+_DTYPE_BYTES = {
+    "float64": 8,
+    "double": 8,
+    "float32": 4,
+    "float": 4,
+    "bfloat16": 2,
+    "bf16": 2,
+    "float16": 2,
+    "fp16": 2,
+    "half": 2,
+    "float8": 1,
+    "fp8": 1,
+    "float8_e4m3fn": 1,
+    "float8_e5m2": 1,
+}
+_KV_CACHE_FRAGMENTATION_NUMERATOR = 9
+_KV_CACHE_FRAGMENTATION_DENOMINATOR = 8
+# vLLM reserves weights, KV cache and non-KV engine workspace inside the same
+# per-device memory target. Compilation/cudagraph/allocator workspace is material
+# for modern transformer servers, so keep a conservative non-KV reserve; when a
+# shared device cannot satisfy it, topology search expands tensor parallelism
+# instead of oversubscribing the device.
+_MODEL_RUNTIME_HEADROOM_FRACTION = 0.25
+_MIN_MODEL_RUNTIME_HEADROOM_BYTES = 4 * _GIB
+_MIN_KV_CACHE_BYTES = 1024 ** 3
+
+
+def _positive_int(document: dict[str, object], *keys: str) -> int | None:
+    for key in keys:
+        value = document.get(key)
+        if type(value) is int and value > 0:
+            return value
+    return None
+
+
+def _model_text_config(asset_path: Path) -> dict[str, object]:
+    path = asset_path / "config.json"
+    try:
+        document = json.loads(path.read_text("utf-8"))
+    except (OSError, UnicodeError, json.JSONDecodeError) as exc:
+        raise RuntimeError("model runtime memory planning requires valid config.json") from exc
+    if not isinstance(document, dict):
+        raise RuntimeError("model runtime memory planning requires object config.json")
+    nested = document.get("text_config")
+    if isinstance(nested, dict):
+        return {**document, **nested}
+    return document
+
+
+def _kv_cache_budget_bytes(
+    asset_path: Path,
+    *,
+    context_length: int,
+    dtype: str,
+    tensor_parallel: int,
+) -> int:
+    if context_length <= 0 or tensor_parallel <= 0:
+        raise ValueError("KV cache planning requires positive context/tensor parallelism")
+    document = _model_text_config(asset_path)
+    layers = _positive_int(document, "num_hidden_layers", "n_layer", "num_layers")
+    attention_heads = _positive_int(
+        document,
+        "num_attention_heads",
+        "n_head",
+        "num_heads",
+    )
+    kv_heads = _positive_int(
+        document,
+        "num_key_value_heads",
+        "multi_query_group_num",
+    )
+    hidden_size = _positive_int(document, "hidden_size", "n_embd", "d_model")
+    head_dim = _positive_int(document, "head_dim")
+    if attention_heads is None:
+        raise RuntimeError("model config lacks attention-head geometry for KV planning")
+    if kv_heads is None:
+        kv_heads = attention_heads
+    if head_dim is None:
+        if hidden_size is None or hidden_size % attention_heads:
+            raise RuntimeError("model config lacks exact attention head dimension")
+        head_dim = hidden_size // attention_heads
+    if layers is None:
+        raise RuntimeError("model config lacks layer count for KV planning")
+    dtype_bytes = _DTYPE_BYTES.get(dtype.strip().lower())
+    if dtype_bytes is None:
+        raise RuntimeError("unsupported model dtype for KV memory planning: " + dtype)
+    # KV heads can be sharded only until one head remains per rank. MQA/GQA
+    # therefore stop shrinking once tensor parallelism exceeds KV-head count.
+    kv_partitions = min(tensor_parallel, kv_heads)
+    per_device_kv_heads = math.ceil(kv_heads / kv_partitions)
+    raw = (
+        context_length
+        * layers
+        * per_device_kv_heads
+        * head_dim
+        * 2  # key + value
+        * dtype_bytes
+    )
+    budget = math.ceil(
+        raw
+        * _KV_CACHE_FRAGMENTATION_NUMERATOR
+        / _KV_CACHE_FRAGMENTATION_DENOMINATOR
+    )
+    return max(_MIN_KV_CACHE_BYTES, budget)
+
+
+def _model_runtime_vram_budget_bytes(
+    asset_path: Path,
+    *,
+    total_asset_bytes: int,
+    context_length: int,
+    dtype: str,
+    tensor_parallel: int,
+) -> int:
+    if total_asset_bytes <= 0:
+        raise ValueError("model runtime memory planning requires positive asset bytes")
+    per_device_weights = max(
+        1,
+        math.ceil(total_asset_bytes / tensor_parallel),
+    )
+    kv_cache = _kv_cache_budget_bytes(
+        asset_path,
+        context_length=context_length,
+        dtype=dtype,
+        tensor_parallel=tensor_parallel,
+    )
+    runtime_headroom = max(
+        _MIN_MODEL_RUNTIME_HEADROOM_BYTES,
+        math.ceil(per_device_weights * _MODEL_RUNTIME_HEADROOM_FRACTION),
+    )
+    return per_device_weights + kv_cache + runtime_headroom
 
 
 @dataclass(frozen=True, slots=True)
@@ -353,6 +488,7 @@ print(json.dumps({
         image_digest: str,
         image_source: str,
         fingerprint: dict[str, str],
+        gpu_memory_utilization: float | None = None,
     ) -> MaterializedModelStack:
         asset = self._assets.model(model_id)
         config = self._assets.model_config(model_id)
@@ -409,23 +545,34 @@ print(json.dumps({
             attention_backend=None,
             scheduler_policy="default",
             engine_args=(
-                "--gpu-memory-utilization",
-                "0.85",
+                ()
+                if gpu_memory_utilization is None
+                else (
+                    "--gpu-memory-utilization",
+                    (
+                        f"{gpu_memory_utilization:.6f}"
+                        .rstrip("0")
+                        .rstrip(".")
+                    ),
+                )
             ),
             serving_policy=ModelServingPolicy(),
         )
-        per_device_weights = max(
-            1,
-            (stats.bytes + tensor_parallel - 1) // tensor_parallel,
+        required_free = _model_runtime_vram_budget_bytes(
+            asset.path,
+            total_asset_bytes=stats.bytes,
+            context_length=config.max_position_embeddings,
+            dtype=config.torch_dtype,
+            tensor_parallel=tensor_parallel,
         )
-        required_free = per_device_weights + 2 * _GIB
         base = ComputeRequirement(
             cpu_cores=4,
             memory_bytes=max(4 * _GIB, min(stats.bytes, 16 * _GIB)),
             gpu_count=tensor_parallel,
             required_gpu_free_memory_bytes=required_free,
+            gpu_admission_headroom_fraction=1.0 - MAX_VLLM_GPU_MEMORY_UTILIZATION,
             max_gpu_utilization_percent=50,
-            gpu_sharing_mode=GpuSharingMode.IDLE_ONLY,
+            gpu_sharing_mode=GpuSharingMode.PREFER_IDLE_ALLOW_SHARED,
         )
         compute = reconcile_vllm_compute_requirement(stack, base)
         return MaterializedModelStack(
@@ -455,7 +602,7 @@ print(json.dumps({
             image_digest=image_digest,
         )
         for tensor_parallel in range(1, max_tensor_parallel + 1):
-            candidate = self._candidate(
+            provisional = self._candidate(
                 model_id=model_id,
                 scope=holder_scope,
                 tensor_parallel=tensor_parallel,
@@ -464,10 +611,10 @@ print(json.dumps({
                 fingerprint=fingerprint,
             )
             if self._compute.candidates(
-                candidate.compute,
+                provisional.compute,
                 scope=holder_scope,
             ):
-                return candidate
+                return provisional
         raise RuntimeError(
             "no compute topology can materialize model stack: " + model_id
         )

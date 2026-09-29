@@ -231,11 +231,13 @@ class AsyncProcessCommandRunner(ProcessCommandRunnerPort):
     ) -> ProcessCommandResult:
         context.checkpoint()
         remaining = context.remaining_seconds
-        if remaining is None:
-            raise RuntimeError("process command execution requires a structured deadline")
-        runtime_budget = min(
-            float(timeout_seconds),
-            max(0.0, remaining - self._cleanup_reserve_seconds),
+        runtime_budget = (
+            float(timeout_seconds)
+            if remaining is None
+            else min(
+                float(timeout_seconds),
+                max(0.0, remaining - self._cleanup_reserve_seconds),
+            )
         )
         if runtime_budget <= 0:
             return ProcessCommandResult(
@@ -293,11 +295,13 @@ class AsyncProcessCommandRunner(ProcessCommandRunnerPort):
         try:
             try:
                 remaining = context.remaining_seconds
-                if remaining is None:
-                    raise RuntimeError("process command execution lost its structured deadline")
-                runtime_budget = min(
-                    float(timeout_seconds),
-                    max(0.0, remaining - self._cleanup_reserve_seconds),
+                runtime_budget = (
+                    float(timeout_seconds)
+                    if remaining is None
+                    else min(
+                        float(timeout_seconds),
+                        max(0.0, remaining - self._cleanup_reserve_seconds),
+                    )
                 )
                 if runtime_budget <= 0:
                     await self._terminate_and_drain(
@@ -346,10 +350,9 @@ class AsyncProcessCommandRunner(ProcessCommandRunnerPort):
         if resolved_limit <= 0:
             raise ValueError("process command output limit must be positive")
         task_id = self._task_id(argv)
-        # ``timeout_seconds`` is the command's end-to-end execution budget.
-        # The task deadline also bounds ASYNC_IO admission.  A cleanup reserve is
-        # added outside that budget so timeout/cancellation can terminate and reap
-        # the process tree before ownership is released.
+        # timeout_seconds is the physical command execution budget.
+        # Queue/admission waiting belongs to TaskGroup admission policy and any
+        # group deadline. The process timeout starts only after execution admission.
         return self._task_group.submit(
             ExecutionSpec(
                 task_id=task_id,
@@ -364,7 +367,6 @@ class AsyncProcessCommandRunner(ProcessCommandRunnerPort):
             bool(inherit_stdin),
             bool(inherit_output),
             resolved_limit,
-            deadline=Deadline.after(float(timeout_seconds) + self._cleanup_reserve_seconds),
         )
 
 

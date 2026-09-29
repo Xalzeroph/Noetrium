@@ -64,7 +64,13 @@ class ModelDeploymentCatalog:
 
     def set_gpu_devices(self, deployment_id: str, gpu_devices: tuple[str, ...]) -> ModelDeploymentSpec:
         normalized = tuple(dict.fromkeys(str(device).strip() for device in gpu_devices if str(device).strip()))
-        return self.put_deployment(replace(self.deployment(deployment_id), gpu_devices=normalized))
+        return self.put_deployment(
+            replace(
+                self.deployment(deployment_id),
+                gpu_devices=normalized,
+                gpu_memory_reservation_bytes=(),
+            )
+        )
 
     def remove(self, deployment_id: str) -> bool:
         return self._deployment_registry.remove(deployment_id)

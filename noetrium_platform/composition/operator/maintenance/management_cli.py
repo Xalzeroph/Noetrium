@@ -8,7 +8,6 @@ import sys
 from noetrium_platform.infrastructure.lifecycle.python.api import EnvironmentCommandResult
 from noetrium_platform.composition.model_management import (
     build_local_management_plane,
-    discover_local_docker_root,
 )
 from noetrium_platform.foundation.kernel.concurrency.api import TaskFailurePolicy, TaskGroupPort
 from noetrium_platform.research.execution.policy.api import ExecutionPriority
@@ -17,8 +16,6 @@ from noetrium_platform.composition.research_execution_pool import ResearchExecut
 from noetrium_platform.composition.shared_host_pressure import (
     LocalSharedNetworkPressureObserver,
     LocalSharedStoragePressureObserver,
-    ResourceCompetitionDemand,
-    StorageCompetitionDemand,
 )
 from noetrium_platform.infrastructure.resources.directory.api import DirectoryLayout
 from noetrium_platform.foundation.kernel.kernel.errors import describe_exception
@@ -136,18 +133,10 @@ def main(argv: list[str] | None = None) -> int:
                 priority=ExecutionPriority.CRITICAL,
                 failure_policy=TaskFailurePolicy.COLLECT_ALL,
             )
-            docker_root = discover_local_docker_root(task_group)
-            docker_task_group = execution_pool.open_orchestration_group(
+            docker_task_group = execution_pool.open_control_group(
                 "management-cli-docker-io",
                 resource_id="docker-management-io",
-                priority=ExecutionPriority.NORMAL,
-                resource_demand=(
-                    ResourceCompetitionDemand(
-                    storage_targets=(StorageCompetitionDemand(docker_root),)
-                )
-                    if docker_root is not None
-                    else ResourceCompetitionDemand()
-                ),
+                priority=ExecutionPriority.CRITICAL,
                 failure_policy=TaskFailurePolicy.COLLECT_ALL,
             )
             context = _load_context(
@@ -183,7 +172,7 @@ def main(argv: list[str] | None = None) -> int:
         # kernel lock is always the final lifetime object released.
         if execution_pool is not None:
             if docker_task_group is not None:
-                execution_pool.close_orchestration_group(
+                execution_pool.close_control_group(
                     docker_task_group,
                     cancel_pending=True,
                 )

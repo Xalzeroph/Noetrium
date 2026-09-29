@@ -82,8 +82,17 @@ def refresh_required_qualified_model_runtimes(
     required = tuple(sorted({row.model_id for row in required_models}))
     if not required:
         return ()
-    if not authority_root.is_dir():
-        raise RuntimeError("qualified model authority root is missing")
+    if authority_root.exists():
+        if authority_root.is_symlink() or not authority_root.is_dir():
+            raise RuntimeError(
+                "qualified model authority root must be a real directory"
+            )
+    else:
+        authority_root.mkdir(parents=True, exist_ok=True)
+        if authority_root.is_symlink() or not authority_root.is_dir():
+            raise RuntimeError(
+                "qualified model authority root creation did not converge"
+            )
     if not project_root.is_dir():
         raise RuntimeError("research project root is missing")
     if model_replica_pool is None:

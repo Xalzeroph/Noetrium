@@ -18,8 +18,8 @@ Usage: ./deploy/noetrium <doctor|build|plan|requirements|preflight|run|project|e
   plan       compile the repository reproduction fleet without starting work
   requirements emit the machine-readable owner authority prerequisite manifest
   preflight  materialize exact authority closure and admit the fleet without starting work
-  run        build/reuse environments and execute the fleet through one shared runtime
-  project    run/control one downstream Research OS project in the Docker-first control plane
+  run        build/reuse environments and execute one or many Research OS projects through the shared portfolio runtime
+  project    create/sync/doctor/test downstream project sources; execution uses run
   env        pass remaining arguments to the low-level environment bootstrap
   docker     manage the optional ordinary-user rootless Docker daemon
 
@@ -129,6 +129,17 @@ fleet() {
   control_python scripts/run_reproduction_fleet.py "$@"
 }
 
+run_has_project_selector() {
+  for argument in "$@"; do
+    case "$argument" in
+      --project|--project=*)
+        return 0
+        ;;
+    esac
+  done
+  return 1
+}
+
 project_root_from_args() {
   project_root="."
   expect_root=0
@@ -221,11 +232,18 @@ case "$command" in
     if [ "${NOETRIUM_SKIP_ENVIRONMENT_BUILD:-0}" != "1" ]; then
       environment_bootstrap build
     fi
-    fleet_with_optional_materializer --execute \
-      --state-root "$FLEET_STATE_ROOT" "$@"
+    if run_has_project_selector "$@"; then
+      project_control run "$@"
+    else
+      fleet_with_optional_materializer --execute \
+        --state-root "$FLEET_STATE_ROOT" "$@"
+    fi
     ;;
   project)
     host_doctor
+    if [ "${1:-}" = "run" ]; then
+      die "project run was removed; use ./deploy/noetrium run --project <path>"
+    fi
     project_control "$@"
     ;;
   env)

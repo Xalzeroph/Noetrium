@@ -243,6 +243,19 @@ def _required_gpu_memory_bytes(
     )
 
 
+def _required_gpu_admission_free_bytes(
+    gpu,
+    requirement: ComputeRequirement,
+    device: GpuDeviceStatus,
+) -> int:
+    reservation = _required_gpu_memory_bytes(gpu, requirement, device)
+    runtime_total_bytes = device.memory_total_mb * 1024 * 1024
+    headroom = math.ceil(
+        runtime_total_bytes * float(requirement.gpu_admission_headroom_fraction)
+    )
+    return reservation + headroom
+
+
 def _runtime_rank(
     gpu,
     requirement: ComputeRequirement,
@@ -256,7 +269,7 @@ def _runtime_rank(
     device = runtime_index.devices_by_id.get(gpu.gpu_id)
     if device is None:
         return None
-    required_free_bytes = _required_gpu_memory_bytes(
+    required_free_bytes = _required_gpu_admission_free_bytes(
         gpu,
         requirement,
         device,

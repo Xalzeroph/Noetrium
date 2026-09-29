@@ -63,6 +63,8 @@ class Pool:
     def __init__(self):
         self.group_closed = False
         self.closed_groups = []
+        self.orchestration_closed_groups = []
+        self.control_closed_groups = []
         self.closed = False
         self.workloads_quiesced = False
         self.quiesce_error = None
@@ -75,6 +77,13 @@ class Pool:
     def close_orchestration_group(self, group, *, cancel_pending=False, deadline=None):
         self.group_closed = True
         self.closed_groups.append(group)
+        self.orchestration_closed_groups.append(group)
+        group.closed = True
+
+    def close_control_group(self, group, *, cancel_pending=False, deadline=None):
+        self.group_closed = True
+        self.closed_groups.append(group)
+        self.control_closed_groups.append(group)
         group.closed = True
 
     def close(self, *, deadline=None):
@@ -218,6 +227,8 @@ def test_managed_runtime_owns_background_controller_lifecycle() -> None:
     assert pool.workloads_quiesced is True
     assert pool.group_closed is True
     assert len(pool.closed_groups) == 2
+    assert len(pool.control_closed_groups) == 1
+    assert len(pool.orchestration_closed_groups) == 1
     assert pool.closed is True
     assert group.closed is True
     assert managed.observability.closed is True

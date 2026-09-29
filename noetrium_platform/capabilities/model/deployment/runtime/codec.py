@@ -25,7 +25,7 @@ from .applied import AppliedModelDeployment
 
 _DEPLOYMENT_FIELDS = frozenset({
     "deployment_id", "scope", "service_id", "model_id", "engine", "container_digest", "executable", "argv", "cwd",
-    "gpu_devices", "environment", "readiness_url", "readiness_timeout_s",
+    "gpu_devices", "gpu_memory_reservation_bytes", "environment", "readiness_url", "readiness_timeout_s",
     "stop_timeout_s", "heartbeat_interval_s", "desired_state", "tags",
 })
 _APPLIED_FIELDS = frozenset({"spec", "contract", "environment", "process"})
@@ -57,6 +57,7 @@ def deployment_to_data(value: ModelDeploymentSpec) -> dict[str, object]:
         "argv": list(value.argv),
         "cwd": str(value.cwd),
         "gpu_devices": list(value.gpu_devices),
+        "gpu_memory_reservation_bytes": list(value.gpu_memory_reservation_bytes),
         "environment": [list(row) for row in value.environment],
         "readiness_url": value.readiness_url,
         "readiness_timeout_s": value.readiness_timeout_s,
@@ -93,6 +94,10 @@ def decode_deployment(data: dict[str, object]) -> ModelDeploymentSpec:
         argv=text_tuple(document["argv"], field="argv"),
         cwd=Path(text(document["cwd"], field="cwd", allow_empty=False)),
         gpu_devices=text_tuple(document["gpu_devices"], field="gpu_devices"),
+        gpu_memory_reservation_bytes=tuple(
+            integer(value, field="gpu_memory_reservation_bytes", minimum=0)
+            for value in document["gpu_memory_reservation_bytes"]
+        ),
         environment=text_pairs(document["environment"], field="environment"),
         readiness_url=optional_text(document["readiness_url"], field="readiness_url"),
         readiness_timeout_s=number(document["readiness_timeout_s"], field="readiness_timeout_s", minimum=0.0),

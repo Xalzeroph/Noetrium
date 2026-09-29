@@ -48,15 +48,12 @@ from .model_management import (
     ManagementPlaneAuthorities,
     bind_local_model_replica_pool,
     build_local_management_plane,
-    discover_local_docker_root,
 )
 from .research_execution_pool import ResearchExecutionPool
 from .resource_lifecycle import ManagedResourceReconciler
 from .shared_host_pressure import (
     LocalSharedNetworkPressureObserver,
     LocalSharedStoragePressureObserver,
-    ResourceCompetitionDemand,
-    StorageCompetitionDemand,
     ResourceCompetitionPolicy,
 )
 
@@ -328,7 +325,7 @@ class ManagedResearchRuntime:
 
         if not self._docker_group_closed:
             try:
-                self.execution_pool.close_orchestration_group(
+                self.execution_pool.close_control_group(
                     self._docker_group,
                     cancel_pending=True,
                 )
@@ -426,18 +423,10 @@ def build_local_managed_research_runtime(
             resource_id="platform-runtime-controller",
             priority=ExecutionPriority.CRITICAL,
         )
-        docker_root = discover_local_docker_root(group)
-        docker_group = pool.open_orchestration_group(
+        docker_group = pool.open_control_group(
             "managed-research-runtime-docker-io",
             resource_id="docker-management-io",
-            priority=ExecutionPriority.NORMAL,
-            resource_demand=(
-                ResourceCompetitionDemand(
-                    storage_targets=(StorageCompetitionDemand(docker_root),)
-                )
-                if docker_root is not None
-                else ResourceCompetitionDemand()
-            ),
+            priority=ExecutionPriority.CRITICAL,
         )
         try:
             management = build_local_management_plane(
@@ -462,7 +451,7 @@ def build_local_managed_research_runtime(
             _reconcile_startup_ownership(management, resources)
             model_replica_pool = bind_local_model_replica_pool(management, pool)
         except BaseException:
-            pool.close_orchestration_group(docker_group, cancel_pending=True)
+            pool.close_control_group(docker_group, cancel_pending=True)
             pool.close_orchestration_group(group, cancel_pending=True)
             raise
         operation_runtime = build_managed_operation_runtime(

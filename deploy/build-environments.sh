@@ -430,8 +430,11 @@ if [ "${1:-}" = "control" ]; then
     if [ -n "$DAEMON_SOCKET_GID" ]; then
       CONTROL_RUNTIME_ARGS="$CONTROL_RUNTIME_ARGS --group-add $DAEMON_SOCKET_GID"
     fi
-    if command -v nvidia-smi >/dev/null 2>&1 && docker info --format '{{json .Runtimes}}' 2>/dev/null | grep -q '"nvidia"'; then
-      CONTROL_RUNTIME_ARGS="$CONTROL_RUNTIME_ARGS --gpus all"
+    if command -v nvidia-smi >/dev/null 2>&1; then
+      if docker run --rm --init --restart no --gpus all \
+        --entrypoint nvidia-smi "$CONTROL_IMAGE" -L >/dev/null 2>&1; then
+        CONTROL_RUNTIME_ARGS="$CONTROL_RUNTIME_ARGS --gpus all"
+      fi
     fi
   elif [ "$CONTROL_HOST_RUNTIME" != "0" ]; then
     echo "NOETRIUM_CONTROL_HOST_RUNTIME must be 0 or 1." >&2

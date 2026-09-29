@@ -306,7 +306,7 @@ class ResearchExecutionPool:
                 errors.append(cleanup_exc)
             if len(errors) == 1:
                 raise
-            raise ExceptionGroup(
+            raise BaseExceptionGroup(
                 "research execution pool construction failed",
                 errors,
             ) from exc
@@ -774,7 +774,7 @@ class ResearchExecutionPool:
             except BaseException as exc:
                 errors.append(exc)
         if errors:
-            return ExceptionGroup(
+            return BaseExceptionGroup(
                 "model-I/O owned resource shutdown failed",
                 errors,
             )
@@ -970,18 +970,20 @@ class ResearchExecutionPool:
         )
         if capability_io_error is not None:
             errors.append(capability_io_error)
-        model_resource_error = self._close_model_io_resources()
-        if model_resource_error is not None:
-            errors.append(model_resource_error)
-        else:
-            model_io_error = self._close_domain_for_physical_convergence(
-                self._model_io,
-                deadline=deadline,
-            )
-            if model_io_error is not None:
-                errors.append(model_io_error)
+        # Model-I/O owned resources include physical service-runtime owners and
+        # their renewable lease guards.  Workload quiescence must seal/join the
+        # model-I/O task domain without closing those owners: ManagedResearchRuntime
+        # retires model replicas and stops physical services before execution-pool
+        # shutdown.  Closing resources here cancels lease heartbeats too early and
+        # makes exact teardown attempt to re-register a lifetime-unique heartbeat.
+        model_io_error = self._close_domain_for_physical_convergence(
+            self._model_io,
+            deadline=deadline,
+        )
+        if model_io_error is not None:
+            errors.append(model_io_error)
         if errors:
-            raise ExceptionGroup(
+            raise BaseExceptionGroup(
                 "research execution workload quiesce failed",
                 errors,
             )
@@ -1081,7 +1083,7 @@ class ResearchExecutionPool:
                 errors.append(control_error)
 
         if errors:
-            raise ExceptionGroup("research execution pool close failed", errors)
+            raise BaseExceptionGroup("research execution pool close failed", errors)
         if not workloads_converged or not self._shared_workload_cpu_closed:
             raise RuntimeError(
                 "research execution pool close did not converge workload CPU ownership"
