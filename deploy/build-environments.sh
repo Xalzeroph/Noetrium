@@ -160,6 +160,7 @@ run_bootstrap_container() {
   # convergence path on a non-zero Docker result.
   # shellcheck disable=SC2086
   if docker run --rm --init --restart no \
+    --tmpfs /tmp:rw,exec,nosuid,nodev,mode=1777 \
     --name "$BOOTSTRAP_CONTAINER_NAME" \
     --label "$BOOTSTRAP_MANAGED_LABEL=$BOOTSTRAP_MANAGED_VALUE" \
     --label "$OWNER_PID_LABEL=$$" \
@@ -381,7 +382,7 @@ if [ "${1:-}" = "control" ]; then
     CONTROL_IMAGE="$BOOTSTRAP_IMAGE"
     BOOTSTRAP_IMAGE_ID="$(docker_image_id "$BOOTSTRAP_IMAGE")"
     PROJECT_RUNTIME_KEY="$(
-      docker run --rm --init --restart no         --user "$HOST_UID:$HOST_GID"         --entrypoint python3         -e HOME=/tmp         -e PIP_DISABLE_PIP_VERSION_CHECK=1         -e PIP_NO_CACHE_DIR=1         -v "$ROOT:$ROOT:ro"         -v "$CONTROL_PROJECT_ROOT:$CONTROL_PROJECT_ROOT"         -v "$CONTROL_STATE_ROOT:$CONTROL_STATE_ROOT"         "$BOOTSTRAP_IMAGE"         "$ROOT/scripts/materialize_project_runtime.py"         --project-root "$CONTROL_PROJECT_ROOT"         --platform-root "$ROOT"         --state-root "$CONTROL_STATE_ROOT"         --base-image-id "$BOOTSTRAP_IMAGE_ID"
+      docker run --rm --init --restart no         --tmpfs /tmp:rw,exec,nosuid,nodev,mode=1777         --user "$HOST_UID:$HOST_GID"         --entrypoint python3         -e HOME=/tmp         -e PIP_DISABLE_PIP_VERSION_CHECK=1         -e PIP_NO_CACHE_DIR=1         -v "$ROOT:$ROOT:ro"         -v "$CONTROL_PROJECT_ROOT:$CONTROL_PROJECT_ROOT"         -v "$CONTROL_STATE_ROOT:$CONTROL_STATE_ROOT"         "$BOOTSTRAP_IMAGE"         "$ROOT/scripts/materialize_project_runtime.py"         --project-root "$CONTROL_PROJECT_ROOT"         --platform-root "$ROOT"         --state-root "$CONTROL_STATE_ROOT"         --base-image-id "$BOOTSTRAP_IMAGE_ID"
     )"
     if [ "$PROJECT_RUNTIME_KEY" != "base" ]; then
       [ "${#PROJECT_RUNTIME_KEY}" -eq 64 ] || {

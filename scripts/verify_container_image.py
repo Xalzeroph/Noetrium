@@ -29,7 +29,16 @@ _QUALIFICATION_OWNER_ENV = (
 
 
 def _qualification_run_options() -> list[str]:
-    options = ["--rm", "--init", "--restart", "no", "--label", _QUALIFICATION_CHILD_LABEL]
+    options = [
+        "--rm",
+        "--init",
+        "--restart",
+        "no",
+        "--tmpfs",
+        "/tmp:rw,exec,nosuid,nodev,mode=1777",
+        "--label",
+        _QUALIFICATION_CHILD_LABEL,
+    ]
     for env_name, label_name in _QUALIFICATION_OWNER_ENV:
         value = os.environ.get(env_name, "").strip()
         if value:

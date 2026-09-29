@@ -375,6 +375,17 @@ def test_environment_catalog_keeps_scientific_assets_downstream() -> None:
     assert "downstream-owned" in boundary
 
 
+def test_bootstrap_containers_use_ephemeral_tmpfs() -> None:
+    text = (ROOT / "deploy" / "build-environments.sh").read_text(encoding="utf-8")
+    tmpfs = "--tmpfs /tmp:rw,exec,nosuid,nodev,mode=1777"
+    assert text.count(tmpfs) >= 2
+    runner = text.split("run_bootstrap_container() {", 1)[1].split("docker_image_id()", 1)[0]
+    assert tmpfs in runner
+    assert any(
+        "docker run --rm --init --restart no" in line and tmpfs in line
+        for line in text.splitlines()
+    )
+
 def test_environment_bootstrap_is_vcs_neutral() -> None:
     text = (ROOT / "deploy" / "build-environments.sh").read_text(encoding="utf-8")
     bootstrap = (ROOT / "deploy" / "bootstrap" / "Dockerfile").read_text(encoding="utf-8")

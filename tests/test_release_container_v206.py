@@ -92,6 +92,12 @@ def test_container_definition_uses_only_prebuilt_distribution_wheel():
     assert user_layer < wheel_copy < wheel_arg < wheel_install
     assert wheel_install < entrypoint_copy < source_arg < provenance_label
 
+def test_container_qualification_uses_ephemeral_tmpfs():
+    options = container._qualification_run_options()
+    assert "--tmpfs" in options
+    assert "/tmp:rw,exec,nosuid,nodev,mode=1777" in options
+
+
 def test_container_smoke_verifies_wheel_record_and_effective_identity():
     script = container._product_smoke_script(WHEEL_SHA)
     assert "PLATFORM_EMBEDDED_WHEEL" in script
@@ -359,7 +365,10 @@ def test_container_verifier_labels_ephemeral_smoke_children_for_orphan_reaping(m
     monkeypatch.setenv("NOETRIUM_BOOTSTRAP_OWNER_START", "456")
     options = container._qualification_run_options()
 
-    assert options[:5] == ["--rm", "--init", "--restart", "no", "--label"]
+    assert options[:4] == ["--rm", "--init", "--restart", "no"]
+    assert "--tmpfs" in options
+    assert "/tmp:rw,exec,nosuid,nodev,mode=1777" in options
+    assert "--label" in options
     assert "io.noetrium.bootstrap-child=qualification-v1" in options
     assert "io.noetrium.bootstrap-owner-pid=123" in options
     assert "io.noetrium.bootstrap-owner-boot=boot-id" in options
