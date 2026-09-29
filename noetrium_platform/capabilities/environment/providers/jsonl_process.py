@@ -282,6 +282,55 @@ class JsonlProcessTransport:
         async for line in self._stream_lines(context, process.stderr):
             self._stderr_tail.append(line.rstrip("\r\n"))
 
+    @staticmethod
+    def _has_file_descriptor(stream: TextIO | None) -> bool:
+        if stream is None:
+            return False
+        try:
+            stream.fileno()
+        except (AttributeError, OSError, ValueError):
+            return False
+        return True
+
+    def _put_stdout_blocking(self, context: TaskContextPort, item: str | object) -> bool:
+        while not self._stdout_stop.is_set():
+            context.checkpoint()
+            try:
+                self._stdout_queue.put_nowait(item)
+                return True
+            except queue.Full:
+                context.wait(0.01)
+        return False
+
+    def _drain_stdout_blocking_task(self, context: TaskContextPort) -> None:
+        process = self._process
+        if process is None or process.stdout is None:
+            return
+        try:
+            while not self._stdout_stop.is_set():
+                context.checkpoint()
+                line = process.stdout.readline()
+                if line == "":
+                    return
+                if not self._put_stdout_blocking(context, line):
+                    return
+        finally:
+            try:
+                self._stdout_queue.put_nowait(_STDOUT_EOF)
+            except queue.Full:
+                pass
+
+    def _drain_stderr_blocking_task(self, context: TaskContextPort) -> None:
+        process = self._process
+        if process is None or process.stderr is None:
+            return
+        while not self._stdout_stop.is_set():
+            context.checkpoint()
+            line = process.stderr.readline()
+            if line == "":
+                return
+            self._stderr_tail.append(line.rstrip("\r\n"))
+
     def start(self) -> None:
         if self._process is not None:
             raise self._error_type(
@@ -323,23 +372,33 @@ class JsonlProcessTransport:
                 self._process = self._process_factory(
                     list(self.spec.command), **process_options
                 )
+            # OS subprocess pipes expose file descriptors and are cooperatively
+            # drained on the shared ASYNC_IO loop. File-like process factories may
+            # expose genuinely blocking streams without fileno(); those must never
+            # block the event loop, so they use the bounded BLOCKING_IO provider.
+            fd_backed = self._has_file_descriptor(self._process.stdout) and self._has_file_descriptor(
+                self._process.stderr
+            )
+            lane_kind = ExecutionLaneKind.ASYNC_IO if fd_backed else ExecutionLaneKind.BLOCKING_IO
+            stdout_drain = self._drain_stdout_task if fd_backed else self._drain_stdout_blocking_task
+            stderr_drain = self._drain_stderr_task if fd_backed else self._drain_stderr_blocking_task
             self._stdout_task, self._stderr_task = self._task_group.submit_atomic_batch(
                 (
                     (
                         ExecutionSpec(
                             task_id=f"{self._task_namespace}:{self._transport_identity}:stdout:{uuid4().hex}",
-                            lane_kind=ExecutionLaneKind.ASYNC_IO,
+                            lane_kind=lane_kind,
                             failure_scope=TaskFailureScope.CALLER,
                         ),
-                        self._drain_stdout_task,
+                        stdout_drain,
                     ),
                     (
                         ExecutionSpec(
                             task_id=f"{self._task_namespace}:{self._transport_identity}:stderr:{uuid4().hex}",
-                            lane_kind=ExecutionLaneKind.ASYNC_IO,
+                            lane_kind=lane_kind,
                             failure_scope=TaskFailureScope.CALLER,
                         ),
-                        self._drain_stderr_task,
+                        stderr_drain,
                     ),
                 )
             )
