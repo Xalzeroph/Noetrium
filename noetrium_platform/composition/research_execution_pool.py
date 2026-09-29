@@ -393,8 +393,13 @@ class ResearchExecutionPool:
             if owner is not None:
                 return owner.transport
 
-            group = self._model_io.open_task_group(
+            # The shared transport is a physical model-I/O resource owner, but
+            # its terminal close must remain executable after model-I/O workload
+            # quiescence.  Bind the owner's close authority to the control domain,
+            # which intentionally outlives every workload domain.
+            group = self._control.open_task_group(
                 f"research-model-http-transport:{self._owner_generation_id}",
+                resource_id="shared-model-http-transport-owner",
                 priority=ExecutionPriority.CRITICAL,
                 failure_policy=TaskFailurePolicy.FAIL_FAST,
             )

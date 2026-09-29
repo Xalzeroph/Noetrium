@@ -96,3 +96,15 @@ def test_managed_container_resolution_uses_exact_applied_host_pid() -> None:
             raise AssertionError(args)
 
     assert _managed_container_id(Runner(), 88) == "sha-b"
+
+
+def test_gpu_memory_accounting_evidence_ref_is_digest_bound():
+    from noetrium_platform.composition.model_runtime_bootstrap import (
+        GPU_MEMORY_ACCOUNTING_EVIDENCE_REF,
+    )
+
+    prefix = "gpu-memory-accounting:sha256:"
+    assert GPU_MEMORY_ACCOUNTING_EVIDENCE_REF.startswith(prefix)
+    digest = GPU_MEMORY_ACCOUNTING_EVIDENCE_REF[len(prefix):]
+    assert len(digest) == 64
+    assert all(ch in "0123456789abcdef" for ch in digest)

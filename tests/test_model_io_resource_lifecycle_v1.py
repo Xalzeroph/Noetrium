@@ -150,6 +150,20 @@ def test_research_execution_pool_reuses_one_model_http_transport_and_closes_it_l
     assert borrower.owner_closed_during_close == [False]
     assert owner.closed is True
 
+def test_shared_model_http_transport_closes_after_model_io_quiescence():
+    pool = _pool()
+    pool.model_http_transport
+    owner = pool._model_http_transport_owner
+    assert owner is not None
+
+    pool.quiesce_workloads()
+
+    assert pool._model_io.topology_snapshot().closed is True
+    assert owner.closed is False
+    pool.close()
+    assert owner.closed is True
+
+
 def test_research_execution_pool_reuses_exact_model_endpoint_pool_across_trials():
     pool = _pool()
     replica_set = ModelEndpointReplicaSet(

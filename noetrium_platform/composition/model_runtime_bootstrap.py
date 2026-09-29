@@ -58,7 +58,16 @@ _PROTOCOL = (
     "model.generation.request.v1",
     "model.generation.response.v1",
 )
-GPU_MEMORY_ACCOUNTING_EVIDENCE_REF = "gpu-memory-accounting:container-process-v1"
+_GPU_MEMORY_ACCOUNTING_EVIDENCE = {
+    "schema": "noetrium.gpu-memory-accounting.v1",
+    "scope": "managed-container-processes",
+    "aggregation": "max-per-placement-device",
+    "foreign_processes": "excluded",
+}
+GPU_MEMORY_ACCOUNTING_EVIDENCE_REF = (
+    "gpu-memory-accounting:sha256:"
+    + canonical_digest(_GPU_MEMORY_ACCOUNTING_EVIDENCE)
+)
 
 
 @dataclass(frozen=True, slots=True)
