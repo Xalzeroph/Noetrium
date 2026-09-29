@@ -389,6 +389,8 @@ def test_deploy_defaults_to_one_noetrium_data_root() -> None:
     assert 'PROJECT_RESEARCH_STATE_ROOT="$CONTROL_STATE_ROOT/research-os"' in bootstrap
     assert '-e NOETRIUM_PROJECT_STATE_ROOT=$PROJECT_RESEARCH_STATE_ROOT' in bootstrap
     assert 'CONTROL_ASSET_REGISTRY="$PROJECT_RESEARCH_STATE_ROOT/platform-runtime/state/model/assets"' in bootstrap
+    discovery = bootstrap.split('CONTROL_ASSET_REGISTRY="$PROJECT_RESEARCH_STATE_ROOT/platform-runtime/state/model/assets"', 1)[1].split('if [ -n "$CONTROL_INPUT_ROOT" ]', 1)[0]
+    assert '-v "$CONTROL_STATE_ROOT:$CONTROL_STATE_ROOT:ro"' in discovery
 
 
 def test_bootstrap_containers_use_ephemeral_tmpfs() -> None:

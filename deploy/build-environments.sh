@@ -475,7 +475,7 @@ if [ "${1:-}" = "control" ]; then
     CONTROL_ASSET_REGISTRY="$PROJECT_RESEARCH_STATE_ROOT/platform-runtime/state/model/assets"
     if [ -d "$CONTROL_ASSET_REGISTRY" ]; then
       CONTROL_INPUT_ROOT="$(
-        docker run --rm           --entrypoint python3           -v "$CONTROL_PROJECT_ROOT:$CONTROL_PROJECT_ROOT:ro"           "$BOOTSTRAP_IMAGE"           -c 'import json, os, pathlib, sys
+        docker run --rm           --entrypoint python3           -v "$CONTROL_PROJECT_ROOT:$CONTROL_PROJECT_ROOT:ro"           -v "$CONTROL_STATE_ROOT:$CONTROL_STATE_ROOT:ro"           "$BOOTSTRAP_IMAGE"           -c 'import json, os, pathlib, sys
 root=pathlib.Path(sys.argv[1])
 refs=[]
 for path in sorted(root.glob("*.json")):
