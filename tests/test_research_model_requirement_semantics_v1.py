@@ -7,7 +7,6 @@ from noetrium_platform.composition.research_model_requirements import (
 from noetrium_platform.research.experimentation.api import (
     ResearchModelRoleRequirement,
 )
-from noetrium_platform.product.research_os import ResearchNodeKind
 
 
 def _noop():
@@ -39,11 +38,8 @@ def _program():
             "prompt_generation_id": "meta-v1",
         },
     )
-    program.node(
-        "fixture",
-        kind=ResearchNodeKind.CUSTOM,
-        definitions=("shared-model", "planner-prompt", "meta-prompt"),
-    )
+    program.custom_definition("noop", implementation=_noop)
+    program.custom_node("noop", definitions=("noop",))
     return portfolio.freeze().programs[0]
 
 
