@@ -229,12 +229,7 @@ class JsonlMinecraftBridge(MinecraftBridgePort):
                             "BRIDGE_INVALID_ACTION_RESULT",
                             safe_exception_message(exc),
                         ) from exc
-                    disposition = {
-                        MinecraftActionOutcomeStatus.APPLIED: ActionReconciliationDisposition.APPLIED,
-                        MinecraftActionOutcomeStatus.REJECTED: ActionReconciliationDisposition.NOT_APPLIED,
-                        MinecraftActionOutcomeStatus.PARTIAL: ActionReconciliationDisposition.UNKNOWN,
-                    }[evidence.status]
-                    self._action_proofs[evidence.action_id] = disposition
+                    self._action_proofs[evidence.action_id] = evidence.effect_disposition
                 continue
             if message.kind != "ack":
                 continue
@@ -471,7 +466,9 @@ class JsonlMinecraftBridge(MinecraftBridgePort):
         local = self._action_proofs.get(action_id)
         if local in {
             ActionReconciliationDisposition.APPLIED,
+            ActionReconciliationDisposition.REJECTED,
             ActionReconciliationDisposition.NOT_APPLIED,
+            ActionReconciliationDisposition.UNKNOWN,
         }:
             return MinecraftReconciliation(
                 action_id=action_id,
@@ -496,6 +493,14 @@ class JsonlMinecraftBridge(MinecraftBridgePort):
         )
         ack = response.diagnostics.get("ack")
         raw = ack.get("disposition") if isinstance(ack, Mapping) else None
+        raw_outcome = ack.get("outcome") if isinstance(ack, Mapping) else None
+        if raw_outcome is not None and not isinstance(raw_outcome, Mapping):
+            raise MinecraftBridgeError(
+                "reconcile",
+                "BRIDGE_INVALID_RECONCILIATION",
+                "provider outcome must be a mapping when present",
+            )
+        provider_outcome = dict(raw_outcome) if isinstance(raw_outcome, Mapping) else None
         try:
             disposition = ActionReconciliationDisposition(str(raw))
         except ValueError as exc:
@@ -513,6 +518,7 @@ class JsonlMinecraftBridge(MinecraftBridgePort):
                 else "process_action_journal",
                 "known_action_proof": disposition.value,
                 "durability": self.action_recovery_durability,
+                "provider_outcome": provider_outcome,
             },
         )
 

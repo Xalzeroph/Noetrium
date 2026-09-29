@@ -31,18 +31,16 @@ from noetrium_platform.foundation.kernel.kernel.durability.sqlite import (
     durable_sqlite_connection,
     immediate_sqlite_transaction,
 )
-from noetrium_platform.infrastructure.resources.lease.runtime.operations import (
+from noetrium_platform.infrastructure.resources.sqlite_resource import (
     acquire_resource_lease,
+    authoritative_lease_now,
     decode_resource_lease,
     ensure_resource_owner,
+    ensure_resource_schema,
+    expire_lease,
     reconcile_expired_resource_leases,
     release_resource_lease,
     renew_resource_lease,
-)
-from noetrium_platform.infrastructure.resources.sqlite_resource import (
-    authoritative_lease_now,
-    ensure_resource_schema,
-    expire_lease,
 )
 from noetrium_platform.foundation.governance.api import ScopeIdentity, ScopeKind
 

@@ -6,7 +6,6 @@ from noetrium_platform.research.execution.policy.api import (
     AdmissionBudget,
     AdmissionIdentity,
     AdmissionIntent,
-    AdmissionMode,
 )
 from noetrium_platform.research.execution.policy.runtime import HierarchicalAdmissionAuthority
 from noetrium_platform.infrastructure.lifecycle.launch_control import RunLaunchIdentity
@@ -35,7 +34,8 @@ def test_admission_identity_and_intent_are_strict_and_canonical():
         AdmissionIntent(priority="high")  # type: ignore[arg-type]
     with pytest.raises(TypeError):
         AdmissionIntent(mode="reject")  # type: ignore[arg-type]
-    assert AdmissionIntent(ExecutionPriority.HIGH, AdmissionMode.REJECT).mode is AdmissionMode.REJECT
+    immediate = AdmissionIntent(ExecutionPriority.HIGH, 0.0)
+    assert immediate.reject_if_wait_required is True
 
 
 def test_admission_group_identity_never_coerces_objects_to_text():

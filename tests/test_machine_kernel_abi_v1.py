@@ -11,6 +11,7 @@ from noetrium_platform.foundation.kernel.kernel import (
     MachineCommit,
     MachineConflict,
     MachineIntegrityError,
+    MachineStateDelta,
     TransitionProposal,
 )
 
@@ -35,7 +36,7 @@ def make_commit(
         machine_id=machine_id,
         command_id=command.command_id,
         base_revision=base_revision,
-        state_delta=state or {"revision": base_revision + 1},
+        state_delta=MachineStateDelta.set(("revision",), int((state or {"revision": base_revision + 1})["revision"])),
     )
     return MachineCommit(
         machine_id=machine_id,

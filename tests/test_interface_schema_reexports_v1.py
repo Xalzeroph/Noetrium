@@ -49,9 +49,9 @@ def test_method_and_memory_are_nested_schema_only_dsl() -> None:
     method = document["reachable_dsl"]["method"]
     memory = document["reachable_dsl"]["memory"]
     assert method["name"] == "ResearchMethodBuilder"
-    assert memory["name"] == "ResearchMemoryBuilder"
+    assert memory["name"] == "ResearchComponentBuilder"
     assert "ResearchMethodBuilder" not in document["public_api"]["symbols"]
-    assert "ResearchMemoryBuilder" not in document["public_api"]["symbols"]
+    assert "ResearchComponentBuilder" not in document["public_api"]["symbols"]
     assert "memory" in {row["name"] for row in method["methods"]}
 
 

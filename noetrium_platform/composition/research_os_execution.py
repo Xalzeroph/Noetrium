@@ -48,6 +48,7 @@ from .research_os_checkpoint import (
     ResearchOSNodeCheckpointPort,
     ResearchOSNodeCheckpointProof,
 )
+from .research_definition_authority import ResearchDefinitionBindingAuthorityPort
 from .research_os_experiment import ResearchOSExperimentClosurePort
 from .research_graph import ResearchGraphControlHalt, ResearchGraphNodeControlHalt
 from .research_os_graph import (
@@ -345,6 +346,7 @@ def prepare_research_os_execution(
     values: ResearchOSValueRouter,
     *,
     experiment_closures: ResearchOSExperimentClosurePort | None = None,
+    definition_bindings: ResearchDefinitionBindingAuthorityPort | None = None,
     artifact_lineage: ArtifactLineageRelationPort | None = None,
     selection_seed_node_ids: tuple[str, ...] | None = None,
 ) -> PreparedResearchOSExecution:
@@ -383,6 +385,7 @@ def prepare_research_os_execution(
     lowering = compile_research_os_lowering(
         compilation,
         experiment_closures=experiment_closures,
+        definition_bindings=definition_bindings,
         selected_node_ids=selected_node_ids,
     )
     validate_research_os_value_authorities(
@@ -505,8 +508,16 @@ class PreparedResearchOSNodeExecutor:
             raise ValueError("research node execution lowering admission drifted")
 
         task_context.checkpoint()
+        execution_attempt_id = canonical_digest(
+            {
+                "schema": "noetrium.research-node-attempt.v1",
+                "execution_cut_id": self._prepared.cut.cut_id,
+                "graph_node_id": node.graph_node_id,
+                "attempt_id": task_context.task_id,
+            }
+        )
         scientific_context = ExecutionContext(
-            run_id=self._prepared.cut.cut_id,
+            run_id=execution_attempt_id,
             trace_id=canonical_digest(
                 {
                     "execution_cut_id": self._prepared.cut.cut_id,
@@ -640,6 +651,7 @@ class StrictResearchOSControl(
         values: ResearchOSValueRouter,
         *,
         experiment_closures: ResearchOSExperimentClosurePort | None = None,
+        definition_bindings: ResearchDefinitionBindingAuthorityPort | None = None,
         artifact_lineage: ArtifactLineageRelationPort | None = None,
         checkpoints: ResearchOSGraphCheckpointStorePort | None = None,
     ) -> None:
@@ -670,6 +682,14 @@ class StrictResearchOSControl(
         self._runtime = runtime
         self._values = values
         self._experiment_closures = experiment_closures
+        if definition_bindings is not None and not isinstance(
+            definition_bindings,
+            ResearchDefinitionBindingAuthorityPort,
+        ):
+            raise TypeError(
+                "Research OS control definition_bindings must satisfy typed port"
+            )
+        self._definition_bindings = definition_bindings
         if artifact_lineage is not None and not isinstance(
             artifact_lineage,
             ArtifactLineageRelationPort,
@@ -1008,6 +1028,7 @@ class StrictResearchOSControl(
             self._runtime,
             self._values,
             experiment_closures=self._experiment_closures,
+            definition_bindings=self._definition_bindings,
             artifact_lineage=self._artifact_lineage,
         )
         if (
@@ -1021,6 +1042,7 @@ class StrictResearchOSControl(
         source_lowering = compile_research_os_lowering(
             source,
             experiment_closures=self._experiment_closures,
+            definition_bindings=self._definition_bindings,
         )
         reuse_proofs = self._migration_reuse_proofs(
             plan,
@@ -1196,6 +1218,28 @@ class StrictResearchOSControl(
                 resolved_state = "cancelled"
             else:
                 resolved_state = "durable"
+        node_rows = []
+        for node_record in snapshot.nodes:
+            node_control = self._store.node_control_state(
+                cut.cut_id,
+                node_record.node_id,
+            )
+            node_rows.append({
+                "graph_node_id": node_record.node_id,
+                "state": node_record.state.value,
+                "attempt_number": node_record.attempt_number,
+                "attempt_id": node_record.attempt_id,
+                "failure_type": node_record.failure_type,
+                "failure_message": node_record.failure_message,
+                "failure_provenance": (
+                    None
+                    if node_record.failure_provenance is None
+                    else node_record.failure_provenance.as_payload()
+                ),
+                "blocked_by_node_ids": node_record.blocked_by_node_ids,
+                "control_phase": node_control.phase.value,
+                "control_generation": node_control.generation,
+            })
         payload: JsonObject = {
             "cut_id": cut.cut_id,
             "graph_digest": compilation.plan.graph_digest,
@@ -1204,6 +1248,7 @@ class StrictResearchOSControl(
             "control_phase": control.phase.value,
             "control_generation": control.generation,
             "states": states,
+            "nodes": tuple(node_rows),
         }
         if request.target.node is not None:
             target_node = self._target_graph_node(request, compilation)
@@ -1219,6 +1264,11 @@ class StrictResearchOSControl(
                 "attempt_id": node_record.attempt_id,
                 "failure_type": node_record.failure_type,
                 "failure_message": node_record.failure_message,
+                "failure_provenance": (
+                    None
+                    if node_record.failure_provenance is None
+                    else node_record.failure_provenance.as_payload()
+                ),
                 "blocked_by_node_ids": node_record.blocked_by_node_ids,
                 "control_phase": node_control.phase.value,
                 "control_generation": node_control.generation,
@@ -1256,6 +1306,7 @@ class StrictResearchOSControl(
             self._runtime,
             self._values,
             experiment_closures=self._experiment_closures,
+            definition_bindings=self._definition_bindings,
             artifact_lineage=self._artifact_lineage,
         )
         activation = activate_research_os_execution_cut(
@@ -1546,6 +1597,7 @@ class StrictResearchOSControl(
             self._runtime,
             self._values,
             experiment_closures=self._experiment_closures,
+            definition_bindings=self._definition_bindings,
             artifact_lineage=self._artifact_lineage,
         )
         if prepared.compilation != compilation or prepared.cut != cut:
@@ -1739,6 +1791,7 @@ class StrictResearchOSControl(
                 self._runtime,
                 self._values,
                 experiment_closures=self._experiment_closures,
+                definition_bindings=self._definition_bindings,
                 artifact_lineage=self._artifact_lineage,
                 selection_seed_node_ids=retry_seed_node_ids,
             )
@@ -1822,6 +1875,7 @@ class StrictResearchOSControl(
             self._runtime,
             self._values,
             experiment_closures=self._experiment_closures,
+            definition_bindings=self._definition_bindings,
             artifact_lineage=self._artifact_lineage,
         )
         if prepared.compilation != compilation or prepared.cut != cut:
@@ -1969,6 +2023,7 @@ class StrictResearchOSControl(
             lowering_plan = compile_research_os_lowering(
                 compilation,
                 experiment_closures=self._experiment_closures,
+                definition_bindings=self._definition_bindings,
                 selected_node_ids=succeeded_ids,
             )
             lowered = {
@@ -1991,10 +2046,16 @@ class StrictResearchOSControl(
             if record.state is ResearchGraphLiveNodeState.SUCCEEDED:
                 node = compiled_by_id[record.node_id]
                 lowering = lowered[record.node_id]
+                attempt = self._store.attempt_state(
+                    cut.cut_id,
+                    record.node_id,
+                    record.attempt_number,
+                )
                 proof = self._runtime.checkpoint_node(
                     node,
                     lowering,
                     execution_cut_id=cut.cut_id,
+                    attempt_id=attempt.attempt_id,
                 )
                 if type(proof) is not ResearchOSNodeCheckpointProof:
                     raise TypeError(
@@ -2116,6 +2177,22 @@ class StrictResearchOSControl(
             "failed_node_ids": report.failed_node_ids,
             "blocked_node_ids": report.blocked_node_ids,
             "cancelled_node_ids": report.cancelled_node_ids,
+            "node_results": tuple(
+                {
+                    "graph_node_id": node.node_id,
+                    "semantic_digest": node.semantic_digest,
+                    "state": node.state.value,
+                    "failure_type": node.failure_type,
+                    "failure_message": node.failure_message,
+                    "failure_provenance": (
+                        None
+                        if node.failure_provenance is None
+                        else node.failure_provenance.as_payload()
+                    ),
+                    "blocked_by_node_ids": node.blocked_by_node_ids,
+                }
+                for node in report.nodes
+            ),
         }
         return ResearchControlReceipt(
             request.action,

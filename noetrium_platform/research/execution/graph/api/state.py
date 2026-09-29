@@ -7,7 +7,7 @@ from typing import Protocol, runtime_checkable
 
 from noetrium_platform.foundation.kernel.kernel import canonical_digest, require_sha256
 
-from .contracts import ResearchGraphPlan
+from .contracts import ResearchGraphFailureProvenance, ResearchGraphPlan
 
 
 def _text(value: object, field: str) -> str:
@@ -142,6 +142,7 @@ class ResearchGraphNodeExecutionRecord:
     retry_not_before_ns: int | None = None
     failure_type: str | None = None
     failure_message: str | None = None
+    failure_provenance: ResearchGraphFailureProvenance | None = None
     blocked_by_node_ids: tuple[str, ...] = ()
 
     def __post_init__(self) -> None:
@@ -167,6 +168,10 @@ class ResearchGraphNodeExecutionRecord:
         )
         _optional_text(self.failure_type, "research graph failure_type")
         _optional_text(self.failure_message, "research graph failure_message")
+        if self.failure_provenance is not None and not isinstance(
+            self.failure_provenance, ResearchGraphFailureProvenance
+        ):
+            raise TypeError("research graph failure_provenance must be typed")
         if type(self.blocked_by_node_ids) is not tuple:
             raise TypeError("research graph blocked_by_node_ids must be a tuple")
         blockers = tuple(
@@ -257,6 +262,7 @@ class ResearchGraphAttemptRecord:
     finished_at_ns: int | None = None
     failure_type: str | None = None
     failure_message: str | None = None
+    failure_provenance: ResearchGraphFailureProvenance | None = None
 
     def __post_init__(self) -> None:
         _text(self.execution_id, "research graph attempt execution_id")
@@ -278,6 +284,10 @@ class ResearchGraphAttemptRecord:
         _optional_ns(self.finished_at_ns, "research graph attempt finished_at_ns")
         _optional_text(self.failure_type, "research graph attempt failure_type")
         _optional_text(self.failure_message, "research graph attempt failure_message")
+        if self.failure_provenance is not None and not isinstance(
+            self.failure_provenance, ResearchGraphFailureProvenance
+        ):
+            raise TypeError("research graph attempt failure_provenance must be typed")
 
     @property
     def fencing_token(self) -> int:
@@ -625,6 +635,7 @@ class ResearchGraphExecutionStorePort(Protocol):
         now_ns: int,
         failure_type: str,
         failure_message: str,
+        failure_provenance: ResearchGraphFailureProvenance,
     ) -> ResearchGraphNodeExecutionRecord: ...
 
     def mark_blocked(

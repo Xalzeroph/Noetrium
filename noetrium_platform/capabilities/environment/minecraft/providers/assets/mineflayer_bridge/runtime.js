@@ -484,24 +484,65 @@ async function gotoBlockPlacement (position, timeoutMs = 30000) {
   }
 }
 
-function result (tool, action, status, code, details = {}) {
+function result (tool, action, status, code, details = {}, effectDisposition = null) {
   if (!['applied', 'partial', 'rejected'].includes(status)) throw new Error(`invalid action status ${status}`)
+  const disposition = effectDisposition || (
+    status === 'applied' ? 'applied' : status === 'rejected' ? 'rejected' : 'unknown'
+  )
+  if (!['applied', 'rejected', 'not_applied', 'unknown'].includes(disposition)) {
+    throw new Error(`invalid action effect disposition ${disposition}`)
+  }
+  if (status === 'applied' && disposition !== 'applied') {
+    throw new Error('applied action must prove applied effect')
+  }
+  if (status === 'rejected' && !['rejected', 'not_applied'].includes(disposition)) {
+    throw new Error('rejected action must prove rejection or no effect')
+  }
+  if (status === 'partial' && !['applied', 'unknown'].includes(disposition)) {
+    throw new Error('partial action effect disposition is invalid')
+  }
   return {
     action: { tool, ...action },
     outcome: { status, code, ...details },
+    effect_disposition: disposition,
     verified: status === 'applied'
   }
 }
 
-function applied (tool, action, code, details = {}) { return result(tool, action, 'applied', code, details) }
-function partial (tool, action, code, details = {}) { return result(tool, action, 'partial', code, details) }
-function rejected (tool, action, code, details = {}) { return result(tool, action, 'rejected', code, details) }
+function applied (tool, action, code, details = {}) { return result(tool, action, 'applied', code, details, 'applied') }
+function partial (tool, action, code, details = {}, effectDisposition = 'unknown') { return result(tool, action, 'partial', code, details, effectDisposition) }
+function rejected (tool, action, code, details = {}, effectDisposition = 'rejected') { return result(tool, action, 'rejected', code, details, effectDisposition) }
+
+function errorEvidence (error, depth = 0) {
+  if (error == null) return null
+  if (depth >= 4) return { message: String(error) }
+  const evidence = {
+    name: String(error.name || 'Error'),
+    code: String(error.code || error.name || 'ERROR'),
+    message: String(error.message || error)
+  }
+  if (typeof error.stack === 'string' && error.stack.trim()) evidence.stack = error.stack
+  if (error.cause != null && error.cause !== error) {
+    evidence.cause = errorEvidence(error.cause, depth + 1)
+  }
+  const properties = {}
+  for (const key of Object.keys(error).sort()) {
+    if (['name', 'code', 'message', 'stack', 'cause'].includes(key)) continue
+    const value = error[key]
+    if (value == null || ['string', 'number', 'boolean'].includes(typeof value)) {
+      properties[key] = value
+    }
+  }
+  if (Object.keys(properties).length > 0) evidence.properties = properties
+  return evidence
+}
 
 module.exports = {
   actionTimeoutMs,
   applied,
   bindBot,
   ensureMovements,
+  errorEvidence,
   entityMatches,
   findEntity,
   captureItemDropNear,

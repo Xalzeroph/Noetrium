@@ -1,14 +1,3 @@
-from ..algorithms import BasicStudyMetricAggregator
-from ..providers import RunArtifactStudyPublication
-from noetrium_platform.research.experimentation.lifecycle.run.api import RunArtifactStorePort
-from .research_result_source import StudyResearchResultSource
+"""Study composition uses canonical Artifact/Evidence authorities through execution composition."""
 
-
-def build_run_study_publication(artifacts: RunArtifactStorePort) -> RunArtifactStudyPublication:
-    return RunArtifactStudyPublication(artifacts)
-
-
-__all__ = [
-    "StudyResearchResultSource",
-    "build_run_study_publication",
-]
+__all__ = []

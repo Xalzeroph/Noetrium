@@ -25,6 +25,9 @@ from noetrium_platform.capabilities.model.deployment.runtime.vllm_resources impo
     reconcile_vllm_compute_requirement,
 )
 from noetrium_platform.capabilities.model.stack.api import ModelStackSpec
+from noetrium_platform.capabilities.model.stack.runtime import (
+    model_stack_launch_settings,
+)
 from noetrium_platform.foundation.kernel.kernel import canonical_digest
 from noetrium_platform.substrate.api import PLATFORM_SCOPE, ScopeIdentity
 from noetrium_platform.substrate.api import (
@@ -45,6 +48,16 @@ from noetrium_platform.substrate.api import ResourceOwnership
 
 
 _BINDING_CONVERGENCE_ATTEMPTS = 4
+
+
+def _exception_leaves(error: BaseException) -> tuple[BaseException, ...]:
+    """Return root failures without losing causal multiplicity."""
+    if isinstance(error, BaseExceptionGroup):
+        leaves: list[BaseException] = []
+        for child in error.exceptions:
+            leaves.extend(_exception_leaves(child))
+        return tuple(leaves)
+    return (error,)
 
 
 def _converge_running_replica_bindings(
@@ -177,10 +190,9 @@ class ModelReplicaPoolRequest:
     scope: ScopeIdentity
     model_id: str
     engine: str
-    python_environment_id: str
     cwd: Path
     compute: ComputeRequirement
-    model_stack: ModelStackSpec | None = None
+    model_stack: ModelStackSpec
     replica_count: int | None = None
     endpoint_host: str = "127.0.0.1"
     endpoint_candidate_count: int = 32
@@ -192,7 +204,6 @@ class ModelReplicaPoolRequest:
             (self.pool_id, "pool_id"),
             (self.model_id, "model_id"),
             (self.engine, "engine"),
-            (self.python_environment_id, "python_environment_id"),
             (self.endpoint_host, "endpoint_host"),
         ):
             if not value.strip():
@@ -201,39 +212,38 @@ class ModelReplicaPoolRequest:
             raise ValueError("model replica pool supports vllm or sglang")
         if self.compute.gpu_count <= 0:
             raise ValueError("automatic model replica pools currently require GPU resources")
-        if self.model_stack is not None:
-            if not isinstance(self.model_stack, ModelStackSpec):
-                raise TypeError("model replica pool model_stack must be ModelStackSpec")
-            if self.model_stack.identity.model_id != self.model_id:
-                raise ValueError("model replica pool model_id must match frozen model stack")
-            if self.model_stack.identity.engine.lower() != self.engine:
-                raise ValueError("model replica pool engine must match frozen model stack")
-            if self.extra_args:
+        if not isinstance(self.model_stack, ModelStackSpec):
+            raise TypeError("model replica pool model_stack must be ModelStackSpec")
+        if self.model_stack.identity.model_id != self.model_id:
+            raise ValueError("model replica pool model_id must match frozen model stack")
+        if self.model_stack.identity.engine.lower() != self.engine:
+            raise ValueError("model replica pool engine must match frozen model stack")
+        if self.extra_args:
+            raise ValueError(
+                "model replica pool extra_args are forbidden; "
+                "put engine arguments in ModelStackSpec.engine_args"
+            )
+        if self.engine == "vllm":
+            if self.model_stack.data_parallel != 1:
                 raise ValueError(
-                    "model replica pool extra_args are forbidden when model_stack is frozen; "
-                    "put engine arguments in ModelStackSpec.engine_args"
+                    "automatic vLLM replica pools use independent replicas; "
+                    "internal data_parallel requires an auxiliary RPC endpoint "
+                    "with its own binding/recovery authority"
                 )
-            if self.engine == "vllm":
-                if self.model_stack.data_parallel != 1:
-                    raise ValueError(
-                        "automatic vLLM replica pools use independent replicas; "
-                        "internal data_parallel requires an auxiliary RPC endpoint "
-                        "with its own binding/recovery authority"
-                    )
-                required_gpus = (
-                    self.model_stack.tensor_parallel
-                    * self.model_stack.pipeline_parallel
+            required_gpus = (
+                self.model_stack.tensor_parallel
+                * self.model_stack.pipeline_parallel
+            )
+        else:
+            if (
+                self.model_stack.data_parallel != 1
+                or self.model_stack.pipeline_parallel != 1
+            ):
+                raise ValueError(
+                    "automatic SGLang replica pools currently support tensor parallel only"
                 )
-            else:
-                if (
-                    self.model_stack.data_parallel != 1
-                    or self.model_stack.pipeline_parallel != 1
-                ):
-                    raise ValueError(
-                        "automatic SGLang replica pools currently support tensor parallel only"
-                    )
-                required_gpus = self.model_stack.tensor_parallel
-            if self.compute.gpu_count != required_gpus:
+            required_gpus = self.model_stack.tensor_parallel
+        if self.compute.gpu_count != required_gpus:
                 raise ValueError(
                     "model replica pool compute.gpu_count must match frozen engine topology"
                 )
@@ -246,7 +256,7 @@ class ModelReplicaPoolRequest:
 
     @property
     def effective_compute(self) -> ComputeRequirement:
-        if self.model_stack is None or self.engine != "vllm":
+        if self.engine != "vllm":
             return self.compute
         return reconcile_vllm_compute_requirement(
             self.model_stack,
@@ -407,26 +417,26 @@ class ModelReplicaPoolLease:
                 generation = self._current_generation(row)
                 self._deployment_runtime.remove_deployment(generation)
             except BaseException as exc:
-                errors.append(exc)
+                errors.extend(_exception_leaves(exc))
             else:
                 self._current_generations[row.deployment_id] = generation
                 self._removed_deployment_ids.add(row.deployment_id)
 
         if len(self._removed_deployment_ids) != len(self.report.placements):
-            raise ExceptionGroup("model replica pool cleanup failed", errors)
+            raise BaseExceptionGroup("model replica pool cleanup failed", errors)
 
         if not self._endpoint_guard_closed:
             try:
                 self._endpoint_guard.close()
             except BaseException as exc:
-                errors.append(exc)
+                errors.extend(_exception_leaves(exc))
             else:
                 self._endpoint_guard_closed = True
         if not self._compute_guard_closed:
             try:
                 self._compute_guard.close()
             except BaseException as exc:
-                errors.append(exc)
+                errors.extend(_exception_leaves(exc))
             else:
                 self._compute_guard_closed = True
 
@@ -440,7 +450,7 @@ class ModelReplicaPoolLease:
                         self._current_endpoints[allocation_id]
                     )
                 except BaseException as exc:
-                    errors.append(exc)
+                    errors.extend(_exception_leaves(exc))
                 else:
                     self._released_endpoint_ids.add(allocation_id)
 
@@ -454,12 +464,12 @@ class ModelReplicaPoolLease:
                         self._current_compute[allocation_id]
                     )
                 except BaseException as exc:
-                    errors.append(exc)
+                    errors.extend(_exception_leaves(exc))
                 else:
                     self._released_compute_ids.add(allocation_id)
 
         if errors:
-            raise ExceptionGroup("model replica pool cleanup failed", errors)
+            raise BaseExceptionGroup("model replica pool cleanup failed", errors)
 
         self._closed = (
             self._endpoint_guard_closed
@@ -542,7 +552,7 @@ class _PendingModelReplicaCleanup:
                     # ownership is already converged for this identity.
                     self._removed_deployment_ids.add(spec.deployment_id)
                 except BaseException as exc:
-                    errors.append(exc)
+                    errors.extend(_exception_leaves(exc))
                 else:
                     self._removed_deployment_ids.add(spec.deployment_id)
 
@@ -550,7 +560,7 @@ class _PendingModelReplicaCleanup:
                 len(self._removed_deployment_ids) == len(self._specs)
             )
             if not deployments_removed:
-                raise ExceptionGroup(
+                raise BaseExceptionGroup(
                     "pending model replica cleanup did not stop all deployments",
                     errors,
                 )
@@ -559,14 +569,14 @@ class _PendingModelReplicaCleanup:
                 try:
                     self._endpoint_guard.close()
                 except BaseException as exc:
-                    errors.append(exc)
+                    errors.extend(_exception_leaves(exc))
                 else:
                     self._endpoint_guard_closed = True
             if not self._compute_guard_closed:
                 try:
                     self._compute_guard.close()
                 except BaseException as exc:
-                    errors.append(exc)
+                    errors.extend(_exception_leaves(exc))
                 else:
                     self._compute_guard_closed = True
 
@@ -577,7 +587,7 @@ class _PendingModelReplicaCleanup:
                     try:
                         self._endpoint_allocations.release(endpoint)
                     except BaseException as exc:
-                        errors.append(exc)
+                        errors.extend(_exception_leaves(exc))
                     else:
                         self._released_endpoint_ids.add(endpoint.allocation_id)
 
@@ -588,12 +598,12 @@ class _PendingModelReplicaCleanup:
                     try:
                         self._compute_scheduler.release(compute)
                     except BaseException as exc:
-                        errors.append(exc)
+                        errors.extend(_exception_leaves(exc))
                     else:
                         self._released_compute_ids.add(compute.allocation_id)
 
             if errors:
-                raise ExceptionGroup(
+                raise BaseExceptionGroup(
                     "pending model replica cleanup failed",
                     errors,
                 )
@@ -653,11 +663,11 @@ class LocalModelReplicaPoolRuntime:
             try:
                 cleanup.close()
             except BaseException as exc:
-                errors.append(exc)
+                errors.extend(_exception_leaves(exc))
             else:
                 self._pending_cleanups.pop(cleanup_id, None)
         if errors:
-            raise ExceptionGroup(
+            raise BaseExceptionGroup(
                 "model replica pool pending cleanup failed",
                 errors,
             )
@@ -679,13 +689,13 @@ class LocalModelReplicaPoolRuntime:
                 try:
                     lease.close()
                 except BaseException as exc:
-                    errors.append(exc)
+                    errors.extend(_exception_leaves(exc))
             try:
                 self._retry_pending_cleanups_locked()
             except BaseException as exc:
-                errors.append(exc)
+                errors.extend(_exception_leaves(exc))
             if errors:
-                raise ExceptionGroup(
+                raise BaseExceptionGroup(
                     "model replica pool runtime cleanup failed",
                     errors,
                 )
@@ -725,17 +735,15 @@ class LocalModelReplicaPoolRuntime:
             f"-replica-{replica_index:03d}"
         )
         stack = request.model_stack
-        engine_args = request.extra_args if stack is None else stack.engine_args
-        tensor_parallel = (
-            request.compute.gpu_count
-            if stack is None
-            else stack.tensor_parallel
-        )
+        launch_settings = model_stack_launch_settings(stack)
+        engine_args = launch_settings.engine_args
+        stack_environment = launch_settings.environment
+        tensor_parallel = stack.tensor_parallel
         common = dict(
             deployment_id=deployment_id,
             scope=request.scope,
             model_id=request.model_id,
-            python_environment_id=request.python_environment_id,
+            container_digest=stack.runtime.container_digest,
             cwd=request.cwd,
             host=endpoint.endpoint.host,
             port=endpoint.endpoint.port,
@@ -747,7 +755,7 @@ class LocalModelReplicaPoolRuntime:
             spec = vllm_deployment(
                 **common,
                 data_parallel=1,
-                pipeline_parallel=1 if stack is None else stack.pipeline_parallel,
+                pipeline_parallel=stack.pipeline_parallel,
             )
         elif request.engine == "sglang":
             spec = sglang_deployment(**common)
@@ -758,14 +766,15 @@ class LocalModelReplicaPoolRuntime:
             "auto-managed",
             f"replica-pool:{request.pool_id}",
             f"placement-generation:{placement_generation_id}",
-            *(
-                ()
-                if stack is None
-                else (f"model-stack:{stack.digest()}",)
-            ),
+            f"model-stack:{stack.digest()}",
         }))
         from dataclasses import replace
-        return replace(spec, desired_state=ModelDesiredState.RUNNING, tags=tags)
+        return replace(
+            spec,
+            environment=tuple(sorted((*spec.environment, *stack_environment))),
+            desired_state=ModelDesiredState.RUNNING,
+            tags=tags,
+        )
 
     def ensure(self, request: ModelReplicaPoolRequest) -> ModelReplicaPoolLease:
         with self._lifecycle_lock:
@@ -926,9 +935,12 @@ class LocalModelReplicaPoolRuntime:
                 cleanup.close()
             except BaseException as cleanup_error:
                 self._pending_cleanups[placement_generation_id] = cleanup
-                raise ExceptionGroup(
+                raise BaseExceptionGroup(
                     "model replica pool creation failed with pending cleanup",
-                    [primary, cleanup_error],
+                    [
+                        *_exception_leaves(primary),
+                        *_exception_leaves(cleanup_error),
+                    ],
                 ) from primary
             raise
 

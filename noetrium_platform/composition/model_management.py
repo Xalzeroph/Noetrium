@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+import os
+from threading import RLock
 from pathlib import Path
 from typing import Mapping
 from uuid import uuid4
@@ -12,7 +14,7 @@ from noetrium_platform.infrastructure.lifecycle.process.supervision.composition 
 from noetrium_platform.infrastructure.resources.directory.api import DirectoryLayout, DirectoryLayoutPort, DirectoryManagementAuthorities
 from noetrium_platform.infrastructure.resources.directory.runtime import build_local_directory_authorities
 from noetrium_platform.capabilities.model.api import ModelAuthorities, ModelRevisionAuthorityPort
-from noetrium_platform.capabilities.model.deployment.api import ModelDeploymentLogs
+from noetrium_platform.capabilities.model.deployment.api import ModelDeploymentLogs, ModelDeploymentSpec
 from noetrium_platform.capabilities.model.asset.providers import HuggingFaceCliModelSource
 from noetrium_platform.capabilities.model.asset.runtime import LocalModelAssetStorage, ModelAssetManager, ModelAssetRegistry
 from noetrium_platform.capabilities.model.composition import DeploymentModelAssetReferences
@@ -46,11 +48,15 @@ from noetrium_platform.infrastructure.resources.container.providers import (
     DockerCliManagedContainerProvider,
     discover_docker_root,
 )
+from noetrium_platform.infrastructure.resources.container.api import (
+    DockerCommandRunnerPort,
+    DockerContainerLeaseGuardFactoryPort,
+)
 from noetrium_platform.infrastructure.resources.container.runtime import (
     DockerContainerLeaseAuthority,
 )
+from noetrium_platform.infrastructure.resources.lease.runtime import LocalLeaseClock
 from noetrium_platform.foundation.scope.api import ScopeRegistryPort
-from noetrium_platform.infrastructure.lifecycle.host.api import OperatingSystemRoute
 from noetrium_platform.infrastructure.lifecycle.python.runtime import (
     CondaEnvironmentBackend,
     build_python_environment_authorities,
@@ -69,11 +75,15 @@ from noetrium_platform.infrastructure.lifecycle.service.runtime import (
     ProcessAliveReadinessProbe,
     StaticServiceEnvironmentProvider,
 )
+from noetrium_platform.composition.docker_service_process_backend import (
+    DockerContainerProcessBackend,
+    DockerServiceBindMount,
+    DockerServiceProcessConfiguration,
+)
 from noetrium_platform.infrastructure.lifecycle.service.runtime.start_intent_store import DirectoryServiceStartIntentStore
 from noetrium_platform.infrastructure.lifecycle.service.runtime.state_storage import FileServiceStateStore
 
-from noetrium_platform.infrastructure.lifecycle.service.composition import compose_local_process_backend, build_service_supervisor
-from noetrium_platform.infrastructure.lifecycle.process.supervision.composition import build_process_supervisor
+from noetrium_platform.infrastructure.lifecycle.service.composition import build_service_supervisor
 from noetrium_platform.infrastructure.lifecycle.host.composition import HostComposition, compose_local_host
 from noetrium_platform.composition.research_execution_pool import ResearchExecutionPool
 from noetrium_platform.composition.platform_meta import (
@@ -101,64 +111,154 @@ class ManagementPlaneAuthorities:
 
 
 class LocalModelServiceRuntimeFactory:
-    """Composition-only factory for many independently managed local model services."""
+    """Compose model serving through the single exact Service + Docker lifecycle."""
 
     def __init__(
         self,
         directories: DirectoryLayoutPort,
         *,
-        operating_system: OperatingSystemRoute,
+        assets: ModelAssetManager,
+        docker_containers: DockerContainerLeaseAuthority,
+        docker_runner: DockerCommandRunnerPort,
+        docker_lease_guards: DockerContainerLeaseGuardFactoryPort,
         task_group: TaskGroupPort,
     ) -> None:
         self._directories = directories
-        self._operating_system = operating_system
+        self._assets = assets
+        self._docker_containers = docker_containers
+        self._docker_runner = docker_runner
+        self._docker_lease_guards = docker_lease_guards
         self._task_group = task_group
         self._state_root = directories.layout.state / "model-services"
         self._intent_root = directories.layout.runtime / "model-service-start-intents"
         self._capture_root = directories.layout.logs / "model-services"
+        self._lock = RLock()
+        self._runtimes: dict[
+            tuple[str, str],
+            tuple[ExactServiceRuntimeEndpoint, DockerContainerProcessBackend],
+        ] = {}
+
+    def _mounts(
+        self,
+        spec: ModelDeploymentSpec,
+        contract: ServiceLaunchContract,
+    ) -> tuple[DockerServiceBindMount, ...]:
+        asset = self._assets.model(spec.model_id)
+        target_asset = Path(asset.path).expanduser().absolute()
+        target_cwd = Path(contract.cwd).expanduser().absolute()
+        rows: dict[str, DockerServiceBindMount] = {}
+
+        asset_mount = DockerServiceBindMount(
+            target_asset.resolve(strict=True),
+            target_asset,
+            read_only=True,
+        )
+        rows[str(asset_mount.target)] = asset_mount
+
+        cwd_mount = DockerServiceBindMount(
+            target_cwd.resolve(strict=True),
+            target_cwd,
+            read_only=True,
+        )
+        rows.setdefault(str(cwd_mount.target), cwd_mount)
+        return tuple(rows[key] for key in sorted(rows))
 
     def open(
         self,
+        spec: ModelDeploymentSpec,
         contract: ServiceLaunchContract,
         *,
         environment: tuple[tuple[str, str], ...],
         readiness_url: str | None,
     ) -> ExactServiceRuntimeEndpoint:
-        service_key = self._safe(contract.service_id)
-        materialized = MaterializedServiceEnvironment(
-            variables=environment,
-            evidence_ref=f"model-serving-env:{contract.environment_digest}",
-        )
-        provider = StaticServiceEnvironmentProvider((materialized,))
-        backend = compose_local_process_backend(
-            self._operating_system,
-            process_supervisor=build_process_supervisor(self._task_group),
-        )
-        readiness = (
-            HttpEndpointReadinessProbe(self._task_group, readiness_url)
-            if readiness_url
-            else ProcessAliveReadinessProbe(self._task_group)
-        )
-        adapter = LocalServiceProcessAdapter(
-            provider,
-            DirectoryCapturePathProvider(self._capture_root),
-            backend,
-            readiness,
-        )
-        contract_key = contract.digest()
-        state = FileServiceStateStore(self._state_root / service_key / contract_key / "state.json")
-        intents = DirectoryServiceStartIntentStore(self._intent_root / service_key / contract_key)
-        return ExactServiceRuntimeEndpoint(build_service_supervisor(state, intents, adapter))
+        if type(spec) is not ModelDeploymentSpec:
+            raise TypeError("model service runtime requires ModelDeploymentSpec")
+        if spec.service_id != contract.service_id:
+            raise ValueError("model service spec/contract service identity drifted")
+        key = (canonical_digest(spec), contract.digest())
 
+        with self._lock:
+            existing = self._runtimes.get(key)
+            if existing is not None:
+                return existing[0]
 
-    def logs(self, contract: ServiceLaunchContract, *, deployment_id: str) -> ModelDeploymentLogs:
+            service_key = self._safe(contract.service_id)
+            materialized = MaterializedServiceEnvironment(
+                variables=environment,
+                evidence_ref=f"model-serving-env:{contract.environment_digest}",
+            )
+            provider = StaticServiceEnvironmentProvider((materialized,))
+            backend = DockerContainerProcessBackend(
+                authority=self._docker_containers,
+                runner=self._docker_runner,
+                lease_guard_factory=self._docker_lease_guards,
+                configuration=DockerServiceProcessConfiguration(
+                    image_digest=spec.container_digest,
+                    holder_scope=spec.scope,
+                    mounts=self._mounts(spec, contract),
+                    gpu_devices=spec.gpu_devices,
+                    network_host=True,
+                    ipc_host=True,
+                    user_uid=os.getuid(),
+                    user_gid=os.getgid(),
+                ),
+            )
+            readiness = (
+                HttpEndpointReadinessProbe(self._task_group, readiness_url)
+                if readiness_url
+                else ProcessAliveReadinessProbe(self._task_group)
+            )
+            adapter = LocalServiceProcessAdapter(
+                provider,
+                DirectoryCapturePathProvider(self._capture_root),
+                backend,
+                readiness,
+            )
+            contract_key = contract.digest()
+            state = FileServiceStateStore(
+                self._state_root / service_key / contract_key / "state.json"
+            )
+            intents = DirectoryServiceStartIntentStore(
+                self._intent_root / service_key / contract_key
+            )
+            endpoint = ExactServiceRuntimeEndpoint(
+                build_service_supervisor(state, intents, adapter)
+            )
+            self._runtimes[key] = (endpoint, backend)
+            return endpoint
+
+    def logs(
+        self,
+        contract: ServiceLaunchContract,
+        *,
+        deployment_id: str,
+    ) -> ModelDeploymentLogs:
         paths = DirectoryCapturePathProvider(self._capture_root).paths(contract)
-        return ModelDeploymentLogs(deployment_id, paths.stdout_path, paths.stderr_path)
+        return ModelDeploymentLogs(
+            deployment_id,
+            paths.stdout_path,
+            paths.stderr_path,
+        )
+
+    def close(self) -> None:
+        with self._lock:
+            rows = tuple(reversed(tuple(self._runtimes.values())))
+            self._runtimes.clear()
+        errors: list[BaseException] = []
+        for _endpoint, backend in rows:
+            try:
+                backend.close()
+            except BaseException as exc:
+                errors.append(exc)
+        if errors:
+            raise BaseExceptionGroup(
+                "model Docker service heartbeat shutdown failed",
+                errors,
+            )
 
     @staticmethod
     def _safe(value: str) -> str:
         return value.replace("/", "_").replace("\\", "_")
-
 
 
 def discover_local_docker_root(
@@ -183,17 +283,23 @@ def build_local_management_plane(
     model_storage_pools: Mapping[str, Path] | None = None,
     task_group: TaskGroupPort,
     docker_task_group: TaskGroupPort,
+    execution_pool: ResearchExecutionPool,
 ) -> ManagementPlaneAuthorities:
+    if not isinstance(execution_pool, ResearchExecutionPool):
+        raise TypeError("management plane requires ResearchExecutionPool")
     local_commands = build_local_command_runner(task_group)
     docker_commands = build_local_command_runner(docker_task_group)
     gpu_runtime = NvidiaSmiGpuRuntimeObserver(LocalCommandResourceProbe(local_commands))
     host_runtime = LocalHostRuntimeObserver()
     directories = build_local_directory_authorities(layout)
     directory_layout = directories.layout
+    lease_clock = LocalLeaseClock()
+    physical_host_identity = lease_clock.read().host_identity_digest
     meta = build_platform_meta(
         directory_layout.layout.state / "platform-meta",
         gpu_runtime_observer=gpu_runtime,
         host_runtime_observer=host_runtime,
+        lease_clock=lease_clock,
     )
     docker_authority_id = canonical_digest(
         {
@@ -223,6 +329,7 @@ def build_local_management_plane(
     try:
         discovered_host = discover_local_compute_host(
             gpu_runtime_observer=gpu_runtime,
+            host_id=physical_host_identity,
         )
     except RuntimeError:
         discovered_host = None
@@ -257,7 +364,7 @@ def build_local_management_plane(
     # paths before model controllers or new service starts are composed.
     applied_store.reconcile_cleared()
     asset_storage = LocalModelAssetStorage(directory_layout, additional_pools=model_storage_pools)
-    deployment_catalog = ModelDeploymentCatalog(asset_registry, deployment_registry, environments.lifecycle)
+    deployment_catalog = ModelDeploymentCatalog(asset_registry, deployment_registry)
     assets = ModelAssetManager(
         asset_registry,
         DeploymentModelAssetReferences(deployment_catalog),
@@ -273,11 +380,18 @@ def build_local_management_plane(
     assignments = ModelAssignmentManager(scopes)
     service_factory = LocalModelServiceRuntimeFactory(
         directory_layout,
-        operating_system=host.operating_system,
+        assets=assets,
+        docker_containers=docker_containers,
+        docker_runner=docker_commands,
+        docker_lease_guards=execution_pool.docker_container_lease_guard_factory(
+            docker_containers
+        ),
         task_group=task_group,
     )
+    execution_pool.register_model_io_resource(service_factory)
     materializer = ModelLaunchMaterializer(
-        assets, environments.lifecycle, base_environment=base_service_environment
+        assets,
+        base_environment=base_service_environment,
     )
     deployment_runtime = ModelDeploymentRuntime(
         applied_store, deployment_catalog, materializer, service_factory

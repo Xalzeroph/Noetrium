@@ -7,6 +7,7 @@ from pathlib import Path
 import re
 from typing import Any, Mapping, TypeAlias
 
+from noetrium_platform.capabilities.environment.api.contracts import ActionReconciliationDisposition
 from noetrium_platform.foundation.kernel.kernel import canonical_digest
 from noetrium_platform.substrate.api import is_absolute_target_path
 from noetrium_platform.substrate.api import ScopeIdentity, ScopeKind
@@ -535,7 +536,12 @@ class MinecraftBranchRuntimeRequest:
         if not self.session_id.strip():
             raise ValueError("Minecraft branch runtime session_id is required")
         if type(self.scope) is not ScopeIdentity or self.scope.kind is not ScopeKind.BRANCH:
-            raise ValueError("Minecraft branch runtime scope must be a branch scope")
+            raise ValueError(
+                "Minecraft branch runtime scope must be a branch scope; "
+                f"actual_type={type(self.scope).__module__}.{type(self.scope).__qualname__}, "
+                f"actual_kind={getattr(self.scope, 'kind', None)!r}, "
+                f"actual_scope={getattr(self.scope, 'key', None)!r}"
+            )
         if self.environment_template.endpoint.port is not None:
             raise ValueError(
                 "Minecraft branch environment template must not preselect a port"
@@ -604,6 +610,7 @@ class MinecraftActionResultEvidence:
     action_id: str
     action_type: str
     status: MinecraftActionOutcomeStatus
+    effect_disposition: ActionReconciliationDisposition
     verified: bool
     outcome: Mapping[str, MinecraftJsonValue]
 
@@ -634,6 +641,13 @@ class MinecraftActionResultEvidence:
         verified = payload.get("verified")
         if not isinstance(verified, bool):
             raise ValueError("Minecraft action_result verified must be boolean")
+        raw_disposition = payload.get("effect_disposition")
+        if raw_disposition is None:
+            raise ValueError("Minecraft action_result effect_disposition is required")
+        try:
+            effect_disposition = ActionReconciliationDisposition(str(raw_disposition))
+        except ValueError as exc:
+            raise ValueError("Minecraft action_result effect_disposition is invalid") from exc
         raw_status = outcome.get("status")
         if raw_status is None:
             raise ValueError("Minecraft action_result outcome.status is required")
@@ -643,12 +657,26 @@ class MinecraftActionResultEvidence:
             raise ValueError("Minecraft action_result status is invalid") from exc
         if status is MinecraftActionOutcomeStatus.REJECTED and verified:
             raise ValueError("Rejected Minecraft action_result cannot be verified")
-        if status is MinecraftActionOutcomeStatus.APPLIED and not verified:
-            raise ValueError("Applied Minecraft action_result must be verified")
+        if status is MinecraftActionOutcomeStatus.APPLIED:
+            if not verified:
+                raise ValueError("Applied Minecraft action_result must be verified")
+            if effect_disposition is not ActionReconciliationDisposition.APPLIED:
+                raise ValueError("Applied Minecraft action_result must prove an applied effect")
+        if status is MinecraftActionOutcomeStatus.REJECTED and effect_disposition not in {
+            ActionReconciliationDisposition.REJECTED,
+            ActionReconciliationDisposition.NOT_APPLIED,
+        }:
+            raise ValueError("Rejected Minecraft action_result must prove rejection or no effect")
+        if status is MinecraftActionOutcomeStatus.PARTIAL and effect_disposition not in {
+            ActionReconciliationDisposition.APPLIED,
+            ActionReconciliationDisposition.UNKNOWN,
+        }:
+            raise ValueError("Partial Minecraft action_result effect disposition is invalid")
         return cls(
             action_id=action_id,
             action_type=expected_action_type,
             status=status,
+            effect_disposition=effect_disposition,
             verified=verified,
             outcome=dict(outcome),
         )

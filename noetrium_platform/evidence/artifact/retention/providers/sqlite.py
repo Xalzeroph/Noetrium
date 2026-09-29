@@ -14,9 +14,9 @@ from noetrium_platform.evidence.artifact.retention.api import (
 )
 from noetrium_platform.foundation.kernel.kernel import strict_finite_json_digest as canonical_digest
 from noetrium_platform.foundation.kernel.kernel.durability.sqlite import (
+    DurableSQLiteWriterOwner,
     immediate_sqlite_transaction,
     open_durable_sqlite_reader,
-    open_durable_sqlite_writer,
 )
 from noetrium_platform.evidence.artifact._sqlite_types import require_integer, require_text
 
@@ -32,11 +32,19 @@ class SQLiteArtifactRetentionStore:
         self.path = Path(path).expanduser().resolve()
         self.timeout_seconds = timeout_seconds
         self.path.parent.mkdir(parents=True, exist_ok=True)
-        with closing(self._connect_writer()) as db:
+        self._writers = DurableSQLiteWriterOwner(
+            self.path,
+            timeout_seconds=self.timeout_seconds,
+        )
+        with self._writers.session() as db:
             self._ensure_schema(db)
 
-    def _connect_writer(self) -> sqlite3.Connection:
-        return open_durable_sqlite_writer(self.path, timeout_seconds=self.timeout_seconds)
+    @property
+    def writer_connection_open_count(self) -> int:
+        return self._writers.open_count
+
+    def close(self) -> None:
+        self._writers.close()
 
     def _connect_reader(self) -> sqlite3.Connection:
         return open_durable_sqlite_reader(self.path, timeout_seconds=self.timeout_seconds)
@@ -161,7 +169,7 @@ class SQLiteArtifactRetentionStore:
             candidate_generation,
             reason_refs,
         )
-        with closing(self._connect_writer()) as db:
+        with self._writers.session() as db:
             with immediate_sqlite_transaction(
                 db,
                 timeout_seconds=self.timeout_seconds,

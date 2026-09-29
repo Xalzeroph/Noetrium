@@ -20,9 +20,9 @@ from noetrium_platform.evidence.data._canonical import (
     strict_json_loads,
 )
 from noetrium_platform.foundation.kernel.kernel.durability.sqlite import (
+    DurableSQLiteWriterOwner,
     immediate_sqlite_transaction,
     open_durable_sqlite_reader,
-    open_durable_sqlite_writer,
 )
 from noetrium_platform.evidence.data._sqlite_types import require_integer, require_text
 
@@ -34,7 +34,11 @@ class SQLiteDurableFactStore:
         self.path = Path(path).expanduser().resolve()
         self.timeout_seconds = timeout_seconds
         self.path.parent.mkdir(parents=True, exist_ok=True)
-        with closing(self._connect_writer()) as db:
+        self._writers = DurableSQLiteWriterOwner(
+            self.path,
+            timeout_seconds=self.timeout_seconds,
+        )
+        with self._writers.session() as db:
             db.executescript(
                 """
                 CREATE TABLE IF NOT EXISTS durable_facts(
@@ -53,11 +57,12 @@ class SQLiteDurableFactStore:
                 """
             )
 
-    def _connect_writer(self) -> sqlite3.Connection:
-        return open_durable_sqlite_writer(
-            self.path,
-            timeout_seconds=self.timeout_seconds,
-        )
+    @property
+    def writer_connection_open_count(self) -> int:
+        return self._writers.open_count
+
+    def close(self) -> None:
+        self._writers.close()
 
     def _connect_reader(self) -> sqlite3.Connection:
         return open_durable_sqlite_reader(
@@ -120,7 +125,7 @@ class SQLiteDurableFactStore:
     def append(self, fact: DurableFact) -> DurableFactReceipt:
         record_sha256 = self._digest(fact)
         payload_json, artifact_refs_json, state_refs_json = self._encoded(fact)
-        with closing(self._connect_writer()) as db:
+        with self._writers.session() as db:
             with immediate_sqlite_transaction(
                 db,
                 timeout_seconds=self.timeout_seconds,

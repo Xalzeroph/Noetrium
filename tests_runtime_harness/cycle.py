@@ -2,15 +2,25 @@ from __future__ import annotations
 
 from dataclasses import dataclass, replace
 
-from noetrium_platform.foundation.kernel.kernel import ExecutionContext, JsonValue, OperationResult
+from noetrium_platform.foundation.kernel.kernel import (
+    ExecutionContext,
+    JsonValue,
+    OperationResult,
+)
+from noetrium_platform.research.execution.api import (
+    BoundParticipants,
+    DecisionCycleIdentity,
+    DecisionCycleResult,
+    ParticipantSessionBinding,
+)
+from noetrium_platform.research.experimentation.lifecycle.experiment.api import (
+    ExperimentSpec,
+)
+from noetrium_platform.research.experimentation.lifecycle.run.api.identity import (
+    RunIdentity,
+)
 
-from noetrium_platform.research.execution.api import BoundParticipants, ParticipantSessionBinding
-from noetrium_platform.research.experimentation.lifecycle.checkpoint.api import RunCheckpointCoordinatorPort
 from .decision_runtime import identity_context
-from noetrium_platform.research.execution.api import DecisionCycleIdentity
-from noetrium_platform.research.execution.api import DecisionCycleResult
-from noetrium_platform.research.experimentation.lifecycle.run.api.identity import RunIdentity
-from noetrium_platform.research.experimentation.lifecycle.experiment.api import ExperimentSpec
 
 
 class RunIdentityMismatch(RuntimeError):
@@ -25,7 +35,13 @@ class RunCycleExecutionForTest:
 
 
 class RunCycleExecutorForTest:
-    """Executes one trial cycle against an already-open participant topology."""
+    """Execute one trial cycle against an already-open participant topology.
+
+    Domain checkpoint capture is intentionally absent. Durable recovery belongs
+    to the Machine Journal / snapshot authority used by the trial and Run
+    machines. checkpoint_id is projected only from the typed execution context
+    when a Machine-level checkpoint already exists.
+    """
 
     def __init__(
         self,
@@ -34,14 +50,12 @@ class RunCycleExecutorForTest:
         run_identity: RunIdentity,
         bound: BoundParticipants,
         trial: object,
-        checkpoint: RunCheckpointCoordinatorPort | None,
         participant_sessions: tuple[ParticipantSessionBinding, ...] = (),
     ) -> None:
         self._spec = spec
         self._run_identity = run_identity
         self._bound = bound
         self._trial = trial
-        self._checkpoint = checkpoint
         self._participant_sessions = participant_sessions
 
     def _validate_identity(self, identity: DecisionCycleIdentity) -> None:
@@ -50,10 +64,15 @@ class RunCycleExecutorForTest:
             self._run_identity.session_id,
             self._run_identity.trace_id,
         )
-        actual = (identity.run_id, identity.session_id, identity.trace_id)
+        actual = (
+            identity.run_id,
+            identity.session_id,
+            identity.trace_id,
+        )
         if actual != expected:
             raise RunIdentityMismatch(
-                f"cycle does not belong to open run: expected={expected!r} actual={actual!r}"
+                "cycle does not belong to open run: "
+                f"expected={expected!r} actual={actual!r}"
             )
 
     def _context(
@@ -90,20 +109,10 @@ class RunCycleExecutorForTest:
             input_kind=input_kind,
             input_payload=input_payload,
         )
-        rows: list[OperationResult[JsonValue]] = list(trial.operation_results)
+        rows: list[OperationResult[JsonValue]] = list(
+            trial.operation_results
+        )
         final_context = trial.final_context
-        checkpoint_id: str | None = None
-        if self._checkpoint is not None:
-            checkpoint = self._checkpoint.checkpoint(
-                spec=self._spec,
-                bound=self._bound,
-                participant_sessions=self._participant_sessions,
-                context=final_context,
-                cycle_identity=cycle_identity,
-            )
-            rows.extend(checkpoint.operation_results)
-            checkpoint_id = checkpoint.manifest.checkpoint_id
-            final_context = replace(final_context, checkpoint_id=checkpoint_id)
         result = DecisionCycleResult(
             cycle_identity.run_id,
             cycle_identity.decision_cycle_id,
@@ -112,7 +121,15 @@ class RunCycleExecutorForTest:
             tuple(rows),
             cycle_identity,
         )
-        return RunCycleExecutionForTest(result, final_context, checkpoint_id)
+        return RunCycleExecutionForTest(
+            result,
+            final_context,
+            final_context.checkpoint_id,
+        )
 
 
-__all__ = ["RunCycleExecutionForTest", "RunCycleExecutorForTest", "RunIdentityMismatch"]
+__all__ = [
+    "RunCycleExecutionForTest",
+    "RunCycleExecutorForTest",
+    "RunIdentityMismatch",
+]

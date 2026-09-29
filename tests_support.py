@@ -303,8 +303,6 @@ class ExperimentRuntimeForTest:
         spec,
         *,
         run_identity=None,
-        restore_checkpoint_id=None,
-        restore_cycle_identity=None,
     ):
         from noetrium_platform.research.experimentation.lifecycle.experiment.api.trial_protocol import (
             verify_trial_protocol_identity,
@@ -315,8 +313,6 @@ class ExperimentRuntimeForTest:
         return self.run_runtime.open(
             spec,
             identity,
-            restore_checkpoint_id=restore_checkpoint_id,
-            restore_cycle_identity=restore_cycle_identity,
         )
 
     def execute_cycle(
@@ -377,6 +373,7 @@ class ExperimentTrialCycleExecutorForTest:
         dispatcher,
         trial_protocol,
         *,
+        effect_dispatcher=None,
         effect_intents=None,
         workflow_surface_factories=(),
         machine_journal=None,
@@ -387,6 +384,9 @@ class ExperimentTrialCycleExecutorForTest:
         )
 
         self.dispatcher = dispatcher
+        self.effect_dispatcher = (
+            dispatcher if effect_dispatcher is None else effect_dispatcher
+        )
         self.trial_protocol = require_execution_trial_protocol(trial_protocol)
         self.effect_intents = effect_intents
         self._surface_registry = ExperimentWorkflowSurfaceRegistryForTest(
@@ -413,6 +413,7 @@ class ExperimentTrialCycleExecutorForTest:
             run_id,
             id(surface_context.bound),
             id(surface_context.participant_sessions),
+            id(surface_context.effect_dispatcher),
             id(surface_context.effect_intents),
             id(surface_context.machine_journal),
             id(surface_context.machine_snapshot_store),
@@ -442,13 +443,14 @@ class ExperimentTrialCycleExecutorForTest:
         )
 
         surface_context = WorkflowSurfaceBindingContext(
-            context.run_id,
-            self.dispatcher,
-            bound,
-            participant_sessions,
-            self.effect_intents,
-            self._machine_journal,
-            self._machine_snapshot_store,
+            run_id=context.run_id,
+            dispatcher=self.dispatcher,
+            bound=bound,
+            participant_sessions=participant_sessions,
+            effect_dispatcher=self.effect_dispatcher,
+            effect_intents=self.effect_intents,
+            machine_journal=self._machine_journal,
+            machine_snapshot_store=self._machine_snapshot_store,
         )
         surface = self._surface_for(
             surface_id=workflow_surface_id(self.trial_protocol),
@@ -497,7 +499,7 @@ def build_experiment_runtime_components_for_test(
     services=None,
     operation_executor=None,
     effect_journal=None,
-    checkpoint_store=None,
+    operation_state_root=None,
     machine_journal=None,
     machine_snapshot_store=None,
     state_root=None,
@@ -534,20 +536,27 @@ def build_experiment_runtime_components_for_test(
         ParticipantResolutionOperations,
         ParticipantSessionLifecycle,
     )
-    from noetrium_platform.research.experimentation.lifecycle.checkpoint.composition import (
-        build_project_run_checkpoint_store,
-    )
-    from noetrium_platform.research.experimentation.lifecycle.checkpoint.runtime.coordination import (
-        RunCheckpointCoordinator,
-    )
-    from tests_runtime_harness import (
+    from tests_runtime_harness.decision_runtime import (
         DecisionCycleRuntimeForTest,
-        RunRuntimeForTest,
     )
+    from tests_runtime_harness.run_runtime import RunRuntimeForTest
     from noetrium_platform.research.execution.workflow.runtime import (
+        DurableKernelOperationDispatcher,
         EffectIntentOperations,
         KernelOperationDispatcher,
         WORKFLOW_RUNTIME_IDENTITY,
+    )
+    from noetrium_platform.research.execution.operation.command.providers import (
+        SQLiteCommandStore,
+    )
+    from noetrium_platform.research.execution.operation.command.runtime import (
+        CommandIntentOwner,
+    )
+    from noetrium_platform.research.execution.operation.providers import (
+        SQLiteOperationStore,
+    )
+    from noetrium_platform.research.execution.operation.runtime import (
+        OperationOwner,
     )
 
     del EffectIntentJournal
@@ -560,52 +569,63 @@ def build_experiment_runtime_components_for_test(
             machine_snapshot_store = DirectoryMachineSnapshotStore(
                 root / "machine-snapshots"
             )
-        if checkpoint_store is None:
-            checkpoint_store = build_project_run_checkpoint_store(
-                root / "run-checkpoints"
-            )
 
     shared_machine_journal = (
         machine_journal
         if machine_journal is not None
         else InMemoryMachineJournal()
     )
-    dispatcher = KernelOperationDispatcher(
+    kernel_dispatcher = KernelOperationDispatcher(
         operation_executor or OperationExecutor(),
         caller=WORKFLOW_RUNTIME_IDENTITY,
     )
+    if effect_journal is None:
+        dispatcher = kernel_dispatcher
+    else:
+        if operation_state_root is None:
+            raise ValueError(
+                "effectful test runtime requires operation_state_root for "
+                "durable Command/Operation authority"
+            )
+        operation_root = Path(operation_state_root)
+        operation_root.mkdir(parents=True, exist_ok=True)
+        command_owner = CommandIntentOwner(
+            SQLiteCommandStore(operation_root / "commands.sqlite")
+        )
+        operation_owner = OperationOwner(
+            SQLiteOperationStore(operation_root / "operations.sqlite")
+        )
+        dispatcher = DurableKernelOperationDispatcher(
+            kernel_dispatcher,
+            commands=command_owner,
+            submissions=operation_owner,
+            admissions=operation_owner,
+            operations=operation_owner,
+        )
     adapters = ParticipantLifecycleAdapterRegistry(participant_adapters)
     participant_resolution = ParticipantResolutionOperations(
-        dispatcher,
+        kernel_dispatcher,
         adapters,
     )
     binder = ExperimentComponentBinderForTest(participant_resolution)
-    lifecycle = ParticipantSessionLifecycle(dispatcher, services)
+    lifecycle = ParticipantSessionLifecycle(kernel_dispatcher, services)
     participant_checkpoints = ParticipantCheckpointOperations(
-        dispatcher,
+        kernel_dispatcher,
         ParticipantCheckpointRuntime(),
     )
     effect_intents = (
-        EffectIntentOperations(dispatcher, effect_journal)
+        EffectIntentOperations(kernel_dispatcher, effect_journal)
         if effect_journal is not None
         else None
     )
     trial_cycle = ExperimentTrialCycleExecutorForTest(
-        dispatcher,
+        kernel_dispatcher,
         trial_protocol,
+        effect_dispatcher=dispatcher,
         effect_intents=effect_intents,
         workflow_surface_factories=workflow_surface_factories,
         machine_journal=shared_machine_journal,
         machine_snapshot_store=machine_snapshot_store,
-    )
-    checkpoint = (
-        RunCheckpointCoordinator(
-            dispatcher,
-            checkpoint_store,
-            participant_checkpoints,
-        )
-        if checkpoint_store is not None
-        else None
     )
     return ExperimentRuntimeComponentsForTest(
         trial_protocol_identity(trial_protocol),
@@ -620,7 +640,6 @@ def build_experiment_runtime_components_for_test(
             binder,
             lifecycle,
             trial_cycle,
-            checkpoint,
             machine_journal=shared_machine_journal,
             machine_snapshot_store=machine_snapshot_store,
         ),
@@ -637,7 +656,7 @@ def build_experiment_runtime_for_test(
     cycle_identity_provider=None,
     run_identity_provider=None,
     effect_journal=None,
-    checkpoint_store=None,
+    operation_state_root=None,
     machine_journal=None,
     machine_snapshot_store=None,
     state_root=None,
@@ -667,7 +686,7 @@ def build_experiment_runtime_for_test(
         services=services,
         operation_executor=operation_executor,
         effect_journal=effect_journal,
-        checkpoint_store=checkpoint_store,
+        operation_state_root=operation_state_root,
         machine_journal=machine_journal,
         machine_snapshot_store=machine_snapshot_store,
         state_root=state_root,
@@ -734,12 +753,19 @@ def context_action_runtime(methods, environments, **kwargs):
 def agent_turn_runtime(agents, **kwargs):
     """Test-only low-level AgentTurn ExperimentRuntime composition."""
 
+    from pathlib import Path
+
     from noetrium_platform.composition.agent_turn import (
         agent_turn_participant_adapters,
     )
     from noetrium_platform.composition.workflows.agent_turn import (
         AgentTurnSurfaceFactory,
         agent_turn_trial_protocol,
+    )
+    from noetrium_platform.foundation.kernel.kernel import (
+        DirectoryMachineJournal,
+        DirectoryMachineSnapshotStore,
+        InMemoryMachineJournal,
     )
     from noetrium_platform.research.execution.capability.runtime import (
         ScopedRegistrationRuntimeFactory,
@@ -755,8 +781,26 @@ def agent_turn_runtime(agents, **kwargs):
         "extra_surface_factories",
         (),
     )
-    capability_program = kwargs.pop("capability_program", None)
-    capability_mediators = kwargs.pop("capability_mediators", None)
+
+    state_root = kwargs.get("state_root")
+    machine_journal = kwargs.get("machine_journal")
+    machine_snapshot_store = kwargs.get("machine_snapshot_store")
+    if machine_journal is None:
+        if state_root is None:
+            machine_journal = InMemoryMachineJournal()
+        else:
+            root = Path(state_root)
+            root.mkdir(parents=True, exist_ok=True)
+            machine_journal = DirectoryMachineJournal(root / "machine-journal")
+        kwargs["machine_journal"] = machine_journal
+    if machine_snapshot_store is None and state_root is not None:
+        root = Path(state_root)
+        root.mkdir(parents=True, exist_ok=True)
+        machine_snapshot_store = DirectoryMachineSnapshotStore(
+            root / "machine-snapshots"
+        )
+        kwargs["machine_snapshot_store"] = machine_snapshot_store
+
     resolver = CompositeParticipantResolver(agents, capability, runtime)
     runtime_kinds = tuple(
         kind
@@ -771,19 +815,18 @@ def agent_turn_runtime(agents, **kwargs):
             include_capability_provider=capability is not None,
             extra=extra_participant_adapters,
         ),
-        trial_protocol=agent_turn_trial_protocol(),
+        trial_protocol=agent_turn_trial_protocol(
+            journal=machine_journal,
+            snapshot_store=machine_snapshot_store,
+        ),
         workflow_surface_factories=(
             AgentTurnSurfaceFactory(
                 ScopedRegistrationRuntimeFactory(),
-                capability_program=capability_program,
-                capability_mediators=capability_mediators,
             ),
             *extra_surface_factories,
         ),
         **kwargs,
     )
-
-
 def frozen_binding(
     role: str,
     kind: str,

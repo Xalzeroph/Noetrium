@@ -17,6 +17,7 @@ class WorkflowSurfaceBindingContext:
     dispatcher: OperationDispatchPort
     bound: BoundParticipants
     participant_sessions: tuple[ParticipantSessionBinding, ...]
+    effect_dispatcher: OperationDispatchPort | None = None
     effect_intents: EffectIntentOperationPort | None = None
     machine_journal: MachineJournalPort | None = None
     machine_snapshot_store: MachineSnapshotStorePort | None = None

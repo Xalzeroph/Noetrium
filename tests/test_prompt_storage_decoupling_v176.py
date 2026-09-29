@@ -4,7 +4,7 @@ from pathlib import Path
 from tempfile import TemporaryDirectory
 import unittest
 
-from noetrium_platform.composition.prompt_registry import build_durable_prompt_registry
+from noetrium_platform.composition.prompt_registry import build_prompt_registry
 from noetrium_platform.capabilities.model.request.prompt.runtime import (
     PromptPromotionEvidence,
     PromptQualification,
@@ -50,7 +50,7 @@ class PromptStorageDecouplingV176Tests(unittest.TestCase):
             lock = Path(lock_td) / "leases" / "publication.lock"
             active.parent.mkdir(parents=True, exist_ok=True)
 
-            registry = build_durable_prompt_registry(
+            registry = build_prompt_registry(
                 generations_root=generations,
                 promotion_records_root=promotions,
                 active_pointer_path=active,

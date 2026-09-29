@@ -3,6 +3,7 @@ from __future__ import annotations
 import time
 
 from noetrium_platform.foundation.kernel.kernel import ExecutionContext
+from noetrium_platform.evidence.observability.api import ContextMetricObservation
 from noetrium_platform.evidence.observability.api.emission import operational_observation_enabled
 
 from ..api.rows import PendingMetric
@@ -33,10 +34,40 @@ class TelemetryStore:
     def writer_session(self) -> "TelemetryStoreWriteSession":
         return TelemetryStoreWriteSession(self._backend.writer_session())
 
+    def observe_many(
+        self,
+        context: ExecutionContext,
+        observations: tuple[ContextMetricObservation, ...],
+    ) -> tuple[int, ...]:
+        if not operational_observation_enabled() or not observations:
+            return ()
+        if type(observations) is not tuple or any(
+            not isinstance(row, ContextMetricObservation)
+            for row in observations
+        ):
+            raise TypeError("telemetry observe_many requires ContextMetricObservation tuple")
+        return self.insert_many(tuple(
+            self.prepare(
+                context,
+                row.name,
+                row.value,
+                **dict(row.dimensions),
+            )
+            for row in observations
+        ))
+
     def observe(self, context: ExecutionContext, name: str, value: float, **dimensions: str) -> int:
-        if not operational_observation_enabled():
-            return 0
-        return self.insert_many((self.prepare(context, name, value, **dimensions),))[0]
+        ids = self.observe_many(
+            context,
+            (
+                ContextMetricObservation(
+                    name,
+                    value,
+                    tuple(sorted(dimensions.items())),
+                ),
+            ),
+        )
+        return 0 if not ids else ids[0]
 
     def query(
         self,

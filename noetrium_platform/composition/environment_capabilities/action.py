@@ -41,6 +41,21 @@ _RESULT_SCHEMA = "noetrium.environment.action-capability.result.v1"
 _HANDLE_SCHEMA = "noetrium.environment.action-capability.handle.v1"
 
 
+def environment_capability_descriptor_metadata(descriptors) -> dict[str, JsonValue]:
+    return {
+        "environment_capabilities": tuple(
+            {
+                "capability_id": descriptor.capability_id,
+                "version": descriptor.version,
+                "action_types": descriptor.action_types,
+                "query_types": descriptor.query_types,
+                "metadata": descriptor.metadata,
+            }
+            for descriptor in descriptors
+        )
+    }
+
+
 def environment_action_capability_payload(action_type: str, payload: JsonInput) -> dict[str, JsonInput]:
     """Build the provider-neutral payload consumed by the environment action bridge."""
     if not isinstance(action_type, str) or not action_type.strip():
@@ -169,6 +184,8 @@ class EnvironmentSessionCapabilityAdapter:
         if not isinstance(effect_class, EffectClass):
             raise TypeError("environment capability effect_class must be EffectClass")
         self._session = session
+        describe_environment = getattr(session, "capability_descriptors", None)
+        descriptors = () if not callable(describe_environment) else tuple(describe_environment())
         self._descriptor = CapabilityDescriptor(
             capability_id=capability_id,
             interface_version="1",
@@ -176,6 +193,7 @@ class EnvironmentSessionCapabilityAdapter:
             result_schema=_RESULT_SCHEMA,
             effect_class=effect_class,
             deterministic=False,
+            metadata=environment_capability_descriptor_metadata(descriptors),
         )
 
     @property

@@ -19,11 +19,11 @@ def deployment_from_json(path: Path) -> ModelDeploymentSpec:
         scope=scope_from_json(data.get("scope")),
         service_id=data.get("service_id", f"model:{data['deployment_id']}"),
         model_id=data["model_id"],
-        engine=data.get("engine", "custom"),
+        engine=data["engine"],
+        container_digest=data["container_digest"],
         executable=data["executable"],
         argv=tuple(data.get("argv", ())),
         cwd=Path(data["cwd"]).expanduser().resolve(),
-        python_environment_id=data.get("python_environment_id"),
         gpu_devices=tuple(str(value) for value in data.get("gpu_devices", ())),
         environment=tuple(
             sorted((str(key), str(value)) for key, value in data.get("environment", {}).items())
@@ -42,7 +42,6 @@ def deployment_selector(args: object) -> ModelDeploymentSelector:
         tags=tuple(getattr(args, "tag", ())),
         model_id=getattr(args, "model", None),
         engine=getattr(args, "engine", None),
-        python_environment_id=getattr(args, "env", None),
     )
 
 

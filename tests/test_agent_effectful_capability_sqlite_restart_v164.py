@@ -23,8 +23,8 @@ from noetrium_platform.capabilities.participant.capability.api import (
 )
 from noetrium_platform.infrastructure.reliability.effect.api import EffectReconciliationDisposition, PreparedEffectHandle
 from noetrium_platform.infrastructure.reliability.effect.api import EffectIntentPhase
-from noetrium_platform.infrastructure.reliability.effect.runtime import SQLiteEffectIntentJournal
-from noetrium_platform.foundation.kernel.kernel import EffectCertainty, EffectClass, EffectReceipt, canonical_digest
+from noetrium_platform.infrastructure.reliability.effect.runtime import sqlite_effect_intent_journal
+from noetrium_platform.foundation.kernel.kernel import EffectCertainty, EffectClass, EffectReceipt, canonical_digest, thaw_json
 from noetrium_platform.composition.workflows.agent_turn import AGENT_TURN_TRIAL_CONFIGURATION_DIGEST
 from noetrium_platform.research.execution.decision.cycle_identity import DecisionCycleIdentity
 from tests_support import ExperimentRuntimeForTest as ExperimentRuntime
@@ -36,7 +36,7 @@ class _CrashBeforeConsumeJournal:
 
     durability = "crash_durable"
 
-    def __init__(self, inner: SQLiteEffectIntentJournal) -> None:
+    def __init__(self, inner: EffectIntentJournalRuntime) -> None:
         self._inner = inner
 
     def prepare(self, intent): return self._inner.prepare(intent)
@@ -51,6 +51,9 @@ class _CrashBeforeConsumeJournal:
         return self._inner.unresolved_for_scope(
             run_id=run_id, lifetime_id=lifetime_id, exclude_intent_id=exclude_intent_id
         )
+
+    def close(self):
+        self._inner.close()
 
     def record_consumed(self, intent_id, *, request_digest, consumption):
         # Abrupt process death models controller/runtime loss after the external effect and
@@ -86,12 +89,12 @@ class _ExternalWriteSession:
         )
 
     @staticmethod
-    def _result(request_digest: str) -> CapabilityResult:
+    def _result(effect_id: str, request_digest: str) -> CapabilityResult:
         return CapabilityResult(
             "tool.write",
             {"ok": True},
             effect=EffectReceipt(
-                "effect:external-write-42",
+                effect_id,
                 request_digest,
                 EffectClass.NON_IDEMPOTENT,
                 EffectCertainty.EFFECT_CONFIRMED,
@@ -106,7 +109,7 @@ class _ExternalWriteSession:
             fh.write(b"EXECUTED\n")
             fh.flush()
             os.fsync(fh.fileno())
-        return self._result(handle.request_digest)
+        return self._result(handle.request_id, handle.request_digest)
 
     def reconcile_prepared_capability(self, handle, context):
         del context
@@ -115,7 +118,7 @@ class _ExternalWriteSession:
         return CapabilityEffectReconciliationResult(
             "tool.write",
             EffectReconciliationDisposition.APPLIED,
-            self._result(handle.request_digest),
+            self._result(handle.request_id, handle.request_digest),
         )
 
     def invoke(self, request):
@@ -198,12 +201,13 @@ def _runtime(db_path: Path, external_effect_path: Path, *, crash_before_consume:
     agents.register("agent", "restart-agent", _RestartAgent)
     providers = FakeParticipantResolver()
     providers.register("capability_provider", "external-write", lambda: _ExternalWriteProvider(external_effect_path))
-    base_journal = SQLiteEffectIntentJournal(db_path)
+    base_journal = sqlite_effect_intent_journal(db_path)
     journal = _CrashBeforeConsumeJournal(base_journal) if crash_before_consume else base_journal
     return agent_turn_runtime(
         agents,
         capability_plugins=providers,
         effect_journal=journal,
+        operation_state_root=db_path.parent / "operation-runtime",
     )
 
 
@@ -226,7 +230,7 @@ def _recovery_process(db_path: str, external_effect_path: str, result_path: str)
         input_payload={"value": 1},
         cycle_identity=DecisionCycleIdentity("run", "dc", "session", "task", "trace"),
     )
-    Path(result_path).write_text(str(result.primary_result.output), encoding="utf-8")
+    Path(result_path).write_text(str(thaw_json(result.primary_result.output)), encoding="utf-8")
 
 
 def test_agent_only_non_idempotent_capability_recovers_across_real_process_restart():
@@ -243,7 +247,7 @@ def test_agent_only_non_idempotent_capability_recovers_across_real_process_resta
         assert external_effect.read_bytes().splitlines() == [b"EXECUTED"]
 
         # The crash happened after RESULT_RECORDED but before CONSUMED.
-        journal = SQLiteEffectIntentJournal(db_path)
+        journal = sqlite_effect_intent_journal(db_path)
         pending = journal.unresolved_for_scope(run_id="run", lifetime_id=None)
         assert len(pending) == 1
         assert pending[0].phase is EffectIntentPhase.RESULT_RECORDED
@@ -261,5 +265,5 @@ def test_agent_only_non_idempotent_capability_recovers_across_real_process_resta
         # A brand-new OS process consumed the durable intent by provider reconciliation.
         # The physical external write never happened twice.
         assert external_effect.read_bytes().splitlines() == [b"EXECUTED"]
-        final = SQLiteEffectIntentJournal(db_path).unresolved_for_scope(run_id="run", lifetime_id=None)
+        final = sqlite_effect_intent_journal(db_path).unresolved_for_scope(run_id="run", lifetime_id=None)
         assert final == ()

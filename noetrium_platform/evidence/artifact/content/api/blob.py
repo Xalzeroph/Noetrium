@@ -211,6 +211,10 @@ class ArtifactBlobResolverPort(Protocol):
 class ArtifactBlobStorePort(Protocol):
     durability: str
 
+    def put_many(
+        self,
+        items: tuple[tuple[bytes, str], ...],
+    ) -> tuple[ArtifactBlobRef, ...]: ...
     def put(self, payload: bytes, *, media_type: str) -> ArtifactBlobRef: ...
 
     def get(self, ref: ArtifactBlobRef) -> bytes: ...

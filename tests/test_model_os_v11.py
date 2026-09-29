@@ -40,10 +40,24 @@ class ModelOSV11Tests(unittest.TestCase):
     def _stack(self): return ModelStackSpec(self._identity(),*stack_parts(),2,1,1,1,"qwen3",None,None,None,"default")
 
     def test_role_assignment_is_exactly_one_deployment(self):
-        m=RoleModelManifest((RoleModelAssignment("planner","dep_a"),RoleModelAssignment("meta","dep_b")))
-        self.assertEqual(m.deployment_for("planner"),"dep_a")
-        with self.assertRaises(ValueError): RoleModelManifest((RoleModelAssignment("planner","a"),RoleModelAssignment("planner","b")))
-        with self.assertRaises(KeyError): m.deployment_for("semantic")
+        m=RoleModelManifest((RoleModelAssignment("planner","generation","model.generation.request.v1","model.generation.response.v1","dep_a"),RoleModelAssignment("meta","generation","model.generation.request.v1","model.generation.response.v1","dep_b")))
+        self.assertEqual(
+            m.deployment_for(
+                "planner",
+                "generation",
+                "model.generation.request.v1",
+                "model.generation.response.v1",
+            ),
+            "dep_a",
+        )
+        with self.assertRaises(ValueError): RoleModelManifest((RoleModelAssignment("planner","generation","model.generation.request.v1","model.generation.response.v1","a"),RoleModelAssignment("planner","generation","model.generation.request.v1","model.generation.response.v1","b")))
+        with self.assertRaises(KeyError):
+            m.deployment_for(
+                "semantic",
+                "generation",
+                "model.generation.request.v1",
+                "model.generation.response.v1",
+            )
 
     def test_deployment_certificate_is_stack_and_host_bound(self):
         stack=self._stack(); host_identity=hashlib.sha256(b"host").hexdigest()

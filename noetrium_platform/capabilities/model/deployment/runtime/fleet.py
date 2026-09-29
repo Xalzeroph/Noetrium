@@ -108,6 +108,7 @@ class ModelFleetRuntime:
             )
             detail = (
                 f"auto-recovery-failed:{descriptor.error_type}:"
+                f"{descriptor.safe_message}:"
                 f"{descriptor.error_digest[:16]}"
             )
             if state.circuit_open:

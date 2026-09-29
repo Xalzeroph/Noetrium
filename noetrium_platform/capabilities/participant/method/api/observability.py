@@ -1,18 +1,24 @@
 from __future__ import annotations
 
-from dataclasses import asdict, dataclass
+from dataclasses import dataclass
 import hashlib
 from threading import RLock
 from typing import Mapping, Protocol, runtime_checkable
 
-from noetrium_platform.foundation.kernel.kernel import ExecutionContext, JsonValue, canonical_bytes, freeze_json
+from noetrium_platform.foundation.kernel.kernel import (
+    ExecutionContext,
+    JsonValue,
+    canonical_bytes,
+    execution_context_payload,
+    freeze_json,
+)
 
 
 def _method_observation_id(
     context: ExecutionContext, method_id: str, session_id: str, kind: str, payload: Mapping[str, JsonValue]
 ) -> str:
     document = {
-        "context": asdict(context),
+        "context": execution_context_payload(context),
         "method_id": method_id,
         "session_id": session_id,
         "kind": kind,

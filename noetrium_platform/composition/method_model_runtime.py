@@ -13,7 +13,7 @@ from noetrium_platform.research.execution.workflow.api import (
     analyze_method_runtime_requirements,
 )
 from noetrium_platform.research.execution.workflow.composition import (
-    DispatchPoolBackedMethodAgentLoop,
+    MethodModelAgentLoop,
     MethodAgentLoopRouter,
     MethodModelEndpointBinding,
     MethodRuntimePortInventory,
@@ -84,7 +84,7 @@ def compose_operational_model_method_runtime(
         {} if generation_options is None else generation_options,
     )
     loops = {
-        agent_id: DispatchPoolBackedMethodAgentLoop(
+        agent_id: MethodModelAgentLoop(
             binding=MethodModelEndpointBinding(
                 agent_id=agent_id,
                 role=agent_id,

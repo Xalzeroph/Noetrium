@@ -25,8 +25,8 @@ from noetrium_platform.foundation.kernel.kernel import (
 
 from .child_machine import (
     ChildResearchMachineExecution,
+    ChildResearchMachineExecutor,
     ChildResearchMachineRequest,
-    RegisteredChildResearchMachineExecutor,
 )
 
 
@@ -63,7 +63,7 @@ class ChildResearchMachineBatchItem:
             "item_digest",
             canonical_digest({
                 "participant_id": self.participant_id,
-                "request": thaw_json(self.request.as_payload()),
+                "request_digest": self.request.request_digest,
             }),
         )
 
@@ -198,6 +198,9 @@ class ChildResearchMachineBatchMechanicsPort(Protocol):
     @property
     def identity_digest(self) -> str: ...
 
+    @property
+    def child_executor_identity_digest(self) -> str: ...
+
     def execute_batch(
         self,
         request: ChildResearchMachineBatchRequest,
@@ -214,6 +217,7 @@ class ChildResearchMachineBatchExecution:
     evidence_digests: tuple[str, ...]
     mechanics_identity_digest: str
     receipt: JsonValue = None
+    receipt_digest: str = field(init=False)
     execution_digest: str = field(init=False)
 
     def __post_init__(self) -> None:
@@ -254,6 +258,11 @@ class ChildResearchMachineBatchExecution:
         object.__setattr__(self, "receipt", freeze_json(self.receipt))
         object.__setattr__(
             self,
+            "receipt_digest",
+            canonical_digest(self.receipt),
+        )
+        object.__setattr__(
+            self,
             "execution_digest",
             canonical_digest({
                 "schema": "noetrium.child-research-machine-batch-execution.v2",
@@ -276,7 +285,7 @@ class ChildResearchMachineBatchExecution:
                 ),
                 "evidence_digests": evidence,
                 "mechanics_identity_digest": mechanics,
-                "receipt": thaw_json(self.receipt),
+                "receipt_digest": self.receipt_digest,
             }),
         )
 
@@ -289,139 +298,85 @@ class ChildResearchMachineBatchExecution:
         return tuple(row.result for row in self.executions)
 
 
-class ChildResearchMachineBatchExecutor:
-    """Validate one logical ready set and project its child Machine cuts."""
+def execute_child_research_machine_batch(
+    executor: ChildResearchMachineExecutor,
+    mechanics: ChildResearchMachineBatchMechanicsPort,
+    request: ChildResearchMachineBatchRequest,
+) -> ChildResearchMachineBatchExecution:
+    """Execute one batch through the single child-machine executor."""
 
-    def __init__(
-        self,
-        mechanics: ChildResearchMachineBatchMechanicsPort,
-    ) -> None:
-        if not isinstance(mechanics, ChildResearchMachineBatchMechanicsPort):
-            raise TypeError(
-                "child batch executor requires ChildResearchMachineBatchMechanicsPort"
-            )
-        self._mechanics = mechanics
-        require_sha256(
-            mechanics.identity_digest,
-            "child batch mechanics identity_digest",
+    if not isinstance(executor, ChildResearchMachineExecutor):
+        raise TypeError("child batch requires ChildResearchMachineExecutor")
+    if not isinstance(mechanics, ChildResearchMachineBatchMechanicsPort):
+        raise TypeError(
+            "child batch requires ChildResearchMachineBatchMechanicsPort"
+        )
+    if not isinstance(request, ChildResearchMachineBatchRequest):
+        raise TypeError(
+            "child batch requires ChildResearchMachineBatchRequest"
+        )
+    require_sha256(
+        mechanics.identity_digest,
+        "child batch mechanics identity_digest",
+    )
+    if (
+        mechanics.child_executor_identity_digest
+        != executor.identity_digest
+    ):
+        raise ValueError(
+            "child batch mechanics is bound to another child executor"
         )
 
-    @property
-    def identity_digest(self) -> str:
-        return canonical_digest({
-            "executor": "child-research-machine-batch",
-            "mechanics_identity_digest": self._mechanics.identity_digest,
-        })
-
-    def execute(
-        self,
-        request: ChildResearchMachineBatchRequest,
-    ) -> ChildResearchMachineBatchExecution:
-        if not isinstance(request, ChildResearchMachineBatchRequest):
-            raise TypeError(
-                "child batch executor requires ChildResearchMachineBatchRequest"
-            )
-        result = self._mechanics.execute_batch(request)
-        if not isinstance(result, ChildResearchMachineBatchMechanicsResult):
-            raise TypeError(
-                "child batch mechanics must return "
-                "ChildResearchMachineBatchMechanicsResult"
-            )
-        if result.request_digest != request.request_digest:
-            raise ValueError("child batch mechanics request identity mismatch")
-        if result.dispatch_parallelism != request.dispatch_parallelism:
-            raise ValueError(
-                "child batch mechanics dispatch_parallelism drifted from request"
-            )
-        if len(result.executions) != len(request.items):
-            raise ValueError(
-                "child batch execution cardinality drifted from request"
-            )
-
-        for item, execution in zip(
-            request.items,
-            result.executions,
-            strict=True,
-        ):
-            expected = item.request
-            if execution.execution.machine_id != expected.child_machine_id:
-                raise ValueError(
-                    "child batch execution order/child identity mismatch"
-                )
-            link = execution.link
-            if link.parent_machine_id != request.parent_machine_id:
-                raise ValueError(
-                    "child batch link parent identity mismatch"
-                )
-            if link.child_machine_id != expected.child_machine_id:
-                raise ValueError(
-                    "child batch link child identity mismatch"
-                )
-
-        return ChildResearchMachineBatchExecution(
-            request_digest=request.request_digest,
-            dispatch_parallelism=result.dispatch_parallelism,
-            executions=result.executions,
-            evidence_digests=result.evidence_digests,
-            mechanics_identity_digest=self._mechanics.identity_digest,
-            receipt=result.receipt,
+    result = mechanics.execute_batch(request)
+    if not isinstance(result, ChildResearchMachineBatchMechanicsResult):
+        raise TypeError(
+            "child batch mechanics must return "
+            "ChildResearchMachineBatchMechanicsResult"
+        )
+    if result.request_digest != request.request_digest:
+        raise ValueError("child batch mechanics request identity mismatch")
+    if result.dispatch_parallelism != request.dispatch_parallelism:
+        raise ValueError(
+            "child batch mechanics dispatch_parallelism drifted from request"
+        )
+    if len(result.executions) != len(request.items):
+        raise ValueError(
+            "child batch execution cardinality drifted from request"
         )
 
-
-class BatchCapableRegisteredChildResearchMachineExecutor:
-    """Compose ordinary registered-child execution with an independent batch seam."""
-
-    def __init__(
-        self,
-        executor: RegisteredChildResearchMachineExecutor,
-        mechanics: ChildResearchMachineBatchMechanicsPort,
-    ) -> None:
-        if not isinstance(executor, RegisteredChildResearchMachineExecutor):
-            raise TypeError(
-                "batch-capable child executor requires registered child executor"
+    for item, execution in zip(
+        request.items,
+        result.executions,
+        strict=True,
+    ):
+        expected = item.request
+        if execution.execution.machine_id != expected.child_machine_id:
+            raise ValueError(
+                "child batch execution order/child identity mismatch"
             )
-        if not isinstance(mechanics, ChildResearchMachineBatchMechanicsPort):
-            raise TypeError(
-                "batch-capable child executor requires child batch mechanics"
-            )
-        self._executor = executor
-        self._batch = ChildResearchMachineBatchExecutor(mechanics)
+        link = execution.link
+        if link.parent_machine_id != request.parent_machine_id:
+            raise ValueError("child batch link parent identity mismatch")
+        if link.child_machine_id != expected.child_machine_id:
+            raise ValueError("child batch link child identity mismatch")
 
-    @property
-    def identity_digest(self) -> str:
-        return canonical_digest({
-            "executor": "batch-capable-registered-child-research-machine",
-            "single_executor_identity_digest": self._executor.identity_digest,
-            "batch_executor_identity_digest": self._batch.identity_digest,
-        })
-
-    def execute(
-        self,
-        request: ChildResearchMachineRequest,
-    ) -> ChildResearchMachineExecution:
-        return self._executor.execute(request)
-
-    def step_once(
-        self,
-        request: ChildResearchMachineRequest,
-    ) -> ChildResearchMachineExecution:
-        return self._executor.step_once(request)
-
-    def execute_batch(
-        self,
-        request: ChildResearchMachineBatchRequest,
-    ) -> ChildResearchMachineBatchExecution:
-        return self._batch.execute(request)
+    return ChildResearchMachineBatchExecution(
+        request_digest=request.request_digest,
+        dispatch_parallelism=result.dispatch_parallelism,
+        executions=result.executions,
+        evidence_digests=result.evidence_digests,
+        mechanics_identity_digest=mechanics.identity_digest,
+        receipt=result.receipt,
+    )
 
 
 __all__ = [
-    "BatchCapableRegisteredChildResearchMachineExecutor",
 
     "ChildResearchMachineBatchExecution",
-    "ChildResearchMachineBatchExecutor",
     "ChildResearchMachineBatchItem",
     "ChildResearchMachineBatchPort",
     "ChildResearchMachineBatchMechanicsPort",
     "ChildResearchMachineBatchMechanicsResult",
     "ChildResearchMachineBatchRequest",
+    "execute_child_research_machine_batch",
 ]

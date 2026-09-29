@@ -1,0 +1,14 @@
+{
+  "schema": "noetrium.model-source-catalog.v1",
+  "models": {
+    "Qwen3-8B": {
+      "backend": "huggingface",
+      "source": "Qwen/Qwen3-8B",
+      "revision": null,
+      "storage_pool": "default",
+      "resume": true,
+      "family": "qwen3",
+      "tags": ["auto-source", "formal"]
+    }
+  }
+}

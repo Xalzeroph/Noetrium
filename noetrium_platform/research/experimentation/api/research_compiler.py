@@ -391,7 +391,12 @@ def _factor_selections(
         return ((),)
     return tuple(
         tuple(
-            FactorSelection(factor.factor_id, level.level_id, level.level_digest)
+            FactorSelection(
+                factor.factor_id,
+                level.level_id,
+                level.level_digest,
+                level.value,
+            )
             for factor, level in zip(definition.factors, levels, strict=True)
         )
         for levels in product(*(factor.levels for factor in definition.factors))
@@ -695,10 +700,6 @@ def _validate_model_role_bindings(
             domain="model",
             requirement_digest=requirement.requirement_digest,
         )
-        if rows and gaps:
-            raise ValueError(
-                f"model role {requirement.role} cannot be both bound and unresolved"
-            )
         if requirement.required and not rows:
             if len(gaps) != 1:
                 raise ValueError(

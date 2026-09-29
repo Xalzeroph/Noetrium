@@ -8,6 +8,7 @@ from pathlib import Path
 import pytest
 
 from noetrium import api
+from noetrium_platform.product import research_os as research_os_api
 from noetrium_platform.composition.operator.project.project_execution_authority import (
     ProjectExecutionAuthorityConfig,
     load_project_execution_authority_config,
@@ -33,14 +34,14 @@ class _BindingAuthority:
 
 
 def test_study_protocol_factory_is_frozen_and_resolved_from_experiment_node() -> None:
-    builder = api.research_os.ResearchProgramBuilder("fixture-program")
+    builder = research_os_api.ResearchProgramBuilder("fixture-program")
     builder.study_protocol("study", implementation=build_study)
     builder.experiment("experiment", definitions=("study",))
-    portfolio = api.research_os.ResearchPortfolio(
+    portfolio = research_os_api.ResearchPortfolio(
         "fixture-portfolio",
         (builder.freeze(),),
     )
-    revision = api.research_os.ResearchGraphRevision(
+    revision = research_os_api.ResearchGraphRevision(
         portfolio.portfolio_id,
         portfolio.portfolio_digest,
         (),
@@ -58,14 +59,14 @@ def test_study_protocol_factory_is_frozen_and_resolved_from_experiment_node() ->
 
 
 def test_study_protocol_factory_requires_exactly_one_implemented_protocol() -> None:
-    builder = api.research_os.ResearchProgramBuilder("fixture-program")
+    builder = research_os_api.ResearchProgramBuilder("fixture-program")
     builder.protocol("unresolved")
     builder.experiment("experiment", definitions=("unresolved",))
-    portfolio = api.research_os.ResearchPortfolio(
+    portfolio = research_os_api.ResearchPortfolio(
         "fixture-portfolio",
         (builder.freeze(),),
     )
-    revision = api.research_os.ResearchGraphRevision(
+    revision = research_os_api.ResearchGraphRevision(
         portfolio.portfolio_id,
         portfolio.portfolio_digest,
         (),
@@ -137,8 +138,8 @@ def test_project_config_materializes_through_generic_portfolio_seam(
 ) -> None:
     class _Materializer:
         def materialize(self, portfolio):
-            assert type(portfolio) is api.research_os.ResearchPortfolio
-            return ResearchExecutionAuthorities.provider_neutral()
+            assert type(portfolio) is research_os_api.ResearchPortfolio
+            return ResearchExecutionAuthorities("0" * 64)
 
     module_name = "_noetrium_test_project_materializer"
     module = ModuleType(module_name)
@@ -152,18 +153,18 @@ def test_project_config_materializes_through_generic_portfolio_seam(
     module.build = build
     monkeypatch.setitem(sys.modules, module_name, module)
 
-    builder = api.research_os.ResearchProgramBuilder("paper")
+    builder = research_os_api.ResearchProgramBuilder("paper")
     builder.definition(
         "bootstrap",
-        kind=api.research_os.ResearchDefinitionKind.CUSTOM,
+        kind=research_os_api.ResearchDefinitionKind.CUSTOM,
         config={"kind": "test"},
     )
     builder.node(
         "root",
-        kind=api.research_os.ResearchNodeKind.CUSTOM,
+        kind=research_os_api.ResearchNodeKind.CUSTOM,
         definitions=("bootstrap",),
     )
-    portfolio = api.research_os.ResearchPortfolio("paper", (builder.freeze(),))
+    portfolio = research_os_api.ResearchPortfolio("paper", (builder.freeze(),))
     context = ResearchExecutionContext(
         tmp_path,
         object.__new__(ManagedResearchRuntime),

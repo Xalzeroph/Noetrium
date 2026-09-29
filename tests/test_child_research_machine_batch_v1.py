@@ -8,9 +8,7 @@ from noetrium_platform.foundation.kernel.kernel import (
     canonical_digest,
 )
 from noetrium_platform.research.execution.machines import (
-    BatchCapableRegisteredChildResearchMachineExecutor,
     ChildResearchHostRegistry,
-    ChildResearchMachineBatchExecutor,
     ChildResearchMachineBatchItem,
     ChildResearchMachineBatchMechanicsResult,
     ChildResearchMachineBatchRequest,
@@ -85,6 +83,10 @@ class _FixtureBatchMechanics:
         self._evidence = evidence
 
     @property
+    def child_executor_identity_digest(self):
+        return self._executor.identity_digest
+
+    @property
     def identity_digest(self):
         return canonical_digest({
             "fixture": "concurrent-child-batch",
@@ -119,9 +121,8 @@ class _FixtureBatchMechanics:
 def test_child_batch_projection_preserves_authoritative_child_links() -> None:
     executor, journal = _registered_executor()
     request = _request(dispatch_parallelism=1)
-    batch = ChildResearchMachineBatchExecutor(
-        _FixtureBatchMechanics(executor, dispatch_parallelism=1)
-    ).execute(request)
+    mechanics = _FixtureBatchMechanics(executor, dispatch_parallelism=1)
+    batch = executor.execute_batch(request, mechanics)
 
     assert batch.dispatch_parallelism == 1
     assert tuple(row.child_machine_id for row in batch.links) == (
@@ -137,29 +138,28 @@ def test_child_batch_projection_preserves_authoritative_child_links() -> None:
 
 def test_child_batch_dispatch_parallelism_drift_fails_closed() -> None:
     executor, _ = _registered_executor()
-    batch = ChildResearchMachineBatchExecutor(
-        _FixtureBatchMechanics(executor, dispatch_parallelism=1)
-    )
+    mechanics = _FixtureBatchMechanics(executor, dispatch_parallelism=1)
     with pytest.raises(ValueError, match="dispatch_parallelism drifted"):
-        batch.execute(_request(dispatch_parallelism=2))
+        executor.execute_batch(_request(dispatch_parallelism=2), mechanics)
 
 
 def test_parallel_child_batch_requires_dispatch_evidence() -> None:
     executor, _ = _registered_executor()
-    batch = ChildResearchMachineBatchExecutor(
-        _FixtureBatchMechanics(executor, dispatch_parallelism=2, evidence=False)
+    mechanics = _FixtureBatchMechanics(
+        executor, dispatch_parallelism=2, evidence=False
     )
     with pytest.raises(ValueError, match="requires dispatch evidence"):
-        batch.execute(_request(dispatch_parallelism=2))
+        executor.execute_batch(_request(dispatch_parallelism=2), mechanics)
 
 
 def test_child_batch_requires_dispatch_evidence_and_exact_order() -> None:
     executor, _ = _registered_executor()
     request = _request(dispatch_parallelism=2)
 
-    success = ChildResearchMachineBatchExecutor(
-        _FixtureBatchMechanics(executor)
-    ).execute(request)
+    success = executor.execute_batch(
+        request,
+        _FixtureBatchMechanics(executor),
+    )
     assert success.dispatch_parallelism == 2
     assert len(success.evidence_digests) == 1
     assert tuple(row.child_machine_id for row in success.links) == (
@@ -190,22 +190,23 @@ def test_child_batch_requires_dispatch_evidence_and_exact_order() -> None:
         ValueError,
         match="order/child identity mismatch",
     ):
-        ChildResearchMachineBatchExecutor(
-            _FixtureBatchMechanics(executor, reverse=True)
-        ).execute(wrong_order_request)
+        executor.execute_batch(
+            wrong_order_request,
+            _FixtureBatchMechanics(executor, reverse=True),
+        )
 
 
-def test_batch_capable_wrapper_keeps_single_child_abi_and_adds_batch_capability() -> None:
+def test_single_child_executor_exposes_batch_capability() -> None:
     executor, _ = _registered_executor()
-    wrapper = BatchCapableRegisteredChildResearchMachineExecutor(
-        executor,
-        _FixtureBatchMechanics(executor),
+    mechanics = _FixtureBatchMechanics(executor)
+    batch = executor.execute_batch(
+        _request(dispatch_parallelism=2),
+        mechanics,
     )
-    batch = wrapper.execute_batch(_request(dispatch_parallelism=2))
 
     assert batch.dispatch_parallelism == 2
-    assert len(wrapper.identity_digest) == 64
-    single = wrapper.execute(
+    assert len(executor.identity_digest) == 64
+    single = executor.execute(
         ChildResearchMachineRequest(
             host_id="fixture.batch-child",
             parent_machine_id="method:single-parent",

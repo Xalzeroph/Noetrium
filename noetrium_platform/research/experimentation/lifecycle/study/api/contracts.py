@@ -1,11 +1,15 @@
 from __future__ import annotations
 
+from collections.abc import Mapping
 from dataclasses import dataclass, field
+import heapq
+from types import MappingProxyType
 from enum import StrEnum
 import math
 from typing import Self
 
 from noetrium_platform.foundation.kernel.kernel import canonical_digest, require_sha256
+from noetrium_platform.research.execution.api import ArtifactReference
 
 from .benchmark import TaskGraph, TaskGraphRelation
 
@@ -331,6 +335,30 @@ class AssignmentWorkload:
     task_ids: tuple[str, ...]
     task_graph: TaskGraph = field(default_factory=TaskGraph)
     workload_digest: str = field(init=False)
+    _task_index: Mapping[str, int] = field(
+        init=False,
+        repr=False,
+        compare=False,
+        metadata={"transient": True},
+    )
+    _dependencies_by_task: Mapping[str, tuple[str, ...]] = field(
+        init=False,
+        repr=False,
+        compare=False,
+        metadata={"transient": True},
+    )
+    _prerequisites_by_task: Mapping[str, tuple[str, ...]] = field(
+        init=False,
+        repr=False,
+        compare=False,
+        metadata={"transient": True},
+    )
+    _retry_sources_by_task: Mapping[str, tuple[str, ...]] = field(
+        init=False,
+        repr=False,
+        compare=False,
+        metadata={"transient": True},
+    )
 
     def __post_init__(self) -> None:
         task_ids = _require_string_tuple(
@@ -343,49 +371,95 @@ class AssignmentWorkload:
         object.__setattr__(self, "task_ids", ordered)
         if type(self.task_graph) is not TaskGraph:
             raise TypeError("assignment workload task_graph must be TaskGraph")
-        known = set(ordered)
-        for edge in self.task_graph.edges:
-            if edge.source_task_id not in known or edge.target_task_id not in known:
-                raise ValueError(
-                    "assignment workload graph references task outside workload"
-                )
-        dependencies = {
-            task_id: set()
-            for task_id in ordered
-        }
-        for edge in self.task_graph.edges:
-            if edge.relation in {
-                TaskGraphRelation.PREREQUISITE,
-                TaskGraphRelation.RETRY_OF,
-            }:
-                dependencies[edge.target_task_id].add(edge.source_task_id)
-        remaining = {task_id: set(rows) for task_id, rows in dependencies.items()}
+
         order_index = {
             task_id: index
             for index, task_id in enumerate(ordered)
         }
+        known = set(ordered)
+        dependencies = {task_id: set() for task_id in ordered}
+        prerequisites = {task_id: set() for task_id in ordered}
+        retry_sources = {task_id: set() for task_id in ordered}
+        dependents = {task_id: set() for task_id in ordered}
+        dependency_relations = {
+            TaskGraphRelation.PREREQUISITE,
+            TaskGraphRelation.RETRY_OF,
+        }
+        for edge in self.task_graph.edges:
+            if (
+                edge.source_task_id not in known
+                or edge.target_task_id not in known
+            ):
+                raise ValueError(
+                    "assignment workload graph references task outside workload"
+                )
+            if edge.relation not in dependency_relations:
+                continue
+            dependencies[edge.target_task_id].add(edge.source_task_id)
+            dependents[edge.source_task_id].add(edge.target_task_id)
+            if edge.relation is TaskGraphRelation.PREREQUISITE:
+                prerequisites[edge.target_task_id].add(edge.source_task_id)
+            else:
+                retry_sources[edge.target_task_id].add(edge.source_task_id)
+
+        indegree = {
+            task_id: len(rows)
+            for task_id, rows in dependencies.items()
+        }
         ready = [
-            task_id
+            order_index[task_id]
             for task_id in ordered
-            if not remaining[task_id]
+            if indegree[task_id] == 0
         ]
-        visited: list[str] = []
+        heapq.heapify(ready)
+        visited_count = 0
         while ready:
-            task_id = ready.pop(0)
-            visited.append(task_id)
-            for target_id in ordered:
-                if task_id not in remaining[target_id]:
-                    continue
-                remaining[target_id].remove(task_id)
-                if (
-                    not remaining[target_id]
-                    and target_id not in visited
-                    and target_id not in ready
-                ):
-                    ready.append(target_id)
-                    ready.sort(key=order_index.__getitem__)
-        if len(visited) != len(ordered):
+            task_id = ordered[heapq.heappop(ready)]
+            visited_count += 1
+            for target_id in dependents[task_id]:
+                indegree[target_id] -= 1
+                if indegree[target_id] == 0:
+                    heapq.heappush(ready, order_index[target_id])
+        if visited_count != len(ordered):
             raise ValueError("assignment workload dependency graph must be acyclic")
+
+        def ordered_rows(rows: set[str]) -> tuple[str, ...]:
+            return tuple(
+                sorted(
+                    rows,
+                    key=order_index.__getitem__,
+                )
+            )
+
+        object.__setattr__(
+            self,
+            "_task_index",
+            MappingProxyType(order_index),
+        )
+        object.__setattr__(
+            self,
+            "_dependencies_by_task",
+            MappingProxyType({
+                task_id: ordered_rows(dependencies[task_id])
+                for task_id in ordered
+            }),
+        )
+        object.__setattr__(
+            self,
+            "_prerequisites_by_task",
+            MappingProxyType({
+                task_id: ordered_rows(prerequisites[task_id])
+                for task_id in ordered
+            }),
+        )
+        object.__setattr__(
+            self,
+            "_retry_sources_by_task",
+            MappingProxyType({
+                task_id: ordered_rows(retry_sources[task_id])
+                for task_id in ordered
+            }),
+        )
         object.__setattr__(
             self,
             "workload_digest",
@@ -397,24 +471,37 @@ class AssignmentWorkload:
             ),
         )
 
+    def task_index(self, task_id: str) -> int:
+        try:
+            return self._task_index[task_id]
+        except KeyError as exc:
+            raise KeyError(
+                f"assignment workload has no task {task_id!r}"
+            ) from exc
+
     def dependencies_for(self, task_id: str) -> tuple[str, ...]:
-        if task_id not in self.task_ids:
-            raise KeyError(f"assignment workload has no task {task_id!r}")
-        dependency_ids = {
-            edge.source_task_id
-            for edge in self.task_graph.edges
-            if edge.target_task_id == task_id
-            and edge.relation
-            in {
-                TaskGraphRelation.PREREQUISITE,
-                TaskGraphRelation.RETRY_OF,
-            }
-        }
-        return tuple(
-            candidate
-            for candidate in self.task_ids
-            if candidate in dependency_ids
-        )
+        try:
+            return self._dependencies_by_task[task_id]
+        except KeyError as exc:
+            raise KeyError(
+                f"assignment workload has no task {task_id!r}"
+            ) from exc
+
+    def prerequisites_for(self, task_id: str) -> tuple[str, ...]:
+        try:
+            return self._prerequisites_by_task[task_id]
+        except KeyError as exc:
+            raise KeyError(
+                f"assignment workload has no task {task_id!r}"
+            ) from exc
+
+    def retry_sources_for(self, task_id: str) -> tuple[str, ...]:
+        try:
+            return self._retry_sources_by_task[task_id]
+        except KeyError as exc:
+            raise KeyError(
+                f"assignment workload has no task {task_id!r}"
+            ) from exc
 
 
 @dataclass(frozen=True, slots=True)
@@ -539,11 +626,95 @@ def _require_metric_rows(value: object) -> tuple[tuple[str, float], ...]:
 class StudyMetricObservation:
     assignment: StudyAssignment
     metrics: tuple[tuple[str, float], ...]
+    trial_request_digest: str | None = None
+    trial_receipt_digest: str | None = None
+    trial_receipt_reference: ArtifactReference | None = None
+    measurement_record_digests: tuple[str, ...] = ()
+    evidence_refs: tuple[ArtifactReference, ...] = ()
+    verifier_receipt_digest: str | None = None
+    observation_digest: str = field(init=False)
 
     def __post_init__(self) -> None:
         if not isinstance(self.assignment, StudyAssignment):
             raise TypeError("study metric observation assignment must be StudyAssignment")
         _require_metric_rows(self.metrics)
+        provenance_fields = (
+            self.trial_request_digest,
+            self.trial_receipt_digest,
+            self.trial_receipt_reference,
+        )
+        has_provenance = any(value is not None for value in provenance_fields)
+        if has_provenance and any(value is None for value in provenance_fields):
+            raise ValueError(
+                "study metric observation Trial provenance must carry request, receipt and reference together"
+            )
+        if self.trial_request_digest is not None:
+            _require_sha256(
+                self.trial_request_digest,
+                "study metric observation trial_request_digest",
+            )
+            _require_sha256(
+                self.trial_receipt_digest,
+                "study metric observation trial_receipt_digest",
+            )
+            if type(self.trial_receipt_reference) is not ArtifactReference:
+                raise TypeError(
+                    "study metric observation trial_receipt_reference must be ArtifactReference"
+                )
+        if type(self.measurement_record_digests) is not tuple:
+            raise TypeError(
+                "study metric observation measurement_record_digests must be tuple"
+            )
+        for digest in self.measurement_record_digests:
+            _require_sha256(
+                digest,
+                "study metric observation measurement_record_digest",
+            )
+        if len(self.measurement_record_digests) != len(
+            set(self.measurement_record_digests)
+        ):
+            raise ValueError(
+                "study metric observation measurement_record_digests must be unique"
+            )
+        if type(self.evidence_refs) is not tuple or any(
+            type(row) is not ArtifactReference for row in self.evidence_refs
+        ):
+            raise TypeError(
+                "study metric observation evidence_refs must contain ArtifactReference"
+            )
+        if len(self.evidence_refs) != len(set(self.evidence_refs)):
+            raise ValueError(
+                "study metric observation evidence_refs must be unique"
+            )
+        if self.verifier_receipt_digest is not None:
+            _require_sha256(
+                self.verifier_receipt_digest,
+                "study metric observation verifier_receipt_digest",
+            )
+        if not has_provenance and (
+            self.measurement_record_digests
+            or self.evidence_refs
+            or self.verifier_receipt_digest is not None
+        ):
+            raise ValueError(
+                "study metric observation Trial-derived provenance requires a Trial receipt reference"
+            )
+        object.__setattr__(
+            self,
+            "observation_digest",
+            canonical_digest(
+                {
+                    "assignment_digest": self.assignment.assignment_digest,
+                    "metrics": self.metrics,
+                    "trial_request_digest": self.trial_request_digest,
+                    "trial_receipt_digest": self.trial_receipt_digest,
+                    "trial_receipt_reference": self.trial_receipt_reference,
+                    "measurement_record_digests": self.measurement_record_digests,
+                    "evidence_refs": self.evidence_refs,
+                    "verifier_receipt_digest": self.verifier_receipt_digest,
+                }
+            ),
+        )
 
 
 @dataclass(frozen=True, slots=True)

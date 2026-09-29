@@ -5,9 +5,9 @@ from pathlib import Path
 import sqlite3
 
 from noetrium_platform.foundation.kernel.kernel.durability.sqlite import (
+    DurableSQLiteWriterOwner,
     immediate_sqlite_transaction,
     open_durable_sqlite_reader,
-    open_durable_sqlite_writer,
 )
 from noetrium_platform.evidence.artifact._sqlite_types import require_text
 from noetrium_platform.evidence.artifact.contracts import ArtifactContentIdentity
@@ -32,11 +32,19 @@ class SQLiteArtifactLineageStore:
         self.path = Path(path).expanduser().resolve()
         self.timeout_seconds = timeout_seconds
         self.path.parent.mkdir(parents=True, exist_ok=True)
-        with closing(self._connect_writer()) as db:
+        self._writers = DurableSQLiteWriterOwner(
+            self.path,
+            timeout_seconds=self.timeout_seconds,
+        )
+        with self._writers.session() as db:
             self._ensure_schema(db)
 
-    def _connect_writer(self) -> sqlite3.Connection:
-        return open_durable_sqlite_writer(self.path, timeout_seconds=self.timeout_seconds)
+    @property
+    def writer_connection_open_count(self) -> int:
+        return self._writers.open_count
+
+    def close(self) -> None:
+        self._writers.close()
 
     def _connect_reader(self) -> sqlite3.Connection:
         return open_durable_sqlite_reader(self.path, timeout_seconds=self.timeout_seconds)
@@ -164,7 +172,7 @@ class SQLiteArtifactLineageStore:
     def add(self, edge: ArtifactLineageEdge) -> ArtifactLineageEdge:
         if type(edge) is not ArtifactLineageEdge:
             raise TypeError("edge must be ArtifactLineageEdge")
-        with closing(self._connect_writer()) as db:
+        with self._writers.session() as db:
             with immediate_sqlite_transaction(
                 db,
                 timeout_seconds=self.timeout_seconds,

@@ -19,11 +19,13 @@ class AdaptiveLeastPressureReplicaSelectionPolicy:
     @property
     def identity_digest(self) -> str:
         return canonical_digest({
-            "policy": "adaptive-least-pressure-model-replica.v1",
+            "policy": "adaptive-least-pressure-model-replica.v2",
             "signals": (
+                "retry_diversity",
                 "saturation",
                 "normalized_in_flight",
                 "consecutive_failures",
+                "prefix_affinity",
                 "observed_latency",
                 "selection_recency",
             ),
@@ -44,10 +46,20 @@ class AdaptiveLeastPressureReplicaSelectionPolicy:
                 if candidate.ewma_latency_seconds is None
                 else candidate.ewma_latency_seconds
             )
+            # Retry diversity is first: when scientifically interchangeable
+            # replicas exist, do not spend a retry on the same physical target
+            # unless every currently admissible candidate was already tried.
+            #
+            # Prefix affinity is deliberately considered only after pressure
+            # and health. This gives sequential/shared-prefix agent traffic KV
+            # locality while preserving load spreading under concurrency.
             return (
+                1 if candidate.attempted_in_dispatch else 0,
                 saturated,
                 normalized_load,
                 candidate.consecutive_failures,
+                -candidate.prefix_affinity_score,
+                -candidate.prefix_affinity_depth,
                 latency_rank,
                 candidate.last_selected_sequence,
                 candidate.deployment_id,

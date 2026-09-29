@@ -177,6 +177,15 @@ def test_generator_readme_drift_fails_closed(tmp_path, monkeypatch) -> None:
     monkeypatch.setattr(module, "render_catalog", lambda _root, _surfaces: b"{}\n")
     monkeypatch.setattr(module, "render_markdown", lambda _root, _surfaces: b"")
     monkeypatch.setattr(module, "render_root_contract_init", lambda _root: "")
+    monkeypatch.setattr(
+        module,
+        "render_readme_interface_block",
+        lambda _root, _surfaces: (
+            module.README_BLOCK_START
+            + "\ncurrent\n"
+            + module.README_BLOCK_END
+        ),
+    )
     monkeypatch.setattr(module, "_readme_paths", lambda _root: (readme,))
     monkeypatch.setattr(module, "_write_or_check", lambda *_args, **_kwargs: True)
     assert module.generate(tmp_path, check=True) == 1

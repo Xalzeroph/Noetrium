@@ -21,6 +21,7 @@ from noetrium_platform.research.experimentation.composition import (
     qualified_replica_capacity_units,
 )
 from noetrium_platform.research.experimentation.lifecycle.api import (
+    AssignmentWorkload,
     StudyExecutionPlan,
     StudyAssignment,
     StudyConcurrencyPolicy,
@@ -70,6 +71,9 @@ def _binding(index: int) -> ProjectModelBinding:
 def _qualified(binding: ProjectModelBinding, capacity: int) -> QualifiedModelEndpointBinding:
     return QualifiedModelEndpointBinding(
         role=binding.role,
+        capability_id="generation",
+        input_schema_id="model.generation.request.v1",
+        output_schema_id="model.generation.response.v1",
         deployment_id=binding.deployment_id,
         deployment_generation=binding.deployment_generation,
         base_url=f"http://127.0.0.1:{18000 + capacity}",
@@ -102,6 +106,10 @@ def _compiled():
         seed_schedule_digest=canonical_digest(tuple(str(i) for i in range(6))),
         metric_names=("success",),
         task_manifest_digest=canonical_digest(tuple(f"task-{i}" for i in range(6))),
+        assignment_workloads=tuple(
+            AssignmentWorkload((f"task-{i}",))
+            for i in range(6)
+        ),
         budget_tiers=("standard",),
         concurrency_policy=StudyConcurrencyPolicy.isolated_parallel_v1(
             max_parallel_repetitions=6,
@@ -120,11 +128,12 @@ def _compiled():
         StudyAssignment(
             study_id=protocol.study_id,
             variant_id=variant.variant_id,
-            repetition=index,
-            seed=str(index),
-            task_id=f"task-{index}",
+            repetition=repetition,
+            seed=str(repetition),
+            workload=workload,
         )
-        for index in range(6)
+        for repetition in range(6)
+        for workload in protocol.assignment_workloads
     )
     return compile_experiment_program(
         StudyExecutionPlan.compile(protocol, (binding,), assignments)
@@ -148,9 +157,9 @@ def test_qualified_replica_capacity_drives_exact_worker_sharding() -> None:
 
     assert tuple(row.capacity_units for row in plan.workers) == (1, 2, 3)
     assert tuple(len(row.assignment_digests) for row in plan.shard_plan.shards) == (
-        1,
-        2,
-        3,
+        6,
+        12,
+        18,
     )
     assert tuple(row.worker_scope_id for row in plan.workers) == tuple(
         row.worker_scope_id for row in plan.shard_plan.shards

@@ -6,6 +6,7 @@ accepts one monotonic revision per machine and rejects ambiguous duplicates.
 
 from __future__ import annotations
 
+from collections.abc import Mapping
 from dataclasses import dataclass, field
 from enum import StrEnum
 from hashlib import sha256
@@ -39,6 +40,7 @@ from .machine import (
     MachineConflict,
     MachineIntegrityError,
     MachineStatus,
+    STRUCTURED_STATE_DELTA_THRESHOLD_BYTES,
 )
 from .contracts import ChildMachineLink
 
@@ -58,15 +60,207 @@ def _command_document(command: MachineCommand) -> dict[str, object]:
     }
 
 
-def _commit_document(commit: MachineCommit) -> dict[str, object]:
+_MACHINE_COMMIT_RECORD_SCHEMA = "machine.commit.v3"
+_DEFAULT_STATE_SNAPSHOT_INTERVAL = 256
+_UNCHANGED = object()
+
+
+def _state_patch(previous: object, current: object):
+    if previous == current:
+        return _UNCHANGED
+    if isinstance(previous, Mapping) and isinstance(current, Mapping):
+        changed: dict[str, object] = {}
+        deleted = sorted(
+            key
+            for key in previous
+            if key not in current
+        )
+        for key, value in current.items():
+            if key not in previous:
+                changed[str(key)] = {
+                    "op": "replace",
+                    "value": thaw_json(value),
+                }
+                continue
+            patch = _state_patch(previous[key], value)
+            if patch is not _UNCHANGED:
+                changed[str(key)] = patch
+        return {
+            "op": "object",
+            "set": changed,
+            "delete": deleted,
+        }
+    if isinstance(previous, (tuple, list)) and isinstance(current, (tuple, list)):
+        if (
+            len(current) >= len(previous)
+            and all(
+                previous[index] == current[index]
+                for index in range(len(previous))
+            )
+        ):
+            return {
+                "op": "append",
+                "items": [
+                    thaw_json(value)
+                    for value in current[len(previous):]
+                ],
+            }
+        if len(current) == len(previous):
+            changed_items: list[list[object]] = []
+            for index, value in enumerate(current):
+                patch = _state_patch(previous[index], value)
+                if patch is not _UNCHANGED:
+                    changed_items.append([index, patch])
+            return {
+                "op": "array",
+                "set": changed_items,
+            }
     return {
+        "op": "replace",
+        "value": thaw_json(current),
+    }
+
+
+def _apply_state_patch(previous: object, patch: object) -> object:
+    row = _require_object(patch, "journal state patch")
+    operation = _require_text(row.get("op"), "journal state patch op")
+    if operation == "replace":
+        _require_exact(row, {"op", "value"}, "journal replace patch")
+        return row["value"]
+    if operation == "object":
+        _require_exact(row, {"op", "set", "delete"}, "journal object patch")
+        if not isinstance(previous, Mapping):
+            raise MachineIntegrityError(
+                "journal object patch requires mapping base"
+            )
+        changed = _require_object(row["set"], "journal object patch set")
+        deleted = row["delete"]
+        if not isinstance(deleted, list) or any(
+            type(key) is not str for key in deleted
+        ):
+            raise MachineIntegrityError(
+                "journal object patch delete must be a string list"
+            )
+        if deleted != sorted(set(deleted)):
+            raise MachineIntegrityError(
+                "journal object patch delete must be unique canonical order"
+            )
+        result = dict(previous)
+        for key in deleted:
+            if key not in result:
+                raise MachineIntegrityError(
+                    "journal object patch deletes absent key"
+                )
+            del result[key]
+        for key, child_patch in changed.items():
+            if key in previous:
+                result[key] = _apply_state_patch(
+                    previous[key],
+                    child_patch,
+                )
+            else:
+                child = _require_object(
+                    child_patch,
+                    "journal object insertion patch",
+                )
+                if set(child) != {"op", "value"} or child.get("op") != "replace":
+                    raise MachineIntegrityError(
+                        "journal object insertion requires replacement patch"
+                    )
+                result[key] = child["value"]
+        return result
+    if operation == "append":
+        _require_exact(row, {"op", "items"}, "journal append patch")
+        if not isinstance(previous, (tuple, list)):
+            raise MachineIntegrityError(
+                "journal append patch requires sequence base"
+            )
+        items = row["items"]
+        if not isinstance(items, list):
+            raise MachineIntegrityError(
+                "journal append patch items must be a list"
+            )
+        return [*previous, *items]
+    if operation == "array":
+        _require_exact(row, {"op", "set"}, "journal array patch")
+        if not isinstance(previous, (tuple, list)):
+            raise MachineIntegrityError(
+                "journal array patch requires sequence base"
+            )
+        changes = row["set"]
+        if not isinstance(changes, list):
+            raise MachineIntegrityError(
+                "journal array patch set must be a list"
+            )
+        result = list(previous)
+        previous_index = -1
+        for entry in changes:
+            if (
+                not isinstance(entry, list)
+                or len(entry) != 2
+                or type(entry[0]) is not int
+            ):
+                raise MachineIntegrityError(
+                    "journal array patch entry must be [index, patch]"
+                )
+            index = entry[0]
+            if (
+                index < 0
+                or index >= len(result)
+                or index <= previous_index
+            ):
+                raise MachineIntegrityError(
+                    "journal array patch indexes must be unique canonical order"
+                )
+            previous_index = index
+            result[index] = _apply_state_patch(
+                previous[index],
+                entry[1],
+            )
+        return result
+    if operation == "same":
+        _require_exact(row, {"op"}, "journal same patch")
+        return previous
+    raise MachineIntegrityError(
+        f"unknown journal state patch operation: {operation}"
+    )
+
+
+def _state_record(
+    commit: MachineCommit,
+    previous_state: object | None,
+    *,
+    force_snapshot: bool,
+) -> tuple[str, object]:
+    if previous_state is None or force_snapshot:
+        return "snapshot", thaw_json(commit.state)
+    patch = _state_patch(previous_state, commit.state)
+    return "patch", ({"op": "same"} if patch is _UNCHANGED else patch)
+
+
+def _commit_document(
+    commit: MachineCommit,
+    *,
+    previous_state: object | None,
+    force_snapshot: bool,
+) -> dict[str, object]:
+    state_encoding, state_payload = _state_record(
+        commit,
+        previous_state,
+        force_snapshot=force_snapshot,
+    )
+    return {
+        "record_schema": _MACHINE_COMMIT_RECORD_SCHEMA,
+        "commit_id": commit.commit_id,
         "machine_id": commit.machine_id,
         "command_id": commit.command_id,
         "base_revision": commit.base_revision,
         "revision": commit.revision,
         "proposal_digest": commit.proposal_digest,
         "command_digest": commit.command_digest,
-        "state": thaw_json(commit.state),
+        "state_encoding": state_encoding,
+        "state_payload": state_payload,
+        "resulting_state_digest": commit.state_digest,
         "output_refs": list(commit.output_refs),
         "event_payloads": [thaw_json(value) for value in commit.event_payloads],
         "effect_intent_refs": list(commit.effect_intent_refs),
@@ -165,16 +359,63 @@ def _decode_child_link(value: object) -> ChildMachineLink:
     return link
 
 
-def _decode_commit(value: object) -> MachineCommit:
+def _decode_commit(
+    value: object,
+    *,
+    previous_state: object | None,
+) -> MachineCommit:
     row = _require_object(value, "journal commit")
     _require_exact(row, {
-        "machine_id", "command_id", "base_revision", "revision",
-        "proposal_digest", "command_digest", "state", "output_refs", "event_payloads",
+        "record_schema", "commit_id", "machine_id", "command_id", "base_revision", "revision",
+        "proposal_digest", "command_digest", "state_encoding", "state_payload",
+        "resulting_state_digest", "output_refs", "event_payloads",
         "effect_intent_refs", "emitted_commands", "previous_commit_id", "before_state_digest",
         "input_digest", "program_digest", "program_lock_digest", "machine_kind", "machine_version", "input_refs",
         "state_delta_ref", "evidence_refs", "artifact_refs", "parent_transition_id", "attempt_id",
         "authority_epoch", "child_links", "accepted_status",
     }, "journal commit")
+    if row["record_schema"] != _MACHINE_COMMIT_RECORD_SCHEMA:
+        raise MachineIntegrityError(
+            "machine journal commit schema is not current"
+        )
+    encoding = _require_text(
+        row["state_encoding"],
+        "journal state encoding",
+    )
+    payload = row["state_payload"]
+    if encoding == "snapshot":
+        state = _require_object(
+            payload,
+            "journal snapshot state",
+        )
+    elif encoding == "patch":
+        if previous_state is None:
+            raise MachineIntegrityError(
+                "journal patch state requires a previous committed state"
+            )
+        state = _apply_state_patch(previous_state, payload)
+    else:
+        raise MachineIntegrityError(
+            f"unknown journal state encoding: {encoding}"
+        )
+    resulting_state_digest = _require_text(
+        row["resulting_state_digest"],
+        "journal resulting state digest",
+    )
+    require_sha256(
+        resulting_state_digest,
+        "journal resulting state digest",
+    )
+    if canonical_digest(state) != resulting_state_digest:
+        raise MachineIntegrityError(
+            "journal resulting state digest mismatch"
+        )
+    if previous_state is not None and row["before_state_digest"] is not None:
+        if canonical_digest(previous_state) != row["before_state_digest"]:
+            raise MachineIntegrityError(
+                "journal before_state_digest mismatch"
+            )
+
     output_refs = row["output_refs"]
     effect_refs = row["effect_intent_refs"]
     input_refs = row["input_refs"]
@@ -194,7 +435,7 @@ def _decode_commit(value: object) -> MachineCommit:
         revision=_require_int(row["revision"], "revision"),
         proposal_digest=_require_text(row["proposal_digest"], "proposal_digest"),
         command_digest=_require_text(row["command_digest"], "command_digest"),
-        state=row["state"],  # type: ignore[arg-type]
+        state=state,  # type: ignore[arg-type]
         output_refs=tuple(_require_text(item, "output ref") for item in output_refs),
         event_payloads=tuple(events),  # type: ignore[arg-type]
         effect_intent_refs=tuple(_require_text(item, "effect ref") for item in effect_refs),
@@ -219,6 +460,19 @@ def _decode_commit(value: object) -> MachineCommit:
         child_links=tuple(_decode_child_link(item) for item in child_links),
         accepted_status=MachineStatus(_require_text(row["accepted_status"], "accepted_status")),
     )
+    if commit.state_digest != resulting_state_digest:
+        raise MachineIntegrityError(
+            "journal reconstructed commit state digest mismatch"
+        )
+    stored_commit_id = _require_text(
+        row["commit_id"],
+        "journal commit_id",
+    )
+    require_sha256(stored_commit_id, "journal commit_id")
+    if commit.commit_id != stored_commit_id:
+        raise MachineIntegrityError(
+            "journal commit identity digest mismatch"
+        )
     return commit
 
 
@@ -333,15 +587,25 @@ class MachineJournalGcPort(Protocol):
 @runtime_checkable
 class MachineJournalPort(Protocol):
     def append(self, commit: MachineCommit) -> MachineCommit: ...
+    def head(
+        self,
+        machine_id: str,
+    ) -> tuple[MachineCommit | None, bool]: ...
     def latest(self, machine_id: str) -> MachineCommit | None: ...
     def get(self, commit_id: str) -> MachineCommit | None: ...
+    def command_commit(
+        self,
+        machine_id: str,
+        command_id: str,
+    ) -> MachineCommit | None: ...
+    def has_emitted_commands(self, machine_id: str) -> bool: ...
     def commits(self, machine_id: str) -> tuple[MachineCommit, ...]: ...
 
 
 class _JournalHistory:
     """Validated in-process projection of one append-only Machine journal."""
 
-    __slots__ = ("commits", "by_command_id", "by_commit_id")
+    __slots__ = ("commits", "by_command_id", "by_commit_id", "has_emitted")
 
     def __init__(
         self,
@@ -350,6 +614,7 @@ class _JournalHistory:
         self.commits: list[MachineCommit] = []
         self.by_command_id: dict[str, MachineCommit] = {}
         self.by_commit_id: dict[str, MachineCommit] = {}
+        self.has_emitted = False
         for commit in commits or ():
             self.accept(commit)
 
@@ -358,6 +623,7 @@ class _JournalHistory:
         value.commits = list(self.commits)
         value.by_command_id = dict(self.by_command_id)
         value.by_commit_id = dict(self.by_commit_id)
+        value.has_emitted = self.has_emitted
         return value
 
     def validate_next(
@@ -403,18 +669,14 @@ class _JournalHistory:
         self.commits.append(commit)
         self.by_command_id[commit.command_id] = commit
         self.by_commit_id[commit.commit_id] = commit
+        if commit.emitted_commands:
+            self.has_emitted = True
         return commit
 
     def snapshot(self) -> tuple[MachineCommit, ...]:
         return tuple(self.commits)
 
 
-@runtime_checkable
-class MachineJournalPort(Protocol):
-    def append(self, commit: MachineCommit) -> MachineCommit: ...
-    def latest(self, machine_id: str) -> MachineCommit | None: ...
-    def get(self, commit_id: str) -> MachineCommit | None: ...
-    def commits(self, machine_id: str) -> tuple[MachineCommit, ...]: ...
 
 
 class InMemoryMachineJournal(MachineJournalPort):
@@ -442,18 +704,49 @@ class InMemoryMachineJournal(MachineJournalPort):
             self._by_id[accepted.commit_id] = accepted
             return accepted
 
-    def latest(self, machine_id: str) -> MachineCommit | None:
+    def head(
+        self,
+        machine_id: str,
+    ) -> tuple[MachineCommit | None, bool]:
         if type(machine_id) is not str or not machine_id.strip():
             raise ValueError("machine_id is required")
         with self._lock:
             history = self._histories.get(machine_id)
-            if history is None or not history.commits:
-                return None
-            return history.commits[-1]
+            if history is None:
+                return None, False
+            latest = None if not history.commits else history.commits[-1]
+            return latest, history.has_emitted
+
+    def latest(self, machine_id: str) -> MachineCommit | None:
+        return self.head(machine_id)[0]
 
     def get(self, commit_id: str) -> MachineCommit | None:
         with self._lock:
             return self._by_id.get(commit_id)
+
+    def command_commit(
+        self,
+        machine_id: str,
+        command_id: str,
+    ) -> MachineCommit | None:
+        if type(machine_id) is not str or not machine_id.strip():
+            raise ValueError("machine_id is required")
+        if type(command_id) is not str or not command_id.strip():
+            raise ValueError("command_id is required")
+        with self._lock:
+            history = self._histories.get(machine_id)
+            return (
+                None
+                if history is None
+                else history.by_command_id.get(command_id)
+            )
+
+    def has_emitted_commands(self, machine_id: str) -> bool:
+        if type(machine_id) is not str or not machine_id.strip():
+            raise ValueError("machine_id is required")
+        with self._lock:
+            history = self._histories.get(machine_id)
+            return False if history is None else history.has_emitted
 
     def commits(self, machine_id: str) -> tuple[MachineCommit, ...]:
         with self._lock:
@@ -462,15 +755,21 @@ class InMemoryMachineJournal(MachineJournalPort):
 
 
 class _DirectoryJournalCache:
-    __slots__ = ("history", "file_identity")
+    __slots__ = (
+        "history",
+        "file_identity",
+        "structured_state_enabled",
+    )
 
     def __init__(
         self,
         history: _JournalHistory,
         file_identity: tuple[int, int, int, int, int] | None,
+        structured_state_enabled: bool = False,
     ) -> None:
         self.history = history
         self.file_identity = file_identity
+        self.structured_state_enabled = structured_state_enabled
 
 
 class DirectoryMachineJournal(MachineJournalPort, MachineJournalGcPort):
@@ -484,12 +783,38 @@ class DirectoryMachineJournal(MachineJournalPort, MachineJournalGcPort):
 
     durability = "crash_durable"
 
-    def __init__(self, root: Path) -> None:
+    def __init__(
+        self,
+        root: Path,
+        *,
+        structured_state_threshold_bytes: int = (
+            STRUCTURED_STATE_DELTA_THRESHOLD_BYTES
+        ),
+        state_snapshot_interval: int = _DEFAULT_STATE_SNAPSHOT_INTERVAL,
+    ) -> None:
+        if (
+            type(structured_state_threshold_bytes) is not int
+            or structured_state_threshold_bytes < 0
+        ):
+            raise ValueError(
+                "structured_state_threshold_bytes must be non-negative integer"
+            )
+        if (
+            type(state_snapshot_interval) is not int
+            or state_snapshot_interval < 1
+        ):
+            raise ValueError(
+                "state_snapshot_interval must be positive integer"
+            )
         self.root = Path(root)
         self.logs = self.root / "machines"
         self.locks = self.root / "locks"
         self.logs.mkdir(parents=True, exist_ok=True)
         self.locks.mkdir(parents=True, exist_ok=True)
+        self._structured_state_threshold_bytes = (
+            structured_state_threshold_bytes
+        )
+        self._state_snapshot_interval = state_snapshot_interval
         self._cache: dict[str, _DirectoryJournalCache] = {}
         self._cache_lock = RLock()
 
@@ -684,10 +1009,14 @@ class DirectoryMachineJournal(MachineJournalPort, MachineJournalGcPort):
         *,
         machine_id: str,
         path: Path,
+        previous_state: object | None,
     ) -> MachineCommit:
         try:
             document = strict_json_loads(line)
-            commit = _decode_commit(document)
+            commit = _decode_commit(
+                document,
+                previous_state=previous_state,
+            )
             if commit.machine_id != machine_id:
                 raise MachineIntegrityError(
                     "journal machine identity mismatch"
@@ -711,7 +1040,7 @@ class DirectoryMachineJournal(MachineJournalPort, MachineJournalGcPort):
         path = self._log_path(machine_id)
         before = self._file_identity(path)
         if before is None:
-            return _DirectoryJournalCache(_JournalHistory(), None)
+            return _DirectoryJournalCache(_JournalHistory(), None, False)
         try:
             raw = path.read_bytes()
         except OSError as exc:
@@ -728,22 +1057,31 @@ class DirectoryMachineJournal(MachineJournalPort, MachineJournalGcPort):
                 "machine journal contains a torn trailing record"
             )
         history = _JournalHistory()
+        previous_state: object | None = None
+        structured_state_enabled = False
         try:
             for line in raw.splitlines():
                 if not line:
                     continue
-                history.accept(
-                    self._decode_line(
-                        line,
-                        machine_id=machine_id,
-                        path=path,
-                    )
+                if len(line) > self._structured_state_threshold_bytes:
+                    structured_state_enabled = True
+                commit = self._decode_line(
+                    line,
+                    machine_id=machine_id,
+                    path=path,
+                    previous_state=previous_state,
                 )
+                history.accept(commit)
+                previous_state = commit.state
         except MachineConflict as exc:
             raise MachineIntegrityError(
                 f"machine journal chain is invalid: {path}"
             ) from exc
-        return _DirectoryJournalCache(history, after)
+        return _DirectoryJournalCache(
+            history,
+            after,
+            structured_state_enabled,
+        )
 
     def _authoritative_cache_locked(
         self,
@@ -781,7 +1119,8 @@ class DirectoryMachineJournal(MachineJournalPort, MachineJournalGcPort):
         self._cache[machine_id] = rebuilt
         return rebuilt
 
-    def _history(self, machine_id: str) -> tuple[MachineCommit, ...]:
+    def _project_history(self, machine_id: str, projector):
+        # Project one validated cache value without copying full history.
         if type(machine_id) is not str or not machine_id.strip():
             raise ValueError("machine_id is required")
         if self._retirement_path(machine_id).exists():
@@ -796,13 +1135,19 @@ class DirectoryMachineJournal(MachineJournalPort, MachineJournalGcPort):
                 cached is not None
                 and cached.file_identity == identity
             ):
-                return cached.history.snapshot()
+                return projector(cached.history)
 
         with InterprocessFileLock(self._lock_path(machine_id)):
             with self._cache_lock:
-                return self._authoritative_cache_locked(
-                    machine_id
-                ).history.snapshot()
+                return projector(
+                    self._authoritative_cache_locked(machine_id).history
+                )
+
+    def _history(self, machine_id: str) -> tuple[MachineCommit, ...]:
+        return self._project_history(
+            machine_id,
+            lambda history: history.snapshot(),
+        )
 
     def append(self, commit: MachineCommit) -> MachineCommit:
         if not isinstance(commit, MachineCommit):
@@ -821,10 +1166,28 @@ class DirectoryMachineJournal(MachineJournalPort, MachineJournalGcPort):
                 if existing is not None:
                     return existing
                 payload = (
-                    canonical_bytes(_commit_document(commit)) + b"\n"
+                    canonical_bytes(
+                        _commit_document(
+                            commit,
+                            previous_state=(
+                                None
+                                if not cached.history.commits
+                                else cached.history.commits[-1].state
+                            ),
+                            force_snapshot=(
+                                not cached.structured_state_enabled
+                                or commit.revision % self._state_snapshot_interval == 0
+                            ),
+                        )
+                    ) + b"\n"
                 )
                 durable_append_bytes(path, payload)
                 cached.history.accept(commit)
+                if (
+                    len(payload)
+                    > self._structured_state_threshold_bytes
+                ):
+                    cached.structured_state_enabled = True
                 cached.file_identity = self._file_identity(path)
                 if cached.file_identity is None:
                     raise MachineIntegrityError(
@@ -832,9 +1195,20 @@ class DirectoryMachineJournal(MachineJournalPort, MachineJournalGcPort):
                     )
                 return commit
 
+    def head(
+        self,
+        machine_id: str,
+    ) -> tuple[MachineCommit | None, bool]:
+        return self._project_history(
+            machine_id,
+            lambda history: (
+                None if not history.commits else history.commits[-1],
+                history.has_emitted,
+            ),
+        )
+
     def latest(self, machine_id: str) -> MachineCommit | None:
-        history = self._history(machine_id)
-        return None if not history else history[-1]
+        return self.head(machine_id)[0]
 
     def get(self, commit_id: str) -> MachineCommit | None:
         if type(commit_id) is not str or not commit_id.strip():
@@ -849,14 +1223,31 @@ class DirectoryMachineJournal(MachineJournalPort, MachineJournalGcPort):
             sorted(set(cached_machine_ids).union(self._machine_ids()))
         )
         for machine_id in machine_ids:
-            self._history(machine_id)
-            with self._cache_lock:
-                value = self._cache[machine_id].history.by_commit_id.get(
-                    commit_id
-                )
-                if value is not None:
-                    return value
+            value = self._project_history(
+                machine_id,
+                lambda history: history.by_commit_id.get(commit_id),
+            )
+            if value is not None:
+                return value
         return None
+
+    def command_commit(
+        self,
+        machine_id: str,
+        command_id: str,
+    ) -> MachineCommit | None:
+        if type(command_id) is not str or not command_id.strip():
+            raise ValueError("command_id is required")
+        return self._project_history(
+            machine_id,
+            lambda history: history.by_command_id.get(command_id),
+        )
+
+    def has_emitted_commands(self, machine_id: str) -> bool:
+        return self._project_history(
+            machine_id,
+            lambda history: history.has_emitted,
+        )
 
     def commits(self, machine_id: str) -> tuple[MachineCommit, ...]:
         return self._history(machine_id)
@@ -1158,12 +1549,20 @@ class DirectoryMachineJournal(MachineJournalPort, MachineJournalGcPort):
                     raise MachineIntegrityError(
                         "machine journal contains a torn first record"
                     )
+                first_document = strict_json_loads(line[:-1])
+                first_row = _require_object(
+                    first_document,
+                    "journal first commit",
+                )
+                machine_id = _require_text(
+                    first_row.get("machine_id"),
+                    "machine_id",
+                )
                 commit = self._decode_line(
                     line[:-1],
-                    machine_id=_decode_commit(
-                        strict_json_loads(line[:-1])
-                    ).machine_id,
+                    machine_id=machine_id,
                     path=path,
+                    previous_state=None,
                 )
                 if self._file_key(commit.machine_id) != path.stem:
                     raise MachineIntegrityError(

@@ -1,9 +1,12 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
+from noetrium_platform.composition.method_telemetry_sink import RawLakeMethodObservationSink
+
+from dataclasses import dataclass, field
 import importlib
 from pathlib import Path
 import sys
+from threading import RLock
 
 from noetrium_platform.composition.managed_research_runtime import (
     ManagedResearchRuntime,
@@ -29,6 +32,7 @@ from noetrium_platform.product.research_os import (
 )
 
 from .project_execution_authority import (
+    ProjectExecutionAuthorityConfig,
     load_project_execution_authority_config,
     materialize_project_execution_authorities,
 )
@@ -43,9 +47,62 @@ _REVISION_MESSAGE_INITIAL = "project source"
 _REVISION_MESSAGE_UPDATE = "project source update"
 
 
+class _LazyProjectResearchOS:
+    """ResearchOS proxy that attaches the physical execution plane on demand."""
+
+    __slots__ = ("_owner", "_delegate")
+
+    def __init__(self, owner: "LoadedProjectResearchOS", delegate: ResearchOS) -> None:
+        self._owner = owner
+        self._delegate = delegate
+
+    def _replace_delegate(self, delegate: ResearchOS) -> None:
+        self._delegate = delegate
+
+    def _execution_delegate(self) -> ResearchOS:
+        self._owner.ensure_execution_plane()
+        return self._delegate
+
+    def __getattr__(self, name: str):
+        return getattr(self._delegate, name)
+
+    def run(self, target, payload=None):
+        return self._execution_delegate().run(target, payload)
+
+    def inspect(self, target, payload=None):
+        return self._delegate.inspect(target, payload)
+
+    def pause(self, target, payload=None):
+        return self._execution_delegate().pause(target, payload)
+
+    def drain(self, target, payload=None):
+        return self._execution_delegate().drain(target, payload)
+
+    def interrupt(self, target, payload=None):
+        return self._execution_delegate().interrupt(target, payload)
+
+    def resume(self, target, payload=None):
+        return self._execution_delegate().resume(target, payload)
+
+    def retry(self, target, payload=None):
+        return self._execution_delegate().retry(target, payload)
+
+    def cancel(self, target, payload=None):
+        return self._execution_delegate().cancel(target, payload)
+
+    def checkpoint(self, target, payload=None):
+        return self._execution_delegate().checkpoint(target, payload)
+
+    def reconcile(self, target, payload=None):
+        return self._execution_delegate().reconcile(target, payload)
+
+    def migrate(self, target, payload=None):
+        return self._execution_delegate().migrate(target, payload)
+
+
 @dataclass(slots=True)
 class LoadedProjectResearchOS:
-    """Platform-owned canonical Research OS composition for one generated project."""
+    """Project control plane with one lazily-owned physical execution plane."""
 
     project_root: Path
     manifest: ProjectManifest
@@ -55,12 +112,98 @@ class LoadedProjectResearchOS:
     research_os: ResearchOS
     execution_pool: ResearchExecutionPool
     _composition: LocalResearchOSComposition
+    _execution_config: ProjectExecutionAuthorityConfig
     _managed_runtime: ManagedResearchRuntime | None = None
     _closed: bool = False
+    _execution_lock: RLock = field(default_factory=RLock, repr=False)
 
     @property
     def default_execution_id(self) -> str:
         return self.manifest.project.identity.project_id
+
+    @property
+    def execution_plane_ready(self) -> bool:
+        return self._managed_runtime is not None
+
+    def ensure_execution_plane(self) -> None:
+        """Materialize the one physical execution plane at first execution intent."""
+        if self._closed:
+            raise RuntimeError("project Research OS is closed")
+        if self._managed_runtime is not None:
+            return
+        with self._execution_lock:
+            if self._managed_runtime is not None:
+                return
+            state_root = self.project_root / _STATE_DIRECTORY
+            managed_runtime = build_local_managed_research_runtime(
+                standard_local_directory_layout(state_root / "platform-runtime"),
+                start_background_controllers=(
+                    self._execution_config.start_background_controllers
+                ),
+            )
+            replacement: LocalResearchOSComposition | None = None
+            try:
+                context = ResearchExecutionContext(
+                    state_root,
+                    managed_runtime,
+                    content=self._composition.content,
+                )
+                authorities = materialize_project_execution_authorities(
+                    context,
+                    self.portfolio,
+                    self.manifest,
+                )
+                replacement = compose_local_research_os(
+                    state_root,
+                    experiment_closures=authorities.experiment_closures,
+                    experiment_runtime_components=(
+                        authorities.experiment_runtime_components
+                    ),
+                    execution_pool=managed_runtime.execution_pool,
+                    method_runtime_inventory=authorities.method_runtime_inventory,
+                    operation_dispatcher=managed_runtime.operation_runtime.dispatcher,
+                    method_observation=RawLakeMethodObservationSink(
+                        managed_runtime.observability.raw
+                    ),
+                    content_authorities=context.content,
+                )
+            except BaseException as primary:
+                try:
+                    managed_runtime.close()
+                except BaseException as cleanup:
+                    raise ExceptionGroup(
+                        "project execution-plane materialization failed with cleanup error",
+                        [primary, cleanup],
+                    ) from primary
+                raise
+            previous = self._composition
+            try:
+                previous.close()
+            except BaseException as primary:
+                cleanup_errors: list[BaseException] = []
+                try:
+                    replacement.close()
+                except BaseException as exc:
+                    cleanup_errors.append(exc)
+                try:
+                    managed_runtime.close()
+                except BaseException as exc:
+                    cleanup_errors.append(exc)
+                if cleanup_errors:
+                    raise ExceptionGroup(
+                        "project control-plane replacement failed with cleanup errors",
+                        [primary, *cleanup_errors],
+                    ) from primary
+                raise
+
+            self._composition = replacement
+            self.execution_pool = replacement.execution_pool
+            self._managed_runtime = managed_runtime
+            proxy = self.research_os
+            if isinstance(proxy, _LazyProjectResearchOS):
+                proxy._replace_delegate(replacement.research_os)
+            else:
+                self.research_os = replacement.research_os
 
     def close(self) -> None:
         if self._closed:
@@ -81,7 +224,6 @@ class LoadedProjectResearchOS:
                 errors,
             )
         self._closed = True
-
 
 def _project_manifest(root: Path) -> ProjectManifest:
     path = root / "project.manifest.json"
@@ -162,10 +304,10 @@ def load_project_research_os(
 ) -> LoadedProjectResearchOS:
     """Load one project directly into the canonical Research OS.
 
-    Downstream scientific code remains provider-free. Optional machine-local
-    provider composition is loaded from one typed authority factory and receives
-    the canonical ManagedResearchRuntime rather than constructing shadow Docker,
-    endpoint, compute, environment, model or execution-pool authorities.
+    Downstream scientific code remains provider-free. Project opening loads
+    only the durable Research OS control plane. The canonical ManagedResearchRuntime
+    and owner-system execution authorities are materialized exactly once, lazily,
+    when execution intent first reaches the control boundary.
     """
 
     root = project_root.expanduser().absolute()
@@ -177,51 +319,16 @@ def load_project_research_os(
     state_root = root / _STATE_DIRECTORY
     state_root.mkdir(parents=True, exist_ok=True)
 
-    managed_runtime: ManagedResearchRuntime | None = None
-    if config_path is None:
-        composition = compose_local_research_os(state_root)
-    else:
-        config = load_project_execution_authority_config(config_path)
-        managed_runtime = build_local_managed_research_runtime(
-            standard_local_directory_layout(
-                state_root / "platform-runtime"
-            ),
-            start_background_controllers=(
-                config.start_background_controllers
-            ),
-        )
-        try:
-            context = ResearchExecutionContext(
-                state_root,
-                managed_runtime,
-                authority_inputs=config.authority_inputs,
-            )
-            authorities = materialize_project_execution_authorities(
-                config.authority_factory,
-                context,
-                portfolio,
-            )
-            composition = compose_local_research_os(
-                state_root,
-                experiment_closures=authorities.experiment_closures,
-                experiment_runtime_components=(
-                    authorities.experiment_runtime_components
-                ),
-                execution_pool=managed_runtime.execution_pool,
-                method_runtime_inventory=(
-                    authorities.method_runtime_inventory
-                ),
-                content_authorities=context.content,
-            )
-        except BaseException as primary:
-            try:
-                managed_runtime.close()
-            except BaseException as cleanup:
-                raise ExceptionGroup(
-                    "project authority composition failed with runtime cleanup error",
-                    [primary, cleanup],
-                ) from primary
-            raise
+    config = (
+        ProjectExecutionAuthorityConfig()
+        if config_path is None
+        else load_project_execution_authority_config(config_path)
+    )
+
+    # Project opening is control-plane only. Physical runtime ownership,
+    # Docker/model/resource reconciliation and execution authorities attach at
+    # the first execution intent.
+    composition = compose_local_research_os(state_root)
     research_os = composition.research_os
     revisions = composition.revision_store
     graph = composition.graph_store
@@ -250,7 +357,7 @@ def load_project_research_os(
                 message=_REVISION_MESSAGE_UPDATE,
             )
 
-    return LoadedProjectResearchOS(
+    loaded = LoadedProjectResearchOS(
         root,
         manifest,
         portfolio,
@@ -259,8 +366,10 @@ def load_project_research_os(
         research_os,
         pool,
         composition,
-        managed_runtime,
+        config,
     )
+    loaded.research_os = _LazyProjectResearchOS(loaded, research_os)
+    return loaded
 
 
 __all__ = ["LoadedProjectResearchOS", "load_project_research_os"]

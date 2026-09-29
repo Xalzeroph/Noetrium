@@ -43,6 +43,11 @@ from noetrium_platform.product.research_os import (
     ResearchNodeKind,
 )
 
+from .research_definition_authority import (
+    ResearchDefinitionBinding,
+    ResearchDefinitionBindingAuthorityPort,
+    ResearchDefinitionBindingMissing,
+)
 from .research_os_experiment import (
     ResearchOSExperimentClosure,
     ResearchOSExperimentClosureMissing,
@@ -551,6 +556,7 @@ class LoweredResearchOSGraphNode:
         | ResolvedResearchMachineProgramImplementation,
         ...,
     ] = ()
+    platform_bindings: tuple[ResearchDefinitionBinding, ...] = ()
     platform_requirements: tuple[ResearchDefinition, ...] = ()
     method_programs: tuple[LoweredResearchMethodProgram, ...] = ()
     machine_programs: tuple[LoweredResearchMachineProgram, ...] = ()
@@ -572,6 +578,11 @@ class LoweredResearchOSGraphNode:
             for row in self.implementations
         ):
             raise TypeError("lowered implementations must be a typed tuple")
+        if type(self.platform_bindings) is not tuple or any(
+            type(row) is not ResearchDefinitionBinding
+            for row in self.platform_bindings
+        ):
+            raise TypeError("lowered platform bindings must be typed tuple")
         if type(self.platform_requirements) is not tuple or any(
             type(row) is not ResearchDefinition
             for row in self.platform_requirements
@@ -594,21 +605,33 @@ class LoweredResearchOSGraphNode:
 
         definitions = {row.definition_id: row for row in self.source.definitions}
         implementation_ids = tuple(row.definition_id for row in self.implementations)
+        platform_binding_ids = tuple(row.definition_id for row in self.platform_bindings)
         requirement_ids = tuple(row.definition_id for row in self.platform_requirements)
         method_ids = tuple(row.definition_id for row in self.method_programs)
         machine_ids = tuple(row.definition_id for row in self.machine_programs)
         if len(implementation_ids) != len(set(implementation_ids)):
             raise ValueError("lowered implementation definitions must be unique")
+        if len(platform_binding_ids) != len(set(platform_binding_ids)):
+            raise ValueError("lowered platform bindings must be unique")
         if len(requirement_ids) != len(set(requirement_ids)):
             raise ValueError("lowered platform requirements must be unique")
-        if set(implementation_ids) & set(requirement_ids):
-            raise ValueError("one research definition cannot be both implementation and requirement")
-        if set(implementation_ids) | set(requirement_ids) != set(definitions):
+        partitions = (
+            set(implementation_ids),
+            set(platform_binding_ids),
+            set(requirement_ids),
+        )
+        if any(partitions[i] & partitions[j] for i in range(3) for j in range(i + 1, 3)):
+            raise ValueError("one research definition cannot occupy two lowering partitions")
+        if set().union(*partitions) != set(definitions):
             raise ValueError("lowered definitions must partition source definitions")
         if any(definitions[key].implementation is None for key in implementation_ids):
             raise ValueError("implementation lowering contains platform-resolved definition")
         if any(definitions[key].implementation is not None for key in requirement_ids):
             raise ValueError("platform requirement contains paper implementation")
+        if any(definitions[key].implementation is not None for key in platform_binding_ids):
+            raise ValueError("platform binding contains paper implementation")
+        for row in self.platform_bindings:
+            row.validate_definition(definitions[row.definition_id])
         if len(method_ids) != len(set(method_ids)):
             raise ValueError("lowered method program definitions must be unique")
         if any(key not in implementation_ids for key in method_ids):
@@ -661,6 +684,9 @@ class LoweredResearchOSGraphNode:
         ordered_implementations = tuple(
             sorted(self.implementations, key=lambda row: row.definition_id)
         )
+        ordered_platform_bindings = tuple(
+            sorted(self.platform_bindings, key=lambda row: row.definition_id)
+        )
         ordered_requirements = tuple(
             sorted(self.platform_requirements, key=lambda row: row.definition_id)
         )
@@ -671,6 +697,7 @@ class LoweredResearchOSGraphNode:
             sorted(self.machine_programs, key=lambda row: row.definition_id)
         )
         object.__setattr__(self, "implementations", ordered_implementations)
+        object.__setattr__(self, "platform_bindings", ordered_platform_bindings)
         object.__setattr__(self, "platform_requirements", ordered_requirements)
         object.__setattr__(self, "method_programs", ordered_method_programs)
         object.__setattr__(self, "machine_programs", ordered_machine_programs)
@@ -687,6 +714,17 @@ class LoweredResearchOSGraphNode:
                             row.declared.implementation_digest,
                         )
                         for row in ordered_implementations
+                    ),
+                    "platform_bindings": tuple(
+                        (
+                            row.definition_id,
+                            row.kind.value,
+                            row.owner_system,
+                            row.provider_identity,
+                            row.binding_identity_digest,
+                            row.binding_digest,
+                        )
+                        for row in ordered_platform_bindings
                     ),
                     "platform_requirements": tuple(
                         (
@@ -782,6 +820,7 @@ class ResearchOSLoweringCompiler:
         self,
         resolver: ResearchImplementationResolverPort | None = None,
         experiment_closures: ResearchOSExperimentClosurePort | None = None,
+        definition_bindings: ResearchDefinitionBindingAuthorityPort | None = None,
     ) -> None:
         resolved = (
             resolver
@@ -803,6 +842,15 @@ class ResearchOSLoweringCompiler:
                 "ResearchOSExperimentClosurePort"
             )
         self._experiment_closures = experiment_closures
+        if definition_bindings is not None and not isinstance(
+            definition_bindings,
+            ResearchDefinitionBindingAuthorityPort,
+        ):
+            raise TypeError(
+                "Research OS definition bindings must satisfy "
+                "ResearchDefinitionBindingAuthorityPort"
+            )
+        self._definition_bindings = definition_bindings
 
     def compile_node(
         self,
@@ -820,12 +868,21 @@ class ResearchOSLoweringCompiler:
             | ResolvedResearchMethodImplementation
             | ResolvedResearchMachineProgramImplementation
         ] = []
+        platform_bindings: list[ResearchDefinitionBinding] = []
         requirements: list[ResearchDefinition] = []
         method_programs: list[LoweredResearchMethodProgram] = []
         machine_programs: list[LoweredResearchMachineProgram] = []
         for definition in node.definitions:
             if definition.implementation is None:
-                requirements.append(definition)
+                if self._definition_bindings is None:
+                    requirements.append(definition)
+                    continue
+                try:
+                    binding = self._definition_bindings.resolve(definition)
+                except ResearchDefinitionBindingMissing:
+                    requirements.append(definition)
+                    continue
+                platform_bindings.append(binding)
                 continue
             if type(definition.implementation) is ResearchMachineProgramImplementation:
                 if target is ResearchOSLoweringTarget.EXPERIMENTATION:
@@ -923,6 +980,7 @@ class ResearchOSLoweringCompiler:
             source=node,
             target=target,
             implementations=tuple(implementations),
+            platform_bindings=tuple(platform_bindings),
             platform_requirements=tuple(requirements),
             method_programs=tuple(method_programs),
             machine_programs=tuple(machine_programs),
@@ -979,11 +1037,13 @@ def compile_research_os_lowering(
     *,
     resolver: ResearchImplementationResolverPort | None = None,
     experiment_closures: ResearchOSExperimentClosurePort | None = None,
+    definition_bindings: ResearchDefinitionBindingAuthorityPort | None = None,
     selected_node_ids: tuple[str, ...] | None = None,
 ) -> ResearchOSLoweringPlan:
     return ResearchOSLoweringCompiler(
         resolver,
         experiment_closures,
+        definition_bindings,
     ).compile(
         compilation,
         selected_node_ids=selected_node_ids,

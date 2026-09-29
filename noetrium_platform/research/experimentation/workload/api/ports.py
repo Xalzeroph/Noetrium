@@ -47,8 +47,17 @@ class WorkloadTaskExecutionPort(Protocol):
     ) -> WorkloadTaskResult: ...
 
 
-class WorkloadGraphExecutionPort(Protocol):
-    """Universal assignment workload graph execution seam."""
+class WorkloadExecutionPort(Protocol):
+    """Universal workload machine seam: one task or an immutable assignment graph."""
+
+    @property
+    def identity_digest(self) -> str: ...
+
+    def execute_one(
+        self,
+        task: ExperimentTaskSpec,
+        context: ExecutionContext,
+    ) -> WorkloadTaskResult: ...
 
     def execute_graph(
         self,
@@ -59,7 +68,7 @@ class WorkloadGraphExecutionPort(Protocol):
 
 
 __all__ = [
-    "WorkloadGraphExecutionPort",
+    "WorkloadExecutionPort",
     "WorkloadMethodCompilerPort",
     "WorkloadMethodResultAdapterPort",
     "WorkloadTaskExecutionPort",

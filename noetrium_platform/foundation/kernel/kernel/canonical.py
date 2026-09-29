@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from collections.abc import Mapping
 from dataclasses import dataclass, fields, is_dataclass
 from enum import Enum, StrEnum
 import hashlib
@@ -7,7 +8,7 @@ import json
 from pathlib import Path
 import re
 from types import MappingProxyType
-from typing import Mapping, cast
+from typing import cast
 
 from .json_value import JsonInput, JsonMutableValue, JsonValue
 
@@ -43,6 +44,83 @@ class CanonicalDecodingError(ValueError):
 
 _DEFAULT_MAX_DEPTH = 128
 _CONTAINER_TYPES = (Mapping, list, tuple, set, frozenset)
+_FROZEN_JSON_TOKEN = object()
+
+
+class _FrozenJsonObject(Mapping[str, JsonValue]):
+    """Trusted deeply-frozen JSON object produced only by freeze_json()."""
+
+    __slots__ = (
+        "_data",
+        "_validated_depth_limit",
+        "_canonical_bytes",
+        "_canonical_digest",
+        "_canonical_validated_max_depth",
+        "_canonical_normalized",
+        "_canonical_normalized_remaining_depth",
+    )
+
+    def __init__(
+        self,
+        data: dict[str, JsonValue],
+        *,
+        validated_depth_limit: int,
+        _token: object,
+    ) -> None:
+        if _token is not _FROZEN_JSON_TOKEN:
+            raise TypeError("frozen JSON objects are created only by freeze_json")
+        self._data = MappingProxyType(data)
+        self._validated_depth_limit = validated_depth_limit
+        self._canonical_bytes: bytes | None = None
+        self._canonical_digest: str | None = None
+        self._canonical_validated_max_depth: int | None = None
+        self._canonical_normalized: dict[str, object] | None = None
+        self._canonical_normalized_remaining_depth: int | None = None
+
+    def __getitem__(self, key: str) -> JsonValue:
+        return self._data[key]
+
+    def __iter__(self):
+        return iter(self._data)
+
+    def __len__(self) -> int:
+        return len(self._data)
+
+    def items(self):
+        return self._data.items()
+
+    def keys(self):
+        return self._data.keys()
+
+    def values(self):
+        return self._data.values()
+
+    def get(self, key: str, default=None):
+        return self._data.get(key, default)
+
+    def _cache_canonical(
+        self,
+        payload: bytes,
+        *,
+        validated_max_depth: int,
+    ) -> None:
+        self._canonical_bytes = payload
+        self._canonical_digest = hashlib.sha256(payload).hexdigest()
+        current = self._canonical_validated_max_depth
+        if current is None or validated_max_depth < current:
+            self._canonical_validated_max_depth = validated_max_depth
+
+
+    def _cache_normalized(
+        self,
+        normalized: dict[str, object],
+        *,
+        validated_remaining_depth: int,
+    ) -> None:
+        self._canonical_normalized = normalized
+        current = self._canonical_normalized_remaining_depth
+        if current is None or validated_remaining_depth < current:
+            self._canonical_normalized_remaining_depth = validated_remaining_depth
 
 
 def _enter(value: object, active: set[int], *, depth: int, max_depth: int) -> int | None:
@@ -77,6 +155,29 @@ def _normalize(value: object, *, active: set[int], depth: int, max_depth: int) -
 
     entered = _enter(value, active, depth=depth, max_depth=max_depth)
     try:
+        if isinstance(value, _FrozenJsonObject):
+            remaining_depth = max_depth - depth
+            cached_normalized = value._canonical_normalized
+            validated_remaining = value._canonical_normalized_remaining_depth
+            if (
+                cached_normalized is not None
+                and validated_remaining is not None
+                and remaining_depth >= validated_remaining
+            ):
+                return cached_normalized
+            rows: dict[str, object] = {}
+            for key, item in value.items():
+                rows[key] = _normalize(
+                    item,
+                    active=active,
+                    depth=depth + 1,
+                    max_depth=max_depth,
+                )
+            value._cache_normalized(
+                rows,
+                validated_remaining_depth=remaining_depth,
+            )
+            return rows
         if is_dataclass(value) and not isinstance(value, type):
             snapshot = tuple(
                 (field.name, getattr(value, field.name))
@@ -176,6 +277,27 @@ def canonical_bytes(
         kwargs["separators"] = (",", ":")
     else:
         kwargs["indent"] = indent
+    if isinstance(value, _FrozenJsonObject) and indent is None:
+        cached = value._canonical_bytes
+        validated = value._canonical_validated_max_depth
+        if (
+            cached is not None
+            and validated is not None
+            and max_depth >= validated
+        ):
+            return cached
+        normalized = _normalize(
+            value,
+            active=set(),
+            depth=0,
+            max_depth=max_depth,
+        )
+        payload = json.dumps(normalized, **kwargs).encode("utf-8")
+        value._cache_canonical(
+            payload,
+            validated_max_depth=max_depth,
+        )
+        return payload
     normalized = _normalize(value, active=set(), depth=0, max_depth=max_depth)
     return json.dumps(normalized, **kwargs).encode("utf-8")
 
@@ -185,6 +307,19 @@ def canonical_text(value: object, *, indent: int | None = None, max_depth: int =
 
 
 def canonical_digest(value: object, *, max_depth: int = _DEFAULT_MAX_DEPTH) -> str:
+    if isinstance(value, _FrozenJsonObject):
+        cached = value._canonical_digest
+        validated = value._canonical_validated_max_depth
+        if (
+            cached is not None
+            and validated is not None
+            and max_depth >= validated
+        ):
+            return cached
+        payload = canonical_bytes(value, max_depth=max_depth)
+        digest = hashlib.sha256(payload).hexdigest()
+        value._canonical_digest = digest
+        return digest
     return hashlib.sha256(canonical_bytes(value, max_depth=max_depth)).hexdigest()
 
 
@@ -223,6 +358,27 @@ def _freeze_json(value: JsonInput, *, active: set[int], depth: int, max_depth: i
         if value != value or value in (float("inf"), float("-inf")):
             raise CanonicalEncodingError("frozen JSON forbids non-finite floats")
         return value
+    if isinstance(value, _FrozenJsonObject):
+        remaining = max_depth - depth
+        if remaining >= value._validated_depth_limit:
+            return value
+        for key, item in value.items():
+            if not isinstance(key, str):
+                raise CanonicalEncodingError(
+                    "frozen JSON mappings require string keys"
+                )
+            validated = _freeze_json(
+                item,
+                active=active,
+                depth=depth + 1,
+                max_depth=max_depth,
+            )
+            if validated is not item:
+                raise CanonicalEncodingError(
+                    "trusted frozen JSON contained a mutable descendant"
+                )
+        value._validated_depth_limit = remaining
+        return value
     if not isinstance(value, (Mapping, list, tuple)):
         raise CanonicalEncodingError(f"unsupported {type(value).__name__} in frozen JSON")
     identity = id(value)
@@ -236,11 +392,27 @@ def _freeze_json(value: JsonInput, *, active: set[int], depth: int, max_depth: i
                 if not isinstance(key, str):
                     raise CanonicalEncodingError("frozen JSON mappings require string keys")
                 frozen[key] = _freeze_json(item, active=active, depth=depth + 1, max_depth=max_depth)
-            return MappingProxyType(frozen)
-        return tuple(
-            _freeze_json(item, active=active, depth=depth + 1, max_depth=max_depth)
-            for item in tuple(value)
+            return _FrozenJsonObject(
+                frozen,
+                validated_depth_limit=max_depth - depth,
+                _token=_FROZEN_JSON_TOKEN,
+            )
+        source = tuple(value)
+        frozen_items = tuple(
+            _freeze_json(
+                item,
+                active=active,
+                depth=depth + 1,
+                max_depth=max_depth,
+            )
+            for item in source
         )
+        if isinstance(value, tuple) and all(
+            frozen is original
+            for frozen, original in zip(frozen_items, source, strict=True)
+        ):
+            return value
+        return frozen_items
     finally:
         active.remove(identity)
 

@@ -30,6 +30,7 @@ from .machine import (
     MachineSnapshot,
     MachineStatus,
     TransitionProposal,
+    apply_machine_state_delta,
 )
 
 
@@ -105,10 +106,21 @@ class MachineExecutor:
         self._lock = RLock()
         self._snapshot: MachineSnapshot | None = None
         self._status = MachineStatus.READY
+        self._interpreter: MachineInterpreterPort | None = None
 
     @property
     def machine_id(self) -> str:
         return self.identity.machine_id
+
+    @property
+    def status(self) -> MachineStatus:
+        with self._lock:
+            return self._status
+
+    @property
+    def current_snapshot(self) -> MachineSnapshot:
+        with self._lock:
+            return self._require_open()
 
     def _assert_commit_program_identity(
         self,
@@ -130,13 +142,10 @@ class MachineExecutor:
 
     def open(self, initial_state: JsonObject | None = None) -> MachineSnapshot:
         with self._lock:
-            latest = self.journal.latest(self.machine_id)
+            latest, has_emitted_commands = self.journal.head(self.machine_id)
             if latest is not None:
                 self._assert_commit_program_identity(latest)
-                if self.outbox is None and any(
-                    commit.emitted_commands
-                    for commit in self.journal.commits(self.machine_id)
-                ):
+                if self.outbox is None and has_emitted_commands:
                     raise MachineIntegrityError(
                         "machine journal contains emitted commands but no "
                         "outbox authority is bound"
@@ -147,6 +156,7 @@ class MachineExecutor:
                     program=self.program,
                     state=latest.state,
                     parent_commit_id=latest.commit_id,
+                    _state_digest_hint=latest.state_digest,
                 )
                 self._status = latest.accepted_status
                 if self.outbox is not None:
@@ -196,7 +206,11 @@ class MachineExecutor:
             self._snapshot = snapshot
             if self.snapshot_store is not None:
                 self.snapshot_store.save(snapshot)
-            self._status = MachineStatus.RUNNABLE
+            self._status = (
+                MachineStatus.READY
+                if latest is None
+                else latest.accepted_status
+            )
             return snapshot
 
     def _require_open(self) -> MachineSnapshot:
@@ -210,25 +224,24 @@ class MachineExecutor:
 
 
     def _existing_command(self, command: MachineCommand) -> MachineCommit | None:
-        for commit in self.journal.commits(self.machine_id):
-            self._assert_commit_program_identity(commit)
-            if commit.command_id != command.command_id:
-                continue
-            # expected_revision is an optimistic-concurrency fence, not part of
-            # the semantic replay identity of an already committed command.
-            # Rebuild the incoming command at the original base revision so an
-            # exact retry returns the committed fact while any payload/kind/
-            # scope/identity drift still fails closed.
-            replay_digest = replace(
-                command,
-                expected_revision=commit.base_revision,
-            ).payload_digest
-            if commit.command_digest != replay_digest:
-                raise MachineConflict(
-                    "command_id was already committed with a different payload"
-                )
-            return commit
-        return None
+        commit = self.journal.command_commit(
+            self.machine_id,
+            command.command_id,
+        )
+        if commit is None:
+            return None
+        self._assert_commit_program_identity(commit)
+        # expected_revision is an optimistic-concurrency fence, not part of
+        # the semantic replay identity of an already committed command.
+        replay_digest = replace(
+            command,
+            expected_revision=commit.base_revision,
+        ).payload_digest
+        if commit.command_digest != replay_digest:
+            raise MachineConflict(
+                "command_id was already committed with a different payload"
+            )
+        return commit
 
     @staticmethod
     def _validate_proposal(
@@ -260,8 +273,6 @@ class MachineExecutor:
     ) -> MachineCommit:
         if not isinstance(command, MachineCommand):
             raise TypeError("step expects MachineCommand")
-        if not isinstance(interpreter, MachineInterpreterPort):
-            raise TypeError("interpreter must implement MachineInterpreterPort")
         if command.machine_id != self.machine_id:
             raise MachineConflict("command belongs to a different machine")
         if self.family is not None and self.family.command_kinds and command.kind not in self.family.command_kinds:
@@ -274,6 +285,14 @@ class MachineExecutor:
             if denied:
                 raise MachineConflict(f"command capability scope is not granted: {sorted(denied)}")
         with self._lock:
+            if self._interpreter is None:
+                if not isinstance(interpreter, MachineInterpreterPort):
+                    raise TypeError("interpreter must implement MachineInterpreterPort")
+                self._interpreter = interpreter
+            elif interpreter is not self._interpreter:
+                raise MachineConflict(
+                    "machine interpreter identity drifted within one executor lifetime"
+                )
             existing = self._existing_command(command)
             if existing is not None:
                 if existing.emitted_commands and self.outbox is None:
@@ -286,9 +305,11 @@ class MachineExecutor:
                     program=self.program,
                     state=existing.state,
                     parent_commit_id=existing.commit_id,
+                    _state_digest_hint=existing.state_digest,
                 )
                 if self.outbox is not None:
                     self.outbox.enqueue(existing)
+                self._status = existing.accepted_status
                 return existing
             self._assert_authority()
             state = self._require_open()
@@ -305,29 +326,16 @@ class MachineExecutor:
                     "before the transition can be committed"
                 )
 
-            proposal = replace(
-                proposal,
-                before_state_digest=canonical_digest(state.state),
-                input_digest=command.payload_digest,
-                program_digest=self.program.program_digest,
-                program_lock_digest=self.program.program_lock.lock_digest,
-                machine_kind=self.identity.kind.value,
-                machine_version=self.identity.implementation_version,
-                state_delta_ref=canonical_digest(proposal.state_delta),
-                parent_transition_id=state.parent_commit_id,
-                attempt_id=canonical_digest({
-                    "command_id": command.command_id,
-                    "base_revision": state.revision,
-                    "worker": "machine-executor",
-                }),
-                authority_epoch=(
-                    None if self.authority_lease is None else self.authority_lease.epoch
-                ),
+            before_state_digest = state.state_digest
+            state_delta_ref = proposal.state_delta_digest
+            # Machine retries are identified by the command semantic identity.
+            # The previous attempt-id digest committed to fewer facts than the
+            # already-computed command digest and added no independent authority.
+            attempt_id = command.payload_digest
+            merged = apply_machine_state_delta(
+                state.state,
+                proposal.state_delta,
             )
-            merged = thaw_json(state.state)
-            if not isinstance(merged, dict):
-                raise MachineExecutionError("machine state must be an object")
-            merged.update(thaw_json(proposal.state_delta))
             self._assert_authority()
             commit = MachineCommit(
                 machine_id=self.machine_id,
@@ -342,19 +350,21 @@ class MachineExecutor:
                 effect_intent_refs=proposal.effect_intent_refs,
                 emitted_commands=proposal.emitted_commands,
                 previous_commit_id=state.parent_commit_id,
-                before_state_digest=proposal.before_state_digest,
-                input_digest=proposal.input_digest,
+                before_state_digest=before_state_digest,
+                input_digest=command.payload_digest,
                 program_digest=self.program.program_digest,
                 program_lock_digest=self.program.program_lock.lock_digest,
-                machine_kind=proposal.machine_kind,
-                machine_version=proposal.machine_version,
+                machine_kind=self.identity.kind.value,
+                machine_version=self.identity.implementation_version,
                 input_refs=proposal.input_refs,
-                state_delta_ref=proposal.state_delta_ref,
+                state_delta_ref=state_delta_ref,
                 evidence_refs=proposal.evidence_refs,
                 artifact_refs=proposal.artifact_refs,
-                parent_transition_id=proposal.parent_transition_id,
-                attempt_id=proposal.attempt_id,
-                authority_epoch=proposal.authority_epoch,
+                parent_transition_id=state.parent_commit_id,
+                attempt_id=attempt_id,
+                authority_epoch=(
+                    None if self.authority_lease is None else self.authority_lease.epoch
+                ),
                 child_links=proposal.child_links,
                 accepted_status=(
                     proposal.accepted_status
@@ -369,6 +379,7 @@ class MachineExecutor:
                 program=self.program,
                 state=accepted.state,
                 parent_commit_id=accepted.commit_id,
+                _state_digest_hint=accepted.state_digest,
             )
             if self.outbox is not None:
                 self.outbox.enqueue(accepted)
@@ -383,7 +394,7 @@ class MachineExecutor:
                 return self.open()
             selected = None
             previous = None
-            states = {}
+            previous_state_digest = None
             for commit in history:
                 if commit.machine_id != self.machine_id:
                     raise MachineIntegrityError("journal contains a foreign machine commit")
@@ -391,10 +402,10 @@ class MachineExecutor:
                 if commit.previous_commit_id != previous:
                     raise MachineIntegrityError("journal replay predecessor chain is invalid")
                 if commit.before_state_digest is not None and previous is not None:
-                    if commit.before_state_digest != canonical_digest(states[previous]):
+                    if commit.before_state_digest != previous_state_digest:
                         raise MachineIntegrityError("journal replay before_state_digest mismatch")
-                states[commit.commit_id] = commit.state
                 previous = commit.commit_id
+                previous_state_digest = commit.state_digest
                 if revision is None or commit.revision <= revision:
                     selected = commit
             if selected is None:
@@ -405,6 +416,7 @@ class MachineExecutor:
                 program=self.program,
                 state=selected.state,
                 parent_commit_id=selected.commit_id,
+                _state_digest_hint=selected.state_digest,
             )
             self._status = selected.accepted_status
             return self._snapshot
@@ -418,14 +430,13 @@ class MachineExecutor:
     def inspect(self) -> MachineInspection:
         with self._lock:
             snapshot = self._require_open()
-            latest = self.journal.latest(self.machine_id)
             return MachineInspection(
                 identity=self.identity,
                 program=self.program,
                 status=self._status,
                 revision=snapshot.revision,
-                state_digest=canonical_digest(snapshot.state),
-                last_commit_id=None if latest is None else latest.commit_id,
+                state_digest=snapshot.state_digest,
+                last_commit_id=snapshot.parent_commit_id,
             )
 
 

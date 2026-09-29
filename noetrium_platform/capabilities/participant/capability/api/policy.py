@@ -58,61 +58,6 @@ class CapabilityPostPolicyPort(Protocol):
     ) -> None: ...
 
 
-@dataclass(frozen=True, slots=True)
-class CapabilityPolicySet:
-    guards: tuple[CapabilityGuardPort, ...] = ()
-    approval: CapabilityApprovalPort | None = None
-    post_policies: tuple[CapabilityPostPolicyPort, ...] = ()
-
-    def __post_init__(self) -> None:
-        if type(self.guards) is not tuple:
-            raise TypeError("capability policy guards must be a tuple")
-        guard_ids: list[str] = []
-        for guard in self.guards:
-            guard_id = getattr(guard, "guard_id", None)
-            if type(guard_id) is not str or not guard_id.strip():
-                raise ValueError("capability guard_id is required")
-            require_sha256(
-                getattr(guard, "implementation_digest", None),
-                f"capability guard {guard_id} implementation_digest",
-            )
-            if not callable(getattr(guard, "evaluate", None)):
-                raise TypeError(
-                    f"capability guard {guard_id} evaluate must be callable"
-                )
-            guard_ids.append(guard_id.strip())
-        if len(guard_ids) != len(set(guard_ids)):
-            raise ValueError("capability guard ids must be unique")
-
-        if self.approval is not None:
-            approval_id = getattr(self.approval, "approval_id", None)
-            if type(approval_id) is not str or not approval_id.strip():
-                raise ValueError("capability approval_id is required")
-            require_sha256(
-                getattr(self.approval, "implementation_digest", None),
-                f"capability approval {approval_id} implementation_digest",
-            )
-            if not callable(getattr(self.approval, "approve", None)):
-                raise TypeError("capability approval approve must be callable")
-
-        if type(self.post_policies) is not tuple:
-            raise TypeError("capability post policies must be a tuple")
-        policy_ids: list[str] = []
-        for policy in self.post_policies:
-            policy_id = getattr(policy, "policy_id", None)
-            if type(policy_id) is not str or not policy_id.strip():
-                raise ValueError("capability post policy_id is required")
-            require_sha256(
-                getattr(policy, "implementation_digest", None),
-                f"capability post policy {policy_id} implementation_digest",
-            )
-            if not callable(getattr(policy, "validate", None)):
-                raise TypeError(
-                    f"capability post policy {policy_id} validate must be callable"
-                )
-            policy_ids.append(policy_id.strip())
-        if len(policy_ids) != len(set(policy_ids)):
-            raise ValueError("capability post policy ids must be unique")
 
 
 class CapabilityPolicyDenied(PermissionError):
@@ -148,7 +93,6 @@ __all__ = [
     "CapabilityApprovalPort",
     "CapabilityGuardPort",
     "CapabilityPolicyDenied",
-    "CapabilityPolicySet",
     "CapabilityPostPolicyPort",
     "CapabilityPostPolicyViolation",
     "GuardDecision",

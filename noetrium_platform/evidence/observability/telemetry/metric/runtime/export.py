@@ -3,6 +3,7 @@ from __future__ import annotations
 from threading import Lock, RLock
 import time
 
+from noetrium_platform.evidence.observability.api import ContextMetricObservation
 from noetrium_platform.evidence.observability.api.emission import (
     operational_observation_enabled,
 )
@@ -70,6 +71,37 @@ class BufferedMetricExportSink:
             dimensions=tuple(sorted(dimensions.items())),
         )
 
+    def observe_many(
+        self,
+        context: ExecutionContext,
+        observations: tuple[ContextMetricObservation, ...],
+    ) -> str | None:
+        if not operational_observation_enabled() or not observations:
+            return None
+        if type(observations) is not tuple or any(
+            not isinstance(row, ContextMetricObservation)
+            for row in observations
+        ):
+            raise TypeError("metric export observe_many requires ContextMetricObservation tuple")
+        rows = tuple(
+            self.prepare(
+                context,
+                row.name,
+                row.value,
+                **dict(row.dimensions),
+            )
+            for row in observations
+        )
+        with self._lock:
+            if self._closing or self._closed:
+                raise RuntimeError("metric export sink is closed")
+            self._pending.extend(rows)
+            should_flush = len(self._pending) >= self._batch_size
+        if should_flush:
+            receipts = self.flush()
+            return None if not receipts else receipts[-1].batch_id
+        return None
+
     def observe(
         self,
         context: ExecutionContext,
@@ -77,18 +109,16 @@ class BufferedMetricExportSink:
         value: float,
         **dimensions: str,
     ) -> str | None:
-        if not operational_observation_enabled():
-            return None
-        row = self.prepare(context, name, value, **dimensions)
-        with self._lock:
-            if self._closing or self._closed:
-                raise RuntimeError("metric export sink is closed")
-            self._pending.append(row)
-            should_flush = len(self._pending) >= self._batch_size
-        if should_flush:
-            receipts = self.flush()
-            return None if not receipts else receipts[-1].batch_id
-        return None
+        return self.observe_many(
+            context,
+            (
+                ContextMetricObservation(
+                    name,
+                    value,
+                    tuple(sorted(dimensions.items())),
+                ),
+            ),
+        )
 
     def flush(self) -> tuple[MetricExportReceipt, ...]:
         receipts: list[MetricExportReceipt] = []

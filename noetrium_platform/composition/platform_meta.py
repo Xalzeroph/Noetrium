@@ -43,7 +43,7 @@ from noetrium_platform.foundation.kernel.kernel.durability.sqlite import (
 )
 from noetrium_platform.infrastructure.resources.allocation.runtime import AtomicEndpointAllocator
 from noetrium_platform.infrastructure.resources.compute.composition import compose_compute_authority
-from noetrium_platform.infrastructure.resources.lease.api import ResourceLeasePort, ResourceOwnershipPort
+from noetrium_platform.infrastructure.resources.lease.api import LeaseClockPort, ResourceLeasePort, ResourceOwnershipPort
 from noetrium_platform.infrastructure.resources.lease.runtime import LocalLeaseClock
 from noetrium_platform.capabilities.environment.catalog.api import ExecutionEnvironmentCatalogPort
 from noetrium_platform.capabilities.environment.catalog.runtime import SQLiteExecutionEnvironmentCatalog
@@ -85,6 +85,7 @@ def build_platform_meta(
     *,
     gpu_runtime_observer: GpuRuntimeObserverPort | None = None,
     host_runtime_observer: HostRuntimeObserverPort | None = None,
+    lease_clock: LeaseClockPort | None = None,
 ) -> PlatformMetaAuthorities:
     """Build the production authority bundle over one durable SQLite root.
 
@@ -105,8 +106,8 @@ def build_platform_meta(
     )
     evolution = RegistryDrivenEvolutionController(systems, store=evolution_store)
     experimentation = SQLiteExperimentationCatalog(root / "platform-experimentation.sqlite", scopes)
-    lease_clock = LocalLeaseClock()
-    resources = ResourceLeaseRegistry(database, clock=lease_clock)
+    resolved_lease_clock = lease_clock or LocalLeaseClock()
+    resources = ResourceLeaseRegistry(database, clock=resolved_lease_clock)
     environments = SQLiteExecutionEnvironmentCatalog(
         root / "platform-environments.sqlite",
         scopes,
@@ -120,14 +121,14 @@ def build_platform_meta(
     endpoint_allocations = AtomicEndpointAllocator(
         reservations=SQLiteEndpointAllocationStore(
             database,
-            clock=lease_clock,
+            clock=resolved_lease_clock,
         ),
         probe=SocketEndpointProbe(),
         candidates=endpoint_candidates,
     )
     compute = compose_compute_authority(
         database,
-        clock=lease_clock,
+        clock=resolved_lease_clock,
         gpu_runtime_observer=gpu_runtime_observer,
         host_runtime_observer=host_runtime_observer,
     )

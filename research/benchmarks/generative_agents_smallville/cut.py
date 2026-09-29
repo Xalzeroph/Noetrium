@@ -3,6 +3,7 @@ from __future__ import annotations
 from noetrium_platform.foundation.kernel.kernel import canonical_digest
 from noetrium_platform.research.experimentation.lifecycle.api import (
     BenchmarkSourceKind,
+    BenchmarkSourceResolution,
     BenchmarkSourceSpec,
     BenchmarkTaskSet,
     TaskDefinition,
@@ -80,11 +81,19 @@ def build_generative_agents_smallville_cut() -> BenchmarkTaskSet:
     )
 
 
+def bind_generative_agents_smallville_cut() -> BenchmarkSourceResolution:
+    return BenchmarkSourceResolution(
+        source=build_generative_agents_smallville_source(),
+        task_set=build_generative_agents_smallville_cut(),
+    )
+
+
 __all__ = [
     "GENERATIVE_AGENTS_BENCHMARK_ID",
     "GENERATIVE_AGENTS_PAPER_COMMIT",
     "GENERATIVE_AGENTS_PROTOCOL_DIGEST",
     "GENERATIVE_AGENTS_SPLIT_ID",
+    "bind_generative_agents_smallville_cut",
     "build_generative_agents_smallville_cut",
     "build_generative_agents_smallville_source",
 ]

@@ -127,7 +127,8 @@ def test_managed_docker_release_removes_physical_container_before_logical_lease(
     authority = _authority(resources, runtime)
     handle = _reserve(authority)
     prefix = authority.docker_run_prefix(handle)
-    assert prefix[:3] == ("docker", "run", "--rm")
+    assert prefix[:2] == ("docker", "run")
+    assert "--rm" not in prefix
     assert "--name" in prefix
     assert "--label" in prefix
     assert "--cpu-shares" not in prefix

@@ -16,6 +16,9 @@ class _Artifacts:
     def __init__(self) -> None:
         self.rows = {}
 
+    def put_many(self, artifacts):
+        return tuple(self.put(artifact) for artifact in artifacts)
+
     def put(self, artifact):
         assert isinstance(artifact, ArtifactRecord)
         current = self.rows.get(artifact.artifact_id)
@@ -23,6 +26,9 @@ class _Artifacts:
             raise AssertionError("immutable artifact identity drifted")
         self.rows[artifact.artifact_id] = artifact
         return artifact
+
+    def put_many(self, artifacts):
+        return tuple(self.put(artifact) for artifact in artifacts)
 
     def get(self, artifact_id):
         return self.rows[artifact_id]
@@ -38,11 +44,23 @@ class _Content:
     def __init__(self) -> None:
         self.rows = {}
 
+    def put_many(self, items):
+        return tuple(
+            self.put(payload, media_type=media_type)
+            for payload, media_type in items
+        )
+
     def put(self, payload, *, media_type):
         digest = sha256(payload).hexdigest()
         ref = ArtifactBlobRef(digest, len(payload), media_type)
         self.rows[digest] = bytes(payload)
         return ref
+
+    def put_many(self, items):
+        return tuple(
+            self.put(payload, media_type=media_type)
+            for payload, media_type in items
+        )
 
     def get(self, ref):
         return self.rows[ref.content_sha256]

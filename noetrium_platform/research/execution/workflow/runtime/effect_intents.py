@@ -39,12 +39,18 @@ class EffectIntentOperations:
     def component_identity(self) -> ComponentIdentity:
         return EFFECT_JOURNAL_IDENTITY
 
+    def close(self) -> None:
+        self._effect_journal.close()
+
     @staticmethod
     def _dc(context: ExecutionContext) -> str:
         return context.decision_cycle_id or context.span_id
 
     def inspect(self, intent: EffectIntent, context: ExecutionContext, *, stage: str = "read"):
         dc = self._dc(context)
+        if type(stage) is not str or not stage.strip():
+            raise ValueError("effect intent inspect stage must be non-empty")
+        stage = stage.strip()
         operation = self._dispatcher.dispatch(
             root_context=context,
             operation_id=f"{dc}:effect.intent.inspect:{stage}:{intent.intent_id}",
@@ -52,7 +58,7 @@ class EffectIntentOperations:
             target=EFFECT_JOURNAL_IDENTITY,
             payload={"intent_id": intent.intent_id},
             payload_schema="effect.intent.inspect.v1",
-            idempotency_key=intent.intent_id,
+            idempotency_key=f"{intent.intent_id}:{stage}",
             handler=lambda request: self._effect_journal.load(str(request.payload["intent_id"])),
         )
         return self._dispatcher.require(operation), operation

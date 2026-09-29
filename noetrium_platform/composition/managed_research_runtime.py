@@ -36,6 +36,10 @@ from noetrium_platform.infrastructure.reliability.recovery.execution.composition
 )
 
 from .managed_observability import ManagedObservability, build_managed_observability
+from .managed_operation_runtime import (
+    ManagedOperationRuntime,
+    build_managed_operation_runtime,
+)
 from .managed_research_services import (
     ManagedResearchServices,
     build_managed_research_services,
@@ -90,6 +94,7 @@ class ManagedResearchRuntime:
     execution_pool: ResearchExecutionPool
     management: ManagementPlaneAuthorities
     observability: ManagedObservability
+    operation_runtime: ManagedOperationRuntime
     recovery_execution: RecoveryExecutionFactoryPort
     services: ManagedResearchServices
     _orchestration_group: TaskGroupPort
@@ -107,6 +112,7 @@ class ManagedResearchRuntime:
     _auto_models_removed: bool = False
     _models_stopped: bool = False
     _resources_cleaned: bool = False
+    _operation_runtime_closed: bool = False
     _observability_closed: bool = False
     _docker_group_closed: bool = False
     _orchestration_closed: bool = False
@@ -146,15 +152,31 @@ class ManagedResearchRuntime:
             "resource",
         )
         stop = _EventStop(self._stop)
+
+        # TaskGroup callables use the kernel task ABI and receive the task
+        # ExecutionContext as their first positional argument.  Model/resource
+        # controllers are lower-layer lifecycle ports with keyword-only run()
+        # contracts, so this composition boundary must absorb that context
+        # rather than leaking TaskGroup semantics into the controller APIs.
+        def run_model_controller(_context):
+            return self.management.models.controller.run(
+                interval_seconds=model_interval,
+                stop=stop,
+            )
+
+        def run_resource_controller(_context):
+            return self.resources.run(
+                interval_seconds=resource_interval,
+                stop=stop,
+            )
+
         if self._model_controller is None or self._model_controller.done():
             self._model_controller = self._orchestration_group.submit(
                 ExecutionSpec(
                     task_id="managed-model-desired-state-controller",
                     lane_kind=ExecutionLaneKind.BLOCKING_IO,
                 ),
-                self.management.models.controller.run,
-                interval_seconds=model_interval,
-                stop=stop,
+                run_model_controller,
             )
         if self._resource_controller is None or self._resource_controller.done():
             self._resource_controller = self._orchestration_group.submit(
@@ -162,9 +184,7 @@ class ManagedResearchRuntime:
                     task_id="managed-resource-reconciler",
                     lane_kind=ExecutionLaneKind.BLOCKING_IO,
                 ),
-                self.resources.run,
-                interval_seconds=resource_interval,
-                stop=stop,
+                run_resource_controller,
             )
 
     def quiesce_background_controllers(self) -> None:
@@ -292,6 +312,13 @@ class ManagedResearchRuntime:
                 raise self._close_stage_error("resource cleanup", exc)
             self._resources_cleaned = True
 
+        if not self._operation_runtime_closed:
+            try:
+                self.operation_runtime.close()
+            except BaseException as exc:
+                raise self._close_stage_error("operation/forensics shutdown", exc)
+            self._operation_runtime_closed = True
+
         if not self._observability_closed:
             try:
                 self.observability.close()
@@ -357,6 +384,8 @@ def build_local_managed_research_runtime(
     orchestration_admission_budget: AdmissionBudget | None = None,
     experiment_concurrency_budget: ConcurrencyBudget | None = None,
     experiment_admission_budget: AdmissionBudget | None = None,
+    capability_io_concurrency_budget: ConcurrencyBudget | None = None,
+    capability_io_admission_budget: AdmissionBudget | None = None,
     model_io_concurrency_budget: ConcurrencyBudget | None = None,
     model_io_admission_budget: AdmissionBudget | None = None,
     start_background_controllers: bool = True,
@@ -370,6 +399,7 @@ def build_local_managed_research_runtime(
     )
     runtime_lock.__enter__()
     pool: ResearchExecutionPool | None = None
+    operation_runtime: ManagedOperationRuntime | None = None
     try:
         host_pressure_observer = LocalHostRuntimeObserver()
         storage_pressure_observer = LocalSharedStoragePressureObserver(
@@ -381,6 +411,8 @@ def build_local_managed_research_runtime(
         orchestration_admission_budget=orchestration_admission_budget,
         experiment_concurrency_budget=experiment_concurrency_budget,
         experiment_admission_budget=experiment_admission_budget,
+        capability_io_concurrency_budget=capability_io_concurrency_budget,
+        capability_io_admission_budget=capability_io_admission_budget,
         model_io_concurrency_budget=model_io_concurrency_budget,
         model_io_admission_budget=model_io_admission_budget,
         host_runtime_observer=host_pressure_observer,
@@ -416,6 +448,7 @@ def build_local_managed_research_runtime(
                 model_storage_pools=model_storage_pools,
                 task_group=group,
                 docker_task_group=docker_group,
+                execution_pool=pool,
             )
             # Startup reconciliation is synchronous and fail-closed. No new
             # workload is admitted until physical owners are converged and then
@@ -432,6 +465,10 @@ def build_local_managed_research_runtime(
             pool.close_orchestration_group(docker_group, cancel_pending=True)
             pool.close_orchestration_group(group, cancel_pending=True)
             raise
+        operation_runtime = build_managed_operation_runtime(
+            layout.state / "operations",
+            task_group=group,
+        )
         observability = build_managed_observability(
             layout.state / "observability",
             task_group=group,
@@ -455,6 +492,7 @@ def build_local_managed_research_runtime(
             execution_pool=pool,
             management=management,
             observability=observability,
+            operation_runtime=operation_runtime,
             recovery_execution=recovery_execution,
             services=services,
             _orchestration_group=group,
@@ -471,6 +509,8 @@ def build_local_managed_research_runtime(
             )
         return runtime
     except BaseException:
+        if operation_runtime is not None:
+            operation_runtime.close()
         if pool is not None:
             pool.close()
         runtime_lock.__exit__(None, None, None)

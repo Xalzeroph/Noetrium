@@ -8,6 +8,7 @@ from noetrium_platform.foundation.kernel.kernel.retry import blocking_wait
 from noetrium_platform.infrastructure.resources.container.api import (
     DockerCommandRunnerPort,
     DockerContainerObservation,
+    DockerContainerProcessObservation,
     DockerManagedContainerPort,
     LABEL_AUTHORITY,
     MANAGED_CONTAINER_LABEL,
@@ -145,6 +146,41 @@ class DockerCliManagedContainerProvider(DockerManagedContainerPort):
             )
         return self._decode_inspect(result.stdout)
 
+    def inspect_process(
+        self,
+        reference: str,
+    ) -> DockerContainerProcessObservation | None:
+        if not reference.strip():
+            raise ValueError("Docker container reference is required")
+        result = self._control_runner.run(
+            (self._docker, "inspect", reference),
+            timeout_seconds=self._timeout,
+        )
+        if result.returncode != 0:
+            if self._missing(result.stderr):
+                return None
+            raise DockerContainerRuntimeError(
+                f"Docker inspect failed with exit code {result.returncode}"
+            )
+        try:
+            payload = json.loads(result.stdout)
+            row = payload[0]
+            state = row["State"]
+            pid = int(state["Pid"])
+            started_at = str(state["StartedAt"])
+        except (json.JSONDecodeError, IndexError, KeyError, TypeError, ValueError) as exc:
+            raise DockerContainerRuntimeError(
+                "Docker inspect returned malformed process state"
+            ) from exc
+        container = self._decode_inspect(result.stdout)
+        if not container.running:
+            return None
+        return DockerContainerProcessObservation(
+            container=container,
+            pid=pid,
+            started_at=started_at,
+        )
+
     def list_managed(self) -> tuple[DockerContainerObservation, ...]:
         result = self._control_runner.run(
             (
@@ -193,6 +229,74 @@ class DockerCliManagedContainerProvider(DockerManagedContainerPort):
         raise DockerContainerRuntimeError(
             f"Docker container did not become running before timeout: {state}"
         )
+
+    def start(
+        self,
+        reference: str,
+        *,
+        timeout_seconds: float = 10.0,
+    ) -> DockerContainerObservation:
+        if timeout_seconds <= 0:
+            raise ValueError("Docker start timeout must be positive")
+        observed = self.inspect(reference)
+        if observed is None:
+            raise DockerContainerRuntimeError(
+                "cannot start missing Docker container"
+            )
+        if observed.running:
+            return observed
+        result = self._control_runner.run(
+            (self._docker, "start", observed.container_id),
+            timeout_seconds=min(self._timeout, float(timeout_seconds)),
+        )
+        if result.returncode != 0:
+            raise DockerContainerRuntimeError(
+                f"Docker start failed with exit code {result.returncode}"
+            )
+        return self.wait_running(
+            observed.container_id,
+            timeout_seconds=float(timeout_seconds),
+        )
+
+    def stop(
+        self,
+        reference: str,
+        *,
+        timeout_seconds: float = 30.0,
+    ) -> DockerContainerObservation:
+        if timeout_seconds <= 0:
+            raise ValueError("Docker stop timeout must be positive")
+        observed = self.inspect(reference)
+        if observed is None:
+            raise DockerContainerRuntimeError(
+                "cannot stop missing Docker container"
+            )
+        if not observed.running:
+            return observed
+        result = self._control_runner.run(
+            (
+                self._docker,
+                "stop",
+                "--time",
+                str(max(1, int(timeout_seconds))),
+                observed.container_id,
+            ),
+            timeout_seconds=max(self._timeout, float(timeout_seconds) + 5.0),
+        )
+        if result.returncode != 0 and not self._missing(result.stderr):
+            raise DockerContainerRuntimeError(
+                f"Docker stop failed with exit code {result.returncode}"
+            )
+        remaining = self.inspect(observed.container_id)
+        if remaining is None:
+            raise DockerContainerRuntimeError(
+                "Docker stopped container disappeared; warm reuse requires retained container"
+            )
+        if remaining.running:
+            raise DockerContainerRuntimeError(
+                "Docker container remained running after stop"
+            )
+        return remaining
 
     def remove(self, reference: str, *, force: bool = True) -> None:
         observed = self.inspect(reference)

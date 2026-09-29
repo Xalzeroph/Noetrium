@@ -77,11 +77,7 @@ async function collectBlock (msg) {
       'COLLECT_BLOCK'
     )
   } catch (error) {
-    failure = {
-      name: String(error.name || 'Error'),
-      code: String(error.code || error.name || 'COLLECTION_FAILED'),
-      message: String(error.message || error)
-    }
+    failure = runtime.errorEvidence(error)
   }
 
   const after = runtime.inventoryMap()
@@ -119,13 +115,14 @@ async function collectBlock (msg) {
     return runtime.rejected('collect_block', action, 'HARVEST_TOOL_REQUIRED', details)
   }
   if (broken.length > 0 || collectedCount > 0) {
-    return runtime.partial('collect_block', action, 'COLLECTION_INCOMPLETE', details)
+    return runtime.partial('collect_block', action, 'COLLECTION_INCOMPLETE', details, 'applied')
   }
   return runtime.rejected(
     'collect_block',
     action,
     failure ? 'COLLECTION_FAILED' : 'BLOCK_NOT_COLLECTED',
-    details
+    details,
+    failure ? 'not_applied' : 'rejected'
   )
 }
 async function craftItem (msg) {
@@ -181,7 +178,7 @@ async function craftItem (msg) {
   const crafted = Math.max(0, after - before)
   const details = { before, after, crafted, executions, output_per_craft: outputPerCraft, used_table: Boolean(table) }
   if (crafted >= action.count) return runtime.applied('craft_item', action, 'ITEM_CRAFTED', details)
-  if (crafted > 0) return runtime.partial('craft_item', action, 'CRAFT_COUNT_INCOMPLETE', details)
+  if (crafted > 0) return runtime.partial('craft_item', action, 'CRAFT_COUNT_INCOMPLETE', details, 'applied')
   return runtime.rejected('craft_item', action, 'CRAFT_EFFECT_NOT_OBSERVED', details)
 }
 
@@ -281,7 +278,8 @@ async function smeltItem (msg) {
     .reduce((sum, [, value]) => sum + value, 0)
   const details = { furnace: runtime.vec(block.position), output: outputObserved, inventory_delta: delta, produced }
   if (produced >= action.count) return runtime.applied('smelt_item', action, 'ITEM_SMELTED', details)
-  return runtime.partial('smelt_item', action, 'SMELT_INCOMPLETE', details)
+  const effectObserved = produced > 0 || Object.values(delta).some(value => Number(value) !== 0)
+  return runtime.partial('smelt_item', action, 'SMELT_INCOMPLETE', details, effectObserved ? 'applied' : 'unknown')
 }
 
 async function clearFurnace (msg) {

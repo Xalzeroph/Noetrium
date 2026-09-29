@@ -88,7 +88,11 @@ class GeneratedProjectTests(unittest.TestCase):
 
     def test_scaffold_does_not_impose_scientific_topology(self):
         self.assertTrue(PROGRAMS)
-        self.assertEqual(tuple(program.program_id for program in PROGRAMS), ({project_id!r},))
+        self.assertEqual(PROGRAMS, PORTFOLIO.programs)
+        self.assertEqual(
+            len({{program.program_id for program in PROGRAMS}}),
+            len(PROGRAMS),
+        )
 
 
 if __name__ == "__main__":

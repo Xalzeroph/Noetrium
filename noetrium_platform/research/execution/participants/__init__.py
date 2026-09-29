@@ -1,7 +1,7 @@
 from .checkpoint_operations import ParticipantCheckpointOperations
 from .resolution import ParticipantResolutionOperations
 from .session_lifecycle import ParticipantSessionLifecycle
-from .agent_memory import MachineAgentMemory, NoMemoryAgentMemory
+from .agent_memory import AgentMemory
 from .agent_context import (
     AgentContextBudgetExceeded,
     AgentContextCompiler,
@@ -18,8 +18,7 @@ __all__ = [
     "AgentContextBudgetExceeded",
     "AgentContextCompiler",
     "CompiledAgentContext",
-    "MachineAgentMemory",
-    "NoMemoryAgentMemory",
+    "AgentMemory",
     "RuntimeParticipantMessageRouter",
     "default_agent_context_program",
     "default_agent_context_renderers",

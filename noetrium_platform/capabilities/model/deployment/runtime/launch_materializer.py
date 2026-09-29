@@ -3,7 +3,6 @@ from __future__ import annotations
 from noetrium_platform.foundation.kernel.kernel import canonical_digest
 from noetrium_platform.capabilities.model.asset.api import ModelAssetManagementPort
 from noetrium_platform.capabilities.model.deployment.api import ModelDeploymentSpec
-from noetrium_platform.substrate.api import PythonEnvironmentLookupPort
 from noetrium_platform.substrate.api import ServiceLaunchContract
 
 
@@ -13,26 +12,18 @@ class ModelLaunchMaterializer:
     def __init__(
         self,
         assets: ModelAssetManagementPort,
-        python_environments: PythonEnvironmentLookupPort,
         *,
         base_environment: tuple[tuple[str, str], ...] = (),
     ) -> None:
         self._assets = assets
-        self._python_environments = python_environments
         self._base_environment = tuple(base_environment)
 
     def materialize(self, spec: ModelDeploymentSpec) -> tuple[ServiceLaunchContract, tuple[tuple[str, str], ...]]:
         asset = self._assets.model(spec.model_id)
         environment = dict(self._base_environment)
         environment.update(spec.environment)
-        if spec.gpu_devices:
-            environment["CUDA_VISIBLE_DEVICES"] = ",".join(spec.gpu_devices)
         executable = spec.executable
         argv = list(spec.argv)
-        if spec.python_environment_id is not None:
-            python_path = self._python_environments.get(spec.python_environment_id).python_path
-            executable = str(python_path) if spec.executable in {"python", "python3", "{python}"} else spec.executable
-            argv = [str(python_path) if item == "{python}" else item for item in argv]
         replacements = {
             "{model_path}": str(asset.path),
             "{model_id}": asset.model_id,
@@ -54,7 +45,8 @@ class ModelLaunchMaterializer:
         runtime_identity_digest = canonical_digest(
             {
                 "engine": spec.engine,
-                "python_environment_id": spec.python_environment_id,
+                "container_digest": spec.container_digest,
+                "gpu_devices": spec.gpu_devices,
                 "executable": executable,
             }
         )

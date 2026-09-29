@@ -221,6 +221,7 @@ class ResearchOSNodeCheckpointPort(Protocol):
         lowering: object,
         *,
         execution_cut_id: str,
+        attempt_id: str,
     ) -> ResearchOSNodeCheckpointProof: ...
 
 

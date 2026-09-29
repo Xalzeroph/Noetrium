@@ -34,9 +34,8 @@ def test_clean_source_identity_returns_exact_sha_and_branch(monkeypatch):
     assert distribution._require_clean_source() == ("a" * 40, "system/06-product-assurance-convergence")
 
 
-def test_spdx_binds_distribution_artifact_sha256():
-    local_root = distribution.ROOT / ".local"
-    local_root.mkdir(parents=True, exist_ok=True)
+def test_spdx_binds_distribution_artifact_sha256(tmp_path: Path):
+    local_root = tmp_path
     with TemporaryDirectory(prefix="spdx-test-", dir=local_root) as td:
         artifact = Path(td) / "noetrium_platform.whl"
         artifact.write_bytes(b"wheel-bytes")
@@ -56,9 +55,9 @@ def test_distribution_output_must_be_outside_source_tree():
         distribution.build_distribution_release(distribution.ROOT / "dist-role06")
 
 
-def test_installed_artifact_verifier_rejects_missing_file():
+def test_installed_artifact_verifier_rejects_missing_file(tmp_path: Path):
     with pytest.raises(FileNotFoundError):
-        verify_installed_artifact(distribution.ROOT / ".local" / "missing-role06.whl")
+        verify_installed_artifact(tmp_path / "missing-role06.whl")
 
 
 
@@ -75,9 +74,8 @@ def test_installed_artifact_verifier_fails_closed_when_venv_is_unavailable(tmp_p
         verify_installed_artifact(artifact)
 
 
-def test_release_authority_text_writer_uses_portable_lf_bytes():
-    local_root = distribution.ROOT / ".local"
-    local_root.mkdir(parents=True, exist_ok=True)
+def test_release_authority_text_writer_uses_portable_lf_bytes(tmp_path: Path):
+    local_root = tmp_path
     with TemporaryDirectory(prefix="release-lf-", dir=local_root) as td:
         path = Path(td) / "SHA256SUMS"
         digest = distribution._write_text_lf(path, "abc  artifact.whl\ndef  artifact.tar.gz\n")
@@ -87,9 +85,8 @@ def test_release_authority_text_writer_uses_portable_lf_bytes():
         assert digest == hashlib.sha256(raw).hexdigest()
 
 
-def test_release_authority_text_writer_rejects_carriage_returns():
-    local_root = distribution.ROOT / ".local"
-    local_root.mkdir(parents=True, exist_ok=True)
+def test_release_authority_text_writer_rejects_carriage_returns(tmp_path: Path):
+    local_root = tmp_path
     with TemporaryDirectory(prefix="release-cr-", dir=local_root) as td:
         path = Path(td) / "SHA256SUMS"
         with pytest.raises(ValueError, match="carriage returns"):
@@ -97,9 +94,8 @@ def test_release_authority_text_writer_rejects_carriage_returns():
         assert not path.exists()
 
 
-def test_distribution_build_runs_from_external_exact_source(monkeypatch):
-    local_root = distribution.ROOT / ".local"
-    local_root.mkdir(parents=True, exist_ok=True)
+def test_distribution_build_runs_from_external_exact_source(monkeypatch, tmp_path: Path):
+    local_root = tmp_path
     seen: dict[str, Path] = {}
 
     def fake_materialize(sha: str, destination: Path) -> str:

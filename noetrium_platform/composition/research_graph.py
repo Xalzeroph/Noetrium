@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import time
+import traceback
 from queue import Empty, Queue
 from threading import RLock
 from uuid import uuid4
@@ -17,8 +18,9 @@ from noetrium_platform.foundation.kernel.concurrency.api import (
     HeartbeatSpec,
     TaskFailurePolicy,
     TaskFailureScope,
+    TaskContextPort,
 )
-from noetrium_platform.foundation.kernel.kernel.errors import describe_exception
+from noetrium_platform.foundation.kernel.kernel.errors import describe_exception, redact_text
 from noetrium_platform.research.execution.graph.api import (
     ResearchGraphControlPhase,
     ResearchGraphControlRecord,
@@ -26,6 +28,7 @@ from noetrium_platform.research.execution.graph.api import (
     ResearchGraphClaimRecoveryPort,
     ResearchGraphExecutionConflict,
     ResearchGraphExecutionReport,
+    ResearchGraphFailureProvenance,
     ResearchGraphExecutionSnapshot,
     ResearchGraphExecutionStorePort,
     ResearchGraphLeaseRenewal,
@@ -63,6 +66,114 @@ def _reportable_failure(exc: BaseException) -> BaseException:
     if len(unique) == 1:
         return rows[0]
     return exc
+
+
+def _failure_provenance(exc: BaseException) -> ResearchGraphFailureProvenance:
+    description = describe_exception(exc)
+    frames = tuple(
+        redact_text(row, max_chars=4096)
+        for row in traceback.format_tb(exc.__traceback__)
+        if row.strip()
+    )
+    cause_chain: list[str] = []
+    lower_refs: list[str] = []
+    evidence_refs: list[str] = []
+    failure_id: str | None = None
+    seen: set[int] = set()
+    current: BaseException | None = exc
+    while current is not None and id(current) not in seen:
+        seen.add(id(current))
+        current_description = describe_exception(current)
+        if current is not exc:
+            cause_chain.append(
+                f"{current_description.qualified_type}: "
+                f"{current_description.safe_message}"
+            )
+        candidate_failure_id = getattr(current, "failure_id", None)
+        if (
+            failure_id is None
+            and isinstance(candidate_failure_id, str)
+            and candidate_failure_id.strip()
+        ):
+            failure_id = candidate_failure_id.strip()
+        candidate_evidence = getattr(current, "evidence_refs", ())
+        if isinstance(candidate_evidence, (tuple, list)):
+            evidence_refs.extend(
+                value.strip()
+                for value in candidate_evidence
+                if isinstance(value, str) and value.strip()
+            )
+        for field_name in (
+            "operation_id",
+            "effect_id",
+            "machine_id",
+            "run_digest",
+            "receipt_digest",
+            "transition_id",
+        ):
+            value = getattr(current, field_name, None)
+            if isinstance(value, str) and value.strip():
+                lower_refs.append(f"{field_name}:{value.strip()}")
+        if current.__cause__ is not None:
+            current = current.__cause__
+        elif not current.__suppress_context__:
+            current = current.__context__
+        else:
+            current = None
+    return ResearchGraphFailureProvenance(
+        qualified_type=description.qualified_type,
+        error_digest=description.error_digest,
+        safe_message=description.safe_message.strip() or type(exc).__name__,
+        traceback_frames=frames,
+        cause_chain=tuple(cause_chain),
+        failure_id=failure_id,
+        evidence_refs=tuple(sorted(set(evidence_refs))),
+        lower_refs=tuple(sorted(set(lower_refs))),
+    )
+
+
+class _AttemptTaskContext:
+    """TaskContext proxy whose task identity is the durable graph attempt id."""
+
+    def __init__(self, base: TaskContextPort, attempt_id: str) -> None:
+        if type(attempt_id) is not str or not attempt_id.strip():
+            raise ValueError("attempt task context requires durable attempt_id")
+        self._base = base
+        self._attempt_id = attempt_id
+
+    @property
+    def group_id(self):
+        return self._base.group_id
+
+    @property
+    def task_id(self):
+        return self._attempt_id
+
+    @property
+    def lane_kind(self):
+        return self._base.lane_kind
+
+    @property
+    def deadline(self):
+        return self._base.deadline
+
+    @property
+    def remaining_seconds(self):
+        return self._base.remaining_seconds
+
+    @property
+    def cancelled(self):
+        return self._base.cancelled
+
+    @property
+    def reason(self):
+        return self._base.reason
+
+    def wait(self, timeout: float | None = None) -> bool:
+        return self._base.wait(timeout)
+
+    def checkpoint(self) -> None:
+        self._base.checkpoint()
 
 
 class ResearchGraphControlHalt(RuntimeError):
@@ -161,8 +272,8 @@ class ResearchGraphScheduler:
         tenant_id: str | None = None,
         priority: ExecutionPriority = ExecutionPriority.NORMAL,
         task_group_id: str | None = None,
-        execution_store: ResearchGraphExecutionStorePort | None = None,
-        execution_id: str | None = None,
+        execution_store: ResearchGraphExecutionStorePort,
+        execution_id: str,
         lease_seconds: float = 30.0,
         scheduler_owner_id: str | None = None,
         selected_node_ids: tuple[str, ...] | None = None,
@@ -183,7 +294,7 @@ class ResearchGraphScheduler:
             raise ValueError("research graph tenant_id must be non-empty when provided")
         if not isinstance(priority, ExecutionPriority):
             raise TypeError("research graph priority must be ExecutionPriority")
-        if execution_store is not None and not isinstance(
+        if not isinstance(
             execution_store,
             ResearchGraphExecutionStorePort,
         ):
@@ -191,15 +302,9 @@ class ResearchGraphScheduler:
                 "research graph execution_store must satisfy "
                 "ResearchGraphExecutionStorePort"
             )
-        if execution_store is not None and (
-            type(execution_id) is not str or not execution_id.strip()
-        ):
+        if type(execution_id) is not str or not execution_id.strip():
             raise ValueError(
-                "durable research graph scheduling requires execution_id"
-            )
-        if execution_store is None and execution_id is not None:
-            raise ValueError(
-                "research graph execution_id requires an execution_store"
+                "research graph scheduling requires durable execution_id"
             )
         if type(lease_seconds) not in {int, float} or lease_seconds <= 0:
             raise ValueError("research graph lease_seconds must be positive")
@@ -275,158 +380,7 @@ class ResearchGraphScheduler:
     ) -> ResearchGraphExecutionReport:
         if self._closed:
             raise RuntimeError("research graph scheduler is closed")
-        if self._execution_store is not None:
-            return self._execute_durable(deadline=deadline)
-        group = self._pool.open_orchestration_group(
-            self._task_group_id
-            or f"research-graph:{self._plan.graph_id}:{uuid4().hex}",
-            tenant_id=self._tenant_id,
-            resource_id=f"research-graph:{self._plan.graph_id}",
-            priority=self._priority,
-            deadline=deadline,
-            failure_policy=TaskFailurePolicy.COLLECT_ALL,
-        )
-        selected = set(self._selected_node_ids)
-        pending = {
-            node.node_id: node
-            for node in self._plan.nodes
-            if node.node_id in selected
-        }
-        running: dict[str, tuple[ResearchGraphNode, object]] = {}
-        results: dict[str, ResearchGraphNodeResult] = {}
-        frontier = ResearchGraphDependencyFrontier(
-            self._plan,
-            selected_node_ids=self._selected_node_ids,
-            terminal_results=results,
-        )
-        completion_queue: Queue[str] = Queue()
-
-        def submit(node: ResearchGraphNode):
-            def run(context, owned_node=node):
-                try:
-                    context.checkpoint()
-                    self._executor.execute(
-                        context,
-                        owned_node,
-                        deadline=deadline,
-                    )
-                    context.checkpoint()
-                finally:
-                    completion_queue.put(owned_node.node_id)
-
-            return group.submit(
-                ExecutionSpec(
-                    task_id=f"research-graph-node:{self._plan.graph_id}:{node.node_id}",
-                    lane_kind=ExecutionLaneKind.BLOCKING_IO,
-                    failure_scope=TaskFailureScope.CALLER,
-                ),
-                run,
-                deadline=deadline,
-            )
-
-        def record_completion(node_id: str, *, timeout: float | None = None) -> None:
-            node, handle = running.pop(node_id)
-            try:
-                handle.result(timeout=timeout)
-                results[node_id] = ResearchGraphNodeResult(
-                    node.node_id,
-                    node.semantic_digest,
-                    ResearchGraphNodeState.SUCCEEDED,
-                )
-                frontier.record_terminal(results[node_id])
-            except BaseException as exc:
-                handle.cancel()
-                failure = _reportable_failure(exc)
-                description = describe_exception(failure)
-                results[node_id] = ResearchGraphNodeResult(
-                    node.node_id,
-                    node.semantic_digest,
-                    ResearchGraphNodeState.FAILED,
-                    failure_type=type(failure).__name__,
-                    failure_message=(
-                        description.safe_message.strip()
-                        or type(failure).__name__
-                    ),
-                )
-                frontier.record_terminal(results[node_id])
-
-        try:
-            while pending or running:
-                progressed = False
-
-                for node_id, blockers in frontier.blocked_nodes(set(pending)):
-                    node = pending[node_id]
-                    result = ResearchGraphNodeResult(
-                        node.node_id,
-                        node.semantic_digest,
-                        ResearchGraphNodeState.BLOCKED,
-                        blocked_by_node_ids=blockers,
-                    )
-                    results[node_id] = result
-                    del pending[node_id]
-                    frontier.record_terminal(result)
-                    progressed = True
-
-                for node_id in frontier.ready_node_ids(set(pending)):
-                    node = pending[node_id]
-                    handle = submit(node)
-                    frontier.consume_ready(node_id)
-                    running[node_id] = (node, handle)
-                    del pending[node_id]
-                    progressed = True
-
-                completed: list[str] = []
-                while True:
-                    try:
-                        completed_id = completion_queue.get_nowait()
-                    except Empty:
-                        break
-                    if completed_id in running:
-                        completed.append(completed_id)
-                if completed:
-                    for node_id in sorted(completed):
-                        record_completion(node_id)
-                    continue
-
-                if pending and not running and not progressed:
-                    raise RuntimeError(
-                        "research graph scheduler reached an impossible dependency state"
-                    )
-
-                if not running:
-                    continue
-
-                if deadline is not None and deadline.expired:
-                    for node_id in tuple(sorted(running)):
-                        record_completion(node_id, timeout=0.0)
-                    continue
-
-                wait_timeout = (
-                    None
-                    if deadline is None
-                    else max(0.0, deadline.remaining_seconds)
-                )
-                try:
-                    completed_id = completion_queue.get(timeout=wait_timeout)
-                except Empty:
-                    for node_id in tuple(sorted(running)):
-                        record_completion(node_id, timeout=0.0)
-                    continue
-                if completed_id in running:
-                    record_completion(completed_id)
-
-            return ResearchGraphExecutionReport(
-                self._plan.graph_id,
-                self._plan.graph_digest,
-                self._plan.research_revision_digest,
-                tuple(results[node_id] for node_id in sorted(results)),
-            )
-        finally:
-            self._pool.close_orchestration_group(
-                group,
-                cancel_pending=deadline.expired if deadline is not None else False,
-                deadline=deadline,
-            )
+        return self._execute_durable(deadline=deadline)
 
 
     def _prepare_durable_execution(
@@ -555,6 +509,7 @@ class ResearchGraphScheduler:
                     ResearchGraphNodeState.FAILED,
                     failure_type=record.failure_type,
                     failure_message=record.failure_message,
+                    failure_provenance=record.failure_provenance,
                 )
             elif record.state is ResearchGraphLiveNodeState.BLOCKED:
                 results[node_id] = ResearchGraphNodeResult(
@@ -626,6 +581,7 @@ class ResearchGraphScheduler:
         except BaseException as exc:
             handle.cancel()
             original_failure = exc
+            __import__("traceback").print_exception(exc)
             failure = _reportable_failure(exc)
             description = describe_exception(failure)
             message = description.safe_message.strip() or type(failure).__name__
@@ -740,6 +696,7 @@ class ResearchGraphScheduler:
                     now_ns=failure_now_ns,
                     failure_type=type(failure).__name__,
                     failure_message=message,
+                    failure_provenance=_failure_provenance(failure),
                 )
             except ResearchGraphExecutionConflict:
                 # The lease may expire between the read above and the failure
@@ -772,8 +729,9 @@ class ResearchGraphScheduler:
                 node.node_id,
                 node.semantic_digest,
                 ResearchGraphNodeState.FAILED,
-                failure_type=type(failure).__name__,
-                failure_message=message,
+                failure_type=current.failure_type,
+                failure_message=current.failure_message,
+                failure_provenance=current.failure_provenance,
             )
             frontier.record_terminal(results[node_id])
             node_control = node_control_store.node_control_state(
@@ -1172,7 +1130,7 @@ class ResearchGraphScheduler:
                     )
                     context.checkpoint()
                     self._executor.execute(
-                        context,
+                        _AttemptTaskContext(context, attempt_id),
                         owned_node,
                         deadline=deadline,
                     )

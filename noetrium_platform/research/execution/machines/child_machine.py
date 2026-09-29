@@ -10,9 +10,10 @@ the parent Program owns the scientific semantics of fail/collect/continue.
 from __future__ import annotations
 
 from collections.abc import Callable, Mapping
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from enum import StrEnum
 from threading import RLock
+from types import MappingProxyType
 from typing import Protocol, runtime_checkable
 
 from noetrium_platform.foundation.kernel.kernel import (
@@ -45,6 +46,18 @@ class ChildResearchMachineRequest:
     payload: JsonValue = None
     command_id_prefix: str | None = None
     resume_waiting: bool = False
+    request_digest: str = field(
+        init=False,
+        repr=False,
+        compare=False,
+        metadata={"transient": True},
+    )
+    _payload: JsonObject = field(
+        init=False,
+        repr=False,
+        compare=False,
+        metadata={"transient": True},
+    )
 
     def __post_init__(self) -> None:
         for name, value in (
@@ -76,9 +89,7 @@ class ChildResearchMachineRequest:
         )
         object.__setattr__(self, "initial_data", freeze_json(self.initial_data))
         object.__setattr__(self, "payload", freeze_json(self.payload))
-
-    def as_payload(self) -> JsonObject:
-        return {
+        frozen_payload = freeze_json({
             "host_id": self.host_id,
             "parent_machine_id": self.parent_machine_id,
             "child_machine_id": self.child_machine_id,
@@ -88,7 +99,18 @@ class ChildResearchMachineRequest:
             "payload": self.payload,
             "command_id_prefix": self.command_id_prefix,
             "resume_waiting": self.resume_waiting,
-        }
+        })
+        if not isinstance(frozen_payload, Mapping):
+            raise TypeError("child request payload must freeze to an object")
+        object.__setattr__(self, "_payload", frozen_payload)
+        object.__setattr__(
+            self,
+            "request_digest",
+            canonical_digest(frozen_payload),
+        )
+
+    def as_payload(self) -> JsonObject:
+        return self._payload
 
     @classmethod
     def from_payload(cls, value: object) -> "ChildResearchMachineRequest":
@@ -155,13 +177,38 @@ class ChildResearchHostRegistryPort(Protocol):
 
     def resolve(self, host_id: str) -> RegisteredChildResearchHost: ...
 
+    def registrations(self) -> tuple[RegisteredChildResearchHost, ...]: ...
+
 
 class ChildResearchHostRegistry(ChildResearchHostRegistryPort):
     """Process-local host directory; it owns declarations, never Machine truth."""
 
     def __init__(self) -> None:
-        self._hosts: dict[str, RegisteredChildResearchHost] = {}
+        self._hosts: Mapping[str, RegisteredChildResearchHost] = {}
         self._lock = RLock()
+        self._sealed = False
+        self._host_ids: tuple[str, ...] | None = None
+        self._registrations: tuple[RegisteredChildResearchHost, ...] | None = None
+        self._identity_digest: str | None = None
+
+    @property
+    def sealed(self) -> bool:
+        return self._sealed
+
+    def seal(self) -> "ChildResearchHostRegistry":
+        with self._lock:
+            if self._sealed:
+                return self
+            ordered = tuple(sorted(self._hosts.items()))
+            self._host_ids = tuple(host_id for host_id, _ in ordered)
+            self._registrations = tuple(row for _, row in ordered)
+            self._identity_digest = canonical_digest(tuple(
+                (host_id, registered.identity_digest)
+                for host_id, registered in ordered
+            ))
+            self._hosts = MappingProxyType(dict(ordered))
+            self._sealed = True
+            return self
 
     def register(
         self,
@@ -176,6 +223,8 @@ class ChildResearchHostRegistry(ChildResearchHostRegistryPort):
             binding_factory_digest,
         )
         with self._lock:
+            if self._sealed:
+                raise RuntimeError("child research host registry is sealed")
             current = self._hosts.get(host.host_id)
             if current is not None:
                 if (
@@ -246,14 +295,20 @@ class ChildResearchHostRegistry(ChildResearchHostRegistryPort):
             }),
         )
 
-    def executor(self) -> "RegisteredChildResearchMachineExecutor":
-        """Build the standard executor for the currently registered hosts."""
+    def executor(self) -> "ChildResearchMachineExecutor":
+        """Seal declarations and build the single child-machine executor."""
 
-        return RegisteredChildResearchMachineExecutor(self)
+        self.seal()
+        return ChildResearchMachineExecutor(self)
 
     def resolve(self, host_id: str) -> RegisteredChildResearchHost:
         if type(host_id) is not str or not host_id.strip():
             raise ValueError("child host_id is required")
+        if self._sealed:
+            try:
+                return self._hosts[host_id]
+            except KeyError as exc:
+                raise KeyError(f"unknown child research host: {host_id}") from exc
         with self._lock:
             try:
                 return self._hosts[host_id]
@@ -261,82 +316,32 @@ class ChildResearchHostRegistry(ChildResearchHostRegistryPort):
                 raise KeyError(f"unknown child research host: {host_id}") from exc
 
     def host_ids(self) -> tuple[str, ...]:
+        if self._sealed:
+            assert self._host_ids is not None
+            return self._host_ids
         with self._lock:
             return tuple(sorted(self._hosts))
 
+    def registrations(self) -> tuple[RegisteredChildResearchHost, ...]:
+        if self._sealed:
+            assert self._registrations is not None
+            return self._registrations
+        with self._lock:
+            return tuple(
+                registered
+                for _host_id, registered in sorted(self._hosts.items())
+            )
+
     @property
     def identity_digest(self) -> str:
+        if self._sealed:
+            assert self._identity_digest is not None
+            return self._identity_digest
         with self._lock:
             return canonical_digest(tuple(
                 (host_id, registered.identity_digest)
                 for host_id, registered in sorted(self._hosts.items())
             ))
-
-
-class RegisteredChildResearchMachineExecutor:
-    """Resolve a named child host and execute it without parent-specific wiring."""
-
-    def __init__(self, registry: ChildResearchHostRegistryPort) -> None:
-        if not isinstance(registry, ChildResearchHostRegistryPort):
-            raise TypeError(
-                "registered child executor requires ChildResearchHostRegistryPort"
-            )
-        self.registry = registry
-        require_sha256(
-            registry.identity_digest,
-            "child research host registry identity_digest",
-        )
-
-    @property
-    def identity_digest(self) -> str:
-        return canonical_digest({
-            "executor": "registered-child-research-machine",
-            "registry_identity_digest": self.registry.identity_digest,
-        })
-
-    def step_once(
-        self,
-        request: ChildResearchMachineRequest,
-    ) -> ChildResearchMachineExecution:
-        if not isinstance(request, ChildResearchMachineRequest):
-            raise TypeError(
-                "registered child executor requires ChildResearchMachineRequest"
-            )
-        registered = self.registry.resolve(request.host_id)
-        binding = registered.binding_factory(request)
-        return ChildResearchMachineExecutor(registered.host).step_once(
-            parent_machine_id=request.parent_machine_id,
-            child_machine_id=request.child_machine_id,
-            instance_identity=request.instance_identity,
-            binding=binding,
-            initial_data=request.initial_data,
-            failure_policy=request.failure_policy,
-            payload=request.payload,
-            command_id_prefix=request.command_id_prefix,
-            resume_waiting=request.resume_waiting,
-        )
-
-    def execute(
-        self,
-        request: ChildResearchMachineRequest,
-    ) -> ChildResearchMachineExecution:
-        if not isinstance(request, ChildResearchMachineRequest):
-            raise TypeError(
-                "registered child executor requires ChildResearchMachineRequest"
-            )
-        registered = self.registry.resolve(request.host_id)
-        binding = registered.binding_factory(request)
-        return ChildResearchMachineExecutor(registered.host).execute(
-            parent_machine_id=request.parent_machine_id,
-            child_machine_id=request.child_machine_id,
-            instance_identity=request.instance_identity,
-            binding=binding,
-            initial_data=request.initial_data,
-            failure_policy=request.failure_policy,
-            payload=request.payload,
-            command_id_prefix=request.command_id_prefix,
-            resume_waiting=request.resume_waiting,
-        )
 
 
 @dataclass(frozen=True, slots=True)
@@ -373,12 +378,28 @@ class ChildResearchMachineExecution:
 
 
 class ChildResearchMachineExecutor:
-    """Stateless executor/projector for one nested ResearchProgram."""
+    """Single registry-aware executor for every nested ResearchProgram."""
 
-    def __init__(self, host: ResearchProgramHost) -> None:
-        if not isinstance(host, ResearchProgramHost):
-            raise TypeError("child machine executor requires ResearchProgramHost")
-        self.host = host
+    def __init__(self, registry: ChildResearchHostRegistryPort) -> None:
+        if not isinstance(registry, ChildResearchHostRegistryPort):
+            raise TypeError(
+                "child machine executor requires ChildResearchHostRegistryPort"
+            )
+        if isinstance(registry, ChildResearchHostRegistry):
+            registry.seal()
+        self.registry = registry
+        registry_identity_digest = require_sha256(
+            registry.identity_digest,
+            "child research host registry identity_digest",
+        )
+        self._identity_digest = canonical_digest({
+            "executor": "child-research-machine.v3",
+            "registry_identity_digest": registry_identity_digest,
+        })
+
+    @property
+    def identity_digest(self) -> str:
+        return self._identity_digest
 
     @staticmethod
     def _project_execution(
@@ -428,91 +449,68 @@ class ChildResearchMachineExecutor:
         )
         return ChildResearchMachineExecution(execution, link)
 
-    def step_once(
+    def _execute(
         self,
+        request: ChildResearchMachineRequest,
         *,
-        parent_machine_id: str,
-        child_machine_id: str,
-        instance_identity: JsonValue,
-        binding: object,
-        initial_data: JsonObject,
-        failure_policy: ChildFailurePolicy = ChildFailurePolicy.FAIL_PARENT,
-        payload: JsonValue = None,
-        command_id_prefix: str | None = None,
-        resume_waiting: bool = False,
+        single_step: bool,
     ) -> ChildResearchMachineExecution:
-        """Commit one incremental child Program step and project its exact cut."""
-
-        if type(parent_machine_id) is not str or not parent_machine_id.strip():
-            raise ValueError("parent_machine_id is required")
-        if type(child_machine_id) is not str or not child_machine_id.strip():
-            raise ValueError("child_machine_id is required")
-        if parent_machine_id == child_machine_id:
-            raise ValueError("parent and child machine ids must differ")
-        if not isinstance(failure_policy, ChildFailurePolicy):
-            raise TypeError("failure_policy must be ChildFailurePolicy")
-
-        execution = self.host.step_once(
-            machine_id=child_machine_id,
-            instance_identity=instance_identity,
-            binding=binding,
-            initial_data=initial_data,
-            payload=payload,
-            command_id_prefix=command_id_prefix,
-            resume_waiting=resume_waiting,
-        )
-        if execution.run.commits:
-            transition_start = execution.run.commits[0].revision
+        if not isinstance(request, ChildResearchMachineRequest):
+            raise TypeError(
+                "child executor requires ChildResearchMachineRequest"
+            )
+        registered = self.registry.resolve(request.host_id)
+        binding = registered.binding_factory(request)
+        if single_step:
+            execution = registered.host.step_once(
+                machine_id=request.child_machine_id,
+                instance_identity=request.instance_identity,
+                binding=binding,
+                initial_data=request.initial_data,
+                payload=request.payload,
+                command_id_prefix=request.command_id_prefix,
+                resume_waiting=request.resume_waiting,
+            )
+            transition_start = (
+                execution.run.commits[0].revision
+                if execution.run.commits
+                else execution.revision
+            )
         else:
-            transition_start = execution.revision
+            execution = registered.host.execute(
+                machine_id=request.child_machine_id,
+                instance_identity=request.instance_identity,
+                binding=binding,
+                initial_data=request.initial_data,
+                payload=request.payload,
+                command_id_prefix=request.command_id_prefix,
+                resume_waiting=request.resume_waiting,
+            )
+            transition_start = 1
         return self._project_execution(
             execution=execution,
-            parent_machine_id=parent_machine_id,
-            child_machine_id=child_machine_id,
-            child_program_digest=self.host.program.program_digest,
-            failure_policy=failure_policy,
+            parent_machine_id=request.parent_machine_id,
+            child_machine_id=request.child_machine_id,
+            child_program_digest=registered.host.program.program_digest,
+            failure_policy=request.failure_policy,
             transition_start=transition_start,
         )
 
+    def step_once(
+        self,
+        request: ChildResearchMachineRequest,
+    ) -> ChildResearchMachineExecution:
+        return self._execute(request, single_step=True)
+
     def execute(
         self,
-        *,
-        parent_machine_id: str,
-        child_machine_id: str,
-        instance_identity: JsonValue,
-        binding: object,
-        initial_data: JsonObject,
-        failure_policy: ChildFailurePolicy = ChildFailurePolicy.FAIL_PARENT,
-        payload: JsonValue = None,
-        command_id_prefix: str | None = None,
-        resume_waiting: bool = False,
+        request: ChildResearchMachineRequest,
     ) -> ChildResearchMachineExecution:
-        if type(parent_machine_id) is not str or not parent_machine_id.strip():
-            raise ValueError("parent_machine_id is required")
-        if type(child_machine_id) is not str or not child_machine_id.strip():
-            raise ValueError("child_machine_id is required")
-        if parent_machine_id == child_machine_id:
-            raise ValueError("parent and child machine ids must differ")
-        if not isinstance(failure_policy, ChildFailurePolicy):
-            raise TypeError("failure_policy must be ChildFailurePolicy")
+        return self._execute(request, single_step=False)
 
-        execution = self.host.execute(
-            machine_id=child_machine_id,
-            instance_identity=instance_identity,
-            binding=binding,
-            initial_data=initial_data,
-            payload=payload,
-            command_id_prefix=command_id_prefix,
-            resume_waiting=resume_waiting,
-        )
-        return self._project_execution(
-            execution=execution,
-            parent_machine_id=parent_machine_id,
-            child_machine_id=child_machine_id,
-            child_program_digest=self.host.program.program_digest,
-            failure_policy=failure_policy,
-            transition_start=1,
-        )
+    def execute_batch(self, request, mechanics):
+        from .child_machine_batch import execute_child_research_machine_batch
+        return execute_child_research_machine_batch(self, mechanics, request)
 
 
 __all__ = [
@@ -524,5 +522,4 @@ __all__ = [
     "ChildResearchMachineExecutor",
     "ChildResearchMachineRequest",
     "RegisteredChildResearchHost",
-    "RegisteredChildResearchMachineExecutor",
 ]

@@ -193,9 +193,12 @@ class UnifiedExecutionAuthority:
         deadline: Deadline | None = None,
         cancellation: CancellationTokenPort | None = None,
     ) -> tuple[Any, ...]:
-        if lane_kind is not ExecutionLaneKind.BLOCKING_IO:
+        if lane_kind not in {
+            ExecutionLaneKind.BLOCKING_IO,
+            ExecutionLaneKind.ASYNC_IO,
+        }:
             raise ValueError(
-                "atomic execution batch currently supports BLOCKING_IO only"
+                "atomic execution batch requires BLOCKING_IO or ASYNC_IO"
             )
         if not isinstance(fns, tuple) or not fns:
             raise ValueError("atomic execution batch requires a non-empty tuple")
@@ -209,8 +212,13 @@ class UnifiedExecutionAuthority:
             deadline=deadline,
             cancellation=cancellation,
         )
+        provider = (
+            self._blocking_io
+            if lane_kind is ExecutionLaneKind.BLOCKING_IO
+            else self._async_io
+        )
         try:
-            raw_handles = self._blocking_io.submit_atomic_batch(
+            raw_handles = provider.submit_atomic_batch(
                 fns,
                 deadline=deadline,
                 cancellation=cancellation,

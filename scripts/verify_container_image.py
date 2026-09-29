@@ -6,6 +6,10 @@ import hashlib
 import json
 import os
 from pathlib import Path
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from noetrium_platform.product.reference import ReferenceResearchOSPort
 import re
 import subprocess
 import sys

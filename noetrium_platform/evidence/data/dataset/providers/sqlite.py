@@ -15,9 +15,9 @@ from noetrium_platform.evidence.data.dataset.api import (
 )
 from noetrium_platform.evidence.data._canonical import DataCanonicalDecodingError, canonical_digest, strict_json_loads
 from noetrium_platform.foundation.kernel.kernel.durability.sqlite import (
+    DurableSQLiteWriterOwner,
     immediate_sqlite_transaction,
     open_durable_sqlite_reader,
-    open_durable_sqlite_writer,
 )
 from noetrium_platform.evidence.data._sqlite_types import require_optional_text, require_text
 from noetrium_platform.foundation.api import ScopeIdentity, ScopeKind
@@ -36,14 +36,19 @@ class SQLiteDatasetRegistry:
         self.path = Path(path).expanduser().resolve()
         self.timeout_seconds = timeout_seconds
         self.path.parent.mkdir(parents=True, exist_ok=True)
-        with closing(self._connect_writer()) as db:
-            self._ensure_schema(db)
-
-    def _connect_writer(self) -> sqlite3.Connection:
-        return open_durable_sqlite_writer(
+        self._writers = DurableSQLiteWriterOwner(
             self.path,
             timeout_seconds=self.timeout_seconds,
         )
+        with self._writers.session() as db:
+            self._ensure_schema(db)
+
+    @property
+    def writer_connection_open_count(self) -> int:
+        return self._writers.open_count
+
+    def close(self) -> None:
+        self._writers.close()
 
     def _connect_reader(self) -> sqlite3.Connection:
         return open_durable_sqlite_reader(
@@ -197,7 +202,7 @@ class SQLiteDatasetRegistry:
 
     def register(self, dataset: DatasetVersion) -> DatasetVersion:
         encoded = self._encode(dataset)
-        with closing(self._connect_writer()) as db:
+        with self._writers.session() as db:
             with immediate_sqlite_transaction(
                 db,
                 timeout_seconds=self.timeout_seconds,

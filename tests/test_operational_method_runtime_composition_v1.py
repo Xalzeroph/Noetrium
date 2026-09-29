@@ -3,17 +3,17 @@ from __future__ import annotations
 from noetrium_platform.capabilities.model.serving.endpoint.api import (
     ModelEndpointRoute,
     OperationalModelEndpointReplica,
-    OperationalModelEndpointReplicaSet,
+    ModelEndpointReplicaSet,
     OperationalModelServingInventory,
 )
 from noetrium_platform.capabilities.model.serving.endpoint.composition import (
-    build_adaptive_operational_endpoint_pool,
+    build_adaptive_model_endpoint_pool,
 )
 from noetrium_platform.composition.method_model_runtime import (
     compose_operational_model_method_runtime,
 )
 from noetrium_platform.composition.model_requests import (
-    build_directory_model_request_recorder,
+    build_model_request_recorder,
 )
 from noetrium_platform.composition.research_execution_pool import ResearchExecutionPool
 from noetrium_platform.foundation.kernel.kernel import ImmutableModelIdentity
@@ -75,7 +75,7 @@ def _serving() -> OperationalModelServingInventory:
     return OperationalModelServingInventory(
         model,
         "runtime-served-model",
-        OperationalModelEndpointReplicaSet((replica,)),
+        ModelEndpointReplicaSet((replica,)),
     )
 
 
@@ -87,7 +87,7 @@ def test_operational_model_composition_binds_union_of_method_agent_requirements(
     group = pool.open_model_io_group("operational-method-runtime-test")
     try:
         serving = _serving()
-        dispatch = build_adaptive_operational_endpoint_pool(
+        dispatch = build_adaptive_model_endpoint_pool(
             serving.replica_set,
             task_group=group,
             admission_registry=pool.model_admission,
@@ -96,7 +96,7 @@ def test_operational_model_composition_binds_union_of_method_agent_requirements(
             programs,
             serving,
             pool=dispatch,
-            recorder=build_directory_model_request_recorder(tmp_path / "requests"),
+            recorder=build_model_request_recorder(tmp_path / "requests"),
             generation_options={"max_tokens": 32},
         )
         assert inventory.agent_loop is not None
@@ -125,7 +125,7 @@ def test_operational_model_composition_does_not_invent_agent_port_when_unused(
     group = pool.open_model_io_group("operational-method-runtime-no-agent-test")
     try:
         serving = _serving()
-        dispatch = build_adaptive_operational_endpoint_pool(
+        dispatch = build_adaptive_model_endpoint_pool(
             serving.replica_set,
             task_group=group,
             admission_registry=pool.model_admission,
@@ -134,7 +134,7 @@ def test_operational_model_composition_does_not_invent_agent_port_when_unused(
             (program,),
             serving,
             pool=dispatch,
-            recorder=build_directory_model_request_recorder(tmp_path / "requests"),
+            recorder=build_model_request_recorder(tmp_path / "requests"),
         )
         assert inventory.agent_loop is None
     finally:

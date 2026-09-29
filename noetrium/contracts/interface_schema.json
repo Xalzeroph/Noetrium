@@ -3,7 +3,7 @@
     "authoring_root": "ResearchPortfolioBuilder",
     "boundary": "Only noetrium.api is downstream-importable. Program/Method/Memory DSL types are schema-reachable implementation contracts; provider selection, deployment, resources, Docker, model/environment lifecycle and recovery remain platform-owned.",
     "entrypoint": "noetrium.api",
-    "memory_dsl": "ResearchMethodBuilder.memory -> ResearchMemoryBuilder",
+    "memory_dsl": "ResearchMethodBuilder.memory -> ResearchComponentBuilder",
     "method_dsl": "ResearchProgramBuilder.method(configure) -> ResearchMethodBuilder callback",
     "portfolio_type": "ResearchPortfolio",
     "program_dsl": "ResearchPortfolioBuilder.program -> ResearchProgramBuilder",
@@ -17,7 +17,7 @@
     "runtime_root": "ResearchOS"
   },
   "generator": "scripts/generate_interface_schemas.py",
-  "interface_digest": "3ddf834141f527691eb90023177fb02e2601b3b018143d2186569e6e1474d13a",
+  "interface_digest": "1d7d60998cc61a124c31869489f861776cf3ee0633ec104359c4ff87b626d225",
   "interface_schema": {
     "description": "The single downstream Research Portfolio / Research OS API plus schema-only DSL types reachable from those roots.",
     "schema_id": "noetrium.interface-schema",
@@ -1175,9 +1175,297 @@
   },
   "reachable_dsl": {
     "memory": {
-      "doc": null,
-      "kind": "unknown",
-      "name": "ResearchMemoryBuilder",
+      "bases": [],
+      "decorators": [],
+      "doc": "Method-owned component authoring over the shared Machine kernel.",
+      "fields": [],
+      "kind": "class",
+      "members": [],
+      "methods": [
+        {
+          "decorators": [],
+          "doc": null,
+          "kind": "method",
+          "name": "__init__",
+          "parameters": [
+            {
+              "annotation": null,
+              "default": null,
+              "kind": "positional_or_keyword",
+              "name": "self",
+              "receiver": true,
+              "required": false
+            },
+            {
+              "annotation": "'ResearchMethodBuilder'",
+              "default": null,
+              "kind": "positional_or_keyword",
+              "name": "parent",
+              "receiver": false,
+              "required": true
+            },
+            {
+              "annotation": "str",
+              "default": null,
+              "kind": "positional_or_keyword",
+              "name": "host_id",
+              "receiver": false,
+              "required": true
+            },
+            {
+              "annotation": "str",
+              "default": null,
+              "kind": "keyword_only",
+              "name": "domain",
+              "receiver": false,
+              "required": true
+            },
+            {
+              "annotation": "str",
+              "default": null,
+              "kind": "keyword_only",
+              "name": "entrypoint",
+              "receiver": false,
+              "required": true
+            },
+            {
+              "annotation": "str",
+              "default": "'1'",
+              "kind": "keyword_only",
+              "name": "version",
+              "receiver": false,
+              "required": false
+            },
+            {
+              "annotation": "str",
+              "default": "'json'",
+              "kind": "keyword_only",
+              "name": "state_schema",
+              "receiver": false,
+              "required": false
+            },
+            {
+              "annotation": "tuple[str, ...]",
+              "default": "()",
+              "kind": "keyword_only",
+              "name": "required_capabilities",
+              "receiver": false,
+              "required": false
+            }
+          ],
+          "return_annotation": "None",
+          "schema_id": "noetrium.interface-schema",
+          "schema_version": "1",
+          "signature": "def __init__(self, parent: 'ResearchMethodBuilder', host_id: str, *, domain: str, entrypoint: str, version: str='1', state_schema: str='json', required_capabilities: tuple[str, ...]=()) -> None:"
+        },
+        {
+          "decorators": [
+            "staticmethod"
+          ],
+          "doc": null,
+          "kind": "method",
+          "name": "_adapt",
+          "parameters": [
+            {
+              "annotation": "Callable[[ResearchComponentCall], ResearchComponentTransition]",
+              "default": null,
+              "kind": "positional_or_keyword",
+              "name": "handler",
+              "receiver": false,
+              "required": true
+            }
+          ],
+          "return_annotation": "Callable[[ProgramNodeRequest, object], ProgramNodeResult]",
+          "schema_id": "noetrium.interface-schema",
+          "schema_version": "1",
+          "signature": "@staticmethod"
+        },
+        {
+          "decorators": [],
+          "doc": null,
+          "kind": "method",
+          "name": "semantic",
+          "parameters": [
+            {
+              "annotation": null,
+              "default": null,
+              "kind": "positional_or_keyword",
+              "name": "self",
+              "receiver": true,
+              "required": false
+            },
+            {
+              "annotation": "str",
+              "default": null,
+              "kind": "positional_or_keyword",
+              "name": "node_id",
+              "receiver": false,
+              "required": true
+            },
+            {
+              "annotation": "str",
+              "default": null,
+              "kind": "positional_or_keyword",
+              "name": "concern",
+              "receiver": false,
+              "required": true
+            },
+            {
+              "annotation": "str",
+              "default": null,
+              "kind": "positional_or_keyword",
+              "name": "operation",
+              "receiver": false,
+              "required": true
+            },
+            {
+              "annotation": "Callable[[ResearchComponentCall], ResearchComponentTransition]",
+              "default": null,
+              "kind": "positional_or_keyword",
+              "name": "handler",
+              "receiver": false,
+              "required": true
+            },
+            {
+              "annotation": "Mapping[str, JsonValue] | None",
+              "default": "None",
+              "kind": "keyword_only",
+              "name": "configuration",
+              "receiver": false,
+              "required": false
+            },
+            {
+              "annotation": "str | None",
+              "default": "None",
+              "kind": "keyword_only",
+              "name": "next_node",
+              "receiver": false,
+              "required": false
+            },
+            {
+              "annotation": "tuple[str, ...]",
+              "default": "()",
+              "kind": "keyword_only",
+              "name": "required_capabilities",
+              "receiver": false,
+              "required": false
+            }
+          ],
+          "return_annotation": "'ResearchComponentBuilder'",
+          "schema_id": "noetrium.interface-schema",
+          "schema_version": "1",
+          "signature": "def semantic(self, node_id: str, concern: str, operation: str, handler: Callable[[ResearchComponentCall], ResearchComponentTransition], *, configuration: Mapping[str, JsonValue] | None=None, next_node: str | None=None, required_capabilities: tuple[str, ...]=()) -> 'ResearchComponentBuilder':"
+        },
+        {
+          "decorators": [],
+          "doc": null,
+          "kind": "method",
+          "name": "custom",
+          "parameters": [
+            {
+              "annotation": null,
+              "default": null,
+              "kind": "positional_or_keyword",
+              "name": "self",
+              "receiver": true,
+              "required": false
+            },
+            {
+              "annotation": "str",
+              "default": null,
+              "kind": "positional_or_keyword",
+              "name": "node_id",
+              "receiver": false,
+              "required": true
+            },
+            {
+              "annotation": "str",
+              "default": null,
+              "kind": "positional_or_keyword",
+              "name": "operation",
+              "receiver": false,
+              "required": true
+            },
+            {
+              "annotation": "Callable[[ResearchComponentCall], ResearchComponentTransition]",
+              "default": null,
+              "kind": "positional_or_keyword",
+              "name": "handler",
+              "receiver": false,
+              "required": true
+            },
+            {
+              "annotation": "Mapping[str, JsonValue] | None",
+              "default": "None",
+              "kind": "keyword_only",
+              "name": "configuration",
+              "receiver": false,
+              "required": false
+            },
+            {
+              "annotation": "str | None",
+              "default": "None",
+              "kind": "keyword_only",
+              "name": "next_node",
+              "receiver": false,
+              "required": false
+            },
+            {
+              "annotation": "tuple[str, ...]",
+              "default": "()",
+              "kind": "keyword_only",
+              "name": "required_capabilities",
+              "receiver": false,
+              "required": false
+            }
+          ],
+          "return_annotation": "'ResearchComponentBuilder'",
+          "schema_id": "noetrium.interface-schema",
+          "schema_version": "1",
+          "signature": "def custom(self, node_id: str, operation: str, handler: Callable[[ResearchComponentCall], ResearchComponentTransition], *, configuration: Mapping[str, JsonValue] | None=None, next_node: str | None=None, required_capabilities: tuple[str, ...]=()) -> 'ResearchComponentBuilder':"
+        },
+        {
+          "decorators": [],
+          "doc": null,
+          "kind": "method",
+          "name": "build",
+          "parameters": [
+            {
+              "annotation": null,
+              "default": null,
+              "kind": "positional_or_keyword",
+              "name": "self",
+              "receiver": true,
+              "required": false
+            }
+          ],
+          "return_annotation": "ResearchComponent",
+          "schema_id": "noetrium.interface-schema",
+          "schema_version": "1",
+          "signature": "def build(self) -> ResearchComponent:"
+        },
+        {
+          "decorators": [],
+          "doc": null,
+          "kind": "method",
+          "name": "end",
+          "parameters": [
+            {
+              "annotation": null,
+              "default": null,
+              "kind": "positional_or_keyword",
+              "name": "self",
+              "receiver": true,
+              "required": false
+            }
+          ],
+          "return_annotation": "'ResearchMethodBuilder'",
+          "schema_id": "noetrium.interface-schema",
+          "schema_version": "1",
+          "signature": "def end(self) -> 'ResearchMethodBuilder':"
+        }
+      ],
+      "name": "ResearchComponentBuilder",
       "schema_id": "noetrium.interface-schema",
       "schema_version": "1"
     },
@@ -2908,6 +3196,42 @@
         },
         {
           "decorators": [],
+          "doc": "Freeze one content-addressed scientific/runtime configuration fact.",
+          "kind": "method",
+          "name": "configuration",
+          "parameters": [
+            {
+              "annotation": null,
+              "default": null,
+              "kind": "positional_or_keyword",
+              "name": "self",
+              "receiver": true,
+              "required": false
+            },
+            {
+              "annotation": "str",
+              "default": null,
+              "kind": "positional_or_keyword",
+              "name": "definition_id",
+              "receiver": false,
+              "required": true
+            },
+            {
+              "annotation": "JsonInput",
+              "default": null,
+              "kind": "keyword_only",
+              "name": "config",
+              "receiver": false,
+              "required": true
+            }
+          ],
+          "return_annotation": "'ResearchProgramBuilder'",
+          "schema_id": "noetrium.interface-schema",
+          "schema_version": "1",
+          "signature": "def configuration(self, definition_id: str, *, config: JsonInput) -> 'ResearchProgramBuilder':"
+        },
+        {
+          "decorators": [],
           "doc": null,
           "kind": "method",
           "name": "model",
@@ -3169,6 +3493,50 @@
           "schema_id": "noetrium.interface-schema",
           "schema_version": "1",
           "signature": "def study_protocol(self, definition_id: str, *, implementation: ResearchImplementation | Callable[..., object], config: JsonInput=None) -> 'ResearchProgramBuilder':"
+        },
+        {
+          "decorators": [],
+          "doc": "Freeze one Program-scoped TaskVerifier factory.\n\nThe definition id is the exact TaskPackageSpec.verifier_requirement_id.\nWhen a factory is supplied it is paper-owned immutable code. Without one,\nthe verifier is a platform-resolved requirement and must be satisfied by\nthe canonical ResearchDefinition binding authority before Trial admission.",
+          "kind": "method",
+          "name": "verifier",
+          "parameters": [
+            {
+              "annotation": null,
+              "default": null,
+              "kind": "positional_or_keyword",
+              "name": "self",
+              "receiver": true,
+              "required": false
+            },
+            {
+              "annotation": "str",
+              "default": null,
+              "kind": "positional_or_keyword",
+              "name": "requirement_id",
+              "receiver": false,
+              "required": true
+            },
+            {
+              "annotation": "Callable[..., object] | None",
+              "default": "None",
+              "kind": "positional_or_keyword",
+              "name": "factory",
+              "receiver": false,
+              "required": false
+            },
+            {
+              "annotation": "JsonInput",
+              "default": "None",
+              "kind": "keyword_only",
+              "name": "config",
+              "receiver": false,
+              "required": false
+            }
+          ],
+          "return_annotation": "'ResearchProgramBuilder'",
+          "schema_id": "noetrium.interface-schema",
+          "schema_version": "1",
+          "signature": "def verifier(self, requirement_id: str, factory: Callable[..., object] | None=None, *, config: JsonInput=None) -> 'ResearchProgramBuilder':"
         },
         {
           "decorators": [],

@@ -6,7 +6,7 @@ import sqlite3
 import tempfile
 
 from noetrium_platform.infrastructure.reliability.effect.api import EffectCompletionEvidence, EffectIntent
-from noetrium_platform.infrastructure.reliability.effect.runtime import InMemoryEffectIntentJournal, SQLiteEffectIntentJournal
+from noetrium_platform.infrastructure.reliability.effect.runtime import memory_effect_intent_journal, sqlite_effect_intent_journal
 from noetrium_platform.foundation.kernel.kernel import ComponentIdentity, EffectCertainty, EffectClass, EffectReceipt, ExecutionContext
 
 
@@ -32,7 +32,7 @@ def test_sqlite_scope_query_filters_before_document_decode() -> None:
     """An unrelated corrupted row must not be materialized for another run's recovery query."""
     with tempfile.TemporaryDirectory() as td:
         path = Path(td) / "effects.sqlite3"
-        journal = SQLiteEffectIntentJournal(path)
+        journal = sqlite_effect_intent_journal(path)
         keep = _intent(request_id="keep", run_id="run-a", lifetime_id="life")
         poison = _intent(request_id="poison", run_id="run-b", lifetime_id="life")
         journal.prepare(keep)
@@ -52,7 +52,7 @@ def test_sqlite_scope_query_filters_before_document_decode() -> None:
 
 
 def test_memory_scope_index_removes_terminal_intents_without_global_scan() -> None:
-    journal = InMemoryEffectIntentJournal()
+    journal = memory_effect_intent_journal()
     a = _intent(request_id="a", run_id="run-a", lifetime_id="life")
     b = _intent(request_id="b", run_id="run-b", lifetime_id="life")
     journal.prepare(a)

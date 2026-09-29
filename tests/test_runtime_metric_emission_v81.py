@@ -32,7 +32,7 @@ class RuntimeMetricEmissionV81Tests(unittest.TestCase):
     def build(self, root: Path):
         d1=deployment("d1","GPU-1")
         d2=deployment("d2","GPU-2")
-        roles=RoleModelManifest((RoleModelAssignment("planner","d1"),RoleModelAssignment("meta","d2")))
+        roles=RoleModelManifest((RoleModelAssignment("planner","generation","model.generation.request.v1","model.generation.response.v1","d1"),RoleModelAssignment("meta","generation","model.generation.request.v1","model.generation.response.v1","d2")))
         ds=freeze_model_deployment_set(roles,(d1,d2))
         metrics=TelemetryStore(build_default_registry(), telemetry_backend(self, root/"metrics.sqlite3"))
         recorder=CallRecorder()

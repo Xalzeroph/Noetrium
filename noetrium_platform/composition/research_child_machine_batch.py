@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from queue import Queue
 from time import monotonic_ns
 
 from noetrium_platform.foundation.kernel.concurrency.api import (
@@ -9,7 +10,7 @@ from noetrium_platform.foundation.kernel.concurrency.api import (
 )
 from noetrium_platform.foundation.kernel.kernel import canonical_digest
 from noetrium_platform.research.execution.machines.child_machine import (
-    RegisteredChildResearchMachineExecutor,
+    ChildResearchMachineExecutor,
 )
 from noetrium_platform.research.execution.machines.child_machine_batch import (
     ChildResearchMachineBatchItem,
@@ -33,13 +34,13 @@ class PooledChildResearchBatchMechanics(
 
     def __init__(
         self,
-        executor: RegisteredChildResearchMachineExecutor,
+        executor: ChildResearchMachineExecutor,
         *,
         execution_pool: ResearchExecutionPool,
     ) -> None:
-        if not isinstance(executor, RegisteredChildResearchMachineExecutor):
+        if not isinstance(executor, ChildResearchMachineExecutor):
             raise TypeError(
-                "pooled child batch mechanics requires registered child executor"
+                "pooled child batch mechanics requires ChildResearchMachineExecutor"
             )
         if not isinstance(execution_pool, ResearchExecutionPool):
             raise TypeError(
@@ -47,15 +48,20 @@ class PooledChildResearchBatchMechanics(
             )
         self._executor = executor
         self._pool = execution_pool
+        self._identity_digest = canonical_digest({
+            "mechanics": "pooled-child-research-batch",
+            "resource_authority": "research-execution-pool/machine",
+            "dispatch_contract": "bounded-rolling-window-ready-set",
+            "child_executor_identity_digest": self._executor.identity_digest,
+        })
+
+    @property
+    def child_executor_identity_digest(self) -> str:
+        return self._executor.identity_digest
 
     @property
     def identity_digest(self) -> str:
-        return canonical_digest({
-            "mechanics": "pooled-child-research-batch",
-            "resource_authority": "research-execution-pool/experiment",
-            "dispatch_contract": "atomic-blocking-io-ready-set",
-            "child_executor_identity_digest": self._executor.identity_digest,
-        })
+        return self._identity_digest
 
     @staticmethod
     def _task_id(
@@ -77,32 +83,36 @@ class PooledChildResearchBatchMechanics(
                 "pooled child batch mechanics requires typed batch request"
             )
         item_count = len(request.items)
-        group = self._pool.open_experiment_group(
+        group = self._pool.open_machine_group(
             f"child-batch:{request.request_digest}",
             resource_id=f"child-machine-parent:{request.parent_machine_id}",
         )
         rows = []
         execution_failure: BaseException | None = None
+        completion_queue: Queue[int] = Queue()
 
         def pair(index: int, item: ChildResearchMachineBatchItem):
             def run(context):
                 entered_ns = monotonic_ns()
-                context.checkpoint()
-                dispatch_ns = monotonic_ns()
-                execution = self._executor.execute(item.request)
-                context.checkpoint()
-                finished_ns = monotonic_ns()
-                return (
-                    index,
-                    execution,
-                    {
-                        "participant_id": item.participant_id,
-                        "child_machine_id": item.request.child_machine_id,
-                        "worker_entered_ns": entered_ns,
-                        "dispatch_ns": dispatch_ns,
-                        "finished_ns": finished_ns,
-                    },
-                )
+                try:
+                    context.checkpoint()
+                    dispatch_ns = monotonic_ns()
+                    execution = self._executor.execute(item.request)
+                    context.checkpoint()
+                    finished_ns = monotonic_ns()
+                    return (
+                        index,
+                        execution,
+                        {
+                            "participant_id": item.participant_id,
+                            "child_machine_id": item.request.child_machine_id,
+                            "worker_entered_ns": entered_ns,
+                            "dispatch_ns": dispatch_ns,
+                            "finished_ns": finished_ns,
+                        },
+                    )
+                finally:
+                    completion_queue.put(index)
 
             return (
                 ExecutionSpec(
@@ -113,22 +123,38 @@ class PooledChildResearchBatchMechanics(
                 run,
             )
 
+        width = request.dispatch_parallelism
+        initial_batch_size = min(width, item_count)
+        refill_count = item_count - initial_batch_size
         try:
-            width = request.dispatch_parallelism
-            for start in range(0, item_count, width):
-                wave = tuple(
-                    pair(index, request.items[index])
-                    for index in range(start, min(start + width, item_count))
-                )
-                handles = group.submit_atomic_batch(wave)
-                rows.extend(handle.result() for handle in handles)
+            active = {}
+            initial = tuple(
+                pair(index, request.items[index])
+                for index in range(initial_batch_size)
+            )
+            initial_handles = group.submit_atomic_batch(initial)
+            active.update(
+                (index, handle)
+                for index, handle in enumerate(initial_handles)
+            )
+            next_index = initial_batch_size
+            while active:
+                completed_index = completion_queue.get()
+                handle = active.pop(completed_index)
+                rows.append(handle.result())
                 group.assert_healthy()
+                if next_index < item_count:
+                    refill_handle = group.submit_atomic_batch(
+                        (pair(next_index, request.items[next_index]),)
+                    )[0]
+                    active[next_index] = refill_handle
+                    next_index += 1
         except BaseException as exc:
             execution_failure = exc
 
         close_failure: BaseException | None = None
         try:
-            self._pool.close_experiment_group(
+            self._pool.close_machine_group(
                 group,
                 cancel_pending=execution_failure is not None,
             )
@@ -152,10 +178,12 @@ class PooledChildResearchBatchMechanics(
                 "schema": "noetrium.child-batch-dispatch-evidence.v2",
                 "request_digest": request.request_digest,
                 "mechanics_identity_digest": self.identity_digest,
-                "resource_authority": "research-execution-pool/experiment",
-                "atomic_wave_dispatch": True,
+                "resource_authority": "research-execution-pool/machine",
+                "dispatch_strategy": "bounded-rolling-window",
+                "atomic_initial_admission": True,
                 "dispatch_parallelism": request.dispatch_parallelism,
-                "wave_count": (item_count + request.dispatch_parallelism - 1) // request.dispatch_parallelism,
+                "initial_batch_size": initial_batch_size,
+                "refill_count": refill_count,
                 "intervals": intervals,
             }),
         )
@@ -166,10 +194,12 @@ class PooledChildResearchBatchMechanics(
             evidence_digests=evidence,
             receipt={
                 "mechanics": "pooled-child-research-batch",
-                "resource_authority": "research-execution-pool/experiment",
-                "atomic_wave_dispatch": True,
+                "resource_authority": "research-execution-pool/machine",
+                "dispatch_strategy": "bounded-rolling-window",
+                "atomic_initial_admission": True,
                 "dispatch_parallelism": request.dispatch_parallelism,
-                "wave_count": (item_count + request.dispatch_parallelism - 1) // request.dispatch_parallelism,
+                "initial_batch_size": initial_batch_size,
+                "refill_count": refill_count,
                 "items": item_count,
                 "intervals": intervals,
             },

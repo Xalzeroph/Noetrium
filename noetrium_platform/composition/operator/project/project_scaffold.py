@@ -226,7 +226,15 @@ def sync_project(project_root: Path) -> ProjectSyncReceipt:
     }
     if rebound_manifest_bytes != manifest_bytes:
         generated[_MANIFEST_PATH] = rebound_manifest_bytes
-    lock_path = root.parent / f".{root.name}.noetrium-sync.lock"
+    state_root = root / ".noetrium"
+    if state_root.is_symlink() or (state_root.exists() and not state_root.is_dir()):
+        raise ValueError("project sync state root must be a real directory")
+    state_root.mkdir(parents=True, exist_ok=True)
+    lock_root = state_root / "locks"
+    if lock_root.is_symlink() or (lock_root.exists() and not lock_root.is_dir()):
+        raise ValueError("project sync lock root must be a real directory")
+    lock_root.mkdir(parents=True, exist_ok=True)
+    lock_path = lock_root / "project-sync.lock"
     with InterprocessFileLock(lock_path):
         # core.py is user-owned and intentionally not parsed or rewritten by sync.
         # The generated shell is independent of scientific topology.

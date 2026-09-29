@@ -62,8 +62,8 @@ def test_reproduction_workload_binding_drives_canonical_method_machine(tmp_path)
     )
     assert result.success is True
     assert result.exports == {"completion": "downstream-owned-input"}
-    assert result.method_receipt is not None
-    assert result.method_receipt.status == "succeeded"
+    method_receipt = dict(result.participant_receipts)["method"]
+    assert method_receipt.status == "succeeded"
 
 
 def test_reproduction_workload_composition_rejects_missing_runtime_port(tmp_path) -> None:

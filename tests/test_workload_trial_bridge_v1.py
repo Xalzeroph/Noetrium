@@ -35,7 +35,6 @@ from noetrium_platform.research.experimentation.lifecycle.api import (
 )
 from noetrium_platform.research.experimentation.lifecycle.study.providers.trial import (
     StandardWorkloadMeasurementProjection,
-    VerifierStageWorkloadTrialProvider,
     WorkloadTrialProvider,
 )
 from noetrium_platform.research.experimentation.workload.api import (
@@ -276,6 +275,29 @@ def _graph_request(protocol: MeasurementProtocol) -> TrialExecutionRequest:
     )
 
 
+def test_trial_assignment_lifetime_is_execution_scoped_and_resume_stable() -> None:
+    protocol = _protocol(_success_definition())
+    first = _request(protocol)
+    repeated = _request(protocol)
+    assert first.assignment_lifetime_id == repeated.assignment_lifetime_id
+
+    other_execution = TrialExecutionRequest(
+        first.project_id,
+        "run-2",
+        first.research_plan_digest,
+        first.revision,
+        first.participant_schedule,
+        first.intervention_spec,
+        first.assignment,
+        first.binding,
+        first.measurement_protocol,
+        first.protocol_identity,
+        first.task_definitions,
+    )
+    assert other_execution.assignment.assignment_digest == first.assignment.assignment_digest
+    assert other_execution.assignment_lifetime_id != first.assignment_lifetime_id
+
+
 def test_trial_request_preserves_exact_intervention_and_assignment_workload() -> None:
     request = _graph_request(_protocol(_success_definition()))
     selection = request.intervention_spec.selections[0]
@@ -298,14 +320,14 @@ def _result() -> WorkloadTaskResult:
         steps=4,
         duration_s=1.25,
         lineage_id="task-1",
-        method_receipt=WorkloadMethodReceipt(
+        participant_receipts=(("method", WorkloadMethodReceipt(
             run_id="method-run",
             program_digest="8" * 64,
             run_digest="9" * 64,
             status="succeeded",
             step_count=4,
             evidence_status="complete",
-        ),
+        )),),
     )
 
 
@@ -428,7 +450,7 @@ def test_universal_trial_provider_executes_multi_task_graph() -> None:
         "task-2",
     )
     assert all(
-        row[1].lifetime_id == request.assignment.assignment_digest
+        row[1].lifetime_id == request.assignment_lifetime_id
         for row in workload.calls
     )
 
@@ -459,7 +481,7 @@ def test_workload_trial_bridge_projects_executes_and_emits_typed_measurements() 
         for row in request.intervention_spec.selections
     )
     assert context.task_id == "task-1"
-    assert context.lifetime_id == request.assignment.assignment_digest
+    assert context.lifetime_id == request.assignment_lifetime_id
     assert context.operation_id.endswith(":task:0000")
     by_id = {row.measurement_id: row for row in receipt.measurements}
     assert by_id["success"].value.boolean is True
@@ -486,7 +508,7 @@ def test_standard_measurement_projection_leaves_unknown_semantics_unclaimed() ->
 def test_workload_trial_bridge_never_bypasses_declared_verifier_boundary() -> None:
     protocol = _protocol(_success_definition())
     provider = _provider(protocol, _Workload(_result()))
-    with pytest.raises(RuntimeError, match="verifier"):
+    with pytest.raises(ValueError, match="verifier"):
         provider.run_trial(_request(protocol, verifier=True))
 
 
@@ -545,12 +567,12 @@ def test_verifier_stage_workload_exports_only_declared_artifacts() -> None:
         lineage_id="task-1",
         exports={"answer": {"text": "42"}},
     )
-    provider = VerifierStageWorkloadTrialProvider(
+    provider = WorkloadTrialProvider(
         protocol_identity=ExperimentTrialProtocolIdentity(
             "trial.workload",
             "7" * 64,
         ),
-        workload=_Workload(result),
+        workload=WorkloadGraphBinding(_Workload(result)),
         task_projection=StaticExperimentTaskProjection(
             (ExperimentTaskSpec("task-1", "family", "solve"),)
         ),
@@ -580,12 +602,12 @@ def test_verifier_stage_workload_rejects_undeclared_exports() -> None:
         lineage_id="task-1",
         exports={"answer": {"text": "42"}, "secret": "leak"},
     )
-    provider = VerifierStageWorkloadTrialProvider(
+    provider = WorkloadTrialProvider(
         protocol_identity=ExperimentTrialProtocolIdentity(
             "trial.workload",
             "7" * 64,
         ),
-        workload=_Workload(result),
+        workload=WorkloadGraphBinding(_Workload(result)),
         task_projection=StaticExperimentTaskProjection(
             (ExperimentTaskSpec("task-1", "family", "solve"),)
         ),

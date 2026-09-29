@@ -69,6 +69,9 @@ def test_persisted_binding_discovers_all_valid_exact_model_replicas(tmp_path: Pa
         deployment_generation=second.digest(),
         route_digest=canonical_digest(route),
         role="planner",
+        capability_id="generation",
+        input_schema_id="model.generation.request.v1",
+        output_schema_id="model.generation.response.v1",
         canary_id="planner-json-replica",
         suite_digest="8" * 64,
         process_pid=receipt.process_pid,
@@ -116,13 +119,13 @@ def test_persisted_binding_discovers_all_valid_exact_model_replicas(tmp_path: Pa
 
     replicas = PersistedQualifiedModelEndpointBinding(closure).replica_set_for(
         role="planner",
-        prompt_generation="prompt-v1",
+        capability_id="generation", input_schema_id="model.generation.request.v1", output_schema_id="model.generation.response.v1", prompt_generation="prompt-v1",
     )
 
-    assert tuple(row.deployment_id for row in replicas.bindings) == (
+    assert tuple(row.deployment_id for row in replicas.members) == (
         "deployment-1",
         "deployment-2",
     )
-    assert replicas.bindings[0].model == replicas.bindings[1].model
-    assert replicas.bindings[0].model_stack_digest == replicas.bindings[1].model_stack_digest
+    assert replicas.members[0].model == replicas.members[1].model
+    assert replicas.members[0].model_stack_digest == replicas.members[1].model_stack_digest
     assert len(replicas.replica_set_digest) == 64

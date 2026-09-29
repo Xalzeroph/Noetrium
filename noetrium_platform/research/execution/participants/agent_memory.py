@@ -4,7 +4,6 @@ from collections.abc import Mapping, Sequence
 
 from noetrium_platform.foundation.kernel.kernel import (
     ExecutionContext,
-    InMemoryMachineJournal,
     MachineCut,
     MachineJournalPort,
     MachineKind,
@@ -29,30 +28,7 @@ from noetrium_platform.capabilities.api import (
 from noetrium_platform.capabilities.api import AgentMemoryPort
 
 
-class NoMemoryAgentMemory(AgentMemoryPort):
-    """Explicit no-memory ablation; it owns no hidden mutable state."""
-
-    def cut(self) -> MachineCut | None:
-        return None
-
-    def recall(
-        self,
-        goal: AgentGoal,
-        observation: AgentObservation,
-        context: ExecutionContext,
-    ) -> AgentMemoryContext:
-        del goal, context
-        return AgentMemoryContext(
-            context_text="",
-            generation=observation.generation,
-            query_id="memory-disabled",
-        )
-
-    def record(self, receipt: AgentStepReceipt, context: ExecutionContext) -> None:
-        del receipt, context
-
-
-class MachineAgentMemory(AgentMemoryPort):
+class AgentMemory(AgentMemoryPort):
     """Agent-facing adapter over one journal-backed programmable Memory Machine."""
 
     def __init__(
@@ -85,15 +61,15 @@ class MachineAgentMemory(AgentMemoryPort):
         memory_id: str,
         *,
         preset: MemoryPresetSpec = MemoryPresetSpec(),
-        journal: MachineJournalPort | None = None,
+        journal: MachineJournalPort,
         snapshot_store: MachineSnapshotStorePort | None = None,
-    ) -> "MachineAgentMemory":
+    ) -> "AgentMemory":
         if type(memory_id) is not str or not memory_id.strip():
             raise ValueError("memory_id is required")
         if not isinstance(preset, MemoryPresetSpec):
             raise TypeError("agent memory preset must be MemoryPresetSpec")
         host = default_memory_host(
-            journal=journal if journal is not None else InMemoryMachineJournal(),
+            journal=journal,
             snapshot_store=snapshot_store,
             preset=preset,
         )
@@ -314,4 +290,4 @@ class MachineAgentMemory(AgentMemoryPort):
         )
 
 
-__all__ = ["MachineAgentMemory", "NoMemoryAgentMemory"]
+__all__ = ["AgentMemory"]

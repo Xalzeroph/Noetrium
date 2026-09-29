@@ -20,7 +20,7 @@ def _deployments(*, role: str = "planner", deployment_id: str = "dep-1") -> Froz
     digest = "d" * 64
     return FrozenDeploymentSet(
         role_manifest_digest="r" * 64,
-        assignments=(FrozenRoleAssignment(role, deployment_id),),
+        assignments=(FrozenRoleAssignment(role,"generation","model.generation.request.v1","model.generation.response.v1",deployment_id),),
         deployments=(FrozenDeploymentIdentity(
             deployment_id=deployment_id,
             deployment_digest=digest,
@@ -41,7 +41,7 @@ def test_binder_resolves_role_from_frozen_deployment_and_preserves_digest() -> N
         endpoint_factory=factory,
     )
 
-    result = binder.bind(_deployments(), role="planner")
+    result = binder.bind(_deployments(), role="planner", capability_id="generation", input_schema_id="model.generation.request.v1", output_schema_id="model.generation.response.v1")
 
     assert result.deployment_id == "dep-1"
     assert result.deployment_generation == "d" * 64
@@ -56,7 +56,7 @@ def test_binder_rejects_route_generation_drift_before_endpoint_factory() -> None
         endpoint_factory=factory,
     )
     with pytest.raises(ValueError, match="generation drift"):
-        binder.bind(_deployments(), role="planner")
+        binder.bind(_deployments(), role="planner", capability_id="generation", input_schema_id="model.generation.request.v1", output_schema_id="model.generation.response.v1")
     assert factory.routes == []
 
 
@@ -66,5 +66,5 @@ def test_binder_rejects_unassigned_role_without_fallback() -> None:
         endpoint_factory=Factory(),
     )
     with pytest.raises(ValueError, match="exactly one"):
-        binder.bind(_deployments(), role="semantic")
+        binder.bind(_deployments(), role="semantic", capability_id="generation", input_schema_id="model.generation.request.v1", output_schema_id="model.generation.response.v1")
 

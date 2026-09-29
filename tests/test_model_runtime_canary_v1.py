@@ -248,3 +248,247 @@ def test_runtime_canary_rejects_endpoint_route_substitution() -> None:
             max_heartbeat_age_seconds=60.0, now=time.time(),
         )
     assert endpoint.requests == []
+
+
+def test_runtime_canary_contract_rejects_unproven_capability_labels() -> None:
+    with pytest.raises(ValueError, match="reasoning content-block proof"):
+        RuntimeCanaryContract(
+            "bad-reasoning",
+            verified_capabilities=("reasoning",),
+        )
+    with pytest.raises(ValueError, match="tool-call proof"):
+        RuntimeCanaryContract(
+            "bad-tools",
+            verified_capabilities=("tools",),
+        )
+    with pytest.raises(ValueError, match="JSON object proof"):
+        RuntimeCanaryContract(
+            "bad-structured",
+            verified_capabilities=("structured_output",),
+        )
+    with pytest.raises(ValueError, match="completed stream-event proof"):
+        RuntimeCanaryContract(
+            "bad-stream",
+            verified_capabilities=("streaming",),
+        )
+
+
+def test_runtime_canary_reasoning_requires_canonical_reasoning_block() -> None:
+    deployment=_deployment()
+    route=_route(deployment)
+    contract=RuntimeCanaryContract(
+        "reasoning-proof",
+        verified_capabilities=("reasoning",),
+        required_content_block_kinds=("reasoning",),
+    )
+    probe=RuntimeCanaryProbe(
+        "reasoning-probe",
+        "planner",
+        _digest("8"),
+        {"model":"planner-model","messages":[{"role":"user","content":"reason"}]},
+        contract,
+    )
+
+    class Endpoint(_Endpoint):
+        def __init__(self, route, with_reasoning):
+            super().__init__(route,text="answer",finish_reason="stop")
+            self.with_reasoning=with_reasoning
+        def complete(self, request):
+            self.requests.append(request)
+            blocks=(
+                {
+                    "kind":"reasoning",
+                    "provider_id":"vllm",
+                    "provider_payload":{"type":"reasoning"},
+                    "text":"reason",
+                },
+                {
+                    "kind":"text",
+                    "provider_id":"vllm",
+                    "provider_payload":{"type":"text"},
+                    "text":"answer",
+                },
+            ) if self.with_reasoning else (
+                {
+                    "kind":"text",
+                    "provider_id":"vllm",
+                    "provider_payload":{"type":"text"},
+                    "text":"<think>reason</think> answer",
+                },
+            )
+            return ModelEndpointResponse(
+                request_id=request.request.request_id,
+                deployment_id=request.deployment_id,
+                text="answer",
+                content_blocks=blocks,
+                finish_reason="stop",
+            )
+
+    proved=run_runtime_canary(
+        Endpoint(route,True),deployment,route,_heartbeat(deployment),probe,
+        max_heartbeat_age_seconds=60.0,now=time.time(),
+    )
+    text_only=run_runtime_canary(
+        Endpoint(route,False),deployment,route,_heartbeat(deployment),probe,
+        max_heartbeat_age_seconds=60.0,now=time.time(),
+    )
+    assert proved.passed is True
+    assert proved.verified_capabilities==("generation","reasoning")
+    assert text_only.passed is False
+    assert text_only.verified_capabilities==()
+
+
+def test_runtime_canary_tool_capability_requires_expected_tool_call() -> None:
+    deployment=_deployment()
+    route=_route(deployment)
+    probe=RuntimeCanaryProbe(
+        "tool-probe",
+        "planner",
+        _digest("9"),
+        {
+            "model":"planner-model",
+            "messages":[{"role":"user","content":"call probe_tool"}],
+            "tools":[{
+                "type":"function",
+                "function":{
+                    "name":"probe_tool",
+                    "parameters":{"type":"object","properties":{}},
+                },
+            }],
+        },
+        RuntimeCanaryContract(
+            "tool-proof",
+            verified_capabilities=("tools",),
+            require_non_empty_text=False,
+            required_tool_names=("probe_tool",),
+            minimum_tool_calls=1,
+        ),
+    )
+
+    class Endpoint(_Endpoint):
+        def complete(self, request):
+            self.requests.append(request)
+            return ModelEndpointResponse(
+                request_id=request.request.request_id,
+                deployment_id=request.deployment_id,
+                text="",
+                tool_calls=({
+                    "id":"call-1",
+                    "type":"function",
+                    "function":{"name":"probe_tool","arguments":{}},
+                },),
+                finish_reason="tool_calls",
+            )
+
+    evidence=run_runtime_canary(
+        Endpoint(route),deployment,route,_heartbeat(deployment),probe,
+        max_heartbeat_age_seconds=60.0,now=time.time(),
+    )
+    assert evidence.passed is True
+    assert evidence.verified_capabilities==("generation","tools")
+
+
+def test_runtime_canary_streaming_requires_real_stream_events_and_binds_digest() -> None:
+    from noetrium_platform.capabilities.model.serving.endpoint.api import (
+        ModelStreamEvent,
+        ModelStreamEventKind,
+    )
+    deployment=_deployment()
+    route=_route(deployment)
+    contract=RuntimeCanaryContract(
+        "stream-proof",
+        verified_capabilities=("streaming",),
+        required_stream_event_kinds=("text_delta","completed"),
+    )
+    with pytest.raises(ValueError,match="stream execution mode"):
+        RuntimeCanaryProbe(
+            "stream-bad","planner",_digest("a"),
+            {"model":"planner-model","messages":[{"role":"user","content":"x"}]},
+            contract,
+        )
+    probe=RuntimeCanaryProbe(
+        "stream-good",
+        "planner",
+        _digest("b"),
+        {"model":"planner-model","messages":[{"role":"user","content":"x"}]},
+        contract,
+        execution_mode="stream",
+    )
+
+    class Endpoint(_Endpoint):
+        def stream(self, request, on_event):
+            self.requests.append(request)
+            on_event(ModelStreamEvent(
+                kind=ModelStreamEventKind.TEXT_DELTA,
+                sequence=1,
+                provider_event_type="response.output_text.delta",
+                provider_id="vllm",
+                text_delta="ok",
+            ))
+            on_event(ModelStreamEvent(
+                kind=ModelStreamEventKind.COMPLETED,
+                sequence=2,
+                provider_event_type="response.completed",
+                provider_id="vllm",
+                content={"response":{"status":"completed"}},
+                terminal=True,
+            ))
+            return ModelEndpointResponse(
+                request_id=request.request.request_id,
+                deployment_id=request.deployment_id,
+                text="ok",
+                finish_reason="stop",
+            )
+
+    evidence=run_runtime_canary(
+        Endpoint(route),deployment,route,_heartbeat(deployment),probe,
+        max_heartbeat_age_seconds=60.0,now=time.time(),
+    )
+    assert evidence.passed is True
+    assert evidence.execution_mode=="stream"
+    assert evidence.verified_capabilities==("generation","streaming")
+    assert evidence.stream_digest is not None
+    assert len(evidence.stream_digest)==64
+
+
+def test_runtime_canary_responses_capability_requires_responses_route() -> None:
+    deployment=_deployment()
+    chat_route=_route(deployment)
+    probe=RuntimeCanaryProbe(
+        "responses-probe",
+        "planner",
+        _digest("c"),
+        {"model":"planner-model","messages":[{"role":"user","content":"x"}]},
+        RuntimeCanaryContract(
+            "responses-proof",
+            verified_capabilities=("responses",),
+        ),
+    )
+    chat=run_runtime_canary(
+        _Endpoint(chat_route,text="ok"),
+        deployment,
+        chat_route,
+        _heartbeat(deployment),
+        probe,
+        max_heartbeat_age_seconds=60.0,
+        now=time.time(),
+    )
+    responses_route=ModelEndpointRoute(
+        chat_route.deployment_id,
+        chat_route.deployment_generation,
+        chat_route.base_url,
+        completion_path="/v1/responses",
+        timeout_s=chat_route.timeout_s,
+    )
+    responses=run_runtime_canary(
+        _Endpoint(responses_route,text="ok"),
+        deployment,
+        responses_route,
+        _heartbeat(deployment),
+        probe,
+        max_heartbeat_age_seconds=60.0,
+        now=time.time(),
+    )
+    assert chat.passed is False
+    assert responses.passed is True
+    assert responses.verified_capabilities==("generation","responses")

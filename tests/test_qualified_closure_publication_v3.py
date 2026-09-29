@@ -79,7 +79,7 @@ def _publication() -> QualifiedModelClosurePublication:
         "http://127.0.0.1:30000",
         timeout_s=17.0,
     )
-    roles = RoleModelManifest((RoleModelAssignment("planner", deployment.deployment_id),))
+    roles = RoleModelManifest((RoleModelAssignment("planner","generation","model.generation.request.v1","model.generation.response.v1",deployment.deployment_id),))
     now = time.time()
     heartbeat = ServiceHeartbeat(
         deployment.deployment_id, stack.digest(), 123, "start-123", _digest("7"),
@@ -98,6 +98,9 @@ def _publication() -> QualifiedModelClosurePublication:
         deployment_generation=deployment.digest(),
         route_digest=canonical_digest(route),
         role="planner",
+        capability_id="generation",
+        input_schema_id="model.generation.request.v1",
+        output_schema_id="model.generation.response.v1",
         canary_id="planner-json",
         suite_digest=_digest("8"),
         process_pid=receipt.process_pid,
@@ -135,7 +138,7 @@ def test_publisher_round_trip_produces_bindable_closure(tmp_path: Path) -> None:
         runtime_canary_store_factory=DirectoryRuntimeCanaryEvidenceStore,
     )
     binding = PersistedQualifiedModelEndpointBinding(closure).binding_for(
-        role="planner", prompt_generation="prompt-v1"
+        role="planner", capability_id="generation", input_schema_id="model.generation.request.v1", output_schema_id="model.generation.response.v1", prompt_generation="prompt-v1"
     )
 
     assert receipt.closure_path == str(path.resolve())

@@ -26,19 +26,19 @@ def test_concurrent_same_digest_publication_writes_physical_blob_once(
 ) -> None:
     store = DirectoryArtifactBlobStore(tmp_path / "blobs")
     payload = (b"research-artifact-" * 8192) + b"tail"
-    original = blob_module.durable_publish_immutable_bytes
+    original = blob_module.durable_publish_immutable_bytes_many
     calls = 0
     guard = Lock()
 
-    def counted(path, value, *, staging_dir=None):
+    def counted(items, *, staging_dir=None):
         nonlocal calls
         with guard:
             calls += 1
-        return original(path, value, staging_dir=staging_dir)
+        return original(items, staging_dir=staging_dir)
 
     monkeypatch.setattr(
         blob_module,
-        "durable_publish_immutable_bytes",
+        "durable_publish_immutable_bytes_many",
         counted,
     )
 
@@ -143,15 +143,16 @@ def test_external_exact_blob_publisher_is_verified_not_overwritten(
     digest = sha256(payload).hexdigest()
     path = store._path(digest)
 
-    def external_wins(target, value, *, staging_dir=None):
-        del value, staging_dir
+    def external_wins(items, *, staging_dir=None):
+        del staging_dir
+        target, _value = items[0]
         target.parent.mkdir(parents=True, exist_ok=True)
         target.write_bytes(payload)
         raise FileExistsError("external immutable publisher won")
 
     monkeypatch.setattr(
         blob_module,
-        "durable_publish_immutable_bytes",
+        "durable_publish_immutable_bytes_many",
         external_wins,
     )
 
@@ -170,15 +171,16 @@ def test_external_corrupt_blob_publisher_fails_closed_without_overwrite(
     path = store._path(digest)
     foreign = b"foreign-corrupt"
 
-    def external_corrupt(target, value, *, staging_dir=None):
-        del value, staging_dir
+    def external_corrupt(items, *, staging_dir=None):
+        del staging_dir
+        target, _value = items[0]
         target.parent.mkdir(parents=True, exist_ok=True)
         target.write_bytes(foreign)
         raise FileExistsError("external corrupt publisher won")
 
     monkeypatch.setattr(
         blob_module,
-        "durable_publish_immutable_bytes",
+        "durable_publish_immutable_bytes_many",
         external_corrupt,
     )
 

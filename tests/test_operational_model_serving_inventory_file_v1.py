@@ -42,7 +42,7 @@ def test_operational_inventory_file_loads_one_frozen_replica(tmp_path) -> None:
     inventory = load_operational_model_serving_inventory(path)
     assert inventory.served_model_name == "qwen"
     assert inventory.capacity == 20
-    assert inventory.replica_set.replicas[0].deployment_id == "replica-0"
+    assert inventory.replica_set.members[0].deployment_id == "replica-0"
 
 
 def test_operational_inventory_file_rejects_schema_drift(tmp_path) -> None:

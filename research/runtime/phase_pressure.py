@@ -17,7 +17,7 @@ import subprocess
 import time
 
 from noetrium_platform.composition.model_requests import (
-    build_directory_model_request_recorder,
+    build_model_request_recorder,
 )
 from noetrium_platform.capabilities.model.serving.endpoint.api import (
     OperationalModelServingInventory,
@@ -29,7 +29,7 @@ from noetrium_platform.capabilities.model.serving.endpoint.runtime import (
     PinnedReplicaSelectionPolicy,
 )
 from noetrium_platform.capabilities.model.serving.endpoint.composition import (
-    build_adaptive_operational_endpoint_pool,
+    build_adaptive_model_endpoint_pool,
 )
 from noetrium_platform.capabilities.model.serving.runtime import ModelAdmissionRegistry
 from noetrium_platform.foundation.kernel.concurrency.api import (
@@ -46,7 +46,7 @@ from noetrium_platform.foundation.kernel.kernel import (
 )
 from noetrium_platform.foundation.kernel.kernel.durability import atomic_replace_bytes
 from noetrium_platform.research.execution.workflow.api import MethodNodeKind, MethodProgram
-from noetrium_platform.research.execution.workflow.runtime import UniversalMethodMachine
+from noetrium_platform.research.execution.workflow.runtime import execute_bound_method_program
 from noetrium_platform.research.experimentation.lifecycle.api import ExperimentTaskSpec
 from noetrium_platform.research.experimentation.workload.composition import (
     DeclarativeWorkloadMethodCompiler,
@@ -146,7 +146,7 @@ def _run_episode(
 ) -> dict:
     output = output_root / package / f"rep-{repetition:02d}"
     output.mkdir(parents=True, exist_ok=True)
-    recorder = build_directory_model_request_recorder(output / "model-requests")
+    recorder = build_model_request_recorder(output / "model-requests")
     runtime_inventory = compose_operational_model_method_runtime(
         (program,),
         inventory,
@@ -192,16 +192,16 @@ def _run_episode(
         ),
     )
     started = time.time()
-    result = UniversalMethodMachine(
-        max_steps=task.max_steps,
-        max_seconds=task.max_seconds,
-    ).run(
-        invocation.program,
-        runtime=invocation.runtime,
-        input_value=invocation.input_value,
-        initial_state=invocation.initial_state,
-        resume=invocation.resume,
-    )
+    try:
+        result = execute_bound_method_program(
+            invocation.program,
+            runtime=invocation.runtime,
+            input_value=invocation.input_value,
+            initial_state=invocation.initial_state,
+            resume=invocation.resume,
+        )
+    finally:
+        recorder.close()
     record = {
         "schema": "noetrium.phase-pressure-result.v3",
         "lane": "platform-pressure",
@@ -407,7 +407,7 @@ def run(args: argparse.Namespace) -> dict:
         if args.deployment_id is None
         else PinnedReplicaSelectionPolicy(args.deployment_id)
     )
-    pool = build_adaptive_operational_endpoint_pool(
+    pool = build_adaptive_model_endpoint_pool(
         inventory.replica_set,
         task_group=group,
         admission_registry=admission,

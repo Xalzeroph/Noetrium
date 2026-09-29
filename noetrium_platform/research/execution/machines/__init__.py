@@ -82,10 +82,11 @@ from .capability_program import (
     CapabilityMediatorRegistry,
     CapabilityMediatorRegistryPort,
     CapabilityProgram,
+    CapabilityProgramBinding,
+    CapabilityProgramBuilder,
     CapabilityRuleProgram,
     CapabilityRuntimeBinding,
     capability_mediator_binding_digest,
-    capability_program_from_policy,
     capability_runtime_module,
     capability_runtime_operations,
 )
@@ -107,14 +108,13 @@ from .context_program import (
     context_runtime_operation,
 )
 from .child_machine_batch import (
-    BatchCapableRegisteredChildResearchMachineExecutor,
     ChildResearchMachineBatchExecution,
-    ChildResearchMachineBatchExecutor,
     ChildResearchMachineBatchItem,
     ChildResearchMachineBatchPort,
     ChildResearchMachineBatchMechanicsPort,
     ChildResearchMachineBatchMechanicsResult,
     ChildResearchMachineBatchRequest,
+    execute_child_research_machine_batch,
 
 )
 from .child_machine import (
@@ -126,7 +126,6 @@ from .child_machine import (
     ChildResearchMachineExecutor,
     ChildResearchMachineRequest,
     RegisteredChildResearchHost,
-    RegisteredChildResearchMachineExecutor,
 )
 from .runtime_module import (
     RuntimeModule,
@@ -309,10 +308,11 @@ __all__ = [
     "capability_runtime_operations",
     "capability_runtime_module",
     "capability_mediator_binding_digest",
-    "capability_program_from_policy",
     "CapabilityRuntimeBinding",
     "CapabilityRuleProgram",
     "CapabilityProgram",
+    "CapabilityProgramBinding",
+    "CapabilityProgramBuilder",
     "CapabilityMediatorRegistryPort",
     "CapabilityMediatorRegistry",
     "CapabilityMediator",
@@ -341,7 +341,6 @@ __all__ = [
     "ContextBlockProgram",
     "participant_turn_host",
     "default_communication_runtime_host",
-    "RegisteredChildResearchMachineExecutor",
     "RegisteredChildResearchHost",
     "ChildResearchMachineRequest",
     "ChildResearchHostRegistryPort",
@@ -349,14 +348,13 @@ __all__ = [
     "ChildResearchBindingFactory",
     "ChildResearchMachineExecutor",
     "ChildResearchMachineExecution",
-    "BatchCapableRegisteredChildResearchMachineExecutor",
     "ChildResearchMachineBatchExecution",
-    "ChildResearchMachineBatchExecutor",
     "ChildResearchMachineBatchItem",
     "ChildResearchMachineBatchPort",
     "ChildResearchMachineBatchMechanicsPort",
     "ChildResearchMachineBatchMechanicsResult",
     "ChildResearchMachineBatchRequest",
+    "execute_child_research_machine_batch",
 
     "ChildFailurePolicy",
     "RuntimeProgramComposer",

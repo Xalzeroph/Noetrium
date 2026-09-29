@@ -1,4 +1,4 @@
-"""High-level binding of MethodProgram execution to the durable Machine kernel."""
+"""Bind Method authoring IR to the single generic ResearchProgram Machine host."""
 from __future__ import annotations
 
 from dataclasses import replace
@@ -7,93 +7,70 @@ from pathlib import Path
 from noetrium_platform.foundation.kernel.kernel import (
     DirectoryMachineJournal,
     DirectoryMachineSnapshotStore,
-    InMemoryMachineJournal,
-    InMemoryMachineSnapshotStore,
-    MachineIdentity,
-    MachineKind,
-    MachineProgramRef,
-    MachineExecutor,
-    ProgramLock,
     canonical_digest,
 )
+from noetrium_platform.research.execution.machines import ResearchProgramHost
+
 from ..api import MethodProgram, MethodRuntimeContext
 from ..api.runtime_services import MethodRuntimeBinderPort
-from ..runtime import MachineMethodTransitionAuthority
+from .program_lowering import (
+    lower_method_program,
+    method_program_lowering_digest,
+    method_program_operations,
+)
 
-def _program_ref(program: MethodProgram, runtime: MethodRuntimeContext) -> MachineProgramRef:
-    dependency_digest = runtime.effective_runtime_binding_digest or canonical_digest({
-        "required_capabilities": program.required_capabilities,
-        "required_runtime_ports": tuple(
-            value.value for value in program.required_runtime_ports
-        ),
-        "program_identity": program.program_identity.digest(),
-    })
-    schema_digest = runtime.schema_digest or canonical_digest({
-        "state": program.state_schema,
-        "input": program.input_schema,
-        "output": program.output_schema,
-    })
-    data_digest = runtime.binding_plan_digest or canonical_digest({"binding_plan": None})
-    return MachineProgramRef(
-        program_digest=program.program_digest,
-        schema_id="noetrium.method-machine.v2",
-        program_kind="method",
-        program_version="2",
-        program_lock=ProgramLock(
-            code_digest=program.program_digest,
-            dependency_digest=dependency_digest,
-            schema_digest=schema_digest,
-            interpreter_digest=canonical_digest({"interpreter": "umm-node-machine", "version": 2}),
-            data_digest=data_digest,
-            config_digest=canonical_digest(program.configuration),
-        ),
-    )
 
 def _bind_machine_method_runtime(
     program: MethodProgram,
     runtime: MethodRuntimeContext,
     *,
-    state_root: str | Path | None = None,
+    state_root: str | Path,
     machine_id: str | None = None,
 ) -> MethodRuntimeContext:
-    """Return a MethodRuntimeContext whose execution truth is Machine-backed.
-
-    With ``state_root=None`` the authority is process-local. Supplying a root
-    enables crash-durable Journal + verified Machine snapshots without changing
-    downstream MethodProgram code.
-    """
-    if runtime.transitions is not None:
-        raise ValueError("method runtime already has a transition authority")
-    identity = MachineIdentity(
-        machine_id or f"method:{runtime.execution.run_id}",
-        MachineKind.METHOD,
-        "2",
-        f"program:{program.program_digest[:16]}",
-    )
-    if state_root is None:
-        journal = InMemoryMachineJournal()
-        snapshots = InMemoryMachineSnapshotStore()
-    else:
-        root = Path(state_root)
-        root.mkdir(parents=True, exist_ok=True)
-        journal = DirectoryMachineJournal(root / "journal")
-        snapshots = DirectoryMachineSnapshotStore(root / "snapshots")
-    machine = MachineExecutor(
-        identity=identity,
-        program=_program_ref(program, runtime),
+    """Bind Method semantics to the one ResearchProgramHost/Machine Journal path."""
+    if runtime.program_host is not None or runtime.machine_id is not None:
+        raise ValueError("method runtime already has a generic Machine host")
+    root = Path(state_root)
+    root.mkdir(parents=True, exist_ok=True)
+    lowered = lower_method_program(program)
+    journal = DirectoryMachineJournal(root / "journal")
+    snapshots = DirectoryMachineSnapshotStore(root / "snapshots")
+    resolved_machine_id = machine_id or f"method:{runtime.execution.run_id}"
+    budget_max_steps = runtime.execution.trial_budget.get("max_steps")
+    if budget_max_steps is not None and (
+        type(budget_max_steps) is not int or budget_max_steps < 1
+    ):
+        raise ValueError("Method TrialBudget max_steps must be positive integer")
+    host = ResearchProgramHost(
+        host_id="method:" + program.program_identity.implementation.method_id,
+        program=lowered,
+        operations=method_program_operations(program),
         journal=journal,
         snapshot_store=snapshots,
+        max_steps=(10_000 if budget_max_steps is None else budget_max_steps),
+        dependency_identity={
+            "schema": "noetrium.method-generic-machine-binding.v1",
+            "method_program_digest": program.program_digest,
+            "lowering_digest": method_program_lowering_digest(program),
+            "binding_plan_digest": runtime.binding_plan_digest,
+            "runtime_binding_digest": runtime.effective_runtime_binding_digest,
+            "schema_digest": runtime.schema_digest,
+        },
     )
-    return replace(runtime, transitions=MachineMethodTransitionAuthority(machine))
+    return replace(
+        runtime,
+        program_host=host,
+        machine_id=resolved_machine_id,
+    )
 
 
 class MachineMethodRuntimeBinder(MethodRuntimeBinderPort):
-    """Execution-owned Machine binding adapter selected by outer composition."""
+    """Bind MethodProgram to the universal ResearchProgram execution kernel."""
 
     @property
     def identity_digest(self) -> str:
         return canonical_digest({
-            "adapter": "machine-method-runtime-binder",
+            "adapter": "method-research-program-runtime-binder",
             "version": 1,
         })
 
@@ -102,7 +79,7 @@ class MachineMethodRuntimeBinder(MethodRuntimeBinderPort):
         program: MethodProgram,
         runtime: MethodRuntimeContext,
         *,
-        state_root: str | Path | None = None,
+        state_root: str | Path,
         machine_id: str | None = None,
     ) -> MethodRuntimeContext:
         return _bind_machine_method_runtime(

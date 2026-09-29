@@ -18,7 +18,7 @@ from noetrium_platform.capabilities.participant.capability.api import (
     capability_request_digest,
 )
 from noetrium_platform.infrastructure.reliability.effect.api import EffectReconciliationDisposition, PreparedEffectHandle
-from noetrium_platform.infrastructure.reliability.effect.runtime import InMemoryEffectIntentJournal
+from noetrium_platform.infrastructure.reliability.effect.runtime import memory_effect_intent_journal
 from noetrium_platform.foundation.kernel.kernel import EffectCertainty, EffectClass, EffectReceipt, canonical_digest
 from noetrium_platform.composition.workflows.agent_turn import AGENT_TURN_TRIAL_CONFIGURATION_DIGEST
 from noetrium_platform.research.execution.decision.cycle_identity import DecisionCycleIdentity
@@ -50,25 +50,25 @@ class WriteToolSession:
         )
 
     @staticmethod
-    def _result(digest):
+    def _result(effect_id, digest):
         return CapabilityResult(
             "tool.write", {"ok": True},
             effect=EffectReceipt(
-                "write-effect-1", digest, EffectClass.NON_IDEMPOTENT,
+                effect_id, digest, EffectClass.NON_IDEMPOTENT,
                 EffectCertainty.EFFECT_CONFIRMED, "write-tool-instance",
             ),
         )
 
     def execute_prepared_capability(self, request, handle):
         type(self).execute_calls += 1
-        return self._result(handle.request_digest)
+        return self._result(handle.request_id, handle.request_digest)
 
     def reconcile_prepared_capability(self, handle, context):
         del context
         type(self).reconcile_calls += 1
         return CapabilityEffectReconciliationResult(
             "tool.write", EffectReconciliationDisposition.APPLIED,
-            self._result(handle.request_digest),
+            self._result(handle.request_id, handle.request_digest),
         )
 
     def invoke(self, request):
@@ -135,20 +135,21 @@ def _spec():
     )
 
 
-def _runtime(journal):
+def _runtime(journal, operation_state_root):
     agents = FakeParticipantResolver(); agents.register("agent", "tool-agent", ToolAgent)
     providers = FakeParticipantResolver(); providers.register("capability_provider", "write-tool", WriteToolProvider)
     return agent_turn_runtime(
         agents,
         capability_plugins=providers,
         effect_journal=journal,
+        operation_state_root=operation_state_root,
     )
 
 
-def test_agent_only_non_idempotent_tool_replay_does_not_repeat_external_effect():
+def test_agent_only_non_idempotent_tool_replay_does_not_repeat_external_effect(tmp_path):
     WriteToolSession.execute_calls = WriteToolSession.reconcile_calls = 0
-    journal = InMemoryEffectIntentJournal()
-    runtime = _runtime(journal)
+    journal = memory_effect_intent_journal()
+    runtime = _runtime(journal, tmp_path / "operation-runtime")
     cycle = DecisionCycleIdentity("run", "dc", "session", "task", "trace")
 
     first = runtime.execute_cycle(

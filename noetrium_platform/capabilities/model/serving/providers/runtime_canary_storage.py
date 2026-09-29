@@ -14,11 +14,13 @@ from noetrium_platform.foundation.kernel.kernel.durability.durable_file import a
 from noetrium_platform.foundation.kernel.kernel.durability.file_lock import InterprocessFileLock
 
 
-_SCHEMA = "runtime-canary-evidence.v3"
+_SCHEMA = "runtime-canary-evidence.v6"
 _FIELDS = frozenset({
-    "deployment_id", "deployment_generation", "route_digest", "role", "canary_id",
+    "deployment_id", "deployment_generation", "route_digest", "role",
+    "capability_id", "input_schema_id", "output_schema_id", "canary_id",
     "suite_digest", "process_pid", "process_start_marker", "argv_digest",
     "request_digest", "probe_digest", "response_digest", "contract_digest", "passed", "observed_at",
+    "verified_capabilities", "execution_mode", "stream_digest",
     "evidence_digest",
 })
 _LOCAL_LOCKS_GUARD = Lock()
@@ -58,6 +60,9 @@ def _encode(evidence: RuntimeCanaryEvidence, runtime_manifest_digest: str) -> by
         "deployment_generation": evidence.deployment_generation,
         "route_digest": evidence.route_digest,
         "role": evidence.role,
+        "capability_id": evidence.capability_id,
+        "input_schema_id": evidence.input_schema_id,
+        "output_schema_id": evidence.output_schema_id,
         "canary_id": evidence.canary_id,
         "suite_digest": evidence.suite_digest,
         "process_pid": evidence.process_pid,
@@ -69,6 +74,9 @@ def _encode(evidence: RuntimeCanaryEvidence, runtime_manifest_digest: str) -> by
         "contract_digest": evidence.contract_digest,
         "passed": evidence.passed,
         "observed_at": evidence.observed_at,
+        "verified_capabilities": list(evidence.verified_capabilities),
+        "execution_mode": evidence.execution_mode,
+        "stream_digest": evidence.stream_digest,
         "evidence_digest": evidence.evidence_digest,
         },
     }
@@ -100,12 +108,22 @@ def _decode(
         raise RuntimeCanaryEvidenceError("runtime canary passed must be bool")
     if type(value["observed_at"]) is not float:
         raise RuntimeCanaryEvidenceError("runtime canary observed_at must be JSON float")
+    capabilities = value["verified_capabilities"]
+    if type(capabilities) is not list or any(
+        type(item) is not str or not item.strip() for item in capabilities
+    ):
+        raise RuntimeCanaryEvidenceError(
+            "runtime canary verified_capabilities must be a JSON string array"
+        )
     try:
         return RuntimeCanaryEvidence(
             deployment_id=_text(value["deployment_id"], "deployment_id"),
             deployment_generation=_digest(value["deployment_generation"], "deployment_generation"),
             route_digest=_digest(value["route_digest"], "route_digest"),
             role=_text(value["role"], "role"),
+            capability_id=_text(value["capability_id"], "capability_id"),
+            input_schema_id=_text(value["input_schema_id"], "input_schema_id"),
+            output_schema_id=_text(value["output_schema_id"], "output_schema_id"),
             canary_id=_text(value["canary_id"], "canary_id"),
             suite_digest=_digest(value["suite_digest"], "suite_digest"),
             process_pid=value["process_pid"],
@@ -117,6 +135,13 @@ def _decode(
             contract_digest=_digest(value["contract_digest"], "contract_digest"),
             passed=value["passed"],
             observed_at=value["observed_at"],
+            verified_capabilities=tuple(capabilities),
+            execution_mode=_text(value["execution_mode"], "execution_mode"),
+            stream_digest=(
+                None
+                if value["stream_digest"] is None
+                else _digest(value["stream_digest"], "stream_digest")
+            ),
             evidence_digest=_digest(value["evidence_digest"], "evidence_digest"),
         )
     except (TypeError, ValueError) as exc:

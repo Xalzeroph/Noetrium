@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from noetrium_platform.foundation.kernel.kernel import blocking_wait
 from dataclasses import dataclass
 from enum import StrEnum
 import math
@@ -1478,7 +1479,7 @@ class ResourceCompetitionAdmissionGate(ExecutionAdmissionPort):
             )
             if sleep_for <= 0:
                 raise TimeoutError("resource competition admission deadline expired")
-            time.sleep(sleep_for)
+            blocking_wait(sleep_for)
 
     def acquire(
         self,

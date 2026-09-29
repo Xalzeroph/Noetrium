@@ -14,7 +14,6 @@ from noetrium_platform.research.execution.machines import (
     ChildResearchHostRegistry,
     ChildResearchMachineExecutor,
     ChildResearchMachineRequest,
-    RegisteredChildResearchMachineExecutor,
     ProgramNodeResult,
     ProgrammableMachineInterpreter,
     ResearchProgramBuilder,
@@ -128,7 +127,13 @@ def test_parent_program_commits_authoritative_child_machine_link() -> None:
         journal=journal,
         max_steps=4,
     )
-    child_executor = ChildResearchMachineExecutor(child_host)
+    child_registry = ChildResearchHostRegistry()
+    child_registry.register_static(
+        child_host,
+        {},
+        binding_identity_digest=canonical_digest({"binding": "paper.optimizer"}),
+    )
+    child_executor = child_registry.executor()
 
     parent_program = (
         ResearchProgramBuilder(
@@ -145,12 +150,14 @@ def test_parent_program_commits_authoritative_child_machine_link() -> None:
 
     def search(request):
         child = child_executor.execute(
-            parent_machine_id=request.snapshot.machine_id,
-            child_machine_id="optimization:paper:child-1",
-            instance_identity={"candidate_space": "paper"},
-            binding={},
-            initial_data={"seed": 7},
-            failure_policy=ChildFailurePolicy.FAIL_PARENT,
+            ChildResearchMachineRequest(
+                host_id=child_host.host_id,
+                parent_machine_id=request.snapshot.machine_id,
+                child_machine_id="optimization:paper:child-1",
+                instance_identity={"candidate_space": "paper"},
+                initial_data={"seed": 7},
+                failure_policy=ChildFailurePolicy.FAIL_PARENT,
+            )
         )
         return ProgramNodeResult(
             value={
@@ -249,7 +256,7 @@ def test_registered_child_host_invocation_is_data_driven() -> None:
             "implementation_revision": 1,
         }),
     )
-    executor = RegisteredChildResearchMachineExecutor(registry)
+    executor = registry.executor()
     request = ChildResearchMachineRequest(
         host_id="optimizer.registered",
         parent_machine_id="method:parent",
@@ -346,24 +353,31 @@ def test_incremental_child_optimization_machine_commits_one_event_per_link() -> 
         journal=journal,
         preset=preset,
     )
-    executor = ChildResearchMachineExecutor(host)
+    registry = ChildResearchHostRegistry()
+    registry.register_static(
+        host,
+        {},
+        binding_identity_digest=canonical_digest({"binding": "aflow-search"}),
+    )
+    executor = registry.executor()
     initial_data = optimization_initial_data("aflow-search", preset)
     common = {
+        "host_id": host.host_id,
         "parent_machine_id": "method:aflow-parent",
         "child_machine_id": "optimization:aflow-search",
         "instance_identity": {
             "method": "aflow",
             "optimization_id": "aflow-search",
         },
-        "binding": {},
         "initial_data": initial_data,
         "failure_policy": ChildFailurePolicy.FAIL_PARENT,
         "command_id_prefix": "aflow-child",
     }
 
     register = executor.step_once(
-        **common,
-        payload={
+        ChildResearchMachineRequest(
+            **common,
+            payload={
             "event": MachineEvent(
                 "optimization.candidate.register",
                 {
@@ -371,7 +385,8 @@ def test_incremental_child_optimization_machine_commits_one_event_per_link() -> 
                     "definition": {"workflow": "blank"},
                 },
             ).as_payload(),
-        },
+            },
+        )
     )
     assert register.status.value == "runnable"
     assert register.link.child_transition_start == 1
@@ -379,8 +394,9 @@ def test_incremental_child_optimization_machine_commits_one_event_per_link() -> 
     assert register.execution.data["candidates"]["w0"]["evaluated"] is False
 
     observe = executor.step_once(
-        **common,
-        payload={
+        ChildResearchMachineRequest(
+            **common,
+            payload={
             "event": MachineEvent(
                 "optimization.candidate.observe",
                 {
@@ -388,7 +404,8 @@ def test_incremental_child_optimization_machine_commits_one_event_per_link() -> 
                     "metrics": {"score": 0.25},
                 },
             ).as_payload(),
-        },
+            },
+        )
     )
     assert observe.status.value == "runnable"
     assert observe.link.child_transition_start == 3
@@ -396,25 +413,29 @@ def test_incremental_child_optimization_machine_commits_one_event_per_link() -> 
     assert observe.execution.data["evaluated_count"] == 1
 
     select = executor.step_once(
-        **common,
-        payload={
+        ChildResearchMachineRequest(
+            **common,
+            payload={
             "event": MachineEvent(
                 "optimization.select",
                 {},
             ).as_payload(),
-        },
+            },
+        )
     )
     assert select.link.child_transition_start == 4
     assert select.result["incumbent_id"] == "w0"
 
     final = executor.step_once(
-        **common,
-        payload={
+        ChildResearchMachineRequest(
+            **common,
+            payload={
             "event": MachineEvent(
                 "optimization.finalize",
                 {},
             ).as_payload(),
-        },
+            },
+        )
     )
     assert final.status.value == "completed"
     assert final.link.child_transition_start == 5

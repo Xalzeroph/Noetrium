@@ -9,7 +9,7 @@ from noetrium_platform.research.experimentation.lifecycle.api import ExperimentR
 from noetrium_platform.research.experimentation.lifecycle.api import RunIdentity
 from noetrium_platform.research.experimentation.identity import OptionalIdentityFacet, ReplayLevel
 from noetrium_platform.research.experimentation.lifecycle.api import CompositionPlanReference, RunLaunchManifest, RunResearchSemanticsReference
-from noetrium_platform.research.experimentation.lifecycle.api import StudyConcurrencyPolicy, StudyProtocol, StudyVariantSpec, VariantKind
+from noetrium_platform.research.experimentation.lifecycle.api import AssignmentWorkload, StudyConcurrencyPolicy, StudyProtocol, StudyVariantSpec, VariantKind
 from tests_support import model_role_for_test
 
 
@@ -53,11 +53,22 @@ class ExperimentRunSpecTests(unittest.TestCase):
             "b" * 64, seed, 2, "workflow.v1", "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
         )
         study = StudyProtocol(
-            "study-1", "workload-1",
-            (StudyVariantSpec("control", VariantKind.CONTROL, "impl", "d" * 64),),
-            2, seed, ("score",), tasks,
-            ("standard",),
-            StudyConcurrencyPolicy.serial_shared_v1(repetition_timeout_seconds=3600.0),
+            study_id="study-1",
+            workload_id="workload-1",
+            variants=(
+                StudyVariantSpec(
+                    "control", VariantKind.CONTROL, "impl", "d" * 64
+                ),
+            ),
+            repetitions=2,
+            seed_schedule_digest=seed,
+            metric_names=("score",),
+            task_manifest_digest=tasks,
+            assignment_workloads=(AssignmentWorkload(("task-0",)),),
+            budget_tiers=("standard",),
+            concurrency_policy=StudyConcurrencyPolicy.serial_shared_v1(
+                repetition_timeout_seconds=3600.0
+            ),
         )
         run = ExperimentRunSpec(
             "run-1", "project-1", "experiment-1", "study-1", "baseline",

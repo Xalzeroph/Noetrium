@@ -3,6 +3,7 @@ from __future__ import annotations
 from pathlib import Path
 
 from noetrium import api
+from noetrium_platform.product import research_os as research_os_api
 from noetrium_platform.composition.managed_research_runtime import ManagedResearchRuntime
 from noetrium_platform.composition.research_portfolio_execution import (
     ResearchExecutionAuthorities,
@@ -17,26 +18,26 @@ def _bootstrap():
     return None
 
 
-def _portfolio() -> api.research_os.ResearchPortfolio:
-    builder = api.research_os.ResearchProgramBuilder("paper")
+def _portfolio() -> research_os_api.ResearchPortfolio:
+    builder = research_os_api.ResearchProgramBuilder("paper")
     builder.definition(
         "bootstrap",
-        kind=api.research_os.ResearchDefinitionKind.CUSTOM,
+        kind=research_os_api.ResearchDefinitionKind.CUSTOM,
         implementation=_bootstrap,
     )
     builder.node(
         "root",
-        kind=api.research_os.ResearchNodeKind.CUSTOM,
+        kind=research_os_api.ResearchNodeKind.CUSTOM,
         definitions=("bootstrap",),
     )
-    return api.research_os.ResearchPortfolio("paper", (builder.freeze(),))
+    return research_os_api.ResearchPortfolio("paper", (builder.freeze(),))
 
 
 def test_single_program_and_multi_program_use_cardinality_agnostic_execution(
     tmp_path: Path,
 ) -> None:
     portfolio = _portfolio()
-    authorities = ResearchExecutionAuthorities.provider_neutral()
+    authorities = ResearchExecutionAuthorities("0" * 64)
 
     preflight = preflight_research_portfolio(
         portfolio,
@@ -60,7 +61,7 @@ def test_portfolio_execution_identity_changes_with_authority_cut(
     tmp_path: Path,
 ) -> None:
     portfolio = _portfolio()
-    left = ResearchExecutionAuthorities.provider_neutral()
+    left = ResearchExecutionAuthorities("0" * 64)
     right = ResearchExecutionAuthorities("a" * 64)
 
     left_preflight = preflight_research_portfolio(
@@ -80,30 +81,30 @@ def _second_bootstrap():
     return None
 
 
-def _program(program_id: str, implementation) -> api.research_os.ResearchProgram:
-    builder = api.research_os.ResearchProgramBuilder(program_id)
+def _program(program_id: str, implementation) -> research_os_api.ResearchProgram:
+    builder = research_os_api.ResearchProgramBuilder(program_id)
     builder.definition(
         "bootstrap",
-        kind=api.research_os.ResearchDefinitionKind.CUSTOM,
+        kind=research_os_api.ResearchDefinitionKind.CUSTOM,
         implementation=implementation,
     )
     builder.node(
         "root",
-        kind=api.research_os.ResearchNodeKind.CUSTOM,
+        kind=research_os_api.ResearchNodeKind.CUSTOM,
         definitions=("bootstrap",),
     )
     return builder.freeze()
 
 
 def test_multiple_programs_use_the_same_portfolio_executor(tmp_path: Path) -> None:
-    portfolio = api.research_os.ResearchPortfolio(
+    portfolio = research_os_api.ResearchPortfolio(
         "many",
         (
             _program("p1", _bootstrap),
             _program("p2", _second_bootstrap),
         ),
     )
-    authorities = ResearchExecutionAuthorities.provider_neutral()
+    authorities = ResearchExecutionAuthorities("0" * 64)
 
     preflight = preflight_research_portfolio(
         portfolio,
@@ -129,8 +130,8 @@ def test_generic_materializer_loader_is_cardinality_agnostic(
 
     class _Materializer:
         def materialize(self, portfolio):
-            assert type(portfolio) is api.research_os.ResearchPortfolio
-            return ResearchExecutionAuthorities.provider_neutral()
+            assert type(portfolio) is research_os_api.ResearchPortfolio
+            return ResearchExecutionAuthorities("0" * 64)
 
     module_name = "_noetrium_test_research_execution_materializer"
     module = ModuleType(module_name)

@@ -21,9 +21,9 @@ from noetrium_platform.foundation.kernel.kernel import (
 )
 from noetrium_platform.evidence.artifact.contracts import ArtifactContentIdentity
 from noetrium_platform.foundation.kernel.kernel.durability.sqlite import (
+    DurableSQLiteWriterOwner,
     immediate_sqlite_transaction,
     open_durable_sqlite_reader,
-    open_durable_sqlite_writer,
 )
 from noetrium_platform.evidence.artifact._sqlite_types import require_optional_text, require_text
 from noetrium_platform.foundation.governance.api import ScopeIdentity, ScopeKind
@@ -42,11 +42,19 @@ class SQLiteArtifactRegistry:
         self.path = Path(path).expanduser().resolve()
         self.timeout_seconds = timeout_seconds
         self.path.parent.mkdir(parents=True, exist_ok=True)
-        with closing(self._connect_writer()) as db:
+        self._writers = DurableSQLiteWriterOwner(
+            self.path,
+            timeout_seconds=self.timeout_seconds,
+        )
+        with self._writers.session() as db:
             self._ensure_schema(db)
 
-    def _connect_writer(self) -> sqlite3.Connection:
-        return open_durable_sqlite_writer(self.path, timeout_seconds=self.timeout_seconds)
+    @property
+    def writer_connection_open_count(self) -> int:
+        return self._writers.open_count
+
+    def close(self) -> None:
+        self._writers.close()
 
     def _connect_reader(self) -> sqlite3.Connection:
         return open_durable_sqlite_reader(self.path, timeout_seconds=self.timeout_seconds)
@@ -181,28 +189,46 @@ class SQLiteArtifactRegistry:
     def _select_columns(cls) -> str:
         return ",".join(cls._COLUMNS)
 
-    def put(self, artifact: ArtifactRecord) -> ArtifactRecord:
-        encoded = self._encode(artifact)
-        with closing(self._connect_writer()) as db:
+    def put_many(
+        self,
+        artifacts: tuple[ArtifactRecord, ...],
+    ) -> tuple[ArtifactRecord, ...]:
+        if type(artifacts) is not tuple or any(
+            type(artifact) is not ArtifactRecord for artifact in artifacts
+        ):
+            raise TypeError("artifact catalog put_many requires ArtifactRecord tuple")
+        if not artifacts:
+            return ()
+        ids = tuple(artifact.artifact_id for artifact in artifacts)
+        if len(ids) != len(set(ids)):
+            raise ValueError("artifact catalog put_many contains duplicate artifact ids")
+        results: list[ArtifactRecord] = []
+        with self._writers.session() as db:
             with immediate_sqlite_transaction(
                 db,
                 timeout_seconds=self.timeout_seconds,
                 label="artifact catalog",
             ):
-                current_row = db.execute(
-                    f"SELECT {self._select_columns()} FROM artifacts WHERE artifact_id=?",
-                    (artifact.artifact_id,),
-                ).fetchone()
-                if current_row is not None:
-                    current = self._decode(current_row)
-                    if current != artifact:
-                        raise ArtifactRegistryConflict(artifact.artifact_id)
-                    return current
-                db.execute(
-                    "INSERT INTO artifacts VALUES(?,?,?,?,?,?,?,?,?,?,?,?)",
-                    encoded,
-                )
-        return artifact
+                for artifact in artifacts:
+                    current_row = db.execute(
+                        f"SELECT {self._select_columns()} FROM artifacts WHERE artifact_id=?",
+                        (artifact.artifact_id,),
+                    ).fetchone()
+                    if current_row is not None:
+                        current = self._decode(current_row)
+                        if current != artifact:
+                            raise ArtifactRegistryConflict(artifact.artifact_id)
+                        results.append(current)
+                        continue
+                    db.execute(
+                        "INSERT INTO artifacts VALUES(?,?,?,?,?,?,?,?,?,?,?,?)",
+                        self._encode(artifact),
+                    )
+                    results.append(artifact)
+        return tuple(results)
+
+    def put(self, artifact: ArtifactRecord) -> ArtifactRecord:
+        return self.put_many((artifact,))[0]
 
     def get(self, artifact_id: str) -> ArtifactRecord:
         with closing(self._connect_reader()) as db:

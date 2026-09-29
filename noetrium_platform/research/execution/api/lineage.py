@@ -1,9 +1,8 @@
 """Lightweight branch-lineage identities for intra-workload execution search.
 
-This module does not replace the research workload checkpoint subsystem.
-``WorkloadExecutionCut`` owns durable task-boundary capture/restore and component
-payload consistency; these values only bind independently owned state digests to
-one logical branch source without taking ownership of those payloads.
+Durable execution recovery is owned exclusively by the Machine Journal and
+``MachineCut``. These lineage values only bind independently owned state digests
+to one logical branch source; they never own restore authority or execution cuts.
 """
 
 from __future__ import annotations

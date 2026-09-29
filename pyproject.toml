@@ -11,6 +11,7 @@ keywords = ["ai-agents", "agent-research", "research-infrastructure", "reproduci
 license = "Apache-2.0"
 license-files = ["LICENSE", "NOTICE", "THIRD_PARTY_NOTICES.md"]
 requires-python = ">=3.11"
+dependencies = ["httpx[http2]>=0.28,<0.29", "huggingface_hub>=0.34,<2"]
 
 [project.urls]
 Homepage = "https://github.com/Xalzeroph/noetrium"
@@ -45,6 +46,7 @@ include = ["components*", "orchestration*", "noetrium*", "noetrium_platform*"]
 "noetrium.contracts" = ["downstream_capability_catalog.json", "interface_schema.json"]
 "noetrium" = ["api.pyi", "py.typed"]
 "noetrium_platform.capabilities.environment.minecraft.providers" = ["assets/mineflayer_bridge/*.js", "assets/mineflayer_bridge/package.json", "assets/mineflayer_bridge/package-lock.json"]
+"noetrium_platform.capabilities.model.asset.catalog" = ["default_sources.json"]
 
 [tool.pytest.ini_options]
 pythonpath = [".", "tests"]

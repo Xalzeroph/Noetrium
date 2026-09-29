@@ -50,6 +50,7 @@ def _load_context(
     layout: DirectoryLayout,
     task_group: TaskGroupPort,
     docker_task_group: TaskGroupPort,
+    execution_pool: ResearchExecutionPool,
 ) -> ManagementCommandContext:
     base_environment = tuple(sorted((str(k), str(v)) for k, v in data.get("service_environment", {}).items()))
     source_config = data.get("model_sources", {})
@@ -68,6 +69,7 @@ def _load_context(
         model_storage_pools=storage_pools,
         task_group=task_group,
         docker_task_group=docker_task_group,
+        execution_pool=execution_pool,
     )
     return ManagementCommandContext(
         plane.scopes,
@@ -153,6 +155,7 @@ def main(argv: list[str] | None = None) -> int:
                 layout,
                 task_group,
                 docker_task_group,
+                execution_pool,
             )
             result = _require_command_success(DISPATCH[args.group](args, context))
         except (

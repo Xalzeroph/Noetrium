@@ -12,6 +12,7 @@ from noetrium_platform.foundation.kernel.concurrency.api import (
 from noetrium_platform.foundation.kernel.concurrency.composition import (
     build_concurrency_runtime,
 )
+from noetrium_platform.foundation.kernel.kernel import InMemoryMachineJournal
 from noetrium_platform.research.experimentation.lifecycle.api import (
     AssignmentWorkload,
     StudyExecutionPlan,
@@ -80,7 +81,7 @@ def _execute(plan: StudyExecutionPlan, adapter, *, task_group=None):
         execution_binding_digest="e" * 64,
         execution_id="f" * 64,
         task_group=task_group,
-    ).execute()
+    ).execute(journal=InMemoryMachineJournal())
 
 
 class _BoundAdapter:

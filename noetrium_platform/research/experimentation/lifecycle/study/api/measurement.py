@@ -93,6 +93,8 @@ class MeasurementDefinition:
     semantic_kind: str = "measurement"
     scale: str | None = None
     domain: str | None = None
+    source_path: str | None = None
+    reducer: str | None = None
     semantic_contract_digest: str = field(init=False)
     definition_digest: str = field(init=False)
 
@@ -105,9 +107,19 @@ class MeasurementDefinition:
         for name, value in (("unit", self.unit), ("scale", self.scale), ("domain", self.domain)):
             if value is not None:
                 _text(value, f"measurement definition {name}")
+        if self.source_path is not None:
+            _text(self.source_path, "measurement definition source_path")
+            if any(not part for part in self.source_path.split(".")):
+                raise ValueError("measurement definition source_path must be canonical dotted path")
+        if self.reducer is not None:
+            _text(self.reducer, "measurement definition reducer")
+            if self.reducer not in {"sum", "mean", "last", "min", "max", "all", "any"}:
+                raise ValueError("unsupported measurement reducer")
+            if self.source_path is None:
+                raise ValueError("measurement reducer requires source_path")
         if type(self.description) is not str:
             raise TypeError("measurement definition description must be a string")
-        semantic = canonical_digest({"measurement_id": self.measurement_id, "schema_id": self.schema_id, "semantic_kind": self.semantic_kind, "value_kind": self.value_kind.value, "unit": self.unit, "scale": self.scale, "domain": self.domain})
+        semantic = canonical_digest({"measurement_id": self.measurement_id, "schema_id": self.schema_id, "semantic_kind": self.semantic_kind, "value_kind": self.value_kind.value, "unit": self.unit, "scale": self.scale, "domain": self.domain, "source_path": self.source_path, "reducer": self.reducer})
         object.__setattr__(self, "semantic_contract_digest", semantic)
         object.__setattr__(self, "definition_digest", canonical_digest({"semantic_contract_digest": semantic, "description": self.description}))
 
@@ -122,6 +134,8 @@ class MeasurementDefinition:
         semantic_kind: str = "measurement",
         scale: str | None = None,
         domain: str | None = None,
+        source_path: str | None = None,
+        reducer: str | None = None,
     ) -> "MeasurementDefinition":
         """Construct the common scalar measurement without exposing value-kind plumbing."""
         return cls(
@@ -133,6 +147,8 @@ class MeasurementDefinition:
             semantic_kind=semantic_kind,
             scale=scale,
             domain=domain,
+            source_path=source_path,
+            reducer=reducer,
         )
 
 

@@ -161,6 +161,7 @@ class EffectIntentJournal(Protocol):
     def unresolved_for_scope(
         self, *, run_id: str, lifetime_id: str | None, exclude_intent_id: str | None = None
     ) -> tuple[EffectIntentRecord, ...]: ...
+    def close(self) -> None: ...
 
 
 def effect_digest(effect: EffectReceipt | None) -> str | None:

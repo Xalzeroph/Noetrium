@@ -46,11 +46,17 @@ def build_agentsquare_evaluation_study(benchmark, *, treatment: AgentSquareTreat
     artifact_requirement = f'agentsquare.final-agent.{profile.key}.{treatment.value}'
     study_id = f'agentsquare-{profile.key}-{treatment.value}-gpt4o'
     return _rs.study_spec(project_id='agentsquare-iclr2025-reproduction', study_id=study_id, benchmark=benchmark, benchmark_split_id=profile.evaluation_split_id, method=_rs.study_participant(role='agent', kind='searched_modular_agent', implementation='agentsquare', treatment=treatment.value, configurations=('agentsquare.iclr2025.modular-design-space', artifact_requirement)), models={'module_llm': _rs.study_model('model.agentsquare.gpt-4o', required=True, max_bindings=1)}, measurements=_measurement_definitions(profile), trial=agentsquare_trial_protocol(profile, treatment), repetitions=1, seeds=('paper-seed-unpublished',), limits=_rs.trial_budget(f'agentsquare-{profile.key}-evaluation-safety-cap', max_steps=4096, max_model_calls=4096, max_working_seconds=14400.0), replay_level='observational', concurrency_policy=_rs.study_concurrency_isolated(max_parallel_repetitions=1, max_parallel_assignments=max_parallel_assignments, repetition_timeout_seconds=14400.0))
-for _benchmark_profile in sorted(AGENTSQUARE_BENCHMARK_PROFILE_BY_ID.values(), key=lambda row: row.benchmark_id):
-    build_agentsquare_evaluation_study = _rs.requires_benchmark_cut(build_agentsquare_evaluation_study)
+for _benchmark_profile in sorted(
+    AGENTSQUARE_BENCHMARK_PROFILE_BY_ID.values(),
+    key=lambda row: row.benchmark_id,
+):
+    build_agentsquare_evaluation_study = _rs.requires_benchmark_cut(
+        _benchmark_profile.benchmark_id,
+        _benchmark_profile.revision_id,
+        split_ids=(_benchmark_profile.evaluation_split_id,),
+    )(build_agentsquare_evaluation_study)
 del _benchmark_profile
 
-@_rs.study_factory('benchmarks')
 def build_agentsquare_ablation_matrix(benchmarks, *, max_parallel_assignments: int=16):
     """Compile the 6 benchmarks × 3 paper treatments into 18 studies."""
     if not isinstance(benchmarks, Mapping):

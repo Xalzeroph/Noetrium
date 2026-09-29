@@ -1,10 +1,9 @@
 from __future__ import annotations
 
-from collections.abc import Callable
+from collections.abc import Callable, Mapping
 
 from noetrium_platform.capabilities.api import (
     CapabilityDescriptor,
-    CapabilityPolicySet,
     CapabilityRequest,
     CapabilityResult,
 )
@@ -18,11 +17,12 @@ from noetrium_platform.research.execution.machines.api import (
     CapabilityMediationDenied,
     CapabilityMediatorRegistryPort,
     CapabilityProgram,
+    CapabilityProgramBinding,
+    CapabilityProgramBuilder,
     CapabilityRuntimeBinding,
     ResearchProgramHost,
     RuntimeProgramComposer,
     capability_mediator_binding_digest,
-    capability_program_from_policy,
     capability_runtime_module,
     capability_runtime_operations,
 )
@@ -164,6 +164,23 @@ class CapabilityInvocationPipeline:
                     stage=CapabilityMediationStage(stage),
                     execution_completed=completed,
                 )
+            failure = execution.semantic_state.get("program_failure")
+            if isinstance(failure, Mapping):
+                code = failure.get("code")
+                message = failure.get("message")
+                cursor = failure.get("cursor")
+                error_digest = failure.get("error_digest")
+                raise RuntimeError(
+                    "capability RuntimeProgram failed"
+                    + ("" if code is None else f" code={code}")
+                    + ("" if cursor is None else f" cursor={cursor}")
+                    + ("" if message is None else f": {message}")
+                    + (
+                        ""
+                        if error_digest is None
+                        else f" [error_digest={error_digest}]"
+                    )
+                )
             raise RuntimeError("capability RuntimeProgram entered FAILED state")
         if execution.status is not MachineStatus.COMPLETED:
             raise RuntimeError(
@@ -185,40 +202,30 @@ class CapabilityInvocationPipelineFactory:
         journal: MachineJournalPort,
         *,
         snapshot_store: MachineSnapshotStorePort | None = None,
-        program: CapabilityProgram | None = None,
-        mediators: CapabilityMediatorRegistryPort | None = None,
     ) -> None:
         if not isinstance(journal, MachineJournalPort):
             raise TypeError("capability pipeline factory requires MachineJournalPort")
-        if (program is None) != (mediators is None):
-            raise ValueError(
-                "custom CapabilityProgram and mediator registry must be supplied together"
-            )
         self._journal = journal
         self._snapshot_store = snapshot_store
-        self._program = program
-        self._mediators = mediators
 
     def create(
         self,
-        policy: CapabilityPolicySet | None = None,
+        program_binding: CapabilityProgramBinding | None = None,
     ) -> CapabilityInvocationPipeline:
-        if self._program is not None:
-            if policy is not None:
-                raise ValueError(
-                    "custom CapabilityProgram cannot be combined with CapabilityPolicySet"
-                )
-            program = self._program
-            mediators = self._mediators
-            if mediators is None:
-                raise RuntimeError("capability mediator registry is missing")
-        else:
-            program, mediators = capability_program_from_policy(policy)
+        selected = (
+            CapabilityProgramBuilder().build()
+            if program_binding is None
+            else program_binding
+        )
+        if not isinstance(selected, CapabilityProgramBinding):
+            raise TypeError(
+                "capability pipeline requires CapabilityProgramBinding"
+            )
         return CapabilityInvocationPipeline(
             journal=self._journal,
             snapshot_store=self._snapshot_store,
-            program=program,
-            mediators=mediators,
+            program=selected.program,
+            mediators=selected.mediators,
         )
 
 

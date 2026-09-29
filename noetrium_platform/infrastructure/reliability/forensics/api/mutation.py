@@ -1,9 +1,13 @@
 from __future__ import annotations
 
-from dataclasses import asdict, dataclass, field
+from dataclasses import dataclass, field, fields
 import time
 
-from noetrium_platform.foundation.kernel.kernel.context import ExecutionContext
+from noetrium_platform.foundation.kernel.kernel.context import (
+    ExecutionContext,
+    execution_context_payload,
+)
+from noetrium_platform.foundation.kernel.kernel.canonical import thaw_json
 
 
 @dataclass(frozen=True, slots=True)
@@ -23,4 +27,10 @@ class MutationRecord:
     effect_ref: str | None = None
 
     def to_dict(self) -> dict[str, object]:
-        return asdict(self)
+        payload = {
+            item.name: getattr(self, item.name)
+            for item in fields(self)
+            if item.name != "context"
+        }
+        payload["context"] = thaw_json(execution_context_payload(self.context))
+        return payload

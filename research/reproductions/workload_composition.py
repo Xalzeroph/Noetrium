@@ -10,7 +10,6 @@ from noetrium_platform.research.execution.workflow.api import (
     MethodProgram,
     MethodRuntimePortInventory,
 )
-from noetrium_platform.research.execution.workflow.runtime import UniversalMethodMachine
 from noetrium_platform.research.experimentation.workload.api import (
     WorkloadTaskExecutionPort,
 )
@@ -67,7 +66,6 @@ def compose_reproduction_method_workload(
         MethodResultProjection(fields=binding.result_fields)
     )
     return bind_method_workload(
-        machine=UniversalMethodMachine(),
         compiler=compiler,
         result_adapter=result_adapter,
     )

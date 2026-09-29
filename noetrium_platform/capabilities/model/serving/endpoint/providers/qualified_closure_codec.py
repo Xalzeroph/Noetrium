@@ -16,6 +16,7 @@ from noetrium_platform.capabilities.model.serving.api.qualified_deployment impor
 )
 from noetrium_platform.capabilities.model.stack.api import (
     ModelArtifactClosure,
+    ModelServingPolicy,
     ModelStackSpec,
     RuntimeBuildIdentity,
 )
@@ -24,7 +25,7 @@ from noetrium_platform.foundation.kernel.kernel import ImmutableModelIdentity, c
 from ..api import ModelEndpointRoute
 
 
-SCHEMA = "qualified-model-deployment-closure.v3"
+SCHEMA = "qualified-model-deployment-closure"
 
 
 class QualifiedClosureCodecError(ValueError):
@@ -65,6 +66,12 @@ def _string(value: object, *, field: str) -> str:
 
 def _optional_string(value: object, *, field: str) -> str | None:
     return None if value is None else _string(value, field=field)
+
+
+def _boolean(value: object, *, field: str) -> bool:
+    if type(value) is not bool:
+        raise QualifiedClosureCodecError(f"closure field must be bool: {field}")
+    return value
 
 
 def _integer(value: object, *, field: str, positive: bool = False) -> int:
@@ -183,6 +190,47 @@ def _runtime(raw: object, *, field: str) -> RuntimeBuildIdentity:
     )
 
 
+def _serving_policy(raw: object, *, field: str) -> ModelServingPolicy:
+    value = _mapping(
+        raw,
+        field=field,
+        fields=frozenset({
+            "prefix_caching",
+            "prefix_cache_hash_algorithm",
+            "chunked_prefill",
+            "max_batch_tokens",
+        }),
+    )
+    prefix_caching = (
+        None
+        if value["prefix_caching"] is None
+        else _boolean(value["prefix_caching"], field=f"{field}.prefix_caching")
+    )
+    chunked_prefill = (
+        None
+        if value["chunked_prefill"] is None
+        else _boolean(value["chunked_prefill"], field=f"{field}.chunked_prefill")
+    )
+    max_batch_tokens = (
+        None
+        if value["max_batch_tokens"] is None
+        else _integer(
+            value["max_batch_tokens"],
+            field=f"{field}.max_batch_tokens",
+            positive=True,
+        )
+    )
+    return ModelServingPolicy(
+        prefix_caching=prefix_caching,
+        prefix_cache_hash_algorithm=_optional_string(
+            value["prefix_cache_hash_algorithm"],
+            field=f"{field}.prefix_cache_hash_algorithm",
+        ),
+        chunked_prefill=chunked_prefill,
+        max_batch_tokens=max_batch_tokens,
+    )
+
+
 def _stack(raw: object, *, field: str) -> ModelStackSpec:
     value = _mapping(
         raw,
@@ -191,6 +239,7 @@ def _stack(raw: object, *, field: str) -> ModelStackSpec:
             "identity", "artifacts", "runtime", "tensor_parallel", "data_parallel",
             "expert_parallel", "pipeline_parallel", "reasoning_parser", "tool_call_parser",
             "kv_cache_dtype", "attention_backend", "scheduler_policy", "engine_args",
+            "serving_policy",
         }),
     )
     return ModelStackSpec(
@@ -207,6 +256,10 @@ def _stack(raw: object, *, field: str) -> ModelStackSpec:
         attention_backend=_optional_string(value["attention_backend"], field=f"{field}.attention_backend"),
         scheduler_policy=_string(value["scheduler_policy"], field=f"{field}.scheduler_policy"),
         engine_args=_strings(value["engine_args"], field=f"{field}.engine_args"),
+        serving_policy=_serving_policy(
+            value["serving_policy"],
+            field=f"{field}.serving_policy",
+        ),
     )
 
 
@@ -308,11 +361,25 @@ def _roles(raw: object) -> RoleModelManifest:
     for index, raw_assignment in enumerate(assignments):
         field = f"role_manifest.assignments[{index}]"
         assignment = _mapping(
-            raw_assignment, field=field, fields=frozenset({"role", "deployment_id"})
+            raw_assignment,
+            field=field,
+            fields=frozenset({
+                "role", "capability_id", "input_schema_id",
+                "output_schema_id", "deployment_id",
+            }),
         )
         rows.append(
             RoleModelAssignment(
                 role=_string(assignment["role"], field=f"{field}.role"),
+                capability_id=_string(
+                    assignment["capability_id"], field=f"{field}.capability_id"
+                ),
+                input_schema_id=_string(
+                    assignment["input_schema_id"], field=f"{field}.input_schema_id"
+                ),
+                output_schema_id=_string(
+                    assignment["output_schema_id"], field=f"{field}.output_schema_id"
+                ),
                 deployment_id=_string(
                     assignment["deployment_id"], field=f"{field}.deployment_id"
                 ),
@@ -332,7 +399,7 @@ def _unsigned_payload(
     runtime_canary_evidence_digests: tuple[str, ...],
 ) -> dict[str, object]:
     return {
-        "schema_version": SCHEMA,
+        "schema": SCHEMA,
         "runtime_manifest_digest": _digest(
             runtime_manifest_digest, field="runtime_manifest_digest"
         ),
@@ -384,15 +451,15 @@ def decode_qualified_closure(document: object) -> DecodedQualifiedClosure:
         document,
         field="root",
         fields=frozenset({
-            "schema_version", "closure_digest", "runtime_manifest_digest",
+            "schema", "closure_digest", "runtime_manifest_digest",
             "runtime_qualification_root", "runtime_qualification_receipt_digests",
             "runtime_canary_root", "runtime_canary_evidence_digests",
             "role_manifest", "deployments", "routes",
         }),
     )
-    if root["schema_version"] != SCHEMA:
+    if root["schema"] != SCHEMA:
         raise QualifiedClosureCodecError(
-            f"unsupported qualified model closure schema: {root['schema_version']!r}"
+            f"unsupported qualified model closure schema: {root['schema']!r}"
         )
     supplied_digest = _digest(root["closure_digest"], field="closure_digest")
     unsigned = {key: value for key, value in root.items() if key != "closure_digest"}

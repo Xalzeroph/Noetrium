@@ -88,7 +88,7 @@ class QualifiedClosureFileTests(unittest.TestCase):
             "http://127.0.0.1:30000",
             timeout_s=17.0,
         )
-        roles = RoleModelManifest((RoleModelAssignment("planner", deployment.deployment_id),))
+        roles = RoleModelManifest((RoleModelAssignment("planner","generation","model.generation.request.v1","model.generation.response.v1",deployment.deployment_id),))
         runtime_manifest_digest = _digest("c")
 
         with tempfile.TemporaryDirectory() as raw_root:
@@ -111,6 +111,9 @@ class QualifiedClosureFileTests(unittest.TestCase):
                 deployment_generation=deployment.digest(),
                 route_digest=canonical_digest(route),
                 role="planner",
+                capability_id="generation",
+                input_schema_id="model.generation.request.v1",
+                output_schema_id="model.generation.response.v1",
                 canary_id="planner-json",
                 suite_digest=_digest("8"),
                 process_pid=receipt.process_pid,
@@ -147,7 +150,7 @@ class QualifiedClosureFileTests(unittest.TestCase):
             )
             binding = PersistedQualifiedModelEndpointBinding(closure).binding_for(
                 role="planner",
-                prompt_generation="prompt-generation-v1",
+                capability_id="generation", input_schema_id="model.generation.request.v1", output_schema_id="model.generation.response.v1", prompt_generation="prompt-generation-v1",
             )
 
         self.assertEqual(binding.deployment_id, "deployment-1")

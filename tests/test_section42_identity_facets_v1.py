@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from dataclasses import replace
+from dataclasses import dataclass, replace
 import hashlib
 
 import pytest
@@ -8,8 +8,6 @@ import pytest
 from noetrium_platform.evidence.artifact.content.api import ArtifactStorageBinding
 from noetrium_platform.evidence.artifact.content.providers import FilesystemArtifactStoragePlacementVerifier
 from noetrium_platform.evidence.data.dataset.api import DatasetIdentity, DatasetVersion
-from noetrium_platform.research.experimentation.lifecycle.api import RunArtifactKind, RunArtifactSnapshotReceipt
-from noetrium_platform.research.experimentation.lifecycle.api import EvidenceBundleManifest, EvidenceBundleStatus, EvidenceStreamDescriptor
 from noetrium_platform.foundation.scope.api import ScopeIdentity, ScopeKind
 
 from noetrium_platform.research.experimentation.lifecycle.api import ExperimentRunSpec
@@ -30,6 +28,18 @@ SHA_A = "a" * 64
 SHA_B = "b" * 64
 SHA_C = "c" * 64
 SHA_D = "d" * 64
+
+
+@dataclass(frozen=True, slots=True)
+class _EvidenceStatus:
+    value: str
+
+
+@dataclass(frozen=True, slots=True)
+class _EvidenceManifest:
+    run_id: str
+    digest: str
+    status: _EvidenceStatus
 
 def _run(artifact_root: str) -> ExperimentRunSpec:
     return ExperimentRunSpec(
@@ -136,9 +146,11 @@ def test_measurement_cut_consumes_portable_dataset_and_real_storage_verification
     scope = ScopeIdentity(ScopeKind.PROJECT, "project-1")
     identity = DatasetIdentity("results", "v1")
     dataset = DatasetVersion(identity, scope, SHA_A, "result.v1")
-    receipt = RunArtifactSnapshotReceipt("run-1", "streams/actions.jsonl", RunArtifactKind.EVIDENCE, SHA_B, SHA_C, 12, 1)
-    stream = EvidenceStreamDescriptor("actions", "actions", "1", receipt, True, True)
-    evidence = EvidenceBundleManifest("2", "bundle-1", "run-1", SHA_D, EvidenceBundleStatus.COMPLETE, None, (stream,))
+    evidence = _EvidenceManifest(
+        "run-1",
+        SHA_D,
+        _EvidenceStatus("complete"),
+    )
     cut = MeasurementCut(dataset_versions=(dataset,), evidence_manifests=(evidence,))
     metadata_only = replace(dataset, tags=("relocated",))
     assert cut.cut_digest == MeasurementCut(dataset_versions=(metadata_only,), evidence_manifests=(evidence,)).cut_digest
@@ -154,6 +166,6 @@ def test_measurement_cut_consumes_portable_dataset_and_real_storage_verification
     assert relocated.content_sha256 == binding.content_sha256
     assert cut.cut_digest == MeasurementCut(dataset_versions=(dataset,), evidence_manifests=(evidence,)).cut_digest
 
-    failed = replace(evidence, status=EvidenceBundleStatus.FAILED)
+    failed = replace(evidence, status=_EvidenceStatus("failed"))
     with pytest.raises(ValueError, match="COMPLETE"):
         MeasurementCut(evidence_manifests=(failed,))

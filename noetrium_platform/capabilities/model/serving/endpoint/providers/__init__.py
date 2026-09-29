@@ -1,6 +1,12 @@
 """Replaceable model endpoint transports and qualified-closure providers."""
 
-from .openai_compatible import AsyncioJsonTransport, OpenAICompatibleModelEndpoint
+from .http_pool import (
+    PooledModelHttpTransport,
+    PooledModelHttpTransportOwner,
+    PooledModelHttpTransportSnapshot,
+)
+from .native import NativeModelProviderEndpoint
+from .structured_http import StructuredModelJsonHttpClient
 from .operational_inventory_file import (
     OPERATIONAL_MODEL_SERVING_INVENTORY_FILE_SCHEMA,
     OperationalModelServingInventoryReadError,
@@ -12,6 +18,11 @@ from .qualified_closure_file import (
     QualifiedModelClosureReadError,
     load_qualified_model_deployment_closure,
 )
+from .tokenization import (
+    ExactModelTokenizationCache,
+    OpenAICompatibleQualifiedTokenization,
+    QualifiedEndpointTokenizationProvider,
+)
 from .qualified_closure_publication import (
     QualifiedModelClosurePublicationError,
     publish_qualified_model_deployment_closure,
@@ -22,8 +33,10 @@ __all__ = [
     "decode_operational_model_serving_inventory",
     "OperationalModelServingInventoryReadError",
     "OPERATIONAL_MODEL_SERVING_INVENTORY_FILE_SCHEMA",
-    "AsyncioJsonTransport", "OpenAICompatibleModelEndpoint",
+    "PooledModelHttpTransport", "PooledModelHttpTransportOwner", "PooledModelHttpTransportSnapshot", "NativeModelProviderEndpoint", "StructuredModelJsonHttpClient",
     "PersistedQualifiedModelEndpointBinding", "QualifiedModelClosurePublicationError",
     "QualifiedModelClosureReadError", "QualifiedModelDeploymentClosure",
     "load_qualified_model_deployment_closure", "publish_qualified_model_deployment_closure",
+    "ExactModelTokenizationCache", "OpenAICompatibleQualifiedTokenization",
+    "QualifiedEndpointTokenizationProvider",
 ]

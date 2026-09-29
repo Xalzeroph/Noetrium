@@ -14,12 +14,12 @@ from threading import RLock
 from typing import Protocol, runtime_checkable
 
 from noetrium_platform.capabilities.api import (
+    CapabilityApprovalPort,
     CapabilityDescriptor,
+    CapabilityGuardPort,
+    CapabilityPostPolicyPort,
     CapabilityRequest,
     CapabilityResult,
-)
-from noetrium_platform.capabilities.api import (
-    CapabilityPolicySet,
     GuardVerdict,
 )
 from noetrium_platform.foundation.kernel.kernel import (
@@ -356,34 +356,71 @@ class CapabilityRuntimeBinding:
 
 
 
-def capability_program_from_policy(
-    policy: CapabilityPolicySet | None,
-    *,
-    program_id: str = "runtime.capability.policy",
-    version: str = "1",
-) -> tuple[CapabilityProgram, CapabilityMediatorRegistry]:
-    """Compile the legacy policy object into RuntimeMachine program semantics."""
+@dataclass(frozen=True, slots=True)
+class CapabilityProgramBinding:
+    """Immutable binding of one mediation program to exact implementations."""
 
-    selected = CapabilityPolicySet() if policy is None else policy
-    if not isinstance(selected, CapabilityPolicySet):
-        raise TypeError("capability policy preset must be CapabilityPolicySet")
+    program: CapabilityProgram
+    mediators: CapabilityMediatorRegistryPort
 
-    rules: list[CapabilityRuleProgram] = []
-    registry = CapabilityMediatorRegistry()
+    def __post_init__(self) -> None:
+        capability_mediator_binding_digest(self.program, self.mediators)
 
-    for index, guard in enumerate(selected.guards):
-        mediator_id = f"capability.guard:{index}:{guard.guard_id}"
-        rules.append(
-            CapabilityRuleProgram(
-                rule_id=f"guard:{index}:{guard.guard_id}",
-                stage=CapabilityMediationStage.PRE,
-                mediator=mediator_id,
-                priority=10_000 - index,
-                required=True,
-            )
+    @property
+    def binding_digest(self) -> str:
+        return capability_mediator_binding_digest(self.program, self.mediators)
+
+
+class CapabilityProgramBuilder:
+    """The single authoring surface for capability mediation semantics."""
+
+    def __init__(
+        self,
+        *,
+        program_id: str = "runtime.capability",
+        version: str = "1",
+    ) -> None:
+        self._program_id = program_id
+        self._version = version
+        self._rules: list[CapabilityRuleProgram] = []
+        self._mediators = CapabilityMediatorRegistry()
+
+    def rule(
+        self,
+        rule: CapabilityRuleProgram,
+        handler: CapabilityMediator,
+        *,
+        implementation_digest: str,
+    ) -> "CapabilityProgramBuilder":
+        if not isinstance(rule, CapabilityRuleProgram):
+            raise TypeError("capability program builder requires CapabilityRuleProgram")
+        self._mediators.register(
+            rule.mediator,
+            handler,
+            implementation_digest=implementation_digest,
         )
+        self._rules.append(rule)
+        return self
 
-        def guard_handler(
+    def guard(
+        self,
+        guard: CapabilityGuardPort,
+        *,
+        priority: int | None = None,
+    ) -> "CapabilityProgramBuilder":
+        guard_id = getattr(guard, "guard_id", None)
+        if type(guard_id) is not str or not guard_id.strip():
+            raise ValueError("capability guard_id is required")
+        implementation_digest = require_sha256(
+            getattr(guard, "implementation_digest", None),
+            f"capability guard {guard_id} implementation_digest",
+        )
+        if not callable(getattr(guard, "evaluate", None)):
+            raise TypeError(f"capability guard {guard_id} evaluate must be callable")
+        mediator_id = f"capability.guard:{guard_id}"
+        resolved_priority = 10_000 - len(self._rules) if priority is None else priority
+
+        def handler(
             request: CapabilityMediationRequest,
             *,
             _guard=guard,
@@ -409,69 +446,87 @@ def capability_program_from_policy(
                 }
             )
 
-        registry.register(
-            mediator_id,
-            guard_handler,
-            implementation_digest=guard.implementation_digest,
-        )
-
-    if selected.approval is not None:
-        mediator_id = (
-            f"capability.approval:{selected.approval.approval_id}"
-        )
-        rules.append(
+        return self.rule(
             CapabilityRuleProgram(
-                rule_id=f"approval:{selected.approval.approval_id}",
+                rule_id=f"guard:{guard_id}",
                 stage=CapabilityMediationStage.PRE,
                 mediator=mediator_id,
-                priority=0,
+                priority=resolved_priority,
                 required=True,
-            )
+            ),
+            handler,
+            implementation_digest=implementation_digest,
         )
 
-        def approval_handler(
+    def approval(
+        self,
+        approval: CapabilityApprovalPort,
+    ) -> "CapabilityProgramBuilder":
+        approval_id = getattr(approval, "approval_id", None)
+        if type(approval_id) is not str or not approval_id.strip():
+            raise ValueError("capability approval_id is required")
+        implementation_digest = require_sha256(
+            getattr(approval, "implementation_digest", None),
+            f"capability approval {approval_id} implementation_digest",
+        )
+        if not callable(getattr(approval, "approve", None)):
+            raise TypeError("capability approval approve must be callable")
+        mediator_id = f"capability.approval:{approval_id}"
+
+        def handler(
             request: CapabilityMediationRequest,
+            *,
+            _approval=approval,
         ) -> CapabilityMediationResult:
-            if not selected.approval.approve(
-                request.descriptor,
-                request.request,
-            ):
+            if not _approval.approve(request.descriptor, request.request):
                 return CapabilityMediationResult(
                     verdict=CapabilityMediationVerdict.DENY,
                     reason_code="approval_denied",
                     receipt={"approved": False},
                 )
-            return CapabilityMediationResult(
-                receipt={"approved": True}
-            )
+            return CapabilityMediationResult(receipt={"approved": True})
 
-        registry.register(
-            mediator_id,
-            approval_handler,
-            implementation_digest=selected.approval.implementation_digest,
-        )
-
-    for index, post in enumerate(selected.post_policies):
-        mediator_id = f"capability.post:{index}:{post.policy_id}"
-        rules.append(
+        return self.rule(
             CapabilityRuleProgram(
-                rule_id=f"post:{index}:{post.policy_id}",
-                stage=CapabilityMediationStage.POST,
+                rule_id=f"approval:{approval_id}",
+                stage=CapabilityMediationStage.PRE,
                 mediator=mediator_id,
-                priority=10_000 - index,
+                priority=0,
                 required=True,
-            )
+            ),
+            handler,
+            implementation_digest=implementation_digest,
         )
 
-        def post_handler(
+    def post_policy(
+        self,
+        policy: CapabilityPostPolicyPort,
+        *,
+        priority: int | None = None,
+    ) -> "CapabilityProgramBuilder":
+        policy_id = getattr(policy, "policy_id", None)
+        if type(policy_id) is not str or not policy_id.strip():
+            raise ValueError("capability post policy_id is required")
+        implementation_digest = require_sha256(
+            getattr(policy, "implementation_digest", None),
+            f"capability post policy {policy_id} implementation_digest",
+        )
+        if not callable(getattr(policy, "validate", None)):
+            raise TypeError(
+                f"capability post policy {policy_id} validate must be callable"
+            )
+        mediator_id = f"capability.post:{policy_id}"
+        resolved_priority = 10_000 - len(self._rules) if priority is None else priority
+
+        def handler(
             request: CapabilityMediationRequest,
             *,
-            _post=post,
+            _policy=policy,
         ) -> CapabilityMediationResult:
             if request.result is None:
                 raise RuntimeError("post-policy requires capability result")
             try:
-                _post.validate(
+                _policy.validate(
                     request.descriptor,
                     request.request,
                     request.result,
@@ -479,33 +534,41 @@ def capability_program_from_policy(
             except Exception:
                 return CapabilityMediationResult(
                     verdict=CapabilityMediationVerdict.DENY,
-                    reason_code=f"post_policy:{_post.policy_id}",
+                    reason_code=f"post_policy:{_policy.policy_id}",
                     receipt={
-                        "policy_id": _post.policy_id,
+                        "policy_id": _policy.policy_id,
                         "validated": False,
                     },
                 )
             return CapabilityMediationResult(
                 receipt={
-                    "policy_id": _post.policy_id,
+                    "policy_id": _policy.policy_id,
                     "validated": True,
                 }
             )
 
-        registry.register(
-            mediator_id,
-            post_handler,
-            implementation_digest=post.implementation_digest,
+        return self.rule(
+            CapabilityRuleProgram(
+                rule_id=f"post:{policy_id}",
+                stage=CapabilityMediationStage.POST,
+                mediator=mediator_id,
+                priority=resolved_priority,
+                required=True,
+            ),
+            handler,
+            implementation_digest=implementation_digest,
         )
 
-    return (
-        CapabilityProgram(
-            program_id=program_id,
-            version=version,
-            rules=tuple(rules),
-        ),
-        registry,
-    )
+    def build(self) -> CapabilityProgramBinding:
+        return CapabilityProgramBinding(
+            CapabilityProgram(
+                program_id=self._program_id,
+                version=self._version,
+                rules=tuple(self._rules),
+            ),
+            self._mediators,
+        )
+
 
 def _apply_stage(
     binding: CapabilityRuntimeBinding,
@@ -746,10 +809,11 @@ __all__ = [
     "CapabilityMediatorRegistry",
     "CapabilityMediatorRegistryPort",
     "CapabilityProgram",
+    "CapabilityProgramBinding",
+    "CapabilityProgramBuilder",
     "CapabilityRuleProgram",
     "CapabilityRuntimeBinding",
     "capability_mediator_binding_digest",
-    "capability_program_from_policy",
     "capability_runtime_module",
     "capability_runtime_operations",
 ]

@@ -1,12 +1,14 @@
 from __future__ import annotations
 
+from prompt_os_test_support import make_promoted_prompt_registry
+
 from pathlib import Path
 import tempfile
 import unittest
 
 from tests._concurrency_support import telemetry_backend
 from noetrium_platform.evidence.artifact.content.providers import DirectoryArtifactBlobStore
-from noetrium_platform.capabilities.model.request.runtime import DirectoryModelRequestLedger, ReconstructableModelRequestRecorder
+from noetrium_platform.capabilities.model.request.runtime import SQLiteModelRequestLedger, ReconstructableModelRequestRecorder
 from noetrium_platform.foundation.kernel.kernel import ExecutionContext, ImmutableModelIdentity
 from noetrium_platform.capabilities.model.request.prompt.runtime import (
     PromptBlock, PromptBlockKind, PromptCompilePipeline,
@@ -37,7 +39,7 @@ class PromptMetricEmissionV80Tests(unittest.TestCase):
                 observer=PromptTelemetryObserver(ctx,raw_sink=raw,metric_sink=metrics),
             )
             trace.mark(PromptTraceStage.REQUEST_CREATED,timestamp=1.0)
-            registry=PromptRegistry(); registry.publish("g80",default_prompt_specs())
+            registry=make_promoted_prompt_registry(generation_id="g80")
             K=PromptBlockKind
             blocks=(
                 PromptBlock(K.TASK,"task","d1",1),
@@ -51,7 +53,7 @@ class PromptMetricEmissionV80Tests(unittest.TestCase):
                 request_id="rq80",context=ctx,model=model,trace=trace,
                 model_requests=ReconstructableModelRequestRecorder(
                     DirectoryArtifactBlobStore(root/"model-request-blobs"),
-                    DirectoryModelRequestLedger(root/"model-request-ledger"),
+                    SQLiteModelRequestLedger(root/"model-request-ledger"),
                 ),
                 body_builder=lambda resolution,compilation:{"messages":[{"role":"system","content":compilation.compiled.text}]},
             )

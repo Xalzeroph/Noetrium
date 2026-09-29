@@ -1,5 +1,5 @@
 from .spec import PromptSection, PromptSpec
-from .runtime import ActivePromptBundle, PromptRegistry, PromptResolution
+from .runtime import ActivePromptBundle, PromptResolution
 from .roles import default_prompt_specs
 from .request_contract import PromptRequestContract, build_prompt_request_contract, verify_prompt_request_contract
 from .blocks import PromptBlock, PromptBlockKind, PromptBlockPolicy
@@ -8,7 +8,7 @@ from .compile_pipeline import PromptCompilationReceipt, PromptCompilePipeline
 from .qualification import CanaryObservation, CanarySuite, PromptCanary, PromptQualification, evaluate_canaries
 from .outcome import PromptOutcomeLink, PromptOutcomeSummary, summarize_outcomes
 from .schema import OutputSchemaRegistry, OutputSchemaSpec, default_output_schemas
-from .publication import DurablePromptRegistry, PromptGenerationManifest, PromptPromotionEvidence, PromptPromotionRecord, PromptPublicationError
+from .publication import PromptRegistry, PromptGenerationManifest, PromptPromotionEvidence, PromptPromotionRecord, PromptPublicationError
 from .execution_contract import PromptExecutionContract, build_execution_contract
 from .request_build import PromptBoundRequest, PromptRequestBuildTransaction
 from .trace import PromptRequestTrace
@@ -20,6 +20,6 @@ __all__ = [
     "CanaryObservation","CanarySuite","PromptCanary","PromptQualification","evaluate_canaries",
     "PromptOutcomeLink","PromptOutcomeSummary","summarize_outcomes",
     "OutputSchemaRegistry","OutputSchemaSpec","default_output_schemas",
-    "DurablePromptRegistry","PromptGenerationManifest","PromptPromotionEvidence","PromptPromotionRecord","PromptPublicationError","PromptExecutionContract","build_execution_contract","PromptBoundRequest","PromptRequestBuildTransaction",
+    "PromptGenerationManifest","PromptPromotionEvidence","PromptPromotionRecord","PromptPublicationError","PromptExecutionContract","build_execution_contract","PromptBoundRequest","PromptRequestBuildTransaction",
     "PromptRequestTrace",
 ]

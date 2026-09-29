@@ -11,7 +11,7 @@ BOOTSTRAP_READY=0
 
 usage() {
   cat <<'EOF'
-Usage: ./deploy/noetrium <doctor|build|plan|requirements|preflight|run|env|docker> [args]
+Usage: ./deploy/noetrium <doctor|build|plan|requirements|preflight|run|project|env|docker> [args]
 
   doctor     verify ordinary-user Docker/Compose access and environment registry
   build      build or reuse all active environment profiles
@@ -19,6 +19,7 @@ Usage: ./deploy/noetrium <doctor|build|plan|requirements|preflight|run|env|docke
   requirements emit the machine-readable owner authority prerequisite manifest
   preflight  materialize exact authority closure and admit the fleet without starting work
   run        build/reuse environments and execute the fleet through one shared runtime
+  project    run/control one downstream Research OS project in the Docker-first control plane
   env        pass remaining arguments to the low-level environment bootstrap
   docker     manage the optional ordinary-user rootless Docker daemon
 
@@ -128,6 +129,63 @@ fleet() {
   control_python scripts/run_reproduction_fleet.py "$@"
 }
 
+project_root_from_args() {
+  project_root="."
+  expect_root=0
+  for argument in "$@"; do
+    if [ "$expect_root" = "1" ]; then
+      project_root="$argument"
+      expect_root=0
+      continue
+    fi
+    case "$argument" in
+      --project)
+        expect_root=1
+        ;;
+      --project=*)
+        project_root="${argument#--project=}"
+        ;;
+    esac
+  done
+  [ "$expect_root" = "0" ] || die "--project requires a path"
+  test -d "$project_root" || die "project root does not exist: $project_root"
+  test ! -L "$project_root" || die "project root must not be a symlink: $project_root"
+  (CDPATH= cd -- "$project_root" && pwd -P)
+}
+
+project_control() {
+  [ "$#" -gt 0 ] || die "project requires a Research OS lifecycle command"
+  action="$1"
+  project_root="$(project_root_from_args "$@")"
+  project_state_root="$project_root/.noetrium/control-plane"
+  mkdir -p "$project_state_root"
+
+  case "$action" in
+    doctor|test|sync)
+      set -- project "$@"
+      ;;
+    run|inspect|pause|drain|interrupt|resume|retry|cancel|checkpoint|reconcile|migrate)
+      ;;
+    *)
+      die "unsupported project control action: $action"
+      ;;
+  esac
+
+  bootstrap_reuse=0
+  if [ "$BOOTSTRAP_READY" = "1" ]; then
+    bootstrap_reuse=1
+  fi
+
+  NOETRIUM_BOOTSTRAP_REUSE="$bootstrap_reuse" \
+  NOETRIUM_CONTROL_PROJECT_ROOT="$project_root" \
+  NOETRIUM_CONTROL_HOST_RUNTIME=1 \
+  NOETRIUM_CONTROL_STATE_ROOT="$project_state_root" \
+  NOETRIUM_BUILD_WORK_ROOT="$ENV_WORK_ROOT" \
+    "$ENV_BOOTSTRAP" control \
+      -c 'from noetrium_platform.composition.operator.wiring.research import main; import sys; raise SystemExit(main(sys.argv[1:]))' \
+      "$@"
+}
+
 command="${1:-}"
 [ -n "$command" ] || {
   usage
@@ -165,6 +223,10 @@ case "$command" in
     fi
     fleet_with_optional_materializer --execute \
       --state-root "$FLEET_STATE_ROOT" "$@"
+    ;;
+  project)
+    host_doctor
+    project_control "$@"
     ;;
   env)
     host_doctor

@@ -84,16 +84,18 @@ class ActionRecoveryJournal {
       throw new Error('ACTION_RECOVERY_INTENT_MISSING')
     }
     const status = result && result.outcome ? result.outcome.status : null
-    const disposition = result && result.verified === true
-      ? 'applied'
-      : status === 'rejected' ? 'not_applied' : 'unknown'
+    const disposition = result ? String(result.effect_disposition || '') : ''
+    if (!['applied', 'rejected', 'not_applied', 'unknown'].includes(disposition)) {
+      throw new Error('ACTION_RECOVERY_EFFECT_DISPOSITION_INVALID')
+    }
     const record = {
       ...existing,
       state: 'terminal',
       disposition,
       verified: Boolean(result && result.verified),
       outcome_status: status || null,
-      outcome_code: result && result.outcome ? result.outcome.code || null : null
+      outcome_code: result && result.outcome ? result.outcome.code || null : null,
+      outcome: result && result.outcome ? result.outcome : null
     }
     this._write(record)
     return record
@@ -104,7 +106,12 @@ class ActionRecoveryJournal {
     const record = this._read(actionId)
     if (!record) return { disposition: 'unknown', state: 'absent', durability: this.durability }
     if (record.request_digest !== requestDigest) throw new Error('ACTION_RECOVERY_IDENTITY_DRIFT')
-    return { disposition: record.disposition || 'unknown', state: record.state, durability: this.durability }
+    return {
+      disposition: record.disposition || 'unknown',
+      state: record.state,
+      durability: this.durability,
+      outcome: record.outcome || null
+    }
   }
 }
 

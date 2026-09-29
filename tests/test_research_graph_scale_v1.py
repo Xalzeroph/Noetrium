@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from pathlib import Path
+import tempfile
 from collections import Counter
 from threading import RLock
 
@@ -7,10 +9,17 @@ from noetrium_platform.composition.research_execution_pool import ResearchExecut
 from noetrium_platform.composition.research_graph import ResearchGraphScheduler
 from noetrium_platform.foundation.kernel.concurrency.api import ConcurrencyBudget
 from noetrium_platform.foundation.kernel.kernel import canonical_digest
+from noetrium_platform.research.execution.graph.providers.sqlite import SQLiteResearchGraphExecutionStore
 from noetrium_platform.research.execution.graph.api import (
     ResearchGraphNode,
     ResearchGraphPlan,
 )
+
+
+
+def _graph_store(label: str) -> SQLiteResearchGraphExecutionStore:
+    root = Path(tempfile.mkdtemp(prefix=f"noetrium-{label}-"))
+    return SQLiteResearchGraphExecutionStore(root / "research-graph.sqlite3")
 
 
 class _DependencyCheckingExecutor:
@@ -107,6 +116,8 @@ def test_research_graph_executes_121_node_multi_paper_dag_exactly_once() -> None
         plan,
         executor,
         execution_pool=pool,
+        execution_store=_graph_store(plan.graph_id),
+        execution_id=f"test:{plan.graph_id}",
         task_group_id="scale-4-papers-121-nodes",
     )
     try:
@@ -147,6 +158,8 @@ def test_research_graph_executes_128_node_deep_chain_in_dependency_order() -> No
         plan,
         executor,
         execution_pool=pool,
+        execution_store=_graph_store(plan.graph_id),
+        execution_id=f"test:{plan.graph_id}",
         task_group_id="scale-deep-chain-128",
     )
     try:
@@ -194,6 +207,8 @@ def test_scale_failure_isolated_to_one_paper_descendant_closure() -> None:
         plan,
         executor,
         execution_pool=pool,
+        execution_store=_graph_store(plan.graph_id),
+        execution_id=f"test:{plan.graph_id}",
         task_group_id="scale-failure-isolation",
     )
     try:

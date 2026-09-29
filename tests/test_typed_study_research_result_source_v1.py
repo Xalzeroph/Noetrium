@@ -21,7 +21,7 @@ from noetrium_platform.research.experimentation.lifecycle.api import (
     TaskDefinition,
     TrialExecutionReceipt,
 )
-from noetrium_platform.research.experimentation.lifecycle.study.composition import StudyResearchResultSource
+from noetrium_platform.research.experimentation.lifecycle.study.composition.research_result_source import StudyResearchResultSource
 from noetrium_platform.foundation.scope.api import ScopeIdentity, ScopeKind
 
 SCOPE = ScopeIdentity(ScopeKind.RUN, "run-load")

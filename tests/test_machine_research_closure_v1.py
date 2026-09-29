@@ -14,6 +14,7 @@ from noetrium_platform.foundation.kernel.kernel import (
     MachineIdentity,
     MachineKind,
     MachineProgramRef,
+    MachineStateDelta,
     MachineExecutor,
     NIREnvelope,
     ProgramLock,
@@ -56,7 +57,7 @@ class Increment:
             machine_id=state.machine_id,
             command_id=command.command_id,
             base_revision=state.revision,
-            state_delta={"count": int(state.state.get("count", 0)) + 1},
+            state_delta=MachineStateDelta.set(("count",), int(state.state.get("count", 0)) + 1),
         )
 
 
@@ -128,7 +129,7 @@ def test_directory_delivery_survives_provider_restart(tmp_path: Path) -> None:
                 machine_id=state.machine_id,
                 command_id=cmd.command_id,
                 base_revision=state.revision,
-                state_delta={"count": 2},
+                state_delta=MachineStateDelta.set(("count",), 2),
                 emitted_commands=(command("child", 0, "child-c1"),),
             )
         })(),

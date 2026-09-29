@@ -7,6 +7,9 @@ from pathlib import Path
 import pytest
 
 from noetrium_platform.capabilities.model.api import (
+    ModelCapabilityInvocation,
+    ModelCapabilityRequirement,
+    ModelCapabilityResponse,
     ProjectModelBinding,
     ProjectModelBindingSet,
     ProjectModelRequest,
@@ -32,9 +35,19 @@ from noetrium_platform.research.execution.machines import (
 )
 
 
+def _requirement() -> ModelCapabilityRequirement:
+    return ModelCapabilityRequirement(
+        role="policy",
+        prompt_generation_id="prompt-generation",
+        prompt_id="policy-prompt",
+        prompt_digest="8" * 64,
+        required_capabilities=("generation",),
+    )
+
+
 def _binding(name: str, digit: str) -> ProjectModelBinding:
     return ProjectModelBinding(
-        requirement_digest="1" * 64,
+        requirement_digest=_requirement().digest(),
         provider_id=f"provider-{name}",
         provider_profile_digest="2" * 64,
         role="policy",
@@ -122,14 +135,23 @@ class _Client:
     fail: bool = False
     calls: int = 0
 
-    def complete(self, request: ProjectModelRequest) -> ProjectModelResponse:
+    @property
+    def requirement(self) -> ModelCapabilityRequirement:
+        return _requirement()
+
+    def invoke(
+        self,
+        invocation: ModelCapabilityInvocation[ProjectModelRequest],
+    ) -> ModelCapabilityResponse[ProjectModelResponse]:
         self.calls += 1
+        assert invocation.requirement_digest == self.requirement.digest()
+        request = invocation.payload
         assert request.envelope.model == self.binding.model
         assert request.envelope.role == self.binding.role
         assert request.requirement_digest == self.binding.requirement_digest
         if self.fail:
             raise RuntimeError("test provider failure")
-        return ProjectModelResponse(
+        response = ProjectModelResponse(
             request_digest=request.request_digest,
             binding_digest=self.binding.digest(),
             response_digest=canonical_digest({
@@ -138,6 +160,12 @@ class _Client:
                 "text": self.text,
             }),
             text=self.text,
+        )
+        return ModelCapabilityResponse(
+            request_digest=invocation.request_digest,
+            binding_digest=self.binding.digest(),
+            output_schema_id=self.requirement.output_schema_id,
+            output=response,
         )
 
 

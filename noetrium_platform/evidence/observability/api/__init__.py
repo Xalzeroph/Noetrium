@@ -9,7 +9,7 @@ from .emission import (
 from .auxiliary_events import OperationAuxiliaryFailureEventSink
 from noetrium_platform.foundation.kernel.record_plane import EventEnvelope, EventSink
 from .fanout import EventDeliveryError, EventDeliveryFailure, FanoutEventSink
-from .metrics import ContextMetricSink
+from .metrics import ContextMetricObservation, ContextMetricSink
 from .raw import ContextRawObservationSink
 from .operation_events import OperationLifecycleObserver
 
@@ -20,6 +20,7 @@ __all__ = [
     "operational_observation_enabled",
     "projection_rebuild_observation_scope",
     "replay_observation_scope",
+    "ContextMetricObservation",
     "ContextMetricSink",
     "ContextRawObservationSink",
     "EventDeliveryError",

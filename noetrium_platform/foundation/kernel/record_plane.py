@@ -1,11 +1,12 @@
 from __future__ import annotations
 
-from dataclasses import asdict, dataclass, field
+from dataclasses import dataclass, field
 from enum import StrEnum
 import time
 from typing import Protocol, runtime_checkable
 
-from .kernel.context import ExecutionContext
+from .kernel.context import ExecutionContext, execution_context_payload
+from .kernel.canonical import freeze_json, thaw_json
 
 
 class ExecutionRecordPlane(StrEnum):
@@ -47,7 +48,27 @@ class EventEnvelope:
         return ExecutionRecordPlane.SIDE_PLANE_OBSERVATION
 
     def to_dict(self) -> dict[str, object]:
-        return asdict(self)
+        # ExecutionContext owns frozen JSON objects backed by mappingproxy.
+        # dataclasses.asdict() deep-copies them and therefore fails. Serialize
+        # through the kernel-owned canonical codecs instead of object copying.
+        payload = thaw_json(freeze_json(self.payload))
+        if not isinstance(payload, dict):
+            raise TypeError("event payload must encode to an object")
+        context = thaw_json(execution_context_payload(self.context))
+        if not isinstance(context, dict):
+            raise TypeError("event context must encode to an object")
+        return {
+            "event_id": self.event_id,
+            "event_type": self.event_type,
+            "context": context,
+            "component_id": self.component_id,
+            "timestamp": self.timestamp,
+            "payload": payload,
+            "artifact_refs": self.artifact_refs,
+            "state_refs": self.state_refs,
+            "effect_refs": self.effect_refs,
+            "request_refs": self.request_refs,
+        }
 
 
 @runtime_checkable

@@ -1,5 +1,5 @@
 from .contracts import (
-    StaticExperimentTaskProjection,
+    StaticExperimentTaskProjection, TaskDefinitionExperimentTaskProjection,
     WorkloadCompletionReceipt,
     WorkloadEvaluation,
     WorkloadGraphResult,
@@ -7,19 +7,23 @@ from .contracts import (
     WorkloadMethodReceipt,
     WorkloadTaskResult,
     WorkloadTaskRunError,
+    workload_method_receipt_payload,
+    workload_method_receipt_from_payload,
+    workload_task_result_payload,
+    workload_task_result_from_payload,
 )
 from .ports import (
-    WorkloadGraphExecutionPort,
+    WorkloadExecutionPort,
     WorkloadMethodCompilerPort,
     WorkloadMethodResultAdapterPort,
     WorkloadTaskExecutionPort,
 )
 
 __all__ = [
-    "StaticExperimentTaskProjection",
+    "StaticExperimentTaskProjection", "TaskDefinitionExperimentTaskProjection",
     "WorkloadCompletionReceipt",
     "WorkloadEvaluation",
-    "WorkloadGraphExecutionPort",
+    "WorkloadExecutionPort",
     "WorkloadGraphResult",
     "WorkloadMethodCompilerPort",
     "WorkloadMethodInvocation",
@@ -28,4 +32,8 @@ __all__ = [
     "WorkloadTaskExecutionPort",
     "WorkloadTaskResult",
     "WorkloadTaskRunError",
+    "workload_method_receipt_payload",
+    "workload_method_receipt_from_payload",
+    "workload_task_result_payload",
+    "workload_task_result_from_payload",
 ]

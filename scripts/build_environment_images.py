@@ -749,6 +749,37 @@ def _verified_profile_image_identity(
     return identity
 
 
+def _category_current_tag(category_id: str) -> str:
+    if PROFILE_TOKEN_RE.fullmatch(category_id) is None:
+        raise ValueError("environment category id is not a deployment token")
+    return f"noetrium-env-category-{category_id}:current"
+
+
+def _publish_category_current_alias(
+    tag: str,
+    *,
+    profile_id: str,
+    category_id: str,
+    profile_revision: str,
+    build_input_digest: str,
+    immutable_identity: dict,
+) -> str:
+    current_tag = _category_current_tag(category_id)
+    _run(("docker", "tag", tag, current_tag))
+    current_identity = _verified_profile_image_identity(
+        current_tag,
+        profile_id=profile_id,
+        category_id=category_id,
+        profile_revision=profile_revision,
+        build_input_digest=build_input_digest,
+    )
+    if current_identity.get("id") != immutable_identity.get("id"):
+        raise RuntimeError(
+            "environment profile current alias does not resolve to the qualified image"
+        )
+    return current_tag
+
+
 def build_environment_images(
     *,
     profiles: tuple[str, ...],
@@ -1068,6 +1099,15 @@ def build_environment_images(
         profile_identity["build_input_digest"] = build_input_digest
         profile_identity["lifecycle"] = row["lifecycle"]
         profile_identity["qualification_instance_cleaned"] = True
+        if row["lifecycle"] == "active" and row.get("default_for_category") is True:
+            profile_identity["current_tag"] = _publish_category_current_alias(
+                tag,
+                profile_id=profile_id,
+                category_id=row["category_id"],
+                profile_revision=revision,
+                build_input_digest=build_input_digest,
+                immutable_identity=profile_identity,
+            )
         images[profile_id] = profile_identity
 
     receipt = {

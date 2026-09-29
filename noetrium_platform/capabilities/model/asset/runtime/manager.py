@@ -46,24 +46,26 @@ class ModelAssetManager:
 
     def fetch_model(self, model_id: str, scope: ScopeIdentity, spec: ModelSourceSpec, *, family: str = "", notes: str = "", tags: tuple[str, ...] = ()) -> ManagedModelAsset:
         with self._lock:
-            self._asset_registry.ensure_not_retired(model_id)
-            try:
-                self.model(model_id)
-            except FileNotFoundError:
-                pass
-            else:
-                raise FileExistsError(
-                    f"model is already registered: {model_id}"
-                )
-            try:
-                backend = self._source_backends[spec.backend]
-            except KeyError as exc:
-                raise KeyError(
-                    f"unknown model source backend: {spec.backend}"
-                ) from exc
-            receipt = backend.acquire(model_id, spec)
-            return self._asset_registry.put(
-                ManagedModelAsset(
+            # Serialize acquisition, publication, deployment admission, and
+            # retirement for this exact logical model identity across processes.
+            with self._asset_registry.lifecycle_fence(model_id):
+                self._asset_registry.ensure_not_retired(model_id)
+                try:
+                    self.model(model_id)
+                except FileNotFoundError:
+                    pass
+                else:
+                    raise FileExistsError(
+                        f"model is already registered: {model_id}"
+                    )
+                try:
+                    backend = self._source_backends[spec.backend]
+                except KeyError as exc:
+                    raise KeyError(
+                        f"unknown model source backend: {spec.backend}"
+                    ) from exc
+                receipt = backend.acquire(model_id, spec)
+                asset = ManagedModelAsset(
                     model_id,
                     scope,
                     receipt.path,
@@ -78,24 +80,100 @@ class ModelAssetManager:
                     self._normalize_tags(tags),
                     receipt.storage_pool,
                 )
-            )
+                try:
+                    return self._asset_registry.put(asset)
+                except BaseException as primary:
+                    try:
+                        self._storage.remove(asset)
+                    except BaseException as cleanup:
+                        primary.add_note(
+                            "model acquisition rollback failed: "
+                            f"{type(cleanup).__name__}: {cleanup}"
+                        )
+                    raise
+
+    def materialize_reference_from_source(
+        self,
+        model_id: str,
+        scope: ScopeIdentity,
+        spec: ModelSourceSpec,
+        *,
+        family: str = "",
+        notes: str = "",
+        tags: tuple[str, ...] = (),
+    ) -> ManagedModelAsset:
+        """Atomically promote one unreferenced external reference into managed storage.
+
+        Explicit retirement remains terminal. This operation is only for an
+        active REFERENCE asset whose physical path is unsuitable for the current
+        execution attachment (for example, a containerized controller).
+        """
+
+        with self._lock:
+            with self._asset_registry.lifecycle_fence(model_id):
+                self._asset_registry.ensure_not_retired(model_id)
+                current = self.model(model_id)
+                if current.mode is not ModelAssetMode.REFERENCE:
+                    raise RuntimeError(
+                        "only active reference assets may be promoted in place: "
+                        f"{model_id}"
+                    )
+                references = self._references.references(model_id)
+                if references:
+                    raise RuntimeError(
+                        "model reference cannot be promoted while deployments "
+                        f"reference it: {model_id}"
+                    )
+                try:
+                    backend = self._source_backends[spec.backend]
+                except KeyError as exc:
+                    raise KeyError(
+                        f"unknown model source backend: {spec.backend}"
+                    ) from exc
+                receipt = backend.acquire(model_id, spec)
+                replacement = ManagedModelAsset(
+                    model_id,
+                    scope,
+                    receipt.path,
+                    ModelAssetMode.FETCHED,
+                    family or current.family,
+                    notes or current.notes,
+                    ModelAssetOrigin(
+                        receipt.backend,
+                        receipt.source,
+                        receipt.revision,
+                    ),
+                    self._normalize_tags((*current.tags, *tags)),
+                    receipt.storage_pool,
+                )
+                try:
+                    return self._asset_registry.put(replacement)
+                except BaseException as primary:
+                    try:
+                        self._storage.remove(replacement)
+                    except BaseException as cleanup:
+                        primary.add_note(
+                            "model reference promotion rollback failed: "
+                            f"{type(cleanup).__name__}: {cleanup}"
+                        )
+                    raise
 
     def register_model(
         self, model_id: str, scope: ScopeIdentity, source: Path, *, mode: str = "reference", family: str = "",
         notes: str = "", tags: tuple[str, ...] = (), storage_pool: str = "default"
     ) -> ManagedModelAsset:
         with self._lock:
-            self._asset_registry.ensure_not_retired(model_id)
-            asset_mode = ModelAssetMode(mode)
-            resolved_source = source.expanduser().resolve()
-            path = self._storage.materialize(
-                model_id,
-                resolved_source,
-                asset_mode,
-                pool_id=storage_pool,
-            )
-            return self._asset_registry.put(
-                ManagedModelAsset(
+            with self._asset_registry.lifecycle_fence(model_id):
+                self._asset_registry.ensure_not_retired(model_id)
+                asset_mode = ModelAssetMode(mode)
+                resolved_source = source.expanduser().resolve()
+                path = self._storage.materialize(
+                    model_id,
+                    resolved_source,
+                    asset_mode,
+                    pool_id=storage_pool,
+                )
+                asset = ManagedModelAsset(
                     model_id,
                     scope,
                     path,
@@ -110,7 +188,18 @@ class ModelAssetManager:
                         else storage_pool
                     ),
                 )
-            )
+                try:
+                    return self._asset_registry.put(asset)
+                except BaseException as primary:
+                    if asset_mode is not ModelAssetMode.REFERENCE:
+                        try:
+                            self._storage.remove(asset)
+                        except BaseException as cleanup:
+                            primary.add_note(
+                                "model registration rollback failed: "
+                                f"{type(cleanup).__name__}: {cleanup}"
+                            )
+                    raise
 
     def model(self, model_id: str) -> ManagedModelAsset:
         return self._asset_registry.get(model_id)

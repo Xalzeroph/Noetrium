@@ -4,6 +4,8 @@ from noetrium_platform.foundation.kernel.kernel import (
 )
 
 from .contracts import (
+    ModelEndpointEnvelope,
+    ModelOperationEnvelope,
     ModelRequestEnvelope,
     ModelRequestLedgerPort,
     ModelRequestRecorderPort,
@@ -15,6 +17,8 @@ from ..prompt.api import PromptSelectionPort
 __all__ = [
     "ExecutionContext",
     "ImmutableModelIdentity",
+    "ModelEndpointEnvelope",
+    "ModelOperationEnvelope",
     "ModelRequestEnvelope",
     "ModelRequestLedgerPort",
     "ModelRequestRecorderPort",

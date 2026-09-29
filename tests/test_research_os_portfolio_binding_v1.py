@@ -5,6 +5,7 @@ from pathlib import Path
 import pytest
 
 from noetrium import api
+from noetrium_platform.product import research_os as research_os_api
 from noetrium_platform.composition.research_os import (
     PortfolioBackedResearchOSPort,
     bind_portfolio_research_os,
@@ -46,7 +47,7 @@ class _Control:
 
     def control(self, request, portfolio):
         self.calls.append((request, portfolio))
-        return api.research_os.ResearchControlReceipt(
+        return research_os_api.ResearchControlReceipt(
             request.action,
             request.target,
             "accepted",
@@ -55,8 +56,8 @@ class _Control:
         )
 
 
-def _paper_a(method) -> api.research_os.ResearchProgram:
-    builder = api.research_os.ResearchProgramBuilder("paper-a")
+def _paper_a(method) -> research_os_api.ResearchProgram:
+    builder = research_os_api.ResearchProgramBuilder("paper-a")
     builder.method("method", implementation=method)
     builder.benchmark("benchmark", implementation=_benchmark)
     builder.metric("metric", implementation=_metric)
@@ -64,9 +65,9 @@ def _paper_a(method) -> api.research_os.ResearchProgram:
         "main",
         definitions=("method", "benchmark"),
         outputs=(
-            api.research_os.ResearchOutputSpec(
+            research_os_api.ResearchOutputSpec(
                 "trajectory",
-                api.research_os.ResearchValueKind.ARTIFACT,
+                research_os_api.ResearchValueKind.ARTIFACT,
             ),
         ),
     )
@@ -75,9 +76,9 @@ def _paper_a(method) -> api.research_os.ResearchProgram:
         definitions=("metric",),
         depends_on=("main",),
         outputs=(
-            api.research_os.ResearchOutputSpec(
+            research_os_api.ResearchOutputSpec(
                 "score",
-                api.research_os.ResearchValueKind.METRIC,
+                research_os_api.ResearchValueKind.METRIC,
             ),
         ),
     )
@@ -85,15 +86,15 @@ def _paper_a(method) -> api.research_os.ResearchProgram:
     return builder.freeze()
 
 
-def _paper_b() -> api.research_os.ResearchProgram:
-    builder = api.research_os.ResearchProgramBuilder("paper-b")
+def _paper_b() -> research_os_api.ResearchProgram:
+    builder = research_os_api.ResearchProgramBuilder("paper-b")
     builder.method("method", implementation=_other_method)
     builder.experiment("main", definitions=("method",))
     return builder.freeze()
 
 
-def _portfolio(method) -> api.research_os.ResearchPortfolio:
-    return api.research_os.ResearchPortfolio(
+def _portfolio(method) -> research_os_api.ResearchPortfolio:
+    return research_os_api.ResearchPortfolio(
         "suite",
         (_paper_a(method), _paper_b()),
     )
@@ -140,17 +141,17 @@ def test_durable_research_os_reopens_revision_graph_and_minimally_invalidates(
         (row.program_id, row.node_id): row.state
         for row in diff.impacts
     }
-    assert impacts[("paper-a", "main")] is api.research_os.ResearchImpactState.INVALIDATED
-    assert impacts[("paper-a", "evaluate")] is api.research_os.ResearchImpactState.STALE
-    assert impacts[("paper-a", "analysis")] is api.research_os.ResearchImpactState.STALE
-    assert impacts[("paper-b", "main")] is api.research_os.ResearchImpactState.REUSABLE
+    assert impacts[("paper-a", "main")] is research_os_api.ResearchImpactState.INVALIDATED
+    assert impacts[("paper-a", "evaluate")] is research_os_api.ResearchImpactState.STALE
+    assert impacts[("paper-a", "analysis")] is research_os_api.ResearchImpactState.STALE
+    assert impacts[("paper-b", "main")] is research_os_api.ResearchImpactState.REUSABLE
 
-    execution = api.research_os.ResearchExecutionTarget(
+    execution = research_os_api.ResearchExecutionTarget(
         "suite-confirmatory",
         second,
     ).for_node("paper-a", "main")
     resumed = reopened.resume(execution)
-    assert resumed.action is api.research_os.ResearchControlAction.RESUME
+    assert resumed.action is research_os_api.ResearchControlAction.RESUME
     assert resumed.target == execution
     assert len(reopened_control.calls) == 1
     control_request, control_portfolio = reopened_control.calls[0]
@@ -210,20 +211,20 @@ def test_portfolio_backed_port_fails_closed_without_runtime_control(
         DirectoryArtifactBlobStore(tmp_path / "blobs"),
     )
     bound = bind_research_os(port)
-    revision = api.research_os.ResearchGraphRevision(
+    revision = research_os_api.ResearchGraphRevision(
         "anything",
         "a" * 64,
         (),
         "unbound control test",
     )
-    target = api.research_os.ResearchExecutionTarget("anything", revision)
+    target = research_os_api.ResearchExecutionTarget("anything", revision)
     with pytest.raises(RuntimeError, match="control is not bound"):
         bound.run(target)
 
 def test_platform_resolved_requirements_round_trip_through_artifact_cas(
     tmp_path: Path,
 ) -> None:
-    builder = api.research_os.ResearchProgramBuilder("declarative")
+    builder = research_os_api.ResearchProgramBuilder("declarative")
     builder.model("planner", config={"role": "planner", "context": 8192})
     builder.environment("world", config={"family": "minecraft"})
     builder.dataset("tasks", config={"split": "test"})
@@ -233,7 +234,7 @@ def test_platform_resolved_requirements_round_trip_through_artifact_cas(
         "main",
         definitions=("planner", "world", "tasks", "protocol", "resources"),
     )
-    portfolio = api.research_os.ResearchPortfolio("declarative-suite", (builder.freeze(),))
+    portfolio = research_os_api.ResearchPortfolio("declarative-suite", (builder.freeze(),))
 
     _, _, _, _, research_os = _binding(tmp_path)
     revision = research_os.commit(portfolio, message="declarative cut")
@@ -241,7 +242,7 @@ def test_platform_resolved_requirements_round_trip_through_artifact_cas(
     _, _, _, _, reopened = _binding(tmp_path)
     diff = reopened.diff(revision, revision)
     assert tuple(row.state for row in diff.impacts) == (
-        api.research_os.ResearchImpactState.UNCHANGED,
+        research_os_api.ResearchImpactState.UNCHANGED,
     )
 
 def test_top_level_portfolio_compiles_into_one_multi_paper_execution_graph(
@@ -249,11 +250,11 @@ def test_top_level_portfolio_compiles_into_one_multi_paper_execution_graph(
 ) -> None:
     paper_a = _paper_a(_method_v1)
     paper_b = _paper_b()
-    cross = api.research_os.ResearchPortfolioDependency(
-        api.research_os.ResearchNodeRef("paper-a", "analysis"),
-        api.research_os.ResearchNodeRef("paper-b", "main"),
+    cross = research_os_api.ResearchPortfolioDependency(
+        research_os_api.ResearchNodeRef("paper-a", "analysis"),
+        research_os_api.ResearchNodeRef("paper-b", "main"),
     )
-    portfolio = api.research_os.ResearchPortfolio(
+    portfolio = research_os_api.ResearchPortfolio(
         "multi-paper",
         (paper_a, paper_b),
         (cross,),

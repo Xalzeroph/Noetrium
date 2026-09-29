@@ -105,23 +105,30 @@ def _check_research_os_product_entrypoint() -> str:
             "legacy Level-0 product composition reappeared: " + ", ".join(leaked)
         )
 
-    entrypoint = ROOT / "noetrium/api.py"
+    entrypoint = ROOT / "noetrium/api/__init__.py"
     product = ROOT / "noetrium_platform/product/api/__init__.py"
-    source_list = ROOT / "noetrium/_api_surface.py"
-    if not entrypoint.is_file() or not product.is_file() or not source_list.is_file():
+    stub = ROOT / "noetrium/api/__init__.pyi"
+    if not entrypoint.is_file() or not product.is_file() or not stub.is_file():
         raise SystemExit("canonical Research OS product surface is incomplete")
 
     entry_source = entrypoint.read_text(encoding="utf-8")
-    source_text = source_list.read_text(encoding="utf-8")
-    if "from noetrium_platform.product import api as _product" not in entry_source:
+    product_source = product.read_text(encoding="utf-8")
+    if "from noetrium_platform.product.api import *" not in entry_source:
         raise SystemExit("noetrium.api is not bound to product.api")
-    if "noetrium_platform.product.api" not in source_text:
-        raise SystemExit("unified API source list omits product.api")
+    if "from noetrium._research_os_runtime import ResearchOS, open_project" not in entry_source:
+        raise SystemExit("noetrium.api is not bound to the ResearchOS runtime facade")
+    expected_all = (
+        "__all__ = ('ResearchPortfolioBuilder', 'ResearchPortfolio', "
+        "'ResearchOS', 'open_project')"
+    )
+    if expected_all not in entry_source:
+        raise SystemExit("canonical Research OS public root set drifted")
     forbidden = (
         "noetrium_platform.platform",
         "components.api",
         "orchestration.api",
     )
+    source_text = entry_source + product_source
     escaped = tuple(value for value in forbidden if value in source_text)
     if escaped:
         raise SystemExit(
@@ -283,19 +290,18 @@ def _check_research_machine_bypasses() -> int:
         )
 
     forbidden_symbols = {
-        ROOT / "noetrium_platform/research/experimentation/experiment/api/trial_protocol.py": {
+        ROOT / "noetrium_platform/research/experimentation/lifecycle/experiment/api/trial_protocol.py": {
             "ExperimentTrialProtocol",
         },
-        ROOT / "noetrium_platform/research/experimentation/study/runtime/trial.py": {
+        ROOT / "noetrium_platform/research/experimentation/lifecycle/study/runtime/trial.py": {
             "TrialMatrixExecutor",
         },
     }
     checked = len(retired_paths)
     for path, names in forbidden_symbols.items():
         if not path.is_file():
-            raise SystemExit(
-                f"research execution gate target is missing: {path.relative_to(ROOT)}"
-            )
+            # A retired implementation path staying absent is the desired state.
+            continue
         tree = ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
         declared = {
             node.name
@@ -310,18 +316,20 @@ def _check_research_machine_bypasses() -> int:
             )
         checked += 1
 
-    trial_cycle = (
+    trial_runtime = (
         ROOT
-        / "noetrium_platform/research/experimentation/experiment/runtime/trial_cycle.py"
+        / "noetrium_platform/research/execution/workflow/runtime/program_trial.py"
     )
-    source = trial_cycle.read_text(encoding="utf-8")
-    if "RuntimeProgramTrialProtocol" not in source:
+    if not trial_runtime.is_file():
+        raise SystemExit("canonical RuntimeProgram Trial adapter is missing")
+    source = trial_runtime.read_text(encoding="utf-8")
+    if "class RuntimeProgramTrialProtocol" not in source:
         raise SystemExit(
-            "Experiment trial-cycle execution is not constrained to RuntimeProgram"
+            "canonical Trial execution is not constrained to RuntimeProgram"
         )
-    if "custom trial runners are not accepted" not in source:
+    if "ResearchProgramHost" not in source:
         raise SystemExit(
-            "Experiment trial-cycle execution lacks the explicit no-runner boundary"
+            "canonical Trial execution bypasses ResearchProgramHost"
         )
     checked += 1
 

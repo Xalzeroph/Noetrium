@@ -12,9 +12,9 @@ class _CountingAdmissionAuthority(HierarchicalAdmissionAuthority):
         super().__init__(**kwargs)
         self.can_admit_calls = 0
 
-    def _can_admit(self, group_id, lane_kind):
+    def _can_admit(self, group_id, lane_kind, permit_count=1):
         self.can_admit_calls += 1
-        return super()._can_admit(group_id, lane_kind)
+        return super()._can_admit(group_id, lane_kind, permit_count)
 
 
 def test_selection_cache_avoids_repeated_full_scan_inside_poll_bucket():

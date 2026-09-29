@@ -32,6 +32,8 @@ from noetrium_platform.foundation.kernel.kernel import (
     MachineSnapshotStorePort,
     MachineStatus,
     canonical_digest,
+    execution_context_from_payload,
+    execution_context_payload,
     freeze_json,
     thaw_json,
 )
@@ -199,51 +201,6 @@ def environment_initial_data(spec: EnvironmentMachineSpec) -> JsonObject:
         "closed": False,
     }
 
-
-_CONTEXT_FIELDS = (
-    "run_id",
-    "trace_id",
-    "span_id",
-    "parent_span_id",
-    "study_id",
-    "condition_id",
-    "condition_selections",
-    "lifetime_id",
-    "branch_id",
-    "task_id",
-    "decision_cycle_id",
-    "checkpoint_id",
-    "operation_id",
-    "component_id",
-    "participant_generations",
-    "platform_generation",
-)
-
-
-def execution_context_payload(context: ExecutionContext) -> JsonObject:
-    if not isinstance(context, ExecutionContext):
-        raise TypeError("environment context must be ExecutionContext")
-    return {
-        field_name: getattr(context, field_name)
-        for field_name in _CONTEXT_FIELDS
-    }
-
-
-def execution_context_from_payload(value: JsonObject) -> ExecutionContext:
-    if not isinstance(value, Mapping):
-        raise TypeError("environment context payload must be an object")
-    decoded = thaw_json(value)
-    if not isinstance(decoded, dict):
-        raise TypeError("environment context payload must decode to an object")
-    unknown = set(decoded) - set(_CONTEXT_FIELDS)
-    if unknown:
-        raise ValueError(f"environment context payload has unknown fields: {sorted(unknown)}")
-    for field_name in ("condition_selections", "participant_generations"):
-        rows = decoded.get(field_name, ())
-        if not isinstance(rows, (tuple, list)):
-            raise TypeError(f"{field_name} must be a sequence")
-        decoded[field_name] = tuple(tuple(row) for row in rows)
-    return ExecutionContext(**decoded)
 
 
 def _data(request: ProgramNodeRequest) -> dict[str, JsonValue]:

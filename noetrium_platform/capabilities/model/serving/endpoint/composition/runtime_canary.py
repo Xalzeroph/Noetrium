@@ -10,13 +10,13 @@ from noetrium_platform.capabilities.model.serving.endpoint.api import (
     ModelEndpointRoute,
 )
 from noetrium_platform.capabilities.model.serving.endpoint.providers import (
-    AsyncioJsonTransport,
-    OpenAICompatibleModelEndpoint,
+    PooledModelHttpTransport,
+    NativeModelProviderEndpoint,
 )
 from noetrium_platform.foundation.kernel.concurrency.api import TaskGroupPort
 
 
-def build_openai_compatible_runtime_canary_endpoint(
+def build_runtime_canary_endpoint(
     deployment: QualifiedDeploymentManifest,
     route: ModelEndpointRoute,
     *,
@@ -39,20 +39,22 @@ def build_openai_compatible_runtime_canary_endpoint(
         if not math.isfinite(float(timeout_s)) or timeout_s <= 0:
             raise ValueError("runtime canary endpoint timeout_s must be positive and finite")
 
+    owns_transport = transport is None
     if transport is None:
-        headers: tuple[tuple[str, str], ...] = ()
-        if api_key:
-            headers = (("Authorization", f"Bearer {api_key}"),)
-        transport = AsyncioJsonTransport(headers=headers)
-    elif api_key:
-        raise ValueError("api_key cannot be combined with an injected runtime canary transport")
+        qualified_capacity = (
+            deployment.certificate.resource_envelope.max_qualified_concurrency
+        )
+        transport = PooledModelHttpTransport(
+            max_connections=qualified_capacity,
+            max_keepalive_connections=qualified_capacity,
+        )
 
     admission = admission_registry.controller_for(
         deployment_id=deployment.deployment_id,
         deployment_generation=generation,
         qualified_capacity=deployment.certificate.resource_envelope.max_qualified_concurrency,
     )
-    return OpenAICompatibleModelEndpoint(
+    return NativeModelProviderEndpoint(
         route=ModelEndpointRoute(
             deployment_id=deployment.deployment_id,
             deployment_generation=generation,
@@ -63,8 +65,10 @@ def build_openai_compatible_runtime_canary_endpoint(
         transport=transport,
         task_group=task_group,
         admission=admission,
+        api_key=api_key,
         observers=observers,
+        owns_transport=owns_transport,
     )
 
 
-__all__ = ["build_openai_compatible_runtime_canary_endpoint"]
+__all__ = ["build_runtime_canary_endpoint"]

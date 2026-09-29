@@ -71,7 +71,7 @@ class ExactDeploymentServicePortV111Tests(unittest.TestCase):
             # Use distinct synthetic GPU identities to satisfy deployment-set exclusivity.
             from dataclasses import replace
             d2=replace(d2,placement=replace(d2.placement,gpu_uuids=("GPU-2",)))
-            roles=RoleModelManifest((RoleModelAssignment("planner","d1"),RoleModelAssignment("meta","d2")))
+            roles=RoleModelManifest((RoleModelAssignment("planner","generation","model.generation.request.v1","model.generation.response.v1","d1"),RoleModelAssignment("meta","generation","model.generation.request.v1","model.generation.response.v1","d2")))
             ds=freeze_model_deployment_set(roles,(d2,d1)); b1,a1=binding(root,d1,101); b2,a2=binding(root,d2,202)
             port=ExactDeploymentServicePort((b1,b2)); m=frozen(ds)
             self.assertEqual(port.reconcile(m,ds),("service-reconcile:d1:no-state","service-reconcile:d2:no-state"))
@@ -86,7 +86,7 @@ class ExactDeploymentServicePortV111Tests(unittest.TestCase):
     def test_binding_rejects_runtime_or_artifact_drift_before_process_action(self):
         with tempfile.TemporaryDirectory() as td:
             root=Path(td); d=deployment("d1")
-            ds=freeze_model_deployment_set(RoleModelManifest((RoleModelAssignment("planner","d1"),)),(d,))
+            ds=freeze_model_deployment_set(RoleModelManifest((RoleModelAssignment("planner","generation","model.generation.request.v1","model.generation.response.v1","d1"),)),(d,))
             b,a=binding(root,d,1)
             from dataclasses import replace
             bad=replace(b,launch_contract=replace(b.launch_contract,artifact_digest=h("wrong")))

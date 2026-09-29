@@ -1,21 +1,31 @@
 from __future__ import annotations
 
+from threading import Lock
 from uuid import uuid4
 
 from noetrium_platform.capabilities.model.serving.api import ModelAdmissionRegistryPort
+from noetrium_platform.capabilities.model.serving.endpoint.api import (
+    AdaptiveModelEndpointPoolPort,
+    ModelEndpointReplicaSet,
+    ModelJsonHttpClientPort,
+)
+from noetrium_platform.capabilities.model.serving.endpoint.composition import (
+    build_adaptive_model_endpoint_pool,
+)
 from noetrium_platform.capabilities.model.serving.runtime import ModelAdmissionRegistry
+from noetrium_platform.capabilities.model.serving.endpoint.providers import (
+    PooledModelHttpTransport,
+    PooledModelHttpTransportOwner,
+    StructuredModelJsonHttpClient,
+)
 from noetrium_platform.infrastructure.resources.container.api import (
     DEFAULT_DOCKER_CONTAINER_LEASE_POLICY,
     DockerContainerLeasePolicy,
 )
-from noetrium_platform.infrastructure.resources.container.runtime import (
-    DockerContainerLeaseAuthority,
-    DockerContainerLeaseHeartbeatFactory,
-)
+from noetrium_platform.infrastructure.resources.container.runtime import DockerContainerLeaseAuthority
 from noetrium_platform.composition.environment_instance_leases import (
     DEFAULT_ENVIRONMENT_INSTANCE_LEASE_POLICY,
     EnvironmentInstanceLeaseAuthority,
-    EnvironmentInstanceLeaseHeartbeatFactory,
     EnvironmentInstanceLeasePolicy,
 )
 from noetrium_platform.infrastructure.resources.compute.api import (
@@ -25,16 +35,17 @@ from noetrium_platform.infrastructure.resources.compute.api import (
     DEFAULT_COMPUTE_LEASE_POLICY,
     HostRuntimeObserverPort,
 )
-from noetrium_platform.infrastructure.resources.compute.runtime import ComputeLeaseHeartbeatFactory
+from noetrium_platform.infrastructure.resources.compute.providers import (
+    LocalHostRuntimeObserver,
+)
 from noetrium_platform.infrastructure.resources.allocation.api import (
     DEFAULT_ENDPOINT_LEASE_POLICY,
     EndpointAllocationPort,
     EndpointLeaseGuardFactoryPort,
     EndpointLeasePolicy,
 )
-from noetrium_platform.infrastructure.resources.allocation.runtime import (
-    EndpointLeaseHeartbeatFactory,
-)
+from noetrium_platform.infrastructure.resources.lease.runtime import LeaseHeartbeatFactory
+from noetrium_platform.foundation.kernel.kernel import canonical_digest
 from noetrium_platform.foundation.kernel.concurrency.api import (
     ConcurrencyBudget,
     Deadline,
@@ -44,6 +55,7 @@ from noetrium_platform.foundation.kernel.concurrency.api import (
 from noetrium_platform.foundation.kernel.concurrency.composition import (
     build_cpu_worker_pool_provider,
 )
+from noetrium_platform.foundation.kernel.concurrency.api import SingleFlightCache
 from noetrium_platform.research.execution.policy.api import AdmissionBudget
 from noetrium_platform.research.execution.policy.api import ExecutionPriority
 
@@ -71,6 +83,22 @@ def _default_control_concurrency_budget() -> ConcurrencyBudget:
     )
 
 
+def _default_experiment_concurrency_budget() -> ConcurrencyBudget:
+    """Keep physical workers bounded while allowing experiment batches to queue."""
+
+    base = ConcurrencyBudget()
+    return ConcurrencyBudget(
+        max_blocking_io_workers=base.max_blocking_io_workers,
+        max_serial_workers=base.max_serial_workers,
+        max_cpu_workers=base.max_cpu_workers,
+        max_blocking_io_in_flight=base.default_queue_capacity,
+        max_async_io_in_flight=base.max_async_io_in_flight,
+        max_cpu_in_flight=base.max_cpu_in_flight,
+        default_queue_capacity=base.default_queue_capacity,
+        shutdown_timeout_seconds=base.shutdown_timeout_seconds,
+    )
+
+
 def _shared_workload_cpu_budget(
     budgets: tuple[ConcurrencyBudget, ...],
 ) -> ConcurrencyBudget:
@@ -87,10 +115,10 @@ class ResearchExecutionPool:
 
     The dependency order is explicit:
 
-        orchestration -> experiment execution -> model I/O
+        orchestration -> experiment scheduling -> machine execution -> {model I/O, capability I/O}
 
     A synchronous parent may wait only on work in a downstream domain. Keeping
-    the three admission/concurrency domains independent prevents nested-admission
+    the workload admission/concurrency domains independent prevents nested-admission
     deadlock while preserving one composition owner and bounded resources.
     Exact model-serving capacity is shared separately through one admission
     registry per deployment generation.
@@ -105,6 +133,10 @@ class ResearchExecutionPool:
         control_admission_budget: AdmissionBudget | None = None,
         experiment_concurrency_budget: ConcurrencyBudget | None = None,
         experiment_admission_budget: AdmissionBudget | None = None,
+        machine_concurrency_budget: ConcurrencyBudget | None = None,
+        machine_admission_budget: AdmissionBudget | None = None,
+        capability_io_concurrency_budget: ConcurrencyBudget | None = None,
+        capability_io_admission_budget: AdmissionBudget | None = None,
         model_io_concurrency_budget: ConcurrencyBudget | None = None,
         model_io_admission_budget: AdmissionBudget | None = None,
         priority_aging_seconds: float = 1.0,
@@ -124,15 +156,30 @@ class ResearchExecutionPool:
             orchestration_concurrency_budget or ConcurrencyBudget()
         )
         resolved_experiment_budget = (
-            experiment_concurrency_budget or ConcurrencyBudget()
+            experiment_concurrency_budget or _default_experiment_concurrency_budget()
+        )
+        resolved_machine_budget = (
+            machine_concurrency_budget or ConcurrencyBudget()
+        )
+        resolved_capability_io_budget = (
+            capability_io_concurrency_budget or ConcurrencyBudget()
         )
         resolved_model_io_budget = (
             model_io_concurrency_budget or ConcurrencyBudget()
         )
+        resolved_resource_competition_policy = (
+            resource_competition_policy or ResourceCompetitionPolicy()
+        )
+        resolved_host_runtime_observer = (
+            host_runtime_observer or LocalHostRuntimeObserver()
+        )
+        self._resource_competition_policy = resolved_resource_competition_policy
         shared_cpu_budget = _shared_workload_cpu_budget(
             (
                 resolved_orchestration_budget,
                 resolved_experiment_budget,
+                resolved_machine_budget,
+                resolved_capability_io_budget,
                 resolved_model_io_budget,
             )
         )
@@ -157,10 +204,10 @@ class ResearchExecutionPool:
                 concurrency_budget=resolved_orchestration_budget,
                 admission_budget=orchestration_admission_budget,
                 priority_aging_seconds=priority_aging_seconds,
-                host_runtime_observer=host_runtime_observer,
+                host_runtime_observer=resolved_host_runtime_observer,
                 storage_pressure_observer=storage_pressure_observer,
                 network_pressure_observer=network_pressure_observer,
-                resource_competition_policy=resource_competition_policy,
+                resource_competition_policy=resolved_resource_competition_policy,
                 resource_competition_reservations=self._resource_competition_reservations,
                 blocking_io_thread_name_prefix="research-orchestration-io",
                 timer_name="research-orchestration-timer",
@@ -170,30 +217,74 @@ class ResearchExecutionPool:
                 concurrency_budget=resolved_experiment_budget,
                 admission_budget=experiment_admission_budget,
                 priority_aging_seconds=priority_aging_seconds,
-                host_runtime_observer=host_runtime_observer,
+                host_runtime_observer=resolved_host_runtime_observer,
                 storage_pressure_observer=storage_pressure_observer,
                 network_pressure_observer=network_pressure_observer,
-                resource_competition_policy=resource_competition_policy,
+                resource_competition_policy=resolved_resource_competition_policy,
                 resource_competition_reservations=self._resource_competition_reservations,
                 blocking_io_thread_name_prefix="research-experiment-io",
                 timer_name="research-experiment-timer",
+                cpu_provider=self._shared_workload_cpu,
+            )
+            self._machines = build_execution_concurrency_runtime(
+                concurrency_budget=resolved_machine_budget,
+                admission_budget=machine_admission_budget,
+                priority_aging_seconds=priority_aging_seconds,
+                host_runtime_observer=resolved_host_runtime_observer,
+                storage_pressure_observer=storage_pressure_observer,
+                network_pressure_observer=network_pressure_observer,
+                resource_competition_policy=resolved_resource_competition_policy,
+                resource_competition_reservations=self._resource_competition_reservations,
+                blocking_io_thread_name_prefix="research-machine-io",
+                timer_name="research-machine-timer",
+                cpu_provider=self._shared_workload_cpu,
+            )
+            self._capability_io = build_execution_concurrency_runtime(
+                concurrency_budget=resolved_capability_io_budget,
+                admission_budget=capability_io_admission_budget,
+                priority_aging_seconds=priority_aging_seconds,
+                host_runtime_observer=resolved_host_runtime_observer,
+                storage_pressure_observer=storage_pressure_observer,
+                network_pressure_observer=network_pressure_observer,
+                resource_competition_policy=resolved_resource_competition_policy,
+                resource_competition_reservations=self._resource_competition_reservations,
+                blocking_io_thread_name_prefix="research-capability-io",
+                timer_name="research-capability-io-timer",
                 cpu_provider=self._shared_workload_cpu,
             )
             self._model_io = build_execution_concurrency_runtime(
                 concurrency_budget=resolved_model_io_budget,
                 admission_budget=model_io_admission_budget,
                 priority_aging_seconds=priority_aging_seconds,
-                host_runtime_observer=host_runtime_observer,
-                resource_competition_policy=resource_competition_policy,
+                host_runtime_observer=resolved_host_runtime_observer,
+                resource_competition_policy=resolved_resource_competition_policy,
                 resource_competition_reservations=self._resource_competition_reservations,
                 blocking_io_thread_name_prefix="research-model-io",
                 timer_name="research-model-timer",
                 cpu_provider=self._shared_workload_cpu,
             )
             self._model_admission: ModelAdmissionRegistryPort = ModelAdmissionRegistry()
+            self._model_io_resource_lock = Lock()
+            self._model_io_resources: list[object] = []
+            self._model_io_resource_ids: set[int] = set()
+            self._model_io_resources_closed = False
+            self._model_http_transport_lock = Lock()
+            self._model_http_transport_owner: PooledModelHttpTransportOwner | None = None
+            self._model_json_http_client_lock = Lock()
+            self._model_json_http_client: ModelJsonHttpClientPort | None = None
+            self._model_endpoint_pools: SingleFlightCache[
+                AdaptiveModelEndpointPoolPort
+            ] = SingleFlightCache()
+            self._model_http_max_connections = max(
+                1,
+                resolved_model_io_budget.max_async_io_in_flight,
+            )
+            self._model_http_close_timeout_s = float(
+                resolved_model_io_budget.shutdown_timeout_seconds
+            )
         except BaseException as exc:
             errors: list[BaseException] = [exc]
-            for name in ("_model_io", "_experiments", "_orchestration"):
+            for name in ("_model_io", "_capability_io", "_machines", "_experiments", "_orchestration"):
                 runtime = getattr(self, name, None)
                 if runtime is None:
                     continue
@@ -240,12 +331,22 @@ class ResearchExecutionPool:
             raise RuntimeError("research execution pool workloads are quiescing")
 
     @property
+    def resource_competition_policy(self) -> ResourceCompetitionPolicy:
+        return self._resource_competition_policy
+
+    @property
+    def resource_competition_policy_digest(self) -> str:
+        return canonical_digest(self._resource_competition_policy)
+
+    @property
     def resource_competition_enabled(self) -> bool:
         """Whether all workload domains are bound to physical competition facts."""
 
         states = (
             self._orchestration.resource_competition is not None,
             self._experiments.resource_competition is not None,
+            self._machines.resource_competition is not None,
+            self._capability_io.resource_competition is not None,
             self._model_io.resource_competition is not None,
         )
         if len(set(states)) != 1:
@@ -276,6 +377,143 @@ class ResearchExecutionPool:
     def model_admission(self) -> ModelAdmissionRegistryPort:
         self._require_workloads_open()
         return self._model_admission
+
+
+    @property
+    def model_http_transport(self) -> PooledModelHttpTransport:
+        """Shared model HTTP/2 transport for this execution-pool generation.
+
+        Scientific endpoint pools retain independent routing/provenance state.
+        Only generic connection management is shared across exact model
+        deployments so role/prompt differences do not duplicate TCP/HTTP2 pools.
+        """
+        self._require_workloads_open()
+        with self._model_http_transport_lock:
+            owner = self._model_http_transport_owner
+            if owner is not None:
+                return owner.transport
+
+            group = self._model_io.open_task_group(
+                f"research-model-http-transport:{self._owner_generation_id}",
+                priority=ExecutionPriority.CRITICAL,
+                failure_policy=TaskFailurePolicy.FAIL_FAST,
+            )
+            transport = PooledModelHttpTransport(
+                max_connections=self._model_http_max_connections,
+                max_keepalive_connections=self._model_http_max_connections,
+            )
+            owner = PooledModelHttpTransportOwner(
+                transport,
+                group,
+                close_timeout_s=self._model_http_close_timeout_s,
+            )
+            try:
+                # Register the shared transport before any pool borrowing it.
+                # Resource shutdown is reverse-registration order, so endpoint
+                # pools close first and the shared transport closes last.
+                self.register_model_io_resource(owner)
+            except BaseException:
+                try:
+                    owner.close()
+                finally:
+                    try:
+                        group.close(cancel_pending=True)
+                    except BaseException:
+                        pass
+                raise
+            self._model_http_transport_owner = owner
+            return owner.transport
+
+    @property
+    def model_json_http_client(self) -> ModelJsonHttpClientPort:
+        """Shared synchronous bridge onto the execution pool HTTP/2 transport."""
+
+        self._require_workloads_open()
+        with self._model_json_http_client_lock:
+            current = self._model_json_http_client
+            if current is not None:
+                return current
+            transport = self.model_http_transport
+            group = self.open_model_io_group(
+                f"research-model-json-http:{self._owner_generation_id}",
+                priority=ExecutionPriority.CRITICAL,
+                failure_policy=TaskFailurePolicy.FAIL_FAST,
+            )
+            client = StructuredModelJsonHttpClient(transport, group)
+            try:
+                self.register_model_io_resource(client)
+            except BaseException:
+                try:
+                    client.close()
+                except BaseException:
+                    pass
+                raise
+            self._model_json_http_client = client
+            return client
+
+    def model_endpoint_pool(
+        self,
+        replica_set: ModelEndpointReplicaSet,
+        *,
+        observers: tuple[object, ...] = (),
+    ) -> AdaptiveModelEndpointPoolPort:
+        """Reuse one physical dispatch runtime for one exact frozen replica set.
+
+        Scientific identity remains in each request/binding. This cache owns
+        only operational state: health, adaptive admission, retry history and
+        prefix/KV locality. Observer identity participates in the key so
+        lossless evidence capture is never silently changed by reuse.
+        """
+
+        self._require_workloads_open()
+        if not isinstance(replica_set, ModelEndpointReplicaSet):
+            raise TypeError(
+                "research model endpoint pool requires ModelEndpointReplicaSet"
+            )
+        if type(observers) is not tuple:
+            raise TypeError("research model endpoint observers must be a tuple")
+        cache_key = canonical_digest(
+            {
+                "schema": "research-model-endpoint-pool-cache.v1",
+                "replica_set_digest": replica_set.replica_set_digest,
+                "observer_runtime_ids": tuple(id(observer) for observer in observers),
+            }
+        )
+
+        def build() -> AdaptiveModelEndpointPoolPort:
+            group = self.open_model_io_group(
+                "research-model-endpoint-pool:"
+                + cache_key[:24],
+                priority=ExecutionPriority.CRITICAL,
+                failure_policy=TaskFailurePolicy.FAIL_FAST,
+            )
+            pool = None
+            try:
+                pool = build_adaptive_model_endpoint_pool(
+                    replica_set,
+                    task_group=group,
+                    admission_registry=self._model_admission,
+                    observers=observers,
+                    transport=self.model_http_transport,
+                )
+                self.register_model_io_resource(pool)
+                return pool
+            except BaseException:
+                if pool is not None:
+                    try:
+                        pool.close()
+                    except BaseException:
+                        pass
+                try:
+                    self.close_model_io_group(
+                        group,
+                        cancel_pending=True,
+                    )
+                except BaseException:
+                    pass
+                raise
+
+        return self._model_endpoint_pools.get_or_create(cache_key, build)
 
     def open_orchestration_group(
         self,
@@ -363,6 +601,36 @@ class ResearchExecutionPool:
             failure_policy=failure_policy,
         )
 
+    def open_machine_group(
+        self,
+        group_id: str,
+        *,
+        tenant_id: str | None = None,
+        resource_id: str | None = None,
+        priority: ExecutionPriority = ExecutionPriority.NORMAL,
+        admission_queue_wait_timeout_seconds: float | None = None,
+        resource_demand: ResourceCompetitionDemand | None = None,
+        deadline: Deadline | None = None,
+        failure_policy: TaskFailurePolicy = TaskFailurePolicy.FAIL_FAST,
+    ) -> TaskGroupPort:
+        """Open generic Research Machine work below experiment scheduling.
+
+        This domain is physically independent from the experiment scheduler so a
+        synchronous experiment task may wait on child Machine execution without
+        occupying the workers needed by those children.
+        """
+        self._require_workloads_open()
+        return self._machines.open_task_group(
+            group_id,
+            tenant_id=tenant_id,
+            resource_id=resource_id,
+            priority=priority,
+            admission_queue_wait_timeout_seconds=admission_queue_wait_timeout_seconds,
+            resource_demand=resource_demand,
+            deadline=deadline,
+            failure_policy=failure_policy,
+        )
+
     def compute_lease_guard_factory(
         self,
         scheduler: ComputeSchedulerPort,
@@ -380,11 +648,14 @@ class ResearchExecutionPool:
                 priority=ExecutionPriority.CRITICAL,
                 failure_policy=TaskFailurePolicy.FAIL_FAST,
             )
-        return ComputeLeaseHeartbeatFactory(
-            scheduler=scheduler,
+        return LeaseHeartbeatFactory(
+            renew=lambda rows: scheduler.renew_many(rows, ttl_seconds=policy.ttl_seconds),
+            row_identity=lambda row: row.allocation_id,
+            heartbeat_namespace="compute-lease",
             task_group=self._compute_lease_group,
             heartbeat_scheduler=self._control.heartbeats,
             lane_id="research-compute-lease-renewal",
+            interval_seconds=policy.renewal_interval_seconds,
             lane_capacity=lane_capacity,
             policy=policy,
         )
@@ -406,11 +677,14 @@ class ResearchExecutionPool:
                 priority=ExecutionPriority.CRITICAL,
                 failure_policy=TaskFailurePolicy.FAIL_FAST,
             )
-        return EndpointLeaseHeartbeatFactory(
-            allocations=allocations,
+        return LeaseHeartbeatFactory(
+            renew=lambda rows: allocations.renew_many(rows, ttl_seconds=policy.ttl_seconds),
+            row_identity=lambda row: row.allocation_id,
+            heartbeat_namespace="endpoint-lease",
             task_group=self._endpoint_lease_group,
             heartbeat_scheduler=self._control.heartbeats,
             lane_id="research-endpoint-lease-renewal",
+            interval_seconds=policy.renewal_interval_seconds,
             lane_capacity=lane_capacity,
             policy=policy,
         )
@@ -421,7 +695,7 @@ class ResearchExecutionPool:
         *,
         policy: EnvironmentInstanceLeasePolicy = DEFAULT_ENVIRONMENT_INSTANCE_LEASE_POLICY,
         lane_capacity: int | None = 1,
-    ) -> EnvironmentInstanceLeaseHeartbeatFactory:
+    ) -> LeaseHeartbeatFactory:
         """Share one structured heartbeat authority across environment checkouts."""
         self._require_workloads_open()
 
@@ -432,11 +706,14 @@ class ResearchExecutionPool:
                 priority=ExecutionPriority.CRITICAL,
                 failure_policy=TaskFailurePolicy.FAIL_FAST,
             )
-        return EnvironmentInstanceLeaseHeartbeatFactory(
-            authority=authority,
+        return LeaseHeartbeatFactory(
+            renew=authority.renew_many,
+            row_identity=lambda row: row.instance.instance_id,
+            heartbeat_namespace="environment-instance-lease",
             task_group=self._environment_lease_group,
             heartbeat_scheduler=self._control.heartbeats,
             lane_id="research-environment-instance-lease-renewal",
+            interval_seconds=policy.renewal_interval_seconds,
             lane_capacity=lane_capacity,
             policy=policy,
         )
@@ -447,7 +724,7 @@ class ResearchExecutionPool:
         *,
         policy: DockerContainerLeasePolicy = DEFAULT_DOCKER_CONTAINER_LEASE_POLICY,
         lane_capacity: int | None = 1,
-    ) -> DockerContainerLeaseHeartbeatFactory:
+    ) -> LeaseHeartbeatFactory:
         """Share one structured heartbeat authority across managed Docker containers."""
         self._require_workloads_open()
 
@@ -458,13 +735,75 @@ class ResearchExecutionPool:
                 priority=ExecutionPriority.CRITICAL,
                 failure_policy=TaskFailurePolicy.FAIL_FAST,
             )
-        return DockerContainerLeaseHeartbeatFactory(
-            authority=authority,
+        return LeaseHeartbeatFactory(
+            renew=authority.renew_many,
+            row_identity=lambda row: row.allocation_id,
+            heartbeat_namespace="docker-container-lease",
             task_group=self._container_lease_group,
             heartbeat_scheduler=self._control.heartbeats,
             lane_id="research-docker-container-lease-renewal",
+            interval_seconds=policy.renewal_interval_seconds,
             lane_capacity=lane_capacity,
             policy=policy,
+        )
+
+    def register_model_io_resource(self, resource: object) -> None:
+        """Bind one closeable long-lived resource to the model-I/O domain."""
+        self._require_workloads_open()
+        closer=getattr(resource,"close",None)
+        if not callable(closer):
+            raise TypeError("model-I/O resource must expose close()")
+        identity=id(resource)
+        with self._model_io_resource_lock:
+            if self._model_io_resources_closed:
+                raise RuntimeError("model-I/O resources are already closed")
+            if identity in self._model_io_resource_ids:
+                return
+            self._model_io_resources.append(resource)
+            self._model_io_resource_ids.add(identity)
+
+    def _close_model_io_resources(self) -> BaseException | None:
+        with self._model_io_resource_lock:
+            if self._model_io_resources_closed:
+                return None
+            resources=tuple(reversed(self._model_io_resources))
+        errors: list[BaseException] = []
+        for resource in resources:
+            try:
+                resource.close()
+            except BaseException as exc:
+                errors.append(exc)
+        if errors:
+            return ExceptionGroup(
+                "model-I/O owned resource shutdown failed",
+                errors,
+            )
+        with self._model_io_resource_lock:
+            self._model_io_resources_closed=True
+        return None
+
+    def open_capability_io_group(
+        self,
+        group_id: str,
+        *,
+        tenant_id: str | None = None,
+        resource_id: str | None = None,
+        priority: ExecutionPriority = ExecutionPriority.NORMAL,
+        admission_queue_wait_timeout_seconds: float | None = None,
+        resource_demand: ResourceCompetitionDemand | None = None,
+        deadline: Deadline | None = None,
+        failure_policy: TaskFailurePolicy = TaskFailurePolicy.FAIL_FAST,
+    ) -> TaskGroupPort:
+        self._require_workloads_open()
+        return self._capability_io.open_task_group(
+            group_id,
+            tenant_id=tenant_id,
+            resource_id=resource_id,
+            priority=priority,
+            admission_queue_wait_timeout_seconds=admission_queue_wait_timeout_seconds,
+            resource_demand=resource_demand,
+            deadline=deadline,
+            failure_policy=failure_policy,
         )
 
     def open_model_io_group(
@@ -528,6 +867,32 @@ class ResearchExecutionPool:
             deadline=deadline,
         )
 
+    def close_machine_group(
+        self,
+        group: TaskGroupPort,
+        *,
+        cancel_pending: bool = False,
+        deadline: Deadline | None = None,
+    ) -> None:
+        self._machines.close_task_group(
+            group,
+            cancel_pending=cancel_pending,
+            deadline=deadline,
+        )
+
+    def close_capability_io_group(
+        self,
+        group: TaskGroupPort,
+        *,
+        cancel_pending: bool = False,
+        deadline: Deadline | None = None,
+    ) -> None:
+        self._capability_io.close_task_group(
+            group,
+            cancel_pending=cancel_pending,
+            deadline=deadline,
+        )
+
     def close_model_io_group(
         self,
         group: TaskGroupPort,
@@ -570,10 +935,12 @@ class ResearchExecutionPool:
         *,
         deadline: Deadline | None = None,
     ) -> None:
-        """Seal and physically join experiment/model-I/O work, keeping control alive.
+        """Seal and physically join experiment/downstream work, keeping control alive.
 
-        Experiments are closed first because they may synchronously wait on
-        model-I/O. Resource and durable-ownership heartbeats live in the
+        Experiment scheduling is closed first because it may synchronously wait
+        on Machine execution; Machine execution is closed next because it may
+        synchronously wait on model-I/O or capability-I/O. Resource and
+        durable-ownership heartbeats live in the
         independent control domain and intentionally survive workload quiescence;
         each physical owner stops its own guard only after dependent work has
         converged and the physical effect is safe to release.
@@ -589,14 +956,30 @@ class ResearchExecutionPool:
         )
         if experiment_error is not None:
             errors.append(experiment_error)
-        # Even when experiment convergence is unproven, model-I/O still receives
-        # a bounded close attempt so shutdown does not strand workers.
-        model_io_error = self._close_domain_for_physical_convergence(
-            self._model_io,
+        machine_error = self._close_domain_for_physical_convergence(
+            self._machines,
             deadline=deadline,
         )
-        if model_io_error is not None:
-            errors.append(model_io_error)
+        if machine_error is not None:
+            errors.append(machine_error)
+        # Even when upstream convergence is unproven, downstream I/O domains
+        # still receive bounded close attempts so shutdown does not strand workers.
+        capability_io_error = self._close_domain_for_physical_convergence(
+            self._capability_io,
+            deadline=deadline,
+        )
+        if capability_io_error is not None:
+            errors.append(capability_io_error)
+        model_resource_error = self._close_model_io_resources()
+        if model_resource_error is not None:
+            errors.append(model_resource_error)
+        else:
+            model_io_error = self._close_domain_for_physical_convergence(
+                self._model_io,
+                deadline=deadline,
+            )
+            if model_io_error is not None:
+                errors.append(model_io_error)
         if errors:
             raise ExceptionGroup(
                 "research execution workload quiesce failed",
@@ -613,6 +996,12 @@ class ResearchExecutionPool:
     def experiment_admission_snapshot(self):
         return self._experiments.admission_snapshot()
 
+    def machine_admission_snapshot(self):
+        return self._machines.admission_snapshot()
+
+    def capability_io_admission_snapshot(self):
+        return self._capability_io.admission_snapshot()
+
     def model_io_admission_snapshot(self):
         return self._model_io.admission_snapshot()
 
@@ -625,12 +1014,12 @@ class ResearchExecutionPool:
         # still make progress after a bounded close failure.
         self._closing = True
         errors: list[BaseException] = []
-        workload_runtimes = (
+        pre_model_runtimes = (
             self._experiments,
-            self._model_io,
-            self._orchestration,
+            self._machines,
+            self._capability_io,
         )
-        for runtime in workload_runtimes:
+        for runtime in pre_model_runtimes:
             error = self._close_domain_for_physical_convergence(
                 runtime,
                 deadline=deadline,
@@ -638,6 +1027,31 @@ class ResearchExecutionPool:
             if error is not None:
                 errors.append(error)
 
+        model_resource_error = self._close_model_io_resources()
+        if model_resource_error is not None:
+            errors.append(model_resource_error)
+        else:
+            model_io_error = self._close_domain_for_physical_convergence(
+                self._model_io,
+                deadline=deadline,
+            )
+            if model_io_error is not None:
+                errors.append(model_io_error)
+
+        orchestration_error = self._close_domain_for_physical_convergence(
+            self._orchestration,
+            deadline=deadline,
+        )
+        if orchestration_error is not None:
+            errors.append(orchestration_error)
+
+        workload_runtimes = (
+            self._experiments,
+            self._machines,
+            self._capability_io,
+            self._model_io,
+            self._orchestration,
+        )
         workloads_converged = all(
             runtime.topology_snapshot().converged
             for runtime in workload_runtimes

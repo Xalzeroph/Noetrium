@@ -3,6 +3,7 @@ from __future__ import annotations
 from pathlib import Path
 
 from noetrium import api
+from noetrium_platform.product import research_os as research_os_api
 from noetrium_platform.composition.research_execution_pool import ResearchExecutionPool
 from noetrium_platform.composition.research_os import bind_portfolio_research_os
 from noetrium_platform.composition.research_os_execution import (
@@ -63,13 +64,13 @@ class _FailOnceRuntime:
         return None
 
 
-def _portfolio() -> api.research_os.ResearchPortfolio:
-    builder = api.research_os.ResearchProgramBuilder("paper")
-    builder.node("root", kind=api.research_os.ResearchNodeKind.CUSTOM)
-    builder.node("child", kind=api.research_os.ResearchNodeKind.CUSTOM)
-    builder.node("unrelated", kind=api.research_os.ResearchNodeKind.CUSTOM)
+def _portfolio() -> research_os_api.ResearchPortfolio:
+    builder = research_os_api.ResearchProgramBuilder("paper")
+    builder.node("root", kind=research_os_api.ResearchNodeKind.CUSTOM)
+    builder.node("child", kind=research_os_api.ResearchNodeKind.CUSTOM)
+    builder.node("unrelated", kind=research_os_api.ResearchNodeKind.CUSTOM)
     builder.depends("child", "root")
-    return api.research_os.ResearchPortfolio("retry-scope", (builder.freeze(),))
+    return research_os_api.ResearchPortfolio("retry-scope", (builder.freeze(),))
 
 
 def _pool() -> ResearchExecutionPool:
@@ -102,7 +103,7 @@ def _bound(tmp_path: Path):
 def _fail_root_once(graph, runtime, research_os):
     portfolio = _portfolio()
     revision = research_os.commit(portfolio, message="retry scope")
-    target = api.research_os.ResearchExecutionTarget("retry-execution", revision)
+    target = research_os_api.ResearchExecutionTarget("retry-execution", revision)
     research_os.run(target.for_node("paper", "root"))
     active = graph.active_cut(target.execution_id)
     assert active is not None

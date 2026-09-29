@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from dataclasses import asdict, dataclass
+from dataclasses import asdict, dataclass, field
 import json
 
 from noetrium_platform.foundation.kernel.kernel.durability import sha256_bytes
@@ -58,6 +58,44 @@ class RuntimeBuildIdentity:
 
 
 @dataclass(frozen=True, slots=True)
+class ModelServingPolicy:
+    """Engine-neutral serving semantics owned by the frozen model stack."""
+
+    prefix_caching: bool | None = None
+    prefix_cache_hash_algorithm: str | None = None
+    chunked_prefill: bool | None = None
+    max_batch_tokens: int | None = None
+
+    def __post_init__(self) -> None:
+        for name in ("prefix_caching", "chunked_prefill"):
+            value = getattr(self, name)
+            if value is not None and type(value) is not bool:
+                raise TypeError(f"model serving policy {name} must be bool or None")
+        if self.prefix_cache_hash_algorithm is not None:
+            if (
+                type(self.prefix_cache_hash_algorithm) is not str
+                or not self.prefix_cache_hash_algorithm.strip()
+            ):
+                raise ValueError(
+                    "model serving policy prefix_cache_hash_algorithm must be text"
+                )
+            if self.prefix_caching is not True:
+                raise ValueError(
+                    "prefix_cache_hash_algorithm requires prefix_caching=True"
+                )
+        if self.max_batch_tokens is not None and (
+            type(self.max_batch_tokens) is not int
+            or self.max_batch_tokens <= 0
+        ):
+            raise ValueError(
+                "model serving policy max_batch_tokens must be positive integer"
+            )
+
+    def digest(self) -> str:
+        return _digest(asdict(self))
+
+
+@dataclass(frozen=True, slots=True)
 class ModelStackSpec:
     """Immutable AI-infrastructure stack contract.
 
@@ -78,6 +116,7 @@ class ModelStackSpec:
     attention_backend: str | None
     scheduler_policy: str
     engine_args: tuple[str, ...] = ()
+    serving_policy: ModelServingPolicy = field(default_factory=ModelServingPolicy)
 
     def __post_init__(self) -> None:
         for name in ("tensor_parallel", "data_parallel", "expert_parallel", "pipeline_parallel"):
@@ -101,7 +140,13 @@ class ModelStackSpec:
             "attention_backend": self.attention_backend,
             "scheduler_policy": self.scheduler_policy,
             "engine_args": self.engine_args,
+            "serving_policy": asdict(self.serving_policy),
         })
 
 
-__all__ = ["ModelArtifactClosure", "ModelStackSpec", "RuntimeBuildIdentity"]
+__all__ = [
+    "ModelArtifactClosure",
+    "ModelServingPolicy",
+    "ModelStackSpec",
+    "RuntimeBuildIdentity",
+]

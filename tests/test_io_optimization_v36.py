@@ -1,7 +1,6 @@
 from tests._concurrency_support import process_capture
 from pathlib import Path
 import tempfile, unittest
-from unittest import mock
 from tests._concurrency_support import telemetry_backend
 from noetrium_platform.foundation.kernel.kernel import ExecutionContext
 from tests._concurrency_support import segmented_byte_capture
@@ -17,12 +16,14 @@ class IOOptimizationV36Tests(unittest.TestCase):
     def test_batch_recorder_reuses_single_writer_session(self):
         with tempfile.TemporaryDirectory() as td:
             backend=telemetry_backend(self, Path(td)/'m.sqlite3'); store=TelemetryStore(build_default_registry(), backend); ctx=ExecutionContext(run_id='r',trace_id='t',span_id='s')
-            original=backend._connect_writer
-            with mock.patch.object(backend,'_connect_writer',wraps=original) as connect:
-                with TelemetryBatchRecorder(store,batch_size=10) as rec:
-                    for _ in range(100): rec.observe(ctx,'llm.tokens.input',1,role='planner',model='m')
-                # one writer connection for the recorder; no connection per batch
-                self.assertEqual(connect.call_count,1)
+            baseline = backend.writer_connection_open_count
+            self.assertEqual(baseline, 1)
+            with TelemetryBatchRecorder(store,batch_size=10) as rec:
+                for _ in range(100):
+                    rec.observe(ctx,'llm.tokens.input',1,role='planner',model='m')
+                self.assertEqual(backend.writer_connection_open_count, baseline)
+            # one canonical writer connection is reused across every batch flush
+            self.assertEqual(backend.writer_connection_open_count, baseline)
             self.assertEqual(store.count(),100)
 
 if __name__=='__main__': unittest.main()

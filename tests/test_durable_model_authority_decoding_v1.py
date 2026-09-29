@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import sqlite3
 from pathlib import Path
 
 import pytest
@@ -24,7 +25,7 @@ from noetrium_platform.capabilities.model.qualification.providers.qualification_
 )
 from noetrium_platform.capabilities.model.request.api import ModelRequestEnvelope
 from noetrium_platform.evidence.artifact.content.api import ArtifactBlobRef
-from noetrium_platform.capabilities.model.request.runtime.ledger import DirectoryModelRequestLedger
+from noetrium_platform.capabilities.model.request.runtime.ledger import SQLiteModelRequestLedger
 from noetrium_platform.foundation.kernel.kernel import ExecutionContext, ImmutableModelIdentity
 from noetrium_platform.foundation.kernel.kernel.durability import (
     decode_checksummed_document,
@@ -127,46 +128,69 @@ def _envelope() -> ModelRequestEnvelope:
         source_state_refs=("state:1",),
     )
 
+
+
+def _mutate_request_payload(ledger: SQLiteModelRequestLedger, request_id: str, mutate) -> None:
+    connection = sqlite3.connect(ledger.path)
+    try:
+        row = connection.execute(
+            "SELECT payload FROM model_requests WHERE request_id = ?",
+            (request_id,),
+        ).fetchone()
+        assert row is not None
+        payload = json.loads(bytes(row[0]))
+        mutate(payload)
+        connection.execute(
+            "UPDATE model_requests SET payload = ? WHERE request_id = ?",
+            (sqlite3.Binary(json.dumps(payload).encode("utf-8")), request_id),
+        )
+        connection.commit()
+    finally:
+        connection.close()
+
+
 def test_request_ledger_rejects_source_ref_type_coercion(tmp_path: Path) -> None:
-    ledger = DirectoryModelRequestLedger(tmp_path / "requests")
+    ledger = SQLiteModelRequestLedger(tmp_path / "requests")
     envelope = _envelope()
     ledger.append(envelope)
-    path = ledger._path(envelope.request_id)
-    payload = json.loads(path.read_text("utf-8"))
-    payload["source_artifact_refs"] = [123]
-    path.write_text(json.dumps(payload), encoding="utf-8")
+    _mutate_request_payload(
+        ledger,
+        envelope.request_id,
+        lambda payload: payload.__setitem__("source_artifact_refs", [123]),
+    )
 
     with pytest.raises(ValueError):
         ledger.get(envelope.request_id)
 
 
 def test_request_ledger_rejects_nested_context_type_coercion(tmp_path: Path) -> None:
-    ledger = DirectoryModelRequestLedger(tmp_path / "requests")
+    ledger = SQLiteModelRequestLedger(tmp_path / "requests")
     envelope = _envelope()
     ledger.append(envelope)
-    path = ledger._path(envelope.request_id)
-    payload = json.loads(path.read_text("utf-8"))
-    payload["context"]["participant_generations"] = [["planner", 7]]
-    path.write_text(json.dumps(payload), encoding="utf-8")
+    def mutate(payload):
+        payload["context"]["participant_generations"] = [["planner", 7]]
+
+    _mutate_request_payload(ledger, envelope.request_id, mutate)
 
     with pytest.raises(ValueError):
         ledger.get(envelope.request_id)
 
 
 def test_request_ledger_rejects_unknown_persisted_fields(tmp_path: Path) -> None:
-    ledger = DirectoryModelRequestLedger(tmp_path / "requests")
+    ledger = SQLiteModelRequestLedger(tmp_path / "requests")
     envelope = _envelope()
     ledger.append(envelope)
-    path = ledger._path(envelope.request_id)
-    payload = json.loads(path.read_text("utf-8"))
-    payload["legacy_fallback"] = True
-    path.write_text(json.dumps(payload), encoding="utf-8")
+    _mutate_request_payload(
+        ledger,
+        envelope.request_id,
+        lambda payload: payload.__setitem__("legacy_fallback", True),
+    )
 
     with pytest.raises(ValueError):
         ledger.get(envelope.request_id)
 
 def test_request_ledger_round_trips_exact_envelope(tmp_path: Path) -> None:
-    ledger = DirectoryModelRequestLedger(tmp_path / "requests")
+    ledger = SQLiteModelRequestLedger(tmp_path / "requests")
     envelope = _envelope()
     ledger.append(envelope)
     assert ledger.get(envelope.request_id) == envelope

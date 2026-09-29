@@ -11,24 +11,29 @@ from noetrium_platform.research.execution.api import (
 from noetrium_platform.research.execution.workflow.composition.machine_binding import (
     MachineMethodRuntimeBinder,
 )
-from noetrium_platform.research.execution.workflow.providers.method_evidence import (
-    DirectoryMethodEvidenceFactory,
-)
+from .method_evidence import ArtifactBackedMethodEvidenceFactory
+from .research_execution_content import ResearchExecutionContentAuthorities
 
 
 def standard_method_runtime_binder() -> MethodRuntimeBinderPort:
     return MachineMethodRuntimeBinder()
 
 
-def standard_method_evidence_factory() -> MethodEvidenceFactoryPort:
-    return DirectoryMethodEvidenceFactory()
+def standard_method_evidence_factory(
+    content: ResearchExecutionContentAuthorities,
+) -> MethodEvidenceFactoryPort:
+    if type(content) is not ResearchExecutionContentAuthorities:
+        raise TypeError(
+            "standard Method evidence requires shared ResearchExecutionContentAuthorities"
+        )
+    return ArtifactBackedMethodEvidenceFactory(content)
 
 
 def bind_standard_method_runtime(
     program: MethodProgram,
     runtime: MethodRuntimeContext,
     *,
-    state_root: str | Path | None = None,
+    state_root: str | Path,
     machine_id: str | None = None,
 ) -> MethodRuntimeContext:
     return standard_method_runtime_binder().bind(

@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from noetrium_platform.infrastructure.resources.lease.runtime import ResourceLeaseRegistry
+from noetrium_platform.infrastructure.resources.lease.runtime import LocalLeaseClock, ManualLeaseClock, ResourceLeaseRegistry
 
 from tests_support import model_role_for_test
 
@@ -23,6 +23,7 @@ from noetrium_platform.capabilities.environment.catalog.api import (
     EnvironmentCleanlinessProof,
     EnvironmentInstance,
     EnvironmentInstanceState,
+    EnvironmentProfileMaterialization,
     EnvironmentProfileLifecycle,
     EnvironmentProfileRevision,
     EnvironmentSpec,
@@ -79,6 +80,27 @@ def _environment_gc_closures(
     )
 
 
+
+
+def _register_materialization(
+    catalog,
+    *,
+    profile_id: str,
+    profile_revision: str,
+    runtime_identity_digest: str,
+    runtime_reference: str,
+) -> EnvironmentProfileMaterialization:
+    materialization = EnvironmentProfileMaterialization(
+        profile_id,
+        profile_revision,
+        "b" * 64,
+        runtime_identity_digest,
+        "c" * 64,
+        runtime_reference,
+    )
+    catalog.register_profile_materialization(materialization)
+    return materialization
+
 class _AvailableProbe:
     def probe(self, endpoint: NetworkEndpoint) -> EndpointProbeResult:
         return EndpointProbeResult(endpoint, True, "test probe")
@@ -112,7 +134,7 @@ class DurableResourceAuthoritiesTests(TestCase):
             scopes = SQLiteScopeRegistry(database)
             scopes.register(workspace, PLATFORM_SCOPE)
             leases = ResourceLeaseRegistry(database)
-            store = SQLiteEndpointAllocationStore(database)
+            store = SQLiteEndpointAllocationStore(database, clock=LocalLeaseClock())
             allocator = AtomicEndpointAllocator(
                 reservations=store,
                 probe=_AvailableProbe(),
@@ -126,7 +148,7 @@ class DurableResourceAuthoritiesTests(TestCase):
             )
             allocation = allocator.allocate(request)
             restored = AtomicEndpointAllocator(
-                reservations=SQLiteEndpointAllocationStore(database),
+                reservations=SQLiteEndpointAllocationStore(database, clock=LocalLeaseClock()),
                 probe=_AvailableProbe(),
             )
             self.assertEqual(restored.allocate(request), allocation)
@@ -222,12 +244,20 @@ class DurableResourceAuthoritiesTests(TestCase):
                     revision,
                 )
             )
+            materialization = _register_materialization(
+                meta.environments,
+                profile_id="web-default",
+                profile_revision=revision,
+                runtime_identity_digest=runtime_digest,
+                runtime_reference="container:env-reuse",
+            )
             instance = EnvironmentInstance(
                 "env-reuse",
                 "b" * 64,
                 "docker",
                 "container:env-reuse",
                 runtime_digest,
+                materialization.materialization_digest,
                 scope,
                 "web-default",
                 revision,
@@ -235,25 +265,27 @@ class DurableResourceAuthoritiesTests(TestCase):
             meta.environments.register_instance(instance)
             self.assertEqual(
                 meta.environments.reusable_instances(
-                    "web-default", revision, runtime_digest
+                    "web-default", revision, runtime_digest, materialization.materialization_digest
                 ),
                 (instance,),
             )
 
             with self.assertRaises(KeyError):
-                meta.environments.acquire_reusable_instance(
+                meta.environment_instance_leases.acquire_reusable_instance(
                     "web-default",
                     revision,
                     "e" * 64,
+                    materialization.materialization_digest,
                     binding_id="wrong-runtime",
                     role="runner",
                     scope=scope,
                 )
 
-            acquisition = meta.environments.acquire_reusable_instance(
+            acquisition = meta.environment_instance_leases.acquire_reusable_instance(
                 "web-default",
                 revision,
                 runtime_digest,
+                materialization.materialization_digest,
                 binding_id="binding-reuse",
                 role="runner",
                 scope=scope,
@@ -267,7 +299,7 @@ class DurableResourceAuthoritiesTests(TestCase):
             self.assertEqual(acquisition.instance.generation, 1)
             self.assertEqual(
                 meta.environments.reusable_instances(
-                    "web-default", revision, runtime_digest
+                    "web-default", revision, runtime_digest, materialization.materialization_digest
                 ),
                 (),
             )
@@ -276,8 +308,7 @@ class DurableResourceAuthoritiesTests(TestCase):
                 restored_acquired.environments.binding("runner", scope),
                 binding,
             )
-            meta.environments.unbind("runner", scope)
-            dirty = meta.environments.release_instance("env-reuse")
+            dirty = meta.environment_instance_leases.release(acquisition)
             self.assertIs(dirty.state, EnvironmentInstanceState.DIRTY)
             self.assertEqual(dirty.generation, 1)
 
@@ -285,6 +316,7 @@ class DurableResourceAuthoritiesTests(TestCase):
                 "env-reuse",
                 revision,
                 runtime_digest,
+                materialization.materialization_digest,
                 dirty.generation,
                 EnvironmentCleanlinessKind.OVERLAY_DESTROYED,
                 "c" * 64,
@@ -296,28 +328,28 @@ class DurableResourceAuthoritiesTests(TestCase):
             self.assertIs(clean.state, EnvironmentInstanceState.CLEAN)
             self.assertEqual(
                 meta.environments.reusable_instances(
-                    "web-default", revision, runtime_digest
+                    "web-default", revision, runtime_digest, materialization.materialization_digest
                 ),
                 (clean,),
             )
 
-            reacquisition = meta.environments.acquire_reusable_instance(
+            reacquisition = meta.environment_instance_leases.acquire_reusable_instance(
                 "web-default",
                 revision,
                 runtime_digest,
+                materialization.materialization_digest,
                 binding_id=binding.binding_id,
                 role=binding.role,
                 scope=binding.scope,
             )
             self.assertEqual(reacquisition.binding, binding)
             self.assertEqual(reacquisition.instance.generation, 2)
-            meta.environments.unbind("runner", scope)
             with self.assertRaises(RuntimeError):
-                meta.environments.release_instance(
-                    "env-reuse",
+                meta.environment_instance_leases.release(
+                    reacquisition,
                     cleanliness=proof,
                 )
-            meta.environments.mark_instance_dirty("env-reuse")
+            meta.environment_instance_leases.reconcile()
             destroyed = meta.environments.destroy_instance("env-reuse")
             self.assertIs(destroyed.state, EnvironmentInstanceState.DESTROYED)
 
@@ -389,12 +421,27 @@ class DurableResourceAuthoritiesTests(TestCase):
             meta.environments.register_profile_revision(
                 EnvironmentProfileRevision("web-multi-runtime", "web", revision)
             )
+            materialization_a = _register_materialization(
+                meta.environments,
+                profile_id="web-multi-runtime",
+                profile_revision=revision,
+                runtime_identity_digest=runtime_a,
+                runtime_reference="container:runtime-a",
+            )
+            materialization_b = _register_materialization(
+                meta.environments,
+                profile_id="web-multi-runtime",
+                profile_revision=revision,
+                runtime_identity_digest=runtime_b,
+                runtime_reference="container:runtime-b",
+            )
             first = EnvironmentInstance(
                 "env-runtime-a",
                 "d" * 64,
                 "docker",
                 "container:runtime-a",
                 runtime_a,
+                materialization_a.materialization_digest,
                 scope,
                 "web-multi-runtime",
                 revision,
@@ -405,6 +452,7 @@ class DurableResourceAuthoritiesTests(TestCase):
                 "docker",
                 "container:runtime-b",
                 runtime_b,
+                materialization_b.materialization_digest,
                 scope,
                 "web-multi-runtime",
                 revision,
@@ -475,22 +523,52 @@ class DurableResourceAuthoritiesTests(TestCase):
                 revision,
             )
             meta.environments.register_profile_revision(profile)
+            initial_materialization = _register_materialization(
+                meta.environments,
+                profile_id=profile.profile_id,
+                profile_revision=profile.profile_revision,
+                runtime_identity_digest=runtime_digest,
+                runtime_reference="container:env-lifecycle",
+            )
+            replacement_materialization = _register_materialization(
+                meta.environments,
+                profile_id=profile.profile_id,
+                profile_revision=profile.profile_revision,
+                runtime_identity_digest=runtime_digest,
+                runtime_reference="container:env-lifecycle",
+            )
+            wrong_scope_materialization = _register_materialization(
+                meta.environments,
+                profile_id=profile.profile_id,
+                profile_revision=profile.profile_revision,
+                runtime_identity_digest=runtime_digest,
+                runtime_reference="container:env-lifecycle",
+            )
+            retired_materialization = _register_materialization(
+                meta.environments,
+                profile_id=profile.profile_id,
+                profile_revision=profile.profile_revision,
+                runtime_identity_digest=runtime_digest,
+                runtime_reference="container:env-lifecycle",
+            )
             instance = EnvironmentInstance(
                 "env-lifecycle",
                 "6" * 64,
                 "docker",
                 "container:env-lifecycle",
                 runtime_digest,
+                initial_materialization.materialization_digest,
                 scope,
                 profile.profile_id,
                 profile.profile_revision,
             )
             meta.environments.register_instance(instance)
 
-            pinned = meta.environments.acquire_reusable_instance(
+            pinned = meta.environment_instance_leases.acquire_reusable_instance(
                 profile.profile_id,
                 profile.profile_revision,
                 runtime_digest,
+                initial_materialization.materialization_digest,
                 binding_id="pinned-binding",
                 role="runner",
                 scope=scope,
@@ -507,10 +585,11 @@ class DurableResourceAuthoritiesTests(TestCase):
                 EnvironmentProfileLifecycle.DRAINING,
             )
             with self.assertRaises(RuntimeError):
-                meta.environments.acquire_reusable_instance(
+                meta.environment_instance_leases.acquire_reusable_instance(
                     profile.profile_id,
                     profile.profile_revision,
                     runtime_digest,
+                    initial_materialization.materialization_digest,
                     binding_id="new-work",
                     role="runner-2",
                     scope=scope,
@@ -520,8 +599,9 @@ class DurableResourceAuthoritiesTests(TestCase):
                 "env-lifecycle-replacement",
                 "8" * 64,
                 "docker",
-                "container:env-lifecycle-replacement",
+                "container:env-lifecycle",
                 runtime_digest,
+                initial_materialization.materialization_digest,
                 scope,
                 profile.profile_id,
                 profile.profile_revision,
@@ -534,8 +614,9 @@ class DurableResourceAuthoritiesTests(TestCase):
                         "env-wrong-scope",
                         "9" * 64,
                         "docker",
-                        "container:env-wrong-scope",
+                        "container:env-lifecycle",
                         runtime_digest,
+                        initial_materialization.materialization_digest,
                         other_scope,
                         profile.profile_id,
                         profile.profile_revision,
@@ -549,10 +630,11 @@ class DurableResourceAuthoritiesTests(TestCase):
                 role="runner",
                 scope=scope,
             )
-            recovered = meta.environments.recover_reusable_instance(
+            recovered = meta.environment_instance_leases.recover_reusable_instance(
                 profile.profile_id,
                 profile.profile_revision,
                 runtime_digest,
+                initial_materialization.materialization_digest,
                 role="runner",
                 scope=scope,
             )
@@ -569,13 +651,13 @@ class DurableResourceAuthoritiesTests(TestCase):
                 recovered.binding,
             )
 
-            meta.environments.unbind("runner", scope)
-            meta.environments.release_instance(
-                recovered.instance.instance_id,
+            meta.environment_instance_leases.release(
+                recovered,
                 cleanliness=EnvironmentCleanlinessProof(
                     recovered.instance.instance_id,
                     revision,
                     runtime_digest,
+                    initial_materialization.materialization_digest,
                     recovered.instance.generation,
                     EnvironmentCleanlinessKind.PROVIDER_RESET_VERIFIED,
                     "7" * 64,
@@ -592,19 +674,12 @@ class DurableResourceAuthoritiesTests(TestCase):
                 EnvironmentProfileLifecycle.RETIRED,
             )
             with self.assertRaises(RuntimeError):
-                meta.environments.acquire_reusable_instance(
+                meta.environment_instance_leases.acquire_reusable_instance(
                     profile.profile_id,
                     profile.profile_revision,
                     runtime_digest,
+                    initial_materialization.materialization_digest,
                     binding_id="new-after-retire",
-                    role="runner",
-                    scope=scope,
-                )
-            with self.assertRaises(RuntimeError):
-                meta.environments.recover_reusable_instance(
-                    profile.profile_id,
-                    profile.profile_revision,
-                    runtime_digest,
                     role="runner",
                     scope=scope,
                 )
@@ -614,8 +689,9 @@ class DurableResourceAuthoritiesTests(TestCase):
                         "env-retired-replacement",
                         "a" * 64,
                         "docker",
-                        "container:env-retired-replacement",
+                        "container:env-lifecycle",
                         runtime_digest,
+                        initial_materialization.materialization_digest,
                         scope,
                         profile.profile_id,
                         profile.profile_revision,
@@ -662,19 +738,35 @@ class DurableResourceAuthoritiesTests(TestCase):
                     revision,
                 )
             )
+            materialization = _register_materialization(
+                first.environments,
+                profile_id="text-world-default",
+                profile_revision=revision,
+                runtime_identity_digest="3" * 64,
+                runtime_reference="python.exe",
+            )
             instance = EnvironmentInstance(
                 "env-1",
                 "1" * 64,
                 "local",
                 "python.exe",
                 "3" * 64,
+                materialization.materialization_digest,
                 scope,
                 "text-world-default",
                 revision,
             )
             first.environments.register_instance(instance)
-            binding = EnvironmentBinding("binding-1", scope, "runner", "env-1")
-            first.environments.bind(binding)
+            leased = first.environment_instance_leases.acquire_reusable_instance(
+                "text-world-default",
+                revision,
+                "3" * 64,
+                materialization.materialization_digest,
+                binding_id="binding-1",
+                role="runner",
+                scope=scope,
+            )
+            binding = leased.binding
             second = build_platform_meta(root)
             resolved = second.environments.resolve("default", scope)
             self.assertEqual(resolved.requirements, (("python", "3.12"),))
@@ -694,7 +786,14 @@ def test_resource_lease_reconcile_can_be_scoped_to_one_resource_kind(tmp_path) -
     )
     from noetrium_platform.foundation.scope.api import PLATFORM_SCOPE
 
-    registry = ResourceLeaseRegistry(tmp_path / "lease-kind.sqlite")
+    clock = ManualLeaseClock(
+        elapsed_seconds=1.0,
+        wall_epoch_seconds=10.0,
+    )
+    registry = ResourceLeaseRegistry(
+        tmp_path / "lease-kind.sqlite",
+        clock=clock,
+    )
     endpoint = ResourceIdentity(ResourceKind.NETWORK_ENDPOINT, "endpoint-a")
     container = ResourceIdentity(ResourceKind.CONTAINER, "container-a")
     for resource in (endpoint, container):
@@ -707,13 +806,18 @@ def test_resource_lease_reconcile_can_be_scoped_to_one_resource_kind(tmp_path) -
                 "kind-scoped-reconcile",
             ),
             ttl_seconds=1.0,
-            now=10.0,
         )
 
+    clock.advance(2.0)
     expired = registry.reconcile_expired(
-        now=12.0,
         resource_kind=ResourceKind.CONTAINER,
     )
     assert [row.resource.kind for row in expired] == [ResourceKind.CONTAINER]
-    assert registry.get("lease:container-a", now=12.0).state.value == "expired"
-    assert registry.get("lease:endpoint-a", now=10.5).state.value == "active"
+    endpoint_expired = registry.reconcile_expired(
+        resource_kind=ResourceKind.NETWORK_ENDPOINT,
+    )
+    assert [row.resource.kind for row in endpoint_expired] == [
+        ResourceKind.NETWORK_ENDPOINT
+    ]
+    assert registry.get("lease:container-a").state.value == "expired"
+    assert registry.get("lease:endpoint-a").state.value == "expired"

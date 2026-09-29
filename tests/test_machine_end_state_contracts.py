@@ -16,9 +16,9 @@ from noetrium_platform.foundation.kernel.kernel import (
     ChildMachinePending,
     ChildMachineRecord,
     ChildMachineStatus,
-    DirectoryChildMachineSupervisor,
+    ChildMachineSupervisor,
     DirectoryMachineJournal,
-    InMemoryChildMachineSupervisor,
+    ChildMachineSupervisor,
     InMemoryPluginRegistry,
     JournalInspectionService,
     MachineCommand,
@@ -28,6 +28,7 @@ from noetrium_platform.foundation.kernel.kernel import (
     MachineIdentity,
     MachineKind,
     MachineProgramRef,
+    MachineStateDelta,
     MachineExecutor,
     PluginManifest,
     ProgramLock,
@@ -77,7 +78,7 @@ class _Interpreter:
             machine_id=command.machine_id,
             command_id=command.command_id,
             base_revision=state.revision,
-            state_delta={"started": True},
+            state_delta=MachineStateDelta.set(("started",), True),
             input_refs=("input/start",),
             evidence_refs=("evidence/start",),
             artifact_refs=("artifact/start",),
@@ -268,7 +269,7 @@ def test_runtime_enforces_granted_capability_scopes(tmp_path: Path) -> None:
             _Interpreter(),
         )
 
-def test_child_supervisor_requires_terminal_join() -> None:
+def test_child_supervisor_requires_terminal_join(tmp_path: Path) -> None:
     link = ChildMachineLink(
         parent_machine_id="parent-1",
         child_machine_id="child-supervised",
@@ -280,7 +281,7 @@ def test_child_supervisor_requires_terminal_join() -> None:
         child_result_ref=None,
         failure_policy="fail_parent",
     )
-    supervisor = InMemoryChildMachineSupervisor()
+    supervisor = ChildMachineSupervisor(tmp_path / "child-supervisor")
     created = supervisor.register(link)
     assert created.status is ChildMachineStatus.CREATED
     with pytest.raises(ChildMachinePending):
@@ -318,12 +319,12 @@ def test_directory_child_supervisor_survives_restart(tmp_path: Path) -> None:
         child_result_ref="result/child",
         failure_policy="fail_parent",
     )
-    first = DirectoryChildMachineSupervisor(tmp_path)
+    first = ChildMachineSupervisor(tmp_path)
     first.register(link)
     first.observe(ChildMachineRecord(
         link, ChildMachineStatus.COMPLETED, 3, result_ref="result/child",
     ))
-    restarted = DirectoryChildMachineSupervisor(tmp_path)
+    restarted = ChildMachineSupervisor(tmp_path)
     assert restarted.join("child-durable").status is ChildMachineStatus.COMPLETED
     assert restarted.list("parent-durable")[0].record_digest
 
@@ -341,8 +342,8 @@ def test_directory_child_records_reject_corruption(tmp_path: Path) -> None:
         failure_policy="fail_parent",
     )
     child_root = tmp_path / "children-corrupt"
-    child = DirectoryChildMachineSupervisor(child_root)
+    child = ChildMachineSupervisor(child_root)
     child.register(link)
     (child_root / "children.json").write_text("[]x", encoding="utf-8")
     with pytest.raises(ValueError, match="corrupt"):
-        DirectoryChildMachineSupervisor(child_root)
+        ChildMachineSupervisor(child_root)

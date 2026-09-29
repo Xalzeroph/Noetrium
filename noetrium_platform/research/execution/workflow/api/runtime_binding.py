@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from typing import Protocol, runtime_checkable
 
 from noetrium_platform.capabilities.api import CapabilityPort
 from noetrium_platform.foundation.kernel.kernel import canonical_digest, require_sha256
@@ -14,6 +15,16 @@ from . import (
     MethodSchemaPort,
     analyze_method_runtime_requirements,
 )
+
+
+@runtime_checkable
+class ProgramScopedCapabilityPort(CapabilityPort, Protocol):
+    """Resolve one exact capability surface from frozen ResearchProgram identity."""
+
+    @property
+    def identity_digest(self) -> str: ...
+
+    def for_program(self, program_id: str) -> CapabilityPort | None: ...
 
 
 def _identity_digest(value: object, name: str) -> str:
@@ -188,5 +199,6 @@ def plan_method_runtime_binding(
 __all__ = [
     "MethodRuntimeBindingPlan",
     "MethodRuntimePortInventory",
+    "ProgramScopedCapabilityPort",
     "plan_method_runtime_binding",
 ]

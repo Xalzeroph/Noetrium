@@ -4,6 +4,7 @@ set -eu
 ROOT="$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)"
 BOOTSTRAP_IMAGE="${NOETRIUM_BOOTSTRAP_IMAGE:-noetrium/environment-builder:local}"
 DOCKER_CLI_IMAGE="${NOETRIUM_DOCKER_CLI_IMAGE:-docker:27-cli}"
+PYTHON_RUNTIME_IMAGE="${NOETRIUM_BOOTSTRAP_PYTHON_IMAGE:-python:3.12-slim-bookworm}"
 WORK_ROOT="${NOETRIUM_BUILD_WORK_ROOT:-$ROOT/.noetrium/environment-images}"
 BOOTSTRAP_MANAGED_LABEL="io.noetrium.bootstrap-managed"
 BOOTSTRAP_MANAGED_VALUE="control-v1"
@@ -187,6 +188,47 @@ run_bootstrap_container() {
   return "$status"
 }
 
+docker_image_id() {
+  image="$1"
+  value="$(docker image inspect "$image" --format '{{.Id}}')" || return 1
+  case "$value" in
+    sha256:????????????????????????????????????????????????????????????????)
+      digest="${value#sha256:}"
+      case "$digest" in
+        *[!0-9a-f]*)
+          echo "Docker image identity is not lowercase SHA-256: $image -> $value" >&2
+          return 1
+          ;;
+      esac
+      ;;
+    *)
+      echo "Docker image identity is not immutable SHA-256: $image -> $value" >&2
+      return 1
+      ;;
+  esac
+  printf '%s\n' "$value"
+}
+
+verify_project_runtime_image() {
+  image="$1"
+  expected_key="$2"
+  expected_base="$3"
+  metadata="$(docker image inspect --format '{{.Id}}|{{index .Config.Labels "io.noetrium.project-runtime-key"}}|{{index .Config.Labels "io.noetrium.project-runtime-base-image-id"}}' "$image")" || return 1
+  old_ifs="$IFS"
+  IFS='|'
+  set -- $metadata
+  IFS="$old_ifs"
+  image_id="${1:-}"
+  runtime_key="${2:-}"
+  base_image_id="${3:-}"
+  case "$image_id" in
+    sha256:????????????????????????????????????????????????????????????????) ;;
+    *) return 1 ;;
+  esac
+  [ "$runtime_key" = "$expected_key" ] || return 1
+  [ "$base_image_id" = "$expected_base" ] || return 1
+}
+
 command -v docker >/dev/null 2>&1 || {
   echo "Noetrium environment bootstrap requires Docker on the host." >&2
   exit 127
@@ -212,6 +254,7 @@ if [ -z "$DAEMON_HOST" ]; then
 fi
 [ -n "$DAEMON_HOST" ] || DAEMON_HOST="unix:///var/run/docker.sock"
 
+DAEMON_SOCKET_GID=""
 case "$DAEMON_HOST" in
   unix://*)
     DAEMON_SOCKET="${DAEMON_HOST#unix://}"
@@ -219,6 +262,13 @@ case "$DAEMON_HOST" in
       echo "Docker daemon socket is unavailable: $DAEMON_SOCKET" >&2
       exit 1
     }
+    DAEMON_SOCKET_GID="$(stat -c '%g' "$DAEMON_SOCKET")"
+    case "$DAEMON_SOCKET_GID" in
+      ''|*[!0-9]*)
+        echo "Docker daemon socket group identity is invalid: $DAEMON_SOCKET" >&2
+        exit 1
+        ;;
+    esac
     DAEMON_ARGS="-v $DAEMON_SOCKET:$DAEMON_SOCKET -e DOCKER_HOST=$DAEMON_HOST"
     ;;
   tcp://*)
@@ -299,6 +349,94 @@ if [ "${1:-}" = "control" ]; then
   mkdir -p "$CONTROL_STATE_ROOT"
   CONTROL_STATE_ROOT="$(CDPATH= cd -- "$CONTROL_STATE_ROOT" && pwd)"
   CONTROL_ENV_FILE="${NOETRIUM_CONTROL_ENV_FILE:-}"
+
+  CONTROL_PROJECT_ROOT="${NOETRIUM_CONTROL_PROJECT_ROOT:-}"
+  CONTROL_HOST_RUNTIME="${NOETRIUM_CONTROL_HOST_RUNTIME:-0}"
+  CONTROL_RUNTIME_ARGS=""
+  CONTROL_IMAGE="$BOOTSTRAP_IMAGE"
+  if [ "$CONTROL_HOST_RUNTIME" = "1" ]; then
+    [ -n "$CONTROL_PROJECT_ROOT" ] || {
+      echo "Host-runtime control requires NOETRIUM_CONTROL_PROJECT_ROOT." >&2
+      exit 2
+    }
+    test -d "$CONTROL_PROJECT_ROOT" || {
+      echo "Control project root does not exist: $CONTROL_PROJECT_ROOT" >&2
+      exit 1
+    }
+    test ! -L "$CONTROL_PROJECT_ROOT" || {
+      echo "Control project root must not be a symlink: $CONTROL_PROJECT_ROOT" >&2
+      exit 1
+    }
+    CONTROL_PROJECT_ROOT="$(CDPATH= cd -- "$CONTROL_PROJECT_ROOT" && pwd -P)"
+    CONTROL_HOME="$CONTROL_STATE_ROOT/home"
+    mkdir -p "$CONTROL_HOME"
+
+    HOST_UID="$(id -u)"
+    HOST_GID="$(id -g)"
+    CONTROL_IMAGE="$BOOTSTRAP_IMAGE"
+    BOOTSTRAP_IMAGE_ID="$(docker_image_id "$BOOTSTRAP_IMAGE")"
+    PROJECT_RUNTIME_KEY="$(
+      docker run --rm --init --restart no         --user "$HOST_UID:$HOST_GID"         --entrypoint python3         -e HOME=/tmp         -e PIP_DISABLE_PIP_VERSION_CHECK=1         -e PIP_NO_CACHE_DIR=1         -v "$ROOT:$ROOT:ro"         -v "$CONTROL_PROJECT_ROOT:$CONTROL_PROJECT_ROOT"         -v "$CONTROL_STATE_ROOT:$CONTROL_STATE_ROOT"         "$BOOTSTRAP_IMAGE"         "$ROOT/scripts/materialize_project_runtime.py"         --project-root "$CONTROL_PROJECT_ROOT"         --platform-root "$ROOT"         --state-root "$CONTROL_STATE_ROOT"         --base-image-id "$BOOTSTRAP_IMAGE_ID"
+    )"
+    if [ "$PROJECT_RUNTIME_KEY" != "base" ]; then
+      [ "${#PROJECT_RUNTIME_KEY}" -eq 64 ] || {
+        echo "Project runtime materializer returned invalid identity: $PROJECT_RUNTIME_KEY" >&2
+        exit 1
+      }
+      case "$PROJECT_RUNTIME_KEY" in
+        *[!0-9a-f]*)
+          echo "Project runtime materializer returned non-SHA256 identity: $PROJECT_RUNTIME_KEY" >&2
+          exit 1
+          ;;
+      esac
+      PROJECT_RUNTIME_CONTEXT="$CONTROL_STATE_ROOT/project-runtime/objects/$PROJECT_RUNTIME_KEY"
+      test -f "$PROJECT_RUNTIME_CONTEXT/Dockerfile" || {
+        echo "Project runtime build context is incomplete: $PROJECT_RUNTIME_CONTEXT" >&2
+        exit 1
+      }
+      PROJECT_BASE_ALIAS="noetrium/project-runtime-base:${BOOTSTRAP_IMAGE_ID#sha256:}"
+      docker tag "$BOOTSTRAP_IMAGE_ID" "$PROJECT_BASE_ALIAS"
+      [ "$(docker_image_id "$PROJECT_BASE_ALIAS")" = "$BOOTSTRAP_IMAGE_ID" ] || {
+        echo "Project runtime base alias drifted from immutable bootstrap image." >&2
+        exit 1
+      }
+      CONTROL_IMAGE="noetrium/project-runtime:$PROJECT_RUNTIME_KEY"
+      if docker image inspect "$CONTROL_IMAGE" >/dev/null 2>&1; then
+        verify_project_runtime_image           "$CONTROL_IMAGE" "$PROJECT_RUNTIME_KEY" "$BOOTSTRAP_IMAGE_ID" || {
+          echo "Cached project runtime image identity/provenance drifted: $CONTROL_IMAGE" >&2
+          exit 1
+        }
+      else
+        docker build           --build-arg "BASE_IMAGE=$PROJECT_BASE_ALIAS"           --build-arg "NOETRIUM_PROJECT_RUNTIME_KEY=$PROJECT_RUNTIME_KEY"           --build-arg "NOETRIUM_PROJECT_RUNTIME_BASE_IMAGE_ID=$BOOTSTRAP_IMAGE_ID"           --tag "$CONTROL_IMAGE"           "$PROJECT_RUNTIME_CONTEXT"
+        verify_project_runtime_image           "$CONTROL_IMAGE" "$PROJECT_RUNTIME_KEY" "$BOOTSTRAP_IMAGE_ID" || {
+          echo "Built project runtime image failed provenance verification: $CONTROL_IMAGE" >&2
+          exit 1
+        }
+      fi
+    fi
+    CONTROL_IMAGE_ID="$(docker_image_id "$CONTROL_IMAGE")"
+
+    HOST_IDENTITY_ARGS=""
+    if [ -s /etc/machine-id ]; then
+      HOST_IDENTITY_ARGS="-v /etc/machine-id:/etc/machine-id:ro"
+    elif [ -s /sys/class/dmi/id/product_uuid ]; then
+      HOST_IDENTITY_ARGS="-v /sys/class/dmi/id/product_uuid:/sys/class/dmi/id/product_uuid:ro"
+    else
+      echo "Noetrium controller attachment requires stable physical-host identity." >&2
+      exit 1
+    fi
+
+    CONTROL_RUNTIME_ARGS="--user $HOST_UID:$HOST_GID --network host $HOST_IDENTITY_ARGS -v $CONTROL_PROJECT_ROOT:$CONTROL_PROJECT_ROOT -v $CONTROL_HOME:$CONTROL_HOME -w $CONTROL_PROJECT_ROOT -e HOME=$CONTROL_HOME -e PYTHONPATH=$ROOT:$CONTROL_PROJECT_ROOT/src -e NOETRIUM_CONTROL_IMAGE_ID=$CONTROL_IMAGE_ID -e NOETRIUM_PROJECT_RUNTIME_KEY=$PROJECT_RUNTIME_KEY"
+    if [ -n "$DAEMON_SOCKET_GID" ]; then
+      CONTROL_RUNTIME_ARGS="$CONTROL_RUNTIME_ARGS --group-add $DAEMON_SOCKET_GID"
+    fi
+    if command -v nvidia-smi >/dev/null 2>&1 && docker info --format '{{json .Runtimes}}' 2>/dev/null | grep -q '"nvidia"'; then
+      CONTROL_RUNTIME_ARGS="$CONTROL_RUNTIME_ARGS --gpus all"
+    fi
+  elif [ "$CONTROL_HOST_RUNTIME" != "0" ]; then
+    echo "NOETRIUM_CONTROL_HOST_RUNTIME must be 0 or 1." >&2
+    exit 2
+  fi
   if [ -z "$CONTROL_ENV_FILE" ] && [ -f "$ROOT/deploy/.env" ]; then
     CONTROL_ENV_FILE="$ROOT/deploy/.env"
   fi
@@ -310,6 +448,31 @@ if [ "${1:-}" = "control" ]; then
   fi
 
   CONTROL_INPUT_ROOT="${NOETRIUM_CONTROL_INPUT_ROOT:-}"
+  if [ -z "$CONTROL_INPUT_ROOT" ] && [ "$CONTROL_HOST_RUNTIME" = "1" ]; then
+    CONTROL_ASSET_REGISTRY="$CONTROL_PROJECT_ROOT/.noetrium/research-os/platform-runtime/state/model/assets"
+    if [ -d "$CONTROL_ASSET_REGISTRY" ]; then
+      CONTROL_INPUT_ROOT="$(
+        docker run --rm           --entrypoint python3           -v "$CONTROL_PROJECT_ROOT:$CONTROL_PROJECT_ROOT:ro"           "$BOOTSTRAP_IMAGE"           -c 'import json, os, pathlib, sys
+root=pathlib.Path(sys.argv[1])
+refs=[]
+for path in sorted(root.glob("*.json")):
+    try:
+        row=json.loads(path.read_text("utf-8"))
+    except Exception:
+        continue
+    if row.get("mode")!="reference":
+        continue
+    raw=row.get("path")
+    if isinstance(raw,str) and os.path.isabs(raw):
+        refs.append(raw)
+if refs:
+    common=os.path.commonpath(refs)
+    if common and common != os.path.sep:
+        print(common)
+' "$CONTROL_ASSET_REGISTRY"
+      )"
+    fi
+  fi
   if [ -n "$CONTROL_INPUT_ROOT" ]; then
     test -d "$CONTROL_INPUT_ROOT" || {
       echo "Noetrium control input root does not exist: $CONTROL_INPUT_ROOT" >&2
@@ -325,42 +488,42 @@ if [ "${1:-}" = "control" ]; then
   if [ -n "$CONTROL_ENV_FILE" ]; then
     if [ -n "$CONTROL_INPUT_ROOT" ]; then
       # shellcheck disable=SC2086
-      run_bootstrap_container --entrypoint python3 $COMMON_ARGS \
+      run_bootstrap_container --entrypoint python3 $COMMON_ARGS $CONTROL_RUNTIME_ARGS \
         --env-file "$CONTROL_ENV_FILE" \
         -v "$WORK_ROOT:$WORK_ROOT" \
         -v "$CONTROL_STATE_ROOT:$CONTROL_STATE_ROOT" \
         -v "$CONTROL_INPUT_ROOT:$CONTROL_INPUT_ROOT:ro" \
         -e NOETRIUM_CONTROL_STATE_ROOT="$CONTROL_STATE_ROOT" \
         -e NOETRIUM_CONTROL_INPUT_ROOT="$CONTROL_INPUT_ROOT" \
-        "$BOOTSTRAP_IMAGE" "$@"
+        "$CONTROL_IMAGE" "$@"
     else
       # shellcheck disable=SC2086
-      run_bootstrap_container --entrypoint python3 $COMMON_ARGS \
+      run_bootstrap_container --entrypoint python3 $COMMON_ARGS $CONTROL_RUNTIME_ARGS \
         --env-file "$CONTROL_ENV_FILE" \
         -v "$WORK_ROOT:$WORK_ROOT" \
         -v "$CONTROL_STATE_ROOT:$CONTROL_STATE_ROOT" \
         -e NOETRIUM_CONTROL_STATE_ROOT="$CONTROL_STATE_ROOT" \
-        "$BOOTSTRAP_IMAGE" "$@"
+        "$CONTROL_IMAGE" "$@"
     fi
     exit $?
   fi
 
   if [ -n "$CONTROL_INPUT_ROOT" ]; then
     # shellcheck disable=SC2086
-    run_bootstrap_container --entrypoint python3 $COMMON_ARGS \
+    run_bootstrap_container --entrypoint python3 $COMMON_ARGS $CONTROL_RUNTIME_ARGS \
       -v "$WORK_ROOT:$WORK_ROOT" \
       -v "$CONTROL_STATE_ROOT:$CONTROL_STATE_ROOT" \
       -v "$CONTROL_INPUT_ROOT:$CONTROL_INPUT_ROOT:ro" \
       -e NOETRIUM_CONTROL_STATE_ROOT="$CONTROL_STATE_ROOT" \
       -e NOETRIUM_CONTROL_INPUT_ROOT="$CONTROL_INPUT_ROOT" \
-      "$BOOTSTRAP_IMAGE" "$@"
+      "$CONTROL_IMAGE" "$@"
   else
     # shellcheck disable=SC2086
-    run_bootstrap_container --entrypoint python3 $COMMON_ARGS \
+    run_bootstrap_container --entrypoint python3 $COMMON_ARGS $CONTROL_RUNTIME_ARGS \
       -v "$WORK_ROOT:$WORK_ROOT" \
       -v "$CONTROL_STATE_ROOT:$CONTROL_STATE_ROOT" \
       -e NOETRIUM_CONTROL_STATE_ROOT="$CONTROL_STATE_ROOT" \
-      "$BOOTSTRAP_IMAGE" "$@"
+      "$CONTROL_IMAGE" "$@"
   fi
   exit $?
 fi

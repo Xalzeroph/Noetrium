@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from collections.abc import Mapping
 from dataclasses import dataclass, field
+from types import MappingProxyType
 import math
 
 from noetrium_platform.research.experimentation.lifecycle.api import (
@@ -11,7 +12,13 @@ from noetrium_platform.research.experimentation.lifecycle.api import (
     TaskDefinition,
     TrialExecutionRequest,
 )
-from noetrium_platform.research.execution.api import MethodProgram, MethodRuntimeContext
+from noetrium_platform.research.execution.api import (
+    ArtifactReference,
+    MethodProgram,
+    MethodRuntimeContext,
+    ScopeIdentity,
+    ScopeKind,
+)
 from noetrium_platform.foundation.kernel.kernel import (
     JsonObject,
     JsonValue,
@@ -44,6 +51,8 @@ class WorkloadMethodReceipt:
     status: str
     step_count: int
     evidence_status: str
+    evidence_reference: ArtifactReference | None = None
+    failure_id: str | None = None
     def __post_init__(self) -> None:
         if any(type(v) is not str or not v.strip() for v in (self.run_id, self.status, self.evidence_status)):
             raise ValueError("workload method receipt identity/status fields are required")
@@ -53,6 +62,16 @@ class WorkloadMethodReceipt:
                 raise ValueError(f"workload method receipt {name} must be SHA-256 hex")
         if type(self.step_count) is not int or isinstance(self.step_count, bool) or self.step_count < 0:
             raise ValueError("workload method receipt step_count must be non-negative integer")
+        if self.evidence_reference is not None and type(
+            self.evidence_reference
+        ) is not ArtifactReference:
+            raise TypeError(
+                "workload method receipt evidence_reference must be ArtifactReference or null"
+            )
+        if self.failure_id is not None and (
+            type(self.failure_id) is not str or not self.failure_id.strip()
+        ):
+            raise ValueError("workload method receipt failure_id must be non-empty text or null")
 
 
 def _freeze_mapping(value: Mapping[str, JsonValue], *, field_name: str) -> Mapping[str, JsonValue]:
@@ -121,7 +140,7 @@ class WorkloadTaskResult:
     duration_s: float
     lineage_id: str
     failure_reason: str = ""
-    method_receipt: WorkloadMethodReceipt | None = None
+    participant_receipts: tuple[tuple[str, WorkloadMethodReceipt], ...] = ()
     completion_receipt: WorkloadCompletionReceipt | None = None
     blocked: bool = False
     failure_scope: str = FailureScope.TASK.value
@@ -145,8 +164,24 @@ class WorkloadTaskResult:
             raise ValueError("successful workload task result cannot be blocked or failed")
         if not self.success and not self.failure_reason.strip():
             raise ValueError("failed/blocked workload task result requires failure_reason")
-        if self.method_receipt is not None and not isinstance(self.method_receipt, WorkloadMethodReceipt):
-            raise TypeError("workload method_receipt must be WorkloadMethodReceipt")
+        if type(self.participant_receipts) is not tuple or any(
+            type(row) is not tuple
+            or len(row) != 2
+            or type(row[0]) is not str
+            or not row[0].strip()
+            or not isinstance(row[1], WorkloadMethodReceipt)
+            for row in self.participant_receipts
+        ):
+            raise TypeError(
+                "workload participant_receipts must be (role, WorkloadMethodReceipt) pairs"
+            )
+        roles = tuple(row[0] for row in self.participant_receipts)
+        if len(roles) != len(set(roles)):
+            raise ValueError("workload participant receipt roles must be unique")
+        if self.participant_receipts != tuple(
+            sorted(self.participant_receipts, key=lambda row: row[0])
+        ):
+            raise ValueError("workload participant receipts must be canonically role-sorted")
         if self.completion_receipt is not None and not isinstance(self.completion_receipt, WorkloadCompletionReceipt):
             raise TypeError("workload completion_receipt must be WorkloadCompletionReceipt")
         object.__setattr__(self, "diagnostics", _freeze_mapping(self.diagnostics, field_name="workload diagnostics"))
@@ -186,10 +221,84 @@ class WorkloadGraphResult:
 
 
 @dataclass(frozen=True, slots=True)
+class TaskDefinitionExperimentTaskProjection:
+    """Project canonical Study TaskDefinition content into ExperimentTaskSpec."""
+
+    @property
+    def identity_digest(self) -> str:
+        return canonical_digest({
+            "projection": "task-definition-experiment-task.v1",
+            "content_schema": "objective|goal,context,max_steps,max_seconds",
+        })
+
+    def task(
+        self,
+        request: TrialExecutionRequest,
+        definition: TaskDefinition,
+    ) -> ExperimentTaskSpec:
+        if not isinstance(request, TrialExecutionRequest):
+            raise TypeError("task-definition projection requires TrialExecutionRequest")
+        if not isinstance(definition, TaskDefinition):
+            raise TypeError("task-definition projection requires TaskDefinition")
+        workload = request.assignment.workload
+        try:
+            definition_index = workload.task_index(definition.task_id)
+        except KeyError as exc:
+            raise ValueError(
+                "task-definition projection definition is outside assignment workload"
+            ) from exc
+        if request.task_definitions[definition_index] != definition:
+            raise ValueError(
+                "task-definition projection definition identity drift"
+            )
+        content = definition.content
+        if not isinstance(content, Mapping):
+            raise ValueError(
+                "task-definition projection requires inline immutable task content"
+            )
+        objective = content.get("objective", content.get("goal"))
+        if type(objective) is not str or not objective.strip():
+            raise ValueError(
+                f"task {definition.task_id!r} content requires objective or goal"
+            )
+        context = content.get("context", "")
+        if type(context) is not str:
+            raise TypeError("task-definition projection context must be text")
+        depends_on = workload.prerequisites_for(definition.task_id)
+        retry_edges = workload.retry_sources_for(definition.task_id)
+        if len(retry_edges) > 1:
+            raise ValueError("task-definition projection admits at most one retry source")
+        max_steps = content.get("max_steps", 12)
+        max_seconds = content.get("max_seconds", 180.0)
+        return ExperimentTaskSpec(
+            task_id=definition.task_id,
+            family=definition.family,
+            objective=objective.strip(),
+            context=context,
+            lineage_id=(
+                definition.lineage_refs[0]
+                if definition.lineage_refs
+                else definition.task_id
+            ),
+            depends_on_task_ids=depends_on,
+            retry_of_task_id=(retry_edges[0] if retry_edges else None),
+            max_steps=max_steps,
+            max_seconds=max_seconds,
+            payload=content,
+        )
+
+
+@dataclass(frozen=True, slots=True)
 class StaticExperimentTaskProjection:
     """Study-agnostic lookup over already-authored ExperimentTaskSpec values."""
 
     tasks: tuple[ExperimentTaskSpec, ...]
+    _tasks_by_id: Mapping[str, ExperimentTaskSpec] = field(
+        init=False,
+        repr=False,
+        compare=False,
+        metadata={"transient": True},
+    )
 
     def __post_init__(self) -> None:
         if type(self.tasks) is not tuple or not self.tasks:
@@ -199,6 +308,14 @@ class StaticExperimentTaskProjection:
         ids = tuple(row.task_id for row in self.tasks)
         if len(ids) != len(set(ids)):
             raise ValueError("static task projection task ids must be unique")
+        object.__setattr__(
+            self,
+            "_tasks_by_id",
+            MappingProxyType({
+                row.task_id: row
+                for row in self.tasks
+            }),
+        )
 
     @property
     def identity_digest(self) -> str:
@@ -218,15 +335,191 @@ class StaticExperimentTaskProjection:
             )
         if not isinstance(definition, TaskDefinition):
             raise TypeError("static task projection requires TaskDefinition")
-        if definition not in request.task_definitions:
+        workload = request.assignment.workload
+        task_id = definition.task_id
+        try:
+            definition_index = workload.task_index(task_id)
+        except KeyError as exc:
             raise ValueError(
                 "static task projection definition is outside assignment workload"
-            )
-        task_id = definition.task_id
-        matches = tuple(row for row in self.tasks if row.task_id == task_id)
-        if len(matches) != 1:
-            raise KeyError(f"static task projection has no unique task {task_id!r}")
-        return matches[0]
+            ) from exc
+        if request.task_definitions[definition_index] != definition:
+            raise ValueError("static task projection definition identity drift")
+        try:
+            return self._tasks_by_id[task_id]
+        except KeyError as exc:
+            raise KeyError(
+                f"static task projection has no unique task {task_id!r}"
+            ) from exc
+
+
+def _artifact_reference_payload(
+    reference: ArtifactReference | None,
+) -> JsonValue:
+    if reference is None:
+        return None
+    return {
+        "reference_id": reference.reference_id,
+        "scope_kind": reference.scope.kind.value,
+        "scope_id": reference.scope.scope_id,
+        "artifact_id": reference.artifact_id,
+        "generation": reference.generation,
+    }
+
+
+def _artifact_reference_from_payload(payload: JsonValue) -> ArtifactReference | None:
+    if payload is None:
+        return None
+    if not isinstance(payload, Mapping):
+        raise TypeError("workload artifact reference payload must be an object")
+    return ArtifactReference(
+        str(payload["reference_id"]),
+        ScopeIdentity(
+            ScopeKind(str(payload["scope_kind"])),
+            str(payload["scope_id"]),
+        ),
+        str(payload["artifact_id"]),
+        int(payload["generation"]),
+    )
+
+
+def workload_method_receipt_payload(
+    receipt: WorkloadMethodReceipt,
+) -> JsonObject:
+    if not isinstance(receipt, WorkloadMethodReceipt):
+        raise TypeError("workload method receipt payload requires WorkloadMethodReceipt")
+    frozen = freeze_json({
+        "run_id": receipt.run_id,
+        "program_digest": receipt.program_digest,
+        "run_digest": receipt.run_digest,
+        "status": receipt.status,
+        "step_count": receipt.step_count,
+        "evidence_status": receipt.evidence_status,
+        "evidence_reference": _artifact_reference_payload(
+            receipt.evidence_reference
+        ),
+        "failure_id": receipt.failure_id,
+    })
+    if not isinstance(frozen, Mapping):
+        raise TypeError("workload method receipt payload must freeze to object")
+    return frozen
+
+
+def workload_method_receipt_from_payload(
+    payload: JsonValue,
+) -> WorkloadMethodReceipt:
+    if not isinstance(payload, Mapping):
+        raise TypeError("workload method receipt payload must be an object")
+    return WorkloadMethodReceipt(
+        run_id=str(payload["run_id"]),
+        program_digest=str(payload["program_digest"]),
+        run_digest=str(payload["run_digest"]),
+        status=str(payload["status"]),
+        step_count=int(payload["step_count"]),
+        evidence_status=str(payload["evidence_status"]),
+        evidence_reference=_artifact_reference_from_payload(
+            payload.get("evidence_reference")
+        ),
+        failure_id=(
+            None
+            if payload.get("failure_id") is None
+            else str(payload["failure_id"])
+        ),
+    )
+
+
+def workload_task_result_payload(result: WorkloadTaskResult) -> JsonObject:
+    if not isinstance(result, WorkloadTaskResult):
+        raise TypeError("workload result payload requires WorkloadTaskResult")
+    completion = result.completion_receipt
+    payload = {
+        "task_id": result.task_id,
+        "family": result.family,
+        "success": result.success,
+        "utility": float(result.utility),
+        "steps": result.steps,
+        "duration_s": float(result.duration_s),
+        "lineage_id": result.lineage_id,
+        "failure_reason": result.failure_reason,
+        "blocked": result.blocked,
+        "failure_scope": result.failure_scope,
+        "diagnostics": dict(result.diagnostics),
+        "exports": dict(result.exports),
+        "participant_receipts": tuple(
+            {
+                "role": role,
+                "receipt": workload_method_receipt_payload(method),
+            }
+            for role, method in result.participant_receipts
+        ),
+        "completion_receipt": (
+            None
+            if completion is None
+            else {
+                "completion_key": completion.completion_key,
+                "method_generation": completion.method_generation,
+                "artifacts": completion.artifacts,
+            }
+        ),
+    }
+    frozen = freeze_json(payload)
+    if not isinstance(frozen, Mapping):
+        raise TypeError("workload task payload must freeze to object")
+    return frozen
+
+
+def workload_task_result_from_payload(payload: JsonValue) -> WorkloadTaskResult:
+    if not isinstance(payload, Mapping):
+        raise TypeError("workload result payload must be an object")
+    receipt_payloads = payload.get("participant_receipts", ())
+    completion_payload = payload.get("completion_receipt")
+    if not isinstance(receipt_payloads, (tuple, list)):
+        raise TypeError("workload participant receipt payload must be a sequence")
+    participant_receipts = []
+    for method_payload in receipt_payloads:
+        if not isinstance(method_payload, Mapping):
+            raise TypeError("workload participant receipt row must be object")
+        participant_receipts.append((
+            str(method_payload["role"]),
+            workload_method_receipt_from_payload(method_payload["receipt"]),
+        ))
+    participant_receipts = tuple(sorted(participant_receipts, key=lambda row: row[0]))
+    completion = None
+    if completion_payload is not None:
+        if not isinstance(completion_payload, Mapping):
+            raise TypeError("workload completion receipt payload must be object")
+        artifacts = completion_payload.get("artifacts", ())
+        if not isinstance(artifacts, (tuple, list)):
+            raise TypeError("workload completion artifacts payload must be sequence")
+        completion = WorkloadCompletionReceipt(
+            completion_key=str(completion_payload["completion_key"]),
+            method_generation=(
+                None
+                if completion_payload.get("method_generation") is None
+                else str(completion_payload["method_generation"])
+            ),
+            artifacts=tuple(str(value) for value in artifacts),
+        )
+    diagnostics = payload.get("diagnostics", {})
+    exports = payload.get("exports", {})
+    if not isinstance(diagnostics, Mapping) or not isinstance(exports, Mapping):
+        raise TypeError("workload result diagnostics/exports payload must be objects")
+    return WorkloadTaskResult(
+        task_id=str(payload["task_id"]),
+        family=str(payload["family"]),
+        success=bool(payload["success"]),
+        utility=float(payload["utility"]),
+        steps=int(payload["steps"]),
+        duration_s=float(payload["duration_s"]),
+        lineage_id=str(payload["lineage_id"]),
+        failure_reason=str(payload.get("failure_reason", "")),
+        participant_receipts=participant_receipts,
+        completion_receipt=completion,
+        blocked=bool(payload.get("blocked", False)),
+        failure_scope=str(payload["failure_scope"]),
+        diagnostics=dict(diagnostics),
+        exports=dict(exports),
+    )
 
 
 class WorkloadTaskRunError(ExperimentWorkloadFailure):
@@ -236,8 +529,10 @@ class WorkloadTaskRunError(ExperimentWorkloadFailure):
 
 __all__ = [
     "WorkloadCompletionReceipt",
-    "StaticExperimentTaskProjection",
+    "StaticExperimentTaskProjection", "TaskDefinitionExperimentTaskProjection",
     "WorkloadGraphResult",
     "WorkloadEvaluation", "WorkloadMethodInvocation", "WorkloadMethodReceipt",
     "WorkloadTaskResult", "WorkloadTaskRunError",
+    "workload_method_receipt_payload", "workload_method_receipt_from_payload",
+    "workload_task_result_payload", "workload_task_result_from_payload",
 ]

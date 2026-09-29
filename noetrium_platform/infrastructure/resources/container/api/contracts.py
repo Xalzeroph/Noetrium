@@ -43,6 +43,21 @@ class DockerContainerObservation:
 
 
 @dataclass(frozen=True, slots=True)
+class DockerContainerProcessObservation:
+    """Exact host-visible process identity for one Docker container generation."""
+
+    container: DockerContainerObservation
+    pid: int
+    started_at: str
+
+    def __post_init__(self) -> None:
+        if type(self.pid) is not int or self.pid <= 0:
+            raise ValueError("Docker container process pid must be positive")
+        if type(self.started_at) is not str or not self.started_at.strip():
+            raise ValueError("Docker container process started_at is required")
+
+
+@dataclass(frozen=True, slots=True)
 class DockerContainerLeasePolicy:
     ttl_seconds: float = 120.0
     renewal_interval_seconds: float = 30.0
@@ -136,6 +151,7 @@ __all__ = [
     "DEFAULT_DOCKER_CONTAINER_LEASE_POLICY",
     "DockerContainerLeasePolicy",
     "DockerContainerObservation",
+    "DockerContainerProcessObservation",
     "DockerContainerReconciliation",
     "LABEL_AUTHORITY",
     "LABEL_OWNER_GENERATION",

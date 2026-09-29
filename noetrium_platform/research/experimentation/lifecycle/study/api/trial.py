@@ -14,7 +14,7 @@ from noetrium_platform.research.experimentation.identity import OptionalIdentity
 
 from .benchmark import TaskArtifactSpec, TaskDefinition, TaskVerifierIsolation
 from .contracts import StudyAssignment
-from .design import StudyIntervention
+from .design import ParticipantSchedule, StudyExecutionPolicy, StudyIntervention
 from .measurement import MeasurementProtocol, MeasurementRecord, MeasurementValue
 from .plan import VariantBinding
 
@@ -311,6 +311,8 @@ class TrialExecutionRequest:
     research_plan_digest: str
     revision: OptionalIdentityFacet
     participant_schedule: OptionalIdentityFacet
+    participant_schedule_spec: ParticipantSchedule | None
+    execution_policy: StudyExecutionPolicy
     intervention_spec: StudyIntervention
     assignment: StudyAssignment
     binding: VariantBinding
@@ -328,6 +330,32 @@ class TrialExecutionRequest:
         if type(self.participant_schedule) is not OptionalIdentityFacet:
             raise TypeError(
                 "trial request participant_schedule must be OptionalIdentityFacet"
+            )
+        if (
+            self.participant_schedule_spec is not None
+            and type(self.participant_schedule_spec) is not ParticipantSchedule
+        ):
+            raise TypeError(
+                "trial request participant_schedule_spec must be ParticipantSchedule or None"
+            )
+        if (
+            self.participant_schedule.applicable
+            != (self.participant_schedule_spec is not None)
+        ):
+            raise ValueError(
+                "trial request participant schedule identity/spec applicability drifted"
+            )
+        if (
+            self.participant_schedule_spec is not None
+            and self.participant_schedule.digest
+            != self.participant_schedule_spec.schedule_digest
+        ):
+            raise ValueError(
+                "trial request participant schedule identity/spec digest drifted"
+            )
+        if type(self.execution_policy) is not StudyExecutionPolicy:
+            raise TypeError(
+                "trial request execution_policy must be StudyExecutionPolicy"
             )
         if type(self.intervention_spec) is not StudyIntervention:
             raise TypeError(
@@ -377,6 +405,8 @@ class TrialExecutionRequest:
                     "research_plan_digest": self.research_plan_digest,
                     "revision": self.revision,
                     "participant_schedule": self.participant_schedule,
+                    "participant_schedule_spec": self.participant_schedule_spec,
+                    "execution_policy_digest": self.execution_policy.policy_digest,
                     "intervention_spec_digest": (
                         self.intervention_spec.intervention_digest
                     ),
@@ -391,6 +421,22 @@ class TrialExecutionRequest:
                     ),
                 }
             ),
+        )
+
+    @property
+    def assignment_lifetime_id(self) -> str:
+        """Physical lifetime identity for one assignment inside one execution.
+
+        StudyAssignment identity is intentionally stable across independent
+        executions. Stateful runtime resources must not be: they may be reused
+        only while the same execution is continuing or resuming.
+        """
+        return canonical_digest(
+            {
+                "schema": "noetrium.trial-assignment-lifetime.v1",
+                "run_id": self.run_id,
+                "assignment_digest": self.assignment.assignment_digest,
+            }
         )
 
     @property

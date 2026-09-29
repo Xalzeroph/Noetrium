@@ -1,34 +1,44 @@
 from __future__ import annotations
 
-from noetrium import api
+from noetrium_platform.foundation.kernel.kernel import canonical_digest
+from noetrium_platform.research.experimentation.lifecycle.api import (
+    BenchmarkTaskSet,
+    ExperimentTrialProtocolIdentity,
+    MeasurementDefinition,
+    ResearchStudyDefinition,
+    Study,
+    StudyParticipant,
+    TaskDefinition,
+    TrialBudget,
+)
 
 
-def build_study() -> api.research_authoring.ResearchStudyDefinition:
-    task = api.research_authoring.TaskDefinition(
+def build_study() -> ResearchStudyDefinition:
+    task = TaskDefinition(
         "task-1",
         "1",
         "fixture",
         "task.fixture.v1",
-        api.research_authoring.canonical_digest({"task": "fixture"}),
+        canonical_digest({"task": "fixture"}),
     )
-    benchmark = api.research_authoring.BenchmarkTaskSet(
+    benchmark = BenchmarkTaskSet(
         "fixture-benchmark",
         "1",
-        api.research_authoring.canonical_digest({"source": "fixture"}),
+        canonical_digest({"source": "fixture"}),
         "task.fixture.v1",
         (task,),
     )
-    measurement = api.research_authoring.MeasurementDefinition.scalar(
+    measurement = MeasurementDefinition.scalar(
         "success",
         schema_id="measurement.boolean.v1",
         semantic_kind="task_success",
         scale="binary",
     )
-    return api.research_authoring.Study(
+    return Study(
         project_id="fixture-project",
         study_id="fixture-study",
         benchmark=benchmark,
-        method=api.research_authoring.StudyParticipant(
+        method=StudyParticipant(
             "agent",
             "agent",
             "fixture-method",
@@ -36,13 +46,13 @@ def build_study() -> api.research_authoring.ResearchStudyDefinition:
         ),
         models={},
         measurements=(measurement,),
-        trial=api.research_authoring.ExperimentTrialProtocolIdentity(
+        trial=ExperimentTrialProtocolIdentity(
             "fixture-trial",
             "7" * 64,
         ),
         repetitions=1,
         seeds=("seed-1",),
-        limits=api.research_authoring.TrialBudget("fixture-budget", max_steps=1),
+        limits=TrialBudget("fixture-budget", max_steps=1),
     ).build()
 
 

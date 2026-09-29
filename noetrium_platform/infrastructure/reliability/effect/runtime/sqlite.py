@@ -2,13 +2,18 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from .persistent import PersistentEffectIntentJournal
+from .persistent import EffectIntentJournalRuntime
 from .sqlite_backend import SQLiteEffectJournalBackend
 
 
-class SQLiteEffectIntentJournal(PersistentEffectIntentJournal):
-    def __init__(self, path: Path, *, timeout_seconds: float = 30.0) -> None:
-        super().__init__(SQLiteEffectJournalBackend(path, timeout_seconds=timeout_seconds))
+def sqlite_effect_intent_journal(
+    path: Path,
+    *,
+    timeout_seconds: float = 30.0,
+) -> EffectIntentJournalRuntime:
+    return EffectIntentJournalRuntime(
+        SQLiteEffectJournalBackend(path, timeout_seconds=timeout_seconds)
+    )
 
 
-__all__ = ["SQLiteEffectIntentJournal"]
+__all__ = ["sqlite_effect_intent_journal"]

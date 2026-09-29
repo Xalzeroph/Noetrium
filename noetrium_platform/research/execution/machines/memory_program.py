@@ -54,8 +54,6 @@ class MemoryPresetSpec:
         ):
             if type(value) is not int or value < 0:
                 raise ValueError(f"memory preset {name} must be a non-negative integer")
-        if self.max_records < 1 or self.recall_limit < 1:
-            raise ValueError("memory preset capacities must be positive")
 
     @property
     def digest(self) -> str:
@@ -294,10 +292,14 @@ def default_memory_operations() -> ProgramHandlerRegistry:
         rows = [row for row in _records(data) if row.record_id != record.record_id]
         rows.append(record)
         max_records = data.get("max_records")
-        if type(max_records) is not int or max_records < 1:
+        if type(max_records) is not int or max_records < 0:
             raise ValueError("memory max_records is invalid")
-        evicted = rows[:-max_records] if len(rows) > max_records else []
-        rows = rows[-max_records:]
+        if max_records == 0:
+            evicted = rows
+            rows = []
+        else:
+            evicted = rows[:-max_records] if len(rows) > max_records else []
+            rows = rows[-max_records:]
         next_sequence = max(sequence + 1, record.ordinal)
         return ProgramNodeResult(
             value={
@@ -337,8 +339,8 @@ def default_memory_operations() -> ProgramHandlerRegistry:
         if type(require_verified) is not bool:
             raise TypeError("memory require_verified must be boolean")
         limit = payload.get("limit", data.get("recall_limit"))
-        if type(limit) is not int or limit < 1:
-            raise ValueError("memory retrieval limit must be positive")
+        if type(limit) is not int or limit < 0:
+            raise ValueError("memory retrieval limit must be non-negative")
         overlap_weight = data.get("token_overlap_weight", 5)
         generation_bonus = data.get("generation_bonus", 2)
         if type(overlap_weight) is not int or type(generation_bonus) is not int:

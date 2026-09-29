@@ -18,7 +18,7 @@ def is_excluded_path(rel: Path) -> bool:
     return (
         rel.as_posix() in _AUDIT_IMPLEMENTATION_FILES
         or any(
-            part in {"tests", "__pycache__", "build", "dist", "node_modules", ".git", ".venv", "venv", ".local", ".pytest_cache", ".server-state"}
+            part in {"tests", "__pycache__", "build", "dist", "node_modules", ".git", ".venv", "venv", ".local", ".pytest_cache", ".server-state", ".noetrium"}
             or part.endswith(".egg-info")
             for part in rel.parts
         )

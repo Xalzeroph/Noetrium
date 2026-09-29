@@ -170,6 +170,50 @@ class EffectJournalDocumentCodec:
             consumption_json, completion_digest,
         )
 
+
+    def encode_transition(
+        self,
+        record: EffectIntentRecord,
+        *,
+        prior: EncodedEffectIntentRecord,
+    ) -> EncodedEffectIntentRecord:
+        if not isinstance(prior, EncodedEffectIntentRecord):
+            raise TypeError("effect transition encoding requires prior encoded record")
+        intent = record.intent
+        for label, observed, expected in (
+            ("intent_id", intent.intent_id, prior.intent_id),
+            ("request_digest", intent.request_digest, prior.request_digest),
+            ("run_id", intent.run_id, prior.run_id),
+            ("lifetime_id", intent.lifetime_id, prior.lifetime_id),
+        ):
+            if observed != expected:
+                raise EffectJournalIntegrityError(
+                    f"effect transition immutable {label} drifted: {intent.intent_id}"
+                )
+        consumption_json, completion_digest = self.encode_consumption(
+            record.consumption
+        )
+        if (
+            record.consumption_digest is not None
+            and record.consumption_digest != completion_digest
+        ):
+            raise ValueError(
+                f"effect completion digest mismatch: {record.intent.intent_id}"
+            )
+        return EncodedEffectIntentRecord(
+            prior.intent_id,
+            prior.intent_json,
+            prior.intent_digest,
+            prior.request_digest,
+            prior.run_id,
+            prior.lifetime_id,
+            record.phase.value,
+            self.encode_effect(record.effect),
+            record.effect_digest,
+            consumption_json,
+            completion_digest,
+        )
+
     def decode_record(self, encoded: EncodedEffectIntentRecord) -> EffectIntentRecord:
         try:
             raw = json.loads(encoded.intent_json)

@@ -9,11 +9,20 @@ from noetrium_platform.substrate.api import ServiceHeartbeat
 @dataclass(frozen=True, slots=True)
 class FrozenRoleAssignment:
     role: str
+    capability_id: str
+    input_schema_id: str
+    output_schema_id: str
     deployment_id: str
 
     def __post_init__(self) -> None:
-        if not self.role or not self.deployment_id:
-            raise ValueError("frozen role assignment requires role and deployment_id")
+        for name in ("role", "capability_id", "input_schema_id", "output_schema_id", "deployment_id"):
+            value=getattr(self,name)
+            if type(value) is not str or not value.strip():
+                raise ValueError(f"frozen model assignment requires {name}")
+
+    @property
+    def protocol_key(self) -> tuple[str, str, str, str]:
+        return (self.role,self.capability_id,self.input_schema_id,self.output_schema_id)
 
 
 @dataclass(frozen=True, slots=True)
@@ -61,9 +70,9 @@ class FrozenDeploymentSet:
         ids = [item.deployment_id for item in self.deployments]
         if len(ids) != len(set(ids)):
             raise ValueError("duplicate deployment_id in frozen deployment set")
-        roles = [item.role for item in self.assignments]
-        if len(roles) != len(set(roles)):
-            raise ValueError("each role must have exactly one frozen deployment assignment")
+        keys = [item.protocol_key for item in self.assignments]
+        if len(keys) != len(set(keys)):
+            raise ValueError("each role/capability protocol must have exactly one frozen deployment assignment")
         known = set(ids)
         missing = {item.deployment_id for item in self.assignments} - known
         if missing:
@@ -82,8 +91,13 @@ class FrozenDeploymentSet:
         return tuple(sorted(self.deployments, key=lambda item: item.deployment_id))
 
     def roles_for(self, deployment_id: str) -> tuple[str, ...]:
-        return tuple(sorted(
+        return tuple(sorted({
             item.role for item in self.assignments if item.deployment_id == deployment_id
+        }))
+
+    def protocols_for(self, deployment_id: str) -> tuple[tuple[str, str, str, str], ...]:
+        return tuple(sorted(
+            item.protocol_key for item in self.assignments if item.deployment_id == deployment_id
         ))
 
 

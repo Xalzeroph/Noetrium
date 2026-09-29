@@ -1,3 +1,4 @@
+from prompt_os_test_support import make_promoted_prompt_registry
 from pathlib import Path
 import json
 import tempfile
@@ -9,8 +10,7 @@ from noetrium_platform.foundation.governance.architecture.gating.quality.no_degr
 
 class PromptV6Tests(unittest.TestCase):
     def setUp(self):
-        self.registry=PromptRegistry()
-        self.registry.publish("g", default_prompt_specs())
+        self.registry=make_promoted_prompt_registry(generation_id="g")
 
     def test_planner_freezes_evidence_and_completion_authority(self):
         text=self.registry.get("planner.v6").text

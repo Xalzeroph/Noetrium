@@ -10,6 +10,7 @@ from noetrium_platform.research.execution.capability.runtime import (
     CapabilityInvocationPipelineFactory,
     ScopedRegistrationRuntime,
 )
+from noetrium_platform.research.execution.machines import CapabilityProgramBuilder
 from noetrium_platform.composition.workflows.agent_turn.capability_operations import (
     CapabilityOperationAdapter,
 )
@@ -21,7 +22,6 @@ from noetrium_platform.research.execution.workflow.runtime import KernelOperatio
 from noetrium_platform.capabilities.participant.capability.api import (
     CapabilityDescriptor,
     CapabilityExportSession,
-    CapabilityPolicySet,
     CapabilityProviderIdentity,
     CapabilityProviderSession,
     CapabilityRequest,
@@ -185,7 +185,7 @@ def _router(provider, guard: CountingGuard):
     return StudyCapabilityRouter(
         adapter,
         (CapabilitySessionBinding(component, provider, "planner"),),
-        pipeline=CapabilityInvocationPipelineFactory(InMemoryMachineJournal()).create(CapabilityPolicySet(guards=(guard,))),
+        pipeline=CapabilityInvocationPipelineFactory(InMemoryMachineJournal()).create(CapabilityProgramBuilder().guard(guard).build()),
         scope=ScopedRegistrationRuntime("typed-capability-test"),
     )
 
@@ -377,7 +377,7 @@ def test_canonical_policy_can_deny_typed_provider_before_handler() -> None:
             provider,
             "planner",
         ),),
-        pipeline=CapabilityInvocationPipelineFactory(InMemoryMachineJournal()).create(CapabilityPolicySet(guards=(DenyGuard(),))),
+        pipeline=CapabilityInvocationPipelineFactory(InMemoryMachineJournal()).create(CapabilityProgramBuilder().guard(DenyGuard()).build()),
         scope=ScopedRegistrationRuntime("typed-capability-deny-test"),
     )
     with pytest.raises(PermissionError, match="TEST_DENY"):

@@ -112,9 +112,41 @@ class ComputeInventory:
 
     def register_host(self, host: ComputeHost) -> None:
         payload = self._host_payload(host)
-        self._put("compute_hosts", host.host_id, payload)
-        if self.host(host.host_id) != host:
-            raise ValueError(f"host identity already registered: {host.host_id}")
+        gpu_ids = frozenset(gpu.gpu_id for gpu in host.gpus)
+        with self._connection() as conn:
+            with immediate_sqlite_transaction(
+                conn,
+                timeout_seconds=self.timeout_seconds,
+                label="compute host registration",
+            ):
+                rows = conn.execute(
+                    "SELECT host_id,payload FROM compute_hosts ORDER BY host_id"
+                ).fetchall()
+                for existing_id, existing_payload in rows:
+                    existing_id = str(existing_id)
+                    if existing_id == host.host_id:
+                        continue
+                    existing = self._decode_host(str(existing_payload))
+                    overlap = gpu_ids.intersection(
+                        gpu.gpu_id for gpu in existing.gpus
+                    )
+                    if overlap:
+                        raise ValueError(
+                            "GPU identity registered by multiple compute hosts: "
+                            + ",".join(sorted(overlap))
+                        )
+                conn.execute(
+                    "INSERT OR IGNORE INTO compute_hosts(host_id,payload) VALUES(?,?)",
+                    (host.host_id, payload),
+                )
+                row = conn.execute(
+                    "SELECT payload FROM compute_hosts WHERE host_id=?",
+                    (host.host_id,),
+                ).fetchone()
+                if row is None or self._decode_host(str(row[0])) != host:
+                    raise ValueError(
+                        f"host identity already registered: {host.host_id}"
+                    )
 
     def host(self, host_id: str) -> ComputeHost:
         with self._connection() as conn:

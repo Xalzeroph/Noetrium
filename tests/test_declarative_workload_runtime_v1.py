@@ -4,6 +4,9 @@ from noetrium_platform.composition.method_runtime import (
     standard_method_evidence_factory,
     standard_method_runtime_binder,
 )
+from noetrium_platform.composition.research_execution_content import (
+    compose_research_execution_content,
+)
 
 
 from pathlib import Path
@@ -13,7 +16,9 @@ import pytest
 from noetrium_platform.capabilities.participant.method.api import MethodIdentity, MethodProgramIdentity
 from noetrium_platform.foundation.kernel.kernel import (
     ExecutionContext,
+    OperationExecutor,
     canonical_digest,
+    canonical_text,
 )
 from noetrium_platform.research.execution.workflow.api import (
     MethodAgentRequest,
@@ -29,7 +34,10 @@ from noetrium_platform.research.execution.workflow.composition import (
     MethodRuntimePortInventory,
     MethodViewChatRequestFactory,
 )
-from noetrium_platform.research.execution.workflow.runtime import UniversalMethodMachine
+from noetrium_platform.research.execution.workflow.runtime import (
+    KernelOperationDispatcher,
+    execute_bound_method_program,
+)
 from noetrium_platform.research.experimentation.lifecycle.api import ExperimentTaskSpec
 from noetrium_platform.research.experimentation.workload.api import WorkloadEvaluation
 from noetrium_platform.research.experimentation.workload.composition import (
@@ -70,20 +78,22 @@ def _request(agent_id: str, view) -> MethodAgentRequest:
     )
 
 
-def test_method_view_factory_requires_downstream_prompt() -> None:
+def test_method_view_factory_projects_downstream_owned_view_without_hidden_template() -> None:
     factory = MethodViewChatRequestFactory(
         "qwen",
         {"temperature": 0, "max_tokens": 128},
-     )
-    request = _request(
-        "agent-a",
-        {
-            "instruction": "platform must not synthesize this into a prompt",
-            "input": {"task_id": "t1", "objective": "solve"},
-        },
     )
-    with pytest.raises(ValueError, match="must provide non-empty model-visible prompt"):
-        factory.build(request)
+    view = {
+        "instruction": "use exactly the downstream-owned structured view",
+        "input": {"task_id": "t1", "objective": "solve"},
+    }
+    compiled = factory.compile(_request("agent-a", view))
+    assert compiled.body["messages"] == (
+        {"role": "user", "content": canonical_text(view)},
+    )
+    assert compiled.compiled_prompt_text == canonical_text(
+        compiled.body["messages"]
+    )
 
 
 def test_method_view_factory_applies_only_explicit_model_generation_namespace() -> None:
@@ -104,7 +114,7 @@ def test_method_view_factory_applies_only_explicit_model_generation_namespace() 
             },
         },
     )
-    body = factory.build(request)
+    body = factory.compile(request).body
     assert body["temperature"] == 0.7
     assert body["top_k"] == 40
     assert body["max_tokens"] == 256
@@ -121,7 +131,7 @@ def test_method_view_factory_rejects_transport_identity_override() -> None:
         },
     )
     with pytest.raises(ValueError, match="must not override model/messages"):
-        factory.build(request)
+        factory.compile(request).body
 
 
 def test_method_agent_router_routes_exact_identity_and_fails_closed() -> None:
@@ -153,6 +163,8 @@ def _program():
 
 
 class _Evaluator:
+    digest = canonical_digest({"adapter": "declarative-test-evaluator.v1"})
+
     def evaluate(self, task, result):
         return WorkloadEvaluation(
             success=result.value["task_id"] == task.task_id,
@@ -167,7 +179,10 @@ def test_declarative_compiler_creates_isolated_machine_and_evidence_per_task(tmp
         program=program,
         runtime=MethodRuntimeBindings(
             runtime_binder=standard_method_runtime_binder(),
-            evidence_factory=standard_method_evidence_factory(),
+            dispatcher=KernelOperationDispatcher(OperationExecutor()),
+            evidence_factory=standard_method_evidence_factory(
+                compose_research_execution_content(tmp_path / "content")
+            ),
             state_root=tmp_path / "state",
         ),
         input_projection=TaskFieldProjection(
@@ -176,7 +191,6 @@ def test_declarative_compiler_creates_isolated_machine_and_evidence_per_task(tmp
         ),
     )
     binding = bind_method_workload(
-        machine=UniversalMethodMachine(),
         compiler=compiler,
         result_adapter=_Evaluator(),
     )
@@ -184,12 +198,14 @@ def test_declarative_compiler_creates_isolated_machine_and_evidence_per_task(tmp
     first = binding.execute_one(ExperimentTaskSpec("task-1", "f", "one"), context)
     second = binding.execute_one(ExperimentTaskSpec("task-2", "f", "two"), context)
     assert first.success and second.success
-    assert first.method_receipt.run_id == "run:task-1"
-    assert second.method_receipt.run_id == "run:task-2"
+    assert first.participant_receipts[0][1].run_id == "run:task-1"
+    assert second.participant_receipts[0][1].run_id == "run:task-2"
+    assert first.participant_receipts[0][1].evidence_reference is not None
+    assert second.participant_receipts[0][1].evidence_reference is not None
     roots = sorted((tmp_path / "state").glob("task-*"))
     assert len(roots) == 2
     assert all(any((root / "machine" / "journal").rglob("*")) for root in roots)
-    assert all(list((root / "evidence" / "results").glob("*.json")) for root in roots)
+    assert all((root / "evidence").is_dir() for root in roots)
     assert len(compiler.digest) == 64
 
 
@@ -214,8 +230,11 @@ def test_auto_composed_declarative_runtime_attaches_only_required_ports(tmp_path
         program,
         MethodRuntimePortInventory(agent_loop=router),
         runtime_binder=standard_method_runtime_binder(),
-        evidence_factory=standard_method_evidence_factory(),
+        evidence_factory=standard_method_evidence_factory(
+            compose_research_execution_content(tmp_path / "content")
+        ),
         state_root=tmp_path / "auto-state",
+        dispatcher=KernelOperationDispatcher(OperationExecutor()),
     )
     assert runtime.agent_loop is router
     assert runtime.capabilities is None
@@ -228,7 +247,7 @@ def test_auto_composed_declarative_runtime_attaches_only_required_ports(tmp_path
         ExperimentTaskSpec("task-auto", "f", "do it"),
         ExecutionContext("auto-run", "trace", "root"),
     )
-    result = UniversalMethodMachine(max_steps=8).run(
+    result = execute_bound_method_program(
         invocation.program,
         runtime=invocation.runtime,
         input_value=invocation.input_value,
@@ -262,7 +281,10 @@ def test_declarative_compiler_can_project_task_fields_into_initial_state(
         program=program,
         runtime=MethodRuntimeBindings(
             runtime_binder=standard_method_runtime_binder(),
-            evidence_factory=standard_method_evidence_factory(),
+            dispatcher=KernelOperationDispatcher(OperationExecutor()),
+            evidence_factory=standard_method_evidence_factory(
+                compose_research_execution_content(tmp_path / "content")
+            ),
             state_root=tmp_path / "state",
         ),
         initial_state_projection=TaskFieldProjection(
@@ -274,7 +296,7 @@ def test_declarative_compiler_can_project_task_fields_into_initial_state(
         ExperimentTaskSpec("task-1", "qa", "What is 2+2?"),
         ExecutionContext("run", "trace", "root"),
     )
-    result = UniversalMethodMachine().run(
+    result = execute_bound_method_program(
         invocation.program,
         runtime=invocation.runtime,
         input_value=invocation.input_value,
@@ -300,7 +322,10 @@ def test_declarative_compiler_rejects_two_initial_state_authorities(
             program=program,
             runtime=MethodRuntimeBindings(
                 runtime_binder=standard_method_runtime_binder(),
-                evidence_factory=standard_method_evidence_factory(),
+                dispatcher=KernelOperationDispatcher(OperationExecutor()),
+                evidence_factory=standard_method_evidence_factory(
+                compose_research_execution_content(tmp_path / "content")
+            ),
                 state_root=tmp_path / "state",
             ),
             initial_state={"fixed": True},
@@ -310,10 +335,15 @@ def test_declarative_compiler_rejects_two_initial_state_authorities(
         )
 
 
-def test_declarative_result_adapter_exports_only_declared_method_result_paths() -> None:
+def test_declarative_result_adapter_exports_only_declared_method_result_paths(tmp_path: Path) -> None:
     program = _program()
     runtime = MethodRuntimeBindings(
         runtime_binder=standard_method_runtime_binder(),
+        dispatcher=KernelOperationDispatcher(OperationExecutor()),
+        evidence_factory=standard_method_evidence_factory(
+            compose_research_execution_content(tmp_path / "content")
+        ),
+        state_root=tmp_path / "state",
     )
     compiler = DeclarativeWorkloadMethodCompiler(
         program=program,
@@ -326,7 +356,7 @@ def test_declarative_result_adapter_exports_only_declared_method_result_paths() 
         ExperimentTaskSpec("task-export", "qa", "question"),
         ExecutionContext("run-export", "trace", "root"),
     )
-    result = UniversalMethodMachine().run(
+    result = execute_bound_method_program(
         invocation.program,
         runtime=invocation.runtime,
         input_value=invocation.input_value,
@@ -388,3 +418,54 @@ def test_declarative_result_adapter_counts_authoritative_model_invocation_events
         result,
     )
     assert evaluation.diagnostics["model_call_count"] == 2
+
+
+def test_declarative_compiler_isolates_same_task_across_lifetimes(
+    tmp_path: Path,
+) -> None:
+    program = _program()
+    compiler = DeclarativeWorkloadMethodCompiler(
+        program=program,
+        runtime=MethodRuntimeBindings(
+            runtime_binder=standard_method_runtime_binder(),
+            dispatcher=KernelOperationDispatcher(OperationExecutor()),
+            evidence_factory=standard_method_evidence_factory(
+                compose_research_execution_content(tmp_path / "content")
+            ),
+            state_root=tmp_path / "state",
+        ),
+        input_projection=TaskFieldProjection(
+            fields=(("task_id", "task_id"), ("objective", "objective")),
+        ),
+    )
+    binding = bind_method_workload(
+        compiler=compiler,
+        result_adapter=_Evaluator(),
+    )
+    task = ExperimentTaskSpec("task-1", "f", "one")
+    first = binding.execute_one(
+        task,
+        ExecutionContext(
+            "run",
+            "trace-a",
+            "root-a",
+            lifetime_id="assignment-a",
+        ),
+    )
+    second = binding.execute_one(
+        task,
+        ExecutionContext(
+            "run",
+            "trace-b",
+            "root-b",
+            lifetime_id="assignment-b",
+        ),
+    )
+    assert first.success and second.success
+    first_method = dict(first.participant_receipts)["method"]
+    second_method = dict(second.participant_receipts)["method"]
+    assert first_method.run_id != second_method.run_id
+    assert ":lifetime:" in first_method.run_id
+    lifetime_roots = tuple((tmp_path / "state").glob("lifetime-*"))
+    assert len(lifetime_roots) == 2
+    assert all(any(root.rglob("*.journal")) for root in lifetime_roots)

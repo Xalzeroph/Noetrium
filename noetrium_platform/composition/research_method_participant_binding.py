@@ -30,7 +30,7 @@ from noetrium_platform.product.research_os import (
     ResearchMethodImplementation,
     ResearchProgram,
 )
-from noetrium_platform.research.execution.workflow.runtime import METHOD_MACHINE_IDENTITY
+from noetrium_platform.research.execution.workflow.runtime import METHOD_EXECUTION_IDENTITY
 from noetrium_platform.research.experimentation.api import ResearchParticipantRequirement
 
 
@@ -88,11 +88,11 @@ def method_implementation_identity(
 def standard_method_session_runtime_identity() -> ParticipantSessionRuntimeIdentity:
     return ParticipantSessionRuntimeIdentity(
         "noetrium.universal-method-machine",
-        METHOD_MACHINE_IDENTITY.implementation_version,
+        METHOD_EXECUTION_IDENTITY.implementation_version,
         "method-runtime.v1",
         canonical_digest(
             {
-                "component": METHOD_MACHINE_IDENTITY,
+                "component": METHOD_EXECUTION_IDENTITY,
                 "runtime_binder": standard_method_runtime_binder().identity_digest,
             }
         ),
@@ -171,10 +171,10 @@ def resolve_exact_method_participant(
     proof = BindingProof(
         owner=CompositionSubject.system_subject(SystemIdentity("participant")),
         subject=subject,
-        requirement_digest=Sha256Digest(requirement.requirement_digest),
+        requirement_digest=Sha256Digest(project_binding.requirement_digest),
         provider_identity=profile.provider_id,
         provider_profile_digest=Sha256Digest(profile.digest()),
-        binding_generation="method-" + method_program.program_digest[:16],
+        binding_generation="participant-" + runtime_binding.runtime.digest(),
     )
     return BindingResolution.bound(project_binding, proof)
 

@@ -1,13 +1,17 @@
 from __future__ import annotations
 
-from dataclasses import asdict
 import hashlib
 from pathlib import Path
 from threading import Lock
 import time
 
 from noetrium_platform.foundation.kernel.concurrency.api import Deadline, SerialActorPort, TaskGroupPort
-from noetrium_platform.foundation.kernel.kernel import ExecutionContext, JsonObject
+from noetrium_platform.foundation.kernel.kernel import (
+    ExecutionContext,
+    JsonObject,
+    canonical_bytes,
+    strict_json_loads,
+)
 from noetrium_platform.foundation.kernel.kernel.errors import describe_exception
 
 from ..api.contracts import RawObservationReceipt, RawObservationSchema
@@ -30,6 +34,15 @@ class FileRawObservationPersistence:
         self._actors: dict[tuple[str, str], SerialActorPort] = {}
         self._close_pending: dict[tuple[str, str], RawSegmentWriter] = {}
         self._closed = False
+
+    @staticmethod
+    def _context_payload(context: ExecutionContext) -> JsonObject:
+        if not isinstance(context, ExecutionContext):
+            raise TypeError("raw observation context must be ExecutionContext")
+        payload = strict_json_loads(canonical_bytes(context))
+        if type(payload) is not dict:
+            raise TypeError("canonical ExecutionContext projection must be an object")
+        return payload
 
     @staticmethod
     def _actor_suffix(run_id: str, family: str) -> str:
@@ -60,13 +73,14 @@ class FileRawObservationPersistence:
         idempotency_key: str | None,
     ) -> RawObservationReceipt:
         resolved_timestamp = time.time() if timestamp is None else float(timestamp)
+        context_payload = self._context_payload(context)
         preflight: dict[str, object] = {
             "sequence": 0,
             "timestamp": resolved_timestamp,
             "family": schema.family,
             "schema_version": schema.schema_version,
             "retention": schema.retention.value,
-            "context": asdict(context),
+            "context": context_payload,
             "payload": dict(payload),
         }
         if idempotency_key is not None:
@@ -87,7 +101,7 @@ class FileRawObservationPersistence:
                 "family": schema.family,
                 "schema_version": schema.schema_version,
                 "retention": schema.retention.value,
-                "context": asdict(context),
+                "context": context_payload,
                 "payload": dict(payload),
             }
             if idempotency_key is not None:

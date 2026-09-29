@@ -119,6 +119,67 @@ class ResearchGraphPlan:
         )
 
 
+@dataclass(frozen=True, slots=True)
+class ResearchGraphFailureProvenance:
+    """Durable graph projection of lower failure provenance; Graph does not own failure truth."""
+
+    qualified_type: str
+    error_digest: str
+    safe_message: str
+    traceback_frames: tuple[str, ...] = ()
+    cause_chain: tuple[str, ...] = ()
+    failure_id: str | None = None
+    evidence_refs: tuple[str, ...] = ()
+    lower_refs: tuple[str, ...] = ()
+    provenance_digest: str = field(init=False)
+
+    def __post_init__(self) -> None:
+        _text(self.qualified_type, "research graph failure qualified_type")
+        require_sha256(self.error_digest, "research graph failure error_digest")
+        _text(self.safe_message, "research graph failure safe_message")
+        for field_name in ("traceback_frames", "cause_chain", "evidence_refs", "lower_refs"):
+            value = getattr(self, field_name)
+            if type(value) is not tuple:
+                raise TypeError(f"research graph failure {field_name} must be a tuple")
+            for item in value:
+                _text(item, f"research graph failure {field_name} item")
+        if self.failure_id is not None:
+            _text(self.failure_id, "research graph failure failure_id")
+        if len(self.evidence_refs) != len(set(self.evidence_refs)):
+            raise ValueError("research graph failure evidence_refs must be unique")
+        if len(self.lower_refs) != len(set(self.lower_refs)):
+            raise ValueError("research graph failure lower_refs must be unique")
+        object.__setattr__(
+            self,
+            "provenance_digest",
+            canonical_digest(
+                {
+                    "qualified_type": self.qualified_type,
+                    "error_digest": self.error_digest,
+                    "safe_message": self.safe_message,
+                    "traceback_frames": self.traceback_frames,
+                    "cause_chain": self.cause_chain,
+                    "failure_id": self.failure_id,
+                    "evidence_refs": tuple(sorted(self.evidence_refs)),
+                    "lower_refs": tuple(sorted(self.lower_refs)),
+                }
+            ),
+        )
+
+    def as_payload(self) -> dict[str, object]:
+        return {
+            "qualified_type": self.qualified_type,
+            "error_digest": self.error_digest,
+            "safe_message": self.safe_message,
+            "traceback_frames": self.traceback_frames,
+            "cause_chain": self.cause_chain,
+            "failure_id": self.failure_id,
+            "evidence_refs": self.evidence_refs,
+            "lower_refs": self.lower_refs,
+            "provenance_digest": self.provenance_digest,
+        }
+
+
 class ResearchGraphNodeState(StrEnum):
     SUCCEEDED = "succeeded"
     FAILED = "failed"
@@ -133,6 +194,7 @@ class ResearchGraphNodeResult:
     state: ResearchGraphNodeState
     failure_type: str | None = None
     failure_message: str | None = None
+    failure_provenance: ResearchGraphFailureProvenance | None = None
     blocked_by_node_ids: tuple[str, ...] = ()
 
     def __post_init__(self) -> None:
@@ -158,7 +220,12 @@ class ResearchGraphNodeResult:
             ResearchGraphNodeState.SUCCEEDED,
             ResearchGraphNodeState.CANCELLED,
         }:
-            if self.failure_type is not None or self.failure_message is not None or blockers:
+            if (
+                self.failure_type is not None
+                or self.failure_message is not None
+                or self.failure_provenance is not None
+                or blockers
+            ):
                 raise ValueError("successful/cancelled research graph node cannot carry failure metadata")
         elif self.state is ResearchGraphNodeState.FAILED:
             if blockers:
@@ -167,8 +234,16 @@ class ResearchGraphNodeResult:
                 raise ValueError("failed research graph node requires failure_type")
             if not isinstance(self.failure_message, str) or not self.failure_message.strip():
                 raise ValueError("failed research graph node requires failure_message")
+            if not isinstance(
+                self.failure_provenance, ResearchGraphFailureProvenance
+            ):
+                raise TypeError("failed research graph node requires typed failure_provenance")
         else:
-            if self.failure_type is not None or self.failure_message is not None:
+            if (
+                self.failure_type is not None
+                or self.failure_message is not None
+                or self.failure_provenance is not None
+            ):
                 raise ValueError("blocked research graph node cannot carry failure metadata")
             if not blockers:
                 raise ValueError("blocked research graph node requires blockers")

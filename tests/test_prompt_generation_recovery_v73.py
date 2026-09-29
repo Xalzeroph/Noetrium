@@ -8,7 +8,7 @@ import unittest
 from unittest import mock
 
 from noetrium_platform.capabilities.model.request.prompt.runtime import (
-    DurablePromptRegistry,
+    PromptRegistry,
     PromptPublicationError,
     default_block_policies,
     default_output_schemas,
@@ -27,10 +27,10 @@ class PromptGenerationRecoveryV73Tests(unittest.TestCase):
             reg = make_prompt_registry(root)
             specs, policies, schemas = self._args()
 
-            original = staging_module.publish_atomic_directory
+            original = staging_module.durable_replace_directory
             with mock.patch.object(
                 staging_module,
-                "publish_atomic_directory",
+                "durable_replace_directory",
                 side_effect=OSError("power loss before directory rename"),
             ):
                 with self.assertRaises(OSError):
@@ -40,7 +40,7 @@ class PromptGenerationRecoveryV73Tests(unittest.TestCase):
             self.assertTrue(tmp.is_file())
             self.assertFalse((root / "generations" / "g1").exists())
 
-            with mock.patch.object(staging_module, "publish_atomic_directory", wraps=original) as publish:
+            with mock.patch.object(staging_module, "durable_replace_directory", wraps=original) as publish:
                 manifest = reg.stage("g1", specs, policies, schemas)
                 self.assertEqual(publish.call_count, 1)
 
@@ -71,7 +71,7 @@ class PromptGenerationRecoveryV73Tests(unittest.TestCase):
 
             with mock.patch.object(
                 staging_module,
-                "publish_atomic_directory",
+                "durable_replace_directory",
                 side_effect=OSError("cut"),
             ):
                 with self.assertRaises(OSError):

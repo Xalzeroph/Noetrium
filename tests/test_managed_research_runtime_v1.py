@@ -4,6 +4,8 @@ from dataclasses import dataclass
 from threading import Event, Thread
 import time
 
+from noetrium_platform.foundation.kernel.kernel import ExecutionContext
+
 from noetrium_platform.composition.managed_research_runtime import (
     ManagedResearchRuntime,
     _reconcile_startup_ownership,
@@ -46,7 +48,12 @@ class Group:
 
     def submit(self, spec, fn, /, *args, **kwargs):
         self.submissions.append(spec.task_id)
-        return Handle(fn, *args, **kwargs)
+        return Handle(
+            fn,
+            ExecutionContext("managed-test", "managed-test-trace", "managed-test-span"),
+            *args,
+            **kwargs,
+        )
 
     def assert_healthy(self):
         return None
@@ -141,6 +148,14 @@ class RuntimeLock:
         self.released = True
 
 
+class OperationRuntime:
+    def __init__(self) -> None:
+        self.closed = False
+
+    def close(self) -> None:
+        self.closed = True
+
+
 class RecoveryExecution:
     def execution(self, owner_id, manifest_digest, *, ttl_seconds):
         raise AssertionError("fake recovery execution is not invoked in lifecycle tests")
@@ -159,6 +174,7 @@ def runtime():
         execution_pool=pool,
         management=Management(Models(controller, fleet)),
         observability=observability,
+        operation_runtime=OperationRuntime(),
         recovery_execution=RecoveryExecution(),
         services=object(),
         _orchestration_group=group,
@@ -232,11 +248,11 @@ def test_managed_runtime_rejects_controller_restart_after_close() -> None:
         raise AssertionError("closed managed runtime accepted controller start")
 
 
-def test_managed_research_runtime_is_available_from_public_platform_facade() -> None:
-    from noetrium_platform import platform
+def test_public_product_entrypoint_remains_research_os_only() -> None:
+    from noetrium import api
 
-    assert platform.ManagedResearchRuntime is ManagedResearchRuntime
-    assert callable(platform.bind_local_managed_research_runtime)
+    assert callable(api.open_project)
+    assert not hasattr(api, "ManagedResearchRuntime")
 
 
 def test_managed_runtime_does_not_release_resources_when_workloads_fail_to_quiesce() -> None:

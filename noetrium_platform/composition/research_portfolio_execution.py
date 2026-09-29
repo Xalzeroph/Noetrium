@@ -24,6 +24,13 @@ from noetrium_platform.product.research_os import (
     ResearchGraphRevision,
     ResearchPortfolio,
 )
+from noetrium_platform.research.execution.policy.api import (
+    ExecutionBudgetAuthorityPort,
+)
+from noetrium_platform.research.execution.policy.runtime import (
+    SQLiteExecutionBudgetAuthority,
+)
+from noetrium_platform.research.execution.workflow.api import OperationDispatchPort
 from noetrium_platform.research.execution.workflow.api.runtime_binding import (
     MethodRuntimePortInventory,
 )
@@ -37,6 +44,9 @@ from .research_authority_inputs import (
     normalize_authority_inputs,
 )
 from .research_binding_authority import ResearchBindingAuthorityPort
+from .research_definition_authority import (
+    ResearchDefinitionBindingAuthorityPort,
+)
 from .research_execution_content import (
     ResearchExecutionContentAuthorities,
     compose_research_execution_content,
@@ -67,6 +77,7 @@ class ResearchExecutionAuthorities:
     experiment_closures: ResearchOSExperimentClosurePort | None = None
     experiment_runtime_components: ResearchOSExperimentRuntimeComponents | None = None
     method_runtime_inventory: MethodRuntimePortInventory | None = None
+    definition_bindings: ResearchDefinitionBindingAuthorityPort | None = None
 
     def __post_init__(self) -> None:
         _require_sha256(
@@ -96,6 +107,13 @@ class ResearchExecutionAuthorities:
             raise TypeError(
                 "research execution experiment_runtime_components must be typed"
             )
+        if self.definition_bindings is not None and not isinstance(
+            self.definition_bindings,
+            ResearchDefinitionBindingAuthorityPort,
+        ):
+            raise TypeError(
+                "research execution definition_bindings must satisfy typed port"
+            )
         if self.method_runtime_inventory is not None and not isinstance(
             self.method_runtime_inventory,
             MethodRuntimePortInventory,
@@ -113,6 +131,7 @@ class ResearchExecutionAuthorities:
         research_bindings: ResearchBindingAuthorityPort,
         experiment_runtime_components: ResearchOSExperimentRuntimeComponents,
         method_runtime_inventory: MethodRuntimePortInventory | None = None,
+        definition_bindings: ResearchDefinitionBindingAuthorityPort | None = None,
     ) -> ResearchExecutionAuthorities:
         if not isinstance(research_bindings, ResearchBindingAuthorityPort):
             raise TypeError(
@@ -121,20 +140,13 @@ class ResearchExecutionAuthorities:
             )
         return cls(
             authority_manifest_digest,
-            ResearchStudyProtocolClosureProvider(research_bindings),
+            ResearchStudyProtocolClosureProvider(
+                research_bindings,
+                definition_bindings=definition_bindings,
+            ),
             experiment_runtime_components,
             method_runtime_inventory,
-        )
-
-    @classmethod
-    def provider_neutral(cls) -> ResearchExecutionAuthorities:
-        return cls(
-            canonical_digest(
-                {
-                    "schema": "noetrium.research-execution-authorities.v1",
-                    "mode": "provider-neutral",
-                }
-            )
+            definition_bindings,
         )
 
 
@@ -146,6 +158,7 @@ class ResearchExecutionContext:
     runtime: ManagedResearchRuntime
     content: ResearchExecutionContentAuthorities | None = None
     authority_inputs: tuple[tuple[str, str], ...] = ()
+    execution_budget: ExecutionBudgetAuthorityPort | None = None
 
     def __post_init__(self) -> None:
         if not isinstance(self.state_root, Path):
@@ -175,6 +188,41 @@ class ResearchExecutionContext:
                 label="research execution authority_inputs",
             ),
         )
+        if self.execution_budget is None:
+            checkpoint_replay_proof = canonical_digest(
+                {
+                    "schema": "noetrium.machine-checkpoint-replay-proof.v1",
+                    "journal": "DirectoryMachineJournal",
+                    "durability": "crash_durable",
+                }
+            )
+            exact_replay_proof = self.authority_input(
+                "replay.exact_proof_digest"
+            )
+            # Cost admission requires a typed accounting authority. A digest-only
+            # configuration is not sufficient proof and therefore cannot enable it.
+            cost_accounting = None
+            object.__setattr__(
+                self,
+                "execution_budget",
+                SQLiteExecutionBudgetAuthority(
+                    self.state_root / "execution-budget.sqlite3",
+                    resource_policy_digest=(
+                        self.runtime.execution_pool.resource_competition_policy_digest
+                    ),
+                    checkpoint_replay_proof_digest=checkpoint_replay_proof,
+                    exact_replay_proof_digest=exact_replay_proof,
+                    cost_accounting_digest=cost_accounting,
+                ),
+            )
+        elif not isinstance(
+            self.execution_budget,
+            ExecutionBudgetAuthorityPort,
+        ):
+            raise TypeError(
+                "research execution context execution_budget must satisfy "
+                "ExecutionBudgetAuthorityPort"
+            )
 
     def authority_input(self, key: str) -> str | None:
         return authority_input_value(
@@ -442,6 +490,7 @@ def preflight_research_portfolio(
     parents: tuple[ResearchGraphRevision, ...] = (),
     message: str | None = None,
     execution_pool: ResearchExecutionPool | None = None,
+    operation_dispatcher: OperationDispatchPort | None = None,
     content_authorities: ResearchExecutionContentAuthorities | None = None,
 ) -> ResearchPortfolioPreflightResult:
     """Run whole-portfolio admission without committing a durable revision/cut."""
@@ -460,8 +509,10 @@ def preflight_research_portfolio(
         state_root,
         experiment_closures=authorities.experiment_closures,
         experiment_runtime_components=authorities.experiment_runtime_components,
+        definition_bindings=authorities.definition_bindings,
         execution_pool=execution_pool,
         method_runtime_inventory=authorities.method_runtime_inventory,
+        operation_dispatcher=operation_dispatcher,
         content_authorities=(
             compose_research_execution_content(state_root / "content")
             if content_authorities is None
@@ -493,12 +544,17 @@ def execute_research_portfolio(
     parents: tuple[ResearchGraphRevision, ...] = (),
     message: str | None = None,
     execution_pool: ResearchExecutionPool | None = None,
+    operation_dispatcher: OperationDispatchPort | None = None,
     content_authorities: ResearchExecutionContentAuthorities | None = None,
 ) -> ResearchPortfolioExecutionResult:
     """Preflight, commit and RUN any ResearchPortfolio through one canonical path."""
 
     if not isinstance(state_root, Path):
         raise TypeError("research portfolio execution state_root must be pathlib.Path")
+    if operation_dispatcher is None:
+        raise RuntimeError(
+            "research portfolio execution requires managed durable Operation authority"
+        )
     prospective = _prospective_revision(
         portfolio,
         authorities,
@@ -511,8 +567,10 @@ def execute_research_portfolio(
         state_root,
         experiment_closures=authorities.experiment_closures,
         experiment_runtime_components=authorities.experiment_runtime_components,
+        definition_bindings=authorities.definition_bindings,
         execution_pool=execution_pool,
         method_runtime_inventory=authorities.method_runtime_inventory,
+        operation_dispatcher=operation_dispatcher,
         content_authorities=(
             compose_research_execution_content(state_root / "content")
             if content_authorities is None

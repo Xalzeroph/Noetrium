@@ -23,11 +23,17 @@ from .persistence import EffectJournalPersistenceBackend, EncodedEffectIntentRec
 
 class EffectJournalCodec(Protocol):
     def encode_record(self, record: EffectIntentRecord) -> EncodedEffectIntentRecord: ...
+    def encode_transition(
+        self,
+        record: EffectIntentRecord,
+        *,
+        prior: EncodedEffectIntentRecord,
+    ) -> EncodedEffectIntentRecord: ...
     def decode_record(self, encoded: EncodedEffectIntentRecord) -> EffectIntentRecord: ...
     def completion_digest(self, consumption: EffectCompletionEvidence | None) -> str | None: ...
 
 
-class PersistentEffectIntentJournal(EffectIntentJournal):
+class EffectIntentJournalRuntime(EffectIntentJournal):
     """Persistent CAS adapter over the single effect-domain transition authority."""
 
     def __init__(
@@ -39,6 +45,9 @@ class PersistentEffectIntentJournal(EffectIntentJournal):
         self.backend = backend
         self.codec: EffectJournalCodec = codec or EffectJournalDocumentCodec()
         self.durability = backend.durability
+
+    def close(self) -> None:
+        self.backend.close()
 
     def load(self, intent_id: str) -> EffectIntentRecord | None:
         row = self.backend.read(intent_id)
@@ -66,8 +75,12 @@ class PersistentEffectIntentJournal(EffectIntentJournal):
             current = self.codec.decode_record(encoded)
             desired = transition(current)
             if desired is not current:
+                if desired.intent != current.intent:
+                    raise RuntimeError(
+                        "effect transition changed immutable intent identity"
+                    )
                 if not tx.update(
-                    self.codec.encode_record(desired),
+                    self.codec.encode_transition(desired, prior=encoded),
                     expected_phase=current.phase.value,
                     expected_effect_digest=current.effect_digest,
                 ):
@@ -126,4 +139,4 @@ class PersistentEffectIntentJournal(EffectIntentJournal):
         return tuple(self.codec.decode_record(row) for row in encoded)
 
 
-__all__ = ["EffectJournalCodec", "PersistentEffectIntentJournal"]
+__all__ = ["EffectJournalCodec", "EffectIntentJournalRuntime"]

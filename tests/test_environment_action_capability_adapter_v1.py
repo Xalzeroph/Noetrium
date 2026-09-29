@@ -8,6 +8,7 @@ from noetrium_platform.capabilities.environment.api import (
     ActionRequest,
     ActionResult,
     Observation,
+    EnvironmentCapabilityDescriptor,
     action_request_digest,
 )
 from noetrium_platform.composition.environment_capabilities import (
@@ -136,6 +137,38 @@ def _request() -> CapabilityRequest:
         idempotency_key="turn-1",
     )
 
+
+
+class _DescribedEnvironment(_DurableEnvironment):
+    def capability_descriptors(self):
+        return (
+            EnvironmentCapabilityDescriptor(
+                capability_id="minecraft.world",
+                version="1",
+                action_types=("collect_block",),
+                metadata={
+                    "action_contracts": (
+                        {
+                            "action_type": "collect_block",
+                            "category": "resource",
+                            "description": "Collect matching blocks.",
+                            "arguments": "{block:string, count?:1..64}",
+                            "mutates_world": True,
+                        },
+                    )
+                },
+            ),
+        )
+
+
+def test_environment_bridge_projects_provider_contract_metadata() -> None:
+    adapter = EnvironmentSessionCapabilityAdapter(_DescribedEnvironment())
+    descriptor = adapter.describe("environment.act")
+    rows = descriptor.metadata["environment_capabilities"]
+    assert rows[0]["capability_id"] == "minecraft.world"
+    contract = rows[0]["metadata"]["action_contracts"][0]
+    assert contract["action_type"] == "collect_block"
+    assert contract["arguments"] == "{block:string, count?:1..64}"
 
 def test_effectful_environment_bridge_requires_generic_effect_executor() -> None:
     adapter = EnvironmentSessionCapabilityAdapter(_DurableEnvironment())

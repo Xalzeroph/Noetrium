@@ -14,8 +14,8 @@ class ForensicReadSessionV38Tests(unittest.TestCase):
             with ForensicStore(root) as store:
                 ctx=ExecutionContext(run_id='r',trace_id='t',span_id='s',task_id='task',decision_cycle_id='dc')
                 f=build_failure(component_id='c',failure_domain='D',failure_code='X',stage='s',context=ctx,exc=RuntimeError('x')); store.append_failure(f)
-            store=ForensicStore(root,read_only=True); original=store.index.db.connect
-            with mock.patch.object(store.index.db,'connect',wraps=original) as connect:
+            store=ForensicStore(root,read_only=True); original=store.index.db.connect_reader
+            with mock.patch.object(store.index.db,'connect_reader',wraps=original) as connect:
                 snap=DebugSnapshotService(ForensicDiagnosticEvidence(store)).build(f.failure_id)
                 self.assertEqual(connect.call_count,1)
                 self.assertEqual(snap.object_id,f.failure_id)

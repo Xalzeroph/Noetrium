@@ -14,11 +14,8 @@ from noetrium_platform.infrastructure.resources.allocation.api import (
 )
 from noetrium_platform.foundation.kernel.concurrency.api import ConcurrencyBudget
 from noetrium_platform.foundation.kernel.concurrency.composition import build_concurrency_runtime
-from noetrium_platform.infrastructure.resources.allocation.runtime import (
-    EndpointLeaseHeartbeatError,
-    EndpointLeaseHeartbeatGuard,
-)
 from noetrium_platform.foundation.scope.api import ScopeIdentity, ScopeKind
+from noetrium_platform.infrastructure.resources.lease.runtime import LeaseHeartbeatError, LeaseHeartbeatFactory, LeaseHeartbeatGuard
 
 
 class _RenewingAllocations:
@@ -81,15 +78,18 @@ def test_endpoint_lease_heartbeat_renews_until_closed() -> None:
     allocations = _RenewingAllocations()
     runtime = _runtime()
     group = runtime.open_task_group("heartbeat-test")
-    guard = EndpointLeaseHeartbeatGuard(
-        allocations=allocations,
-        allocation_rows=(allocations.value,),
+    policy = EndpointLeasePolicy(ttl_seconds=0.2, renewal_interval_seconds=0.01)
+    guard = LeaseHeartbeatFactory(
+        renew=lambda rows: allocations.renew_many(rows, ttl_seconds=policy.ttl_seconds),
+        row_identity=lambda row: row.allocation_id,
+        heartbeat_namespace="endpoint-lease",
         task_group=group,
         heartbeat_scheduler=runtime.heartbeats,
         lane_id="endpoint-lease-writer",
+        interval_seconds=policy.renewal_interval_seconds,
         lane_capacity=8,
-        policy=EndpointLeasePolicy(ttl_seconds=0.2, renewal_interval_seconds=0.01),
-    )
+        policy=policy,
+    ).create((allocations.value,))
     try:
         guard.start()
         assert allocations.renewed.wait(timeout=1)
@@ -106,18 +106,21 @@ def test_endpoint_lease_heartbeat_failure_is_fail_closed() -> None:
     allocations = _RenewingAllocations(fail=True)
     runtime = _runtime()
     group = runtime.open_task_group("heartbeat-failure-test")
-    guard = EndpointLeaseHeartbeatGuard(
-        allocations=allocations,
-        allocation_rows=(allocations.value,),
+    policy = EndpointLeasePolicy(ttl_seconds=0.2, renewal_interval_seconds=0.01)
+    guard = LeaseHeartbeatFactory(
+        renew=lambda rows: allocations.renew_many(rows, ttl_seconds=policy.ttl_seconds),
+        row_identity=lambda row: row.allocation_id,
+        heartbeat_namespace="endpoint-lease",
         task_group=group,
         heartbeat_scheduler=runtime.heartbeats,
         lane_id="endpoint-lease-writer-failure",
+        interval_seconds=policy.renewal_interval_seconds,
         lane_capacity=8,
-        policy=EndpointLeasePolicy(ttl_seconds=0.2, renewal_interval_seconds=0.01),
-    )
+        policy=policy,
+    ).create((allocations.value,))
     guard.start()
     assert allocations.renewed.wait(timeout=1)
-    with pytest.raises(EndpointLeaseHeartbeatError, match="renew failed"):
+    with pytest.raises(LeaseHeartbeatError, match="renew failed"):
         guard.assert_healthy()
     guard.close()
     heartbeat = runtime.topology_snapshot().heartbeats[0]

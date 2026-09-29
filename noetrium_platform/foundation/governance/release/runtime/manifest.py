@@ -9,7 +9,7 @@ from noetrium_platform.foundation.governance.release.api import FileDigest, Rele
 from .project_metadata import load_project_metadata
 
 
-EXCLUDED_DIRS = {"__pycache__", ".git", ".local", ".pytest_cache", ".server-state", "build", "dist", "node_modules"}
+EXCLUDED_DIRS = {"__pycache__", ".git", ".local", ".pytest_cache", ".server-state", ".noetrium", "build", "dist", "node_modules"}
 EXCLUDED_SUFFIXES = {".pyc", ".pyo"}
 EXCLUDED_NAME_MARKERS = (".local.",)
 DERIVED_RELEASE_FILES = {

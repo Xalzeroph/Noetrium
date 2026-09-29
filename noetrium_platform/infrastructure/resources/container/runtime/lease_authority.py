@@ -1,23 +1,14 @@
 from __future__ import annotations
 
 import math
-from threading import Lock, RLock
+from threading import RLock
 from time import time
 from typing import cast
 
 from noetrium_platform.foundation.governance.api import PLATFORM_SCOPE, ScopeIdentity
-from noetrium_platform.foundation.kernel.concurrency.api import (
-    HeartbeatSchedulerPort,
-    HeartbeatSpec,
-    ScheduledTaskHandlePort,
-    TaskContextPort,
-    TaskGroupPort,
-)
 from noetrium_platform.foundation.kernel.kernel import canonical_digest
 from noetrium_platform.infrastructure.resources.container.api import (
     DEFAULT_DOCKER_CONTAINER_LEASE_POLICY,
-    DockerContainerLeaseGuardFactoryPort,
-    DockerContainerLeaseGuardPort,
     DockerContainerLeasePolicy,
     DockerContainerObservation,
     DockerContainerReconciliation,
@@ -89,6 +80,10 @@ class DockerContainerLeaseAuthority:
         self.policy = policy
         self._confirmed_lock = RLock()
         self._confirmed_handles: dict[str, ManagedDockerContainerLease] = {}
+        # Opportunistic warm cache only. Durable lease/fencing remains authority.
+        # After process restart this map is empty, so reconcile treats any
+        # stopped physical container as stale and removes it fail-closed.
+        self._parked_handles: dict[str, ManagedDockerContainerLease] = {}
         if reconcile_on_start:
             self.reconcile()
 
@@ -195,6 +190,129 @@ class DockerContainerLeaseAuthority:
         with self._confirmed_lock:
             return tuple(self._confirmed_handles.values())
 
+
+    def _parked_exact(
+        self,
+        *,
+        lease_id: str,
+        fencing_token: int,
+    ) -> bool:
+        with self._confirmed_lock:
+            parked = self._parked_handles.get(lease_id)
+            return (
+                parked is not None
+                and parked.lease.fencing_token == fencing_token
+            )
+
+
+    def park(
+        self,
+        handle: ManagedDockerContainerLease,
+        *,
+        timeout_seconds: float = 30.0,
+    ) -> DockerContainerObservation:
+        self._require_handle_authority(handle)
+        current = self.leases.get(handle.lease.lease_id)
+        if (
+            current.state is not LeaseState.ACTIVE
+            or current.fencing_token != handle.lease.fencing_token
+        ):
+            raise DockerContainerLeaseConflict(
+                "cannot park stale Docker lease generation"
+            )
+        observed = self.runtime.inspect(handle.container_name)
+        if observed is None:
+            raise DockerContainerLeaseConflict(
+                "cannot park missing Docker container"
+            )
+        self._validate_observation(handle, observed)
+
+        # Publish current-generation parking intent before physical stop.
+        # Reconcile may observe the container immediately after it stops.
+        with self._confirmed_lock:
+            parked = self._parked_handles.get(handle.lease.lease_id)
+            if (
+                parked is not None
+                and parked.lease.fencing_token != handle.lease.fencing_token
+            ):
+                raise DockerContainerLeaseConflict(
+                    "cannot park over a different Docker lease generation"
+                )
+            self._parked_handles[handle.lease.lease_id] = handle
+        try:
+            if observed.running:
+                observed = self.runtime.stop(
+                    observed.container_id,
+                    timeout_seconds=timeout_seconds,
+                )
+            self._validate_observation(handle, observed)
+            if observed.running:
+                raise DockerContainerLeaseConflict(
+                    "Docker park did not quiesce physical container"
+                )
+            current = self.leases.get(handle.lease.lease_id)
+            if (
+                current.state is not LeaseState.ACTIVE
+                or current.fencing_token != handle.lease.fencing_token
+            ):
+                raise DockerContainerLeaseConflict(
+                    "Docker lease generation changed while parking"
+                )
+            return observed
+        except BaseException:
+            with self._confirmed_lock:
+                parked = self._parked_handles.get(handle.lease.lease_id)
+                if (
+                    parked is not None
+                    and parked.lease.fencing_token == handle.lease.fencing_token
+                ):
+                    self._parked_handles.pop(handle.lease.lease_id, None)
+            raise
+
+
+    def resume(
+        self,
+        handle: ManagedDockerContainerLease,
+        *,
+        timeout_seconds: float = 30.0,
+    ) -> DockerContainerObservation:
+        self._require_handle_authority(handle)
+        if not self._parked_exact(
+            lease_id=handle.lease.lease_id,
+            fencing_token=handle.lease.fencing_token,
+        ):
+            raise DockerContainerLeaseConflict(
+                "Docker resume requires current-generation parked handle"
+            )
+        current = self.leases.get(handle.lease.lease_id)
+        if (
+            current.state is not LeaseState.ACTIVE
+            or current.fencing_token != handle.lease.fencing_token
+        ):
+            raise DockerContainerLeaseConflict(
+                "cannot resume stale Docker lease generation"
+            )
+        observed = self.runtime.inspect(handle.container_name)
+        if observed is None:
+            raise DockerContainerLeaseConflict(
+                "cannot resume missing parked Docker container"
+            )
+        self._validate_observation(handle, observed)
+        if not observed.running:
+            observed = self.runtime.start(
+                observed.container_id,
+                timeout_seconds=timeout_seconds,
+            )
+        self._validate_observation(handle, observed)
+        if not observed.running:
+            raise DockerContainerLeaseConflict(
+                "Docker resume did not restore running container"
+            )
+        with self._confirmed_lock:
+            self._parked_handles.pop(handle.lease.lease_id, None)
+        self._remember_confirmed(handle)
+        return observed
+
     def reserve(
         self,
         *,
@@ -278,6 +396,79 @@ class DockerContainerLeaseAuthority:
             "current controller generation"
         )
 
+    def observe_exact(
+        self,
+        handle: ManagedDockerContainerLease,
+    ) -> DockerContainerObservation | None:
+        """Resolve one exact physical container generation from durable labels."""
+
+        self._require_handle_authority(handle)
+        named = self.runtime.inspect(handle.container_name)
+        if named is not None and self._matches_exact_generation(handle, named):
+            self._validate_observation(handle, named)
+            return named
+
+        candidates = self._exact_physical_candidates(handle)
+        if len(candidates) > 1:
+            raise DockerContainerLeaseConflict(
+                "managed Docker generation maps to multiple physical containers"
+            )
+        if candidates:
+            return candidates[0]
+        if named is not None:
+            raise DockerContainerLeaseConflict(
+                "managed Docker name was reused before exact generation converged"
+            )
+        return None
+
+    def recover(
+        self,
+        *,
+        allocation_id: str,
+        image: str,
+        runtime_identity_digest: str,
+    ) -> ManagedDockerContainerLease | None:
+        """Rebuild the current-generation handle from ResourceLease + Docker truth.
+
+        No container-specific registry is consulted or created. A missing active
+        lease means there is no recoverable generation. Physical absence with an
+        active lease remains representable so the caller can reconcile/release
+        that fenced logical generation.
+        """
+
+        if not allocation_id.strip() or not image.strip():
+            raise ValueError("managed Docker recovery identity is required")
+        if not self._runtime_digest_valid(runtime_identity_digest):
+            raise ValueError(
+                "managed Docker runtime identity must be lowercase sha256"
+            )
+        try:
+            lease = self.leases.get(self._lease_id(allocation_id))
+        except KeyError:
+            return None
+        if lease.state is not LeaseState.ACTIVE:
+            return None
+        resource = self._resource(allocation_id)
+        if lease.resource != resource:
+            raise DockerContainerLeaseConflict(
+                "managed Docker recovery resource identity drifted"
+            )
+
+        handle = ManagedDockerContainerLease(
+            allocation_id,
+            lease.holder_scope,
+            image,
+            runtime_identity_digest,
+            self.authority_id,
+            self.owner_generation_id,
+            self._name(allocation_id, lease.fencing_token),
+            lease,
+        )
+        observed = self.observe_exact(handle)
+        if observed is not None and observed.running:
+            self._remember_confirmed(handle)
+        return handle
+
     def docker_run_prefix(
         self,
         handle: ManagedDockerContainerLease,
@@ -290,7 +481,6 @@ class DockerContainerLeaseAuthority:
         return (
             self.runtime.docker_executable,
             "run",
-            "--rm",
             *handle.docker_run_options(),
         )
 
@@ -306,6 +496,8 @@ class DockerContainerLeaseAuthority:
             timeout_seconds=timeout_seconds,
         )
         self._validate_observation(handle, observed)
+        with self._confirmed_lock:
+            self._parked_handles.pop(handle.lease.lease_id, None)
         self._remember_confirmed(handle)
         return observed
 
@@ -336,6 +528,12 @@ class DockerContainerLeaseAuthority:
                 and current.lease.fencing_token == handle.lease.fencing_token
             ):
                 self._confirmed_handles[handle.lease.lease_id] = renewed_handle
+            parked = self._parked_handles.get(handle.lease.lease_id)
+            if (
+                parked is not None
+                and parked.lease.fencing_token == handle.lease.fencing_token
+            ):
+                self._parked_handles[handle.lease.lease_id] = renewed_handle
         return renewed_handle
 
     def renew_many(
@@ -383,6 +581,13 @@ class DockerContainerLeaseAuthority:
             handle.lease.lease_id,
             fencing_token=handle.lease.fencing_token,
         )
+        with self._confirmed_lock:
+            parked = self._parked_handles.get(handle.lease.lease_id)
+            if (
+                parked is not None
+                and parked.lease.fencing_token == handle.lease.fencing_token
+            ):
+                self._parked_handles.pop(handle.lease.lease_id, None)
         self._forget_confirmed(handle)
         return released
 
@@ -440,7 +645,16 @@ class DockerContainerLeaseAuthority:
                 and lease.fencing_token == fencing
                 and holder_key == lease.holder_scope.key
                 and self._runtime_digest_valid(runtime_digest)
-                and observed.running
+                and (
+                    observed.running
+                    or (
+                        fencing is not None
+                        and self._parked_exact(
+                            lease_id=lease.lease_id,
+                            fencing_token=fencing,
+                        )
+                    )
+                )
             )
             if valid:
                 continue
@@ -475,6 +689,12 @@ class DockerContainerLeaseAuthority:
                         and current.lease.fencing_token == lease.fencing_token
                     ):
                         self._confirmed_handles.pop(lease.lease_id, None)
+                    parked = self._parked_handles.get(lease.lease_id)
+                    if (
+                        parked is not None
+                        and parked.lease.fencing_token == lease.fencing_token
+                    ):
+                        self._parked_handles.pop(lease.lease_id, None)
 
         # A confirmed current-generation container that disappears entirely
         # cannot be discovered by list_managed(). Its durable lease must not
@@ -560,6 +780,7 @@ class DockerContainerLeaseAuthority:
 
         with self._confirmed_lock:
             self._confirmed_handles.clear()
+            self._parked_handles.clear()
         return DockerContainerReconciliation(
             tuple(sorted(set(removed))),
             tuple(sorted(set(released))),
@@ -597,160 +818,4 @@ class DockerContainerLeaseAuthority:
             if stop.wait(float(interval_seconds)):
                 return latest
 
-
-class DockerContainerLeaseHeartbeatError(RuntimeError):
-    pass
-
-
-class DockerContainerLeaseHeartbeatGuard(DockerContainerLeaseGuardPort):
-    def __init__(
-        self,
-        *,
-        authority: DockerContainerLeaseAuthority,
-        handles: tuple[ManagedDockerContainerLease, ...],
-        task_group: TaskGroupPort,
-        heartbeat_scheduler: HeartbeatSchedulerPort,
-        lane_id: str,
-        lane_capacity: int | None = None,
-        policy: DockerContainerLeasePolicy = DEFAULT_DOCKER_CONTAINER_LEASE_POLICY,
-    ) -> None:
-        if not handles:
-            raise ValueError("container lease heartbeat requires handles")
-        allocation_ids = tuple(handle.allocation_id for handle in handles)
-        if len(set(allocation_ids)) != len(allocation_ids):
-            raise ValueError(
-                "container lease heartbeat allocation ids must be unique"
-            )
-        if not lane_id.strip():
-            raise ValueError("container lease heartbeat lane_id required")
-        if lane_capacity is not None and lane_capacity <= 0:
-            raise ValueError(
-                "container lease heartbeat lane capacity must be positive"
-            )
-        self._authority = authority
-        self._handles = handles
-        self._task_group = task_group
-        self._heartbeat_scheduler = heartbeat_scheduler
-        self._lane_id = lane_id
-        self._lane_capacity = lane_capacity
-        self._policy = policy
-        self._lock = Lock()
-        self._scheduled: ScheduledTaskHandlePort | None = None
-        self._closing = False
-        self._closed = False
-
-    @property
-    def handles(self) -> tuple[ManagedDockerContainerLease, ...]:
-        with self._lock:
-            return self._handles
-
-    def start(self) -> None:
-        with self._lock:
-            if self._closed:
-                raise DockerContainerLeaseHeartbeatError(
-                    "container lease heartbeat is closed"
-                )
-            if self._closing:
-                raise DockerContainerLeaseHeartbeatError("container lease heartbeat is closing")
-            if self._scheduled is not None:
-                return
-            allocation_ids = tuple(
-                handle.allocation_id for handle in self._handles
-            )
-            self._scheduled = self._heartbeat_scheduler.register(
-                self._task_group.group_id,
-                HeartbeatSpec(
-                    heartbeat_id="container-lease:" + ",".join(allocation_ids),
-                    lane_id=self._lane_id,
-                    interval_seconds=self._policy.renewal_interval_seconds,
-                    initial_delay_seconds=self._policy.renewal_interval_seconds,
-                    lane_capacity=self._lane_capacity,
-                ),
-                self._renew_once,
-            )
-
-    def _renew_once(self, context: TaskContextPort) -> None:
-        context.checkpoint()
-        with self._lock:
-            handles = self._handles
-        renewed = self._authority.renew_many(handles)
-        with self._lock:
-            self._handles = renewed
-        context.checkpoint()
-
-    def assert_healthy(self) -> None:
-        with self._lock:
-            scheduled = self._scheduled
-        if scheduled is None:
-            return
-        try:
-            scheduled.assert_healthy()
-            self._task_group.assert_healthy()
-        except BaseException as exc:
-            raise DockerContainerLeaseHeartbeatError(
-                "container lease heartbeat failed: "
-                f"{type(exc).__name__}: {exc}"
-            ) from exc
-
-    def close(self) -> None:
-        with self._lock:
-            if self._closed:
-                return
-            self._closing = True
-            scheduled = self._scheduled
-        if scheduled is not None:
-            # Teardown cancels future renewal authority. Historical heartbeat
-            # failure remains observable through assert_healthy()/task-group
-            # evidence, but must not permanently block exact-generation release.
-            # Any already-dispatched renewal is fenced by the allocation/lease
-            # generation and therefore cannot mutate a replacement generation.
-            scheduled.cancel()
-        with self._lock:
-            self._closed = True
-            self._closing = False
-
-
-class DockerContainerLeaseHeartbeatFactory(DockerContainerLeaseGuardFactoryPort):
-    def __init__(
-        self,
-        *,
-        authority: DockerContainerLeaseAuthority,
-        task_group: TaskGroupPort,
-        heartbeat_scheduler: HeartbeatSchedulerPort,
-        lane_id: str,
-        lane_capacity: int | None = None,
-        policy: DockerContainerLeasePolicy = DEFAULT_DOCKER_CONTAINER_LEASE_POLICY,
-    ) -> None:
-        self._authority = authority
-        self._task_group = task_group
-        self._heartbeat_scheduler = heartbeat_scheduler
-        self._lane_id = lane_id
-        self._lane_capacity = lane_capacity
-        self._policy = policy
-
-    @property
-    def policy(self) -> DockerContainerLeasePolicy:
-        return self._policy
-
-    def create(
-        self,
-        handles: tuple[ManagedDockerContainerLease, ...],
-    ) -> DockerContainerLeaseHeartbeatGuard:
-        return DockerContainerLeaseHeartbeatGuard(
-            authority=self._authority,
-            handles=handles,
-            task_group=self._task_group,
-            heartbeat_scheduler=self._heartbeat_scheduler,
-            lane_id=self._lane_id,
-            lane_capacity=self._lane_capacity,
-            policy=self._policy,
-        )
-
-
-__all__ = [
-    "DockerContainerLeaseAuthority",
-    "DockerContainerLeaseConflict",
-    "DockerContainerLeaseHeartbeatError",
-    "DockerContainerLeaseHeartbeatFactory",
-    "DockerContainerLeaseHeartbeatGuard",
-]
+__all__ = ["DockerContainerLeaseAuthority", "DockerContainerLeaseConflict"]

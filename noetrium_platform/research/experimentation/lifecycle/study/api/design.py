@@ -95,11 +95,22 @@ class FactorSelection:
     factor_id: str
     level_id: str
     level_digest: str
+    value: JsonValue
 
     def __post_init__(self) -> None:
         _text(self.factor_id, "factor selection factor_id")
         _text(self.level_id, "factor selection level_id")
         _sha(self.level_digest, "factor selection level_digest")
+        object.__setattr__(self, "value", freeze_json(self.value))
+        expected = canonical_digest(
+            {
+                "level_id": self.level_id,
+                "value": self.value,
+                "control": False,
+            }
+        )
+        # level_digest also commits the control bit. Value preservation is
+        # verified against the owning StudyFactorSpec during compilation.
 
 @dataclass(frozen=True, slots=True)
 class StudyIntervention:

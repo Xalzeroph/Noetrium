@@ -8,7 +8,7 @@ import unittest
 from unittest import mock
 
 from noetrium_platform.capabilities.model.request.prompt.runtime import (
-    DurablePromptRegistry,
+    PromptRegistry,
     PromptPublicationError,
     PromptPromotionEvidence,
     default_block_policies,

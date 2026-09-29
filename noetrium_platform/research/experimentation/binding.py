@@ -302,7 +302,10 @@ class ResearchModelRoleBinding:
             raise ValueError("model role binding proof provider drifted")
         if self.proof.provider_profile_digest.value != self.binding.provider_profile_digest:
             raise ValueError("model role binding proof profile drifted")
-        expected_generation = f"model-{self.binding.deployment_generation}"
+        expected_generation = (
+            f"model-{self.binding.deployment_generation}-"
+            f"{self.binding.digest()[:16]}"
+        )
         if self.proof.binding_generation != expected_generation:
             raise ValueError("model role binding proof generation drifted")
         object.__setattr__(self, "binding_digest", canonical_digest({

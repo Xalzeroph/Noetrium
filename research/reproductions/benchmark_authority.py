@@ -461,11 +461,6 @@ class RepositoryBenchmarkAuthority:
                 "repository benchmark resolution Study factory no longer resolves"
             )
         benchmark_ids = definition.catalog.benchmark_ids
-        if len(benchmark_ids) > 1 and len(factories) > 1:
-            raise ReproductionResearchOSCompileError(
-                f"{definition.package} has multiple Study factories and multiple "
-                "benchmarks; exact Study-to-benchmark ownership must be paper-owned"
-            )
 
         split_consumers = set(resolve_benchmark_split_consumers(definition))
         split_aware = (
@@ -479,6 +474,8 @@ class RepositoryBenchmarkAuthority:
         selections: list[ReproductionBenchmarkSelection] = []
         for benchmark_id in benchmark_ids:
             requirement = study_factory.benchmark_requirement(benchmark_id)
+            if study_factory.benchmark_requirements and requirement is None:
+                continue
             resolution, authority_proofs = self._resolution(
                 benchmark_id,
                 requirement,

@@ -3,6 +3,7 @@ from __future__ import annotations
 from pathlib import Path
 
 from noetrium import api
+from noetrium_platform.product import research_os as research_os_api
 
 from noetrium_platform.composition.operator.project import project_scaffold
 from noetrium_platform.composition.operator.project.project_platform_identity import (
@@ -35,7 +36,7 @@ def test_generated_project_shell_accepts_arbitrary_multi_program_research_core(
     )
 
     core = root / "src" / "paper" / "core.py"
-    authored = '''from noetrium.api import research_os as api
+    authored = '''from noetrium import api
 
 
 def source():
@@ -47,48 +48,30 @@ def consume(payload):
 
 
 def build_research() -> api.ResearchPortfolio:
-    first = api.ResearchProgramBuilder("paper-a")
-    first.definition(
+    portfolio = api.ResearchPortfolioBuilder("paper")
+    first = portfolio.program("paper-a")
+    first.custom_definition("source", implementation=source)
+    first.custom_node(
         "source",
-        kind=api.ResearchDefinitionKind.CUSTOM,
-        implementation=source,
-    )
-    first.node(
-        "source",
-        kind=api.ResearchNodeKind.CUSTOM,
         definitions=("source",),
-        outputs=(api.ResearchOutputSpec("data", api.ResearchValueKind.DATA),),
+        outputs=(("data", "data"),),
     )
 
-    second = api.ResearchProgramBuilder("paper-b")
-    second.definition(
+    second = portfolio.program("paper-b")
+    second.custom_definition("consume", implementation=consume)
+    second.custom_node(
         "consume",
-        kind=api.ResearchDefinitionKind.CUSTOM,
-        implementation=consume,
-    )
-    second.node(
-        "consume",
-        kind=api.ResearchNodeKind.CUSTOM,
         definitions=("consume",),
-        outputs=(api.ResearchOutputSpec("data", api.ResearchValueKind.DATA),),
+        outputs=(("data", "data"),),
     )
-
-    dependency = api.ResearchPortfolioDependency(
-        api.ResearchNodeRef("paper-a", "source"),
-        api.ResearchNodeRef("paper-b", "consume"),
-        (
-            api.ResearchInputBinding(
-                "upstream",
-                "data",
-                api.ResearchValueKind.DATA,
-            ),
-        ),
+    portfolio.depends(
+        upstream_program_id="paper-a",
+        upstream_node_id="source",
+        downstream_program_id="paper-b",
+        downstream_node_id="consume",
+        bindings=(("upstream", "data", "data"),),
     )
-    return api.ResearchPortfolio(
-        "paper",
-        (first.freeze(), second.freeze()),
-        (dependency,),
-    )
+    return portfolio.freeze()
 
 
 __all__ = ["build_research"]
@@ -114,14 +97,14 @@ __all__ = ["build_research"]
         }
         consume = graph.node("paper-b::consume")
         assert consume.upstream_refs == (
-            api.research_os.ResearchNodeRef("paper-a", "source"),
+            research_os_api.ResearchNodeRef("paper-a", "source"),
         )
         assert len(consume.incoming_edges) == 1
         assert consume.incoming_edges[0].bindings == (
-            api.research_os.ResearchInputBinding(
+            research_os_api.ResearchInputBinding(
                 "upstream",
                 "data",
-                api.research_os.ResearchValueKind.DATA,
+                research_os_api.ResearchValueKind.DATA,
             ),
         )
     finally:
@@ -144,7 +127,7 @@ def test_generated_project_preserves_public_study_experiment_authoring(
 
     core = root / "src" / "study_paper" / "core.py"
     core.write_text(
-        '''from noetrium.api import research_os as api
+        '''from noetrium import api
 
 
 def build_study():
@@ -152,10 +135,11 @@ def build_study():
 
 
 def build_research() -> api.ResearchPortfolio:
-    research = api.ResearchProgramBuilder("study-paper")
+    portfolio = api.ResearchPortfolioBuilder("study-paper")
+    research = portfolio.program("study-paper")
     research.study_protocol("study", implementation=build_study)
     research.experiment("experiment", definitions=("study",))
-    return api.ResearchPortfolio("study-paper", (research.freeze(),))
+    return portfolio.freeze()
 
 
 __all__ = ["build_research"]
@@ -168,11 +152,11 @@ __all__ = ["build_research"]
     try:
         program = loaded.portfolio.programs[0]
         assert any(
-            definition.kind is api.research_os.ResearchDefinitionKind.PROTOCOL
+            definition.kind is research_os_api.ResearchDefinitionKind.PROTOCOL
             for definition in program.definitions
         )
         assert any(
-            node.kind is api.research_os.ResearchNodeKind.EXPERIMENT
+            node.kind is research_os_api.ResearchNodeKind.EXPERIMENT
             for node in program.nodes
         )
     finally:

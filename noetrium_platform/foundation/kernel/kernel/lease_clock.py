@@ -74,16 +74,22 @@ def _read_text(path: Path) -> str | None:
 
 def _linux_reading() -> LeaseClockReading:
     explicit_host = os.environ.get("NOETRIUM_HOST_IDENTITY", "").strip()
-    host_parts: list[str] = []
     if explicit_host:
-        host_parts.append("explicit:" + explicit_host)
-    for label, path in (
-        ("dmi", Path("/sys/class/dmi/id/product_uuid")),
-        ("machine", Path("/etc/machine-id")),
-    ):
-        value = _read_text(path)
-        if value:
-            host_parts.append(f"{label}:{value}")
+        # An explicit physical-host identity is authoritative.  Do not mix it
+        # with ambient container-visible hardware facts: visibility of DMI can
+        # change with container privilege and would otherwise change the lease
+        # authority for the same physical host.
+        host_parts = ["explicit:" + explicit_host]
+    else:
+        # /etc/machine-id is the canonical Linux host identity when available.
+        # It is stable across privilege levels and can be projected read-only
+        # into a Docker control-plane container. DMI is a fallback only.
+        machine_id = _read_text(Path("/etc/machine-id"))
+        if machine_id:
+            host_parts = ["machine:" + machine_id]
+        else:
+            dmi_id = _read_text(Path("/sys/class/dmi/id/product_uuid"))
+            host_parts = [] if dmi_id is None else ["dmi:" + dmi_id]
     if not host_parts:
         raise LeaseClockUnavailable(
             "Linux lease clock requires a stable host identity"

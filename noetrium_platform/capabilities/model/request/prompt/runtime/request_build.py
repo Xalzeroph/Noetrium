@@ -10,7 +10,7 @@ from .blocks import PromptBlock, PromptBlockPolicy
 from .compile_pipeline import PromptCompilationReceipt, PromptCompilePipeline
 from .execution_contract import PromptExecutionContract, build_execution_contract
 from .request_contract import PromptRequestContract, build_prompt_request_contract
-from .runtime import PromptRegistry
+from .publication import PromptRegistry
 from .runtime_contracts import PromptResolution
 from .schema import OutputSchemaRegistry
 from noetrium_platform.capabilities.model.request.prompt.api import PromptTraceStage

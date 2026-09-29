@@ -55,6 +55,18 @@ class ResearchMachineSessionPort(Protocol):
     @property
     def previous_value(self) -> JsonValue: ...
 
+    @property
+    def visit_counts(self) -> tuple[tuple[str, int], ...]: ...
+
+    @property
+    def step_count(self) -> int: ...
+
+    @property
+    def semantic_state(self) -> JsonObject: ...
+
+    @property
+    def checkpoint_value(self) -> JsonValue: ...
+
     def start(
         self,
         initial_data: Mapping[str, JsonValue] | None = None,

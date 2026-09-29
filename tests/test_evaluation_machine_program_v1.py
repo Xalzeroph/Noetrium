@@ -142,5 +142,5 @@ def test_paired_evaluation_records_invalid_comparability_without_scoring_delta()
     result = session.previous_value
     assert result["valid"] is False
     assert "workload_id mismatch" in result["violations"]
-    assert result["metric_deltas"] == []
+    assert result["metric_deltas"] == ()
     assert session.data["valid_comparison_count"] == 0

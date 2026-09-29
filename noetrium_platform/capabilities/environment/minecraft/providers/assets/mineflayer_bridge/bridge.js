@@ -193,6 +193,8 @@ function connect (options) {
   runtime.bindBot(bot)
   actionRecovery.configure(options.action_recovery_dir || null)
   bot.loadPlugin(pathfinder)
+  bot.loadPlugin(tool)
+  bot.loadPlugin(collectblock)
   bot.loadPlugin(pvp)
   bot.once('spawn', () => {
     emit('bridge_status', {
@@ -213,13 +215,14 @@ function connect (options) {
 function emitActionResult (cmd, msg, result) {
   const requestId = msg.request_id || msg.action_id || null
   emit('action_result', {
-    action_id: msg.action_id || null,
+    action_id: requestId,
     task_id: msg.task_id || null,
     task_lineage: msg.task_lineage || null,
     task: msg.task || '',
     context: msg.context || {},
     action: result.action,
     outcome: result.outcome,
+    effect_disposition: result.effect_disposition,
     anchors: Array.isArray(msg.anchors) ? msg.anchors : [],
     verified: Boolean(result.verified)
   }, requestId)
@@ -227,6 +230,7 @@ function emitActionResult (cmd, msg, result) {
   ack(cmd, {
     verified: Boolean(result.verified),
     rejected: result.outcome.status === 'rejected',
+    effect_disposition: result.effect_disposition,
     outcome_code: result.outcome.code
   }, requestId)
 }
@@ -241,9 +245,15 @@ async function runAction (cmd, msg) {
     const disposition = prepared.record.disposition || 'unknown'
     const replay = disposition === 'applied'
       ? runtime.applied(cmd, {}, 'ACTION_RECOVERY_CONFIRMED', { recovery_state: prepared.record.state })
-      : disposition === 'not_applied'
-        ? runtime.rejected(cmd, {}, 'ACTION_RECOVERY_NOT_APPLIED', { recovery_state: prepared.record.state })
-        : runtime.partial(cmd, {}, 'ACTION_RECOVERY_UNCERTAIN', { recovery_state: prepared.record.state })
+      : ['rejected', 'not_applied'].includes(disposition)
+        ? runtime.rejected(
+            cmd,
+            {},
+            disposition === 'rejected' ? 'ACTION_RECOVERY_REJECTED' : 'ACTION_RECOVERY_NOT_APPLIED',
+            { recovery_state: prepared.record.state },
+            disposition
+          )
+        : runtime.partial(cmd, {}, 'ACTION_RECOVERY_UNCERTAIN', { recovery_state: prepared.record.state }, 'unknown')
     emitActionResult(cmd, msg, replay)
     return
   }

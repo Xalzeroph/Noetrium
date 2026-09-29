@@ -6,7 +6,6 @@ from enum import StrEnum
 from typing import Protocol, runtime_checkable
 
 from noetrium_platform.capabilities.model.request.api import ModelRequestEnvelope
-from noetrium_platform.substrate.api import ArtifactBlobRef
 from noetrium_platform.capabilities.model.request.api import PromptSelectionPort
 from noetrium_platform.foundation.kernel.kernel import (
     ImmutableModelIdentity,
@@ -56,6 +55,12 @@ class ModelCapabilityRequirement:
     capability_id: str = "generation"
     input_schema_id: str = "model.generation.request.v1"
     output_schema_id: str = "model.generation.response.v1"
+    _digest: str = field(
+        init=False,
+        repr=False,
+        compare=False,
+        metadata={"transient": True},
+    )
 
     def __post_init__(self) -> None:
         _text(self.role, "model requirement role")
@@ -81,64 +86,14 @@ class ModelCapabilityRequirement:
             if not generation:
                 raise ValueError("tool schema identity is only valid for generation capabilities")
             _sha256(self.tool_schema_sha256, "model requirement tool_schema_sha256")
+        object.__setattr__(self, "_digest", canonical_digest(self))
 
     @property
     def is_generation(self) -> bool:
         return self.capability_id in {"generation", "structured-generation"}
 
     def digest(self) -> str:
-        return canonical_digest(self)
-
-
-@dataclass(frozen=True, slots=True)
-class MultimodalContent:
-    role: str
-    content: ArtifactBlobRef
-
-    def __post_init__(self) -> None:
-        _text(self.role, "multimodal content role")
-        if not isinstance(self.content, ArtifactBlobRef):
-            raise TypeError("multimodal content must carry ArtifactBlobRef")
-
-
-@dataclass(frozen=True, slots=True)
-class MultimodalInferenceInput:
-    content: tuple[MultimodalContent, ...]
-    instruction: str | None = None
-    schema_id: str = field(init=False, default="model.multimodal.input.v1")
-
-    def __post_init__(self) -> None:
-        if not isinstance(self.content, tuple) or not self.content:
-            raise TypeError("multimodal input content must be a non-empty tuple")
-        if any(not isinstance(item, MultimodalContent) for item in self.content):
-            raise TypeError("multimodal input must contain typed MultimodalContent values")
-        if self.instruction is not None:
-            _text(self.instruction, "multimodal instruction")
-
-    def digest(self) -> str:
-        return canonical_digest(self)
-
-
-@dataclass(frozen=True, slots=True)
-class MultimodalInferenceOutput:
-    model_revision: str
-    text: str | None = None
-    content: tuple[MultimodalContent, ...] = ()
-    schema_id: str = field(init=False, default="model.multimodal.output.v1")
-
-    def __post_init__(self) -> None:
-        _text(self.model_revision, "multimodal output model_revision")
-        if self.text is not None:
-            _text(self.text, "multimodal output text")
-        if not isinstance(self.content, tuple) or any(
-            not isinstance(item, MultimodalContent) for item in self.content
-        ):
-            raise TypeError("multimodal output content must be typed MultimodalContent values")
-        if self.text is None and not self.content:
-            raise ValueError("multimodal output must contain text or content references")
-
-    def digest(self) -> str:
-        return canonical_digest(self)
+        return self._digest
 
 
 @dataclass(frozen=True, slots=True)
@@ -268,6 +223,12 @@ class ModelProviderProfile:
     provider_id: str
     capabilities: tuple[str, ...]
     schema_version: str = "project-model-provider.v1"
+    _digest: str = field(
+        init=False,
+        repr=False,
+        compare=False,
+        metadata={"transient": True},
+    )
 
     def __post_init__(self) -> None:
         _text(self.provider_id, "model provider_id")
@@ -278,9 +239,10 @@ class ModelProviderProfile:
             "capabilities",
             _tokens(self.capabilities, "model provider capabilities"),
         )
+        object.__setattr__(self, "_digest", canonical_digest(self))
 
     def digest(self) -> str:
-        return canonical_digest(self)
+        return self._digest
 
 
 @dataclass(frozen=True, slots=True)
@@ -295,8 +257,8 @@ class ProjectModelBinding:
     deployment_id: str
     deployment_generation: str
     model_stack_digest: str
-    qualification_certificate_digest: str
-    runtime_qualification_digest: str
+    qualification_certificate_digest: str | None
+    runtime_qualification_digest: str | None
     host_identity_digest: str
     prompt_generation_id: str | None
     prompt_id: str | None
@@ -307,6 +269,12 @@ class ProjectModelBinding:
     capability_id: str = "generation"
     input_schema_id: str = "model.generation.request.v1"
     output_schema_id: str = "model.generation.response.v1"
+    _digest: str = field(
+        init=False,
+        repr=False,
+        compare=False,
+        metadata={"transient": True},
+    )
 
     def __post_init__(self) -> None:
         for field_name in (
@@ -314,11 +282,26 @@ class ProjectModelBinding:
             "provider_profile_digest",
             "deployment_generation",
             "model_stack_digest",
-            "qualification_certificate_digest",
-            "runtime_qualification_digest",
             "host_identity_digest",
         ):
             _sha256(getattr(self, field_name), f"project model binding {field_name}")
+        qualification = (
+            self.qualification_certificate_digest,
+            self.runtime_qualification_digest,
+        )
+        if (qualification[0] is None) != (qualification[1] is None):
+            raise ValueError(
+                "project model binding qualification evidence must be complete or absent"
+            )
+        if qualification[0] is not None:
+            _sha256(
+                qualification[0],
+                "project model binding qualification_certificate_digest",
+            )
+            _sha256(
+                qualification[1],
+                "project model binding runtime_qualification_digest",
+            )
         for field_name in ("provider_id", "role", "deployment_id", "capability_id", "input_schema_id", "output_schema_id"):
             _text(getattr(self, field_name), f"project model binding {field_name}")
         generation = self.capability_id in {"generation", "structured-generation"}
@@ -345,15 +328,33 @@ class ProjectModelBinding:
         )
         if not isinstance(self.runtime_canary_evidence_digests, tuple):
             raise TypeError("project model binding canary evidence must be a tuple")
+        if self.qualification_certificate_digest is None:
+            if self.runtime_canary_evidence_digests:
+                raise ValueError(
+                    "operational model binding cannot carry qualified canary evidence"
+                )
+        elif not self.runtime_canary_evidence_digests:
+            raise ValueError(
+                "qualified model binding requires runtime canary evidence"
+            )
         for digest in self.runtime_canary_evidence_digests:
             _sha256(digest, "project model binding runtime canary evidence digest")
         if len(set(self.runtime_canary_evidence_digests)) != len(
             self.runtime_canary_evidence_digests
         ):
             raise ValueError("project model binding canary evidence must be unique")
+        object.__setattr__(self, "_digest", canonical_digest(self))
+
+    @property
+    def qualified(self) -> bool:
+        return self.qualification_certificate_digest is not None
+
+    @property
+    def authority_kind(self) -> str:
+        return "qualified" if self.qualified else "operational"
 
     def digest(self) -> str:
-        return canonical_digest(self)
+        return self._digest
 
 
 @dataclass(frozen=True, slots=True)
@@ -498,6 +499,7 @@ class ProjectModelRequest:
     requirement_digest: str
     envelope: ModelRequestEnvelope
     body: Mapping[str, JsonInput]
+    schema_id: str = field(init=False, default="model.generation.request.v1")
     request_digest: str = field(init=False)
 
     def __post_init__(self) -> None:
@@ -519,6 +521,8 @@ class ProjectModelRequest:
                 }
             ),
         )
+    def digest(self) -> str:
+        return self.request_digest
 
 
 @dataclass(frozen=True, slots=True)
@@ -535,6 +539,7 @@ class ProjectModelResponse:
     operational_deployment_id: str | None = None
     operational_deployment_generation: str | None = None
     operational_dispatch_digest: str | None = None
+    schema_id: str = field(init=False, default="model.generation.response.v1")
 
     def __post_init__(self) -> None:
         _sha256(self.request_digest, "project model response request_digest")
@@ -570,6 +575,8 @@ class ProjectModelResponse:
                 self.operational_dispatch_digest,
                 "project model response operational_dispatch_digest",
             )
+    def digest(self) -> str:
+        return self.response_digest
 
 
 class ModelBindingDiagnosticSeverity(StrEnum):
@@ -617,26 +624,6 @@ class ModelProjectBindingError(RuntimeError):
         super().__init__("; ".join(row.message for row in diagnostics))
 
 
-@runtime_checkable
-class ProjectModelClientPort(Protocol):
-    @property
-    def binding(self) -> ProjectModelBinding: ...
-
-    def complete(self, request: ProjectModelRequest) -> ProjectModelResponse: ...
-
-
-@runtime_checkable
-class ProjectModelProviderPort(Protocol):
-    @property
-    def profile(self) -> ModelProviderProfile: ...
-
-    def bind(self, requirement: ModelCapabilityRequirement) -> ProjectModelClientPort: ...
-
-    def diagnose(
-        self, requirement: ModelCapabilityRequirement
-    ) -> tuple[ModelBindingDiagnostic, ...]: ...
-
-
 __all__ = [
     "ModelBindingSelectionReceipt",
     "ModelBindingDiagnostic",
@@ -645,15 +632,10 @@ __all__ = [
     "ModelCapabilityRequirement",
     "ModelProjectBindingError",
     "ModelProjectDefinition",
-    "MultimodalInferenceOutput",
-    "MultimodalInferenceInput",
-    "MultimodalContent",
     "ModelRequirementContribution",
     "ModelProviderProfile",
     "ProjectModelBinding",
     "ProjectModelBindingSet",
-    "ProjectModelClientPort",
-    "ProjectModelProviderPort",
     "ProjectModelRequest",
     "ProjectModelResponse",
     "StructuredGenerationInput",

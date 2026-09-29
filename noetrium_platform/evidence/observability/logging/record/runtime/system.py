@@ -23,6 +23,7 @@ from noetrium_platform.evidence.observability.logging.sink.api import LogSinkPor
 from noetrium_platform.evidence.observability.logging.context.api import DiagnosticAddress
 from noetrium_platform.foundation.governance.api import PLATFORM_SCOPE, ScopeIdentity
 from noetrium_platform.foundation.kernel.kernel import JsonValue
+from noetrium_platform.evidence.observability.api import ContextMetricObservation
 from noetrium_platform.evidence.observability.api.emission import operational_observation_enabled
 
 
@@ -131,6 +132,50 @@ class SystemBoundMetricSink:
     def topology_digest(self) -> str:
         return self._systems.topology_digest
 
+    def _bind_dimensions(
+        self,
+        dimensions: tuple[tuple[str, str], ...],
+    ) -> tuple[tuple[str, str], ...]:
+        resolved = dict(dimensions)
+        existing = resolved.get("system")
+        if existing is not None and existing != self.system.key:
+            raise ValueError(
+                f"metric system dimension conflicts with bound system: {existing!r}"
+            )
+        generation = str(self.topology_generation)
+        existing_generation = resolved.get("topology_generation")
+        if existing_generation is not None and existing_generation != generation:
+            raise ValueError(
+                "metric topology_generation conflicts with the bound registry generation"
+            )
+        resolved["system"] = self.system.key
+        resolved["topology_generation"] = generation
+        return tuple(sorted(resolved.items()))
+
+    def observe_many(
+        self,
+        context: object,
+        observations: tuple[ContextMetricObservation, ...],
+    ) -> object:
+        if not operational_observation_enabled() or not observations:
+            return None
+        if type(observations) is not tuple or any(
+            not isinstance(row, ContextMetricObservation)
+            for row in observations
+        ):
+            raise TypeError("system metric observe_many requires ContextMetricObservation tuple")
+        return self._sink.observe_many(
+            context,
+            tuple(
+                ContextMetricObservation(
+                    row.name,
+                    row.value,
+                    self._bind_dimensions(row.dimensions),
+                )
+                for row in observations
+            ),
+        )
+
     def observe(
         self,
         context: object,
@@ -138,22 +183,16 @@ class SystemBoundMetricSink:
         value: float,
         **dimensions: str,
     ) -> object:
-        if not operational_observation_enabled():
-            return None
-        existing = dimensions.get("system")
-        if existing is not None and existing != self.system.key:
-            raise ValueError(
-                f"metric system dimension conflicts with bound system: {existing!r}"
-            )
-        generation = str(self.topology_generation)
-        existing_generation = dimensions.get("topology_generation")
-        if existing_generation is not None and existing_generation != generation:
-            raise ValueError(
-                "metric topology_generation conflicts with the bound registry generation"
-            )
-        dimensions["system"] = self.system.key
-        dimensions["topology_generation"] = generation
-        return self._sink.observe(context, name, value, **dimensions)
+        return self.observe_many(
+            context,
+            (
+                ContextMetricObservation(
+                    name,
+                    value,
+                    tuple(sorted(dimensions.items())),
+                ),
+            ),
+        )
 
 
 class SystemObservationFactory:

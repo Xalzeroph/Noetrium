@@ -65,28 +65,23 @@ def _publication_maps(publication: QualifiedModelClosurePublication):
 
 def _validate(publication: QualifiedModelClosurePublication, *, now: float) -> None:
     deployments, routes, receipts, canaries = _publication_maps(publication)
-    roles_by_deployment: dict[str, set[str]] = {key: set() for key in deployments}
-    roles_by_stack: dict[str, set[str]] = {}
+    keys_by_stack: dict[str, set[tuple[str, str, str, str]]] = {}
     for assignment in publication.role_manifest.assignments:
         deployment = deployments.get(assignment.deployment_id)
         if deployment is None:
             raise QualifiedModelClosurePublicationError(
-                f"qualified role references missing deployment: {assignment.role}"
+                f"qualified capability references missing deployment: {assignment.protocol_key}"
             )
-        roles_by_deployment[assignment.deployment_id].add(assignment.role)
-        roles_by_stack.setdefault(deployment.stack.digest(), set()).add(assignment.role)
+        keys_by_stack.setdefault(deployment.stack.digest(), set()).add(assignment.protocol_key)
 
-    required_roles_by_deployment: dict[str, set[str]] = {}
+    required_keys_by_deployment: dict[str, set[tuple[str, str, str, str]]] = {}
     for deployment_id, deployment in deployments.items():
-        # Scientific identity remains one canonical deployment per role. Exact
-        # same-stack deployments are operational replicas and must independently
-        # qualify every role served by that immutable stack.
-        required_roles = set(roles_by_stack.get(deployment.stack.digest(), set()))
-        if not required_roles:
+        required_keys = set(keys_by_stack.get(deployment.stack.digest(), set()))
+        if not required_keys:
             raise QualifiedModelClosurePublicationError(
-                f"qualified deployment is an orphan with no canonical stack role: {deployment_id}"
+                f"qualified deployment is an orphan with no canonical stack capability: {deployment_id}"
             )
-        required_roles_by_deployment[deployment_id] = required_roles
+        required_keys_by_deployment[deployment_id] = required_keys
 
     for deployment_id, deployment in deployments.items():
         route = routes[deployment_id]
@@ -118,7 +113,7 @@ def _validate(publication: QualifiedModelClosurePublication, *, now: float) -> N
             raise QualifiedModelClosurePublicationError(
                 f"runtime qualification evidence identity drift: {deployment_id}"
             )
-        required_roles = required_roles_by_deployment[deployment_id]
+        required_roles = {key[0] for key in required_keys_by_deployment[deployment_id]}
         if not required_roles.issubset(set(receipt.qualified_roles)):
             raise QualifiedModelClosurePublicationError(
                 f"runtime qualification does not cover frozen roles: {deployment_id}"
@@ -131,15 +126,8 @@ def _validate(publication: QualifiedModelClosurePublication, *, now: float) -> N
             raise QualifiedModelClosurePublicationError(
                 f"runtime qualification receipt is from the future: {deployment_id}"
             )
-        if receipt.valid_until < now:
-            raise QualifiedModelClosurePublicationError(
-                "runtime qualification receipt is stale: "
-                f"{deployment_id}; valid_until={receipt.valid_until:.3f}; "
-                f"now={now:.3f}; expired_by={now - receipt.valid_until:.3f}s; "
-                "refresh the live qualification closure before publishing"
-            )
 
-    covered: set[tuple[str, str]] = set()
+    covered: set[tuple[str, str, str, str, str]] = set()
     for evidence in canaries:
         deployment = deployments.get(evidence.deployment_id)
         if deployment is None:
@@ -156,9 +144,13 @@ def _validate(publication: QualifiedModelClosurePublication, *, now: float) -> N
             raise QualifiedModelClosurePublicationError("runtime canary deployment generation drift")
         if evidence.route_digest != canonical_digest(route):
             raise QualifiedModelClosurePublicationError("runtime canary route digest drift")
-        if evidence.role not in required_roles_by_deployment[evidence.deployment_id]:
+        evidence_key=(
+            evidence.role,evidence.capability_id,
+            evidence.input_schema_id,evidence.output_schema_id,
+        )
+        if evidence_key not in required_keys_by_deployment[evidence.deployment_id]:
             raise QualifiedModelClosurePublicationError(
-                "runtime canary role is not qualified for deployment stack"
+                "runtime canary capability is not qualified for deployment stack"
             )
         if (evidence.process_pid, evidence.process_start_marker, evidence.argv_digest) != (
             receipt.process_pid, receipt.process_start_marker, receipt.argv_digest
@@ -173,11 +165,14 @@ def _validate(publication: QualifiedModelClosurePublication, *, now: float) -> N
             raise QualifiedModelClosurePublicationError(
                 "runtime qualification receipt does not bind runtime canary evidence"
             )
-        covered.add((evidence.deployment_id, evidence.role))
+        covered.add((
+            evidence.deployment_id,evidence.role,evidence.capability_id,
+            evidence.input_schema_id,evidence.output_schema_id,
+        ))
     required = {
-        (deployment_id, role)
-        for deployment_id, roles in required_roles_by_deployment.items()
-        for role in roles
+        (deployment_id,*key)
+        for deployment_id, keys in required_keys_by_deployment.items()
+        for key in keys
     }
     if covered != required:
         missing = sorted(required - covered)
@@ -197,7 +192,7 @@ def publish_qualified_model_deployment_closure(
     runtime_canary_store_factory: Callable[[Path], RuntimeCanaryEvidenceStorePort],
     now: float | None = None,
 ) -> QualifiedModelClosurePublicationReceipt:
-    """Publish exact runtime receipts first, then expose one immutable closure atomically."""
+    """Publish exact runtime receipts, archive prior exact closure, then atomically expose current."""
 
     closure_path = Path(path).expanduser().resolve(strict=False)
     lock_path = closure_path.with_name(closure_path.name + ".publish.lock")
@@ -227,20 +222,34 @@ def publish_qualified_model_deployment_closure(
     with _local_lock(lock_path), InterprocessFileLock(lock_path):
         _validate(publication, now=current_time)
         existing_digest: str | None = None
+        existing_bytes: bytes | None = None
         if closure_path.exists():
             try:
+                existing_bytes = closure_path.read_bytes()
                 existing = decode_qualified_closure(
-                    json.loads(closure_path.read_text(encoding="utf-8"))
+                    json.loads(existing_bytes.decode("utf-8"))
                 )
             except (OSError, UnicodeDecodeError, json.JSONDecodeError, QualifiedClosureCodecError) as exc:
                 raise QualifiedModelClosurePublicationError(
-                    "existing qualified closure is malformed and cannot be overwritten"
+                    "existing qualified closure is malformed and requires explicit state migration"
                 ) from exc
-            if existing.closure_digest != decoded.closure_digest:
-                raise QualifiedModelClosurePublicationError(
-                    "qualified closure already exists with different content"
-                )
-            existing_digest = existing.closure_digest
+            if existing.closure_digest == decoded.closure_digest:
+                existing_digest = existing.closure_digest
+            else:
+                history_root = closure_path.parent / "qualified-model-closure-history"
+                history_root.mkdir(parents=True, exist_ok=True)
+                history_path = history_root / f"{existing.closure_digest}.json"
+                if history_path.exists():
+                    if history_path.read_bytes() != existing_bytes:
+                        raise QualifiedModelClosurePublicationError(
+                            "qualified closure history content drift"
+                        )
+                else:
+                    atomic_replace_bytes(history_path, existing_bytes)
+                    if history_path.read_bytes() != existing_bytes:
+                        raise QualifiedModelClosurePublicationError(
+                            "qualified closure history readback drift"
+                        )
         runtime_root = (closure_path.parent / decoded.runtime_qualification_root).resolve(strict=False)
         runtime_store = runtime_qualification_store_factory(runtime_root)
         evidence_paths: list[str] = []

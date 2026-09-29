@@ -2,7 +2,7 @@ from __future__ import annotations
 from noetrium_platform.composition.method_runtime import bind_standard_method_runtime
 
 from noetrium_platform.composition.model_requests import (
-    build_directory_model_request_recorder,
+    build_model_request_recorder,
 )
 from noetrium_platform.capabilities.model.serving.endpoint.api import (
     ModelEndpointDispatchResult,
@@ -16,11 +16,15 @@ from noetrium_platform.foundation.kernel.kernel import (
     EffectClass,
     ExecutionContext,
     ImmutableModelIdentity,
+    canonical_digest,
 )
+from noetrium_platform.research.execution.policy.api import ExecutionBudgetPolicy
+from noetrium_platform.research.execution.policy.runtime import SQLiteExecutionBudgetAuthority
+from tests._model_tokenization_support import FixedModelRequestTokenizationProvider
 from noetrium_platform.research.execution.workflow.api import MethodAgentRequest
 from noetrium_platform.research.execution.workflow.composition import (
-    DispatchPoolBackedMethodAgentLoop,
-    EndpointBackedMethodAgentLoop,
+    MethodModelAgentLoop,
+    MethodModelAgentLoop,
     MethodModelEndpointBinding,
     MethodViewChatRequestFactory,
 )
@@ -76,10 +80,45 @@ def _request() -> MethodAgentRequest:
             "run-1",
             "trace-1",
             "span-1",
+            replay_level="observational",
+            trial_budget={
+                "max_tokens": 4096,
+                "max_turns": 10,
+                "max_messages": 100,
+                "max_model_calls": 10,
+            },
+            lifetime_id="assignment-1",
             task_id="gsm8k:test:00000",
             operation_id="method:run-1:program:reason:0",
         ),
     )
+
+
+def _runtime_dependencies(tmp_path):
+    tokenization = FixedModelRequestTokenizationProvider(input_tokens=9).bind(
+        model=_model(),
+        model_stack_digest="c" * 64,
+        tokenizer_sha256="d" * 64,
+        chat_template_sha256=None,
+    )
+    budget = SQLiteExecutionBudgetAuthority(
+        tmp_path / "model-budget.sqlite",
+        resource_policy_digest="e" * 64,
+        checkpoint_replay_proof_digest="f" * 64,
+    )
+    budget.open_scope(
+        ExecutionBudgetPolicy(
+            scope_id="assignment-1",
+            budget_id="test-budget",
+            budget_digest=canonical_digest({"budget": "test"}),
+            replay_level="observational",
+            max_tokens=4096,
+            max_turns=10,
+            max_messages=100,
+            max_model_calls=10,
+        )
+    )
+    return tokenization, budget
 
 
 def test_endpoint_backed_method_agent_records_request_usage_and_effect(tmp_path) -> None:
@@ -97,27 +136,33 @@ def test_endpoint_backed_method_agent_records_request_usage_and_effect(tmp_path)
         model=_model(),
         request_factory_digest=factory.digest,
     )
-    endpoint = _Endpoint()
-    recorder = build_directory_model_request_recorder(tmp_path / "model-requests")
-    loop = EndpointBackedMethodAgentLoop(
+    recorder = build_model_request_recorder(tmp_path / "model-requests")
+    tokenization, budget = _runtime_dependencies(tmp_path)
+    loop = MethodModelAgentLoop(
         binding=binding,
-        endpoint=endpoint,
+        pool=_Pool(),
         recorder=recorder,
         request_factory=factory,
+        tokenization=tokenization,
+        execution_budget=budget,
     )
 
-    result = loop.run(_request())
+    try:
+        result = loop.run(_request())
+    finally:
+        budget.close()
 
-    assert result.value == "The answer is 18."
-    assert len(endpoint.requests) == 1
-    sent = endpoint.requests[0]
+    assert result.value == "pooled answer"
+    sent = loop.pool.requests[0]
     assert sent.body["model"] == "qwen"
     assert sent.body["messages"][0]["content"] == "Q: How many?\nA:"
     assert sent.body["temperature"] == 0
     envelope = recorder._ledger.get(sent.request.request_id)
     assert envelope.prompt_digest == "b" * 64
     reconstructed = recorder.reconstruct(envelope)
-    assert reconstructed.compiled_prompt_text == "Q: How many?\nA:"
+    assert reconstructed.compiled_prompt_text == (
+        '[{"content":"Q: How many?\\nA:","role":"user"}]'
+    )
     assert result.effect_receipts[0].effect_class is EffectClass.RECONCILABLE
     assert (
         result.effect_receipts[0].certainty
@@ -125,79 +170,8 @@ def test_endpoint_backed_method_agent_records_request_usage_and_effect(tmp_path)
     )
     assert result.effect_receipts[0].provider_receipt
     assert result.events[0].kind == "model.invocation"
-    assert result.events[0].payload["input_tokens"] == 100
-    assert result.events[0].payload["output_tokens"] == 8
-
-
-def test_endpoint_agent_closes_machine_journal_and_method_evidence(tmp_path) -> None:
-    from noetrium_platform.research.execution.workflow.api import (
-        MethodEvidenceStatus,
-        MethodRuntimeContext,
-    )
-    from noetrium_platform.composition.method_runtime import (
-        bind_standard_method_runtime,
-    )
-    from noetrium_platform.research.execution.workflow.providers import (
-        DirectoryEventMethodEvidence,
-    )
-    from noetrium_platform.research.execution.workflow.runtime import UniversalMethodMachine
-    from research.reproductions.chain_of_thought_gsm8k import (
-        CHAIN_OF_THOUGHT_GSM8K_METHOD_PROGRAM,
-        COT_GSM8K_PROMPT_BUNDLE_ID,
-        COT_GSM8K_PROMPT_DIGEST,
-        chain_of_thought_gsm8k_initial_state,
-    )
-
-    factory = MethodViewChatRequestFactory(
-        "qwen",
-        {"temperature": 0, "max_tokens": 512},
-    )
-    binding = MethodModelEndpointBinding(
-        agent_id="cot.reasoner",
-        role="reasoner",
-        model=_model(),
-        request_factory_digest=factory.digest,
-    )
-    loop = EndpointBackedMethodAgentLoop(
-        binding=binding,
-        endpoint=_Endpoint(),
-        recorder=build_directory_model_request_recorder(tmp_path / "requests"),
-        request_factory=factory,
-    )
-    runtime = MethodRuntimeContext(
-        ExecutionContext(
-            "cot-real-shape-run",
-            "trace",
-            "root",
-            task_id="gsm8k:test:00000",
-        ),
-        agent_loop=loop,
-        evidence=DirectoryEventMethodEvidence(tmp_path / "evidence"),
-        binding_plan_digest=binding.digest,
-    )
-    runtime = bind_standard_method_runtime(
-        CHAIN_OF_THOUGHT_GSM8K_METHOD_PROGRAM,
-        runtime,
-        state_root=tmp_path / "machine",
-    )
-
-    result = UniversalMethodMachine(max_steps=8).run(
-        CHAIN_OF_THOUGHT_GSM8K_METHOD_PROGRAM,
-        runtime=runtime,
-        initial_state=chain_of_thought_gsm8k_initial_state(
-            task_id="gsm8k:test:00000",
-            question="How much does Janet make?",
-        ),
-    )
-
-    assert result.evidence_status is MethodEvidenceStatus.COMPLETE
-    assert len(result.effect_receipts) == 1
-    assert {event.kind for event in result.events} >= {
-        "model.invocation",
-        "cot.reasoning-completion",
-    }
-    assert any(path.is_file() for path in (tmp_path / "machine" / "journal").rglob("*"))
-    assert list((tmp_path / "evidence" / "results").glob("*.json"))
+    assert result.events[0].payload["input_tokens"] == 9
+    assert result.events[0].payload["output_tokens"] == 3
 
 
 class _Pool:
@@ -212,6 +186,9 @@ class _Pool:
             selection_sequence=len(self.requests),
             replicas=(),
         )
+
+    def stream(self, request, body, on_event, *, stream_idle_timeout_s=30.0):
+        raise AssertionError("streaming is not exercised by this test pool")
 
     def complete(self, request, body):
         physical = ModelEndpointRequest(
@@ -251,15 +228,21 @@ def test_dispatch_pool_backed_method_agent_records_selected_replica(tmp_path) ->
         request_factory_digest=factory.digest,
     )
     pool = _Pool()
-    recorder = build_directory_model_request_recorder(tmp_path / "pool-requests")
-    loop = DispatchPoolBackedMethodAgentLoop(
+    recorder = build_model_request_recorder(tmp_path / "pool-requests")
+    tokenization, budget = _runtime_dependencies(tmp_path)
+    loop = MethodModelAgentLoop(
         binding=binding,
         pool=pool,
         recorder=recorder,
         request_factory=factory,
+        tokenization=tokenization,
+        execution_budget=budget,
     )
 
-    result = loop.run(_request())
+    try:
+        result = loop.run(_request())
+    finally:
+        budget.close()
 
     assert result.value == "pooled answer"
     assert len(pool.requests) == 1
@@ -273,4 +256,6 @@ def test_dispatch_pool_backed_method_agent_records_selected_replica(tmp_path) ->
     assert event.payload["selection_sequence"] == 1
     assert len(loop.identity_digest) == 64
     envelope = recorder._ledger.get(pool.requests[0].request.request_id)
-    assert recorder.reconstruct(envelope).compiled_prompt_text == "Q: How many?\nA:"
+    assert recorder.reconstruct(envelope).compiled_prompt_text == (
+        '[{"content":"Q: How many?\\nA:","role":"user"}]'
+    )

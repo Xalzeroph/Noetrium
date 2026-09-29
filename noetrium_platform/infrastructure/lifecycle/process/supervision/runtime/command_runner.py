@@ -8,6 +8,7 @@ import signal
 import subprocess
 from threading import Lock
 from typing import Mapping
+from uuid import uuid4
 
 from noetrium_platform.foundation.kernel.concurrency.api import (
     Deadline,
@@ -62,6 +63,7 @@ class AsyncProcessCommandRunner(ProcessCommandRunnerPort):
         *,
         cleanup_timeout_seconds: float = 2.0,
         default_output_limit_bytes: int = 8 * 1024 * 1024,
+        task_namespace: str | None = None,
     ) -> None:
         if not math.isfinite(float(cleanup_timeout_seconds)) or cleanup_timeout_seconds <= 0:
             raise ValueError("process command cleanup timeout must be finite and positive")
@@ -70,6 +72,10 @@ class AsyncProcessCommandRunner(ProcessCommandRunnerPort):
         self._task_group = task_group
         self._cleanup_timeout_seconds = float(cleanup_timeout_seconds)
         self._default_output_limit_bytes = int(default_output_limit_bytes)
+        namespace = str(task_namespace).strip() if task_namespace is not None else uuid4().hex
+        if not namespace:
+            raise ValueError("process command task namespace required")
+        self._task_namespace = namespace
         # A task deadline must outlive child cleanup so the coroutine can reap
         # the complete process tree before its structured owner becomes terminal.
         self._cleanup_reserve_seconds = (2.0 * self._cleanup_timeout_seconds) + 0.1
@@ -83,7 +89,7 @@ class AsyncProcessCommandRunner(ProcessCommandRunnerPort):
             self._sequence += 1
             sequence = self._sequence
         executable = str(argv[0]).rsplit("/", 1)[-1].rsplit("\\", 1)[-1]
-        return f"process-command:{executable}:{sequence}"
+        return f"process-command:{self._task_namespace}:{executable}:{sequence}"
 
     @staticmethod
     def _signal_process(

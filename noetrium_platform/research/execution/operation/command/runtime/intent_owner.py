@@ -18,6 +18,9 @@ class CommandIntentOwner:
     def durability(self) -> str:
         return self._store.durability
 
+    def close(self) -> None:
+        self._store.close()
+
     def submit(self, command: ExecutionCommand) -> tuple[ExecutionCommand, bool]:
         return self._store.create_or_get(command)
 

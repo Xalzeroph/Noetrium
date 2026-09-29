@@ -32,8 +32,8 @@ from research.reproductions.authority_requirements import (
     compile_materialized_fleet_owner_requirements,
     compile_repository_fleet_prerequisites,
 )
-from research.reproductions.auto_materializer import (
-    build_auto_repository_fleet_authority_materializer,
+from research.reproductions.repository_authority import (
+    build_repository_fleet_authority_materializer,
 )
 from research.reproductions.benchmark_authority import RepositoryBenchmarkAuthority
 from research.reproductions.contracts import ReproductionAssetKind
@@ -492,51 +492,12 @@ def build_plan() -> dict:
 
 
 
-def _load_authority_materializer(
-    spec: str,
-    context: ResearchExecutionContext,
-) -> ReproductionFleetAuthorityMaterializerPort:
-    if type(spec) is not str or not spec.strip() or spec != spec.strip():
-        raise ValueError("fleet authority materializer spec must be canonical text")
-    module_name, separator, qualname = spec.partition(":")
-    if (
-        separator != ":"
-        or not module_name
-        or not qualname
-        or ":" in qualname
-    ):
-        raise ValueError(
-            "fleet authority materializer must use module:factory format"
-        )
-    module = importlib.import_module(module_name)
-    value = module
-    for part in qualname.split("."):
-        if not part or part.startswith("_"):
-            raise ValueError(
-                "fleet authority materializer factory qualname must be public"
-            )
-        value = getattr(value, part)
-    if not callable(value):
-        raise TypeError("fleet authority materializer target must be callable")
-    materializer = value(context)
-    if not isinstance(materializer, ReproductionFleetAuthorityMaterializerPort):
-        raise TypeError(
-            "fleet authority materializer factory must return "
-            "ReproductionFleetAuthorityMaterializerPort"
-        )
-    return materializer
-
-
 def _execution_source(
     args,
     parser,
     context: ResearchExecutionContext,
 ):
-    materializer = (
-        build_auto_repository_fleet_authority_materializer(context)
-        if args.authority_materializer is None
-        else _load_authority_materializer(args.authority_materializer, context)
-    )
+    materializer = build_repository_fleet_authority_materializer(context)
     materialized = materialize_repository_fleet_execution_authorities(
         materializer,
         require_full_closure=False,
@@ -603,14 +564,6 @@ def main() -> int:
         ),
     )
     parser.add_argument(
-        "--authority-materializer",
-        help=(
-            "optional module:factory(context) returning "
-            "ReproductionFleetAuthorityMaterializerPort; omitted uses the "
-            "built-in automatic owner-authority materializer"
-        ),
-    )
-    parser.add_argument(
         "--state-root",
         type=Path,
         default=ROOT / ".noetrium" / "reproduction-fleet",
@@ -630,10 +583,6 @@ def main() -> int:
     authority_inputs = _parse_authority_inputs(args.authority_input, parser)
 
     if args.requirements:
-        if args.authority_materializer is not None:
-            parser.error(
-                "--requirements does not accept an execution authority source"
-            )
         if args.execution_id is not None:
             parser.error("--requirements does not accept --execution-id")
         if authority_inputs:
@@ -920,11 +869,6 @@ def main() -> int:
         print(rendered, end="")
         return 0 if result.receipt.state == "succeeded" else 1
 
-    if args.authority_materializer is not None:
-        parser.error(
-            "authority materializer requires --authority-audit, "
-            "--preflight, or --execute"
-        )
     if args.execution_id is not None:
         parser.error("--execution-id requires --preflight or --execute")
     if authority_inputs:

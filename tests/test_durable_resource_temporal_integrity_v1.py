@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from noetrium_platform.infrastructure.resources.lease.runtime import ResourceLeaseRegistry
+from noetrium_platform.infrastructure.resources.lease.runtime import LocalLeaseClock, ResourceLeaseRegistry
 
 from tests.resource_lease_support import TestResourceLeaseRegistry
 
@@ -150,7 +150,7 @@ def test_endpoint_authorities_reject_non_finite_runtime_budgets() -> None:
             )
     with TemporaryDirectory() as directory:
         path = Path(directory) / "endpoint.sqlite"
-        store = SQLiteEndpointAllocationStore(path)
+        store = SQLiteEndpointAllocationStore(path, clock=LocalLeaseClock())
         request = EndpointAllocationRequest(
             "allocation-a", PLATFORM_SCOPE, "finite endpoint", "127.0.0.1", (25565,)
         )

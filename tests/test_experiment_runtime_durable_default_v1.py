@@ -17,4 +17,3 @@ def test_state_root_wires_durable_experiment_authorities(tmp_path: Path) -> None
     assert isinstance(run_runtime._machine_snapshot_store, DirectoryMachineSnapshotStore)
     assert (tmp_path / "machine-journal").exists()
     assert (tmp_path / "machine-snapshots").exists()
-    assert (tmp_path / "run-checkpoints").exists()

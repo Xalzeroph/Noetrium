@@ -2,8 +2,10 @@ from __future__ import annotations
 
 from typing import Protocol
 
+
 from .contracts import (
     DockerContainerObservation,
+    DockerContainerProcessObservation,
     ManagedDockerContainerLease,
 )
 
@@ -28,6 +30,10 @@ class DockerManagedContainerPort(Protocol):
     def docker_executable(self) -> str: ...
     def assert_expansion_admissible(self) -> None: ...
     def inspect(self, reference: str) -> DockerContainerObservation | None: ...
+    def inspect_process(
+        self,
+        reference: str,
+    ) -> DockerContainerProcessObservation | None: ...
     def list_managed(self) -> tuple[DockerContainerObservation, ...]: ...
     def wait_running(
         self,
@@ -35,7 +41,20 @@ class DockerManagedContainerPort(Protocol):
         *,
         timeout_seconds: float = 10.0,
     ) -> DockerContainerObservation: ...
+    def start(
+        self,
+        reference: str,
+        *,
+        timeout_seconds: float = 10.0,
+    ) -> DockerContainerObservation: ...
+    def stop(
+        self,
+        reference: str,
+        *,
+        timeout_seconds: float = 30.0,
+    ) -> DockerContainerObservation: ...
     def remove(self, reference: str, *, force: bool = True) -> None: ...
+
 
 
 class DockerReconcileStopPort(Protocol):

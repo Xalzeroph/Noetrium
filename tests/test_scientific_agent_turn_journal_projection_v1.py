@@ -114,6 +114,17 @@ def test_projection_fails_closed_when_journaled_domain_fact_digest_is_tampered()
         def get(self, commit_id):
             return next((item for item in commits if item.commit_id == commit_id), None)
 
+        def command_commit(self, machine_id, command_id):
+            if machine_id != "agent-turn:1":
+                return None
+            return next((item for item in commits if item.command_id == command_id), None)
+
+        def has_emitted_commands(self, machine_id):
+            return (
+                machine_id == "agent-turn:1"
+                and any(item.emitted_commands for item in commits)
+            )
+
         def commits(self, machine_id):
             return tuple(commits) if machine_id == "agent-turn:1" else ()
 

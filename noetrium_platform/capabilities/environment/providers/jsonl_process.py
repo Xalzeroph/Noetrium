@@ -1,7 +1,10 @@
 from __future__ import annotations
 
 from collections import deque
+from collections.abc import AsyncIterator
 from dataclasses import dataclass
+import asyncio
+import codecs
 import json
 import os
 import queue
@@ -182,50 +185,102 @@ class JsonlProcessTransport:
             attributes=attributes,
         )
 
-    def _put_stdout(self, item: str | object) -> bool:
+    async def _put_stdout_async(
+        self,
+        context: TaskContextPort,
+        item: str | object,
+    ) -> bool:
         while not self._stdout_stop.is_set():
+            context.checkpoint()
             try:
-                self._stdout_queue.put(item, timeout=0.1)
+                self._stdout_queue.put_nowait(item)
                 return True
             except queue.Full:
-                continue
+                await asyncio.sleep(0.01)
         return False
 
-    def _drain_stdout(self) -> None:
+    async def _stream_lines(
+        self,
+        context: TaskContextPort,
+        stream: TextIO,
+    ) -> AsyncIterator[str]:
+        """Drain one text pipe without occupying a BLOCKING_IO worker.
+
+        Real subprocess pipes are switched to non-blocking descriptor reads and
+        cooperatively multiplexed by the platform ASYNC_IO loop. In-memory test
+        streams have no file descriptor and are already non-blocking.
+        """
+        try:
+            fd = stream.fileno()
+        except (AttributeError, OSError, ValueError):
+            while not self._stdout_stop.is_set():
+                context.checkpoint()
+                line = stream.readline()
+                if line == "":
+                    return
+                yield line
+                await asyncio.sleep(0)
+            return
+
+        was_blocking = os.get_blocking(fd)
+        if was_blocking:
+            os.set_blocking(fd, False)
+        encoding = getattr(stream, "encoding", None) or "utf-8"
+        decoder = codecs.getincrementaldecoder(encoding)(errors="replace")
+        pending = ""
+        try:
+            while not self._stdout_stop.is_set():
+                context.checkpoint()
+                try:
+                    chunk = os.read(fd, 65536)
+                except BlockingIOError:
+                    await asyncio.sleep(0.01)
+                    continue
+                except (OSError, ValueError):
+                    if self._stdout_stop.is_set():
+                        return
+                    raise
+                if not chunk:
+                    pending += decoder.decode(b"", final=True)
+                    if pending:
+                        yield pending
+                    return
+                pending += decoder.decode(chunk)
+                while True:
+                    end = pending.find("\n")
+                    if end < 0:
+                        break
+                    end += 1
+                    line, pending = pending[:end], pending[end:]
+                    yield line
+                await asyncio.sleep(0)
+        finally:
+            if was_blocking and not getattr(stream, "closed", False):
+                try:
+                    os.set_blocking(fd, True)
+                except (OSError, ValueError):
+                    pass
+
+    async def _drain_stdout_task(self, context: TaskContextPort) -> None:
         process = self._process
         if process is None or process.stdout is None:
             return
         try:
-            try:
-                for line in iter(process.stdout.readline, ""):
-                    if not self._put_stdout(line):
-                        return
-            except (OSError, ValueError):
-                if not self._stdout_stop.is_set():
-                    raise
+            async for line in self._stream_lines(context, process.stdout):
+                if not await self._put_stdout_async(context, line):
+                    return
         finally:
-            self._put_stdout(_STDOUT_EOF)
+            try:
+                self._stdout_queue.put_nowait(_STDOUT_EOF)
+            except queue.Full:
+                pass
 
-    def _drain_stderr(self) -> None:
+    async def _drain_stderr_task(self, context: TaskContextPort) -> None:
         process = self._process
         if process is None or process.stderr is None:
             return
-        try:
-            for line in iter(process.stderr.readline, ""):
-                self._stderr_tail.append(line.rstrip("\r\n"))
-        except (OSError, ValueError):
-            if not self._stdout_stop.is_set():
-                raise
-
-    def _drain_stdout_task(self, context: TaskContextPort) -> None:
-        context.checkpoint()
-        self._drain_stdout()
-        context.checkpoint()
-
-    def _drain_stderr_task(self, context: TaskContextPort) -> None:
-        context.checkpoint()
-        self._drain_stderr()
-        context.checkpoint()
+        async for line in self._stream_lines(context, process.stderr):
+            self._stderr_tail.append(line.rstrip("\r\n"))
 
     def start(self) -> None:
         if self._process is not None:
@@ -268,21 +323,25 @@ class JsonlProcessTransport:
                 self._process = self._process_factory(
                     list(self.spec.command), **process_options
                 )
-            self._stdout_task = self._task_group.submit(
-                ExecutionSpec(
-                    task_id=f"{self._task_namespace}:{self._transport_identity}:stdout:{uuid4().hex}",
-                    lane_kind=ExecutionLaneKind.BLOCKING_IO,
-                    failure_scope=TaskFailureScope.CALLER,
-                ),
-                self._drain_stdout_task,
-            )
-            self._stderr_task = self._task_group.submit(
-                ExecutionSpec(
-                    task_id=f"{self._task_namespace}:{self._transport_identity}:stderr:{uuid4().hex}",
-                    lane_kind=ExecutionLaneKind.BLOCKING_IO,
-                    failure_scope=TaskFailureScope.CALLER,
-                ),
-                self._drain_stderr_task,
+            self._stdout_task, self._stderr_task = self._task_group.submit_atomic_batch(
+                (
+                    (
+                        ExecutionSpec(
+                            task_id=f"{self._task_namespace}:{self._transport_identity}:stdout:{uuid4().hex}",
+                            lane_kind=ExecutionLaneKind.ASYNC_IO,
+                            failure_scope=TaskFailureScope.CALLER,
+                        ),
+                        self._drain_stdout_task,
+                    ),
+                    (
+                        ExecutionSpec(
+                            task_id=f"{self._task_namespace}:{self._transport_identity}:stderr:{uuid4().hex}",
+                            lane_kind=ExecutionLaneKind.ASYNC_IO,
+                            failure_scope=TaskFailureScope.CALLER,
+                        ),
+                        self._drain_stderr_task,
+                    ),
+                )
             )
         except BaseException as primary:
             # A physical child may already exist even though transport startup

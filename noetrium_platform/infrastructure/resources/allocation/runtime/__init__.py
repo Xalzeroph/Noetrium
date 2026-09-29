@@ -11,15 +11,3 @@ __all__ = [
     "EndpointAllocationUnavailable",
     "EndpointPhysicalConvergencePending",
 ]
-
-from .lease_heartbeat import (
-    EndpointLeaseHeartbeatError,
-    EndpointLeaseHeartbeatFactory,
-    EndpointLeaseHeartbeatGuard,
-)
-
-__all__ += [
-    "EndpointLeaseHeartbeatError",
-    "EndpointLeaseHeartbeatFactory",
-    "EndpointLeaseHeartbeatGuard",
-]

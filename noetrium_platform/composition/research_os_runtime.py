@@ -2,7 +2,6 @@ from __future__ import annotations
 
 from collections.abc import Mapping
 from dataclasses import asdict, replace
-import hashlib
 from pathlib import Path
 from threading import RLock
 
@@ -35,20 +34,24 @@ from noetrium_platform.research.experimentation.api import (
     ExperimentProgramBinding,
     experiment_report_from_data,
 )
-from noetrium_platform.research.experimentation.lifecycle.api import (
-    RunArtifactKind,
-    RunArtifactSealedError,
-    RunArtifactSnapshotReceipt,
+from noetrium_platform.evidence.artifact.catalog.api import (
+    ArtifactKind,
+    ArtifactRetention,
 )
+from noetrium_platform.evidence.artifact.reference.api import ArtifactReference
+from noetrium_platform.foundation.governance.api import ScopeIdentity, ScopeKind
+from .research_execution_content import ResearchExecutionContentAuthorities
 from noetrium_platform.product.research_os import ResearchValueKind
 from noetrium_platform.research.execution.workflow.api import (
+    MethodObservationPort,
     MethodRunStatus,
+    MethodRuntimeBindingPlan,
     MethodRuntimeContext,
     MethodRuntimePortInventory,
     plan_method_runtime_binding,
 )
 from noetrium_platform.research.execution.workflow.runtime import (
-    UniversalMethodMachine,
+    execute_bound_method_program,
 )
 
 from .research_os_checkpoint import (
@@ -83,7 +86,9 @@ class CanonicalResearchOSRuntimeUnsupported(RuntimeError):
 
 
 class CanonicalResearchOSRuntimeFailure(RuntimeError):
-    pass
+    def __init__(self, message: str, *, failure_id: str | None = None) -> None:
+        self.failure_id = failure_id
+        super().__init__(message)
 
 
 class CanonicalResearchOSNodeRuntime(
@@ -114,6 +119,9 @@ class CanonicalResearchOSNodeRuntime(
         execution_pool: ResearchExecutionPool | None = None,
         experiment_bindings: ResearchOSExperimentRuntimeBindingPort | None = None,
         method_runtime_inventory: MethodRuntimePortInventory | None = None,
+        operation_dispatcher: OperationDispatchPort | None = None,
+        method_observation: MethodObservationPort | None = None,
+        content_authorities: ResearchExecutionContentAuthorities,
         max_steps: int = 10_000,
     ) -> None:
         if not isinstance(state_root, (str, Path)):
@@ -147,6 +155,10 @@ class CanonicalResearchOSNodeRuntime(
             raise TypeError(
                 "canonical Method runtime inventory must be MethodRuntimePortInventory"
             )
+        if type(content_authorities) is not ResearchExecutionContentAuthorities:
+            raise TypeError(
+                "canonical Research OS runtime requires ResearchExecutionContentAuthorities"
+            )
         root.mkdir(parents=True, exist_ok=True)
         self._state_root = root
         self._execution_pool = execution_pool
@@ -157,12 +169,19 @@ class CanonicalResearchOSNodeRuntime(
             else method_runtime_inventory
         )
         self._max_steps = max_steps
+        self._operation_dispatcher = operation_dispatcher
+        self._method_observation = method_observation
+        self._content = content_authorities
         self._machine_journal = DirectoryMachineJournal(root / "program-journal")
         self._method_journal = DirectoryMachineJournal(root / "method-state" / "journal")
         self._method_binder_digest = standard_method_runtime_binder().identity_digest
         self._program_method_runtime_inventories: dict[
             tuple[str, str],
             MethodRuntimePortInventory,
+        ] = {}
+        self._method_runtime_binding_plans: dict[
+            tuple[str, str],
+            MethodRuntimeBindingPlan,
         ] = {}
         self._method_inventory_lock = RLock()
 
@@ -209,6 +228,57 @@ class CanonicalResearchOSNodeRuntime(
                 self._method_runtime_inventory,
             )
 
+    def _method_binding_plan_for(
+        self,
+        program,
+        inventory: MethodRuntimePortInventory,
+    ) -> MethodRuntimeBindingPlan:
+        key = (program.program_digest, inventory.identity_digest)
+        with self._method_inventory_lock:
+            cached = self._method_runtime_binding_plans.get(key)
+            if cached is not None:
+                return cached
+            plan = plan_method_runtime_binding(program, inventory)
+            current = self._method_runtime_binding_plans.get(key)
+            if current is not None:
+                if current.digest != plan.digest:
+                    raise RuntimeError(
+                        "Method runtime binding plan identity drifted for immutable inputs"
+                    )
+                return current
+            self._method_runtime_binding_plans[key] = plan
+            return plan
+
+    @staticmethod
+    def _experiment_admission_binding_digest(
+        lowering: LoweredResearchOSGraphNode,
+        runtime_binding: ResearchOSExperimentRuntimeBinding,
+    ) -> str:
+        closure = lowering.experiment_closure
+        if closure is None:
+            raise CanonicalResearchOSRuntimeUnsupported(
+                "Experimentation target has no canonical experiment closure"
+            )
+        runtime_binding.validate_closure(closure)
+        return canonical_digest(
+            {
+                "runtime": "canonical-research-os-experiment-runtime",
+                "version": 1,
+                "closure_digest": closure.closure_digest,
+                "runtime_binding_digest": runtime_binding.runtime_binding_digest,
+                "experiment_program_digest": (
+                    closure.experiment_program.program.program_digest
+                ),
+                "experiment_batch_plan_digest": (
+                    closure.experiment_program.batch_plan_digest
+                ),
+                "platform_definition_bindings": tuple(
+                    row.binding_digest for row in lowering.platform_bindings
+                ),
+                "journal": "directory-machine-journal",
+            }
+        )
+
     def admit(
         self,
         node: CompiledResearchOSGraphNode,
@@ -243,21 +313,9 @@ class CanonicalResearchOSNodeRuntime(
                 raise TypeError(
                     "experiment runtime binding resolver returned invalid binding"
                 )
-            runtime_binding.validate_closure(closure)
-            binding_digest = canonical_digest(
-                {
-                    "runtime": "canonical-research-os-experiment-runtime",
-                    "version": 1,
-                    "closure_digest": closure.closure_digest,
-                    "runtime_binding_digest": runtime_binding.runtime_binding_digest,
-                    "experiment_program_digest": (
-                        closure.experiment_program.program.program_digest
-                    ),
-                    "experiment_batch_plan_digest": (
-                        closure.experiment_program.batch_plan_digest
-                    ),
-                    "journal": "directory-machine-journal",
-                }
+            binding_digest = self._experiment_admission_binding_digest(
+                lowering,
+                runtime_binding,
             )
             return ResearchOSNodeAdmission(
                 node.graph_node_id,
@@ -280,7 +338,7 @@ class CanonicalResearchOSNodeRuntime(
                 )
             program = lowering.method_programs[0].program
             inventory = self._method_inventory_for(node)
-            binding_plan = plan_method_runtime_binding(
+            binding_plan = self._method_binding_plan_for(
                 program,
                 inventory,
             )
@@ -302,6 +360,9 @@ class CanonicalResearchOSNodeRuntime(
                         inventory.identity_digest
                     ),
                     "method_runtime_binding_plan_digest": binding_plan.digest,
+                    "platform_definition_bindings": tuple(
+                        row.binding_digest for row in lowering.platform_bindings
+                    ),
                     "journal": "directory-machine-journal",
                     "max_steps": self._max_steps,
                 }
@@ -331,6 +392,9 @@ class CanonicalResearchOSNodeRuntime(
                     "target": lowering.target.value,
                     "program_digest": lowered.program.program_digest,
                     "operations_digest": lowered.operations_digest,
+                    "platform_definition_bindings": tuple(
+                        row.binding_digest for row in lowering.platform_bindings
+                    ),
                     "journal": "directory-machine-journal",
                     "max_steps": self._max_steps,
                 }
@@ -372,12 +436,11 @@ class CanonicalResearchOSNodeRuntime(
         admission = self.admit(node, lowering)
         runtime_context = replace(
             context,
-            run_id=execution_cut_id,
             component_id=node.graph_node_id,
         )
         payload: JsonValue = inputs if inputs else None
         machine_id = self._machine_id(
-            execution_cut_id,
+            context.run_id,
             node.graph_node_id,
             lowering.lowering_digest,
         )
@@ -388,6 +451,7 @@ class CanonicalResearchOSNodeRuntime(
                 lowering,
                 admission.runtime_binding_digest,
                 execution_cut_id=execution_cut_id,
+                execution_id=context.run_id,
                 deadline=deadline,
             )
         if lowering.target is ResearchOSLoweringTarget.METHOD_MACHINE:
@@ -411,69 +475,51 @@ class CanonicalResearchOSNodeRuntime(
             "canonical runtime execution target was not admitted"
         )
 
-    @staticmethod
-    def _receipt_json(
-        receipt: RunArtifactSnapshotReceipt,
+    def _artifact_reference_json(
+        self,
+        reference: ArtifactReference,
     ) -> JsonObject:
+        if type(reference) is not ArtifactReference:
+            raise TypeError("Experiment report requires ArtifactReference")
+        record = self._content.artifacts.get(reference.artifact_id)
         return {
-            "run_id": receipt.run_id,
-            "artifact_ref": receipt.artifact_ref,
-            "artifact_kind": receipt.artifact_kind.value,
-            "generation": receipt.generation,
-            "content_sha256": receipt.content_sha256,
-            "byte_size": receipt.byte_size,
-            "record_count": receipt.record_count,
+            "reference_id": reference.reference_id,
+            "scope_kind": reference.scope.kind.value,
+            "scope_id": reference.scope.scope_id,
+            "artifact_id": reference.artifact_id,
+            "generation": reference.generation,
+            "content_sha256": record.digest,
+            "media_type": record.media_type,
+            "artifact_kind": record.kind.value,
+            "retention": record.retention.value,
         }
 
-    @staticmethod
-    def _publish_exact_finalized_json(
-        artifacts,
-        name: str,
-        payload: JsonValue,
+    def _publish_exact_json(
+        self,
         *,
-        kind: RunArtifactKind,
-    ) -> RunArtifactSnapshotReceipt:
+        execution_cut_id: str,
+        reference_id: str,
+        payload: JsonValue,
+        kind: ArtifactKind,
+        metadata: Mapping[str, str],
+    ) -> ArtifactReference:
+        require_sha256(execution_cut_id, "Experiment Artifact execution cut")
         body = canonical_bytes(payload, indent=2) + b"\n"
-        expected_sha = hashlib.sha256(body).hexdigest()
-        expected_size = len(body)
-        try:
-            artifacts.publish_text(
-                name,
-                body.decode("utf-8"),
-                kind=kind,
-            )
-        except RunArtifactSealedError:
-            # Exact-identity recovery only: the immutable sealed artifact must
-            # already contain precisely the bytes this execution intends to publish.
-            receipt = artifacts.finalize(
-                name,
-                kind=kind,
-                record_stream=False,
-            )
-            verified = artifacts.verify_finalized(receipt)
-            if (
-                verified.content_sha256 != expected_sha
-                or verified.byte_size != expected_size
-            ):
-                raise CanonicalResearchOSRuntimeFailure(
-                    "sealed Experiment artifact content drifted during recovery"
-                )
-            return verified
-
-        receipt = artifacts.finalize(
-            name,
+        reference = self._content.publish(
+            reference_id=reference_id,
+            scope=ScopeIdentity(ScopeKind.EXECUTION_CUT, execution_cut_id),
+            payload=body,
+            media_type="application/json",
             kind=kind,
-            record_stream=False,
+            retention=ArtifactRetention.PROJECT,
+            producer_component_id="research-os.experiment-report",
+            metadata=metadata,
         )
-        verified = artifacts.verify_finalized(receipt)
-        if (
-            verified.content_sha256 != expected_sha
-            or verified.byte_size != expected_size
-        ):
+        if self._content.read(reference) != body:
             raise CanonicalResearchOSRuntimeFailure(
-                "Experiment artifact finalization identity drifted"
+                "canonical Artifact authority returned content drift"
             )
-        return verified
+        return reference
 
     def _publish_experiment_report(
         self,
@@ -488,41 +534,45 @@ class CanonicalResearchOSNodeRuntime(
             raise CanonicalResearchOSRuntimeUnsupported(
                 "Experiment report publication has no canonical closure"
             )
-        artifact_binding = runtime_binding.bind_artifacts(
-            closure,
+        runtime_binding.validate_closure(closure)
+        prefix = f"experiment:{closure.closure_digest}"
+        base_metadata = {
+            "closure_digest": closure.closure_digest,
+            "execution_cut_id": execution_cut_id,
+            "research_plan_digest": closure.research_plan.research_plan_digest,
+        }
+        protocol = self._publish_exact_json(
             execution_cut_id=execution_cut_id,
-        )
-        artifacts = artifact_binding.artifacts
-        prefix = f"research-os/experiments/{closure.closure_digest}"
-        protocol = self._publish_exact_finalized_json(
-            artifacts,
-            f"{prefix}/protocol.json",
-            {
+            reference_id=f"{prefix}:protocol",
+            payload={
                 "protocol": asdict(closure.experiment_program.plan.protocol),
                 "assignments": tuple(
                     asdict(row)
                     for row in closure.experiment_program.plan.assignments
                 ),
             },
-            kind=RunArtifactKind.MANIFEST,
+            kind=ArtifactKind.SCIENTIFIC,
+            metadata={**base_metadata, "report_part": "protocol"},
         )
-        observations = self._publish_exact_finalized_json(
-            artifacts,
-            f"{prefix}/observations.json",
-            tuple(asdict(row) for row in report.observations),
-            kind=RunArtifactKind.METRIC,
+        observations = self._publish_exact_json(
+            execution_cut_id=execution_cut_id,
+            reference_id=f"{prefix}:observations",
+            payload=tuple(asdict(row) for row in report.observations),
+            kind=ArtifactKind.REPORT,
+            metadata={**base_metadata, "report_part": "observations"},
         )
-        aggregates = self._publish_exact_finalized_json(
-            artifacts,
-            f"{prefix}/aggregates.json",
-            tuple(asdict(row) for row in report.aggregates),
-            kind=RunArtifactKind.METRIC,
+        aggregates = self._publish_exact_json(
+            execution_cut_id=execution_cut_id,
+            reference_id=f"{prefix}:aggregates",
+            payload=tuple(asdict(row) for row in report.aggregates),
+            kind=ArtifactKind.REPORT,
+            metadata={**base_metadata, "report_part": "aggregates"},
         )
         manifest_payload: JsonObject = {
-            "schema": "research-os.experiment-report-manifest.v2",
+            "schema": "research-os.experiment-report-manifest.v3",
             "closure_digest": closure.closure_digest,
             "execution_cut_id": execution_cut_id,
-            "artifact_store_binding_digest": artifact_binding.binding_digest,
+            "content_authority_digest": self._content.identity_digest,
             "research_plan_digest": closure.research_plan.research_plan_digest,
             "experiment_program_digest": (
                 closure.experiment_program.program.program_digest
@@ -532,22 +582,23 @@ class CanonicalResearchOSNodeRuntime(
             "plan_digest": report.plan_digest,
             "observation_count": len(report.observations),
             "aggregate_count": len(report.aggregates),
-            "protocol_artifact": self._receipt_json(protocol),
-            "observations_artifact": self._receipt_json(observations),
-            "aggregates_artifact": self._receipt_json(aggregates),
+            "protocol_artifact": self._artifact_reference_json(protocol),
+            "observations_artifact": self._artifact_reference_json(observations),
+            "aggregates_artifact": self._artifact_reference_json(aggregates),
         }
-        manifest = self._publish_exact_finalized_json(
-            artifacts,
-            f"{prefix}/report-manifest.json",
-            manifest_payload,
-            kind=RunArtifactKind.MANIFEST,
+        manifest = self._publish_exact_json(
+            execution_cut_id=execution_cut_id,
+            reference_id=f"{prefix}:report-manifest",
+            payload=manifest_payload,
+            kind=ArtifactKind.REPORT,
+            metadata={**base_metadata, "report_part": "manifest"},
         )
         return {
-            "schema": "research-os.experiment-report-ref.v2",
+            "schema": "research-os.experiment-report-ref.v3",
             "closure_digest": closure.closure_digest,
             "execution_cut_id": execution_cut_id,
-            "artifact_store_binding_digest": artifact_binding.binding_digest,
-            "manifest": self._receipt_json(manifest),
+            "content_authority_digest": self._content.identity_digest,
+            "manifest": self._artifact_reference_json(manifest),
         }
 
     def _execute_experiment(
@@ -557,6 +608,7 @@ class CanonicalResearchOSNodeRuntime(
         admission_binding_digest: str,
         *,
         execution_cut_id: str,
+        execution_id: str,
         deadline: Deadline | None,
     ) -> JsonValue:
         closure = lowering.experiment_closure
@@ -573,21 +625,9 @@ class CanonicalResearchOSNodeRuntime(
             raise TypeError(
                 "experiment runtime binding resolver returned invalid binding"
             )
-        runtime_binding.validate_closure(closure)
-        observed_admission = canonical_digest(
-            {
-                "runtime": "canonical-research-os-experiment-runtime",
-                "version": 1,
-                "closure_digest": closure.closure_digest,
-                "runtime_binding_digest": runtime_binding.runtime_binding_digest,
-                "experiment_program_digest": (
-                    closure.experiment_program.program.program_digest
-                ),
-                "experiment_batch_plan_digest": (
-                    closure.experiment_program.batch_plan_digest
-                ),
-                "journal": "directory-machine-journal",
-            }
+        observed_admission = self._experiment_admission_binding_digest(
+            lowering,
+            runtime_binding,
         )
         if observed_admission != admission_binding_digest:
             raise CanonicalResearchOSRuntimeFailure(
@@ -618,7 +658,7 @@ class CanonicalResearchOSNodeRuntime(
                 runtime_binding.adapter,
                 runtime_binding.aggregation,
                 execution_binding_digest=runtime_binding.runtime_binding_digest,
-                execution_id=execution_cut_id,
+                execution_id=execution_id,
                 task_group=group,
             ).execute(
                 journal=self._machine_journal,
@@ -651,6 +691,14 @@ class CanonicalResearchOSNodeRuntime(
             )
 
 
+    def _require_operation_dispatcher(self) -> OperationDispatchPort:
+        dispatcher = self._operation_dispatcher
+        if dispatcher is None:
+            raise CanonicalResearchOSRuntimeUnsupported(
+                "Method execution requires the managed durable Operation authority"
+            )
+        return dispatcher
+
     def _execute_method(
         self,
         context: ExecutionContext,
@@ -662,7 +710,7 @@ class CanonicalResearchOSNodeRuntime(
     ) -> JsonValue:
         program = lowering.method_programs[0].program
         inventory = self._method_inventory_for(node)
-        binding_plan = plan_method_runtime_binding(
+        binding_plan = self._method_binding_plan_for(
             program,
             inventory,
         )
@@ -675,15 +723,15 @@ class CanonicalResearchOSNodeRuntime(
                 agent_loop=inventory.agent_loop,
                 schemas=inventory.schemas,
                 child_machines=inventory.child_machines,
+                dispatcher=self._require_operation_dispatcher(),
+                observation=self._method_observation,
                 binding_plan_digest=binding_plan.digest,
                 runtime_binding_digest=runtime_binding_digest,
             ),
             state_root=self._state_root / "method-state",
             machine_id=machine_id,
         )
-        result = UniversalMethodMachine(
-            max_steps=self._max_steps,
-        ).run(
+        result = execute_bound_method_program(
             program,
             runtime=runtime,
             input_value=payload,
@@ -693,7 +741,8 @@ class CanonicalResearchOSNodeRuntime(
                 "MethodProgram did not reach SUCCEEDED: "
                 f"status={result.status.value} "
                 f"failure_code={result.failure_code!r} "
-                f"failure={result.failure!r}"
+                f"failure={result.failure!r}",
+                failure_id=result.failure_id,
             )
         return result.value
 
@@ -748,6 +797,7 @@ class CanonicalResearchOSNodeRuntime(
         lowering: LoweredResearchOSGraphNode,
         *,
         execution_cut_id: str,
+        attempt_id: str,
     ) -> ResearchOSNodeCheckpointProof:
         if type(node) is not CompiledResearchOSGraphNode:
             raise TypeError("canonical checkpoint requires compiled graph node")
@@ -756,8 +806,13 @@ class CanonicalResearchOSNodeRuntime(
         if lowering.source != node:
             raise ValueError("canonical checkpoint node/lowering identity drifted")
         require_sha256(execution_cut_id, "canonical checkpoint execution_cut_id")
-        machine_id = self._machine_id(
+        execution_attempt_id = self._execution_attempt_id(
             execution_cut_id,
+            node.graph_node_id,
+            attempt_id,
+        )
+        machine_id = self._machine_id(
+            execution_attempt_id,
             node.graph_node_id,
             lowering.lowering_digest,
         )
@@ -815,8 +870,13 @@ class CanonicalResearchOSNodeRuntime(
         if type(attempt_id) is not str or not attempt_id.strip():
             raise ValueError("canonical reconciliation attempt_id is required")
 
-        machine_id = self._machine_id(
+        execution_attempt_id = self._execution_attempt_id(
             execution_cut_id,
+            node.graph_node_id,
+            attempt_id,
+        )
+        machine_id = self._machine_id(
+            execution_attempt_id,
             node.graph_node_id,
             lowering.lowering_digest,
         )
@@ -970,6 +1030,26 @@ class CanonicalResearchOSNodeRuntime(
             return report_ref if node.node.outputs else None
         return program_state.get("previous_value")
 
+
+    @staticmethod
+    def _execution_attempt_id(
+        execution_cut_id: str,
+        graph_node_id: str,
+        attempt_id: str,
+    ) -> str:
+        require_sha256(execution_cut_id, "Research OS execution cut identity")
+        if type(graph_node_id) is not str or not graph_node_id.strip():
+            raise ValueError("Research OS graph_node_id is required")
+        if type(attempt_id) is not str or not attempt_id.strip():
+            raise ValueError("Research OS attempt_id is required")
+        return canonical_digest(
+            {
+                "schema": "noetrium.research-node-attempt.v1",
+                "execution_cut_id": execution_cut_id,
+                "graph_node_id": graph_node_id,
+                "attempt_id": attempt_id,
+            }
+        )
 
     @staticmethod
     def _machine_id(

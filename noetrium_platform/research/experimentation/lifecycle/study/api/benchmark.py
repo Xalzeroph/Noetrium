@@ -144,6 +144,7 @@ class TaskDefinition:
     family: str
     schema_id: str
     content_digest: str
+    content: JsonObject | None = None
     content_reference: ArtifactReference | None = None
     lineage_refs: tuple[str, ...] = ()
     package: TaskPackageSpec | None = None
@@ -153,6 +154,13 @@ class TaskDefinition:
         for name, value in (("task_id", self.task_id), ("revision_id", self.revision_id), ("family", self.family), ("schema_id", self.schema_id)):
             _text(value, f"task definition {name}")
         _sha(self.content_digest, "task definition content_digest")
+        if self.content is not None:
+            if not isinstance(self.content, Mapping):
+                raise TypeError("task definition content must be a JSON object or None")
+            frozen_content = freeze_json(self.content)
+            if canonical_digest(frozen_content) != self.content_digest:
+                raise ValueError("task definition inline content digest mismatch")
+            object.__setattr__(self, "content", frozen_content)
         if self.content_reference is not None and type(self.content_reference) is not ArtifactReference:
             raise TypeError("task definition content_reference must be ArtifactReference or None")
         _ids(self.lineage_refs, "task definition lineage_refs", allow_empty=True)

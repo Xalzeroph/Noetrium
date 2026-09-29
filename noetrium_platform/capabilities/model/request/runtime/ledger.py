@@ -1,9 +1,6 @@
 from __future__ import annotations
 
-import hashlib
 import json
-from contextlib import contextmanager
-from dataclasses import asdict
 from pathlib import Path
 
 from noetrium_platform.capabilities.model._persisted import (
@@ -14,62 +11,69 @@ from noetrium_platform.capabilities.model._persisted import (
     text_pairs,
     text_tuple,
 )
-from noetrium_platform.capabilities.model.request.api import ModelRequestEnvelope
+from noetrium_platform.capabilities.model.request.api import (
+    ModelEndpointEnvelope, ModelOperationEnvelope, ModelRequestEnvelope,
+)
 from noetrium_platform.substrate.api import ArtifactBlobRef
-from noetrium_platform.foundation.kernel.kernel import ExecutionContext, ImmutableModelIdentity
-from noetrium_platform.foundation.kernel.kernel.durability.durable_file import atomic_replace_bytes
-from noetrium_platform.foundation.kernel.kernel.durability.file_lock import InterprocessFileLock
+from noetrium_platform.foundation.kernel.kernel import (
+    DurableSQLiteWriterOwner,
+    ExecutionContext,
+    ImmutableModelIdentity,
+    canonical_bytes,
+    execution_context_from_payload,
+    immediate_sqlite_transaction,
+)
 
 
-_ENVELOPE_FIELDS = frozenset({
+_REQUEST_ENVELOPE_FIELDS = frozenset({
     "schema_version", "request_id", "context", "role", "model", "prompt_generation_id",
     "prompt_id", "prompt_digest", "request_body", "compiled_prompt", "tool_schema_bundle",
     "source_artifact_refs", "source_state_refs", "envelope_digest",
 })
-_CONTENT_REF_FIELDS = frozenset({"content_sha256", "size_bytes", "media_type"})
-_CONTEXT_FIELDS = frozenset({
-    "run_id", "trace_id", "span_id", "parent_span_id", "study_id", "condition_id",
-    "condition_selections", "lifetime_id", "branch_id", "task_id", "decision_cycle_id", "checkpoint_id",
-    "operation_id", "component_id", "participant_generations", "platform_generation",
+
+_OPERATION_ENVELOPE_FIELDS = frozenset({
+    "schema_version", "request_id", "context", "role", "model", "capability_id",
+    "input_schema_id", "output_schema_id", "request_body",
+    "source_artifact_refs", "source_state_refs", "envelope_digest",
 })
+_CONTENT_REF_FIELDS = frozenset({"content_sha256", "size_bytes", "media_type"})
 _MODEL_FIELDS = frozenset({
     "logical_name", "model_id", "revision", "engine", "engine_version", "dtype",
     "quantization", "context_length", "tokenizer_revision",
 })
 
 
-@contextmanager
-def _exclusive_lock(path: Path):
-    """Hold the platform-owned cross-process lock without duplicate OS code."""
-
-    with InterprocessFileLock(path, blocking=True):
-        yield
-
-
-class DirectoryModelRequestLedger:
-    """Append-only-by-identity request ledger: request_id may bind exactly one envelope."""
+class SQLiteModelRequestLedger:
+    """Crash-durable append-only model request ledger backed by SQLite WAL."""
 
     durability = "crash_durable"
+    _BUSY_TIMEOUT_MS = 30_000
 
-    def __init__(self, root: Path) -> None:
-        self.root = Path(root)
-        self.root.mkdir(parents=True, exist_ok=True)
+    def __init__(self, path: str | Path) -> None:
+        self.path = Path(path)
+        self.path.parent.mkdir(parents=True, exist_ok=True)
+        self._writer = DurableSQLiteWriterOwner(
+            self.path,
+            timeout_seconds=self._BUSY_TIMEOUT_MS / 1000.0,
+        )
+        with self._writer.session() as connection:
+            connection.execute(
+                """
+                CREATE TABLE IF NOT EXISTS model_requests (
+                    request_id TEXT PRIMARY KEY NOT NULL,
+                    envelope_digest TEXT NOT NULL,
+                    payload BLOB NOT NULL
+                ) WITHOUT ROWID
+                """
+            )
+            connection.execute(
+                "CREATE INDEX IF NOT EXISTS model_requests_envelope_digest "
+                "ON model_requests(envelope_digest)"
+            )
 
     @staticmethod
-    def _safe(request_id: str) -> str:
-        return hashlib.sha256(request_id.encode("utf-8")).hexdigest()
-
-    def _path(self, request_id: str) -> Path:
-        return self.root / f"{self._safe(request_id)}.json"
-
-    def _lock_path(self, request_id: str) -> Path:
-        return self.root / f"{self._safe(request_id)}.lock"
-
-    @staticmethod
-    def _encode(envelope: ModelRequestEnvelope) -> bytes:
-        return json.dumps(
-            asdict(envelope), sort_keys=True, ensure_ascii=False, separators=(",", ":")
-        ).encode("utf-8")
+    def _encode(envelope: ModelEndpointEnvelope) -> bytes:
+        return canonical_bytes(envelope)
 
     @staticmethod
     def _ref(value: object, *, field: str) -> ArtifactBlobRef:
@@ -88,31 +92,7 @@ class DirectoryModelRequestLedger:
 
     @staticmethod
     def _context(value: object) -> ExecutionContext:
-        data = exact_fields(value, field="model request context", fields=_CONTEXT_FIELDS)
-        return ExecutionContext(
-            run_id=text(data["run_id"], field="context.run_id", allow_empty=False),
-            trace_id=text(data["trace_id"], field="context.trace_id", allow_empty=False),
-            span_id=text(data["span_id"], field="context.span_id", allow_empty=False),
-            parent_span_id=optional_text(data["parent_span_id"], field="context.parent_span_id"),
-            study_id=optional_text(data["study_id"], field="context.study_id"),
-            condition_id=optional_text(data["condition_id"], field="context.condition_id"),
-            condition_selections=text_pairs(
-                data["condition_selections"], field="context.condition_selections"
-            ),
-            lifetime_id=optional_text(data["lifetime_id"], field="context.lifetime_id"),
-            branch_id=optional_text(data["branch_id"], field="context.branch_id"),
-            task_id=optional_text(data["task_id"], field="context.task_id"),
-            decision_cycle_id=optional_text(data["decision_cycle_id"], field="context.decision_cycle_id"),
-            checkpoint_id=optional_text(data["checkpoint_id"], field="context.checkpoint_id"),
-            operation_id=optional_text(data["operation_id"], field="context.operation_id"),
-            component_id=optional_text(data["component_id"], field="context.component_id"),
-            participant_generations=text_pairs(
-                data["participant_generations"], field="context.participant_generations"
-            ),
-            platform_generation=optional_text(
-                data["platform_generation"], field="context.platform_generation"
-            ),
-        )
+        return execution_context_from_payload(value)  # type: ignore[arg-type]
 
     @staticmethod
     def _model(value: object) -> ImmutableModelIdentity:
@@ -132,55 +112,194 @@ class DirectoryModelRequestLedger:
         )
 
     @classmethod
-    def _decode(cls, payload: bytes) -> ModelRequestEnvelope:
-        data = exact_fields(
-            json.loads(payload), field="model request envelope", fields=_ENVELOPE_FIELDS
-        )
-        return ModelRequestEnvelope(
-            schema_version=text(data["schema_version"], field="schema_version", allow_empty=False),
-            request_id=text(data["request_id"], field="request_id", allow_empty=False),
-            context=cls._context(data["context"]),
-            role=text(data["role"], field="role", allow_empty=False),
-            model=cls._model(data["model"]),
-            prompt_generation_id=text(
-                data["prompt_generation_id"], field="prompt_generation_id", allow_empty=False
-            ),
-            prompt_id=text(data["prompt_id"], field="prompt_id", allow_empty=False),
-            prompt_digest=text(data["prompt_digest"], field="prompt_digest", allow_empty=False),
-            request_body=cls._ref(data["request_body"], field="request_body"),
-            compiled_prompt=cls._optional_ref(
-                data["compiled_prompt"], field="compiled_prompt"
-            ),
-            tool_schema_bundle=cls._optional_ref(
-                data["tool_schema_bundle"], field="tool_schema_bundle"
-            ),
-            source_artifact_refs=text_tuple(
-                data["source_artifact_refs"], field="source_artifact_refs"
-            ),
-            source_state_refs=text_tuple(data["source_state_refs"], field="source_state_refs"),
-            envelope_digest=text(
-                data["envelope_digest"], field="envelope_digest", allow_empty=False
-            ),
-        )
+    def _decode(cls, payload: bytes) -> ModelEndpointEnvelope:
+        raw = json.loads(payload)
+        if not isinstance(raw, dict):
+            raise ValueError("model invocation envelope must be an object")
+        schema = raw.get("schema_version")
+        if schema in {"model-request.v1", "runtime-canary-request.v1"}:
+            data = exact_fields(
+                raw,
+                field="model request envelope",
+                fields=_REQUEST_ENVELOPE_FIELDS,
+            )
+            return ModelRequestEnvelope(
+                schema_version=text(
+                    data["schema_version"],
+                    field="schema_version",
+                    allow_empty=False,
+                ),
+                request_id=text(
+                    data["request_id"],
+                    field="request_id",
+                    allow_empty=False,
+                ),
+                context=cls._context(data["context"]),
+                role=text(data["role"], field="role", allow_empty=False),
+                model=cls._model(data["model"]),
+                prompt_generation_id=text(
+                    data["prompt_generation_id"],
+                    field="prompt_generation_id",
+                    allow_empty=False,
+                ),
+                prompt_id=text(
+                    data["prompt_id"],
+                    field="prompt_id",
+                    allow_empty=False,
+                ),
+                prompt_digest=text(
+                    data["prompt_digest"],
+                    field="prompt_digest",
+                    allow_empty=False,
+                ),
+                request_body=cls._ref(
+                    data["request_body"], field="request_body"
+                ),
+                compiled_prompt=cls._optional_ref(
+                    data["compiled_prompt"], field="compiled_prompt"
+                ),
+                tool_schema_bundle=cls._optional_ref(
+                    data["tool_schema_bundle"],
+                    field="tool_schema_bundle",
+                ),
+                source_artifact_refs=text_tuple(
+                    data["source_artifact_refs"],
+                    field="source_artifact_refs",
+                ),
+                source_state_refs=text_tuple(
+                    data["source_state_refs"],
+                    field="source_state_refs",
+                ),
+                envelope_digest=text(
+                    data["envelope_digest"],
+                    field="envelope_digest",
+                    allow_empty=False,
+                ),
+            )
+        if schema in {"model-operation.v1", "runtime-canary-operation.v1"}:
+            data = exact_fields(
+                raw,
+                field="model operation envelope",
+                fields=_OPERATION_ENVELOPE_FIELDS,
+            )
+            return ModelOperationEnvelope(
+                schema_version=text(
+                    data["schema_version"],
+                    field="schema_version",
+                    allow_empty=False,
+                ),
+                request_id=text(
+                    data["request_id"],
+                    field="request_id",
+                    allow_empty=False,
+                ),
+                context=cls._context(data["context"]),
+                role=text(data["role"], field="role", allow_empty=False),
+                model=cls._model(data["model"]),
+                capability_id=text(
+                    data["capability_id"],
+                    field="capability_id",
+                    allow_empty=False,
+                ),
+                input_schema_id=text(
+                    data["input_schema_id"],
+                    field="input_schema_id",
+                    allow_empty=False,
+                ),
+                output_schema_id=text(
+                    data["output_schema_id"],
+                    field="output_schema_id",
+                    allow_empty=False,
+                ),
+                request_body=cls._ref(
+                    data["request_body"], field="request_body"
+                ),
+                source_artifact_refs=text_tuple(
+                    data["source_artifact_refs"],
+                    field="source_artifact_refs",
+                ),
+                source_state_refs=text_tuple(
+                    data["source_state_refs"],
+                    field="source_state_refs",
+                ),
+                envelope_digest=text(
+                    data["envelope_digest"],
+                    field="envelope_digest",
+                    allow_empty=False,
+                ),
+            )
+        raise ValueError(f"unsupported model invocation schema_version: {schema!r}")
 
-    def append(self, envelope: ModelRequestEnvelope) -> None:
-        path = self._path(envelope.request_id)
+    def append(self, envelope: ModelEndpointEnvelope) -> None:
+        if not isinstance(
+            envelope,
+            (ModelRequestEnvelope, ModelOperationEnvelope),
+        ):
+            raise TypeError(
+                "model invocation ledger requires request/operation envelope"
+            )
         encoded = self._encode(envelope)
-        lock_path = self._lock_path(envelope.request_id)
-        lock_path.parent.mkdir(parents=True, exist_ok=True)
-        with _exclusive_lock(lock_path):
-            if path.exists():
-                current = self._decode(path.read_bytes())
-                if current != envelope:
-                    raise RuntimeError("model request id is already bound to a different envelope")
-                return
-            atomic_replace_bytes(path, encoded)
+        request_id = envelope.request_id
+        envelope_digest = envelope.envelope_digest
 
-    def get(self, request_id: str) -> ModelRequestEnvelope:
-        envelope = self._decode(self._path(request_id).read_bytes())
+        with self._writer.session() as connection:
+            row = connection.execute(
+                "SELECT envelope_digest, payload FROM model_requests "
+                "WHERE request_id = ?",
+                (request_id,),
+            ).fetchone()
+            if row is not None:
+                current = self._decode(bytes(row[1]))
+                if row[0] != envelope_digest or current != envelope:
+                    raise RuntimeError(
+                        "model request id is already bound to a different envelope"
+                    )
+                return
+
+            with immediate_sqlite_transaction(
+                connection,
+                timeout_seconds=self._BUSY_TIMEOUT_MS / 1000.0,
+                label="model request ledger append",
+            ):
+                row = connection.execute(
+                    "SELECT envelope_digest, payload FROM model_requests "
+                    "WHERE request_id = ?",
+                    (request_id,),
+                ).fetchone()
+                if row is not None:
+                    current = self._decode(bytes(row[1]))
+                    if row[0] != envelope_digest or current != envelope:
+                        raise RuntimeError(
+                            "model request id is already bound to a different envelope"
+                        )
+                else:
+                    connection.execute(
+                        "INSERT INTO model_requests"
+                        "(request_id, envelope_digest, payload) VALUES (?, ?, ?)",
+                        (request_id, envelope_digest, encoded),
+                    )
+
+    def get(self, request_id: str) -> ModelEndpointEnvelope:
+        if type(request_id) is not str or not request_id:
+            raise ValueError("model request ledger request_id is required")
+        with self._writer.session() as connection:
+            row = connection.execute(
+                "SELECT envelope_digest, payload FROM model_requests "
+                "WHERE request_id = ?",
+                (request_id,),
+            ).fetchone()
+        if row is None:
+            raise KeyError(f"model request ledger has no request: {request_id}")
+        envelope = self._decode(bytes(row[1]))
         if envelope.request_id != request_id:
             raise RuntimeError("model request lookup identity mismatch")
+        if envelope.envelope_digest != row[0]:
+            raise RuntimeError("model request ledger indexed digest drift")
         return envelope
 
+    def close(self) -> None:
+        self._writer.close()
 
-__all__ = ["DirectoryModelRequestLedger"]
+
+
+__all__ = ["SQLiteModelRequestLedger"]

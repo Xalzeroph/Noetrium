@@ -2,6 +2,8 @@ from __future__ import annotations
 
 import pytest
 
+from noetrium_platform.composition.method_runtime import bind_standard_method_runtime
+
 from noetrium_platform.capabilities.participant.api import (
     MethodProjectDefinition,
     ParticipantRequirement,
@@ -20,14 +22,17 @@ from noetrium_platform.capabilities.participant.method.api import (
     MethodProgramIdentityMismatch,
     MethodRuntimeIdentity,
 )
-from noetrium_platform.foundation.kernel.kernel import ExecutionContext
+from noetrium_platform.foundation.kernel.kernel import ExecutionContext, OperationExecutor
 from noetrium_platform.research.execution.workflow.api import (
     MethodNodeResult,
     MethodProgram,
     MethodProgramBuilder,
     MethodRuntimeContext,
 )
-from noetrium_platform.research.execution.workflow.runtime import UniversalMethodMachine
+from noetrium_platform.research.execution.workflow.runtime import (
+    KernelOperationDispatcher,
+    execute_bound_method_program,
+)
 
 
 def _identity(configuration_digest: str = "b" * 64) -> MethodProgramIdentity:
@@ -81,13 +86,21 @@ def _participant_binding(configuration_digest: str = "b" * 64) -> ParticipantRun
     )
 
 
-def test_downstream_method_authors_target_method_program_directly() -> None:
+def test_downstream_method_authors_target_method_program_directly(tmp_path) -> None:
     program = _program()
 
     assert type(program) is MethodProgram
-    result = UniversalMethodMachine().run(
+    runtime = bind_standard_method_runtime(
         program,
-        runtime=MethodRuntimeContext(ExecutionContext("run-1", "trace-1", "span-1")),
+        MethodRuntimeContext(
+            ExecutionContext("run-1", "trace-1", "span-1"),
+            dispatcher=KernelOperationDispatcher(OperationExecutor()),
+        ),
+        state_root=tmp_path / "method-state",
+    )
+    result = execute_bound_method_program(
+        program,
+        runtime=runtime,
         input_value={
             "task_id": "task-7",
             "threshold": 0.5,

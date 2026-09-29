@@ -1,12 +1,11 @@
 from __future__ import annotations
 
-from contextlib import closing
 import sqlite3
 from pathlib import Path
 
 from noetrium_platform.foundation.kernel.kernel.durability.sqlite import (
+    DurableSQLiteWriterOwner,
     immediate_sqlite_transaction,
-    open_durable_sqlite_writer,
 )
 from noetrium_platform.research.execution.operation.command.api import (
     CommandConflict,
@@ -23,20 +22,25 @@ class SQLiteCommandStore:
     def __init__(self, path: str | Path) -> None:
         self._path = Path(path)
         self._path.parent.mkdir(parents=True, exist_ok=True)
+        self._connections = DurableSQLiteWriterOwner(
+            self._path,
+            timeout_seconds=30.0,
+        )
         self._initialize()
 
     @property
     def durability(self) -> str:
         return "sqlite-wal"
 
-    def _connect(self) -> sqlite3.Connection:
-        return open_durable_sqlite_writer(
-            self._path,
-            timeout_seconds=30.0,
-        )
+    @property
+    def connection_open_count(self) -> int:
+        return self._connections.open_count
+
+    def close(self) -> None:
+        self._connections.close()
 
     def _initialize(self) -> None:
-        with closing(self._connect()) as db:
+        with self._connections.session() as db:
             with immediate_sqlite_transaction(
                 db,
                 timeout_seconds=30.0,
@@ -103,13 +107,20 @@ class SQLiteCommandStore:
 
     @staticmethod
     def _same(existing: ExecutionCommand, command: ExecutionCommand) -> bool:
-        return existing == command
+        return (
+            existing.command_id == command.command_id
+            and existing.command_type == command.command_type
+            and existing.payload_schema == command.payload_schema
+            and existing.payload_digest == command.payload_digest
+            and existing.deduplication_key == command.deduplication_key
+            and existing.deadline_unix == command.deadline_unix
+        )
 
     def create_or_get(
         self,
         command: ExecutionCommand,
     ) -> tuple[ExecutionCommand, bool]:
-        with closing(self._connect()) as db:
+        with self._connections.session() as db:
             try:
                 with immediate_sqlite_transaction(
                     db,
@@ -152,7 +163,7 @@ class SQLiteCommandStore:
                 ) from exc
 
     def load(self, command_id: CommandId) -> ExecutionCommand | None:
-        with closing(self._connect()) as db, db:
+        with self._connections.session() as db:
             row = db.execute(
                 "SELECT * FROM commands WHERE command_id=?", (command_id.value,)
             ).fetchone()
@@ -161,7 +172,7 @@ class SQLiteCommandStore:
     def load_by_deduplication_key(
         self, key: CommandDeduplicationKey
     ) -> ExecutionCommand | None:
-        with closing(self._connect()) as db, db:
+        with self._connections.session() as db:
             row = db.execute(
                 "SELECT * FROM commands WHERE deduplication_key=?", (key.value,)
             ).fetchone()

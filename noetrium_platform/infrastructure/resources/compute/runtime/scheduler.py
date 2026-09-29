@@ -24,12 +24,13 @@ from noetrium_platform.foundation.kernel.kernel.durability.sqlite import (
     rollback_sqlite_writer,
 )
 from noetrium_platform.infrastructure.resources.sqlite_resource import (
+    acquire_resource_lease,
     authoritative_lease_now,
+    ensure_resource_owner,
     ensure_resource_schema,
-)
-from noetrium_platform.infrastructure.resources.lease.runtime.operations import (
-    acquire_resource_lease, ensure_resource_owner, reconcile_expired_resource_leases,
-    release_resource_lease, renew_resource_lease,
+    reconcile_expired_resource_leases,
+    release_resource_lease,
+    renew_resource_lease,
 )
 
 
@@ -913,7 +914,6 @@ class ComputeScheduler:
                             host_runtime_snapshot,
                         )
                         if without_quarantine:
-                            conn.rollback()
                             raise ComputePhysicalConvergencePending(
                                 blocking_pending
                             )
@@ -966,7 +966,12 @@ class ComputeScheduler:
                 )
                 conn.commit()
                 return allocation
-            except ComputePhysicalConvergencePending:
+            except ComputePhysicalConvergencePending as primary:
+                rollback_sqlite_writer(
+                    conn,
+                    primary,
+                    label="compute scheduler pending convergence",
+                )
                 raise
             except BaseException as primary:
                 rollback_sqlite_writer(

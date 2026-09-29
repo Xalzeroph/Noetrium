@@ -86,6 +86,11 @@ class ResearchMethodCall:
     trace_id: str
     condition_id: str | None
     condition_selections: tuple[tuple[str, str], ...]
+    intervention_values: tuple[tuple[str, JsonValue], ...]
+    assignment_seed: str | None
+    participant_context: Mapping[str, JsonValue]
+    replay_level: str | None
+    trial_budget: Mapping[str, JsonValue]
     lifetime_id: str | None
     checkpoint: JsonValue
     _request: MethodNodeRequest = field(repr=False, compare=False)
@@ -102,6 +107,11 @@ class ResearchMethodCall:
             trace_id=request.context.trace_id,
             condition_id=request.context.condition_id,
             condition_selections=request.context.condition_selections,
+            intervention_values=request.context.intervention_values,
+            assignment_seed=request.context.assignment_seed,
+            participant_context=request.context.participant_context,
+            replay_level=request.context.replay_level,
+            trial_budget=request.context.trial_budget,
             lifetime_id=request.context.lifetime_id,
             checkpoint=request.checkpoint,
             _request=request,
@@ -113,6 +123,25 @@ class ResearchMethodCall:
         payload: JsonInput,
     ) -> dict[str, JsonInput]:
         return environment_action_capability_payload(action_type, payload)
+
+    def describe_capability(self, capability_id: str) -> dict[str, JsonValue]:
+        if not isinstance(capability_id, str) or not capability_id.strip():
+            raise ValueError("research method capability_id must be non-empty")
+        capabilities = self._request.capabilities
+        if capabilities is None:
+            raise RuntimeError(
+                "research method describe_capability() requires capability runtime"
+            )
+        descriptor = capabilities.describe(capability_id)
+        return {
+            "capability_id": descriptor.capability_id,
+            "interface_version": descriptor.interface_version,
+            "request_schema": descriptor.request_schema,
+            "result_schema": descriptor.result_schema,
+            "effect_class": descriptor.effect_class.value,
+            "deterministic": descriptor.deterministic,
+            "metadata": descriptor.metadata,
+        }
 
     def event(self, kind: str, payload: JsonInput = None) -> "ResearchEvent":
         return ResearchEvent(kind, payload)

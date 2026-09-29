@@ -239,14 +239,17 @@ def compile_research_portfolio_graph(
         )
         for ref in ordered_refs
     }
-    program_child_definition_digests = {
+    program_auxiliary_definition_digests = {
         program.program_id: tuple(
             definition.definition_digest
             for definition in sorted(
                 (
                     definition
                     for definition in program.definitions
-                    if definition.kind is ResearchDefinitionKind.CHILD_MACHINE
+                    if definition.kind in {
+                        ResearchDefinitionKind.CHILD_MACHINE,
+                        ResearchDefinitionKind.VERIFIER,
+                    }
                 ),
                 key=lambda definition: definition.definition_id,
             )
@@ -269,8 +272,8 @@ def compile_research_portfolio_graph(
                     definition.definition_digest
                     for definition in node_definitions
                 ),
-                "program_child_machine_definition_digests": (
-                    program_child_definition_digests[ref.program_id]
+                "program_auxiliary_definition_digests": (
+                    program_auxiliary_definition_digests[ref.program_id]
                 ),
                 "incoming": tuple(
                     {
@@ -384,8 +387,8 @@ def bind_research_portfolio_scheduler(
     tenant_id: str | None = None,
     priority: ExecutionPriority = ExecutionPriority.NORMAL,
     task_group_id: str | None = None,
-    execution_store: ResearchGraphExecutionStorePort | None = None,
-    execution_id: str | None = None,
+    execution_store: ResearchGraphExecutionStorePort,
+    execution_id: str,
     lease_seconds: float = 30.0,
     scheduler_owner_id: str | None = None,
     selected_node_ids: tuple[str, ...] | None = None,

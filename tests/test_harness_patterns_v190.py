@@ -11,7 +11,6 @@ import unittest
 
 from noetrium_platform.capabilities.participant.capability.api import (
     CapabilityDescriptor,
-    CapabilityPolicySet,
     CapabilityRequest,
     CapabilityResult,
     GuardDecision,
@@ -20,9 +19,9 @@ from noetrium_platform.capabilities.participant.capability.api import (
 from noetrium_platform.research.execution.capability.runtime import CapabilityInvocationPipelineFactory
 from noetrium_platform.research.execution.machines import (
     CapabilityMediationDenied,
+    CapabilityProgramBuilder,
     CapabilityRuntimeBinding,
     capability_mediator_binding_digest,
-    capability_program_from_policy,
 )
 from noetrium_platform.evidence.data.fact.api import DurableFact, FactCriticality, UnknownRequiredFact
 from noetrium_platform.evidence.observability.api import EventEnvelope
@@ -31,7 +30,7 @@ from noetrium_platform.evidence.data.fact.runtime import FactDecoderRegistry
 from noetrium_platform.foundation.kernel.kernel import InMemoryMachineJournal, canonical_bytes, EffectClass, ExecutionContext, ImmutableModelIdentity, canonical_digest
 from noetrium_platform.evidence.artifact.content.providers import DirectoryArtifactBlobStore
 from noetrium_platform.capabilities.model.request.runtime import (
-    DirectoryModelRequestLedger,
+    SQLiteModelRequestLedger,
     ReconstructableModelRequestRecorder,
 )
 from noetrium_platform.evidence.data.projection.api import ProjectionCursor, ProjectionTail
@@ -90,17 +89,10 @@ class _Reducer:
 
 class HarnessPatternsV190Tests(unittest.TestCase):
     def test_capability_policy_binding_changes_with_implementation_identity(self):
-        first_program, first_mediators = capability_program_from_policy(
-            CapabilityPolicySet(guards=(_Allow(),))
-        )
-        second_program, second_mediators = capability_program_from_policy(
-            CapabilityPolicySet(guards=(_AllowV2(),))
-        )
-        self.assertEqual(first_program.program_digest, second_program.program_digest)
-        self.assertNotEqual(
-            capability_mediator_binding_digest(first_program, first_mediators),
-            capability_mediator_binding_digest(second_program, second_mediators),
-        )
+        first = CapabilityProgramBuilder().guard(_Allow()).build()
+        second = CapabilityProgramBuilder().guard(_AllowV2()).build()
+        self.assertEqual(first.program.program_digest, second.program.program_digest)
+        self.assertNotEqual(first.binding_digest, second.binding_digest)
 
     def test_capability_policy_requires_explicit_implementation_identity(self):
         class MissingIdentity:
@@ -109,7 +101,7 @@ class HarnessPatternsV190Tests(unittest.TestCase):
                 return GuardDecision(self.guard_id, GuardVerdict.ALLOW)
 
         with self.assertRaises((TypeError, ValueError)):
-            CapabilityPolicySet(guards=(MissingIdentity(),))
+            CapabilityProgramBuilder().guard(MissingIdentity())
 
     def context(self):
         return ExecutionContext(run_id="r190", trace_id="tr190", span_id="sp190", decision_cycle_id="dc190")
@@ -118,7 +110,7 @@ class HarnessPatternsV190Tests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as td:
             root=Path(td)
             content=DirectoryArtifactBlobStore(root/"blobs")
-            ledger=DirectoryModelRequestLedger(root/"ledger")
+            ledger=SQLiteModelRequestLedger(root/"ledger")
             recorder=ReconstructableModelRequestRecorder(content,ledger)
             body={"messages":[{"role":"system","content":"hello"}],"tools":[{"name":"x"}]}
             env=recorder.record(
@@ -153,7 +145,7 @@ class HarnessPatternsV190Tests(unittest.TestCase):
             root=Path(td)
             recorder=ReconstructableModelRequestRecorder(
                 DirectoryArtifactBlobStore(root/"blobs"),
-                DirectoryModelRequestLedger(root/"ledger"),
+                SQLiteModelRequestLedger(root/"ledger"),
             )
             common=dict(
                 request_id="rq-bad-json", context=self.context(), role="planner",
@@ -186,7 +178,10 @@ class HarnessPatternsV190Tests(unittest.TestCase):
         called=[]
         journal=InMemoryMachineJournal()
         pipeline=CapabilityInvocationPipelineFactory(journal).create(
-            CapabilityPolicySet(guards=(_Deny(),_Allow()))
+            CapabilityProgramBuilder()
+            .guard(_Deny())
+            .guard(_Allow())
+            .build()
         )
         def execute(mediated):
             called.append(1)
@@ -296,7 +291,7 @@ class HarnessPatternsV190Tests(unittest.TestCase):
         result=CapabilityResult("capability.test",{"ok":True})
         pipeline=CapabilityInvocationPipelineFactory(
             InMemoryMachineJournal()
-        ).create(CapabilityPolicySet(post_policies=(_RejectPost(),)))
+        ).create(CapabilityProgramBuilder().post_policy(_RejectPost()).build())
         with self.assertRaises(CapabilityMediationDenied) as caught:
             pipeline.invoke(
                 invocation_id="dc190:capability.test:post",

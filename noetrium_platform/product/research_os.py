@@ -61,11 +61,13 @@ class ResearchDefinitionKind(StrEnum):
     BENCHMARK = "benchmark"
     DATASET = "dataset"
     METRIC = "metric"
+    CONFIGURATION = "configuration"
     MODEL = "model"
     ENVIRONMENT = "environment"
     PARTICIPANT = "participant"
     PROTOCOL = "protocol"
     TRIAL_PROVIDER = "trial-provider"
+    VERIFIER = "verifier"
     RESOURCE_POLICY = "resource-policy"
     CHILD_MACHINE = "child-machine"
     CUSTOM = "custom"
@@ -551,6 +553,29 @@ class ResearchImplementation:
             source_digest,
         )
 
+    def resolve(self) -> Callable[..., object]:
+        try:
+            value: object = importlib.import_module(self.module)
+            for part in self.qualname.split("."):
+                value = getattr(value, part)
+        except (ImportError, AttributeError) as exc:
+            raise ValueError(
+                f"research implementation cannot be imported: {self.module}:{self.qualname}"
+            ) from exc
+        if not callable(value):
+            raise TypeError("frozen research implementation no longer resolves to callable")
+        try:
+            source = inspect.getsource(value)
+        except (OSError, TypeError) as exc:
+            raise ValueError(
+                "research implementation callable source cannot be resolved"
+            ) from exc
+        normalized = source.replace("\r\n", "\n").replace("\r", "\n")
+        digest = hashlib.sha256(normalized.encode("utf-8")).hexdigest()
+        if digest != self.source_digest:
+            raise ValueError("research implementation source drifted from frozen revision")
+        return value
+
 
 @dataclass(frozen=True, slots=True)
 class ResearchDefinition:
@@ -838,22 +863,24 @@ class ResearchProgram:
         known_definitions = set(definition_ids)
         known_nodes = set(node_ids)
         by_node = {row.node_id: row for row in nodes}
-        child_definition_ids = {
+        auxiliary_definition_ids = {
             row.definition_id
             for row in definitions
-            if row.kind is ResearchDefinitionKind.CHILD_MACHINE
+            if row.kind in {
+                ResearchDefinitionKind.CHILD_MACHINE,
+                ResearchDefinitionKind.VERIFIER,
+            }
         }
 
         for node in nodes:
-            child_refs = tuple(
+            auxiliary_refs = tuple(
                 value for value in node.definition_ids
-                if value in child_definition_ids
+                if value in auxiliary_definition_ids
             )
-            if child_refs:
+            if auxiliary_refs:
                 raise ValueError(
-                    "CHILD_MACHINE definitions are Program-scoped auxiliary "
-                    f"runtime declarations and cannot be consumed by node {node.node_id!r}: "
-                    f"{child_refs}"
+                    "Program-scoped auxiliary definitions cannot be consumed by "
+                    f"node {node.node_id!r}: {auxiliary_refs}"
                 )
             unknown = tuple(
                 value for value in node.definition_ids
@@ -1964,6 +1991,19 @@ class ResearchProgramBuilder:
             config=config,
         )
 
+    def configuration(
+        self,
+        definition_id: str,
+        *,
+        config: JsonInput,
+    ) -> "ResearchProgramBuilder":
+        """Freeze one content-addressed scientific/runtime configuration fact."""
+        return self.definition(
+            definition_id,
+            kind=ResearchDefinitionKind.CONFIGURATION,
+            config=config,
+        )
+
     def model(
         self,
         definition_id: str,
@@ -2058,6 +2098,27 @@ class ResearchProgramBuilder:
             definition_id,
             kind=ResearchDefinitionKind.PROTOCOL,
             implementation=implementation,
+            config=config,
+        )
+
+    def verifier(
+        self,
+        requirement_id: str,
+        factory: Callable[..., object] | None = None,
+        *,
+        config: JsonInput = None,
+    ) -> "ResearchProgramBuilder":
+        """Freeze one Program-scoped TaskVerifier factory.
+
+        The definition id is the exact TaskPackageSpec.verifier_requirement_id.
+        When a factory is supplied it is paper-owned immutable code. Without one,
+        the verifier is a platform-resolved requirement and must be satisfied by
+        the canonical ResearchDefinition binding authority before Trial admission.
+        """
+        return self.definition(
+            requirement_id,
+            kind=ResearchDefinitionKind.VERIFIER,
+            implementation=factory,
             config=config,
         )
 

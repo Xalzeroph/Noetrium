@@ -571,3 +571,35 @@ test('read-only observe_entities without action_id bypasses action recovery iden
   assert.ok(output.includes('node-test-observe'))
   assert.ok(!output.includes('ACTION_RECOVERY_ACTION_ID_REQUIRED'))
 })
+
+test('collect_block preserves native NoPath evidence and proves no effect', async () => {
+  const items = []
+  const bot = fakeBot(items)
+  const position = new Vec3(4, 64, 0)
+  const live = { name: 'oak_log', position, drops: [9] }
+  bot.registry.items = { 9: { id: 9, name: 'oak_log' } }
+  bot.findBlocks = () => [position]
+  bot.blockAt = () => ({ ...live })
+  bot.collectBlock.collect = async () => {
+    const error = new Error('No path to the goal!')
+    error.name = 'NoPath'
+    error.code = 'NoPath'
+    throw error
+  }
+  runtime.bindBot(bot)
+
+  const result = await withoutMovementConstruction(() => resources.collect_block({
+    block: 'oak_log', count: 1, max_distance: 16, _action_timeout_ms: 2000
+  }))
+
+  assert.equal(result.verified, false)
+  assert.equal(result.effect_disposition, 'not_applied')
+  assert.equal(result.outcome.code, 'COLLECTION_FAILED')
+  assert.equal(result.outcome.broken.length, 0)
+  assert.equal(result.outcome.collected_count, 0)
+  assert.equal(result.outcome.errors[0].phase, 'collectblock')
+  assert.equal(result.outcome.errors[0].name, 'NoPath')
+  assert.equal(result.outcome.errors[0].code, 'NoPath')
+  assert.equal(result.outcome.errors[0].message, 'No path to the goal!')
+  assert.match(result.outcome.errors[0].stack, /No path to the goal!/)
+})

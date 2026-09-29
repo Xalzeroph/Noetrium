@@ -2,7 +2,11 @@ from __future__ import annotations
 
 from tests.resource_endpoint_support import TestEndpointAllocator
 
-from noetrium_platform.infrastructure.resources.lease.runtime import ResourceLeaseRegistry
+from noetrium_platform.infrastructure.resources.lease.runtime import (
+    LeaseHeartbeatError,
+    LeaseHeartbeatFactory,
+    ResourceLeaseRegistry,
+)
 
 from tests.resource_lease_support import TestResourceLeaseRegistry
 
@@ -31,8 +35,6 @@ from noetrium_platform.foundation.kernel.concurrency.composition import build_co
 from noetrium_platform.infrastructure.resources.allocation.runtime import (
     AtomicEndpointAllocator,
     EndpointAllocationUnavailable,
-    EndpointLeaseHeartbeatError,
-    EndpointLeaseHeartbeatFactory,
     EndpointPhysicalConvergencePending,
 )
 from noetrium_platform.infrastructure.resources.lease.api import (
@@ -592,13 +594,18 @@ def test_endpoint_heartbeat_surfaces_background_renewal_failure() -> None:
         timer_name="atomic-heartbeat-failure-timer",
     )
     group = runtime.open_task_group("atomic-heartbeat-failure")
-    guard = EndpointLeaseHeartbeatFactory(
-        allocations=_FailingAllocations(),  # type: ignore[arg-type]
+    policy = EndpointLeasePolicy(ttl_seconds=0.2, renewal_interval_seconds=0.01)
+    failing = _FailingAllocations()
+    guard = LeaseHeartbeatFactory(
+        renew=lambda rows: failing.renew_many(rows, ttl_seconds=policy.ttl_seconds),
+        row_identity=lambda row: row.allocation_id,
+        heartbeat_namespace="endpoint-lease",
         task_group=group,
         heartbeat_scheduler=runtime.heartbeats,
         lane_id="atomic-heartbeat-failure-writer",
+        interval_seconds=policy.renewal_interval_seconds,
         lane_capacity=8,
-        policy=EndpointLeasePolicy(ttl_seconds=0.2, renewal_interval_seconds=0.01),
+        policy=policy,
     ).create((
         EndpointAllocation(
             allocation_id="allocation-a",
@@ -612,7 +619,7 @@ def test_endpoint_heartbeat_surfaces_background_renewal_failure() -> None:
     ))
     guard.start()
     assert renewed.wait(timeout=1.0)
-    with pytest.raises(EndpointLeaseHeartbeatError, match="renew failed"):
+    with pytest.raises(LeaseHeartbeatError, match="renew failed"):
         guard.assert_healthy()
     guard.close()
     heartbeat = runtime.topology_snapshot().heartbeats[0]

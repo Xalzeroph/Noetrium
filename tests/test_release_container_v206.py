@@ -228,9 +228,8 @@ def _write_distribution_evidence(
     return evidence_path
 
 
-def test_prepare_context_rejects_distribution_wheel_byte_drift(monkeypatch):
-    local = ROOT / ".local"
-    local.mkdir(parents=True, exist_ok=True)
+def test_prepare_context_rejects_distribution_wheel_byte_drift(monkeypatch, tmp_path: Path):
+    local = tmp_path
     with TemporaryDirectory(prefix="container-context-", dir=local) as td:
         root = Path(td)
         dist = root / "dist"
@@ -245,9 +244,8 @@ def test_prepare_context_rejects_distribution_wheel_byte_drift(monkeypatch):
             context.prepare_container_context(dist, root / "ctx", expected_source_sha=SHA)
 
 
-def test_prepare_context_uses_exact_git_blobs_not_mutable_checkout(monkeypatch):
-    local = ROOT / ".local"
-    local.mkdir(parents=True, exist_ok=True)
+def test_prepare_context_uses_exact_git_blobs_not_mutable_checkout(monkeypatch, tmp_path: Path):
+    local = tmp_path
     with TemporaryDirectory(prefix="container-context-", dir=local) as td:
         root = Path(td)
         dist = root / "dist"
@@ -289,9 +287,8 @@ def test_ci_builds_container_from_formal_distribution_context():
     assert "--file deploy/Dockerfile ." not in workflow
 
 
-def test_prepare_context_rejects_tampered_distribution_evidence_sidecar(monkeypatch):
-    local = ROOT / ".local"
-    local.mkdir(parents=True, exist_ok=True)
+def test_prepare_context_rejects_tampered_distribution_evidence_sidecar(monkeypatch, tmp_path: Path):
+    local = tmp_path
     with TemporaryDirectory(prefix="container-context-sidecar-", dir=local) as td:
         root = Path(td)
         dist = root / "dist"

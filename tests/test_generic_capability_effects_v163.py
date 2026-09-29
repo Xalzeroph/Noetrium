@@ -20,8 +20,8 @@ from noetrium_platform.infrastructure.reliability.effect.api import (
     EffectIntentPhase,
 )
 from noetrium_platform.infrastructure.reliability.effect.runtime import (
-    InMemoryEffectIntentJournal,
-    SQLiteEffectIntentJournal,
+    memory_effect_intent_journal,
+    sqlite_effect_intent_journal,
 )
 from noetrium_platform.foundation.kernel.kernel import (
     ComponentIdentity,
@@ -44,7 +44,15 @@ from noetrium_platform.research.execution.capability.runtime import (
     CapabilityInvocationPipelineFactory,
     ScopedRegistrationRuntime,
 )
-from noetrium_platform.research.execution.workflow.runtime import EffectIntentOperations, KernelOperationDispatcher
+from noetrium_platform.research.execution.workflow.runtime import (
+    DurableKernelOperationDispatcher,
+    EffectIntentOperations,
+    KernelOperationDispatcher,
+)
+from noetrium_platform.research.execution.operation.command.providers import SQLiteCommandStore
+from noetrium_platform.research.execution.operation.command.runtime import CommandIntentOwner
+from noetrium_platform.research.execution.operation.providers import SQLiteOperationStore
+from noetrium_platform.research.execution.operation.runtime import OperationOwner
 
 
 class EffectfulSession:
@@ -70,12 +78,12 @@ class EffectfulSession:
         )
 
     @staticmethod
-    def _result(request_digest: str):
+    def _result(request_id: str, request_digest: str):
         return CapabilityResult(
             "tool.write",
             {"written": True},
             effect=EffectReceipt(
-                "effect:write-1",
+                request_id,
                 request_digest,
                 EffectClass.NON_IDEMPOTENT,
                 EffectCertainty.EFFECT_CONFIRMED,
@@ -86,7 +94,7 @@ class EffectfulSession:
     def execute_prepared_capability(self, request, handle):
         type(self).execute_calls += 1
         assert handle.request_digest == capability_request_digest(request)
-        return self._result(handle.request_digest)
+        return self._result(handle.request_id, handle.request_digest)
 
     def reconcile_prepared_capability(self, handle, context):
         del context
@@ -94,7 +102,7 @@ class EffectfulSession:
         return CapabilityEffectReconciliationResult(
             "tool.write",
             EffectReconciliationDisposition.APPLIED,
-            self._result(handle.request_digest),
+            self._result(handle.request_id, handle.request_digest),
         )
 
     # Generic provider compatibility methods unused for the effectful route.
@@ -118,8 +126,17 @@ def _context():
     )
 
 
-def _router(journal=None):
-    dispatcher = KernelOperationDispatcher(OperationExecutor())
+def _router(journal, root: Path):
+    kernel = KernelOperationDispatcher(OperationExecutor())
+    commands = CommandIntentOwner(SQLiteCommandStore(root / "commands.sqlite3"))
+    operation_owner = OperationOwner(SQLiteOperationStore(root / "operations.sqlite3"))
+    dispatcher = DurableKernelOperationDispatcher(
+        kernel,
+        commands=commands,
+        submissions=operation_owner,
+        admissions=operation_owner,
+        operations=operation_owner,
+    )
     operations = CapabilityOperationAdapter(dispatcher)
     component = ComponentIdentity("capability_provider.writer", "writer", "1", "1", "cfg")
     session = EffectfulSession()
@@ -139,10 +156,10 @@ def _router(journal=None):
     ), session
 
 
-def test_effectful_capability_is_exactly_once_for_same_logical_key():
+def test_effectful_capability_is_exactly_once_for_same_logical_key(tmp_path: Path):
     EffectfulSession.prepare_calls = EffectfulSession.execute_calls = EffectfulSession.reconcile_calls = 0
-    journal = InMemoryEffectIntentJournal()
-    router, _ = _router(journal)
+    journal = memory_effect_intent_journal()
+    router, _ = _router(journal, tmp_path)
     request = CapabilityRequest("tool.write", {"value": 7}, _context(), "write-slot-1")
 
     first = router.invoke(request)
@@ -158,19 +175,19 @@ def test_effectful_capability_is_exactly_once_for_same_logical_key():
     assert any("capability.effect.reconcile:" in row.operation_id for row in operations)
 
 
-def test_effectful_capability_without_journal_fails_before_provider_side_effect():
+def test_effectful_capability_without_journal_fails_before_provider_side_effect(tmp_path: Path):
     EffectfulSession.prepare_calls = EffectfulSession.execute_calls = 0
-    router, _ = _router(None)
-    with pytest.raises(UnsafeGenericCapability):
+    router, _ = _router(None, tmp_path)
+    with pytest.raises(RuntimeError, match="UnsafeGenericCapability"):
         router.invoke(CapabilityRequest("tool.write", {"value": 7}, _context(), "slot"))
     assert EffectfulSession.prepare_calls == 0
     assert EffectfulSession.execute_calls == 0
 
 
-def test_effectful_capability_requires_stable_idempotency_key_before_prepare():
+def test_effectful_capability_requires_stable_idempotency_key_before_prepare(tmp_path: Path):
     EffectfulSession.prepare_calls = EffectfulSession.execute_calls = 0
-    router, _ = _router(InMemoryEffectIntentJournal())
-    with pytest.raises(UnsafeEffectfulCapability):
+    router, _ = _router(memory_effect_intent_journal(), tmp_path)
+    with pytest.raises(RuntimeError, match="UnsafeEffectfulCapability"):
         router.invoke(CapabilityRequest("tool.write", {"value": 7}, _context()))
     assert EffectfulSession.prepare_calls == 0
     assert EffectfulSession.execute_calls == 0
@@ -198,9 +215,9 @@ def test_generic_effect_journal_sqlite_reopens_without_environment_types():
             recovery_handle=handle,
             intent_namespace="capability-effect-intent",
         )
-        first = SQLiteEffectIntentJournal(path)
+        first = sqlite_effect_intent_journal(path)
         first.prepare(intent)
-        second = SQLiteEffectIntentJournal(path)
+        second = sqlite_effect_intent_journal(path)
         reopened = second.load(intent.intent_id)
         assert reopened is not None
         assert reopened.phase is EffectIntentPhase.PREPARED

@@ -3,6 +3,7 @@ from __future__ import annotations
 from pathlib import Path
 
 from noetrium import api
+from noetrium_platform.product import research_os as research_os_api
 from noetrium_platform.composition.research_execution_pool import ResearchExecutionPool
 from noetrium_platform.composition.research_os import bind_portfolio_research_os
 from noetrium_platform.composition.research_os_execution import (
@@ -71,13 +72,13 @@ def _pool() -> ResearchExecutionPool:
     )
 
 
-def _portfolio() -> api.research_os.ResearchPortfolio:
-    builder = api.research_os.ResearchProgramBuilder("paper")
+def _portfolio() -> research_os_api.ResearchPortfolio:
+    builder = research_os_api.ResearchProgramBuilder("paper")
     builder.node(
         "task",
-        kind=api.research_os.ResearchNodeKind.CUSTOM,
+        kind=research_os_api.ResearchNodeKind.CUSTOM,
     )
-    return api.research_os.ResearchPortfolio("retry-pause", (builder.freeze(),))
+    return research_os_api.ResearchPortfolio("retry-pause", (builder.freeze(),))
 
 
 def test_retry_respects_local_pause_until_explicit_resume(tmp_path: Path) -> None:
@@ -97,7 +98,7 @@ def test_retry_respects_local_pause_until_explicit_resume(tmp_path: Path) -> Non
     try:
         portfolio = _portfolio()
         revision = research_os.commit(portfolio, message="retry pause")
-        target = api.research_os.ResearchExecutionTarget("retry-pause-execution", revision)
+        target = research_os_api.ResearchExecutionTarget("retry-pause-execution", revision)
         node_target = target.for_node("paper", "task")
 
         first = research_os.run(node_target)

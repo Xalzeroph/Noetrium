@@ -3,6 +3,7 @@ from __future__ import annotations
 from threading import RLock
 
 from noetrium_platform.capabilities.model.deployment.api import (
+    ModelAppliedRuntimeIdentity,
     ModelDeploymentCatalogPort,
     ModelDeploymentGeneration,
     ModelDeploymentSpec,
@@ -12,6 +13,7 @@ from noetrium_platform.capabilities.model.deployment.api import (
     ModelServiceRuntimeFactoryPort,
 )
 from noetrium_platform.foundation.kernel.kernel import canonical_digest
+from noetrium_platform.capabilities.model.serving.runtime.process_identity import ProcessIdentity
 from noetrium_platform.substrate.api import ServiceContractDrift
 
 from .applied import AppliedModelDeployment
@@ -95,6 +97,7 @@ class ModelDeploymentRuntime:
                 detail="not-applied",
             )
         runtime = self._service_factory.open(
+            applied.spec,
             applied.contract,
             environment=applied.environment,
             readiness_url=applied.spec.readiness_url,
@@ -151,6 +154,7 @@ class ModelDeploymentRuntime:
 
             if applied is not None:
                 runtime = self._service_factory.open(
+                    applied.spec,
                     applied.contract,
                     environment=applied.environment,
                     readiness_url=applied.spec.readiness_url,
@@ -198,6 +202,7 @@ class ModelDeploymentRuntime:
                 )
 
             runtime = self._service_factory.open(
+                spec,
                 desired_contract,
                 environment=desired_environment,
                 readiness_url=spec.readiness_url,
@@ -268,6 +273,7 @@ class ModelDeploymentRuntime:
                     detail="not-applied",
                 )
             runtime = self._service_factory.open(
+                applied.spec,
                 applied.contract,
                 environment=applied.environment,
                 readiness_url=applied.spec.readiness_url,
@@ -318,6 +324,48 @@ class ModelDeploymentRuntime:
                 ModelRuntimeState.UPDATE_PENDING if pending else ModelRuntimeState.RUNNING,
                 observation.process.pid,
                 "desired-config-pending" if pending else "",
+            )
+
+    def applied_identity(
+        self,
+        deployment_id: str,
+    ) -> ModelAppliedRuntimeIdentity:
+        """Return exact immutable process/launch identity for qualification."""
+        with self._lock:
+            generation, desired, applied = self._snapshot_unlocked(deployment_id)
+            if applied is None or generation.applied_runtime_digest is None:
+                raise RuntimeError(
+                    f"model deployment has no applied runtime: {deployment_id}"
+                )
+            runtime = self._service_factory.open(
+                applied.spec,
+                applied.contract,
+                environment=applied.environment,
+                readiness_url=applied.spec.readiness_url,
+            )
+            observation = runtime.reconcile_exact(applied.contract)
+            if observation.process is None:
+                raise RuntimeError(
+                    f"model applied process is not running: {deployment_id}"
+                )
+            if observation.process != applied.process:
+                raise RuntimeError(
+                    "model applied process generation drifted during identity read: "
+                    f"{deployment_id}"
+                )
+            process_identity = ProcessIdentity.from_argv(
+                applied.process.pid,
+                applied.process.start_identity,
+                applied.contract.argv,
+            )
+            return ModelAppliedRuntimeIdentity(
+                deployment_id=deployment_id,
+                desired_spec_digest=generation.desired_spec_digest,
+                applied_runtime_digest=generation.applied_runtime_digest,
+                service_contract_digest=applied.contract.digest(),
+                pid=process_identity.pid,
+                process_start_marker=process_identity.start_marker,
+                argv_digest=process_identity.argv_digest,
             )
 
     def remove_deployment(

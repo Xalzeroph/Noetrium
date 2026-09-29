@@ -9,6 +9,8 @@ from __future__ import annotations
 from collections.abc import Mapping
 from dataclasses import dataclass
 
+from noetrium_platform.foundation.kernel.kernel import canonical_digest, freeze_json
+
 from noetrium_platform.research.experimentation.binding import (
     ResearchBindingRequirements,
     ResearchModelRoleRequirement,
@@ -339,6 +341,8 @@ def _study_spec_measurement(value: object) -> MeasurementDefinition:
         semantic_kind=str(row.get("semantic_kind", "measurement")),
         scale=row.get("scale"),
         domain=row.get("domain"),
+        source_path=row.get("source_path"),
+        reducer=row.get("reducer"),
     )
     if kind == "scalar":
         return MeasurementDefinition.scalar(**common)
@@ -390,13 +394,22 @@ def _study_spec_benchmark(value: object) -> BenchmarkTaskSet:
     tasks = []
     for raw in row["tasks"]:
         task = _study_spec_mapping(raw, "benchmark task spec")
+        content = task.get("content")
+        content_digest = task.get("content_digest")
+        if content_digest is None:
+            if not isinstance(content, Mapping):
+                raise ValueError(
+                    "benchmark task requires inline content when content_digest is omitted"
+                )
+            content_digest = canonical_digest(freeze_json(content))
         tasks.append(
             TaskDefinition(
                 task_id=str(task["task_id"]),
                 revision_id=str(task.get("revision_id", revision_id)),
                 family=str(task["family"]),
                 schema_id=str(task.get("schema_id", schema_id)),
-                content_digest=str(task["content_digest"]),
+                content_digest=str(content_digest),
+                content=content,
                 lineage_refs=tuple(task.get("lineage_refs", ())),
             )
         )
@@ -412,12 +425,25 @@ def _study_spec_benchmark(value: object) -> BenchmarkTaskSet:
             key=lambda item: item.split_id,
         )
     )
+    ordered_tasks = tuple(sorted(tasks, key=lambda item: item.task_id))
+    source_digest = row.get("source_digest")
+    if source_digest is None:
+        source_digest = canonical_digest(
+            {
+                "benchmark_id": str(row["benchmark_id"]),
+                "revision_id": revision_id,
+                "task_schema_id": schema_id,
+                "tasks": tuple(
+                    (item.task_id, item.content_digest) for item in ordered_tasks
+                ),
+            }
+        )
     return BenchmarkTaskSet(
         benchmark_id=str(row["benchmark_id"]),
         revision_id=revision_id,
-        source_digest=str(row["source_digest"]),
+        source_digest=str(source_digest),
         task_schema_id=schema_id,
-        tasks=tuple(sorted(tasks, key=lambda item: item.task_id)),
+        tasks=ordered_tasks,
         task_graph=_study_spec_task_graph(row.get("task_graph")),
         splits=splits,
     )
@@ -444,14 +470,24 @@ def materialize_research_study_spec(value: object) -> ResearchStudyDefinition:
         for item in row["measurements"]
     )
     trial_row = _study_spec_mapping(row["trial"], "research study trial")
+    trial_configuration_digest = trial_row.get(
+        "configuration_digest",
+        trial_row.get("protocol_digest"),
+    )
+    if trial_configuration_digest is None:
+        trial_configuration_digest = canonical_digest(
+            {
+                "protocol_id": str(trial_row["protocol_id"]),
+                "configuration": {
+                    key: value
+                    for key, value in trial_row.items()
+                    if key not in {"configuration_digest", "protocol_digest"}
+                },
+            }
+        )
     trial = ExperimentTrialProtocolIdentity(
         str(trial_row["protocol_id"]),
-        str(
-            trial_row.get(
-                "configuration_digest",
-                trial_row.get("protocol_digest"),
-            )
-        ),
+        str(trial_configuration_digest),
     )
     limits_row = _study_spec_mapping(row["limits"], "research study limits")
     limits = TrialBudget(

@@ -1,7 +1,9 @@
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 from noetrium_platform.capabilities.participant.agent.api import AgentTurnRequest, AgentTurnResult
-from noetrium_platform.capabilities.participant.capability.api import CapabilityExportSession, CapabilityPolicySet
+from noetrium_platform.capabilities.participant.capability.api import CapabilityExportSession
 from noetrium_platform.research.execution.capability.api import (
     CapabilityInvocationPipelineFactoryPort,
     RegistrationScopeFactoryPort,
@@ -18,6 +20,11 @@ from noetrium_platform.research.execution.workflow.api import (
 )
 from noetrium_platform.capabilities.participant.core.api import ParticipantSessionBinding
 
+if TYPE_CHECKING:
+    from noetrium_platform.research.execution.machines.capability_program import (
+        CapabilityProgramBinding,
+    )
+
 
 class AgentTurnTrialOperations:
     """Agent+Capability operation surface only; no Method/Environment action dependencies."""
@@ -27,10 +34,11 @@ class AgentTurnTrialOperations:
         dispatcher: OperationDispatchPort,
         participant_sessions: tuple[ParticipantSessionBinding, ...],
         *,
+        effect_dispatcher: OperationDispatchPort | None = None,
         effect_intents: EffectIntentOperationPort | None = None,
         capability_pipeline_factory: CapabilityInvocationPipelineFactoryPort,
         registration_scope_factory: RegistrationScopeFactoryPort,
-        capability_policy: CapabilityPolicySet | None = None,
+        capability_program: "CapabilityProgramBinding | None" = None,
     ) -> None:
         self._dispatcher = dispatcher
         agent = next(
@@ -50,10 +58,13 @@ class AgentTurnTrialOperations:
             for row in participant_sessions
             if isinstance(row.session, CapabilityExportSession)
         )
-        self._capability_operations = CapabilityOperationAdapter(dispatcher)
+        effect_operation_dispatcher = effect_dispatcher or dispatcher
+        self._capability_operations = CapabilityOperationAdapter(
+            effect_operation_dispatcher
+        )
         self._capability_pipeline_factory = capability_pipeline_factory
         self._registration_scope_factory = registration_scope_factory
-        self._capability_policy = capability_policy
+        self._capability_program = capability_program
         self._capability_effects = (
             CapabilityEffectExecutor(dispatcher, effect_intents, self._capability_operations)
             if effect_intents is not None else None
@@ -71,7 +82,7 @@ class AgentTurnTrialOperations:
             self._capability_sessions,
             effect_executor=self._capability_effects,
             consumer_component=self._agent.participant.component,
-            pipeline=self._capability_pipeline_factory.create(self._capability_policy),
+            pipeline=self._capability_pipeline_factory.create(self._capability_program),
             scope=self._registration_scope_factory.create(
                 f"decision-cycle:{self._dc(context)}:capabilities"
             ),

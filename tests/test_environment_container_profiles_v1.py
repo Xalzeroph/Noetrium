@@ -12,6 +12,7 @@ from scripts.build_environment_images import (
     _parse_profile_build_input_overrides,
     _prepare_qualification_instance,
     _profile_build_input_digest,
+    _category_current_tag,
     _profile_map,
     _profile_revision,
     _require_profile_build_intent,
@@ -116,6 +117,11 @@ def test_environment_profile_lifecycle_blocks_new_work_without_recovery_intent()
         allow_draining=False,
         allow_retired=True,
     )
+
+
+def test_environment_category_current_alias_is_generic_and_stable() -> None:
+    assert _category_current_tag("minecraft") == "noetrium-env-category-minecraft:current"
+    assert _category_current_tag("web") == "noetrium-env-category-web:current"
 
 
 def test_environment_build_receipt_uses_concrete_content_addressed_runtime_identity() -> None:

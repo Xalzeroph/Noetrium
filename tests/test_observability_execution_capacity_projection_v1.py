@@ -28,6 +28,7 @@ from noetrium_platform.foundation.kernel.concurrency.api import (
 def _source_snapshots() -> tuple[AdmissionTopologySnapshot, ConcurrencyTopologySnapshot]:
     admission = AdmissionTopologySnapshot(
         max_total_in_flight=8,
+        max_waiting=32,
         max_in_flight_per_group=4,
         max_in_flight_per_tenant=6,
         max_in_flight_per_resource=3,

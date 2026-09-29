@@ -99,15 +99,14 @@ def test_project_sync_never_parses_or_rewrites_user_core(
 
     core_path = root / "src" / "paper" / "core.py"
     custom = '''"""arbitrary user semantics"""
-from noetrium.api import research_os as api
+from noetrium import api
 
 
 def build_research() -> api.ResearchPortfolio:
-    a = api.ResearchProgramBuilder("paper-a")
-    a.node("alpha", kind=api.ResearchNodeKind.CUSTOM)
-    b = api.ResearchProgramBuilder("paper-b")
-    b.node("beta", kind=api.ResearchNodeKind.CUSTOM)
-    return api.ResearchPortfolio("paper", (a.freeze(), b.freeze()))
+    portfolio = api.ResearchPortfolioBuilder("paper")
+    portfolio.program("paper-a").custom_node("alpha")
+    portfolio.program("paper-b").custom_node("beta")
+    return portfolio.freeze()
 
 
 __all__ = ["build_research"]
@@ -258,23 +257,19 @@ def test_user_core_may_delegate_to_arbitrary_project_modules(
 
     package_root = root / "src" / "modular_paper"
     (package_root / "semantics.py").write_text(
-        '''from noetrium.api import research_os as api
+        '''from noetrium import api
 
 
 def make_portfolio() -> api.ResearchPortfolio:
-    first = api.ResearchProgramBuilder("paper-a")
-    first.node("discover", kind=api.ResearchNodeKind.CUSTOM)
-    second = api.ResearchProgramBuilder("paper-b")
-    second.node("verify", kind=api.ResearchNodeKind.CUSTOM)
     portfolio = api.ResearchPortfolioBuilder("modular-paper")
-    portfolio.program(first.freeze())
-    portfolio.program(second.freeze())
+    portfolio.program("paper-a").custom_node("discover")
+    portfolio.program("paper-b").custom_node("verify")
     return portfolio.freeze()
 ''',
         encoding="utf-8",
     )
     (package_root / "core.py").write_text(
-        '''from noetrium.api import research_os as api
+        '''from noetrium import api
 from .semantics import make_portfolio
 
 
@@ -317,25 +312,25 @@ def test_generated_shell_is_independent_of_scientific_topology(
 
     core_path = root / "src" / "topology_independent" / "core.py"
     core_path.write_text(
-        '''from noetrium.api import research_os as api
+        '''from noetrium import api
 
 
 def build_research() -> api.ResearchPortfolio:
-    programs = []
+    portfolio = api.ResearchPortfolioBuilder("topology-independent")
     for program_id, node_ids in (
         ("paper-a", ("a0", "a1", "a2")),
         ("paper-b", ("b0", "b1")),
         ("paper-c", ("c0",)),
     ):
-        builder = api.ResearchProgramBuilder(program_id)
+        builder = portfolio.program(program_id)
         previous = None
         for node_id in node_ids:
-            builder.node(node_id, kind=api.ResearchNodeKind.CUSTOM)
-            if previous is not None:
-                builder.depends(node_id, previous)
+            builder.custom_node(
+                node_id,
+                depends_on=(() if previous is None else (previous,)),
+            )
             previous = node_id
-        programs.append(builder.freeze())
-    return api.ResearchPortfolio("topology-independent", tuple(programs))
+    return portfolio.freeze()
 
 
 __all__ = ["build_research"]

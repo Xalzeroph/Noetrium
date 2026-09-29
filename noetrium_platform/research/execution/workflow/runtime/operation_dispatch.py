@@ -14,7 +14,7 @@ from noetrium_platform.foundation.kernel.kernel import (
 )
 
 from .operation_policy import ProtectedOperationSemanticPolicy
-from ..api.dispatch import OperationDispatchPort
+from ..api.dispatch import OperationDispatchPort, OperationEffectBinding
 
 T = TypeVar("T")
 R = TypeVar("R")
@@ -42,6 +42,26 @@ class KernelOperationDispatcher:
         self._executor = executor
         self._caller = caller
         self._semantic_policy = semantic_policy
+        self._identity_digest = canonical_digest(
+            {
+                "dispatcher": "noetrium.kernel-operation-dispatcher.v2",
+                "executor_type": (
+                    type(executor).__module__
+                    + "."
+                    + type(executor).__qualname__
+                ),
+                "caller": caller,
+                "semantic_policy": (
+                    semantic_policy.__module__
+                    + "."
+                    + semantic_policy.__qualname__
+                ),
+            }
+        )
+
+    @property
+    def identity_digest(self) -> str:
+        return self._identity_digest
 
     def _execute(
         self,
@@ -134,7 +154,12 @@ class KernelOperationDispatcher:
     def dispatch(self, *, root_context: ExecutionContext, operation_id: str, operation_type: str,
                  target: ComponentIdentity, payload: T, payload_schema: str,
                  handler: Callable[[OperationRequest[T]], R], digest_output: bool = True,
-                 effect_projector=None, idempotency_key: str | None = None) -> OperationResult[R]:
+                 effect_projector=None, idempotency_key: str | None = None,
+                 effect_binding: OperationEffectBinding | None = None) -> OperationResult[R]:
+        if effect_binding is not None:
+            raise RuntimeError(
+                "effectful operation requires the durable Operation dispatcher"
+            )
         return self._execute(root_context=root_context, operation_id=operation_id, operation_type=operation_type,
                              target=target, payload=payload, payload_schema=payload_schema, handler=handler,
                              digest_output=digest_output, effect_projector=effect_projector,
@@ -153,7 +178,12 @@ class KernelOperationDispatcher:
         digest_output: bool = True,
         effect_projector=None,
         idempotency_key: str | None = None,
+        effect_binding: OperationEffectBinding | None = None,
     ) -> OperationResult[R]:
+        if effect_binding is not None:
+            raise RuntimeError(
+                "effectful operation requires the durable Operation dispatcher"
+            )
         return await self._execute_async(
             root_context=root_context,
             operation_id=operation_id,
@@ -181,77 +211,4 @@ class KernelOperationDispatcher:
         return self._executor.require_success(result)
 
 
-class MethodNodeOperationAdapter:
-    """Narrow operation seam used by the universal method machine.
-
-    The method machine owns control flow; this adapter owns the single legal
-    transition from a node invocation into the Operation ABI.  Its forwarding
-    contract is explicit so method nodes never escape through an untyped
-    ``**kwargs`` boundary.
-    """
-
-    def __init__(self, dispatcher: OperationDispatchPort) -> None:
-        if not callable(getattr(dispatcher, "dispatch", None)) and not callable(
-            getattr(dispatcher, "dispatch_async", None)
-        ):
-            raise TypeError("method node operation adapter requires an operation dispatcher")
-        self._dispatcher = dispatcher
-
-    def execute(
-        self,
-        *,
-        root_context: ExecutionContext,
-        operation_id: str,
-        operation_type: str,
-        target: ComponentIdentity,
-        payload: T,
-        payload_schema: str,
-        handler: Callable[[OperationRequest[T]], R],
-        digest_output: bool = True,
-        effect_projector=None,
-        idempotency_key: str | None = None,
-    ) -> OperationResult[R]:
-        return self._dispatcher.dispatch(
-            root_context=root_context,
-            operation_id=operation_id,
-            operation_type=operation_type,
-            target=target,
-            payload=payload,
-            payload_schema=payload_schema,
-            handler=handler,
-            digest_output=digest_output,
-            effect_projector=effect_projector,
-            idempotency_key=idempotency_key,
-        )
-
-    async def execute_async(
-        self,
-        *,
-        root_context: ExecutionContext,
-        operation_id: str,
-        operation_type: str,
-        target: ComponentIdentity,
-        payload: T,
-        payload_schema: str,
-        handler: Callable[[OperationRequest[T]], R],
-        digest_output: bool = True,
-        effect_projector=None,
-        idempotency_key: str | None = None,
-    ) -> OperationResult[R]:
-        dispatch_async = getattr(self._dispatcher, "dispatch_async", None)
-        if not callable(dispatch_async):
-            raise TypeError("operation dispatcher does not provide async dispatch")
-        return await dispatch_async(
-            root_context=root_context,
-            operation_id=operation_id,
-            operation_type=operation_type,
-            target=target,
-            payload=payload,
-            payload_schema=payload_schema,
-            handler=handler,
-            digest_output=digest_output,
-            effect_projector=effect_projector,
-            idempotency_key=idempotency_key,
-        )
-
-__all__ = ["KernelOperationDispatcher", "MethodNodeOperationAdapter", "WORKFLOW_RUNTIME_IDENTITY"]
+__all__ = ["KernelOperationDispatcher", "WORKFLOW_RUNTIME_IDENTITY"]

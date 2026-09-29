@@ -14,15 +14,13 @@ from noetrium_platform.research.execution.policy.api import ExecutionPriority
 from noetrium_platform.research.execution.policy.composition import build_admission_scheduling_policy
 from noetrium_platform.foundation.kernel.concurrency.api import (
     ConcurrencyBudget,
+    CpuWorkerPoolProviderPort,
     ConcurrencyTopologySnapshot,
     Deadline,
     HeartbeatSchedulerPort,
     TaskFailurePolicy,
     TaskGroupPort,
     StructuredConcurrencyRuntimePort,
-)
-from noetrium_platform.foundation.kernel.concurrency.api.ports import (
-    CpuWorkerPoolProviderPort,
 )
 from noetrium_platform.foundation.kernel.concurrency.composition import build_concurrency_runtime as _build_kernel_concurrency_runtime
 from noetrium_platform.infrastructure.resources.compute.api import HostRuntimeObserverPort

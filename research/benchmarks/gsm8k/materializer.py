@@ -6,6 +6,7 @@ from dataclasses import dataclass
 from pathlib import Path
 
 from noetrium_platform.composition.research_execution_content import (
+    ResearchContentPublication,
     ResearchExecutionContentAuthorities,
 )
 from noetrium_platform.foundation.kernel.kernel import canonical_bytes, canonical_digest
@@ -288,7 +289,8 @@ def materialize_repository_benchmark_authority(
         media_type="application/x-ndjson",
         producer_component_id="research.benchmarks.gsm8k",
     )
-    content_references = {}
+    task_ids: list[str] = []
+    publications: list[ResearchContentPublication] = []
     for task in materialized.tasks:
         document = _task_content_document(
             git_blob_sha1=materialized.git_blob_sha1,
@@ -301,13 +303,18 @@ def materialize_repository_benchmark_authority(
         payload = canonical_bytes(document)
         if hashlib.sha256(payload).hexdigest() != task.record.content_digest:
             raise RuntimeError("GSM8K canonical task content digest drifted")
-        content_references[task.record.task_id] = content.publish(
-            reference_id=f"gsm8k:task:{task.record.content_digest}",
-            scope=scope,
-            payload=payload,
-            media_type="application/json",
-            producer_component_id="research.benchmarks.gsm8k",
+        task_ids.append(task.record.task_id)
+        publications.append(
+            ResearchContentPublication(
+                reference_id=f"gsm8k:task:{task.record.content_digest}",
+                scope=scope,
+                payload=payload,
+                media_type="application/json",
+                producer_component_id="research.benchmarks.gsm8k",
+            )
         )
+    published = content.publish_many(tuple(publications))
+    content_references = dict(zip(task_ids, published, strict=True))
 
     cut = build_gsm8k_task_set(
         tuple(task.record for task in materialized.tasks),

@@ -19,6 +19,7 @@ from noetrium_platform.foundation.kernel.kernel import canonical_digest
 from noetrium_platform.foundation.kernel.kernel.identity import ImmutableModelIdentity
 from noetrium_platform.capabilities.model.stack.api import (
     ModelArtifactClosure,
+    ModelServingPolicy,
     ModelStackSpec,
     RuntimeBuildIdentity,
 )
@@ -58,7 +59,7 @@ def _vllm_stack(
         ),
         ModelArtifactClosure("weights", "tokenizer", "config"),
         RuntimeBuildIdentity(
-            "container",
+            "c" * 64,
             "engine",
             "lock",
             "cuda",
@@ -370,7 +371,7 @@ def test_auto_model_replica_pool_exhausts_available_gpu_capacity_without_gpu_or_
             scope=PLATFORM_SCOPE,
             model_id="qwen3-8b",
             engine="vllm",
-            python_environment_id="vllm",
+            model_stack=_vllm_stack(),
             cwd=Path(tmp_path),
             compute=ComputeRequirement(
                 cpu_cores=2,
@@ -457,7 +458,7 @@ def test_model_pool_rebinds_compute_and_endpoint_after_runtime_recovery(
             scope=PLATFORM_SCOPE,
             model_id="qwen3-8b",
             engine="vllm",
-            python_environment_id="vllm",
+            model_stack=_vllm_stack(),
             cwd=Path(tmp_path),
             compute=ComputeRequirement(
                 cpu_cores=2,
@@ -544,7 +545,7 @@ def test_model_pool_binding_retries_torn_status_generation_observation(
             scope=PLATFORM_SCOPE,
             model_id="qwen3-8b",
             engine="vllm",
-            python_environment_id="vllm",
+            model_stack=_vllm_stack(),
             cwd=Path(tmp_path),
             compute=ComputeRequirement(
                 cpu_cores=2,
@@ -625,7 +626,7 @@ def test_model_pool_rebinds_if_runtime_restarts_between_compute_and_endpoint_bin
             scope=PLATFORM_SCOPE,
             model_id="qwen3-8b",
             engine="vllm",
-            python_environment_id="vllm",
+            model_stack=_vllm_stack(),
             cwd=Path(tmp_path),
             compute=ComputeRequirement(
                 cpu_cores=2,
@@ -704,7 +705,7 @@ def test_model_pool_generation_churn_fails_closed_without_releasing_resources(
             scope=PLATFORM_SCOPE,
             model_id="qwen3-8b",
             engine="vllm",
-            python_environment_id="vllm",
+            model_stack=_vllm_stack(),
             cwd=Path(tmp_path),
             compute=ComputeRequirement(
                 cpu_cores=2,
@@ -772,8 +773,8 @@ def test_model_endpoint_binding_requires_applied_runtime_generation(
                 scope=PLATFORM_SCOPE,
                 model_id="qwen3-8b",
                 engine="vllm",
-                python_environment_id="vllm",
-                cwd=Path(tmp_path),
+            model_stack=_vllm_stack(),
+                    cwd=Path(tmp_path),
                 compute=ComputeRequirement(
                     cpu_cores=2,
                     memory_bytes=1024,
@@ -854,7 +855,7 @@ def test_auto_model_replica_pool_uses_multiple_shared_slots_on_one_gpu(
             scope=PLATFORM_SCOPE,
             model_id="qwen3-8b",
             engine="vllm",
-            python_environment_id="vllm",
+            model_stack=_vllm_stack(),
             cwd=Path(tmp_path),
             compute=ComputeRequirement(
                 cpu_cores=2,
@@ -890,14 +891,21 @@ def test_auto_model_replica_pool_launches_frozen_vllm_engine_args(
         compute_lease_guards=ComputeGuards(),
         endpoint_lease_guards=EndpointGuards(),
     )
-    stack = _vllm_stack(
-        engine_args=(
-            "--gpu-memory-utilization",
-            "0.97",
-            "--max-num-seqs",
-            "64",
-            "--enable-prefix-caching",
-        )
+    stack = replace(
+        _vllm_stack(
+            engine_args=(
+                "--gpu-memory-utilization",
+                "0.97",
+                "--max-num-seqs",
+                "64",
+            )
+        ),
+        serving_policy=ModelServingPolicy(
+            prefix_caching=True,
+            prefix_cache_hash_algorithm="sha256",
+            chunked_prefill=True,
+            max_batch_tokens=4096,
+        ),
     )
     lease = pool.ensure(
         ModelReplicaPoolRequest(
@@ -905,7 +913,6 @@ def test_auto_model_replica_pool_launches_frozen_vllm_engine_args(
             scope=PLATFORM_SCOPE,
             model_id="qwen3-8b",
             engine="vllm",
-            python_environment_id="vllm",
             cwd=Path(tmp_path),
             compute=ComputeRequirement(
                 cpu_cores=2,
@@ -921,6 +928,10 @@ def test_auto_model_replica_pool_launches_frozen_vllm_engine_args(
     assert argv[argv.index("--gpu-memory-utilization") + 1] == "0.97"
     assert argv[argv.index("--max-num-seqs") + 1] == "64"
     assert "--enable-prefix-caching" in argv
+    assert argv[argv.index("--prefix-caching-hash-algo") + 1] == "sha256"
+    assert "--enable-chunked-prefill" in argv
+    assert argv[argv.index("--max-num-batched-tokens") + 1] == "4096"
+    assert argv[argv.index("--scheduling-policy") + 1] == "fcfs"
     assert f"model-stack:{stack.digest()}" in lease.report.placements[0].deployment.tags
     lease.close()
 
@@ -953,7 +964,6 @@ def test_frozen_vllm_stack_drives_physical_vram_and_cpu_offload_reservation(
             scope=PLATFORM_SCOPE,
             model_id="qwen3-8b",
             engine="vllm",
-            python_environment_id="vllm",
             cwd=Path(tmp_path),
             compute=ComputeRequirement(
                 cpu_cores=2,
@@ -981,7 +991,6 @@ def test_frozen_vllm_stack_rejects_ad_hoc_runtime_drift(tmp_path) -> None:
             scope=PLATFORM_SCOPE,
             model_id="qwen3-8b",
             engine="vllm",
-            python_environment_id="vllm",
             cwd=Path(tmp_path),
             compute=ComputeRequirement(
                 cpu_cores=2,
@@ -1008,7 +1017,6 @@ def test_auto_vllm_pool_rejects_internal_dp_without_owned_rpc_endpoint(
             scope=PLATFORM_SCOPE,
             model_id="qwen3-8b",
             engine="vllm",
-            python_environment_id="vllm",
             cwd=Path(tmp_path),
             compute=ComputeRequirement(
                 cpu_cores=2,
@@ -1052,8 +1060,8 @@ def test_auto_model_replica_pool_does_not_mask_scheduler_failure(tmp_path) -> No
                 scope=PLATFORM_SCOPE,
                 model_id="qwen3-8b",
                 engine="vllm",
-                python_environment_id="vllm",
-                cwd=Path(tmp_path),
+            model_stack=_vllm_stack(),
+                    cwd=Path(tmp_path),
                 compute=ComputeRequirement(
                     cpu_cores=2,
                     memory_bytes=1024,
@@ -1114,7 +1122,7 @@ def test_failed_creation_retains_cleanup_generation_until_retry(
         scope=PLATFORM_SCOPE,
         model_id="qwen3-8b",
         engine="vllm",
-        python_environment_id="vllm",
+            model_stack=_vllm_stack(),
         cwd=Path(tmp_path),
         compute=ComputeRequirement(
             cpu_cores=2,
@@ -1130,8 +1138,14 @@ def test_failed_creation_retains_cleanup_generation_until_retry(
         match="creation failed with pending cleanup",
     ) as raised:
         pool.ensure(request)
-    assert "simulated startup failure" in str(raised.value)
-    assert "simulated creation cleanup failure" in str(raised.value)
+    assert any(
+        "simulated startup failure" in str(item)
+        for item in raised.value.exceptions
+    )
+    assert any(
+        "simulated creation cleanup failure" in str(item)
+        for item in raised.value.exceptions
+    )
     assert pool.pending_cleanup_count == 1
 
     # Failed service convergence must keep both physical resource families
@@ -1187,7 +1201,7 @@ def test_model_replica_pool_cleanup_is_retryable_and_never_releases_resources_un
             scope=PLATFORM_SCOPE,
             model_id="qwen3-8b",
             engine="vllm",
-            python_environment_id="vllm",
+            model_stack=_vllm_stack(),
             cwd=Path(tmp_path),
             compute=ComputeRequirement(
                 cpu_cores=2,
@@ -1244,7 +1258,7 @@ def test_model_replica_pool_runtime_retires_forgotten_active_lease(tmp_path) -> 
             scope=PLATFORM_SCOPE,
             model_id="qwen3-8b",
             engine="vllm",
-            python_environment_id="vllm",
+            model_stack=_vllm_stack(),
             cwd=Path(tmp_path),
             compute=ComputeRequirement(
                 cpu_cores=2,
@@ -1298,7 +1312,7 @@ def test_model_replica_pool_runtime_close_all_is_retryable_and_seals_new_ensure(
         scope=PLATFORM_SCOPE,
         model_id="qwen3-8b",
         engine="vllm",
-        python_environment_id="vllm",
+            model_stack=_vllm_stack(),
         cwd=Path(tmp_path),
         compute=ComputeRequirement(
             cpu_cores=2,
@@ -1329,3 +1343,56 @@ def test_model_replica_pool_runtime_close_all_is_retryable_and_seals_new_ensure(
 
     pool.close_all()
     assert pool.active_lease_count == 0
+
+
+def test_auto_model_replica_pool_materializes_typed_vllm_stack_launch_semantics(
+    tmp_path,
+) -> None:
+    catalog = Catalog()
+    runtime = Runtime(catalog)
+    pool = LocalModelReplicaPoolRuntime(
+        deployment_catalog=catalog,
+        deployment_runtime=runtime,
+        fleet=Fleet(catalog),
+        compute_scheduler=Scheduler(),
+        endpoint_allocations=Endpoints(),
+        compute_lease_guards=ComputeGuards(),
+        endpoint_lease_guards=EndpointGuards(),
+    )
+    stack = replace(
+        _vllm_stack(engine_args=("--max-num-seqs", "64")),
+        reasoning_parser="qwen3",
+        tool_call_parser="hermes",
+        kv_cache_dtype="fp8",
+        attention_backend="FLASH_ATTN",
+        scheduler_policy="priority",
+    )
+
+    lease = pool.ensure(
+        ModelReplicaPoolRequest(
+            pool_id="qwen-typed-launch",
+            scope=PLATFORM_SCOPE,
+            model_id="qwen3-8b",
+            engine="vllm",
+            cwd=Path(tmp_path),
+            compute=ComputeRequirement(
+                cpu_cores=2,
+                memory_bytes=1024,
+                gpu_count=1,
+                minimum_gpu_memory_bytes=40 * 1024**3,
+            ),
+            model_stack=stack,
+            replica_count=1,
+        )
+    )
+
+    spec = lease.report.placements[0].deployment
+    argv = spec.argv
+    assert "--enable-reasoning" in argv
+    assert argv[argv.index("--reasoning-parser") + 1] == "qwen3"
+    assert "--enable-auto-tool-choice" in argv
+    assert argv[argv.index("--tool-call-parser") + 1] == "hermes"
+    assert argv[argv.index("--kv-cache-dtype") + 1] == "fp8"
+    assert argv[argv.index("--scheduling-policy") + 1] == "priority"
+    assert ("VLLM_ATTENTION_BACKEND", "FLASH_ATTN") in spec.environment
+    lease.close()

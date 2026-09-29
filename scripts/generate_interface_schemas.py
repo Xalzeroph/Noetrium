@@ -305,7 +305,7 @@ def build_document(root: Path) -> dict[str, Any]:
     reachable_dsl = {
         "program": _symbols(root, product_source, ("ResearchProgramBuilder",))[0],
         "method": _symbols(root, method_source, ("ResearchMethodBuilder",))[0],
-        "memory": _symbols(root, method_source, ("ResearchMemoryBuilder",))[0],
+        "memory": _symbols(root, method_source, ("ResearchComponentBuilder",))[0],
         "runtime": _symbols(root, runtime_source, ("ResearchOS",))[0],
     }
 
@@ -330,7 +330,7 @@ def build_document(root: Path) -> dict[str, Any]:
             "portfolio_type": "ResearchPortfolio",
             "program_dsl": "ResearchPortfolioBuilder.program -> ResearchProgramBuilder",
             "method_dsl": "ResearchProgramBuilder.method(configure) -> ResearchMethodBuilder callback",
-            "memory_dsl": "ResearchMethodBuilder.memory -> ResearchMemoryBuilder",
+            "memory_dsl": "ResearchMethodBuilder.memory -> ResearchComponentBuilder",
             "runtime_root": "ResearchOS",
             "project_opener": "open_project",
             "boundary": (

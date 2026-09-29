@@ -3,6 +3,7 @@ from __future__ import annotations
 from pathlib import Path
 
 from noetrium import api
+from noetrium_platform.product import research_os as research_os_api
 from noetrium_platform.composition.research_execution_content import (
     compose_research_execution_content,
 )
@@ -34,18 +35,18 @@ def test_research_execution_content_survives_reopen_and_is_shared_with_research_
     assert reopened.references.resolve(reference.reference_id, scope) == reference
     assert reopened.read(reference) == payload
 
-    builder = api.research_os.ResearchProgramBuilder("fixture")
+    builder = research_os_api.ResearchProgramBuilder("fixture")
     builder.definition(
         "bootstrap",
-        kind=api.research_os.ResearchDefinitionKind.CUSTOM,
+        kind=research_os_api.ResearchDefinitionKind.CUSTOM,
         implementation=_bootstrap,
     )
     builder.node(
         "root",
-        kind=api.research_os.ResearchNodeKind.CUSTOM,
+        kind=research_os_api.ResearchNodeKind.CUSTOM,
         definitions=("bootstrap",),
     )
-    portfolio = api.research_os.ResearchPortfolio("fixture", (builder.freeze(),))
+    portfolio = research_os_api.ResearchPortfolio("fixture", (builder.freeze(),))
 
     composition = compose_local_research_os(
         tmp_path / "research-os",

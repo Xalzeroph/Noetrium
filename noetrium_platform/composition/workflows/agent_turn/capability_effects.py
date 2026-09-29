@@ -25,6 +25,9 @@ class CapabilityEffectExecutor:
         self._intent_operations = effect_intents
         self._provider = CapabilityEffectProviderOperations(dispatcher, capability_operations)
 
+    def close(self) -> None:
+        self._intent_operations.close()
+
     def invoke(
         self,
         *,
@@ -50,7 +53,11 @@ class CapabilityEffectExecutor:
             invocation_ordinal=invocation_ordinal,
         )
         probe = build_capability_effect_intent(request, target, invoke_operation_id)
-        existing, inspect_operation = self._intent_operations.inspect(probe, request.context)
+        existing, inspect_operation = self._intent_operations.inspect(
+            probe,
+            request.context,
+            stage=f"read:{invocation_ordinal}",
+        )
         prefix = (inspect_operation,)
         if existing is not None:
             return resolve_existing_capability_effect(
@@ -64,6 +71,7 @@ class CapabilityEffectExecutor:
                 request=request,
                 consumer_component=consumer_component,
                 completion_operation_id=invoke_operation_id,
+                invocation_ordinal=invocation_ordinal,
                 prefix_operations=prefix,
             )
         return execute_new_capability_effect(

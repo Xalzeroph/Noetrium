@@ -12,6 +12,7 @@ from noetrium_platform.substrate.api import (
     CompositionSubject,
     RequirementAddress,
 )
+from noetrium_platform.capabilities.model.api.capability import ProjectModelCapabilityProviderPort
 from noetrium_platform.capabilities.model.api.project import (
     ModelBindingDiagnostic,
     ModelBindingDiagnosticCode,
@@ -19,7 +20,6 @@ from noetrium_platform.capabilities.model.api.project import (
     ModelCapabilityRequirement,
     ModelProjectBindingError,
     ProjectModelBinding,
-    ProjectModelProviderPort,
 )
 from noetrium_platform.foundation.kernel.kernel import Sha256Digest
 
@@ -50,6 +50,37 @@ def _evidence_refs(values: tuple[str, ...]) -> tuple[BindingDiagnosticReference,
         BindingDiagnosticReference(BindingDiagnosticReferenceKind.EVIDENCE, value)
         for value in values
     )
+
+
+def project_bound_model_resolution(
+    binding: ProjectModelBinding,
+    *,
+    owner: CompositionSubject,
+    subject: CompositionSubject,
+) -> BindingResolution[ProjectModelBinding]:
+    """Project one already-qualified Model binding into the canonical PSC-03 proof."""
+    if not isinstance(binding, ProjectModelBinding):
+        raise TypeError("model binding projection requires ProjectModelBinding")
+    if not isinstance(owner, CompositionSubject) or not isinstance(subject, CompositionSubject):
+        raise TypeError("model binding projection owner/subject must be CompositionSubject")
+    proof = BindingProof(
+        owner=owner,
+        subject=subject,
+        requirement_digest=Sha256Digest(binding.requirement_digest),
+        provider_identity=binding.provider_id,
+        provider_profile_digest=Sha256Digest(binding.provider_profile_digest),
+        binding_generation=(
+            f"model-{binding.deployment_generation}-"
+            f"{binding.digest()[:16]}"
+        ),
+        evidence_refs=_evidence_refs(
+            tuple(
+                f"sha256:{digest}"
+                for digest in binding.runtime_canary_evidence_digests
+            )
+        ),
+    )
+    return BindingResolution.bound(binding, proof)
 
 
 def project_model_diagnostic(
@@ -84,14 +115,14 @@ class ModelBindingResolutionAdapter:
 
     def __init__(
         self,
-        provider: ProjectModelProviderPort,
+        provider: ProjectModelCapabilityProviderPort,
         *,
         owner: CompositionSubject,
         subject: CompositionSubject,
         requirement_id: str,
     ) -> None:
-        if not isinstance(provider, ProjectModelProviderPort):
-            raise TypeError("model binding resolution requires ProjectModelProviderPort")
+        if not isinstance(provider, ProjectModelCapabilityProviderPort):
+            raise TypeError("model binding resolution requires ProjectModelCapabilityProviderPort")
         self._provider = provider
         self._owner = owner
         self._subject = subject
@@ -105,7 +136,7 @@ class ModelBindingResolutionAdapter:
         if not isinstance(requirement, ModelCapabilityRequirement):
             raise TypeError("model binding resolution requires ModelCapabilityRequirement")
         try:
-            client = self._provider.bind(requirement)
+            client = self._provider.bind_capability(requirement)
         except ModelProjectBindingError as exc:
             profile_digest = self._provider.profile.digest()
             diagnostics = tuple(
@@ -122,18 +153,15 @@ class ModelBindingResolutionAdapter:
         binding = client.binding
         if binding.requirement_digest != requirement.digest():
             raise ValueError("model binding resolution requirement drift")
-        proof = BindingProof(
+        return project_bound_model_resolution(
+            binding,
             owner=self._owner,
             subject=self._subject,
-            requirement_digest=Sha256Digest(binding.requirement_digest),
-            provider_identity=binding.provider_id,
-            provider_profile_digest=Sha256Digest(binding.provider_profile_digest),
-            binding_generation=f"model-{binding.deployment_generation}",
-            evidence_refs=_evidence_refs(
-                tuple(f"sha256:{digest}" for digest in binding.runtime_canary_evidence_digests)
-            ),
         )
-        return BindingResolution.bound(binding, proof)
 
 
-__all__ = ["ModelBindingResolutionAdapter", "project_model_diagnostic"]
+__all__ = [
+    "ModelBindingResolutionAdapter",
+    "project_bound_model_resolution",
+    "project_model_diagnostic",
+]

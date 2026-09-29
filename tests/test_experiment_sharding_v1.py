@@ -11,6 +11,7 @@ from noetrium_platform.research.experimentation.api import (
     compile_experiment_shard_plan,
 )
 from noetrium_platform.research.experimentation.lifecycle.api import (
+    AssignmentWorkload,
     StudyExecutionPlan,
     StudyAssignment,
     StudyConcurrencyPolicy,
@@ -36,6 +37,7 @@ def _plan() -> StudyExecutionPlan:
         _variant("control", VariantKind.CONTROL),
         _variant("treatment", VariantKind.TREATMENT),
     )
+    workload = AssignmentWorkload(("task-0", "task-1", "task-2"))
     protocol = StudyProtocol(
         study_id="server-sharding-test",
         workload_id="benchmark:test",
@@ -44,6 +46,7 @@ def _plan() -> StudyExecutionPlan:
         seed_schedule_digest=canonical_digest(("0", "1", "2")),
         metric_names=("task_success",),
         task_manifest_digest=canonical_digest(("task-0", "task-1", "task-2")),
+        assignment_workloads=(workload,),
         budget_tiers=("standard",),
         concurrency_policy=StudyConcurrencyPolicy.isolated_parallel_v1(
             max_parallel_repetitions=3,
@@ -73,7 +76,7 @@ def _plan() -> StudyExecutionPlan:
             variant_id=variant.variant_id,
             repetition=repetition,
             seed=str(repetition),
-            task_id=f"task-{repetition}",
+            workload=workload,
         )
         for repetition in range(3)
         for variant in variants

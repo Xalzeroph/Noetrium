@@ -20,9 +20,10 @@ from typing import Protocol, runtime_checkable
 
 from noetrium_platform.capabilities.api import (
     ModelBindingSelectionReceipt,
+    ModelCapabilityInvocation,
+    ProjectModelCapabilityClientPort,
     ProjectModelBinding,
     ProjectModelBindingSet,
-    ProjectModelClientPort,
     ProjectModelRequest,
     ProjectModelResponse,
 )
@@ -405,7 +406,7 @@ def _blob_ref_from_payload(value: object) -> ArtifactBlobRef:
 class ModelInvocationRuntimeBinding:
     program: ModelInvocationProgram
     binding_set: ProjectModelBindingSet
-    clients: tuple[ProjectModelClientPort, ...]
+    clients: tuple[ProjectModelCapabilityClientPort, ...]
     input_digest: str
     request_factory: ModelInvocationRequestFactoryPort
     responses: ArtifactBlobStorePort
@@ -441,11 +442,11 @@ class ModelInvocationRuntimeBinding:
         if type(self.clients) is not tuple or not self.clients:
             raise ValueError("model invocation binding requires model clients")
         if any(
-            not isinstance(client, ProjectModelClientPort)
+            not isinstance(client, ProjectModelCapabilityClientPort)
             for client in self.clients
         ):
             raise TypeError(
-                "model invocation clients must implement ProjectModelClientPort"
+                "model invocation clients must implement ProjectModelCapabilityClientPort"
             )
         client_digests = tuple(client.binding.digest() for client in self.clients)
         if len(client_digests) != len(set(client_digests)):
@@ -504,7 +505,7 @@ class ModelInvocationRuntimeBinding:
             ),
         })
 
-    def client_for(self, binding_digest: str) -> ProjectModelClientPort:
+    def client_for(self, binding_digest: str) -> ProjectModelCapabilityClientPort:
         matches = tuple(
             client
             for client in self.clients
@@ -648,8 +649,15 @@ def _attempt(
         "failure_digest": None,
     }
 
+    invocation = ModelCapabilityInvocation.from_requirement(
+        client.requirement,
+        model_request.envelope.request_id,
+        model_request,
+        context=model_request.envelope.context,
+    )
     try:
-        response = client.complete(model_request)
+        capability_response = client.invoke(invocation)
+        response = capability_response.output
     except Exception as exc:
         binding.last_error = exc
         failure_type = type(exc).__name__
@@ -705,7 +713,7 @@ def _attempt(
 
     if not isinstance(response, ProjectModelResponse):
         raise TypeError(
-            "ProjectModelClientPort.complete must return ProjectModelResponse"
+            "generation capability client must return ProjectModelResponse"
         )
     if response.request_digest != model_request.request_digest:
         raise ValueError("model response request identity drifted")
@@ -947,7 +955,7 @@ class ModelInvocationRuntime:
         run_id: str,
         invocation_id: str,
         binding_set: ProjectModelBindingSet,
-        clients: tuple[ProjectModelClientPort, ...],
+        clients: tuple[ProjectModelCapabilityClientPort, ...],
         input_digest: str,
         request_factory: ModelInvocationRequestFactoryPort,
         selectors: ModelResponseSelectorRegistryPort | None = None,

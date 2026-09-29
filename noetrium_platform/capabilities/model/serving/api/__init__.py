@@ -99,7 +99,7 @@ from ..endpoint.api import (
     QualifiedModelClosurePublicationReceipt,
     QualifiedModelEndpointBinding,
     QualifiedModelEndpointBindingPort,
-    QualifiedModelEndpointReplicaSet,
+    ModelEndpointReplicaSet,
 )
 
 __all__ = [
@@ -134,7 +134,7 @@ __all__ = [
     "QualifiedModelClosurePublicationReceipt",
     "QualifiedModelEndpointBinding",
     "QualifiedModelEndpointBindingPort",
-    "QualifiedModelEndpointReplicaSet",
+    "ModelEndpointReplicaSet",
     "ModelEndpointResponse",
     "ModelEndpointRoute",
 ]

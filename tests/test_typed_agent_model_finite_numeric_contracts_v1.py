@@ -316,6 +316,9 @@ def test_qualified_binding_rejects_non_finite_timeout(value: float) -> None:
     with pytest.raises(ValueError, match="finite"):
         QualifiedModelEndpointBinding(
             role="planner",
+            capability_id="generation",
+            input_schema_id="model.generation.request.v1",
+            output_schema_id="model.generation.response.v1",
             deployment_id="dep",
             deployment_generation="a" * 64,
             base_url="http://127.0.0.1:8000",

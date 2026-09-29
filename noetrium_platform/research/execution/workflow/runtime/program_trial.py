@@ -6,12 +6,12 @@ provided by ResearchProgramHost.
 """
 from __future__ import annotations
 
+from collections.abc import Mapping
 from dataclasses import dataclass, field
 from typing import Callable
 
 from noetrium_platform.foundation.kernel.kernel import (
     ExecutionContext,
-    InMemoryMachineJournal,
     JsonInput,
     JsonObject,
     JsonValue,
@@ -130,7 +130,7 @@ class RuntimeProgramTrialProtocol:
         program: ResearchProgram,
         operations: tuple[TrialProgramOperation, ...],
         max_steps: int = 256,
-        journal: MachineJournalPort | None = None,
+        journal: MachineJournalPort,
         snapshot_store: MachineSnapshotStorePort | None = None,
         restorer: TrialProgramRestorer | None = None,
         restorer_implementation_digest: str | None = None,
@@ -172,8 +172,7 @@ class RuntimeProgramTrialProtocol:
         self.program = program
         self.operations = operations
         self.max_steps = max_steps
-        owned_journal = journal if journal is not None else InMemoryMachineJournal()
-        self._journal = owned_journal
+        self._journal = journal
         runtime_operations: list[ResearchHostOperation] = []
         for item in operations:
             def invoke(
@@ -215,7 +214,7 @@ class RuntimeProgramTrialProtocol:
             host_id=f"trial:{self.protocol_id}",
             program=self.program,
             operations=tuple(runtime_operations),
-            journal=owned_journal,
+            journal=journal,
             snapshot_store=snapshot_store,
             max_steps=self.max_steps,
             dependency_identity={
@@ -314,6 +313,23 @@ class RuntimeProgramTrialProtocol:
             command_id_prefix=machine_id,
         )
         if execution.status is MachineStatus.FAILED:
+            failure = execution.semantic_state.get("program_failure")
+            if isinstance(failure, Mapping):
+                code = failure.get("code")
+                message = failure.get("message")
+                cursor = failure.get("cursor")
+                error_digest = failure.get("error_digest")
+                raise RuntimeError(
+                    "trial RuntimeProgram failed"
+                    + ("" if code is None else f" code={code}")
+                    + ("" if cursor is None else f" cursor={cursor}")
+                    + ("" if message is None else f": {message}")
+                    + (
+                        ""
+                        if error_digest is None
+                        else f" [error_digest={error_digest}]"
+                    )
+                )
             raise RuntimeError("trial RuntimeProgram entered FAILED state")
         if execution.status in {MachineStatus.WAITING, MachineStatus.INTERRUPTED}:
             raise RuntimeError(

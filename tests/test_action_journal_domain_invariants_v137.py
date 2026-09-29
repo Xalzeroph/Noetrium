@@ -14,8 +14,8 @@ from noetrium_platform.infrastructure.reliability.effect.api import (
     EffectIntentPhase,
 )
 from noetrium_platform.infrastructure.reliability.effect.runtime import (
-    InMemoryEffectIntentJournal,
-    SQLiteEffectIntentJournal,
+    memory_effect_intent_journal,
+    sqlite_effect_intent_journal,
 )
 from noetrium_platform.capabilities.environment.api import ActionRequest
 from noetrium_platform.foundation.kernel.kernel import ComponentIdentity, EffectCertainty, EffectClass, EffectReceipt, ExecutionContext
@@ -43,9 +43,9 @@ def _consumption() -> EffectCompletionEvidence:
 
 
 def _journals():
-    yield InMemoryEffectIntentJournal()
+    yield memory_effect_intent_journal()
     with tempfile.TemporaryDirectory() as td:
-        yield SQLiteEffectIntentJournal(Path(td) / "actions.sqlite3")
+        yield sqlite_effect_intent_journal(Path(td) / "actions.sqlite3")
 
 
 @pytest.mark.parametrize("certainty", [EffectCertainty.EFFECT_UNKNOWN, EffectCertainty.EFFECT_POSSIBLE, EffectCertainty.NO_EFFECT])

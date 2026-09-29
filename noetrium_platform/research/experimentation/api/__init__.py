@@ -391,8 +391,6 @@ __all__ = [
     'StudyObservationTableAdapter',
 ]
 
-from noetrium_platform.research.experimentation.lifecycle.api import RunCheckpointManifest
-__all__ = tuple(__all__) + ("RunCheckpointManifest",)
 
 from noetrium_platform.research.experimentation.lifecycle.api import StudyVariantSpec
 __all__ = tuple(__all__) + ("StudyVariantSpec",)

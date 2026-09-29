@@ -19,7 +19,7 @@ from noetrium_platform.capabilities.model.serving.endpoint.api import (
     QualifiedModelClosurePublicationReceipt,
 )
 from noetrium_platform.capabilities.model.serving.endpoint.composition import (
-    build_openai_compatible_runtime_canary_endpoint,
+    build_runtime_canary_endpoint,
 )
 from noetrium_platform.capabilities.model.serving.runtime import run_runtime_canary
 from noetrium_platform.foundation.kernel.concurrency.api import TaskGroupPort
@@ -83,34 +83,40 @@ def qualify_and_publish_model_deployment_closure(
             f"role manifest references unknown deployments: {sorted(unknown_assignments)}"
         )
 
-    required_roles = {item.role for item in role_manifest.assignments}
-    if not required_roles:
-        raise ValueError("qualified closure requires at least one frozen role")
-    roles_by_stack: dict[str, set[str]] = {}
+    required_keys = {item.protocol_key for item in role_manifest.assignments}
+    if not required_keys:
+        raise ValueError("qualified closure requires at least one frozen model capability")
+    keys_by_stack: dict[str, set[tuple[str, str, str, str]]] = {}
     for assignment in role_manifest.assignments:
         deployment = deployment_map[assignment.deployment_id]
-        roles_by_stack.setdefault(deployment.stack.digest(), set()).add(assignment.role)
-    required_roles_by_deployment = {
-        deployment_id: tuple(sorted(roles_by_stack.get(deployment.stack.digest(), set())))
+        keys_by_stack.setdefault(deployment.stack.digest(), set()).add(assignment.protocol_key)
+    required_keys_by_deployment = {
+        deployment_id: tuple(sorted(keys_by_stack.get(deployment.stack.digest(), set())))
         for deployment_id, deployment in deployment_map.items()
     }
     orphaned = sorted(
         deployment_id
-        for deployment_id, roles in required_roles_by_deployment.items()
-        if not roles
+        for deployment_id, keys in required_keys_by_deployment.items()
+        if not keys
     )
     if orphaned:
         raise ValueError(
-            "qualified deployments have no canonical role for their exact stack: "
+            "qualified deployments have no canonical capability for their exact stack: "
             f"{orphaned}"
         )
-    probe_roles = {probe.role for probe in canary_probes}
-    if probe_roles != required_roles:
-        missing = sorted(required_roles - probe_roles)
-        extra = sorted(probe_roles - required_roles)
+    probe_keys = {
+        (probe.role,probe.capability_id,probe.input_schema_id,probe.output_schema_id)
+        for probe in canary_probes
+    }
+    if probe_keys != required_keys:
+        missing = sorted(required_keys - probe_keys)
+        extra = sorted(probe_keys - required_keys)
         raise ValueError(
             f"runtime canary probe coverage mismatch: missing={missing}; extra={extra}"
         )
+    canary_ids = tuple(probe.canary_id for probe in canary_probes)
+    if len(set(canary_ids)) != len(canary_ids):
+        raise ValueError("runtime canary probe ids must be globally unique")
 
     api_keys = {} if api_keys_by_deployment is None else dict(api_keys_by_deployment)
     transports = (
@@ -129,38 +135,68 @@ def qualify_and_publish_model_deployment_closure(
 
     endpoints = {}
     canary_evidence = []
-    probes_by_role = {probe.role: probe for probe in canary_probes}
-    for deployment_id in sorted(deployment_ids):
-        deployment = deployment_map[deployment_id]
-        route = route_map[deployment_id]
-        heartbeat = heartbeat_map[deployment_id]
-        endpoint = build_openai_compatible_runtime_canary_endpoint(
-            deployment,
-            route,
-            task_group=task_group,
-            admission_registry=admission_registry,
-            api_key=api_keys.get(deployment_id, ""),
-            transport=transports.get(deployment_id),
+    probes_by_key: dict[tuple[str, str, str, str], tuple[RuntimeCanaryProbe, ...]] = {}
+    for key in sorted(required_keys):
+        probes_by_key[key] = tuple(
+            sorted(
+                (
+                    probe for probe in canary_probes
+                    if (
+                        probe.role,probe.capability_id,
+                        probe.input_schema_id,probe.output_schema_id,
+                    ) == key
+                ),
+                key=lambda probe: probe.canary_id,
+            )
         )
-        endpoints[deployment_id] = endpoint
-        for role in required_roles_by_deployment[deployment_id]:
-            probe = probes_by_role[role]
-            canary_evidence.append(
-                run_runtime_canary(
-                    endpoint,
-                    deployment,
-                    route,
-                    heartbeat,
-                    probe,
-                    max_heartbeat_age_seconds=max_heartbeat_age_seconds,
-                )
+    try:
+        for deployment_id in sorted(deployment_ids):
+            deployment = deployment_map[deployment_id]
+            route = route_map[deployment_id]
+            heartbeat = heartbeat_map[deployment_id]
+            endpoint = build_runtime_canary_endpoint(
+                deployment,
+                route,
+                task_group=task_group,
+                admission_registry=admission_registry,
+                api_key=api_keys.get(deployment_id, ""),
+                transport=transports.get(deployment_id),
+            )
+            endpoints[deployment_id] = endpoint
+            for key in required_keys_by_deployment[deployment_id]:
+                for probe in probes_by_key[key]:
+                    canary_evidence.append(
+                        run_runtime_canary(
+                            endpoint,
+                            deployment,
+                            route,
+                            heartbeat,
+                            probe,
+                            max_heartbeat_age_seconds=max_heartbeat_age_seconds,
+                        )
+                    )
+    finally:
+        close_errors=[]
+        for deployment_id, endpoint in reversed(tuple(endpoints.items())):
+            closer=getattr(endpoint,"close",None)
+            if callable(closer):
+                try:
+                    closer()
+                except BaseException as exc:
+                    close_errors.append(exc)
+        if close_errors:
+            raise ExceptionGroup(
+                "runtime qualification endpoint shutdown failed",
+                close_errors,
             )
 
     receipts = []
     for deployment_id in sorted(deployment_ids):
         deployment = deployment_map[deployment_id]
         heartbeat = heartbeat_map[deployment_id]
-        roles = required_roles_by_deployment[deployment_id]
+        roles = tuple(sorted({
+            key[0] for key in required_keys_by_deployment[deployment_id]
+        }))
         canary_refs = tuple(sorted(
             f"canary:sha256:{item.evidence_digest}"
             for item in canary_evidence

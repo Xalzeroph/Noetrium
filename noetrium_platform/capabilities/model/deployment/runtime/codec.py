@@ -24,8 +24,8 @@ from .applied import AppliedModelDeployment
 
 
 _DEPLOYMENT_FIELDS = frozenset({
-    "deployment_id", "scope", "service_id", "model_id", "engine", "executable", "argv", "cwd",
-    "python_environment_id", "gpu_devices", "environment", "readiness_url", "readiness_timeout_s",
+    "deployment_id", "scope", "service_id", "model_id", "engine", "container_digest", "executable", "argv", "cwd",
+    "gpu_devices", "environment", "readiness_url", "readiness_timeout_s",
     "stop_timeout_s", "heartbeat_interval_s", "desired_state", "tags",
 })
 _APPLIED_FIELDS = frozenset({"spec", "contract", "environment", "process"})
@@ -52,10 +52,10 @@ def deployment_to_data(value: ModelDeploymentSpec) -> dict[str, object]:
         "service_id": value.service_id,
         "model_id": value.model_id,
         "engine": value.engine,
+        "container_digest": value.container_digest,
         "executable": value.executable,
         "argv": list(value.argv),
         "cwd": str(value.cwd),
-        "python_environment_id": value.python_environment_id,
         "gpu_devices": list(value.gpu_devices),
         "environment": [list(row) for row in value.environment],
         "readiness_url": value.readiness_url,
@@ -84,10 +84,14 @@ def decode_deployment(data: dict[str, object]) -> ModelDeploymentSpec:
         service_id=text(document["service_id"], field="service_id", allow_empty=False),
         model_id=text(document["model_id"], field="model_id", allow_empty=False),
         engine=text(document["engine"], field="engine", allow_empty=False),
+        container_digest=text(
+            document["container_digest"],
+            field="container_digest",
+            allow_empty=False,
+        ),
         executable=text(document["executable"], field="executable", allow_empty=False),
         argv=text_tuple(document["argv"], field="argv"),
         cwd=Path(text(document["cwd"], field="cwd", allow_empty=False)),
-        python_environment_id=optional_text(document["python_environment_id"], field="python_environment_id"),
         gpu_devices=text_tuple(document["gpu_devices"], field="gpu_devices"),
         environment=text_pairs(document["environment"], field="environment"),
         readiness_url=optional_text(document["readiness_url"], field="readiness_url"),

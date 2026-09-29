@@ -8,6 +8,7 @@ validates the result through the canonical research compiler.
 from __future__ import annotations
 
 from dataclasses import dataclass
+from threading import RLock
 from typing import Protocol, runtime_checkable
 
 from noetrium_platform.capabilities.model.api import ProjectModelBinding
@@ -988,6 +989,11 @@ class ResearchBindingAuthority:
         self._capabilities = capabilities
         self._participants = participants
         self._models = models
+        self._cache: dict[
+            str,
+            tuple[ResearchRequirementResolution, ResearchBindingContribution],
+        ] = {}
+        self._cache_lock = RLock()
 
     def _capability_bindings(
         self,
@@ -1127,6 +1133,15 @@ class ResearchBindingAuthority:
                         member_index,
                     )
                 )
+                if not binding.qualified:
+                    gaps.append(
+                        ResearchBindingAssuranceGap(
+                            domain="model",
+                            requirement_key=requirement.role,
+                            requirement_digest=requirement.requirement_digest,
+                            diagnostic_digests=(),
+                        )
+                    )
                 member_index += 1
             if len(proof_digests) != len(set(proof_digests)):
                 raise ValueError(
@@ -1153,6 +1168,12 @@ class ResearchBindingAuthority:
             raise TypeError(
                 "research binding authority requires ResearchStudyDefinition"
             )
+        cache_key = definition.definition_digest
+        with self._cache_lock:
+            cached = self._cache.get(cache_key)
+        if cached is not None:
+            return cached
+
         manifest = self._manifests.resolve(definition)
         if type(manifest) is not ProjectManifest:
             raise TypeError(
@@ -1176,7 +1197,15 @@ class ResearchBindingAuthority:
         # The canonical compiler is the final authority for cross-domain binding
         # invariants. This is validation only; no execution or provider effects.
         compile_research_plan(definition, resolution, contribution)
-        return resolution, contribution
+        resolved = (resolution, contribution)
+        with self._cache_lock:
+            existing = self._cache.setdefault(cache_key, resolved)
+        if existing != resolved:
+            raise RuntimeError(
+                "research binding authority resolved one Study definition to "
+                "multiple immutable binding closures"
+            )
+        return existing
 
 
 __all__ = [

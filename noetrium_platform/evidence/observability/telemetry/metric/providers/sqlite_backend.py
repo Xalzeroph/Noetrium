@@ -5,9 +5,9 @@ from pathlib import Path
 import sqlite3
 
 from noetrium_platform.foundation.kernel.kernel.durability.sqlite import (
+    DurableSQLiteWriterOwner,
     SQLiteDurabilityProfile,
     open_durable_sqlite_reader,
-    open_durable_sqlite_writer,
 )
 from threading import Lock
 from weakref import WeakSet
@@ -34,17 +34,24 @@ class TelemetrySQLiteBackend:
         self._close_incomplete = False
         self._sessions: WeakSet[TelemetryWriteSession] = WeakSet()
         path.parent.mkdir(parents=True, exist_ok=True)
-        self._writer_actor.call("initialize-schema", self._initialize_owned)
-
-    def _connect_writer(self) -> sqlite3.Connection:
-        return open_durable_sqlite_writer(
+        self._writers = DurableSQLiteWriterOwner(
             self.path,
             timeout_seconds=30.0,
             profile=SQLiteDurabilityProfile.PROJECTION,
         )
+        self._writer_actor.call("initialize-schema", self._initialize_owned)
+        self._default_writer_session = TelemetryWriteSession(
+            self._writers,
+            self._writer_actor,
+        )
+        self._sessions.add(self._default_writer_session)
+
+    @property
+    def writer_connection_open_count(self) -> int:
+        return self._writers.open_count
 
     def _initialize_owned(self) -> None:
-        with closing(self._connect_writer()) as db:
+        with self._writers.session() as db:
             initialize_telemetry_schema(db)
 
     def connect_reader(self) -> sqlite3.Connection:
@@ -58,7 +65,7 @@ class TelemetrySQLiteBackend:
         with self._state_lock:
             if self._closed:
                 raise RuntimeError("telemetry backend closed")
-            session = TelemetryWriteSession(self._connect_writer, self._writer_actor)
+            session = TelemetryWriteSession(self._writers, self._writer_actor)
             self._sessions.add(session)
             return session
 
@@ -66,8 +73,11 @@ class TelemetrySQLiteBackend:
         return TelemetryReadSession(self.connect_reader)
 
     def insert_many(self, values: tuple[TelemetryStorageWriteRow, ...]) -> tuple[int, ...]:
-        with self.writer_session() as session:
-            return session.insert_many(values)
+        with self._state_lock:
+            if self._closed:
+                raise RuntimeError("telemetry backend closed")
+            session = self._default_writer_session
+        return session.insert_many(values)
 
     def query(
         self,
@@ -101,6 +111,10 @@ class TelemetrySQLiteBackend:
                     session.close()
                 except BaseException as exc:
                     errors.append(exc)
+            try:
+                self._writer_actor.call("close-writer-owner", self._writers.close)
+            except BaseException as exc:
+                errors.append(exc)
             self._close_incomplete = bool(errors)
         if errors:
             raise ExceptionGroup("telemetry backend close failed", errors)

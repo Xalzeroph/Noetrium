@@ -14,7 +14,6 @@ from noetrium_platform.foundation.kernel.kernel import (
     require_sha256,
 )
 from noetrium_platform.research.execution.api import (
-    AsyncOperationDispatchPort,
     MethodAgentLoopPort,
     MethodChildMachinePort,
     MethodObservationPort,
@@ -28,6 +27,9 @@ from noetrium_platform.research.execution.api import (
 )
 from noetrium_platform.research.execution.api import OperationDispatchPort
 from noetrium_platform.research.execution.api import (
+    ExecutionBudgetAuthorityPort,
+)
+from noetrium_platform.research.execution.api import (
     MethodEvidenceFactoryPort,
     MethodRuntimeBinderPort,
     MethodRuntimePortInventory,
@@ -40,6 +42,12 @@ from ..api import WorkloadEvaluation, WorkloadMethodInvocation
 
 def _safe_task_key(task: ExperimentTaskSpec) -> str:
     return f"task-{canonical_digest({'task_id': task.task_id, 'lineage_id': task.lineage_id})[:24]}"
+
+
+def _lifetime_invocation_key(context: ExecutionContext) -> str | None:
+    if context.lifetime_id is None:
+        return None
+    return canonical_digest({"lifetime_id": context.lifetime_id})[:24]
 
 
 def _port_identity(value: object, name: str) -> str:
@@ -271,6 +279,7 @@ class DeclarativeExecutionResultAdapter:
             diagnostics={
                 "method_run_digest": result.run_digest,
                 "method_status": result.status.value,
+                "failure_id": result.failure_id,
                 "model_call_count": sum(
                     1 for event in result.events if event.kind == "model.invocation"
                 ),
@@ -292,6 +301,7 @@ class MethodRuntimeBindings:
     """
 
     runtime_binder: MethodRuntimeBinderPort
+    state_root: Path
     evidence_factory: MethodEvidenceFactoryPort | None = None
     capabilities: CapabilityPort | None = None
     dispatcher: OperationDispatchPort | None = None
@@ -299,8 +309,7 @@ class MethodRuntimeBindings:
     agent_loop: MethodAgentLoopPort | None = None
     schemas: MethodSchemaPort | None = None
     child_machines: MethodChildMachinePort | None = None
-    async_dispatcher: AsyncOperationDispatchPort | None = None
-    state_root: Path | None = None
+    execution_budget: ExecutionBudgetAuthorityPort | None = None
     runtime_binding_digest: str | None = None
 
     def __post_init__(self) -> None:
@@ -310,8 +319,15 @@ class MethodRuntimeBindings:
             self.evidence_factory, MethodEvidenceFactoryPort
         ):
             raise TypeError("declarative runtime evidence_factory must satisfy MethodEvidenceFactoryPort")
-        if self.state_root is not None:
-            object.__setattr__(self, "state_root", Path(self.state_root))
+        object.__setattr__(self, "state_root", Path(self.state_root))
+        if self.execution_budget is not None and not isinstance(
+            self.execution_budget,
+            ExecutionBudgetAuthorityPort,
+        ):
+            raise TypeError(
+                "declarative workload execution_budget must satisfy "
+                "ExecutionBudgetAuthorityPort"
+            )
         if self.runtime_binding_digest is not None:
             require_sha256(self.runtime_binding_digest, "declarative workload runtime_binding_digest")
 
@@ -332,7 +348,7 @@ class MethodRuntimeBindings:
             ("agent_loop", self.agent_loop),
             ("schemas", self.schemas),
             ("child_machines", self.child_machines),
-            ("async_dispatcher", self.async_dispatcher),
+            ("execution_budget", self.execution_budget),
         ):
             if value is not None:
                 identities[name] = _port_identity(value, name)
@@ -341,14 +357,15 @@ class MethodRuntimeBindings:
             "ports": identities,
         })
 
-    def bind(
+    def materialize_context(
         self,
         *,
         program: MethodProgram,
         task: ExperimentTaskSpec,
         context: ExecutionContext,
         binding_plan_digest: str,
-    ) -> MethodRuntimeContext:
+        invocation_id: str | None = None,
+    ) -> tuple[MethodRuntimeContext, Path]:
         if not isinstance(program, MethodProgram):
             raise TypeError("declarative runtime requires MethodProgram")
         if not isinstance(task, ExperimentTaskSpec):
@@ -356,11 +373,37 @@ class MethodRuntimeBindings:
         if not isinstance(context, ExecutionContext):
             raise TypeError("declarative runtime requires ExecutionContext")
         require_sha256(binding_plan_digest, "declarative workload binding_plan_digest")
+        if invocation_id is not None and (
+            type(invocation_id) is not str or not invocation_id.strip()
+        ):
+            raise ValueError("declarative runtime invocation_id must be non-empty text")
+        lifetime_key = _lifetime_invocation_key(context)
+        invocation_key = (
+            None
+            if invocation_id is None
+            else canonical_digest({"invocation_id": invocation_id})[:24]
+        )
+        base_run_id = (
+            f"{context.run_id}:{task.task_id}"
+            if lifetime_key is None
+            else f"{context.run_id}:lifetime:{lifetime_key}:{task.task_id}"
+        )
         execution = replace(
             context,
-            run_id=f"{context.run_id}:{task.task_id}",
+            run_id=(
+                base_run_id
+                if invocation_key is None
+                else f"{base_run_id}:invocation:{invocation_key}"
+            ),
             task_id=task.task_id,
-            span_id=f"{context.span_id}:{canonical_digest(task.task_id)[:12]}",
+            span_id=(
+                f"{context.span_id}:{canonical_digest(task.task_id)[:12]}"
+                if invocation_key is None
+                else (
+                    f"{context.span_id}:{canonical_digest(task.task_id)[:12]}"
+                    f":invocation:{invocation_key[:12]}"
+                )
+            ),
         )
         runtime_binding_digest = self.resolved_runtime_binding_digest()
         schema_digest = canonical_digest({
@@ -368,15 +411,17 @@ class MethodRuntimeBindings:
             "input": program.input_schema,
             "output": program.output_schema,
         })
-        task_root: Path | None = None
-        evidence = None
-        if self.state_root is not None:
-            if self.evidence_factory is None:
-                raise RuntimeError(
-                    "durable declarative runtime requires MethodEvidenceFactoryPort"
-                )
-            task_root = self.state_root / _safe_task_key(task)
-            evidence = self.evidence_factory.create(task_root / "evidence")
+        if self.evidence_factory is None:
+            raise RuntimeError(
+                "durable declarative runtime requires MethodEvidenceFactoryPort"
+            )
+        task_root = self.state_root
+        if lifetime_key is not None:
+            task_root = task_root / f"lifetime-{lifetime_key}"
+        task_root = task_root / _safe_task_key(task)
+        if invocation_key is not None:
+            task_root = task_root / f"invocation-{invocation_key}"
+        evidence = self.evidence_factory.create(task_root / "evidence")
         runtime = MethodRuntimeContext(
             execution=execution,
             capabilities=self.capabilities,
@@ -386,17 +431,36 @@ class MethodRuntimeBindings:
             agent_loop=self.agent_loop,
             schemas=self.schemas,
             child_machines=self.child_machines,
-            async_dispatcher=self.async_dispatcher,
+            execution_budget=self.execution_budget,
             binding_plan_digest=binding_plan_digest,
             runtime_binding_digest=runtime_binding_digest,
             schema_digest=schema_digest,
         )
+        return runtime, task_root
+
+    def bind(
+        self,
+        *,
+        program: MethodProgram,
+        task: ExperimentTaskSpec,
+        context: ExecutionContext,
+        binding_plan_digest: str,
+        invocation_id: str | None = None,
+    ) -> MethodRuntimeContext:
+        runtime, task_root = self.materialize_context(
+            program=program,
+            task=task,
+            context=context,
+            binding_plan_digest=binding_plan_digest,
+            invocation_id=invocation_id,
+        )
         return self.runtime_binder.bind(
             program,
             runtime,
-            state_root=None if task_root is None else task_root / "machine",
-            machine_id=f"method:{execution.run_id}",
+            state_root=task_root / "machine",
+            machine_id=f"method:{runtime.execution.run_id}",
         )
+
 
 
 def compose_method_runtime_bindings(
@@ -405,10 +469,10 @@ def compose_method_runtime_bindings(
     *,
     runtime_binder: MethodRuntimeBinderPort,
     evidence_factory: MethodEvidenceFactoryPort | None = None,
-    state_root: str | Path | None = None,
-    dispatcher: OperationDispatchPort | None = None,
+    state_root: str | Path,
+    dispatcher: OperationDispatchPort,
     observation: MethodObservationPort | None = None,
-    async_dispatcher: AsyncOperationDispatchPort | None = None,
+    execution_budget: ExecutionBudgetAuthorityPort | None = None,
 ) -> MethodRuntimeBindings:
     """Resolve a MethodProgram runtime closure from one explicit shared inventory.
 
@@ -449,8 +513,8 @@ def compose_method_runtime_bindings(
             if MethodRuntimePort.CHILD_MACHINES in ports
             else None
         ),
-        async_dispatcher=async_dispatcher,
-        state_root=None if state_root is None else Path(state_root),
+        state_root=Path(state_root),
+        execution_budget=execution_budget,
         runtime_binding_digest=plan.digest,
     )
 

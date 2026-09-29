@@ -9,7 +9,7 @@ import unittest
 
 from noetrium_platform.capabilities.participant.core.api import ParticipantImplementationIdentity
 from noetrium_platform.capabilities.participant.core.api import ParticipantImplementationInventory, ParticipantRuntimeBindingManifest, ParticipantRuntimeInventory
-from noetrium_platform.capabilities.model.request.prompt.runtime import DurablePromptRegistry, PromptPromotionEvidence
+from noetrium_platform.capabilities.model.request.prompt.runtime import PromptRegistry, PromptPromotionEvidence
 from noetrium_platform.capabilities.model.request.prompt.runtime import default_block_policies, default_output_schemas, default_prompt_specs
 from noetrium_platform.capabilities.model.request.prompt.runtime.qualification import PromptQualification
 from noetrium_platform.foundation.governance.release.runtime.manifest import build_release_manifest

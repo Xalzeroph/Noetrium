@@ -6,7 +6,7 @@ from pathlib import Path
 from noetrium_platform.capabilities.model.serving.endpoint.api import (
     ModelEndpointRoute,
     OperationalModelEndpointReplica,
-    OperationalModelEndpointReplicaSet,
+    ModelEndpointReplicaSet,
     OperationalModelServingInventory,
 )
 from noetrium_platform.foundation.kernel.kernel import ImmutableModelIdentity, canonical_digest
@@ -31,7 +31,7 @@ def _inventory() -> OperationalModelServingInventory:
             tokenizer_revision="b" * 64,
         ),
         served_model_name="qwen",
-        replica_set=OperationalModelEndpointReplicaSet(
+        replica_set=ModelEndpointReplicaSet(
             (
                 OperationalModelEndpointReplica(
                     ModelEndpointRoute(

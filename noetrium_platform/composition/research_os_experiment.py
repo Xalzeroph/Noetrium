@@ -15,7 +15,6 @@ from noetrium_platform.research.experimentation.api import (
 )
 from noetrium_platform.research.experimentation.lifecycle.api import (
     BoundStudyExecutionPort,
-    RunArtifactStorePort,
     StudyMetricAggregationPort,
 )
 
@@ -210,102 +209,11 @@ class ResearchOSExperimentReconciliationPort(Protocol):
 
 
 @dataclass(frozen=True, slots=True)
-class ResearchOSExperimentArtifactStoreBinding:
-    """Run-local Artifact authority selected only after an execution cut exists."""
-
-    closure_digest: str
-    execution_cut_id: str
-    artifacts: RunArtifactStorePort
-    factory_identity_digest: str
-    store_identity_digest: str
-    binding_digest: str = field(init=False)
-
-    def __post_init__(self) -> None:
-        require_sha256(
-            self.closure_digest,
-            "experiment artifact binding closure_digest",
-        )
-        require_sha256(
-            self.execution_cut_id,
-            "experiment artifact binding execution_cut_id",
-        )
-        if not isinstance(self.artifacts, RunArtifactStorePort):
-            raise TypeError(
-                "experiment artifact binding artifacts must satisfy RunArtifactStorePort"
-            )
-        require_sha256(
-            self.factory_identity_digest,
-            "experiment artifact binding factory_identity_digest",
-        )
-        require_sha256(
-            self.store_identity_digest,
-            "experiment artifact binding store_identity_digest",
-        )
-        object.__setattr__(
-            self,
-            "binding_digest",
-            canonical_digest(
-                {
-                    "closure_digest": self.closure_digest,
-                    "execution_cut_id": self.execution_cut_id,
-                    "factory_identity_digest": self.factory_identity_digest,
-                    "store_identity_digest": self.store_identity_digest,
-                }
-            ),
-        )
-
-    def validate_context(
-        self,
-        closure: ResearchOSExperimentClosure,
-        *,
-        execution_cut_id: str,
-        factory_identity_digest: str,
-    ) -> None:
-        if type(closure) is not ResearchOSExperimentClosure:
-            raise TypeError(
-                "experiment artifact binding validation requires closure"
-            )
-        require_sha256(
-            execution_cut_id,
-            "experiment artifact binding validation execution_cut_id",
-        )
-        require_sha256(
-            factory_identity_digest,
-            "experiment artifact binding validation factory identity",
-        )
-        if (
-            self.closure_digest != closure.closure_digest
-            or self.execution_cut_id != execution_cut_id
-            or self.factory_identity_digest != factory_identity_digest
-        ):
-            raise ValueError(
-                "experiment artifact binding does not belong to the execution cut"
-            )
-
-
-@runtime_checkable
-class ResearchOSExperimentArtifactStoreFactoryPort(Protocol):
-    """Bind one durable run-local Artifact store after execution identity exists."""
-
-    @property
-    def identity_digest(self) -> str: ...
-
-    def resolve(
-        self,
-        closure: ResearchOSExperimentClosure,
-        *,
-        execution_cut_id: str,
-    ) -> ResearchOSExperimentArtifactStoreBinding: ...
-
-
-@dataclass(frozen=True, slots=True)
 class ResearchOSExperimentRuntimeBinding:
-    """Static Experiment runtime binding admitted before execution-cut creation.
+    """Static scientific/runtime binding for one Experiment closure.
 
-    Adapter, aggregation, reconciliation and Artifact-store factory semantics are
-    frozen here. A concrete RunArtifactStore is intentionally not: it is bound
-    later against the durable execution_cut_id so independent executions cannot
-    share run-local Artifact truth.
+    Artifact publication is platform infrastructure owned by the canonical
+    Artifact authority and is deliberately excluded from this scientific binding.
     """
 
     closure_digest: str
@@ -313,11 +221,9 @@ class ResearchOSExperimentRuntimeBinding:
     research_binding_digest: str
     adapter: BoundStudyExecutionPort
     aggregation: StudyMetricAggregationPort
-    artifact_store_factory: ResearchOSExperimentArtifactStoreFactoryPort
     reconciliation: ResearchOSExperimentReconciliationPort
     adapter_identity_digest: str
     aggregation_identity_digest: str
-    artifact_store_factory_identity_digest: str
     reconciliation_identity_digest: str
     runtime_binding_digest: str = field(init=False)
 
@@ -344,27 +250,12 @@ class ResearchOSExperimentRuntimeBinding:
                 "StudyMetricAggregationPort"
             )
         if not isinstance(
-            self.artifact_store_factory,
-            ResearchOSExperimentArtifactStoreFactoryPort,
-        ):
-            raise TypeError(
-                "experiment runtime binding Artifact factory must satisfy "
-                "ResearchOSExperimentArtifactStoreFactoryPort"
-            )
-        if not isinstance(
             self.reconciliation,
             ResearchOSExperimentReconciliationPort,
         ):
             raise TypeError(
                 "experiment runtime binding reconciliation must satisfy "
                 "ResearchOSExperimentReconciliationPort"
-            )
-        if (
-            self.artifact_store_factory.identity_digest
-            != self.artifact_store_factory_identity_digest
-        ):
-            raise ValueError(
-                "experiment Artifact-store factory identity digest drifted"
             )
         if (
             self.reconciliation.identity_digest
@@ -376,10 +267,6 @@ class ResearchOSExperimentRuntimeBinding:
         for field_name, value in (
             ("adapter_identity_digest", self.adapter_identity_digest),
             ("aggregation_identity_digest", self.aggregation_identity_digest),
-            (
-                "artifact_store_factory_identity_digest",
-                self.artifact_store_factory_identity_digest,
-            ),
             ("reconciliation_identity_digest", self.reconciliation_identity_digest),
         ):
             require_sha256(value, f"experiment runtime binding {field_name}")
@@ -393,9 +280,6 @@ class ResearchOSExperimentRuntimeBinding:
                     "research_binding_digest": self.research_binding_digest,
                     "adapter_identity_digest": self.adapter_identity_digest,
                     "aggregation_identity_digest": self.aggregation_identity_digest,
-                    "artifact_store_factory_identity_digest": (
-                        self.artifact_store_factory_identity_digest
-                    ),
                     "reconciliation_identity_digest": (
                         self.reconciliation_identity_digest
                     ),
@@ -422,31 +306,6 @@ class ResearchOSExperimentRuntimeBinding:
                 "experiment runtime binding does not belong to the closure"
             )
 
-    def bind_artifacts(
-        self,
-        closure: ResearchOSExperimentClosure,
-        *,
-        execution_cut_id: str,
-    ) -> ResearchOSExperimentArtifactStoreBinding:
-        self.validate_closure(closure)
-        require_sha256(
-            execution_cut_id,
-            "experiment runtime artifact execution_cut_id",
-        )
-        bound = self.artifact_store_factory.resolve(
-            closure,
-            execution_cut_id=execution_cut_id,
-        )
-        if type(bound) is not ResearchOSExperimentArtifactStoreBinding:
-            raise TypeError(
-                "experiment Artifact-store factory returned invalid binding"
-            )
-        bound.validate_context(
-            closure,
-            execution_cut_id=execution_cut_id,
-            factory_identity_digest=self.artifact_store_factory_identity_digest,
-        )
-        return bound
 
 
 @runtime_checkable
@@ -520,8 +379,6 @@ def compile_research_os_experiment_closure(
 
 
 __all__ = [
-    "ResearchOSExperimentArtifactStoreBinding",
-    "ResearchOSExperimentArtifactStoreFactoryPort",
     "ResearchOSExperimentClosure",
     "ResearchOSExperimentClosureMissing",
     "ResearchOSExperimentClosurePort",

@@ -16,6 +16,7 @@ from noetrium_platform.foundation.kernel.kernel import (
     MachineProgramRef,
     MachineExecutor,
     MachineSnapshot,
+    MachineStateDelta,
     MachineConformanceHarness,
     NshCompiler,
     ProgramLock,
@@ -45,7 +46,7 @@ class _Interpreter:
             state.machine_id,
             command.command_id,
             state.revision,
-            {"last": command.kind},
+            MachineStateDelta.set(("last",), command.kind),
             event_payloads=({"kind": command.kind},),
         )
 
@@ -69,11 +70,12 @@ def test_machine_authority_fences_expired_owner_before_commit() -> None:
         authority_lease=lease_a,
     )
     runtime.open({})
-    runtime.step(_command("m1", 0, "c1"), _Interpreter())
+    interpreter = _Interpreter()
+    runtime.step(_command("m1", 0, "c1"), interpreter)
     clock.advance(6.0)
     authority.acquire("m1", "worker-b", ttl_seconds=5)
     with pytest.raises(MachineLeaseLost):
-        runtime.step(_command("m1", 1, "c2"), _Interpreter())
+        runtime.step(_command("m1", 1, "c2"), interpreter)
 
 
 def test_directory_machine_authority_preserves_epoch_across_restart(tmp_path) -> None:
@@ -120,7 +122,7 @@ def test_authenticated_worker_candidate_is_admitted_and_committed() -> None:
     class Worker:
         def propose(self, envelope: NIREnvelope, state: MachineSnapshot) -> WorkerReply:
             proposal = TransitionProposal(
-                envelope.machine_id, envelope.command_id, state.revision, {"worker": True}
+                envelope.machine_id, envelope.command_id, state.revision, MachineStateDelta.set(("worker",), True)
             )
             return WorkerReply(
                 proposal,

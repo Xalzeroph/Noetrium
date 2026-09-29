@@ -4,7 +4,6 @@ from threading import Event
 
 import pytest
 
-from noetrium_platform.platform import bind_research_execution_pool
 from noetrium_platform.composition.research_execution_pool import ResearchExecutionPool
 from noetrium_platform.composition.shared_host_pressure import (
     ResourceCompetitionDemand,
@@ -22,7 +21,6 @@ from noetrium_platform.infrastructure.resources.compute.api import (
 )
 from noetrium_platform.research.execution.policy.api import (
     AdmissionBudget,
-    AdmissionMode,
     AdmissionRejected,
 )
 
@@ -53,7 +51,7 @@ class _FixedHostObserver:
 
 
 def test_pool_group_lifecycle_unregisters_identity_for_safe_reuse() -> None:
-    pool = bind_research_execution_pool()
+    pool = ResearchExecutionPool()
     try:
         first = pool.open_experiment_group("study:reuse", tenant_id="project-a")
         pool.close_experiment_group(first)
@@ -65,7 +63,7 @@ def test_pool_group_lifecycle_unregisters_identity_for_safe_reuse() -> None:
 
 
 def test_experiment_and_model_io_use_independent_admission_domains() -> None:
-    pool = bind_research_execution_pool(
+    pool = ResearchExecutionPool(
         experiment_concurrency_budget=ConcurrencyBudget(
             max_blocking_io_workers=1, max_cpu_workers=1, max_async_io_in_flight=1,
         ),
@@ -130,12 +128,12 @@ def test_workload_domains_share_one_physical_resource_reservation_ledger() -> No
     )
     orchestration = pool.open_orchestration_group(
         "reserve-orchestration",
-        admission_mode=AdmissionMode.REJECT,
+        admission_queue_wait_timeout_seconds=0.0,
         resource_demand=demand,
     )
     experiment = pool.open_experiment_group(
         "reserve-experiment",
-        admission_mode=AdmissionMode.REJECT,
+        admission_queue_wait_timeout_seconds=0.0,
         resource_demand=demand,
     )
     entered = Event()
@@ -198,7 +196,7 @@ def test_workload_domains_share_one_physical_resource_reservation_ledger() -> No
 
 
 def test_pool_shares_exact_model_admission_by_deployment_generation() -> None:
-    pool = bind_research_execution_pool()
+    pool = ResearchExecutionPool()
     generation = "a" * 64
     try:
         first = pool.model_admission.controller_for(
@@ -230,7 +228,7 @@ def test_orchestration_experiment_model_dependency_chain_has_no_nested_admission
         max_blocking_io_in_flight=1,
         max_async_io_in_flight=1,
     )
-    pool = bind_research_execution_pool(
+    pool = ResearchExecutionPool(
         orchestration_concurrency_budget=one,
         orchestration_admission_budget=one_admission,
         experiment_concurrency_budget=one,
@@ -277,7 +275,7 @@ def test_orchestration_experiment_model_dependency_chain_has_no_nested_admission
 
 
 def test_workload_quiesce_seals_work_domains_but_keeps_cleanup_orchestration_alive() -> None:
-    pool = bind_research_execution_pool()
+    pool = ResearchExecutionPool()
     pool.quiesce_workloads()
 
     for operation in (
@@ -288,7 +286,7 @@ def test_workload_quiesce_seals_work_domains_but_keeps_cleanup_orchestration_ali
         lambda: pool.environment_instance_lease_guard_factory(object()),
         lambda: pool.docker_container_lease_guard_factory(object()),
     ):
-        with pytest.raises(RuntimeError, match="workloads are quiesced"):
+        with pytest.raises(RuntimeError, match="workloads are quiesc"):
             operation()
 
     cleanup = pool.open_orchestration_group("terminal-cleanup")
@@ -297,7 +295,7 @@ def test_workload_quiesce_seals_work_domains_but_keeps_cleanup_orchestration_ali
 
 
 def test_workload_failure_does_not_block_physical_quiescence_or_pool_close() -> None:
-    pool = bind_research_execution_pool()
+    pool = ResearchExecutionPool()
     group = pool.open_experiment_group("failed-workload")
 
     def boom(context: TaskContextPort) -> None:
@@ -433,6 +431,8 @@ def test_workload_domains_share_one_cpu_provider_while_control_is_isolated() -> 
     pool = ResearchExecutionPool(
         orchestration_concurrency_budget=budget,
         experiment_concurrency_budget=budget,
+        machine_concurrency_budget=budget,
+        capability_io_concurrency_budget=budget,
         model_io_concurrency_budget=budget,
     )
     orchestration = pool.open_orchestration_group("shared-cpu-orchestration")

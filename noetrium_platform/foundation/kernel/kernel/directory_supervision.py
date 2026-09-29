@@ -10,7 +10,7 @@ from .supervision import (
     ChildMachineRecord,
     ChildMachineStatus,
     ChildMachineSupervisorPort,
-    InMemoryChildMachineSupervisor,
+    _ChildMachineSupervisorState,
 )
 
 
@@ -70,8 +70,8 @@ def _decode_record(value: object) -> ChildMachineRecord:
     return record
 
 
-class DirectoryChildMachineSupervisor(
-    InMemoryChildMachineSupervisor, ChildMachineSupervisorPort
+class ChildMachineSupervisor(
+    _ChildMachineSupervisorState, ChildMachineSupervisorPort
 ):
     """Canonical record ledger for parent/child lifecycle observations."""
 
@@ -137,7 +137,7 @@ class DirectoryChildMachineSupervisor(
                     ChildMachineStatus.CANCELED,
                 }:
                     return current
-                updated = InMemoryChildMachineSupervisor.observe(
+                updated = _ChildMachineSupervisorState.observe(
                     self,
                     ChildMachineRecord(
                         current.link, ChildMachineStatus.CANCELED,
@@ -153,4 +153,4 @@ class DirectoryChildMachineSupervisor(
             return super().list(parent_machine_id)
 
 
-__all__ = ["DirectoryChildMachineSupervisor"]
+__all__ = ["ChildMachineSupervisor"]

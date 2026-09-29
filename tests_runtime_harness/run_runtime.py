@@ -1,13 +1,13 @@
 """Default long-lived run RuntimeProgram.
 
 The run Runtime owns paper-variable execution semantics around participant
-lifetime: binding, opening, optional checkpoint restoration, active-run
+lifetime: binding, opening, Machine-Journal recovery, active-run
 suspension, reverse cleanup and finalization. It does not own Run truth; the
 separate RunMachine remains the authoritative scientific run lifecycle.
 """
 from __future__ import annotations
 
-from dataclasses import dataclass, field, replace
+from dataclasses import dataclass, field
 
 from noetrium_platform.research.execution.api import (
     BoundParticipants,
@@ -37,9 +37,6 @@ from noetrium_platform.research.execution.api import (
     ResearchHostOperation,
     RuntimeProgramBuilder,
     ResearchProgramHost,
-)
-from noetrium_platform.research.experimentation.lifecycle.checkpoint.api import (
-    RunCheckpointCoordinatorPort,
 )
 from noetrium_platform.research.experimentation.lifecycle.experiment.api import ExperimentSpec
 from noetrium_platform.research.experimentation.lifecycle.run.api.identity import RunIdentity
@@ -147,11 +144,8 @@ class _RunRuntimeFrame:
     binder: object
     lifecycle: ParticipantSessionLifecyclePort
     trial: object
-    checkpoint: RunCheckpointCoordinatorPort | None
     machine_journal: MachineJournalPort
     machine_snapshot_store: MachineSnapshotStorePort | None
-    restore_checkpoint_id: str | None
-    restore_cycle_identity: DecisionCycleIdentity | None
     context: ExecutionContext
     operations: list[OperationResult[JsonValue]] = field(default_factory=list)
     bound: BoundParticipants | None = None
@@ -293,111 +287,19 @@ def _open_next(
     )
 
 
-def _require_restore_identity(
-    frame: _RunRuntimeFrame,
-) -> DecisionCycleIdentity:
-    identity = frame.restore_cycle_identity
-    if identity is None:
-        raise ValueError(
-            "restore_cycle_identity is required for exact checkpoint recovery"
-        )
-    expected = (
-        frame.identity.run_id,
-        frame.identity.session_id,
-        frame.identity.trace_id,
-    )
-    actual = (
-        identity.run_id,
-        identity.session_id,
-        identity.trace_id,
-    )
-    if actual != expected:
-        raise ValueError(
-            "restore cycle identity does not belong to requested run identity"
-        )
-    return identity
-
-
 def _restore(
     request: ProgramNodeRequest,
     binding: object,
 ) -> ProgramNodeResult:
-    frame = _frame(binding)
-    checkpoint_id = frame.restore_checkpoint_id
-    if checkpoint_id is None:
-        return ProgramNodeResult(
-            value={"restored": False},
-            state_update={"restored": False},
-            next_node="activate",
-            events=({"type": "run_runtime_restore_skipped"},),
-        )
-    if frame.checkpoint is None:
-        frame.primary_error = RuntimeError(
-            "restore requested but run Runtime has no checkpoint store"
-        )
-        return ProgramNodeResult(
-            value={"restored": False},
-            state_update={
-                "outcome": "failed",
-                "failure_digest": canonical_digest({
-                    "type": type(frame.primary_error).__name__,
-                    "message": str(frame.primary_error),
-                }),
-            },
-            next_node="close" if frame.participant_sessions else "finalize",
-            events=({"type": "run_runtime_restore_failed"},),
-        )
-    if frame.bound is None:
-        raise RuntimeError("run restore requires bound participants")
-
-    try:
-        cycle_identity = _require_restore_identity(frame)
-        restore_context = identity_context(cycle_identity, frame.spec)
-        restored = frame.checkpoint.restore(
-            checkpoint_id,
-            spec=frame.spec,
-            bound=frame.bound,
-            participant_sessions=tuple(frame.participant_sessions),
-            context=restore_context,
-            cycle_identity=cycle_identity,
-        )
-        frame.operations.extend(restored.operation_results)
-        generations = tuple(sorted(
-            (ref.role, ref.generation)
-            for ref in restored.bundle.manifest.participant_snapshots
-            if ref.generation is not None
-        ))
-        frame.context = replace(
-            restore_context,
-            checkpoint_id=checkpoint_id,
-            participant_generations=generations,
-        )
-    except BaseException as exc:
-        frame.primary_error = exc
-        return ProgramNodeResult(
-            value={"restored": False},
-            state_update={
-                "outcome": "failed",
-                "failure_digest": canonical_digest({
-                    "type": type(exc).__name__,
-                    "message": str(exc),
-                }),
-            },
-            next_node="close" if frame.participant_sessions else "finalize",
-            events=({"type": "run_runtime_restore_failed"},),
-        )
-
+    _ = request
+    _frame(binding)
     return ProgramNodeResult(
-        value={"restored": True, "checkpoint_id": checkpoint_id},
-        state_update={
-            "restored": True,
-            "checkpoint_id": checkpoint_id,
-            "participant_generations": frame.context.participant_generations,
-        },
+        value={"restored": False},
+        state_update={"restored": False},
         next_node="activate",
         events=({
-            "type": "run_runtime_restored",
-            "checkpoint_id": checkpoint_id,
+            "type": "run_runtime_machine_journal_recovery",
+            "authority": "machine_journal",
         },),
     )
 
@@ -682,7 +584,6 @@ class RunRuntimeForTest:
         binder: object,
         lifecycle: ParticipantSessionLifecyclePort,
         trial: object,
-        checkpoint: RunCheckpointCoordinatorPort | None,
         *,
         machine_journal: MachineJournalPort,
         machine_snapshot_store: MachineSnapshotStorePort | None = None,
@@ -692,7 +593,6 @@ class RunRuntimeForTest:
         self._binder = binder
         self._lifecycle = lifecycle
         self._trial = trial
-        self._checkpoint = checkpoint
         self._machine_journal = machine_journal
         self._machine_snapshot_store = machine_snapshot_store
         self._host = ResearchProgramHost(
@@ -712,9 +612,6 @@ class RunRuntimeForTest:
         self,
         spec: ExperimentSpec,
         identity: RunIdentity,
-        *,
-        restore_checkpoint_id: str | None = None,
-        restore_cycle_identity: DecisionCycleIdentity | None = None,
     ) -> RunSessionForTest:
         if not isinstance(spec, ExperimentSpec):
             raise TypeError("RunRuntime.open requires ExperimentSpec")
@@ -727,11 +624,8 @@ class RunRuntimeForTest:
             binder=self._binder,
             lifecycle=self._lifecycle,
             trial=self._trial,
-            checkpoint=self._checkpoint,
             machine_journal=self._machine_journal,
             machine_snapshot_store=self._machine_snapshot_store,
-            restore_checkpoint_id=restore_checkpoint_id,
-            restore_cycle_identity=restore_cycle_identity,
             context=_open_context(spec, identity),
         )
         machine_id = (
@@ -757,7 +651,7 @@ class RunRuntimeForTest:
                 "run_id": identity.run_id,
                 "session_id": identity.session_id,
                 "experiment_spec_digest": spec.identity_digest(),
-                "restore_requested": restore_checkpoint_id is not None,
+                "restore_requested": False,
                 "outcome": "new",
             },
             command_id=f"{machine_id}:start",
@@ -797,7 +691,6 @@ class RunRuntimeForTest:
             run_identity=identity,
             bound=frame.bound,
             trial=self._trial,
-            checkpoint=self._checkpoint,
             participant_sessions=tuple(frame.participant_sessions),
         )
         return RunSessionForTest(

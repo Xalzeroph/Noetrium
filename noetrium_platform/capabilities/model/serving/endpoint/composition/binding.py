@@ -34,12 +34,21 @@ class FrozenDeploymentEndpointBinder:
         self._routes = {route.deployment_id: route for route in routes}
         self._endpoint_factory = endpoint_factory
 
-    def bind(self, deployments: FrozenDeploymentSet, *, role: str) -> FrozenEndpointBinding:
-        if not role.strip():
-            raise ValueError("endpoint binding role is required")
-        assignments = [item for item in deployments.assignments if item.role == role]
+    def bind(
+        self,
+        deployments: FrozenDeploymentSet,
+        *,
+        role: str,
+        capability_id: str,
+        input_schema_id: str,
+        output_schema_id: str,
+    ) -> FrozenEndpointBinding:
+        key=(role,capability_id,input_schema_id,output_schema_id)
+        if any(type(value) is not str or not value.strip() for value in key):
+            raise ValueError("endpoint binding requires exact role/capability protocol")
+        assignments = [item for item in deployments.assignments if item.protocol_key == key]
         if len(assignments) != 1:
-            raise ValueError(f"role must have exactly one frozen deployment assignment: {role}")
+            raise ValueError(f"model capability must have exactly one frozen deployment assignment: {key}")
         deployment_id = assignments[0].deployment_id
         deployment = next(
             (item for item in deployments.deployments if item.deployment_id == deployment_id),

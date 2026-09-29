@@ -171,36 +171,64 @@ def durable_create_binary_file(
                 )
 
 
-def durable_publish_immutable_bytes(
-    path: Path,
-    payload: bytes,
+def durable_publish_immutable_bytes_many(
+    items: tuple[tuple[Path, bytes], ...],
     *,
     staging_dir: Path | None = None,
 ) -> None:
-    """Durably publish immutable bytes without exposing a partial target.
+    """Durably publish immutable files under one batched directory barrier."""
+    if type(items) is not tuple:
+        raise TypeError("immutable durable batch must be tuple")
+    if not items:
+        return
 
-    Publication is staged in a unique file, fsynced, then linked into the
-    canonical pathname with no-replace semantics. A crash before the link can
-    leave only a non-canonical staging file; a crash after the link leaves a
-    complete canonical inode. Callers may retry and verify an existing target
-    after FileExistsError.
-    """
-    if type(payload) is not bytes:
-        raise TypeError("immutable durable payload must be bytes")
-    parent = path.parent
-    parent.mkdir(parents=True, exist_ok=True)
-    staging = parent if staging_dir is None else Path(staging_dir)
-    staging.mkdir(parents=True, exist_ok=True)
-    tmp = staging / f"{path.name}.immutable.{os.getpid()}.{uuid4().hex}"
+    normalized: list[tuple[Path, bytes]] = []
+    targets: set[Path] = set()
+    for raw_path, payload in items:
+        path = Path(raw_path)
+        if type(payload) is not bytes:
+            raise TypeError("immutable durable payload must be bytes")
+        if path in targets:
+            raise ValueError("immutable durable batch contains duplicate target")
+        targets.add(path)
+        normalized.append((path, payload))
+
+    staging = None if staging_dir is None else Path(staging_dir)
+    if staging is not None:
+        staging.mkdir(parents=True, exist_ok=True)
+
+    staged: list[tuple[Path, Path]] = []
+    target_parents: set[Path] = set()
+    staging_parents: set[Path] = set()
     primary: BaseException | None = None
     try:
-        with tmp.open("xb") as handle:
-            handle.write(payload)
-            handle.flush()
-            flush_file_descriptor(handle.fileno())
-        fsync_directory(staging)
-        _windows_file_operation(lambda: os.link(tmp, path))
-        fsync_directory(parent)
+        for path, payload in normalized:
+            parent = path.parent
+            parent.mkdir(parents=True, exist_ok=True)
+            stage_parent = parent if staging is None else staging
+            stage_parent.mkdir(parents=True, exist_ok=True)
+            tmp = stage_parent / (
+                f"{path.name}.immutable.{os.getpid()}.{uuid4().hex}"
+            )
+            with tmp.open("xb") as handle:
+                handle.write(payload)
+                handle.flush()
+            staged.append((tmp, path))
+            staging_parents.add(stage_parent)
+
+        # Queue all writes before explicit file durability barriers so the
+        # filesystem can group dirty-data and journal work.
+        for tmp, _path in staged:
+            _flush_file(tmp)
+
+        for tmp, path in staged:
+            _windows_file_operation(
+                lambda tmp=tmp, path=path: os.link(tmp, path)
+            )
+            target_parents.add(path.parent)
+
+        for parent in sorted(target_parents, key=lambda item: item.as_posix()):
+            fsync_directory(parent)
     except FileExistsError as exc:
         primary = exc
         raise
@@ -209,20 +237,46 @@ def durable_publish_immutable_bytes(
         if isinstance(exc, (KeyboardInterrupt, SystemExit)):
             raise
         raise DurableFileWriteError(
-            f"durable immutable publication failed for {path}"
+            "durable immutable batch publication failed"
         ) from exc
     finally:
-        try:
-            if tmp.exists():
-                _windows_file_operation(lambda: tmp.unlink(missing_ok=True))
-                fsync_directory(staging)
-        except BaseException as cleanup_exc:
+        cleanup_error: BaseException | None = None
+        touched_staging: set[Path] = set()
+        for tmp, _path in staged:
+            try:
+                if tmp.exists():
+                    _windows_file_operation(
+                        lambda tmp=tmp: tmp.unlink(missing_ok=True)
+                    )
+                    touched_staging.add(tmp.parent)
+            except BaseException as exc:
+                if cleanup_error is None:
+                    cleanup_error = exc
+        for parent in sorted(touched_staging, key=lambda item: item.as_posix()):
+            try:
+                fsync_directory(parent)
+            except BaseException as exc:
+                if cleanup_error is None:
+                    cleanup_error = exc
+        if cleanup_error is not None:
             if primary is None:
-                raise
+                raise cleanup_error
             primary.add_note(
-                "immutable publication staging cleanup failed: "
-                f"{type(cleanup_exc).__name__}"
+                "immutable batch staging cleanup failed: "
+                f"{type(cleanup_error).__name__}"
             )
+
+
+def durable_publish_immutable_bytes(
+    path: Path,
+    payload: bytes,
+    *,
+    staging_dir: Path | None = None,
+) -> None:
+    durable_publish_immutable_bytes_many(
+        ((path, payload),),
+        staging_dir=staging_dir,
+    )
 
 
 def durable_truncate_file(path: Path, size: int) -> None:
@@ -242,39 +296,85 @@ def durable_truncate_file(path: Path, size: int) -> None:
         ) from exc
 
 
-def atomic_replace_bytes(path: Path, payload: bytes) -> None:
-    """Durably publish *payload* at *path* using same-directory atomic replace.
+def atomic_replace_bytes_many(
+    items: tuple[tuple[Path, bytes], ...],
+) -> None:
+    """Durably replace one or many files through one publication mechanism."""
+    if type(items) is not tuple:
+        raise TypeError("atomic replace batch must be tuple")
+    if not items:
+        return
 
-    The protocol is intentionally minimal and domain-agnostic:
+    normalized: list[tuple[Path, bytes]] = []
+    targets: set[Path] = set()
+    for raw_path, payload in items:
+        path = Path(raw_path)
+        if type(payload) is not bytes:
+            raise TypeError("atomic replace payload must be bytes")
+        if path in targets:
+            raise ValueError("atomic replace batch contains duplicate target")
+        targets.add(path)
+        normalized.append((path, payload))
 
-        write unique temp -> fsync(temp) -> replace -> fsync(parent)
-
-    A unique temp name avoids concurrent writers corrupting one another's temp
-    file.  Higher layers remain responsible for single-writer/CAS semantics and
-    document schemas/checksums.
-    """
-
-    parent = path.parent
-    parent.mkdir(parents=True, exist_ok=True)
-    tmp = parent / f".{path.name}.tmp.{os.getpid()}.{uuid4().hex}"
-    published = False
+    staged: list[tuple[Path, Path]] = []
+    parents: set[Path] = set()
+    primary: BaseException | None = None
     try:
-        with tmp.open("xb") as handle:
-            handle.write(payload)
-            handle.flush()
-            flush_file_descriptor(handle.fileno())
-        _windows_file_operation(lambda: os.replace(tmp, path))
-        published = True
-        fsync_directory(parent)
+        for path, payload in normalized:
+            parent = path.parent
+            parent.mkdir(parents=True, exist_ok=True)
+            tmp = parent / f".{path.name}.tmp.{os.getpid()}.{uuid4().hex}"
+            with tmp.open("xb") as handle:
+                handle.write(payload)
+                handle.flush()
+            staged.append((tmp, path))
+            parents.add(parent)
+
+        for tmp, _path in staged:
+            _flush_file(tmp)
+
+        for tmp, path in staged:
+            _windows_file_operation(
+                lambda tmp=tmp, path=path: os.replace(tmp, path)
+            )
+
+        for parent in sorted(parents, key=lambda item: item.as_posix()):
+            fsync_directory(parent)
     except BaseException as exc:
-        if not published:
-            try:
-                tmp.unlink(missing_ok=True)
-            except OSError:
-                pass
+        primary = exc
         if isinstance(exc, (KeyboardInterrupt, SystemExit)):
             raise
-        raise DurableFileWriteError(f"durable atomic publication failed for {path}") from exc
+        raise DurableFileWriteError(
+            "durable atomic batch publication failed"
+        ) from exc
+    finally:
+        cleanup_error: BaseException | None = None
+        cleanup_parents: set[Path] = set()
+        for tmp, _path in staged:
+            try:
+                if tmp.exists():
+                    tmp.unlink(missing_ok=True)
+                    cleanup_parents.add(tmp.parent)
+            except OSError as exc:
+                if cleanup_error is None:
+                    cleanup_error = exc
+        for parent in sorted(cleanup_parents, key=lambda item: item.as_posix()):
+            try:
+                fsync_directory(parent)
+            except BaseException as exc:
+                if cleanup_error is None:
+                    cleanup_error = exc
+        if cleanup_error is not None:
+            if primary is None:
+                raise cleanup_error
+            primary.add_note(
+                "atomic batch staging cleanup failed: "
+                f"{type(cleanup_error).__name__}"
+            )
+
+
+def atomic_replace_bytes(path: Path, payload: bytes) -> None:
+    atomic_replace_bytes_many(((path, payload),))
 
 
 def durable_replace_file(source: Path, target: Path) -> None:
@@ -332,8 +432,10 @@ def durable_unlink(path: Path) -> None:
 __all__ = [
     "DurableFileWriteError",
     "atomic_replace_bytes",
+    "atomic_replace_bytes_many",
     "durable_create_binary_file",
     "durable_publish_immutable_bytes",
+    "durable_publish_immutable_bytes_many",
     "durable_truncate_file",
     "durable_replace_file",
     "durable_replace_directory",

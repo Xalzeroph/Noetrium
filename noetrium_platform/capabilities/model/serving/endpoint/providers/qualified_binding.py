@@ -17,7 +17,7 @@ from ..api import (
     ModelEndpointRoute,
     QualifiedModelEndpointBinding,
     QualifiedModelEndpointBindingPort,
-    QualifiedModelEndpointReplicaSet,
+    ModelEndpointReplicaSet,
 )
 
 
@@ -71,10 +71,19 @@ class PersistedQualifiedModelEndpointBinding(QualifiedModelEndpointBindingPort):
             if not isinstance(digest, str) or _SHA256.fullmatch(digest) is None:
                 raise ValueError("qualified deployment closure runtime receipt digest is invalid")
         self._runtime_receipt_digests = receipt_digests
-        canaries_by_binding: dict[tuple[str, str], list[RuntimeCanaryEvidence]] = {}
+        canaries_by_binding: dict[
+            tuple[str, str, str, str, str], list[RuntimeCanaryEvidence]
+        ] = {}
         for evidence in closure.runtime_canary_evidence:
             if evidence.passed:
-                canaries_by_binding.setdefault((evidence.deployment_id, evidence.role), []).append(evidence)
+                key=(
+                    evidence.deployment_id,
+                    evidence.role,
+                    evidence.capability_id,
+                    evidence.input_schema_id,
+                    evidence.output_schema_id,
+                )
+                canaries_by_binding.setdefault(key, []).append(evidence)
         self._canaries_by_binding = {
             key: tuple(values) for key, values in canaries_by_binding.items()
         }
@@ -85,7 +94,10 @@ class PersistedQualifiedModelEndpointBinding(QualifiedModelEndpointBindingPort):
         deployment_id: str,
         *,
         role: str,
-        prompt_generation: str,
+        capability_id: str,
+        input_schema_id: str,
+        output_schema_id: str,
+        prompt_generation: str | None,
         now: float,
     ) -> QualifiedModelEndpointBinding:
         deployment = self._deployments.get(deployment_id)
@@ -123,16 +135,13 @@ class PersistedQualifiedModelEndpointBinding(QualifiedModelEndpointBindingPort):
             raise ValueError(f"runtime qualification receipt does not qualify role: {role}")
         if receipt.created_at > now:
             raise ValueError("runtime qualification receipt is from the future")
-        if receipt.valid_until < now:
-            raise ValueError(
-                "runtime qualification receipt is stale: "
-                f"valid_until={receipt.valid_until:.3f}; now={now:.3f}; "
-                f"expired_by={now - receipt.valid_until:.3f}s; "
-                "refresh the live qualification closure before launching"
-            )
-        canaries = self._canaries_by_binding.get((deployment_id, role), ())
+        canary_key=(deployment_id,role,capability_id,input_schema_id,output_schema_id)
+        canaries = self._canaries_by_binding.get(canary_key, ())
         if not canaries:
-            raise ValueError(f"runtime canary evidence does not qualify role: {role}")
+            raise ValueError(
+                "runtime canary evidence does not qualify model capability: "
+                f"{(role, capability_id, input_schema_id, output_schema_id)}"
+            )
         route_digest = canonical_digest(route)
         for evidence in canaries:
             if evidence.deployment_generation != deployment_generation:
@@ -150,6 +159,9 @@ class PersistedQualifiedModelEndpointBinding(QualifiedModelEndpointBindingPort):
 
         return QualifiedModelEndpointBinding(
             role=role,
+            capability_id=capability_id,
+            input_schema_id=input_schema_id,
+            output_schema_id=output_schema_id,
             deployment_id=deployment_id,
             deployment_generation=deployment_generation,
             base_url=route.base_url,
@@ -163,24 +175,55 @@ class PersistedQualifiedModelEndpointBinding(QualifiedModelEndpointBindingPort):
             runtime_canary_evidence_digests=tuple(item.evidence_digest for item in canaries),
             tokenizer_sha256=deployment.stack.artifacts.tokenizer_sha256,
             chat_template_sha256=deployment.stack.artifacts.chat_template_sha256,
+            verified_capabilities=tuple(sorted({
+                capability
+                for item in canaries
+                for capability in item.verified_capabilities
+            })),
             completion_path=route.completion_path,
             timeout_s=route.timeout_s,
         )
 
-    def binding_for(self, *, role: str, prompt_generation: str) -> QualifiedModelEndpointBinding:
+    def binding_for(
+        self,
+        *,
+        role: str,
+        capability_id: str,
+        input_schema_id: str,
+        output_schema_id: str,
+        prompt_generation: str | None = None,
+    ) -> QualifiedModelEndpointBinding:
         """Revalidate the canonical frozen deployment assigned to one role."""
 
-        if not role.strip() or not prompt_generation.strip():
-            raise ValueError("qualified model binding role and prompt generation are required")
+        for name,value in (
+            ("role",role),
+            ("capability_id",capability_id),
+            ("input_schema_id",input_schema_id),
+            ("output_schema_id",output_schema_id),
+        ):
+            if type(value) is not str or not value.strip():
+                raise ValueError(f"qualified model binding {name} is required")
+        if prompt_generation is not None and (
+            type(prompt_generation) is not str
+            or not prompt_generation.strip()
+        ):
+            raise ValueError(
+                "qualified model binding prompt generation must be non-empty text or None"
+            )
         now = float(self._clock())
         if not math.isfinite(now):
             raise ValueError("runtime qualification binding clock must be finite")
-        deployment_id = self._roles.deployment_for(role)
+        deployment_id = self._roles.deployment_for(
+            role,capability_id,input_schema_id,output_schema_id
+        )
         if deployment_id not in self._deployments:
             raise ValueError(f"qualified role assignment has no deployment: {deployment_id}")
         return self._binding_for_deployment(
             deployment_id,
             role=role,
+            capability_id=capability_id,
+            input_schema_id=input_schema_id,
+            output_schema_id=output_schema_id,
             prompt_generation=prompt_generation,
             now=now,
         )
@@ -189,20 +232,26 @@ class PersistedQualifiedModelEndpointBinding(QualifiedModelEndpointBindingPort):
         self,
         *,
         role: str,
-        prompt_generation: str,
-    ) -> QualifiedModelEndpointReplicaSet:
+        capability_id: str,
+        input_schema_id: str,
+        output_schema_id: str,
+        prompt_generation: str | None = None,
+    ) -> ModelEndpointReplicaSet:
         """Discover every currently valid replica of the canonical role binding.
 
         The role manifest still freezes the scientific model choice to exactly one
         canonical deployment. Additional deployments are eligible only when they
         prove the exact same immutable model and stack and independently carry a
-        fresh qualification receipt plus passed canary evidence for the role.
-        Stale/unqualified operational replicas are omitted; the canonical role
-        assignment itself must remain valid or resolution fails closed.
+        generation-bound qualification receipt plus passed canary evidence for the role.
+        Identity-drifted or unqualified operational replicas are omitted; the canonical
+        role assignment itself must remain valid or resolution fails closed.
         """
 
         canonical = self.binding_for(
             role=role,
+            capability_id=capability_id,
+            input_schema_id=input_schema_id,
+            output_schema_id=output_schema_id,
             prompt_generation=prompt_generation,
         )
         now = float(self._clock())
@@ -216,19 +265,30 @@ class PersistedQualifiedModelEndpointBinding(QualifiedModelEndpointBindingPort):
                 continue
             if deployment_id not in self._routes:
                 continue
-            if (deployment_id, role) not in self._canaries_by_binding:
+            if (
+                deployment_id,
+                role,
+                capability_id,
+                input_schema_id,
+                output_schema_id,
+            ) not in self._canaries_by_binding:
                 continue
             try:
                 binding = self._binding_for_deployment(
                     deployment_id,
                     role=role,
+                    capability_id=capability_id,
+                    input_schema_id=input_schema_id,
+                    output_schema_id=output_schema_id,
                     prompt_generation=prompt_generation,
                     now=now,
                 )
             except (KeyError, ValueError):
                 continue
+            if binding.verified_capabilities != canonical.verified_capabilities:
+                continue
             values.append(binding)
-        return QualifiedModelEndpointReplicaSet(tuple(values))
+        return ModelEndpointReplicaSet(tuple(values))
 
 
 __all__ = [

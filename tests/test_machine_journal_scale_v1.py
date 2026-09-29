@@ -10,6 +10,8 @@ from noetrium_platform.foundation.kernel.kernel import (
     MachineCommand,
     MachineCommit,
     MachineIntegrityError,
+    MachineStateDelta,
+    MachineStateMutation,
     TransitionProposal,
 )
 
@@ -33,7 +35,9 @@ def _commit(
         machine_id=machine_id,
         command_id=command_id,
         base_revision=revision - 1,
-        state_delta={"revision": revision},
+        state_delta=MachineStateDelta((
+            MachineStateMutation(("revision",), revision),
+        )),
     )
     return MachineCommit(
         machine_id=machine_id,
@@ -56,10 +60,10 @@ def test_single_writer_200_appends_do_not_redecode_committed_prefix(
     decoded = 0
     original = journal_module._decode_commit
 
-    def counted(value):
+    def counted(value, *, previous_state=None):
         nonlocal decoded
         decoded += 1
-        return original(value)
+        return original(value, previous_state=previous_state)
 
     monkeypatch.setattr(journal_module, "_decode_commit", counted)
     journal = DirectoryMachineJournal(tmp_path)

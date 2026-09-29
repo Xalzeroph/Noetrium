@@ -19,8 +19,10 @@ from .contracts import (
     TaskState,
     TaskTopologySnapshot,
 )
+from .single_flight import SingleFlightCache
 from .ports import (
     CancellationTokenPort,
+    CpuWorkerPoolProviderPort,
     ExecutorPort,
     ExecutionPermitLeasePort,
     ExecutionPermitPort,
@@ -36,7 +38,9 @@ from .ports import (
 __all__ = [
     "SerialMailboxPolicy",
     "SerialMailboxRejected",
+    "SingleFlightCache",
     "CancellationTokenPort",
+    "CpuWorkerPoolProviderPort",
     "ConcurrencyBudget",
     "ConcurrencyTopologySnapshot",
     "Deadline",

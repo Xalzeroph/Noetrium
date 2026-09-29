@@ -63,14 +63,13 @@ from ..program_host import (
     ResearchHostOperation,
 )
 from ..child_machine_batch import (
-    BatchCapableRegisteredChildResearchMachineExecutor,
     ChildResearchMachineBatchExecution,
-    ChildResearchMachineBatchExecutor,
     ChildResearchMachineBatchItem,
     ChildResearchMachineBatchPort,
     ChildResearchMachineBatchMechanicsPort,
     ChildResearchMachineBatchMechanicsResult,
     ChildResearchMachineBatchRequest,
+    execute_child_research_machine_batch,
 
 )
 from ..child_machine import (
@@ -82,7 +81,6 @@ from ..child_machine import (
     ChildResearchMachineExecutor,
     ChildResearchMachineRequest,
     RegisteredChildResearchHost,
-    RegisteredChildResearchMachineExecutor,
 )
 from ..context_program import (
     ContextBlockProgram,
@@ -111,10 +109,11 @@ from ..capability_program import (
     CapabilityMediatorRegistry,
     CapabilityMediatorRegistryPort,
     CapabilityProgram,
+    CapabilityProgramBinding,
+    CapabilityProgramBuilder,
     CapabilityRuleProgram,
     CapabilityRuntimeBinding,
     capability_mediator_binding_digest,
-    capability_program_from_policy,
     capability_runtime_module,
     capability_runtime_operations,
 )
@@ -254,16 +253,17 @@ __all__ = [
     "CapabilityMediatorRegistry",
     "CapabilityMediatorRegistryPort",
     "CapabilityProgram",
+    "CapabilityProgramBinding",
+    "CapabilityProgramBuilder",
     "CapabilityRuleProgram",
     "CapabilityRuntimeBinding",
-    "BatchCapableRegisteredChildResearchMachineExecutor",
     "ChildResearchMachineBatchExecution",
-    "ChildResearchMachineBatchExecutor",
     "ChildResearchMachineBatchItem",
     "ChildResearchMachineBatchPort",
     "ChildResearchMachineBatchMechanicsPort",
     "ChildResearchMachineBatchMechanicsResult",
     "ChildResearchMachineBatchRequest",
+    "execute_child_research_machine_batch",
 
     "ChildFailurePolicy",
     "ChildResearchBindingFactory",
@@ -353,7 +353,6 @@ __all__ = [
     "RecoveryRuntimeBinding",
     "RecoverySignal",
     "RegisteredChildResearchHost",
-    "RegisteredChildResearchMachineExecutor",
     "ResearchHostBindingRestorer",
     "ResearchHostExecution",
     "ResearchHostHandler",
@@ -392,7 +391,6 @@ __all__ = [
     "VisibilitySubject",
     "build_rule_handlers",
     "capability_mediator_binding_digest",
-    "capability_program_from_policy",
     "capability_runtime_module",
     "communication_initial_data",
     "communication_rule_set",

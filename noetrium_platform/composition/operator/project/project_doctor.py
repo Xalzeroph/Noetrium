@@ -38,6 +38,7 @@ from noetrium_platform.foundation.portfolio.api import (
 
 _MANIFEST_PATH = "project.manifest.json"
 _PACKAGE = re.compile(r"[a-z][a-z0-9_]*")
+_DEPENDENCY_NAME = re.compile(r"^\s*([A-Za-z0-9][A-Za-z0-9._-]*)")
 _PROBE_TIMEOUT_S = 30
 _PROBE_SCRIPT = r'''
 from noetrium import api
@@ -77,9 +78,38 @@ def _project_metadata(root: Path) -> tuple[str, str, tuple[str, ...]]:
     project_id = str(project.get("name", "")).strip()
     version = str(project.get("version", "")).strip()
     dependencies = project.get("dependencies", ())
-    if not isinstance(dependencies, list):
-        raise ValueError("project dependencies must be an array")
-    return project_id, version, tuple(str(item) for item in dependencies)
+    if not isinstance(dependencies, list) or any(
+        not isinstance(item, str) or not item.strip()
+        for item in dependencies
+    ):
+        raise ValueError("project dependencies must be a non-empty string array")
+    return project_id, version, tuple(item.strip() for item in dependencies)
+
+
+def _dependency_name(requirement: str) -> str:
+    match = _DEPENDENCY_NAME.match(requirement)
+    if match is None:
+        raise ValueError("invalid project dependency requirement")
+    return re.sub(r"[-_.]+", "-", match.group(1)).lower()
+
+
+def _pins_current_platform(
+    dependencies: tuple[str, ...],
+    platform_version: str,
+) -> bool:
+    try:
+        platform_rows = tuple(
+            item
+            for item in dependencies
+            if _dependency_name(item) == "noetrium"
+        )
+    except ValueError:
+        return False
+    expected = f"noetrium=={platform_version}".lower()
+    return (
+        len(platform_rows) == 1
+        and re.sub(r"\s+", "", platform_rows[0]).lower() == expected
+    )
 
 
 def _manifest(root: Path) -> ProjectManifest | None:
@@ -180,9 +210,15 @@ def doctor_project(
     platform = installed_platform_identity()
     checks.append(_check(
         "platform_version",
-        dependencies == (f"noetrium=={platform.version}",),
-        f"project pins installed noetrium {platform.version}",
-        "regenerate with the installed qualified noetrium artifact",
+        _pins_current_platform(dependencies, platform.version),
+        (
+            f"project pins installed noetrium {platform.version}; "
+            "additional project dependencies are allowed"
+        ),
+        (
+            f"pin exactly noetrium=={platform.version}; "
+            "declare additional Python dependencies normally in pyproject.toml"
+        ),
     ))
     checks.append(_check(
         "platform_provenance",

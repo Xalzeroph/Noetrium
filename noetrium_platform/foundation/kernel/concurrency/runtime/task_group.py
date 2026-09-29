@@ -281,15 +281,15 @@ class StructuredTaskGroup:
         *,
         deadline: Deadline | None = None,
     ) -> tuple[TaskHandlePort[T], ...]:
-        """Submit one all-or-none concurrent BLOCKING_IO ready set.
+        """Submit one all-or-none concurrent ready set on one concurrent I/O lane.
 
         Resource admission and provider capacity are reserved for the entire set
         before any user callable can begin. Unsupported lanes fail closed rather
         than silently degrading to sequential execution.
         """
 
-        if not isinstance(items, tuple) or len(items) < 2:
-            raise ValueError("atomic task batch requires at least two items")
+        if not isinstance(items, tuple) or not items:
+            raise ValueError("atomic task batch requires a non-empty tuple")
         specs: list[ExecutionSpec] = []
         functions: list[Callable[..., T]] = []
         for item in items:
@@ -300,9 +300,12 @@ class StructuredTaskGroup:
             spec, fn = item
             if not isinstance(spec, ExecutionSpec):
                 raise TypeError("atomic task batch requires ExecutionSpec values")
-            if spec.lane_kind is not ExecutionLaneKind.BLOCKING_IO:
+            if spec.lane_kind not in {
+                ExecutionLaneKind.BLOCKING_IO,
+                ExecutionLaneKind.ASYNC_IO,
+            }:
                 raise ValueError(
-                    "atomic task batch currently supports BLOCKING_IO only"
+                    "atomic task batch requires BLOCKING_IO or ASYNC_IO"
                 )
             if not callable(fn):
                 raise TypeError("atomic task batch callable required")
@@ -311,6 +314,10 @@ class StructuredTaskGroup:
         task_ids = tuple(spec.task_id for spec in specs)
         if len(set(task_ids)) != len(task_ids):
             raise ValueError("atomic task batch task ids must be unique")
+        lane_kinds = {spec.lane_kind for spec in specs}
+        if len(lane_kinds) != 1:
+            raise ValueError("atomic task batch requires one shared execution lane")
+        lane_kind = next(iter(lane_kinds))
 
         with self._submission_scope():
             records: list[_TaskRecord] = []
@@ -319,7 +326,7 @@ class StructuredTaskGroup:
                     records.append(
                         self._reserve_task(
                             spec.task_id,
-                            ExecutionLaneKind.BLOCKING_IO,
+                            lane_kind,
                             None,
                             deadline,
                             spec.failure_scope,
@@ -343,18 +350,38 @@ class StructuredTaskGroup:
                     self.cancel,
                 )
 
-                def invoke(
-                    owned_record: _TaskRecord = record,
-                    owned_context: _TaskContext = context,
-                    owned_fn: Callable[..., T] = fn,
-                ) -> T:
-                    self._mark_running(owned_record.task_id)
-                    owned_context.checkpoint()
-                    value = owned_fn(owned_context)
-                    owned_context.checkpoint()
-                    return value
+                if lane_kind is ExecutionLaneKind.ASYNC_IO:
+                    async def invoke_async(
+                        owned_record: _TaskRecord = record,
+                        owned_context: _TaskContext = context,
+                        owned_fn: Callable[..., T] = fn,
+                    ) -> T:
+                        self._mark_running(owned_record.task_id)
+                        owned_context.checkpoint()
+                        value = owned_fn(owned_context)
+                        import inspect
+                        if not inspect.isawaitable(value):
+                            raise TypeError(
+                                "ASYNC_IO atomic batch callable must return an awaitable"
+                            )
+                        result = await value
+                        owned_context.checkpoint()
+                        return result
 
-                invocations.append(invoke)
+                    invocations.append(invoke_async)
+                else:
+                    def invoke_blocking(
+                        owned_record: _TaskRecord = record,
+                        owned_context: _TaskContext = context,
+                        owned_fn: Callable[..., T] = fn,
+                    ) -> T:
+                        self._mark_running(owned_record.task_id)
+                        owned_context.checkpoint()
+                        value = owned_fn(owned_context)
+                        owned_context.checkpoint()
+                        return value
+
+                    invocations.append(invoke_blocking)
 
             effective_deadlines = {
                 record.deadline.monotonic_deadline
@@ -377,7 +404,7 @@ class StructuredTaskGroup:
             try:
                 raws = self._execution.submit_atomic_batch(
                     self._group_id,
-                    ExecutionLaneKind.BLOCKING_IO,
+                    lane_kind,
                     tuple(invocations),
                     deadline=batch_deadline,
                     cancellation=self._provider_submission_cancellation,
