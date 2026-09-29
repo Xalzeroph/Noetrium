@@ -32,12 +32,14 @@ from noetrium_platform.research.execution.graph.api import (
     ResearchGraphAttemptState,
     ResearchGraphControlPhase,
     ResearchGraphControlStorePort,
+    ResearchGraphCutSwitchFence,
     ResearchGraphExecutionConflict,
     ResearchGraphExecutionReport,
     ResearchGraphExecutionStorePort,
     ResearchGraphLiveNodeState,
     ResearchGraphNodeControlPhase,
     ResearchGraphNodeControlStorePort,
+    ResearchGraphOwnerGenerationRecoveryPort,
     ResearchGraphReconciliationDisposition,
 )
 
@@ -67,6 +69,7 @@ from .research_os_reconciliation import (
     ResearchOSNodeReconciliationProof,
 )
 from .research_os_migration import (
+    ResearchOSExecutionActivation,
     ResearchOSExecutionCut,
     ResearchOSExecutionMigrationPlan,
     ResearchOSReuseMaterializerPort,
@@ -1290,6 +1293,99 @@ class StrictResearchOSControl(
             payload,
         )
 
+    def _activate_run_cut(
+        self,
+        execution_id: str,
+        compilation: CompiledResearchOSGraph,
+    ) -> ResearchOSExecutionActivation:
+        """Activate RUN, automatically superseding a provably abandoned prior cut.
+
+        A revision change must never steal a live execution.  The managed local
+        runtime can, however, prove exclusivity through its outer process-generation
+        fence.  In that case old scheduler generations are recovered first; any
+        current-generation/non-expired work still blocks the switch.  Abandoned
+        RUNNING work remains reconciliation debt on the immutable source cut and is
+        never reused by the fresh target cut.
+        """
+        cut = ResearchOSExecutionCut.from_compilation(execution_id, compilation)
+        observed = self._store.active_execution_snapshot(execution_id)
+        if observed is None or observed.active_cut.cut_id == cut.cut_id:
+            return activate_research_os_execution_cut(
+                execution_id, compilation, self._store
+            )
+        if (
+            not self._pool.can_recover_abandoned_owner_generations
+            or not isinstance(self._store, ResearchGraphOwnerGenerationRecoveryPort)
+        ):
+            return activate_research_os_execution_cut(
+                execution_id, compilation, self._store
+            )
+
+        now_ns = time.time_ns()
+        source_cut_id = observed.active_cut.cut_id
+        snapshot = self._store.recover_abandoned_owner_generation(
+            source_cut_id,
+            current_owner_generation_id=self._pool.owner_generation_id,
+            now_ns=now_ns,
+        )
+        snapshot = self._store.recover_expired(source_cut_id, now_ns=now_ns)
+        still_active = tuple(
+            node.node_id
+            for node in snapshot.nodes
+            if node.state in {
+                ResearchGraphLiveNodeState.CLAIMED,
+                ResearchGraphLiveNodeState.RUNNING,
+            }
+        )
+        if still_active:
+            raise ResearchGraphExecutionConflict(
+                "logical Research OS execution still has live work in the active cut; "
+                f"revision supersession refused: {still_active}"
+            )
+
+        source_control = self._store.control_state(source_cut_id)
+        if snapshot.reconciliation_required_node_ids:
+            if source_control.phase in {
+                ResearchGraphControlPhase.ACTIVE,
+                ResearchGraphControlPhase.DRAINING,
+            }:
+                source_control = self._store.require_recovery(
+                    source_cut_id,
+                    expected_generation=source_control.generation,
+                    now_ns=now_ns,
+                )
+            elif source_control.phase is not ResearchGraphControlPhase.RECOVERY_REQUIRED:
+                raise ResearchGraphExecutionConflict(
+                    "abandoned source cut has reconciliation debt in an incompatible "
+                    f"control phase: {source_control.phase.value}"
+                )
+
+        target_snapshot = self._store.ensure_execution(cut.cut_id, compilation.plan)
+        active = self._store.active_cut(execution_id)
+        if active is None or active.cut_id != source_cut_id:
+            raise ResearchGraphExecutionConflict(
+                "research active cut changed while abandoned revision was fenced"
+            )
+        source_snapshot = self._store.snapshot(source_cut_id)
+        source_control = self._store.control_state(source_cut_id)
+        source_fence = ResearchGraphCutSwitchFence(
+            source_cut_id,
+            active.generation,
+            source_snapshot.generation,
+            source_control,
+            tuple(
+                self._store.node_control_state(source_cut_id, node.node_id)
+                for node in source_snapshot.nodes
+            ),
+        )
+        active = self._store.move_active_cut(
+            execution_id,
+            cut.cut_id,
+            expected_cut_id=source_cut_id,
+            source_fence=source_fence,
+        )
+        return ResearchOSExecutionActivation(cut, active, target_snapshot)
+
     def _run(
         self,
         request: ResearchControlRequest,
@@ -1309,10 +1405,9 @@ class StrictResearchOSControl(
             definition_bindings=self._definition_bindings,
             artifact_lineage=self._artifact_lineage,
         )
-        activation = activate_research_os_execution_cut(
+        activation = self._activate_run_cut(
             request.target.execution_id,
             prepared.compilation,
-            self._store,
         )
         if activation.cut != prepared.cut:
             raise ValueError("Research OS active cut drifted from preflight cut")

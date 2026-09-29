@@ -323,21 +323,29 @@ def _portfolio_v2() -> research_os_api.ResearchPortfolio:
     return research_os_api.ResearchPortfolio("suite", (builder.freeze(),))
 
 
-def _pool() -> ResearchExecutionPool:
+def _pool(*, exclusive_owner_generation: bool = False) -> ResearchExecutionPool:
     return ResearchExecutionPool(
         orchestration_concurrency_budget=ConcurrencyBudget(
             max_blocking_io_workers=2,
             max_cpu_workers=1,
             max_async_io_in_flight=2,
-        )
+        ),
+        exclusive_owner_generation=exclusive_owner_generation,
     )
 
 
-def _bound(tmp_path: Path, runtime, values, *, artifact_lineage=None):
+def _bound(
+    tmp_path: Path,
+    runtime,
+    values,
+    *,
+    artifact_lineage=None,
+    exclusive_owner_generation: bool = False,
+):
     revisions = SQLitePortfolioRevisionStore(tmp_path / "portfolio.sqlite3")
     blobs = DirectoryArtifactBlobStore(tmp_path / "blobs")
     graph = SQLiteResearchGraphExecutionStore(tmp_path / "graph.sqlite3")
-    pool = _pool()
+    pool = _pool(exclusive_owner_generation=exclusive_owner_generation)
     control = StrictResearchOSControl(
         graph,
         pool,
@@ -432,6 +440,76 @@ def test_run_cannot_switch_active_revision_without_explicit_migration(
     finally:
         pool.close()
 
+
+
+def test_run_supersedes_abandoned_revision_under_exclusive_owner_fence(
+    tmp_path: Path,
+) -> None:
+    runtime = _Runtime()
+    values = ResearchOSValueRouter((_ValueAuthority(),))
+    graph, pool, research_os = _bound(
+        tmp_path, runtime, values, exclusive_owner_generation=True
+    )
+    try:
+        first_portfolio = _portfolio()
+        first_revision = research_os.commit(first_portfolio, message="r1")
+        first_target = research_os_api.ResearchExecutionTarget(
+            "execution-abandoned-revision", first_revision
+        )
+        first_compilation = compile_research_portfolio_graph(
+            first_revision, first_portfolio
+        )
+        first_cut = ResearchOSExecutionCut.from_compilation(
+            first_target.execution_id, first_compilation
+        )
+        graph.ensure_execution(first_cut.cut_id, first_compilation.plan)
+        graph.move_active_cut(first_target.execution_id, first_cut.cut_id)
+        graph.mark_ready(first_cut.cut_id, "paper::source", now_ns=1)
+        claimed = graph.claim(
+            first_cut.cut_id,
+            "paper::source",
+            owner_id="research-graph-scheduler:dead-generation:worker",
+            now_ns=2,
+            lease_expires_at_ns=9_000_000_000_000_000_000,
+        )
+        graph.mark_running(
+            first_cut.cut_id,
+            "paper::source",
+            attempt_id=claimed.attempt_id or "",
+            owner_id="research-graph-scheduler:dead-generation:worker",
+            now_ns=3,
+        )
+
+        second_portfolio = _portfolio_v2()
+        second_revision = research_os.commit(
+            second_portfolio, parents=(first_revision,), message="r2"
+        )
+        second_target = research_os_api.ResearchExecutionTarget(
+            first_target.execution_id, second_revision
+        )
+        receipt = research_os.run(second_target.for_node("paper", "source"))
+
+        second_compilation = compile_research_portfolio_graph(
+            second_revision, second_portfolio
+        )
+        second_cut = ResearchOSExecutionCut.from_compilation(
+            second_target.execution_id, second_compilation
+        )
+        active = graph.active_cut(second_target.execution_id)
+        assert active is not None
+        assert active.cut_id == second_cut.cut_id
+        assert receipt.state == "succeeded"
+        assert graph.snapshot(first_cut.cut_id).node("paper::source").state is (
+            ResearchGraphLiveNodeState.RECONCILE_REQUIRED
+        )
+        assert graph.control_state(first_cut.cut_id).phase is (
+            ResearchGraphControlPhase.RECOVERY_REQUIRED
+        )
+        assert graph.snapshot(second_cut.cut_id).node("paper::source").state is (
+            ResearchGraphLiveNodeState.SUCCEEDED
+        )
+    finally:
+        pool.close()
 
 def test_node_scoped_preflight_does_not_admit_unselected_nodes(tmp_path: Path) -> None:
     runtime = _Runtime(reject=frozenset({"paper::consume"}))
