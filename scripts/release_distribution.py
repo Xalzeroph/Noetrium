@@ -194,6 +194,23 @@ def _source_identity(root: Path = ROOT) -> str:
     return _source_manifest(root).source_tree_sha256
 
 
+def _assert_source_identity(expected: ReleaseManifest) -> None:
+    """Explicitly compare the mutable workspace against one manifest.
+
+    Formal release construction intentionally does not call this after a source
+    snapshot has been frozen: the snapshot, not the subsequently mutable worktree,
+    is the authority for that release.
+    """
+    observed = _source_manifest(ROOT)
+    if (
+        observed.source_tree_sha256 != expected.source_tree_sha256
+        or observed.digest() != expected.digest()
+    ):
+        raise RuntimeError(
+            "source identity drifted during explicit workspace verification"
+        )
+
+
 def _materialize_exact_source(
     destination: Path,
 ) -> tuple[str, int, ReleaseManifest]:
@@ -401,8 +418,6 @@ def build_distribution_release(output: Path) -> dict:
     wheel, sdist, build_command, manifest = _build_distributions(output, sha=sha)
     oss_metadata = _verify_oss_metadata(wheel, sdist)
     workspace_boundary = _verify_workspace_exclusion(wheel, sdist)
-    _assert_source_identity(source_authority)
-
     verification_refs: dict[str, dict[str, str]] = {}
     for kind, artifact in (("wheel", wheel), ("sdist", sdist)):
         receipt = verify_installed_artifact(artifact)
@@ -465,12 +480,6 @@ def build_distribution_release(output: Path) -> dict:
         sidecar,
         f"{evidence_sha}  {evidence_path.name}\n",
     )
-    try:
-        _assert_source_identity(source_authority)
-    except Exception:
-        evidence_path.unlink(missing_ok=True)
-        sidecar.unlink(missing_ok=True)
-        raise
     return evidence
 
 
