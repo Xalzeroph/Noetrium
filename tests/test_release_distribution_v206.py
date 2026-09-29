@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import hashlib
+import io
 import subprocess
 import tarfile
 from pathlib import Path
@@ -62,6 +63,34 @@ def test_spdx_binds_distribution_artifact_sha256(tmp_path: Path):
         checksum = document["files"][0]["checksums"][0]["checksumValue"]
         assert checksum == hashlib.sha256(b"wheel-bytes").hexdigest()
         assert document["packages"][0]["licenseDeclared"] == "Apache-2.0"
+
+
+def test_sdist_normalization_removes_archive_time_variance(tmp_path: Path):
+    def create(path: Path, *, mtime: int) -> None:
+        import gzip
+
+        with path.open("wb") as raw:
+            with gzip.GzipFile(
+                filename="source.tar", mode="wb", fileobj=raw, mtime=mtime
+            ) as compressed:
+                with tarfile.open(fileobj=compressed, mode="w") as archive:
+                    info = tarfile.TarInfo("pkg/example.txt")
+                    payload = b"same-content\n"
+                    info.size = len(payload)
+                    info.mtime = mtime
+                    info.uid = 123
+                    info.gid = 456
+                    info.uname = "builder"
+                    info.gname = "builder"
+                    archive.addfile(info, io.BytesIO(payload))
+
+    first = tmp_path / "first.tar.gz"
+    second = tmp_path / "second.tar.gz"
+    create(first, mtime=1700000010)
+    create(second, mtime=1700000999)
+    distribution._normalize_sdist(first, source_date_epoch="1700000000")
+    distribution._normalize_sdist(second, source_date_epoch="1700000000")
+    assert first.read_bytes() == second.read_bytes()
 
 
 def test_distribution_output_must_be_outside_source_tree():
@@ -126,7 +155,12 @@ def test_distribution_build_runs_from_external_exact_source(monkeypatch, tmp_pat
         assert env["SOURCE_DATE_EPOCH"] == "1700000000"
         output = Path(argv[-1])
         (output / "noetrium_platform-1.0-py3-none-any.whl").write_bytes(b"wheel")
-        (output / "noetrium_platform-1.0.tar.gz").write_bytes(b"sdist")
+        sdist_path = output / "noetrium_platform-1.0.tar.gz"
+        with tarfile.open(sdist_path, "w:gz") as archive:
+            info = tarfile.TarInfo("noetrium_platform-1.0/PKG-INFO")
+            payload = b"Metadata-Version: 2.1\nName: noetrium-platform\nVersion: 1.0\n"
+            info.size = len(payload)
+            archive.addfile(info, io.BytesIO(payload))
         return type("Completed", (), {
             "returncode": 0,
             "stdout": "build-ok",

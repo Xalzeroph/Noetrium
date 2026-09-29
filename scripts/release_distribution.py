@@ -5,7 +5,9 @@ from email.parser import BytesParser
 from email.policy import default
 from dataclasses import asdict, dataclass
 from datetime import datetime, timezone
+import gzip
 import hashlib
+import io
 import json
 import os
 from pathlib import Path, PurePosixPath
@@ -342,6 +344,48 @@ def _source_date_epoch(sha: str) -> str:
     return str(max(int(raw), 315532800))
 
 
+def _normalize_sdist(path: Path, *, source_date_epoch: str) -> None:
+    epoch = int(source_date_epoch)
+    canonical = path.with_name(path.name + ".canonical")
+    with tarfile.open(path, "r:gz") as source, canonical.open("wb") as raw:
+        with gzip.GzipFile(
+            filename="",
+            mode="wb",
+            fileobj=raw,
+            compresslevel=9,
+            mtime=epoch,
+        ) as compressed:
+            with tarfile.open(
+                fileobj=compressed,
+                mode="w",
+                format=tarfile.PAX_FORMAT,
+            ) as target:
+                for member in sorted(source.getmembers(), key=lambda row: row.name):
+                    payload = None
+                    if member.isfile():
+                        handle = source.extractfile(member)
+                        if handle is None:
+                            raise RuntimeError(
+                                f"sdist member payload is unavailable: {member.name}"
+                            )
+                        payload = handle.read()
+                    member.mtime = epoch
+                    member.uid = 0
+                    member.gid = 0
+                    member.uname = ""
+                    member.gname = ""
+                    member.pax_headers = {
+                        key: value
+                        for key, value in member.pax_headers.items()
+                        if key not in {"atime", "ctime", "mtime"}
+                    }
+                    target.addfile(
+                        member,
+                        None if payload is None else io.BytesIO(payload),
+                    )
+    canonical.replace(path)
+
+
 def _build_distributions(
     output: Path, *, sha: str
 ) -> tuple[Path, Path, dict[str, object], ReleaseManifest]:
@@ -388,6 +432,7 @@ def _build_distributions(
     sdists = tuple(output.glob("*.tar.gz"))
     if len(wheels) != 1 or len(sdists) != 1:
         raise RuntimeError("distribution build must produce exactly one wheel and one sdist")
+    _normalize_sdist(sdists[0], source_date_epoch=source_date_epoch)
     return wheels[0], sdists[0], command, manifest
 
 
