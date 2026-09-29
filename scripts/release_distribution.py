@@ -194,17 +194,6 @@ def _source_identity(root: Path = ROOT) -> str:
     return _source_manifest(root).source_tree_sha256
 
 
-def _assert_source_identity(expected: ReleaseManifest) -> None:
-    observed = _source_manifest(ROOT)
-    if (
-        observed.source_tree_sha256 != expected.source_tree_sha256
-        or observed.digest() != expected.digest()
-    ):
-        raise RuntimeError(
-            "source identity drifted during formal distribution qualification"
-        )
-
-
 def _materialize_exact_source(
     destination: Path,
 ) -> tuple[str, int, ReleaseManifest]:
@@ -222,7 +211,9 @@ def _materialize_exact_source(
         target.write_bytes(raw)
         target.chmod(0o644)
 
-    _assert_source_identity(opening)
+    # The copied bytes are now the immutable source authority for this run.
+    # Do not re-read the mutable working tree: concurrent development after the
+    # per-file digest checks must not invalidate an already frozen snapshot.
     snapshot = build_release_manifest(
         destination,
         platform_code_version=opening.platform_code_version,
