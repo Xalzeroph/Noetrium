@@ -5,7 +5,15 @@ ROOT="$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)"
 ENV_BOOTSTRAP="$ROOT/deploy/build-environments.sh"
 ROOTLESS_DOCKER="$ROOT/deploy/rootless-docker.sh"
 STATE_ROOT="${NOETRIUM_DEPLOYMENT_STATE_ROOT:-$ROOT/.noetrium/deployment}"
-ENV_WORK_ROOT="$STATE_ROOT/environment-images"
+if [ -n "${XDG_CACHE_HOME:-}" ]; then
+  CACHE_ROOT="$XDG_CACHE_HOME"
+elif [ -n "${HOME:-}" ]; then
+  CACHE_ROOT="$HOME/.cache"
+else
+  CACHE_ROOT="${TMPDIR:-/tmp}"
+fi
+ROOT_CACHE_KEY="$(printf '%s' "$ROOT" | cksum | awk '{print $1}')"
+ENV_WORK_ROOT="${NOETRIUM_BUILD_WORK_ROOT:-$CACHE_ROOT/noetrium/environment-images/$ROOT_CACHE_KEY}"
 FLEET_STATE_ROOT="$STATE_ROOT/reproduction-fleet"
 BOOTSTRAP_READY=0
 
@@ -26,6 +34,7 @@ Usage: ./deploy/noetrium <doctor|build|plan|requirements|preflight|run|project|e
 Configuration:
   NOETRIUM_FLEET_AUTHORITY_MATERIALIZER=module:factory  # optional advanced override
   NOETRIUM_DEPLOYMENT_STATE_ROOT=/writable/path
+  NOETRIUM_BUILD_WORK_ROOT=/external/cache/path
   NOETRIUM_CONTROL_ENV_FILE=/path/to/env-file
   NOETRIUM_CONTROL_INPUT_ROOT=/read-only/authority-assets
   NOETRIUM_SKIP_ENVIRONMENT_BUILD=1
