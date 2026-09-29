@@ -173,6 +173,38 @@ project_root_from_args() {
   (CDPATH= cd -- "$project_root" && pwd -P)
 }
 
+project_runtime_control() {
+  project_root="$1"
+  project_state_root="$2"
+  shift 2
+
+  bootstrap_reuse=0
+  if [ "$BOOTSTRAP_READY" = "1" ]; then
+    bootstrap_reuse=1
+  fi
+  NOETRIUM_BOOTSTRAP_REUSE="$bootstrap_reuse" \
+  NOETRIUM_CONTROL_PROJECT_ROOT="$project_root" \
+  NOETRIUM_CONTROL_HOST_RUNTIME=1 \
+  NOETRIUM_CONTROL_STATE_ROOT="$project_state_root" \
+  NOETRIUM_BUILD_WORK_ROOT="$ENV_WORK_ROOT" \
+    "$ENV_BOOTSTRAP" control "$@"
+  BOOTSTRAP_READY=1
+}
+
+materialize_project_environment_profiles() {
+  project_root="$(project_root_from_args "$@")"
+  project_state_root="$project_root/.noetrium/control-plane"
+  mkdir -p "$project_state_root"
+  PROJECT_ENVIRONMENT_PROFILES_FILE="$project_state_root/environment-profiles.txt"
+
+  project_runtime_control \
+    "$project_root" \
+    "$project_state_root" \
+    "$ROOT/scripts/resolve_project_environment_profiles.py" \
+    --project "$project_root" \
+    --output "$PROJECT_ENVIRONMENT_PROFILES_FILE"
+}
+
 project_control() {
   [ "$#" -gt 0 ] || die "project requires a Research OS lifecycle command"
   action="$1"
@@ -191,19 +223,11 @@ project_control() {
       ;;
   esac
 
-  bootstrap_reuse=0
-  if [ "$BOOTSTRAP_READY" = "1" ]; then
-    bootstrap_reuse=1
-  fi
-
-  NOETRIUM_BOOTSTRAP_REUSE="$bootstrap_reuse" \
-  NOETRIUM_CONTROL_PROJECT_ROOT="$project_root" \
-  NOETRIUM_CONTROL_HOST_RUNTIME=1 \
-  NOETRIUM_CONTROL_STATE_ROOT="$project_state_root" \
-  NOETRIUM_BUILD_WORK_ROOT="$ENV_WORK_ROOT" \
-    "$ENV_BOOTSTRAP" control \
-      -c 'from noetrium_platform.composition.operator.wiring.research import main; import sys; raise SystemExit(main(sys.argv[1:]))' \
-      "$@"
+  project_runtime_control \
+    "$project_root" \
+    "$project_state_root" \
+    -c 'from noetrium_platform.composition.operator.wiring.research import main; import sys; raise SystemExit(main(sys.argv[1:]))' \
+    "$@"
 }
 
 command="${1:-}"
@@ -238,12 +262,22 @@ case "$command" in
     ;;
   run)
     host_doctor
-    if [ "${NOETRIUM_SKIP_ENVIRONMENT_BUILD:-0}" != "1" ]; then
-      environment_bootstrap build
-    fi
     if run_has_project_selector "$@"; then
+      if [ "${NOETRIUM_SKIP_ENVIRONMENT_BUILD:-0}" != "1" ]; then
+        materialize_project_environment_profiles "$@"
+        if [ -s "$PROJECT_ENVIRONMENT_PROFILES_FILE" ]; then
+          project_profiles="$(tr '\n' ' ' < "$PROJECT_ENVIRONMENT_PROFILES_FILE")"
+          # Profile ids are registry-validated deployment tokens, so intentional
+          # field splitting is the exact argv materialization required here.
+          # shellcheck disable=SC2086
+          environment_bootstrap build --profiles $project_profiles
+        fi
+      fi
       project_control run "$@"
     else
+      if [ "${NOETRIUM_SKIP_ENVIRONMENT_BUILD:-0}" != "1" ]; then
+        environment_bootstrap build
+      fi
       fleet_with_optional_materializer --execute \
         --state-root "$FLEET_STATE_ROOT" "$@"
     fi

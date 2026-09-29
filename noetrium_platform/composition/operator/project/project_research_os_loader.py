@@ -302,6 +302,23 @@ def _public_revision(value) -> ResearchGraphRevision:
     return revision
 
 
+def _load_project_source(
+    project_root: Path,
+) -> tuple[Path, ProjectManifest, ResearchPortfolio]:
+    root = project_root.expanduser().absolute()
+    if root.is_symlink() or not root.is_dir():
+        raise ValueError("project Research OS root must be a real directory")
+    manifest = _project_manifest(root)
+    return root, manifest, _load_generated_portfolio(root, manifest)
+
+
+def load_project_portfolio(project_root: Path) -> ResearchPortfolio:
+    """Load the frozen portfolio without attaching control or runtime state."""
+
+    _root, _manifest, portfolio = _load_project_source(project_root)
+    return portfolio
+
+
 def load_project_research_os(
     project_root: Path,
     *,
@@ -315,12 +332,7 @@ def load_project_research_os(
     when execution intent first reaches the control boundary.
     """
 
-    root = project_root.expanduser().absolute()
-    if root.is_symlink() or not root.is_dir():
-        raise ValueError("project Research OS root must be a real directory")
-
-    manifest = _project_manifest(root)
-    portfolio = _load_generated_portfolio(root, manifest)
+    root, manifest, portfolio = _load_project_source(project_root)
     state_root = root / _STATE_DIRECTORY
     state_root.mkdir(parents=True, exist_ok=True)
 
@@ -377,4 +389,4 @@ def load_project_research_os(
     return loaded
 
 
-__all__ = ["LoadedProjectResearchOS", "load_project_research_os"]
+__all__ = ["LoadedProjectResearchOS", "load_project_portfolio", "load_project_research_os"]
