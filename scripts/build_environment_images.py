@@ -295,6 +295,44 @@ def _parse_profile_build_input_overrides(
     return result
 
 
+def _parse_profile_build_input_env_file(
+    path: Path | None,
+    *,
+    declared_environment_variables: set[str],
+) -> dict[str, str]:
+    if path is None:
+        return {}
+    if not path.is_file():
+        raise ValueError(f"profile build input env file does not exist: {path}")
+    result: dict[str, str] = {}
+    for line_number, raw_line in enumerate(
+        path.read_text(encoding="utf-8").splitlines(),
+        start=1,
+    ):
+        line = raw_line.strip()
+        if not line or line.startswith("#"):
+            continue
+        if line.startswith("export "):
+            line = line.removeprefix("export ").lstrip()
+        environment_variable, separator, value = line.partition("=")
+        environment_variable = environment_variable.strip()
+        if environment_variable not in declared_environment_variables:
+            continue
+        value = value.strip()
+        if separator != "=" or not value:
+            raise ValueError(
+                "profile build input env file contains invalid declared value "
+                f"at line {line_number}: {environment_variable!r}"
+            )
+        if environment_variable in result:
+            raise ValueError(
+                "duplicate profile build input env file value: "
+                + environment_variable
+            )
+        result[environment_variable] = value
+    return result
+
+
 def _profile_revision(row: dict) -> str:
     """Digest the immutable deployable profile definition and its recipe bytes."""
     material = {
@@ -788,6 +826,7 @@ def build_environment_images(
     python_runtime_image: str,
     python_runtime_canonical_image: str,
     profile_build_input_overrides: dict[str, str],
+    profile_build_input_env_file: Path | None = None,
     rebuild: bool = False,
     allow_draining: bool = False,
     allow_retired: bool = False,
@@ -815,9 +854,17 @@ def build_environment_images(
         for group in _profile_build_input_rows(by_id[profile_id])
         for spec in group
     }
+    env_file_build_input_overrides = _parse_profile_build_input_env_file(
+        profile_build_input_env_file,
+        declared_environment_variables=declared_build_input_variables,
+    )
+    resolved_profile_build_input_overrides = {
+        **env_file_build_input_overrides,
+        **profile_build_input_overrides,
+    }
     unknown_build_input_overrides = tuple(
         sorted(
-            set(profile_build_input_overrides)
+            set(resolved_profile_build_input_overrides)
             - declared_build_input_variables
         )
     )
@@ -975,7 +1022,7 @@ def build_environment_images(
         input_environment, resolved_build_inputs = (
             _resolve_profile_build_inputs(
                 row,
-                overrides=profile_build_input_overrides,
+                overrides=resolved_profile_build_input_overrides,
                 image_identity_cache=profile_input_image_cache,
             )
         )
@@ -1215,6 +1262,16 @@ def main(argv: list[str] | None = None) -> int:
         ),
     )
     build.add_argument(
+        "--build-input-env-file",
+        type=Path,
+        default=None,
+        help=(
+            "Read only registry-declared profile build inputs from a deployment "
+            "env file. Unrelated variables are ignored; explicit --build-input "
+            "values take precedence."
+        ),
+    )
+    build.add_argument(
         "--rebuild",
         action="store_true",
         help="Ignore exact-SHA image cache and rebuild base/profile images.",
@@ -1292,6 +1349,7 @@ def main(argv: list[str] | None = None) -> int:
                     tuple(args.build_input)
                 )
             ),
+            profile_build_input_env_file=args.build_input_env_file,
             rebuild=args.rebuild,
             allow_draining=args.allow_draining,
             allow_retired=args.allow_retired,
