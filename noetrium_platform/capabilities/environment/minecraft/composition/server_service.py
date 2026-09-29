@@ -25,6 +25,7 @@ from noetrium_platform.substrate.api import (
 )
 from noetrium_platform.foundation.kernel.kernel import JsonValue, canonical_digest
 from noetrium_platform.foundation.kernel.concurrency.api import (
+    Deadline,
     ExecutionLaneKind,
     ExecutionSpec,
     TaskFailureScope,
@@ -64,12 +65,9 @@ class MinecraftTcpReadinessProbe:
 
     async def _wait_ready_async(self, context, process, contract: ServiceLaunchContract, backend: ServiceProcessLivenessPort) -> str:
         last_error = "not-probed"
+        del backend
         while True:
             context.checkpoint()
-            if not backend.alive(process):
-                raise MinecraftServerServiceError(
-                    f"Minecraft server process exited before TCP readiness: {self.host}:{self.port}"
-                )
             writer = None
             try:
                 connect_timeout = min(1.0, self.poll_interval_s + 0.5)
@@ -93,6 +91,13 @@ class MinecraftTcpReadinessProbe:
             await asyncio.sleep(delay)
 
     def wait_ready(self, process, contract: ServiceLaunchContract, backend: ServiceProcessLivenessPort) -> str:
+        # Liveness may itself require blocking provider I/O (Docker/procfs). Never
+        # call it from the ASYNC_IO event loop: that creates an ASYNC_IO ->
+        # BLOCKING_IO synchronous dependency inside the same capability domain.
+        if not backend.alive(process):
+            raise MinecraftServerServiceError(
+                f"Minecraft server process exited before TCP readiness: {self.host}:{self.port}"
+            )
         with self._sequence_lock:
             self._sequence += 1
             sequence = self._sequence
@@ -116,8 +121,14 @@ class MinecraftTcpReadinessProbe:
             process,
             contract,
             backend,
+            deadline=Deadline.after(contract.readiness_timeout_s),
         )
-        return handle.result()
+        evidence = handle.result()
+        if not backend.alive(process):
+            raise MinecraftServerServiceError(
+                f"Minecraft server process exited after TCP readiness: {self.host}:{self.port}"
+            )
+        return evidence
 
 
 class MinecraftServerReadinessProbe:

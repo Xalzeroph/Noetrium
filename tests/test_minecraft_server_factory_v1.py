@@ -1,5 +1,8 @@
 from __future__ import annotations
 
+import asyncio
+import time
+
 from dataclasses import replace
 from pathlib import Path
 from types import SimpleNamespace
@@ -207,6 +210,75 @@ def test_tcp_readiness_runs_network_connect_on_async_io_lane(monkeypatch, tmp_pa
     assert writer.closed is True
     assert writer.waited is True
 
+
+
+def test_tcp_readiness_never_runs_blocking_liveness_inside_async_lane(monkeypatch, tmp_path: Path) -> None:
+    async def open_connection(host: str, port: int):
+        del host, port
+        class Writer:
+            def close(self) -> None: pass
+            async def wait_closed(self) -> None: pass
+        return object(), Writer()
+
+    monkeypatch.setattr(
+        "noetrium_platform.capabilities.environment.minecraft.composition.server_service.asyncio.open_connection",
+        open_connection,
+    )
+
+    class Backend:
+        calls = 0
+        def alive(self, process):
+            del process
+            self.calls += 1
+            try:
+                asyncio.get_running_loop()
+            except RuntimeError:
+                return True
+            raise AssertionError("blocking liveness executed inside ASYNC_IO event loop")
+
+    spec = _spec(tmp_path)
+    contract = build_server_service_contract(
+        spec, environment_digest="a" * 64, artifact_digest="b" * 64,
+        runtime_identity_digest="c" * 64, readiness_timeout_s=1,
+    )
+    backend = Backend()
+    probe = MinecraftTcpReadinessProbe(
+        host=spec.host, port=spec.port,
+        task_group=make_task_group("minecraft-readiness-no-nested-blocking"),
+        poll_interval_s=0.001,
+    )
+    assert probe.wait_ready(SimpleNamespace(pid=9, start_identity="start"), contract, backend).startswith("minecraft-tcp-ready:")
+    assert backend.calls == 2
+
+
+def test_tcp_readiness_contract_timeout_is_enforced(monkeypatch, tmp_path: Path) -> None:
+    async def unavailable(host: str, port: int):
+        del host, port
+        raise OSError("not ready")
+
+    monkeypatch.setattr(
+        "noetrium_platform.capabilities.environment.minecraft.composition.server_service.asyncio.open_connection",
+        unavailable,
+    )
+    class Backend:
+        def alive(self, process):
+            del process
+            return True
+
+    spec = _spec(tmp_path)
+    contract = build_server_service_contract(
+        spec, environment_digest="a" * 64, artifact_digest="b" * 64,
+        runtime_identity_digest="c" * 64, readiness_timeout_s=0.05,
+    )
+    probe = MinecraftTcpReadinessProbe(
+        host=spec.host, port=spec.port,
+        task_group=make_task_group("minecraft-readiness-deadline"),
+        poll_interval_s=0.005,
+    )
+    started = time.monotonic()
+    with pytest.raises(Exception):
+        probe.wait_ready(SimpleNamespace(pid=10, start_identity="start"), contract, Backend())
+    assert time.monotonic() - started < 1.0
 
 
 def test_tcp_readiness_identity_is_unique_across_probe_instances_sharing_one_group(tmp_path: Path, monkeypatch) -> None:
