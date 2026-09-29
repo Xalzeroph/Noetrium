@@ -9,6 +9,7 @@ from pathlib import Path
 from scripts.build_environment_images import (
     _default_active_profile_ids,
     _image_runtime_identity_digest,
+    _parse_profile_build_input_env_file,
     _parse_profile_build_input_overrides,
     _prepare_qualification_instance,
     _profile_build_input_digest,
@@ -657,7 +658,26 @@ def test_environment_bootstrap_uses_one_deployment_env_for_control_and_build() -
     assert 'DEPLOYMENT_ENV_FILE="${NOETRIUM_DEPLOYMENT_ENV_FILE:-}"' in bootstrap
     assert 'CONTROL_ENV_FILE="${NOETRIUM_CONTROL_ENV_FILE:-$DEPLOYMENT_ENV_FILE}"' in bootstrap
     build_block = bootstrap.split('if [ "${1:-}" = "build" ]; then', 1)[1]
-    assert '--env-file "$DEPLOYMENT_ENV_FILE"' in build_block
+    assert '-v "$DEPLOYMENT_ENV_FILE:/run/noetrium/build-input.env:ro"' in build_block
+    assert '--build-input-env-file /run/noetrium/build-input.env' in build_block
+    assert '--env-file "$DEPLOYMENT_ENV_FILE"' not in build_block
     dockerignore = (ROOT / ".dockerignore").read_text(encoding="utf-8").splitlines()
     assert ".env" in dockerignore
     assert "**/.env" in dockerignore
+
+
+def test_environment_build_input_env_file_reads_only_declared_inputs(tmp_path: Path) -> None:
+    env_file = tmp_path / "deployment.env"
+    env_file.write_text(
+        "IGNORED_SECRET=do-not-forward\n"
+        "NODE_RUNTIME_IMAGE=mirror.example/library/node:22\n"
+        "export JAVA_RUNTIME_IMAGE=mirror.example/library/java:21\n",
+        encoding="utf-8",
+    )
+    assert _parse_profile_build_input_env_file(
+        env_file,
+        declared_environment_variables={"JAVA_RUNTIME_IMAGE", "NODE_RUNTIME_IMAGE"},
+    ) == {
+        "JAVA_RUNTIME_IMAGE": "mirror.example/library/java:21",
+        "NODE_RUNTIME_IMAGE": "mirror.example/library/node:22",
+    }

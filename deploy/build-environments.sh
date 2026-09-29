@@ -546,14 +546,18 @@ fi
 
 if [ "${1:-}" = "build" ]; then
   if [ -n "$DEPLOYMENT_ENV_FILE" ]; then
+    # Build-time deployment input is mounted read-only and filtered inside the
+    # builder against registry-declared build inputs. Never inject unrelated
+    # deployment variables or secrets into the environment build container.
     # shellcheck disable=SC2086
     run_bootstrap_container $COMMON_ARGS \
-      --env-file "$DEPLOYMENT_ENV_FILE" \
+      -v "$DEPLOYMENT_ENV_FILE:/run/noetrium/build-input.env:ro" \
       -v "$WORK_ROOT:$WORK_ROOT" \
       "$BOOTSTRAP_IMAGE" \
       "$@" \
       --work-root "$WORK_ROOT" \
-      --output "$WORK_ROOT/environment-image-build.json"
+      --output "$WORK_ROOT/environment-image-build.json" \
+      --build-input-env-file /run/noetrium/build-input.env
   else
     # shellcheck disable=SC2086
     run_bootstrap_container $COMMON_ARGS \
