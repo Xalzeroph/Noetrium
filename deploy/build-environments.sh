@@ -339,6 +339,22 @@ fi
 # container's uid can differ from the checkout owner on CI or rootless hosts.
 COMMON_ARGS="$DAEMON_ARGS $GIT_METADATA_ARGS -v $ROOT:$ROOT:ro -w $ROOT -e PYTHONDONTWRITEBYTECODE=1 -e NOETRIUM_BOOTSTRAP_OWNER_PID=$$ -e NOETRIUM_BOOTSTRAP_OWNER_BOOT=$BOOT_ID -e NOETRIUM_BOOTSTRAP_OWNER_START=$OWNER_START -e GIT_CONFIG_COUNT=1 -e GIT_CONFIG_KEY_0=safe.directory -e GIT_CONFIG_VALUE_0=$ROOT"
 
+DEPLOYMENT_ENV_FILE="${NOETRIUM_DEPLOYMENT_ENV_FILE:-}"
+if [ -z "$DEPLOYMENT_ENV_FILE" ] && [ -f "$ROOT/deploy/.env" ]; then
+  DEPLOYMENT_ENV_FILE="$ROOT/deploy/.env"
+fi
+if [ -n "$DEPLOYMENT_ENV_FILE" ]; then
+  test -f "$DEPLOYMENT_ENV_FILE" || {
+    echo "Noetrium deployment env file does not exist: $DEPLOYMENT_ENV_FILE" >&2
+    exit 1
+  }
+  test ! -L "$DEPLOYMENT_ENV_FILE" || {
+    echo "Noetrium deployment env file must not be a symlink: $DEPLOYMENT_ENV_FILE" >&2
+    exit 1
+  }
+  DEPLOYMENT_ENV_FILE="$(CDPATH= cd -- "$(dirname "$DEPLOYMENT_ENV_FILE")" && pwd -P)/$(basename "$DEPLOYMENT_ENV_FILE")"
+fi
+
 if [ "${1:-}" = "control" ]; then
   shift
   [ "$#" -gt 0 ] || {
@@ -348,7 +364,7 @@ if [ "${1:-}" = "control" ]; then
   CONTROL_STATE_ROOT="${NOETRIUM_CONTROL_STATE_ROOT:-$WORK_ROOT/control}"
   mkdir -p "$CONTROL_STATE_ROOT"
   CONTROL_STATE_ROOT="$(CDPATH= cd -- "$CONTROL_STATE_ROOT" && pwd)"
-  CONTROL_ENV_FILE="${NOETRIUM_CONTROL_ENV_FILE:-}"
+  CONTROL_ENV_FILE="${NOETRIUM_CONTROL_ENV_FILE:-$DEPLOYMENT_ENV_FILE}"
 
   CONTROL_PROJECT_ROOT="${NOETRIUM_CONTROL_PROJECT_ROOT:-}"
   CONTROL_HOST_RUNTIME="${NOETRIUM_CONTROL_HOST_RUNTIME:-0}"
@@ -440,9 +456,6 @@ if [ "${1:-}" = "control" ]; then
     echo "NOETRIUM_CONTROL_HOST_RUNTIME must be 0 or 1." >&2
     exit 2
   fi
-  if [ -z "$CONTROL_ENV_FILE" ] && [ -f "$ROOT/deploy/.env" ]; then
-    CONTROL_ENV_FILE="$ROOT/deploy/.env"
-  fi
   if [ -n "$CONTROL_ENV_FILE" ]; then
     test -f "$CONTROL_ENV_FILE" || {
       echo "Noetrium control env file does not exist: $CONTROL_ENV_FILE" >&2
@@ -532,13 +545,24 @@ if refs:
 fi
 
 if [ "${1:-}" = "build" ]; then
-  # shellcheck disable=SC2086
-  run_bootstrap_container $COMMON_ARGS \
-    -v "$WORK_ROOT:$WORK_ROOT" \
-    "$BOOTSTRAP_IMAGE" \
-    "$@" \
-    --work-root "$WORK_ROOT" \
-    --output "$WORK_ROOT/environment-image-build.json"
+  if [ -n "$DEPLOYMENT_ENV_FILE" ]; then
+    # shellcheck disable=SC2086
+    run_bootstrap_container $COMMON_ARGS \
+      --env-file "$DEPLOYMENT_ENV_FILE" \
+      -v "$WORK_ROOT:$WORK_ROOT" \
+      "$BOOTSTRAP_IMAGE" \
+      "$@" \
+      --work-root "$WORK_ROOT" \
+      --output "$WORK_ROOT/environment-image-build.json"
+  else
+    # shellcheck disable=SC2086
+    run_bootstrap_container $COMMON_ARGS \
+      -v "$WORK_ROOT:$WORK_ROOT" \
+      "$BOOTSTRAP_IMAGE" \
+      "$@" \
+      --work-root "$WORK_ROOT" \
+      --output "$WORK_ROOT/environment-image-build.json"
+  fi
   exit $?
 fi
 

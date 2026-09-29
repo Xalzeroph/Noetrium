@@ -650,3 +650,14 @@ def test_bootstrap_normal_completion_proves_exact_container_absence(
     assert removed.read_text(encoding="utf-8").splitlines() == [
         "bootstrap-id",
     ]
+
+
+def test_environment_bootstrap_uses_one_deployment_env_for_control_and_build() -> None:
+    bootstrap = (ROOT / "deploy" / "build-environments.sh").read_text(encoding="utf-8")
+    assert 'DEPLOYMENT_ENV_FILE="${NOETRIUM_DEPLOYMENT_ENV_FILE:-}"' in bootstrap
+    assert 'CONTROL_ENV_FILE="${NOETRIUM_CONTROL_ENV_FILE:-$DEPLOYMENT_ENV_FILE}"' in bootstrap
+    build_block = bootstrap.split('if [ "${1:-}" = "build" ]; then', 1)[1]
+    assert '--env-file "$DEPLOYMENT_ENV_FILE"' in build_block
+    dockerignore = (ROOT / ".dockerignore").read_text(encoding="utf-8").splitlines()
+    assert ".env" in dockerignore
+    assert "**/.env" in dockerignore
