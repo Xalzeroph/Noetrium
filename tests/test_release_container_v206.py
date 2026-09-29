@@ -78,7 +78,18 @@ def test_container_definition_uses_only_prebuilt_distribution_wheel():
     assert "sha256sum -c -" in dockerfile
     assert 'mkdir -p "$(dirname "$PLATFORM_EMBEDDED_WHEEL")"' in dockerfile
     assert "USER platform" in dockerfile
+    assert "COPY --chmod=0755 container-entrypoint.sh" in dockerfile
 
+    apt_layer = dockerfile.index("RUN apt-get update")
+    user_layer = dockerfile.index("RUN useradd")
+    wheel_copy = dockerfile.index("COPY *.whl")
+    wheel_arg = dockerfile.index("ARG PLATFORM_WHEEL_SHA256")
+    wheel_install = dockerfile.index("RUN wheel=")
+    entrypoint_copy = dockerfile.index("COPY --chmod=0755 container-entrypoint.sh")
+    source_arg = dockerfile.index("ARG PLATFORM_SOURCE_SHA")
+    provenance_label = dockerfile.index("LABEL org.opencontainers.image.revision")
+    assert apt_layer < user_layer < wheel_copy < wheel_arg < wheel_install
+    assert wheel_install < entrypoint_copy < source_arg < provenance_label
 
 def test_container_smoke_verifies_wheel_record_and_effective_identity():
     script = container._product_smoke_script(WHEEL_SHA)
