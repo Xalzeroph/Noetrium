@@ -69,10 +69,39 @@ class DockerServiceBindMount:
 
 
 @dataclass(frozen=True, slots=True)
+class DockerServiceTmpfsMount:
+    target: Path
+    size_bytes: int
+    mode: int = 0o1777
+    executable: bool = False
+
+    def __post_init__(self) -> None:
+        target = Path(self.target)
+        if not target.is_absolute() or target == Path("/"):
+            raise ValueError("Docker service tmpfs target must be absolute and non-root")
+        if type(self.size_bytes) is not int or self.size_bytes <= 0:
+            raise ValueError("Docker service tmpfs size_bytes must be positive integer")
+        if type(self.mode) is not int or not (0 <= self.mode <= 0o7777):
+            raise ValueError("Docker service tmpfs mode must be valid permission bits")
+        if type(self.executable) is not bool:
+            raise TypeError("Docker service tmpfs executable must be bool")
+        object.__setattr__(self, "target", target)
+
+    @property
+    def docker_option(self) -> str:
+        execution = "exec" if self.executable else "noexec"
+        return (
+            f"{self.target}:rw,{execution},nosuid,nodev,"
+            f"size={self.size_bytes},mode={self.mode:o}"
+        )
+
+
+@dataclass(frozen=True, slots=True)
 class DockerServiceProcessConfiguration:
     image_digest: str
     holder_scope: ScopeIdentity
     mounts: tuple[DockerServiceBindMount, ...] = ()
+    tmpfs_mounts: tuple[DockerServiceTmpfsMount, ...] = ()
     gpu_devices: tuple[str, ...] = ()
     network_host: bool = True
     ipc_host: bool = False
@@ -92,6 +121,20 @@ class DockerServiceProcessConfiguration:
             type(row) is not DockerServiceBindMount for row in self.mounts
         ):
             raise TypeError("Docker service mounts must be DockerServiceBindMount values")
+        if type(self.tmpfs_mounts) is not tuple or any(
+            type(row) is not DockerServiceTmpfsMount for row in self.tmpfs_mounts
+        ):
+            raise TypeError("Docker service tmpfs_mounts must be DockerServiceTmpfsMount values")
+        tmpfs_targets = tuple(str(row.target) for row in self.tmpfs_mounts)
+        if len(set(tmpfs_targets)) != len(tmpfs_targets):
+            raise ValueError("Docker service tmpfs targets must be unique")
+        bind_targets = {str(row.target) for row in self.mounts}
+        overlap = bind_targets.intersection(tmpfs_targets)
+        if overlap:
+            raise ValueError(
+                "Docker service tmpfs target conflicts with bind target: "
+                + sorted(overlap)[0]
+            )
         if type(self.gpu_devices) is not tuple or any(
             type(value) is not str or not value.strip() for value in self.gpu_devices
         ):
@@ -121,6 +164,10 @@ class DockerServiceProcessConfiguration:
                 "mounts": tuple(
                     (str(row.source), str(row.target), row.read_only)
                     for row in self.mounts
+                ),
+                "tmpfs_mounts": tuple(
+                    (str(row.target), row.size_bytes, row.mode, row.executable)
+                    for row in self.tmpfs_mounts
                 ),
                 "gpu_devices": self.gpu_devices,
                 "network_host": self.network_host,
@@ -363,6 +410,8 @@ class DockerContainerProcessBackend:
                     f"{self._configuration.user_uid}:{self._configuration.user_gid}",
                 )
             )
+        for row in self._configuration.tmpfs_mounts:
+            argv.extend(("--tmpfs", row.docker_option))
         if self._configuration.gpu_devices:
             argv.extend(
                 (

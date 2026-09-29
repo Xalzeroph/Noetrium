@@ -79,6 +79,7 @@ from noetrium_platform.composition.docker_service_process_backend import (
     DockerContainerProcessBackend,
     DockerServiceBindMount,
     DockerServiceProcessConfiguration,
+    DockerServiceTmpfsMount,
 )
 from noetrium_platform.infrastructure.lifecycle.service.runtime.start_intent_store import DirectoryServiceStartIntentStore
 from noetrium_platform.infrastructure.lifecycle.service.runtime.state_storage import FileServiceStateStore
@@ -196,6 +197,13 @@ class LocalModelServiceRuntimeFactory:
                     image_digest=spec.container_digest,
                     holder_scope=spec.scope,
                     mounts=self._mounts(spec, contract),
+                    tmpfs_mounts=(
+                        DockerServiceTmpfsMount(
+                            Path("/tmp"),
+                            4 * 1024 ** 3,
+                            executable=True,
+                        ),
+                    ),
                     gpu_devices=spec.gpu_devices,
                     network_host=True,
                     ipc_host=True,
