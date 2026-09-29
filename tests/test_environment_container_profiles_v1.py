@@ -362,18 +362,17 @@ def test_environment_catalog_keeps_scientific_assets_downstream() -> None:
     assert "downstream-owned" in boundary
 
 
-def test_environment_bootstrap_supports_linked_git_worktrees_without_host_git() -> None:
+def test_environment_bootstrap_is_vcs_neutral() -> None:
     text = (ROOT / "deploy" / "build-environments.sh").read_text(encoding="utf-8")
-    assert 'if [ -f "$ROOT/.git" ]; then' in text
-    assert "gitdir: " in text
-    assert 'if [ -f "$GITDIR/commondir" ]; then' in text
-    assert 'GIT_METADATA_ARGS="-v $GIT_METADATA_ROOT:$GIT_METADATA_ROOT:ro"' in text
-    assert "$GIT_METADATA_ARGS -v $ROOT:$ROOT:ro" in text
+    bootstrap = (ROOT / "deploy" / "bootstrap" / "Dockerfile").read_text(encoding="utf-8")
+    assert "GIT_METADATA_ARGS" not in text
+    assert "safe.directory" not in text
     assert "git rev-parse" not in text
+    assert "apt-get" not in bootstrap
+    assert " git " not in bootstrap.lower()
     prefix = text.split("docker build", 1)[0].lower()
     assert "python3" not in prefix
     assert "python -m" not in prefix
-
 
 def test_qualification_precreates_runtime_and_profile_bind_sources(tmp_path: Path) -> None:
     compose = tmp_path / "compose.yaml"

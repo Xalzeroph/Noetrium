@@ -11,7 +11,7 @@ import scripts.prepare_container_context as context
 import scripts.verify_container_image as container
 
 ROOT = Path(__file__).resolve().parents[1]
-SHA = "a" * 40
+SHA = "a" * 64
 WHEEL_SHA = "b" * 64
 DIST_SHA = "c" * 64
 RUNTIME_SHA = "d" * 64
@@ -80,7 +80,8 @@ def test_container_definition_uses_only_prebuilt_distribution_wheel():
     assert "USER platform" in dockerfile
     assert "COPY --chmod=0755 container-entrypoint.sh" in dockerfile
 
-    apt_layer = dockerfile.index("RUN apt-get update")
+    assert "apt-get" not in dockerfile
+    assert " install git" not in dockerfile.lower()
     user_layer = dockerfile.index("RUN useradd")
     wheel_copy = dockerfile.index("COPY *.whl")
     wheel_arg = dockerfile.index("ARG PLATFORM_WHEEL_SHA256")
@@ -88,7 +89,7 @@ def test_container_definition_uses_only_prebuilt_distribution_wheel():
     entrypoint_copy = dockerfile.index("COPY --chmod=0755 container-entrypoint.sh")
     source_arg = dockerfile.index("ARG PLATFORM_SOURCE_SHA")
     provenance_label = dockerfile.index("LABEL org.opencontainers.image.revision")
-    assert apt_layer < user_layer < wheel_copy < wheel_arg < wheel_install
+    assert user_layer < wheel_copy < wheel_arg < wheel_install
     assert wheel_install < entrypoint_copy < source_arg < provenance_label
 
 def test_container_smoke_verifies_wheel_record_and_effective_identity():
@@ -113,7 +114,7 @@ def test_container_smoke_verifies_wheel_record_and_effective_identity():
 
 
 def test_container_verifier_rejects_source_revision_drift(monkeypatch):
-    monkeypatch.setattr(container, "_run", _fake_outputs(_inspect(revision="e" * 40), _smoke()))
+    monkeypatch.setattr(container, "_run", _fake_outputs(_inspect(revision="e" * 64), _smoke()))
     with pytest.raises(RuntimeError, match="source revision"):
         container.verify_container_image(
             "noetrium:test", expected_source_sha=SHA,
@@ -215,18 +216,36 @@ def test_container_verifier_returns_distribution_bound_receipt(monkeypatch):
 def _write_distribution_evidence(
     dist: Path, wheel: Path, *, wheel_sha: str, tree_sha: str
 ) -> Path:
+    assets = dist / "container-build-assets"
+    assets.mkdir(exist_ok=True)
+    dockerfile = assets / "Dockerfile"
+    entrypoint = assets / "container-entrypoint.sh"
+    dockerfile.write_bytes(b"FROM exact\n")
+    entrypoint.write_bytes(b"#!/bin/sh\n")
     evidence = {
         "schema": context._DISTRIBUTION_SCHEMA,
         "source_sha": SHA,
         "source_tree_sha256": tree_sha,
-        "manifest_source": "external-git-object-database",
+        "manifest_source": "content-addressed-filesystem-snapshot",
         "release_manifest_digest": "f" * 64,
         "build_command": {
             "source_sha": SHA,
-            "cwd_mode": "external-git-object-database",
-            "source_materialization_schema": "noetrium.git-object-materialization.v1",
+            "cwd_mode": "external-content-addressed-snapshot",
+            "source_materialization_schema": "noetrium.filesystem-source-snapshot.v1",
             "source_materialization_sha256": "9" * 64,
             "source_materialization_file_count": 3000,
+        },
+        "container_build_assets": {
+            "dockerfile": {
+                "path": "container-build-assets/Dockerfile",
+                "sha256": hashlib.sha256(dockerfile.read_bytes()).hexdigest(),
+                "size": dockerfile.stat().st_size,
+            },
+            "entrypoint": {
+                "path": "container-build-assets/container-entrypoint.sh",
+                "sha256": hashlib.sha256(entrypoint.read_bytes()).hexdigest(),
+                "size": entrypoint.stat().st_size,
+            },
         },
         "oss_metadata": {"license_expression": "Apache-2.0", "license_files": ["LICENSE", "NOTICE", "THIRD_PARTY_NOTICES.md"]},
         "artifacts": {wheel.name: {"sha256": wheel_sha, "size": wheel.stat().st_size}},
@@ -240,7 +259,6 @@ def _write_distribution_evidence(
     )
     return evidence_path
 
-
 def test_prepare_context_rejects_distribution_wheel_byte_drift(monkeypatch, tmp_path: Path):
     local = tmp_path
     with TemporaryDirectory(prefix="container-context-", dir=local) as td:
@@ -252,12 +270,11 @@ def test_prepare_context_rejects_distribution_wheel_byte_drift(monkeypatch, tmp_
         _write_distribution_evidence(
             dist, wheel, wheel_sha=hashlib.sha256(b"other-wheel").hexdigest(), tree_sha="d" * 64
         )
-        monkeypatch.setattr(context, "_git_blob", lambda sha, path: b"exact")
         with pytest.raises(ValueError, match="wheel bytes"):
             context.prepare_container_context(dist, root / "ctx", expected_source_sha=SHA)
 
 
-def test_prepare_context_uses_exact_git_blobs_not_mutable_checkout(monkeypatch, tmp_path: Path):
+def test_prepare_context_uses_evidence_bound_snapshot_assets(tmp_path: Path):
     local = tmp_path
     with TemporaryDirectory(prefix="container-context-", dir=local) as td:
         root = Path(td)
@@ -269,23 +286,13 @@ def test_prepare_context_uses_exact_git_blobs_not_mutable_checkout(monkeypatch, 
         evidence_path = _write_distribution_evidence(
             dist, wheel, wheel_sha=wheel_sha, tree_sha="e" * 64
         )
-        blobs = {
-            "deploy/Dockerfile": b"FROM exact\n",
-            "deploy/container-entrypoint.sh": b"#!/bin/sh\n",
-        }
-        seen: list[tuple[str, str]] = []
-        def fake_blob(sha: str, path: str) -> bytes:
-            seen.append((sha, path))
-            return blobs[path]
-        monkeypatch.setattr(context, "_git_blob", fake_blob)
         output = root / "ctx"
         receipt = context.prepare_container_context(dist, output, expected_source_sha=SHA)
-        assert seen == [(SHA, "deploy/Dockerfile"), (SHA, "deploy/container-entrypoint.sh")]
         assert (output / wheel.name).read_bytes() == b"exact-wheel"
         assert (output / "Dockerfile").read_bytes() == b"FROM exact\n"
+        assert (output / "container-entrypoint.sh").read_bytes() == b"#!/bin/sh\n"
         assert receipt.wheel_sha256 == wheel_sha
         assert receipt.distribution_evidence_sha256 == hashlib.sha256(evidence_path.read_bytes()).hexdigest()
-
 
 def test_ci_builds_container_from_formal_distribution_context():
     workflow = (ROOT / ".github" / "workflows" / "ci.yml").read_text(encoding="utf-8")
@@ -318,7 +325,6 @@ def test_prepare_context_rejects_tampered_distribution_evidence_sidecar(monkeypa
             "0" * 64 + "  DISTRIBUTION_RELEASE_EVIDENCE.json\n",
             encoding="utf-8",
         )
-        monkeypatch.setattr(context, "_git_blob", lambda sha, path: b"exact")
         with pytest.raises(ValueError, match="sidecar mismatch"):
             context.prepare_container_context(dist, root / "ctx", expected_source_sha=SHA)
 

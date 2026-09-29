@@ -10,18 +10,16 @@ ENV DEBIAN_FRONTEND=noninteractive \
 
 WORKDIR /opt/noetrium
 
-# Stable OS/runtime dependencies and runtime identity precede all source-specific
-# material. Ordinary source commits therefore retain these expensive layers.
-RUN apt-get update \
-    && apt-get install -y --no-install-recommends git \
-    && rm -rf /var/lib/apt/lists/*
+# The base runtime is deliberately VCS-free. Source provenance is already frozen
+# into the evidence-bound wheel and content-addressed source digest before this
+# image is built; runtime execution must not require Git or package-manager I/O.
 
 RUN useradd --create-home --uid 10001 --shell /usr/sbin/nologin platform \
     && mkdir -p "$PLATFORM_STATE_DIR" \
     && chown -R platform:platform /opt/noetrium "$PLATFORM_STATE_DIR"
 
 # The formal container context is materialized by prepare_container_context.py.
-# It contains exactly one evidence-bound wheel plus exact Git blobs for this
+# It contains exactly one evidence-bound wheel plus exact content-addressed bytes for this
 # Dockerfile and the entrypoint at the context root; never copy mutable source.
 COPY *.whl /tmp/wheelhouse/
 ARG PLATFORM_WHEEL_SHA256=unknown

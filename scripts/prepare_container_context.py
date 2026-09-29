@@ -7,13 +7,11 @@ import json
 from pathlib import Path
 import re
 import shutil
-import subprocess
 import sys
 
 ROOT = Path(__file__).resolve().parents[1]
-_SHA40_RE = re.compile(r"^[0-9a-f]{40}$")
 _SHA256_RE = re.compile(r"^[0-9a-f]{64}$")
-_DISTRIBUTION_SCHEMA = "noetrium.distribution-release.v4"
+_DISTRIBUTION_SCHEMA = "noetrium.distribution-release.v5"
 
 
 @dataclass(frozen=True, slots=True)
@@ -35,20 +33,6 @@ def _sha256_bytes(raw: bytes) -> str:
 def _sha256(path: Path) -> str:
     return _sha256_bytes(path.read_bytes())
 
-def _git_blob(source_sha: str, path: str) -> bytes:
-    completed = subprocess.run(
-        ["git", "show", f"{source_sha}:{path}"],
-        cwd=ROOT,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
-        check=False,
-    )
-    if completed.returncode != 0:
-        message = completed.stderr.decode("utf-8", "replace").strip()
-        raise RuntimeError(message or f"missing exact-source build asset: {path}")
-    return completed.stdout
-
-
 def _load_distribution_evidence(path: Path, *, expected_source_sha: str) -> tuple[dict, bytes]:
     raw = path.read_bytes()
     try:
@@ -61,17 +45,17 @@ def _load_distribution_evidence(path: Path, *, expected_source_sha: str) -> tupl
         raise ValueError("distribution evidence schema is not current")
     if payload.get("source_sha") != expected_source_sha:
         raise ValueError("distribution evidence source SHA mismatch")
-    if payload.get("manifest_source") != "external-git-object-database":
-        raise ValueError("distribution manifest is not bound to raw Git object source")
+    if payload.get("manifest_source") != "content-addressed-filesystem-snapshot":
+        raise ValueError("distribution manifest is not bound to content-addressed source snapshot")
     manifest_digest = payload.get("release_manifest_digest")
     if not isinstance(manifest_digest, str) or not _SHA256_RE.fullmatch(manifest_digest):
         raise ValueError("distribution release-manifest digest is invalid")
     build_command = payload.get("build_command")
     if not isinstance(build_command, dict) or build_command.get("source_sha") != expected_source_sha:
         raise ValueError("distribution build source identity is invalid")
-    if build_command.get("cwd_mode") != "external-git-object-database":
-        raise ValueError("distribution build did not use raw Git object source")
-    if build_command.get("source_materialization_schema") != "noetrium.git-object-materialization.v1":
+    if build_command.get("cwd_mode") != "external-content-addressed-snapshot":
+        raise ValueError("distribution build did not use isolated content-addressed source")
+    if build_command.get("source_materialization_schema") != "noetrium.filesystem-source-snapshot.v1":
         raise ValueError("distribution source materialization schema is invalid")
     materialization_digest = build_command.get("source_materialization_sha256")
     if not isinstance(materialization_digest, str) or not _SHA256_RE.fullmatch(materialization_digest):
@@ -91,8 +75,8 @@ def prepare_container_context(
     expected_source_sha: str,
 ) -> ContainerContextReceipt:
     source_sha = expected_source_sha.strip().lower()
-    if not _SHA40_RE.fullmatch(source_sha):
-        raise ValueError("expected source SHA must be a lowercase 40-character Git SHA")
+    if not _SHA256_RE.fullmatch(source_sha):
+        raise ValueError("expected source SHA must be a lowercase SHA-256 source-tree digest")
     distribution_dir = Path(distribution_dir).resolve()
     evidence_path = distribution_dir / "DISTRIBUTION_RELEASE_EVIDENCE.json"
     evidence, evidence_raw = _load_distribution_evidence(
@@ -139,8 +123,37 @@ def prepare_container_context(
     tree_digest = evidence["source_tree_sha256"]
     if not isinstance(tree_digest, str):
         raise ValueError("distribution source-tree digest is invalid")
-    dockerfile_raw = _git_blob(source_sha, "deploy/Dockerfile")
-    entrypoint_raw = _git_blob(source_sha, "deploy/container-entrypoint.sh")
+    build_assets = evidence.get("container_build_assets")
+    if not isinstance(build_assets, dict):
+        raise ValueError("distribution container-build asset authority is missing")
+
+    def bound_asset(name: str) -> bytes:
+        row = build_assets.get(name)
+        if not isinstance(row, dict):
+            raise ValueError(f"distribution container-build asset is missing: {name}")
+        relative = row.get("path")
+        digest = row.get("sha256")
+        size = row.get("size")
+        if (
+            not isinstance(relative, str)
+            or relative.startswith("/")
+            or ".." in Path(relative).parts
+            or not isinstance(digest, str)
+            or not _SHA256_RE.fullmatch(digest)
+            or type(size) is not int
+            or size < 1
+        ):
+            raise ValueError(f"distribution container-build asset authority is invalid: {name}")
+        path = distribution_dir / relative
+        if not path.is_file():
+            raise ValueError(f"distribution container-build asset bytes are missing: {name}")
+        raw = path.read_bytes()
+        if len(raw) != size or _sha256_bytes(raw) != digest:
+            raise ValueError(f"distribution container-build asset bytes drifted: {name}")
+        return raw
+
+    dockerfile_raw = bound_asset("dockerfile")
+    entrypoint_raw = bound_asset("entrypoint")
 
     output = Path(output).resolve()
     if output.exists():

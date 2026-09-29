@@ -13,6 +13,8 @@ import tempfile
 from typing import Iterable
 import uuid
 
+from noetrium_platform.foundation.governance.release.runtime.manifest import build_release_manifest
+
 ROOT = Path(__file__).resolve().parents[1]
 CATALOG_PATH = ROOT / "deploy" / "environments" / "catalog.json"
 PROFILE_REGISTRY_SCHEMA = "noetrium.environment-profile-registry.v3"
@@ -87,10 +89,6 @@ def _run(
             f"command failed rc={completed.returncode}: {' '.join(argv)}"
         )
     return (completed.stdout or "").strip() if capture else ""
-
-
-def _git(*args: str) -> str:
-    return _run(("git", *args), capture=True)
 
 
 def _sha256(path: Path) -> str:
@@ -841,11 +839,9 @@ def build_environment_images(
     allow_draining: bool = False,
     allow_retired: bool = False,
 ) -> dict:
-    source_sha = _git("rev-parse", "HEAD")
-    if _git("status", "--porcelain"):
-        raise RuntimeError("environment image build requires a clean checkout")
-
-    branch = _git("branch", "--show-current")
+    source_manifest = build_release_manifest(ROOT)
+    source_sha = source_manifest.source_tree_sha256
+    branch = "content-addressed"
     catalog = _load_catalog()
     by_id = _profile_map(catalog)
     unknown = tuple(sorted(set(profiles) - set(by_id)))

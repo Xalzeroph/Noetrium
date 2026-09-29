@@ -11,7 +11,6 @@ import subprocess
 import sys
 
 ROOT = Path(__file__).resolve().parents[1]
-_SHA40_RE = re.compile(r"^[0-9a-f]{40}$")
 _SHA256_RE = re.compile(r"^[0-9a-f]{64}$")
 _PUBLIC_API_ROOTS = ("ResearchPortfolioBuilder", "ResearchPortfolio", "ResearchOS", "open_project")
 _MARKER = "CONTAINER_PRODUCT_SMOKE="
@@ -220,8 +219,8 @@ def verify_container_image(
     python_runtime_identity_digest = (
         expected_python_runtime_identity_digest.strip().lower()
     )
-    if not _SHA40_RE.fullmatch(source_sha):
-        raise ValueError("expected source SHA must be a lowercase 40-character Git SHA")
+    if not _SHA256_RE.fullmatch(source_sha):
+        raise ValueError("expected source SHA must be a lowercase SHA-256 source-tree digest")
     if not _SHA256_RE.fullmatch(wheel_sha256):
         raise ValueError("expected wheel SHA256 must be lowercase hexadecimal")
     if not _SHA256_RE.fullmatch(distribution_sha256):
