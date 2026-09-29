@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import argparse
+from contextlib import contextmanager
+import fcntl
 import hashlib
 import json
 import os
@@ -54,6 +56,134 @@ _QUALIFICATION_OWNER_ENV = (
     ("NOETRIUM_BOOTSTRAP_OWNER_START", "io.noetrium.bootstrap-owner-start"),
 )
 
+
+
+_ENVIRONMENT_QUALIFICATION_SCHEMA = "noetrium.environment-profile-qualification.v1"
+
+
+def _qualification_material(
+    *,
+    profile_id: str,
+    category_id: str,
+    image_identity: dict,
+    profile_revision: str,
+    build_input_digest: str,
+    doctor_sha256: str,
+) -> dict[str, str]:
+    return {
+        "schema": _ENVIRONMENT_QUALIFICATION_SCHEMA,
+        "profile_id": profile_id,
+        "category_id": category_id,
+        "image_runtime_identity_digest": _image_runtime_identity_digest(image_identity),
+        "profile_revision": profile_revision,
+        "build_input_digest": build_input_digest,
+        "doctor_sha256": doctor_sha256,
+    }
+
+
+def _qualification_digest(material: dict[str, str]) -> str:
+    return hashlib.sha256(
+        json.dumps(
+            material, sort_keys=True, separators=(",", ":"), ensure_ascii=True
+        ).encode("utf-8")
+    ).hexdigest()
+
+
+def _qualification_receipt_path(
+    work_root: Path, profile_id: str, qualification_digest: str
+) -> Path:
+    return (
+        work_root
+        / "qualification-receipts"
+        / profile_id
+        / f"{qualification_digest}.json"
+    )
+
+
+def _load_qualification_receipt(
+    path: Path, *, material: dict[str, str], qualification_digest: str
+) -> dict | None:
+    if not path.is_file() or path.is_symlink():
+        return None
+    try:
+        data = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return None
+    if (
+        type(data) is not dict
+        or data.get("status") != "pass"
+        or data.get("qualification_digest") != qualification_digest
+        or data.get("material") != material
+    ):
+        return None
+    return data
+
+
+def _publish_qualification_receipt(
+    path: Path, *, material: dict[str, str], qualification_digest: str
+) -> dict:
+    receipt = {
+        "schema": _ENVIRONMENT_QUALIFICATION_SCHEMA,
+        "status": "pass",
+        "qualification_digest": qualification_digest,
+        "material": material,
+    }
+    path.parent.mkdir(parents=True, exist_ok=True)
+    temporary = path.with_name(path.name + f".tmp-{os.getpid()}-{uuid.uuid4().hex}")
+    temporary.write_text(
+        json.dumps(receipt, indent=2, sort_keys=True) + "\n", encoding="utf-8"
+    )
+    os.replace(temporary, path)
+    return receipt
+
+
+@contextmanager
+def _qualification_lock(path: Path):
+    lock_path = path.with_suffix(path.suffix + ".lock")
+    lock_path.parent.mkdir(parents=True, exist_ok=True)
+    with lock_path.open("a+b") as handle:
+        fcntl.flock(handle.fileno(), fcntl.LOCK_EX)
+        try:
+            yield
+        finally:
+            fcntl.flock(handle.fileno(), fcntl.LOCK_UN)
+
+
+def _qualify_profile_once(
+    *,
+    work_root: Path,
+    profile_id: str,
+    category_id: str,
+    image_identity: dict,
+    profile_revision: str,
+    build_input_digest: str,
+    rebuild: bool,
+    doctor: Path,
+    run_doctor,
+) -> tuple[dict, bool]:
+    material = _qualification_material(
+        profile_id=profile_id,
+        category_id=category_id,
+        image_identity=image_identity,
+        profile_revision=profile_revision,
+        build_input_digest=build_input_digest,
+        doctor_sha256=_sha256(doctor),
+    )
+    digest = _qualification_digest(material)
+    path = _qualification_receipt_path(work_root, profile_id, digest)
+    with _qualification_lock(path):
+        cached = None if rebuild else _load_qualification_receipt(
+            path, material=material, qualification_digest=digest
+        )
+        if cached is not None:
+            return cached, True
+        run_doctor()
+        return (
+            _publish_qualification_receipt(
+                path, material=material, qualification_digest=digest
+            ),
+            False,
+        )
 
 def _qualification_label_args() -> tuple[str, ...]:
     args: list[str] = ["--label", _QUALIFICATION_CHILD_LABEL]
@@ -1056,20 +1186,6 @@ def build_environment_images(
         )
         profile_build_inputs[profile_id] = resolved_build_inputs
         if row.get("build_mode") == "base-only":
-            _run(
-                (
-                    "docker",
-                    "run",
-                    "--rm",
-                    "--init",
-                    "--restart",
-                    "no",
-                    *_qualification_label_args(),
-                    base_tag,
-                    "environment-doctor",
-                    row["category_id"],
-                )
-            )
             profile_revision = _profile_revision(row)
             build_input_digest = _profile_build_input_digest(
                 row,
@@ -1079,6 +1195,31 @@ def build_environment_images(
                 ],
                 resolved_build_inputs=resolved_build_inputs,
             )
+            doctor = ROOT / "deploy" / "environments" / row["category_id"] / "doctor.sh"
+            qualification, qualification_reused = _qualify_profile_once(
+                work_root=work_root,
+                profile_id=profile_id,
+                category_id=row["category_id"],
+                image_identity=base_identity,
+                profile_revision=profile_revision,
+                build_input_digest=build_input_digest,
+                rebuild=rebuild,
+                doctor=doctor,
+                run_doctor=lambda: _run(
+                    (
+                        "docker",
+                        "run",
+                        "--rm",
+                        "--init",
+                        "--restart",
+                        "no",
+                        *_qualification_label_args(),
+                        base_tag,
+                        "environment-doctor",
+                        row["category_id"],
+                    )
+                ),
+            )
             profile_identity = dict(base_identity)
             profile_identity["profile_id"] = profile_id
             profile_identity["profile_revision"] = profile_revision
@@ -1086,6 +1227,8 @@ def build_environment_images(
             profile_identity["lifecycle"] = row["lifecycle"]
             profile_identity["base_only"] = True
             profile_identity["reused"] = True
+            profile_identity["qualification_digest"] = qualification["qualification_digest"]
+            profile_identity["qualification_reused"] = qualification_reused
             images[profile_id] = profile_identity
             continue
 
@@ -1111,12 +1254,7 @@ def build_environment_images(
         env.update(input_environment)
         env["PLATFORM_HOST_DATA_ROOT"] = str(runtime_root)
         qualification_instance = (
-            instances_root
-            / f"doctor-{profile_id}-{build_input_digest[:24]}"
-        )
-        _prepare_qualification_instance(
-            qualification_instance,
-            compose_path=ROOT / compose,
+            instances_root / f"doctor-{profile_id}-{build_input_digest[:24]}"
         )
         env["PLATFORM_ENVIRONMENT_INSTANCE_ROOT"] = str(qualification_instance)
         env["PLATFORM_RUNTIME_STATE_ROOT"] = str(
@@ -1142,24 +1280,6 @@ def build_environment_images(
                 ),
                 env=env,
             )
-        _run(
-            (
-                "docker",
-                "compose",
-                "-f",
-                "deploy/compose.yaml",
-                "-f",
-                compose,
-                "run",
-                "--rm",
-                *_qualification_label_args(),
-                "platform-runtime",
-                "environment-doctor",
-                row["category_id"],
-            ),
-            env=env,
-        )
-        shutil.rmtree(qualification_instance)
         profile_identity = _verified_profile_image_identity(
             tag,
             profile_id=profile_id,
@@ -1167,10 +1287,51 @@ def build_environment_images(
             profile_revision=revision,
             build_input_digest=build_input_digest,
         )
+        doctor = ROOT / "deploy" / "environments" / row["category_id"] / "doctor.sh"
+
+        def run_profile_doctor() -> None:
+            _prepare_qualification_instance(
+                qualification_instance, compose_path=ROOT / compose
+            )
+            try:
+                _run(
+                    (
+                        "docker",
+                        "compose",
+                        "-f",
+                        "deploy/compose.yaml",
+                        "-f",
+                        compose,
+                        "run",
+                        "--rm",
+                        *_qualification_label_args(),
+                        "platform-runtime",
+                        "environment-doctor",
+                        row["category_id"],
+                    ),
+                    env=env,
+                )
+            finally:
+                if qualification_instance.exists():
+                    shutil.rmtree(qualification_instance)
+
+        qualification, qualification_reused = _qualify_profile_once(
+            work_root=work_root,
+            profile_id=profile_id,
+            category_id=row["category_id"],
+            image_identity=profile_identity,
+            profile_revision=revision,
+            build_input_digest=build_input_digest,
+            rebuild=rebuild,
+            doctor=doctor,
+            run_doctor=run_profile_doctor,
+        )
         profile_identity["reused"] = reused_profile
         profile_identity["runtime_identity_digest"] = _image_runtime_identity_digest(
             profile_identity
         )
+        profile_identity["qualification_digest"] = qualification["qualification_digest"]
+        profile_identity["qualification_reused"] = qualification_reused
         profile_identity["profile_revision"] = revision
         profile_identity["build_input_digest"] = build_input_digest
         profile_identity["lifecycle"] = row["lifecycle"]

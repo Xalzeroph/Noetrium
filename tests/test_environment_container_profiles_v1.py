@@ -3,6 +3,8 @@ from __future__ import annotations
 import json
 import os
 import subprocess
+from concurrent.futures import ThreadPoolExecutor
+from threading import Barrier, Lock
 from copy import deepcopy
 from pathlib import Path
 
@@ -12,6 +14,7 @@ from scripts.build_environment_images import (
     _image_object_tag,
     _image_runtime_identity_digest,
     _parse_profile_build_input_env_file,
+    _qualify_profile_once,
     _parse_profile_build_input_overrides,
     _prepare_qualification_instance,
     _profile_build_input_digest,
@@ -57,6 +60,101 @@ def test_temporary_base_build_tags_do_not_collide():
     assert first != second
     assert len(first) <= 128
     assert len(second) <= 128
+
+
+def test_environment_qualification_receipt_reuses_exact_immutable_proof(tmp_path: Path) -> None:
+    doctor = tmp_path / "doctor.sh"
+    doctor.write_text("#!/bin/sh\nexit 0\n", encoding="utf-8")
+    image = {"id": "sha256:" + "a" * 64}
+    calls = []
+
+    first, reused_first = _qualify_profile_once(
+        work_root=tmp_path / "state",
+        profile_id="minecraft",
+        category_id="minecraft",
+        image_identity=image,
+        profile_revision="b" * 64,
+        build_input_digest="c" * 64,
+        rebuild=False,
+        doctor=doctor,
+        run_doctor=lambda: calls.append("doctor"),
+    )
+    second, reused_second = _qualify_profile_once(
+        work_root=tmp_path / "state",
+        profile_id="minecraft",
+        category_id="minecraft",
+        image_identity=image,
+        profile_revision="b" * 64,
+        build_input_digest="c" * 64,
+        rebuild=False,
+        doctor=doctor,
+        run_doctor=lambda: calls.append("doctor"),
+    )
+
+    assert calls == ["doctor"]
+    assert reused_first is False
+    assert reused_second is True
+    assert first == second
+
+
+def test_environment_qualification_receipt_is_single_flight_across_threads(tmp_path: Path) -> None:
+    doctor = tmp_path / "doctor.sh"
+    doctor.write_text("#!/bin/sh\nexit 0\n", encoding="utf-8")
+    image = {"id": "sha256:" + "1" * 64}
+    started = Barrier(2)
+    calls_lock = Lock()
+    calls = 0
+
+    def qualify():
+        nonlocal calls
+        started.wait(timeout=2.0)
+
+        def run_doctor():
+            nonlocal calls
+            with calls_lock:
+                calls += 1
+
+        return _qualify_profile_once(
+            work_root=tmp_path / "state",
+            profile_id="minecraft",
+            category_id="minecraft",
+            image_identity=image,
+            profile_revision="2" * 64,
+            build_input_digest="3" * 64,
+            rebuild=False,
+            doctor=doctor,
+            run_doctor=run_doctor,
+        )
+
+    with ThreadPoolExecutor(max_workers=2) as pool:
+        first = pool.submit(qualify)
+        second = pool.submit(qualify)
+        rows = (first.result(timeout=3.0), second.result(timeout=3.0))
+
+    assert calls == 1
+    assert sorted(reused for _receipt, reused in rows) == [False, True]
+
+
+def test_environment_qualification_receipt_invalidates_on_doctor_change(tmp_path: Path) -> None:
+    doctor = tmp_path / "doctor.sh"
+    doctor.write_text("#!/bin/sh\nexit 0\n", encoding="utf-8")
+    image = {"id": "sha256:" + "d" * 64}
+    calls = []
+    kwargs = dict(
+        work_root=tmp_path / "state",
+        profile_id="minecraft",
+        category_id="minecraft",
+        image_identity=image,
+        profile_revision="e" * 64,
+        build_input_digest="f" * 64,
+        rebuild=False,
+        doctor=doctor,
+        run_doctor=lambda: calls.append("doctor"),
+    )
+    _qualify_profile_once(**kwargs)
+    doctor.write_text("#!/bin/sh\necho changed\n", encoding="utf-8")
+    _qualify_profile_once(**kwargs)
+    assert calls == ["doctor", "doctor"]
 
 
 def test_environment_profile_registry_is_dynamic_and_lifecycle_driven() -> None:
