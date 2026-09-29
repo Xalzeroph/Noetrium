@@ -732,6 +732,16 @@ def test_environment_bootstrap_uses_one_deployment_env_for_control_and_build() -
     dockerignore = (ROOT / ".dockerignore").read_text(encoding="utf-8").splitlines()
     assert ".env" in dockerignore
     assert "**/.env" in dockerignore
+    assert ".noetrium" in dockerignore
+    assert ".noetrium/**" in dockerignore
+
+
+def test_project_run_reuses_bootstrap_after_profile_resolution() -> None:
+    deploy = (ROOT / "deploy" / "noetrium").read_text(encoding="utf-8")
+    function = deploy.split("environment_bootstrap() {", 1)[1].split("}\n", 1)[0]
+    assert 'if [ "$BOOTSTRAP_READY" = "1" ]; then' in function
+    assert 'bootstrap_reuse=1' in function
+    assert 'NOETRIUM_BOOTSTRAP_REUSE="$bootstrap_reuse"' in function
 
 
 def test_environment_build_input_env_file_reads_only_declared_inputs(tmp_path: Path) -> None:

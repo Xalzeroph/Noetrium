@@ -105,7 +105,13 @@ fleet_with_optional_materializer() {
 }
 
 environment_bootstrap() {
-  NOETRIUM_BUILD_WORK_ROOT="$ENV_WORK_ROOT" "$ENV_BOOTSTRAP" "$@"
+  bootstrap_reuse=0
+  if [ "$BOOTSTRAP_READY" = "1" ]; then
+    bootstrap_reuse=1
+  fi
+  NOETRIUM_BOOTSTRAP_REUSE="$bootstrap_reuse" \
+    NOETRIUM_BUILD_WORK_ROOT="$ENV_WORK_ROOT" \
+    "$ENV_BOOTSTRAP" "$@"
   BOOTSTRAP_READY=1
 }
 
