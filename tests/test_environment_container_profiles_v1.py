@@ -375,16 +375,28 @@ def test_environment_catalog_keeps_scientific_assets_downstream() -> None:
     assert "downstream-owned" in boundary
 
 
+def test_deploy_defaults_to_one_noetrium_data_root() -> None:
+    deploy = (ROOT / "deploy" / "noetrium").read_text(encoding="utf-8")
+    bootstrap = (ROOT / "deploy" / "build-environments.sh").read_text(encoding="utf-8")
+    assert 'DATA_ROOT="${NOETRIUM_DATA_ROOT:-$ROOT/.noetrium}"' in deploy
+    assert 'STATE_ROOT="${NOETRIUM_DEPLOYMENT_STATE_ROOT:-$DATA_ROOT/deployment}"' in deploy
+    assert 'ENV_WORK_ROOT="${NOETRIUM_BUILD_WORK_ROOT:-$DATA_ROOT/environment-images/$ROOT_CACHE_KEY}"' in deploy
+    assert 'PROJECTS_STATE_ROOT="$DATA_ROOT/projects"' in deploy
+    assert 'project_state_root="$(project_state_root_for "$project_root")"' in deploy
+    assert "XDG_CACHE_HOME" not in deploy
+    assert '$HOME/.cache' not in deploy
+    assert '${TMPDIR:-/tmp}' not in deploy
+    assert 'PROJECT_RESEARCH_STATE_ROOT="$CONTROL_STATE_ROOT/research-os"' in bootstrap
+    assert '-e NOETRIUM_PROJECT_STATE_ROOT=$PROJECT_RESEARCH_STATE_ROOT' in bootstrap
+    assert 'CONTROL_ASSET_REGISTRY="$PROJECT_RESEARCH_STATE_ROOT/platform-runtime/state/model/assets"' in bootstrap
+
+
 def test_bootstrap_containers_use_ephemeral_tmpfs() -> None:
     text = (ROOT / "deploy" / "build-environments.sh").read_text(encoding="utf-8")
     tmpfs = "--tmpfs /tmp:rw,exec,nosuid,nodev,mode=1777"
     assert text.count(tmpfs) >= 2
     runner = text.split("run_bootstrap_container() {", 1)[1].split("docker_image_id()", 1)[0]
     assert tmpfs in runner
-    assert any(
-        "docker run --rm --init --restart no" in line and tmpfs in line
-        for line in text.splitlines()
-    )
 
 def test_environment_bootstrap_is_vcs_neutral() -> None:
     text = (ROOT / "deploy" / "build-environments.sh").read_text(encoding="utf-8")

@@ -339,6 +339,8 @@ if [ "${1:-}" = "control" ]; then
   CONTROL_STATE_ROOT="${NOETRIUM_CONTROL_STATE_ROOT:-$WORK_ROOT/control}"
   mkdir -p "$CONTROL_STATE_ROOT"
   CONTROL_STATE_ROOT="$(CDPATH= cd -- "$CONTROL_STATE_ROOT" && pwd)"
+  PROJECT_RESEARCH_STATE_ROOT="$CONTROL_STATE_ROOT/research-os"
+  mkdir -p "$PROJECT_RESEARCH_STATE_ROOT"
   CONTROL_ENV_FILE="${NOETRIUM_CONTROL_ENV_FILE:-$DEPLOYMENT_ENV_FILE}"
 
   CONTROL_PROJECT_ROOT="${NOETRIUM_CONTROL_PROJECT_ROOT:-}"
@@ -382,7 +384,22 @@ if [ "${1:-}" = "control" ]; then
     CONTROL_IMAGE="$BOOTSTRAP_IMAGE"
     BOOTSTRAP_IMAGE_ID="$(docker_image_id "$BOOTSTRAP_IMAGE")"
     PROJECT_RUNTIME_KEY="$(
-      docker run --rm --init --restart no         --tmpfs /tmp:rw,exec,nosuid,nodev,mode=1777         --user "$HOST_UID:$HOST_GID"         --entrypoint python3         -e HOME=/tmp         -e PIP_DISABLE_PIP_VERSION_CHECK=1         -e PIP_NO_CACHE_DIR=1         -v "$ROOT:$ROOT:ro"         -v "$CONTROL_PROJECT_ROOT:$CONTROL_PROJECT_ROOT"         -v "$CONTROL_STATE_ROOT:$CONTROL_STATE_ROOT"         "$BOOTSTRAP_IMAGE"         "$ROOT/scripts/materialize_project_runtime.py"         --project-root "$CONTROL_PROJECT_ROOT"         --platform-root "$ROOT"         --state-root "$CONTROL_STATE_ROOT"         --base-image-id "$BOOTSTRAP_IMAGE_ID"
+      docker run --rm --init --restart no \
+        --tmpfs /tmp:rw,exec,nosuid,nodev,mode=1777 \
+        --user "$HOST_UID:$HOST_GID" \
+        --entrypoint python3 \
+        -e HOME=/tmp \
+        -e PIP_DISABLE_PIP_VERSION_CHECK=1 \
+        -e PIP_NO_CACHE_DIR=1 \
+        -v "$ROOT:$ROOT:ro" \
+        -v "$CONTROL_PROJECT_ROOT:$CONTROL_PROJECT_ROOT" \
+        -v "$CONTROL_STATE_ROOT:$CONTROL_STATE_ROOT" \
+        "$BOOTSTRAP_IMAGE" \
+        "$ROOT/scripts/materialize_project_runtime.py" \
+        --project-root "$CONTROL_PROJECT_ROOT" \
+        --platform-root "$ROOT" \
+        --state-root "$CONTROL_STATE_ROOT" \
+        --base-image-id "$BOOTSTRAP_IMAGE_ID"
     )"
     if [ "$PROJECT_RUNTIME_KEY" != "base" ]; then
       [ "${#PROJECT_RUNTIME_KEY}" -eq 64 ] || {
@@ -432,7 +449,7 @@ if [ "${1:-}" = "control" ]; then
       exit 1
     fi
 
-    CONTROL_RUNTIME_ARGS="--user $HOST_UID:$HOST_GID --network host $HOST_IDENTITY_ARGS -v $CONTROL_PROJECT_ROOT:$CONTROL_PROJECT_ROOT -v $CONTROL_HOME:$CONTROL_HOME -v $CONTROL_COORDINATION_ROOT:$CONTROL_COORDINATION_ROOT -w $CONTROL_PROJECT_ROOT -e HOME=$CONTROL_HOME -e PYTHONPATH=$ROOT:$CONTROL_PROJECT_ROOT/src -e NOETRIUM_RUNTIME_COORDINATION_ROOT=$CONTROL_COORDINATION_ROOT -e NOETRIUM_CONTROL_IMAGE_ID=$CONTROL_IMAGE_ID -e NOETRIUM_PROJECT_RUNTIME_KEY=$PROJECT_RUNTIME_KEY"
+    CONTROL_RUNTIME_ARGS="--user $HOST_UID:$HOST_GID --network host $HOST_IDENTITY_ARGS -v $CONTROL_PROJECT_ROOT:$CONTROL_PROJECT_ROOT -v $CONTROL_HOME:$CONTROL_HOME -v $CONTROL_COORDINATION_ROOT:$CONTROL_COORDINATION_ROOT -w $CONTROL_PROJECT_ROOT -e HOME=$CONTROL_HOME -e PYTHONPATH=$ROOT:$CONTROL_PROJECT_ROOT/src -e NOETRIUM_RUNTIME_COORDINATION_ROOT=$CONTROL_COORDINATION_ROOT -e NOETRIUM_PROJECT_STATE_ROOT=$PROJECT_RESEARCH_STATE_ROOT -e NOETRIUM_CONTROL_IMAGE_ID=$CONTROL_IMAGE_ID -e NOETRIUM_PROJECT_RUNTIME_KEY=$PROJECT_RUNTIME_KEY"
     if [ -n "$DAEMON_SOCKET_GID" ]; then
       CONTROL_RUNTIME_ARGS="$CONTROL_RUNTIME_ARGS --group-add $DAEMON_SOCKET_GID"
     fi
@@ -455,7 +472,7 @@ if [ "${1:-}" = "control" ]; then
 
   CONTROL_INPUT_ROOT="${NOETRIUM_CONTROL_INPUT_ROOT:-}"
   if [ -z "$CONTROL_INPUT_ROOT" ] && [ "$CONTROL_HOST_RUNTIME" = "1" ]; then
-    CONTROL_ASSET_REGISTRY="$CONTROL_PROJECT_ROOT/.noetrium/research-os/platform-runtime/state/model/assets"
+    CONTROL_ASSET_REGISTRY="$PROJECT_RESEARCH_STATE_ROOT/platform-runtime/state/model/assets"
     if [ -d "$CONTROL_ASSET_REGISTRY" ]; then
       CONTROL_INPUT_ROOT="$(
         docker run --rm           --entrypoint python3           -v "$CONTROL_PROJECT_ROOT:$CONTROL_PROJECT_ROOT:ro"           "$BOOTSTRAP_IMAGE"           -c 'import json, os, pathlib, sys
