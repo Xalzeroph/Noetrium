@@ -652,6 +652,8 @@ class LocalMinecraftLifetimeSessionAuthority(EnvironmentLifetimeSessionAuthority
         self.owner_generation_id = owner_generation_id
         self.lock = threading.RLock()
         self.runtimes: dict[str, _LifetimeRuntime] = {}
+        self._lifetime_locks: dict[str, threading.Lock] = {}
+        self._instance_sequence_lock = threading.Lock()
         self.asset = self.asset_root / "server.jar"
         if not self.asset.is_file():
             raise FileNotFoundError(f"Minecraft server asset missing: {self.asset}")
@@ -772,12 +774,14 @@ class LocalMinecraftLifetimeSessionAuthority(EnvironmentLifetimeSessionAuthority
                 )
             )
         except KeyError:
-            self._instance_sequence += 1
+            with self._instance_sequence_lock:
+                self._instance_sequence += 1
+                instance_sequence = self._instance_sequence
             instance_id = (
                 "minecraft:"
                 + self.owner_generation_id[:16]
                 + ":slot:"
-                + f"{self._instance_sequence:08d}"
+                + f"{instance_sequence:08d}"
             )
             catalog.register_instance(
                 EnvironmentInstance(
@@ -920,59 +924,85 @@ class LocalMinecraftLifetimeSessionAuthority(EnvironmentLifetimeSessionAuthority
         if not lifetime_id:
             raise ValueError("Minecraft runtime requires lifetime_id")
         with self.lock:
-            row = self.runtimes.get(lifetime_id)
+            lifetime_lock = self._lifetime_locks.get(lifetime_id)
+            if lifetime_lock is None:
+                lifetime_lock = threading.Lock()
+                self._lifetime_locks[lifetime_id] = lifetime_lock
+        # Physical environment creation may wait on Docker, server readiness and
+        # the Mineflayer handshake. Serialize only identical lifetimes; unrelated
+        # assignments must not queue behind one global authority lock.
+        with lifetime_lock:
+            with self.lock:
+                row = self.runtimes.get(lifetime_id)
             if row is None:
-                row = self._open(context)
-                self.runtimes[lifetime_id] = row
+                opened = self._open(context)
+                with self.lock:
+                    row = self.runtimes.get(lifetime_id)
+                    if row is None:
+                        self.runtimes[lifetime_id] = opened
+                        row = opened
+                if row is not opened:
+                    # The per-lifetime lock makes this unreachable in normal use,
+                    # but fail closed against future lock-policy drift.
+                    opened.binding.close()
+                    opened.instance_guard.close()
+                    self.environment_instance_authority.release(
+                        opened.instance_guard.handles[0]
+                    )
             row.instance_guard.assert_healthy()
             return row.session
 
     def release(self, lifetime_id: str) -> None:
         with self.lock:
-            row = self.runtimes.pop(lifetime_id, None)
-        if row is None:
-            return
-        physical_closed = False
-        try:
-            row.binding.close()
-            shutil.rmtree(row.workdir, ignore_errors=False)
-            recovery = (
-                self.recovery_root
-                / canonical_digest({"lifetime_id": lifetime_id})
-            ).resolve()
-            shutil.rmtree(recovery, ignore_errors=False)
-            physical_closed = True
-        finally:
-            row.instance_guard.close()
-            current_handle = row.instance_guard.handles[0]
-            if physical_closed:
-                proof = EnvironmentCleanlinessProof(
-                    instance_id=current_handle.instance.instance_id,
-                    profile_revision=current_handle.instance.profile_revision,
-                    runtime_identity_digest=current_handle.instance.runtime_identity_digest,
-                    materialization_digest=current_handle.instance.materialization_digest,
-                    generation=current_handle.instance.generation,
-                    kind=EnvironmentCleanlinessKind.OVERLAY_DESTROYED,
-                    proof_digest=canonical_digest(
-                        {
-                            "schema": "noetrium.minecraft-instance-cleanliness.v1",
-                            "instance_id": current_handle.instance.instance_id,
-                            "generation": current_handle.instance.generation,
-                            "workdir": str(row.workdir),
-                            "overlay_destroyed": True,
-                            "capsule_generation": (
-                                self._capsule.generation_digest
-                            ),
-                        }
-                    ),
-                )
-                self.environment_instance_authority.release(
-                    current_handle,
-                    cleanliness=proof,
-                )
-            else:
-                self.environment_instance_authority.release(current_handle)
-
+            lifetime_lock = self._lifetime_locks.get(lifetime_id)
+            if lifetime_lock is None:
+                lifetime_lock = threading.Lock()
+                self._lifetime_locks[lifetime_id] = lifetime_lock
+        with lifetime_lock:
+            with self.lock:
+                row = self.runtimes.pop(lifetime_id, None)
+            if row is None:
+                return
+            physical_closed = False
+            try:
+                row.binding.close()
+                shutil.rmtree(row.workdir, ignore_errors=False)
+                recovery = (
+                    self.recovery_root
+                    / canonical_digest({"lifetime_id": lifetime_id})
+                ).resolve()
+                shutil.rmtree(recovery, ignore_errors=False)
+                physical_closed = True
+            finally:
+                row.instance_guard.close()
+                current_handle = row.instance_guard.handles[0]
+                if physical_closed:
+                    proof = EnvironmentCleanlinessProof(
+                        instance_id=current_handle.instance.instance_id,
+                        profile_revision=current_handle.instance.profile_revision,
+                        runtime_identity_digest=current_handle.instance.runtime_identity_digest,
+                        materialization_digest=current_handle.instance.materialization_digest,
+                        generation=current_handle.instance.generation,
+                        kind=EnvironmentCleanlinessKind.OVERLAY_DESTROYED,
+                        proof_digest=canonical_digest(
+                            {
+                                "schema": "noetrium.minecraft-instance-cleanliness.v1",
+                                "instance_id": current_handle.instance.instance_id,
+                                "generation": current_handle.instance.generation,
+                                "workdir": str(row.workdir),
+                                "overlay_destroyed": True,
+                                "capsule_generation": (
+                                    self._capsule.generation_digest
+                                ),
+                            }
+                        ),
+                    )
+                    self.environment_instance_authority.release(
+                        current_handle,
+                        cleanliness=proof,
+                    )
+                else:
+                    self.environment_instance_authority.release(current_handle)
     def close(self) -> None:
         with self.lock:
             lifetime_ids = tuple(self.runtimes)
