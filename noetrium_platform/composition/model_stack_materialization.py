@@ -176,6 +176,40 @@ def _model_runtime_vram_budget_bytes(
     return per_device_weights + kv_cache + runtime_headroom
 
 
+def _model_compute_requirement(
+    asset_path: Path,
+    *,
+    total_asset_bytes: int,
+    context_length: int,
+    dtype: str,
+    tensor_parallel: int,
+) -> ComputeRequirement:
+    """Freeze hard model capacity while keeping shared-GPU load as a preference.
+
+    VRAM residual capacity is admission-critical and durably reserved. Instantaneous
+    GPU utilization is intentionally not a hard cutoff for shared serving because
+    candidate discovery and allocation observe at different instants; a fixed
+    utilization ceiling would turn harmless load jitter into placement TOCTOU.
+    The compute scheduler still ranks lower-utilization devices first.
+    """
+
+    required_free = _model_runtime_vram_budget_bytes(
+        asset_path,
+        total_asset_bytes=total_asset_bytes,
+        context_length=context_length,
+        dtype=dtype,
+        tensor_parallel=tensor_parallel,
+    )
+    return ComputeRequirement(
+        cpu_cores=4,
+        memory_bytes=max(4 * _GIB, min(total_asset_bytes, 16 * _GIB)),
+        gpu_count=tensor_parallel,
+        required_gpu_free_memory_bytes=required_free,
+        gpu_admission_headroom_fraction=1.0 - MAX_VLLM_GPU_MEMORY_UTILIZATION,
+        gpu_sharing_mode=GpuSharingMode.PREFER_IDLE_ALLOW_SHARED,
+    )
+
+
 @dataclass(frozen=True, slots=True)
 class MaterializedModelStack:
     stack: ModelStackSpec
@@ -558,21 +592,12 @@ print(json.dumps({
             ),
             serving_policy=ModelServingPolicy(),
         )
-        required_free = _model_runtime_vram_budget_bytes(
+        base = _model_compute_requirement(
             asset.path,
             total_asset_bytes=stats.bytes,
             context_length=config.max_position_embeddings,
             dtype=config.torch_dtype,
             tensor_parallel=tensor_parallel,
-        )
-        base = ComputeRequirement(
-            cpu_cores=4,
-            memory_bytes=max(4 * _GIB, min(stats.bytes, 16 * _GIB)),
-            gpu_count=tensor_parallel,
-            required_gpu_free_memory_bytes=required_free,
-            gpu_admission_headroom_fraction=1.0 - MAX_VLLM_GPU_MEMORY_UTILIZATION,
-            max_gpu_utilization_percent=50,
-            gpu_sharing_mode=GpuSharingMode.PREFER_IDLE_ALLOW_SHARED,
         )
         compute = reconcile_vllm_compute_requirement(stack, base)
         return MaterializedModelStack(

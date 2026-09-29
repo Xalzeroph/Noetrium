@@ -11,6 +11,7 @@ from noetrium_platform.capabilities.model.stack.api import (
 from noetrium_platform.composition.model_stack_materialization import (
     _GIB,
     _kv_cache_budget_bytes,
+    _model_compute_requirement,
     _model_runtime_vram_budget_bytes,
 )
 
@@ -110,3 +111,21 @@ def test_kv_planning_fails_closed_without_attention_geometry(
             dtype="bfloat16",
             tensor_parallel=1,
         )
+
+
+def test_shared_model_compute_uses_utilization_as_ranking_not_hard_gate(
+    tmp_path: Path,
+) -> None:
+    _qwen3_config(tmp_path)
+    requirement = _model_compute_requirement(
+        tmp_path,
+        total_asset_bytes=16 * _GIB,
+        context_length=40960,
+        dtype="bfloat16",
+        tensor_parallel=2,
+    )
+
+    assert requirement.gpu_count == 2
+    assert requirement.required_gpu_free_memory_bytes > 0
+    assert requirement.max_gpu_utilization_percent == 100
+    assert requirement.gpu_sharing_mode.value == "prefer-idle-allow-shared"
