@@ -6,6 +6,41 @@ from noetrium_platform.capabilities.model.deployment.api import ModelDeploymentS
 from noetrium_platform.substrate.api import ServiceLaunchContract
 
 
+_GIB = 1024**3
+_MODEL_ENGINE_COLD_START_BASE_SECONDS = 120.0
+_MODEL_ENGINE_COLD_START_SECONDS_PER_GIB = 20.0
+_MODEL_ENGINE_COLD_START_MAX_SECONDS = 1800.0
+
+
+def _model_readiness_timeout_s(
+    *,
+    configured_timeout_s: float,
+    artifact_bytes: int,
+    engine: str,
+) -> float:
+    """Derive a finite cold-start budget from immutable model size.
+
+    GPU model servers must not share one fixed readiness deadline: loading,
+    compilation and warmup scale materially with checkpoint size. Explicit
+    larger deployment budgets remain authoritative; the derived budget is
+    bounded so a genuinely stuck service still fails closed.
+    """
+
+    if artifact_bytes < 0:
+        raise ValueError("model artifact bytes must be non-negative")
+    if engine not in {"vllm", "sglang"}:
+        return float(configured_timeout_s)
+    gib = max(1, (int(artifact_bytes) + _GIB - 1) // _GIB)
+    derived = (
+        _MODEL_ENGINE_COLD_START_BASE_SECONDS
+        + _MODEL_ENGINE_COLD_START_SECONDS_PER_GIB * gib
+    )
+    return max(
+        float(configured_timeout_s),
+        min(_MODEL_ENGINE_COLD_START_MAX_SECONDS, derived),
+    )
+
+
 class ModelLaunchMaterializer:
     """Materializes mutable deployment intent into one exact service launch contract."""
 
@@ -20,6 +55,12 @@ class ModelLaunchMaterializer:
 
     def materialize(self, spec: ModelDeploymentSpec) -> tuple[ServiceLaunchContract, tuple[tuple[str, str], ...]]:
         asset = self._assets.model(spec.model_id)
+        stats = self._assets.model_stats(spec.model_id)
+        readiness_timeout_s = _model_readiness_timeout_s(
+            configured_timeout_s=spec.readiness_timeout_s,
+            artifact_bytes=stats.bytes,
+            engine=spec.engine,
+        )
         environment = dict(self._base_environment)
         environment.update(spec.environment)
         executable = spec.executable
@@ -75,7 +116,7 @@ class ModelLaunchMaterializer:
                 environment_digest=environment_digest,
                 artifact_digest=artifact_digest,
                 runtime_identity_digest=runtime_identity_digest,
-                readiness_timeout_s=spec.readiness_timeout_s,
+                readiness_timeout_s=readiness_timeout_s,
                 stop_timeout_s=spec.stop_timeout_s,
                 heartbeat_interval_s=spec.heartbeat_interval_s,
             ),
