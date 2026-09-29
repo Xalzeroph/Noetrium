@@ -58,6 +58,7 @@ _PROTOCOL = (
     "model.generation.request.v1",
     "model.generation.response.v1",
 )
+GPU_MEMORY_ACCOUNTING_EVIDENCE_REF = "gpu-memory-accounting:container-process-v1"
 
 
 @dataclass(frozen=True, slots=True)
@@ -223,7 +224,7 @@ def _parse_memory_bytes(text: str) -> int:
     return max(1, int(amount * multipliers[unit]))
 
 
-def _container_memory_bytes(command_runner, pid: int) -> int:
+def _managed_container_id(command_runner, pid: int) -> str:
     listed = command_runner.run(
         (
             "docker",
@@ -253,7 +254,6 @@ def _container_memory_bytes(command_runner, pid: int) -> int:
     )
     if inspected.returncode != 0:
         raise RuntimeError("Docker managed-container process inspection failed")
-    matched = None
     for line in inspected.stdout.splitlines():
         fields = line.strip().split()
         if len(fields) != 2:
@@ -263,10 +263,34 @@ def _container_memory_bytes(command_runner, pid: int) -> int:
         except ValueError:
             continue
         if observed_pid == pid:
-            matched = fields[0]
-            break
-    if matched is None:
-        raise RuntimeError("model qualification cannot resolve exact Docker container")
+            return fields[0]
+    raise RuntimeError("model qualification cannot resolve exact Docker container")
+
+
+def _container_process_pids(command_runner, container_id: str) -> frozenset[int]:
+    measured = command_runner.run(
+        ("docker", "top", container_id, "-eo", "pid"),
+        timeout_seconds=20.0,
+    )
+    if measured.returncode != 0:
+        raise RuntimeError("Docker model process inventory failed")
+    pids: set[int] = set()
+    for line in measured.stdout.splitlines():
+        fields = line.strip().split()
+        if not fields:
+            continue
+        try:
+            pid = int(fields[0])
+        except ValueError:
+            continue
+        if pid > 0:
+            pids.add(pid)
+    if not pids:
+        raise RuntimeError("Docker model process inventory is empty")
+    return frozenset(pids)
+
+
+def _container_memory_bytes(command_runner, container_id: str) -> int:
     measured = command_runner.run(
         (
             "docker",
@@ -274,7 +298,7 @@ def _container_memory_bytes(command_runner, pid: int) -> int:
             "--no-stream",
             "--format",
             "{{.MemUsage}}",
-            matched,
+            container_id,
         ),
         timeout_seconds=20.0,
     )
@@ -286,19 +310,30 @@ def _container_memory_bytes(command_runner, pid: int) -> int:
 def _gpu_memory_bytes(
     resources: ModelResourceViewPort,
     gpu_ids: tuple[str, ...],
+    command_runner,
+    container_id: str,
 ) -> int:
     snapshot = resources.gpu_runtime()
     if not snapshot.available:
         raise RuntimeError("GPU runtime measurement is unavailable")
-    selected = [
-        device.memory_used_mb * 1024 * 1024
-        for device in snapshot.devices
-        if device.uuid in set(gpu_ids)
-    ]
-    if len(selected) != len(gpu_ids) or not selected:
-        raise RuntimeError("GPU runtime measurement does not cover placement")
-    return max(selected)
-
+    if not snapshot.processes_complete:
+        raise RuntimeError("GPU process memory measurement is incomplete")
+    selected_gpus = frozenset(gpu_ids)
+    if not selected_gpus or len(selected_gpus) != len(gpu_ids):
+        raise RuntimeError("GPU process memory measurement requires unique placement")
+    container_pids = _container_process_pids(command_runner, container_id)
+    usage = {gpu_id: 0 for gpu_id in selected_gpus}
+    for process in snapshot.processes:
+        if process.pid not in container_pids or process.gpu_uuid not in selected_gpus:
+            continue
+        usage[process.gpu_uuid] += process.used_memory_mb * 1024 * 1024
+    missing = tuple(sorted(gpu_id for gpu_id, used in usage.items() if used <= 0))
+    if missing:
+        raise RuntimeError(
+            "GPU process memory measurement does not cover placement: "
+            + ",".join(missing)
+        )
+    return max(usage.values())
 
 def _run_static_qualification(
     *,
@@ -318,6 +353,7 @@ def _run_static_qualification(
     exact_reproducible = True
     peak_gpu = 0
     peak_host = 0
+    container_id = _managed_container_id(command_runner, process_pid)
 
     for requirement in requirements:
         body = _qualification_body(model_id, requirement.required_capabilities)
@@ -341,10 +377,13 @@ def _run_static_qualification(
             )
             exchanges.append(exchange)
             all_exchanges.append(exchange)
-            peak_gpu = max(peak_gpu, _gpu_memory_bytes(resources, gpu_ids))
+            peak_gpu = max(
+                peak_gpu,
+                _gpu_memory_bytes(resources, gpu_ids, command_runner, container_id),
+            )
             peak_host = max(
                 peak_host,
-                _container_memory_bytes(command_runner, process_pid),
+                _container_memory_bytes(command_runner, container_id),
             )
 
         passed = sum(
@@ -595,7 +634,9 @@ def bootstrap_required_qualified_model_runtime(
                     row.deployment_id: (
                         "static-qualification:sha256:"
                         + certificate.evidence_digest,
-                        "model-stack-fingerprint:sha256:" + canonical_digest(materialized.fingerprint_ref),
+                        "model-stack-fingerprint:sha256:"
+                        + canonical_digest(materialized.fingerprint_ref),
+                        GPU_MEMORY_ACCOUNTING_EVIDENCE_REF,
                     ),
                 },
             )

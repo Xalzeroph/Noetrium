@@ -11,6 +11,9 @@ from noetrium_platform.capabilities.model.deployment.composition import (
     LocalModelReplicaPoolRuntime,
     ModelReplicaPoolRequest,
 )
+from noetrium_platform.capabilities.model.stack.api import (
+    MAX_VLLM_GPU_MEMORY_UTILIZATION,
+)
 from noetrium_platform.capabilities.model.serving.api import (
     DeploymentPlacement,
     QualifiedDeploymentManifest,
@@ -32,11 +35,14 @@ from noetrium_platform.capabilities.model.serving.providers import (
 from noetrium_platform.foundation.kernel.kernel import canonical_digest
 from noetrium_platform.infrastructure.resources.compute.api import (
     ComputeInventoryPort,
+    ComputePlacementUnavailable,
     ComputeRequirement,
+    GpuSharingMode,
 )
 from noetrium_platform.substrate.api import PLATFORM_SCOPE, ServiceHeartbeat
 
 from .model_runtime_bootstrap import (
+    GPU_MEMORY_ACCOUNTING_EVIDENCE_REF,
     RequiredModelRuntime,
     bootstrap_required_qualified_model_runtime,
 )
@@ -48,6 +54,47 @@ def _load_strict(path: Path):
         path,
         runtime_qualification_store_factory=DirectoryRuntimeQualificationEvidenceStore,
         runtime_canary_store_factory=DirectoryRuntimeCanaryEvidenceStore,
+    )
+
+
+def _uses_current_gpu_memory_accounting(closure) -> bool:
+    for deployment in closure.deployments:
+        receipt = closure.runtime_qualifications.load(
+            closure.runtime_manifest_digest,
+            deployment.deployment_id,
+        )
+        if GPU_MEMORY_ACCOUNTING_EVIDENCE_REF not in receipt.evidence_refs:
+            return False
+    return True
+
+
+def _refresh_compute_requirement(source) -> ComputeRequirement:
+    envelope = source.certificate.resource_envelope
+    engine = source.stack.identity.engine.lower()
+    gpu_count = (
+        source.stack.tensor_parallel * source.stack.pipeline_parallel
+        if engine == "vllm"
+        else source.stack.tensor_parallel
+    )
+    return ComputeRequirement(
+        cpu_cores=1,
+        memory_bytes=max(
+            2 * 1024**3,
+            int(envelope.peak_host_memory_bytes * 2),
+        ),
+        gpu_count=gpu_count,
+        required_gpu_free_memory_bytes=envelope.peak_gpu_memory_bytes_per_device,
+        gpu_admission_headroom_fraction=(
+            1.0 - MAX_VLLM_GPU_MEMORY_UTILIZATION
+            if engine == "vllm" and gpu_count > 0
+            else 0.0
+        ),
+        max_gpu_utilization_percent=100,
+        gpu_sharing_mode=(
+            GpuSharingMode.PREFER_IDLE_ALLOW_SHARED
+            if gpu_count > 0
+            else GpuSharingMode.IDLE_ONLY
+        ),
     )
 
 
@@ -106,6 +153,8 @@ def refresh_required_qualified_model_runtimes(
             closure = _load_strict(path)
         except QualifiedModelClosureReadError:
             continue
+        if not _uses_current_gpu_memory_accounting(closure):
+            continue
         model_ids = {
             deployment.stack.identity.model_id
             for deployment in closure.deployments
@@ -120,6 +169,7 @@ def refresh_required_qualified_model_runtimes(
     }
     missing = sorted(set(required) - found)
     receipts: list[str] = []
+    bootstrapped: set[str] = set()
     for model_id in missing:
         rows = tuple(
             row for row in required_models if row.model_id == model_id
@@ -138,6 +188,7 @@ def refresh_required_qualified_model_runtimes(
                 execution_pool=execution_pool,
             )
         )
+        bootstrapped.add(model_id)
 
     for path, closure in loaded:
         replacement_deployments = []
@@ -154,7 +205,6 @@ def refresh_required_qualified_model_runtimes(
                 # Static qualification is host-specific. Never reuse measured
                 # capacity on a different physical host.
                 compute_inventory.host(source.certificate.target_host_identity_digest)
-                envelope = source.certificate.resource_envelope
                 request = ModelReplicaPoolRequest(
                     pool_id=(
                         "qualified-runtime-refresh:"
@@ -170,23 +220,7 @@ def refresh_required_qualified_model_runtimes(
                     model_id=model_id,
                     engine=source.stack.identity.engine,
                     cwd=project_root,
-                    compute=ComputeRequirement(
-                        cpu_cores=1,
-                        memory_bytes=max(
-                            2 * 1024**3,
-                            int(envelope.peak_host_memory_bytes * 2),
-                        ),
-                        gpu_count=(
-                            source.stack.tensor_parallel
-                            * source.stack.pipeline_parallel
-                            if source.stack.identity.engine.lower() == "vllm"
-                            else source.stack.tensor_parallel
-                        ),
-                        required_gpu_free_memory_bytes=(
-                            envelope.peak_gpu_memory_bytes_per_device
-                        ),
-                        max_gpu_utilization_percent=100,
-                    ),
+                    compute=_refresh_compute_requirement(source),
                     model_stack=source.stack,
                     replica_count=1,
                     endpoint_host="127.0.0.1",
@@ -327,6 +361,7 @@ def refresh_required_qualified_model_runtimes(
                         item.deployment_id: (
                             "prior-runtime-manifest:sha256:"
                             + closure.runtime_manifest_digest,
+                            GPU_MEMORY_ACCOUNTING_EVIDENCE_REF,
                         )
                         for item in replacement_deployments
                     },
@@ -342,6 +377,43 @@ def refresh_required_qualified_model_runtimes(
                     "qualified model runtime refresh readback drift"
                 )
             receipts.append(receipt.closure_digest)
+        except ComputePlacementUnavailable:
+            for lease in reversed(opened_leases):
+                try:
+                    lease.close()
+                except BaseException:
+                    pass
+            model_ids = tuple(
+                sorted(
+                    {
+                        source.stack.identity.model_id
+                        for source in closure.deployments
+                        if source.stack.identity.model_id in required
+                    }
+                )
+            )
+            for model_id in model_ids:
+                if model_id in bootstrapped:
+                    continue
+                rows = tuple(
+                    row for row in required_models if row.model_id == model_id
+                )
+                receipts.append(
+                    bootstrap_required_qualified_model_runtime(
+                        authority_root=authority_root,
+                        project_root=project_root,
+                        state_root=state_root,
+                        requirements=rows,
+                        assets=assets,
+                        compute_scheduler=compute_scheduler,
+                        model_replica_pool=model_replica_pool,
+                        deployment_runtime=deployment_runtime,
+                        model_resources=model_resources,
+                        execution_pool=execution_pool,
+                    )
+                )
+                bootstrapped.add(model_id)
+            continue
         except BaseException:
             # Failed refreshes must not pin resource leases. Successful leases
             # intentionally remain registered in LocalModelReplicaPoolRuntime
