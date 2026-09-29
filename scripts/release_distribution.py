@@ -7,6 +7,7 @@ from dataclasses import asdict, dataclass
 from datetime import datetime, timezone
 import hashlib
 import json
+import os
 from pathlib import Path, PurePosixPath
 import shutil
 import subprocess
@@ -332,6 +333,15 @@ def _materialize_exact_source(sha: str, destination: Path) -> tuple[str, int]:
         target.chmod(0o755 if entry.mode == "100755" else 0o644)
     return digest.hexdigest(), len(entries)
 
+def _source_date_epoch(sha: str) -> str:
+    raw = _git("show", "-s", "--format=%ct", sha).strip()
+    if not raw.isdecimal():
+        raise RuntimeError("Git commit timestamp is not a canonical Unix epoch")
+    # ZIP timestamps cannot represent years before 1980.  The repository is
+    # newer, but clamp defensively so the reproducibility contract is total.
+    return str(max(int(raw), 315532800))
+
+
 def _build_distributions(
     output: Path, *, sha: str
 ) -> tuple[Path, Path, dict[str, object], ReleaseManifest]:
@@ -348,11 +358,22 @@ def _build_distributions(
         platform_projection = _project_platform_source(source_root)
         manifest = build_release_manifest(source_root)
         argv = [sys.executable, "-m", "build", "--wheel", "--sdist", "--outdir", str(output)]
-        completed = subprocess.run(argv, cwd=source_root, text=True, capture_output=True, check=False)
+        source_date_epoch = _source_date_epoch(sha)
+        build_env = os.environ.copy()
+        build_env["SOURCE_DATE_EPOCH"] = source_date_epoch
+        completed = subprocess.run(
+            argv,
+            cwd=source_root,
+            env=build_env,
+            text=True,
+            capture_output=True,
+            check=False,
+        )
         command = {
             "argv": argv,
             "cwd_mode": "external-git-object-database",
             "source_sha": sha,
+            "source_date_epoch": source_date_epoch,
             "source_materialization_schema": _MATERIALIZATION_SCHEMA,
             "source_materialization_sha256": source_materialization_sha256,
             "source_materialization_file_count": source_file_count,

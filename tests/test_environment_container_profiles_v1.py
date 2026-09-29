@@ -8,6 +8,7 @@ from pathlib import Path
 
 from scripts.build_environment_images import (
     _default_active_profile_ids,
+    _image_object_tag,
     _image_runtime_identity_digest,
     _parse_profile_build_input_env_file,
     _parse_profile_build_input_overrides,
@@ -17,6 +18,7 @@ from scripts.build_environment_images import (
     _profile_map,
     _profile_revision,
     _require_profile_build_intent,
+    _temporary_base_build_tag,
     validate_catalog,
 )
 
@@ -27,6 +29,21 @@ ENV_ROOT = ROOT / "deploy" / "environments"
 
 def _catalog() -> dict:
     return json.loads((ENV_ROOT / "catalog.json").read_text(encoding="utf-8"))
+
+
+def test_base_image_object_tag_is_content_addressed():
+    identity = {"id": "sha256:" + "a" * 64}
+    assert _image_object_tag(identity) == "noetrium:object-" + "a" * 64
+
+
+def test_temporary_base_build_tags_do_not_collide():
+    first = _temporary_base_build_tag("b" * 40)
+    second = _temporary_base_build_tag("b" * 40)
+    assert first.startswith("noetrium:build-" + "b" * 12 + "-")
+    assert second.startswith("noetrium:build-" + "b" * 12 + "-")
+    assert first != second
+    assert len(first) <= 128
+    assert len(second) <= 128
 
 
 def test_environment_profile_registry_is_dynamic_and_lifecycle_driven() -> None:

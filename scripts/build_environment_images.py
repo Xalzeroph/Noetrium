@@ -11,6 +11,7 @@ import subprocess
 import sys
 import tempfile
 from typing import Iterable
+import uuid
 
 ROOT = Path(__file__).resolve().parents[1]
 CATALOG_PATH = ROOT / "deploy" / "environments" / "catalog.json"
@@ -661,6 +662,15 @@ def _image_runtime_identity_digest(identity: dict) -> str:
     return image_id.removeprefix("sha256:")
 
 
+def _image_object_tag(identity: dict) -> str:
+    digest = _image_runtime_identity_digest(identity)
+    return f"noetrium:object-{digest}"
+
+
+def _temporary_base_build_tag(source_sha: str) -> str:
+    return f"noetrium:build-{source_sha[:12]}-{uuid.uuid4().hex}"
+
+
 def _ensure_image_identity(image: str) -> dict:
     """Resolve the concrete local image that will be consumed by Docker."""
 
@@ -905,20 +915,23 @@ def build_environment_images(
     )
     profile_input_image_cache: dict[str, dict] = {}
 
-    base_tag = (
+    base_alias = (
         f"noetrium:{source_sha}-{python_runtime_identity_digest}"
     )
-    reused_base = _image_exists(base_tag) and not rebuild
+    reused_base = _image_exists(base_alias) and not rebuild
     build_mode = "reused-verified-base" if reused_base else "qualified-distribution-build"
+    temporary_base_tag: str | None = None
 
     if reused_base:
         scratch_root.mkdir(parents=True, exist_ok=True)
-        base_identity = _image_identity(base_tag)
+        base_identity = _image_identity(base_alias)
         wheel_sha256, distribution_evidence_sha256 = _cached_base_provenance(
             base_identity,
             source_sha,
             python_runtime_identity_digest,
         )
+        base_tag = _image_object_tag(base_identity)
+        _run(("docker", "tag", base_identity["id"], base_tag))
     else:
         if scratch_root.exists():
             shutil.rmtree(scratch_root)
@@ -955,6 +968,7 @@ def build_environment_images(
         distribution_evidence_sha256 = context_receipt[
             "distribution_evidence_sha256"
         ]
+        temporary_base_tag = _temporary_base_build_tag(source_sha)
         _run(
             (
                 "docker",
@@ -976,11 +990,13 @@ def build_environment_images(
                     f"{distribution_evidence_sha256}"
                 ),
                 "--tag",
-                base_tag,
+                temporary_base_tag,
                 str(context),
             )
         )
-        base_identity = _image_identity(base_tag)
+        base_identity = _image_identity(temporary_base_tag)
+        base_tag = _image_object_tag(base_identity)
+        _run(("docker", "tag", base_identity["id"], base_tag))
         built_wheel, built_distribution = _cached_base_provenance(
             base_identity,
             source_sha,
@@ -1010,6 +1026,13 @@ def build_environment_images(
             str(base_verification),
         )
     )
+
+    # Qualification always targets an image-id-derived object tag.  Only after
+    # proof closes do we publish the mutable source alias used for cache discovery.
+    # Concurrent builders can replace the alias later without invalidating this run.
+    _run(("docker", "tag", base_identity["id"], base_alias))
+    if temporary_base_tag is not None:
+        _run(("docker", "image", "rm", temporary_base_tag))
 
     base_identity["reused"] = reused_base
     base_identity["runtime_identity_digest"] = _image_runtime_identity_digest(

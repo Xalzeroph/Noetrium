@@ -34,6 +34,20 @@ def test_clean_source_identity_returns_exact_sha_and_branch(monkeypatch):
     assert distribution._require_clean_source() == ("a" * 40, "system/06-product-assurance-convergence")
 
 
+def test_source_date_epoch_is_bound_to_git_commit_time(monkeypatch):
+    monkeypatch.setattr(
+        distribution,
+        "_git",
+        lambda *args: "1700000000" if args[:3] == ("show", "-s", "--format=%ct") else "",
+    )
+    assert distribution._source_date_epoch("a" * 40) == "1700000000"
+
+
+def test_source_date_epoch_clamps_pre_zip_epoch(monkeypatch):
+    monkeypatch.setattr(distribution, "_git", lambda *args: "1")
+    assert distribution._source_date_epoch("a" * 40) == "315532800"
+
+
 def test_spdx_binds_distribution_artifact_sha256(tmp_path: Path):
     local_root = tmp_path
     with TemporaryDirectory(prefix="spdx-test-", dir=local_root) as td:
@@ -104,11 +118,12 @@ def test_distribution_build_runs_from_external_exact_source(monkeypatch, tmp_pat
         seen["source"] = destination.resolve()
         return "b" * 64, 123
 
-    def fake_run(argv, *, cwd, text, capture_output, check):
+    def fake_run(argv, *, cwd, env, text, capture_output, check):
         source_root = Path(cwd).resolve()
         assert source_root == seen["source"]
         assert source_root != distribution.ROOT
         assert distribution.ROOT not in source_root.parents
+        assert env["SOURCE_DATE_EPOCH"] == "1700000000"
         output = Path(argv[-1])
         (output / "noetrium_platform-1.0-py3-none-any.whl").write_bytes(b"wheel")
         (output / "noetrium_platform-1.0.tar.gz").write_bytes(b"sdist")
@@ -125,6 +140,7 @@ def test_distribution_build_runs_from_external_exact_source(monkeypatch, tmp_pat
         return distribution.ReleaseManifest(1, (), "c" * 64, ">=3.11", "1.0")
 
     monkeypatch.setattr(distribution, "_materialize_exact_source", fake_materialize)
+    monkeypatch.setattr(distribution, "_source_date_epoch", lambda sha: "1700000000")
     monkeypatch.setattr(distribution, "build_release_manifest", fake_manifest)
     monkeypatch.setattr(distribution.subprocess, "run", fake_run)
     with TemporaryDirectory(prefix="release-build-test-", dir=local_root) as td:
@@ -137,6 +153,7 @@ def test_distribution_build_runs_from_external_exact_source(monkeypatch, tmp_pat
     assert sdist.name.endswith(".tar.gz")
     assert receipt["cwd_mode"] == "external-git-object-database"
     assert receipt["source_sha"] == "a" * 40
+    assert receipt["source_date_epoch"] == "1700000000"
     assert receipt["source_materialization_schema"] == distribution._MATERIALIZATION_SCHEMA
     assert receipt["source_materialization_sha256"] == "b" * 64
     assert receipt["source_materialization_file_count"] == 123
