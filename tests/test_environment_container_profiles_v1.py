@@ -381,6 +381,9 @@ def test_environment_bootstrap_is_vcs_neutral() -> None:
     assert "GIT_METADATA_ARGS" not in text
     assert "safe.directory" not in text
     assert "git rev-parse" not in text
+    assert "BUILDX_GIT_INFO=false" in text
+    assert "BUILDX_GIT_LABELS=false" in text
+    assert "BUILDX_GIT_CHECK_DIRTY=false" in text
     assert "apt-get" not in bootstrap
     assert " git " not in bootstrap.lower()
     prefix = text.split("docker build", 1)[0].lower()

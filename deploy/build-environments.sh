@@ -311,7 +311,7 @@ fi
 # inside the control-plane container so daemon-side build contexts and Compose
 # bind mounts resolve to the same files. Source stays read-only; only the
 # dedicated build/runtime root is writable.
-COMMON_ARGS="$DAEMON_ARGS -v $ROOT:$ROOT:ro -w $ROOT -e PYTHONDONTWRITEBYTECODE=1 -e NOETRIUM_BOOTSTRAP_OWNER_PID=$$ -e NOETRIUM_BOOTSTRAP_OWNER_BOOT=$BOOT_ID -e NOETRIUM_BOOTSTRAP_OWNER_START=$OWNER_START"
+COMMON_ARGS="$DAEMON_ARGS -v $ROOT:$ROOT:ro -w $ROOT -e PYTHONDONTWRITEBYTECODE=1 -e BUILDX_GIT_INFO=false -e BUILDX_GIT_LABELS=false -e BUILDX_GIT_CHECK_DIRTY=false -e NOETRIUM_BOOTSTRAP_OWNER_PID=$$ -e NOETRIUM_BOOTSTRAP_OWNER_BOOT=$BOOT_ID -e NOETRIUM_BOOTSTRAP_OWNER_START=$OWNER_START"
 
 DEPLOYMENT_ENV_FILE="${NOETRIUM_DEPLOYMENT_ENV_FILE:-}"
 if [ -z "$DEPLOYMENT_ENV_FILE" ] && [ -f "$ROOT/deploy/.env" ]; then
