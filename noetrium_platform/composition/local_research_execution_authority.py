@@ -940,19 +940,24 @@ class PortfolioAutomaticTrialProviderResolver:
         program_journal = DirectoryMachineJournal(
             self.context.state_root / "machine-state" / "program-journal"
         )
-        program_inventory = compose_program_method_runtime_inventory(
-            program,
-            study_inventory,
-            journal=program_journal,
-            max_steps=10_000,
-        )
         participant_runtimes = []
+        method_inventories: dict[str, MethodRuntimePortInventory] = {}
         for requirement in requirements:
             method = exact_methods.get(requirement.method_id)
             if method is None:
                 raise LookupError(
                     f"Study has no frozen MethodProgram for {requirement.method_id!r}"
                 )
+            program_inventory = method_inventories.get(method.program_digest)
+            if program_inventory is None:
+                program_inventory = compose_program_method_runtime_inventory(
+                    program,
+                    study_inventory,
+                    method_program_digests=(method.program_digest,),
+                    journal=program_journal,
+                    max_steps=10_000,
+                )
+                method_inventories[method.program_digest] = program_inventory
             runtime = compose_method_runtime_bindings(
                 method,
                 program_inventory,

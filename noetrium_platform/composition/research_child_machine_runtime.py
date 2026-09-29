@@ -31,10 +31,18 @@ def compose_program_method_runtime_inventory(
     program: ResearchProgram,
     base: MethodRuntimePortInventory,
     *,
+    method_program_digests: tuple[str, ...],
     journal: MachineJournalPort,
     max_steps: int,
 ) -> MethodRuntimePortInventory:
-    """Bind Method-owned pure components into one immutable runtime inventory."""
+    """Bind only the selected MethodPrograms' components into one runtime inventory.
+
+    Method-owned component host ids are logical names scoped by their owning Method.
+    A ResearchProgram may contain many alternative/baseline Methods that legitimately
+    reuse the same logical host id with different implementations.  Physical child
+    host registration therefore follows the exact MethodProgram(s) selected by the
+    current execution binding rather than aggregating every Method in the program.
+    """
 
     if type(program) is not ResearchProgram:
         raise TypeError("child runtime composition requires ResearchProgram")
@@ -44,6 +52,19 @@ def compose_program_method_runtime_inventory(
         raise TypeError("child runtime composition requires MachineJournalPort")
     if type(max_steps) is not int or max_steps < 1:
         raise ValueError("child runtime composition max_steps must be positive")
+    if type(method_program_digests) is not tuple or any(
+        type(value) is not str
+        or len(value) != 64
+        or any(ch not in "0123456789abcdef" for ch in value)
+        for value in method_program_digests
+    ):
+        raise TypeError(
+            "child runtime composition method_program_digests must be SHA-256 tuple"
+        )
+    if len(method_program_digests) != len(set(method_program_digests)):
+        raise ValueError(
+            "child runtime composition method_program_digests must be unique"
+        )
 
     capabilities = base.capabilities
     if isinstance(capabilities, ProgramScopedCapabilityPort):
@@ -55,11 +76,25 @@ def compose_program_method_runtime_inventory(
         schemas=base.schemas,
     )
 
-    owned_components = tuple(
-        (definition, method, component)
+    selected_method_digests = frozenset(method_program_digests)
+    resolved_methods = tuple(
+        (definition, definition.implementation.resolve())
         for definition in program.definitions
         if type(definition.implementation) is ResearchMethodImplementation
-        for method in (definition.implementation.resolve(),)
+    )
+    available_method_digests = frozenset(
+        method.program.program_digest for _definition, method in resolved_methods
+    )
+    missing_method_digests = selected_method_digests - available_method_digests
+    if missing_method_digests:
+        raise LookupError(
+            "selected MethodProgram is not owned by ResearchProgram: "
+            + ",".join(sorted(missing_method_digests))
+        )
+    owned_components = tuple(
+        (definition, method, component)
+        for definition, method in resolved_methods
+        if method.program.program_digest in selected_method_digests
         for component in method.components
     )
     declared_children = tuple(

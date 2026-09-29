@@ -41,7 +41,10 @@ from noetrium_platform.evidence.artifact.catalog.api import (
 from noetrium_platform.evidence.artifact.reference.api import ArtifactReference
 from noetrium_platform.foundation.governance.api import ScopeIdentity, ScopeKind
 from .research_execution_content import ResearchExecutionContentAuthorities
-from noetrium_platform.product.research_os import ResearchValueKind
+from noetrium_platform.product.research_os import (
+    ResearchMethodImplementation,
+    ResearchValueKind,
+)
 from noetrium_platform.research.execution.workflow.api import (
     MethodObservationPort,
     MethodRunStatus,
@@ -195,13 +198,29 @@ class CanonicalResearchOSNodeRuntime(
         for node in compilation.nodes:
             nodes_by_program.setdefault(node.ref.program_id, []).append(node)
         for program in compilation.portfolio.programs:
-            inventory = compose_program_method_runtime_inventory(
-                program,
-                self._method_runtime_inventory,
-                journal=self._machine_journal,
-                max_steps=self._max_steps,
-            )
             for node in nodes_by_program.get(program.program_id, ()):
+                method_program_digests = tuple(
+                    definition.implementation.resolve().program.program_digest
+                    for definition in node.definitions
+                    if type(definition.implementation) is ResearchMethodImplementation
+                )
+                # Only a METHOD_MACHINE node consumes a Method runtime inventory and
+                # canonical lowering already requires exactly one MethodProgram there.
+                # Multi-Method experiment nodes intentionally receive no Method-owned
+                # child hosts; their participant bindings compose the selected Method
+                # independently at Trial execution time.
+                selected = (
+                    method_program_digests
+                    if len(method_program_digests) <= 1
+                    else ()
+                )
+                inventory = compose_program_method_runtime_inventory(
+                    program,
+                    self._method_runtime_inventory,
+                    method_program_digests=selected,
+                    journal=self._machine_journal,
+                    max_steps=self._max_steps,
+                )
                 staged[(program.program_id, node.semantic_digest)] = inventory
 
         with self._method_inventory_lock:
