@@ -669,6 +669,15 @@ def _temporary_base_build_tag(source_sha: str) -> str:
     return f"noetrium:build-{source_sha[:12]}-{uuid.uuid4().hex}"
 
 
+def _base_cache_alias(
+    source_sha: str, python_runtime_identity_digest: str
+) -> str:
+    identity = hashlib.sha256(
+        (source_sha + "\0" + python_runtime_identity_digest).encode("ascii")
+    ).hexdigest()
+    return f"noetrium:source-{identity}"
+
+
 def _ensure_image_identity(image: str) -> dict:
     """Resolve the concrete local image that will be consumed by Docker."""
 
@@ -911,8 +920,8 @@ def build_environment_images(
     )
     profile_input_image_cache: dict[str, dict] = {}
 
-    base_alias = (
-        f"noetrium:{source_sha}-{python_runtime_identity_digest}"
+    base_alias = _base_cache_alias(
+        source_sha, python_runtime_identity_digest
     )
     reused_base = _image_exists(base_alias) and not rebuild
     build_mode = "reused-verified-base" if reused_base else "qualified-distribution-build"

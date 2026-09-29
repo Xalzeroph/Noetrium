@@ -7,6 +7,7 @@ from copy import deepcopy
 from pathlib import Path
 
 from scripts.build_environment_images import (
+    _base_cache_alias,
     _default_active_profile_ids,
     _image_object_tag,
     _image_runtime_identity_digest,
@@ -36,9 +37,21 @@ def test_base_image_object_tag_is_content_addressed():
     assert _image_object_tag(identity) == "noetrium:object-" + "a" * 64
 
 
+def test_base_cache_alias_is_bounded_content_identity():
+    source = "a" * 64
+    runtime = "b" * 64
+    first = _base_cache_alias(source, runtime)
+    second = _base_cache_alias(source, runtime)
+    other = _base_cache_alias(source, "c" * 64)
+    assert first == second
+    assert first != other
+    assert first.startswith("noetrium:source-")
+    assert len(first.split(":", 1)[1]) <= 128
+
+
 def test_temporary_base_build_tags_do_not_collide():
-    first = _temporary_base_build_tag("b" * 40)
-    second = _temporary_base_build_tag("b" * 40)
+    first = _temporary_base_build_tag("b" * 64)
+    second = _temporary_base_build_tag("b" * 64)
     assert first.startswith("noetrium:build-" + "b" * 12 + "-")
     assert second.startswith("noetrium:build-" + "b" * 12 + "-")
     assert first != second
