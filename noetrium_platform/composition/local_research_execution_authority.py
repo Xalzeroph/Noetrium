@@ -1033,6 +1033,45 @@ class PortfolioAutomaticTrialProviderResolver:
         )
 
 
+def _model_physical_owner_digest(binding: ProjectModelBinding) -> str:
+    if not isinstance(binding, ProjectModelBinding):
+        raise TypeError("model physical owner projection requires ProjectModelBinding")
+    return canonical_digest(
+        {
+            "schema": "noetrium.model-physical-owner.v1",
+            "provider_id": binding.provider_id,
+            "model": binding.model,
+            "deployment_id": binding.deployment_id,
+            "deployment_generation": binding.deployment_generation,
+            "model_stack_digest": binding.model_stack_digest,
+            "qualification_certificate_digest": (
+                binding.qualification_certificate_digest
+            ),
+            "runtime_qualification_digest": binding.runtime_qualification_digest,
+            "host_identity_digest": binding.host_identity_digest,
+            "runtime_canary_evidence_digests": tuple(
+                sorted(binding.runtime_canary_evidence_digests)
+            ),
+        }
+    )
+
+
+def _model_definition_owner_identity(
+    bindings: tuple[ProjectModelBinding, ...],
+) -> str:
+    if type(bindings) is not tuple or not bindings:
+        raise TypeError("model definition owner identity requires non-empty tuple")
+    physical = tuple(
+        sorted({_model_physical_owner_digest(row) for row in bindings})
+    )
+    return canonical_digest(
+        {
+            "schema": "noetrium.model-definition-owner.v1",
+            "physical_owner_digests": physical,
+        }
+    )
+
+
 def _materialize_platform_definition_bindings(
     portfolio: ResearchPortfolio,
     *,
@@ -1043,6 +1082,9 @@ def _materialize_platform_definition_bindings(
 ) -> ResearchDefinitionBindingRegistry:
     rows: dict[str, ResearchDefinitionBinding] = {}
     studies: list[tuple[object, object]] = []
+    model_definition_bindings: dict[
+        str, tuple[object, dict[str, object]]
+    ] = {}
 
     def add(definition, *, owner: str, provider: str, identity: str, binding: object) -> None:
         candidate = ResearchDefinitionBinding(
@@ -1181,15 +1223,27 @@ def _materialize_platform_definition_bindings(
             )
             bound = contribution.model_role_bindings_for(requirement.role)
             if len(definitions) == 1 and bound:
-                add(
-                    definitions[0],
-                    owner="model",
-                    provider="qualified-model-binding",
-                    identity=canonical_digest(
-                        tuple(row.binding_digest for row in bound)
-                    ),
-                    binding=bound,
+                definition = definitions[0]
+                existing = model_definition_bindings.get(
+                    definition.definition_digest
                 )
+                if existing is None:
+                    by_binding_digest: dict[str, object] = {}
+                    model_definition_bindings[definition.definition_digest] = (
+                        definition,
+                        by_binding_digest,
+                    )
+                else:
+                    existing_definition, by_binding_digest = existing
+                    if (
+                        existing_definition.definition_digest
+                        != definition.definition_digest
+                    ):
+                        raise RuntimeError(
+                            "model definition owner aggregation identity drift"
+                        )
+                for row in bound:
+                    by_binding_digest[row.binding_digest] = row
 
         for participant in contribution.participant_bindings:
             definitions = tuple(
@@ -1236,6 +1290,20 @@ def _materialize_platform_definition_bindings(
                 identity=study.benchmark.cut_digest,
                 binding=study.benchmark,
             )
+
+    for definition_digest in sorted(model_definition_bindings):
+        definition, by_binding_digest = model_definition_bindings[definition_digest]
+        role_bindings = tuple(
+            by_binding_digest[key] for key in sorted(by_binding_digest)
+        )
+        physical_bindings = tuple(row.binding for row in role_bindings)
+        add(
+            definition,
+            owner="model",
+            provider="qualified-model-binding",
+            identity=_model_definition_owner_identity(physical_bindings),
+            binding=role_bindings,
+        )
 
     return ResearchDefinitionBindingRegistry(tuple(rows.values()))
 
