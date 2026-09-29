@@ -10,6 +10,8 @@ from noetrium_platform.composition.shared_host_pressure import (
     ResourceCompetitionDemand,
     ResourceCompetitionPolicy,
     ResourceCompetitionReservationLedger,
+    _default_resource_competition_directory,
+    _resource_competition_runtime_root,
 )
 from noetrium_platform.foundation.kernel.concurrency.api import ExecutionLaneKind
 from noetrium_platform.infrastructure.resources.compute.api import (
@@ -26,6 +28,38 @@ from noetrium_platform.research.execution.policy.composition import (
     build_admission_scheduling_policy,
     build_execution_admission,
 )
+
+
+def test_reservation_authority_prefers_explicit_runtime_coordination_root(
+    monkeypatch, tmp_path: Path
+) -> None:
+    runtime_root = tmp_path / "runtime"
+    monkeypatch.setenv(
+        "NOETRIUM_RUNTIME_COORDINATION_ROOT", str(runtime_root)
+    )
+    resolved = _default_resource_competition_directory()
+    assert resolved.is_relative_to(runtime_root / "resource-competition")
+    assert "noetrium-resource-competition" not in resolved.parts
+
+
+def test_reservation_authority_uses_xdg_runtime_when_unbound(
+    monkeypatch, tmp_path: Path
+) -> None:
+    runtime_root = tmp_path / "xdg"
+    runtime_root.mkdir()
+    monkeypatch.delenv("NOETRIUM_RUNTIME_COORDINATION_ROOT", raising=False)
+    monkeypatch.setenv("XDG_RUNTIME_DIR", str(runtime_root))
+    assert _resource_competition_runtime_root() == runtime_root / "noetrium"
+
+
+def test_reservation_authority_rejects_relative_explicit_root(monkeypatch) -> None:
+    monkeypatch.setenv("NOETRIUM_RUNTIME_COORDINATION_ROOT", "relative/runtime")
+    try:
+        _resource_competition_runtime_root()
+    except ValueError as exc:
+        assert "absolute path" in str(exc)
+    else:
+        raise AssertionError("relative runtime coordination root was accepted")
 
 
 class _FixedHostObserver:

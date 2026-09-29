@@ -390,6 +390,17 @@ def test_environment_bootstrap_is_vcs_neutral() -> None:
     assert "python3" not in prefix
     assert "python -m" not in prefix
 
+def test_control_runtime_shares_host_runtime_coordination_namespace() -> None:
+    text = (ROOT / "deploy" / "build-environments.sh").read_text(
+        encoding="utf-8"
+    )
+    assert 'HOST_RUNTIME_BASE="${XDG_RUNTIME_DIR:-/run/user/$HOST_UID}"' in text
+    assert 'CONTROL_COORDINATION_ROOT="$HOST_RUNTIME_BASE/noetrium"' in text
+    assert 'CONTROL_COORDINATION_ROOT="/dev/shm/noetrium-uid-$HOST_UID"' in text
+    assert '-v $CONTROL_COORDINATION_ROOT:$CONTROL_COORDINATION_ROOT' in text
+    assert '-e NOETRIUM_RUNTIME_COORDINATION_ROOT=$CONTROL_COORDINATION_ROOT' in text
+
+
 def test_qualification_precreates_runtime_and_profile_bind_sources(tmp_path: Path) -> None:
     compose = tmp_path / "compose.yaml"
     compose.write_text(

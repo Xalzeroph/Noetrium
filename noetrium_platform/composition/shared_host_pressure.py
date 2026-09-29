@@ -567,11 +567,48 @@ def _resource_competition_user_namespace() -> str:
     return "user-" + canonical_digest(raw)[:16]
 
 
+_RUNTIME_COORDINATION_ROOT_ENV = "NOETRIUM_RUNTIME_COORDINATION_ROOT"
+
+
+def _resource_competition_runtime_root() -> Path:
+    explicit = os.environ.get(_RUNTIME_COORDINATION_ROOT_ENV, "").strip()
+    if explicit:
+        root = Path(explicit)
+        if not root.is_absolute():
+            raise ValueError(
+                f"{_RUNTIME_COORDINATION_ROOT_ENV} must be an absolute path"
+            )
+        return root
+
+    xdg_runtime = os.environ.get("XDG_RUNTIME_DIR", "").strip()
+    if xdg_runtime:
+        candidate = Path(xdg_runtime).absolute()
+        if candidate.is_dir() and os.access(candidate, os.W_OK | os.X_OK):
+            return candidate / "noetrium"
+
+    getuid = getattr(os, "getuid", None)
+    if callable(getuid):
+        candidate = Path("/run/user") / str(int(getuid()))
+        if candidate.is_dir() and os.access(candidate, os.W_OK | os.X_OK):
+            return candidate / "noetrium"
+        shared_memory = Path("/dev/shm")
+        if shared_memory.is_dir() and os.access(
+            shared_memory, os.W_OK | os.X_OK
+        ):
+            return shared_memory / f"noetrium-uid-{int(getuid())}"
+
+    if os.name != "nt":
+        raise RuntimeError(
+            "no writable host runtime coordination filesystem is available"
+        )
+    return Path(gettempdir()).absolute() / "noetrium"
+
+
 def _default_resource_competition_directory() -> Path:
     reading = LocalLeaseClock().read()
     return (
-        Path(gettempdir()).absolute()
-        / "noetrium-resource-competition"
+        _resource_competition_runtime_root()
+        / "resource-competition"
         / _resource_competition_user_namespace()
         / reading.host_identity_digest
         / reading.boot_identity_digest
