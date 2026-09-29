@@ -493,24 +493,35 @@ print(json.dumps({
             pass
         if asset is not None and asset.path.exists():
             return asset
-        if asset is not None:
-            usage = self._assets.model_usage(model_id)
-            if usage.deployment_ids or usage.desired_running_deployment_ids:
-                raise RuntimeError(
-                    "inaccessible model asset retains deployment references: "
-                    + model_id
-                )
-            self._assets.unregister_model(
-                model_id,
-                delete_managed_files=False,
-            )
+
         entry = self._sources.resolve(model_id)
-        return self._assets.fetch_model(
-            model_id,
-            PLATFORM_SCOPE if scope is None else scope,
-            entry.source,
-            family=entry.family,
-            tags=entry.tags,
+        resolved_scope = PLATFORM_SCOPE if scope is None else scope
+        if asset is None:
+            return self._assets.fetch_model(
+                model_id,
+                resolved_scope,
+                entry.source,
+                family=entry.family,
+                tags=entry.tags,
+            )
+
+        usage = self._assets.model_usage(model_id)
+        if usage.deployment_ids or usage.desired_running_deployment_ids:
+            raise RuntimeError(
+                "inaccessible model asset retains deployment references: "
+                + model_id
+            )
+        if asset.mode is ModelAssetMode.REFERENCE:
+            return self._assets.materialize_reference_from_source(
+                model_id,
+                resolved_scope,
+                entry.source,
+                family=entry.family,
+                tags=entry.tags,
+            )
+        raise RuntimeError(
+            "inaccessible managed model asset requires explicit recovery: "
+            + model_id
         )
 
     def _candidate(
