@@ -52,6 +52,7 @@ class StructuredTaskGroup:
         self,
         *,
         group_id: str,
+        instance_generation: int,
         execution: ExecutionAuthorityProviderPort,
         timers: TimerSchedulerProviderPort,
         default_queue_capacity: int,
@@ -63,6 +64,8 @@ class StructuredTaskGroup:
         group_id = str(group_id).strip()
         if not group_id:
             raise ValueError("task group id required")
+        if type(instance_generation) is not int or instance_generation <= 0:
+            raise ValueError("task group instance generation must be positive")
         if shutdown_timeout_seconds <= 0:
             raise ValueError("task group shutdown timeout must be positive")
         self._group_id = group_id
@@ -90,7 +93,7 @@ class StructuredTaskGroup:
             if deadline.expired:
                 raise TaskDeadlineExceeded(f"task group deadline already expired: {group_id}")
             handle = self._timers.schedule_once(
-                f"task-group-deadline:{group_id}",
+                f"task-group-deadline:{group_id}:{instance_generation}",
                 deadline.remaining_seconds,
                 lambda: self.cancel(f"task group deadline exceeded: {group_id}"),
             )

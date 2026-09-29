@@ -45,6 +45,7 @@ class StructuredConcurrencyRuntime:
     _serial_lane_factory: SerialExecutionLaneFactoryProviderPort
     _owns_cpu_provider: bool = True
     _groups: dict[str, StructuredTaskGroup] = field(default_factory=dict)
+    _group_generation: int = 0
     _serial_lanes: dict[str, _OwnedLane] = field(default_factory=dict)
     _lock: Lock = field(default_factory=Lock)
     _closing: bool = False
@@ -97,8 +98,10 @@ class StructuredConcurrencyRuntime:
                 raise RuntimeError("concurrency runtime is closed")
             if group_id in self._groups:
                 raise ValueError(f"task group id already owned: {group_id}")
+            self._group_generation += 1
             group = StructuredTaskGroup(
                 group_id=group_id,
+                instance_generation=self._group_generation,
                 execution=self._execution,
                 timers=self._timers,
                 default_queue_capacity=self.budget.default_queue_capacity,
