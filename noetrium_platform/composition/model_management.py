@@ -96,6 +96,74 @@ from noetrium_platform.infrastructure.resources.compute.composition import (
 )
 
 
+_MODEL_SERVING_CACHE_ROOT = Path("/var/cache/noetrium/model-serving")
+_MODEL_SERVING_CACHE_ENVIRONMENT = (
+    ("TORCHINDUCTOR_CACHE_DIR", str(_MODEL_SERVING_CACHE_ROOT / "compile" / "torchinductor")),
+    ("TRITON_CACHE_DIR", str(_MODEL_SERVING_CACHE_ROOT / "compile" / "triton")),
+    ("CUDA_CACHE_PATH", str(_MODEL_SERVING_CACHE_ROOT / "compile" / "cuda")),
+    ("VLLM_CACHE_ROOT", str(_MODEL_SERVING_CACHE_ROOT / "topology" / "vllm")),
+)
+_DYNAMIC_MODEL_ENDPOINT_FLAGS = frozenset({
+    "--host",
+    "--port",
+    "--data-parallel-rpc-port",
+})
+
+
+def _model_cache_semantic_argv(argv: tuple[str, ...]) -> tuple[str, ...]:
+    rows: list[str] = []
+    index = 0
+    while index < len(argv):
+        value = argv[index]
+        if value in _DYNAMIC_MODEL_ENDPOINT_FLAGS:
+            rows.extend((value, "<dynamic>"))
+            index += 2
+            continue
+        matched = next(
+            (flag for flag in _DYNAMIC_MODEL_ENDPOINT_FLAGS if value.startswith(flag + "=")),
+            None,
+        )
+        rows.append(f"{matched}=<dynamic>" if matched is not None else value)
+        index += 1
+    return tuple(rows)
+
+
+def _model_serving_cache_keys(spec: ModelDeploymentSpec) -> tuple[str, str]:
+    compile_key = canonical_digest(
+        {
+            "schema": "noetrium.model-serving-compile-cache.v1",
+            "model_id": spec.model_id,
+            "engine": spec.engine,
+            "container_digest": spec.container_digest,
+            "executable": spec.executable,
+            "argv": _model_cache_semantic_argv(spec.argv),
+            "environment": spec.environment,
+        }
+    )
+    topology_key = canonical_digest(
+        {
+            "schema": "noetrium.model-serving-topology-cache.v1",
+            "compile_key": compile_key,
+            "gpu_devices": spec.gpu_devices,
+        }
+    )
+    return compile_key, topology_key
+
+
+def _model_serving_environment(
+    base_environment: tuple[tuple[str, str], ...],
+) -> tuple[tuple[str, str], ...]:
+    resolved = dict(base_environment)
+    for key, value in _MODEL_SERVING_CACHE_ENVIRONMENT:
+        existing = resolved.get(key)
+        if existing is not None and existing != value:
+            raise ValueError(
+                f"model serving cache environment is platform-owned: {key}"
+            )
+        resolved[key] = value
+    return tuple(sorted(resolved.items()))
+
+
 @dataclass(frozen=True, slots=True)
 class ManagementPlaneAuthorities:
     scopes: ScopeRegistryPort
@@ -162,6 +230,23 @@ class LocalModelServiceRuntimeFactory:
             read_only=True,
         )
         rows.setdefault(str(cwd_mount.target), cwd_mount)
+
+        compile_key, topology_key = _model_serving_cache_keys(spec)
+        cache_root = self._directories.layout.cache / "model-serving"
+        cache_mounts = (
+            (
+                cache_root / "compile" / compile_key,
+                _MODEL_SERVING_CACHE_ROOT / "compile",
+            ),
+            (
+                cache_root / "topology" / topology_key,
+                _MODEL_SERVING_CACHE_ROOT / "topology",
+            ),
+        )
+        for source, target in cache_mounts:
+            source.mkdir(parents=True, exist_ok=True)
+            mount = DockerServiceBindMount(source, target, read_only=False)
+            rows[str(mount.target)] = mount
         return tuple(rows[key] for key in sorted(rows))
 
     def open(
@@ -405,7 +490,7 @@ def build_local_management_plane(
     materializer = ModelLaunchMaterializer(
         assets,
         gpu_runtime_observer=gpu_runtime,
-        base_environment=base_service_environment,
+        base_environment=_model_serving_environment(base_service_environment),
     )
     deployment_runtime = ModelDeploymentRuntime(
         applied_store, deployment_catalog, materializer, service_factory
