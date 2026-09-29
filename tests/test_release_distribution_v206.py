@@ -252,6 +252,22 @@ def test_source_snapshot_ignores_local_runtime_material(monkeypatch, tmp_path: P
     assert second.source_tree_sha256 == first.source_tree_sha256
 
 
+def test_source_snapshot_ignores_pytest_worker_roots(monkeypatch, tmp_path: Path):
+    source = tmp_path / "source"
+    source.mkdir()
+    _minimal_project(source)
+    (source / "tracked.py").write_text("VALUE = 1\n", encoding="utf-8")
+    worker = source / "pytest-of-ubuntu"
+    worker.mkdir()
+    (worker / "ephemeral.txt").write_text("one\n", encoding="utf-8")
+    monkeypatch.setattr(distribution, "ROOT", source)
+    first = distribution._source_manifest(source)
+    (worker / "ephemeral.txt").write_text("two\n", encoding="utf-8")
+    second = distribution._source_manifest(source)
+    assert first.source_tree_sha256 == second.source_tree_sha256
+    assert not any(row.path.startswith("pytest-of-") for row in first.files)
+
+
 def test_release_path_contains_no_git_subprocess_contract():
     text = Path(distribution.__file__).read_text(encoding="utf-8")
     assert '["git"' not in text

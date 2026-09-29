@@ -4,6 +4,7 @@ from noetrium_platform.composition.method_telemetry_sink import RawLakeMethodObs
 
 from dataclasses import dataclass, field
 import importlib
+import os
 from pathlib import Path
 import sys
 from threading import RLock
@@ -45,6 +46,20 @@ from .project_layout import project_package_name
 _STATE_DIRECTORY = ".noetrium/research-os"
 _REVISION_MESSAGE_INITIAL = "project source"
 _REVISION_MESSAGE_UPDATE = "project source update"
+
+
+_PROJECT_STATE_ROOT_ENV = "NOETRIUM_PROJECT_STATE_ROOT"
+
+
+def _project_state_root(project_root: Path) -> Path:
+    explicit = os.environ.get(_PROJECT_STATE_ROOT_ENV, "").strip()
+    if not explicit:
+        return project_root / _STATE_DIRECTORY
+    root = Path(explicit)
+    if not root.is_absolute():
+        raise ValueError(f"{_PROJECT_STATE_ROOT_ENV} must be an absolute path")
+    root.mkdir(parents=True, exist_ok=True)
+    return root
 
 
 class _LazyProjectResearchOS:
@@ -134,7 +149,7 @@ class LoadedProjectResearchOS:
         with self._execution_lock:
             if self._managed_runtime is not None:
                 return
-            state_root = self.project_root / _STATE_DIRECTORY
+            state_root = _project_state_root(self.project_root)
             managed_runtime = build_local_managed_research_runtime(
                 standard_local_directory_layout(state_root / "platform-runtime"),
                 # Initial execution-authority materialization is the sole owner
@@ -333,7 +348,7 @@ def load_project_research_os(
     """
 
     root, manifest, portfolio = _load_project_source(project_root)
-    state_root = root / _STATE_DIRECTORY
+    state_root = _project_state_root(root)
     state_root.mkdir(parents=True, exist_ok=True)
 
     config = (

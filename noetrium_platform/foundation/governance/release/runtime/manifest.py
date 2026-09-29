@@ -13,7 +13,9 @@ EXCLUDED_DIRS = {
     "__pycache__", ".git", ".local", ".pytest_cache", ".server-state",
     ".noetrium", ".docker-engine", ".docker-build", ".runtime-assets",
     ".venv", "venv", "env", "build", "dist", "node_modules", "htmlcov",
+    ".hypothesis", ".mypy_cache", ".ruff_cache", ".tox",
 }
+EXCLUDED_DIR_PREFIXES = ("pytest-of-",)
 EXCLUDED_SUFFIXES = {".pyc", ".pyo", ".log"}
 EXCLUDED_FILENAMES = {".env", ".coverage", "coverage.xml", "nohup.out"}
 EXCLUDED_NAME_MARKERS = (".local.",)
@@ -37,7 +39,11 @@ def hash_file(path: Path) -> str:
 
 
 def _excluded_dir_name(name: str) -> bool:
-    return name in EXCLUDED_DIRS or name.endswith(".egg-info")
+    return (
+        name in EXCLUDED_DIRS
+        or name.endswith(".egg-info")
+        or any(name.startswith(prefix) for prefix in EXCLUDED_DIR_PREFIXES)
+    )
 
 
 def _excluded_file_name(name: str) -> bool:
@@ -140,6 +146,7 @@ def verify_release_manifest(
 __all__ = [
     "DERIVED_RELEASE_FILES",
     "EXCLUDED_DIRS",
+    "EXCLUDED_DIR_PREFIXES",
     "EXCLUDED_FILENAMES",
     "EXCLUDED_NAME_MARKERS",
     "EXCLUDED_SUFFIXES",

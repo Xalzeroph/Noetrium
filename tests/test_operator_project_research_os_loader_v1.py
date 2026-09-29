@@ -108,6 +108,33 @@ __all__ = ["build_research"]
         second.close()
 
 
+def test_project_state_root_can_be_physically_externalized(
+    tmp_path: Path, monkeypatch
+) -> None:
+    project = tmp_path / "paper"
+    project.mkdir()
+    external = tmp_path / "noetrium-data" / "projects" / "paper" / "research-os"
+    monkeypatch.setenv("NOETRIUM_PROJECT_STATE_ROOT", str(external))
+    resolved = project_research_os_loader._project_state_root(project)
+    assert resolved == external
+    assert external.is_dir()
+    assert not (project / ".noetrium").exists()
+
+
+def test_project_state_root_rejects_relative_externalization(
+    tmp_path: Path, monkeypatch
+) -> None:
+    project = tmp_path / "paper"
+    project.mkdir()
+    monkeypatch.setenv("NOETRIUM_PROJECT_STATE_ROOT", "relative/state")
+    try:
+        project_research_os_loader._project_state_root(project)
+    except ValueError as exc:
+        assert "absolute path" in str(exc)
+    else:
+        raise AssertionError("relative project state root was accepted")
+
+
 def test_project_open_is_control_plane_only(tmp_path: Path, monkeypatch) -> None:
     root = tmp_path / "paper"
     _create(root, monkeypatch)
