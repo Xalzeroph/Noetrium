@@ -45,7 +45,7 @@ def _inspect(*, revision: str = SHA, wheel: str = WHEEL_SHA,
 def _smoke(*, uid: int = 10001, gid: int = 10001,
            wheel: str = WHEEL_SHA, verified: int = 2557) -> dict:
     return {
-        "actions": list(container._ACTIONS),
+        "public_api_roots": list(container._PUBLIC_API_ROOTS),
         "module_file": "/usr/local/lib/python3.12/site-packages/noetrium_platform/api.py",
         "package_version": "0.43.1",
         "python_version": "3.12.10",
@@ -92,11 +92,13 @@ def test_container_smoke_verifies_wheel_record_and_effective_identity():
     assert "os.getegid()" in script
     assert "installed RECORD digest mismatch" in script
     assert script.index("installed RECORD digest mismatch") < script.index("noetrium --help")
+    assert "ResearchPortfolioBuilder" in script
     assert "ResearchOS" in script
-    assert "ReferenceResearchOSPort" in script
-    assert 'for action in ("run", "inspect", "pause", "resume", "checkpoint", "reconcile")' in script
-    for action in container._ACTIONS:
-        assert action in script
+    assert "open_project" in script
+    assert "ReferenceResearchOSPort" not in script
+    assert "ResearchExecutionTarget" not in script
+    for root in container._PUBLIC_API_ROOTS:
+        assert root in script
 
 
 def test_container_verifier_rejects_source_revision_drift(monkeypatch):
@@ -187,10 +189,10 @@ def test_container_verifier_returns_distribution_bound_receipt(monkeypatch):
         expected_distribution_evidence_sha256=DIST_SHA,
         expected_python_runtime_identity_digest=RUNTIME_SHA,
     )
-    assert result.schema == "noetrium.container-verification.v4"
-    assert result.qualification_scope == "research-os-smoke-only"
+    assert result.schema == "noetrium.container-verification.v5"
+    assert result.qualification_scope == "public-four-root-smoke"
     assert result.npe_verified is False
-    assert result.research_os_smoke_actions == ("run", "inspect", "pause", "resume", "checkpoint", "reconcile")
+    assert result.public_api_roots == container._PUBLIC_API_ROOTS
     assert result.source_sha == SHA
     assert result.wheel_sha256 == WHEEL_SHA
     assert result.distribution_evidence_sha256 == DIST_SHA
