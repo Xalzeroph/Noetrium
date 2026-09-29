@@ -101,9 +101,33 @@ class ExecutionConcurrencyAuthorities:
         cancel_pending: bool = False,
         deadline: Deadline | None = None,
     ) -> None:
-        group.close(cancel_pending=cancel_pending, deadline=deadline)
-        self.concurrency.release_task_group(group.group_id)
-        self.admission.unregister_group(group.group_id)
+        errors: list[BaseException] = []
+        try:
+            group.close(cancel_pending=cancel_pending, deadline=deadline)
+        except BaseException as exc:
+            errors.append(exc)
+
+        released = False
+        try:
+            self.concurrency.release_task_group(group.group_id)
+        except BaseException as exc:
+            errors.append(exc)
+        else:
+            released = True
+
+        if released:
+            try:
+                self.admission.unregister_group(group.group_id)
+            except BaseException as exc:
+                errors.append(exc)
+
+        if errors:
+            if len(errors) == 1:
+                raise errors[0]
+            raise ExceptionGroup(
+                f"task group close/release failed: {group.group_id}",
+                errors,
+            )
 
     def topology_snapshot(self) -> ConcurrencyTopologySnapshot:
         return self.concurrency.topology_snapshot()
