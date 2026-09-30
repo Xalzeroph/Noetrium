@@ -50,7 +50,7 @@ class CapabilityOperationAdapter:
         handler: Callable[[CapabilityRequest], CapabilityResult] | None = None,
     ) -> CapabilityInvocationExecution:
         effect_binding = None
-        if descriptor.effect_class is not EffectClass.PURE:
+        if descriptor.effect_class is EffectClass.IDEMPOTENT:
             request_id = capability_effect_request_id(request)
             effect_binding = OperationEffectBinding(
                 OperationEffectProfile(descriptor.effect_class.value),

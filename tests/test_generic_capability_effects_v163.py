@@ -114,6 +114,40 @@ class EffectfulSession:
     def close(self): pass
 
 
+class InitiallyUncertainEffectfulSession(EffectfulSession):
+    execute_calls = 0
+    reconcile_calls = 0
+
+    @staticmethod
+    def _uncertain_result(request_id: str, request_digest: str):
+        return CapabilityResult(
+            "tool.write",
+            {"written": True},
+            effect=EffectReceipt(
+                request_id,
+                request_digest,
+                EffectClass.NON_IDEMPOTENT,
+                EffectCertainty.EFFECT_POSSIBLE,
+                "writer-1",
+                verification_required=True,
+            ),
+        )
+
+    def execute_prepared_capability(self, request, handle):
+        type(self).execute_calls += 1
+        assert handle.request_digest == capability_request_digest(request)
+        return self._uncertain_result(handle.request_id, handle.request_digest)
+
+    def reconcile_prepared_capability(self, handle, context):
+        del context
+        type(self).reconcile_calls += 1
+        return CapabilityEffectReconciliationResult(
+            "tool.write",
+            EffectReconciliationDisposition.APPLIED,
+            EffectfulSession._result(handle.request_id, handle.request_digest),
+        )
+
+
 class Provider:
     pass
 
@@ -126,7 +160,7 @@ def _context():
     )
 
 
-def _router(journal, root: Path):
+def _router(journal, root: Path, session_type=EffectfulSession):
     kernel = KernelOperationDispatcher(OperationExecutor())
     commands = CommandIntentOwner(SQLiteCommandStore(root / "commands.sqlite3"))
     operation_owner = OperationOwner(SQLiteOperationStore(root / "operations.sqlite3"))
@@ -139,7 +173,7 @@ def _router(journal, root: Path):
     )
     operations = CapabilityOperationAdapter(dispatcher)
     component = ComponentIdentity("capability_provider.writer", "writer", "1", "1", "cfg")
-    session = EffectfulSession()
+    session = session_type()
     binding = CapabilitySessionBinding(component, session, "writer")
     effect_executor = (
         CapabilityEffectExecutor(dispatcher, EffectIntentOperations(dispatcher, journal), operations)
@@ -225,3 +259,43 @@ def test_generic_effect_journal_sqlite_reopens_without_environment_types():
         assert reopened.intent.provider_component_digest == intent.provider_component_digest
         assert reopened.intent.recovery_handle is not None
         assert reopened.intent.recovery_handle.opaque_payload == b"opaque"
+
+
+def test_effectful_capability_reconciles_uncertain_execution_before_kernel_terminalization(
+    tmp_path: Path,
+):
+    InitiallyUncertainEffectfulSession.prepare_calls = 0
+    InitiallyUncertainEffectfulSession.execute_calls = 0
+    InitiallyUncertainEffectfulSession.reconcile_calls = 0
+    router, _ = _router(
+        memory_effect_intent_journal(),
+        tmp_path,
+        session_type=InitiallyUncertainEffectfulSession,
+    )
+    request = CapabilityRequest(
+        "tool.write",
+        {"value": 11},
+        _context(),
+        "write-slot-uncertain",
+    )
+
+    result = router.invoke(request)
+
+    assert result.payload == {"written": True}
+    assert result.effect is not None
+    assert result.effect.certainty is EffectCertainty.EFFECT_CONFIRMED
+    assert result.effect.verification_required is False
+    assert InitiallyUncertainEffectfulSession.prepare_calls == 1
+    assert InitiallyUncertainEffectfulSession.execute_calls == 1
+    assert InitiallyUncertainEffectfulSession.reconcile_calls == 1
+    operations = router.drain_operations()
+    invoke = tuple(
+        row for row in operations
+        if "capability.invoke:tool.write:key:" in row.operation_id
+    )
+    assert len(invoke) == 1
+    assert invoke[0].status.value == "succeeded"
+    assert any(
+        "capability.effect.reconcile:" in row.operation_id
+        for row in operations
+    )
