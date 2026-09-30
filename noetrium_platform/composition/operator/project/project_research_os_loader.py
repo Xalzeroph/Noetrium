@@ -38,6 +38,7 @@ from .project_execution_authority import (
     materialize_project_execution_authorities,
 )
 from noetrium_platform.composition.research_portfolio_execution import (
+    ResearchExecutionAuthorities,
     ResearchExecutionContext,
 )
 from .project_layout import project_package_name
@@ -129,6 +130,7 @@ class LoadedProjectResearchOS:
     _composition: LocalResearchOSComposition
     _execution_config: ProjectExecutionAuthorityConfig
     _managed_runtime: ManagedResearchRuntime | None = None
+    _execution_authorities: ResearchExecutionAuthorities | None = None
     _closed: bool = False
     _execution_lock: RLock = field(default_factory=RLock, repr=False)
 
@@ -160,6 +162,7 @@ class LoadedProjectResearchOS:
                 start_background_controllers=False,
             )
             replacement: LocalResearchOSComposition | None = None
+            authorities: ResearchExecutionAuthorities | None = None
             try:
                 context = ResearchExecutionContext(
                     state_root,
@@ -188,15 +191,24 @@ class LoadedProjectResearchOS:
                 if self._execution_config.start_background_controllers:
                     managed_runtime.start_background_controllers()
             except BaseException as primary:
+                cleanup_errors: list[BaseException] = []
+                if authorities is not None:
+                    try:
+                        authorities.close()
+                    except BaseException as exc:
+                        cleanup_errors.append(exc)
                 try:
                     managed_runtime.close()
-                except BaseException as cleanup:
+                except BaseException as exc:
+                    cleanup_errors.append(exc)
+                if cleanup_errors:
                     raise ExceptionGroup(
                         "project execution-plane materialization failed with cleanup error",
-                        [primary, cleanup],
+                        [primary, *cleanup_errors],
                     ) from primary
                 raise
             previous = self._composition
+            previous.handoff_content_ownership(replacement)
             try:
                 previous.close()
             except BaseException as primary:
@@ -205,6 +217,11 @@ class LoadedProjectResearchOS:
                     replacement.close()
                 except BaseException as exc:
                     cleanup_errors.append(exc)
+                if authorities is not None:
+                    try:
+                        authorities.close()
+                    except BaseException as exc:
+                        cleanup_errors.append(exc)
                 try:
                     managed_runtime.close()
                 except BaseException as exc:
@@ -219,6 +236,7 @@ class LoadedProjectResearchOS:
             self._composition = replacement
             self.execution_pool = replacement.execution_pool
             self._managed_runtime = managed_runtime
+            self._execution_authorities = authorities
             proxy = self.research_os
             if isinstance(proxy, _LazyProjectResearchOS):
                 proxy._replace_delegate(replacement.research_os)
@@ -233,6 +251,11 @@ class LoadedProjectResearchOS:
             self._composition.close()
         except BaseException as exc:
             errors.append(exc)
+        if self._execution_authorities is not None:
+            try:
+                self._execution_authorities.close()
+            except BaseException as exc:
+                errors.append(exc)
         if self._managed_runtime is not None:
             try:
                 self._managed_runtime.close()

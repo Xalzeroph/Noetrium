@@ -116,6 +116,26 @@ class LocalResearchOSComposition:
             artifact_lineage=self._artifact_lineage,
         )
 
+    def handoff_content_ownership(
+        self,
+        target: "LocalResearchOSComposition",
+    ) -> None:
+        """Atomically move shared content authority ownership to a replacement composition."""
+        if self._closed:
+            raise RuntimeError("closed local Research OS cannot transfer content ownership")
+        if not isinstance(target, LocalResearchOSComposition):
+            raise TypeError("content ownership target must be LocalResearchOSComposition")
+        if target._closed:
+            raise RuntimeError("closed local Research OS cannot receive content ownership")
+        if self.content is not target.content:
+            raise ValueError("content ownership transfer requires identical authority object")
+        if not self._owns_content_authorities or self._content_closed:
+            raise RuntimeError("source local Research OS does not own live content authorities")
+        if target._owns_content_authorities or target._content_closed:
+            raise RuntimeError("target local Research OS already owns or closed content authorities")
+        self._owns_content_authorities = False
+        target._owns_content_authorities = True
+
     def close(self) -> None:
         if self._closed:
             return
