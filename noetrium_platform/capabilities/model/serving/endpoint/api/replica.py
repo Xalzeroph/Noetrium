@@ -376,6 +376,8 @@ class ModelEndpointDispatchPoolPort(Protocol):
         self,
         request: ModelEndpointEnvelope,
         body: Mapping[str, JsonInput],
+        *,
+        timeout_s: float | None = None,
     ) -> ModelEndpointDispatchResult: ...
 
     def stream(
@@ -384,6 +386,7 @@ class ModelEndpointDispatchPoolPort(Protocol):
         body: Mapping[str, JsonInput],
         on_event: Callable[[ModelStreamEvent], None],
         *,
+        timeout_s: float | None = None,
         stream_idle_timeout_s: float = 30.0,
     ) -> ModelEndpointDispatchResult: ...
 
@@ -398,6 +401,8 @@ class AdaptiveModelEndpointPoolPort(Protocol):
         self,
         request: ModelEndpointEnvelope,
         body: Mapping[str, JsonInput],
+        *,
+        timeout_s: float | None = None,
     ) -> ModelEndpointDispatchResult: ...
 
     def stream(
@@ -406,6 +411,7 @@ class AdaptiveModelEndpointPoolPort(Protocol):
         body: Mapping[str, JsonInput],
         on_event: Callable[[ModelStreamEvent], None],
         *,
+        timeout_s: float | None = None,
         stream_idle_timeout_s: float = 30.0,
     ) -> ModelEndpointDispatchResult: ...
 

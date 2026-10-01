@@ -25,6 +25,7 @@ from noetrium_platform.foundation.kernel.concurrency.api import (
 from noetrium_platform.capabilities.model.serving.endpoint.api.contracts import (
     ModelEndpointError,
     ModelEndpointRequest,
+    ModelEndpointRequestRejected,
 )
 from noetrium_platform.capabilities.model.serving.endpoint.api.ports import ModelEndpointPort
 from noetrium_platform.capabilities.model.serving.endpoint.api.pressure import (
@@ -56,8 +57,14 @@ class _StreamConsumerError(RuntimeError):
         self.cause=cause
 
 
-class ModelEndpointPoolUnavailable(RuntimeError):
-    pass
+class ModelEndpointPoolUnavailable(ModelEndpointRequestRejected):
+    def __init__(self, message: str) -> None:
+        super().__init__(
+            message,
+            failure_kind="capacity",
+            retryable=True,
+            affects_replica_health=False,
+        )
 
 
 def _request_prefix_affinity_keys(
@@ -340,6 +347,33 @@ class AdaptiveModelEndpointPool:
                     clock=self._clock,
                 ),
             )
+
+    def _dispatch_timeout_seconds(self, timeout_s: float | None) -> float:
+        operational_cap = max(
+            float(runtime.endpoint.route.timeout_s)
+            for runtime in self._runtimes.values()
+        )
+        if timeout_s is None:
+            return operational_cap
+        if (
+            isinstance(timeout_s, bool)
+            or not isinstance(timeout_s, (int, float))
+            or not math.isfinite(float(timeout_s))
+            or float(timeout_s) <= 0
+        ):
+            raise ValueError(
+                "model endpoint dispatch timeout must be finite and positive"
+            )
+        return min(operational_cap, float(timeout_s))
+
+    @staticmethod
+    def _remaining_dispatch_seconds(deadline_at: float) -> float:
+        remaining = float(deadline_at) - time.monotonic()
+        if remaining <= 0:
+            raise ModelEndpointPoolUnavailable(
+                "model endpoint pool dispatch timed out before provider dispatch"
+            )
+        return remaining
 
     def _schedule_pressure_probe(
         self,
@@ -706,10 +740,12 @@ class AdaptiveModelEndpointPool:
         attempted_deployments: frozenset[str],
         *,
         owner_id: str,
+        dispatch_deadline: float,
     ) -> tuple[int, object, _ReplicaRuntime]:
         if type(owner_id) is not str or not owner_id.strip():
             raise ValueError("model endpoint pool owner_id must be non-empty text")
         owner_id = owner_id.strip()
+        self._remaining_dispatch_seconds(dispatch_deadline)
         with self._cv:
             if self._closed:
                 raise ModelEndpointPoolUnavailable(
@@ -748,12 +784,18 @@ class AdaptiveModelEndpointPool:
             admitted = False
             try:
                 while True:
+                    remaining_dispatch = self._remaining_dispatch_seconds(
+                        dispatch_deadline
+                    )
                     if self._closed:
                         raise ModelEndpointPoolUnavailable(
                             "model endpoint pool is closed"
                         )
                     if self._selected_waiter_locked() is not waiter:
-                        self._wait_for_waiter_signal_locked(waiter)
+                        self._wait_for_waiter_signal_locked(
+                            waiter,
+                            timeout_seconds=remaining_dispatch,
+                        )
                         continue
 
                     (
@@ -770,17 +812,23 @@ class AdaptiveModelEndpointPool:
                         if cooling_until is not None:
                             self._wait_for_waiter_signal_locked(
                                 waiter,
-                                timeout_seconds=max(
-                                    0.0,
-                                    cooling_until - now,
+                                timeout_seconds=min(
+                                    remaining_dispatch,
+                                    max(0.0, cooling_until - now),
                                 ),
                             )
                         else:
-                            self._wait_for_waiter_signal_locked(waiter)
+                            self._wait_for_waiter_signal_locked(
+                                waiter,
+                                timeout_seconds=remaining_dispatch,
+                            )
                         continue
 
                     if runtime.in_flight >= runtime.adaptive_window.limit:
-                        self._wait_for_waiter_signal_locked(waiter)
+                        self._wait_for_waiter_signal_locked(
+                            waiter,
+                            timeout_seconds=remaining_dispatch,
+                        )
                         continue
 
                     self._remove_waiter_locked(waiter)
@@ -894,6 +942,8 @@ class AdaptiveModelEndpointPool:
         self,
         request: ModelEndpointEnvelope,
         body: Mapping[str, JsonInput],
+        *,
+        timeout_s: float | None = None,
     ) -> ModelEndpointDispatchResult:
         if not isinstance(
             request,
@@ -905,6 +955,8 @@ class AdaptiveModelEndpointPool:
         if not isinstance(body, Mapping):
             raise TypeError("endpoint pool body must be a mapping")
 
+        dispatch_timeout = self._dispatch_timeout_seconds(timeout_s)
+        dispatch_deadline = time.monotonic() + dispatch_timeout
         affinity_keys = self._affinity_keys_for_request(request, body)
         owner_id = model_request_owner_id(request)
         attempts: list[ModelEndpointDispatchAttempt] = []
@@ -914,6 +966,7 @@ class AdaptiveModelEndpointPool:
                 affinity_keys,
                 frozenset(attempted_deployments),
                 owner_id=owner_id,
+                dispatch_deadline=dispatch_deadline,
             )
             attempted_deployments.add(binding.deployment_id)
             physical_request = ModelEndpointRequest(
@@ -921,6 +974,7 @@ class AdaptiveModelEndpointPool:
                 deployment_id=binding.deployment_id,
                 deployment_generation=binding.deployment_generation,
                 body=body,
+                timeout_s=self._remaining_dispatch_seconds(dispatch_deadline),
             )
             started = self._clock()
             try:
@@ -950,16 +1004,25 @@ class AdaptiveModelEndpointPool:
                     and exc.failure_kind
                     in self._retry_policy.retryable_failure_kinds
                 )
+                remaining_for_retry = max(
+                    0.0,
+                    dispatch_deadline - time.monotonic(),
+                )
+                if can_retry and remaining_for_retry <= 0:
+                    can_retry = False
                 wait = (
-                    max(
-                        self._retry_policy.wait_seconds(
-                            attempt_number=attempt_number,
-                            retry_after_seconds=exc.retry_after_seconds,
-                        ),
-                        (
-                            max(0.0, runtime.cooldown_until - self._clock())
-                            if exc.affects_replica_health
-                            else 0.0
+                    min(
+                        remaining_for_retry,
+                        max(
+                            self._retry_policy.wait_seconds(
+                                attempt_number=attempt_number,
+                                retry_after_seconds=exc.retry_after_seconds,
+                            ),
+                            (
+                                max(0.0, runtime.cooldown_until - self._clock())
+                                if exc.affects_replica_health
+                                else 0.0
+                            ),
                         ),
                     )
                     if can_retry
@@ -1047,6 +1110,7 @@ class AdaptiveModelEndpointPool:
         body: Mapping[str, JsonInput],
         on_event: Callable[[ModelStreamEvent], None],
         *,
+        timeout_s: float | None = None,
         stream_idle_timeout_s: float = 30.0,
     ) -> ModelEndpointDispatchResult:
         if not isinstance(request,ModelRequestEnvelope):
@@ -1063,6 +1127,8 @@ class AdaptiveModelEndpointPool:
         ):
             raise ValueError("endpoint pool stream idle timeout must be finite and positive")
 
+        dispatch_timeout=self._dispatch_timeout_seconds(timeout_s)
+        dispatch_deadline=time.monotonic()+dispatch_timeout
         affinity_keys=self._affinity_keys_for_request(request, body)
         owner_id=model_request_owner_id(request)
         attempts: list[ModelEndpointDispatchAttempt]=[]
@@ -1072,6 +1138,7 @@ class AdaptiveModelEndpointPool:
                 affinity_keys,
                 frozenset(attempted_deployments),
                 owner_id=owner_id,
+                dispatch_deadline=dispatch_deadline,
             )
             attempted_deployments.add(binding.deployment_id)
             physical_request=ModelEndpointRequest(
@@ -1079,6 +1146,7 @@ class AdaptiveModelEndpointPool:
                 deployment_id=binding.deployment_id,
                 deployment_generation=binding.deployment_generation,
                 body=body,
+                timeout_s=self._remaining_dispatch_seconds(dispatch_deadline),
             )
             started=self._clock()
             emitted=0
@@ -1143,16 +1211,25 @@ class AdaptiveModelEndpointPool:
                     and exc.failure_kind
                     in self._retry_policy.retryable_failure_kinds
                 )
+                remaining_for_retry=max(
+                    0.0,
+                    dispatch_deadline-time.monotonic(),
+                )
+                if can_retry and remaining_for_retry <= 0:
+                    can_retry=False
                 wait=(
-                    max(
-                        self._retry_policy.wait_seconds(
-                            attempt_number=attempt_number,
-                            retry_after_seconds=exc.retry_after_seconds,
-                        ),
-                        (
-                            max(0.0, runtime.cooldown_until - self._clock())
-                            if exc.affects_replica_health
-                            else 0.0
+                    min(
+                        remaining_for_retry,
+                        max(
+                            self._retry_policy.wait_seconds(
+                                attempt_number=attempt_number,
+                                retry_after_seconds=exc.retry_after_seconds,
+                            ),
+                            (
+                                max(0.0, runtime.cooldown_until - self._clock())
+                                if exc.affects_replica_health
+                                else 0.0
+                            ),
                         ),
                     )
                     if can_retry

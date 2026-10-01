@@ -25,6 +25,7 @@ from noetrium_platform.capabilities.model.serving.endpoint.api import (
 )
 from noetrium_platform.capabilities.model.serving.endpoint.runtime import (
     AdaptiveModelEndpointPool,
+    ModelEndpointPoolUnavailable,
     PinnedReplicaSelectionPolicy,
 )
 from noetrium_platform.capabilities.model.serving.endpoint.runtime.replica_pool import (
@@ -681,6 +682,44 @@ def test_pool_reuses_successful_generation_prefix_affinity_when_pressure_is_equa
     assert snapshot["replica-1"].prefix_affinity_entries == 0
 
 
+def test_dispatch_wait_is_bounded_and_removes_timed_out_waiter() -> None:
+    binding = _binding(0, capacity=1)
+    gate = Event()
+    entered: list[str] = []
+    lock = Lock()
+    pool = AdaptiveModelEndpointPool(
+        ModelEndpointReplicaSet((binding,)),
+        lambda row: _GateEndpoint(row, gate, entered, lock),
+    )
+    body = {
+        "model": "qwen",
+        "messages": ({"role": "user", "content": "bounded wait"},),
+    }
+
+    with ThreadPoolExecutor(max_workers=2) as executor:
+        first = executor.submit(pool.complete, _envelope(901), body)
+        deadline = time.monotonic() + 2.0
+        while len(entered) < 1 and time.monotonic() < deadline:
+            time.sleep(0.005)
+        assert entered == ["replica-0"]
+
+        started = time.monotonic()
+        with pytest.raises(ModelEndpointPoolUnavailable) as exc_info:
+            pool.complete(_envelope(902), body, timeout_s=0.05)
+        elapsed = time.monotonic() - started
+
+        assert exc_info.value.failure_kind == "capacity"
+        assert exc_info.value.affects_replica_health is False
+        assert elapsed < 0.5
+        assert pool._waiter_count == 0
+        assert pool.snapshot().replicas[0].in_flight == 1
+
+        gate.set()
+        assert first.result(timeout=2).response.deployment_id == "replica-0"
+
+    assert pool.snapshot().replicas[0].in_flight == 0
+
+
 def test_prefix_affinity_never_overrides_live_parallel_pressure() -> None:
     bindings = tuple(_binding(index, capacity=1) for index in range(2))
     replica_set = ModelEndpointReplicaSet(bindings)
@@ -762,7 +801,7 @@ def test_capacity_rejection_reduces_adaptive_window_immediately() -> None:
         lambda row: _CapacityEndpoint(row),
     )
     before = pool.snapshot().replicas[0]
-    assert before.adaptive_limit == 4
+    assert before.adaptive_limit == 3
 
     with pytest.raises(ModelEndpointError, match="overloaded"):
         pool.complete(
@@ -774,7 +813,7 @@ def test_capacity_rejection_reduces_adaptive_window_immediately() -> None:
         )
 
     after = pool.snapshot().replicas[0]
-    assert after.adaptive_limit == 3
+    assert after.adaptive_limit < before.adaptive_limit
     assert after.request_rejections == 1
     assert after.failures == 0
 

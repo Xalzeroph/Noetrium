@@ -654,8 +654,30 @@ class MethodModelAgentLoop:
                 ) from exc
             raise
 
+        remaining_seconds = self.execution_budget.remaining_seconds(plan.scope_id)
+        if remaining_seconds is not None and remaining_seconds <= 0:
+            try:
+                self.execution_budget.abort(budget_reservation)
+            except BaseException as budget_exc:
+                raise ExceptionGroup(
+                    "model dispatch budget expiry and reservation abort failed",
+                    [
+                        ExecutionBudgetExceeded(
+                            "TrialBudget exhausted before model dispatch"
+                        ),
+                        budget_exc,
+                    ],
+                ) from budget_exc
+            raise ExecutionBudgetExceeded(
+                "TrialBudget exhausted before model dispatch"
+            )
+
         try:
-            dispatch = self.pool.complete(envelope, body)
+            dispatch = self.pool.complete(
+                envelope,
+                body,
+                timeout_s=remaining_seconds,
+            )
         except ModelEndpointRequestRejected as exc:
             try:
                 self.execution_budget.abort(budget_reservation)

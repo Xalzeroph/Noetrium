@@ -31,6 +31,12 @@ class ModelEndpointRequest:
     deployment_id: str
     deployment_generation: str
     body: Mapping[str, JsonInput]
+    timeout_s: float | None = field(
+        default=None,
+        repr=False,
+        compare=False,
+        metadata={"transient": True},
+    )
     _digest: str = field(
         init=False,
         repr=False,
@@ -51,6 +57,15 @@ class ModelEndpointRequest:
         _require_sha256(self.deployment_generation, "model endpoint deployment_generation")
         if not isinstance(self.body, Mapping):
             raise TypeError("model endpoint request body must be a mapping")
+        if self.timeout_s is not None and (
+            isinstance(self.timeout_s, bool)
+            or not isinstance(self.timeout_s, (int, float))
+            or not math.isfinite(float(self.timeout_s))
+            or float(self.timeout_s) <= 0
+        ):
+            raise ValueError(
+                "model endpoint request timeout_s must be finite and positive"
+            )
         object.__setattr__(
             self, "body", freeze_json(self.body)
         )

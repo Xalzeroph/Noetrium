@@ -103,7 +103,7 @@ def _request() -> MethodAgentRequest:
     )
 
 
-def _runtime_dependencies(tmp_path):
+def _runtime_dependencies(tmp_path, *, max_seconds=None):
     tokenization = FixedModelRequestTokenizationProvider(input_tokens=9).bind(
         model=_model(),
         model_stack_digest="c" * 64,
@@ -125,6 +125,7 @@ def _runtime_dependencies(tmp_path):
             max_turns=10,
             max_messages=100,
             max_model_calls=10,
+            max_seconds=max_seconds,
         )
     )
     return tokenization, budget
@@ -186,6 +187,7 @@ def test_endpoint_backed_method_agent_records_request_usage_and_effect(tmp_path)
 class _Pool:
     def __init__(self) -> None:
         self.requests = []
+        self.timeouts = []
         self.replica_set_digest = "d" * 64
 
     def snapshot(self):
@@ -199,7 +201,8 @@ class _Pool:
     def stream(self, request, body, on_event, *, stream_idle_timeout_s=30.0):
         raise AssertionError("streaming is not exercised by this test pool")
 
-    def complete(self, request, body):
+    def complete(self, request, body, *, timeout_s=None):
+        self.timeouts.append(timeout_s)
         physical = ModelEndpointRequest(
             request=request,
             deployment_id="pool-qwen-a",
@@ -270,8 +273,41 @@ def test_dispatch_pool_backed_method_agent_records_selected_replica(tmp_path) ->
     )
 
 
+def test_method_model_dispatch_uses_remaining_trial_deadline(tmp_path) -> None:
+    factory = MethodViewChatRequestFactory(
+        "qwen",
+        {"temperature": 0, "max_tokens": 64},
+    )
+    binding = MethodModelEndpointBinding(
+        agent_id="cot.reasoner",
+        role="reasoner",
+        model=_model(),
+        request_factory_digest=factory.digest,
+    )
+    pool = _Pool()
+    recorder = build_model_request_recorder(tmp_path / "deadline-requests")
+    tokenization, budget = _runtime_dependencies(tmp_path, max_seconds=5.0)
+    loop = MethodModelAgentLoop(
+        binding=binding,
+        pool=pool,
+        recorder=recorder,
+        request_factory=factory,
+        tokenization=tokenization,
+        execution_budget=budget,
+    )
+
+    try:
+        loop.run(_request())
+    finally:
+        budget.close()
+
+    assert len(pool.timeouts) == 1
+    assert pool.timeouts[0] is not None
+    assert 0.0 < pool.timeouts[0] <= 5.0
+
+
 class _RejectedPool(_Pool):
-    def complete(self, request, body):
+    def complete(self, request, body, *, timeout_s=None):
         raise ModelEndpointRequestRejected(
             "request rejected before provider dispatch",
             failure_kind="invalid_request",
@@ -281,7 +317,7 @@ class _RejectedPool(_Pool):
 
 
 class _TimeoutPool(_Pool):
-    def complete(self, request, body):
+    def complete(self, request, body, *, timeout_s=None):
         raise ModelEndpointError(
             "model request timed out after dispatch",
             failure_kind="timeout",

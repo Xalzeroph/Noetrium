@@ -452,7 +452,12 @@ class NativeModelProviderEndpoint(ModelEndpointPort):
             provider_id=plan.profile.provider_id,
         )
         accumulator=ModelStreamAccumulator(plan)
-        deadline=Deadline.after(self.route.timeout_s)
+        request_timeout_s = (
+            self.route.timeout_s
+            if request.timeout_s is None
+            else min(self.route.timeout_s, float(request.timeout_s))
+        )
+        deadline=Deadline.after(request_timeout_s)
         try:
             owner_id=model_request_owner_id(request.request)
             lease=self._admission.acquire(
@@ -463,7 +468,7 @@ class NativeModelProviderEndpoint(ModelEndpointPort):
             raise ModelEndpointError(
                 "model endpoint streaming admission timed out; "
                 f"request_id={request.request.request_id}; "
-                f"timeout_s={self.route.timeout_s:.3f}",
+                f"timeout_s={request_timeout_s:.3f}",
                 failure_kind="capacity",
                 retryable=True,
                 affects_replica_health=False,
@@ -509,7 +514,7 @@ class NativeModelProviderEndpoint(ModelEndpointPort):
                 "model endpoint streaming transport timed out; "
                 f"request_id={request.request.request_id}; "
                 f"deployment_id={request.deployment_id}; "
-                f"timeout_s={self.route.timeout_s:.3f}",
+                f"timeout_s={request_timeout_s:.3f}",
                 request_body=wire.wire_bytes,
                 failure_kind="timeout",
                 retryable=True,
@@ -696,7 +701,12 @@ class NativeModelProviderEndpoint(ModelEndpointPort):
         started_monotonic_ns: int,
     ) -> ModelEndpointResponse:
         plan=self._operation_wire(request)
-        deadline=Deadline.after(self.route.timeout_s)
+        request_timeout_s = (
+            self.route.timeout_s
+            if request.timeout_s is None
+            else min(self.route.timeout_s, float(request.timeout_s))
+        )
+        deadline=Deadline.after(request_timeout_s)
         try:
             owner_id=model_request_owner_id(request.request)
             lease=self._admission.acquire(
@@ -810,7 +820,12 @@ class NativeModelProviderEndpoint(ModelEndpointPort):
             return self._complete_operation(request, started_monotonic_ns)
 
         plan,wire=self._plan(request)
-        deadline=Deadline.after(self.route.timeout_s)
+        request_timeout_s = (
+            self.route.timeout_s
+            if request.timeout_s is None
+            else min(self.route.timeout_s, float(request.timeout_s))
+        )
+        deadline=Deadline.after(request_timeout_s)
         try:
             owner_id=model_request_owner_id(request.request)
             lease=self._admission.acquire(
@@ -821,7 +836,7 @@ class NativeModelProviderEndpoint(ModelEndpointPort):
             raise ModelEndpointError(
                 "model endpoint admission timed out; "
                 f"request_id={request.request.request_id}; "
-                f"timeout_s={self.route.timeout_s:.3f}"
+                f"timeout_s={request_timeout_s:.3f}"
             ) from exc
         except ModelAdmissionClosed as exc:
             raise ModelEndpointError("model endpoint admission is closed") from exc
@@ -851,7 +866,7 @@ class NativeModelProviderEndpoint(ModelEndpointPort):
                 "model endpoint HTTP transport failed: TimeoutError; "
                 f"request_id={request.request.request_id}; "
                 f"deployment_id={request.deployment_id}; "
-                f"timeout_s={self.route.timeout_s:.3f}",
+                f"timeout_s={request_timeout_s:.3f}",
                 request_body=wire.wire_bytes,
             ) from exc
         except (TaskCancelled,CancelledError) as exc:

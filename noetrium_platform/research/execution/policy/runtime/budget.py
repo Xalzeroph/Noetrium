@@ -464,6 +464,24 @@ class SQLiteExecutionBudgetAuthority(ExecutionBudgetAuthorityPort):
                 reserved,
             )
 
+    def remaining_seconds(self, scope_id: str) -> float | None:
+        if type(scope_id) is not str or not scope_id.strip():
+            raise ValueError("execution budget scope_id is required")
+        with closing(self._reader()) as db:
+            scope = self._scope_policy_row(db, scope_id)
+            elapsed = max(
+                0.0,
+                (int(self._clock_ns()) - int(scope[4])) / 1_000_000_000,
+            )
+            limits = tuple(
+                float(limit)
+                for limit in (scope[6], scope[12])
+                if limit is not None
+            )
+            if not limits:
+                return None
+            return max(0.0, min(limits) - elapsed)
+
     def reserve(
         self,
         scope_id: str,

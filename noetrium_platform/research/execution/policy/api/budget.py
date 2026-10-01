@@ -204,6 +204,8 @@ class ExecutionBudgetAuthorityPort(Protocol):
 
     def require_active(self, scope_id: str) -> ExecutionBudgetSnapshot: ...
 
+    def remaining_seconds(self, scope_id: str) -> float | None: ...
+
     def reserve(
         self,
         scope_id: str,
